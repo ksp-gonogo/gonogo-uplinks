@@ -15,7 +15,14 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -60,9 +67,16 @@ mkdirSync(join(staging, "Plugins"), { recursive: true });
 for (const dll of required) {
   cpSync(join(modBin, dll), join(staging, "Plugins", dll));
 }
-for (const extra of ["LICENSE", `NOTICE-${declared.mod?.name ?? ""}.txt`]) {
-  const from = join(uplinkDir, "mod", extra);
-  if (existsSync(from)) cpSync(from, join(staging, extra));
+/*
+ * LICENSE plus every NOTICE beside the plugin, matched by SHAPE rather than by
+ * name. Deriving the filename from `mod.name` looked fine and was wrong: the
+ * declared name is "SCANsat" and the file is `NOTICE-SCANSAT.txt`, which matches
+ * on a case-insensitive macOS filesystem and silently does not on a Linux
+ * runner, so the attribution notice would go missing only in CI.
+ */
+for (const extra of readdirSync(join(uplinkDir, "mod"))) {
+  if (extra !== "LICENSE" && !/^NOTICE.*\.txt$/i.test(extra)) continue;
+  cpSync(join(uplinkDir, "mod", extra), join(staging, extra));
 }
 const netkan = join(uplinkDir, "mod", `${declared.gamedata}.netkan`);
 if (existsSync(netkan)) cpSync(netkan, join(outDir, `${declared.gamedata}.netkan`));
