@@ -1,38 +1,37 @@
 #!/usr/bin/env node
 /**
- * Serves `artifacts/` over HTTP so a running gonogo app can fetch an Uplink's
- * client bundle from this repo.
+ * Serves an Uplink's published bundle over HTTP, so a running gonogo app can
+ * fetch it from the release URL the Uplink declared.
  *
- * ## Why this has to exist at all, and it is a finding rather than a convenience
+ * ## The websocket carries the URL, not the bytes
  *
- * The app is a browser and fetches the bundle over HTTP. The mod is a KSP plugin
- * whose only network surface is the Fleck **WebSocket** listener
- * (`Sitrep.Transport/FleckTransportListener`): there is no HTTP server in the mod
- * and no static route anywhere in it. So a mod CANNOT serve the bundle it ships
- * beside its own DLL in GameData, and `ClientSource.Url` can never point at the
- * mod itself.
+ * The mod publishes `ClientSource.Url` on `system.uplinks`; the app reads it off
+ * the socket it already has and downloads over HTTP, then distributes to stations
+ * over PeerJS as it already does. The mod does not serve files, and could not:
+ * its only network surface is the Fleck WebSocket listener
+ * (`Sitrep.Transport/FleckTransportListener`), with no HTTP anywhere in
+ * `Sitrep.Host`, `Sitrep.Transport` or `Sitrep.Core`.
  *
- * That is the right answer for a release (the bundle belongs on a release asset
- * or GitHub Pages, versioned and cacheable, not served by a game process), and it
- * leaves the DEV loop with nowhere to fetch from. This is that nowhere: a static
- * server the author runs beside their editor, whose address goes into the DLL as
- * `DevPath`.
+ * ## Why serving a directory OUTSIDE the repo is the point
  *
- * ## CORS, because the app and this are different origins by construction
+ * A release URL is not a folder path in either repo, which is what lets the
+ * acceptance test pass: rename or delete `gonogo-uplinks` and a client already
+ * published still loads. A server rooted inside this repo would die with the
+ * folder and prove nothing, so `--dir` points at a release host standing in for
+ * a GitHub release asset.
  *
- * The app is served from wherever it is deployed and this is a separate host and
- * port, so every fetch is cross-origin. `import(bundleUrl)` of a module from
- * another origin needs `Access-Control-Allow-Origin`, and so does the sidecar
- * fetch. Without it the browser refuses before the loader sees anything, and the
- * failure surfaces as a module that would not load rather than as a CORS problem.
+ * ## CORS, because the app and any release host are different origins
  *
- * `*` is right here and only here: this serves build output from a directory the
- * author already trusts, to a dev machine, for one afternoon. A release host
- * makes its own decision.
+ * `import(bundleUrl)` of a module from another origin needs
+ * `Access-Control-Allow-Origin`, and so does the sidecar fetch. Without it the
+ * browser refuses before the loader sees anything, and it surfaces as a module
+ * that would not load rather than as a CORS problem. `*` is right for a local
+ * release host; a real one makes its own decision.
  *
  * Usage:
- *   serve-artifacts.mjs [--port 8099] [--host 0.0.0.0]
+ *   serve-artifacts.mjs [--dir <release host>] [--port 8099] [--host 0.0.0.0]
  */
+
 
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
@@ -40,9 +39,17 @@ import { dirname, extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SERVE = join(ROOT, "artifacts");
-
+/*
+ * Defaults to this repo's own artifacts for the dev loop, but takes --dir so it
+ * can serve a RELEASE HOST instead: a directory that is not either repo. That is
+ * what makes the folder-move test meaningful, since a server rooted inside
+ * gonogo-uplinks dies the moment the folder is renamed.
+ */
 const args = process.argv.slice(2);
+const SERVE = resolve(
+  args.includes("--dir") ? args[args.indexOf("--dir") + 1] : join(ROOT, "artifacts"),
+);
+
 const flag = (which, fallback) =>
   args.includes(which) ? args[args.indexOf(which) + 1] : fallback;
 const port = Number(flag("--port", "8099"));
@@ -54,7 +61,7 @@ const host = flag("--host", "0.0.0.0");
 if (!existsSync(SERVE)) {
   console.error(
     `✖ ${SERVE} does not exist, so this would serve 404s that look like a loader problem.\n` +
-      "  Build an Uplink first: node tooling/release-uplink.mjs <name>",
+      "  Publish one first: node tooling/publish-release.mjs <name> --to <release host>",
   );
   process.exit(1);
 }
@@ -115,7 +122,7 @@ server.listen(port, host, () => {
   console.log(`  http://<this-machine>:${port}/<id>/<id>.client.js`);
   console.log(`  http://<this-machine>:${port}/<id>/gonogo-uplink.json`);
   console.log(
-    "\nThe first of those is what goes into the DLL as DevPath:\n" +
-      `  node tooling/release-uplink.mjs <name> --dev-path http://<this-machine>:${port}/<id>/<id>.client.js`,
+    "\nThe first of those is the release URL an Uplink declares in uplink.json as client.url,\n" +
+      "which the mod then publishes and the app downloads from.",
   );
 });

@@ -24,6 +24,6 @@
   },
   "csharpNamespace": "Gonogo.ScansatUplink",
   "client": {
-    "url": "https://github.com/ksp-gonogo/gonogo-uplinks/releases/download/scansat-v0.0.1/scansat.client.js"
+    "url": "http://192.168.86.24:8099/scansat/v0.0.1/scansat.client.js"
   }
 }
