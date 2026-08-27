@@ -90,12 +90,21 @@ thing an author has to work out for themselves today, and each belongs upstream.
    (the RT-attributed twin) and `CodegenTwin.props`. With both vendored, codegen
    from here is byte-identical to the monorepo's committed output, so this is a
    packaging job rather than a design one
-5. **`server.deps.inline` is mandatory and undocumented.** ui-kit's published dist
-   loads under vitest only when Vite processes it rather than pre-bundling it. In
-   `gonogo` it is always a pnpm symlink and Vite never pre-bundles a linked
-   dependency, so the whole tree is green and the published artifact fails for
-   everyone else with `styled.span is not a function`, in setup, before one
-   assertion runs. The devkit should ship the vitest config, not the knowledge
+5. **ui-kit's published bundle cannot be loaded, and `server.deps.inline` only
+   hides it.** Two named imports of CommonJS dependencies survive into its ESM
+   dist: `styled` from styled-components (which publishes no `exports` field, so
+   Node takes its CJS `main` and the default arrives as a namespace) and
+   `toHaveNoViolations` from jest-axe. Plain `node -e 'import("@ksp-gonogo/ui-kit")'`
+   throws `styled.span is not a function` at module scope, and
+   `@ksp-gonogo/ui-kit/testing` throws on the jest-axe import, which takes out
+   `expectNoA11yViolations` — the a11y helper every widget test is told to call.
+   Under vitest it presents as every test file dying in setup before one assertion
+   runs. `server.deps.inline` makes Vite process the file instead of pre-bundling
+   it, which is what a pnpm symlink gets for free in `gonogo` and is why the whole
+   tree is green there. This repo carries that line, and it is a workaround: the
+   fix is defensive default resolution in ui-kit's build. `gonogo`'s extraction
+   probe now has a load leg that reproduces both, with the two specifiers in a
+   `LOAD_EXEMPT` list that fails as stale the moment they load
 6. **Neither published package is resolvable from CJS**, because both declare an
    `import` condition with no `require` one, and neither exports `./package.json`.
    Any build tool that wants to resolve them or read their version hits both
