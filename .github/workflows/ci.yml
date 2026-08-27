@@ -21,6 +21,10 @@ jobs:
       - id: matrix
         run: node scripts/uplink-matrix.mjs --github >> "$GITHUB_OUTPUT"
       - run: node scripts/uplink-matrix.mjs
+      # The repo's front door describes the repo. Generated from the same
+      # uplink.json files the matrix reads, so it cannot drift into describing a
+      # set of Uplinks that no longer exists.
+      - run: node tooling/generate-root-readme.mjs --check
 
   uplink:
     needs: discover

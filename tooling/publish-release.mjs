@@ -71,11 +71,23 @@ if (!existsSync(join(from, bundleName))) {
  * The path the app will actually request, derived from the declared URL rather
  * than chosen here. Publishing to a directory of this tool's choosing and hoping
  * it matches is how a 404 becomes a silently absent widget.
+ *
+ * `client.url` is JUST a URL and this deliberately does not care which kind: a
+ * public release, a LAN host, a box on the same machine as KSP, or a bare
+ * same-origin path. The loader does not care either (`manifestUrlFor` slices the
+ * string rather than using `new URL(rel, base)`, precisely so a path with no
+ * origin works), and the choice belongs to the author. A browser fetching a URL
+ * is unremarkable; a KSP mod acting as a file server is the odd thing, which is
+ * why this shape won over serving bytes off the telemetry socket.
  */
-const declaredPath = new URL(url).pathname.replace(/^\/+/, "");
+const declaredPath = (
+  URL.canParse(url) ? new URL(url).pathname : url
+).replace(/^\/+/, "");
 const target = resolve(to, dirname(declaredPath));
 
-if (base) {
+// Only checkable when the declared URL has an origin to compare against. A bare
+// same-origin path is published as-is: there is no host in it to disagree with.
+if (base && URL.canParse(url)) {
   const expected = new URL(declaredPath, base.endsWith("/") ? base : `${base}/`).href;
   if (expected !== url) {
     console.error(
