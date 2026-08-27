@@ -97,7 +97,7 @@ thing an author has to work out for themselves today, and each belongs upstream.
    `toHaveNoViolations` from jest-axe. Plain `node -e 'import("@ksp-gonogo/ui-kit")'`
    throws `styled.span is not a function` at module scope, and
    `@ksp-gonogo/ui-kit/testing` throws on the jest-axe import, which takes out
-   `expectNoA11yViolations` — the a11y helper every widget test is told to call.
+   `expectNoA11yViolations`, the a11y helper every widget test is told to call.
    Under vitest it presents as every test file dying in setup before one assertion
    runs. `server.deps.inline` makes Vite process the file instead of pre-bundling
    it, which is what a pnpm symlink gets for free in `gonogo` and is why the whole
