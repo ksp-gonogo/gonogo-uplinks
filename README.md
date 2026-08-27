@@ -47,6 +47,8 @@ npm run typecheck && npm test                        # client half
 cd - && node tooling/codegen-uplink.mjs scansat      # regenerate committed types
 dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
+node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED, in bare node
+node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
 node tooling/check-mod-version.mjs scansat           # parent mod, pinned vs newer
 node tooling/bundle-uplink-client.mjs scansat        # artifacts/<id>.client.js + descriptor
 node tooling/package-uplink-mod.mjs scansat          # artifacts/<GameData>.zip
@@ -73,6 +75,35 @@ A third state matters as much as the other two: **could not check**. CKAN
 unreachable, identifier wrong, mod delisted. It fails loudly and never reads like
 either neighbour, because a check that cannot say it failed to look reports
 success it did not earn.
+
+## A green test run is not evidence that your dependencies load
+
+Worth knowing before you trust a green run here. Every client sets
+`server.deps.inline` for `@ksp-gonogo/*`, and it has to: without it ui-kit's
+published bundle throws `styled.span is not a function` at module scope and every
+test file dies in `setupFiles` before one assertion runs.
+
+Inlining makes Vite TRANSFORM the dependency, and its resolver performs the
+extension search Node refuses to. So a package emitting extensionless relative
+specifiers, which no Node process can import, PASSES a vitest run with inlining
+on. Measured both ways against the same pre-fix sdk:
+
+| consumer config | extensionless sdk |
+|---|---|
+| with `deps.inline` | passes |
+| without it | ERR_MODULE_NOT_FOUND |
+
+That is how six weeks of an unimportable sdk went unnoticed while every gate was
+green. So `tooling/check-published-loadability.mjs` asks the question in a bare
+`node` process with no bundler anywhere near it, and reports it separately. Two
+different claims: the tests say your code works, that says anyone can install what
+it needs.
+
+The same split applies to typechecking. `bundler` and `nodenext` disagree
+SILENTLY: `declare module "./types"` binds under one and not the other, so a
+declaration merge vanishes and every key it contributed goes with it. Every Uplink
+declares its own Topics through exactly that mechanism, so both modes are checked,
+with the count held as a ceiling in `scripts/nodenext-debt.mjs`.
 
 ## What the devkit still owes, measured from the outside
 

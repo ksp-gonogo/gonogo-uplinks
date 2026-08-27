@@ -17,7 +17,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "render": "gonogo-uplink render",
     "docs": "gonogo-uplink docs",
     "docs:check": "gonogo-uplink docs --check"

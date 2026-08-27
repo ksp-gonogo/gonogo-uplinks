@@ -59,10 +59,28 @@ jobs:
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm run typecheck
 
+      # Loadability is asked SEPARATELY from the tests, and in a bare node
+      # process, because a green test run is not evidence of it: every client
+      # sets `server.deps.inline` (it must, or ui-kit's bundle kills every test
+      # file in setup), and inlining makes Vite perform the extension search Node
+      # refuses to. A dependency no Node process can import passes vitest with
+      # inlining on, which is how six weeks of an unimportable sdk went unnoticed.
+      - name: Published dependencies load
+        if: inputs.client
+        run: node tooling/check-published-loadability.mjs "${{ inputs.name }}"
+
       - name: Test client
         if: inputs.test
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm test
+
+      # The mode a client does not check is the one that fails silently:
+      # `declare module` bindings resolve under bundler and not under nodenext, so
+      # a Topic declaration merge vanishes and takes its keys with it. Held as a
+      # CEILING rather than red/green, see scripts/nodenext-debt.mjs.
+      - name: Typecheck client under nodenext
+        if: inputs.typecheck
+        run: node scripts/check-nodenext.mjs "${{ inputs.name }}"
 
       # Codegen is verified rather than run: the generated TypeScript is
       # committed, so a slice whose C# moved without regenerating produces a
