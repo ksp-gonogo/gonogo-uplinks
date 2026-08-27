@@ -1,0 +1,13 @@
+{
+  "spec_version": 1,
+  "identifier": "GonogoExampleUplink",
+  "name": "Gonogo Example Uplink",
+  "abstract": "The smallest complete Gonogo Uplink: publishes example.heartbeat and renders it.",
+  "author": "your name here",
+  "license": "MIT",
+  "release_status": "development",
+  "depends": [{ "name": "GonogoCore" }],
+  "install": [
+    { "file": "GameData/GonogoExampleUplink", "install_to": "GameData" }
+  ]
+}

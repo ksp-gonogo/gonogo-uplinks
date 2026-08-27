@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Codegen-only twin of the contract slice: the SAME sources recompiled with
+       SITREP_CODEGEN defined, which is the only build in which the
+       Reinforced.Typings attributes exist. Nothing references a twin and nothing
+       ships one. See $(GonogoContract)\CodegenTwin.props for why the attributes
+       cannot live in the shipped assembly.
+
+       AssemblyName matches the SHIPPED assembly deliberately: rtcli sees the same
+       assembly identity, type names and member order either way, so the generated
+       TypeScript does not change with the build that produced it. -->
+  <PropertyGroup>
+    <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
+    <AssemblyName>GonogoExampleUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoExampleUplink</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(GonogoContract)\CodegenTwin.props" />
+
+  <!-- The codegen-flavoured core contract, not the shipped one: rtcli reads this
+       assembly's metadata and has to resolve the core types it references,
+       attributes included. Copied local (no Private="false") so it sits beside
+       the assembly rtcli loads. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\codegen\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

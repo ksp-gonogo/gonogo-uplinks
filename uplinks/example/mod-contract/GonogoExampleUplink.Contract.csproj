@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- This Uplink's OWN wire types. No Uplink-specific wire type belongs in
+       Sitrep.Contract, so every Uplink has a slice like this one.
+
+       Two target frameworks, and both are load-bearing: net48 is what ships into
+       GameData beside the plugin, and netstandard2.0 is what a net10.0 test
+       project can reference. -->
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>GonogoExampleUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoExampleUplink</RootNamespace>
+  </PropertyGroup>
+
+  <!-- netstandard2.0 regardless of which framework THIS project is building,
+       not $(GonogoContract)\$(TargetFramework)\. That looked right and is not:
+       the artifact ships net472 (what GameData installs) and netstandard2.0 (what
+       everything else consumes), and neither is spelled `net48`. netstandard2.0 is
+       referenceable from net48 and from net10.0 alike, which is the reason the
+       contract multi-targets it in the first place.
+
+       Private="false": GonogoCore provides Sitrep.Contract.dll at runtime out of
+       GameData/Gonogo/Plugins/, so a copy must never travel beside this
+       assembly. Two copies of one assembly identity is two sets of types that do
+       not compare equal. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract" Private="false">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

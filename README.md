@@ -7,6 +7,11 @@ built next to the app is not an example of what anyone else can build.
 
 Adding an Uplink is adding a directory under `uplinks/`. No CI file changes.
 
+**Start from `uplinks/example/`.** It is the smallest Uplink that is still a real
+one: one channel, one widget, no third-party mod, and green on a fresh clone. It
+is also the CI's own smoke test, so it cannot rot quietly. Copy it, rename it, and
+replace the payload.
+
 ```
 uplinks/<name>/
   uplink.json                 id, provenance, parent mod, codegen. CI reads THIS
@@ -112,3 +117,12 @@ thing an author has to work out for themselves today, and each belongs upstream.
    beside the C# sources. Five of scansat's tests failed on the layout here until
    repointed. They are good tests and worth keeping: the fix is a path from
    `uplink.json` rather than a relative guess
+8. **The unit-map codegen emits extensionless relative imports.** `topic-map.ts`
+   carries `from "./contract"`, which is TS2835 under `moduleResolution: nodenext`,
+   so an Uplink cannot pass a nodenext typecheck however carefully it writes its
+   own sources. That is why `uplinks/example/client/tsconfig.nodenext.json` has
+   exactly one `exclude`, and deleting it is the acceptance test for the fix.
+   Checking both modes matters because they disagree SILENTLY: `declare module
+   "./types"` binds under `bundler` and does not bind under `nodenext`, so a
+   declaration merge vanishes and every key it contributed goes with it, which is
+   the pattern `TopicPayloadMap` uses for an Uplink's own Topics

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The plugin assembly. net48, matching what KSP loads.
+
+       No KSP or Unity reference, deliberately: this Uplink reads only what the
+       shared KspSnapshot already carries, so there is no live game type in the
+       assembly and the whole thing can be exercised headless. An Uplink that DOES
+       need a live API reads it in the capture-on-main half of AddSampledSource
+       and adds a $(KspManaged) reference here. -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>GonogoExampleUplink</AssemblyName>
+    <RootNamespace>GonogoExampleUplink</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract" Private="false">
+      <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Private defaults to true here, unlike the reference above: core does not
+       provide this DLL, it is this Uplink's own slice and ships beside it. -->
+  <ItemGroup>
+    <ProjectReference Include="..\mod-contract\GonogoExampleUplink.Contract.csproj" />
+  </ItemGroup>
+</Project>

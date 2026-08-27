@@ -1,0 +1,12 @@
+{
+  "//": "The SAME sources under moduleResolution nodenext. An author who picks it is not doing anything exotic, and the two modes disagree SILENTLY: `declare module \"./types\"` binds under bundler and does not bind under nodenext, so a declaration merge vanishes and every key it contributed goes with it. Typechecking one mode and shipping to both is how that reaches a consumer.",
+  "extends": "@ksp-gonogo/sitrep-sdk/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src"],
+  "//exclude": "ONE exclusion, and it is not the author's code. The Sitrep unit-map codegen emits `import ... from './contract'` into topic-map.ts with no extension, which is TS2835 here, so an Uplink cannot pass this leg however it writes its own sources. Deleting this line is the acceptance test for that fix. Everything under src/ that an author actually writes is checked.",
+  "exclude": ["src/__generated__"]
+}

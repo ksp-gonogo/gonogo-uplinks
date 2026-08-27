@@ -1,0 +1,19 @@
+{
+  "id": "example",
+  "name": "Example",
+  "author": "your name here",
+  "repo": "https://github.com/you/your-uplinks",
+  "gamedata": "GonogoExampleUplink",
+  "dll": "GonogoExampleUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": null,
+  "codegen": {
+    "assembly": "GonogoExampleUplink.Contract",
+    "configurationMethod": "GonogoExampleUplink.ExampleRtConfig.Configure",
+    "emits": {
+      "SITREP_EXAMPLE_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_EXAMPLE_UNITMAP_OUT": "units.ts",
+      "SITREP_EXAMPLE_UNITJSON_OUT": "units.json"
+    }
+  }
+}
