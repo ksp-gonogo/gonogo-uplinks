@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  # Discovery is its own job so a broken walk fails HERE with a message, rather
+  # than emitting an empty matrix. GitHub Actions skips a job whose matrix is
+  # empty, and a skipped matrix job reports as successful, so every Uplink's CI
+  # would go green at once. `scripts/uplink-matrix.mjs` carries the floor that
+  # refuses to emit nothing.
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - id: matrix
+        run: node scripts/uplink-matrix.mjs --github >> "$GITHUB_OUTPUT"
+      - run: node scripts/uplink-matrix.mjs
+
+  uplink:
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/_uplink-tasks.yml
+    with:
+      name: ${{ matrix.name }}
+      id: ${{ matrix.id }}
+      client: ${{ matrix.client }}
+      mod_csproj: ${{ matrix.mod_csproj }}
+      tests_csproj: ${{ matrix.tests_csproj }}
+      codegen_csproj: ${{ matrix.codegen_csproj }}
+      typecheck: ${{ matrix.typecheck }}
+      test: ${{ matrix.test }}
+      bundle: ${{ matrix.bundle }}
+      docs_check: ${{ matrix.docs_check }}

@@ -1,0 +1,113 @@
+# THE reusable per-Uplink task set. One invocation runs the whole lifecycle for
+# ONE uplinks/<name>, and `ci.yml` / `publish.yml` invoke it in a matrix whose
+# entries come from `scripts/uplink-matrix.mjs`.
+#
+# Every capability fact arrives as an input computed from disk by that script.
+# Nothing here names an Uplink and nothing here infers a capability from a
+# string: a GitHub Actions `if:` is a string comparison against a matrix value,
+# so a condition that can never match reports as a correctly-skipped step, and a
+# leg of skipped steps reports green having done nothing.
+name: uplink-tasks
+
+on:
+  workflow_call:
+    inputs:
+      name: { required: true, type: string }
+      id: { required: true, type: string }
+      client: { required: true, type: boolean }
+      mod_csproj: { required: true, type: string }
+      tests_csproj: { required: true, type: string }
+      codegen_csproj: { required: true, type: string }
+      typecheck: { required: true, type: boolean }
+      test: { required: true, type: boolean }
+      bundle: { required: true, type: boolean }
+      docs_check: { required: true, type: boolean }
+      publish: { required: false, type: boolean, default: false }
+
+jobs:
+  uplink:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The reference set an Uplink compiles against: KSP's own managed
+      # assemblies plus the GameData of the mod this Uplink wraps. Neither is
+      # ours to redistribute, so both arrive from a private checkout and the
+      # build fails loudly rather than dropping a reference: MSB3245 is a
+      # WARNING, so a HintPath that does not exist takes the assembly off the
+      # compile surface and the build carries on and exits 0.
+      - name: Resolve the reference set
+        id: refs
+        run: |
+          echo "Reference set resolution is repo-owner specific."
+          echo "gonogo_contract=$PWD/vendor/contract" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "10.0.x" }
+
+      - uses: actions/setup-node@v4
+        if: inputs.client
+        with: { node-version: "24" }
+
+      - name: Install client dependencies
+        if: inputs.client
+        working-directory: uplinks/${{ inputs.name }}/client
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck client
+        if: inputs.typecheck
+        working-directory: uplinks/${{ inputs.name }}/client
+        run: npm run typecheck
+
+      - name: Test client
+        if: inputs.test
+        working-directory: uplinks/${{ inputs.name }}/client
+        run: npm test
+
+      # Codegen is verified rather than run: the generated TypeScript is
+      # committed, so a slice whose C# moved without regenerating produces a
+      # diff here instead of a client that types a payload the mod no longer
+      # sends.
+      - name: Codegen is current
+        if: inputs.codegen_csproj != ''
+        run: |
+          node tooling/codegen-uplink.mjs "${{ inputs.name }}" \
+            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+          git diff --exit-code -- "uplinks/${{ inputs.name }}/client/src/__generated__"
+
+      - name: Build mod
+        if: inputs.mod_csproj != ''
+        run: |
+          dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo \
+            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+
+      - name: Test mod
+        if: inputs.tests_csproj != ''
+        run: |
+          dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo \
+            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+
+      # The parent mod's version, read from THIS Uplink's own uplink.json rather
+      # than from anything central. `mod.tier` decides whether a newer published
+      # version can be discovered at all; see tooling/check-mod-version.mjs.
+      - name: Parent mod version
+        run: node tooling/check-mod-version.mjs "${{ inputs.name }}"
+
+      - name: Bundle client
+        if: inputs.bundle
+        run: node tooling/bundle-uplink-client.mjs "${{ inputs.name }}"
+
+      - name: Package mod
+        if: inputs.mod_csproj != ''
+        run: node tooling/package-uplink-mod.mjs "${{ inputs.name }}"
+
+      - name: Docs are current
+        if: inputs.docs_check
+        working-directory: uplinks/${{ inputs.name }}/client
+        run: npx playwright install --with-deps chromium && npm run docs:check
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uplink-${{ inputs.id }}
+          path: artifacts/
+          if-no-files-found: error

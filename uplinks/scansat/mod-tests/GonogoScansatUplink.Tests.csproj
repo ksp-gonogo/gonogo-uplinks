@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Only the pure, SCANsat/KSP-type-free logic
+         (CoverageHash/CoveragePlane/GroundTrackFov/VersionGuard) is
+         exercised here - net10.0, no SCANsat.dll or KSP DLLs needed, same
+         headless-test split as GonogoKosUplink/GonogoKosUplink.Tests. -->
+    <Compile Include="..\mod\CoverageHash.cs" />
+    <Compile Include="..\mod\CoveragePlane.cs" />
+    <Compile Include="..\mod\GroundTrackFov.cs" />
+    <Compile Include="..\mod\VersionGuard.cs" />
+    <Compile Include="..\mod\ScanChannels.cs" />
+    <Compile Include="..\mod\ScanGrids.cs" />
+    <Compile Include="..\mod\TerrainTiering.cs" />
+    <Compile Include="..\mod\ScanningVessels.cs" />
+    <Compile Include="..\mod\ScanScience.cs" />
+    <Compile Include="..\mod\ScanAnomalies.cs" />
+    <!-- F1 capture-on-main / handle-on-Courier split: the payload POCO and
+         the KSP-free Courier-side publish logic (see ScanPublicationsTests). -->
+    <Compile Include="..\mod\ScanCapture.cs" />
+    <Compile Include="..\mod\ScanPublications.cs" />
+  </ItemGroup>
+
+  <!-- GonogoScansatUplink.Contract: ScanningVesselEntry/ScanSensorEntry/
+       ScanTrackColor/ScanScienceEntry/ScanAnomalyEntry, this Uplink's own wire
+       types (relocated out of Sitrep.Contract, see that project's header
+       comment). ScansatUnitCoverageTests.cs below reflects over it directly. -->
+  <ItemGroup>
+    <ProjectReference Include="..\mod-contract\GonogoScansatUplink.Contract.csproj" />
+    <!-- Sitrep.Contract.TestSupport: the shared Unit-coverage sweep every
+         relocated Uplink's <X>UnitCoverageTests calls, extracted once five
+         near-identical copies existed (see UnitCoverageAssertion's own doc
+         comment). The [Fact]s stay here, naming this Uplink's own types. -->
+    <Reference Include="Sitrep.Contract.TestSupport">
+      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

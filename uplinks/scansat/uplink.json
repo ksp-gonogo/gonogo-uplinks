@@ -1,0 +1,25 @@
+{
+  "id": "scansat",
+  "name": "SCANsat",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoScansatUplink",
+  "dll": "GonogoScansatUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "SCANsat",
+    "tier": "ckan",
+    "ckan": "SCANsat",
+    "builtAgainst": "20.4",
+    "assembly": "SCANsat/Plugins/SCANsat.dll"
+  },
+  "codegen": {
+    "assembly": "GonogoScansatUplink.Contract",
+    "configurationMethod": "GonogoScansatUplink.ScansatRtConfig.Configure",
+    "emits": {
+      "SITREP_SCANSAT_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_SCANSAT_UNITMAP_OUT": "units.ts",
+      "SITREP_SCANSAT_UNITJSON_OUT": "units.json"
+    }
+  }
+}

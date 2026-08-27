@@ -1,0 +1,22 @@
+<Project>
+  <!-- Where the Gonogo contract assemblies live. An author points this at the
+       Sitrep.Contract.dll GonogoCore installs into GameData/Gonogo/Plugins/,
+       or at a vendored copy, and overrides it per environment with
+       -p:GonogoContract=... exactly as the KSP reference set is overridden. -->
+  <PropertyGroup Condition="'$(GonogoContract)' == ''">
+    <GonogoContract>$(MSBuildThisFileDirectory)vendor\contract</GonogoContract>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(KspManaged)' == ''">
+    <KspManaged>$(MSBuildThisFileDirectory)vendor\ksp-managed</KspManaged>
+  </PropertyGroup>
+  <!-- The author's own KSP GameData, where the mod this Uplink wraps is installed. -->
+  <PropertyGroup Condition="'$(KspGameData)' == ''">
+    <KspGameData>$(MSBuildThisFileDirectory)vendor\gamedata</KspGameData>
+  </PropertyGroup>
+  <!-- The Gonogo Uplink devkit: test doubles and shared assertions, shipped as a
+       release artifact rather than in GameData, because it carries an xunit
+       dependency KSP must never load. -->
+  <PropertyGroup Condition="'$(GonogoDevkit)' == ''">
+    <GonogoDevkit>$(MSBuildThisFileDirectory)vendor\devkit</GonogoDevkit>
+  </PropertyGroup>
+</Project>
