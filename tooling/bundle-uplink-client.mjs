@@ -133,8 +133,18 @@ const cssInject = {
   },
 };
 
-mkdirSync(outDir, { recursive: true });
-const outFile = join(outDir, `${declared.id}.client.js`);
+/*
+ * One directory per Uplink, and that is not tidiness.
+ *
+ * The loader derives the sidecar's URL from the bundle's own
+ * (`manifestUrlFor`: strip the last path segment, append `gonogo-uplink.json`),
+ * so the sidecar MUST be named exactly that and MUST sit beside the bundle. A
+ * flat artifacts directory therefore gives every Uplink the same sidecar path
+ * and the second one to publish silently answers for the first.
+ */
+const bundleDir = join(outDir, declared.id);
+mkdirSync(bundleDir, { recursive: true });
+const outFile = join(bundleDir, `${declared.id}.client.js`);
 
 await build({
   entryPoints: [join(clientDir, "src/index.ts")],
@@ -187,12 +197,12 @@ const descriptor = {
   uiKitVersion,
   contractMajor: sdk.CONTRACT_MAJOR,
   contractMinor: sdk.CONTRACT_MINOR,
-  bundleUrl: `${declared.id}.client.js`,
+  bundleUrl: `${declared.id}/${declared.id}.client.js`,
   integrity,
   mod: declared.mod,
 };
 writeFileSync(
-  join(outDir, `${declared.id}.gonogo-uplink.json`),
+  join(bundleDir, "gonogo-uplink.json"),
   `${JSON.stringify(descriptor, null, 2)}\n`,
 );
 writeFileSync(`${outFile}.sha256`, `${integrity}\n`);

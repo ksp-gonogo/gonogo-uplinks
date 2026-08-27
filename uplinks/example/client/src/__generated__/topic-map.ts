@@ -21,7 +21,7 @@
 
 import type {
   ExampleHeartbeat,
-} from "./contract";
+} from "./contract.js";
 
 export interface GeneratedTopicPayloadMap {
   "example.heartbeat": ExampleHeartbeat;

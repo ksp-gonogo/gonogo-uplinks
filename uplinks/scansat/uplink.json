@@ -21,5 +21,9 @@
       "SITREP_SCANSAT_UNITMAP_OUT": "units.ts",
       "SITREP_SCANSAT_UNITJSON_OUT": "units.json"
     }
+  },
+  "csharpNamespace": "Gonogo.ScansatUplink",
+  "client": {
+    "url": "https://github.com/ksp-gonogo/gonogo-uplinks/releases/download/scansat-v0.0.1/scansat.client.js"
   }
 }

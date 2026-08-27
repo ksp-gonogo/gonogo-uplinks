@@ -15,5 +15,9 @@
       "SITREP_EXAMPLE_UNITMAP_OUT": "units.ts",
       "SITREP_EXAMPLE_UNITJSON_OUT": "units.json"
     }
+  },
+  "csharpNamespace": "GonogoExampleUplink",
+  "client": {
+    "url": "https://github.com/ksp-gonogo/gonogo-uplinks/releases/download/example-v0.0.1/example.client.js"
   }
 }
