@@ -3,7 +3,7 @@ dist/
 bin/
 obj/
 renders/
-package-lock.json
+artifacts/
 .DS_Store
 # Vendored reference assemblies: the author's own KSP install and the artifacts
 # GonogoCore ships. Machine-local and not ours to redistribute.
@@ -12,3 +12,9 @@ vendor/gamedata/
 vendor/contract/
 vendor/devkit/
 vendor/*.tgz
+
+# The client's lockfile IS committed, deliberately. gonogo's Uplink clients have
+# none of their own and lean on the workspace lockfile, so an extracted client
+# floats every transitive version and meets breakage the monorepo never sees.
+# `uplink-extraction-debt.mjs` explicitly declines to count a missing lockfile,
+# which is what let that stay invisible.
