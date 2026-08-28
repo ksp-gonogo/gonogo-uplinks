@@ -141,6 +141,10 @@ namespace Gonogo.ScansatUplink
             // Null when the generated const is empty (dev / never-released) so the loader
             // degrades to the two-way check; a real sha256-… once the release build bakes it
             // (mod/scripts/bake-client-hash.mjs → ExpectedClientHash.g.cs).
+            // Provenance for the consent dialog, from uplink.json.
+            Name = Provenance.Name,
+            Author = Provenance.Author,
+            Repo = Provenance.Repo,
             ExpectedClientHash = string.IsNullOrEmpty(ExpectedClientHash.Value) ? null : ExpectedClientHash.Value,
             // Where this Uplink's CLIENT bundle lives, so the app never needs to
             // know the id: it reads the URL off the roster the mod publishes.
