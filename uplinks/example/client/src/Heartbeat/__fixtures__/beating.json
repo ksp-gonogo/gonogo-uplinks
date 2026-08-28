@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "notes": "The template's one fixture, and the shape to copy. A fixture is a scene the render harness mounts the widget in: `_scene` says which widget and how to caption the picture, `_stream` says what arrives on the wire before the screenshot is taken. Everything the widget reads has to be emitted here, because the harness feeds it nothing by default: a topic you forget is a topic the widget renders as pending, which looks like a broken widget rather than a missing emit."
+  },
+  "_scene": {
+    "widget": "example-heartbeat",
+    "caption": "The example Uplink publishing: 42 ticks since load, at UT 1,000,000",
+    "modes": ["default", "min"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "example.heartbeat",
+        "payload": {
+          "ut": 1000000,
+          "ticks": 42
+        }
+      }
+    ]
+  }
+}

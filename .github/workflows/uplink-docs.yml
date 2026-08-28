@@ -1,0 +1,142 @@
+name: uplink pages
+
+# Regenerate every Uplink's page on a push to main and commit the result back.
+#
+# The pages are DERIVED: from each Uplink's registrations, its generated contract
+# slice, its fixtures, and the one `uplink.md` its author writes. Nothing about
+# them is a decision, so nothing about them should need a human to remember. A
+# widget gaining a channel, a contract field gaining a unit, a fixture being
+# renamed: each changes the page, and each lands in a commit whose author was
+# thinking about something else.
+#
+# ## Why this and the PR check both exist
+#
+# `ci.yml`'s per-leg "Docs are current" step fails a pull request whose page has
+# moved, and it is not made redundant by this. A workflow that silently fixes
+# main means nobody ever sees a generator that has quietly stopped emitting a
+# section: the page would keep being "current" against a generator that no longer
+# produces the wire table, and every run would agree. The PR check is where a
+# person looks; this keeps main from carrying a page it could have fixed itself.
+#
+# ## Why this cannot loop
+#
+# It commits with GITHUB_TOKEN, and a push made with that token does NOT trigger
+# workflow runs. So the commit this makes starts no further run, and there is no
+# loop to guard against with an actor check or a `[skip ci]` marker.
+#
+# ## Renders are committed, and the pictures a GitHub page loads depend on it
+#
+# `renders/` is gitignored (review output, regenerated on demand) and
+# `docs/assets/` is NOT, because the generated page references that path and a
+# gitignored image is an image GitHub renders as a broken icon.
+
+on:
+  push:
+    branches: [main]
+  # By hand, for any ref: useful after a generator change lands on a branch, and
+  # necessary because a GITHUB_TOKEN push gives no run of its own.
+  workflow_dispatch:
+
+# contents: write so the job can commit the regenerated pages back.
+permissions:
+  contents: write
+
+# One run at a time on a ref, and the later one wins. Two concurrent runs would
+# both regenerate and both push, and the loser's push is rejected as
+# non-fast-forward after paying for every render.
+concurrency:
+  group: uplink-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+
+      # Per client, because that is how this repo installs: each Uplink's client
+      # is its own npm project against the vendored published tarballs, which is
+      # the point (it is what a third-party author has).
+      - name: Install client dependencies
+        run: |
+          set -euo pipefail
+          node scripts/uplink-matrix.mjs |
+            node -e '
+              let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+                for (const leg of JSON.parse(s)) if (leg.client) console.log(leg.name);
+              });
+            ' > /tmp/uplink-clients.txt
+          if [ ! -s /tmp/uplink-clients.txt ]; then
+            echo "✖ discovered no client-bearing Uplink, so this installed nothing."
+            exit 1
+          fi
+          while IFS= read -r name; do
+            ( cd "uplinks/$name/client" && npm ci --no-audit --no-fund )
+          done < /tmp/uplink-clients.txt
+
+      # Chromium alone: the page harness launches nothing else, and the renders
+      # embedded in a page are whatever THIS engine produced. That is also why the
+      # images are generated here rather than accepted from a contributor's
+      # machine.
+      - name: Install the browser the page harness renders in
+        run: npx playwright install --with-deps chromium
+
+      # The same script the PR check runs with `--check`, so what heals main and
+      # what fails a pull request cannot disagree about which Uplinks they cover.
+      - name: Regenerate every Uplink page
+        run: node tooling/uplink-docs.mjs
+
+      # Asking whether the run actually left a page behind. Not the same question
+      # as the step above, which fails when the CLI errors: this one fails when it
+      # exited 0 having written nothing.
+      - name: Every Uplink has a generated page
+        run: node tooling/uplink-docs.mjs --gate
+
+      # The front door lists the Uplinks and links each row at its own README, so
+      # an Uplink that just gained one changes the table.
+      - name: Regenerate the root README table
+        run: node tooling/generate-root-readme.mjs
+
+      - name: Commit and push the pages
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md 'uplinks/*/client/README.md' \
+                  'uplinks/*/client/gonogo-uplink.json'
+
+          # Assets by NAME, never by bytes, which is the same policy
+          # `docs --check` applies and for a sharper reason here. A PNG re-renders
+          # byte-identically on the same runner, but a motion scene's GIF does
+          # NOT: three regenerations of an unchanged tree produce three different
+          # files. Staging byte changes would commit a churn asset on every single
+          # push to main, forever, and a commit that always appears is a commit
+          # nobody reads.
+          #
+          # So an asset ADDED (a new fixture) or DELETED (a fixture removed) is
+          # real drift and is committed; one whose bytes merely moved is
+          # discarded. The pathspec ends `/*` and that is load-bearing: a git
+          # pathspec containing a wildcard is matched as a PATTERN against whole
+          # paths rather than resolved as a directory prefix, so
+          # `uplinks/*/client/docs/assets` matches the directory and none of the
+          # files in it.
+          git status --porcelain -- 'uplinks/*/client/docs/assets/*' |
+            while read -r code path; do
+              case "$code" in
+                '??' | 'D') git add -A -- "$path" ;;
+                *) git checkout -- "$path" ;;
+              esac
+            done
+
+          if git diff --cached --quiet; then
+            echo "Every Uplink page already describes the code. Nothing to commit."
+          else
+            git diff --cached --name-status
+            git commit -m "chore: regenerate Uplink pages"
+            git push origin HEAD:${{ github.ref_name }}
+          fi

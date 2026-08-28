@@ -21,7 +21,6 @@ on:
       typecheck: { required: true, type: boolean }
       test: { required: true, type: boolean }
       bundle: { required: true, type: boolean }
-      docs_check: { required: true, type: boolean }
       publish: { required: false, type: boolean, default: false }
 
 jobs:
@@ -119,10 +118,21 @@ jobs:
         if: inputs.mod_csproj != ''
         run: node tooling/package-uplink-mod.mjs "${{ inputs.name }}"
 
+      # Gated on `client` and nothing else. It used to be gated on a `docs_check`
+      # input derived from a `docs:check` script, and the example Uplink HAD that
+      # script and no page, so the leg asked whether a page it did not have had
+      # drifted and reported green. A gate you opt into describes whoever
+      # remembered.
+      #
+      # Through `tooling/uplink-docs.mjs --only` rather than the CLI directly, so
+      # `RENDER_DEBT` applies here too: an Uplink whose render is known-broken
+      # would otherwise make this leg permanently red, and a permanently-red leg
+      # hides the next real failure behind it.
       - name: Docs are current
-        if: inputs.docs_check
-        working-directory: uplinks/${{ inputs.name }}/client
-        run: npx playwright install --with-deps chromium && npm run docs:check
+        if: inputs.client
+        run: |
+          npx playwright install --with-deps chromium
+          node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
 
       - uses: actions/upload-artifact@v4
         with:

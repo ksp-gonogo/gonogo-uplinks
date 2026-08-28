@@ -1,0 +1,11 @@
+{
+  "id": "example",
+  "version": "0.0.1",
+  "description": "The smallest Uplink that is still a real one: one KSP plugin, one channel, one widget, and no third-party mod to install. Copy this directory to start your own.",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "1.0.0",
+  "uiKitVersion": "0.2.0",
+  "contractMajor": 13,
+  "contractMinor": 2,
+  "integrity": ""
+}

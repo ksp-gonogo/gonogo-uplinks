@@ -25,6 +25,15 @@ jobs:
       # uplink.json files the matrix reads, so it cannot drift into describing a
       # set of Uplinks that no longer exists.
       - run: node tooling/generate-root-readme.mjs --check
+      # Does every client-bearing Uplink HAVE a generated page. A second's worth
+      # of filesystem, and here rather than in a leg because it is a question
+      # about the SET: a leg can only report on itself, and the failure this
+      # catches is an Uplink nobody wrote a page for. Whether each page is
+      # CURRENT is the leg's question, and needs a browser.
+      #
+      # It plants three trees and proves it can see a missing page before
+      # reporting on the real ones, and refuses if discovery hands it nothing.
+      - run: node tooling/uplink-docs.mjs --gate
 
   uplink:
     needs: discover
@@ -42,4 +51,3 @@ jobs:
       typecheck: ${{ matrix.typecheck }}
       test: ${{ matrix.test }}
       bundle: ${{ matrix.bundle }}
-      docs_check: ${{ matrix.docs_check }}

@@ -86,7 +86,13 @@ const legs = readdirSync(UPLINKS, { withFileTypes: true })
       typecheck: scripts.includes("typecheck"),
       test: scripts.includes("test"),
       bundle: clientManifest !== null,
-      docs_check: scripts.includes("docs:check"),
+      // No `docs_check`. It used to be `scripts.includes("docs:check")`, which
+      // read like a capability fact and was not: every client-bearing Uplink is
+      // expected to have a generated page, so the answer is always `client` and a
+      // separate field could only ever excuse an Uplink from the check. It did:
+      // the example Uplink had no page at all while CI stayed green, because its
+      // `docs:check` was asking whether a page it did not have had drifted.
+      // `tooling/uplink-docs.mjs` owns both questions now.
     };
   });
 

@@ -34,6 +34,49 @@ node tooling/bundle-uplink-client.mjs scansat        # artifacts/<id>.client.js 
 node tooling/package-uplink-mod.mjs scansat          # artifacts/<GameData>.zip
 ```
 
+## The README, which you do not write
+
+Every Uplink's `client/README.md` is GENERATED, from its registrations, its
+generated contract slice, its fixtures, and the one file you do write:
+`client/uplink.md`. Nothing else on the page is authored, so nothing else on it
+can go stale.
+
+```bash
+node tooling/uplink-docs.mjs                 # rewrite every page
+node tooling/uplink-docs.mjs --check         # fail on any page that has drifted
+node tooling/uplink-docs.mjs --gate          # fail on any Uplink with no page
+```
+
+`uplink.md` carries a lede (what the Uplink is for, which mod it wraps, what
+someone has to install first) and, where a widget needs more than its own
+registered description, a `## widget:<id>` section. A section naming an id
+nothing registered fails the build, so prose about a widget you deleted is a
+build error rather than a paragraph that quietly disappears.
+
+Three things check it, and each asks something the others cannot:
+
+- `--gate`, once per run in `ci.yml`'s `discover` job: does every client-bearing
+  Uplink HAVE a page. It is not implied by `--check`, and the reason is on the
+  record: the example Uplink had a `docs:check` script and no page, so its leg was
+  asking whether a page it did not have had drifted, and reported green
+- `--check --only <name>`, per leg: is that page CURRENT. Needs chromium
+- `.github/workflows/uplink-docs.yml`, on a push to `main`: regenerates the pages
+  and commits the result back, so `main` heals itself
+
+The last one does not replace the second. A workflow that silently fixes `main`
+means nobody ever sees a generator that has quietly stopped emitting a section:
+the page would keep being "current" against a generator that no longer produces
+it, and every run would agree.
+
+Screenshots live in `client/docs/assets/`, which is COMMITTED, because the
+generated page references that path and a gitignored image is one GitHub draws as
+a broken icon. `renders/` is the other thing, gitignored: review output from
+`gonogo-uplink render`, regenerated on demand and never a gate.
+
+The commit-back stages assets by NAME, never by bytes. A PNG re-renders
+byte-identically on the same runner; a motion scene's GIF does not, so staging
+byte changes would commit a churn asset on every push to `main` forever.
+
 ## The parent mod version, declared per Uplink
 
 `uplink.json`'s `mod` block is where an Uplink states what it wraps and which
