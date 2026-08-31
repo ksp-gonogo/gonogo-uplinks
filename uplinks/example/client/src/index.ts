@@ -9,7 +9,12 @@
 //   Heartbeat    the one widget, registered so the picker can place it
 import "./topics.js";
 import "./Heartbeat/index.js";
+import "./PulseDial/index.js";
+import "./CadenceSection/index.js";
+import "./HeartbeatBlob/index.js";
 
 export { EXAMPLE } from "./uplink.js";
 export { HeartbeatWidget } from "./Heartbeat/index.js";
+export { PulseDialWidget } from "./PulseDial/index.js";
+export { CadenceSection } from "./CadenceSection/index.js";
 export type { ExampleHeartbeat } from "./topics.js";

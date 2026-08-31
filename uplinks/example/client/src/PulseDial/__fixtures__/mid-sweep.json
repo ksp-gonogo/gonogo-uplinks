@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "notes": "Deliberately 42 ticks, the same sample Heartbeat's fixture uses. Two widgets, one Topic, one wire state: the pair of renders side by side is the illustration, because the same fact reads as a number in one and as a position in the other. 42 also lands the needle short of a full sweep, which is what shows that the dial wraps at sixty rather than pinning at a maximum."
+  },
+  "_scene": {
+    "widget": "example-pulse-dial",
+    "caption": "42 publishes since load: the needle two-thirds through its sweep, the true total in the centre",
+    "modes": ["default", "min"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "example.heartbeat",
+        "payload": {
+          "ut": 1000000,
+          "ticks": 42
+        }
+      }
+    ]
+  }
+}

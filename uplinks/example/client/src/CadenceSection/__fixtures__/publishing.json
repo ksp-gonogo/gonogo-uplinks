@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "notes": "An AUGMENT scene. `_scene.augment` names the registered augment id.\n\nThere is deliberately NO `_scene.host`. `_scene.host` mounts the augment inside the real widget it targets, and the real widget is in the app, not in any published package: an author outside the gonogo repo has nothing to pass to `--with`, so naming a host here fails with \"which no widget in this bundle registers\". Faking one would be worse than going without, because the picture would then be of a panel that does not exist.\n\nSo the harness mounts it in a stand-in panel. That is honest for a BODY slot, where the augment renders from its own Topics and draws its own content. It would not be honest for an overlay slot, which draws in its host projection and has nothing to draw against without one: those are listed on the generated page with no preview and the reason, which is the right answer rather than a workaround.\n\nThe `example.available` emit is not optional and is easy to miss. `requires: \"example\"` gates the mount on that Topic being live, so without it `AugmentSlot` never mounts the component, nothing subscribes to `example.heartbeat`, and the harness fails with \"nothing in the mounted tree subscribed to 1 emitted topic(s)\". The presence gate is doing its job; the fixture had not declared the install it was describing."
+  },
+  "_scene": {
+    "augment": "example-cadence-section",
+    "caption": "The example Uplink section as it renders in a host panel: a badge, the last publish, and the count",
+    "modes": [
+      "default"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "example.available",
+        "payload": {}
+      },
+      {
+        "topic": "example.heartbeat",
+        "payload": {
+          "ut": 1000000,
+          "ticks": 42
+        }
+      }
+    ]
+  }
+}
