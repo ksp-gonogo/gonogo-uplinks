@@ -11,7 +11,20 @@ vendor/ksp-managed/
 vendor/gamedata/
 vendor/contract/
 vendor/devkit/
-vendor/*.tgz
+
+# vendor/*.tgz is NOT ignored, deliberately. These are our own MIT packages, so
+# unlike the KSP assemblies above there is nothing here we may not redistribute,
+# and while they were ignored `npm ci` could not resolve a single client: the
+# clients depend on them by `file:` path, so a fresh clone had no way to install
+# and every CI run this repo has ever had failed at its first install step.
+#
+# They are content-addressed (`-<sha256:12>` before `.tgz`) and that is what
+# makes committing them safe. npm does NOT verify lockfile integrity for a
+# `file:` dependency, so under a stable filename a refresh silently re-points
+# every Uplink at bytes its lockfile does not describe and nothing anywhere
+# complains. With the hash in the name a refresh ADDS a file and can never
+# overwrite one, so an Uplink moves only when its own package.json says so.
+# `scripts/check-vendor-pins.mjs` holds that.
 
 # The client's lockfile IS committed, deliberately. gonogo's Uplink clients have
 # none of their own and lean on the workspace lockfile, so an extracted client

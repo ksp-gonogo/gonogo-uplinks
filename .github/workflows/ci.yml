@@ -34,6 +34,14 @@ jobs:
       # It plants three trees and proves it can see a missing page before
       # reporting on the real ones, and refuses if discovery hands it nothing.
       - run: node tooling/uplink-docs.mjs --gate
+      # Are the vendored artefacts every client installs from actually HERE, and
+      # does each Uplink resolve the bytes its own lockfile describes. Here
+      # rather than in a leg because it is a question about the SET: the failure
+      # it catches is one Uplink's refresh re-pointing another, which no leg
+      # looking only at itself can see. It is also the cheapest possible early
+      # warning, a second of hashing before twelve legs each spend a minute
+      # discovering the same missing tarball at `npm ci`.
+      - run: node scripts/check-vendor-pins.mjs
 
   uplink:
     needs: discover
