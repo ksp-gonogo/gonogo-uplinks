@@ -8,7 +8,7 @@ namespace GonogoKerbcastUplink;
 // ─────────────────────────────────────────────────────────────────────────────
 // kerbcast Topic payloads: the CONTROL plane only.
 //
-// kerbcast (the camera-streaming mod, ~/personal/kerbcam) splits cleanly in two:
+// kerbcast (the camera-streaming mod) splits cleanly in two:
 //
 //   • MEDIA: H.264 video, sidecar -> browser over WebRTC, negotiated by
 //     HTTP POST /offer and steered on the "kerbcast-control" data channel.
