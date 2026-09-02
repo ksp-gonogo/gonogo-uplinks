@@ -1,0 +1,29 @@
+{
+  "id": "realfuels",
+  "name": "RealFuels",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoRealFuelsUplink",
+  "dll": "GonogoRealFuelsUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "RealFuels",
+    "tier": "ckan",
+    "ckan": "RealFuels",
+    "builtAgainst": "15.15.0",
+    "assembly": "RealFuels/Plugins/RealFuels.dll"
+  },
+  "codegen": {
+    "assembly": "GonogoRealFuelsUplink.Contract",
+    "configurationMethod": "GonogoRealFuelsUplink.RealFuelsRtConfig.Configure",
+    "emits": {
+      "SITREP_REALFUELS_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_REALFUELS_UNITMAP_OUT": "units.ts",
+      "SITREP_REALFUELS_UNITJSON_OUT": "units.json"
+    }
+  },
+  "csharpNamespace": "GonogoRealFuelsUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@realfuels-v0.0.1/uplinks/realfuels/release/realfuels.client.js"
+  }
+}

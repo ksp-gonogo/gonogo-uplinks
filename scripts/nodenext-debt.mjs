@@ -70,11 +70,23 @@
  * (`topic-map.ts`/`units.ts` importing `./contract`), so this client cannot reach
  * zero on its own however it is written, exactly as scansat cannot.
  *
+ * ## What the 11 is, measured 2026-09-02 as realfuels arrived
+ *
+ * The same single cause again, an order of magnitude smaller because this is a
+ * much smaller client: 6 x TS2835 plus 1 x TS2834 are its own extensionless
+ * relative imports, and all four remaining errors follow from them. The 2 x
+ * TS7006 are a `.map` callback over an array whose element type came from a
+ * specifier that did not resolve, and the 2 x TS2345 are `topics.ts` feeding the
+ * generated unit maps to `registerTopicUnits`/`registerTypeUnits` as `unknown`
+ * for the same reason. Two of the unresolved specifiers name generated files, so
+ * this client cannot reach zero on its own either.
+ *
  * Tighten with `node scripts/check-nodenext.mjs --update <name>` and commit the
  * diff beside whatever was fixed.
  */
 
 export const NODENEXT_DEBT = {
   kerbcast: 96,
+  realfuels: 11,
   scansat: 112,
 };
