@@ -61,10 +61,20 @@
  * scansat cannot reach zero on its own however it is written: that fix belongs to
  * the unit-map codegen.
  *
+ * ## What the 96 is, measured 2026-09-02 as kerbcast arrived
+ *
+ * Same shape as scansat's and the same single cause: 79 x TS2835 plus 4 x TS2834
+ * are this client's own relative imports carrying no extension, and the 13 x
+ * TS7006 follow from them, because a specifier that does not resolve makes every
+ * name it exported `any`. 5 of the 96 are in generated code
+ * (`topic-map.ts`/`units.ts` importing `./contract`), so this client cannot reach
+ * zero on its own however it is written, exactly as scansat cannot.
+ *
  * Tighten with `node scripts/check-nodenext.mjs --update <name>` and commit the
  * diff beside whatever was fixed.
  */
 
 export const NODENEXT_DEBT = {
+  kerbcast: 96,
   scansat: 112,
 };

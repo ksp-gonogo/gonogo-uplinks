@@ -98,6 +98,25 @@ const assembly = resolve(
   `${codegen.assembly}.dll`,
 );
 
+/*
+ * The contract's `///` prose, which reaches the generated TypeScript ONLY through
+ * this file. Reinforced.Typings reads an XMLDOC file and never the sources, so
+ * without it rtcli reports "0 declarations documented" and writes a contract of
+ * bare field names: the same slice the monorepo generates with every explanation
+ * attached. The twin emits the XML beside its own assembly (see
+ * CodegenTwin.props' GenerateDocumentationFile), so the path is derived from the
+ * assembly rather than declared.
+ */
+const documentation = assembly.replace(/\.dll$/, ".xml");
+if (!existsSync(documentation)) {
+  console.error(
+    `✖ ${documentation} does not exist, so the emitted contract would carry no prose at all.\n` +
+      "  It comes from the twin's GenerateDocumentationFile: a vendored CodegenTwin.props predating\n" +
+      "  that property builds cleanly and silently drops every doc comment. Refusing.",
+  );
+  process.exit(1);
+}
+
 const env = { ...process.env, DOTNET_ROLL_FORWARD: "LatestMajor" };
 for (const [variable, file] of Object.entries(codegen.emits ?? {})) {
   env[variable] = join(outDir, file);
@@ -107,6 +126,7 @@ execFileSync(
   "dotnet",
   [
     RTCLI,
+    `DocumentationFilePath=${documentation}`,
     `SourceAssemblies=${assembly}`,
     `TargetFile=${join(outDir, "contract.ts")}`,
     `ConfigurationMethod=${codegen.configurationMethod}`,

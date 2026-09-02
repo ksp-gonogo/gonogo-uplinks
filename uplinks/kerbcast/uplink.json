@@ -1,0 +1,28 @@
+{
+  "id": "kerbcast",
+  "name": "Kerbcast",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoKerbcastUplink",
+  "dll": "GonogoKerbcastUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "kerbcast",
+    "tier": "manual",
+    "builtAgainst": "1.8.1"
+  },
+  "codegen": {
+    "assembly": "GonogoKerbcastUplink.Contract",
+    "configurationMethod": "GonogoKerbcastUplink.KerbcastRtConfig.Configure",
+    "emits": {
+      "SITREP_KERBCAST_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_KERBCAST_UNITMAP_OUT": "units.ts",
+      "SITREP_KERBCAST_UNITJSON_OUT": "units.json",
+      "SITREP_KERBCAST_COMMANDMAP_OUT": "command-map.ts"
+    }
+  },
+  "csharpNamespace": "Gonogo.KerbcastUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@kerbcast-v0.0.1/uplinks/kerbcast/release/kerbcast.client.js"
+  }
+}
