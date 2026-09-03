@@ -54,6 +54,19 @@ namespace Gonogo.UplinkWiring
     /// runtime (<see cref="EveryNameTheWalkReadsResolvesToAValue"/> makes that
     /// visible rather than silent), and it does not look at dynamic-namespace
     /// sub-topics, which are correctly absent from the channel list.</para>
+    ///
+    /// <para><b>A measured consequence of that, worth knowing before trusting the
+    /// publish half.</b> An Uplink with a fail-soft inert path registers a channel
+    /// source for the SAME topics it publishes when live, so such a topic has two
+    /// publish sites on mutually exclusive branches and either one satisfies this
+    /// walk alone. Deleting the live publisher and leaving the inert one standing
+    /// was tried on a real Uplink here and the walk stayed green, yet the topic
+    /// then reaches no subscriber on any install where the Uplink IS available,
+    /// which is the silent failure this direction exists to catch. Five of the six
+    /// topics declared across this repo have that shape. Telling the two branches
+    /// apart needs control flow, which a text walk does not have, so read the
+    /// publish half as a floor against a topic nothing publishes AT ALL rather
+    /// than as a guarantee that the live path publishes it.</para>
     /// </summary>
     public class UplinkWiringCoverageTests
     {

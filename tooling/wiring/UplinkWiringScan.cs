@@ -162,6 +162,19 @@ namespace Gonogo.UplinkWiring
     /// writes a literal and the other a const with a different value. The walk
     /// resolves each name to the string it actually carries, and reports anything
     /// it cannot resolve rather than dropping it.</para>
+    ///
+    /// <para><b>THIS FILE IS VENDORED, and a copy of it is pinned by content
+    /// elsewhere.</b> Uplinks that leave this repo leave the reach of the walk that
+    /// enrols them by their living under <c>mod/</c>, so the repo they move to runs
+    /// this same walk over its own layout, from a byte-for-byte copy differing only
+    /// in its namespace line. That is why <see cref="Scan"/> takes the source
+    /// DIRECTORIES rather than deriving them: two hand-maintained walks are two
+    /// chances for one of them to stop matching <c>host.AddCommandHandler</c>, and
+    /// a walk that matches nothing reports a clean repo. Editing this file is fine
+    /// and expected; it puts the copy out of date, and the consequence is that the
+    /// other repo's own check goes red asking to be re-synced. Nothing here can see
+    /// that, so a change that matters to the pairing is worth mentioning where the
+    /// Uplinks went.</para>
     /// </summary>
     internal static class UplinkWiringScan
     {

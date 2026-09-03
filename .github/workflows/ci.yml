@@ -35,6 +35,35 @@ jobs:
       # reporting on the real ones, and refuses if discovery hands it nothing.
       - run: node tooling/uplink-docs.mjs --gate
 
+  # Does every Uplink here register what it declares, and declare what it
+  # registers. A question about the SET, so not a leg of `_uplink-tasks.yml`: the
+  # guard this restores was a per-project one in `gonogo`, and a per-project
+  # guard is the thing that gets forgotten. It was forgotten by exactly the
+  # Uplinks that moved here, because `gonogo`'s walk enrols an Uplink by its
+  # living under that repo's `mod/` and departure took these three out of reach.
+  #
+  # Its own job rather than a step of `discover`, which every leg waits on: this
+  # needs the dotnet SDK, and paying for that in front of the matrix delays every
+  # Uplink's build to answer a question none of them asked.
+  wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      # The walk is vendored from `gonogo` verbatim. Checked BEFORE it runs: a
+      # hand-edit here forks the gate into two that agree until one stops
+      # matching a registration shape, and a walk that matches nothing reports a
+      # clean repo rather than going red.
+      - run: node tooling/check-wiring-walk.mjs
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "10.0.x" }
+      # No reference set, unlike every other dotnet step in this repo: the walk
+      # reads `.cs` off disk with System.IO. That is what lets it BLOCK from a
+      # bare checkout instead of waiting on vendored assemblies a runner has no
+      # way to obtain.
+      - run: dotnet test tooling/wiring/Gonogo.UplinkWiring.Tests.csproj -c Release --nologo
+
   uplink:
     needs: discover
     strategy:
