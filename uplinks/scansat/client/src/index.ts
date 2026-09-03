@@ -12,9 +12,13 @@
 //
 //   - `Scanning` component → registerComponent({ id: "scanning", ... }) so it
 //     is placeable from the dashboard widget picker.
-//   - `ScansatScienceAugment` → registerAugment({ id: "scansat-science", ... })
-//     so it fills @ksp-gonogo/components's Experiments widget's
-//     `experiments.actions` slot.
+//   - `ScienceContribution` → SCANSAT.registerContribution({ id:
+//     "science-instruments", contributes: "experiments.instruments", ... }) so
+//     @ksp-gonogo/components's Experiments widget draws SCANsat's own
+//     map-scanner instruments with its own row, counts them in its totals and
+//     matches them against its filter. It was an augment on the header's
+//     `experiments.actions` segment; see that module's header for why a
+//     contribution replaced it.
 //   - `AnomalyOverlay/index.ts` → registerMapPoiProvider({ id:
 //     "scansat:anomalies", requires: "scansat", ... }) so discovered
 //     anomalies render through @ksp-gonogo/components's MapView's shared
@@ -57,15 +61,15 @@ export type { ScanningConfig, ScanningScope } from "./Scanning";
 export { ScanningComponent } from "./Scanning";
 export type { MinimapProps } from "./Scanning/Minimap";
 export { Minimap, MinimapForActiveVessel } from "./Scanning/Minimap";
-export { parseScanScience } from "./ScienceAugment";
+export { parseScanScience } from "./ScienceContribution";
 
 // Side-effect registration. Kept as bare imports so the built dist/index.js
-// retains them and bundlers won't tree-shake the registerComponent()/
-// registerAugment() calls away.
+// retains them and bundlers won't tree-shake the registerComponent() /
+// registerAugment() / registerContribution() calls away.
 import "./topics"; // registerBarePrimitiveTopic("scansat.available") + TopicPayloadMap augment
 import "./uplink"; // defineUplinkClient(SCANSAT): every widget/augment below stamps `owner: SCANSAT`
 import "./Scanning";
-import "./ScienceAugment";
+import "./ScienceContribution";
 import "./AnomalyOverlay";
 import "./FootprintOverlay";
 import "./CoveragePanel";
