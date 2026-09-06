@@ -1,0 +1,16 @@
+{
+  "id": "actionGroupsExtended",
+  "name": "ActionGroupsExtended",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoActionGroupsExtendedUplink",
+  "dll": "GonogoActionGroupsExtendedUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "Action Groups Extended",
+    "tier": "ckan",
+    "ckan": "AGExt",
+    "builtAgainst": "2.4.1.4"
+  },
+  "csharpNamespace": "Gonogo.ActionGroupsExtendedUplink"
+}

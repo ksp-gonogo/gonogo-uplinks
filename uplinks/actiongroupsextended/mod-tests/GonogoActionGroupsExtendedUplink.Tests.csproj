@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Compile the uplink's own files directly (same selective-Compile
+       pattern GonogoRealAntennasUplink.Tests / GonogoKerbcastUplink.Tests /
+       GonogoScansatUplink.Tests / GonogoKosUplink.Tests all use, none of
+       them ProjectReference their net48 main csproj from a net10.0 test
+       project, to avoid the cross-TFM NU1702 resolution warning). The whole
+       uplink is KSP-free (no KSP/Unity reference at all; see the main
+       csproj's header), so unlike RA/kerbcast there is no split: every file
+       in the main project compiles headlessly. -->
+  <ItemGroup>
+    <Compile Include="..\mod\IAgxApi.cs" />
+    <Compile Include="..\mod\AgxReflection.cs" />
+    <Compile Include="..\mod\AgxActionGroupsBackend.cs" />
+    <Compile Include="..\mod\ActionGroupsExtendedUplink.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+    <!-- ChannelEngine/UplinkDiscovery (the election-adversarial-ordering
+         tests) and the ActionGroups seam (Sitrep.Host.ActionGroups) both
+         live in Sitrep.Host, which is itself KSP-free, same reference
+         Sitrep.Host.Tests takes on itself.
+
+         OPEN DECISION, not a settled one. Sitrep.Host is core, and no
+         published package carries it, so this line is the reason the devkit
+         now vendors Sitrep.Host.dll alongside Sitrep.Contract.TestSupport.dll.
+         The Uplink's own SHIPPED compile surface is still Sitrep.Contract
+         alone (see the main csproj): what changed is what may be VERIFIED
+         about it, which is the asymmetry ActionGroupsExtendedElectionTests
+         .UplinkCapabilityIdMatchesTheOneCoreRegisters describes in its own
+         doc comment. The alternatives were dropping the ten Facts that reach
+         Host, or holding the Uplink back until ActionGroupsElection is
+         declared in Sitrep.Contract and resolved through host.Kernel, which
+         is what docs/uplink-isolation.md says the real fix is. -->
+    <Reference Include="Sitrep.Host">
+      <HintPath>$(GonogoDevkit)\Sitrep.Host.dll</HintPath>
+    </Reference>
+    <!-- Sitrep.Contract.TestSupport: StarvationProbeHost, the host an Uplink can
+         be registered into and TICKED, so ActionGroupsStarvationTests can ask
+         what the exclusive capability answers under named subscriptions rather
+         than what was registered. -->
+    <Reference Include="Sitrep.Contract.TestSupport">
+      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Sitrep.Host's own dependencies, present for the RUNTIME only. `None` with
+       CopyToOutputDirectory rather than `Reference` on purpose: ChannelEngine's
+       constructor touches Sitrep.Core, so without these two Facts fail at load
+       with FileNotFoundException on Sitrep.Core, but nothing here compiles
+       against any of the three and putting them on the compile surface would
+       widen what this project can NAME as well as what it can load. Keeping
+       them off it means a test that starts using a core type stops building,
+       which is the signal worth having while the seam is undecided. -->
+  <ItemGroup>
+    <None Include="$(GonogoDevkit)\Sitrep.Core.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(GonogoDevkit)\Sitrep.Propagation.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(GonogoDevkit)\Sitrep.Transport.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>
