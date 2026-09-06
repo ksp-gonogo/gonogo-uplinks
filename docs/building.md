@@ -181,23 +181,28 @@ thing an author has to work out for themselves today, and each belongs upstream.
    declaration merge vanishes and every key it contributed goes with it, which is
    the pattern `TopicPayloadMap` uses for an Uplink's own Topics
 
-9. **There is no headless host to test an ELECTION against.** A capability
-   provider is not exercised by the seam alone: the question that matters is
-   which provider wins when core resolves, and in what discovery order. `Kernel`
-   itself is in `Sitrep.Contract` and reachable, but the capability's own
-   registration helper (`Sitrep.Host.ActionGroups.ActionGroupsElection`, which
-   owns the capability id both halves have to agree on) and the two-pass
-   discovery that orders it (`ChannelEngine`, `UplinkDiscovery`) are not. So
-   `actiongroupsextended` compiles its test project against a vendored
-   `Sitrep.Host.dll` and copies `Sitrep.Core`, `Sitrep.Propagation` and
-   `Sitrep.Transport` beside it for the runtime, because `ChannelEngine`'s
-   constructor loads Core. Compile surface and runtime set are kept apart
-   deliberately: only Host is a `Reference`, the other three are `None` copies,
-   so a test that starts NAMING a core type stops building. It is the largest
-   outstanding contradiction of the isolation rule in this repo and it is an
-   OPEN DECISION rather than a settled pattern: the alternatives were dropping
-   the ten Facts that reach Host, or holding the Uplink back until
-   `ActionGroupsElection` is declared in `Sitrep.Contract` and resolved through
-   `host.Kernel`, which is what `gonogo`'s `docs/uplink-isolation.md` says the
-   real fix is. What the devkit owes is a supported headless host harness, so an
-   author can ask "does my provider win" without reaching into core at all
+9. **There is no headless host to test an ELECTION against, and it turned out
+   not to be needed.** A capability provider is not exercised by the seam alone:
+   the question that matters is which provider wins when core resolves, and in
+   what discovery order. `Kernel` itself is in `Sitrep.Contract` and reachable,
+   but the capability's own registration helper
+   (`Sitrep.Host.ActionGroups.ActionGroupsElection`) and the two-pass discovery
+   that orders it (`ChannelEngine`, `UplinkDiscovery`) are not. So
+   `actiongroupsextended` used to compile its test project against a vendored
+   `Sitrep.Host.dll`, with `Sitrep.Core`, `Sitrep.Propagation` and
+   `Sitrep.Transport` copied beside it for the runtime, and that was the largest
+   outstanding contradiction of the isolation rule in this repo. It is gone, and
+   none of the three fixes was a headless host: the capability id moved to
+   `Sitrep.Contract` as `ActionGroupsCapability.Id`, so both halves read one
+   declaration instead of pinning two spellings equal; the cases that needed
+   `ChannelEngine` were asserting CORE's discovery ordering through a
+   hand-written double of the Uplink, so they belonged in core's own suite and
+   moved there; and the probe host is now `RecordingUplinkHost.cs` in the Tests
+   project, over a real `Kernel` with the capability declared on it. That is
+   what "Testing a NEW Uplink" in `gonogo`'s `docs/uplink-isolation.md` tells a
+   new Uplink to write anyway. Before concluding an election needs core, check
+   whether the assertion is actually about core, and whether a real `Kernel` and
+   a per-Uplink double will carry the rest. A devkit harness would still be
+   worth having, so an author does not write that double from scratch, but it is
+   a convenience now rather than the thing standing between this Uplink and the
+   rule
