@@ -81,11 +81,24 @@
  * for the same reason. Two of the unresolved specifiers name generated files, so
  * this client cannot reach zero on its own either.
  *
+ * ## What the 5 is, measured 2026-09-06 as avionics arrived
+ *
+ * The same single cause a fourth time and the smallest count yet: all 5 are this
+ * client's own extensionless relative imports, 4 x TS2835 plus 1 x TS2834, and
+ * nothing cascades off them. Unlike the three above, NONE of the 5 sits in
+ * generated code: two of the specifiers name a generated file
+ * (`./__generated__/contract`, `./__generated__/units`) but both import
+ * statements are in the hand-written `topics.ts`, and the other three are in
+ * `index.ts`, `AvionicsGoNoGo/index.tsx` and its test. So this is the first
+ * client that could reach zero on its own, without waiting on the unit-map
+ * codegen.
+ *
  * Tighten with `node scripts/check-nodenext.mjs --update <name>` and commit the
  * diff beside whatever was fixed.
  */
 
 export const NODENEXT_DEBT = {
+  avionics: 5,
   kerbcast: 96,
   realfuels: 11,
   scansat: 112,
