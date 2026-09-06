@@ -81,11 +81,25 @@
  * for the same reason. Two of the unresolved specifiers name generated files, so
  * this client cannot reach zero on its own either.
  *
+ * ## What the 17 is, measured 2026-09-06 as ferramaerospaceresearch arrived
+ *
+ * The same single cause a third time, and nothing else: 9 x TS2835 plus 2 x
+ * TS2834 are this client's own extensionless relative imports, and the 4 x TS7006
+ * and 2 x TS2345 all follow from them. The TS7006 pair are `.map` and `.find`
+ * callbacks in two test files over arrays whose element type came from a
+ * specifier that did not resolve, and the TS2345 pair are `topics.ts` handing the
+ * generated unit maps to `registerTopicUnits`/`registerTypeUnits` as `unknown`
+ * for the same reason. Two of the unresolved specifiers name generated files
+ * (`./__generated__/contract` and `./__generated__/units`), so this client cannot
+ * reach zero on its own however it is written, exactly as its three predecessors
+ * cannot.
+ *
  * Tighten with `node scripts/check-nodenext.mjs --update <name>` and commit the
  * diff beside whatever was fixed.
  */
 
 export const NODENEXT_DEBT = {
+  ferramaerospaceresearch: 17,
   kerbcast: 96,
   realfuels: 11,
   scansat: 112,

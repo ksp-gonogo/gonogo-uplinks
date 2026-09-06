@@ -1,0 +1,28 @@
+{
+  "id": "aero",
+  "name": "Aerodynamics",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoFerramAerospaceResearchUplink",
+  "dll": "GonogoFerramAerospaceResearchUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "Ferram Aerospace Research",
+    "tier": "ckan",
+    "ckan": "FerramAerospaceResearchContinued",
+    "builtAgainst": "0.16.1.2"
+  },
+  "codegen": {
+    "assembly": "GonogoFerramAerospaceResearchUplink.Contract",
+    "configurationMethod": "GonogoFerramAerospaceResearchUplink.AeroRtConfig.Configure",
+    "emits": {
+      "SITREP_AERO_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_AERO_UNITMAP_OUT": "units.ts",
+      "SITREP_AERO_UNITJSON_OUT": "units.json"
+    }
+  },
+  "csharpNamespace": "GonogoFerramAerospaceResearchUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@ferramaerospaceresearch-v0.0.1/uplinks/ferramaerospaceresearch/release/ferramaerospaceresearch.client.js"
+  }
+}
