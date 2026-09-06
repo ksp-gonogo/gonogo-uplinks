@@ -1,0 +1,109 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Compile only the PURE, KSP-free files from the uplink so the tests never
+       need the KSP/reflection-dependent assembly (same selective-Compile pattern
+       GonogoScansatUplink.Tests / GonogoRealAntennasUplink.Tests use). -->
+  <ItemGroup>
+    <Compile Include="..\mod\KerbalismRawTypes.cs" />
+    <Compile Include="..\mod\KerbalismCapture.cs" />
+    <!-- The per-craft subscription gate for the kerbalism.vessel.<guid> fleet
+         namespace: KSP-free on purpose, because reading every craft in the save
+         looks exactly like reading the watched one from the outside. -->
+    <Compile Include="..\mod\KerbalismFleetScope.cs" />
+    <!-- The two-stage deadline: pure arithmetic over a captured bundle, which is
+         the half of it that can be checked without a save carrying life-support
+         rules. -->
+    <Compile Include="..\mod\KerbalismDeathClock.cs" />
+    <Compile Include="..\mod\KerbalismReliabilityMap.cs" />
+    <!-- Which modules a repair acts on and what it charges, carved out of
+         KerbalismReflection.AttemptRepair (whose walk reaches a live Part and
+         Vessel) so the scope that made the Service verb dead is checkable. -->
+    <Compile Include="..\mod\KerbalismRepairScope.cs" />
+    <Compile Include="..\mod\KerbalismScienceMap.cs" />
+    <Compile Include="..\mod\KerbalismIsruMap.cs" />
+    <!-- The science BACKEND is KSP-free too (it maps a plain captured bundle; the
+         reflection that produces that bundle is the KSP-touching half and stays
+         out), so the elected instance itself is testable here rather than only its
+         mapper. -->
+    <Compile Include="..\mod\KerbalismScienceBackend.cs" />
+    <!-- File Manager command validation: resolves a subject against the same
+         plain ScienceRaw snapshot the science backend above stashes, never
+         touches live Kerbalism (the actuator it delegates to is the seam;
+         only its interface is compiled here, the live Drive implementation
+         is the KSP-touching half and stays out). -->
+    <Compile Include="..\mod\IKerbalismFileActuator.cs" />
+    <Compile Include="..\mod\KerbalismFileCommandProvider.cs" />
+    <!-- moveToLab's destination-picking decision, pulled out of the live
+         KerbalismFileActuator so it is unit-testable without a vessel; see
+         that type's own doc comment. -->
+    <Compile Include="..\mod\KerbalismMoveDestinationSelector.cs" />
+  </ItemGroup>
+
+  <!-- KerbalismReliabilityMap builds Sitrep.Contract POCOs (KSP-free).
+       Sitrep.Core: ReliabilityExtensionWireTests serialises those POCOs through
+       the REAL EnvelopeCodec/JsonWriter rather than asserting on a hand-written
+       string, which is the only way the provider-extension proof is end-to-end
+       instead of a restatement of the producer. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+    <!-- Sitrep.Core is vendored rather than reached as a project, and it is the
+         ONE assembly here an Uplink is not otherwise entitled to. The three wire
+         tests below serialise this Uplink's POCOs through the REAL EnvelopeCodec
+         and JsonWriter, which is what makes the golden fixture a proof rather than
+         a restatement of the producer: a stub codec would assert that the test
+         agrees with itself. Flagged in docs/building.md and in the arrival commit,
+         and if the operator would rather drop the coverage, deleting this
+         reference and those three [Fact]s is the whole change. Sitrep.Core reaches
+         nothing but Sitrep.Contract, which is already on the compile surface
+         above, so no further satellite assemblies are needed. -->
+    <Reference Include="Sitrep.Core">
+      <HintPath>$(GonogoDevkit)\Sitrep.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- The cross-language golden fixture: this project WRITES it (from the real
+       codec) and this Uplink's client test READS it back through the real decode
+       path, so server and client cannot drift apart silently. Same
+       shared-JSON-both-sides pattern as mod/golden-fixtures/README.md describes,
+       run in the C#-to-TS direction. -->
+  <ItemGroup>
+    <None Include="..\mod\golden-fixtures\reliability-extensions.json" Link="golden-fixtures/reliability-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\mod\golden-fixtures\science-extensions.json" Link="golden-fixtures/science-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\mod\golden-fixtures\isru-extensions.json" Link="golden-fixtures/isru-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- GonogoKerbalismUplink.Contract: this Uplink's own wire types (relocated
+       out of Sitrep.Contract, see that project's header comment).
+       KerbalismUnitCoverageTests.cs reflects over it directly, and
+       KerbalismCaptureTests.cs asserts against KerbalismLifeSupport's shape. -->
+  <ItemGroup>
+    <ProjectReference Include="..\mod-contract\GonogoKerbalismUplink.Contract.csproj" />
+    <!-- Sitrep.Contract.TestSupport: the shared Unit-coverage sweep every
+         relocated Uplink's <X>UnitCoverageTests calls, extracted once five
+         near-identical copies existed (see UnitCoverageAssertion's own doc
+         comment). The [Fact]s stay here, naming this Uplink's own types. -->
+    <Reference Include="Sitrep.Contract.TestSupport">
+      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

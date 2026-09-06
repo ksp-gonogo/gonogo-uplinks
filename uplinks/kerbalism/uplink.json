@@ -1,0 +1,29 @@
+{
+  "id": "kerbalism",
+  "name": "Kerbalism",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoKerbalismUplink",
+  "dll": "GonogoKerbalismUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "Kerbalism",
+    "tier": "ckan",
+    "ckan": "Kerbalism",
+    "builtAgainst": "3.32"
+  },
+  "codegen": {
+    "assembly": "GonogoKerbalismUplink.Contract",
+    "configurationMethod": "GonogoKerbalismUplink.KerbalismRtConfig.Configure",
+    "emits": {
+      "SITREP_KERBALISM_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_KERBALISM_UNITMAP_OUT": "units.ts",
+      "SITREP_KERBALISM_UNITJSON_OUT": "units.json",
+      "SITREP_KERBALISM_COMMANDMAP_OUT": "command-map.ts"
+    }
+  },
+  "csharpNamespace": "Gonogo.KerbalismUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@kerbalism-v0.0.1/uplinks/kerbalism/release/kerbalism.client.js"
+  }
+}
