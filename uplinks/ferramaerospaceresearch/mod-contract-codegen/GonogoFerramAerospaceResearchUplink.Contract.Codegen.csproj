@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Codegen-only twin of GonogoFerramAerospaceResearchUplink.Contract. See the devkit's CodegenTwin.props. -->
+  <PropertyGroup>
+    <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
+    <AssemblyName>GonogoFerramAerospaceResearchUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoFerramAerospaceResearchUplink</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(GonogoContract)\CodegenTwin.props" />
+  <!-- The Sitrep.Contract TWIN, not the shipped contract: rtcli reads this
+       assembly's metadata and resolves the core types it references, and it
+       must see the same core assembly it always did, attributes included. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\codegen\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
