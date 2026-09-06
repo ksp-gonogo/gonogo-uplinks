@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "engine": "chromium",
+  "assets": {
+    "boot-then-run--default.gif": {
+      "hash": "cd3a130fec0eb11e",
+      "elements": 58,
+      "text": "a0774835"
+    },
+    "cpu-picker-untagged--default.png": {
+      "hash": "7951db8adf8e68db",
+      "elements": 29,
+      "text": "54cb2e54"
+    },
+    "lander-cpu-attached--default.png": {
+      "hash": "a4a108a4b767cfb5",
+      "elements": 67,
+      "text": "12f1d671"
+    },
+    "two-cpus-idle--default.png": {
+      "hash": "d7043049cffe5d4e",
+      "elements": 31,
+      "text": "db7edf95"
+    },
+    "two-cpus-idle--min.png": {
+      "hash": "d7043049cffe5d4e",
+      "elements": 31,
+      "text": "db7edf95"
+    }
+  }
+}
