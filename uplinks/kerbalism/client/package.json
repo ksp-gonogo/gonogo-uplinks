@@ -1,0 +1,48 @@
+{
+  "name": "@ksp-gonogo/gonogo-kerbalism-uplink",
+  "license": "MIT",
+  "version": "0.0.1",
+  "private": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "render": "gonogo-uplink render",
+    "docs": "gonogo-uplink docs",
+    "docs:check": "gonogo-uplink docs --check",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-c42dc392b6c0.tgz",
+    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.2.0-936c0c9d23c9.tgz",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest-axe": "^3.5.9",
+    "@types/react": "^18.3.28",
+    "esbuild": "^0.28.0",
+    "jest-axe": "^10.0.0",
+    "jsdom": "^29.0.2",
+    "playwright": "^1.60.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}
