@@ -1,0 +1,29 @@
+{
+  "id": "avionics",
+  "name": "Avionics",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoAvionicsUplink",
+  "dll": "GonogoAvionicsUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "RP-1",
+    "tier": "ckan",
+    "ckan": "RP-1",
+    "builtAgainst": "4.5.0.0",
+    "assembly": "RP-1/Plugins/RP0.dll"
+  },
+  "codegen": {
+    "assembly": "GonogoAvionicsUplink.Contract",
+    "configurationMethod": "GonogoAvionicsUplink.AvionicsRtConfig.Configure",
+    "emits": {
+      "SITREP_AVIONICS_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_AVIONICS_UNITMAP_OUT": "units.ts",
+      "SITREP_AVIONICS_UNITJSON_OUT": "units.json"
+    }
+  },
+  "csharpNamespace": "GonogoAvionicsUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@avionics-v0.0.1/uplinks/avionics/release/avionics.client.js"
+  }
+}
