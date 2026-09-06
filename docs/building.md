@@ -13,7 +13,7 @@ install and re-run:
 | `KspManaged` | KSP's managed assemblies | your own KSP install, `KSP_x64_Data/Managed` |
 | `KspGameData` | the mod this Uplink wraps | your own `GameData` |
 | `GonogoContract` | `Sitrep.Contract.dll`, per target framework | `GameData/Gonogo/Plugins/`, installed by GonogoCore |
-| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll` | see **What the devkit still owes** |
+| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, and for one Uplink `Sitrep.Host.dll` plus the three assemblies it loads | see **What the devkit still owes** |
 
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.
@@ -180,3 +180,24 @@ thing an author has to work out for themselves today, and each belongs upstream.
    "./types"` binds under `bundler` and does not bind under `nodenext`, so a
    declaration merge vanishes and every key it contributed goes with it, which is
    the pattern `TopicPayloadMap` uses for an Uplink's own Topics
+
+9. **There is no headless host to test an ELECTION against.** A capability
+   provider is not exercised by the seam alone: the question that matters is
+   which provider wins when core resolves, and in what discovery order. `Kernel`
+   itself is in `Sitrep.Contract` and reachable, but the capability's own
+   registration helper (`Sitrep.Host.ActionGroups.ActionGroupsElection`, which
+   owns the capability id both halves have to agree on) and the two-pass
+   discovery that orders it (`ChannelEngine`, `UplinkDiscovery`) are not. So
+   `actiongroupsextended` compiles its test project against a vendored
+   `Sitrep.Host.dll` and copies `Sitrep.Core`, `Sitrep.Propagation` and
+   `Sitrep.Transport` beside it for the runtime, because `ChannelEngine`'s
+   constructor loads Core. Compile surface and runtime set are kept apart
+   deliberately: only Host is a `Reference`, the other three are `None` copies,
+   so a test that starts NAMING a core type stops building. It is the largest
+   outstanding contradiction of the isolation rule in this repo and it is an
+   OPEN DECISION rather than a settled pattern: the alternatives were dropping
+   the ten Facts that reach Host, or holding the Uplink back until
+   `ActionGroupsElection` is declared in `Sitrep.Contract` and resolved through
+   `host.Kernel`, which is what `gonogo`'s `docs/uplink-isolation.md` says the
+   real fix is. What the devkit owes is a supported headless host harness, so an
+   author can ask "does my provider win" without reaching into core at all
