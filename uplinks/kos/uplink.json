@@ -1,0 +1,30 @@
+{
+  "id": "kos",
+  "name": "kOS",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoKosUplink",
+  "dll": "GonogoKosUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "kOS",
+    "tier": "ckan",
+    "ckan": "kOS",
+    "builtAgainst": "1.6.0.1",
+    "assembly": "kOS/Plugins/kOS.dll"
+  },
+  "codegen": {
+    "assembly": "GonogoKosUplink.Contract",
+    "configurationMethod": "Gonogo.KosUplink.KosRtConfig.Configure",
+    "emits": {
+      "SITREP_KOS_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_KOS_UNITMAP_OUT": "units.ts",
+      "SITREP_KOS_UNITJSON_OUT": "units.json",
+      "SITREP_KOS_COMMANDMAP_OUT": "command-map.ts"
+    }
+  },
+  "csharpNamespace": "Gonogo.KosUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@kos-v0.0.1/uplinks/kos/release/kos.client.js"
+  }
+}
