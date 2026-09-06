@@ -1,0 +1,16 @@
+{
+  "id": "testflight",
+  "name": "TestFlight",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoTestFlightUplink",
+  "dll": "GonogoTestFlightUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "TestFlight",
+    "tier": "ckan",
+    "ckan": "TestFlight",
+    "builtAgainst": "2.12.0.0"
+  },
+  "csharpNamespace": "GonogoTestFlightUplink"
+}

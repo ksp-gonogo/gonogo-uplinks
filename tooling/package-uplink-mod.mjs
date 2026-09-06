@@ -45,11 +45,18 @@ const modBin = join(uplinkDir, "mod", "bin", "Release");
  * The plugin plus its contract slice, named from `uplink.json` rather than
  * discovered, so a build that emitted the wrong assembly fails here instead of
  * shipping a zip with a DLL nobody asked for.
+ *
+ * Whether there IS a contract slice is the one thing read off disk, because an
+ * Uplink that declares no Topics of its own has none to build and the name alone
+ * cannot say so. Asking for it unconditionally made a mod-only Uplink fail here
+ * with a DLL it could never produce. The guard keeps its teeth: an Uplink with a
+ * mod-contract/ directory is still held to emitting the assembly that matches
+ * its declared name.
  */
-const required = [
-  declared.dll,
-  declared.dll.replace(/\.dll$/, ".Contract.dll"),
-];
+const required = [declared.dll];
+if (existsSync(join(uplinkDir, "mod-contract"))) {
+  required.push(declared.dll.replace(/\.dll$/, ".Contract.dll"));
+}
 
 const missing = required.filter((dll) => !existsSync(join(modBin, dll)));
 if (missing.length > 0) {
