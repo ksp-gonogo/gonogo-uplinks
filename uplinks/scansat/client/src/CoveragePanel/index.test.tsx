@@ -183,13 +183,12 @@ describe("CoveragePanel: map-view.sections slot", () => {
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
-    // Coverage rides the STREAM now (the dynamic `scansat.coverage.*` prefix is
-    // carried), not the legacy source. The per-type rows only subscribe once the
-    // panel is mounted (availability live), so emit availability first, wait for
-    // the row subscriptions, THEN emit coverage on the transport.
+    // Coverage rides the STREAM (the dynamic `scansat.coverage.*` prefix is
+    // carried), and so does the vessel list. The per-type rows only subscribe
+    // once the panel is mounted (availability live), so emit availability first,
+    // wait for the row subscriptions, THEN emit coverage on the transport.
     const meta = { quality: Quality.Loaded, source: "scansat" };
     act(() => {
-      source.emit("scansat.scanningVessels", [vessel({})]);
       transport.emit("scansat.available", true, meta);
     });
 
@@ -200,6 +199,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       expect(transport.isSubscribed("scansat.coverage.Kerbin.2")).toBe(true),
     );
     act(() => {
+      transport.emit("scansat.scanningVessels", [vessel({})], meta);
       transport.emit("scansat.coverage.Kerbin.2", 45.6, meta);
       transport.emit("scansat.coverage.Kerbin.1", 67.6, meta);
       transport.emit("scansat.coverage.Kerbin.8", 29.6, meta);
@@ -233,7 +233,6 @@ describe("CoveragePanel: map-view.sections slot", () => {
     );
     const meta = { quality: Quality.Loaded, source: "scansat" };
     act(() => {
-      source.emit("scansat.scanningVessels", [vessel({ body: "Mun" })]);
       transport.emit("scansat.available", true, meta);
     });
 
@@ -244,9 +243,16 @@ describe("CoveragePanel: map-view.sections slot", () => {
       expect(transport.isSubscribed("scansat.coverage.Kerbin.2")).toBe(true),
     );
     act(() => {
+      transport.emit("scansat.scanningVessels", [vessel({ body: "Mun" })], meta);
       transport.emit("scansat.coverage.Kerbin.2", 12, meta);
     });
     await waitFor(() => expect(visibleText(panel)).toContain("12 %"));
+    // The Mun vessel's sensors must not reach Kerbin's chips. The list IS fed
+    // and the panel IS subscribed by this point, so an empty chip row is the
+    // body filter working rather than a read that never landed.
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.scanningVessels")).toBe(true),
+    );
     expect(within(panel).queryByText("best")).toBeNull();
   });
 
@@ -286,17 +292,25 @@ describe("CoveragePanel: map-view.sections slot", () => {
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
+    const meta = { quality: Quality.Loaded, source: "scansat" };
     act(() => {
-      source.emit("scansat.scanningVessels", [vessel({})]);
-      source.emit("scansat.coverage.Kerbin.2", 45.6);
-      source.emit("scansat.coverage.Kerbin.1", 67.6);
-      source.emit("scansat.coverage.Kerbin.8", 29.6);
-      transport.emit("scansat.available", true, {
-        quality: Quality.Loaded,
-        source: "scansat",
-      });
+      transport.emit("scansat.available", true, meta);
     });
     await screen.findByRole("region", { name: /Scan coverage for Kerbin/i });
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.coverage.Kerbin.2")).toBe(true),
+    );
+    // Every channel the panel draws from, so the smoke walks the populated
+    // markup (chips and all) rather than an empty shell.
+    act(() => {
+      transport.emit("scansat.scanningVessels", [vessel({})], meta);
+      transport.emit("scansat.coverage.Kerbin.2", 45.6, meta);
+      transport.emit("scansat.coverage.Kerbin.1", 67.6, meta);
+      transport.emit("scansat.coverage.Kerbin.8", 29.6, meta);
+    });
+    await waitFor(() =>
+      expect(within(screen.getByRole("region")).getByText("best")).toBeInTheDocument(),
+    );
 
     await expectNoA11yViolations(container);
   });

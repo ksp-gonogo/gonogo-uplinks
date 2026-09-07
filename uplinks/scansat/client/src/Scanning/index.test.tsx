@@ -1,15 +1,7 @@
-import type { DataKey } from "@ksp-gonogo/sitrep-sdk";
-import {
-  BufferedDataSource,
-  clearRegistry,
-  MemoryStore,
-  registerDataSource,
-  registerStockBodies,
-} from "@ksp-gonogo/sitrep-sdk";
+import { clearRegistry, registerStockBodies, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   render,
   StubTransport,
   screen,
@@ -22,46 +14,61 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { SCANScanningVessel } from "../schema.js";
 import { ScanningComponent } from "./index.js";
 
-// `scansat.available`, `vessel.identity`, `system.bodies`, and
-// `vessel.surface` (body name + biome) all ride the native TelemetryClient
-// stream now (this task migrated the widget off the
-// `v.body`/`v.biome`/`scansat.available` two-arg shim).
-//
-// `scansat.coverage.<body>.<type>` and `scansat.anomalies.<body>` (still
-// read via the legacy two-arg `useTelemetry("data", key)` shim inside
-// `useScanLayers.ts`, untouched by this migration) turn out to ALSO ride
-// the stream the moment any `TelemetryProvider` is mounted:
-// `DYNAMIC_CARRIED_TOPIC_PREFIXES` (`@ksp-gonogo/sitrep-client`'s
-// `default-carried-topics.ts`) unconditionally folds in the
-// `scansat.coverage.`/`scansat.anomalies.` prefixes, so `mapTopic` resolves
-// them AND the carried-channels gate passes regardless of what
-// `carriedChannels` prop (if any) this test's `TelemetryProvider` is given.
-// Emitting those two families on the legacy `MockDataSource` here would
-// silently never reach the widget once a provider is mounted: they must go
-// over `transport.emit`, matching production. `scansat.scanningVessels` is
-// the one family that ISN'T in that carried set (only a literal-string
-// member of the app's `DEFAULT_SITREP_CARRIED_TOPICS`, which this bare
-// `TelemetryProvider` doesn't apply), so it genuinely stays on the legacy
-// "data" source here.
-const KEYS: DataKey[] = [{ key: "scansat.scanningVessels" }];
+// Every channel this widget reads rides the native TelemetryClient stream, so
+// every emit here goes over `transport`. That includes `scansat.scanningVessels`,
+// which until recently was read through the two-arg `useTelemetry("data", key)`
+// shim and fed here off a `MockDataSource`: the shim resolves no Topic for a bare
+// Topic id and the app registers nothing under the flat id `"data"`, so the list
+// was dead in production while this file's legacy source kept the tests green.
+// See `useScanLayers.ts`'s `useScanningVessels`.
 
 /** `system.bodies` fixture carrying just the one body the tests need. */
 const SYSTEM_BODIES = { bodies: [{ index: 1, name: "Kerbin" }] };
 /** `vessel.identity` fixture: active vessel orbiting/landed at Kerbin (index 1). */
 const VESSEL_IDENTITY_AT_KERBIN = { parentBodyIndex: 1 };
 
+/** One tracked scanner over Kerbin, with both sensors in range. */
+function vessel(over: Partial<SCANScanningVessel> = {}): SCANScanningVessel {
+  return {
+    vesselId: "v1",
+    vesselName: "Mapper One",
+    body: "Kerbin",
+    subLatitude: value("°", 12),
+    subLongitude: value("°", 35),
+    altitude: value("m", 250_000),
+    sensors: [
+      {
+        type: 2, // AltimetryHiRes
+        fov: value("°", 5),
+        minAlt: value("m", 5000),
+        maxAlt: value("m", 500_000),
+        bestAlt: value("m", 250_000),
+        inRange: true,
+        bestRange: true,
+      },
+    ],
+    groundTrackWidthDeg: value("°", 6),
+    groundTrackLonHalfDeg: value("°", 6.1),
+    trackColor: {
+      r: value("count", 0),
+      g: value("count", 255),
+      b: value("count", 200),
+      a: value("count", 200),
+    },
+    ...over,
+  };
+}
+
 describe("ScanningComponent", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
   let transport: StubTransport;
   let client: ReturnType<typeof createTestTelemetryClient>;
 
-  // Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
-  // the buffered source. RTL auto-cleanup runs after this file's afterEach, so
-  // it can't be relied on to unmount first, disconnecting a live source while
-  // the widget is still mounted fires a status change into it, a state update
+  // Rendered trees, tracked so afterEach unmounts them inside the test's own
+  // scope. RTL auto-cleanup runs after this file's afterEach, so it cannot be
+  // relied on to unmount first, and a live tree torn down later re-renders
   // outside act() (the documented anti-pattern in CLAUDE.md).
   const renderedTrees: Array<() => void> = [];
 
@@ -73,13 +80,9 @@ describe("ScanningComponent", () => {
     return result;
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     clearRegistry();
     registerStockBodies();
-    source = new MockDataSource({ keys: KEYS });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
     transport = new StubTransport();
     client = createTestTelemetryClient(transport);
   });
@@ -87,7 +90,6 @@ describe("ScanningComponent", () => {
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
   });
 
   it("shows the empty state when SCANsat is not installed", async () => {
@@ -104,13 +106,48 @@ describe("ScanningComponent", () => {
       transport.emit("scansat.available", true);
       transport.emit("system.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
-      source.emit("scansat.scanningVessels", []);
     });
     await screen.findByText(/Coverage: Kerbin/);
     expect(screen.getByText(/Scanning vessels/)).toBeInTheDocument();
+    // An EMPTY list, emitted, not merely never sent: "no vessels" has to be an
+    // answer here rather than a silence, or the assertion passes just as well
+    // against a read that resolves nothing.
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.scanningVessels")).toBe(true),
+    );
+    act(() => {
+      transport.emit("scansat.scanningVessels", []);
+    });
     expect(
       screen.getByText(/No vessels tracked by SCANsat yet/),
     ).toBeInTheDocument();
+  });
+
+  it("renders a tracked vessel's name, sub-point and scanners", async () => {
+    renderScanning(<ScanningComponent config={{}} id="scanning" />);
+    act(() => {
+      transport.emit("scansat.available", true);
+      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
+    });
+    await screen.findByText(/Coverage: Kerbin/);
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.scanningVessels")).toBe(true),
+    );
+    act(() => {
+      transport.emit("scansat.scanningVessels", [vessel()]);
+    });
+
+    await screen.findByText("Mapper One");
+    // The sub-point and altitude render through <Unit>, which splits number
+    // from symbol across elements, so the whole-tree text is what to assert on.
+    await waitFor(() => expect(visibleText()).toContain("sub-point 12.00°"));
+    expect(visibleText()).toContain("35.00°");
+    expect(visibleText()).toContain("250 km");
+    // The scanner row, so a vessel that arrives with its sensors dropped is not
+    // mistaken for one that rendered fine.
+    expect(visibleText()).toContain("FoV 5.0°");
+    expect(screen.queryByText(/No scanners\./)).toBeNull();
   });
 
   it("renders coverage percentages for each scan type when values are emitted", async () => {
@@ -119,13 +156,9 @@ describe("ScanningComponent", () => {
       transport.emit("scansat.available", true);
       transport.emit("system.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
-      source.emit("scansat.scanningVessels", []);
     });
     await screen.findByText(/Coverage: Kerbin/);
     act(() => {
-      // `scansat.coverage.<body>.<type>` rides the stream (see header note):
-      // once the per-body coverage rows mount, wait for their subscribe then
-      // emit over `transport`, not `source`.
       // Distinct non-zero values for each of the 5 DISPLAY_SCAN_TYPES
       transport.emit("scansat.coverage.Kerbin.2", 12.3); // AltimetryHiRes
       transport.emit("scansat.coverage.Kerbin.1", 34.5); // AltimetryLoRes
@@ -149,7 +182,6 @@ describe("ScanningComponent", () => {
       transport.emit("scansat.available", true);
       transport.emit("system.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
-      source.emit("scansat.scanningVessels", []);
     });
     await screen.findByText(/Coverage: Kerbin/);
     act(() => {
@@ -193,7 +225,6 @@ describe("ScanningComponent", () => {
       transport.emit("system.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
       transport.emit("vessel.surface", { biome: "Highlands" });
-      source.emit("scansat.scanningVessels", []);
     });
     await waitFor(() =>
       expect(screen.getByText(/Biome: Highlands/)).toBeInTheDocument(),

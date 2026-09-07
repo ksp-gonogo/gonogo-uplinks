@@ -1,10 +1,6 @@
 import {
-  BufferedDataSource,
   clearRegistry,
-  type DataKey,
-  MemoryStore,
   registerAugment,
-  registerDataSource,
   registerStockBodies,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -12,7 +8,6 @@ import {
   clearAugments,
   createTestTelemetryClient,
   getAugmentsForSlot,
-  MockDataSource,
   render,
   StubTransport,
   screen,
@@ -31,43 +26,27 @@ import { ScanningComponent } from "./index.js";
  * slot props.
  */
 
-// `scansat.available`, `vessel.identity`, and `system.bodies` ride the
-// native TelemetryClient stream (see Scanning/index.test.tsx's header note);
-// only `scansat.scanningVessels`/`scansat.coverage.*`/`scansat.anomalies.*`
-// still ride the legacy "data" DataSource.
-const KEYS: DataKey[] = [
-  { key: "scansat.scanningVessels" },
-  { key: "scansat.coverage.Kerbin.2" },
-  { key: "scansat.coverage.Kerbin.1" },
-  { key: "scansat.coverage.Kerbin.8" },
-  { key: "scansat.coverage.Kerbin.16" },
-  { key: "scansat.coverage.Kerbin.256" },
-  { key: "scansat.anomalies.Kerbin" },
-];
+// Every channel the widget reads rides the native TelemetryClient stream, so
+// this suite needs no `DataSource` at all. It used to register one for
+// `scansat.scanningVessels`, back when that list was read through the two-arg
+// shim; the slot assertions never depended on it.
 
 const SYSTEM_BODIES = { bodies: [{ index: 1, name: "Kerbin" }] };
 const VESSEL_IDENTITY_AT_KERBIN = { parentBodyIndex: 1 };
 
 describe("Scanning: augment slots (spec §4)", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
   let transport: StubTransport;
   let client: ReturnType<typeof createTestTelemetryClient>;
 
-  // Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
-  // the buffered source. RTL auto-cleanup runs after this file's afterEach, so
-  // it can't be relied on to unmount first, disconnecting a live source while
-  // the widget is still mounted fires a status change into it, a state update
+  // Rendered trees, tracked so afterEach unmounts them inside the test's own
+  // scope. RTL auto-cleanup runs after this file's afterEach, so it cannot be
+  // relied on to unmount first, and a live tree torn down later re-renders
   // outside act() (the documented anti-pattern in CLAUDE.md).
   const renderedTrees: Array<() => void> = [];
 
-  beforeEach(async () => {
+  beforeEach(() => {
     clearRegistry();
     registerStockBodies();
-    source = new MockDataSource({ keys: KEYS });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
     transport = new StubTransport();
     client = createTestTelemetryClient(transport);
   });
@@ -75,7 +54,6 @@ describe("Scanning: augment slots (spec §4)", () => {
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
     // Wipe any test augment so it never leaks into other suites.
     clearAugments();
   });
@@ -104,7 +82,6 @@ describe("Scanning: augment slots (spec §4)", () => {
       transport.emit("scansat.available", true);
       transport.emit("system.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
-      source.emit("scansat.scanningVessels", []);
     });
     await screen.findByText(/Coverage: Kerbin/);
   }

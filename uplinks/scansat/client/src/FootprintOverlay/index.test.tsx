@@ -1,18 +1,13 @@
 import {
   AugmentSlot,
-  BufferedDataSource,
   clearRegistry,
-  type DataKey,
-  MemoryStore,
   Quality,
-  registerDataSource,
   type SlotProps,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   render,
   StubTransport,
   TelemetryProvider,
@@ -153,11 +148,10 @@ describe("drawFootprints: pure geometry", () => {
   });
 });
 
-// Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
-// the buffered source. RTL auto-cleanup runs after this file's afterEach, so it
-// can't be relied on to unmount first, disconnecting a live source while the
-// widget is still mounted fires a status change into it, a state update outside
-// act() (the documented anti-pattern in CLAUDE.md).
+// Rendered trees, tracked so afterEach unmounts them inside the test's own
+// scope. RTL auto-cleanup runs after this file's afterEach, so it cannot be
+// relied on to unmount first, and a live tree torn down later re-renders
+// outside act() (the documented anti-pattern in CLAUDE.md).
 const renderedTrees: Array<() => void> = [];
 
 function renderSlot(ui: ReactElement) {
@@ -185,24 +179,19 @@ function overlayProps(
 }
 
 describe("FootprintOverlay: map-view.overlay slot", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
-  beforeEach(async () => {
+  // No `DataSource`: the overlay's only read is the vessel list, which rides the
+  // stream. It used to be fed here off a `MockDataSource` registered under the
+  // flat id `"data"`, which is an id the app has not had for some time.
+  beforeEach(() => {
     clearRegistry();
-    const keys: DataKey[] = [{ key: "scansat.scanningVessels" }];
-    source = new MockDataSource({ keys });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
     originalGetContext = HTMLCanvasElement.prototype.getContext;
   });
 
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
@@ -217,22 +206,20 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
-    act(() => {
-      source.emit("scansat.scanningVessels", [vessel({})]);
-    });
-
+    // Nothing to feed the vessel list with: the augment is gated off, so it has
+    // not mounted and has not subscribed, and an emit would go to no one. That
+    // the gate holds before any data arrives is the assertion.
     expect(container.querySelector("canvas")).toBeNull();
   });
 
   it("stays absent when the scansat domain is unavailable but no provider is mounted", () => {
     // No TelemetryProvider at all: the app-realistic case of a KSP install
-    // with no SCANsat mod present: scansat.available never arrives.
+    // with no SCANsat mod present: scansat.available never arrives. There is no
+    // transport to feed the vessel list on either, which is the condition under
+    // test rather than a gap in it.
     const { container } = renderSlot(
       <AugmentSlot name="map-view.overlay" props={overlayProps()} />,
     );
-    act(() => {
-      source.emit("scansat.scanningVessels", [vessel({})]);
-    });
 
     expect(container.querySelector("canvas")).toBeNull();
   });
@@ -264,17 +251,24 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
+    // The overlay only subscribes to the vessel list once the availability gate
+    // has let it mount, so availability goes first and the list follows the
+    // subscription. Emitting both at once delivers the list to no one.
+    const meta = { quality: Quality.Loaded, source: "scansat" };
     act(() => {
-      source.emit("scansat.scanningVessels", [vessel({})]);
-      transport.emit("scansat.available", true, {
-        quality: Quality.Loaded,
-        source: "scansat",
-      });
+      transport.emit("scansat.available", true, meta);
     });
 
     await waitFor(() => {
       expect(container.querySelector("canvas")).not.toBeNull();
     });
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.scanningVessels")).toBe(true),
+    );
+    act(() => {
+      transport.emit("scansat.scanningVessels", [vessel({})], meta);
+    });
+
     await waitFor(() => {
       expect(calls.some((c) => c.startsWith("fillRect"))).toBe(true);
     });

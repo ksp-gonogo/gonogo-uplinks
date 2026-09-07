@@ -9,7 +9,7 @@
 // `map-view.sections` is a below-content panel slot: MapView passes down
 // only the mapped body name (plus per-namespace augment settings, unused
 // here): this augment reads its own `scansat.coverage.<body>.<type>` and
-// `scansat.scanningVessels` Topics directly via `useDataValue`/
+// `scansat.scanningVessels` Topics directly, through `useTelemetry` and
 // `useScanningVessels`.
 //
 // Presence-gated on `requires: "scansat"`: renders only while
