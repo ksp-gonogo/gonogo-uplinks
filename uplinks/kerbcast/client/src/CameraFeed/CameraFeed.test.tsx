@@ -1381,6 +1381,22 @@ function aimLayer(): HTMLElement {
 }
 
 describe("CameraFeed: delayed aim controls", () => {
+  it("is a panel, so the aim it commands has a delay rail to travel in", async () => {
+    // The widget was a bare `FramedDisplay` and had no rail band, no status
+    // dots, no `panelBadges` and neither universal augment segment. There is no
+    // media exemption from `Panel`; the SDK's own hover-gated title is a camera
+    // PICKER drawn inside the picture, and an ordinary panel header sits in a
+    // row above it, so the two never share a corner.
+    await buildConnectedSource([STEERABLE]);
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    await screen.findByRole("button", { name: /starboard cam/i });
+    expect(screen.getByRole("heading", { name: "CAMERA" })).toBeTruthy();
+    expect(document.querySelector("[data-panel-rail-frame]")).toBeTruthy();
+  });
+
   it("gives a steerable camera an aim surface once the link is delayed", async () => {
     await buildConnectedSource([STEERABLE]);
 

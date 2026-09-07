@@ -25,6 +25,8 @@ import {
 import {
   Badge,
   FramedDisplay,
+  Panel,
+  Section,
   type Severity,
   speakQuantity,
   Unit,
@@ -459,104 +461,137 @@ export function CameraFeed({
   // hook, satisfying the seam's rules-of-hooks contract. Its signature matches
   // the SDK's `CameraStreamHook` type, so the prop is passed plainly.
   //
-  // One framed region, and everything is inside it: the video, the augment
-  // overlay, the status chips and the delayed-aim controls. Nothing here is
-  // laid out beside the picture, because a camera feed IS its picture and any
-  // row of chrome comes straight out of the shot. Every layer over the video is
-  // absolutely positioned, so the widget also stops asking its tile to grow to
-  // fit controls that were never meant to have a height of their own.
+  // A panel with one filling section, and a framed picture filling that: the
+  // shape Targeting's docking HUD uses for the same job. Inside the frame
+  // everything is a layer OVER the video (the augment overlay, the status chips,
+  // the delayed-aim controls), because a camera feed IS its picture and any row
+  // of chrome laid beside it comes straight out of the shot. Every one of those
+  // layers is absolutely positioned, so the widget never asks its tile to grow
+  // to fit controls that were not meant to have a height of their own.
+  //
+  // The widget went without a `Panel` for a while, on the grounds that a media
+  // widget was a special case. It is not, and the exemption cost it the things
+  // only a panel has: the delay-rail band its own aim commands travel in, the
+  // status dots, `panelBadges`, and both universal augment segments.
+  //
+  // An ORDINARY header, deliberately, not `floatingHeader`. What the SDK draws
+  // in the picture's top-left is not a title competing with this one, it is the
+  // CAMERA PICKER: a `<button aria-haspopup="menu">` whose label happens to be
+  // the camera's name, and the only way to reach the camera list this widget
+  // advertises. There is no prop to suppress it and suppressing it would delete
+  // the picker, so the two are kept in different boxes instead: the panel names
+  // the instrument in a row above the picture, the feed names the camera inside
+  // it. `floatingHeader` is what puts them in one corner, and it was tried:
+  // "CAMERA" and "STARBOARD CAM" overlap, character on character.
   return (
     <KerbcastProvider client={client} subscriptions={subscriptions}>
-      <FramedDisplay
-        style={FEED_FRAME_STYLE}
-        onPointerEnter={() => setPointerOver(true)}
-        onPointerMove={() => setPointerOver(true)}
-        onPointerDown={() => setPointerOver(true)}
-        onPointerLeave={() => setPointerOver(false)}
-        onFocus={() => setFocusWithin(true)}
-        onBlur={onFeedBlur}
-      >
-        <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
-          <SharedCameraFeed
-            ref={feedRef}
-            useStream={useDelayedKerbcastStream}
-            flightId={requested}
-            cameraFilter={isPartCamera}
-            onSelectCamera={(nextFlightId) =>
-              onConfigChange?.({
-                flightId: nextFlightId,
-                showDebugInfo: config?.showDebugInfo ?? false,
-              })
-            }
-            onDisplayedCameraChange={setEffectiveFlightId}
-            showDebugInfo={showDebugInfo}
-            enableFullscreen
-            enablePictureInPicture
-            // `disableManualControls={controlMode === "staged"}` belongs here, so
-            // the SDK's built-in live pan and zoom are genuinely disabled above
-            // the delay threshold. The prop does not exist on the pinned
-            // @ksp-gonogo/kerbcast-react 1.8.1's `CameraFeedProps`, so passing it
-            // fails typecheck; it needs a 1.9.0 lockfile bump first. Until then
-            // the CameraSetpointSurface below is the delayed control path and the
-            // SDK's live controls stay reachable.
-          />
-          <div style={FEED_OVERLAY_STYLE}>
-            <AugmentSlot name="camera-feed.overlay" props={overlayContext} />
-          </div>
-          <div style={FEED_BADGES_STYLE}>
-            {delayBadge && (
-              <Badge aria-label={delayBadge.ariaLabel}>
-                {delayBadge.label}
-              </Badge>
-            )}
-            {qualityBadge && (
-              <Badge
-                severity={qualityBadge.tone}
-                aria-label={qualityBadge.ariaLabel}
-              >
-                {qualityBadge.label}
-              </Badge>
-            )}
-          </div>
-          {showSetpointSurface && (
-            <div
-              // A stable targeting hook for the layer that carries the reveal,
-              // the same contract as ui-kit's `data-panel-body`: what a test
-              // needs here is the OPACITY, which lives on the layer rather than
-              // on any control inside it, and counting ancestors up from a
-              // slider would break the moment the composition changed.
-              data-camera-aim=""
-              style={{
-                ...FEED_SETPOINT_STYLE,
-                opacity: controlsRevealed ? 1 : 0,
-                transition: reduceMotion ? undefined : "opacity 150ms ease",
-              }}
+      <Panel
+        panelTitle="CAMERA"
+        sections={
+          <Section full fill>
+            <FramedDisplay
+              style={FEED_FRAME_STYLE}
+              onPointerEnter={() => setPointerOver(true)}
+              onPointerMove={() => setPointerOver(true)}
+              onPointerDown={() => setPointerOver(true)}
+              onPointerLeave={() => setPointerOver(false)}
+              onFocus={() => setFocusWithin(true)}
+              onBlur={onFeedBlur}
             >
-              <CameraSetpointSurface
-                cameraId={effectiveFlightId as number}
-                bounds={setpointBounds as CameraSetpointBounds}
-                initial={setpointInitial as CameraSetpoint}
-                mode={controlMode}
-                frame={feedSize}
-              />
-            </div>
-          )}
-          {unavailableReason && (
-            <div
-              role="status"
-              aria-live="polite"
-              style={FEED_UNAVAILABLE_STYLE}
-            >
-              <Badge severity="critical" aria-label="Delayed feed unavailable">
-                DELAYED FEED UNAVAILABLE
-              </Badge>
-              <span style={FEED_UNAVAILABLE_REASON_STYLE}>
-                {unavailableReason}
-              </span>
-            </div>
-          )}
-        </div>
-      </FramedDisplay>
+              <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
+                <SharedCameraFeed
+                  ref={feedRef}
+                  useStream={useDelayedKerbcastStream}
+                  flightId={requested}
+                  cameraFilter={isPartCamera}
+                  onSelectCamera={(nextFlightId) =>
+                    onConfigChange?.({
+                      flightId: nextFlightId,
+                      showDebugInfo: config?.showDebugInfo ?? false,
+                    })
+                  }
+                  onDisplayedCameraChange={setEffectiveFlightId}
+                  showDebugInfo={showDebugInfo}
+                  enableFullscreen
+                  enablePictureInPicture
+                  // `disableManualControls={controlMode === "staged"}` belongs
+                  // here, so the SDK's built-in live pan and zoom stand down
+                  // above the delay threshold rather than offering a second,
+                  // undelayed way to aim the same camera. It is REACHABLE now:
+                  // the lockfile pins @ksp-gonogo/kerbcast-react 1.9.1 and the
+                  // prop is on its `CameraFeedProps`. It is still not passed,
+                  // because standing the SDK's own pan pad down changes what the
+                  // operator sees rather than fixing wiring, and the delayed
+                  // surface below is drawn to sit ON TOP of that pad rather than
+                  // in place of it.
+                />
+                <div style={FEED_OVERLAY_STYLE}>
+                  <AugmentSlot
+                    name="camera-feed.overlay"
+                    props={overlayContext}
+                  />
+                </div>
+                <div style={FEED_BADGES_STYLE}>
+                  {delayBadge && (
+                    <Badge aria-label={delayBadge.ariaLabel}>
+                      {delayBadge.label}
+                    </Badge>
+                  )}
+                  {qualityBadge && (
+                    <Badge
+                      severity={qualityBadge.tone}
+                      aria-label={qualityBadge.ariaLabel}
+                    >
+                      {qualityBadge.label}
+                    </Badge>
+                  )}
+                </div>
+                {showSetpointSurface && (
+                  <div
+                    // A stable targeting hook for the layer that carries the
+                    // reveal, the same contract as ui-kit's `data-panel-body`:
+                    // what a test needs here is the OPACITY, which lives on the
+                    // layer rather than on any control inside it, and counting
+                    // ancestors up from a slider would break the moment the
+                    // composition changed.
+                    data-camera-aim=""
+                    style={{
+                      ...FEED_SETPOINT_STYLE,
+                      opacity: controlsRevealed ? 1 : 0,
+                      transition: reduceMotion ? undefined : "opacity 150ms ease",
+                    }}
+                  >
+                    <CameraSetpointSurface
+                      cameraId={effectiveFlightId as number}
+                      bounds={setpointBounds as CameraSetpointBounds}
+                      initial={setpointInitial as CameraSetpoint}
+                      mode={controlMode}
+                      frame={feedSize}
+                    />
+                  </div>
+                )}
+                {unavailableReason && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    style={FEED_UNAVAILABLE_STYLE}
+                  >
+                    <Badge
+                      severity="critical"
+                      aria-label="Delayed feed unavailable"
+                    >
+                      DELAYED FEED UNAVAILABLE
+                    </Badge>
+                    <span style={FEED_UNAVAILABLE_REASON_STYLE}>
+                      {unavailableReason}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </FramedDisplay>
+          </Section>
+        }
+      />
     </KerbcastProvider>
   );
 }
@@ -641,19 +676,23 @@ function describeSignalQuality(
 }
 
 /**
- * The frame, and the whole widget: it takes the tile and the picture takes the
- * frame, with no sibling to share the height with.
+ * The frame, and the whole of the panel body: it takes the filling section and
+ * the picture takes the frame, with no sibling to share the height with.
  *
  * The size is stated here rather than left to the content, because there is no
  * content to leave it to. The kerbcast SDK's `Stage` positions its `<video>`
  * absolutely and says in its own comment that it "collapses to zero height"
  * without a definite one, so a frame that sizes to its children sizes to
  * nothing, and the render harness then stretches a 2px scene into a barcode of
- * vertical bars rather than showing an empty box.
+ * vertical bars rather than showing an empty box. `flex: 1` against a filling
+ * `Section` is what supplies that definite height, the same pairing Targeting's
+ * docking viewport uses; the `min-*: 0` are what let it SHRINK to the tile
+ * rather than pushing the panel past it.
  */
 const FEED_FRAME_STYLE: CSSProperties = {
-  width: "100%",
-  height: "100%",
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
 };
 
 // Positioned wrapper that lets the augment slots layer over the SDK feed. The

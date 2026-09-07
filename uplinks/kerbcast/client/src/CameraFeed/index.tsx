@@ -14,21 +14,34 @@ registerComponent<CameraFeedConfig>({
   description:
     "Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera picker and Next/Previous switching.",
   tags: ["camera"],
-  defaultSize: { w: 6, h: 5 },
   /**
-   * Six columns is what the feed header's own title needs before it
-   * ellipsises, and four rows is what the "no cameras" sentence needs before
-   * the panel edge cuts through it. Both come out of the shared kerbcast feed
-   * rather than this widget, so the tile is the only side that can give.
-   *
-   * <p>It was five, measured on macOS, and five had NO margin: the same title
-   * rendered 5px wider under Linux font metrics and the render gate refused
-   * the page because "Nose Cam" was clipped rather than readable. A threshold
-   * measured on one platform's font rasterisation and set to the exact width
-   * that just fits is a threshold that only holds on that platform, so this
-   * one is deliberately a column clear of the boundary rather than on it.</p>
+   * Eleven columns is what the WHOLE delayed-aim cluster needs: the tapes and
+   * the commit are 287px, the framing tile beside them another 68px, and the
+   * insets 16px, so 371px of picture and 407px of tile. At the minimum below,
+   * the tile is dropped and the numbers stay; this is the size at which the
+   * operator gets the review of them as well.
    */
-  minSize: { w: 6, h: 4 },
+  defaultSize: { w: 11, h: 7 },
+  /**
+   * Nine columns and six rows is what is left over once `Panel`'s chrome has
+   * taken its share, measured on the render harness: 36px of width to the body
+   * padding and the frame border, and 67px of height to the panel border, the
+   * reserved delay-rail band, the title row and the body padding. A 6x4 tile,
+   * which is what this said while the widget was a bare `FramedDisplay`, leaves
+   * a 196x40 picture, and nothing in this widget works at that size.
+   *
+   * <p>Nine columns is set by the widest thing that must ALWAYS be drawn over
+   * the picture, the tapes and their commit at 287px: 303px of picture plus the
+   * chrome. Six rows is set by the kerbcast SDK's own zoom column, which is
+   * 109px tall and bottom-anchored, so a shorter picture cuts the "+" off the
+   * top of it.</p>
+   *
+   * <p>The old note about the feed's own title needing six columns still holds
+   * and is no longer the binding constraint: the title is drawn inside the
+   * picture, which is now 36px narrower than the tile, and nine columns clears
+   * it comfortably.</p>
+   */
+  minSize: { w: 9, h: 6 },
   // On MobileDashboard a widget without this squishes to
   // `defaultSize.h * ROW_HEIGHT` (5 * 25 = 125px), far too short for a
   // 16:9 feed. Give it a proper box (mirrors the other media-ish widgets

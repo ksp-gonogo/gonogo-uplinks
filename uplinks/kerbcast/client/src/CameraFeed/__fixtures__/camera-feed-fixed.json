@@ -1,9 +1,9 @@
 {
   "_scene": {
     "widget": "camera-feed",
-    "modes": ["default", "mobile-9x8", "landscape-18x5"],
+    "modes": ["default", "min", "mobile-9x8"],
     "config": { "flightId": 42 },
-    "caption": "A fixed camera, which most are: no aim to give it, so the feed has the whole tile and the header carries the name and the signal delay",
+    "caption": "A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay",
     "before": [{ "hover": "video" }],
     "paints": ["Nose Cam"]
   },

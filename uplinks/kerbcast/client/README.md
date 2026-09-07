@@ -43,20 +43,20 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Reads | `vessel.comms`, `comms.link`, `comms.delay` |
 | Actions | `nextCamera`, `prevCamera`, `zoomIn`, `zoomOut`, `panYaw`, `panPitch` |
 | Slots | `camera-feed.overlay` |
-| Default size | 6 × 5 |
+| Default size | 11 × 7 |
 | Scenes | 2 |
 
-![A fixed camera, which most are: no aim to give it, so the feed has the whole tile and the header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
+![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
+
+![The same widget at its minimum size](docs/assets/camera-feed-fixed--min.png)
 
 ![The same widget at 9 × 8](docs/assets/camera-feed-fixed--mobile-9x8.png)
 
-![The same widget at 18 × 5](docs/assets/camera-feed-fixed--landscape-18x5.png)
+![A camera that can be aimed: the pan, pitch and zoom tapes tuck into the corner the kerbcast feed keeps its own pan pad in, and the aim is one the operator commits rather than one that fires per notch](docs/assets/camera-feed-steerable--default.png)
 
-![A camera that can be aimed: the reticle sits over the live feed, and the pan, pitch and zoom tapes below it are an aim the operator commits rather than one that fires per notch](docs/assets/camera-feed-steerable--default.png)
+![The same widget at its minimum size](docs/assets/camera-feed-steerable--min.png)
 
 ![The same widget at 9 × 8](docs/assets/camera-feed-steerable--mobile-9x8.png)
-
-![The same widget at 18 × 5](docs/assets/camera-feed-steerable--landscape-18x5.png)
 
 ## Augments
 
