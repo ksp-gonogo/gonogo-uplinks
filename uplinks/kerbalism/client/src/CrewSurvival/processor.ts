@@ -3,8 +3,8 @@ import { magnitudeOf, magnitudeOr } from "@ksp-gonogo/ui-kit";
 import type {
   KerbalismCrewEntry,
   KerbalismCrewRule,
-} from "../__generated__/contract";
-import { KERBALISM } from "../uplink";
+} from "../__generated__/contract.js";
+import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
 // Per-kerbal Kerbalism survival: dose/stress/etc rule state plus a death

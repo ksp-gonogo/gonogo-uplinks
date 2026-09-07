@@ -22,7 +22,7 @@ import {
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
-} from "./topics";
+} from "./topics.js";
 
 // src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");

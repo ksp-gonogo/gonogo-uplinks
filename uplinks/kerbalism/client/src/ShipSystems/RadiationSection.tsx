@@ -11,8 +11,8 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect, useState } from "react";
-import type { KerbalismSpaceWeather } from "../__generated__/contract";
-import { HIGH_RADIATION_RAD_PER_HOUR } from "../CrewSurvival/summary";
+import type { KerbalismSpaceWeather } from "../__generated__/contract.js";
+import { HIGH_RADIATION_RAD_PER_HOUR } from "../CrewSurvival/summary.js";
 
 // ---------------------------------------------------------------------------
 // The radiation graph + belt/location readout, piece of the Ship Systems

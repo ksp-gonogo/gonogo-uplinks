@@ -5,9 +5,9 @@ import {
   setupStreamFixture,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it } from "vitest";
-import { CREW_SURVIVAL } from "./CrewSurvival/processor";
-import { SHIP_SYSTEMS } from "./processor";
-import { KERBALISM } from "./uplink";
+import { CREW_SURVIVAL } from "./CrewSurvival/processor.js";
+import { SHIP_SYSTEMS } from "./processor.js";
+import { KERBALISM } from "./uplink.js";
 
 // ---------------------------------------------------------------------------
 // The two REAL registered processors, against the real spine, counting what a

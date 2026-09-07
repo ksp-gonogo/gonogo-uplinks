@@ -4,8 +4,8 @@ import type {
   KerbalismSpaceWeather,
   KerbalismStarInfo,
   KerbalismStormEntry,
-} from "../__generated__/contract";
-import { KERBALISM } from "../uplink";
+} from "../__generated__/contract.js";
+import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
 // CME / solar-activity overlay: a `system-view.entities` contribution off

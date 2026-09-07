@@ -11,7 +11,7 @@ import { NULL_DISPLAY, resourceColor } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerComponent(...).
-import { fmtAmt, ShipSystemsComponent } from "./index";
+import { fmtAmt, ShipSystemsComponent } from "./index.js";
 
 const CARRIED = [
   "kerbalism.profile",

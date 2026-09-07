@@ -15,7 +15,7 @@ import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...) and,
 // through `./meters`, the `crew-status.meters` registerContribution(...).
-import { CrewSurvivalBadgeAugment } from "./index";
+import { CrewSurvivalBadgeAugment } from "./index.js";
 
 // `kerbalism.available` is here for the METERS half: a contribution's
 // `requires` gate is read straight off the client by the aggregation

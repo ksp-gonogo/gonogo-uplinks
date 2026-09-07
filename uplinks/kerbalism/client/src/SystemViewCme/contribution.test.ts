@@ -1,6 +1,6 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { computeCmeEntities } from "./contribution";
+import { computeCmeEntities } from "./contribution.js";
 
 /** A vessel-to-star unit vector pointing straight along +x (i.e. the star
  *  sits at the vessel's +x): the negated bearing this produces (star-to-

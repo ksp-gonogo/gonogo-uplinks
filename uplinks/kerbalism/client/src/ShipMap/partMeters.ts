@@ -1,8 +1,8 @@
 import type { ContributionEntry, VesselParts } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, magnitudeOr, type Quantityish } from "@ksp-gonogo/ui-kit";
-import type { KerbalismProfile } from "../__generated__/contract";
-import { resourceFacts } from "../ecosystem";
-import { KERBALISM } from "../uplink";
+import type { KerbalismProfile } from "../__generated__/contract.js";
+import { resourceFacts } from "../ecosystem.js";
+import { KERBALISM } from "../uplink.js";
 
 // The Kerbalism half of the `ship-map.part-meters` self-contribution:
 // supply-tank resources this

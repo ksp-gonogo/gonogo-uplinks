@@ -1,6 +1,6 @@
 import type { IsruConverterEntry } from "@ksp-gonogo/sitrep-sdk";
-import { readKerbalismIsruConverterExt } from "../isru";
-import { KERBALISM } from "../uplink";
+import { readKerbalismIsruConverterExt } from "../isru.js";
+import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
 // Kerbalism's own axis on ResourceOps' filter slot: one pre-filled SEARCH TERM

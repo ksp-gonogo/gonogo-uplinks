@@ -13,7 +13,7 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerComponent(...), which
 // is what `renderWidget` looks the widget up by.
-import "./index";
+import "./index.js";
 
 // SpaceWeather reads the real `kerbalism.spaceweather` Topic (canonical
 // one-arg useTelemetry) plus `vessel.flight` for the belt-ring altitude, so the

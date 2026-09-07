@@ -38,13 +38,13 @@ import {
 import type {
   KerbalismIsruConverterExtension,
   KerbalismIsruDrillExtension,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 // Side-effect import: `topics.ts` feeds this Uplink's generated TYPE unit/shape maps
 // into the SDK's type-keyed registry, which is what the
 // `registerProviderExtensionShape` calls below resolve their type names through.
 // Imported here, not just from the package entry, so the two halves cannot come apart
 // for a consumer that reaches this module directly.
-import "./topics";
+import "./topics.js";
 
 export type { KerbalismIsruConverterExtension, KerbalismIsruDrillExtension };
 

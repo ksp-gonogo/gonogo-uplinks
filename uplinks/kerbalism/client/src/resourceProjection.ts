@@ -7,8 +7,8 @@ import type {
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
-import { KERBALISM_LIFESUPPORT_TOPIC } from "./topics";
-import { KERBALISM } from "./uplink";
+import { KERBALISM_LIFESUPPORT_TOPIC } from "./topics.js";
+import { KERBALISM } from "./uplink.js";
 
 /**
  * `kerbalism.resourceProjection`: every life-support consumable, carried

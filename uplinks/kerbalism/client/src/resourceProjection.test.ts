@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveResourceProjectionReckoning,
   deriveResourceProjections,
-} from "./resourceProjection";
+} from "./resourceProjection.js";
 
 /**
  * Class B, end to end and pure: the model, its band, and the label that says a

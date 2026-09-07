@@ -1,6 +1,6 @@
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
-import { KERBALISM } from "../uplink";
-import { CREW_SURVIVAL, type CrewSurvival } from "./processor";
+import { KERBALISM } from "../uplink.js";
+import { CREW_SURVIVAL, type CrewSurvival } from "./processor.js";
 
 // ---------------------------------------------------------------------------
 // CrewStatus's panel badge (mirrors `ShipSystems/badge.ts`'s

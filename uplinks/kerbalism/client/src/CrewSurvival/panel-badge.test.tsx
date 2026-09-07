@@ -15,7 +15,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load
 // `KERBALISM.registerContribution(...)` (the panel badge under test).
-import "./badge";
+import "./badge.js";
 
 /**
  * End-to-end proof that the CrewStatus panel badge (`badge.ts`) actually

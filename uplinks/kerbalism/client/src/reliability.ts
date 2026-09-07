@@ -20,13 +20,13 @@ import {
   type ReliabilitySummary,
   registerProviderExtensionShape,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { KerbalismReliabilityExt } from "./__generated__/contract";
+import type { KerbalismReliabilityExt } from "./__generated__/contract.js";
 // Side-effect import: `topics.ts` feeds this Uplink's generated TYPE unit/shape
 // maps into the SDK's type-keyed registry, which is what `registerProviderExtensionShape`
 // below resolves `"KerbalismReliabilityExt"` through. Imported here, not just from
 // the package entry, so the two halves cannot come apart for a consumer that reaches
 // this module directly.
-import "./topics";
+import "./topics.js";
 
 export type { KerbalismReliabilityExt };
 

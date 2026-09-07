@@ -27,7 +27,7 @@ import {
   SCIENCE_EXPERIMENTS_TOPIC,
   SCIENCE_INSTRUMENTS_TOPIC,
   SCIENCE_LAB_TOPIC,
-} from "./science";
+} from "./science.js";
 
 // src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(

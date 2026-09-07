@@ -13,7 +13,7 @@ import {
   KERBALISM_RELIABILITY_PROVIDER_ID,
   RELIABILITY_SUMMARY_TOPIC,
   readKerbalismReliabilityExt,
-} from "./reliability";
+} from "./reliability.js";
 
 // src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(

@@ -8,9 +8,9 @@ import { magnitudeOr } from "@ksp-gonogo/ui-kit";
 import type {
   KerbalismLifeSupport,
   KerbalismProfile,
-} from "./__generated__/contract";
-import { type Summary, summarise } from "./ecosystem";
-import { KERBALISM } from "./uplink";
+} from "./__generated__/contract.js";
+import { type Summary, summarise } from "./ecosystem.js";
+import { KERBALISM } from "./uplink.js";
 
 // The single per-frame derivation the Ship Systems widget AND its panel badge
 // both pull from, and the Processor primitive's

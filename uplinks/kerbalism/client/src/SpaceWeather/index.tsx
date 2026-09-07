@@ -33,15 +33,15 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
-import styled, { css, keyframes } from "styled-components";
+import { css, keyframes, styled } from "styled-components";
 // This Uplink's own wire shapes for the sun-vantage half of the payload, named
 // from the generated contract slice the same way Ship Systems names its own.
 import type {
   KerbalismStarInfo,
   KerbalismStormEntry,
   KerbalismStormTargetKind,
-} from "../__generated__/contract";
-import { KERBALISM } from "../uplink";
+} from "../__generated__/contract.js";
+import { KERBALISM } from "../uplink.js";
 
 type SpaceWeatherConfig = Record<string, never>;
 

@@ -7,7 +7,7 @@ import {
   type GreenhouseRow,
   GreenhouseSection,
   radiationTooHigh,
-} from "./GreenhouseSection";
+} from "./GreenhouseSection.js";
 
 function row(overrides: Partial<GreenhouseRow> = {}): GreenhouseRow {
   return {

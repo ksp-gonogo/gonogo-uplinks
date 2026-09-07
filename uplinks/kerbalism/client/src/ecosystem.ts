@@ -7,7 +7,7 @@ import type {
   KerbalismLifeSupport,
   KerbalismProcessDef,
   KerbalismProfile,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 
 /**
  * Derivation over the Kerbalism wire payloads: the resource graph, the

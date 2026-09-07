@@ -1,6 +1,6 @@
 import { type PayloadMeta, Quality, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { deriveCrewSurvival, toneFor } from "./processor";
+import { deriveCrewSurvival, toneFor } from "./processor.js";
 
 /**
  * The provenance every `vessel.crew` payload carries. Nothing here reads it,

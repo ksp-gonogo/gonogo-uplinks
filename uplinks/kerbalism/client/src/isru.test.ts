@@ -20,7 +20,7 @@ import {
   KERBALISM_ISRU_PROVIDER_ID,
   readKerbalismIsruConverterExt,
   readKerbalismIsruDrillExt,
-} from "./isru";
+} from "./isru.js";
 
 // src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(

@@ -1,8 +1,8 @@
 import type { MeterEntry } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { writeQuantity } from "@ksp-gonogo/ui-kit";
-import { KERBALISM } from "../uplink";
-import { CREW_SURVIVAL, type CrewSurvival, toneFor } from "./processor";
+import { KERBALISM } from "../uplink.js";
+import { CREW_SURVIVAL, type CrewSurvival, toneFor } from "./processor.js";
 
 // ---------------------------------------------------------------------------
 // Per-kerbal survival meters, as DATA.

@@ -1,6 +1,6 @@
 import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
-import { KERBALISM } from "../uplink";
-import { CREW_SURVIVAL, type CrewSurvival } from "./processor";
+import { KERBALISM } from "../uplink.js";
+import { CREW_SURVIVAL, type CrewSurvival } from "./processor.js";
 
 // ---------------------------------------------------------------------------
 // CrewStatus's `crew-status.row-tone` contribution (packages/components/src/

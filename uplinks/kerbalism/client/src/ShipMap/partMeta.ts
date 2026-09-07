@@ -1,7 +1,7 @@
 import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
-import type { KerbalismLifeSupport } from "../__generated__/contract";
-import { KERBALISM } from "../uplink";
+import type { KerbalismLifeSupport } from "../__generated__/contract.js";
+import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
 // The Kerbalism `ship-map.part-meta` contribution: per-part status rows for

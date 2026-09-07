@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   KERBALISM_RESOURCE_PROJECTION_TOPIC,
   kerbalismResourceProjectionChannel,
-} from "./resourceProjection";
+} from "./resourceProjection.js";
 
 /**
  * What this channel actually carries, and why none of it reaches a chart.

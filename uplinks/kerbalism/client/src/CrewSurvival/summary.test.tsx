@@ -9,7 +9,7 @@ import {
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
-import { CrewRadiationSummaryAugment, radiationSummaryFor } from "./summary";
+import { CrewRadiationSummaryAugment, radiationSummaryFor } from "./summary.js";
 
 const radPerSec = (n: number) => value("rad/s", n);
 
