@@ -75,8 +75,9 @@ jobs:
 
       # The mode a client does not check is the one that fails silently:
       # `declare module` bindings resolve under bundler and not under nodenext, so
-      # a Topic declaration merge vanishes and takes its keys with it. Held as a
-      # CEILING rather than red/green, see scripts/nodenext-debt.mjs.
+      # a Topic declaration merge vanishes and takes its keys with it. Zero
+      # errors, red or green; see scripts/check-nodenext.mjs for why there is no
+      # debt list and for the fault class this gate structurally cannot see.
       - name: Typecheck client under nodenext
         if: inputs.typecheck
         run: node scripts/check-nodenext.mjs "${{ inputs.name }}"

@@ -1,31 +1,53 @@
 #!/usr/bin/env node
 /**
- * Typecheck every Uplink client under `moduleResolution: nodenext` and hold the
- * error count against `nodenext-debt.mjs` as a ceiling.
+ * Typecheck every Uplink client under `moduleResolution: nodenext`. Zero errors,
+ * everywhere, red or green.
  *
- * See that file for why both resolution modes have to be checked, and for what
- * the current debt is made of. The short version: the two modes disagree
- * silently, `declare module` bindings are what disagree, and every Uplink
- * declares its Topics through one.
+ * ## Why the mode is checked at all
+ *
+ * The two resolutions disagree SILENTLY, which is what makes this worth a gate
+ * rather than a note. `declare module "./types"` binds under `bundler` and does
+ * NOT bind under `nodenext`, so a declaration merge vanishes and every key it
+ * contributed goes with it. That shipped in the sdk once and emptied
+ * `ContributionRegistry`. Every Uplink here declares its own Topics through the
+ * same mechanism (`declare module "@ksp-gonogo/sitrep-sdk"` extending
+ * `TopicPayloadMap`), so an Uplink is exposed to the identical failure and a
+ * `bundler`-only typecheck cannot see it.
+ *
+ * An author choosing `nodenext` is not doing anything exotic. It is the default
+ * a modern Node package reaches for.
+ *
+ * ## There is no debt list, and there is not going to be one
+ *
+ * This was a ceiling per Uplink for a while, seeded when five clients arrived
+ * carrying hundreds of errors between them. Every one of those was a mechanical
+ * fault of the same three kinds: a relative import with no extension (and the
+ * cascade of `any` that follows an unresolved specifier), a default import of a
+ * package that publishes no `exports` map, and a fixture whose shape had drifted
+ * from the type it claimed. None of them was a disagreement anyone had decided
+ * to live with, and a ceiling made a number to manage out of what was really a
+ * morning's work.
+ *
+ * A count this gate cannot see is what a ceiling was always going to hide: tsc
+ * raises TS2834/TS2835 only for an import that BINDS something, so an
+ * unresolvable SIDE-EFFECT import (`import "./topics";`) passes a clean
+ * typecheck and vanishes at runtime instead. One client sat at zero here with
+ * thirteen of those still in it. So a green run means the errors are gone, not
+ * that the imports are right.
  *
  * Usage:
  *   node scripts/check-nodenext.mjs                every Uplink
  *   node scripts/check-nodenext.mjs example        one of them
- *   node scripts/check-nodenext.mjs --update       rewrite the debt from this run
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NODENEXT_DEBT } from "./nodenext-debt.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const DEBT_PATH = join(ROOT, "scripts", "nodenext-debt.mjs");
 
-const args = process.argv.slice(2);
-const update = args.includes("--update");
-const only = args.find((arg) => !arg.startsWith("--"));
+const only = process.argv.slice(2).find((arg) => !arg.startsWith("--"));
 
 const legs = JSON.parse(
   spawnSync("node", [join(ROOT, "scripts/uplink-matrix.mjs")], {
@@ -46,7 +68,6 @@ if (legs.length === 0) {
   process.exit(1);
 }
 
-const measured = {};
 let exitCode = 0;
 
 for (const leg of legs) {
@@ -82,11 +103,8 @@ for (const leg of legs) {
     continue;
   }
 
-  measured[leg.name] = errors;
-  const allowed = NODENEXT_DEBT[leg.name] ?? 0;
-
-  if (errors > allowed) {
-    console.log(`✖ ${leg.name}: ${errors} error(s) under nodenext, debt allows ${allowed}`);
+  if (errors > 0) {
+    console.log(`✖ ${leg.name}: ${errors} error(s) under nodenext`);
     for (const line of output
       .split("\n")
       .filter((line) => /error TS/.test(line))
@@ -94,27 +112,9 @@ for (const leg of legs) {
       console.log(`    ${line.trim()}`);
     }
     exitCode = 1;
-  } else if (errors < allowed) {
-    console.log(
-      `  ${leg.name}: ${errors} error(s), debt allows ${allowed}. Tighten with --update ${leg.name}.`,
-    );
   } else {
-    console.log(`✓ ${leg.name}: ${errors} error(s), at its ceiling of ${allowed}`);
+    console.log(`✓ ${leg.name}`);
   }
-}
-
-if (update) {
-  const merged = { ...NODENEXT_DEBT, ...measured };
-  for (const [name, count] of Object.entries(merged)) {
-    if (count === 0) delete merged[name];
-  }
-  const header = readFileSync(DEBT_PATH, "utf8").split("export const NODENEXT_DEBT")[0];
-  writeFileSync(
-    DEBT_PATH,
-    `${header}export const NODENEXT_DEBT = ${JSON.stringify(merged, null, 2)};\n`,
-  );
-  console.log(`\nRewrote ${DEBT_PATH} from this run.`);
-  exitCode = 0;
 }
 
 process.exit(exitCode);

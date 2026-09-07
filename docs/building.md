@@ -126,7 +126,12 @@ The same split applies to typechecking. `bundler` and `nodenext` disagree
 SILENTLY: `declare module "./types"` binds under one and not the other, so a
 declaration merge vanishes and every key it contributed goes with it. Every Uplink
 declares its own Topics through exactly that mechanism, so both modes are checked,
-with the count held as a ceiling in `scripts/nodenext-debt.mjs`.
+and `scripts/check-nodenext.mjs` holds every client at zero.
+
+Know what that gate cannot see. tsc raises TS2834/TS2835 only for an import that
+BINDS something, so a side-effect import of an unresolvable specifier
+(`import "./topics";`) passes a clean nodenext typecheck and fails at runtime
+instead. Give those the same extension as the rest; nothing will tell you.
 
 ## What the devkit still owes, measured from the outside
 
