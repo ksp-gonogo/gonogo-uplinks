@@ -24,6 +24,10 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Cluster,
+  FramedDisplay,
+  Panel,
+  Section,
   type Severity,
   speakQuantity,
   Unit,
@@ -419,79 +423,118 @@ export function CameraFeed({
     setpointBounds !== undefined &&
     setpointInitial !== undefined;
 
-  // Inject gonogo's delayed-playout stream source through the SDK's `useStream`
-  // seam. `useDelayedKerbcastStream` is a stable module-scope
-  // hook, satisfying the seam's rules-of-hooks contract. Its signature matches
-  // the SDK's `CameraStreamHook` type, so the prop is passed plainly.
-  //
-  // The feed is wrapped in a positioned box that hosts the augment slots: an
-  // OVERLAY layer painted over the video (pointer-events off so the SDK's own
-  // controls stay reachable; an augment re-enables pointer events on its own
-  // interactive elements) and a top-of-feed BADGES strip. Both are empty until
-  // an Uplink registers, adding nothing to the stock feed.
+  /* Inject gonogo's delayed-playout stream source through the SDK's
+     `useStream` seam. `useDelayedKerbcastStream` is a stable module-scope
+     hook, satisfying the seam's rules-of-hooks contract. Its signature matches
+     the SDK's `CameraStreamHook` type, so the prop is passed plainly. */
   return (
     <KerbcastProvider client={client} subscriptions={subscriptions}>
-      <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
-        <SharedCameraFeed
-          ref={feedRef}
-          useStream={useDelayedKerbcastStream}
-          flightId={requested}
-          cameraFilter={isPartCamera}
-          onSelectCamera={(nextFlightId) =>
-            onConfigChange?.({
-              flightId: nextFlightId,
-              showDebugInfo: config?.showDebugInfo ?? false,
-            })
-          }
-          onDisplayedCameraChange={setEffectiveFlightId}
-          showDebugInfo={showDebugInfo}
-          enableFullscreen
-          enablePictureInPicture
-          // `disableManualControls={controlMode === "staged"}` belongs here, so
-          // the SDK's built-in live pan and zoom are genuinely disabled above
-          // the delay threshold. The prop does not exist on the pinned
-          // @ksp-gonogo/kerbcast-react 1.8.1's `CameraFeedProps`, so passing it
-          // fails typecheck; it needs a 1.9.0 lockfile bump first. Until then
-          // the CameraSetpointSurface below is the delayed control path and the
-          // SDK's live controls stay reachable.
-        />
-        {unavailableReason && (
-          <div role="status" aria-live="polite" style={FEED_UNAVAILABLE_STYLE}>
-            <Badge severity="critical" aria-label="Delayed feed unavailable">
-              DELAYED FEED UNAVAILABLE
-            </Badge>
-            <span style={FEED_UNAVAILABLE_REASON_STYLE}>
-              {unavailableReason}
-            </span>
-          </div>
-        )}
-        <div style={FEED_OVERLAY_STYLE}>
-          <AugmentSlot name="camera-feed.overlay" props={overlayContext} />
-        </div>
-        <div style={FEED_BADGES_STYLE}>
-          {delayBadge && (
-            <Badge aria-label={delayBadge.ariaLabel}>{delayBadge.label}</Badge>
-          )}
-          {qualityBadge && (
-            <Badge
-              severity={qualityBadge.tone}
-              aria-label={qualityBadge.ariaLabel}
-            >
-              {qualityBadge.label}
-            </Badge>
-          )}
-        </div>
-        {showSetpointSurface && (
-          <div style={FEED_SETPOINT_STYLE}>
-            <CameraSetpointSurface
-              cameraId={effectiveFlightId as number}
-              bounds={setpointBounds as CameraSetpointBounds}
-              initial={setpointInitial as CameraSetpoint}
-              mode={controlMode}
-            />
-          </div>
-        )}
-      </div>
+      <Panel
+        panelTitle="CAMERA"
+        /* The two always-on status chips are chrome, not content: they say
+           something about the LINK the picture arrived over rather than about
+           the picture, which is what the header aside is for. They used to
+           float over the video's top-right corner, where they sat on top of
+           whatever the camera was pointed at. */
+        panelAside={
+          delayBadge || qualityBadge ? (
+            <Cluster gap="xs" align="center">
+              {delayBadge && (
+                <Badge aria-label={delayBadge.ariaLabel}>
+                  {delayBadge.label}
+                </Badge>
+              )}
+              {qualityBadge && (
+                <Badge
+                  severity={qualityBadge.tone}
+                  aria-label={qualityBadge.ariaLabel}
+                >
+                  {qualityBadge.label}
+                </Badge>
+              )}
+            </Cluster>
+          ) : undefined
+        }
+        sections={
+          <Section full fill>
+            {/* The video is a visual, so it takes a frame inside the ordinary
+                padded body rather than the body being unpadded around it. The
+                widget is MIXED, which is the case the frame exists for: the
+                delayed-control surface below is a form, and it needs the inset
+                the video does not want. */}
+            <FramedDisplay style={FEED_FRAME_STYLE}>
+              {/* Still the positioned box the overlay slot measures and draws
+                  against: the slot's contract is the VIDEO's pixel space, so
+                  it has to be the video's own box and not the panel body. */}
+              <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
+                <SharedCameraFeed
+                  ref={feedRef}
+                  useStream={useDelayedKerbcastStream}
+                  flightId={requested}
+                  cameraFilter={isPartCamera}
+                  onSelectCamera={(nextFlightId) =>
+                    onConfigChange?.({
+                      flightId: nextFlightId,
+                      showDebugInfo: config?.showDebugInfo ?? false,
+                    })
+                  }
+                  onDisplayedCameraChange={setEffectiveFlightId}
+                  showDebugInfo={showDebugInfo}
+                  enableFullscreen
+                  enablePictureInPicture
+                  // `disableManualControls={controlMode === "staged"}` belongs here, so
+                  // the SDK's built-in live pan and zoom are genuinely disabled above
+                  // the delay threshold. The prop does not exist on the pinned
+                  // @ksp-gonogo/kerbcast-react 1.8.1's `CameraFeedProps`, so passing it
+                  // fails typecheck; it needs a 1.9.0 lockfile bump first. Until then
+                  // the CameraSetpointSurface below is the delayed control path and the
+                  // SDK's live controls stay reachable.
+                />
+                {unavailableReason && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    style={FEED_UNAVAILABLE_STYLE}
+                  >
+                    <Badge
+                      severity="critical"
+                      aria-label="Delayed feed unavailable"
+                    >
+                      DELAYED FEED UNAVAILABLE
+                    </Badge>
+                    <span style={FEED_UNAVAILABLE_REASON_STYLE}>
+                      {unavailableReason}
+                    </span>
+                  </div>
+                )}
+                {/* Full-area overlay layer, still over the video and nothing
+                    else. Empty until an Uplink registers, adding nothing to
+                    the stock feed. */}
+                <div style={FEED_OVERLAY_STYLE}>
+                  <AugmentSlot
+                    name="camera-feed.overlay"
+                    props={overlayContext}
+                  />
+                </div>
+              </div>
+            </FramedDisplay>
+            {/* A CONTROL, so it sits in the body under the frame rather than
+                floating over the picture it is aiming. Over the video it
+                covered the bottom of the shot at exactly the moment the
+                operator was framing one, and the aside was not an option
+                either: that collapses at narrow widths and would take a
+                commit button with it. */}
+            {showSetpointSurface && (
+              <CameraSetpointSurface
+                cameraId={effectiveFlightId as number}
+                bounds={setpointBounds as CameraSetpointBounds}
+                initial={setpointInitial as CameraSetpoint}
+                mode={controlMode}
+              />
+            )}
+          </Section>
+        }
+      />
     </KerbcastProvider>
   );
 }
@@ -575,6 +618,30 @@ function describeSignalQuality(
   };
 }
 
+/**
+ * The frame the video sits in, and the one rule in this file that is not
+ * cosmetic.
+ *
+ * It GROWS but never SHRINKS, and it carries the feed's own aspect. Both halves
+ * are load-bearing, because the SDK's `Stage` positions its `<video>`
+ * absolutely and says so in its own comment: the element contributes no height
+ * of its own, so a frame that is free to shrink has nothing holding it open and
+ * collapses to zero the moment anything else in the body wants the room. The
+ * delayed-control surface is exactly that: on a default-sized tile it is taller
+ * than the whole body, and with an ordinary `flex: 1` the picture disappeared
+ * entirely while the controls stayed. The aspect gives the frame a real height
+ * to start from; refusing to shrink is what keeps it.
+ *
+ * What gives instead is the BODY, which scrolls. That is the honest trade: an
+ * operator aiming a camera can scroll to the commit button, and cannot aim one
+ * they cannot see.
+ */
+const FEED_FRAME_STYLE: CSSProperties = {
+  flex: "1 0 auto",
+  minWidth: 0,
+  aspectRatio: "16 / 9",
+};
+
 // Positioned wrapper that lets the augment slots layer over the SDK feed. The
 // feed's own root (`Stage`) fills this box, so absolutely-positioned children
 // cover the video exactly.
@@ -590,35 +657,6 @@ const FEED_WRAP_STYLE: CSSProperties = {
 const FEED_OVERLAY_STYLE: CSSProperties = {
   position: "absolute",
   inset: 0,
-  pointerEvents: "none",
-};
-
-// Header badge strip, top-of-feed. Positioned to the right of the SDK's own
-// (hover-gated) title so chips stay clear of it. Container is click-through;
-// individual badges re-enable pointer events as needed.
-const FEED_BADGES_STYLE: CSSProperties = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  display: "flex",
-  gap: "var(--space-4)",
-  padding: "var(--space-4)",
-  pointerEvents: "none",
-};
-
-// Delayed camera control surface (#35), centre-bottom of the feed. The
-// wrapper is click-through so it never steals the video's own hover controls;
-// the surface re-enables pointer events on itself. Sits at z-index 1 (above the
-// video, below the "delayed feed unavailable" scrim at z-index 2).
-const FEED_SETPOINT_STYLE: CSSProperties = {
-  position: "absolute",
-  bottom: "var(--space-8)",
-  left: "50%",
-  transform: "translateX(-50%)",
-  display: "flex",
-  justifyContent: "center",
-  maxWidth: "100%",
-  zIndex: 1,
   pointerEvents: "none",
 };
 
