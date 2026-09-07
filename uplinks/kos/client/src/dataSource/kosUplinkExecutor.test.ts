@@ -4,10 +4,13 @@ import {
   StubTransport,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract";
-import { isKosScriptError } from "../shared/KosScriptError";
-import { KosUplinkExecutor } from "./kosUplinkExecutor";
-import { buildKosWrapper } from "./kosWrapper";
+import type {
+  KosProcessorInfo,
+  KosRunResult,
+} from "../__generated__/contract.js";
+import { isKosScriptError } from "../shared/KosScriptError.js";
+import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
+import { buildKosWrapper } from "./kosWrapper.js";
 
 /**
  * Unit tests for the `kos.run` Uplink executor that now backs

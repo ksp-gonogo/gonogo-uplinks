@@ -36,14 +36,14 @@
 // stamps the returned handle as `owner`, so the widget picker's mod search
 // tags derive "kos" automatically.
 // (Also re-run by `./runtime`, below, idempotent, see that module's doc.)
-import "./uplink";
+import "./uplink.js";
 /*
  * Side-effect import: mounts kOS's CPU registry at the root of every screen.
  * Registered here rather than hand-wired into the app's screens, which is what
  * made `packages/app` import this Uplink by name and unable to build without
  * it. See `./shared/rootProvider` for why the service is keyed by screen.
  */
-import "./shared/rootProvider";
+import "./shared/rootProvider.js";
 
 // This Uplink's own wire payload types, now that it declares them rather than
 // core (relocated out of Sitrep.Contract, see ./topics.ts and
@@ -62,15 +62,15 @@ export type {
   KosTerminalFrame,
   KosTerminalOpenArgs,
   KosTerminalResizeArgs,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 // This Uplink's own commands: the `CommandArgsMap`/`CommandReplyMap`
 // augmentation and the runtime registration. RE-EXPORTED rather than imported
 // for side effect, for the same reason ./topics is: a bare import is elided from
 // the emitted `dist/index.d.ts` and the augmentation would not cross the package
 // boundary.
-export { UPLINK_COMMAND_IDS } from "./commands";
-export * from "./KosScriptTrigger";
-export * from "./KosTerminal";
+export { UPLINK_COMMAND_IDS } from "./commands.js";
+export * from "./KosScriptTrigger/index.js";
+export * from "./KosTerminal/index.js";
 // Non-widget infra (defineUplinkClient/registerUplinkHandle side effects,
 // KosCpuDiscovery, the shared CpuRegistryService/Context/[KOSDATA] parser/
 // ScriptableDataSource) lives in `./runtime`, split out specifically so
@@ -78,7 +78,7 @@ export * from "./KosTerminal";
 // `./KosTerminal` above (see `./runtime`'s own doc comment for why that
 // matters to the Uplink loader). Re-exported here too so the package root
 // keeps its full existing surface for every other consumer.
-export * from "./runtime";
+export * from "./runtime.js";
 // The kos.processors Topic registration. RE-EXPORTED rather than imported for
 // side effect alone, and that is load-bearing in two ways: it keeps bundlers
 // from tree-shaking the registration calls, AND it puts a real
@@ -89,4 +89,4 @@ export * from "./runtime";
 // `useTelemetry("kos.processors")` resolve to `unknown` with nothing going red
 // here (the same failure mode ui-kit's styledComponentsTheme.ts documents for
 // its own augmentation).
-export { KOS_PROCESSORS_TOPIC } from "./topics";
+export { KOS_PROCESSORS_TOPIC } from "./topics.js";

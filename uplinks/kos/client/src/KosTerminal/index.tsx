@@ -42,7 +42,7 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { Terminal } from "@xterm/xterm";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import type {
   KosKeystrokeArgs,
   KosProcessorInfo,
@@ -50,9 +50,9 @@ import type {
   KosTerminalFrame,
   KosTerminalOpenArgs,
   KosTerminalResizeArgs,
-} from "../__generated__/contract";
-import { KOS } from "../uplink";
-import { useKosScriptListing } from "./useKosScriptListing";
+} from "../__generated__/contract.js";
+import { KOS } from "../uplink.js";
+import { useKosScriptListing } from "./useKosScriptListing.js";
 import "@xterm/xterm/css/xterm.css";
 
 /**

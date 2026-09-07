@@ -4,11 +4,11 @@ import type {
   KosProcessorInfo,
   KosRunArgs,
   KosRunResult,
-} from "../__generated__/contract";
-import { KosScriptError } from "../shared/KosScriptError";
-import type { KosData, KosScriptArg } from "../shared/kos-data-parser";
-import type { KosManagedScript } from "../shared/ScriptableDataSource";
-import { buildKosRunCommand } from "./kosWrapper";
+} from "../__generated__/contract.js";
+import { KosScriptError } from "../shared/KosScriptError.js";
+import type { KosData, KosScriptArg } from "../shared/kos-data-parser.js";
+import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
+import { buildKosRunCommand } from "./kosWrapper.js";
 
 /**
  * `KosDataSource.executeScript`'s Uplink implementation: dispatches the

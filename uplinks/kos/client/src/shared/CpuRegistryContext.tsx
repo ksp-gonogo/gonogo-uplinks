@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import type { CpuRegistryService, KosCpuEntry } from "./CpuRegistryService";
+import type { CpuRegistryService, KosCpuEntry } from "./CpuRegistryService.js";
 
 const CpuRegistryContext = createContext<CpuRegistryService | null>(null);
 

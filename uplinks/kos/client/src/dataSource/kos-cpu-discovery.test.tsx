@@ -20,10 +20,10 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it } from "vitest";
-import { CpuRegistryService } from "../shared/CpuRegistryService";
-import { FakeKosUplink } from "./__fixtures__/FakeKosUplink";
-import { KosCpuDiscovery } from "./KosCpuDiscovery";
-import { kosSource } from "./kos";
+import { CpuRegistryService } from "../shared/CpuRegistryService.js";
+import { FakeKosUplink } from "./__fixtures__/FakeKosUplink.js";
+import { KosCpuDiscovery } from "./KosCpuDiscovery.js";
+import { kosSource } from "./kos.js";
 
 describe("kOS CPU discovery → registry", () => {
   afterEach(() => {

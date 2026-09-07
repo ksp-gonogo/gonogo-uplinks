@@ -23,7 +23,7 @@
 import { setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { renderWidget } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
-import { getWidget } from "../../scripts/widgets";
+import { getWidget } from "../../scripts/widgets.js";
 import {
   flushProviderFrame,
   flushResizeObservers,
@@ -32,12 +32,16 @@ import {
   replayStreamBlock,
   resolveStreamBlock,
   stripVolatile,
-} from "../test/widgetDomSnapshot";
-import basicSession from "./__fixtures__/probe/basic-session.json";
-import charModeBadges from "./__fixtures__/probe/char-mode-badges.json";
+} from "../test/widgetDomSnapshot.js";
+import basicSession from "./__fixtures__/probe/basic-session.json" with {
+  type: "json",
+};
+import charModeBadges from "./__fixtures__/probe/char-mode-badges.json" with {
+  type: "json",
+};
 // Side-effect import: the widget self-registers on module load, and
 // `renderWidget` looks it up by id rather than importing the component.
-import "./index";
+import "./index.js";
 
 const FIXTURES: Record<string, Record<string, unknown>> = {
   "basic-session": basicSession as Record<string, unknown>,

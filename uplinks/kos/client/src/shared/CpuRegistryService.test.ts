@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CpuRegistryService } from "./CpuRegistryService";
+import { CpuRegistryService } from "./CpuRegistryService.js";
 
 class MemoryStorage implements Storage {
   private map = new Map<string, string>();

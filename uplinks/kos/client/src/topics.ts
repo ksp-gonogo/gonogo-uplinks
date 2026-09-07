@@ -39,13 +39,13 @@ import {
   registerTypeUnits,
   type TopicPayload,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { KosProcessorInfo } from "./__generated__/contract";
+import type { KosProcessorInfo } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
   GENERATED_TYPE_SHAPES,
   GENERATED_TYPE_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 
 /**
  * The kOS CPU discovery Topic (an array channel). Its value MUST match

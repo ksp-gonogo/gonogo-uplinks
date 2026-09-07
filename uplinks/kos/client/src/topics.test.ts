@@ -15,11 +15,11 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
-import type { KosProcessorInfo } from "./__generated__/contract";
+import type { KosProcessorInfo } from "./__generated__/contract.js";
 // Side-effect import: registers `kos.processors` into the SDK's runtime registry
 // and feeds this Uplink's own generated unit/shape maps into BOTH halves of the
 // relocated unit registry.
-import { KOS_PROCESSORS_TOPIC } from "./topics";
+import { KOS_PROCESSORS_TOPIC } from "./topics.js";
 
 // src -> client -> kos -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");

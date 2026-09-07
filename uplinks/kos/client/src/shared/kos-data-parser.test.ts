@@ -3,7 +3,7 @@ import {
   DEFAULT_KOS_TOPIC,
   parseKosData,
   parseKosDataTopics,
-} from "./kos-data-parser";
+} from "./kos-data-parser.js";
 
 describe("parseKosData", () => {
   it("returns null when there's no [KOSDATA] block", () => {
