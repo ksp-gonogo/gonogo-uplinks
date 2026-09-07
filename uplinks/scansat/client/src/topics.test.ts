@@ -20,7 +20,7 @@ import {
   SCANSAT_AVAILABLE_TOPIC,
   SCANSAT_SCANNING_VESSELS_TOPIC,
   SCANSAT_SCIENCE_TOPIC,
-} from "./topics";
+} from "./topics.js";
 
 // src -> client -> GonogoScansatUplink
 const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");
@@ -28,12 +28,12 @@ const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "m
 /** The value of a `const string <name>` in ScansatUplink.cs, as the C# declares it. */
 /**
  * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading gives nothing, because a judgement cannot be dated: the operator
- * reads a band or a pill as the situation NOW.
+ * A stale reading carrying no model gives nothing, because a judgement cannot be
+ * dated: the operator reads a band or a pill as the situation NOW.
  */
 function judgeable<T>(reading: Reading<T>): T | undefined {
   if (reading.state === "observed") return reading.value;
-  if (reading.state === "reckonable") return reading.reckoned.value;
+  if (reading.reckoning === "available") return reading.reckoned.value;
   return undefined;
 }
 

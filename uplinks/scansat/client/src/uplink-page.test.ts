@@ -3,7 +3,7 @@ import { describe, it } from "vitest";
 // The client itself, so its registrations happen. The check reads the same
 // registries the renderer reads; with nothing imported it would find an Uplink
 // with no widgets and cheerfully report the page correct.
-import "./index";
+import "./index.js";
 
 /**
  * The generated page, gated without a browser.

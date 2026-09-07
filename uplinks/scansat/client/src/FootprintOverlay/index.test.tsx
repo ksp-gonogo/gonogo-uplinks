@@ -7,6 +7,7 @@ import {
   Quality,
   registerDataSource,
   type SlotProps,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
@@ -19,26 +20,31 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { WithScansatAvailability } from "../test/withScansatAvailability";
-import { drawFootprints } from "./index";
+import { WithScansatAvailability } from "../test/withScansatAvailability.js";
+import { drawFootprints } from "./index.js";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerAugment(...)` exactly once: same convention as
 // AnomalyOverlay/slot.test.tsx.
-import "./index";
-import type { SCANScanningVessel } from "../schema";
+import "./index.js";
+import type { SCANScanningVessel } from "../schema.js";
 
 function vessel(over: Partial<SCANScanningVessel>): SCANScanningVessel {
   return {
     vesselId: "v1",
     vesselName: "Mapper",
     body: "Kerbin",
-    subLatitude: 0,
-    subLongitude: 0,
-    altitude: 250_000,
+    subLatitude: value("°", 0),
+    subLongitude: value("°", 0),
+    altitude: value("m", 250_000),
     sensors: [],
-    groundTrackWidthDeg: 6,
-    groundTrackLonHalfDeg: 6.1,
-    trackColor: { r: 0, g: 255, b: 200, a: 200 },
+    groundTrackWidthDeg: value("°", 6),
+    groundTrackLonHalfDeg: value("°", 6.1),
+    trackColor: {
+      r: value("count", 0),
+      g: value("count", 255),
+      b: value("count", 200),
+      a: value("count", 200),
+    },
     ...over,
   };
 }
@@ -101,7 +107,12 @@ describe("drawFootprints: pure geometry", () => {
       ctx,
       600,
       "Kerbin",
-      [vessel({ subLongitude: 179, groundTrackLonHalfDeg: 5 })],
+      [
+        vessel({
+          subLongitude: value("°", 179),
+          groundTrackLonHalfDeg: value("°", 5),
+        }),
+      ],
       (lat, lon) => ({ x: lon, y: lat }),
     );
     const calls = (ctx as unknown as { calls: string[] }).calls;

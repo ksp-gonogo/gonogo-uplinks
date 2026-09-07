@@ -6,8 +6,8 @@ import {
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import { SCAN_TYPE, type SCANCoverageBitmap, type SCANType } from "../schema";
-import { applyScanCoverageToMask } from "./scanCoverageSync";
+import { SCAN_TYPE, type SCANCoverageBitmap, type SCANType } from "../schema.js";
+import { applyScanCoverageToMask } from "./scanCoverageSync.js";
 
 /**
  * Scan types this Uplink keeps per-body fog masks for, mapped to their

@@ -26,9 +26,9 @@ import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, magnitudeOr } from "@ksp-gonogo/ui-kit";
 import { useEffect, useRef } from "react";
-import { useScanningVessels } from "../FogReveal/useScanLayers";
-import type { SCANScanningVessel } from "../schema";
-import { SCANSAT } from "../uplink";
+import { useScanningVessels } from "../FogReveal/useScanLayers.js";
+import type { SCANScanningVessel } from "../schema.js";
+import { SCANSAT } from "../uplink.js";
 
 /** Fixed screen-pixel stroke width: see module doc comment for why this
  *  replaces the old world-space `1 / camZoom` compensation. `project()`

@@ -12,7 +12,7 @@ import {
   ViewClock,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
-import { SCAN_TYPE } from "./schema";
+import { SCAN_TYPE } from "./schema.js";
 
 // Client-half round-trip for the SCANsat dynamic wire contract, against the REAL
 // TimelineStore configured exactly as the live TelemetryProvider configures it

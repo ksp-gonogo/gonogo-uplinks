@@ -7,17 +7,17 @@ import type {
   SCANHeightGrid,
   SCANScanningVessel,
   SCANType,
-} from "../schema";
+} from "../schema.js";
 import type {
   DecodedBiomes,
   DecodedCoverage,
   DecodedHeights,
-} from "./scanDecode";
+} from "./scanDecode.js";
 import {
   decodeBiomeGrid,
   decodeCoverage,
   decodeHeightGrid,
-} from "./scanDecode";
+} from "./scanDecode.js";
 
 /**
  * Live snapshot of SCANsat's per-tile coverage bitfield for the named

@@ -18,7 +18,7 @@ import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerMapPoiProvider(...)` exactly once: same convention
 // as the deleted slot.test.tsx's `registerAugment` import.
-import "./index";
+import "./index.js";
 
 function getProvider() {
   const provider = getMapPoiProviders().find(
@@ -30,7 +30,7 @@ function getProvider() {
   return provider;
 }
 
-function wrapper(client: TelemetryClient) {
+function wrapper(client: ReturnType<typeof createTestTelemetryClient>) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <TelemetryProvider client={client}>{children}</TelemetryProvider>;
   };

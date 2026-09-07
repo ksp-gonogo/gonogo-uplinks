@@ -20,10 +20,10 @@ import { registerAugment, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import { NULL_DISPLAY, Unit, useWidgetScope } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
-import { useScanningVessels } from "../FogReveal/useScanLayers";
-import type { SCANType } from "../schema";
-import { SCAN_TYPE } from "../schema";
-import { SCANSAT } from "../uplink";
+import { useScanningVessels } from "../FogReveal/useScanLayers.js";
+import type { SCANType } from "../schema.js";
+import { SCAN_TYPE } from "../schema.js";
+import { SCANSAT } from "../uplink.js";
 
 const COVERAGE_TYPES: { type: SCANType; label: string }[] = [
   { type: SCAN_TYPE.AltimetryHiRes, label: "Alt Hi" },

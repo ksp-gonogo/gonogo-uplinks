@@ -20,14 +20,14 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SCANHeightGrid } from "../schema";
-import { WithScansatAvailability } from "../test/withScansatAvailability";
-import { ALTIMETRY_LAYER_ID } from "./AltimetryBase";
+import type { SCANHeightGrid } from "../schema.js";
+import { WithScansatAvailability } from "../test/withScansatAvailability.js";
+import { ALTIMETRY_LAYER_ID } from "./AltimetryBase.js";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerAugment(...)` exactly once: same convention as
 // FootprintOverlay/index.test.tsx and CoveragePanel/index.test.tsx.
-import "./AltimetryBase";
-import { BASE_LAYER_CANVAS_H, BASE_LAYER_CANVAS_W } from "./paintTile";
+import "./AltimetryBase.js";
+import { BASE_LAYER_CANVAS_H, BASE_LAYER_CANVAS_W } from "./paintTile.js";
 
 function encodeInt16LE(values: number[]): string {
   const buf = Buffer.alloc(values.length * 2);

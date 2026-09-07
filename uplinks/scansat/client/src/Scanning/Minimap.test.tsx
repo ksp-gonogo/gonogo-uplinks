@@ -19,14 +19,20 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { SCANBiomeGrid } from "../schema";
+import type { SCANBiomeGrid } from "../schema.js";
 import {
   BASE_LAYER_CANVAS_H,
   BASE_LAYER_CANVAS_W,
-} from "../TerrainBase/paintTile";
-import { Minimap } from "./Minimap";
+} from "../TerrainBase/paintTile.js";
+import { Minimap } from "./Minimap.js";
 
-const BODY: BodyDefinition = { id: "Kerbin", name: "Kerbin", radius: 600000 };
+const BODY: BodyDefinition = {
+  id: "Kerbin",
+  name: "Kerbin",
+  radius: 600000,
+  hasAtmosphere: true,
+  maxAtmosphere: 70000,
+};
 const LAYER_ID = "scansat-test:biome";
 
 function encodeBytes(values: number[]): string {

@@ -2,8 +2,46 @@
   "_meta": {
     "capturedAt": "2026-05-29",
     "body": "Kerbin",
-    "notes": "SYNTHETIC, hand-generated (no live SCANsat capture available), replace with a real capture when SCANsat is installed and a body scanned. Structured asymmetrically (south ice cap > north, west-hemisphere ocean, mountains patch, ~46% scanned swath) so an N/S axis flip or wrong longitude offset is visible in the render. Cell order idx=ilon*180+ilat per scanDecode. The scan MASK is deliberately not fed here: it reaches the minimap through the registered fog-reveal sources rather than a topic this widget subscribes to, so an emit of it is dropped and the harness says so."
+    "notes": "SYNTHETIC, hand-generated (no live SCANsat capture available), replace with a real capture when SCANsat is installed and a body scanned. Structured asymmetrically (south ice cap > north, west-hemisphere ocean, mountains patch, ~46% scanned swath) so an N/S axis flip or wrong longitude offset is visible in the render. Cell order idx=ilon*180+ilat per scanDecode. The scan MASK is deliberately not fed here: it reaches the minimap through the registered fog-reveal sources rather than a topic this widget subscribes to, so an emit of it is dropped and the harness says so. `scansat.scanningVessels` is a TOP-LEVEL key rather than a stream emit because the widget still reads it through the legacy `\"data\"` DataSource (`useScanLayers.ts`'s `useScanningVessels`); an emit of it on the stream is dropped for the same reason, unsubscribed. Move it back into `_stream.emits` the day that read migrates."
   },
+  "scansat.scanningVessels": [
+    {
+      "vesselId": "scn-1",
+      "vesselName": "ScanSat-1",
+      "body": "Kerbin",
+      "subLatitude": { "magnitude": 12, "unit": "°" },
+      "subLongitude": { "magnitude": 35, "unit": "°" },
+      "altitude": { "magnitude": 250000, "unit": "m" },
+      "sensors": [
+        {
+          "type": 2,
+          "fov": { "magnitude": 5, "unit": "°" },
+          "minAlt": { "magnitude": 5000, "unit": "m" },
+          "maxAlt": { "magnitude": 500000, "unit": "m" },
+          "bestAlt": { "magnitude": 250000, "unit": "m" },
+          "inRange": true,
+          "bestRange": true
+        },
+        {
+          "type": 8,
+          "fov": { "magnitude": 5, "unit": "°" },
+          "minAlt": { "magnitude": 5000, "unit": "m" },
+          "maxAlt": { "magnitude": 500000, "unit": "m" },
+          "bestAlt": { "magnitude": 250000, "unit": "m" },
+          "inRange": true,
+          "bestRange": false
+        }
+      ],
+      "groundTrackWidthDeg": { "magnitude": 5, "unit": "°" },
+      "groundTrackLonHalfDeg": { "magnitude": 5.18, "unit": "°" },
+      "trackColor": {
+        "r": { "magnitude": 0, "unit": "count" },
+        "g": { "magnitude": 255, "unit": "count" },
+        "b": { "magnitude": 200, "unit": "count" },
+        "a": { "magnitude": 255, "unit": "count" }
+      }
+    }
+  ],
   "_scene": {
     "widget": "scanning",
     "caption": "Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies",
@@ -50,47 +88,6 @@
           "longitude": 35,
           "altitude": 250000
         }
-      },
-      {
-        "topic": "scansat.scanningVessels",
-        "payload": [
-          {
-            "vesselId": "scn-1",
-            "vesselName": "ScanSat-1",
-            "body": "Kerbin",
-            "subLatitude": 12,
-            "subLongitude": 35,
-            "altitude": 250000,
-            "sensors": [
-              {
-                "type": 2,
-                "fov": 5,
-                "minAlt": 5000,
-                "maxAlt": 500000,
-                "bestAlt": 250000,
-                "inRange": true,
-                "bestRange": true
-              },
-              {
-                "type": 8,
-                "fov": 5,
-                "minAlt": 5000,
-                "maxAlt": 500000,
-                "bestAlt": 250000,
-                "inRange": true,
-                "bestRange": false
-              }
-            ],
-            "groundTrackWidthDeg": 5,
-            "groundTrackLonHalfDeg": 5.18,
-            "trackColor": {
-              "r": 0,
-              "g": 255,
-              "b": 200,
-              "a": 255
-            }
-          }
-        ]
       },
       {
         "topic": "scansat.anomalies.Kerbin",

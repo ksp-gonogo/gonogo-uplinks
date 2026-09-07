@@ -1,6 +1,6 @@
-import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import {
   type BodyDefinition,
+  observedValue,
   useTelemetry,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -12,20 +12,20 @@ import {
   useElementSize,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect, useRef } from "react";
-import styled from "styled-components";
-import { useScanCoverageGate } from "../FogReveal/useScanCoverageGate";
+import { styled } from "styled-components";
+import { useScanCoverageGate } from "../FogReveal/useScanCoverageGate.js";
 import {
   useScanAnomalies,
   useScanBiomeGrid,
   useScanningVessels,
-} from "../FogReveal/useScanLayers";
-import type { SCANScanningVessel } from "../schema";
-import { packedColourToComponents } from "../TerrainBase/BiomeBase";
+} from "../FogReveal/useScanLayers.js";
+import type { SCANScanningVessel } from "../schema.js";
+import { packedColourToComponents } from "../TerrainBase/BiomeBase.js";
 import {
   BASE_LAYER_CANVAS_H,
   BASE_LAYER_CANVAS_W,
   paintTile,
-} from "../TerrainBase/paintTile";
+} from "../TerrainBase/paintTile.js";
 
 /**
  * Live "camera view" of the active vessel's sub-point. Paints its own
@@ -56,17 +56,6 @@ const WINDOW_HALF_DEG = 20;
 /** Source-canvas dimensions; must match paintTile's BASE_LAYER_CANVAS_W/H. */
 const SRC_W = BASE_LAYER_CANVAS_W;
 const SRC_H = BASE_LAYER_CANVAS_H;
-
-/**
- * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading gives nothing, because a judgement cannot be dated: the operator
- * reads a band or a pill as the situation NOW.
- */
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.state === "reckonable") return reading.reckoned.value;
-  return undefined;
-}
 
 export function Minimap({
   body,
@@ -235,7 +224,15 @@ export function Minimap({
 export function MinimapForActiveVessel({
   body,
 }: Readonly<{ body: BodyDefinition }>) {
-  const flight = judgeable(useTelemetry("vessel.flight"));
+  /*
+   * The OBSERVATION, not the model. `vessel.flight` is a reckonable topic, but
+   * what it declares reckonable is altitude and orbital speed, not the ground
+   * track: a propagated reading has no latitude or longitude to give, so there
+   * is nothing here for `reckoned` to answer. Reading the observation also keeps
+   * the marker honest, since a sub-point drawn from a last-known fix asserts
+   * where the craft is when the link stopped saying.
+   */
+  const flight = observedValue(useTelemetry("vessel.flight"));
   return (
     <Minimap
       body={body}

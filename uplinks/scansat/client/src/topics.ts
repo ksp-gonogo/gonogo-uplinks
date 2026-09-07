@@ -36,13 +36,13 @@ import {
 import type {
   ScanningVesselEntry,
   ScanScienceEntry,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
   GENERATED_TYPE_SHAPES,
   GENERATED_TYPE_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 
 /**
  * The bare-boolean presence-gate Topic this Uplink publishes. Its value MUST match

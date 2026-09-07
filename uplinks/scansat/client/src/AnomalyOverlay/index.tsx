@@ -22,9 +22,9 @@ import {
   useCommand,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import { magnitudeOf, magnitudeOr, usePanelDelay } from "@ksp-gonogo/ui-kit";
+import { magnitudeOf, usePanelDelay } from "@ksp-gonogo/ui-kit";
 import { useMemo } from "react";
-import { useScanAnomalies } from "../FogReveal/useScanLayers";
+import { useScanAnomalies } from "../FogReveal/useScanLayers.js";
 
 /**
  * The value of a FACT: something that stays true until an event changes it, and no
@@ -37,8 +37,10 @@ function stillTrue<T, A>(
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
+  // `stale` covers the modelled reading too, and takes its OBSERVATION rather
+  // than its `reckoned`: a fact is what was last really seen, and a forward
+  // model has nothing to add to one.
   if (reading.state === "stale") return reading.value;
-  if (reading.state === "reckonable") return reading.value;
   if (reading.state === "absent") return whenConfirmedNothing;
   return undefined;
 }
@@ -80,28 +82,30 @@ registerMapPoiProvider({
 
       return anomalies
         .filter((a) => a.known)
-        .map(
-          (a): MapPoi => ({
-            // `MapPoi` takes plain numbers for the projection; the anomaly's
-            // own latitude arrives as `Value<"°">`. Passed through unread it
-            // placed every marker at NaN, while the set-target command below
-            // takes the Value and so was always right.
-            id: `anomaly:${a.name}-${magnitudeOf(a.latitude)}-${magnitudeOf(a.longitude)}`,
+        .map((a): MapPoi => {
+          // The projection and the command both take plain numbers; the
+          // anomaly's own coordinates arrive as `Value<"°">`. Passed through
+          // unread they placed every marker at NaN.
+          const lat = magnitudeOf(a.latitude);
+          const lon = magnitudeOf(a.longitude);
+
+          return {
+            id: `anomaly:${a.name}-${lat}-${lon}`,
             bodyId,
-            lat: magnitudeOr(a.latitude, 0),
-            lon: magnitudeOr(a.longitude, 0),
+            lat: lat ?? 0,
+            lon: lon ?? 0,
             kind: "anomaly",
             label: a.detail ? a.name : "(unknown)",
             status: "info",
             meta: { known: a.known, detail: a.detail },
-            // Only dispatchable once the body index has resolved; never hand a
-            // malformed Position SetTarget to the queue while `system.bodies`
-            // is still loading. Rides `useCommand("vessel.target.set")` (a
-            // Position-kind SetTarget) instead of the legacy `useExecuteAction`
-            // string path; instant today, so `usePanelDelay` consumes the
-            // handle and the widget stays behaviour-free.
+            // Only dispatchable once the body index AND both coordinates have
+            // resolved; never hand a malformed Position SetTarget to the queue
+            // while `system.bodies` is still loading, or for an anomaly whose
+            // fix did not decode. Rides `useCommand("vessel.target.set")` (a
+            // Position-kind SetTarget); instant today, so `usePanelDelay`
+            // consumes the handle and the widget stays behaviour-free.
             actions:
-              bodyIndex === undefined
+              bodyIndex === undefined || lat == null || lon == null
                 ? []
                 : [
                     {
@@ -112,15 +116,15 @@ registerMapPoiProvider({
                           {
                             kind: TargetKind.Position,
                             bodyIndex,
-                            latitude: a.latitude,
-                            longitude: a.longitude,
+                            latitude: lat,
+                            longitude: lon,
                           },
                           { label: "Set as Target" },
                         ),
                     },
                   ],
-          }),
-        );
+          };
+        });
     }, [anomalies, ctx.bodyId, setTargetCmd, bodyIndexByName]);
   },
 });

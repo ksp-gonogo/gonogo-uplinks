@@ -14,7 +14,6 @@ import {
   magnitudeOf,
   NULL_DISPLAY,
   Panel,
-  PanelTitle,
   ProgressBar,
   ScrollArea,
   Section,
@@ -29,11 +28,11 @@ import { useMemo } from "react";
 import {
   useScanAnomalies,
   useScanningVessels,
-} from "../FogReveal/useScanLayers";
-import type { SCANType } from "../schema";
-import { SCAN_TYPE } from "../schema";
-import { SCANSAT } from "../uplink";
-import { MinimapForActiveVessel } from "./Minimap";
+} from "../FogReveal/useScanLayers.js";
+import type { SCANType } from "../schema.js";
+import { SCAN_TYPE } from "../schema.js";
+import { SCANSAT } from "../uplink.js";
+import { MinimapForActiveVessel } from "./Minimap.js";
 
 // ---------------------------------------------------------------------------
 // Augment slots.
@@ -124,12 +123,12 @@ const DISPLAY_SCAN_TYPES: SCANType[] = [
 
 /**
  * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading gives nothing, because a judgement cannot be dated: the operator
- * reads a band or a pill as the situation NOW.
+ * A stale reading carrying no model gives nothing, because a judgement cannot be
+ * dated: the operator reads a band or a pill as the situation NOW.
  */
 function judgeable<T>(reading: Reading<T>): T | undefined {
   if (reading.state === "observed") return reading.value;
-  if (reading.state === "reckonable") return reading.reckoned.value;
+  if (reading.reckoning === "available") return reading.reckoned.value;
   return undefined;
 }
 
@@ -144,8 +143,10 @@ function stillTrue<T, A>(
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
+  // `stale` covers the modelled reading too, and takes its OBSERVATION rather
+  // than its `reckoned`: a fact is what was last really seen, and a forward
+  // model has nothing to add to one.
   if (reading.state === "stale") return reading.value;
-  if (reading.state === "reckonable") return reading.value;
   if (reading.state === "absent") return whenConfirmedNothing;
   return undefined;
 }
@@ -193,7 +194,7 @@ function ScanningComponent({
   if (scanAvailable === false) {
     return (
       <Panel>
-        <PanelTitle>Scanning</PanelTitle>
+        <Panel.Title>Scanning</Panel.Title>
         <EmptyState>
           SCANsat is not installed. Install it for fog-of-war, biome imaging,
           anomaly tracking, and the per-vessel scanner readouts this widget
@@ -209,7 +210,7 @@ function ScanningComponent({
     <WidgetScopeProvider widget="scanning" scope={scope}>
       <Panel panelSections={false}>
         <Cluster>
-          <PanelTitle>Scanning</PanelTitle>
+          <Panel.Title>Scanning</Panel.Title>
         </Cluster>
 
         <ScrollArea>

@@ -3,7 +3,7 @@ import type {
   SCANCoverageBitmap,
   SCANHeightGrid,
   SCANType,
-} from "../schema";
+} from "../schema.js";
 
 /**
  * Decode helpers for the bulk SCANsat keys (scan.maskBitmap,

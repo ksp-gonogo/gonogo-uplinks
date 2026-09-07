@@ -20,10 +20,16 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { SCAN_TYPE, type SCANCoverageBitmap } from "../schema";
-import { useScanSatFogSync } from "./useScanSatFogSync";
+import { SCAN_TYPE, type SCANCoverageBitmap } from "../schema.js";
+import { useScanSatFogSync } from "./useScanSatFogSync.js";
 
-const BODY: BodyDefinition = { id: "Kerbin", name: "Kerbin", radius: 600000 };
+const BODY: BodyDefinition = {
+  id: "Kerbin",
+  name: "Kerbin",
+  radius: 600000,
+  hasAtmosphere: true,
+  maxAtmosphere: 70000,
+};
 const LAYER_ID = "scansat:AltimetryHiRes";
 
 /** Fork-shaped bitmap with a single tile set, same shape used by scanCoverageSync.test.ts. */
@@ -60,7 +66,7 @@ function Harness({
 
 describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSource)", () => {
   let legacySource: MockDataSource;
-  let client: TelemetryClient;
+  let client: ReturnType<typeof createTestTelemetryClient>;
   let transport: StubTransport;
   let store: FogMaskStore;
   let cache: FogMaskCache | null;

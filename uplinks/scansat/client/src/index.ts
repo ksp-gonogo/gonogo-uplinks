@@ -12,9 +12,12 @@
 //
 //   - `Scanning` component → registerComponent({ id: "scanning", ... }) so it
 //     is placeable from the dashboard widget picker.
-//   - `ScansatScienceAugment` → registerAugment({ id: "scansat-science", ... })
-//     so it fills @ksp-gonogo/components's Experiments widget's
-//     `experiments.actions` slot.
+//   - `ScienceInstruments` → SCANSAT.registerContribution({ id:
+//     "science-instruments", contributes: "experiments.instruments", ... }) so
+//     the Experiments widget draws SCANsat's map scanners in its own rows,
+//     counts them in its own header and matches them against its own filter.
+//     Experiments reads `science.instruments`, the STOCK experiment list, which
+//     a SCANsat scanner never appears in.
 //   - `AnomalyOverlay/index.ts` → registerMapPoiProvider({ id:
 //     "scansat:anomalies", requires: "scansat", ... }) so discovered
 //     anomalies render through @ksp-gonogo/components's MapView's shared
@@ -53,22 +56,22 @@
 // `TerrainBase/paintTile.ts`, the same as BiomeBase, so it borrows no MapView
 // canvas hook from @ksp-gonogo/components at all.
 
-export type { ScanningConfig, ScanningScope } from "./Scanning";
-export { ScanningComponent } from "./Scanning";
-export type { MinimapProps } from "./Scanning/Minimap";
-export { Minimap, MinimapForActiveVessel } from "./Scanning/Minimap";
-export { parseScanScience } from "./ScienceAugment";
+export type { ScanningConfig, ScanningScope } from "./Scanning/index.js";
+export { ScanningComponent } from "./Scanning/index.js";
+export type { MinimapProps } from "./Scanning/Minimap.js";
+export { Minimap, MinimapForActiveVessel } from "./Scanning/Minimap.js";
+export { parseScanScience } from "./ScienceInstruments/index.js";
 
 // Side-effect registration. Kept as bare imports so the built dist/index.js
 // retains them and bundlers won't tree-shake the registerComponent()/
 // registerAugment() calls away.
-import "./topics"; // registerBarePrimitiveTopic("scansat.available") + TopicPayloadMap augment
-import "./uplink"; // defineUplinkClient(SCANSAT): every widget/augment below stamps `owner: SCANSAT`
-import "./Scanning";
-import "./ScienceAugment";
-import "./AnomalyOverlay";
-import "./FootprintOverlay";
-import "./CoveragePanel";
-import "./TerrainBase/AltimetryBase";
-import "./TerrainBase/BiomeBase";
-import "./FogReveal/useScanSatFogSync";
+import "./topics.js"; // registerBarePrimitiveTopic("scansat.available") + TopicPayloadMap augment
+import "./uplink.js"; // defineUplinkClient(SCANSAT): every widget/augment below stamps `owner: SCANSAT`
+import "./Scanning/index.js";
+import "./ScienceInstruments/index.js";
+import "./AnomalyOverlay/index.js";
+import "./FootprintOverlay/index.js";
+import "./CoveragePanel/index.js";
+import "./TerrainBase/AltimetryBase.js";
+import "./TerrainBase/BiomeBase.js";
+import "./FogReveal/useScanSatFogSync.js";

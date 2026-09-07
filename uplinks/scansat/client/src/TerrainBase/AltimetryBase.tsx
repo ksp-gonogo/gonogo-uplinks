@@ -33,13 +33,13 @@ import {
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import { useScanHeightGrid } from "../FogReveal/useScanLayers";
-import { SCANSAT } from "../uplink";
+import { useScanHeightGrid } from "../FogReveal/useScanLayers.js";
+import { SCANSAT } from "../uplink.js";
 import {
   BASE_LAYER_CANVAS_H,
   BASE_LAYER_CANVAS_W,
   paintTile,
-} from "./paintTile";
+} from "./paintTile.js";
 
 export const ALTIMETRY_LAYER_ID = "scansat:altimetry";
 

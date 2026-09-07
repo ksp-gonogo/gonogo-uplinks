@@ -8,7 +8,7 @@ import {
   paintTile,
   tileToPixelRect,
   withAlpha,
-} from "./paintTile";
+} from "./paintTile.js";
 
 const NO_OFFSETS = {};
 

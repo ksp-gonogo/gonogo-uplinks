@@ -1,16 +1,19 @@
 import type { BodyDefinition, BodyMask } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import type { SCANCoverageBitmap } from "../schema";
-import { SCAN_TYPE } from "../schema";
+import type { SCANCoverageBitmap } from "../schema.js";
+import { SCAN_TYPE } from "../schema.js";
 import {
   applyScanCoverageToMask,
   SCAN_BITMAP_HEIGHT,
   SCAN_BITMAP_WIDTH,
-} from "./scanCoverageSync";
+} from "./scanCoverageSync.js";
 
 function emptyMask(width = 2048, height = 1024): BodyMask {
   return {
     bodyId: "kerbin",
+    // A mask belongs to one reveal source, and this Uplink registers one per
+    // scan type. Altimetry is the one every case below writes through.
+    layerId: "scansat:AltimetryHiRes",
     width,
     height,
     data: new Uint8Array(width * height),

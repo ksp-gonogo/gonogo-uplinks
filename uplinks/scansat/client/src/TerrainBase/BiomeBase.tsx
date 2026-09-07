@@ -21,13 +21,13 @@ import {
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import { useScanBiomeGrid } from "../FogReveal/useScanLayers";
-import { SCANSAT } from "../uplink";
+import { useScanBiomeGrid } from "../FogReveal/useScanLayers.js";
+import { SCANSAT } from "../uplink.js";
 import {
   BASE_LAYER_CANVAS_H,
   BASE_LAYER_CANVAS_W,
   paintTile,
-} from "./paintTile";
+} from "./paintTile.js";
 
 export const BIOME_LAYER_ID = "scansat:biome";
 

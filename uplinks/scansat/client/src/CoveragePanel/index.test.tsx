@@ -6,6 +6,7 @@ import {
   MemoryStore,
   Quality,
   registerDataSource,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
@@ -25,44 +26,49 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { WithScansatAvailability } from "../test/withScansatAvailability";
+import { WithScansatAvailability } from "../test/withScansatAvailability.js";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerAugment(...)` exactly once: same convention as
 // FootprintOverlay/index.test.tsx and AnomalyOverlay/slot.test.tsx.
-import "./index";
-import type { SCANScanningVessel } from "../schema";
+import "./index.js";
+import type { SCANScanningVessel } from "../schema.js";
 
 function vessel(over: Partial<SCANScanningVessel>): SCANScanningVessel {
   return {
     vesselId: "v1",
     vesselName: "Mapper",
     body: "Kerbin",
-    subLatitude: 12,
-    subLongitude: 35,
-    altitude: 250_000,
+    subLatitude: value("°", 12),
+    subLongitude: value("°", 35),
+    altitude: value("m", 250_000),
     sensors: [
       {
         type: 2, // AltimetryHiRes
-        fov: 5,
-        minAlt: 5000,
-        maxAlt: 500_000,
-        bestAlt: 250_000,
+        fov: value("°", 5),
+        minAlt: value("m", 5000),
+        maxAlt: value("m", 500_000),
+        bestAlt: value("m", 250_000),
         inRange: true,
         bestRange: true,
       },
       {
         type: 8, // Biome
-        fov: 5,
-        minAlt: 5000,
-        maxAlt: 500_000,
-        bestAlt: 250_000,
+        fov: value("°", 5),
+        minAlt: value("m", 5000),
+        maxAlt: value("m", 500_000),
+        bestAlt: value("m", 250_000),
         inRange: true,
         bestRange: false,
       },
     ],
-    groundTrackWidthDeg: 6,
-    groundTrackLonHalfDeg: 6.1,
-    trackColor: { r: 0, g: 255, b: 200, a: 200 },
+    groundTrackWidthDeg: value("°", 6),
+    groundTrackLonHalfDeg: value("°", 6.1),
+    trackColor: {
+      r: value("count", 0),
+      g: value("count", 255),
+      b: value("count", 200),
+      a: value("count", 200),
+    },
     ...over,
   };
 }

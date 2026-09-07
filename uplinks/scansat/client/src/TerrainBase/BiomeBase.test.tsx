@@ -20,18 +20,18 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { SCANBiomeGrid } from "../schema";
-import { WithScansatAvailability } from "../test/withScansatAvailability";
+import type { SCANBiomeGrid } from "../schema.js";
+import { WithScansatAvailability } from "../test/withScansatAvailability.js";
 import {
   BIOME_LAYER_ID,
   BIOME_LAYER_OPACITY,
   packedColourToComponents,
-} from "./BiomeBase";
+} from "./BiomeBase.js";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerAugment(...)` exactly once: same convention as
 // AltimetryBase.test.tsx / FootprintOverlay/index.test.tsx.
-import "./BiomeBase";
-import { BASE_LAYER_CANVAS_H, BASE_LAYER_CANVAS_W } from "./paintTile";
+import "./BiomeBase.js";
+import { BASE_LAYER_CANVAS_H, BASE_LAYER_CANVAS_W } from "./paintTile.js";
 
 function encodeBytes(values: number[]): string {
   return Buffer.from(values).toString("base64");

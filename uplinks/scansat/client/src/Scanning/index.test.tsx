@@ -22,7 +22,7 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ScanningComponent } from "./index";
+import { ScanningComponent } from "./index.js";
 
 // `scansat.available`, `vessel.identity`, `system.bodies`, and
 // `vessel.surface` (body name + biome) all ride the native TelemetryClient
@@ -56,7 +56,7 @@ describe("ScanningComponent", () => {
   let source: MockDataSource;
   let buffered: BufferedDataSource;
   let transport: StubTransport;
-  let client: TelemetryClient;
+  let client: ReturnType<typeof createTestTelemetryClient>;
 
   // Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
   // the buffered source. RTL auto-cleanup runs after this file's afterEach, so

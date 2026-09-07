@@ -1,6 +1,6 @@
 import type { BodyDefinition, BodyMask } from "@ksp-gonogo/sitrep-sdk";
-import type { SCANCoverageBitmap, SCANType } from "../schema";
-import { SCAN_TYPE } from "../schema";
+import type { SCANCoverageBitmap, SCANType } from "../schema.js";
+import { SCAN_TYPE } from "../schema.js";
 
 /** Wrap a longitude into the [-180, 180) range. */
 function wrapLon(lon: number): number {

@@ -21,7 +21,7 @@ import {
 import { useWidgetScope, WidgetMetaContext } from "@ksp-gonogo/ui-kit";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ScanningComponent } from "./index";
+import { ScanningComponent } from "./index.js";
 
 /**
  * Scanning augment-slot exposure: SCANsat-OWNED widget exposing a slot OTHER
@@ -52,7 +52,7 @@ describe("Scanning: augment slots (spec §4)", () => {
   let source: MockDataSource;
   let buffered: BufferedDataSource;
   let transport: StubTransport;
-  let client: TelemetryClient;
+  let client: ReturnType<typeof createTestTelemetryClient>;
 
   // Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
   // the buffered source. RTL auto-cleanup runs after this file's afterEach, so
