@@ -9,10 +9,10 @@ import {
   expectNoA11yViolations,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
-import { findDriveEntries, ScienceDataAboardRowAugment } from "./index";
+import { findDriveEntries, ScienceDataAboardRowAugment } from "./index.js";
 
 const CARRIED = [
   "science.experiments",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { survivalBadges } from "./badge";
-import type { CrewSurvival, KerbalSurvival } from "./processor";
+import { survivalBadges } from "./badge.js";
+import type { CrewSurvival, KerbalSurvival } from "./processor.js";
 
 function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
   return {

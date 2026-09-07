@@ -1,7 +1,7 @@
 import { type VesselParts, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import type { KerbalismProfile } from "../__generated__/contract";
-import { computeKerbalismPartMeters } from "./partMeters";
+import type { KerbalismProfile } from "../__generated__/contract.js";
+import { computeKerbalismPartMeters } from "./partMeters.js";
 
 function part(
   id: string,

@@ -1,6 +1,6 @@
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
-import { SHIP_SYSTEMS, type ShipSystems } from "../processor";
-import { KERBALISM } from "../uplink";
+import { SHIP_SYSTEMS, type ShipSystems } from "../processor.js";
+import { KERBALISM } from "../uplink.js";
 
 // The Ship Systems panel badge.
 //

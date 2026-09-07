@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type {
   KerbalismLifeSupport,
   KerbalismProfile,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 import {
   buildLedger,
   closedLoops,
@@ -12,7 +12,7 @@ import {
   summarise,
   timeToEmptySeconds,
   wearRows,
-} from "./ecosystem";
+} from "./ecosystem.js";
 
 // Real numbers from Kerbalism's stock profile config, trimmed to the processes
 // and rules that matter here. Nothing below is invented except which converters

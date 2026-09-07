@@ -1,7 +1,7 @@
 import { renderHook } from "@ksp-gonogo/sitrep-sdk/testing";
 import { resourceColor } from "@ksp-gonogo/ui-kit";
 import { describe, expect, it } from "vitest";
-import { useResourceColorMap } from "./resourceColorMap";
+import { useResourceColorMap } from "./resourceColorMap.js";
 
 describe("useResourceColorMap", () => {
   it("maps every name to the same colour ui-kit's resourceColor would give it directly", () => {

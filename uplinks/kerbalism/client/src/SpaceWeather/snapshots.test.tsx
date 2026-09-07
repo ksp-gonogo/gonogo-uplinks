@@ -18,7 +18,7 @@ import { getComponent } from "@ksp-gonogo/sitrep-sdk";
 import { setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { renderWidget } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
-import { getWidget } from "../../scripts/widgets";
+import { getWidget } from "../../scripts/widgets.js";
 import {
   flushProviderFrame,
   flushResizeObservers,
@@ -27,16 +27,16 @@ import {
   replayStreamBlock,
   resolveStreamBlock,
   stripVolatile,
-} from "../test/widgetDomSnapshot";
-import binary from "./__fixtures__/binary.json";
-import innerBelt from "./__fixtures__/inner-belt.json";
-import interplanetary from "./__fixtures__/interplanetary.json";
-import nominal from "./__fixtures__/nominal.json";
-import stormInbound from "./__fixtures__/storm-inbound.json";
-import stormPeak from "./__fixtures__/storm-peak.json";
+} from "../test/widgetDomSnapshot.js";
+import binary from "./__fixtures__/binary.json" with { type: "json" };
+import innerBelt from "./__fixtures__/inner-belt.json" with { type: "json" };
+import interplanetary from "./__fixtures__/interplanetary.json" with { type: "json" };
+import nominal from "./__fixtures__/nominal.json" with { type: "json" };
+import stormInbound from "./__fixtures__/storm-inbound.json" with { type: "json" };
+import stormPeak from "./__fixtures__/storm-peak.json" with { type: "json" };
 // Side-effect import: the widget self-registers on module load, and
 // `renderWidget` looks it up by id rather than importing the component.
-import "./index";
+import "./index.js";
 
 const FIXTURES: Record<string, Record<string, unknown>> = {
   nominal,

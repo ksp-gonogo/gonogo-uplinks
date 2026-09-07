@@ -1,17 +1,17 @@
 import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment, useProcessor, value } from "@ksp-gonogo/sitrep-sdk";
 import { Badge, type Severity, writeQuantity } from "@ksp-gonogo/ui-kit";
-import { KERBALISM } from "../uplink";
+import { KERBALISM } from "../uplink.js";
 // Side-effect: registers the per-kerbal survival METERS, which were the
 // `crew-status.survival` augment in this file until they became data. See that
 // module's own header for why a stack of bars is a contribution.
-import "./meters";
-import { ruleLabel } from "./meters";
+import "./meters.js";
+import { ruleLabel } from "./meters.js";
 import {
   CREW_SURVIVAL,
   type CrewSurvival,
   type KerbalSurvival,
-} from "./processor";
+} from "./processor.js";
 
 /**
  * Shared lookup: matched by `crewIndex` first (the row order CrewStatus

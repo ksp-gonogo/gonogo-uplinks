@@ -42,13 +42,13 @@ export type {
   // host installed. A reader annotates the ordinal it compares against instead,
   // so a renumber on the mod side still fails its build.
   KerbalismStormTargetKind,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 // This Uplink's own commands: the `CommandArgsMap`/`CommandReplyMap`
 // augmentation and the runtime registration. RE-EXPORTED rather than imported
 // for side effect, for the same reason ./topics is: a bare import is elided from
 // the emitted `dist/index.d.ts` and the augmentation would not cross the package
 // boundary.
-export { UPLINK_COMMAND_IDS } from "./commands";
+export { UPLINK_COMMAND_IDS } from "./commands.js";
 // This Uplink's namespaces of the two elected `isru.*` payloads' extension bags, same
 // boundary and same load-bearing re-export again. Kerbalism WINS the ISRU election too,
 // but here it fills every shared field: these readers add the blocking reason, the EC
@@ -63,7 +63,7 @@ export {
   type KerbalismIsruDrillExtension,
   readKerbalismIsruConverterExt,
   readKerbalismIsruDrillExt,
-} from "./isru";
+} from "./isru.js";
 // This Uplink's namespace of the CORE `reliability.summary` payload's provider
 // extension bag: the typed shape plus its reader. Not a Topic of this Domain, a
 // sub-tree of an elected capability's shared payload that core keeps opaque on
@@ -75,7 +75,7 @@ export {
   type KerbalismReliabilityExt,
   RELIABILITY_SUMMARY_TOPIC,
   readKerbalismReliabilityExt,
-} from "./reliability";
+} from "./reliability.js";
 // This Uplink's namespaces of the four elected `science.*` payloads' extension bags,
 // same boundary and same load-bearing re-export as ./reliability above. Kerbalism
 // WINS the science election, so on a Kerbalism install these readers are how a widget
@@ -96,7 +96,7 @@ export {
   SCIENCE_EXPERIMENTS_TOPIC,
   SCIENCE_INSTRUMENTS_TOPIC,
   SCIENCE_LAB_TOPIC,
-} from "./science";
+} from "./science.js";
 export {
   KERBALISM_AVAILABLE_TOPIC,
   KERBALISM_CREW_TOPIC,
@@ -104,18 +104,18 @@ export {
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
-} from "./topics";
+} from "./topics.js";
 
 // The Uplink client identity, then the per-frame `summarise` Processor that
 // stamps against it. Bare side-effect imports so the registrations survive
 // tree-shaking when the app pulls the package entry in.
-import "./uplink";
-import "./processor";
+import "./uplink.js";
+import "./processor.js";
 // The Ship Systems widget (registerComponent) and its panel badge (a
 // contribution off the same Processor). Side-effect imports so both register
 // when the app pulls the package entry in.
-import "./ShipSystems";
-import "./ShipSystems/badge";
+import "./ShipSystems/index.js";
+import "./ShipSystems/badge.js";
 // CrewStatus's per-kerbal survival: a Processor (CrewSurvival/processor.ts),
 // the `crew-status.meters` contribution that carries it into the BASE widget's
 // (packages/components/src/CrewStatus) own slot, the panel badge, and the
@@ -125,41 +125,41 @@ import "./ShipSystems/badge";
 // survival is a Kerbalism concept and never belonged in the base widget
 // itself, see that widget's own doc comment on the slot. Side-effect imports
 // so all four register when the app pulls the package entry in.
-import "./CrewSurvival";
-import "./CrewSurvival/badge";
-import "./CrewSurvival/rowTone";
+import "./CrewSurvival/index.js";
+import "./CrewSurvival/badge.js";
+import "./CrewSurvival/rowTone.js";
 // The whole-widget `crew-status.summary` slot: a vessel radiation-environment
 // reading off `kerbalism.spaceweather`, distinct from the per-kerbal survival
 // above (a storm affects the whole crew together, not one kerbal at a time).
-import "./CrewSurvival/summary";
+import "./CrewSurvival/summary.js";
 // The Space Weather widget (registerComponent) and its panel badge, a
 // contribution to the widget's own `space-weather.badges` slot off the
 // `kerbalism.spaceweather` Topic. Side-effect imports so both register when the
 // app pulls the package entry in.
-import "./SpaceWeather";
-import "./SpaceWeather/badge";
+import "./SpaceWeather/index.js";
+import "./SpaceWeather/badge.js";
 // The CME / solar-activity overlay: a contribution to SystemView's
 // `system-view.entities` slot off the same `kerbalism.spaceweather` Topic,
 // one faint blob per active storm. SystemView itself stays in
 // @ksp-gonogo/components and has no idea Kerbalism exists.
-import "./SystemViewCme/contribution";
+import "./SystemViewCme/contribution.js";
 // ShipMap's self-contribution: supply-tank part-meters and
 // fitted-process part-meta, on the SAME two slots the built-in `core`
 // contribution feeds (`packages/components/src/ShipMap/
 // partMetersContribution.ts`). ShipMap itself stays in @ksp-gonogo/components;
 // only these two Kerbalism-derived contributions live here.
-import "./ShipMap/partMeta";
-import "./ShipMap/partMeters";
+import "./ShipMap/partMeta.js";
+import "./ShipMap/partMeters.js";
 // ResourceOps' filter slot: Kerbalism's per-process axis over its own
 // converter list, contributed because Kerbalism is the only party that knows
 // which process each row is (see ./ResourceOps/processFilters.ts for what it
 // deliberately does NOT contribute).
-import "./ResourceOps/processFilters";
+import "./ResourceOps/processFilters.js";
 // ScienceData's per-subject `science-data.aboard-row` slot: the File
 // Manager controls (send/delete/analyze/dump/move-to-lab) over the drive
 // picture only Kerbalism has. ScienceData itself stays in
 // @ksp-gonogo/components; only this augment lives here.
-import "./ScienceFileManager";
+import "./ScienceFileManager/index.js";
 
 // The CrewSurvival Processor handle + its result types, the single per-frame
 // derivation the survival meters, the per-row badge and the panel badge all consume.
@@ -169,7 +169,7 @@ export {
   type KerbalRuleState,
   type KerbalSurvival,
   type SurvivalTone,
-} from "./CrewSurvival/processor";
+} from "./CrewSurvival/processor.js";
 export type {
   DiagnosisGroup,
   DiagnosisInput,
@@ -183,7 +183,7 @@ export type {
   Summary,
   SummaryInput,
   WearRow,
-} from "./ecosystem";
+} from "./ecosystem.js";
 // The derivation layer over the Kerbalism payloads: the resource graph, the
 // per-source rate ledger, and the root-cause walk. Pure functions of the wire
 // shapes, no React and no KSP, so a widget calls them and so does a test.
@@ -200,10 +200,10 @@ export {
   summarise,
   timeToEmptySeconds,
   wearRows,
-} from "./ecosystem";
+} from "./ecosystem.js";
 // The Ship Systems Processor handle + its result type, the single per-frame
 // derivation the widget and its badge both consume.
-export { SHIP_SYSTEMS, type ShipSystems } from "./processor";
+export { SHIP_SYSTEMS, type ShipSystems } from "./processor.js";
 // The consumable projection channel, re-exported rather than imported for side
 // effect alone for the same reason `./topics` is: a bare side-effect import is
 // elided from the emitted declaration and bundlers tree-shake the registration
@@ -216,4 +216,4 @@ export {
   type KerbalismResourceProjection,
   type KerbalismResourceProjections,
   kerbalismResourceProjectionChannel,
-} from "./resourceProjection";
+} from "./resourceProjection.js";

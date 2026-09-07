@@ -8,8 +8,8 @@ import {
   type Severity,
   Unit,
 } from "@ksp-gonogo/ui-kit";
-import type { KerbalismSpaceWeather } from "../__generated__/contract";
-import { KERBALISM } from "../uplink";
+import type { KerbalismSpaceWeather } from "../__generated__/contract.js";
+import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
 // CrewStatus's `crew-status.summary` augment: the ONE whole-widget slot

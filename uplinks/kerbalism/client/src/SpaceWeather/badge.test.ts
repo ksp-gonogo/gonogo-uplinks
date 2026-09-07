@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { spaceWeatherBadges } from "./badge";
+import { spaceWeatherBadges } from "./badge.js";
 
 describe("spaceWeatherBadges", () => {
   it("flags a storm in progress as Storm in progress (nogo)", () => {

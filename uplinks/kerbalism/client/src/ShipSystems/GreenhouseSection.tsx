@@ -9,7 +9,7 @@ import {
   Stack,
   Text,
 } from "@ksp-gonogo/ui-kit";
-import { KERBALISM } from "../uplink";
+import { KERBALISM } from "../uplink.js";
 
 /**
  * Greenhouse section, the built-in filler for the `ship-systems.life-support`

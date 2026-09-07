@@ -17,7 +17,7 @@ import {
   type RadiationSample,
   RadiationSection,
   toRadPerHourSeries,
-} from "./RadiationSection";
+} from "./RadiationSection.js";
 
 // ---------------------------------------------------------------------------
 // pushRadiationSample: pure buffer management, no React involved.

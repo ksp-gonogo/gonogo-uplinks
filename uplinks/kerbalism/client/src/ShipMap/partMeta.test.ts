@@ -1,7 +1,7 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import type { KerbalismLifeSupport } from "../__generated__/contract";
-import { computeKerbalismPartMeta } from "./partMeta";
+import type { KerbalismLifeSupport } from "../__generated__/contract.js";
+import { computeKerbalismPartMeta } from "./partMeta.js";
 
 describe("computeKerbalismPartMeta", () => {
   it("emits a running-process row, keyed by its host part", () => {

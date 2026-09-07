@@ -36,24 +36,24 @@ import type {
   KerbalismHabitat,
   KerbalismProcessEntry,
   KerbalismSpaceWeather,
-} from "../__generated__/contract";
+} from "../__generated__/contract.js";
 import {
   buildLedger,
   type Ledger,
   type ResourceRow,
   type WearRow,
-} from "../ecosystem";
-import { SHIP_SYSTEMS, type ShipSystems } from "../processor";
-import { KERBALISM } from "../uplink";
+} from "../ecosystem.js";
+import { SHIP_SYSTEMS, type ShipSystems } from "../processor.js";
+import { KERBALISM } from "../uplink.js";
 // Side-effect import: registers the `ship-systems.life-support` augment filler
 // (the Greenhouse section) and the SlotRegistry declaration merge for that
 // slot id, see that file's own doc comment. Life support is a Kerbalism
 // concept, so this augment lives here in the Uplink rather than in
 // `@ksp-gonogo/components`.
-import "./GreenhouseSection";
-import { radiationTooHigh } from "./GreenhouseSection";
-import { RadiationSection } from "./RadiationSection";
-import { useResourceColorMap } from "./resourceColorMap";
+import "./GreenhouseSection.js";
+import { radiationTooHigh } from "./GreenhouseSection.js";
+import { RadiationSection } from "./RadiationSection.js";
+import { useResourceColorMap } from "./resourceColorMap.js";
 
 type ShipSystemsConfig = Record<string, never>;
 

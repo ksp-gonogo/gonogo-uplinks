@@ -9,7 +9,7 @@ import { renderWidget, visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerComponent(...), which
 // is what the registry lookup below and `renderWidget` both read.
-import "./index";
+import "./index.js";
 
 /**
  * What SpaceWeather does when its readings stop being current.

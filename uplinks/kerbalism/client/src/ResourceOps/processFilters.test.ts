@@ -1,6 +1,6 @@
 import type { IsruConverterEntry } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { computeKerbalismProcessTerms } from "./processFilters";
+import { computeKerbalismProcessTerms } from "./processFilters.js";
 
 /** A converter carrying Kerbalism's own extension namespace, the shape
  *  `readKerbalismIsruConverterExt` reads a process title back out of. */

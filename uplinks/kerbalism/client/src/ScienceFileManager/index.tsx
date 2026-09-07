@@ -21,8 +21,8 @@ import {
 import {
   type KerbalismScienceExperimentExt,
   readKerbalismScienceExperimentExt,
-} from "../science";
-import { KERBALISM } from "../uplink";
+} from "../science.js";
+import { KERBALISM } from "../uplink.js";
 
 /** The file and/or sample entry a subject holds, joined out of the raw
  *  `science.experiments` array. Either may be absent; a subject that has

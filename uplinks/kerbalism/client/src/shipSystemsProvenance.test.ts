@@ -8,7 +8,7 @@ import {
   ViewClock,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { SHIP_SYSTEMS, type ShipSystems } from "./processor";
+import { SHIP_SYSTEMS, type ShipSystems } from "./processor.js";
 
 /**
  * The live bug, closed: a Ship Systems summary knows how current the resource

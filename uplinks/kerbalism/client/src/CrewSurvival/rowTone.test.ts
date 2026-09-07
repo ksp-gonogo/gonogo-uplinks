@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { CrewSurvival, KerbalSurvival } from "./processor";
-import { rowTones } from "./rowTone";
+import type { CrewSurvival, KerbalSurvival } from "./processor.js";
+import { rowTones } from "./rowTone.js";
 
 function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
   return {
