@@ -24,8 +24,6 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  type CameraSetpoint,
-  type CameraSetpointBounds,
   type Severity,
   speakQuantity,
   Unit,
@@ -40,6 +38,10 @@ import {
   useRef,
   useState,
 } from "react";
+import type {
+  CameraSetpoint,
+  CameraSetpointBounds,
+} from "../CameraSetpoint/CameraSetpointInput";
 import { CameraSetpointSurface } from "../CameraSetpoint/CameraSetpointSurface";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras";
 import type { KerbcastDataSource } from "../KerbcastDataSource";

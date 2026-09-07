@@ -12,7 +12,10 @@
  * the four corners stays exactly the target centre.
  */
 
-import type { CameraSetpoint, CameraSetpointBounds } from "@ksp-gonogo/ui-kit";
+import type {
+  CameraSetpoint,
+  CameraSetpointBounds,
+} from "./CameraSetpointInput";
 
 export interface FrameCorners {
   tl: [number, number];

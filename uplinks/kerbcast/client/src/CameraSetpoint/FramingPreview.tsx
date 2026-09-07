@@ -14,8 +14,11 @@
  * with no transition.
  */
 
-import type { CameraSetpoint, CameraSetpointBounds } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
+import type {
+  CameraSetpoint,
+  CameraSetpointBounds,
+} from "./CameraSetpointInput";
 import { computeTargetFraming, type FrameCorners } from "./framingGeometry";
 
 export interface FramingPreviewProps {

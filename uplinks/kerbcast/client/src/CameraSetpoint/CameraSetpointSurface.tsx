@@ -15,15 +15,13 @@
  */
 
 import { useCommand } from "@ksp-gonogo/sitrep-sdk";
+import { Box, CommandDelay, Stack } from "@ksp-gonogo/ui-kit";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import {
-  Box,
   type CameraSetpoint,
   type CameraSetpointBounds,
   CameraSetpointInput,
-  CommandDelay,
-  Stack,
-} from "@ksp-gonogo/ui-kit";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+} from "./CameraSetpointInput";
 import { FramingPreview } from "./FramingPreview";
 
 /** Sitrep command ids (string literals, not exported from the SDK in TS). */
