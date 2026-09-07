@@ -10,7 +10,7 @@ Reports the active RP-1 avionics unit's tonnage limit against the vessel's mass.
 | Uplink id | `avionics` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.5.0.0 (ckan) |
-| Built against | contract 14.6, api 1.0.0, ui-kit 0.2.0 |
+| Built against | contract 15.0, api 1.0.0, ui-kit 0.1.0 |
 
 ## Wire
 

@@ -65,12 +65,7 @@ describe("an Uplink can reach the SDK's shared Processors", () => {
     expect(bodyAtIndex(facts, 1)?.name).toBe("Kerbin");
 
     const budget: DeltaVBudget = deriveDeltaVBudget(
-      // No `reckoning: "none"` beside the state. The published sdk
-      // (0.0.1-c42dc392b6c0) types the pending arm as a bare
-      // `{ state: "pending" }` with no reckoning axis on it, so naming the
-      // field is an excess property here even though gonogo's own unreleased
-      // copy requires it. Put it back when an sdk carrying the axis is vendored.
-      { state: "pending" },
+      { state: "pending", reckoning: "none" },
       [{ stage: 0, dvVac: 1200 }],
       0,
       0,

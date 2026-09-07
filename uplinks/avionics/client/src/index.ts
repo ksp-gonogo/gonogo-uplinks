@@ -14,8 +14,8 @@
 //
 // It also declares the bare `avionics.available` presence primitive
 // (`./topics`) so the client type system knows the TrueNow boolean Topic.
-import "./uplink";
-import "./topics";
-import "./AvionicsGoNoGo";
+import "./uplink.js";
+import "./topics.js";
+import "./AvionicsGoNoGo/index.js";
 
-export { AvionicsGoNoGoComponent } from "./AvionicsGoNoGo";
+export { AvionicsGoNoGoComponent } from "./AvionicsGoNoGo/index.js";

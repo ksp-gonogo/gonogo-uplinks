@@ -10,7 +10,7 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerComponent(...) once.
-import { AvionicsGoNoGoComponent } from "./index";
+import { AvionicsGoNoGoComponent } from "./index.js";
 
 const renderedTrees: Array<() => void> = [];
 

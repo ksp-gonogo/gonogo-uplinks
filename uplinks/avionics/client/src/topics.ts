@@ -2,11 +2,11 @@ import {
   registerBarePrimitiveTopic,
   registerTopicUnits,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { AvionicsStatus } from "./__generated__/contract";
+import type { AvionicsStatus } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 
 // The bare TrueNow presence primitive is declared client-side (it has no
 // [SitrepTopic] contract type: see the SDK topics.ts header). avionics.status

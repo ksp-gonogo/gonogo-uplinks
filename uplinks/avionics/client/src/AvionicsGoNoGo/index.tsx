@@ -18,8 +18,8 @@ import {
 // Value<"t">), so it pulls the registration itself rather than relying on
 // the package entry point's import order (see ../index.ts, which also
 // imports this for the same reason).
-import "../topics";
-import { AVIONICS } from "../uplink";
+import "../topics.js";
+import { AVIONICS } from "../uplink.js";
 
 type AvionicsConfig = Record<string, never>;
 
