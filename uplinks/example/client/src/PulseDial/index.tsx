@@ -1,5 +1,5 @@
 import { magnitudeOf, registerComponent, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
-import { Dial, EmptyState, Panel, PanelTitle, Text, Unit } from "@ksp-gonogo/ui-kit";
+import { Dial, EmptyState, Panel, Text, Unit } from "@ksp-gonogo/ui-kit";
 import { EXAMPLE } from "../uplink.js";
 
 /**
@@ -41,7 +41,7 @@ function PulseDialWidget() {
   if (heartbeat.state !== "observed") {
     return (
       <Panel>
-        <PanelTitle>Pulse</PanelTitle>
+        <Panel.Title>Pulse</Panel.Title>
         <EmptyState>Waiting for the example Uplink</EmptyState>
       </Panel>
     );
@@ -51,7 +51,7 @@ function PulseDialWidget() {
 
   return (
     <Panel>
-      <PanelTitle>Pulse</PanelTitle>
+      <Panel.Title>Pulse</Panel.Title>
       <Dial
         value={ticks}
         min={0}

@@ -15,4 +15,8 @@ export const EXAMPLE = defineUplinkClient({
   id: "example",
   version: UPLINK_VERSION,
   name: "Example",
+  description:
+    "The smallest Uplink that is still a real one: one KSP plugin, one " +
+    "channel, one widget, and no third-party mod to install. Copy this " +
+    "directory to start your own.",
 });

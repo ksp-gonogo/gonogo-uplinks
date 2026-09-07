@@ -3,7 +3,6 @@ import type {
   ContributionTopics,
 } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/sitrep-sdk";
-import type { ExampleHeartbeat } from "../topics.js";
 import { EXAMPLE } from "../uplink.js";
 
 /**
@@ -18,6 +17,22 @@ import { EXAMPLE } from "../uplink.js";
  * without one the return type has to be spelled at every use.
  */
 type SystemViewEntity = ContributionEntry<"system-view.entities">;
+
+/**
+ * What this contribution reads, as a literal tuple.
+ *
+ * Declared once, up here, because it is read twice: `deps` below feeds it to the
+ * aggregation, and `computeHeartbeatBlob`'s parameter names it to get the topics
+ * bag typed. Spelling the list twice would let the registration and the function
+ * that receives it describe different deps, and nothing would say so.
+ */
+const DEPS = ["system.bodies", "example.heartbeat"] as const;
+
+/** The bag `compute` is handed, exported so a test can build one without respelling the deps. */
+export type HeartbeatBlobTopics = ContributionTopics<
+  "system-view.entities",
+  typeof DEPS
+>;
 
 /**
  * A CONTRIBUTION: data this Uplink hands to another widget's renderer, with no
@@ -55,25 +70,20 @@ EXAMPLE.registerContribution({
   contributes: "system-view.entities",
   requires: "example",
   /*
-   * TWO deps, and they are not the same kind of dep, which is the one rough edge
-   * in this file worth reading before you copy it.
+   * TWO deps, from two different places, and both arrive precisely typed.
    *
-   * `system.bodies` is one of the topics the SLOT declares, so `topics` types it
-   * precisely: the mapped half of `ContributionTopics` covers exactly the union
-   * the slot owner enumerated.
+   * `system.bodies` is one of the topics the SLOT declares, so it would be in
+   * the bag whether or not this contribution asked for it.
    *
    * `example.heartbeat` is THIS Uplink's own topic, which the slot's author had
-   * never heard of and could not have enumerated. It still arrives, through the
-   * `& Record<string, unknown>` tail on `ContributionTopics`, but typed
-   * `unknown`, so reading it needs the cast below. That cast is load-bearing and
-   * it is the only unchecked step in this file: nothing verifies that the shape
-   * asserted here is the shape the Topic carries.
-   *
-   * Worth knowing rather than working around. The alternative, not declaring the
-   * dep and reading the Topic through a hook, is not available: `compute` is not
-   * a component and cannot hold one.
+   * never heard of and could not have enumerated. Declaring it here is what
+   * types it: `ContributionTopics` resolves the deps tuple against
+   * `TopicPayloadMap`, so an Uplink's own channel comes back as its payload
+   * type with no assertion anywhere. The other side of that is what a slot
+   * declaration is not: a topic nobody declared is not readable at all, rather
+   * than readable as `unknown`.
    */
-  deps: ["system.bodies", "example.heartbeat"],
+  deps: DEPS,
   compute: computeHeartbeatBlob,
   /*
    * No `owner` here, unlike the widget and the augment: registering THROUGH the
@@ -92,13 +102,12 @@ EXAMPLE.registerContribution({
  * as much as the arithmetic.
  */
 export function computeHeartbeatBlob(
-  topics: ContributionTopics<"system-view.entities">,
+  topics: HeartbeatBlobTopics,
 ): readonly SystemViewEntity[] | null {
   const home = topics["system.bodies"]?.bodies?.[0]?.name;
   if (!home) return null;
 
-  const heartbeat = topics["example.heartbeat"] as ExampleHeartbeat | undefined;
-  const ticks = magnitudeOf(heartbeat?.ticks);
+  const ticks = magnitudeOf(topics["example.heartbeat"]?.ticks);
   if (ticks == null) return null;
 
   return [

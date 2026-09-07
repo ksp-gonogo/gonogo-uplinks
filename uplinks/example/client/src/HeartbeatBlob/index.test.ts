@@ -1,7 +1,6 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
-import type { ContributionTopics } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { computeHeartbeatBlob } from "./index.js";
+import { computeHeartbeatBlob, type HeartbeatBlobTopics } from "./index.js";
 
 /**
  * A pure `compute` is the easiest thing in an Uplink to test well, and these three
@@ -16,13 +15,13 @@ import { computeHeartbeatBlob } from "./index.js";
 function topicsWith(
   bodies: string[],
   ticks?: number,
-): ContributionTopics<"system-view.entities"> {
+): HeartbeatBlobTopics {
   return {
     "system.bodies": { bodies: bodies.map((name, index) => ({ index, name })) },
     ...(ticks === undefined
       ? {}
       : { "example.heartbeat": { ut: value("ut", 1_000_000), ticks: value("count", ticks) } }),
-  } as ContributionTopics<"system-view.entities">;
+  } as HeartbeatBlobTopics;
 }
 
 describe("computeHeartbeatBlob", () => {

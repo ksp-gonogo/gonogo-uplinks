@@ -5,7 +5,6 @@ import {
 import {
   EmptyState,
   Panel,
-  PanelTitle,
   Stack,
   Text,
   Unit,
@@ -43,7 +42,7 @@ function HeartbeatWidget() {
   if (heartbeat.state !== "observed") {
     return (
       <Panel>
-        <PanelTitle>Heartbeat</PanelTitle>
+        <Panel.Title>Heartbeat</Panel.Title>
         <EmptyState>Waiting for the example Uplink</EmptyState>
       </Panel>
     );
@@ -51,7 +50,7 @@ function HeartbeatWidget() {
 
   return (
     <Panel>
-      <PanelTitle>Heartbeat</PanelTitle>
+      <Panel.Title>Heartbeat</Panel.Title>
       <Stack>
         <Text>
           Ticks <Unit value={heartbeat.value.ticks} />

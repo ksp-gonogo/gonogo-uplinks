@@ -54,7 +54,7 @@ function CadenceSection(_props: SlotProps<"space-center-status.sections">) {
   return (
     <Stack gap="xs">
       <Cluster gap="sm">
-        <Badge tone="info">example</Badge>
+        <Badge severity="info">example</Badge>
         <Text>
           publishing, last at UT <Unit value={heartbeat.value.ut} />
         </Text>
