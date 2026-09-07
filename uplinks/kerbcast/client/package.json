@@ -29,7 +29,7 @@
   "dependencies": {
     "@ksp-gonogo/kerbcast": "^1.8.1",
     "@ksp-gonogo/kerbcast-react": "^1.8.1",
-    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-b160d2c86b75.tgz",
+    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-ee3febebeaaa.tgz",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
