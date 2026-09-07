@@ -58,16 +58,16 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource } from "../KerbcastDataSource";
+import { KerbcastDataSource } from "../KerbcastDataSource.js";
 import {
   CameraFeed,
   type CameraFeedConfig,
   type CameraOverlayContext,
-} from "./CameraFeed";
+} from "./CameraFeed.js";
 // Side-effect import: `registerComponent` lives in ./index, not ./CameraFeed,
 // and `renderWidget`/`WidgetHost` look the widget up by id.
-import "./index";
-import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel";
+import "./index.js";
+import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel.js";
 
 // ---------------------------------------------------------------------------
 // Render helper, CameraFeed calls useActionInput, which reads its instance

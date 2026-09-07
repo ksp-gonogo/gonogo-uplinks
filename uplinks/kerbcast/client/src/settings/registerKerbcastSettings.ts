@@ -1,5 +1,5 @@
 import { registerSetting } from "@ksp-gonogo/sitrep-sdk";
-import type { KerbcastDataSource } from "../KerbcastDataSource";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /*
  * kerbcast's declarative settings: two rows under one "Kerbcast" category in

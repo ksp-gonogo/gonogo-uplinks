@@ -18,8 +18,8 @@ import type { CSSProperties } from "react";
 import type {
   CameraSetpoint,
   CameraSetpointBounds,
-} from "./CameraSetpointInput";
-import { computeTargetFraming, type FrameCorners } from "./framingGeometry";
+} from "./CameraSetpointInput.js";
+import { computeTargetFraming, type FrameCorners } from "./framingGeometry.js";
 
 export interface FramingPreviewProps {
   setpoint: CameraSetpoint;

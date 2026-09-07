@@ -33,11 +33,11 @@ import {
   registerTopicUnits,
   type TopicPayload,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { KerbcastCameraEntry } from "./__generated__/contract";
+import type { KerbcastCameraEntry } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 
 /**
  * The bare-boolean presence-gate Topic this Uplink publishes. Its value MUST match

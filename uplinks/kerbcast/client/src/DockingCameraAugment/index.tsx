@@ -29,17 +29,17 @@ import {
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect, useMemo, useRef } from "react";
-import { useDelayedKerbcastStream } from "../CameraFeed/useDelayedKerbcastStream";
-import type { KerbcastDataSource } from "../KerbcastDataSource";
-import { KERBCAST } from "../uplink";
+import { useDelayedKerbcastStream } from "../CameraFeed/useDelayedKerbcastStream.js";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { KERBCAST } from "../uplink.js";
 // Side-effect import: registers kerbcast.cameras's unit map into the SDK's
 // runtime hydration registry (registerTopicUnits) and augments
 // TopicPayloadMap for the type. This augment is the one production consumer
 // of that decode-time wrap today, so it pulls the registration itself rather
 // than relying on the package entry point's import order (see ../index.ts,
 // which also imports this module for the same reason).
-import "../topics";
-import { selectDockingCamera } from "./selectDockingCamera";
+import "../topics.js";
+import { selectDockingCamera } from "./selectDockingCamera.js";
 
 /**
  * The value of a FACT: something that stays true until an event changes it, and no
@@ -52,8 +52,10 @@ function stillTrue<T, A>(
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
+  // `stale` covers the modelled reading too, and takes its OBSERVATION rather
+  // than its `reckoned`: a camera roster is a fact, so the last real answer is
+  // the right one and a forward model has nothing to add to it.
   if (reading.state === "stale") return reading.value;
-  if (reading.state === "reckonable") return reading.value;
   if (reading.state === "absent") return whenConfirmedNothing;
   return undefined;
 }

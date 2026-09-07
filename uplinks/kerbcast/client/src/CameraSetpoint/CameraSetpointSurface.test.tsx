@@ -1,7 +1,7 @@
 import { render, screen } from "@ksp-gonogo/sitrep-sdk/testing";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
-import { CameraSetpointSurface } from "./CameraSetpointSurface";
+import { CameraSetpointSurface } from "./CameraSetpointSurface.js";
 
 const bounds = {
   yawMin: -90,

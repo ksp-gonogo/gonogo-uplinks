@@ -15,7 +15,7 @@ import {
 import { describe, expect, it } from "vitest";
 // Side-effect import: registers `kerbcast.available`/`kerbcast.cameras` into
 // the SDK's runtime registry.
-import { KERBCAST_AVAILABLE_TOPIC, KERBCAST_CAMERAS_TOPIC } from "./topics";
+import { KERBCAST_AVAILABLE_TOPIC, KERBCAST_CAMERAS_TOPIC } from "./topics.js";
 
 // src -> client -> uplinks/kerbcast, where `mod/` holds the C# these Topic
 // strings have to agree with.
@@ -29,12 +29,12 @@ const MOD_ROOT = join(
 /** The value of `KerbcastUplink.AvailableTopic` as declared in the C# source. */
 /**
  * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading gives nothing, because a judgement cannot be dated: the operator
- * reads a band or a pill as the situation NOW.
+ * A stale reading carrying no model gives nothing, because a judgement cannot be
+ * dated: the operator reads a band or a pill as the situation NOW.
  */
 function judgeable<T>(reading: Reading<T>): T | undefined {
   if (reading.state === "observed") return reading.value;
-  if (reading.state === "reckonable") return reading.reckoned.value;
+  if (reading.reckoning === "available") return reading.reckoned.value;
   return undefined;
 }
 

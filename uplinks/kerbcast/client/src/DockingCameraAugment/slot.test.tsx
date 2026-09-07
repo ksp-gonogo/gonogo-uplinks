@@ -23,12 +23,12 @@ import { useEffect } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load `registerAugment(...)` once,
 // the same way the app picks this augment up via the package's bare
-// `import "./DockingCameraAugment"`. So this suite exercises the ACTUAL
+// `import "./DockingCameraAugment/index.js"`. So this suite exercises the ACTUAL
 // production registration and deliberately never calls `clearAugments()`:
 // that would wipe the one real registration this file exists to check, and
 // re-importing an already-evaluated ES module is a no-op, so it'd never
 // come back.
-import "./index";
+import "./index.js";
 
 const HUD_CONTEXT = {
   maxDeg: 8,

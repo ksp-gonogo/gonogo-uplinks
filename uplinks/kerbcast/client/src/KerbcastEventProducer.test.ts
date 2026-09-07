@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   type KerbcastEdgeSource,
   KerbcastEventProducer,
-} from "./KerbcastEventProducer";
+} from "./KerbcastEventProducer.js";
 
 /** In-memory stand-in for the kerbcast SDK client, no WebRTC. */
 class FakeClient implements KerbcastEdgeSource {

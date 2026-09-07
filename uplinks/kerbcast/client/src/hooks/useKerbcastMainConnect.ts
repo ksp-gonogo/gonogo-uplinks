@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { kerbcastSource } from "../KerbcastDataSource";
+import { kerbcastSource } from "../KerbcastDataSource.js";
 
 /**
  * Main-screen-only eager connect. Historically this happened for free as

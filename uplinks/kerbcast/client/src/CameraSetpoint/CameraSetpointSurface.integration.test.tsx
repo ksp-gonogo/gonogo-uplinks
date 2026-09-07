@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
-import { renderWithCommandClient } from "../test/commandHarness";
-import { CameraSetpointSurface } from "./CameraSetpointSurface";
+import { renderWithCommandClient } from "../test/commandHarness.js";
+import { CameraSetpointSurface } from "./CameraSetpointSurface.js";
 
 const bounds = {
   yawMin: -90,

@@ -7,11 +7,11 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { act } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource, kerbcastSource } from "./KerbcastDataSource";
+import { KerbcastDataSource, kerbcastSource } from "./KerbcastDataSource.js";
 import {
   createMockKerbcastSession,
   kerbcastFetchImpl,
-} from "./test/MockKerbcastSession";
+} from "./test/MockKerbcastSession.js";
 
 // Every KerbcastDataSource subscribes to the shared gameHost in its
 // constructor, so a test that never disconnect()s leaks that subscription into

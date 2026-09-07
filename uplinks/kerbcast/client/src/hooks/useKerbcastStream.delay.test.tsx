@@ -43,7 +43,7 @@ import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
   useKerbcastStream,
-} from "./useKerbcastStream";
+} from "./useKerbcastStream.js";
 
 // Testing Library auto-cleans the DOM after every test, no manual cleanup()
 // needed here, only the registry teardown this file actually owns.

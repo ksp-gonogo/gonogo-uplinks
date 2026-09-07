@@ -15,7 +15,7 @@ import {
   type SnapshottableDelayClock,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import { useEffect, useRef, useState } from "react";
-import type { KerbcastDataSource } from "../KerbcastDataSource";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
  *  `ut: null` makes the worker/encoded backends treat frames as un-stampable

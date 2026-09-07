@@ -1,7 +1,7 @@
 import { CameraKind, CrewLocation } from "@ksp-gonogo/kerbcast";
 import { describe, expect, it } from "vitest";
-import { selectKerbalCamera } from "./selectKerbalCamera";
-import { makeCameraState } from "./testFixtures";
+import { selectKerbalCamera } from "./selectKerbalCamera.js";
+import { makeCameraState } from "./testFixtures.js";
 
 describe("selectKerbalCamera", () => {
   it("returns null with no cameras", () => {

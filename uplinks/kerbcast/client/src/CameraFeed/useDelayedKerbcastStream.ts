@@ -10,7 +10,7 @@ import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
   useKerbcastStream,
-} from "../hooks/useKerbcastStream";
+} from "../hooks/useKerbcastStream.js";
 
 // Re-exported for backward compat: `interpolateCaptureUt`/`CaptureClockSample`
 // are the generic capture-clock helpers, published as `@ksp-gonogo/sitrep-sdk/media`

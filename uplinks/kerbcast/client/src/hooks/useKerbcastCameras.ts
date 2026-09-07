@@ -1,7 +1,7 @@
 import type { CameraState } from "@ksp-gonogo/kerbcast";
 import { getUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect, useState } from "react";
-import type { KerbcastDataSource } from "../KerbcastDataSource";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /**
  * Live snapshot of the kerbcast camera registry. Returns the empty

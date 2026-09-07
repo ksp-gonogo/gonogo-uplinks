@@ -1,12 +1,12 @@
 import { registerComponent } from "@ksp-gonogo/sitrep-sdk";
-import { KERBCAST } from "../uplink";
+import { KERBCAST } from "../uplink.js";
 import {
   CameraFeed,
   type CameraFeedConfig,
   cameraFeedActions,
   isPartCamera,
-} from "./CameraFeed";
-import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel";
+} from "./CameraFeed.js";
+import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel.js";
 
 registerComponent<CameraFeedConfig>({
   id: "camera-feed",

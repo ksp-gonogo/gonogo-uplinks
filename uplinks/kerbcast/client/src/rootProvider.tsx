@@ -1,9 +1,9 @@
 import type { Screen } from "@ksp-gonogo/sitrep-sdk";
 import type { ReactNode } from "react";
-import { useKerbcastMainConnect } from "./hooks/useKerbcastMainConnect";
-import { kerbcastSource } from "./KerbcastDataSource";
-import { KERBCAST_EVENTS_TOPIC } from "./KerbcastEventProducer";
-import { KERBCAST } from "./uplink";
+import { useKerbcastMainConnect } from "./hooks/useKerbcastMainConnect.js";
+import { kerbcastSource } from "./KerbcastDataSource.js";
+import { KERBCAST_EVENTS_TOPIC } from "./KerbcastEventProducer.js";
+import { KERBCAST } from "./uplink.js";
 
 /**
  * kerbcast connecting itself, and feeding its own occurrences to the alarm host.

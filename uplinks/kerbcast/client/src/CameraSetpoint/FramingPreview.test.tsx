@@ -1,6 +1,6 @@
 import { render } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
-import { FramingPreview } from "./FramingPreview";
+import { FramingPreview } from "./FramingPreview.js";
 
 const bounds = {
   yawMin: -90,

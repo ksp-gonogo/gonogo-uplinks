@@ -26,7 +26,7 @@ import {
   GENERATED_COMMAND_IDS,
   type GeneratedCommandArgsMap,
   type GeneratedCommandReplyMap,
-} from "./__generated__/command-map";
+} from "./__generated__/command-map.js";
 
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface CommandArgsMap extends GeneratedCommandArgsMap {}

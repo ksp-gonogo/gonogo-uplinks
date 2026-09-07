@@ -21,8 +21,8 @@ import {
   type CameraSetpoint,
   type CameraSetpointBounds,
   CameraSetpointInput,
-} from "./CameraSetpointInput";
-import { FramingPreview } from "./FramingPreview";
+} from "./CameraSetpointInput.js";
+import { FramingPreview } from "./FramingPreview.js";
 
 /** Sitrep command ids (string literals, not exported from the SDK in TS). */
 const SET_PAN = "kerbcast.setPan";

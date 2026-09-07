@@ -42,33 +42,33 @@
 // bootstrap (alongside the other data-source/registration imports in
 // app/src/dataSources/index.ts).
 
-export type { CameraFeedConfig } from "./CameraFeed";
-export { CameraFeed, isPartCamera } from "./CameraFeed";
+export type { CameraFeedConfig } from "./CameraFeed/index.js";
+export { CameraFeed, isPartCamera } from "./CameraFeed/index.js";
 export {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
-} from "./CameraFeed/useDelayedKerbcastStream";
+} from "./CameraFeed/useDelayedKerbcastStream.js";
 // The embedded-facecam kill-switch gate + kerbal-face augment, wired into
 // CrewStatus's `crew-status.avatar` slot below.
-export { KerbcastAvatarAugment } from "./CrewAvatarGate";
-export { selectKerbalCamera } from "./CrewAvatarGate/selectKerbalCamera";
-export type { LabelableCamera } from "./cameraLabels";
-export { buildCameraLabeler } from "./cameraLabels";
+export { KerbcastAvatarAugment } from "./CrewAvatarGate/index.js";
+export { selectKerbalCamera } from "./CrewAvatarGate/selectKerbalCamera.js";
+export type { LabelableCamera } from "./cameraLabels.js";
+export { buildCameraLabeler } from "./cameraLabels.js";
 // The generic delayed-media infrastructure (DelayedPlayoutBuffer, the
 // per-frame pipeline, `isFrameDelaySupported`, the capture-clock helpers) is
 // published as `@ksp-gonogo/sitrep-sdk/media`: import it from there, not from
 // this kerbcast client.
-export { DockingCameraAugment } from "./DockingCameraAugment";
-export { selectDockingCamera } from "./DockingCameraAugment/selectDockingCamera";
-export { useKerbcastCameras } from "./hooks/useKerbcastCameras";
+export { DockingCameraAugment } from "./DockingCameraAugment/index.js";
+export { selectDockingCamera } from "./DockingCameraAugment/selectDockingCamera.js";
+export { useKerbcastCameras } from "./hooks/useKerbcastCameras.js";
 export type {
   DelayedPlayoutResult,
   KerbcastStreamDelayOptions,
-} from "./hooks/useKerbcastStream";
+} from "./hooks/useKerbcastStream.js";
 export {
   useDelayedPlayout,
   useKerbcastStream,
-} from "./hooks/useKerbcastStream";
+} from "./hooks/useKerbcastStream.js";
 export type {
   CameraAddedPayload,
   CameraRemovedPayload,
@@ -76,9 +76,9 @@ export type {
   KerbcastEventKind,
   SignalLostPayload,
   StreamDegradedPayload,
-} from "./KerbcastEventProducer";
-export type { CameraLifecycle } from "./lifecycle";
-export { getCameraLifecycle } from "./lifecycle";
+} from "./KerbcastEventProducer.js";
+export type { CameraLifecycle } from "./lifecycle.js";
+export { getCameraLifecycle } from "./lifecycle.js";
 // Non-widget infra (defineUplinkClient-equivalent registerUplinkHandle side
 // effect, kerbcastSource, KERBCAST_EVENTS_TOPIC, useKerbcastMainConnect)
 // lives in `./runtime`, split out specifically so MainScreen can depend on
@@ -86,21 +86,21 @@ export { getCameraLifecycle } from "./lifecycle";
 // comment for why that matters to the Uplink loader). Re-exported here too
 // so the package root keeps its full existing surface for every other
 // consumer.
-export * from "./runtime";
+export * from "./runtime.js";
 
 // Side-effect registrations happen at the module-load points below.
 // The imports stay un-aliased so the package's `dist/index.js` keeps
 // them as bare imports tsc / bundlers won't tree-shake away.
-export { KERBCAST } from "./uplink";
+export { KERBCAST } from "./uplink.js";
 
-import "./CameraFeed";
-import "./CrewAvatarGate"; // registerAugment("kerbcast-crew-avatar" -> crew-status.avatar)
-import "./DockingCameraAugment";
-import "./settings/registerKerbcastSettings"; // registerSetting × 2 (declarative "Kerbcast" category)
+import "./CameraFeed/index.js";
+import "./CrewAvatarGate/index.js"; // registerAugment("kerbcast-crew-avatar" -> crew-status.avatar)
+import "./DockingCameraAugment/index.js";
+import "./settings/registerKerbcastSettings.js"; // registerSetting × 2 (declarative "Kerbcast" category)
 
 // This Uplink's own commands: the `CommandArgsMap`/`CommandReplyMap`
 // augmentation and the runtime registration. RE-EXPORTED rather than imported
 // for side effect, for the same reason ./topics is: a bare import is elided from
 // the emitted `dist/index.d.ts` and the augmentation would not cross the package
 // boundary.
-export { UPLINK_COMMAND_IDS } from "./commands";
+export { UPLINK_COMMAND_IDS } from "./commands.js";

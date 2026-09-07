@@ -29,7 +29,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
-} from "./useKerbcastStream";
+} from "./useKerbcastStream.js";
 
 // Testing Library auto-cleans the DOM after every test, no manual
 // cleanup() needed here, only the registry/global teardown this file

@@ -16,10 +16,10 @@ import {
 import { Badge, TextButton, useModal } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo } from "react";
-import { useKerbcastCameras } from "../hooks/useKerbcastCameras";
-import type { KerbcastDataSource } from "../KerbcastDataSource";
-import { KERBCAST } from "../uplink";
-import { selectKerbalCamera } from "./selectKerbalCamera";
+import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { KERBCAST } from "../uplink.js";
+import { selectKerbalCamera } from "./selectKerbalCamera.js";
 
 /**
  * kerbcast crew-avatar augment: fills CrewStatus's `crew-status.avatar`

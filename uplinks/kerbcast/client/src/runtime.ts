@@ -8,7 +8,7 @@
 // from the package root (`@ksp-gonogo/gonogo-kerbcast-uplink`), which forced
 // evaluation of the WHOLE `index.ts` module: ES module evaluation always
 // runs a module's full top-level code once, regardless of which named export
-// the importer actually uses, including `import "./CameraFeed";`, which
+// the importer actually uses, including `import "./CameraFeed/index.js";`, which
 // self-registers the "camera-feed" widget via `registerComponent`.
 // `@ksp-gonogo/core` makes that call THROW on a duplicate id (by design,
 // component ids must be unique), so under the runtime-loader flag the
@@ -33,13 +33,13 @@
 // loader's own full-package bundle (flag on): neither of which this split
 // affects.
 
-import "./topics"; // registerBarePrimitiveTopic("kerbcast.available"): idempotent
-import "./KerbcastDataSource"; // kerbcastSource singleton + registerUplinkHandle("kerbcast", ...), idempotent
-import "./rootProvider"; // registerRootProvider + registerRevealedEventSource, both idempotent
+import "./topics.js"; // registerBarePrimitiveTopic("kerbcast.available"): idempotent
+import "./KerbcastDataSource.js"; // kerbcastSource singleton + registerUplinkHandle("kerbcast", ...), idempotent
+import "./rootProvider.js"; // registerRootProvider + registerRevealedEventSource, both idempotent
 
-export { useKerbcastMainConnect } from "./hooks/useKerbcastMainConnect";
-export * from "./KerbcastDataSource";
+export { useKerbcastMainConnect } from "./hooks/useKerbcastMainConnect.js";
+export * from "./KerbcastDataSource.js";
 export {
   KERBCAST_EVENTS_TOPIC,
   KerbcastEventProducer,
-} from "./KerbcastEventProducer";
+} from "./KerbcastEventProducer.js";

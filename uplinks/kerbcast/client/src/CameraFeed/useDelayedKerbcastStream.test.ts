@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type CaptureClockSample,
   interpolateCaptureUt,
-} from "./useDelayedKerbcastStream";
+} from "./useDelayedKerbcastStream.js";
 
 describe("interpolateCaptureUt", () => {
   it("returns null when there is no clock (ut === null)", () => {

@@ -13,8 +13,8 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource } from "../KerbcastDataSource";
-import { useKerbcastCameras } from "./useKerbcastCameras";
+import { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { useKerbcastCameras } from "./useKerbcastCameras.js";
 
 afterEach(() => {
   clearUplinkHandles();

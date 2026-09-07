@@ -7,7 +7,7 @@ import {
   Switch,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
-import type { CameraFeedConfig } from "./CameraFeed";
+import type { CameraFeedConfig } from "./CameraFeed.js";
 
 /**
  * Settings-tab config UI for the Camera Feed widget. Rendered by the dashboard

@@ -19,7 +19,7 @@ import {
 import {
   type KerbcastEventKind,
   KerbcastEventProducer,
-} from "./KerbcastEventProducer";
+} from "./KerbcastEventProducer.js";
 
 /**
  * gonogo `DataSource` wrapper around `KerbcastClient`. Surfaces the

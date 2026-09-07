@@ -24,8 +24,8 @@ import { ModalProvider } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource } from "../KerbcastDataSource";
-import { KerbcastAvatarAugment } from "./index";
+import { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { KerbcastAvatarAugment } from "./index.js";
 
 function memoryStorage(): Storage {
   const m = new Map<string, string>();

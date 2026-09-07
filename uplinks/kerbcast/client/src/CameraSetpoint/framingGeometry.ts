@@ -15,7 +15,7 @@
 import type {
   CameraSetpoint,
   CameraSetpointBounds,
-} from "./CameraSetpointInput";
+} from "./CameraSetpointInput.js";
 
 export interface FrameCorners {
   tl: [number, number];

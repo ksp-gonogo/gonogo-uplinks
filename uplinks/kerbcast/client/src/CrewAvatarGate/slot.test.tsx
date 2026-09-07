@@ -24,10 +24,10 @@ import { ModalProvider } from "@ksp-gonogo/ui-kit";
 import { beforeEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load `registerAugment(...)` once,
 // the same way the app picks this augment up via the package's bare
-// `import "./CrewAvatarGate"`. Deliberately never call `clearAugments()`
+// `import "./CrewAvatarGate/index.js"`. Deliberately never call `clearAugments()`
 // here for the same reason DockingCameraAugment's slot test doesn't: it
 // would wipe the one real registration this file exists to check.
-import "./index";
+import "./index.js";
 
 const CONTEXT: SlotProps<"crew-status.avatar"> = {
   crewName: "Jebediah Kerman",

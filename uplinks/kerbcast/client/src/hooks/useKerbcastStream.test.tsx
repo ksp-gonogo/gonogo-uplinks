@@ -16,8 +16,8 @@ import {
   render,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource } from "../KerbcastDataSource";
-import { useKerbcastStream } from "./useKerbcastStream";
+import { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { useKerbcastStream } from "./useKerbcastStream.js";
 
 function StreamProbe({ flightId }: { flightId: number | null }): null {
   useKerbcastStream(flightId);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeTargetFraming } from "./framingGeometry";
+import { computeTargetFraming } from "./framingGeometry.js";
 
 const bounds = {
   yawMin: -90,

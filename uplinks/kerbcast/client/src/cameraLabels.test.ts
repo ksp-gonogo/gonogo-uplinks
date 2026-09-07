@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCameraLabeler, type LabelableCamera } from "./cameraLabels";
+import { buildCameraLabeler, type LabelableCamera } from "./cameraLabels.js";
 
 const cam = (
   flightId: number,

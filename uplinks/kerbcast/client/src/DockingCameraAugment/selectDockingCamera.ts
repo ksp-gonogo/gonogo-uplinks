@@ -1,4 +1,4 @@
-import type { KerbcastCameraEntry } from "../__generated__/contract";
+import type { KerbcastCameraEntry } from "../__generated__/contract.js";
 
 /**
  * Picks the camera that should back Targeting's docking HUD, from the
