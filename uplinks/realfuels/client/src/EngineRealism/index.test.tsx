@@ -10,7 +10,7 @@ import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
-import { EngineRealismSection } from "./index";
+import { EngineRealismSection } from "./index.js";
 
 const CARRIED = ["realfuels.engines", "realfuels.boiloff"];
 

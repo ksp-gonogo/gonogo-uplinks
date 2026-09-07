@@ -7,13 +7,13 @@ import {
 import type {
   RealFuelsBoiloff,
   RealFuelsEngines,
-} from "./__generated__/contract";
+} from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
   GENERATED_TYPE_SHAPES,
   GENERATED_TYPE_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 
 // `realfuels.available` is a bare JSON boolean with no contract payload type
 // behind it, so it is declared client-side (see the SDK topics.ts header). The

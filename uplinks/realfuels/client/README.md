@@ -9,7 +9,7 @@ Reports per-engine RealFuels limits: ignitions remaining, ullage stability and p
 | --- | --- |
 | Uplink id | `realfuels` |
 | Version | `0.0.1` |
-| Built against | contract 14.7, api 1.0.0, ui-kit 0.1.0 |
+| Built against | contract 15.0, api 1.0.0, ui-kit 0.1.0 |
 
 ## Wire
 

@@ -20,14 +20,14 @@ import {
   REALFUELS_AVAILABLE_TOPIC,
   REALFUELS_BOILOFF_TOPIC,
   REALFUELS_ENGINES_TOPIC,
-} from "./topics";
+} from "./topics.js";
 
 // src -> client -> realfuels -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");
 
 function judgeable<T>(reading: Reading<T>): T | undefined {
   if (reading.state === "observed") return reading.value;
-  if (reading.state === "reckonable") return reading.reckoned.value;
+  if (reading.reckoning === "available") return reading.reckoned.value;
   return undefined;
 }
 

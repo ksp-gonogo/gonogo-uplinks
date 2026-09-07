@@ -15,8 +15,8 @@
 // `./topics` declares the three Topics this Uplink publishes, including the bare
 // `realfuels.available` presence primitive, and feeds their generated unit and
 // shape maps into the SDK's runtime hydration registry.
-import "./uplink";
-import "./topics";
-import "./EngineRealism";
+import "./uplink.js";
+import "./topics.js";
+import "./EngineRealism/index.js";
 
-export { EngineRealismSection } from "./EngineRealism";
+export { EngineRealismSection } from "./EngineRealism/index.js";
