@@ -18,18 +18,18 @@ import {
   registerTypeUnits,
   type TopicPayload,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { AeroState } from "./__generated__/contract";
+import type { AeroState } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
   GENERATED_TOPIC_UNITS,
   GENERATED_TYPE_SHAPES,
   GENERATED_TYPE_UNITS,
-} from "./__generated__/units";
+} from "./__generated__/units.js";
 // Side-effect import, and load-bearing rather than tidiness: the unit maps below
 // name `kg/m²` and `W/kg`, and `wrapTopicPayload` skips a field whose token has
 // no model entry. Without this a widget imported on its own decodes those two
 // fields as bare numbers and renders them as absent.
-import "./units";
+import "./units.js";
 
 /**
  * A full-fidelity aerodynamics model is installed and readable. Its value must

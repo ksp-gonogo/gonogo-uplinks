@@ -14,8 +14,8 @@ import { writeQuantity } from "@ksp-gonogo/ui-kit";
 // Side-effect import: registers aero.state's unit map and augments
 // TopicPayloadMap. This module reads the Topic, so it pulls the registration
 // itself rather than relying on the package entry's import order.
-import "../topics";
-import { AERO } from "../uplink";
+import "../topics.js";
+import { AERO } from "../uplink.js";
 
 /**
  * The aero model's own descent envelope, as a CONTRIBUTED PLOT.

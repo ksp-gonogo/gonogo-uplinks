@@ -9,7 +9,7 @@ import {
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
-import { AeroStateComponent } from "./index";
+import { AeroStateComponent } from "./index.js";
 
 const TOPIC = "aero.state";
 

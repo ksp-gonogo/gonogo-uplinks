@@ -17,8 +17,8 @@ import {
 // hydration registry and augments TopicPayloadMap for the type. This widget is
 // the consumer of that decode-time wrap, so it pulls the registration itself
 // rather than relying on the package entry point's import order.
-import "../topics";
-import { AERO } from "../uplink";
+import "../topics.js";
+import { AERO } from "../uplink.js";
 
 type AeroConfig = Record<string, never>;
 

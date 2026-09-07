@@ -5,7 +5,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { aeroBadges, aeroDescentLayers } from "./index";
+import { aeroBadges, aeroDescentLayers } from "./index.js";
 
 /**
  * The plot's own anchors, describing a Kerbin entry at 28 km whose

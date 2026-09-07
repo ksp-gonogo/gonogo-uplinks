@@ -14,8 +14,8 @@ import {
 import { describe, expect, it } from "vitest";
 // Side-effect import: registers both aero.* Topics and feeds this Uplink's own
 // generated unit and shape maps into the decode-time registry.
-import "./units";
-import { AERO_AVAILABLE_TOPIC, AERO_STATE_TOPIC } from "./topics";
+import "./units.js";
+import { AERO_AVAILABLE_TOPIC, AERO_STATE_TOPIC } from "./topics.js";
 
 // src -> client -> ferramaerospaceresearch -> mod, where the C# half of this
 // Uplink lives
