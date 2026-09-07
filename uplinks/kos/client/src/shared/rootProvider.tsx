@@ -1,10 +1,10 @@
 import type { Screen } from "@ksp-gonogo/sitrep-sdk";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { KosCpuDiscovery } from "../dataSource/KosCpuDiscovery";
-import { KOS } from "../uplink";
-import { CpuRegistryProvider } from "./CpuRegistryContext";
-import { CpuRegistryService } from "./CpuRegistryService";
+import { KosCpuDiscovery } from "../dataSource/KosCpuDiscovery.js";
+import { KOS } from "../uplink.js";
+import { CpuRegistryProvider } from "./CpuRegistryContext.js";
+import { CpuRegistryService } from "./CpuRegistryService.js";
 
 /**
  * kOS mounting its own CPU registry at the root of every screen.

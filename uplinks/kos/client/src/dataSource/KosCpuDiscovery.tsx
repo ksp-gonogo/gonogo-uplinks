@@ -1,7 +1,7 @@
 import { useTelemetryClientOptional } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import type { CpuRegistryService } from "../shared/CpuRegistryService";
-import { kosSource } from "./kos";
+import type { CpuRegistryService } from "../shared/CpuRegistryService.js";
+import { kosSource } from "./kos.js";
 
 /**
  * Stands up kOS CPU discovery for the lifetime of the mounted sitrep stream,

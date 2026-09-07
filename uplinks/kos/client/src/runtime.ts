@@ -25,8 +25,8 @@
 // loses access to these names: only MainScreen/StationScreen need to import
 // from `@ksp-gonogo/gonogo-kos-uplink/runtime` specifically instead of the package root.
 
-import "./uplink"; // defineUplinkClient(KOS): idempotent re-registration
-import "./dataSource/kos"; // registerUplinkHandle("kos", kosSource): idempotent
+import "./uplink.js"; // defineUplinkClient(KOS): idempotent re-registration
+import "./dataSource/kos.js"; // registerUplinkHandle("kos", kosSource): idempotent
 // registerBarePrimitiveTopic("kos.processors") + the two unit-registry loops,
 // all idempotent (a Set, and last-write-wins Maps), so re-running them from both
 // this file AND `index.ts`'s re-export is harmless in the same way the two above
@@ -36,7 +36,7 @@ import "./dataSource/kos"; // registerUplinkHandle("kos", kosSource): idempotent
 // consumer that loads only the runtime half would see `isTopicId
 // ("kos.processors")` go false and `getAllKnownTopicIds()` drop it, which would
 // quietly cost the replay recorder a channel.
-import "./topics";
+import "./topics.js";
 
-export { KosCpuDiscovery } from "./dataSource/KosCpuDiscovery";
-export * from "./shared";
+export { KosCpuDiscovery } from "./dataSource/KosCpuDiscovery.js";
+export * from "./shared/index.js";

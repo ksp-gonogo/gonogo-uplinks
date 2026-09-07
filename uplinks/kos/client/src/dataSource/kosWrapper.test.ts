@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildKosRunCommand, buildKosWrapper } from "./kosWrapper";
+import { buildKosRunCommand, buildKosWrapper } from "./kosWrapper.js";
 
 describe("buildKosWrapper", () => {
   it("emits SET-based check-and-rewrite at REPL top level", () => {

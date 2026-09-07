@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseScriptArgs } from "./args";
+import { parseScriptArgs } from "./args.js";
 
 describe("parseScriptArgs", () => {
   it("returns no args for empty or whitespace-only input", () => {

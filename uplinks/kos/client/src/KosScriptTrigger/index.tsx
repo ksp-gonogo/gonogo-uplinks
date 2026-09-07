@@ -25,13 +25,13 @@ import {
   useModalSaveBar,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import styled from "styled-components";
-import type { KosProcessorInfo } from "../__generated__/contract";
-import { kosSource } from "../dataSource/kos";
-import { isKosScriptError } from "../shared/KosScriptError";
-import type { KosData } from "../shared/kos-data-parser";
-import { KOS } from "../uplink";
-import { parseScriptArgs } from "./args";
+import { styled } from "styled-components";
+import type { KosProcessorInfo } from "../__generated__/contract.js";
+import { kosSource } from "../dataSource/kos.js";
+import { isKosScriptError } from "../shared/KosScriptError.js";
+import type { KosData } from "../shared/kos-data-parser.js";
+import { KOS } from "../uplink.js";
+import { parseScriptArgs } from "./args.js";
 
 interface KosScriptTriggerConfig {
   /**

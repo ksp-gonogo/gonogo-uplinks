@@ -49,8 +49,8 @@ import {
 import type {
   KosProcessorInfo,
   KosRunResult,
-} from "../../__generated__/contract";
-import { parseKosData } from "../../shared/kos-data-parser";
+} from "../../__generated__/contract.js";
+import { parseKosData } from "../../shared/kos-data-parser.js";
 
 export interface FakeKosCpu {
   /** Used as the coreId on the kos.processors wire shape. */

@@ -7,8 +7,8 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { KosProcessorInfo } from "../__generated__/contract";
-import { KosTerminalComponent } from "./index";
+import type { KosProcessorInfo } from "../__generated__/contract.js";
+import { KosTerminalComponent } from "./index.js";
 
 // Faithful terminal reconstruction: back the component's @xterm/xterm import
 // with @xterm/headless (the IDENTICAL VT engine, same 6.0.0), so these tests

@@ -15,9 +15,9 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { Terminal } from "@xterm/xterm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { KosProcessorInfo } from "../__generated__/contract";
-import { kosSource } from "../dataSource/kos";
-import { KosTerminalComponent } from "./index";
+import type { KosProcessorInfo } from "../__generated__/contract.js";
+import { kosSource } from "../dataSource/kos.js";
+import { KosTerminalComponent } from "./index.js";
 
 // xterm.js needs a canvas-capable DOM jsdom doesn't provide. Mock it at the
 // library boundary: the real component logic, stream hooks, and command

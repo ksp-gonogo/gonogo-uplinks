@@ -4,10 +4,10 @@ import {
   getActiveTelemetryClient,
   registerUplinkHandle,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { KosProcessorInfo } from "../__generated__/contract";
-import type { KosData, KosScriptArg } from "../shared/kos-data-parser";
-import type { KosManagedScript } from "../shared/ScriptableDataSource";
-import { KosUplinkExecutor } from "./kosUplinkExecutor";
+import type { KosProcessorInfo } from "../__generated__/contract.js";
+import type { KosData, KosScriptArg } from "../shared/kos-data-parser.js";
+import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
+import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
 
 export type { KosManagedScript, KosScriptArg };
 

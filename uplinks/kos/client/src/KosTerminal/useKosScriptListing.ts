@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { kosSource } from "../dataSource/kos";
-import type { KosData } from "../shared/kos-data-parser";
-import { hashKosScript } from "./hashKosScript";
+import { kosSource } from "../dataSource/kos.js";
+import type { KosData } from "../shared/kos-data-parser.js";
+import { hashKosScript } from "./hashKosScript.js";
 import {
   KOS_FILES_SCRIPT,
   KOS_FILES_SCRIPT_NAME,
   type KosFileEntry,
-} from "./scriptListingScript";
+} from "./scriptListingScript.js";
 
 const SCRIPT_VERSION = hashKosScript(KOS_FILES_SCRIPT);
 
