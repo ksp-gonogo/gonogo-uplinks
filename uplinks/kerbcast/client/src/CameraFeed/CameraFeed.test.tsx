@@ -1346,3 +1346,117 @@ describe("CameraFeed: augment slots (spec §4)", () => {
     await waitFor(() => expect(augment.textContent).toBe("HUD:42:0x0"));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Delayed aim controls (#35), drawn OVER the picture.
+//
+// The widget is media-first: the video is the content and everything else is a
+// layer on top of it that stays out of the way until the operator reaches for
+// it. These cover the two halves of that: WHEN an aim surface exists at all,
+// and when it is visible once it does.
+// ---------------------------------------------------------------------------
+
+const STEERABLE = makeCamera({
+  flightId: 42,
+  cameraName: "Starboard Cam",
+  supportsPan: true,
+  supportsZoom: true,
+  panYaw: 18,
+  panPitch: -10,
+  panYawMin: -90,
+  panYawMax: 90,
+  panPitchMin: -45,
+  panPitchMax: 45,
+  fov: 45,
+  fovMin: 10,
+  fovMax: 90,
+});
+
+/** The layer the aim controls fade on, found from a control inside it. */
+function aimLayer(): HTMLElement {
+  const bar = screen.getByLabelText("Delayed camera control");
+  const layer = bar.closest<HTMLElement>("[data-camera-aim]");
+  if (!layer) throw new Error("aim controls are not on a reveal layer");
+  return layer;
+}
+
+describe("CameraFeed: delayed aim controls", () => {
+  it("gives a steerable camera an aim surface once the link is delayed", async () => {
+    await buildConnectedSource([STEERABLE]);
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: 1.4 });
+    });
+
+    expect(
+      await screen.findByRole("slider", { name: /field of view/i }),
+    ).toBeTruthy();
+  });
+
+  it("gives a FIXED camera none, however delayed the link is", async () => {
+    // A fixed Hullcam has no aim to give it, and its pan bounds are a set of
+    // zeroes rather than an absence, so a gate that only asked whether bounds
+    // existed drew three dead 0-degree tapes across every fixed camera's shot.
+    await buildConnectedSource([
+      makeCamera({ flightId: 42, cameraName: "Nose Cam" }),
+    ]);
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: 1.4 });
+    });
+
+    await screen.findByRole("button", { name: /nose cam/i });
+    expect(screen.queryByLabelText("Delayed camera control")).toBeNull();
+  });
+
+  it("keeps the aim controls off the picture until the pointer moves over it", async () => {
+    await buildConnectedSource([STEERABLE]);
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: 1.4 });
+    });
+
+    const bar = await screen.findByLabelText("Delayed camera control");
+    expect(aimLayer().style.opacity).toBe("0");
+
+    // Fired on a descendant and read on the layer: the reveal is held on the
+    // feed, which is what makes it the same signal the kerbcast SDK's own
+    // controls come back on, so the two clusters appear together.
+    fireEvent.pointerMove(bar);
+    expect(aimLayer().style.opacity).toBe("1");
+
+    fireEvent.pointerLeave(bar);
+    expect(aimLayer().style.opacity).toBe("0");
+  });
+
+  it("reveals them for the keyboard too, and never takes them out of the tree", async () => {
+    // The fade is opacity and nothing else. A pointer-only affordance would
+    // leave a keyboard operator dialling a camera they cannot see, and a
+    // `display: none` one would leave them unable to reach it at all.
+    await buildConnectedSource([STEERABLE]);
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: 1.4 });
+    });
+
+    const yaw = await screen.findByRole("slider", { name: /yaw/i });
+    expect(aimLayer().style.opacity).toBe("0");
+    // Reachable while faded out, so it is still announced and still tabbable.
+    expect(yaw.tabIndex).toBe(0);
+
+    act(() => yaw.focus());
+    expect(aimLayer().style.opacity).toBe("1");
+  });
+});

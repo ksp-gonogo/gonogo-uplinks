@@ -3,33 +3,33 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "94f5735f2a286d79",
-      "elements": 48,
-      "text": "d8dcb9c8"
+      "hash": "9ff055c9acc1175f",
+      "elements": 26,
+      "text": "5a036dc9"
     },
     "camera-feed-fixed--landscape-18x5.png": {
-      "hash": "22611e44513d7109",
-      "elements": 48,
-      "text": "d8dcb9c8"
+      "hash": "a414fbd8a640ffa9",
+      "elements": 26,
+      "text": "5a036dc9"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "c84ab7a77e65b97f",
-      "elements": 48,
-      "text": "d8dcb9c8"
+      "hash": "0746e6f5fab6bd52",
+      "elements": 26,
+      "text": "5a036dc9"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "22bbbb0e8d8f8bc0",
-      "elements": 58,
+      "hash": "71faeeb21c602402",
+      "elements": 61,
       "text": "d5021643"
     },
     "camera-feed-steerable--landscape-18x5.png": {
-      "hash": "e0c7a4567587ef6f",
-      "elements": 58,
+      "hash": "aea4b5548bdab5dc",
+      "elements": 61,
       "text": "d5021643"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "684c032fe03eaf97",
-      "elements": 58,
+      "hash": "cb2724a6141ffdd9",
+      "elements": 61,
       "text": "d5021643"
     }
   }

@@ -1,7 +1,7 @@
 /**
  * CameraSetpointInput: the grouped yaw/pitch/fov vector input for delayed
- * camera control. Three `JogWheel`s (the pan pair, Yaw + Pitch, as horizontal
- * scrubbers, and FOV as a vertical one) inside the existing `CommandGroup`
+ * camera control. Three horizontal `JogWheel` scrubbers (Yaw, Pitch and FOV,
+ * one row) inside the existing `CommandGroup`
  * commit container, so the whole vector dispatches as ONE delayed command on
  * an explicit commit (never on a child's own change). Vanilla-safe: props only,
  * no gonogo data hooks. The `gated`/`gatedReason`/`commitLabel` pass straight
@@ -78,9 +78,15 @@ export function CameraSetpointInput({
         format={formatDegrees}
         onChange={(pitch) => onChange({ ...value, pitch })}
       />
+      {/* Horizontal like the pan pair, though a zoom reads naturally as a
+          vertical slider. A vertical JogWheel is 40x120 where a horizontal one
+          is 120x40, so a single vertical wheel sets the height of the whole
+          row, and this row is a strip along the bottom edge of a camera
+          picture: 120px of it against 40 is the difference between chrome ON
+          the shot and chrome INSTEAD of it. */}
       <JogWheel
         ariaLabel="Field of view"
-        orientation="vertical"
+        orientation="horizontal"
         value={value.fov}
         min={bounds.fovMin}
         max={bounds.fovMax}

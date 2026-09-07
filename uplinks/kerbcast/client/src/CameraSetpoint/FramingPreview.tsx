@@ -28,6 +28,17 @@ export interface FramingPreviewProps {
   height: number;
   /** Drives the single simultaneous unwind morph on commit. */
   committing?: boolean;
+  /**
+   * Clip the drawing to its own box instead of letting it spill.
+   *
+   * A pan-and-zoom target legitimately lands partly outside the current view,
+   * and in a preview BOX the spill is the honest way to say so. Drawn at the
+   * size of the live picture it is not: there the box IS the view, so a target
+   * outside it is outside it, and the spill is both a lie and a layout problem
+   * (the overflow counts as content, and a tile grows to make room for a quad
+   * that was never meant to be reachable).
+   */
+  clip?: boolean;
 }
 
 const AMBER = "var(--color-status-warning-bg)";
@@ -50,6 +61,7 @@ export function FramingPreview({
   width,
   height,
   committing = false,
+  clip = false,
 }: FramingPreviewProps): JSX.Element {
   const { corners, centroid } = computeTargetFraming(setpoint, bounds, {
     width,
@@ -103,7 +115,7 @@ export function FramingPreview({
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       aria-label="Camera framing preview"
-      style={{ display: "block", overflow: "visible" }}
+      style={{ display: "block", overflow: clip ? "hidden" : "visible" }}
     >
       <rect
         data-role="feed-frame"
