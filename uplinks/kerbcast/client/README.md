@@ -43,7 +43,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Reads | `vessel.comms`, `comms.link`, `comms.delay` |
 | Actions | `nextCamera`, `prevCamera`, `zoomIn`, `zoomOut`, `panYaw`, `panPitch` |
 | Slots | `camera-feed.overlay` |
-| Default size | 11 × 7 |
+| Default size | 9 × 8 |
 | Scenes | 2 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
@@ -52,7 +52,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 
 ![The same widget at 9 × 8](docs/assets/camera-feed-fixed--mobile-9x8.png)
 
-![A camera that can be aimed: the pan, pitch and zoom tapes tuck into the corner the kerbcast feed keeps its own pan pad in, and the aim is one the operator commits rather than one that fires per notch](docs/assets/camera-feed-steerable--default.png)
+![A camera that can be aimed: yaw and zoom stack beside a standing pitch wheel, in a block drawn next to the kerbcast feed's own live pan pad rather than over it, so what the delayed aim costs in picture can be read against the live control it supersedes](docs/assets/camera-feed-steerable--default.png)
 
 ![The same widget at its minimum size](docs/assets/camera-feed-steerable--min.png)
 

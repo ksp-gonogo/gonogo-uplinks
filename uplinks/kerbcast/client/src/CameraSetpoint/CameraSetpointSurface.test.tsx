@@ -56,6 +56,38 @@ describe("CameraSetpointSurface", () => {
     expect((commit as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it("keeps the framing preview for a picture with room to spare, and drops it otherwise", () => {
+    // The picture the widget's own default tile draws (316x176) is not one of
+    // them: the wheels, the commit and a tile beside them would be a third of
+    // its width, and the review of an aim is the part of this cluster a small
+    // picture can do without.
+    const { rerender } = render(
+      <CameraSetpointSurface
+        cameraId={42}
+        bounds={bounds}
+        initial={initial}
+        mode="staged"
+        frame={{ width: 316, height: 176 }}
+      />,
+    );
+    expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(
+      null,
+    );
+
+    rerender(
+      <CameraSetpointSurface
+        cameraId={42}
+        bounds={bounds}
+        initial={initial}
+        mode="staged"
+        frame={{ width: 900, height: 506 }}
+      />,
+    );
+    expect(
+      screen.getByRole("img", { name: "Camera framing preview" }),
+    ).toBeTruthy();
+  });
+
   it("has no axe violations in staged mode", async () => {
     const { container } = render(
       <CameraSetpointSurface

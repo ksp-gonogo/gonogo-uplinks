@@ -45,23 +45,33 @@ const CAMERAS: Record<string, MockCameraInit> = {
   },
 };
 
-/** Everything a camera carries that is not about how it can be steered. */
+/**
+ * Everything a camera carries that is not about how it can be steered.
+ *
+ * The render size is the shipped one, not a round number: kerbcast's own
+ * `KerbcastSettings` defaults `Width`/`Height` to 1024x576, and every camera
+ * takes those unless a part-specific override says otherwise. It matters here
+ * because the widget's frame now holds the CAMERA's aspect, so a fixture that
+ * declared a square camera was a picture of a shape no shipped install
+ * produces.
+ */
 function base(): MockCameraInit {
   return {
     flightId: 42,
     partTitle: "Hullcam Mk1",
     cameraName: "Starboard Cam",
     vesselName: "Kerbal X",
-    renderWidth: 384,
-    renderHeight: 384,
-    operatorWidth: 384,
-    operatorHeight: 384,
+    renderWidth: 1024,
+    renderHeight: 576,
+    operatorWidth: 1024,
+    operatorHeight: 576,
     fov: 45,
     encoderBitrateBps: 1_500_000,
   };
 }
 
-const FEED_PX = 384;
+const FEED_W_PX = 512;
+const FEED_H_PX = 288;
 
 let source: KerbcastDataSource | null = null;
 let rafId = 0;
@@ -121,16 +131,16 @@ function paintScene(
  *  rather than in one only this harness can produce. */
 function startCanvasStream(): MediaStream {
   const canvas = document.createElement("canvas");
-  canvas.width = FEED_PX;
-  canvas.height = FEED_PX;
-  canvas.style.cssText = `position:fixed;left:-9999px;top:0;width:${FEED_PX}px;height:${FEED_PX}px;`;
+  canvas.width = FEED_W_PX;
+  canvas.height = FEED_H_PX;
+  canvas.style.cssText = `position:fixed;left:-9999px;top:0;width:${FEED_W_PX}px;height:${FEED_H_PX}px;`;
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("kerbcast render setup: no 2d context");
   let t = 0;
   const draw = (): void => {
     t += 0.02;
-    paintScene(ctx, FEED_PX, FEED_PX, t);
+    paintScene(ctx, FEED_W_PX, FEED_H_PX, t);
     rafId = requestAnimationFrame(draw);
   };
   draw();

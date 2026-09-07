@@ -30,6 +30,7 @@ import {
   type Severity,
   speakQuantity,
   Unit,
+  useElementSize,
   usePrefersReducedMotion,
   writeQuantity,
 } from "@ksp-gonogo/ui-kit";
@@ -50,6 +51,7 @@ import type {
 import { CameraSetpointSurface } from "../CameraSetpoint/CameraSetpointSurface.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { feedAspect, frameBox } from "./frameShape.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
@@ -375,6 +377,17 @@ export function CameraFeed({
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
 
+  // ---- Frame shape ----
+  // The box the frame is fitted INTO, measured so the frame itself can be given
+  // the CAMERA's shape rather than the tile's (see `frameShape.ts`). Seeded 16:9
+  // rather than empty: jsdom's ResizeObserver stub never fires, and a zero seed
+  // there would give the frame no size at all, which is the one thing the SDK's
+  // `Stage` cannot survive.
+  const { ref: stageRef, size: stageBox } = useElementSize<HTMLDivElement>({
+    w: 320,
+    h: 180,
+  });
+
   // ---- Control reveal ----
   // The delayed-aim controls are drawn over the picture and are hidden until
   // the operator reaches for them, exactly as the kerbcast SDK's own controls
@@ -385,7 +398,7 @@ export function CameraFeed({
   //
   // Focus is a first-class reveal rather than a nicety: the surface is only
   // ever faded, never unmounted or `visibility: hidden`, so a keyboard operator
-  // tabbing into the tapes brings them back and the controls stay in the
+  // tabbing into the wheels brings them back and the controls stay in the
   // accessibility tree the whole time.
   const [pointerOver, setPointerOver] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
@@ -449,6 +462,8 @@ export function CameraFeed({
   const steerable =
     activeCamera !== undefined &&
     (activeCamera.supportsPan || activeCamera.supportsZoom);
+  // The frame takes the CAMERA's shape, fitted into whatever the tile left it.
+  const frame = frameBox(stageBox, feedAspect(activeCamera));
   const showSetpointSurface =
     controlMode !== "live" &&
     effectiveFlightId !== null &&
@@ -489,106 +504,108 @@ export function CameraFeed({
         panelTitle="CAMERA"
         sections={
           <Section full fill>
-            <FramedDisplay
-              style={FEED_FRAME_STYLE}
-              onPointerEnter={() => setPointerOver(true)}
-              onPointerMove={() => setPointerOver(true)}
-              onPointerDown={() => setPointerOver(true)}
-              onPointerLeave={() => setPointerOver(false)}
-              onFocus={() => setFocusWithin(true)}
-              onBlur={onFeedBlur}
-            >
-              <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
-                <SharedCameraFeed
-                  ref={feedRef}
-                  useStream={useDelayedKerbcastStream}
-                  flightId={requested}
-                  cameraFilter={isPartCamera}
-                  onSelectCamera={(nextFlightId) =>
-                    onConfigChange?.({
-                      flightId: nextFlightId,
-                      showDebugInfo: config?.showDebugInfo ?? false,
-                    })
-                  }
-                  onDisplayedCameraChange={setEffectiveFlightId}
-                  showDebugInfo={showDebugInfo}
-                  enableFullscreen
-                  enablePictureInPicture
-                  // `disableManualControls={controlMode === "staged"}` belongs
-                  // here, so the SDK's built-in live pan and zoom stand down
-                  // above the delay threshold rather than offering a second,
-                  // undelayed way to aim the same camera. It is REACHABLE now:
-                  // the lockfile pins @ksp-gonogo/kerbcast-react 1.9.1 and the
-                  // prop is on its `CameraFeedProps`. It is still not passed,
-                  // because standing the SDK's own pan pad down changes what the
-                  // operator sees rather than fixing wiring, and the delayed
-                  // surface below is drawn to sit ON TOP of that pad rather than
-                  // in place of it.
-                />
-                <div style={FEED_OVERLAY_STYLE}>
-                  <AugmentSlot
-                    name="camera-feed.overlay"
-                    props={overlayContext}
+            <div ref={stageRef} style={FEED_STAGE_STYLE}>
+              <FramedDisplay
+                style={{ ...FEED_FRAME_STYLE, ...frame }}
+                onPointerEnter={() => setPointerOver(true)}
+                onPointerMove={() => setPointerOver(true)}
+                onPointerDown={() => setPointerOver(true)}
+                onPointerLeave={() => setPointerOver(false)}
+                onFocus={() => setFocusWithin(true)}
+                onBlur={onFeedBlur}
+              >
+                <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
+                  <SharedCameraFeed
+                    ref={feedRef}
+                    useStream={useDelayedKerbcastStream}
+                    flightId={requested}
+                    cameraFilter={isPartCamera}
+                    onSelectCamera={(nextFlightId) =>
+                      onConfigChange?.({
+                        flightId: nextFlightId,
+                        showDebugInfo: config?.showDebugInfo ?? false,
+                      })
+                    }
+                    onDisplayedCameraChange={setEffectiveFlightId}
+                    showDebugInfo={showDebugInfo}
+                    enableFullscreen
+                    enablePictureInPicture
+                    // `disableManualControls={controlMode === "staged"}` belongs
+                    // here, so the SDK's built-in live pan and zoom stand down
+                    // above the delay threshold rather than offering a second,
+                    // undelayed way to aim the same camera. It is REACHABLE now:
+                    // the lockfile pins @ksp-gonogo/kerbcast-react 1.9.1 and the
+                    // prop is on its `CameraFeedProps`. It is still not passed,
+                    // because standing the SDK's own pan pad down changes what the
+                    // operator sees rather than fixing wiring, and the delayed
+                    // surface below is drawn to sit ON TOP of that pad rather than
+                    // in place of it.
                   />
-                </div>
-                <div style={FEED_BADGES_STYLE}>
-                  {delayBadge && (
-                    <Badge aria-label={delayBadge.ariaLabel}>
-                      {delayBadge.label}
-                    </Badge>
-                  )}
-                  {qualityBadge && (
-                    <Badge
-                      severity={qualityBadge.tone}
-                      aria-label={qualityBadge.ariaLabel}
-                    >
-                      {qualityBadge.label}
-                    </Badge>
-                  )}
-                </div>
-                {showSetpointSurface && (
-                  <div
-                    // A stable targeting hook for the layer that carries the
-                    // reveal, the same contract as ui-kit's `data-panel-body`:
-                    // what a test needs here is the OPACITY, which lives on the
-                    // layer rather than on any control inside it, and counting
-                    // ancestors up from a slider would break the moment the
-                    // composition changed.
-                    data-camera-aim=""
-                    style={{
-                      ...FEED_SETPOINT_STYLE,
-                      opacity: controlsRevealed ? 1 : 0,
-                      transition: reduceMotion ? undefined : "opacity 150ms ease",
-                    }}
-                  >
-                    <CameraSetpointSurface
-                      cameraId={effectiveFlightId as number}
-                      bounds={setpointBounds as CameraSetpointBounds}
-                      initial={setpointInitial as CameraSetpoint}
-                      mode={controlMode}
-                      frame={feedSize}
+                  <div style={FEED_OVERLAY_STYLE}>
+                    <AugmentSlot
+                      name="camera-feed.overlay"
+                      props={overlayContext}
                     />
                   </div>
-                )}
-                {unavailableReason && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    style={FEED_UNAVAILABLE_STYLE}
-                  >
-                    <Badge
-                      severity="critical"
-                      aria-label="Delayed feed unavailable"
-                    >
-                      DELAYED FEED UNAVAILABLE
-                    </Badge>
-                    <span style={FEED_UNAVAILABLE_REASON_STYLE}>
-                      {unavailableReason}
-                    </span>
+                  <div style={FEED_BADGES_STYLE}>
+                    {delayBadge && (
+                      <Badge aria-label={delayBadge.ariaLabel}>
+                        {delayBadge.label}
+                      </Badge>
+                    )}
+                    {qualityBadge && (
+                      <Badge
+                        severity={qualityBadge.tone}
+                        aria-label={qualityBadge.ariaLabel}
+                      >
+                        {qualityBadge.label}
+                      </Badge>
+                    )}
                   </div>
-                )}
-              </div>
-            </FramedDisplay>
+                  {showSetpointSurface && (
+                    <div
+                      // A stable targeting hook for the layer that carries the
+                      // reveal, the same contract as ui-kit's `data-panel-body`:
+                      // what a test needs here is the OPACITY, which lives on the
+                      // layer rather than on any control inside it, and counting
+                      // ancestors up from a slider would break the moment the
+                      // composition changed.
+                      data-camera-aim=""
+                      style={{
+                        ...FEED_SETPOINT_STYLE,
+                        opacity: controlsRevealed ? 1 : 0,
+                        transition: reduceMotion ? undefined : "opacity 150ms ease",
+                      }}
+                    >
+                      <CameraSetpointSurface
+                        cameraId={effectiveFlightId as number}
+                        bounds={setpointBounds as CameraSetpointBounds}
+                        initial={setpointInitial as CameraSetpoint}
+                        mode={controlMode}
+                        frame={feedSize}
+                      />
+                    </div>
+                  )}
+                  {unavailableReason && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      style={FEED_UNAVAILABLE_STYLE}
+                    >
+                      <Badge
+                        severity="critical"
+                        aria-label="Delayed feed unavailable"
+                      >
+                        DELAYED FEED UNAVAILABLE
+                      </Badge>
+                      <span style={FEED_UNAVAILABLE_REASON_STYLE}>
+                        {unavailableReason}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </FramedDisplay>
+            </div>
           </Section>
         }
       />
@@ -676,21 +693,30 @@ function describeSignalQuality(
 }
 
 /**
- * The frame, and the whole of the panel body: it takes the filling section and
- * the picture takes the frame, with no sibling to share the height with.
+ * The box the frame is fitted into: the whole of the panel body, with the frame
+ * centred in whatever it does not use.
+ */
+const FEED_STAGE_STYLE: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+/**
+ * The frame itself, sized by `frameBox` rather than by the layout.
  *
- * The size is stated here rather than left to the content, because there is no
- * content to leave it to. The kerbcast SDK's `Stage` positions its `<video>`
- * absolutely and says in its own comment that it "collapses to zero height"
- * without a definite one, so a frame that sizes to its children sizes to
- * nothing, and the render harness then stretches a 2px scene into a barcode of
- * vertical bars rather than showing an empty box. `flex: 1` against a filling
- * `Section` is what supplies that definite height, the same pairing Targeting's
- * docking viewport uses; the `min-*: 0` are what let it SHRINK to the tile
- * rather than pushing the panel past it.
+ * The size has to be stated somewhere, because there is no content to leave it
+ * to. The kerbcast SDK's `Stage` positions its `<video>` absolutely and says in
+ * its own comment that it "collapses to zero height" without a definite one, so
+ * a frame that sizes to its children sizes to nothing, and the render harness
+ * then stretches a 2px scene into a barcode of vertical bars rather than showing
+ * an empty box.
  */
 const FEED_FRAME_STYLE: CSSProperties = {
-  flex: 1,
+  flex: "0 0 auto",
   minWidth: 0,
   minHeight: 0,
 };

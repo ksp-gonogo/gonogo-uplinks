@@ -15,33 +15,31 @@ registerComponent<CameraFeedConfig>({
     "Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera picker and Next/Previous switching.",
   tags: ["camera"],
   /**
-   * Eleven columns is what the WHOLE delayed-aim cluster needs: the tapes and
-   * the commit are 287px, the framing tile beside them another 68px, and the
-   * insets 16px, so 371px of picture and 407px of tile. At the minimum below,
-   * the tile is dropped and the numbers stay; this is the size at which the
-   * operator gets the review of them as well.
+   * Down from 11x7. Eleven columns were what the aim cluster needed while it
+   * was a 357px strip; it is now a 110x88 block, and the frame holds the
+   * CAMERA's aspect rather than the tile's, so width past what the height can
+   * use is empty panel either side of the picture.
+   *
+   * <p>The chrome takes a fixed 36px of width and 67px of height (the panel
+   * border, the reserved delay-rail band, the title row and the body padding),
+   * measured on the render harness. Eight rows leave 189px of picture height,
+   * which a 16:9 camera would fill at 336px wide; nine columns offer 316px, so
+   * the picture is 316x178 and the cluster is a third of its width and half its
+   * height. A tenth column would buy 40px the height cannot use.</p>
    */
-  defaultSize: { w: 11, h: 7 },
+  defaultSize: { w: 9, h: 8 },
   /**
-   * Nine columns and six rows is what is left over once `Panel`'s chrome has
-   * taken its share, measured on the render harness: 36px of width to the body
-   * padding and the frame border, and 67px of height to the panel border, the
-   * reserved delay-rail band, the title row and the body padding. A 6x4 tile,
-   * which is what this said while the widget was a bare `FramedDisplay`, leaves
-   * a 196x40 picture, and nothing in this widget works at that size.
-   *
-   * <p>Nine columns is set by the widest thing that must ALWAYS be drawn over
-   * the picture, the tapes and their commit at 287px: 303px of picture plus the
-   * chrome. Six rows is set by the kerbcast SDK's own zoom column, which is
+   * Six rows is unchanged, and still set by the kerbcast SDK's own zoom column:
    * 109px tall and bottom-anchored, so a shorter picture cuts the "+" off the
-   * top of it.</p>
+   * top of it. The 123px of picture that leaves also holds the aim cluster,
+   * which is 88px plus 16px of inset.
    *
-   * <p>The old note about the feed's own title needing six columns still holds
-   * and is no longer the binding constraint: the title is drawn inside the
-   * picture, which is now 36px narrower than the tile, and nine columns clears
-   * it comfortably.</p>
+   * <p>Seven columns, down from nine. Nine was set by the aim tapes needing
+   * 287px of picture in one row, and that row is gone; what is left is the
+   * cluster's own 110px plus its inset, and the 219px a 16:9 camera draws into
+   * 123px of height. 255px of tile, so seven columns.</p>
    */
-  minSize: { w: 9, h: 6 },
+  minSize: { w: 7, h: 6 },
   // On MobileDashboard a widget without this squishes to
   // `defaultSize.h * ROW_HEIGHT` (5 * 25 = 125px), far too short for a
   // 16:9 feed. Give it a proper box (mirrors the other media-ish widgets

@@ -10,7 +10,7 @@
  * gated, consistent with any uplink command under signal loss.
  *
  * It is drawn OVER the picture as ONE cluster tucked into the bottom-right
- * corner: the tapes, the commit and a small framing preview, sized to its own
+ * corner: the wheels, the commit and a small framing preview, sized to its own
  * content rather than to the picture. It is absolutely positioned and takes no
  * share of the layout, because the host is a video widget whose content is the
  * picture.
@@ -42,6 +42,7 @@ import {
   type CameraSetpoint,
   type CameraSetpointBounds,
   CameraSetpointInput,
+  SETPOINT_INPUT_HEIGHT_PX,
   SETPOINT_INPUT_WIDTH_PX,
 } from "./CameraSetpointInput.js";
 import { FramingPreview } from "./FramingPreview.js";
@@ -64,19 +65,44 @@ const PREVIEW_MIN_HEIGHT_PX = 28;
  *  CSS px the arithmetic below needs it in. */
 const CLUSTER_INSET_PX = 8;
 
-/** Gap between the tapes and the preview tile, CSS px (`--space-4`). */
+/** The SDK's own pan pad, read off its `PanControl`: a 52px square inset 10px
+ *  from the bottom-right corner of the picture. The cluster is placed against
+ *  it, so both numbers are load-bearing rather than decorative. */
+const SDK_PAN_PAD_PX = 52;
+const SDK_PAN_PAD_INSET_PX = 10;
+
+/** Where the cluster's right edge sits: clear of the pad, by an inset. */
+const PAN_PAD_CLEARANCE_PX =
+  SDK_PAN_PAD_PX + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX;
+
+/** Gap between the wheels and the preview tile, CSS px (`--space-4`). */
 const PREVIEW_GAP_PX = 4;
+
+/**
+ * The most of the picture the DRAWN cluster may take before it stops being
+ * chrome in the corner and becomes the thing on screen.
+ *
+ * A share rather than a pixel threshold, because that is the question actually
+ * being asked. The old test compared the picture against a fixed width, which
+ * was a fair proxy while the wheels alone were 287px wide: a picture that could
+ * hold them and a tile was, by then, a large one. The wheels are now a block
+ * about a third of that width, so the same fixed test would have shown the tile
+ * on every picture big enough to see and laid a cluster across a third of it.
+ */
+const CLUSTER_MAX_WIDTH_SHARE = 1 / 3;
+const CLUSTER_MAX_HEIGHT_SHARE = 1 / 2;
 
 /**
  * The preview tile's own size, or `null` when the picture cannot spare one.
  *
  * The tile is the one OPTIONAL part of the cluster, so whether it fits is a
- * question about what the rest already costs, and it is asked that way: the
- * tapes plus the commit are `SETPOINT_INPUT_WIDTH_PX` wide whatever the picture
- * is, and a picture that cannot hold those plus a tile plus the insets drops the
- * tile and keeps the numbers, which are the control. The same test doubles as
- * the guard against a zero-sized frame, which is what an unmeasured feed and
- * every jsdom test report.
+ * question about what the rest already costs, and it is asked twice: whether
+ * the cluster plus a tile physically fits between the SDK's pan pad and the far
+ * edge, and then whether what is DRAWN still reads as chrome rather than as the
+ * screen. A picture that fails either drops the tile and keeps the numbers,
+ * which are the control. The first test doubles as the guard against a
+ * zero-sized frame, which is what an unmeasured feed and every jsdom test
+ * report.
  *
  * The height follows the picture's aspect rather than a fixed rectangle: the
  * preview says where a framing lands inside the current view, and a 16:9 model
@@ -88,12 +114,12 @@ function previewSize(
   frame: { width: number; height: number } | undefined,
 ): { width: number; height: number } | null {
   if (!frame || frame.width <= 0 || frame.height <= 0) return null;
-  const room =
-    SETPOINT_INPUT_WIDTH_PX +
-    PREVIEW_GAP_PX +
-    PREVIEW_WIDTH_PX +
-    2 * CLUSTER_INSET_PX;
-  if (frame.width < room) return null;
+  const drawnWidth =
+    SETPOINT_INPUT_WIDTH_PX + PREVIEW_GAP_PX + PREVIEW_WIDTH_PX;
+  if (drawnWidth + PAN_PAD_CLEARANCE_PX + CLUSTER_INSET_PX > frame.width) {
+    return null;
+  }
+  if (drawnWidth > frame.width * CLUSTER_MAX_WIDTH_SHARE) return null;
   const height = Math.round(
     Math.min(
       PREVIEW_WIDTH_PX,
@@ -104,7 +130,8 @@ function previewSize(
     ),
   );
   // A tile that fills the picture it is a model OF is not a model of it.
-  if (frame.height < height + 4 * CLUSTER_INSET_PX) return null;
+  const drawnHeight = Math.max(SETPOINT_INPUT_HEIGHT_PX, height);
+  if (drawnHeight > frame.height * CLUSTER_MAX_HEIGHT_SHARE) return null;
   return { width: PREVIEW_WIDTH_PX, height };
 }
 
@@ -119,7 +146,7 @@ export interface CameraSetpointSurfaceProps {
    * Rendered size of the picture this surface is drawn over, CSS px. It sets
    * the preview tile's aspect and decides whether the picture can spare one at
    * all. Absent (or zero, which is what an unmeasured feed reports) leaves the
-   * tapes alone and draws no tile.
+   * wheels alone and draws no tile.
    */
   frame?: { width: number; height: number };
 }
@@ -188,7 +215,7 @@ export function CameraSetpointSurface({
         />
         {preview && (
           // Last, so a picture too narrow for the whole cluster clips the
-          // PREVIEW first and keeps the tapes: the numbers are the control, the
+          // PREVIEW first and keeps the wheels: the numbers are the control, the
           // tile is the review of them.
           <FramingPreview
             setpoint={setpoint}
@@ -204,25 +231,38 @@ export function CameraSetpointSurface({
 }
 
 /**
- * The cluster, tucked into the bottom-right corner of the picture.
+ * The cluster, on the bottom edge of the picture and just clear of the SDK's own
+ * pan pad rather than on top of it.
+ *
+ * The pad is `52x52` at `bottom: 10px; right: 10px`, read off the SDK's own
+ * `PanControl`, so its left edge is 62px in and the cluster starts a `--space-8`
+ * further along. It used to be stacked over that pad, on the reasoning that a
+ * staged control lands on the affordance it supersedes; the two now sit side by
+ * side because the live pad is the YARDSTICK. Standing them next to each other
+ * is the only way an operator can see what the delayed cluster costs them in
+ * picture, and the same reason `disableManualControls` is deliberately not
+ * passed.
+ *
+ * `bottom` matches the pad's own 10px rather than the `--space-8` everything
+ * else here uses, so the two boxes share a baseline instead of missing it by 2px.
  *
  * No `left`, so an absolutely positioned box shrinks to its own content instead
  * of spanning the shot; `max-width` then keeps it inside the picture on a tile
  * too narrow to hold it, where what gives is how much of the cluster is on
  * screen at once rather than how much of the video is left.
  *
- * It stays ONE ROW, and that is now the kit's job rather than a trick played on
+ * It stays ONE BLOCK, and that is the kit's job rather than a trick played on
  * it. `CommandGroup wrap={false}` is the real fix for what an inner
  * `width: max-content` track used to buy: that track defeated the wrap by
  * laying the row out against the width it wanted, which made the cluster a
  * sideways-scrolling strip with the FOV tape off the edge of the picture.
- * Vertical growth is still the one thing this widget must not do, and it is not
- * containable by a `max-height`, because the render harness grows the tile
- * until nothing inside it scrolls vertically.
+ * Uncontrolled growth on either axis is the one thing this widget must not do,
+ * and it is not containable by a `max-height`, because the render harness grows
+ * the tile until nothing inside it scrolls vertically.
  *
- * `overflow: hidden` rather than `auto`: a row that no longer wraps and is sized
- * to the corner has nothing to scroll TO, and a scroll container here only ever
- * offered a scrollbar drawn across the shot.
+ * `overflow: hidden` rather than `auto`: a block that no longer wraps and is
+ * sized to the corner has nothing to scroll TO, and a scroll container here only
+ * ever offered a scrollbar drawn across the shot.
  *
  * Its own translucent backing rather than `surface="panel"`: an opaque panel
  * colour over a moving picture reads as a hole cut in the video, where the
@@ -231,15 +271,15 @@ export function CameraSetpointSurface({
  */
 const CLUSTER_STYLE: CSSProperties = {
   position: "absolute",
-  right: "var(--space-8)",
-  bottom: "var(--space-8)",
-  maxWidth: "calc(100% - 2 * var(--space-8))",
+  right: `${PAN_PAD_CLEARANCE_PX}px`,
+  bottom: `${SDK_PAN_PAD_INSET_PX}px`,
+  maxWidth: `calc(100% - ${PAN_PAD_CLEARANCE_PX + CLUSTER_INSET_PX}px)`,
   overflow: "hidden",
   background: "rgba(0, 0, 0, 0.72)",
   pointerEvents: "auto",
 };
 
-/** The tapes and the preview tile, side by side, vertically centred. */
+/** The wheels and the preview tile, side by side, vertically centred. */
 const CLUSTER_TRACK_STYLE: CSSProperties = {
   display: "flex",
   alignItems: "center",

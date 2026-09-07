@@ -5,8 +5,8 @@
     "config": {
       "flightId": 42
     },
-    "caption": "A camera that can be aimed: the pan, pitch and zoom tapes tuck into the corner the kerbcast feed keeps its own pan pad in, and the aim is one the operator commits rather than one that fires per notch",
-    "before": [{ "hover": "video" }],
+    "caption": "A camera that can be aimed: yaw and zoom stack beside a standing pitch wheel, in a block drawn next to the kerbcast feed's own live pan pad rather than over it, so what the delayed aim costs in picture can be read against the live control it supersedes",
+    "before": [{ "hover": "[aria-label='Pan camera']" }],
     "paints": ["Commit"]
   },
   "_stream": {

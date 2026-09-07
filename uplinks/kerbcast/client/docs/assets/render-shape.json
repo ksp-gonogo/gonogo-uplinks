@@ -3,34 +3,34 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "0ff3b582ec624a6f",
-      "elements": 37,
+      "hash": "0e33f017a461a3eb",
+      "elements": 38,
       "text": "ccb1a4af"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "a82f3d7867925785",
-      "elements": 37,
+      "hash": "c3d718d6c11f425d",
+      "elements": 38,
       "text": "ccb1a4af"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "96afcef7231d21e5",
-      "elements": 37,
+      "hash": "5f2f614398706469",
+      "elements": 38,
       "text": "ccb1a4af"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "801d98ca2d6cf779",
-      "elements": 70,
-      "text": "09495471"
+      "hash": "91c534bb071fa522",
+      "elements": 71,
+      "text": "9e4d3ccc"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "af7a4a30e64a63d4",
-      "elements": 65,
-      "text": "09495471"
+      "hash": "33d22a3eaedec2f5",
+      "elements": 71,
+      "text": "9e4d3ccc"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "194123c01b5f47da",
-      "elements": 65,
-      "text": "09495471"
+      "hash": "ca40dec2f8c32652",
+      "elements": 71,
+      "text": "9e4d3ccc"
     }
   }
 }
