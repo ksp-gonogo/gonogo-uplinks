@@ -85,4 +85,33 @@ describe("AvionicsGoNoGoComponent", () => {
     });
     expect(await screen.findByText("NO AVIONICS")).toBeInTheDocument();
   });
+
+  // The withholding this widget documents ("a stale GO is the single worst
+  // thing this widget could draw") produced a confident NO AVIONICS instead of
+  // a withheld verdict, because the flag was coalesced to false. NO AVIONICS is
+  // a claim about the vessel's hardware; nobody read the hardware.
+  // Container-scoped, because both strings are this widget's own and a
+  // body-wide query would answer from either.
+  it("says it has no reading, not NO AVIONICS, while the status has not been observed", async () => {
+    const fixture = newFixture();
+    const { container } = renderWidget(fixture);
+    await act(async () => {});
+
+    expect(visibleText(container)).toContain("NO READING");
+    expect(visibleText(container)).not.toContain("NO AVIONICS");
+  });
+
+  // The same absence arriving inside an observed payload: the channel answered
+  // but the flag was not in it, so the vessel's avionics are still unread.
+  it("says it has no reading when an observed status carries no avionicsActive flag", async () => {
+    const fixture = newFixture();
+    const { container } = renderWidget(fixture);
+    act(() => {
+      fixture.emit("avionics.status", { vesselMassTons: 6.5 });
+    });
+    await act(async () => {});
+
+    expect(visibleText(container)).toContain("NO READING");
+    expect(visibleText(container)).not.toContain("NO AVIONICS");
+  });
 });

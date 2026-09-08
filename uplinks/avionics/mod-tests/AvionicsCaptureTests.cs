@@ -28,6 +28,23 @@ public class AvionicsCaptureTests
         Assert.Equal(true, s["controllable"]);
     }
 
+    // A vessel that HAS an avionics unit whose switch could not be read is a
+    // different fact from one with no avionics at all, and the wire has to keep
+    // them apart: the widget draws NO AVIONICS for a false and withholds its
+    // verdict for a null. Coalesced (`systemEnabled ?? true`) this arrived as a
+    // confident "on" and the widget drew a GO/NO-GO off a switch nobody read.
+    [Fact]
+    public void Build_carries_an_unread_switch_through_as_null()
+    {
+        var s = AvionicsCapture.Build(
+            new AvionicsRaw { ControllableMassTons = 4.0, AvionicsActive = null },
+            vesselMassTons: 5.2);
+
+        Assert.Null(s["avionicsActive"]);
+        // The mass limit WAS read, so it still goes out: only the switch is unknown.
+        Assert.Equal(4.0, (double)s["controllableMassTons"]!, 6);
+    }
+
     [Fact]
     public void Build_reports_no_avionics_when_raw_null()
     {

@@ -175,13 +175,23 @@ namespace Gonogo.KerbcastUplink
         /// </summary>
         internal object? CaptureOnMain(KspSnapshot? snapshot)
         {
+            // No snapshot, no UT. The publish UT is what the reveal buffer gates
+            // on, so a sample stamped 0 is older than every edge and goes straight
+            // past the signal delay: live data on a delayed link, with nothing
+            // saying so. A tick we cannot date is skipped, the same fail-soft this
+            // method already uses when kerbcast is absent.
+            if (snapshot == null)
+            {
+                return null;
+            }
+
             var kerbcast = _kerbcast;
             if (kerbcast == null)
             {
                 return null;
             }
 
-            var capture = new CameraCapture { Ut = snapshot?.Ut ?? 0.0 };
+            var capture = new CameraCapture { Ut = snapshot.Ut };
 
             var coreActive = kerbcast.IsActive();
             _coreActive = coreActive;

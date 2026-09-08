@@ -76,7 +76,10 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
 
   beforeEach(async () => {
     clearRegistry();
-    const keys: DataKey[] = [{ key: "scansat.biome.Kerbin" }];
+    const keys: DataKey[] = [
+      { key: "scansat.biome.Kerbin" },
+      { key: "scansat.anomalies.Kerbin" },
+    ];
     source = new MockDataSource({ keys });
     buffered = new BufferedDataSource({ source, store: new MemoryStore() });
     registerDataSource(buffered);
@@ -250,6 +253,41 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
 
     await waitFor(() => {
       expect(visibleDrawImageCalls().length).toBe(1);
+    });
+  });
+
+  // Anomaly markers are the only `fill()` the visible canvas takes (the
+  // crosshair strokes, the colormap arrives as one drawImage), so counting
+  // them counts markers. A known anomaly whose fix did not decode used to
+  // default to 0/0 and land inside a window centred on 0°N 0°E: a marker on
+  // the map for a site whose position nobody read.
+  it("plants no anomaly marker for a known anomaly with no readable coordinates", async () => {
+    renderMinimap(
+      <FogMaskCacheProvider store={store}>
+        <Minimap body={BODY} vesselLat={0} vesselLon={0} />
+      </FogMaskCacheProvider>,
+    );
+    act(() => {
+      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      source.emit("scansat.anomalies.Kerbin", [
+        // In-window and fully readable: the control, so a count of 1 below
+        // means "one was filtered", not "nothing rendered at all".
+        { name: "Monolith", latitude: 5, longitude: 5, known: true, detail: true },
+        {
+          name: "Unfixed",
+          latitude: null,
+          longitude: null,
+          known: true,
+          detail: true,
+        },
+      ]);
+    });
+
+    await waitFor(() => {
+      const markers = calls.filter(
+        (c) => c.kind === "fill" && c.canvasW !== BASE_LAYER_CANVAS_W,
+      );
+      expect(markers.length).toBe(1);
     });
   });
 });

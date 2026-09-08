@@ -35,9 +35,11 @@ function Tons({ t }: { t?: Value<"t"> }) {
  * RP-1 ascent controllability go/no-go. Reads the single `avionics.status`
  * Topic (see GonogoAvionicsUplink) and shows whether the vessel's current mass
  * is within the active avionics unit's controllable-mass limit. The state text
- * (GO / NO-GO / NO AVIONICS) carries the meaning, colour is reinforcement, not
- * the sole signal: and the state block is a polite live region so the go/no-go
- * flip is announced without flooding.
+ * (GO / NO-GO / NO AVIONICS / NO READING) carries the meaning, colour is
+ * reinforcement, not the sole signal: and the state block is a polite live
+ * region so the go/no-go flip is announced without flooding. NO READING is a
+ * fourth state, not a flavour of NO AVIONICS: one says the hardware is not
+ * there, the other says nobody looked.
  */
 export function AvionicsGoNoGoComponent(
   _props: ComponentProps<AvionicsConfig>,
@@ -56,14 +58,30 @@ export function AvionicsGoNoGoComponent(
    */
   const status = useTelemetry("avionics.status");
   const s = status.state === "observed" ? status.value : undefined;
-  const noAvionics = !(s?.avionicsActive ?? false);
+  // The withholding above only holds if the widget then SAYS it is withholding.
+  // Coalesced to false, an absent reading came out as "NO AVIONICS": a claim
+  // about what is bolted to the vessel, made from a reading nobody took, in the
+  // reassuring warning tone rather than the alert one. This arm sits above the
+  // no-avionics arm and takes only the cases that one was answering wrongly; an
+  // OBSERVED `avionicsActive: false` is a real answer and still reads NO
+  // AVIONICS below.
+  const unread = s?.avionicsActive == null;
+  const noAvionics = !unread && !s?.avionicsActive;
   const controllable = s?.controllable ?? false;
-  const label = noAvionics ? "NO AVIONICS" : controllable ? "GO" : "NO-GO";
-  const tone: ReadoutTone = noAvionics
-    ? "warning"
-    : controllable
-      ? "go"
-      : "alert";
+  const label = unread
+    ? "NO READING"
+    : noAvionics
+      ? "NO AVIONICS"
+      : controllable
+        ? "GO"
+        : "NO-GO";
+  const tone: ReadoutTone = unread
+    ? "default"
+    : noAvionics
+      ? "warning"
+      : controllable
+        ? "go"
+        : "alert";
   return (
     <Panel
       panelTitle="Avionics Control"

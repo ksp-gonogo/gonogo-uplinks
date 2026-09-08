@@ -82,30 +82,38 @@ registerMapPoiProvider({
 
       return anomalies
         .filter((a) => a.known)
-        .map((a): MapPoi => {
+        .flatMap((a): MapPoi[] => {
           // The projection and the command both take plain numbers; the
           // anomaly's own coordinates arrive as `Value<"°">`. Passed through
           // unread they placed every marker at NaN.
           const lat = magnitudeOf(a.latitude);
           const lon = magnitudeOf(a.longitude);
+          // An anomaly whose fix did not decode has no place on the map, so
+          // it gets no marker. Defaulted to 0/0 it got one anyway, carrying
+          // the anomaly's real name, sitting at 0°N 0°E. The `actions` guard
+          // below was already written for this absence and already refused to
+          // steer at such a marker; nothing stopped it being DRAWN.
+          if (lat == null || lon == null) return [];
 
-          return {
+          return [{
             id: `anomaly:${a.name}-${lat}-${lon}`,
             bodyId,
-            lat: lat ?? 0,
-            lon: lon ?? 0,
+            lat,
+            lon,
             kind: "anomaly",
             label: a.detail ? a.name : "(unknown)",
             status: "info",
             meta: { known: a.known, detail: a.detail },
-            // Only dispatchable once the body index AND both coordinates have
-            // resolved; never hand a malformed Position SetTarget to the queue
-            // while `system.bodies` is still loading, or for an anomaly whose
-            // fix did not decode. Rides `useCommand("vessel.target.set")` (a
-            // Position-kind SetTarget); instant today, so `usePanelDelay`
-            // consumes the handle and the widget stays behaviour-free.
+            // Only dispatchable once the body index has resolved; never hand
+            // a malformed Position SetTarget to the queue while
+            // `system.bodies` is still loading. The coordinate half of this
+            // guard moved up to the marker itself: an anomaly we cannot place
+            // is no longer drawn, so it cannot be reached here. Rides
+            // `useCommand("vessel.target.set")` (a Position-kind SetTarget);
+            // instant today, so `usePanelDelay` consumes the handle and the
+            // widget stays behaviour-free.
             actions:
-              bodyIndex === undefined || lat == null || lon == null
+              bodyIndex === undefined
                 ? []
                 : [
                     {
@@ -123,7 +131,7 @@ registerMapPoiProvider({
                         ),
                     },
                   ],
-          };
+          }];
         });
     }, [anomalies, ctx.bodyId, setTargetCmd, bodyIndexByName]);
   },

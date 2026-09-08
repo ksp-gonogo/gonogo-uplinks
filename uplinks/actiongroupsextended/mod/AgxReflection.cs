@@ -131,7 +131,18 @@ namespace Gonogo.ActionGroupsExtendedUplink
                         continue;
                     }
                     var name = entry.Value as string;
-                    var state = _groupState.Invoke(null, new object[] { index }) is true;
+                    // `is true` folded "AGExt answered with something that is not
+                    // a bool" into "the group is off": a claim about the vessel
+                    // from a read that did not happen, drawn as a disengaged
+                    // toggle. A per-group read failure IS a read failure, and
+                    // this method's own contract already says what one means:
+                    // null for the tick, retried on the next. It cannot be said
+                    // per group, because `ActionGroupState.State` is a plain
+                    // bool on the wire and has no way to spell "unknown".
+                    if (_groupState.Invoke(null, new object[] { index }) is not bool state)
+                    {
+                        return null;
+                    }
                     result.Add(new AgxGroup(index, name, state));
                 }
                 return result;

@@ -35,7 +35,9 @@ const NEUTRAL_CAPTURE_SAMPLE: CaptureClockSample = {
  * consumer unmounts. See `SharedDelayedStreams`' contribution-seam doc.
  */
 interface CaptureContribution {
-  captureUt(): number;
+  /** `null` when the clock cannot be read for this frame, the same absence
+   *  `NEUTRAL_CAPTURE_SAMPLE` carries for the worker/encoded backends. */
+  captureUt(): number | null;
   getCaptureSample(): CaptureClockSample;
 }
 
@@ -122,8 +124,16 @@ export interface KerbcastStreamDelayOptions {
   view: DelayClockLike;
   /** Capture-UT to stamp EACH captured video frame with, called once per
    *  frame the pipeline reads off the track, not once per stream
-   *  reference. */
-  captureUt(): number;
+   *  reference.
+   *
+   *  Returns `null` when the capture clock cannot be read for this frame:
+   *  a gap in the ~1Hz sidecar samples, or a contributing consumer that has
+   *  unmounted. Frames are then held against the last UT the clock actually
+   *  produced rather than stamped with a fabricated one. A frame stamped
+   *  UT 0 is older than any edge the `view` can hold, so the buffer releases
+   *  it at once and the picture runs LIVE beside correctly-delayed
+   *  telemetry: the one outcome the delay model must never produce. */
+  captureUt(): number | null;
   /** The raw (un-interpolated) capture-clock sample backing `captureUt`.
    *  Only needed by the worker backend, which interpolates locally at
    *  frame-read time inside the worker rather than calling a main-thread
@@ -253,7 +263,7 @@ export function useDelayedPlayout(
     // contributing lease is first-still-live, so the pipeline keeps stamping
     // correctly even after the consumer that built it unmounts.
     lease.setContribution({
-      captureUt: () => captureUtRef.current?.() ?? 0,
+      captureUt: () => captureUtRef.current?.() ?? null,
       getCaptureSample: () =>
         getCaptureSampleRef.current?.() ?? NEUTRAL_CAPTURE_SAMPLE,
     });
@@ -311,7 +321,22 @@ function buildDelayedPipeline(
   const onPipelineError = (err: unknown) => {
     logger.tag("kerbcast:frame-delay").warn("frame pipeline error", { err });
   };
-  const captureUt = () => ctx.contribution()?.captureUt() ?? 0;
+  // Stamp against the last UT the capture clock actually produced, never a
+  // fabricated one. `NEUTRAL_CAPTURE_SAMPLE` already carries that absence for
+  // the worker and encoded backends; this is the same absence for the
+  // main-thread backend, which is the only one that stamps through
+  // `captureUt`. Holding the last real UT is late at worst. Substituting 0
+  // is early always: `DelayedPlayoutBuffer` releases every frame whose stamp
+  // is at or before `confirmedEdgeUt()`, and UT 0 is before every edge, so a
+  // clock gap silently ran the picture LIVE while telemetry stayed delayed.
+  // Before the clock has EVER produced a UT there is nothing to hold against
+  // and the frame is undatable, so it is held indefinitely rather than shown.
+  let lastCaptureUt: number | null = null;
+  const captureUt = () => {
+    const ut = ctx.contribution()?.captureUt();
+    if (ut != null) lastCaptureUt = ut;
+    return lastCaptureUt ?? Number.POSITIVE_INFINITY;
+  };
   const getCaptureSample = () =>
     ctx.contribution()?.getCaptureSample() ?? NEUTRAL_CAPTURE_SAMPLE;
 

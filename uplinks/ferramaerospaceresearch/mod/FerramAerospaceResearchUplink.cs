@@ -146,12 +146,22 @@ namespace GonogoFerramAerospaceResearchUplink
         /// </summary>
         internal object? CaptureOnMain(KspSnapshot? snapshot)
         {
+            // No snapshot, no UT. The publish UT is what the reveal buffer gates
+            // on, so a sample stamped 0 is older than every edge and goes straight
+            // past the signal delay: live data on a delayed link, with nothing
+            // saying so. A tick we cannot date is skipped, the same fail-soft this
+            // method already uses when there is no vessel. It also feeds
+            // `_far.Read`, so a substituted 0 dated the reading twice over.
+            if (snapshot == null)
+            {
+                return null;
+            }
             var vessel = ScopedVessel();
             if (vessel == null)
             {
                 return null;
             }
-            var ut = snapshot?.Ut ?? 0.0;
+            var ut = snapshot.Ut;
             return new AeroCaptured { Ut = ut, Raw = _far.Read(vessel, ut) };
         }
 

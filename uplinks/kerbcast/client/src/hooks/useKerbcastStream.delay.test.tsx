@@ -240,7 +240,7 @@ function StreamProbe({
 }: {
   flightId: number | null;
   clock: DelayClockLike;
-  captureUt: () => number;
+  captureUt: () => number | null;
   resetEpoch?: number;
   onResult: (r: DelayedPlayoutResult) => void;
 }): null {
@@ -619,6 +619,60 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     expect(proc?.cancelled).toBe(false);
     expect(gen?.closed).toBe(false);
     expect(FakeProcessor.instances).toHaveLength(1);
+  });
+
+  // A gap in the ~1Hz capture-clock samples must not become a claim that the
+  // picture has arrived. The stamp decides release entirely
+  // (`DelayedPlayoutBuffer` writes every frame whose UT is at or before
+  // `confirmedEdgeUt()`), so a frame stamped with a substituted 0 is older
+  // than every edge and goes out at once: live video beside delayed
+  // telemetry, with nothing on screen saying so.
+  it("holds a frame the capture clock could not date, against the last UT the clock did produce, rather than releasing it live", async () => {
+    const { FakeGenerator } = installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const rawStream = fakeVideoStream(track);
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    // Edge at UT 10: past a fabricated 0, well short of the camera's real
+    // capture UT of 500. So the two answers are distinguishable at exactly
+    // this edge.
+    const clock = manualClock(10);
+
+    let ut: number | null = 500;
+    render(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => ut}
+        onResult={() => {}}
+      />,
+    );
+    act(() => {
+      cam.emit(rawStream);
+    });
+    const [gen] = FakeGenerator.instances;
+
+    const dated = fakeFrame("dated");
+    track.push(dated);
+    await act(async () => {});
+
+    // The sidecar's clock goes dark mid-stream.
+    ut = null;
+    const undated = fakeFrame("undated");
+    track.push(undated);
+    await act(async () => {});
+
+    expect(gen?.written).toEqual([]);
+
+    // Neither is lost: both release once the edge reaches the last UT the
+    // clock actually produced, which is what the undated one was held
+    // against.
+    act(() => {
+      clock.setEdge(500);
+    });
+    await waitFor(() => {
+      expect(gen?.written).toEqual([dated, undated]);
+    });
   });
 
   // Delay is a property of the CAMERA, not the viewer. Two consumers of one

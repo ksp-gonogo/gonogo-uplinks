@@ -47,7 +47,21 @@ function PulseDialWidget() {
     );
   }
 
-  const ticks = magnitudeOf(heartbeat.value.ticks) ?? 0;
+  // Observed is not the same as complete. Every field on a Topic is
+  // independently optional, so a payload can arrive without the one this
+  // instrument is about. Coalesced to 0 the dial drew a needle at the minimum
+  // and the centre read "0", which is the picture of an Uplink that has
+  // published nothing, not the picture of a count nobody sent. Same reason the
+  // pending state above draws no dial, one step further in.
+  const ticks = magnitudeOf(heartbeat.value.ticks);
+  if (ticks == null) {
+    return (
+      <Panel>
+        <Panel.Title>Pulse</Panel.Title>
+        <EmptyState>The heartbeat carried no tick count</EmptyState>
+      </Panel>
+    );
+  }
 
   return (
     <Panel>

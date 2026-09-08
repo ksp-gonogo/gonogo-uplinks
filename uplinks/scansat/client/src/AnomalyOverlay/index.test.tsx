@@ -117,6 +117,50 @@ describe("scansat:anomalies map POI provider", () => {
     expect(pyramid).toMatchObject({ label: "(unknown)" });
   });
 
+  // A known anomaly whose fix did not decode gets NO marker. Defaulting the
+  // coordinates to 0 put a named marker on the equator at the prime
+  // meridian, which the operator reads as a discovered site there. The
+  // action guard was already written for this absence and already refused
+  // to dispatch; it never stopped the marker being drawn.
+  it("drops a known anomaly with no readable coordinates, rather than placing it at 0°N 0°E", async () => {
+    const anomalySource = new MockDataSource({ id: "data" });
+    registerDataSource(anomalySource);
+    const transport = new StubTransport();
+    const client = createTestTelemetryClient(transport);
+    const provider = getProvider();
+
+    const { result, unmount } = renderHook(
+      () => provider.usePois({ bodyId: "Kerbin" }),
+      { wrapper: wrapper(client) },
+    );
+    renderedTrees.push(unmount);
+
+    act(() => {
+      transport.emit("scansat.anomalies.Kerbin", [
+        {
+          name: "Unfixed",
+          latitude: null,
+          longitude: null,
+          known: true,
+          detail: true,
+        },
+        {
+          name: "Monolith",
+          latitude: 10,
+          longitude: 33,
+          known: true,
+          detail: true,
+        },
+      ]);
+    });
+
+    await waitFor(() => expect(result.current).toHaveLength(1));
+    expect(result.current?.[0]?.id).toContain("Monolith");
+    expect(
+      result.current?.some((p) => p.id.startsWith("anomaly:Unfixed")),
+    ).toBe(false);
+  });
+
   it("a POI's set-target action dispatches vessel.target.set with the resolved body index", async () => {
     // Migrated off the legacy `useExecuteAction`/`tar.setTargetPosition[...]`
     // string path: the action now rides `useCommand("vessel.target.set")`, so

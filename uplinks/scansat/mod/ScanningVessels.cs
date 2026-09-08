@@ -56,22 +56,37 @@ namespace Gonogo.ScansatUplink
         /// <c>groundTrackWidthDeg</c> FoV replication. When no sensor is
         /// in-range the FoV is 0, and BOTH <c>groundTrackWidthDeg</c> and
         /// <c>groundTrackLonHalfDeg</c> emit <c>null</c> (nothing to paint):
-        /// matching the client contract.
+        /// matching the client contract. The same nulls stand in for an
+        /// UNREAD altitude or home radius, which are two of the FoV's inputs:
+        /// see the note on those parameters.
         /// </summary>
+        /// <param name="altitude">
+        /// v.vessel.altitude, or <c>null</c> when SCANsat is tracking a vessel
+        /// whose KSP <c>Vessel</c> is not resolvable. Emitted as-is, so the
+        /// operator reads a blank rather than sea level, and it suppresses the
+        /// ground track, which cannot be computed without it.
+        /// </param>
         /// <param name="bodyRadius">b.Radius (public).</param>
         /// <param name="bodySoiRadius">b.sphereOfInfluence (public).</param>
-        /// <param name="homeRadius">Planetarium.fetch.Home.Radius (public).</param>
+        /// <param name="homeRadius">
+        /// Planetarium.fetch.Home.Radius (public), or <c>null</c> before
+        /// Planetarium is ready. It is the numerator of getFOV's
+        /// <c>surfScale</c>, and a substituted 0 does not surface as a zero:
+        /// getFOV's own <c>if (surfScale &lt; 1) surfScale = 1</c> clamp
+        /// absorbs it, so the swath came out Kerbin-scaled on every body,
+        /// ~1.7× too narrow at the Mun, with nothing to show it was invented.
+        /// </param>
         public static Dictionary<string, object?> Build(
             string vesselId,
             string vesselName,
             string bodyName,
             double subLatitude,
             double subLongitude,
-            double altitude,
+            double? altitude,
             IReadOnlyList<SensorInput> sensors,
             double bodyRadius,
             double bodySoiRadius,
-            double homeRadius,
+            double? homeRadius,
             int trackColorR,
             int trackColorG,
             int trackColorB,
@@ -97,9 +112,22 @@ namespace Gonogo.ScansatUplink
                 fovInputs.Add(new SensorFovInputs(s.Fov, s.MinAlt, s.MaxAlt, s.BestAlt));
             }
 
-            double widthDeg = GroundTrackFov.Compute(fovInputs, altitude, bodyRadius, bodySoiRadius, homeRadius);
-            object? groundTrackWidthDeg = widthDeg > 0 ? widthDeg : null;
-            object? groundTrackLonHalfDeg = widthDeg > 0 ? LonHalfWidth(widthDeg, subLatitude) : null;
+            // A swath needs BOTH the vessel's altitude and the home body's
+            // radius. Either one unread and there is no width to state, so both
+            // emit the null a vessel with no in-range sensor already emits and
+            // the client already reads as nothing to paint.
+            object? groundTrackWidthDeg = null;
+            object? groundTrackLonHalfDeg = null;
+            if (altitude.HasValue && homeRadius.HasValue)
+            {
+                double widthDeg = GroundTrackFov.Compute(
+                    fovInputs, altitude.Value, bodyRadius, bodySoiRadius, homeRadius.Value);
+                if (widthDeg > 0)
+                {
+                    groundTrackWidthDeg = widthDeg;
+                    groundTrackLonHalfDeg = LonHalfWidth(widthDeg, subLatitude);
+                }
+            }
 
             return new Dictionary<string, object?>
             {

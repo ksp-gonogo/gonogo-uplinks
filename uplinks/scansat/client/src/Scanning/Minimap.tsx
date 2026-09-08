@@ -162,9 +162,14 @@ export function Minimap({
     if (anomalies) {
       for (const a of anomalies) {
         if (!a.known) continue;
-        const aTexLat = magnitudeOr(a.latitude, 0) + (body.latitudeOffset ?? 0);
-        const aTexLon =
-          magnitudeOr(a.longitude, 0) + (body.longitudeOffset ?? 0);
+        const aLat = magnitudeOf(a.latitude);
+        const aLon = magnitudeOf(a.longitude);
+        // An anomaly whose fix did not decode is not at 0°N 0°E, it is
+        // nowhere we can draw. Defaulted, it planted a marker on the
+        // equator that the operator could steer at.
+        if (aLat == null || aLon == null) continue;
+        const aTexLat = aLat + (body.latitudeOffset ?? 0);
+        const aTexLon = aLon + (body.longitudeOffset ?? 0);
         const dLat = aTexLat - texLat;
         const dLon = shortestLonDelta(wrapLon(aTexLon), wrapLon(texLon));
         if (Math.abs(dLat) > WINDOW_HALF_DEG) continue;
@@ -321,6 +326,11 @@ function drawScannerFootprint(
   const halfLon = magnitudeOf(v.groundTrackLonHalfDeg);
   if (halfLat == null || halfLat <= 0) return;
   if (halfLon == null || halfLon <= 0) return;
+  // Same rule as the MapView footprint: no sub-point, no rectangle. A
+  // defaulted 0°N 0°E painted a swath the vessel was nowhere near.
+  const subLat = magnitudeOf(v.subLatitude);
+  const subLon = magnitudeOf(v.subLongitude);
+  if (subLat == null || subLon == null) return;
 
   const tc = v.trackColor;
   const fill = tc
@@ -328,10 +338,8 @@ function drawScannerFootprint(
       `${magnitudeOr(tc.b, 255)}, ${(magnitudeOr(tc.a, 255) / 255).toFixed(3)})`
     : "rgba(255, 255, 255, 0.4)";
 
-  const vTexLat = magnitudeOr(v.subLatitude, 0) + (body.latitudeOffset ?? 0);
-  const vTexLon = wrapLon(
-    magnitudeOr(v.subLongitude, 0) + (body.longitudeOffset ?? 0),
-  );
+  const vTexLat = subLat + (body.latitudeOffset ?? 0);
+  const vTexLon = wrapLon(subLon + (body.longitudeOffset ?? 0));
   // Vertical extent: straight delta-lat from the minimap centre.
   const dLatTop = vTexLat + halfLat - centerTexLat;
   const dLatBot = vTexLat - halfLat - centerTexLat;

@@ -185,8 +185,13 @@ export function useDelayedKerbcastStream(
     });
   }, [captureUt, warpRate, view]);
 
+  // `interpolateCaptureUt` returns null when the latched sample has no UT,
+  // which is a real answer and is passed through as one: the pipeline holds
+  // the frame against the last UT it did see. Coalescing it to 0 stamped the
+  // frame before every possible reveal edge, so a gap in the ~1Hz samples
+  // released the picture live.
   const liveCaptureUt = useCallback(
-    () => interpolateCaptureUt(sampleRef.current, performance.now()) ?? 0,
+    () => interpolateCaptureUt(sampleRef.current, performance.now()),
     [],
   );
   // The worker backend needs the RAW sample, not the interpolated value,

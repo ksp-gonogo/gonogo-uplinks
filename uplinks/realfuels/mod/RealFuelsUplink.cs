@@ -125,6 +125,15 @@ namespace GonogoRealFuelsUplink
         /// state off the live modules. Null when there is no reported vessel.</summary>
         internal object? CaptureEnginesOnMain(KspSnapshot? snapshot)
         {
+            // No snapshot, no UT. The publish UT is what the reveal buffer gates
+            // on, so a sample stamped 0 is older than every edge and goes straight
+            // past the signal delay: live data on a delayed link, with nothing
+            // saying so. A tick we cannot date is skipped, the same fail-soft this
+            // method already uses when there is no vessel.
+            if (snapshot == null)
+            {
+                return null;
+            }
             var vessel = ScopedVessel();
             if (vessel == null)
             {
@@ -132,7 +141,7 @@ namespace GonogoRealFuelsUplink
             }
             return new EnginesCaptureData
             {
-                Ut = snapshot?.Ut ?? 0.0,
+                Ut = snapshot.Ut,
                 Raw = _rf.ReadEngines(vessel),
             };
         }
@@ -152,6 +161,12 @@ namespace GonogoRealFuelsUplink
         /// mass and the physics interval it accumulated over.</summary>
         internal object? CaptureBoiloffOnMain(KspSnapshot? snapshot)
         {
+            // Same rule as CaptureEnginesOnMain: a tick with no snapshot has no
+            // UT to publish under, and a sample stamped 0 slips the reveal gate.
+            if (snapshot == null)
+            {
+                return null;
+            }
             var vessel = ScopedVessel();
             if (vessel == null)
             {
@@ -159,7 +174,7 @@ namespace GonogoRealFuelsUplink
             }
             return new BoiloffCaptureData
             {
-                Ut = snapshot?.Ut ?? 0.0,
+                Ut = snapshot.Ut,
                 Raw = _rf.ReadBoiloff(vessel),
             };
         }

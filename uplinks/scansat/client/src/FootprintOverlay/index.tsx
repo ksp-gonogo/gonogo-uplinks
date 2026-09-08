@@ -69,10 +69,15 @@ export function drawFootprints(
     // footprint silently drew nothing.
     const halfLat = magnitudeOf(v.groundTrackWidthDeg);
     const halfLon = magnitudeOf(v.groundTrackLonHalfDeg);
-    const subLat = magnitudeOr(v.subLatitude, 0);
-    const subLon = magnitudeOr(v.subLongitude, 0);
+    const subLat = magnitudeOf(v.subLatitude);
+    const subLon = magnitudeOf(v.subLongitude);
     if (halfLat == null || halfLat <= 0) continue;
     if (halfLon == null || halfLon <= 0) continue;
+    // A vessel whose sub-point did not decode has no known place on this
+    // body, so it gets no rectangle. Defaulted to 0 it got one anyway,
+    // centred on 0°N 0°E, and the operator read a swath being scanned off
+    // the west coast of Africa.
+    if (subLat == null || subLon == null) continue;
 
     const tc = v.trackColor;
     const channels = tc

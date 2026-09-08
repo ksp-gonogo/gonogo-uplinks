@@ -145,6 +145,67 @@ namespace GonogoScansatUplink.Tests
             Assert.Null(wire["groundTrackLonHalfDeg"]);
         }
 
+        // SCANsat tracks unloaded vessels, so a Known_Vessels entry can carry no
+        // resolvable KSP Vessel and therefore no altitude. Substituted with 0 it
+        // published a mapping satellite at sea level, which the widget rendered
+        // as "0 km" through a <Unit> that already had a null token to show.
+        [Fact]
+        public void UnreadAltitude_EmitsNullAltitudeAndNoGroundTrack()
+        {
+            var sensors = new List<ScanningVessels.SensorInput>
+            {
+                new ScanningVessels.SensorInput(type: 2, fov: 5, minAlt: 5000, maxAlt: 500_000, bestAlt: 250_000, inRange: true, bestRange: true),
+            };
+            var wire = ScanningVessels.Build(
+                "scn-4", "Unloaded", "Kerbin",
+                subLatitude: 12.0, subLongitude: 35.0, altitude: null,
+                sensors: sensors,
+                bodyRadius: 600_000, bodySoiRadius: 84_000_000, homeRadius: 600_000,
+                trackColorR: 0, trackColorG: 255, trackColorB: 200, trackColorA: 255);
+
+            Assert.Null(wire["altitude"]);
+            Assert.Null(wire["groundTrackWidthDeg"]);
+            Assert.Null(wire["groundTrackLonHalfDeg"]);
+            // The vessel is still published: it IS being tracked, and its
+            // sub-point and sensors were read.
+            Assert.Equal(12.0, wire["subLatitude"]);
+            Assert.Single(Assert.IsType<List<object?>>(wire["sensors"]));
+        }
+
+        // homeRadius is getFOV's surfScale numerator. A substituted 0 does not
+        // read as zero anywhere: getFOV clamps surfScale up to 1, so the swath
+        // came out at the home body's scale on every body, ~1.7x too narrow at
+        // the Mun, with nothing on the wire to say it was invented.
+        [Fact]
+        public void UnreadHomeRadius_SuppressesTheGroundTrackRatherThanScalingItToOne()
+        {
+            var sensors = new List<ScanningVessels.SensorInput>
+            {
+                new ScanningVessels.SensorInput(type: 2, fov: 5, minAlt: 5000, maxAlt: 500_000, bestAlt: 250_000, inRange: true, bestRange: true),
+            };
+
+            var known = ScanningVessels.Build(
+                "scn-5", "Munar", "Mun",
+                subLatitude: 0, subLongitude: 0, altitude: 250_000,
+                sensors: sensors,
+                bodyRadius: 200_000, bodySoiRadius: 2_400_000, homeRadius: 600_000,
+                trackColorR: 0, trackColorG: 0, trackColorB: 0, trackColorA: 0);
+            var scaled = Assert.IsType<double>(known["groundTrackWidthDeg"]);
+
+            var unknown = ScanningVessels.Build(
+                "scn-5", "Munar", "Mun",
+                subLatitude: 0, subLongitude: 0, altitude: 250_000,
+                sensors: sensors,
+                bodyRadius: 200_000, bodySoiRadius: 2_400_000, homeRadius: null,
+                trackColorR: 0, trackColorG: 0, trackColorB: 0, trackColorA: 0);
+
+            Assert.Null(unknown["groundTrackWidthDeg"]);
+            Assert.Null(unknown["groundTrackLonHalfDeg"]);
+            // And the scale genuinely mattered: the Mun's swath is sqrt(3) wider
+            // than the unscaled one a substituted 0 would have produced.
+            Assert.Equal(5.0 * Math.Sqrt(3.0), scaled, precision: 6);
+        }
+
         [Fact]
         public void LonHalfWidth_CapsAt120NearThePoles()
         {

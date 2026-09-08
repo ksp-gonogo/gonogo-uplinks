@@ -389,6 +389,17 @@ namespace Gonogo.ScansatUplink
             // in the first place avoids the startup throw/retry churn.
             try
             {
+                // No snapshot, no UT. The publish UT is what the reveal buffer
+                // gates on, so a sample stamped 0 is older than every edge and
+                // goes straight past the signal delay: live coverage on a delayed
+                // link, with nothing saying so. A tick we cannot date is skipped,
+                // the same fail-soft this method already uses when the game is
+                // not ready.
+                if (snapshot == null)
+                {
+                    return null;
+                }
+
                 if (!TryGetActiveBody(out var bodyName, out var body))
                 {
                     return null;
@@ -396,7 +407,7 @@ namespace Gonogo.ScansatUplink
 
                 var capture = new ScanCapture
                 {
-                    Ut = snapshot?.Ut ?? 0.0,
+                    Ut = snapshot.Ut,
                     BodyName = bodyName,
                 };
 
@@ -506,13 +517,20 @@ namespace Gonogo.ScansatUplink
             // disables this sampler.
             try
             {
+            // Same rule as CaptureOnMain: a tick with no snapshot has no UT to
+            // publish under, and a sample stamped 0 slips the reveal gate.
+            if (snapshot == null)
+            {
+                return null;
+            }
+
             var vessel = FlightGlobals.ActiveVessel;
             if (vessel == null)
             {
                 return null;
             }
 
-            var capture = new ScienceCapture { Ut = snapshot?.Ut ?? 0.0 };
+            var capture = new ScienceCapture { Ut = snapshot.Ut };
             var modules = vessel.FindPartModulesImplementing<SCANexperiment>();
             if (modules == null)
             {
@@ -734,7 +752,11 @@ namespace Gonogo.ScansatUplink
             var controller = SCANcontroller.controller;
             if (controller == null) return new List<object>();
 
-            double homeRadius = Planetarium.fetch?.Home?.Radius ?? 0.0;
+            // Nullable, and carried nullable all the way to the wire: it scales
+            // every ground track, so an unready Planetarium must suppress the
+            // swath rather than silently pin it to the home body's scale. See
+            // ScanningVessels.Build's homeRadius note.
+            double? homeRadius = Planetarium.fetch?.Home?.Radius;
             var result = new List<object>();
             foreach (var v in controller.Known_Vessels)
             {
@@ -754,7 +776,7 @@ namespace Gonogo.ScansatUplink
         /// trackColor packing) lives in the headlessly-tested pure builder.
         /// Returns null when the vessel has no main body (nothing to scope to).
         /// </summary>
-        private static Dictionary<string, object?>? MapScanningVessel(SCANcontroller.SCANvessel v, double homeRadius)
+        private static Dictionary<string, object?>? MapScanningVessel(SCANcontroller.SCANvessel v, double? homeRadius)
         {
             var body = v.body;
             if (body == null) return null;
@@ -784,7 +806,11 @@ namespace Gonogo.ScansatUplink
                 body.name,
                 v.latitude,
                 v.longitude,
-                v.vessel?.altitude ?? 0.0,
+                // Null, not 0: SCANsat tracks unloaded vessels, and a Known_Vessels
+                // entry whose KSP Vessel does not resolve has an altitude nobody
+                // read. Published as 0 the operator saw a mapping satellite sitting
+                // at sea level, and the readout's own null token was unreachable.
+                v.vessel?.altitude,
                 sensors,
                 body.Radius,
                 body.sphereOfInfluence,

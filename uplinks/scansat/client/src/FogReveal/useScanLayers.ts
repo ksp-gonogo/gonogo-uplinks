@@ -121,9 +121,10 @@ export function useScanningVessels(): SCANScanningVessel[] | undefined {
   // link that has gone quiet cannot deliver that event. So `stale` still answers
   // with what was last really seen; only `pending`/`unowned`/`absent` have
   // nothing to give. The cast restores the required-field mirror in ../schema.ts
-  // over the all-optional shape codegen emits for a reference type; the wire
-  // always carries every field (see the mod's ScanningVessels.Build), and the
-  // previous read asserted exactly the same thing through its type parameter.
+  // over the all-optional shape codegen emits for a reference type. The wire
+  // carries every KEY, but not every key with a value: `altitude` and the two
+  // ground-track widths are genuinely null when their inputs were not read
+  // (see the mod's ScanningVessels.Build), and the mirror says so.
   if (reading.state === "observed" || reading.state === "stale") {
     return reading.value as SCANScanningVessel[];
   }

@@ -102,7 +102,12 @@ export function AeroStateComponent(_props: ComponentProps<AeroConfig>) {
   const s = reading.state === "observed" ? reading.value : undefined;
   const stall = s?.stallFraction;
   const band = stall == null ? null : stallBand(stall);
-  const modelValid = s?.aeroModelValid ?? false;
+  // MODEL STALE is FAR's own statement that its model has not caught up with
+  // the vehicle's shape. Coalesced to false it was also raised when there was
+  // no reading at all, so the widget said NO AERO DATA and MODEL STALE at once:
+  // a claim about FAR's internals from a channel that had answered nothing.
+  // The sibling DescentEnvelope already asks it this way (`=== false`).
+  const modelStale = s?.aeroModelValid === false;
 
   return (
     <Panel
@@ -114,7 +119,7 @@ export function AeroStateComponent(_props: ComponentProps<AeroConfig>) {
             <StatusPill $tone={band?.tone ?? "default"}>
               {band?.label ?? "NO AERO DATA"}
             </StatusPill>
-            {!modelValid && (
+            {modelStale && (
               <StatusPill $tone="warning">MODEL STALE</StatusPill>
             )}
           </Cluster>

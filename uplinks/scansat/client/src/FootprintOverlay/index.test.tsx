@@ -85,6 +85,21 @@ describe("drawFootprints: pure geometry", () => {
     expect((ctx as unknown as { calls: string[] }).calls).toHaveLength(0);
   });
 
+  // A vessel with a real swath but no readable sub-point has no place on the
+  // body. Defaulting the sub-point to 0 drew the swath anyway, centred on
+  // 0°N 0°E, which reads as a claim about where the mapping is happening.
+  it("skips a vessel whose sub-point did not decode, rather than painting it at 0°N 0°E", () => {
+    const ctx = fakeCtx();
+    drawFootprints(
+      ctx,
+      600,
+      "Kerbin",
+      [vessel({ subLatitude: null, subLongitude: null })],
+      (lat, lon) => ({ x: lon, y: lat }),
+    );
+    expect((ctx as unknown as { calls: string[] }).calls).toHaveLength(0);
+  });
+
   it("paints a rect for an in-range vessel", () => {
     const ctx = fakeCtx();
     drawFootprints(ctx, 600, "Kerbin", [vessel({})], (lat, lon) => ({

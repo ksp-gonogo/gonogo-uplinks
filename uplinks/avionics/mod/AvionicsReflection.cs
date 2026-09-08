@@ -62,7 +62,11 @@ namespace GonogoAvionicsUplink
             }
 
             double? maxAcrossParts = null;
-            bool active = false;
+            // Three-valued, held as two flags so the reduction below is explicit:
+            // a switch that could not be read is neither on nor off, and folding
+            // it into either is the whole defect. See AvionicsRaw.AvionicsActive.
+            bool anyDefinitelyOn = false;
+            bool anySwitchUnreadable = false;
 
             foreach (var part in v.parts)
             {
@@ -93,9 +97,13 @@ namespace GonogoAvionicsUplink
                         partSum += l;
                     }
                     var systemEnabled = ReadBool(pm, t, "systemEnabled");
-                    if (systemEnabled ?? true)
+                    if (systemEnabled == true)
                     {
-                        active = true;
+                        anyDefinitelyOn = true;
+                    }
+                    else if (systemEnabled == null)
+                    {
+                        anySwitchUnreadable = true;
                     }
                 }
 
@@ -109,6 +117,11 @@ namespace GonogoAvionicsUplink
             {
                 return null;
             }
+            // A definite "on" anywhere settles it. Otherwise an unreadable switch
+            // leaves the answer unknown rather than off: this vessel HAS avionics
+            // (maxAcrossParts is non-null), so "off" would be a claim about the
+            // switch and "no avionics" would be a claim about the hardware.
+            bool? active = anyDefinitelyOn ? true : anySwitchUnreadable ? (bool?)null : false;
             return new AvionicsRaw { ControllableMassTons = maxAcrossParts.Value, AvionicsActive = active };
         }
 

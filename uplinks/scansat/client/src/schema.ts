@@ -144,17 +144,29 @@ export interface SCANScanningVessel {
   vesselId: string;
   vesselName: string;
   body: string;
-  subLatitude: Value<"°">;
-  subLongitude: Value<"°">;
-  altitude: Value<"m">;
+  /**
+   * The vessel's sub-point. Optional and nullable to match the generated
+   * `ScanningVesselEntry`, which is the authority on the wire shape: a
+   * vessel we cannot place is not a vessel at 0°N 0°E, and both the MapView
+   * footprint and the minimap skip one rather than draw there.
+   */
+  subLatitude?: Value<"°"> | null;
+  subLongitude?: Value<"°"> | null;
+  /**
+   * Null when SCANsat is tracking a vessel whose KSP `Vessel` does not
+   * resolve, which is the ordinary state for an unloaded craft. It is an
+   * unread altitude, not sea level; `<Unit>` renders its null token for it.
+   */
+  altitude?: Value<"m"> | null;
   sensors: SCANSensorEntry[];
   /**
    * SCANsat's actual current ground-track FoV for this vessel in
    * degrees: reflected from the private `SCANcontroller.getFOV`
    * (the same number used to paint the in-flight overlay via
    * `drawGroundTrackTris`). This is the per-side latitude half-width.
-   * Null when SCANsat is not installed or the vessel currently has
-   * no in-range sensors.
+   * Null when SCANsat is not installed, when the vessel currently has
+   * no in-range sensors, or when either FoV input (the vessel's
+   * altitude, the home body's radius) could not be read.
    */
   groundTrackWidthDeg?: Value<"°"> | null;
   /**
