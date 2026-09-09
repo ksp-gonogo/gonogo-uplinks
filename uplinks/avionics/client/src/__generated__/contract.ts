@@ -30,7 +30,12 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 */
 export interface AvionicsStatus
 {
-	/** True when an avionics unit is present + active on the vessel. */
+	/**
+	* True when an avionics unit is present + active on the vessel, false when the
+	* vessel was inspected and carries none (or none switched on), and null when
+	* the inspection itself produced nothing. A false is a claim about the
+	* hardware, so it is never sent for a read that did not happen.
+	*/
 	avionicsActive?: boolean;
 	/**
 	* Controllable-mass limit of the active avionics (tonnes), the MAX across

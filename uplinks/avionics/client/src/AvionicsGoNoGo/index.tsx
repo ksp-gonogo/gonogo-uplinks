@@ -39,7 +39,8 @@ function Tons({ t }: { t?: Value<"t"> }) {
  * reinforcement, not the sole signal: and the state block is a polite live
  * region so the go/no-go flip is announced without flooding. NO READING is a
  * fourth state, not a flavour of NO AVIONICS: one says the hardware is not
- * there, the other says nobody looked.
+ * there, the other says nobody looked, and every absence in the payload lands
+ * on the second rather than being coalesced into the first.
  */
 export function AvionicsGoNoGoComponent(
   _props: ComponentProps<AvionicsConfig>,
@@ -65,9 +66,16 @@ export function AvionicsGoNoGoComponent(
   // no-avionics arm and takes only the cases that one was answering wrongly; an
   // OBSERVED `avionicsActive: false` is a real answer and still reads NO
   // AVIONICS below.
-  const unread = s?.avionicsActive == null;
-  const noAvionics = !unread && !s?.avionicsActive;
-  const controllable = s?.controllable ?? false;
+  const active = s?.avionicsActive;
+  // The verdict is unread two ways and both belong in this arm: the switch
+  // itself unread, or a switch that read ON above a `controllable` that did
+  // not. Coalesced to false, the second one drew NO-GO in the alert tone off a
+  // ceiling nobody measured, which is the same fabricated verdict as the line
+  // above, one field over. An OBSERVED `controllable: false` is a real answer
+  // and still reads NO-GO.
+  const unread = active == null || (active === true && s?.controllable == null);
+  const noAvionics = !unread && !active;
+  const controllable = s?.controllable === true;
   const label = unread
     ? "NO READING"
     : noAvionics

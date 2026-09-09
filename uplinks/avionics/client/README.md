@@ -31,7 +31,7 @@ RP-1 ascent controllability: is the vessel mass within the active avionics unit'
 | Reads | `avionics.status` |
 | Only while present | `flight` |
 | Default size | 4 × 4 |
-| Scenes | 3 |
+| Scenes | 4 |
 
 ![No avionics unit fitted: the vessel mass still reads, the controllable ceiling is a dash rather than a substituted zero](docs/assets/no-avionics-unit--default.png)
 
@@ -40,6 +40,10 @@ RP-1 ascent controllability: is the vessel mass within the active avionics unit'
 ![Vessel heavier than the avionics unit can control: NO-GO, with the controllable ceiling carrying the alert tone](docs/assets/over-controllable-mass--default.png)
 
 ![The same widget at its minimum size](docs/assets/over-controllable-mass--min.png)
+
+![Avionics fitted and switched on, but no unit's mass limit could be read: the verdict is withheld and the ceiling is a dash, where a partial sum used to draw NO-GO against 0.00 t](docs/assets/unread-controllable-limit--default.png)
+
+![The same widget at its minimum size](docs/assets/unread-controllable-limit--min.png)
 
 ![Vessel mass inside the active avionics unit's controllable-mass limit, so the ascent is GO](docs/assets/within-avionics-limit--default.png)
 

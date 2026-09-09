@@ -84,16 +84,18 @@ namespace GonogoAvionicsUplink
         }
 
         /// <summary>
-        /// The reduced reading, or <c>null</c> when no part carried an avionics
-        /// module at all.
+        /// The reduced reading, and never <c>null</c>.
+        ///
+        /// <para>A vessel that was WALKED and carried no avionics module is an
+        /// observation, not an absence: <c>AvionicsActive</c> false with no
+        /// ceiling, which is what the widget's NO AVIONICS state is for. A null
+        /// <see cref="AvionicsRaw"/> means the walk never happened, and only
+        /// <c>AvionicsReflection.Read</c>'s own guard produces one. Folding the
+        /// two together is what left the widget claiming a vessel had no
+        /// avionics fitted on the strength of a read nobody took.</para>
         /// </summary>
-        public AvionicsRaw? Build()
+        public AvionicsRaw Build()
         {
-            if (_maxAcrossParts == null)
-            {
-                return null;
-            }
-
             // A definite "on" anywhere settles the switch. Otherwise an
             // unreadable one leaves the answer unknown rather than off: this
             // vessel HAS avionics, so "off" would be a claim about the switch
@@ -103,8 +105,12 @@ namespace GonogoAvionicsUplink
             // The same rule for the limit, and it is the one the max hides. The
             // maximum of a set holding an unknown is a LOWER BOUND, not the
             // maximum: an unreadable limit could have been the largest. So the
-            // total is unknown, never the known part of it.
-            double? controllableMassTons = _anyLimitUnreadable ? (double?)null : _maxAcrossParts.Value;
+            // total is unknown, never the known part of it. No avionics at all
+            // has no ceiling to report either, and a 0 there would read as a
+            // unit that can control nothing.
+            double? controllableMassTons = _maxAcrossParts == null || _anyLimitUnreadable
+                ? (double?)null
+                : _maxAcrossParts.Value;
 
             return new AvionicsRaw
             {

@@ -20,12 +20,19 @@ namespace GonogoAvionicsUplink
         {
             if (raw == null)
             {
+                // The read produced nothing, so the only fact here is the
+                // vessel's own mass and nothing else is claimed. This is NOT
+                // "no avionics fitted": that arrives as an observed
+                // AvionicsActive false out of AvionicsFold. Hardcoding a false
+                // pair here made the widget say NO AVIONICS about hardware
+                // nobody had looked at, and left its NO READING state
+                // unreachable from the mod entirely.
                 return new Dictionary<string, object?>
                 {
-                    ["avionicsActive"] = false,
+                    ["avionicsActive"] = null,
                     ["controllableMassTons"] = null,
                     ["vesselMassTons"] = vesselMassTons,
-                    ["controllable"] = false,
+                    ["controllable"] = null,
                 };
             }
             return new Dictionary<string, object?>

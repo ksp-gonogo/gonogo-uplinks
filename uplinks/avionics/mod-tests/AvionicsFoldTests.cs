@@ -20,7 +20,7 @@ public class AvionicsFoldTests
         f.AddModule(4.0, true);
         f.EndPart();
 
-        Assert.Equal(7.0, f.Build()!.ControllableMassTons!.Value, 6);
+        Assert.Equal(7.0, f.Build().ControllableMassTons!.Value, 6);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class AvionicsFoldTests
         f.AddModule(4.0, true);
         f.EndPart();
 
-        Assert.Equal(10.0, f.Build()!.ControllableMassTons!.Value, 6);
+        Assert.Equal(10.0, f.Build().ControllableMassTons!.Value, 6);
     }
 
     [Fact]
@@ -46,17 +46,26 @@ public class AvionicsFoldTests
         f.EndPart();
         f.EndPart();
 
-        Assert.Equal(10.0, f.Build()!.ControllableMassTons!.Value, 6);
+        Assert.Equal(10.0, f.Build().ControllableMassTons!.Value, 6);
     }
 
+    // A walked vessel that carries no avionics is an OBSERVATION, and the wire
+    // has to be able to say so: the widget's NO AVIONICS state is a claim about
+    // the hardware. A null reading means the walk never happened, which is a
+    // different fact and reaches a different state.
     [Fact]
-    public void Reports_no_avionics_when_no_part_carried_a_module()
+    public void A_walked_vessel_with_no_avionics_says_so_rather_than_answering_nothing()
     {
         var f = Fold();
         f.EndPart();
         f.EndPart();
 
-        Assert.Null(f.Build());
+        var raw = f.Build();
+        Assert.NotNull(raw);
+        Assert.Equal(false, raw.AvionicsActive);
+        // No unit, no ceiling. A 0 here would read as a unit that can control
+        // nothing, which is a reading RP-1 does produce and this is not it.
+        Assert.Null(raw.ControllableMassTons);
     }
 
     // The defect. An unreadable CurrentMassLimit contributed zero to the part
@@ -73,7 +82,7 @@ public class AvionicsFoldTests
 
         var raw = f.Build();
         Assert.NotNull(raw);
-        Assert.Null(raw!.ControllableMassTons);
+        Assert.Null(raw.ControllableMassTons);
         // The vessel still HAS avionics and the switch still read, so only the
         // ceiling is unknown.
         Assert.Equal(true, raw.AvionicsActive);
@@ -91,7 +100,7 @@ public class AvionicsFoldTests
         f.AddModule(null, true);
         f.EndPart();
 
-        Assert.Null(f.Build()!.ControllableMassTons);
+        Assert.Null(f.Build().ControllableMassTons);
     }
 
     // RP-1's CurrentMassLimit already returns 0 for a dead / powered-off /
@@ -107,7 +116,7 @@ public class AvionicsFoldTests
 
         var raw = f.Build();
         Assert.NotNull(raw);
-        Assert.Equal(0.0, raw!.ControllableMassTons!.Value, 6);
+        Assert.Equal(0.0, raw.ControllableMassTons!.Value, 6);
     }
 
     [Fact]
@@ -119,7 +128,7 @@ public class AvionicsFoldTests
         f.AddModule(10.0, true);
         f.EndPart();
 
-        Assert.Equal(true, f.Build()!.AvionicsActive);
+        Assert.Equal(true, f.Build().AvionicsActive);
     }
 
     [Fact]
@@ -129,7 +138,7 @@ public class AvionicsFoldTests
         f.AddModule(4.0, false);
         f.EndPart();
 
-        Assert.Equal(false, f.Build()!.AvionicsActive);
+        Assert.Equal(false, f.Build().AvionicsActive);
     }
 
     [Fact]
@@ -140,6 +149,6 @@ public class AvionicsFoldTests
         f.AddModule(4.0, null);
         f.EndPart();
 
-        Assert.Null(f.Build()!.AvionicsActive);
+        Assert.Null(f.Build().AvionicsActive);
     }
 }

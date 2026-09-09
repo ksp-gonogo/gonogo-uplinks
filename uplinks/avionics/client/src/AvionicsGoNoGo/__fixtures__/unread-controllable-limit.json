@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. The UNREAD state, and the one that used to be indistinguishable from a verdict. RP-1's avionics units are on the vessel and their switches read ON, but no unit's `CurrentMassLimit` answered, so there is no ceiling and therefore no go/no-go. Before the mod carried that absence through, an unreadable limit contributed zero to the total: this same vessel drew NO-GO in the ALERT tone against a `Controllable` readout of 0.00 t, for a craft RP-1 was flying perfectly well. The render is here to check the two things that changed together: the state text withholds the verdict rather than asserting one, and the ceiling is a dash rather than a substituted zero."
+  },
+  "_scene": {
+    "widget": "avionics-go-no-go",
+    "caption": "Avionics fitted and switched on, but no unit's mass limit could be read: the verdict is withheld and the ceiling is a dash, where a partial sum used to draw NO-GO against 0.00 t",
+    "modes": [
+      "default",
+      "min"
+    ],
+    "paints": [
+      "NO READING",
+      "Vessel mass",
+      "Controllable"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "avionics.status",
+        "payload": {
+          "avionicsActive": true,
+          "vesselMassTons": 5.2
+        }
+      }
+    ]
+  }
+}

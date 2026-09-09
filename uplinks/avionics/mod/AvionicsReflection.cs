@@ -54,7 +54,12 @@ namespace GonogoAvionicsUplink
         /// each part's summed <c>CurrentMassLimit</c> (matching ShouldLock), plus
         /// whether any avionics unit is switched on. Either half is <c>null</c>
         /// when the reads behind it did not answer, see <see cref="AvionicsFold"/>.
-        /// Null when no avionics unit is present on the vessel.
+        ///
+        /// <para>Null only when the vessel could not be WALKED (RP-1 gone, or no
+        /// parts list). A walked vessel carrying no avionics comes back as a
+        /// reading that says so, because "no avionics fitted" is a claim about
+        /// the hardware and this method has to be able to tell it apart from
+        /// never having looked.</para>
         /// </summary>
         public AvionicsRaw? Read(Vessel v)
         {

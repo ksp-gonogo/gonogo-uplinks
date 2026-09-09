@@ -64,13 +64,19 @@ public class AvionicsCaptureTests
         Assert.Equal(5.2, (double)s["vesselMassTons"]!, 6);
     }
 
+    // A null raw is "the read produced nothing", not "no avionics fitted": the
+    // latter arrives as an observed AvionicsActive false out of AvionicsFold.
+    // Hardcoding a false pair here published a claim about the vessel's hardware
+    // from a read nobody took, and left the widget's NO READING state
+    // unreachable from the mod: the client arm existed and nothing could reach
+    // it. The vessel's own mass is the one fact this branch has.
     [Fact]
-    public void Build_reports_no_avionics_when_raw_null()
+    public void Build_claims_nothing_but_the_mass_when_the_read_produced_nothing()
     {
         var s = AvionicsCapture.Build(null, vesselMassTons: 6.5);
-        Assert.Equal(false, s["avionicsActive"]);
+        Assert.Null(s["avionicsActive"]);
         Assert.Null(s["controllableMassTons"]);
-        Assert.Equal(false, s["controllable"]);
+        Assert.Null(s["controllable"]);
         Assert.Equal(6.5, (double)s["vesselMassTons"]!, 6);
     }
 }
