@@ -8,6 +8,11 @@ namespace GonogoAvionicsUplink
     /// side-effect-free so it is unit-tested headless. The go/no-go mirrors
     /// <c>RP0.ControlLockerUtils.ShouldLock</c>: control is LOST only when the
     /// vessel mass strictly EXCEEDS the limit, so mass == limit is still GO.
+    ///
+    /// <para>The verdict is three-valued because its input is. Where
+    /// <see cref="AvionicsRaw.ControllableMassTons"/> is <c>null</c> there is no
+    /// ceiling to compare against, so <c>controllable</c> goes out unset rather
+    /// than as the false a compare against absence produces.</para>
     /// </summary>
     public static class AvionicsCapture
     {
@@ -28,7 +33,13 @@ namespace GonogoAvionicsUplink
                 ["avionicsActive"] = raw.AvionicsActive,
                 ["controllableMassTons"] = raw.ControllableMassTons,
                 ["vesselMassTons"] = vesselMassTons,
-                ["controllable"] = vesselMassTons <= raw.ControllableMassTons,
+                // No ceiling read, no verdict. `vesselMassTons <= (double?)null`
+                // is false in C#, so the old unconditional compare turned an
+                // unread limit into a confident NO-GO: the widget's alert tone
+                // for a craft nobody had measured.
+                ["controllable"] = raw.ControllableMassTons is double limit
+                    ? (bool?)(vesselMassTons <= limit)
+                    : null,
             };
         }
     }

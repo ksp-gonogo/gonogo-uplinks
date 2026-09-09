@@ -20,9 +20,12 @@
   <!-- Compile only the PURE, KSP-free files from the uplink so the tests never
        need the KSP/reflection-dependent assembly (same selective-Compile pattern
        GonogoRealAntennasUplink.Tests uses). AvionicsCapture is the pure mass
-       compare -> dict mapper; AvionicsRaw is its KSP-free input DTO. -->
+       compare -> dict mapper; AvionicsRaw is its KSP-free input DTO;
+       AvionicsFold is the per-part reduction, carved out of AvionicsReflection
+       precisely so it lands on this side of the KSP line. -->
   <ItemGroup>
     <Compile Include="..\mod\AvionicsCapture.cs" />
+    <Compile Include="..\mod\AvionicsFold.cs" />
     <Compile Include="..\mod\AvionicsRaw.cs" />
   </ItemGroup>
 

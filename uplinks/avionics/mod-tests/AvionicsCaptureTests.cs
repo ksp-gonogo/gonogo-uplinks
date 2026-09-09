@@ -45,6 +45,25 @@ public class AvionicsCaptureTests
         Assert.Equal(4.0, (double)s["controllableMassTons"]!, 6);
     }
 
+    // The other half of the same rule, one field over. `vesselMassTons <= null`
+    // is false in C#, so an unread ceiling used to come out of the compare as a
+    // confident NO-GO: alert tone, "Controllable 0 t", for a craft nobody had
+    // measured. There is no verdict to publish when there is nothing to compare
+    // against.
+    [Fact]
+    public void Build_withholds_the_verdict_when_the_limit_was_not_read()
+    {
+        var s = AvionicsCapture.Build(
+            new AvionicsRaw { ControllableMassTons = null, AvionicsActive = true },
+            vesselMassTons: 5.2);
+
+        Assert.Null(s["controllable"]);
+        Assert.Null(s["controllableMassTons"]);
+        // The switch DID read, and that answer still goes out.
+        Assert.Equal(true, s["avionicsActive"]);
+        Assert.Equal(5.2, (double)s["vesselMassTons"]!, 6);
+    }
+
     [Fact]
     public void Build_reports_no_avionics_when_raw_null()
     {

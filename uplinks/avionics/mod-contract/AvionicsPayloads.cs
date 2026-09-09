@@ -42,7 +42,10 @@ public sealed class AvionicsStatus
 
     /// <summary>Controllable-mass limit of the active avionics (tonnes), the MAX
     /// across parts of each part's summed <c>CurrentMassLimit</c>, matching
-    /// <c>ControlLockerUtils.ShouldLock</c>. Null when no avionics is present.</summary>
+    /// <c>ControlLockerUtils.ShouldLock</c>. Null when no avionics is present,
+    /// and null when any avionics unit's limit could not be read: a maximum over
+    /// a set holding an unknown is a lower bound, so it travels as unknown rather
+    /// than as a partial sum wearing a total's name.</summary>
     [SitrepUnit(Units.Tonnes)]
     public double? ControllableMassTons { get; set; }
 
@@ -50,7 +53,9 @@ public sealed class AvionicsStatus
     [SitrepUnit(Units.Tonnes)]
     public double? VesselMassTons { get; set; }
 
-    /// <summary>Derived: VesselMassTons &lt;= ControllableMassTons (the ascent go/no-go).</summary>
+    /// <summary>Derived: VesselMassTons &lt;= ControllableMassTons (the ascent
+    /// go/no-go). Null whenever either side of that compare is null, so an
+    /// unread ceiling withholds the verdict instead of publishing a NO-GO.</summary>
     [SitrepUnit(Units.Flag)]
     public bool? Controllable { get; set; }
 }

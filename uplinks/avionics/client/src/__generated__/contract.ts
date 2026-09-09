@@ -35,11 +35,18 @@ export interface AvionicsStatus
 	/**
 	* Controllable-mass limit of the active avionics (tonnes), the MAX across
 	* parts of each part's summed `CurrentMassLimit`, matching
-	* `ControlLockerUtils.ShouldLock`. Null when no avionics is present.
+	* `ControlLockerUtils.ShouldLock`. Null when no avionics is present, and null
+	* when any avionics unit's limit could not be read: a maximum over a set
+	* holding an unknown is a lower bound, so it travels as unknown rather than as
+	* a partial sum wearing a total's name.
 	*/
 	controllableMassTons?: Value<"t">;
 	/** Vessel current total mass (tonnes). */
 	vesselMassTons?: Value<"t">;
-	/** Derived: VesselMassTons <= ControllableMassTons (the ascent go/no-go). */
+	/**
+	* Derived: VesselMassTons <= ControllableMassTons (the ascent go/no-go). Null
+	* whenever either side of that compare is null, so an unread ceiling withholds
+	* the verdict instead of publishing a NO-GO.
+	*/
 	controllable?: boolean;
 }

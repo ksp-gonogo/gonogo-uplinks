@@ -14,7 +14,8 @@
 //     is exactly what RP0.ControlLockerUtils.ShouldLock sums, so we read it.
 //   - ShouldLock sums CurrentMassLimit per PART, then takes the MAX across parts
 //     (a second smaller unit elsewhere does not add to the best part's rating).
-//     We mirror that: per-part sum, then max across parts.
+//     We mirror that in AvionicsFold, which holds the reduction so a headless
+//     test can reach it without a Vessel.
 //   - systemEnabled (public bool) marks whether a unit is switched on.
 using System;
 using System.Reflection;
@@ -51,8 +52,9 @@ namespace GonogoAvionicsUplink
         /// <summary>
         /// Reads the vessel's avionics controllability: the MAX across parts of
         /// each part's summed <c>CurrentMassLimit</c> (matching ShouldLock), plus
-        /// whether any avionics unit is switched on. Null when no avionics unit is
-        /// present on the vessel.
+        /// whether any avionics unit is switched on. Either half is <c>null</c>
+        /// when the reads behind it did not answer, see <see cref="AvionicsFold"/>.
+        /// Null when no avionics unit is present on the vessel.
         /// </summary>
         public AvionicsRaw? Read(Vessel v)
         {
@@ -61,12 +63,11 @@ namespace GonogoAvionicsUplink
                 return null;
             }
 
-            double? maxAcrossParts = null;
-            // Three-valued, held as two flags so the reduction below is explicit:
-            // a switch that could not be read is neither on nor off, and folding
-            // it into either is the whole defect. See AvionicsRaw.AvionicsActive.
-            bool anyDefinitelyOn = false;
-            bool anySwitchUnreadable = false;
+            // Everything below the reads is AvionicsFold's, which is KSP-free and
+            // therefore headless-testable. This method's whole job is to turn
+            // KSP's part/module tree into calls on it, so the three-valued
+            // reduction never has to be re-derived beside a Vessel again.
+            var fold = new AvionicsFold();
 
             foreach (var part in v.parts)
             {
@@ -74,9 +75,6 @@ namespace GonogoAvionicsUplink
                 {
                     continue;
                 }
-
-                double partSum = 0.0;
-                bool partHasAvionics = false;
 
                 foreach (var pm in part.Modules)
                 {
@@ -90,39 +88,15 @@ namespace GonogoAvionicsUplink
                         continue;
                     }
 
-                    partHasAvionics = true;
-                    var limit = ReadDouble(pm, t, "CurrentMassLimit");
-                    if (limit is double l)
-                    {
-                        partSum += l;
-                    }
-                    var systemEnabled = ReadBool(pm, t, "systemEnabled");
-                    if (systemEnabled == true)
-                    {
-                        anyDefinitelyOn = true;
-                    }
-                    else if (systemEnabled == null)
-                    {
-                        anySwitchUnreadable = true;
-                    }
+                    fold.AddModule(
+                        ReadDouble(pm, t, "CurrentMassLimit"),
+                        ReadBool(pm, t, "systemEnabled"));
                 }
 
-                if (partHasAvionics)
-                {
-                    maxAcrossParts = maxAcrossParts == null ? partSum : Math.Max(maxAcrossParts.Value, partSum);
-                }
+                fold.EndPart();
             }
 
-            if (maxAcrossParts == null)
-            {
-                return null;
-            }
-            // A definite "on" anywhere settles it. Otherwise an unreadable switch
-            // leaves the answer unknown rather than off: this vessel HAS avionics
-            // (maxAcrossParts is non-null), so "off" would be a claim about the
-            // switch and "no avionics" would be a claim about the hardware.
-            bool? active = anyDefinitelyOn ? true : anySwitchUnreadable ? (bool?)null : false;
-            return new AvionicsRaw { ControllableMassTons = maxAcrossParts.Value, AvionicsActive = active };
+            return fold.Build();
         }
 
         private static double? ReadDouble(object o, Type t, string member)
