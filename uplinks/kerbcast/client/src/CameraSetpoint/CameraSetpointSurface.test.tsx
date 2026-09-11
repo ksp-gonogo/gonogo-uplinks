@@ -56,12 +56,14 @@ describe("CameraSetpointSurface", () => {
     expect((commit as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("keeps the framing preview for a picture with room to spare, and drops it otherwise", () => {
-    // The picture the widget's own default tile draws (316x176) is not one of
-    // them: the wheels, the commit and a tile beside them would be a third of
-    // its width, and the review of an aim is the part of this cluster a small
-    // picture can do without.
-    const { rerender } = render(
+  it("draws the framing preview on the picture the shipped default tile produces", () => {
+    // 316x176, measured in the render harness rather than assumed: it is what
+    // `camera-feed` at its own `defaultSize` gives the frame. This is the case
+    // the preview was never once drawn for. The old rule capped the cluster at
+    // a THIRD of the picture's width, which is 105px here, and the wheels alone
+    // were 104px, so no tile fitted on any picture this widget draws at any
+    // shipped tile size.
+    render(
       <CameraSetpointSurface
         cameraId={42}
         bounds={bounds}
@@ -70,22 +72,63 @@ describe("CameraSetpointSurface", () => {
         frame={{ width: 316, height: 176 }}
       />,
     );
+    expect(
+      screen.getByRole("img", { name: "Camera framing preview" }),
+    ).toBeTruthy();
+  });
+
+  it("drops the framing preview on a picture that cannot spare it", () => {
+    // 220x122, the picture the widget's own `minSize` tile produces. The
+    // cluster plus a tile is 215px across and does not physically fit inside
+    // it, so the tile goes and the numbers stay: they are the control, the tile
+    // is the review of them.
+    const { rerender } = render(
+      <CameraSetpointSurface
+        cameraId={42}
+        bounds={bounds}
+        initial={initial}
+        mode="staged"
+        frame={{ width: 220, height: 122 }}
+      />,
+    );
     expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(
       null,
     );
+    expect(screen.getByRole("slider", { name: /yaw/i })).toBeTruthy();
 
+    // A zero-sized frame is what an unmeasured feed reports, and what every
+    // jsdom test reports; it is not a picture with room for anything.
     rerender(
       <CameraSetpointSurface
         cameraId={42}
         bounds={bounds}
         initial={initial}
         mode="staged"
-        frame={{ width: 900, height: 506 }}
+        frame={{ width: 0, height: 0 }}
       />,
     );
-    expect(
-      screen.getByRole("img", { name: "Camera framing preview" }),
-    ).toBeTruthy();
+    expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(
+      null,
+    );
+  });
+
+  it("keeps the cluster to a quarter of the picture it is drawn over", () => {
+    // The cap that decides the tile is on AREA, because the cluster is short: a
+    // block that looks like two thirds of the width is a fifth of the shot. A
+    // picture wide enough to hold the cluster but too small to carry it still
+    // drops the tile.
+    render(
+      <CameraSetpointSurface
+        cameraId={42}
+        bounds={bounds}
+        initial={initial}
+        mode="staged"
+        frame={{ width: 260, height: 100 }}
+      />,
+    );
+    expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(
+      null,
+    );
   });
 
   it("has no axe violations in staged mode", async () => {

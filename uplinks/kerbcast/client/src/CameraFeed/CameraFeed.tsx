@@ -573,16 +573,24 @@ export function CameraFeed({
                     showDebugInfo={showDebugInfo}
                     enableFullscreen
                     enablePictureInPicture
-                    // `disableManualControls={controlMode === "staged"}` belongs
-                    // here, so the SDK's built-in live pan and zoom stand down
-                    // above the delay threshold rather than offering a second,
-                    // undelayed way to aim the same camera. It is REACHABLE now:
-                    // the lockfile pins @ksp-gonogo/kerbcast-react 1.9.1 and the
-                    // prop is on its `CameraFeedProps`. It is still not passed,
-                    // because standing the SDK's own pan pad down changes what the
-                    // operator sees rather than fixing wiring, and the delayed
-                    // surface below is drawn to sit ON TOP of that pad rather than
-                    // in place of it.
+                    // The SDK's own pan pad and zoom pair stand down for as
+                    // long as the staged cluster is up. Above the delay
+                    // threshold they aim at where the craft is NOW while the
+                    // picture shows where it was a light-time ago, so leaving
+                    // them live offered the operator a second, undelayed way to
+                    // aim the same camera and no way to tell which one they
+                    // were holding. Gated on `showSetpointSurface` rather than
+                    // on the mode alone, so the one case where the cluster does
+                    // not appear (a camera with no aim to give) keeps whatever
+                    // the SDK would have drawn: the flag must never take a
+                    // control away without putting the staged one in its place.
+                    //
+                    // It costs the bound serial inputs nothing. Above the
+                    // threshold every pan/zoom action already routes to
+                    // `setpointRef`, never to `feedRef`, so the handle's
+                    // pan/zoom methods going no-op is a stand-down of a path
+                    // nothing was taking.
+                    disableManualControls={showSetpointSurface}
                   />
                   <div style={FEED_OVERLAY_STYLE}>
                     <AugmentSlot

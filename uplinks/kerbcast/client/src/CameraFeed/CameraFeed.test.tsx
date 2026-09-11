@@ -1129,6 +1129,46 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
 });
 
 // ---------------------------------------------------------------------------
+// The SDK's own live pan/zoom, against the staged cluster.
+//
+// Two controls that aim the same camera cannot both be on the picture above the
+// delay threshold: one of them steers at where the craft is now while the
+// picture shows where it was a light-time ago, and nothing on screen says which
+// one an operator is holding. So the staged cluster appearing and the live pad
+// disappearing are ONE event, and this asserts them together rather than
+// separately.
+// ---------------------------------------------------------------------------
+
+describe("CameraFeed -- live pan/zoom against the staged cluster", () => {
+  async function feedAtDelay(oneWaySeconds: number): Promise<void> {
+    await buildConnectedSource([STEERABLE]);
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    await act(async () => {
+      emitComms(stream, { connected: true, signalDelay: oneWaySeconds });
+    });
+  }
+
+  it("leaves the SDK's pan pad and zoom pair in charge below the threshold", async () => {
+    await feedAtDelay(LIVE_DELAY_S);
+
+    expect(screen.getByLabelText("Pan camera")).toBeTruthy();
+    expect(screen.getByLabelText("Zoom in")).toBeTruthy();
+    expect(screen.getByLabelText("Zoom out")).toBeTruthy();
+    expect(screen.queryByRole("slider", { name: /yaw/i })).toBe(null);
+  });
+
+  it("stands both of them down while the staged cluster is up", async () => {
+    await feedAtDelay(STAGED_DELAY_S);
+
+    await screen.findByRole("slider", { name: /yaw/i });
+    expect(screen.queryByLabelText("Pan camera")).toBe(null);
+    expect(screen.queryByLabelText("Zoom in")).toBe(null);
+    expect(screen.queryByLabelText("Zoom out")).toBe(null);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // CommNet degrade
 // ---------------------------------------------------------------------------
 

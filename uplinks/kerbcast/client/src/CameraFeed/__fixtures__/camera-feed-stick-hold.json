@@ -6,7 +6,7 @@
       "flightId": 42
     },
     "caption": "A bound analog stick held right, then released. Above the staged delay threshold the input aims the DRAFT rather than the camera: the yaw wheel turns at 30 degrees per second for as long as the stick is held, stops where it is when the stick centres, and nothing has been sent to the camera at any point in this film. The operator commits once, when the number is the one they want",
-    "before": [{ "hover": "[aria-label='Pan camera']" }],
+    "before": [{ "hover": "video" }],
     "steps": [
       { "waitMs": 1200, "frames": 8 },
       { "waitMs": 1200, "frames": 8 }

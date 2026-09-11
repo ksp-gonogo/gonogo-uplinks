@@ -29,11 +29,11 @@ describe("CameraSetpointInput", () => {
     ).toBeInTheDocument();
   });
 
-  it("names each axis twice: a glyph on the wheel, the word on the wheel's name", () => {
-    // The wheels are 50px wide and there is no room beside them for a label
-    // column, so the visible name is one character inside the caret readout.
-    // That is a shorthand a sighted operator learns, never the accessible name,
-    // which stays the whole word.
+  it("names each flat axis twice: a glyph on the wheel, the word on the wheel's name", () => {
+    // The flat wheels are 50px wide and there is no room beside them for a
+    // label column, so the visible name is one character inside the caret
+    // readout. That is a shorthand a sighted operator learns, never the
+    // accessible name, which stays the whole word.
     render(
       <CameraSetpointInput
         value={{ yaw: 18, pitch: -10, fov: 45 }}
@@ -44,7 +44,6 @@ describe("CameraSetpointInput", () => {
     );
     for (const [name, glyph, degrees] of [
       ["Yaw", "Y", "18°"],
-      ["Pitch", "P", "−10°"],
       ["Zoom (field of view)", "Z", "45°"],
     ]) {
       const wheel = screen.getByRole("slider", { name });
@@ -53,19 +52,43 @@ describe("CameraSetpointInput", () => {
     }
   });
 
-  it("writes a negative value with a true minus sign, which cannot break the line", () => {
-    // A hyphen is a line-break opportunity, so `P-10°` broke after it and drew
-    // two lines inside a wheel with room for one.
-    render(
+  it("leaves the standing wheel's reading to its value, not to a caret it cannot hold", () => {
+    // Measured, not preferred: a `WHEEL_SHORT_PX` box leaves 18px of content
+    // and `P−10°` is 40px of the kit's mono, and the kit's wheel is
+    // `overflow: hidden`, so the label would be sliced rather than shrunk. The
+    // kit writes `aria-valuetext` FROM the caret label, so a wheel with no
+    // caret has no valuetext either, and the angle is carried by
+    // `aria-valuenow` and by the wrapper's title instead.
+    const { container } = render(
       <CameraSetpointInput
-        value={{ yaw: 0, pitch: -10, fov: 60 }}
+        value={{ yaw: 18, pitch: -10, fov: 45 }}
         bounds={bounds}
         onChange={() => {}}
         onCommit={() => {}}
       />,
     );
     const pitch = screen.getByRole("slider", { name: "Pitch" });
-    expect(pitch.textContent).not.toContain("-");
+    expect(pitch.textContent).toBe("");
+    expect(pitch).toHaveAttribute("aria-valuenow", "-10");
+    expect(container.querySelector('[title="Pitch −10°"]')).toBeTruthy();
+  });
+
+  it("writes a negative value with a true minus sign, which cannot break the line", () => {
+    // A hyphen is a line-break opportunity, so `P-10°` broke after it and drew
+    // two lines inside a wheel with room for one.
+    render(
+      <CameraSetpointInput
+        value={{ yaw: -10, pitch: -10, fov: 60 }}
+        bounds={bounds}
+        onChange={() => {}}
+        onCommit={() => {}}
+      />,
+    );
+    // The standing pitch wheel draws no caret, so the rule is asserted on the
+    // flat wheel that can carry a sign.
+    const yaw = screen.getByRole("slider", { name: "Yaw" });
+    expect(yaw.textContent).toBe("Y−10°");
+    expect(yaw.textContent).not.toContain("-");
   });
 
   it("stands the pitch wheel up, and lays the other two flat", () => {
@@ -119,6 +142,48 @@ describe("CameraSetpointInput", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Commit" }));
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it("makes the pitch wheel as wide as the flat wheels are tall", () => {
+    // The operator's shape: one number across both orientations, so the
+    // standing tape is as THICK as the two it stands beside are short. It used
+    // to take the flat wheels' WIDTH, which drew a 50x52 near-square next to
+    // two thin bars and read as a block rather than as an axis to drag.
+    render(
+      <CameraSetpointInput
+        value={{ yaw: 0, pitch: 0, fov: 60 }}
+        bounds={bounds}
+        onChange={() => {}}
+        onCommit={() => {}}
+      />,
+    );
+    const box = (name: string): { width: string; height: string } => {
+      const style = getComputedStyle(screen.getByRole("slider", { name }));
+      return { width: style.width, height: style.height };
+    };
+    const flat = box("Yaw");
+    expect(box("Zoom (field of view)")).toEqual(flat);
+    expect(box("Pitch").width).toBe(flat.height);
+  });
+
+  it("stands the commit beside the wheels, not under them", () => {
+    // Under, the commit cost a whole line and the cluster came out 88px tall on
+    // a 176px picture. `CommandGroup orientation="row"` is what the kit offers
+    // for that, and what it offers is the whole of it: the commit is always the
+    // group's LAST child, so an icon-sized control on the LEFT of the wheels is
+    // not expressible without a change to `CommandGroup` itself.
+    const { container } = render(
+      <CameraSetpointInput
+        value={{ yaw: 0, pitch: 0, fov: 60 }}
+        bounds={bounds}
+        onChange={() => {}}
+        onCommit={() => {}}
+      />,
+    );
+    const commit = screen.getByRole("button", { name: "Commit" });
+    const group = commit.parentElement as HTMLElement;
+    expect(container.contains(group)).toBe(true);
+    expect(getComputedStyle(group).flexDirection).toBe("row");
   });
 
   it("has no axe violations", async () => {

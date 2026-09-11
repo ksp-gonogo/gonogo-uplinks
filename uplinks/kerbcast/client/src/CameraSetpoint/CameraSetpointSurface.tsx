@@ -24,7 +24,12 @@
  * The corner is the SDK's corner. kerbcast's own pan pad sits bottom-right and
  * its zoom pair on the left edge, so a staged control that supersedes the live
  * one lands on top of the affordance it is replacing instead of somewhere else
- * on the shot. Two earlier shapes both failed that: a 220x132 preview box
+ * on the shot. Both of those live controls stand down for as long as this
+ * surface is up: the host passes `disableManualControls`, because a live pan
+ * pad above the delay threshold aims at where the craft is NOW while the
+ * picture shows where it was a light-time ago, and two controls for one camera
+ * with nothing on screen saying which is which is worse than either alone.
+ * Two earlier shapes both failed that: a 220x132 preview box
  * stacked above the tapes (~305x290 CSS px of intrinsic size, larger than the
  * whole widget at its own default tile), then a preview drawn at the picture's
  * own size with the tapes in a full-width strip along the bottom edge, which put
@@ -87,42 +92,46 @@ const PREVIEW_MIN_HEIGHT_PX = 28;
  *  CSS px the arithmetic below needs it in. */
 const CLUSTER_INSET_PX = 8;
 
-/** The SDK's own pan pad, read off its `PanControl`: a 52px square inset 10px
- *  from the bottom-right corner of the picture. The cluster is placed against
- *  it, so both numbers are load-bearing rather than decorative. */
-const SDK_PAN_PAD_PX = 52;
+/** The SDK's own pan pad, read off its `PanControl`: a square inset from the
+ *  bottom-right corner of the picture. The cluster takes that corner, and the
+ *  pad stands down while it does (`disableManualControls` on the host), so the
+ *  inset is what the two share rather than a clearance between them. */
 const SDK_PAN_PAD_INSET_PX = 10;
-
-/** Where the cluster's right edge sits: clear of the pad, by an inset. */
-const PAN_PAD_CLEARANCE_PX =
-  SDK_PAN_PAD_PX + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX;
 
 /** Gap between the wheels and the preview tile, CSS px (`--space-4`). */
 const PREVIEW_GAP_PX = 4;
 
+/** What the `Box` below adds around its content on each axis: `pad="xs"`
+ *  (`--space-2`) plus the 1px `bordered` rule, both sides. */
+const CLUSTER_CHROME_PX = 2 * (2 + 1);
+
 /**
- * The most of the picture the DRAWN cluster may take before it stops being
+ * The most of the picture the DRAWN cluster may cover before it stops being
  * chrome in the corner and becomes the thing on screen.
  *
- * A share rather than a pixel threshold, because that is the question actually
- * being asked. The old test compared the picture against a fixed width, which
- * was a fair proxy while the wheels alone were 287px wide: a picture that could
- * hold them and a tile was, by then, a large one. The wheels are now a block
- * about a third of that width, so the same fixed test would have shown the tile
- * on every picture big enough to see and laid a cluster across a third of it.
+ * AREA, and one number, where this used to ask a width share and a height share
+ * separately. Two axis shares cannot describe a corner cluster whose shape
+ * changes: the width cap was 1/3, and it REFUSED THE TILE ON EVERY PICTURE THIS
+ * WIDGET DRAWS. Measured in the render harness: the widest picture any shipped
+ * tile produces is 316x176, a third of which is 105px, and the wheels alone
+ * were 104px. So the cap admitted a 1px tile at best and the preview had never
+ * once been visible, on any tile, at any size.
+ *
+ * Area is the question that survives the shape change, because the cluster is
+ * SHORT: the wheels are 52px on a 176px picture, so the same cluster that looks
+ * like half the width is a fifth of the shot.
  */
-const CLUSTER_MAX_WIDTH_SHARE = 1 / 3;
-const CLUSTER_MAX_HEIGHT_SHARE = 1 / 2;
+const CLUSTER_MAX_AREA_SHARE = 1 / 4;
 
 /**
  * The preview tile's own size, or `null` when the picture cannot spare one.
  *
  * The tile is the one OPTIONAL part of the cluster, so whether it fits is a
  * question about what the rest already costs, and it is asked twice: whether
- * the cluster plus a tile physically fits between the SDK's pan pad and the far
- * edge, and then whether what is DRAWN still reads as chrome rather than as the
- * screen. A picture that fails either drops the tile and keeps the numbers,
- * which are the control. The first test doubles as the guard against a
+ * the cluster plus a tile physically fits inside the picture at the inset it is
+ * anchored on, and then whether what is DRAWN still reads as chrome rather than
+ * as the screen. A picture that fails either drops the tile and keeps the
+ * numbers, which are the control. The first test doubles as the guard against a
  * zero-sized frame, which is what an unmeasured feed and every jsdom test
  * report.
  *
@@ -136,12 +145,6 @@ function previewSize(
   frame: { width: number; height: number } | undefined,
 ): { width: number; height: number } | null {
   if (!frame || frame.width <= 0 || frame.height <= 0) return null;
-  const drawnWidth =
-    SETPOINT_INPUT_WIDTH_PX + PREVIEW_GAP_PX + PREVIEW_WIDTH_PX;
-  if (drawnWidth + PAN_PAD_CLEARANCE_PX + CLUSTER_INSET_PX > frame.width) {
-    return null;
-  }
-  if (drawnWidth > frame.width * CLUSTER_MAX_WIDTH_SHARE) return null;
   const height = Math.round(
     Math.min(
       PREVIEW_WIDTH_PX,
@@ -151,9 +154,26 @@ function previewSize(
       ),
     ),
   );
+  const drawnWidth =
+    SETPOINT_INPUT_WIDTH_PX +
+    PREVIEW_GAP_PX +
+    PREVIEW_WIDTH_PX +
+    CLUSTER_CHROME_PX;
   // A tile that fills the picture it is a model OF is not a model of it.
-  const drawnHeight = Math.max(SETPOINT_INPUT_HEIGHT_PX, height);
-  if (drawnHeight > frame.height * CLUSTER_MAX_HEIGHT_SHARE) return null;
+  const drawnHeight =
+    Math.max(SETPOINT_INPUT_HEIGHT_PX, height) + CLUSTER_CHROME_PX;
+  if (drawnWidth + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.width) {
+    return null;
+  }
+  if (drawnHeight + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.height) {
+    return null;
+  }
+  if (
+    drawnWidth * drawnHeight >
+    frame.width * frame.height * CLUSTER_MAX_AREA_SHARE
+  ) {
+    return null;
+  }
   return { width: PREVIEW_WIDTH_PX, height };
 }
 
@@ -332,20 +352,19 @@ export const CameraSetpointSurface = forwardRef<
 });
 
 /**
- * The cluster, on the bottom edge of the picture and just clear of the SDK's own
- * pan pad rather than on top of it.
+ * The cluster, in the picture's bottom-right corner: the SDK's own pan pad's
+ * corner, which the pad has vacated.
  *
  * The pad is `52x52` at `bottom: 10px; right: 10px`, read off the SDK's own
- * `PanControl`, so its left edge is 62px in and the cluster starts a `--space-8`
- * further along. It used to be stacked over that pad, on the reasoning that a
- * staged control lands on the affordance it supersedes; the two now sit side by
- * side because the live pad is the YARDSTICK. Standing them next to each other
- * is the only way an operator can see what the delayed cluster costs them in
- * picture, and the same reason `disableManualControls` is deliberately not
- * passed.
- *
- * `bottom` matches the pad's own 10px rather than the `--space-8` everything
- * else here uses, so the two boxes share a baseline instead of missing it by 2px.
+ * `PanControl`, and the same two insets are used here so the staged cluster
+ * lands exactly where the live control was. The two sat SIDE BY SIDE for a
+ * while, on the reasoning that the live pad was the yardstick for what the
+ * delayed cluster cost in picture. That reasoning offered the operator a live
+ * pan pad and a live zoom pair that, above the delay threshold, aim at where
+ * the craft is now while the picture shows where it was a light-time ago. The
+ * host passes `disableManualControls` now, so there is no second control to
+ * stand beside and no yardstick to read: this IS the aim control, and it takes
+ * the corner the aim control has always been in.
  *
  * No `left`, so an absolutely positioned box shrinks to its own content instead
  * of spanning the shot; `max-width` then keeps it inside the picture on a tile
@@ -372,9 +391,9 @@ export const CameraSetpointSurface = forwardRef<
  */
 const CLUSTER_STYLE: CSSProperties = {
   position: "absolute",
-  right: `${PAN_PAD_CLEARANCE_PX}px`,
+  right: `${SDK_PAN_PAD_INSET_PX}px`,
   bottom: `${SDK_PAN_PAD_INSET_PX}px`,
-  maxWidth: `calc(100% - ${PAN_PAD_CLEARANCE_PX + CLUSTER_INSET_PX}px)`,
+  maxWidth: `calc(100% - ${SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX}px)`,
   overflow: "hidden",
   background: "rgba(0, 0, 0, 0.72)",
   pointerEvents: "auto",
