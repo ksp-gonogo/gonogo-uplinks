@@ -1,5 +1,12 @@
 import { magnitudeOf, registerComponent, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
-import { Dial, EmptyState, Panel, Text, Unit } from "@ksp-gonogo/ui-kit";
+import {
+  Dial,
+  EmptyState,
+  Panel,
+  Section,
+  Text,
+  Unit,
+} from "@ksp-gonogo/ui-kit";
 import { EXAMPLE } from "../uplink.js";
 
 /**
@@ -40,10 +47,14 @@ function PulseDialWidget() {
 
   if (heartbeat.state !== "observed") {
     return (
-      <Panel>
-        <Panel.Title>Pulse</Panel.Title>
-        <EmptyState>Waiting for the example Uplink</EmptyState>
-      </Panel>
+      <Panel
+        panelTitle="Pulse"
+        sections={
+          <Section>
+            <EmptyState>Waiting for the example Uplink</EmptyState>
+          </Section>
+        }
+      />
     );
   }
 
@@ -56,29 +67,37 @@ function PulseDialWidget() {
   const ticks = magnitudeOf(heartbeat.value.ticks);
   if (ticks == null) {
     return (
-      <Panel>
-        <Panel.Title>Pulse</Panel.Title>
-        <EmptyState>The heartbeat carried no tick count</EmptyState>
-      </Panel>
+      <Panel
+        panelTitle="Pulse"
+        sections={
+          <Section>
+            <EmptyState>The heartbeat carried no tick count</EmptyState>
+          </Section>
+        }
+      />
     );
   }
 
   return (
-    <Panel>
-      <Panel.Title>Pulse</Panel.Title>
-      <Dial
-        value={ticks}
-        min={0}
-        max={SWEEP_TICKS}
-        wrap
-        valueLabel={String(ticks)}
-        ticks={DIAL_TICKS}
-        ariaLabel={`${ticks} publishes since load`}
-      />
-      <Text>
-        UT <Unit value={heartbeat.value.ut} />
-      </Text>
-    </Panel>
+    <Panel
+      panelTitle="Pulse"
+      sections={
+        <Section>
+          <Dial
+            value={ticks}
+            min={0}
+            max={SWEEP_TICKS}
+            wrap
+            valueLabel={String(ticks)}
+            ticks={DIAL_TICKS}
+            ariaLabel={`${ticks} publishes since load`}
+          />
+          <Text>
+            UT <Unit value={heartbeat.value.ut} />
+          </Text>
+        </Section>
+      }
+    />
   );
 }
 

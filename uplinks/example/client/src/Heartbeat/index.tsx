@@ -5,7 +5,7 @@ import {
 import {
   EmptyState,
   Panel,
-  Stack,
+  Section,
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
@@ -35,31 +35,44 @@ import { EXAMPLE } from "../uplink.js";
  * `<Unit>` renders them without this file knowing that `ut` means universal time.
  * Never format a unit by hand: `<Unit>` is the only unit renderer, and it is what
  * makes a unit change in the contract reach the screen.
+ *
+ * The panel takes its title and its body as PROPS, and that is the shape to copy.
+ * `panelTitle` gets the padded frame every built-in widget has, and `sections`
+ * lets Panel decide from the tile's own width whether the groups run down one
+ * column or across two, which a widget cannot see for itself. Passing children
+ * instead still renders, but it is the retiring form and it gets the older
+ * unpadded passthrough.
  */
 function HeartbeatWidget() {
   const heartbeat = useTelemetry("example.heartbeat");
 
   if (heartbeat.state !== "observed") {
     return (
-      <Panel>
-        <Panel.Title>Heartbeat</Panel.Title>
-        <EmptyState>Waiting for the example Uplink</EmptyState>
-      </Panel>
+      <Panel
+        panelTitle="Heartbeat"
+        sections={
+          <Section>
+            <EmptyState>Waiting for the example Uplink</EmptyState>
+          </Section>
+        }
+      />
     );
   }
 
   return (
-    <Panel>
-      <Panel.Title>Heartbeat</Panel.Title>
-      <Stack>
-        <Text>
-          Ticks <Unit value={heartbeat.value.ticks} />
-        </Text>
-        <Text>
-          UT <Unit value={heartbeat.value.ut} />
-        </Text>
-      </Stack>
-    </Panel>
+    <Panel
+      panelTitle="Heartbeat"
+      sections={
+        <Section>
+          <Text>
+            Ticks <Unit value={heartbeat.value.ticks} />
+          </Text>
+          <Text>
+            UT <Unit value={heartbeat.value.ut} />
+          </Text>
+        </Section>
+      }
+    />
   );
 }
 
