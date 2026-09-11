@@ -44,7 +44,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Actions | `nextCamera`, `prevCamera`, `zoomIn`, `zoomOut`, `panYaw`, `panPitch` |
 | Slots | `camera-feed.overlay` |
 | Default size | 9 × 8 |
-| Scenes | 2 |
+| Scenes | 3 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
 
@@ -57,6 +57,8 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 ![The same widget at its minimum size](docs/assets/camera-feed-steerable--min.png)
 
 ![The same widget at 9 × 8](docs/assets/camera-feed-steerable--mobile-9x8.png)
+
+![A bound analog stick held right, then released. Above the staged delay threshold the input aims the DRAFT rather than the camera: the yaw wheel turns at 30 degrees per second for as long as the stick is held, stops where it is when the stick centres, and nothing has been sent to the camera at any point in this film. The operator commits once, when the number is the one they want](docs/assets/camera-feed-stick-hold--default.gif)
 
 ## Augments
 

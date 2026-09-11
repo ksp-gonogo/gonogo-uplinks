@@ -763,9 +763,18 @@ describe("CameraFeed: empty state and status", () => {
 // -> client.camera(42).setZoomRate / setPanRate -> MockSidecar wire command.
 // The shared package tests cover the handle directly; these tests cover the
 // gonogo wrapper's useActionInput binding.
+//
+// Every test here mounts a comms stream and says what the link is doing, because
+// the binding ROUTES on it: pan and zoom reach the camera only below the staged
+// delay threshold, and above it they turn the staged setpoint instead. A test
+// that emitted no delay at all would be asserting the live path from inside
+// `no-path`, which is the mode an absent `comms.delay` resolves to.
 // ---------------------------------------------------------------------------
 
-describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
+/** A link short enough that the camera itself is still what a control aims. */
+const LIVE_DELAY_S = 0.2;
+
+describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
   it("zoomIn serial action holds a +1 zoom rate, releases to 0", async () => {
     const { sidecar } = await buildConnectedSource();
 
@@ -773,7 +782,11 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
       sidecar.updateCamera(42, { supportsZoom: true, fov: 60 });
     });
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     // Press: +rate = zoom in (FoV decreases). The plugin integrates per frame.
     await act(async () => {
@@ -804,7 +817,11 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
       sidecar.updateCamera(42, { supportsZoom: true, fov: 60 });
     });
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     await act(async () => {
       dispatchAction(TEST_INSTANCE_ID, "zoomOut", {
@@ -830,7 +847,11 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
     // Default camera fixture has supportsZoom: false -- handle guard blocks the command.
     const { sidecar } = await buildConnectedSource();
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     await act(async () => {
       dispatchAction(TEST_INSTANCE_ID, "zoomIn", {
@@ -857,7 +878,11 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
       });
     });
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     await act(async () => {
       dispatchAction(TEST_INSTANCE_ID, "panYaw", {
@@ -886,7 +911,11 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
       });
     });
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     await act(async () => {
       dispatchAction(TEST_INSTANCE_ID, "panPitch", {
@@ -906,12 +935,195 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan)", () => {
     // Default camera fixture has supportsPan: false -- handle guard blocks the command.
     const { sidecar } = await buildConnectedSource();
 
-    renderFeed({ flightId: 42 });
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
 
     await act(async () => {
       dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
     });
 
+    expect(sidecar.lastCommand("set-pan-rate")).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Serial-action dispatch above the staged threshold.
+//
+// The operator's ruling: the input here PLANS a movement, it does not report
+// where the camera is. So a held stick turns the staged wheel and nothing
+// leaves the widget until the commit. Same dispatch path as the block above,
+// routed to the setpoint cluster instead of the feed handle.
+// ---------------------------------------------------------------------------
+
+const STAGED_DELAY_S = 1.4;
+
+/** The angle a wheel is showing, off its own slider semantics. */
+function wheelValue(name: RegExp): number {
+  return Number(
+    screen.getByRole("slider", { name }).getAttribute("aria-valuenow"),
+  );
+}
+
+describe("CameraFeed -- serial-action dispatch, staged link", () => {
+  beforeEach(() => {
+    // Only the ticker. Faking setTimeout as well would take the sidecar
+    // handshake and RTL's own async settling with it, and the thing under test
+    // is one interval.
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  async function stagedFeed(): Promise<{ sidecar: MockSidecar }> {
+    const { sidecar } = await buildConnectedSource([STEERABLE]);
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: STAGED_DELAY_S });
+    });
+    await screen.findByRole("slider", { name: /yaw/i });
+    return { sidecar };
+  }
+
+  /** Let a held input run for `ms`, at the tick the surface actually uses. */
+  async function heldFor(ms: number): Promise<void> {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(ms);
+    });
+  }
+
+  it("a held yaw stick turns the staged wheel and keeps turning it", async () => {
+    await stagedFeed();
+    expect(wheelValue(/yaw/i)).toBe(STEERABLE.panYaw);
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+    });
+    await heldFor(600);
+    const moved = wheelValue(/yaw/i);
+    expect(moved).toBeGreaterThan(STEERABLE.panYaw as number);
+
+    await heldFor(600);
+    expect(wheelValue(/yaw/i)).toBeGreaterThan(moved);
+  });
+
+  it("releasing the stick stops the wheel where it is", async () => {
+    await stagedFeed();
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: -1 });
+    });
+    await heldFor(600);
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+    });
+    const atRelease = wheelValue(/yaw/i);
+    await heldFor(3000);
+
+    expect(wheelValue(/yaw/i)).toBe(atRelease);
+  });
+
+  it("sends the camera nothing while the stick is held: this is a draft", async () => {
+    const { sidecar } = await stagedFeed();
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+    });
+    await heldFor(2000);
+
+    // Not one live pan command, however long the input is held. The whole
+    // point of the staged mode is that ONE absolute command goes out, on the
+    // operator's commit.
+    expect(sidecar.lastCommand("set-pan-rate")).toBeUndefined();
+    expect(wheelValue(/yaw/i)).not.toBe(STEERABLE.panYaw);
+  });
+
+  it("holds zoom-in on the field-of-view wheel, narrowing it", async () => {
+    const { sidecar } = await stagedFeed();
+    const before = wheelValue(/field of view/i);
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "zoomIn", { kind: "button", value: true });
+    });
+    await heldFor(600);
+
+    expect(wheelValue(/field of view/i)).toBeLessThan(before);
+    expect(sidecar.lastCommand("set-zoom-rate")).toBeUndefined();
+  });
+
+  it("holds zoom-out the other way", async () => {
+    await stagedFeed();
+    const before = wheelValue(/field of view/i);
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "zoomOut", {
+        kind: "button",
+        value: true,
+      });
+    });
+    await heldFor(600);
+
+    expect(wheelValue(/field of view/i)).toBeGreaterThan(before);
+  });
+
+  it("stops on a release even while the pitch stick is still held", async () => {
+    // Two axes at once, because a stick has two and an operator holds both.
+    await stagedFeed();
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "panPitch", {
+        kind: "analog",
+        value: 1,
+      });
+    });
+    await heldFor(600);
+    const yawHeld = wheelValue(/yaw/i);
+    const pitchHeld = wheelValue(/pitch/i);
+    expect(yawHeld).toBeGreaterThan(STEERABLE.panYaw as number);
+    expect(pitchHeld).toBeGreaterThan(STEERABLE.panPitch as number);
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+    });
+    await heldFor(600);
+
+    expect(wheelValue(/yaw/i)).toBe(yawHeld);
+    expect(wheelValue(/pitch/i)).toBeGreaterThan(pitchHeld);
+  });
+
+  it("stops the wheel when the link goes live under a held stick", async () => {
+    // Crossing back under the threshold takes the whole surface off the
+    // picture, and with it the timer that was turning the wheel.
+    const { sidecar } = await buildConnectedSource([STEERABLE]);
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: STAGED_DELAY_S });
+    });
+    await screen.findByRole("slider", { name: /yaw/i });
+
+    act(() => {
+      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+    });
+    await heldFor(600);
+
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
+    });
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Delayed camera control")).toBeNull(),
+    );
+    await heldFor(3000);
+
+    // And the live camera was never driven by the stale rate either: the
+    // gesture that crossed the threshold was consumed by the staged side.
     expect(sidecar.lastCommand("set-pan-rate")).toBeUndefined();
   });
 });

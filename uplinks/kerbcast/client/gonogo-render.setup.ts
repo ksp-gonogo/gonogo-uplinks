@@ -10,7 +10,7 @@
 // The scene's own shape still comes from its fixture. What is here is the fake
 // nobody else could write, which is what this file is for.
 import { type MockCameraInit, MockSidecar } from "@ksp-gonogo/kerbcast/testing";
-import { registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
+import { dispatchAction, registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
 import { defineRenderSetup } from "@ksp-gonogo/ui-kit/render-probe";
 import { KerbcastDataSource } from "./src/KerbcastDataSource";
 
@@ -43,6 +43,19 @@ const CAMERAS: Record<string, MockCameraInit> = {
     supportsZoom: false,
     supportsPan: false,
   },
+  "camera-feed-stick-hold": {
+    ...base(),
+    supportsZoom: true,
+    supportsPan: true,
+    fovMin: 10,
+    fovMax: 90,
+    panYaw: 0,
+    panPitch: -10,
+    panYawMin: -90,
+    panYawMax: 90,
+    panPitchMin: -45,
+    panPitchMax: 45,
+  },
 };
 
 /**
@@ -72,6 +85,49 @@ function base(): MockCameraInit {
 
 const FEED_W_PX = 512;
 const FEED_H_PX = 288;
+
+/**
+ * The scene whose subject is a HELD INPUT, which the fixture format cannot
+ * express on its own.
+ *
+ * A `_scene.steps` entry can wait, click, or hold a POINTER on a control; there
+ * is no step that dispatches a component action, so a film of what a bound
+ * stick does to the staged wheel cannot be written as a fixture. This reaches
+ * the same registry the serial-input platform dispatches through and drives the
+ * real action, which is the one fake this harness exists to let an Uplink write.
+ * Everything the camera then does is the widget's own code: the gesture is real,
+ * only the thumb is ours.
+ */
+const STICK_HOLD_SCENE = "camera-feed-stick-hold";
+
+/** The instance id the render probe mounts a widget under. */
+const PROBE_INSTANCE_ID = "probe";
+
+/** Roughly how long the stick is held, ms, against the scene's own frame clock. */
+const STICK_HOLD_MS = 1400;
+
+let stickReleaseTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Push the yaw stick fully right, and centre it partway through the film.
+ *
+ * Wall-clock rather than frame-indexed, because the driver owns the frame loop
+ * and an Uplink's setup cannot see it. That fixes only WHERE in the film the
+ * release lands, not whether it happens: both halves of the gesture are real
+ * dispatches through the real handler.
+ */
+function holdThenReleaseStick(): void {
+  // A keyboard operator's reveal, and the deterministic one: the cluster is
+  // faded out until the feed is hovered or focused, and a hover set before the
+  // driver resizes the viewport may not survive it.
+  document
+    .querySelector<HTMLElement>('[role="slider"][aria-label="Yaw"]')
+    ?.focus();
+  dispatchAction(PROBE_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+  stickReleaseTimer = setTimeout(() => {
+    dispatchAction(PROBE_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+  }, STICK_HOLD_MS);
+}
 
 let source: KerbcastDataSource | null = null;
 let rafId = 0;
@@ -218,15 +274,20 @@ export default defineRenderSetup({
     sidecar.setConnectionState("connected");
   },
 
-  async afterMount({ starve }) {
+  async afterMount({ scene, starve }) {
     if (starve) return;
     // The snapshot has to reach the widget and the track has to attach before
     // there is a `<video>` to sit behind.
     await new Promise((resolve) => setTimeout(resolve, 400));
     paintFeedBackdrop();
+    if (scene.fixture === STICK_HOLD_SCENE) holdThenReleaseStick();
   },
 
   afterScene() {
+    if (stickReleaseTimer !== null) {
+      clearTimeout(stickReleaseTimer);
+      stickReleaseTimer = null;
+    }
     if (rafId) {
       cancelAnimationFrame(rafId);
       rafId = 0;

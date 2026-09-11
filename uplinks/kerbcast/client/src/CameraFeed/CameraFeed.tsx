@@ -48,7 +48,10 @@ import type {
   CameraSetpoint,
   CameraSetpointBounds,
 } from "../CameraSetpoint/CameraSetpointInput.js";
-import { CameraSetpointSurface } from "../CameraSetpoint/CameraSetpointSurface.js";
+import {
+  CameraSetpointSurface,
+  type CameraSetpointSurfaceHandle,
+} from "../CameraSetpoint/CameraSetpointSurface.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { feedAspect, frameBox } from "./frameShape.js";
@@ -165,27 +168,29 @@ export const cameraFeedActions = [
     id: "zoomIn",
     label: "Zoom in",
     accepts: ["button"],
-    description: "Zoom in one step (reduces field of view by 5 degrees).",
+    description:
+      "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
     id: "zoomOut",
     label: "Zoom out",
     accepts: ["button"],
-    description: "Zoom out one step (increases field of view by 5 degrees).",
+    description:
+      "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
     id: "panYaw",
     label: "Pan yaw axis",
     accepts: ["analog"],
     description:
-      "Analog yaw pan rate. Positive = pan right, negative = pan left. Maps -1..1 to the camera's max pan speed.",
+      "Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit.",
   },
   {
     id: "panPitch",
     label: "Pan pitch axis",
     accepts: ["analog"],
     description:
-      "Analog pitch pan rate. Positive = pan up, negative = pan down. No-op if the camera does not support pitch. Maps -1..1 to the camera's max pan speed.",
+      "Analog pitch rate, -1..1. Positive = up. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged pitch wheel at up to 30 degrees per second, clamped to the camera's pitch envelope, and sends nothing until the commit. A camera with no pitch envelope does not move either way.",
   },
 ] as const satisfies readonly ActionDefinition[];
 
@@ -257,36 +262,10 @@ export function CameraFeed({
   }, []);
   useEffect(() => () => overlayObserverRef.current?.disconnect(), []);
 
-  // ---- Serial-input actions ----
-  // stepCamera, setZoomRate and setPanAxis are guarded internally by the
-  // shared component (showZoom / showPan / supportsPitch checks), so the
-  // handlers here can call them unconditionally.
-  useActionInput<CameraFeedActions>({
-    nextCamera: (payload) => {
-      if (payload.kind === "button" && payload.value !== true) return;
-      feedRef.current?.stepCamera(1);
-    },
-    prevCamera: (payload) => {
-      if (payload.kind === "button" && payload.value !== true) return;
-      feedRef.current?.stepCamera(-1);
-    },
-    zoomIn: (payload) => {
-      if (payload.kind !== "button") return;
-      feedRef.current?.setZoomRate(payload.value === true ? 1 : 0);
-    },
-    zoomOut: (payload) => {
-      if (payload.kind !== "button") return;
-      feedRef.current?.setZoomRate(payload.value === true ? -1 : 0);
-    },
-    panYaw: (payload) => {
-      if (payload.kind !== "analog") return;
-      feedRef.current?.setPanAxis("yaw", payload.value as number);
-    },
-    panPitch: (payload) => {
-      if (payload.kind !== "analog") return;
-      feedRef.current?.setPanAxis("pitch", payload.value as number);
-    },
-  });
+  // Internal ref onto the staged setpoint cluster, the delayed twin of
+  // `feedRef`: above the staged threshold a bound input aims the DRAFT rather
+  // than the camera, and the draft is that component's own state.
+  const setpointRef = useRef<CameraSetpointSurfaceHandle>(null);
 
   // ---- CommNet degrade (500ms debounce) ----
   // In auto mode (config.flightId === null) the shared component picks the
@@ -318,6 +297,71 @@ export function CameraFeed({
   const signalDelay =
     useLatestValue<TopicPayload<"comms.delay">>("comms.delay")?.oneWaySeconds;
   const degradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Delayed camera control (#35): live vs. staged vs. no-path off the same
+  // one-way delay the badge reads. Derived here rather than at the render site
+  // because the serial-input handlers below route on it, and a widget reading
+  // the mode in two places is a widget that can disagree with itself about
+  // which control an operator is holding.
+  const controlMode = currentMode({ oneWaySeconds: signalDelay ?? null });
+
+  // ---- Serial-input actions ----
+  // stepCamera, setZoomRate and setPanAxis are guarded internally by the
+  // shared component (showZoom / showPan / supportsPitch checks), so the
+  // handlers here can call them unconditionally.
+  //
+  // Pan and zoom route on the delay mode, because above the staged threshold
+  // the camera is not what an operator is aiming: the setpoint cluster has
+  // taken over, and what a held input moves is the DRAFT it commits from. Both
+  // ends of the route are the same gesture, a rate held until it is released;
+  // only what integrates it differs. Camera selection is not delayed and does
+  // not route.
+  //
+  // `setpointRef` is null in live mode (the surface is unmounted) and the
+  // staged branch simply no-ops, which is also what a mode change under a held
+  // input does: the rate that crossed the threshold was already consumed by the
+  // other side, so nothing moves again until the operator moves the input.
+  const staged = controlMode !== "live";
+  useActionInput<CameraFeedActions>({
+    nextCamera: (payload) => {
+      if (payload.kind === "button" && payload.value !== true) return;
+      feedRef.current?.stepCamera(1);
+    },
+    prevCamera: (payload) => {
+      if (payload.kind === "button" && payload.value !== true) return;
+      feedRef.current?.stepCamera(-1);
+    },
+    zoomIn: (payload) => {
+      if (payload.kind !== "button") return;
+      // A press zooms IN, which is FoV going DOWN, so the draft's fov rate is
+      // the negative of the live zoom rate rather than the same number.
+      const held = payload.value === true;
+      if (staged) setpointRef.current?.setAxisRate("fov", held ? -1 : 0);
+      else feedRef.current?.setZoomRate(held ? 1 : 0);
+    },
+    zoomOut: (payload) => {
+      if (payload.kind !== "button") return;
+      const held = payload.value === true;
+      if (staged) setpointRef.current?.setAxisRate("fov", held ? 1 : 0);
+      else feedRef.current?.setZoomRate(held ? -1 : 0);
+    },
+    panYaw: (payload) => {
+      if (payload.kind !== "analog") return;
+      const rate = payload.value as number;
+      if (staged) setpointRef.current?.setAxisRate("yaw", rate);
+      else feedRef.current?.setPanAxis("yaw", rate);
+    },
+    panPitch: (payload) => {
+      if (payload.kind !== "analog") return;
+      const rate = payload.value as number;
+      // No pitch guard on the staged branch: a camera that cannot pitch reports
+      // `panPitchMin === panPitchMax`, and clamping the draft into a
+      // zero-width envelope makes every step a no-op on its own. One rule, and
+      // the bounds are the ones the camera itself published.
+      if (staged) setpointRef.current?.setAxisRate("pitch", rate);
+      else feedRef.current?.setPanAxis("pitch", rate);
+    },
+  });
 
   useEffect(() => {
     if (effectiveFlightId === null || !client) return;
@@ -426,13 +470,12 @@ export function CameraFeed({
   const delayBadge = describeSignalDelay(signalDelay);
   const qualityBadge = describeSignalQuality(commConnected, signalStrength);
 
-  // Delayed camera control (#35): pick live vs. staged vs. no-path off the same
-  // one-way delay the badge reads. `currentMode` maps null → "no-path" (never
-  // coerce to 0), <= 1s → "live", > 1s → "staged". Below threshold the surface
-  // renders nothing and the SDK's own live controls stay in charge; above it the
+  // Delayed camera control (#35). `currentMode` (derived above, where the
+  // serial-input handlers also read it) maps null → "no-path" (never coerce to
+  // 0), <= 1s → "live", > 1s → "staged". Below threshold the surface renders
+  // nothing and the SDK's own live controls stay in charge; above it the
   // setpoint surface takes over. Bounds + the seed target come off THIS camera's
   // live `CameraState` (never hardcoded).
-  const controlMode = currentMode({ oneWaySeconds: signalDelay ?? null });
   const activeCamera =
     effectiveFlightId === null
       ? undefined
@@ -578,6 +621,7 @@ export function CameraFeed({
                       }}
                     >
                       <CameraSetpointSurface
+                        ref={setpointRef}
                         cameraId={effectiveFlightId as number}
                         bounds={setpointBounds as CameraSetpointBounds}
                         initial={setpointInitial as CameraSetpoint}
