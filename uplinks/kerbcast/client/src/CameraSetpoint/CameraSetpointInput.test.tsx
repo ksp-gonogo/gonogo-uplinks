@@ -53,12 +53,15 @@ describe("CameraSetpointInput", () => {
   });
 
   it("leaves the standing wheel's reading to its value, not to a caret it cannot hold", () => {
-    // Measured, not preferred: a `WHEEL_SHORT_PX` box leaves 18px of content
-    // and `P−10°` is 40px of the kit's mono, and the kit's wheel is
-    // `overflow: hidden`, so the label would be sliced rather than shrunk. The
-    // kit writes `aria-valuetext` FROM the caret label, so a wheel with no
-    // caret has no valuetext either, and the angle is carried by
-    // `aria-valuenow` and by the wrapper's title instead.
+    // Measured, not preferred, and the quarter turn does not change it: the
+    // kit's `orientation` leaves the caret label upright, so a standing wheel's
+    // label still has only its WIDTH to sit in. A `WHEEL_SHORT_PX` box leaves
+    // 18px of content, `P−10°` is 40px of the kit's mono, and the kit's wheel
+    // is `overflow: hidden`, so the label would be sliced rather than shrunk.
+    //
+    // Naming the axis there instead is not a free swap either: the kit writes
+    // `aria-valuetext` FROM the caret label, so a face reading "P" announces
+    // "P" in place of the angle. Empty leaves `aria-valuenow` to carry it.
     const { container } = render(
       <CameraSetpointInput
         value={{ yaw: 18, pitch: -10, fov: 45 }}
@@ -144,11 +147,11 @@ describe("CameraSetpointInput", () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it("makes the pitch wheel as wide as the flat wheels are tall", () => {
-    // The operator's shape: one number across both orientations, so the
-    // standing tape is as THICK as the two it stands beside are short. It used
-    // to take the flat wheels' WIDTH, which drew a 50x52 near-square next to
-    // two thin bars and read as a block rather than as an axis to drag.
+  it("draws the pitch wheel as the flat wheel turned a quarter turn", () => {
+    // The operator's shape: the same box on both, one of them on its side. Two
+    // earlier readings got it wrong in the same direction, first a 50x52
+    // near-square beside two thin bars, then a strip whose height was however
+    // deep the stack beside it happened to be.
     render(
       <CameraSetpointInput
         value={{ yaw: 0, pitch: 0, fov: 60 }}
@@ -163,7 +166,28 @@ describe("CameraSetpointInput", () => {
     };
     const flat = box("Yaw");
     expect(box("Zoom (field of view)")).toEqual(flat);
-    expect(box("Pitch").width).toBe(flat.height);
+    expect(box("Pitch")).toEqual({ width: flat.height, height: flat.width });
+  });
+
+  it("draws the commit in the cluster's own voice without renaming it", () => {
+    // `CommandGroup` renders the commit and offers a caller no say in how it
+    // looks, so the scope it is drawn in is the lever. Uppercase is DRAWN
+    // rather than spelled, so the accessible name stays the word: this asserts
+    // the label that reaches an assistive technology, not the pixels.
+    render(
+      <CameraSetpointInput
+        value={{ yaw: 0, pitch: 0, fov: 60 }}
+        bounds={bounds}
+        onChange={() => {}}
+        onCommit={() => {}}
+        commitLabel="Commit"
+      />,
+    );
+    const commit = screen.getByRole("button", { name: "Commit" });
+    expect(commit.textContent).toBe("Commit");
+    const style = getComputedStyle(commit);
+    expect(style.textTransform).toBe("uppercase");
+    expect(style.fontFamily).toContain("--font-family-mono");
   });
 
   it("stands the commit beside the wheels, not under them", () => {

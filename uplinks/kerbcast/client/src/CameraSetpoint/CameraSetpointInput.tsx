@@ -1,19 +1,24 @@
 /**
  * CameraSetpointInput: the grouped yaw/pitch/fov vector input for delayed
  * camera control. Yaw and zoom are horizontal `JogWheel` scrubbers stacked in a
- * column; pitch is a VERTICAL one standing beside them, which is what turns
- * three tapes in a line into a block roughly as tall as it is wide. The three
- * sit inside the existing `CommandGroup` commit container, so the whole vector
- * dispatches as ONE delayed command on an explicit commit (never on a child's
- * own change). Vanilla-safe: props only, no gonogo data hooks. The
- * `gated`/`gatedReason`/`commitLabel` pass straight through to `CommandGroup`,
- * whose own gating disables the commit under `no-path`, so this component does
- * not re-implement it.
+ * column; pitch is the same wheel turned a quarter turn, standing beside them,
+ * which is what turns three tapes in a line into a block roughly as tall as it
+ * is wide. The three sit inside the existing `CommandGroup` commit container, so
+ * the whole vector dispatches as ONE delayed command on an explicit commit
+ * (never on a child's own change). Vanilla-safe: props only, no gonogo data
+ * hooks. The `gated`/`gatedReason`/`commitLabel` pass straight through to
+ * `CommandGroup`, whose own gating disables the commit under `no-path`, so this
+ * component does not re-implement it.
  */
 
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { CommandGroup, JogWheel, writeQuantity } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
+// Named, not default: `styled-components@6` ships no `exports` map, so under
+// `moduleResolution: nodenext` the default import resolves to the CJS
+// namespace and `styled.div` is a type error. The named export binds in both
+// modes, and the nodenext typecheck is the gate that says so.
+import { styled } from "styled-components";
 
 export type CameraSetpoint = { yaw: number; pitch: number; fov: number };
 export type CameraSetpointBounds = {
@@ -40,47 +45,57 @@ export interface CameraSetpointInputProps {
 }
 
 /**
- * The wheels' boxes, CSS px, against the kit's 120x40 (horizontal) and 40x120
- * (vertical) defaults.
+ * ONE wheel box, CSS px, drawn twice: the flat wheels are `LONG x SHORT` and
+ * the standing one is `SHORT x LONG`. Same control, quarter turn. Against the
+ * kit's 120x40 (horizontal) and 40x120 (vertical) defaults, which are both far
+ * too big for a corner of a video.
  *
- * `SHORT` is ONE number across both orientations: it is the horizontal wheels'
- * HEIGHT and the vertical wheel's WIDTH, so the pitch tape is exactly as thick
- * as the two it stands beside. It used to be the horizontal height alone, with
- * the pitch wheel taking `LONG` for its width, which drew a 50x52 near-square
- * next to two thin bars: a control that reads as a block rather than as an axis
- * you drag up and down.
- *
- * It is also the kit's `JOG_WHEEL_MIN_TARGET_PX` exactly: the WCAG 2.2 SC 2.5.8
+ * `SHORT` is the kit's `JOG_WHEEL_MIN_TARGET_PX` exactly: the WCAG 2.2 SC 2.5.8
  * floor for a pointer target, and the floor is where this sits because the two
- * horizontal wheels are stacked and their heights come straight out of the shot.
- * The kit clamps a smaller ask up to it anyway, so asking for less would be a
- * number that silently did not apply.
+ * flat wheels are stacked and their heights come straight out of the shot. The
+ * kit clamps a smaller ask up to it anyway, so asking for less would be a number
+ * that silently did not apply.
  *
- * `LONG` is the horizontal wheels' width alone, and it is set by TEXT rather
- * than by taste: their caret label is the kit's `--font-size-sm` mono and it
- * carries an axis glyph, a sign, up to three digits and a degree sign, which is
- * 40px of type inside 6px of border and padding. `TALL` is the height of the
- * two stacked wheels plus the gap between them, so the pitch wheel spans
- * exactly the pair it stands beside.
+ * `LONG` is set by TEXT rather than by taste: a flat wheel's caret label is the
+ * kit's `--font-size-sm` mono and it carries an axis glyph, a sign, up to three
+ * digits and a degree sign, which is 40px of type inside 6px of border and
+ * padding.
+ *
+ * The standing wheel used to take the STACK's height (52) instead of `LONG`,
+ * on a "span the pair you stand beside" rule. It is within 2px of the same
+ * number and it is the wrong rule: it made the pitch box a function of how many
+ * flat axes happen to be stacked, so a third flat axis would have stretched the
+ * pitch wheel rather than left it alone.
  */
 const WHEEL_LONG_PX = 50;
 const WHEEL_SHORT_PX = 24;
 const WHEEL_STACK_GAP_PX = 4;
-const WHEEL_TALL_PX = 2 * WHEEL_SHORT_PX + WHEEL_STACK_GAP_PX;
+
+/** The stacked flat pair, top to bottom. */
+const AXIS_STACK_HEIGHT_PX = 2 * WHEEL_SHORT_PX + WHEEL_STACK_GAP_PX;
 
 /** Gap between the stacked pair and the pitch wheel beside them, CSS px. */
 const AXIS_GAP_PX = 4;
 
 /**
- * The commit control beside the wheels: `CommandGroup`'s own `--space-8` before
- * it, then the button, which measures 67x22 for "Commit" in one line of
- * `--font-size-xs` inside 12px of horizontal padding and a border. Measured off
- * the rendered control in the render harness rather than reasoned about; the
- * first guess from the type metrics was 55, which would have under-reported the
- * cluster's width by 12px to every caller asking whether a tile fits.
+ * The commit control beside the wheels: `CommandGroup`'s own gap before it, then
+ * the button. Both numbers are measured off the rendered control in the render
+ * harness rather than reasoned about; the first guess from the type metrics was
+ * 55 against a then-67px button, which would have under-reported the cluster's
+ * width by 12px to every caller asking whether a tile fits.
+ *
+ * The gap is `--space-8`, which {@link CommitScope} sets to 4 so the cluster
+ * keeps one rhythm; the width is what "Commit" measures in the uppercase mono
+ * that scope also hands the button.
+ *
+ * Its HEIGHT is not written down here because nothing needs it: the commit is
+ * shorter than the wheels it stands beside, so the cluster's depth is theirs.
+ * It measures 24 in the same render, which is the wheels' own short axis and
+ * the WCAG 2.2 SC 2.5.8 target floor: the mono face is what took it there, from
+ * the 22 the kit's default type drew.
  */
-const COMMIT_GAP_PX = 8;
-const COMMIT_WIDTH_PX = 67;
+const COMMIT_GAP_PX = 4;
+const COMMIT_WIDTH_PX = 63;
 
 /**
  * What the whole control measures across, CSS px, for a caller deciding what
@@ -102,9 +117,14 @@ export const SETPOINT_INPUT_WIDTH_PX =
 /**
  * And what it measures top to bottom, which is now the wheels and nothing else:
  * the commit stands beside them rather than under them, and it is shorter than
- * they are.
+ * they are. The taller of the two columns, because the standing wheel is sized
+ * off its flat partner and the stack is sized off how many flat axes there are,
+ * so neither one is guaranteed to be the deeper.
  */
-export const SETPOINT_INPUT_HEIGHT_PX = WHEEL_TALL_PX;
+export const SETPOINT_INPUT_HEIGHT_PX = Math.max(
+  AXIS_STACK_HEIGHT_PX,
+  WHEEL_LONG_PX,
+);
 
 /**
  * A caret label, in the one typographic detail that is load-bearing here: the
@@ -120,7 +140,7 @@ const formatDegrees = (v: number): string =>
 
 /**
  * One axis, named twice over: a glyph a sighted operator reads at 12px inside a
- * 48px box, and the full word for everyone else.
+ * 50px box, and the full word for everyone else.
  *
  * The glyph goes in the caret LABEL because that is the only thing this control
  * can draw inside itself, and inside is the only place a label is free: a label
@@ -130,16 +150,27 @@ const formatDegrees = (v: number): string =>
  * wrapper so a pointer can ask what "P" means. The wrapper exists only for that
  * title: `JogWheel` renders no `...rest`, so there is nowhere else to put it.
  *
- * The STANDING wheel carries no caret label, and that is arithmetic rather than
- * a preference. Its box is `WHEEL_SHORT_PX` across, which leaves 18px of content
- * inside the kit's border and compact inset, and `P−10°` measures 40px in the
- * kit's `--font-size-sm` mono. Both numbers are measured off the rendered
- * control. The kit's root is `overflow: hidden`, so a label that does not fit is
- * not a label that shrinks, it is one sliced through the middle: the widest
- * string this box can hold is under two characters, and a signed angle is three
- * at its shortest. So the standing wheel draws its tape and its caret, and the
- * value it is showing goes in the `title` beside the axis name, on top of the
- * `aria-valuetext` the kit already writes for every wheel.
+ * The STANDING wheel carries no caret label, and that survives the wheel being
+ * its flat partner turned rather than a thin strip, because a quarter turn is
+ * the one thing the kit's `orientation` prop does NOT do to the caret label: it
+ * turns the drag axis, the tape, the caret bar and `aria-orientation`, and
+ * leaves the label an upright `<span>` centred in the box. So the room a label
+ * has is the box's WIDTH either way, and standing, that width is
+ * `WHEEL_SHORT_PX`: 18px of content inside the kit's border and compact inset,
+ * against the 40px `P−10°` measures in the kit's `--font-size-sm` mono. Both
+ * numbers are measured off the rendered control, and the kit's root is
+ * `overflow: hidden`, so a label that does not fit is not one that shrinks, it
+ * is one sliced through the middle.
+ *
+ * Nor can the axis be named there instead of measured. `JogWheel` writes
+ * `aria-valuetext` FROM whatever `format` returns, so a wheel drawing a bare
+ * "P" would announce "P" to a screen reader in place of its angle. An empty
+ * format writes an empty valuetext, which falls back to `aria-valuenow`, so the
+ * angle is read correctly by the one audience that cannot see the tape move.
+ * The standing axis is named on `ariaLabel` and in the wrapper's `title`, and
+ * its angle is drawn — as a position rather than as digits — by the framing
+ * preview this cluster sits beside. Naming it on its face as well needs a
+ * `JogWheel` that separates its caret label from its value text.
  */
 function AxisWheel({
   glyph,
@@ -186,79 +217,91 @@ export function CameraSetpointInput({
   commitLabel,
 }: CameraSetpointInputProps): JSX.Element {
   return (
-    <CommandGroup
-      value={value}
-      onChange={onChange}
-      onCommit={onCommit}
-      gated={gated}
-      gatedReason={gatedReason}
-      commitLabel={commitLabel}
-      /* Beside the wheels, not under them. Under, the commit cost a whole line:
-         a 52px block of wheels drew an 88px cluster, half the height of the
-         176px picture the widget's own default tile produces. Beside, it costs
-         its width instead, on the axis the corner has more of. The older
-         reading (that beside "turns a square cluster back into a strip") was
-         measured against a block two LONG wheels wide; the pitch wheel is now a
-         SHORT one, so the wheels are 78px across rather than 104px. */
-      orientation="row"
-      /* One block, always. The children here are a single laid-out div, so a
-         wrap would only ever break the pitch wheel off under the pair and make
-         the cluster taller than the picture can spare. */
-      wrap={false}
-    >
-      <div style={AXES_STYLE}>
-        <div style={AXIS_STACK_STYLE}>
+    <CommitScope>
+      <CommandGroup
+        value={value}
+        onChange={onChange}
+        onCommit={onCommit}
+        gated={gated}
+        gatedReason={gatedReason}
+        commitLabel={commitLabel}
+        /* Beside the wheels, not under them. Under, the commit cost a whole
+           line: a 52px block of wheels drew an 88px cluster, half the height of
+           the 176px picture the widget's own default tile produces. Beside, it
+           costs its width instead, on the axis the corner has more of. */
+        orientation="row"
+        /* One block, always. The children here are a single laid-out div, so a
+           wrap would only ever break the pitch wheel off under the pair and
+           make the cluster taller than the picture can spare. */
+        wrap={false}
+      >
+        <div style={AXES_STYLE}>
+          <div style={AXIS_STACK_STYLE}>
+            <AxisWheel
+              glyph="Y"
+              name="Yaw"
+              orientation="horizontal"
+              width={WHEEL_LONG_PX}
+              height={WHEEL_SHORT_PX}
+              value={value.yaw}
+              min={bounds.yawMin}
+              max={bounds.yawMax}
+              step={step}
+              onChange={(yaw) => onChange({ ...value, yaw })}
+            />
+            <AxisWheel
+              glyph="Z"
+              name="Zoom (field of view)"
+              orientation="horizontal"
+              width={WHEEL_LONG_PX}
+              height={WHEEL_SHORT_PX}
+              value={value.fov}
+              min={bounds.fovMin}
+              max={bounds.fovMax}
+              step={step}
+              onChange={(fov) => onChange({ ...value, fov })}
+            />
+          </div>
+          {/* The flat wheel's own box, turned: its width is their height and
+              its height is their width, so the three are one control drawn
+              twice rather than two bars and a strip.
+
+              The kit's `orientation` prop is the whole of the turn, and a CSS
+              `rotate(90deg)` over a horizontal wheel is NOT an alternative to
+              it. `JogWheel` picks its drag axis by reading `e.clientX` or
+              `e.clientY`, which are VIEWPORT coordinates and do not rotate with
+              the element: a transformed wheel draws a tape running up the
+              screen and moves it when the operator drags ACROSS the screen.
+              The transform turns the picture and leaves the control where it
+              was. */}
           <AxisWheel
-            glyph="Y"
-            name="Yaw"
-            orientation="horizontal"
-            width={WHEEL_LONG_PX}
-            height={WHEEL_SHORT_PX}
-            value={value.yaw}
-            min={bounds.yawMin}
-            max={bounds.yawMax}
+            glyph="P"
+            name="Pitch"
+            labelled={false}
+            orientation="vertical"
+            width={WHEEL_SHORT_PX}
+            height={WHEEL_LONG_PX}
+            value={value.pitch}
+            min={bounds.pitchMin}
+            max={bounds.pitchMax}
             step={step}
-            onChange={(yaw) => onChange({ ...value, yaw })}
-          />
-          <AxisWheel
-            glyph="Z"
-            name="Zoom (field of view)"
-            orientation="horizontal"
-            width={WHEEL_LONG_PX}
-            height={WHEEL_SHORT_PX}
-            value={value.fov}
-            min={bounds.fovMin}
-            max={bounds.fovMax}
-            step={step}
-            onChange={(fov) => onChange({ ...value, fov })}
+            onChange={(pitch) => onChange({ ...value, pitch })}
           />
         </div>
-        {/* Vertical, and as THIN as the two it stands beside are short, so it
-            looks like what it does: a pitch axis an operator drags up and down.
-            The kit's `orientation` already turns the drag, the tape and the
-            caret; the box is what makes that legible before anyone touches it. */}
-        <AxisWheel
-          glyph="P"
-          name="Pitch"
-          labelled={false}
-          orientation="vertical"
-          width={WHEEL_SHORT_PX}
-          height={WHEEL_TALL_PX}
-          value={value.pitch}
-          min={bounds.pitchMin}
-          max={bounds.pitchMax}
-          step={step}
-          onChange={(pitch) => onChange({ ...value, pitch })}
-        />
-      </div>
-    </CommandGroup>
+      </CommandGroup>
+    </CommitScope>
   );
 }
 
-/** The stacked pair and the pitch wheel, side by side. */
+/**
+ * The stacked pair and the standing wheel, side by side and centred on each
+ * other. Centred rather than top-aligned because the two columns are now sized
+ * by different rules and land 2px apart; the standing wheel reads as the pair's
+ * partner when it is centred on them and as a dropped one when it is not.
+ */
 const AXES_STYLE: CSSProperties = {
   display: "flex",
-  alignItems: "flex-start",
+  alignItems: "center",
   gap: `${AXIS_GAP_PX}px`,
 };
 
@@ -271,3 +314,51 @@ const AXIS_STACK_STYLE: CSSProperties = {
 
 /** Carries the `title` and nothing else, so it must not take a box of its own. */
 const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
+
+/**
+ * What makes the commit read as part of this cluster rather than as a form
+ * button dropped on a video.
+ *
+ * `CommandGroup` renders its own commit and offers a caller three things about
+ * it: `commitLabel` (a string), `orientation`, and `gated`. None of them is
+ * appearance, and a bespoke button beside the group would be a second
+ * implementation of select-then-commit. So the lever is the scope the kit's
+ * button is drawn in, in two parts.
+ *
+ * <p><b>Two spacing tokens, which inside this subtree only the commit reads.</b>
+ * `--space-8` is `CommandGroup`'s gap between its inputs and its commit (its
+ * inputs gap too, but there is one input here) and `--space-12` is the button's
+ * side padding. At the kit's own values the commit sat 8px from the wheels and
+ * 4px from the framing preview on its other side, so it grouped with the
+ * picture it reviews rather than with the control it belongs to; at 4 the
+ * cluster keeps one rhythm and the button stops being a slab.</p>
+ *
+ * <p><b>One rule reaching the button itself, for the type.</b> This widget's
+ * chrome is tracked-out uppercase mono throughout ("STARBOARD CAM", "1.4 S",
+ * "Y18°") and the commit was the one element in it set in title-case Arial: the
+ * loudest thing in the cluster while being the least of it. That is not a
+ * choice the kit made, it is the UA stylesheet: a `<button>` gets its own
+ * `font`, and resets `text-transform` and `letter-spacing` to `initial`, so
+ * none of the three inherits from an ancestor. Every other button in the kit
+ * answers that with `font-family: inherit`; `CommandGroup`'s is the one that
+ * does not, so it renders in Arial under every theme. Setting the three here is
+ * a stand-in for that one missing line, and it goes when the kit grows it.</p>
+ *
+ * <p>The label stays "Commit" rather than "COMMIT": `text-transform` changes
+ * what is drawn and not the accessible name, and a screen reader handed an
+ * all-caps name may spell it out.</p>
+ *
+ * <p>`& button` rather than a child selector because the group's own root sits
+ * between: the subtree holds exactly one button, which is the commit.</p>
+ */
+const CommitScope = styled.div`
+  display: flex;
+  --space-8: 4px;
+  --space-12: 8px;
+
+  & button {
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+`;
