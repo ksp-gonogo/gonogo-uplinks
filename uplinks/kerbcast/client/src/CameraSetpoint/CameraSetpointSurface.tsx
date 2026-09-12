@@ -9,11 +9,17 @@
  * already `Delayed`). Under `no-path` the surface still shows but the commit is
  * gated, consistent with any uplink command under signal loss.
  *
- * It is drawn OVER the picture as ONE cluster tucked into the bottom-right
- * corner: the wheels, the commit and a small framing preview, sized to its own
- * content rather than to the picture. It is absolutely positioned and takes no
- * share of the layout, because the host is a video widget whose content is the
- * picture.
+ * It is drawn OVER the picture as TWO absolutely positioned siblings, and
+ * neither takes a share of the layout, because the host is a video widget whose
+ * content is the picture. The CLUSTER, in the bottom-right corner, is the
+ * control: the wheels and the commit, sized to its own content. The PREVIEW is
+ * not in it. It is a free-standing tile at the bottom CENTRE of the picture,
+ * because it is a readout of what the control is about to do rather than part
+ * of the control, and because inside the cluster it was the thing that got cut:
+ * the cluster is `overflow: hidden` (it has to be, it is `max-width`-clamped to
+ * the picture) and the preview was drawn last, so the quad's deliberate spill
+ * outside the feed frame was sliced at the cluster's right edge on every
+ * picture wide enough to draw it at all.
  *
  * The in-flight readout is NOT in the cluster. Both handles go to
  * `usePanelDelay`, so the host panel's own delay rail draws them in the band it
@@ -60,7 +66,6 @@ import {
   type CameraSetpoint,
   type CameraSetpointBounds,
   CameraSetpointInput,
-  SETPOINT_INPUT_HEIGHT_PX,
   SETPOINT_INPUT_WIDTH_PX,
 } from "./CameraSetpointInput.js";
 import { FramingPreview } from "./FramingPreview.js";
@@ -98,42 +103,40 @@ const CLUSTER_INSET_PX = 8;
  *  inset is what the two share rather than a clearance between them. */
 const SDK_PAN_PAD_INSET_PX = 10;
 
-/** Gap between the wheels and the preview tile, CSS px (`--space-4`). */
-const PREVIEW_GAP_PX = 4;
+/** Clear air between the centred preview tile and the cluster beside it, CSS px
+ *  (`--space-4`). Two pieces of chrome on one picture with no gap read as one
+ *  piece of chrome with a seam in it. */
+const PREVIEW_CLEARANCE_PX = 4;
 
 /** What the `Box` below adds around its content on each axis: `pad="xs"`
  *  (`--space-2`) plus the 1px `bordered` rule, both sides. */
 const CLUSTER_CHROME_PX = 2 * (2 + 1);
 
-/**
- * The most of the picture the DRAWN cluster may cover before it stops being
- * chrome in the corner and becomes the thing on screen.
- *
- * AREA, and one number, where this used to ask a width share and a height share
- * separately. Two axis shares cannot describe a corner cluster whose shape
- * changes: the width cap was 1/3, and it REFUSED THE TILE ON EVERY PICTURE THIS
- * WIDGET DRAWS. Measured in the render harness: the widest picture any shipped
- * tile produces is 316x176, a third of which is 105px, and the wheels alone
- * were 104px. So the cap admitted a 1px tile at best and the preview had never
- * once been visible, on any tile, at any size.
- *
- * Area is the question that survives the shape change, because the cluster is
- * SHORT: the wheels are 52px on a 176px picture, so the same cluster that looks
- * like half the width is a fifth of the shot.
- */
-const CLUSTER_MAX_AREA_SHARE = 1 / 4;
+/** The cluster's own box, now that it holds the control and nothing else. It is
+ *  a CONSTANT per picture, where it used to grow by a tile, which is what makes
+ *  the question below a clearance rather than a share. */
+const CLUSTER_WIDTH_PX = SETPOINT_INPUT_WIDTH_PX + CLUSTER_CHROME_PX;
 
 /**
- * The preview tile's own size, or `null` when the picture cannot spare one.
+ * The preview tile's own size, or `null` when the picture has no room to draw
+ * it WHOLE and clear of the cluster.
  *
- * The tile is the one OPTIONAL part of the cluster, so whether it fits is a
- * question about what the rest already costs, and it is asked twice: whether
- * the cluster plus a tile physically fits inside the picture at the inset it is
- * anchored on, and then whether what is DRAWN still reads as chrome rather than
- * as the screen. A picture that fails either drops the tile and keeps the
- * numbers, which are the control. The first test doubles as the guard against a
- * zero-sized frame, which is what an unmeasured feed and every jsdom test
- * report.
+ * The question changed with the tile's home. Inside the cluster it was a share
+ * one: the tile grew the cluster, so what it cost was how much of the shot the
+ * cluster covered, and the rule was an area cap. Bottom-centre of the picture
+ * the tile costs the cluster nothing and the shot almost nothing (64px of a
+ * 316px picture), and the only thing it can run into is the cluster itself,
+ * which is right-anchored and reaches back past the centre line. So the rule is
+ * CLEARANCE: half a tile plus a gap, measured from the centre of the picture,
+ * has to stop short of the cluster's left edge.
+ *
+ * That is a stricter test than the area cap it replaces, and deliberately: an
+ * area cap admits a tile that overlaps the control, and half a diagram behind a
+ * wheel is the cut-off the move was made to end. A picture that fails it draws
+ * no tile and keeps the numbers, which are the control.
+ *
+ * The first test doubles as the guard against a zero-sized frame, which is what
+ * an unmeasured feed and every jsdom test report.
  *
  * The height follows the picture's aspect rather than a fixed rectangle: the
  * preview says where a framing lands inside the current view, and a 16:9 model
@@ -154,26 +157,16 @@ function previewSize(
       ),
     ),
   );
-  const drawnWidth =
-    SETPOINT_INPUT_WIDTH_PX +
-    PREVIEW_GAP_PX +
-    PREVIEW_WIDTH_PX +
-    CLUSTER_CHROME_PX;
-  // A tile that fills the picture it is a model OF is not a model of it.
-  const drawnHeight =
-    Math.max(SETPOINT_INPUT_HEIGHT_PX, height) + CLUSTER_CHROME_PX;
-  if (drawnWidth + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.width) {
+  // A tile that fills the picture it is a model OF is not a model of it. The
+  // tile is bottom-anchored on the same inset the cluster is, so its top edge is
+  // what has to stay inside the picture.
+  if (height + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.height) {
     return null;
   }
-  if (drawnHeight + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.height) {
-    return null;
-  }
-  if (
-    drawnWidth * drawnHeight >
-    frame.width * frame.height * CLUSTER_MAX_AREA_SHARE
-  ) {
-    return null;
-  }
+  const clusterLeftEdge =
+    frame.width - SDK_PAN_PAD_INSET_PX - CLUSTER_WIDTH_PX;
+  const tileRightEdge = frame.width / 2 + PREVIEW_WIDTH_PX / 2;
+  if (tileRightEdge + PREVIEW_CLEARANCE_PX > clusterLeftEdge) return null;
   return { width: PREVIEW_WIDTH_PX, height };
 }
 
@@ -318,14 +311,14 @@ export const CameraSetpointSurface = forwardRef<
   const preview = previewSize(frame);
 
   return (
-    <Box
-      pad="xs"
-      radius="sm"
-      bordered
-      style={CLUSTER_STYLE}
-      aria-label="Delayed camera control"
-    >
-      <div style={CLUSTER_TRACK_STYLE}>
+    <>
+      <Box
+        pad="xs"
+        radius="sm"
+        bordered
+        style={CLUSTER_STYLE}
+        aria-label="Delayed camera control"
+      >
         <CameraSetpointInput
           value={setpoint}
           bounds={bounds}
@@ -334,10 +327,9 @@ export const CameraSetpointSurface = forwardRef<
           onChange={setSetpoint}
           onCommit={handleCommit}
         />
-        {preview && (
-          // Last, so a picture too narrow for the whole cluster clips the
-          // PREVIEW first and keeps the wheels: the numbers are the control, the
-          // tile is the review of them.
+      </Box>
+      {preview && (
+        <div style={PREVIEW_STYLE}>
           <FramingPreview
             setpoint={setpoint}
             bounds={bounds}
@@ -345,9 +337,9 @@ export const CameraSetpointSurface = forwardRef<
             height={preview.height}
             committing={committing}
           />
-        )}
-      </div>
-    </Box>
+        </div>
+      )}
+    </>
   );
 });
 
@@ -382,7 +374,11 @@ export const CameraSetpointSurface = forwardRef<
  *
  * `overflow: hidden` rather than `auto`: a block that no longer wraps and is
  * sized to the corner has nothing to scroll TO, and a scroll container here only
- * ever offered a scrollbar drawn across the shot.
+ * ever offered a scrollbar drawn across the shot. It is also why the framing
+ * preview is no longer in here. Nothing the CONTROL draws wants to leave this
+ * box, so the clip is right for it; the preview's quad wants to leave its own
+ * tile by design, so the same clip was wrong for that, and the tile drawn last
+ * in the row was the one it landed on.
  *
  * Its own translucent backing rather than `surface="panel"`: an opaque panel
  * colour over a moving picture reads as a hole cut in the video, where the
@@ -399,9 +395,35 @@ const CLUSTER_STYLE: CSSProperties = {
   pointerEvents: "auto",
 };
 
-/** The wheels and the preview tile, side by side, vertically centred. */
-const CLUSTER_TRACK_STYLE: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "var(--space-4)",
+/**
+ * The framing preview: bottom CENTRE of the picture, standing on its own.
+ *
+ * The same bottom inset the cluster uses, so the two sit on one line along the
+ * foot of the shot rather than at two heights. Centred with `left: 50%` and a
+ * half-width translate rather than `inset-inline: 0` plus `margin: auto`,
+ * because an absolutely positioned box with both edges pinned spans the picture
+ * and this one has to shrink to the tile.
+ *
+ * NOTHING CLIPS IT, which is the whole point of the move. The tile's own SVG is
+ * `overflow: visible` and says why: a pan-and-zoom target legitimately lands
+ * partly outside the current view, and a quad drawn crossing the feed frame is
+ * the honest reading of that. Inside the cluster that spill met the cluster's
+ * `overflow: hidden` and was sliced at whatever edge it reached first. Out here
+ * it draws over the picture, which is where a target outside the current view
+ * actually is. The spill is bounded by the geometry rather than by a box:
+ * `computeTargetFraming` clamps the zoom ratio to 2 and the fisheye to 1.5, so
+ * the widest quad a 64px tile can draw is about 150px across, centred on the
+ * tile.
+ *
+ * Click-through, unlike the cluster. The preview is a readout and has no
+ * gesture of its own, and it is laid over the middle of the shot where the SDK's
+ * own hover behaviour lives; a transparent tile that swallowed a pointer there
+ * would be a dead patch in the picture for no gain.
+ */
+const PREVIEW_STYLE: CSSProperties = {
+  position: "absolute",
+  left: "50%",
+  transform: "translateX(-50%)",
+  bottom: `${SDK_PAN_PAD_INSET_PX}px`,
+  pointerEvents: "none",
 };

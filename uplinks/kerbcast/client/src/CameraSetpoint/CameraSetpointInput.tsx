@@ -169,8 +169,8 @@ const formatDegrees = (v: number): string =>
  * angle is read correctly by the one audience that cannot see the tape move.
  * The standing axis is named on `ariaLabel` and in the wrapper's `title`, and
  * its angle is drawn — as a position rather than as digits — by the framing
- * preview this cluster sits beside. Naming it on its face as well needs a
- * `JogWheel` that separates its caret label from its value text.
+ * preview at the foot of the same picture. Naming it on its face as well needs
+ * a `JogWheel` that separates its caret label from its value text.
  */
 function AxisWheel({
   glyph,
@@ -328,10 +328,10 @@ const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
  * <p><b>Two spacing tokens, which inside this subtree only the commit reads.</b>
  * `--space-8` is `CommandGroup`'s gap between its inputs and its commit (its
  * inputs gap too, but there is one input here) and `--space-12` is the button's
- * side padding. At the kit's own values the commit sat 8px from the wheels and
- * 4px from the framing preview on its other side, so it grouped with the
- * picture it reviews rather than with the control it belongs to; at 4 the
- * cluster keeps one rhythm and the button stops being a slab.</p>
+ * side padding. At the kit's own values the commit sat 8px from the wheels in a
+ * cluster whose own rhythm is 4, so it read as a slab set down beside the
+ * control rather than as the last element of it; at 4 the cluster keeps one
+ * rhythm throughout.</p>
  *
  * <p><b>One rule reaching the button itself, for the type.</b> This widget's
  * chrome is tracked-out uppercase mono throughout ("STARBOARD CAM", "1.4 S",
