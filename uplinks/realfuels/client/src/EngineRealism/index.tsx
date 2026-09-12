@@ -11,8 +11,11 @@
 // data-gated besides: with no engine reading the section draws nothing at all
 // and FuelStatus composes exactly as it does on a stock install.
 
-import type { Reading } from "@ksp-gonogo/sitrep-sdk";
-import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  observedValue,
+  registerAugment,
+  useTelemetry,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Grid,
@@ -33,18 +36,6 @@ import { REALFUELS } from "../uplink.js";
 // section's readings depend on. Pulled here rather than left to the package
 // entry point's import order, since this is their one consumer.
 import "../topics.js";
-
-/**
- * The value a judgement may be drawn from: current, or modelled forward to the
- * frame. A stale reading carrying no model gives nothing. An ignition budget
- * held from before a gap is the worst kind of number to draw, because the burn
- * it describes may already have spent it.
- */
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.reckoning === "available") return reading.reckoned.value;
-  return undefined;
-}
 
 /**
  * RealFuels' own settling bands, from its ullage simulator's state strings.
@@ -225,10 +216,13 @@ function BoiloffRow({ boiloff }: { boiloff: RealFuelsBoiloff }) {
  * engines, which is not what an absent reading says.
  */
 export function EngineRealismSection() {
-  const engines = judgeable(useTelemetry("realfuels.engines")) as
+  // Observed only. An ignition budget held from before a gap is the worst kind
+  // of number to draw, because the burn it describes may already have spent it,
+  // and a settling band is a verdict on the ullage RIGHT NOW.
+  const engines = observedValue(useTelemetry("realfuels.engines")) as
     | RealFuelsEngines
     | undefined;
-  const boiloff = judgeable(useTelemetry("realfuels.boiloff")) as
+  const boiloff = observedValue(useTelemetry("realfuels.boiloff")) as
     | RealFuelsBoiloff
     | undefined;
 

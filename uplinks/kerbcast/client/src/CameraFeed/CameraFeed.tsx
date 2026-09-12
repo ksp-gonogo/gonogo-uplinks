@@ -16,7 +16,7 @@ import {
   currentMode,
   getUplinkHandle,
   logger,
-  type Reading,
+  observedValue,
   useActionInput,
   useLatestValue,
   useTelemetry,
@@ -76,17 +76,6 @@ export interface CameraFeedConfig extends Record<string, unknown> {
    * default chrome stays uncluttered; toggled from the camera menu.
    */
   showDebugInfo: boolean;
-}
-
-/**
- * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading carrying no model gives nothing, because a judgement cannot be
- * dated: the operator reads a band or a pill as the situation NOW.
- */
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.reckoning === "available") return reading.reckoned.value;
-  return undefined;
 }
 
 /**
@@ -278,14 +267,18 @@ export function CameraFeed({
   );
 
   // Native topic reads: the canonical field paths, not a two-arg shim.
-  const vesselComms = judgeable(useTelemetry("vessel.comms"));
+  // `observedValue` on both: the strength drives a quality pill and the H.264
+  // degrade level, and a held figure would claim a link the craft may no longer
+  // have. A stale strength is worse than none here, because the badge it feeds
+  // is read as the situation now.
+  const vesselComms = observedValue(useTelemetry("vessel.comms"));
   const signalStrength = vesselComms?.signalStrength;
   // `comms.link` (NOT `vessel.comms.connected`): a dedicated, freeze-EXEMPT
   // MetaTopic. `vessel.comms` is a Delayed struct subject to the reveal-gate
   // freeze, so its own `.connected` field would stick at last-known through
   // a blackout instead of firing "NO SIGNAL". `comms.link` escapes that
   // freeze, so it's the edge that actually reflects a live disconnect.
-  const commConnected = judgeable(useTelemetry("comms.link"))?.connected;
+  const commConnected = observedValue(useTelemetry("comms.link"))?.connected;
   // One-way light-time delay for THIS downlink (the footage left the craft
   // this long ago): NOT round-trip. Round-trip doubling only applies to
   // interactive command/response paths (e.g. the kOS terminal), which this

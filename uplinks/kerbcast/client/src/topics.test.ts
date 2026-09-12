@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import {
   getAllKnownTopicIds,
   isTopicId,
+  observedValue,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -27,17 +27,6 @@ const MOD_ROOT = join(
 );
 
 /** The value of `KerbcastUplink.AvailableTopic` as declared in the C# source. */
-/**
- * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading carrying no model gives nothing, because a judgement cannot be
- * dated: the operator reads a band or a pill as the situation NOW.
- */
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.reckoning === "available") return reading.reckoned.value;
-  return undefined;
-}
-
 function csAvailableTopic(): string {
   const src = readFileSync(join(MOD_ROOT, "KerbcastUplink.cs"), "utf8");
   const m = src.match(/const\s+string\s+AvailableTopic\s*=\s*"([^"]+)"/);
@@ -90,7 +79,7 @@ describe("kerbcast.cameras Topic (relocated out of Sitrep.Contract)", () => {
       carriedChannels: [KERBCAST_CAMERAS_TOPIC],
     });
     const { result } = renderHook(
-      () => judgeable(useTelemetry(KERBCAST_CAMERAS_TOPIC)),
+      () => observedValue(useTelemetry(KERBCAST_CAMERAS_TOPIC)),
       {
         wrapper: fixture.Provider,
       },

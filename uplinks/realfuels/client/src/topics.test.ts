@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import {
   getAllKnownTopicIds,
   isTopicId,
+  observedValue,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -24,12 +24,6 @@ import {
 
 // src -> client -> realfuels -> mod, where the C# half of this Uplink lives
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");
-
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.reckoning === "available") return reading.reckoned.value;
-  return undefined;
-}
 
 /** The value of a `const string <name>` in RealFuelsUplink.cs, as the C# declares it. */
 function csTopic(constName: string): string {
@@ -77,7 +71,7 @@ describe("unit hydration at decode time", () => {
       carriedChannels: [REALFUELS_BOILOFF_TOPIC],
     });
     const { result } = renderHook(
-      () => judgeable(useTelemetry(REALFUELS_BOILOFF_TOPIC)),
+      () => observedValue(useTelemetry(REALFUELS_BOILOFF_TOPIC)),
       { wrapper: fixture.Provider },
     );
 
@@ -108,7 +102,7 @@ describe("unit hydration at decode time", () => {
       carriedChannels: [REALFUELS_ENGINES_TOPIC],
     });
     const { result } = renderHook(
-      () => judgeable(useTelemetry(REALFUELS_ENGINES_TOPIC)),
+      () => observedValue(useTelemetry(REALFUELS_ENGINES_TOPIC)),
       { wrapper: fixture.Provider },
     );
 

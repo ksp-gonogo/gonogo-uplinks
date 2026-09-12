@@ -1,6 +1,7 @@
 import type { ComponentProps, Reading } from "@ksp-gonogo/sitrep-sdk";
 import {
   getBody,
+  observedValue,
   registerComponent,
   useTelemetry,
   value,
@@ -120,17 +121,6 @@ const DISPLAY_SCAN_TYPES: SCANType[] = [
 ];
 
 /**
- * The value a VERDICT may be drawn from: current, or modelled forward to the frame.
- * A stale reading carrying no model gives nothing, because a judgement cannot be
- * dated: the operator reads a band or a pill as the situation NOW.
- */
-function judgeable<T>(reading: Reading<T>): T | undefined {
-  if (reading.state === "observed") return reading.value;
-  if (reading.reckoning === "available") return reading.reckoned.value;
-  return undefined;
-}
-
-/**
  * The value of a FACT: something that stays true until an event changes it, and no
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
@@ -174,9 +164,10 @@ function ScanningComponent({
 }: Readonly<ComponentProps<ScanningConfig>>) {
   const activeBody = useActiveVesselBodyName();
   const bodyName = config?.bodyName ?? activeBody;
-  // The biome under the craft is a judgement: it changes as the craft moves, and a
-  // held one would label a scan with the wrong terrain.
-  const surface = judgeable(useTelemetry("vessel.surface"));
+  // The biome under the craft is the opposite of the facts `stillTrue` reads
+  // below: it changes as the craft moves, and a held one would label a scan
+  // with the wrong terrain, so only an observation will do.
+  const surface = observedValue(useTelemetry("vessel.surface"));
   const biome = surface?.biome;
   // A presence gate, so a fact: a domain that reported and went quiet is still
   // installed.
