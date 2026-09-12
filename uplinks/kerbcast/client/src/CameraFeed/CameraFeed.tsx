@@ -532,19 +532,40 @@ export function CameraFeed({
   // only a panel has: the delay-rail band its own aim commands travel in, the
   // status dots, `panelBadges`, and both universal augment segments.
   //
-  // An ORDINARY header, deliberately, not `floatingHeader`. What the SDK draws
-  // in the picture's top-left is not a title competing with this one, it is the
-  // CAMERA PICKER: a `<button aria-haspopup="menu">` whose label happens to be
-  // the camera's name, and the only way to reach the camera list this widget
-  // advertises. There is no prop to suppress it and suppressing it would delete
-  // the picker, so the two are kept in different boxes instead: the panel names
-  // the instrument in a row above the picture, the feed names the camera inside
-  // it. `floatingHeader` is what puts them in one corner, and it was tried:
-  // "CAMERA" and "STARBOARD CAM" overlap, character on character.
+  // NO `panelTitle`, and that is a naming decision rather than a saving that
+  // happens to be free. What the SDK draws in the picture's top-left is already
+  // the instrument's name: the CAMERA PICKER, a `<button aria-haspopup="menu">`
+  // labelled with the camera's own name ("Starboard Cam"), and the only way to
+  // reach the camera list this widget advertises. There is no prop to suppress
+  // it, so a panel title beside it is a second name for the same thing. It was
+  // first tried as a `floatingHeader`, where "CAMERA" and "STARBOARD CAM"
+  // overlapped character on character, and then as an ordinary header in a row
+  // above the picture, which is where this measurement came from: the header
+  // row, the body inset and the gap under it cost 32px of width and 47px of
+  // height, 33% of a 9x8 tile, all of it taken off a picture that is the whole
+  // point of the widget. Untitled, `Panel` takes the headerless path and the
+  // header collapses to NOTHING rather than to an empty row (measured in
+  // chromium against the vendored kit: the filling section goes from 318x191 to
+  // 350x238 at 9x8), which is what makes this worth doing at all.
+  //
+  // What that costs, said plainly: the picker's name is REVEALED rather than
+  // standing. The SDK fades its whole top overlay in on hover, on focus-within,
+  // or once a click has pinned the chrome, so at rest the tile is the picture
+  // plus this widget's own always-on badges and no words at all. Reached for,
+  // it names the camera; with no camera at all it names the widget, the picker
+  // falling back to the words "Camera Feed" beside the SDK's empty message. A
+  // standing name would have to be drawn in the picture's top-left, which is
+  // the corner the picker takes, and that overlap is what sent the panel title
+  // into a row of its own in the first place.
+  //
+  // The panel is still a panel, and the band is why: the rail moves from the
+  // sticky header unit into the container's own top padding, same height, same
+  // permanence. A contributed badge or a bound `camera-feed.actions` augment
+  // gives the header row back (unnamed, carrying only what was contributed),
+  // and the picture pays the 47px again for as long as it is there.
   return (
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <Panel
-        panelTitle="CAMERA"
         sections={
           <Section full fill>
             <div ref={stageRef} style={FEED_STAGE_STYLE}>

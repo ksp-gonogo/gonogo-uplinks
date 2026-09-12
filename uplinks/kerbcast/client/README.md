@@ -52,7 +52,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 
 ![The same widget at 9 × 8](docs/assets/camera-feed-fixed--mobile-9x8.png)
 
-![A camera that can be aimed, above the staged delay threshold: yaw and zoom stack beside a pitch wheel that is the same wheel turned a quarter turn, with the commit and a framing preview on the same line, in the picture's bottom-right corner. The kerbcast feed's own live pan pad and zoom pair have stood down for as long as this is up, so the corner they held is the corner this takes and there is only ever one control aiming the camera](docs/assets/camera-feed-steerable--default.png)
+![A camera that can be aimed, above the staged delay threshold: yaw and zoom stack beside a pitch wheel that is the same wheel turned a quarter turn, with the commit on the same line, in the picture's bottom-right corner. The kerbcast feed's own live pan pad and zoom pair have stood down for as long as this is up, so the corner they held is the corner this takes and there is only ever one control aiming the camera. The framing preview is no longer inside that cluster: it stands on its own at the bottom centre of the picture, where nothing clips the quad it deliberately draws outside the feed frame, and it appears on any picture whose centre line is clear of the control](docs/assets/camera-feed-steerable--default.png)
 
 ![The same widget at its minimum size](docs/assets/camera-feed-steerable--min.png)
 

@@ -125,7 +125,7 @@ const CLUSTER_WIDTH_PX = SETPOINT_INPUT_WIDTH_PX + CLUSTER_CHROME_PX;
  * one: the tile grew the cluster, so what it cost was how much of the shot the
  * cluster covered, and the rule was an area cap. Bottom-centre of the picture
  * the tile costs the cluster nothing and the shot almost nothing (64px of a
- * 316px picture), and the only thing it can run into is the cluster itself,
+ * 348px picture), and the only thing it can run into is the cluster itself,
  * which is right-anchored and reaches back past the centre line. So the rule is
  * CLEARANCE: half a tile plus a gap, measured from the centre of the picture,
  * has to stop short of the cluster's left edge.

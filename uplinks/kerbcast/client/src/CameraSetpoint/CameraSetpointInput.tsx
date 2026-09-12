@@ -105,7 +105,7 @@ const COMMIT_WIDTH_PX = 63;
  * Composed from its parts rather than written down, so it cannot go stale
  * behind a change to a wheel's size. The commit is IN it now, because it is on
  * the same line: `orientation="row"` trades its whole line of height for its
- * own width, which is the trade a control drawn on a 176px-tall picture wants.
+ * own width, which is the trade a control drawn on a 194px-tall picture wants.
  */
 export const SETPOINT_INPUT_WIDTH_PX =
   WHEEL_LONG_PX +
@@ -226,8 +226,8 @@ export function CameraSetpointInput({
         gatedReason={gatedReason}
         commitLabel={commitLabel}
         /* Beside the wheels, not under them. Under, the commit cost a whole
-           line: a 52px block of wheels drew an 88px cluster, half the height of
-           the 176px picture the widget's own default tile produces. Beside, it
+           line: a 52px block of wheels drew an 88px cluster, nearly half the
+           height of the 194px picture the default tile produces. Beside, it
            costs its width instead, on the axis the corner has more of. */
         orientation="row"
         /* One block, always. The children here are a single laid-out div, so a

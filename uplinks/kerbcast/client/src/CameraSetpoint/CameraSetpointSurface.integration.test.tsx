@@ -81,8 +81,12 @@ describe("delayed camera control, end to end", () => {
       // the store has to sit where both can see it. The dashboard mounts one per
       // grid item; `renderWidget` mounts one too.
       <DelayRailProvider>
+        {/* Untitled, which is the panel shape `CameraFeed` actually renders: it
+            takes no title (the SDK's picker names the widget), so the rail lives
+            in the container's own top band rather than inside a header's sticky
+            unit. A harness that kept a title would prove the band on a shape
+            this surface is never drawn in. */}
         <Panel
-          panelTitle="CAMERA"
           sections={
             <Section full>
               <CameraSetpointSurface

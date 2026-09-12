@@ -93,19 +93,20 @@ describe("CameraSetpointSurface", () => {
   });
 
   it("drops the framing preview when the cluster reaches past the centre line", () => {
-    // 316x176, the picture the widget's own `defaultSize` tile produces. The
-    // cluster's left edge lands at 155 and the picture's centre is 158, so the
-    // centre line itself is under the control and no width of centred tile
-    // clears it. What decides this is the commit: 63 of the cluster's 151px is
-    // the word "COMMIT", and while the commit is a word the picture needs 394
-    // before a centred tile has anywhere to stand.
+    // 348x194, the picture the widget's own `defaultSize` tile produces now
+    // that its host takes no panel title: 32px wider than the 316x176 it drew
+    // with one, and it still does not fit. The cluster's left edge lands at
+    // 187, where half a 64px tile plus 4px of clear air reaches 210. What
+    // decides the 394 it would take is the commit: 63 of the cluster's 151px
+    // is the word "COMMIT", and while the commit is a word a centred tile
+    // needs that much picture before it has anywhere to stand.
     const { rerender } = render(
       <CameraSetpointSurface
         cameraId={42}
         bounds={bounds}
         initial={initial}
         mode="staged"
-        frame={{ width: 316, height: 176 }}
+        frame={{ width: 348, height: 194 }}
       />,
     );
     expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(
@@ -114,15 +115,17 @@ describe("CameraSetpointSurface", () => {
     // The numbers are the control and they never go: only the review of them does.
     expect(screen.getByRole("slider", { name: /yaw/i })).toBeTruthy();
 
-    // 236x132, the picture `minSize` produces. Here the cluster is 64% of the
-    // width, so the centre line is buried deeper still.
+    // 268x149, the picture `minSize` produces. Here the cluster is 56% of the
+    // width, so the centre line is buried deeper still. The picture is now
+    // width-limited rather than height-limited: with the title gone the six
+    // rows have height to spare, so the seven columns are what caps it.
     rerender(
       <CameraSetpointSurface
         cameraId={42}
         bounds={bounds}
         initial={initial}
         mode="staged"
-        frame={{ width: 236, height: 132 }}
+        frame={{ width: 268, height: 149 }}
       />,
     );
     expect(screen.queryByRole("img", { name: "Camera framing preview" })).toBe(

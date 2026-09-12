@@ -20,12 +20,19 @@ registerComponent<CameraFeedConfig>({
    * CAMERA's aspect rather than the tile's, so width past what the height can
    * use is empty panel either side of the picture.
    *
-   * <p>The chrome takes a fixed 36px of width and 67px of height (the panel
-   * border, the reserved delay-rail band, the title row and the body padding),
-   * measured on the render harness. Eight rows leave 189px of picture height,
-   * which a 16:9 camera would fill at 336px wide; nine columns offer 316px, so
-   * the picture is 316x178 and the cluster is a third of its width and half its
-   * height. A tenth column would buy 40px the height cannot use.</p>
+   * <p>The chrome is now 2px of width and 18px of height: the panel border and
+   * the reserved delay-rail band, and nothing else, the widget having given up
+   * its panel title (see `CameraFeed.tsx`) and with it the header row, the body
+   * inset and the gap under it. That was 32px of width and 47px of height,
+   * measured in chromium against the vendored kit. Nine columns leave 348px of
+   * picture, eight rows 236px, and a 16:9 camera fills the width first, so the
+   * picture is 348x194 where it was 316x176.</p>
+   *
+   * <p>The height is no longer what caps it: 236px of height could carry a
+   * 419px-wide 16:9 picture, so a tenth or eleventh column would now be spent
+   * rather than wasted. Left at nine deliberately, because widening the default
+   * tile is a dashboard-layout decision rather than a chrome one, and eleven
+   * columns is also where the framing preview starts to fit.</p>
    */
   defaultSize: { w: 9, h: 8 },
   /**
@@ -38,6 +45,10 @@ registerComponent<CameraFeedConfig>({
    * 287px of picture in one row, and that row is gone; what is left is the
    * cluster's own 110px plus its inset, and the 219px a 16:9 camera draws into
    * 123px of height. 255px of tile, so seven columns.</p>
+   *
+   * <p>Both numbers held while the panel title went: the title cost height the
+   * 16:9 fit was spending anyway here, so the same seven columns now draw a
+   * 268x149 picture rather than 220x122.</p>
    */
   minSize: { w: 7, h: 6 },
   // On MobileDashboard a widget without this squishes to
