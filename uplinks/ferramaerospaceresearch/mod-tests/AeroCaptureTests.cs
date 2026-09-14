@@ -211,6 +211,20 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         }
 
         /// <summary>
+        /// An unknown qualifier travels as absent, not as a verdict. False is
+        /// drawn as MODEL STALE and dashes every mark on the descent envelope,
+        /// so a reading nobody could take must not borrow it.
+        /// </summary>
+        [Fact]
+        public void AQualifierNobodyCouldReadIsNotAStaleModel()
+        {
+            var raw = Flying();
+            raw.AeroModelValid = null;
+
+            Assert.Null(Built(raw)["aeroModelValid"]);
+        }
+
+        /// <summary>
         /// The mapper and the wire type must name the same fields. Nothing else in
         /// the build connects them: the uplink hand-builds this dict and
         /// <c>JsonWriter</c> walks the live tree, so a property renamed on

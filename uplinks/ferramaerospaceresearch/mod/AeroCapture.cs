@@ -79,10 +79,41 @@ namespace GonogoFerramAerospaceResearchUplink
                 ["dragCoefficient"] = hasAirflow ? Finite(raw.DragCoefficient) : null,
                 ["liftToDragRatio"] = hasAirflow ? Finite(raw.LiftToDragRatio) : null,
 
-                // Geometry, not aerodynamics: the reference area the coefficients
-                // above are divided by exists whether or not the vessel is moving,
-                // so it is not gated on airflow. A non-positive one is a vessel
-                // with no shape yet rather than a vessel with no area.
+                /*
+                 * Geometry, not aerodynamics: the reference area the coefficients
+                 * above are divided by exists whether or not the vessel is
+                 * moving, so it is not gated on airflow. A non-positive one is a
+                 * vessel with no shape yet rather than a vessel with no area.
+                 *
+                 * FAR's OWN placeholder here is exactly 1.0, and it is the one
+                 * substitution in this struct that survives every filter below.
+                 * Read off the shipped FerramAerospaceResearch.dll,
+                 * PhysicsCalcs.CalculateForceBreakdown:
+                 *
+                 *   if (useWingArea)                      refArea = wingArea;
+                 *   else if (_vesselAero && isValid)      refArea = MaxCrossSectionArea;
+                 *   else                                  refArea = 1.0;
+                 *
+                 * so the decline is the branch where FAR has neither a wing to
+                 * measure nor a valid vehicle aero to voxelise, and the two
+                 * coefficients above are then force / dynPres rather than
+                 * coefficients at all (the method computes them as
+                 * 1 / (refArea * dynPres) times each force).
+                 *
+                 * It is NOT filtered, deliberately, and not by sniffing the
+                 * value: a wing area or a cross-section of exactly one square
+                 * metre is a legitimate reading, and treating a bare 1.0 as
+                 * absence would throw one away. The CONDITION is what would have
+                 * to be read, and neither half of it is on the surface this
+                 * Uplink binds. PhysicsCalcs.useWingArea is private on an object
+                 * reached through FlightGUI's private _physicsCalcs; and the
+                 * validity in that branch is FARVesselAero.isValid
+                 * (enabled && _vehicleAero != null), a DIFFERENT predicate from
+                 * the HasValidVoxelizationCurrently() behind aeroModelValid
+                 * (FlightGlobals.ready && _currentAeroSections != null
+                 * && vessel && !_updateQueued). Gating on the flag we do read
+                 * would be a second opinion about the other one.
+                 */
                 ["referenceArea"] = Positive(raw.ReferenceAreaSqM),
 
                 // Forces stay ungated. Zero lift and zero drag in vacuum or at

@@ -225,29 +225,39 @@ namespace GonogoFerramAerospaceResearchUplink
         }
 
         /// <summary>
-        /// Whether FAR's voxelisation of this vessel is current. False rather than
-        /// absent when the module or the method is missing: this qualifies the
-        /// readings beside it, and "we cannot confirm the model is current" and
-        /// "the model is not current" call for the same caution from an operator.
+        /// Whether FAR's voxelisation of this vessel is current, as FAR's own
+        /// <c>HasValidVoxelizationCurrently()</c> answers it. Null in the four
+        /// cases where nobody could ask: the type did not resolve, the method did
+        /// not resolve, the vessel held no such module or its module list could
+        /// not be walked, and the call threw or returned a non-bool.
+        ///
+        /// <para>It used to answer false for all four, argued as the cautious
+        /// direction. It is not the cautious direction: false here is FAR's OWN
+        /// statement that the model has not caught up with the vehicle's shape,
+        /// which the widgets draw as MODEL STALE and which makes every mark on
+        /// the descent envelope faint and dashed. Substituted, it makes that
+        /// claim about FAR's internals out of a read that failed, and both
+        /// widgets already ask it as <c>aeroModelValid === false</c> precisely so
+        /// that an unknown draws neither.</para>
         /// </summary>
-        private bool ReadVoxelizationValid(object vessel)
+        private bool? ReadVoxelizationValid(object vessel)
         {
             if (_vesselAero == null || _hasValidVoxelization == null)
             {
-                return false;
+                return null;
             }
             var aero = FindVesselModule(vessel, _vesselAero);
             if (aero == null)
             {
-                return false;
+                return null;
             }
             try
             {
-                return _hasValidVoxelization.Invoke(aero, null) is bool valid && valid;
+                return _hasValidVoxelization.Invoke(aero, null) as bool?;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
         }
 

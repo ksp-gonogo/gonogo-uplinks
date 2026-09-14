@@ -83,7 +83,14 @@ namespace FerramAerospaceResearch.FARAeroComponents
     {
         public bool Valid;
 
-        public bool HasValidVoxelizationCurrently() => Valid;
+        /// <summary>
+        /// Whether the call itself faults, which is one of the four ways the
+        /// voxelisation verdict comes back unknown rather than false.
+        /// </summary>
+        public bool Throws;
+
+        public bool HasValidVoxelizationCurrently() =>
+            Throws ? throw new System.InvalidOperationException("FAR's internals moved") : Valid;
     }
 }
 

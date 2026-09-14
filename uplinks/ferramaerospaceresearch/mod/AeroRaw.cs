@@ -74,7 +74,12 @@ namespace GonogoFerramAerospaceResearchUplink
         /// <summary>Watts per kilogram.</summary>
         public double SpecificExcessPower;
 
-        /// <summary>Whether the vessel's voxelisation is current rather than queued for a rebuild.</summary>
-        public bool AeroModelValid;
+        /// <summary>
+        /// Whether the vessel's voxelisation is current rather than queued for a
+        /// rebuild. Null when the reflection layer could not ask FAR at all:
+        /// false is FAR's own verdict on its model and must not be borrowed for
+        /// a read that failed.
+        /// </summary>
+        public bool? AeroModelValid;
     }
 }

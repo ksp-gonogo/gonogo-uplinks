@@ -64,10 +64,16 @@ export interface AeroState
 	* The area the two coefficients above are referenced to: total wing area on a
 	* winged craft, otherwise the maximum cross-section the aerodynamics model
 	* voxelised. Published because a coefficient without its reference area is not
-	* comparable to anything, including the same vessel after staging. Read it
-	* against `AeroState.aeroModelValid`: with neither wings nor a current
-	* voxelisation the model substitutes one square metre, and the coefficients
-	* beside it are then referenced to a placeholder.
+	* comparable to anything, including the same vessel after staging.
+	*
+	* With neither a wing to measure nor an initialised vehicle aerodynamics
+	* model, the model substitutes exactly one square metre, and the two
+	* coefficients beside it are then a force over dynamic pressure rather than
+	* coefficients. Nothing published distinguishes that substitution:
+	* `AeroState.aeroModelValid` is a different predicate and is NOT the one that
+	* branch turns on, so reading this against it would be wrong. Treat an exact 1
+	* with suspicion on a craft with no wings, and read the coefficients as
+	* relative rather than absolute.
 	*/
 	referenceArea?: Value<"m²">;
 	/** Total aerodynamic lift, perpendicular to the airflow. */
@@ -111,6 +117,11 @@ export interface AeroState
 	* has re-run, during which every coefficient above still describes the
 	* PREVIOUS shape. It is a qualifier on the readings beside it rather than a
 	* reading of its own, which is why it stays present when they go absent.
+	*
+	* False is the model's own verdict on itself, so it is worth drawing: null is
+	* the Uplink not having been able to ask, and is worth drawing as nothing. Ask
+	* it as `=== false` rather than for truthiness, or a vessel nobody could read
+	* becomes a vessel whose model has gone stale.
 	*/
 	aeroModelValid?: boolean;
 }

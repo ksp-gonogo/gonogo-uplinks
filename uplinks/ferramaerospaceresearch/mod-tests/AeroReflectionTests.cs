@@ -120,19 +120,26 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         }
 
         /// <summary>
-        /// The qualifier reads false when it cannot be confirmed, not absent: an
-        /// operator's response to "the aerodynamic model may not have caught up"
-        /// is the same either way, and a nullable third state would only invite a
-        /// widget to treat unknown as fine.
+        /// The qualifier is ABSENT when it cannot be confirmed, and false only
+        /// when FAR itself says so. This used to read false either way, argued
+        /// as the cautious direction, and it is not one: false is drawn as MODEL
+        /// STALE and dashes every mark on the descent envelope, so a vessel
+        /// whose module list could not be walked had a verdict published about
+        /// FAR's internals that nothing had read. Both widgets ask
+        /// <c>aeroModelValid === false</c> for exactly this reason.
         /// </summary>
         [Fact]
-        public void AVesselWithNoAeroModuleIsReportedAsNotCurrentlyVoxelised()
+        public void AVesselWithNoAeroModuleHasNoVoxelisationVerdictAtAll()
         {
             var vessel = VesselWith(FlightGuiHolding(new VesselFlightInfo { dynPres = 5.0 }));
 
-            Assert.False(new AeroReflection().Read(vessel, ut: 1.0)!.AeroModelValid);
+            Assert.Null(new AeroReflection().Read(vessel, ut: 1.0)!.AeroModelValid);
         }
 
+        /// <summary>
+        /// And FAR's own false still travels as false: the point is to tell the
+        /// two apart, not to stop reporting a stale model.
+        /// </summary>
         [Fact]
         public void AQueuedVoxelisationIsReportedAsNotCurrent()
         {
@@ -174,6 +181,24 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         public void AVesselWithNoModuleListDegradesToAbsence()
         {
             Assert.Null(new AeroReflection().Read(new object(), ut: 1.0));
+        }
+
+        /// <summary>
+        /// The other side of the same rule: a voxelisation method that throws is
+        /// no more a stale model than a missing one is. The readings beside it
+        /// still travel, because losing the qualifier is not losing the reading.
+        /// </summary>
+        [Fact]
+        public void AVoxelisationCheckThatThrewHasNoVerdictEither()
+        {
+            var vessel = VesselWith(
+                FlightGuiHolding(new VesselFlightInfo { aoA = 2.0, dynPres = 5.0 }),
+                new FARVesselAero { Throws = true });
+
+            var raw = new AeroReflection().Read(vessel, ut: 1.0);
+
+            Assert.Equal(2.0, raw!.AngleOfAttackDeg);
+            Assert.Null(raw.AeroModelValid);
         }
     }
 }
