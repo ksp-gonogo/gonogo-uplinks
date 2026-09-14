@@ -170,6 +170,10 @@ export interface RealFuelsBoiloff
 	* and it is what makes a null `RealFuelsBoiloff.boiloffRate` readable: no
 	* cryogenic tanks means nothing to measure, some tanks and no rate means the
 	* measurement failed.
+	*
+	* Because zero carries that much, it is never a stand-in for tanks the Uplink
+	* could not classify. Null is the third answer and it means the vessel's tanks
+	* could not be counted, not that it has none.
 	*/
 	cryogenicTankCount?: Value<"count">;
 }

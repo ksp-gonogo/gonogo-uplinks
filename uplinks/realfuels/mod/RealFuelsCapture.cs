@@ -5,16 +5,33 @@ namespace GonogoRealFuelsUplink
     /// <summary>
     /// Pure mappers: turn the reflected RealFuels readings into the
     /// <c>realfuels.engines</c> and <c>realfuels.boiloff</c> dicts. KSP-free and
-    /// side-effect-free, so both the ignition semantics and the boiloff unit
-    /// conversion are unit-tested headless.
+    /// side-effect-free, so the ignition semantics, the boiloff unit conversion
+    /// and the finiteness policy are all unit-tested headless.
     ///
-    /// <para>This is where RealFuels' two traps are unpicked, and it is
-    /// deliberately the only place either rule is written down.</para>
+    /// <para>This is where RealFuels' traps are unpicked, and it is deliberately
+    /// the only place any of the rules is written down.</para>
     /// </summary>
     public static class RealFuelsCapture
     {
         /// <summary>Tonnes to kilograms, for the boiloff rate.</summary>
         private const double KilogramsPerTonne = 1000.0;
+
+        /// <summary>
+        /// The Uplink's finiteness policy, applied to every double that leaves
+        /// here for the wire: a NaN or an infinity is not a reading and becomes
+        /// null.
+        ///
+        /// <para>RealFuels computes these from numbers a part config supplies and
+        /// divides by quantities that reach zero, so a non-finite return is a
+        /// real one rather than a hypothetical. Published, it is worse than
+        /// absent: a comparison against a NaN is false whichever way it is
+        /// written, so every band and every threshold downstream quietly answers
+        /// "no" and the operator reads a nominal engine.</para>
+        /// </summary>
+        public static double? Finite(double? value) =>
+            value != null && !double.IsNaN(value.Value) && !double.IsInfinity(value.Value)
+                ? value
+                : null;
 
         /// <summary>
         /// True when the engine can be relit without limit.
@@ -65,11 +82,67 @@ namespace GonogoRealFuelsUplink
         /// </summary>
         public static double? BoiloffRateKgPerSecond(double? boiloffMassTons, double? intervalSeconds)
         {
-            if (boiloffMassTons == null || intervalSeconds == null || intervalSeconds.Value <= 0.0)
+            var mass = Finite(boiloffMassTons);
+            var interval = Finite(intervalSeconds);
+            // Written on the finite values rather than on the arguments: a NaN
+            // interval satisfies <= 0.0 no more than it satisfies > 0.0, so the
+            // guard as it stood passed it through and the rate came out NaN.
+            if (mass == null || interval == null || interval.Value <= 0.0)
             {
                 return null;
             }
-            return boiloffMassTons.Value * KilogramsPerTonne / intervalSeconds.Value;
+            return Finite(mass.Value * KilogramsPerTonne / interval.Value);
+        }
+
+        /// <summary>
+        /// The vessel's boiloff, folded over its tanks. Lives here rather than in
+        /// the reflection walk so the fold's absence rules are testable headless.
+        ///
+        /// <para>A tank whose <c>SupportsBoiloff</c> could not be read, or which
+        /// supports boiloff but whose mass could not be read, makes the VESSEL's
+        /// mass and tank count unknown. Both were previously skipped: the mass
+        /// became a sum over the tanks that answered, and the count became the
+        /// number of tanks that answered yes, so an install where the member had
+        /// moved published zero cryogenic tanks, which the contract states means
+        /// the vessel has none and will never boil off.</para>
+        /// </summary>
+        public static RealFuelsBoiloffRaw VesselBoiloff(
+            IEnumerable<TankBoiloffReading> tanks,
+            double? intervalSeconds)
+        {
+            double massTons = 0.0;
+            var tankCount = 0;
+            var readAny = false;
+            var unreadable = false;
+
+            foreach (var tank in tanks)
+            {
+                if (tank.SupportsBoiloff == null)
+                {
+                    unreadable = true;
+                    continue;
+                }
+                if (!tank.SupportsBoiloff.Value)
+                {
+                    continue;
+                }
+                tankCount++;
+                var mass = Finite(tank.MassTons);
+                if (mass == null)
+                {
+                    unreadable = true;
+                    continue;
+                }
+                massTons += mass.Value;
+                readAny = true;
+            }
+
+            return new RealFuelsBoiloffRaw
+            {
+                BoiloffMassTons = readAny && !unreadable ? massTons : (double?)null,
+                IntervalSeconds = intervalSeconds,
+                CryogenicTankCount = unreadable ? (int?)null : tankCount,
+            };
         }
 
         /// <summary>Builds the <c>realfuels.engines</c> payload. Null raw means
@@ -99,13 +172,13 @@ namespace GonogoRealFuelsUplink
                     ["groundIgnitionOnly"] = GroundIgnitionOnly(e.Ignitions, raw.IgnitionsLimited),
                     ["literalZeroIgnitions"] = e.LiteralZeroIgnitions,
                     ["ullageModelled"] = e.UllageModelled,
-                    ["ullageStability"] = e.UllageStability,
-                    ["ignitionProbability"] = e.IgnitionProbability,
+                    ["ullageStability"] = Finite(e.UllageStability),
+                    ["ignitionProbability"] = Finite(e.IgnitionProbability),
                     ["pressureFed"] = e.PressureFed,
                     ["feedPressureOk"] = e.FeedPressureOk,
-                    ["ratedBurnTimeSeconds"] = e.RatedBurnTimeSeconds,
-                    ["ratedContinuousBurnTimeSeconds"] = e.RatedContinuousBurnTimeSeconds,
-                    ["predictedMaximumResiduals"] = e.PredictedMaximumResiduals,
+                    ["ratedBurnTimeSeconds"] = Finite(e.RatedBurnTimeSeconds),
+                    ["ratedContinuousBurnTimeSeconds"] = Finite(e.RatedContinuousBurnTimeSeconds),
+                    ["predictedMaximumResiduals"] = Finite(e.PredictedMaximumResiduals),
                 });
             }
 

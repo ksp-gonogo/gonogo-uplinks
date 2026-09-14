@@ -253,6 +253,36 @@ describe("EngineRealismSection", () => {
     await screen.findByText("not simulated");
   });
 
+  /**
+   * The third rung the ignition ladder already has. With the game-wide ullage
+   * switch unreadable, the same stability is either a real risk or a simulator
+   * sitting at its untouched initial value, and a band cannot say which.
+   */
+  it("dashes a stability whose regime the Uplink could not establish", async () => {
+    const fixture = newFixture();
+    renderSection(fixture);
+    act(() => {
+      fixture.emit(
+        "realfuels.engines",
+        engines(
+          [
+            {
+              partName: "RD-58",
+              ignitionsRemaining: 1,
+              ullageModelled: true,
+              ullageStability: 0.2,
+            },
+          ],
+          { ullageSimulated: null },
+        ),
+      );
+    });
+    const row = await screen.findByText("RD-58");
+    expect(row.parentElement).toHaveTextContent(NULL_DISPLAY);
+    expect(screen.queryByText("UNSTABLE")).not.toBeInTheDocument();
+    expect(screen.queryByText("not simulated")).not.toBeInTheDocument();
+  });
+
   it("shows the boiloff rate through the canonical Unit renderer", async () => {
     const fixture = newFixture();
     const { container } = renderSection(fixture);

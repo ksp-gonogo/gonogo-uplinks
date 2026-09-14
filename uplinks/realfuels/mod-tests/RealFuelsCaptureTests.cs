@@ -198,4 +198,122 @@ public class RealFuelsCaptureTests
         Assert.Null(payload["boiloffRate"]);
         Assert.Null(payload["cryogenicTankCount"]);
     }
+
+    private static TankBoiloffReading Tank(bool? supports, double? mass = null) =>
+        new TankBoiloffReading { SupportsBoiloff = supports, MassTons = mass };
+
+    [Fact]
+    public void The_vessel_fold_sums_the_tanks_that_boil_off_and_counts_them()
+    {
+        var raw = RealFuelsCapture.VesselBoiloff(
+            new[] { Tank(true, 0.0003), Tank(false), Tank(true, 0.0002) },
+            intervalSeconds: 0.02);
+
+        Assert.Equal(0.0005, raw.BoiloffMassTons!.Value, 9);
+        Assert.Equal(2, raw.CryogenicTankCount);
+    }
+
+    /// <summary>
+    /// A tank whose <c>SupportsBoiloff</c> could not be read is not a tank that
+    /// said no. Skipped, it left a count that the contract states means the
+    /// vessel has no cryogenic tanks and will never boil off, which on an
+    /// install where the member had moved was every tank aboard.
+    /// </summary>
+    [Fact]
+    public void A_tank_nobody_could_classify_makes_the_count_unknown_not_zero()
+    {
+        var allUnreadable = RealFuelsCapture.VesselBoiloff(
+            new[] { Tank(null), Tank(null) },
+            intervalSeconds: 0.02);
+        Assert.Null(allUnreadable.CryogenicTankCount);
+        Assert.Null(allUnreadable.BoiloffMassTons);
+
+        var oneUnreadable = RealFuelsCapture.VesselBoiloff(
+            new[] { Tank(true, 0.0005), Tank(null) },
+            intervalSeconds: 0.02);
+        Assert.Null(oneUnreadable.CryogenicTankCount);
+        Assert.Null(oneUnreadable.BoiloffMassTons);
+    }
+
+    /// <summary>
+    /// And a supporting tank whose mass could not be read poisons the sum rather
+    /// than dropping out of it: a total over the tanks that answered is lower
+    /// than the truth, and nothing in the payload says a term is missing.
+    /// </summary>
+    [Fact]
+    public void A_tank_whose_mass_could_not_be_read_is_not_a_tank_losing_nothing()
+    {
+        var raw = RealFuelsCapture.VesselBoiloff(
+            new[] { Tank(true, 0.0005), Tank(true, null) },
+            intervalSeconds: 0.02);
+
+        Assert.Null(raw.BoiloffMassTons);
+        Assert.Null(RealFuelsCapture.BuildBoiloff(raw)["boiloffRate"]);
+    }
+
+    /// <summary>
+    /// RealFuels divides by tank volumes and temperature deltas a part config
+    /// supplies, so a non-finite mass is a real return. One NaN tank used to
+    /// take the whole vessel's rate with it while every reading still looked
+    /// present, and a NaN on the wire is worse than an absent one: every
+    /// comparison against it answers false, so downstream bands read nominal.
+    /// </summary>
+    [Fact]
+    public void A_non_finite_tank_reading_is_not_a_measurement()
+    {
+        foreach (var poison in new[] { double.NaN, double.PositiveInfinity })
+        {
+            var raw = RealFuelsCapture.VesselBoiloff(
+                new[] { Tank(true, 0.0005), Tank(true, poison) },
+                intervalSeconds: 0.02);
+            Assert.Null(raw.BoiloffMassTons);
+            Assert.Null(RealFuelsCapture.BuildBoiloff(raw)["boiloffRate"]);
+        }
+    }
+
+    /// <summary>
+    /// A NaN interval satisfies <c>&lt;= 0.0</c> no more than it satisfies
+    /// <c>&gt; 0.0</c>, so the guard on its own let one through and the rate came
+    /// out NaN.
+    /// </summary>
+    [Fact]
+    public void A_non_finite_interval_yields_no_rate()
+    {
+        Assert.Null(RealFuelsCapture.BoiloffRateKgPerSecond(0.0005, double.NaN));
+        Assert.Null(RealFuelsCapture.BoiloffRateKgPerSecond(0.0005, double.PositiveInfinity));
+        Assert.Null(RealFuelsCapture.BoiloffRateKgPerSecond(double.NaN, 0.02));
+    }
+
+    /// <summary>
+    /// The finiteness policy covers every double the mapper publishes, not just
+    /// the boiloff rate: a NaN stability would clear no band and draw
+    /// VERY UNSTABLE, and a NaN residual would render as a quantity.
+    /// </summary>
+    [Fact]
+    public void A_non_finite_engine_reading_never_reaches_the_wire()
+    {
+        var e = FirstEngine(RealFuelsCapture.BuildEngines(new RealFuelsVesselRaw
+        {
+            IgnitionsLimited = true,
+            UllageSimulated = true,
+            Engines =
+            {
+                new RealFuelsEngineRaw
+                {
+                    UllageModelled = true,
+                    UllageStability = double.NaN,
+                    IgnitionProbability = double.NaN,
+                    RatedBurnTimeSeconds = double.PositiveInfinity,
+                    RatedContinuousBurnTimeSeconds = double.NaN,
+                    PredictedMaximumResiduals = double.NaN,
+                },
+            },
+        }));
+
+        Assert.Null(e["ullageStability"]);
+        Assert.Null(e["ignitionProbability"]);
+        Assert.Null(e["ratedBurnTimeSeconds"]);
+        Assert.Null(e["ratedContinuousBurnTimeSeconds"]);
+        Assert.Null(e["predictedMaximumResiduals"]);
+    }
 }

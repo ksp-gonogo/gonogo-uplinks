@@ -48,6 +48,25 @@ namespace GonogoRealFuelsUplink
     {
         public double? BoiloffMassTons;
         public double? IntervalSeconds;
-        public int CryogenicTankCount;
+        /// <summary>
+        /// How many of the vessel's tanks boil off, or null when a tank could not
+        /// be classified at all. Zero says the vessel has no cryogenic tanks,
+        /// which is what makes a null rate beside it readable, so it must not
+        /// stand in for tanks nobody could ask.
+        /// </summary>
+        public int? CryogenicTankCount;
+    }
+
+    /// <summary>
+    /// One <c>ModuleFuelTanks</c> as reflection found it, before the vessel fold.
+    /// Both members are nullable because both reads can fail independently: a
+    /// tank whose boiloff support could not be read is not a tank that says no,
+    /// and a supporting tank whose mass could not be read is not a tank losing
+    /// nothing.
+    /// </summary>
+    public struct TankBoiloffReading
+    {
+        public bool? SupportsBoiloff;
+        public double? MassTons;
     }
 }

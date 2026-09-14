@@ -242,6 +242,10 @@ public sealed class RealFuelsBoiloff
     /// boil off), and it is what makes a null <see cref="BoiloffRate"/>
     /// readable: no cryogenic tanks means nothing to measure, some tanks and no
     /// rate means the measurement failed.
+    ///
+    /// <para>Because zero carries that much, it is never a stand-in for tanks
+    /// the Uplink could not classify. Null is the third answer and it means the
+    /// vessel's tanks could not be counted, not that it has none.</para>
     /// </summary>
     [SitrepUnit(Units.Count)]
     public int? CryogenicTankCount { get; set; }

@@ -21,6 +21,7 @@
 //   - RealFuels.Tanks.ModuleFuelTanks exposes the public `BoiloffMassRate`
 //     property (a MASS, not a rate, see RealFuelsCapture) and `SupportsBoiloff`.
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace GonogoRealFuelsUplink
@@ -169,10 +170,10 @@ namespace GonogoRealFuelsUplink
                 return null;
             }
 
-            double massTons = 0.0;
-            var tankCount = 0;
-            var readAny = false;
-
+            // One reading per tank, folded by RealFuelsCapture.VesselBoiloff. A
+            // tank nobody could read has to REACH the fold to be counted as
+            // unknown; skipping it here is what hid it.
+            var tanks = new List<TankBoiloffReading>();
             foreach (var part in v.parts)
             {
                 if (part?.Modules == null)
@@ -186,26 +187,18 @@ namespace GonogoRealFuelsUplink
                         continue;
                     }
                     var t = pm.GetType();
-                    if (ReadBool(pm, t, "SupportsBoiloff") != true)
+                    var supports = ReadBool(pm, t, "SupportsBoiloff");
+                    tanks.Add(new TankBoiloffReading
                     {
-                        continue;
-                    }
-                    tankCount++;
-                    var mass = ReadDouble(pm, t, "BoiloffMassRate");
-                    if (mass != null)
-                    {
-                        massTons += mass.Value;
-                        readAny = true;
-                    }
+                        SupportsBoiloff = supports,
+                        // Only asked of a tank that says it boils off: RealFuels
+                        // does not maintain the property on any other.
+                        MassTons = supports == true ? ReadDouble(pm, t, "BoiloffMassRate") : null,
+                    });
                 }
             }
 
-            return new RealFuelsBoiloffRaw
-            {
-                BoiloffMassTons = readAny ? massTons : (double?)null,
-                IntervalSeconds = ReadIntegratorInterval(v),
-                CryogenicTankCount = tankCount,
-            };
+            return RealFuelsCapture.VesselBoiloff(tanks, ReadIntegratorInterval(v));
         }
 
         /// <summary>
