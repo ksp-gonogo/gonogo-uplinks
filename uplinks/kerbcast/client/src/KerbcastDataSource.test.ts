@@ -408,6 +408,96 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
   });
 });
 
+describe("KerbcastDataSource: slot refusal", () => {
+  const SIX_SLOTS = ["0", "1", "2", "3", "4", "5"];
+  const POOL = [41, 42, 43, 44, 45, 46];
+  const SEVENTH = 47;
+
+  function fetchAnswering(bound: number[]): void {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+      Promise.resolve(
+        String(input).includes("/ice-config")
+          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+          : MockSidecar.makeOfferResponse(bound),
+      ),
+    );
+  }
+
+  async function connectedSixSlotSidecar(): Promise<{
+    ds: KerbcastDataSource;
+    sidecar: MockSidecar;
+  }> {
+    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
+    for (const flightId of [...POOL, SEVENTH]) sidecar.addCamera({ flightId });
+    fetchAnswering([]);
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    return { ds, sidecar };
+  }
+
+  it("records the sidecar's refusal against the camera whose bind was refused", async () => {
+    const { ds } = await connectedSixSlotSidecar();
+    const changes = vi.fn();
+    ds.onSlotRefusalChange(changes);
+
+    for (const flightId of POOL) ds.subscribeCamera(flightId);
+    expect(changes).not.toHaveBeenCalled();
+
+    ds.subscribeCamera(SEVENTH);
+
+    expect(ds.getSlotRefusal(SEVENTH)).toEqual({ slotsInUse: 6 });
+    for (const flightId of POOL) expect(ds.getSlotRefusal(flightId)).toBeNull();
+    expect(changes).toHaveBeenCalled();
+  });
+
+  it("binds the refused camera once a slot frees, and clears its refusal", async () => {
+    const { ds, sidecar } = await connectedSixSlotSidecar();
+    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
+    expect(ds.getSlotRefusal(SEVENTH)).not.toBeNull();
+
+    ds.unsubscribeCamera(POOL[0]);
+
+    expect(ds.getSlotRefusal(SEVENTH)).toBeNull();
+    expect(sidecar.slotMidFor(SEVENTH)).toBeDefined();
+  });
+
+  it("forgets a refusal once nothing displays that camera", async () => {
+    const { ds } = await connectedSixSlotSidecar();
+    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
+
+    ds.unsubscribeCamera(SEVENTH);
+
+    expect(ds.getSlotRefusal(SEVENTH)).toBeNull();
+  });
+
+  it("records a refusal from the initial bind set, where the sidecar only leaves the camera out of the answer", async () => {
+    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
+    for (const flightId of [...POOL, SEVENTH]) sidecar.addCamera({ flightId });
+    fetchAnswering(POOL);
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+
+    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
+    await ds.connect();
+
+    expect(ds.getSlotRefusal(SEVENTH)).toEqual({ slotsInUse: 6 });
+    for (const flightId of POOL) expect(ds.getSlotRefusal(flightId)).toBeNull();
+  });
+
+  it("does not read a short answer as a refusal when the pool was not full", async () => {
+    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
+    fetchAnswering([41]);
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+
+    ds.subscribeCamera(41);
+    ds.subscribeCamera(99);
+    await ds.connect();
+
+    expect(ds.getSlotRefusal(99)).toBeNull();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // relayOffer: the main screen's half of the station broker. Forwards a
 // station's offer to the local sidecar's /offer and returns the answer.

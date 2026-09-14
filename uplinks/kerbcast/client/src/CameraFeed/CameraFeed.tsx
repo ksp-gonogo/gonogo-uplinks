@@ -53,6 +53,10 @@ import {
   type CameraSetpointSurfaceHandle,
 } from "../CameraSetpoint/CameraSetpointSurface.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
+import {
+  describeSlotRefusal,
+  useSlotRefusal,
+} from "../hooks/useSlotRefusal.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { feedAspect, frameBox } from "./frameShape.js";
 import {
@@ -406,6 +410,7 @@ export function CameraFeed({
   const playoutStatus = useDelayedPlaybackStatus(effectiveFlightId);
   const unavailableReason =
     playoutStatus.kind === "unavailable" ? playoutStatus.reason : null;
+  const slotRefusal = useSlotRefusal(effectiveFlightId);
 
   // ---- Delayed camera control gate (#35) ----
   // The live snapshot of the camera registry, so the setpoint surface can read
@@ -652,6 +657,18 @@ export function CameraFeed({
                       />
                     </div>
                   )}
+                  {slotRefusal && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      aria-label={describeSlotRefusal(slotRefusal)}
+                      style={FEED_NO_SLOT_STYLE}
+                    >
+                      <Badge severity="warning">
+                        {describeSlotRefusal(slotRefusal)}
+                      </Badge>
+                    </div>
+                  )}
                   {unavailableReason && (
                     <div
                       role="status"
@@ -842,6 +859,25 @@ const FEED_SETPOINT_STYLE: CSSProperties = {
   position: "absolute",
   inset: 0,
   zIndex: 4,
+  pointerEvents: "none",
+};
+
+/**
+ * The layer that says why the picture is empty when the sidecar refused this
+ * camera a slot: the reason centred over the SDK's sourceless feed.
+ *
+ * Click-through, unlike the delay scrim below, because nothing under it is
+ * unsafe to reach: the camera picker stays usable. Above the SDK's top gradient
+ * (2) at the same height as the status chips, so the darkening never dims it.
+ */
+const FEED_NO_SLOT_STYLE: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  zIndex: 3,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "var(--space-16)",
   pointerEvents: "none",
 };
 

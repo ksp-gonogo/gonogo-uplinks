@@ -1,3 +1,4 @@
+import { MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import {
   AugmentSlot,
   clearRegistry,
@@ -12,6 +13,7 @@ import {
   clearUplinkHandles,
   render,
   type StreamFixture,
+  screen,
   setupStreamFixture,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
@@ -20,7 +22,8 @@ import {
   useDomainAvailabilityStore,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { KerbcastDataSource } from "../KerbcastDataSource.js";
 // Importing the real module runs its module-load `registerAugment(...)` once,
 // the same way the app picks this augment up via the package's bare
 // `import "./DockingCameraAugment/index.js"`. So this suite exercises the ACTUAL
@@ -133,6 +136,51 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
       <AugmentSlot name="targeting.camera" props={HUD_CONTEXT} />,
     );
     expect(container.querySelector("video")).toBeNull();
+  });
+
+  it("says the pool is full instead of drawing an empty backdrop when the docking camera's bind is refused", async () => {
+    const pool = [41, 42, 43, 44, 45, 46];
+    const sidecar = new MockSidecar().withSlots(["0", "1", "2", "3", "4", "5"]);
+    const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
+    registerUplinkHandle("kerbcast", ds);
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation((input) =>
+        Promise.resolve(
+          String(input).includes("/ice-config")
+            ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+            : MockSidecar.makeOfferResponse([]),
+        ),
+      );
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    for (const flightId of pool) ds.subscribeCamera(flightId);
+
+    const stream = setupStreamFixture({ carriedChannels: SLOT_TOPICS });
+    renderSlot(stream);
+    act(() => {
+      stream.emit("kerbcast.available", true, {
+        quality: Quality.Loaded,
+        source: "kerbcast",
+      });
+    });
+    await waitFor(() =>
+      expect(stream.transport.isSubscribed("kerbcast.cameras")).toBe(true),
+    );
+    act(() => {
+      stream.emit(
+        "kerbcast.cameras",
+        [{ cameraId: 47, isDockingCamera: true }],
+        { quality: Quality.Loaded, source: "kerbcast" },
+      );
+    });
+
+    const status = await screen.findByRole("status", {
+      name: "No video slot free (6 in use)",
+    });
+    expect(status).toHaveTextContent("No video slot free (6 in use)");
+    fetchSpy.mockRestore();
   });
 
   // The two planes are separate, so naming a camera on the CONTROL channel must

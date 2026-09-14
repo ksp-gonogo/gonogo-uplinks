@@ -72,6 +72,21 @@ const RECONNECT_MAX_MS = 30_000;
 // simultaneous on-screen feeds, not a steady-state cost.
 const SLOT_COUNT = 6;
 
+/**
+ * A camera the sidecar would not bind because every slot in this connection's
+ * pool was already carrying another camera.
+ */
+export interface SlotRefusal {
+  /** Slots bound when the bind was refused, which is the whole negotiated pool. */
+  slotsInUse: number;
+}
+
+/** The sidecar's `error` message when a `subscribe` finds every slot bound. */
+const NO_FREE_SLOT_PREFIX = "no free slot";
+
+/** The sidecar's `error` message when a `subscribe` names a camera it does not have. */
+const NO_LIVE_CAMERA = /^no live camera with flight_id=(\d+)/;
+
 // The kerbcast WebRTC stream needs the same TURN relay the PeerJS host uses
 // for non-LAN delivery. The gonogo relay bundles coturn and serves the
 // rotated creds at `/ice-config` (see packages/relay). We fetch them here and
@@ -271,7 +286,7 @@ export class BrowserRTCTransport implements KerbcastTransport {
 /**
  * Wraps any inner `KerbcastTransport` and intercepts ping messages on the data
  * channel, answering pong automatically. Non-ping messages pass through to the
- * SDK handler unchanged.
+ * SDK handler unchanged, after `onServerMessage` has seen them.
  *
  * Ping-and-pong belongs in `@ksp-gonogo/kerbcast` itself and lives here only
  * because the SDK exposes no reconnect-policy hook to hang it on.
@@ -282,6 +297,10 @@ export class KeepaliveTransport implements KerbcastTransport {
     private readonly onPingReceived: (
       sendFn: (msg: ClientMessage) => void,
     ) => void,
+    private readonly onServerMessage?: (msg: {
+      type?: string;
+      content?: unknown;
+    }) => void,
   ) {}
 
   createPeer(iceServers: RTCIceServer[]): KerbcastPeer {
@@ -292,9 +311,9 @@ export class KeepaliveTransport implements KerbcastTransport {
       // Install our ping filter on the inner channel immediately so
       // the test's captured.onMessage points at this filter, not the SDK.
       ch.onMessage((raw: string) => {
-        let msg: { type?: string } | null = null;
+        let msg: { type?: string; content?: unknown } | null = null;
         try {
-          msg = JSON.parse(raw) as { type?: string };
+          msg = JSON.parse(raw) as { type?: string; content?: unknown };
         } catch {
           sdkHandler?.(raw);
           return;
@@ -306,6 +325,7 @@ export class KeepaliveTransport implements KerbcastTransport {
           // Do NOT forward ping to SDK handler.
           return;
         }
+        if (msg) this.onServerMessage?.(msg);
         sdkHandler?.(raw);
       });
 
@@ -400,6 +420,20 @@ export class KerbcastDataSource {
   // the initial set on (re)connect so a reconnect re-binds whatever's on screen
   // without a client-side round-trip (the sidecar pushes the SlotMaps on Hello).
   private desiredSubs = new Map<number, number>();
+
+  /**
+   * Cameras the sidecar refused a slot to, oldest first, so a freed slot goes
+   * to the camera that has waited longest.
+   */
+  private slotRefusals = new Map<number, SlotRefusal>();
+  private slotRefusalListeners = new Set<() => void>();
+  /**
+   * `subscribe`s sent and not yet answered, in send order. The sidecar answers
+   * each one in turn with a `slot-map` or an `error`, and its "no free slot"
+   * error carries no flightId, so the oldest unanswered bind is the one it
+   * refers to.
+   */
+  private awaitingSlot: number[] = [];
 
   /* Listeners notified when the throttle state changes via settings-change. */
   private throttleListeners = new Set<(enabled: boolean) => void>();
@@ -502,6 +536,7 @@ export class KerbcastDataSource {
       reconnectEnabled: this.reconnectEnabled,
       brokered: !!this.broker,
       desiredSubs: [...this.desiredSubs.entries()],
+      slotRefusals: [...this.slotRefusals.keys()],
       dynamicMode: c.dynamicMode ?? null,
       cameras: c.cameras?.map((cam) => cam.flightId) ?? null,
       slotTracks: c.trackByMid
@@ -529,6 +564,7 @@ export class KerbcastDataSource {
     // station's own loopback, so skip it. On the main screen we stay STUN-only
     // until a failed attempt has flipped `turnEscalated` (see the field comment).
     if (!this.broker && this.turnEscalated) await this.applyRelayIce();
+    this.awaitingSlot = [];
     try {
       await this.client.connect([...this.desiredSubs.keys()], {
         slots: SLOT_COUNT,
@@ -574,11 +610,7 @@ export class KerbcastDataSource {
     const count = this.desiredSubs.get(flightId) ?? 0;
     this.desiredSubs.set(flightId, count + 1);
     if (this.status === "connected") {
-      if (count === 0) {
-        void this.client.subscribe(flightId).catch(() => {
-          /* channel raced closed: re-bound on next connect via initial set */
-        });
-      }
+      if (count === 0) this.requestSlot(flightId);
       return;
     }
     // Not connected. A brokered station source isn't eager-connected anywhere,
@@ -599,11 +631,28 @@ export class KerbcastDataSource {
       return;
     }
     this.desiredSubs.delete(flightId);
+    if (this.slotRefusals.delete(flightId)) this.notifySlotRefusals();
     if (this.status === "connected") {
       void this.client.unsubscribe(flightId).catch(() => {
         /* already tearing down */
       });
     }
+  }
+
+  /**
+   * Why `flightId` has no video, when the reason is that the sidecar refused it
+   * a slot: `null` while it holds one, is waiting on an answer, or is not
+   * wanted at all. Cleared when a slot frees and the camera is bound into it,
+   * when nothing displays the camera any more, and when the connection drops.
+   */
+  getSlotRefusal(flightId: number): SlotRefusal | null {
+    return this.slotRefusals.get(flightId) ?? null;
+  }
+
+  /** Notified whenever any camera's {@link getSlotRefusal} answer changes. */
+  onSlotRefusalChange(cb: () => void): () => void {
+    this.slotRefusalListeners.add(cb);
+    return () => this.slotRefusalListeners.delete(cb);
   }
 
   /**
@@ -687,6 +736,7 @@ export class KerbcastDataSource {
     this.turnEscalated = false;
     this.clearTimers();
     this.client.disconnect();
+    this.forgetSlotState();
     this.unsubGameHost?.();
   }
 
@@ -736,6 +786,7 @@ export class KerbcastDataSource {
         sendFn({ type: "pong" });
         this.startWatchdog();
       },
+      (msg) => this.observeSlotMessage(msg),
     );
 
     // Capture the broker locally so the negotiate closure is stable across a
@@ -748,10 +799,18 @@ export class KerbcastDataSource {
         // Pass the relay's TURN servers when we have them; `undefined` lets
         // the SDK apply its STUN-only default (LAN / no relay).
         iceServers: this.iceServers.length > 0 ? this.iceServers : undefined,
-        // Brokered (station) mode: route the offer→answer through the host
-        // instead of POSTing localhost:port/offer. Default (main) mode leaves
-        // this undefined so the SDK uses its built-in httpNegotiate.
-        negotiate: broker ? (offer) => broker.negotiate(offer) : undefined,
+        // Brokered (station) mode routes the offer→answer through the host;
+        // main mode POSTs the sidecar's /offer, the same request the SDK's
+        // built-in negotiation makes. Both are taken over here because the
+        // answer's `cameras` is the only place the sidecar reports which of the
+        // initial cameras it bound, and the SDK drops it in dynamic mode.
+        negotiate: async (offer) => {
+          const answer = broker
+            ? await broker.negotiate(offer)
+            : await this.relayOffer(offer);
+          this.noteInitialBinds(offer, answer);
+          return answer;
+        },
       },
       keepaliveTransport,
     );
@@ -761,6 +820,9 @@ export class KerbcastDataSource {
     logger.tag("kerbcast:clock").debug("built KerbcastClient", { instanceId });
     this.clientUnsubs.push(
       client.on("state-change", (s) => {
+        // The slot pool belongs to the peer, so a lost peer takes every
+        // binding and every refusal with it; the next answer restates them.
+        if (s === "disconnected" || s === "failed") this.forgetSlotState();
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
@@ -842,6 +904,104 @@ export class KerbcastDataSource {
     this.clientUnsubs = [];
   }
 
+  /** Ask the connected sidecar to bind `flightId` into a free slot. */
+  private requestSlot(flightId: number): void {
+    // Queued before the send because the answer can arrive before the send's
+    // promise settles.
+    this.awaitingSlot.push(flightId);
+    void this.client.subscribe(flightId).catch(() => {
+      // Channel raced closed, so no answer is coming. Re-bound on the next
+      // connect via the initial set.
+      this.dropAwaiting(flightId);
+    });
+  }
+
+  private dropAwaiting(flightId: number): void {
+    const at = this.awaitingSlot.indexOf(flightId);
+    if (at !== -1) this.awaitingSlot.splice(at, 1);
+  }
+
+  /**
+   * Follow the sidecar's answers to `subscribe`. The SDK surfaces neither a
+   * `slot-map` nor which camera an `error` was about, so both are read off the
+   * control channel here, in wire order, ahead of the SDK.
+   */
+  private observeSlotMessage(msg: { type?: string; content?: unknown }): void {
+    if (msg.type === "slot-map") {
+      const { flightId } = (msg.content ?? {}) as { flightId?: number | null };
+      if (flightId == null) {
+        this.bindLongestRefused();
+      } else {
+        this.dropAwaiting(flightId);
+      }
+      return;
+    }
+    if (msg.type !== "error") return;
+    const message = (msg.content as { message?: unknown } | undefined)?.message;
+    if (typeof message !== "string") return;
+    const missing = NO_LIVE_CAMERA.exec(message);
+    if (missing) {
+      this.dropAwaiting(Number(missing[1]));
+      return;
+    }
+    if (!message.startsWith(NO_FREE_SLOT_PREFIX)) return;
+    const refused = this.awaitingSlot.shift();
+    if (refused === undefined || !this.desiredSubs.has(refused)) return;
+    this.slotRefusals.set(refused, { slotsInUse: SLOT_COUNT });
+    this.notifySlotRefusals();
+  }
+
+  /** A slot has freed: offer it to the camera that has been refused longest. */
+  private bindLongestRefused(): void {
+    if (this.status !== "connected") return;
+    for (const flightId of this.slotRefusals.keys()) {
+      this.slotRefusals.delete(flightId);
+      this.notifySlotRefusals();
+      this.requestSlot(flightId);
+      return;
+    }
+  }
+
+  /**
+   * The initial cameras ride the offer, and the sidecar binds them into free
+   * slots in order, skipping any it does not have and stopping when the pool is
+   * full. A refusal there sends no `error`; the camera is only missing from the
+   * answer. So a full answer means every requested camera left out of it was
+   * refused, and a short one means none were.
+   */
+  private noteInitialBinds(
+    offer: { cameras: number[]; slots?: number },
+    answer: { cameras?: number[] },
+  ): void {
+    if (!Array.isArray(answer.cameras)) return;
+    const pool = offer.slots ?? SLOT_COUNT;
+    const bound = new Set(answer.cameras);
+    const poolFull = bound.size >= pool;
+    let changed = false;
+    for (const flightId of offer.cameras) {
+      if (poolFull && !bound.has(flightId)) {
+        this.slotRefusals.set(flightId, { slotsInUse: pool });
+        changed = true;
+      } else if (this.slotRefusals.delete(flightId)) {
+        changed = true;
+      }
+    }
+    if (changed) this.notifySlotRefusals();
+  }
+
+  private forgetSlotState(): void {
+    this.awaitingSlot = [];
+    if (this.slotRefusals.size === 0) return;
+    this.slotRefusals.clear();
+    this.notifySlotRefusals();
+  }
+
+  private notifySlotRefusals(): void {
+    this.slotRefusalListeners.forEach((cb) => {
+      cb();
+    });
+  }
+
   private setStatus(status: DataSourceStatus): void {
     this.status = status;
     this.statusListeners.forEach((cb) => {
@@ -893,6 +1053,7 @@ export class KerbcastDataSource {
 
   private async attemptReconnect(): Promise<void> {
     if (!this.broker && this.turnEscalated) await this.applyRelayIce();
+    this.awaitingSlot = [];
     try {
       await this.client.connect([...this.desiredSubs.keys()], {
         slots: SLOT_COUNT,
