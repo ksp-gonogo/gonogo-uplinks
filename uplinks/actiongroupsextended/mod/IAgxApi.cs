@@ -23,6 +23,20 @@ namespace Gonogo.ActionGroupsExtendedUplink
         /// typed absence, mirroring <c>IActionGroupsBackend.Groups()</c>'s
         /// null contract: and must NEVER be conflated with an empty list
         /// (which would assert "this vessel has zero groups").
+        ///
+        /// <para><b>The failure is whole-tick because that is the only shape
+        /// available.</b> AGExt reads each group's state through its own
+        /// surface, so one group can fail while the rest answer, and the honest
+        /// reading of that is a PER-GROUP absence: the entry present with an
+        /// unknown state, rather than the whole list withheld along with nine
+        /// groups that read fine. It cannot be spelled through
+        /// <see cref="AgxGroup.State"/> while
+        /// <c>Sitrep.Contract.ActionGroupState.State</c> is a plain bool, which
+        /// is what the vendored contract this Uplink compiles against carries.
+        /// Widening <see cref="AgxGroup.State"/> on its own does not build: the
+        /// assignment in <c>AgxActionGroupsBackend.Groups</c> fails CS0266.
+        /// Widen both together once a contract with a three-valued
+        /// <c>State</c> is published, and let a single group fail alone.</para>
         /// </summary>
         IReadOnlyList<AgxGroup>? AssignedGroups();
 

@@ -122,35 +122,54 @@ namespace Gonogo.ActionGroupsExtendedUplink
                 {
                     return null;
                 }
-
-                var result = new List<AgxGroup>(raw.Count);
-                foreach (DictionaryEntry entry in raw)
-                {
-                    if (entry.Key is not int index)
-                    {
-                        continue;
-                    }
-                    var name = entry.Value as string;
-                    // `is true` folded "AGExt answered with something that is not
-                    // a bool" into "the group is off": a claim about the vessel
-                    // from a read that did not happen, drawn as a disengaged
-                    // toggle. A per-group read failure IS a read failure, and
-                    // this method's own contract already says what one means:
-                    // null for the tick, retried on the next. It cannot be said
-                    // per group, because `ActionGroupState.State` is a plain
-                    // bool on the wire and has no way to spell "unknown".
-                    if (_groupState.Invoke(null, new object[] { index }) is not bool state)
-                    {
-                        return null;
-                    }
-                    result.Add(new AgxGroup(index, name, state));
-                }
-                return result;
+                return MapGroups(raw, index => _groupState.Invoke(null, new object[] { index }));
             }
             catch (Exception)
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Shapes AGExt's raw index -&gt; name dictionary into
+        /// <see cref="AgxGroup"/>s, reading each group's state through
+        /// <paramref name="readState"/>. Split out from the reflection call
+        /// above so the mapping runs headlessly against a fake AGExt surface,
+        /// the way the rest of this Uplink's logic already does; the live
+        /// binding itself stays Deck-validated.
+        ///
+        /// <para>Null on ANY element this cannot read, key or state alike. A
+        /// <c>continue</c> on an unreadable key dropped that group and published
+        /// the rest as a complete list, so the operator could not tell "AGX
+        /// reports eight groups" from "AGX reports ten and we read eight", and a
+        /// group the vessel HAS was not on screen to command. <c>is true</c> on
+        /// the state was the same collapse one rung along: it folded "AGExt
+        /// answered with something that is not a bool" into a definite off and
+        /// drew a disengaged toggle from a read that never happened.</para>
+        ///
+        /// <para>Both are read failures, and this method's own contract already
+        /// says what one means: null for the tick, retried on the next. Neither
+        /// can be said PER GROUP against the <c>Sitrep.Contract</c> this Uplink
+        /// compiles against, where <c>ActionGroupState.State</c> is a plain bool
+        /// with no spelling for "unknown".</para>
+        /// </summary>
+        internal static IReadOnlyList<AgxGroup>? MapGroups(IDictionary raw, Func<int, object?> readState)
+        {
+            var result = new List<AgxGroup>(raw.Count);
+            foreach (DictionaryEntry entry in raw)
+            {
+                if (entry.Key is not int index)
+                {
+                    return null;
+                }
+                var name = entry.Value as string;
+                if (readState(index) is not bool state)
+                {
+                    return null;
+                }
+                result.Add(new AgxGroup(index, name, state));
+            }
+            return result;
         }
 
         /// <summary>Sets one group by AGExt's own 1-based index. Returns AGExt's own success bool, or false on any failure.</summary>

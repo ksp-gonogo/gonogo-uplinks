@@ -74,19 +74,60 @@ namespace GonogoExampleUplink
         /// snapshot is null on a tick with nothing to report, and returning null
         /// publishes nothing rather than publishing a zero: a substituted zero is
         /// indistinguishable from a real reading downstream.
+        ///
+        /// <para><b>A non-null snapshot is not the same thing as a readable
+        /// UT</b>, which is the whole reason <see cref="ReadableUt"/> exists.
+        /// Copy it along with this file.</para>
         /// </summary>
         internal object? Sample(KspSnapshot? snapshot)
+        {
+            var ut = ReadableUt(snapshot);
+            if (ut == null)
+            {
+                return null;
+            }
+            // Only a published tick counts: a `ticks` that also counted the
+            // declined ones would be a second invented reading beside the first.
+            _ticks += 1;
+            return new Dictionary<string, object?>
+            {
+                ["ut"] = ut,
+                ["ticks"] = _ticks,
+            };
+        }
+
+        /// <summary>
+        /// The tick's UT, or null when this Uplink cannot honestly say what it
+        /// was.
+        ///
+        /// <para><see cref="KspSnapshot.Ut"/> is a plain <c>double</c>, and core
+        /// fills it from <c>Planetarium.GetUniversalTime</c> through a try/catch
+        /// that logs a warning and returns 0: that path is live before any save
+        /// has loaded. So a NON-NULL snapshot can still carry a UT nobody read,
+        /// and the substituted zero does not sit inert. Core's own sample cadence
+        /// compares it against the last sampled UT, reads <c>0 &lt; last</c> as a
+        /// BACKWARD jump, and forces the sample carrying it, so a fabricated
+        /// timestamp perturbs the cadence rather than merely misreporting a
+        /// clock. On a reveal-gated channel it is also older than every edge and
+        /// walks straight past the signal delay.</para>
+        ///
+        /// <para>UT 0 is in principle the first instant of a brand-new save, so
+        /// this declines one tick that might have been real. That is the cheaper
+        /// of the two mistakes: nothing downstream can tell the two apart from
+        /// the value alone, and the next tick publishes either way.</para>
+        /// </summary>
+        private static double? ReadableUt(KspSnapshot? snapshot)
         {
             if (snapshot == null)
             {
                 return null;
             }
-            _ticks += 1;
-            return new Dictionary<string, object?>
+            var ut = snapshot.Ut;
+            if (ut == 0.0 || double.IsNaN(ut) || double.IsInfinity(ut))
             {
-                ["ut"] = snapshot.Ut,
-                ["ticks"] = _ticks,
-            };
+                return null;
+            }
+            return ut;
         }
     }
 }

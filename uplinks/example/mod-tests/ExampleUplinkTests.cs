@@ -36,6 +36,40 @@ namespace GonogoExampleUplink.Tests
         }
 
         [Fact]
+        public void PublishesNothingForASnapshotCarryingAUtNobodyRead()
+        {
+            // Core's NowUt() catches a Planetarium throw, logs a warning and
+            // returns 0, which is the live path before any save has loaded. So
+            // the snapshot arrives NON-NULL with a UT that was never read, and
+            // the zero is not inert: core's sample cadence reads
+            // 0 < lastSampledUt as a backward jump and forces the sample
+            // carrying it, so the fabricated timestamp perturbs the cadence.
+            Assert.Null(new ExampleUplink().Sample(new KspSnapshot { Ut = 0.0 }));
+        }
+
+        [Fact]
+        public void PublishesNothingForANonFiniteUt()
+        {
+            Assert.Null(new ExampleUplink().Sample(new KspSnapshot { Ut = double.NaN }));
+            Assert.Null(new ExampleUplink().Sample(
+                new KspSnapshot { Ut = double.PositiveInfinity }));
+        }
+
+        [Fact]
+        public void ADeclinedTickDoesNotAdvanceTheCount()
+        {
+            // A `ticks` that counted declined ticks would be a second invented
+            // reading beside the UT: a heartbeat claiming more beats than it
+            // ever published.
+            var uplink = new ExampleUplink();
+
+            Assert.Null(uplink.Sample(new KspSnapshot { Ut = 0.0 }));
+            var first = Assert.IsType<Dictionary<string, object?>>(
+                uplink.Sample(new KspSnapshot { Ut = 1234.5 }));
+            Assert.Equal(1.0, first["ticks"]);
+        }
+
+        [Fact]
         public void CarriesTheSnapshotUtAndACountThatAdvances()
         {
             var uplink = new ExampleUplink();
