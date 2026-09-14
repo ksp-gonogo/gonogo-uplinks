@@ -40,9 +40,10 @@ import { homedir } from "node:os";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const RT_VERSION = "1.6.7";
+// The same cache `dotnet restore` writes to: NUGET_PACKAGES when it is set.
 const RTCLI = join(
-  homedir(),
-  ".nuget/packages/reinforced.typings",
+  process.env.NUGET_PACKAGES || join(homedir(), ".nuget/packages"),
+  "reinforced.typings",
   RT_VERSION,
   "tools/net5.0/rtcli.dll",
 );
@@ -69,11 +70,23 @@ if (!existsSync(project)) {
   process.exit(1);
 }
 
-if (!existsSync(RTCLI)) {
+/*
+ * The twin imports CodegenTwin.props from the contract directory, and MSBuild
+ * skips a missing import without a word: the build then fails on an empty
+ * TargetFramework (NETSDK1013), which names nothing that is actually absent.
+ */
+const contractArg = passthrough.find((arg) => arg.startsWith("-p:GonogoContract="));
+const contractDir = contractArg
+  ? contractArg.slice("-p:GonogoContract=".length)
+  : join(ROOT, "vendor", "contract");
+const contractMissing = ["CodegenTwin.props", "codegen/Sitrep.Contract.dll"]
+  .map((file) => join(contractDir, file))
+  .filter((file) => !existsSync(file));
+if (contractMissing.length > 0) {
   console.error(
-    `✖ rtcli ${RT_VERSION} is not in the NuGet cache at ${RTCLI}.\n` +
-      "  It arrives with the twin's Reinforced.Typings PackageReference: build the twin once, or\n" +
-      "  run `dotnet restore`, then re-run. Refusing rather than emitting an empty contract.ts.",
+    `✖ the Gonogo contract artifacts the twin builds against are not at ${contractDir}:\n` +
+      contractMissing.map((file) => `    ${file}`).join("\n") +
+      "\n  Point -p:GonogoContract at a directory holding them (see Directory.Build.props).",
   );
   process.exit(1);
 }
@@ -81,6 +94,21 @@ if (!existsSync(RTCLI)) {
 execFileSync("dotnet", ["build", project, "-v", "minimal", ...passthrough], {
   stdio: "inherit",
 });
+
+/*
+ * Checked AFTER the twin builds, because that build's restore is what puts rtcli
+ * in the cache. Checked before it, a fresh machine (every CI runner) refused on
+ * every run and never reached the build that would have fixed it.
+ */
+if (!existsSync(RTCLI)) {
+  console.error(
+    `✖ rtcli ${RT_VERSION} is not in the NuGet cache at ${RTCLI}, even after building the twin.\n` +
+      "  It arrives with the Reinforced.Typings PackageReference in $(GonogoContract)/CodegenTwin.props,\n" +
+      "  so a vendored props file that no longer declares it restores nothing. Refusing rather than\n" +
+      "  emitting an empty contract.ts.",
+  );
+  process.exit(1);
+}
 
 const outDir = join(uplinkDir, "client", "src", "__generated__");
 mkdirSync(outDir, { recursive: true });
