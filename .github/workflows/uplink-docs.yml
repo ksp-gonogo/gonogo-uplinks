@@ -83,8 +83,17 @@ jobs:
       # embedded in a page are whatever THIS engine produced. That is also why the
       # images are generated here rather than accepted from a contributor's
       # machine.
+      #
+      # Once per client, through that client's own playwright: each lockfile pins
+      # its own version and each version launches its own chromium revision. One
+      # `npx playwright install` from the repo root fetches the newest playwright
+      # instead, and installs a revision the locked clients do not launch.
       - name: Install the browser the page harness renders in
-        run: npx playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          while IFS= read -r name; do
+            ( cd "uplinks/$name/client" && npm exec --no -- playwright install --with-deps chromium )
+          done < /tmp/uplink-clients.txt
 
       # The same script the PR check runs with `--check`, so what heals main and
       # what fails a pull request cannot disagree about which Uplinks they cover.

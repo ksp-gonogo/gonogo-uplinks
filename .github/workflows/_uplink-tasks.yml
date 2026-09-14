@@ -93,9 +93,13 @@ jobs:
             -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
           git diff --exit-code -- "uplinks/${{ inputs.name }}/client/src/__generated__"
 
+      # ClientSource.g.cs and ExpectedClientHash.g.cs are gitignored and a mod
+      # that reads them does not compile without them, so they are baked first,
+      # in the release shape with no hash: the bundle is not built until later.
       - name: Build mod
         if: inputs.mod_csproj != ''
         run: |
+          node tooling/bake-client-source.mjs "${{ inputs.name }}"
           dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo \
             -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
 
@@ -129,10 +133,16 @@ jobs:
       # `RENDER_DEBT` applies here too: an Uplink whose render is known-broken
       # would otherwise make this leg permanently red, and a permanently-red leg
       # hides the next real failure behind it.
+      #
+      # The browser is installed by the CLIENT's own playwright. Run from the repo
+      # root, npx finds none and fetches the newest release, whose chromium
+      # revision is not the one the client's locked playwright launches, so the
+      # render dies at `browserType.launch: Executable doesn't exist`. `--no`
+      # refuses that fetch rather than installing the wrong revision.
       - name: Docs are current
         if: inputs.client
         run: |
-          npx playwright install --with-deps chromium
+          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
           node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
 
       - uses: actions/upload-artifact@v4
