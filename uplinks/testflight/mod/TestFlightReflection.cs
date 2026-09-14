@@ -170,9 +170,9 @@ namespace GonogoTestFlightUplink
                     if (!_coreInterface.IsAssignableFrom(pm.GetType())) continue;
                     // A core that TestFlight itself is not running, or that belongs
                     // to a config other than the flying one, is not this part's
-                    // reliability model and must not be reported as one.
-                    if (Bool(_testFlightEnabled, pm) == false) continue;
-                    if (Bool(_activeConfiguration, pm) == false) continue;
+                    // reliability model and must not be reported as one. Nor is one
+                    // we could not ask: see TestFlightRepairScope.IsLiveCore.
+                    if (!IsLive(pm)) continue;
                     yield return Read(part, pm);
                 }
             }
@@ -197,25 +197,29 @@ namespace GonogoTestFlightUplink
             // Rated times live on the RELIABILITY modules, run times on the core:
             // the two halves are on different objects, which is precisely what a
             // no-arg core-only reflection could never reach.
-            var modules = ReliabilityModules(part, alias);
-            double? ratedCumulative = null;
-            double? ratedContinuous = null;
-            double? baseRate = null;
-            foreach (var module in modules)
+            //
+            // An RO engine carries one module per failure mode, so each number
+            // below is a fold over the list and every term has to be readable for
+            // the fold to mean anything: see TestFlightModuleFold.
+            var ratedCumulative = new List<double?>();
+            var ratedContinuous = new List<double?>();
+            var baseRates = new List<double?>();
+            foreach (var module in ReliabilityModules(part, alias))
             {
-                ratedCumulative = MaxOf(ratedCumulative, Num(Invoke(_getRatedTime, module, _scopeCumulative)));
-                ratedContinuous = MaxOf(ratedContinuous, Num(Invoke(_getRatedTime, module, _scopeContinuous)));
+                ratedCumulative.Add(Num(Invoke(_getRatedTime, module, _scopeCumulative)));
+                ratedContinuous.Add(Num(Invoke(_getRatedTime, module, _scopeContinuous)));
                 // Evaluated at LIVE flight data, not the no-arg cached
                 // GetBaseFailureRate(), which evaluates at initialFlightData and so
                 // never moves during a mission.
                 if (flightData.HasValue)
                 {
-                    var rate = Num(Invoke(_getBaseFailureRate, module, (float)flightData.Value));
-                    if (rate.HasValue) baseRate = (baseRate ?? 0.0) + rate.Value;
+                    baseRates.Add(Num(Invoke(_getBaseFailureRate, module, (float)flightData.Value)));
                 }
             }
-            raw.RatedCumulativeSeconds = ratedCumulative;
-            raw.RatedContinuousSeconds = ratedContinuous;
+            var ratedCumulativeSeconds = TestFlightModuleFold.Highest(ratedCumulative);
+            var baseRate = TestFlightModuleFold.Total(baseRates);
+            raw.RatedCumulativeSeconds = ratedCumulativeSeconds;
+            raw.RatedContinuousSeconds = TestFlightModuleFold.Highest(ratedContinuous);
             raw.BaseFailureRate = baseRate;
 
             // Deliberately NOT GetWorstMomentaryFailureRate(): the momentary list is
@@ -223,10 +227,10 @@ namespace GonogoTestFlightUplink
             // with valid == false and failureRate == 0, which would render as a
             // perfect pre-launch score. The base rate at live flight data is the
             // number TestFlight's own GUI quotes, over the cumulative rating.
-            if (baseRate.HasValue && ratedCumulative is > 0)
+            if (baseRate.HasValue && ratedCumulativeSeconds is > 0)
             {
-                raw.Survival = Survival(baseRate.Value, ratedCumulative.Value);
-                if (raw.Survival.HasValue) raw.SurvivalHorizonSeconds = ratedCumulative;
+                raw.Survival = Survival(baseRate.Value, ratedCumulativeSeconds.Value);
+                if (raw.Survival.HasValue) raw.SurvivalHorizonSeconds = ratedCumulativeSeconds;
             }
             return raw;
         }
@@ -305,8 +309,7 @@ namespace GonogoTestFlightUplink
                 {
                     if (pm == null || _coreInterface == null) continue;
                     if (!_coreInterface.IsAssignableFrom(pm.GetType())) continue;
-                    if (Bool(_testFlightEnabled, pm) == false) continue;
-                    if (Bool(_activeConfiguration, pm) == false) continue;
+                    if (!IsLive(pm)) continue;
                     if (seen == occurrence) return pm;
                     seen++;
                 }
@@ -314,16 +317,27 @@ namespace GonogoTestFlightUplink
             return null;
         }
 
-        private int ActiveFailureCount(object? core)
+        /// <summary>
+        /// Whether this module is the core that is actually flying, decided by the
+        /// shared <see cref="TestFlightRepairScope.IsLiveCore"/> so the listing
+        /// walk and the repair walk cannot filter differently.
+        /// </summary>
+        private bool IsLive(PartModule pm) => TestFlightRepairScope.IsLiveCore(
+            Bool(_testFlightEnabled, pm), Bool(_activeConfiguration, pm));
+
+        /// <summary>
+        /// How many failures the core is carrying, or null when the list could not
+        /// be read: an unbound member, a call that threw, or a return that is not
+        /// a sequence. Zero is reserved for a core that answered and said none.
+        /// </summary>
+        private int? ActiveFailureCount(object? core)
         {
             if (core == null) return 0;
+            if (Invoke(_getActiveFailures, core) is not IEnumerable failures) return null;
             var count = 0;
-            if (Invoke(_getActiveFailures, core) is IEnumerable failures)
+            foreach (var failure in failures)
             {
-                foreach (var failure in failures)
-                {
-                    if (failure != null) count++;
-                }
+                if (failure != null) count++;
             }
             return count;
         }
@@ -461,13 +475,6 @@ namespace GonogoTestFlightUplink
         {
             if (o == null) return null;
             try { return Convert.ToInt32(o); } catch { return null; }
-        }
-
-        private static double? MaxOf(double? a, double? b)
-        {
-            if (a == null) return b;
-            if (b == null) return a;
-            return Math.Max(a.Value, b.Value);
         }
 
         private Type? FindType(string fullName)

@@ -26,6 +26,8 @@
     <!-- The id split and the refusal decision behind a repair, carved out of
          TestFlightReflection (whose walk reaches a live Vessel and Part). -->
     <Compile Include="..\mod\TestFlightRepairScope.cs" />
+    <!-- How a part's several reliability modules combine into one number. -->
+    <Compile Include="..\mod\TestFlightModuleFold.cs" />
   </ItemGroup>
 
   <!-- The mapper builds Sitrep.Contract POCOs directly now, rather than plain

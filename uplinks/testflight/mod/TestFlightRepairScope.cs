@@ -60,6 +60,27 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
+        /// Whether a TestFlight core is the one flying: TestFlight is running it,
+        /// and it belongs to the active engine config rather than one of the many
+        /// an RO part carries.
+        ///
+        /// <para>Both arguments are null when the property did not bind, the read
+        /// threw, or the value was not a bool, and null answers false. This is a
+        /// GUARD, so it fails CLOSED: a core we cannot confirm is live is not
+        /// reported as a reliability model and is not repaired. Written
+        /// <c>== false</c> it failed OPEN precisely when the binder had regressed,
+        /// putting rated burn times and survival odds for a config the vessel is
+        /// not flying on screen as extra rows, and pointing a repair at a core the
+        /// operator never named.</para>
+        ///
+        /// <para>Shared so the listing walk and the repair walk cannot filter
+        /// differently: two walks that number the cores differently mint an id
+        /// against one and act on the other.</para>
+        /// </summary>
+        public static bool IsLiveCore(bool? testFlightEnabled, bool? activeConfiguration) =>
+            testFlightEnabled == true && activeConfiguration == true;
+
+        /// <summary>
         /// What a walk that reached the named core found, as a refusal token.
         /// Null means there is something to repair and the walk should go ahead.
         ///
@@ -68,10 +89,18 @@ namespace GonogoTestFlightUplink
         /// whose every failure is terminal are different answers, and collapsing
         /// them would tell an operator whose engine has exploded to go looking
         /// for a part id that is sitting right there.</para>
+        ///
+        /// <para><paramref name="activeFailures"/> is null when the core's failure
+        /// list could not be READ at all, which is not the same fact as an empty
+        /// one and must not borrow its answer: counted as zero it told an operator
+        /// whose row says <c>failed</c> that no such part exists, while the row and
+        /// the button sat beside each other. It refuses as <c>not-modelled</c>,
+        /// the same token an unbound failure-list member already produces.</para>
         /// </summary>
-        public static string? RefusalFor(bool coreFound, int activeFailures, int repairable)
+        public static string? RefusalFor(bool coreFound, int? activeFailures, int repairable)
         {
             if (!coreFound) return RepairRefusal.NoSuchPart;
+            if (activeFailures == null) return RepairRefusal.NotModelled;
             if (activeFailures == 0) return RepairRefusal.NoSuchPart;
             if (repairable == 0) return RepairRefusal.Unrepairable;
             return null;

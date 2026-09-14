@@ -70,6 +70,57 @@ namespace GonogoTestFlightUplink.Tests
         }
 
         /// <summary>
+        /// A failure list that could not be READ is not an empty one. Counted as
+        /// zero it answered <c>no-such-part</c> for a core the walk had just
+        /// found, so pressing Repair on a row that says <c>failed</c> denied the
+        /// part existed while the row sat beside the button.
+        /// </summary>
+        [Fact]
+        public void AnUnreadableFailureListDoesNotBorrowTheAnswerForAnEmptyOne()
+        {
+            Assert.Equal(
+                RepairRefusal.NotModelled,
+                TestFlightRepairScope.RefusalFor(coreFound: true, activeFailures: null, repairable: 0));
+            Assert.Equal(
+                RepairRefusal.NoSuchPart,
+                TestFlightRepairScope.RefusalFor(coreFound: true, activeFailures: 0, repairable: 0));
+        }
+
+        /// <summary>
+        /// The liveness filter is a GUARD and fails CLOSED. Written
+        /// <c>== false</c> it failed OPEN on null, which is what an unbound or
+        /// throwing property read returns, so the regression that made the read
+        /// fail was also the one that let the core through.
+        /// </summary>
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        // The liveness flag could not be read at all.
+        [InlineData(null, true, false)]
+        [InlineData(true, null, false)]
+        [InlineData(null, null, false)]
+        public void ACoreNobodyCouldConfirmIsLiveIsNotTreatedAsLive(
+            bool? enabled, bool? activeConfig, bool expected)
+        {
+            Assert.Equal(expected, TestFlightRepairScope.IsLiveCore(enabled, activeConfig));
+        }
+
+        /// <summary>
+        /// Both walks reach the shared filter rather than spelling it out twice,
+        /// so a repair cannot number the cores differently from the listing that
+        /// minted the id.
+        /// </summary>
+        [Fact]
+        public void BothWalksFilterThroughTheOneSharedPredicate()
+        {
+            var source = File.ReadAllText(ReflectionSourcePath());
+
+            Assert.Contains("TestFlightRepairScope.IsLiveCore", source);
+            Assert.DoesNotContain("== false) continue", source);
+        }
+
+        /// <summary>
         /// A terminal failure sitting beside a repairable one must not make the
         /// repair of the repairable one report failure. <c>ForceRepair</c> returns
         /// <c>0f</c> on every path, so the list is the only evidence there is.
