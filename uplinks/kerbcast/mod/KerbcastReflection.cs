@@ -101,10 +101,13 @@ namespace Gonogo.KerbcastUplink
             // Optional: added later than IsActive/CamerasFor, so an older
             // kerbcast build simply won't have it. Never gates IsAvailable
             // (unlike IsActive/CamerasFor/FlightId below): SidecarAlive()
-            // fails soft to false rather than making the whole uplink
-            // unavailable over a missing diagnostic property.
+            // fails soft to NULL rather than making the whole uplink
+            // unavailable over a missing diagnostic property. Not to false,
+            // which is a verdict SidecarDeathDebouncer latches on.
             _sidecarAlive = control.GetProperty("SidecarAlive", BindingFlags.Public | BindingFlags.Static);
             _camerasFor = FindMethod(control, "CamerasFor", 1);
+            // Not gating either, so an aim command answers NULL rather than
+            // false when it did not resolve: see InvokeBool.
             _setFov = FindMethod(control, "SetFov", 2);
             _setPan = FindMethod(control, "SetPan", 3);
 
@@ -185,24 +188,35 @@ namespace Gonogo.KerbcastUplink
         }
 
         /// <summary>
-        /// Whether kerbcast's video sidecar process is alive. Fail-soft to
-        /// false when the property is unreadable (an older kerbcast build
-        /// that predates this surface, or the probe never resolved it) or
-        /// the read itself throws: same pattern as <see cref="IsActive"/>.
+        /// Whether kerbcast's video sidecar process is alive, or NULL when
+        /// nobody could ask: the property is absent (an older kerbcast build
+        /// that predates this surface), it never resolved, the read threw, or
+        /// the value was not a bool.
+        ///
+        /// <para>Null and false are different answers and this used to give
+        /// false for both. The property deliberately never gates
+        /// <see cref="IsAvailable"/>, so a build without it stays usable, but
+        /// the false it failed soft to is a positive claim that the sidecar is
+        /// DOWN, and <see cref="SidecarDeathDebouncer"/> latches on two
+        /// consecutive ones with no path back: on such a build the Uplink
+        /// reported "video sidecar not alive; feeds will be black" from the
+        /// second capture tick to the end of the session, over a working feed,
+        /// and nothing could clear it. Failing soft over a missing diagnostic
+        /// property has to cost nothing, which means saying nothing.</para>
         /// </summary>
-        public bool SidecarAlive()
+        public bool? SidecarAlive()
         {
             if (_sidecarAlive == null)
             {
-                return false;
+                return null;
             }
             try
             {
-                return _sidecarAlive.GetValue(null) is true;
+                return _sidecarAlive.GetValue(null) as bool?;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
         }
 
@@ -261,25 +275,46 @@ namespace Gonogo.KerbcastUplink
             Part = ReadObject(_part, view),
         };
 
-        /// <summary>Applies a field-of-view change. False when kerbcast rejected it or the call is unavailable.</summary>
-        public bool SetFov(uint flightId, float fov) => InvokeBool(_setFov, new object[] { flightId, fov });
+        /// <summary>
+        /// Applies a field-of-view change. False is kerbcast's OWN rejection of
+        /// the camera id; null means the call could not be made at all.
+        /// </summary>
+        public bool? SetFov(uint flightId, float fov) => InvokeBool(_setFov, new object[] { flightId, fov });
 
-        /// <summary>Applies an absolute pan. False when kerbcast rejected it or the call is unavailable.</summary>
-        public bool SetPan(uint flightId, float yaw, float pitch) => InvokeBool(_setPan, new object[] { flightId, yaw, pitch });
+        /// <summary>
+        /// Applies an absolute pan. False is kerbcast's OWN rejection of the
+        /// camera id; null means the call could not be made at all.
+        /// </summary>
+        public bool? SetPan(uint flightId, float yaw, float pitch) => InvokeBool(_setPan, new object[] { flightId, yaw, pitch });
 
-        private static bool InvokeBool(MethodInfo? method, object[] args)
+        /// <summary>
+        /// Invokes one of kerbcast's bool-returning statics. Null when the
+        /// method did not resolve, the call threw, or the return was not a
+        /// bool: none of those is kerbcast answering no.
+        ///
+        /// <para><c>_setFov</c> and <c>_setPan</c> are resolved by
+        /// <see cref="FindMethod"/> but are NOT gating members, only the three
+        /// behind <see cref="Reason"/> are. So on a kerbcast build where one of
+        /// them is absent, renamed or has changed arity the Uplink stays
+        /// AVAILABLE, and the false this used to return became
+        /// <c>NotFound</c>: an unresolved METHOD reported as an unresolved
+        /// CAMERA ID. The operator sent a zoom to a camera they could watch
+        /// streaming and it came back saying the vessel has no camera with that
+        /// id.</para>
+        /// </summary>
+        private static bool? InvokeBool(MethodInfo? method, object[] args)
         {
             if (method == null)
             {
-                return false;
+                return null;
             }
             try
             {
-                return method.Invoke(null, args) is true;
+                return method.Invoke(null, args) as bool?;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
         }
 

@@ -62,14 +62,12 @@ namespace Gonogo.KerbcastUplink
         // main thread (a Unity null-check off-thread is not safe).
         private volatile string? _unavailableReason;
         private volatile bool _coreActive;
-        // Raw per-tick SidecarAlive() reading, published alongside _coreActive.
-        // Health() itself does NOT read this directly: it reads the DEBOUNCED
-        // _sidecarConfirmedDead below, kerbcast's own auto-restart (up to 5
-        // attempts, ~5s apart) makes a single false tick a transient, not a
-        // fault. _sidecarDebouncer (main-thread-only, never touched off it) is
+        // Health() never reads the raw per-tick SidecarAlive() reading: it reads
+        // the DEBOUNCED _sidecarConfirmedDead, kerbcast's own auto-restart (up
+        // to 5 attempts, ~5s apart) makes a single false tick a transient, not
+        // a fault. _sidecarDebouncer (main-thread-only, never touched off it) is
         // the state machine; _sidecarConfirmedDead is its published, volatile
         // Courier-thread-readable output. See SidecarDeathDebouncer's own doc.
-        private volatile bool _sidecarAlive;
         private volatile bool _sidecarConfirmedDead;
         private readonly SidecarDeathDebouncer _sidecarDebouncer = new SidecarDeathDebouncer();
         private volatile bool _sampledOnce;
@@ -203,9 +201,7 @@ namespace Gonogo.KerbcastUplink
             // (the !coreActive check runs before the sidecar check) that
             // keeps a dead-sidecar-out-of-flight reading benign, not gating
             // the capture here.
-            var sidecarAliveNow = kerbcast.SidecarAlive();
-            _sidecarAlive = sidecarAliveNow;
-            _sidecarDebouncer.Observe(sidecarAliveNow);
+            _sidecarDebouncer.Observe(kerbcast.SidecarAlive());
             _sidecarConfirmedDead = _sidecarDebouncer.ConfirmedDead;
 
             var vessel = FlightGlobals.ActiveVessel;
@@ -282,11 +278,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            // kerbcast clamps to the camera's own bounds and returns false when
-            // the id doesn't resolve: NotFound is the honest code for that.
-            return kerbcast.SetFov(cameraId, (float)args.FieldOfView)
-                ? CommandResult.Ok()
-                : CommandResult.Fail(CommandErrorCode.NotFound);
+            return KerbcastAimOutcome.For(kerbcast.SetFov(cameraId, (float)args.FieldOfView));
         }
 
         /// <summary>MAIN-THREAD command: aim a camera (absolute degrees).</summary>
@@ -305,9 +297,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            return kerbcast.SetPan(cameraId, (float)args.Yaw, (float)args.Pitch)
-                ? CommandResult.Ok()
-                : CommandResult.Fail(CommandErrorCode.NotFound);
+            return KerbcastAimOutcome.For(kerbcast.SetPan(cameraId, (float)args.Yaw, (float)args.Pitch));
         }
 
         // The wire carries cameraId as a JSON number (long on the contract);

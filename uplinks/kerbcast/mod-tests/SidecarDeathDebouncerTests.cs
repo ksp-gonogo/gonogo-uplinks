@@ -82,4 +82,47 @@ public class SidecarDeathDebouncerTests
 
         Assert.True(debouncer.ConfirmedDead);
     }
+
+    /// <summary>
+    /// A null tick is kerbcast declining to say, which is what every tick of a
+    /// pre-<c>SidecarAlive</c> install reports. Counted as not-alive it latched
+    /// on the second tick and no later tick could clear it, so the Uplink told
+    /// an operator with a perfectly good feed that their video sidecar was dead
+    /// for the rest of the session.
+    /// </summary>
+    [Fact]
+    public void NeverConfirmsDead_WhenNoTickCanSayEitherWay()
+    {
+        var debouncer = new SidecarDeathDebouncer();
+
+        for (var tick = 0; tick < 10; tick++)
+        {
+            debouncer.Observe(null);
+        }
+
+        Assert.False(debouncer.ConfirmedDead);
+    }
+
+    /// <summary>
+    /// The streak an unreadable tick does not advance, it also does not break:
+    /// two reads that genuinely said not-alive still confirm with one between
+    /// them, because nothing in it said the sidecar came back. Only a positive
+    /// reading clears a verdict.
+    /// </summary>
+    [Fact]
+    public void AnUnreadableTickBreaksNeitherTheStreakNorTheVerdict()
+    {
+        var debouncer = new SidecarDeathDebouncer();
+
+        debouncer.Observe(false);
+        debouncer.Observe(null);
+        debouncer.Observe(false);
+        Assert.True(debouncer.ConfirmedDead);
+
+        debouncer.Observe(null);
+        Assert.True(debouncer.ConfirmedDead);
+
+        debouncer.Observe(true);
+        Assert.False(debouncer.ConfirmedDead);
+    }
 }

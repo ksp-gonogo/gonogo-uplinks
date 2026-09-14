@@ -68,23 +68,47 @@ public class KerbcastReflectionTests
         Assert.False(kerbcast.SidecarAlive());
     }
 
+    /// <summary>
+    /// A pre-<c>SidecarAlive</c> kerbcast build (built via Reflection.Emit so
+    /// its shape is INDEPENDENTLY constructed, not a second same-named type in
+    /// this assembly, which C# forbids): <c>IsActive</c>, <c>CamerasFor</c> and
+    /// <c>KerbcastCameraView.FlightId</c> are present and nothing else is.
+    ///
+    /// <para>It must not make the whole surface unavailable, and it must not
+    /// claim the sidecar is DOWN either. False was a verdict the debouncer
+    /// latched on within two ticks, and no tick on such a build could ever
+    /// clear it.</para>
+    /// </summary>
     [Fact]
-    public void SidecarAliveFailsSoft_WhenTheAssemblyPredatesTheProperty()
+    public void SidecarAliveIsUnknown_WhenTheAssemblyPredatesTheProperty()
     {
-        // A pre-SidecarAlive kerbcast build: KerbcastControl exists (built
-        // via Reflection.Emit so its shape is INDEPENDENTLY constructed, not
-        // a second same-named type in this assembly, which C# forbids) with
-        // IsActive/CamerasFor/SetFov/SetPan but no SidecarAlive property.
-        // Must NOT make the whole reflection surface unavailable: only
-        // SidecarAlive() itself fails soft to false; IsActive/CamerasFor
-        // keep working exactly as they do today.
         var assembly = LegacyKerbcastAssemblyBuilder.BuildWithoutSidecarAlive();
         var probe = KerbcastReflection.ForAssembly(assembly);
 
         Assert.True(probe.IsAvailable);
         Assert.Null(probe.Reason);
-        Assert.False(probe.SidecarAlive());
+        Assert.Null(probe.SidecarAlive());
         Assert.True(probe.IsActive());
+    }
+
+    /// <summary>
+    /// The same fixture carries no <c>SetFov</c>/<c>SetPan</c> either, and
+    /// neither gates <c>IsAvailable</c>: only the three behind
+    /// <c>Reason</c> do. So the Uplink stays AVAILABLE on a build where the aim
+    /// commands have moved, and the false these used to answer reached the
+    /// operator as <c>NotFound</c>, which says their vessel has no camera with
+    /// that id. Null is the reading that can be told apart from kerbcast's own
+    /// refusal of an id.
+    /// </summary>
+    [Fact]
+    public void AnAimCommandThatDidNotResolveIsUnknown_NotAnIdKerbcastRefused()
+    {
+        var assembly = LegacyKerbcastAssemblyBuilder.BuildWithoutSidecarAlive();
+        var probe = KerbcastReflection.ForAssembly(assembly);
+
+        Assert.True(probe.IsAvailable);
+        Assert.Null(probe.SetFov(42u, 35f));
+        Assert.Null(probe.SetPan(42u, 10f, -5f));
     }
 
     [Fact]
@@ -171,13 +195,17 @@ public class KerbcastReflectionTests
     [Fact]
     public void CommandsFailSoft_WhenTheSurfaceIsMissing()
     {
-        // No KerbcastControl on this assembly: must return false, never throw.
+        // No KerbcastControl on this assembly: must never throw. The three
+        // gating members are absent, so Reason is set and the Uplink reports
+        // itself unavailable; the aim commands and the sidecar read still have
+        // to say they could not answer rather than answering.
         var kerbcast = KerbcastReflection.ForAssembly(typeof(string).Assembly);
 
-        Assert.False(kerbcast.SetFov(1u, 50f));
-        Assert.False(kerbcast.SetPan(1u, 0f, 0f));
+        Assert.False(kerbcast.IsAvailable);
+        Assert.Null(kerbcast.SetFov(1u, 50f));
+        Assert.Null(kerbcast.SetPan(1u, 0f, 0f));
         Assert.False(kerbcast.IsActive());
-        Assert.False(kerbcast.SidecarAlive());
+        Assert.Null(kerbcast.SidecarAlive());
         Assert.Empty(kerbcast.CamerasFor(new object()));
     }
 }

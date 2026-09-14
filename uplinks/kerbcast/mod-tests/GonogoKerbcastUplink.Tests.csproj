@@ -27,7 +27,9 @@
        only: it names no KSP or kerbcast type at compile time, which is exactly
        the licence boundary that makes it testable here at all);
        SidecarDeathDebouncer is the sidecar-liveness debounce state machine
-       Health() reads through KerbcastUplink.
+       Health() reads through KerbcastUplink;
+       KerbcastAimOutcome is what kerbcast's answer to an aim command means on
+       the wire.
 
        DockingCameraDetector and KerbcastUplink are deliberately ABSENT: both
        touch live stock-KSP types (Part/ModuleDockingNode/FlightGlobals) and so
@@ -39,6 +41,7 @@
     <Compile Include="..\mod\KerbcastReflection.cs" />
     <Compile Include="..\mod\DockingCameraFacts.cs" />
     <Compile Include="..\mod\SidecarDeathDebouncer.cs" />
+    <Compile Include="..\mod\KerbcastAimOutcome.cs" />
   </ItemGroup>
 
   <!-- GonogoKerbcastUplink.Contract: KerbcastCameraEntry/KerbcastSetFieldOfViewArgs/

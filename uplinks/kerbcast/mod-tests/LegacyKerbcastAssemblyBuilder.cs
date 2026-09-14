@@ -10,8 +10,12 @@ namespace GonogoKerbcastUplink.Tests;
 /// shaped like a PRE-<c>SidecarAlive</c> kerbcast build: everything
 /// <see cref="Gonogo.KerbcastUplink.KerbcastReflection"/> requires for
 /// <c>IsAvailable</c> (<c>IsActive</c>, <c>CamerasFor</c>,
-/// <c>KerbcastCameraView.FlightId</c>) is present, but the
-/// <c>SidecarAlive</c> property itself is not.
+/// <c>KerbcastCameraView.FlightId</c>) is present and NOTHING ELSE is.
+///
+/// <para>So it is the fixture for the non-gating members generally:
+/// <c>SidecarAlive</c>, <c>SetFov</c> and <c>SetPan</c> are all absent while
+/// the probe stays AVAILABLE, which is the shape in which an unresolved
+/// member's substituted answer reaches an operator.</para>
 ///
 /// <para>A second same-named <c>Kerbcast.KerbcastControl</c> type can't just
 /// be added to <see cref="KerbcastReflectionTests"/>'s existing stand-in
