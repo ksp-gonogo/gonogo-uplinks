@@ -19,7 +19,7 @@ import {
   waitFor,
   within,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import { WidgetScopeProvider } from "@ksp-gonogo/ui-kit";
+import { NULL_DISPLAY, WidgetScopeProvider } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
   visibleText,
@@ -216,6 +216,48 @@ describe("CoveragePanel: map-view.sections slot", () => {
     // AltHiRes sensor is bestRange → "best"; Biome sensor inRange → "scan".
     expect(within(panel).getByText("best")).toBeInTheDocument();
     expect(within(panel).getAllByText("scan").length).toBeGreaterThan(0);
+  });
+
+  it("draws the null token, not 0 %, for a scan type whose coverage was not read", async () => {
+    // The mod publishes null on scansat.coverage.<body>.<type> when SCANsat
+    // refused the percentage. Read as 0 % it says this body is untouched, and
+    // that is the figure an operator plans a mapping campaign around: they fly
+    // a survey that may already be done.
+    const transport = new StubTransport();
+    const client = createTestTelemetryClient(transport);
+
+    renderSlot(
+      <TelemetryProvider client={client}>
+        <WithScansatAvailability>
+          <MappedBody>
+            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+          </MappedBody>
+        </WithScansatAvailability>
+      </TelemetryProvider>,
+    );
+    const meta = { quality: Quality.Loaded, source: "scansat" };
+    act(() => {
+      transport.emit("scansat.available", true, meta);
+    });
+
+    const panel = await screen.findByRole("region", {
+      name: /Scan coverage for Kerbin/i,
+    });
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.coverage.Kerbin.2")).toBe(true),
+    );
+    act(() => {
+      // AltHiRes unread, AltLoRes a real zero: the two must not read alike.
+      transport.emit("scansat.coverage.Kerbin.2", null, meta);
+      transport.emit("scansat.coverage.Kerbin.1", 0, meta);
+    });
+
+    // One real 0 % on the panel (AltLoRes) and no second one standing in for
+    // the type nobody read.
+    await waitFor(() =>
+      expect(visibleText(panel).match(/0 %/g) ?? []).toHaveLength(1),
+    );
+    expect(visibleText(panel)).toContain(NULL_DISPLAY);
   });
 
   it("excludes scanning vessels on a different body from the in-range chips", async () => {

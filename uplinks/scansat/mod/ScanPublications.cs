@@ -67,11 +67,17 @@ namespace Gonogo.ScansatUplink
             // PQS/BiomeMap), published once per body visit.
             if (cap.IncludeHeightBiome)
             {
-                publications.Add(new ScanPublication(
-                    ScanChannelKind.Height,
-                    ScanChannels.BodySubTopic(cap.BodyName),
-                    ScanGrids.BuildHeightPayload(ScanGrids.Width, ScanGrids.Height, cap.HeightGrid),
-                    cap.Ut));
+                // No grid, no height keyframe: the capture could not reach the
+                // body's PQS controller, and a flat quarter-million cells of
+                // sea level is not a terrain reading.
+                if (cap.HeightGrid.HasValue)
+                {
+                    publications.Add(new ScanPublication(
+                        ScanChannelKind.Height,
+                        ScanChannels.BodySubTopic(cap.BodyName),
+                        ScanGrids.BuildHeightPayload(ScanGrids.Width, ScanGrids.Height, cap.HeightGrid.Value),
+                        cap.Ut));
+                }
 
                 publications.Add(new ScanPublication(
                     ScanChannelKind.Biome,
@@ -127,7 +133,14 @@ namespace Gonogo.ScansatUplink
                 lastPackedByBodyType[key] = packed;
 
                 var subTopic = ScanChannels.BodyTypeSubTopic(cap.BodyName, typeBit);
-                var percent = cap.CoveragePercents.TryGetValue(typeBit, out var p) ? p : 0.0;
+                // Null, not 0.0, for a type whose percentage the capture did not
+                // get: either SCANsat refused the read or the capture carried no
+                // entry for the type at all. 0% is the most consequential figure
+                // this Uplink states, it means "this body is untouched", and an
+                // operator who reads it plans a survey that may already be done.
+                // The mask keyframe below still publishes: the plane changed, so
+                // the bits ARE readable, it is only the scalar that is missing.
+                double? percent = cap.CoveragePercents.TryGetValue(typeBit, out var p) ? p : null;
 
                 // coverage.<body>.<type> is the SCALAR percentage; mask is the
                 // full packed keyframe: matching the pre-split wire shape.

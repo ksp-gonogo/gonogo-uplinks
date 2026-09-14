@@ -253,8 +253,18 @@ function ScanningComponent({
                   <Card key={v.vesselId}>
                     <Stack gap="xs">
                       <Cluster>
-                        <Text size="sm" tone="default">
-                          {v.vesselName || "(unnamed)"}
+                        {/* Three answers, not two: a name, a craft the player
+                            left unnamed, and a craft whose name was never read
+                            because SCANsat is tracking a KSP Vessel that does
+                            not resolve. The third used to arrive as "" and be
+                            drawn as "(unnamed)". */}
+                        <Text
+                          size="sm"
+                          tone={v.vesselName == null ? "muted" : "default"}
+                        >
+                          {v.vesselName == null
+                            ? NULL_DISPLAY
+                            : v.vesselName || "(unnamed)"}
                         </Text>
                         <Text size="xs" tone="muted">
                           {v.body}
@@ -373,18 +383,34 @@ function CoverageRow({
     "data",
     `scansat.coverage.${bodyName}.${scanType}`,
   );
-  const coverage = typeof pct === "number" ? pct : 0;
+  // Null, not 0. "0% scanned" says this body is untouched, and it is the
+  // figure an operator plans a whole mapping campaign around: read off a scan
+  // type whose percentage never arrived, it sends them to fly a survey that
+  // was already done.
+  const coverage = typeof pct === "number" ? pct : null;
   return (
     <Grid cols="120px 1fr 60px" gap="md">
       <Text size="xs" tone="default">
         {SCAN_TYPE_LABELS[scanType]}
       </Text>
-      <ProgressBar
-        value={coverage}
-        ariaLabel={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
-      />
+      {/* No bar for an unread coverage: `ProgressBar` takes a number, and the
+          only number available would be the 0 that reads as "nothing scanned
+          here". An empty cell says nothing, which is the truth. */}
+      {coverage == null ? (
+        <Text size="xs" tone="muted">
+          {NULL_DISPLAY}
+        </Text>
+      ) : (
+        <ProgressBar
+          value={coverage}
+          ariaLabel={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
+        />
+      )}
       <Text size="xs" tone="muted">
-        <Unit value={value("%", coverage)} decimals={1} />
+        <Unit
+          value={coverage == null ? null : value("%", coverage)}
+          decimals={1}
+        />
       </Text>
     </Grid>
   );

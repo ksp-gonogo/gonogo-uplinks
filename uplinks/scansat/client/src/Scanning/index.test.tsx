@@ -8,6 +8,7 @@ import {
   TelemetryProvider,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
   visibleText,
@@ -174,6 +175,65 @@ describe("ScanningComponent", () => {
     expect(visibleText()).toContain("56.7 %");
     expect(visibleText()).toContain("78.9 %");
     expect(visibleText()).toContain("91.0 %");
+  });
+
+  it("draws no coverage bar and no 0 % for a scan type whose coverage was not read", async () => {
+    // The mod publishes null on scansat.coverage.<body>.<type> when SCANsat
+    // refused the percentage. Drawn as 0 % with an empty bar it says this body
+    // is untouched, and that is the figure an operator plans a mapping
+    // campaign around: they fly a survey that may already be done.
+    renderScanning(<ScanningComponent config={{}} id="scanning" />);
+    act(() => {
+      transport.emit("scansat.available", true);
+      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
+    });
+    await screen.findByText(/Coverage: Kerbin/);
+    act(() => {
+      // AltimetryHiRes unread; AltimetryLoRes a real zero, so the two answers
+      // must not render alike.
+      transport.emit("scansat.coverage.Kerbin.2", null);
+      transport.emit("scansat.coverage.Kerbin.1", 0);
+      transport.emit("scansat.coverage.Kerbin.8", 56.7);
+      transport.emit("scansat.coverage.Kerbin.16", 78.9);
+      transport.emit("scansat.coverage.Kerbin.256", 91.0);
+    });
+
+    await waitFor(() => expect(visibleText()).toContain("56.7 %"));
+    // A bar per readable type, and none for the one nobody read.
+    expect(screen.getAllByRole("progressbar")).toHaveLength(4);
+    expect(
+      screen.queryByRole("progressbar", {
+        name: /Altimetry \(Hi\) coverage: Kerbin/,
+      }),
+    ).toBeNull();
+    // The real zero still reads as a zero, and there is only the one.
+    expect(visibleText().match(/0\.0 %/g) ?? []).toHaveLength(1);
+  });
+
+  it("draws the null token for a tracked vessel whose name was not read", async () => {
+    // SCANsat tracks unloaded craft, so a Known_Vessels entry can carry a KSP
+    // Vessel that does not resolve and therefore no name. Arriving as "" the
+    // widget drew "(unnamed)" and told the operator the craft carries no name.
+    renderScanning(<ScanningComponent config={{}} id="scanning" />);
+    act(() => {
+      transport.emit("scansat.available", true);
+      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
+    });
+    await screen.findByText(/Coverage: Kerbin/);
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.scanningVessels")).toBe(true),
+    );
+    act(() => {
+      transport.emit("scansat.scanningVessels", [vessel({ vesselName: null })]);
+    });
+
+    // The vessel IS published and its scanners DID read, so the card renders:
+    // it is only the name that is absent.
+    await waitFor(() => expect(visibleText()).toContain("FoV 5.0°"));
+    expect(screen.queryByText("(unnamed)")).toBeNull();
+    expect(visibleText()).toContain(NULL_DISPLAY);
   });
 
   it("renders anomaly names according to discovery state", async () => {

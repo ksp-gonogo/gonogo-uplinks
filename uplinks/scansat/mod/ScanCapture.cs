@@ -35,8 +35,14 @@ namespace Gonogo.ScansatUplink
         /// Per client SCANtype bit -> coverage PERCENTAGE [0,100]
         /// (<c>SCANUtil.GetCoverage</c>), captured on the main thread. Null iff
         /// <see cref="Coverage"/> is null.
+        ///
+        /// <para>A per-type value is itself nullable, for the type whose
+        /// percentage SCANsat refused to answer. "0% scanned" is the figure an
+        /// operator plans a whole mapping campaign around, and one substituted
+        /// for a read that failed says the body is untouched: they fly a survey
+        /// that was already done.</para>
         /// </summary>
-        public Dictionary<short, double>? CoveragePercents;
+        public Dictionary<short, double?>? CoveragePercents;
 
         /// <summary>
         /// True the FIRST time this body is visited: the (expensive, ~64800-
@@ -47,8 +53,14 @@ namespace Gonogo.ScansatUplink
         /// </summary>
         public bool IncludeHeightBiome;
 
-        /// <summary>Valid iff <see cref="IncludeHeightBiome"/>: the packed stock-PQS elevation grid.</summary>
-        public ScanGrids.HeightGrid HeightGrid;
+        /// <summary>
+        /// Valid iff <see cref="IncludeHeightBiome"/>: the packed stock-PQS
+        /// elevation grid, or null when the body's PQS controller could not be
+        /// reached (see <see cref="ScanGrids.BuildHeights"/> for why no grid
+        /// beats a flat one). The biome keyframe beside it still publishes: a
+        /// byte-per-cell index grid CAN spell an unread cell, as 0xFF.
+        /// </summary>
+        public ScanGrids.HeightGrid? HeightGrid;
 
         /// <summary>Valid iff <see cref="IncludeHeightBiome"/>: the body's biome legend entries.</summary>
         public List<object?>? BiomeEntries;

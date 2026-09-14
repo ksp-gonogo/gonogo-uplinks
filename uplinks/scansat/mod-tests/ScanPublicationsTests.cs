@@ -36,7 +36,7 @@ namespace GonogoScansatUplink.Tests
                 Ut = 5.0,
                 BodyName = "Kerbin",
                 Coverage = coverage,
-                CoveragePercents = new Dictionary<short, double>
+                CoveragePercents = new Dictionary<short, double?>
                 {
                     [1] = 12.5,
                     [2] = 0.0,
@@ -205,7 +205,7 @@ namespace GonogoScansatUplink.Tests
                 Ut = 1.0,
                 BodyName = "Kerbin",
                 Coverage = coverage,
-                CoveragePercents = new Dictionary<short, double> { [1] = 5.0, [2] = 0.0, [8] = 0.0, [16] = 0.0, [128] = 0.0, [256] = 0.0 },
+                CoveragePercents = new Dictionary<short, double?> { [1] = 5.0, [2] = 0.0, [8] = 0.0, [16] = 0.0, [128] = 0.0, [256] = 0.0 },
                 IncludeHeightBiome = false,
             };
 
@@ -215,6 +215,62 @@ namespace GonogoScansatUplink.Tests
             var payload = Assert.IsType<Dictionary<string, object?>>(maskPub.Payload);
             Assert.Equal(10, payload["width"]);
             Assert.Equal(5, payload["height"]);
+        }
+
+        [Fact]
+        public void ATypeWhoseCoveragePercentWasNotReadPublishesNullNotZero()
+        {
+            // SCANUtil.GetCoverage threw for AltimetryLoRes(1) and the capture
+            // carried null for it. 0.0 on this channel says the body is
+            // untouched, which is the reading an operator plans a mapping
+            // campaign around: they fly a survey that may already be done.
+            var coverage = new short[NativeCoverageWidth, NativeCoverageHeight];
+            coverage[0, 0] = 1 | 8;
+            var capture = BuildCapture(coverage, includeHeightBiome: false);
+            capture.CoveragePercents![1] = null;
+
+            var publications = ScanPublications.Compute(
+                capture, new Dictionary<string, ulong>(), new Dictionary<string, byte[]>());
+
+            var pub = Assert.Single(publications, p => p.Kind == ScanChannelKind.Coverage && p.SubTopic == "Kerbin.1");
+            Assert.Null(pub.Payload);
+            // The mask beside it still goes: the plane changed, so the BITS were
+            // readable, it is only the scalar that was not.
+            Assert.Contains(publications, p => p.Kind == ScanChannelKind.Mask && p.SubTopic == "Kerbin.1");
+        }
+
+        [Fact]
+        public void ATypeMissingFromTheCaptureEntirelyPublishesNullNotZero()
+        {
+            var coverage = new short[NativeCoverageWidth, NativeCoverageHeight];
+            coverage[0, 0] = 1;
+            var capture = BuildCapture(coverage, includeHeightBiome: false);
+            capture.CoveragePercents!.Remove(1);
+
+            var publications = ScanPublications.Compute(
+                capture, new Dictionary<string, ulong>(), new Dictionary<string, byte[]>());
+
+            var pub = Assert.Single(publications, p => p.Kind == ScanChannelKind.Coverage && p.SubTopic == "Kerbin.1");
+            Assert.Null(pub.Payload);
+        }
+
+        [Fact]
+        public void ABodyWithNoReadableHeightGridPublishesNoHeightKeyframe()
+        {
+            // The PQS controller was unreachable, so ScanGrids.BuildHeights
+            // abandoned the grid. A payload built from a default HeightGrid
+            // would be a quarter-million cells of sea level, drawn as terrain.
+            var coverage = new short[NativeCoverageWidth, NativeCoverageHeight];
+            var capture = BuildCapture(coverage, includeHeightBiome: true);
+            capture.HeightGrid = null;
+
+            var publications = ScanPublications.Compute(
+                capture, new Dictionary<string, ulong>(), new Dictionary<string, byte[]>());
+
+            Assert.DoesNotContain(publications, p => p.Kind == ScanChannelKind.Height);
+            // Biome still publishes: a byte-per-cell index grid CAN spell an
+            // unread cell, as 0xFF, so it is not blocked by the height failure.
+            Assert.Contains(publications, p => p.Kind == ScanChannelKind.Biome);
         }
     }
 }

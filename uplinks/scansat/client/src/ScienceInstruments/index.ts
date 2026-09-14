@@ -49,16 +49,22 @@ export type ScienceInstrumentTopics = ContributionTopics<
  * Parses `scansat.science` (`GonogoScansatUplink.ScanScienceEntry[]`, built by
  * `mod/GonogoScansatUplink/ScanScience.cs`) into the slot's row shape. Field
  * names already match it 1:1 (the mod-side builder deliberately names them to
- * match), so this is a straight nullable-wire -> plain-boolean normalisation:
- * `bool?` -> `=== true`, missing `partTitle`/`expId` -> a safe fallback,
- * entries with no `partId` skipped.
+ * match), so the flags are read straight and the strings fall back.
  *
- * The slot wants plain booleans rather than the wire's optionals, and this
- * Uplink can honour that outright: `deployed` and `inoperable` are always
- * `false` on the wire and `rerunnable` is always `true`, because a SCANsat map
- * experiment has no deploy or inoperable lifecycle and SCANsat hard-codes
- * `IsRerunnable()` (see `ScanScience.cs`'s own doc comment). So a SCANsat row's
- * DEPLOYED/INOPERABLE/ONE-SHOT badges never show; only DATA does.
+ * The slot's four lifecycle flags are plain booleans with no third state: the
+ * host draws a badge per flag, so there is nowhere on a row to put "nobody
+ * read this". That is what made `=== true` a lie by construction rather than a
+ * convenience, because it turns an absent flag into a definite OFF, and an
+ * absent `rerunnable` in particular flips a SCANsat scanner's badge to
+ * ONE-SHOT. So an entry that does not carry all four as real booleans is not
+ * an entry in the shape this Uplink speaks, and the whole FRAME declines: no
+ * row fabricates a badge, and no row goes quietly missing either, since a
+ * short list drawn as complete is the same defect one rung along and the host
+ * counts these rows in its own header.
+ *
+ * `null` is therefore "this frame is not readable", the answer this function
+ * already gives for a payload that is not a list, and it stays distinct from
+ * the empty list that means "this vessel carries no SCANsat scanners".
  *
  * Takes `unknown` rather than the decoded payload type because this is the one
  * place this Uplink decides what a malformed frame means, and a shape assertion
@@ -69,18 +75,27 @@ export function parseScanScience(raw: unknown): InstrumentEntry[] | null {
   if (!Array.isArray(raw)) return null;
   const out: InstrumentEntry[] = [];
   for (const entry of raw) {
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
     const e = entry as Record<string, unknown>;
-    const partId = typeof e.partId === "string" ? e.partId : null;
-    if (partId === null) continue;
+    // partId is the row's React key and the host's identity for it, so an
+    // entry without one cannot be drawn at all.
+    if (typeof e.partId !== "string") return null;
+    if (
+      typeof e.deployed !== "boolean" ||
+      typeof e.hasData !== "boolean" ||
+      typeof e.rerunnable !== "boolean" ||
+      typeof e.inoperable !== "boolean"
+    ) {
+      return null;
+    }
     out.push({
-      partId,
+      partId: e.partId,
       partTitle: typeof e.partTitle === "string" ? e.partTitle : "Unknown part",
       expId: typeof e.expId === "string" ? e.expId : "",
-      deployed: e.deployed === true,
-      hasData: e.hasData === true,
-      rerunnable: e.rerunnable === true,
-      inoperable: e.inoperable === true,
+      deployed: e.deployed,
+      hasData: e.hasData,
+      rerunnable: e.rerunnable,
+      inoperable: e.inoperable,
     });
   }
   return out;

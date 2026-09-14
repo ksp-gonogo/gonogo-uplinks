@@ -172,6 +172,28 @@ namespace GonogoScansatUplink.Tests
             Assert.Single(Assert.IsType<List<object?>>(wire["sensors"]));
         }
 
+        // The same unresolvable KSP Vessel that costs the altitude above also
+        // costs the NAME, and an empty string is a different claim: the widget
+        // draws "" as "(unnamed)" and tells the operator the craft carries no
+        // name, when in truth nobody read one.
+        [Fact]
+        public void UnreadVesselName_EmitsNullRatherThanABlankName()
+        {
+            var sensors = new List<ScanningVessels.SensorInput>
+            {
+                new ScanningVessels.SensorInput(type: 2, fov: 5, minAlt: 5000, maxAlt: 500_000, bestAlt: 250_000, inRange: true, bestRange: true),
+            };
+            var wire = ScanningVessels.Build(
+                "scn-5", null, "Kerbin",
+                subLatitude: 12.0, subLongitude: 35.0, altitude: null,
+                sensors: sensors,
+                bodyRadius: 600_000, bodySoiRadius: 84_000_000, homeRadius: 600_000,
+                trackColorR: 0, trackColorG: 255, trackColorB: 200, trackColorA: 255);
+
+            Assert.True(wire.ContainsKey("vesselName"));
+            Assert.Null(wire["vesselName"]);
+        }
+
         // homeRadius is getFOV's surfScale numerator. A substituted 0 does not
         // read as zero anywhere: getFOV clamps surfScale up to 1, so the swath
         // came out at the home body's scale on every body, ~1.7x too narrow at

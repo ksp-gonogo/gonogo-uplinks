@@ -51,8 +51,17 @@ namespace Gonogo.ScansatUplink
         /// expected to already apply the §0E convention
         /// (<c>Round(GetSurfaceHeight(rad) - pqsController.radius, 1)</c>);
         /// this method only clamps to Int16 range and tracks min/max.
+        ///
+        /// <para>A sampler that returns <c>null</c> for any cell abandons the
+        /// whole grid and this returns <c>null</c>. A packed Int16 array has no
+        /// spelling for "this cell's elevation was never read", so the only
+        /// alternative is a substituted 0, and a body whose PQS controller
+        /// could not be reached would publish a quarter-million cells of sea
+        /// level: a perfectly flat world, drawn as terrain, with nothing saying
+        /// it was invented. No grid at all is the one answer this format can
+        /// carry, and the caller retries it on the next visit.</para>
         /// </summary>
-        public static HeightGrid BuildHeights(int width, int height, Func<double, double, double> sampleMetres)
+        public static HeightGrid? BuildHeights(int width, int height, Func<double, double, double?> sampleMetres)
         {
             if (sampleMetres == null) throw new ArgumentNullException(nameof(sampleMetres));
 
@@ -68,8 +77,12 @@ namespace Gonogo.ScansatUplink
                 {
                     double lon = ilon * degPerCellLon - 180.0;
                     double lat = ilat * degPerCellLat - 90.0;
-                    double m = sampleMetres(lon, lat);
-                    short clamped = ClampToInt16(m);
+                    double? m = sampleMetres(lon, lat);
+                    if (!m.HasValue)
+                    {
+                        return null;
+                    }
+                    short clamped = ClampToInt16(m.Value);
                     metres[ilon * height + ilat] = clamped;
                     if (clamped < min) min = clamped;
                     if (clamped > max) max = clamped;

@@ -103,22 +103,37 @@ function CoverageRow({
     "data",
     `scansat.coverage.${bodyName}.${scanType}`,
   );
-  const coverage = typeof pct === "number" ? pct : 0;
-  const filled = Math.max(0, Math.min(100, coverage));
+  // Null, not 0. "0% scanned" says this body is untouched, and it is the
+  // figure an operator plans a whole mapping campaign around: read off a scan
+  // type whose percentage never arrived, it sends them to fly a survey that
+  // was already done.
+  const coverage = typeof pct === "number" ? pct : null;
+  const filled = coverage == null ? null : Math.max(0, Math.min(100, coverage));
   return (
     <div style={COVERAGE_GRID}>
       <span style={LABEL}>{label}</span>
       {/* Track: a stadium rail with a filled sub-bar. The fill was a
           `::after` pseudo in styled-components; as an inline style it becomes
           a real child element instead (inline `style` can't express a
-          pseudo). */}
-      <div style={TRACK}>
-        <div style={{ ...TRACK_FILL, width: `${filled}%` }} />
-      </div>
+          pseudo). An unread coverage draws NO rail: an empty rail is exactly
+          what a real 0% renders, so drawing one would put the absent reading
+          straight back at the value it is not. The empty cell holds the
+          column. */}
+      {filled == null ? (
+        <div />
+      ) : (
+        <div style={TRACK}>
+          <div style={{ ...TRACK_FILL, width: `${filled}%` }} />
+        </div>
+      )}
       <span style={COVERAGE_VALUE}>
         {/* The wire carries 0..100, so the unit is `%` and not `ratio`:
-            handing a percent to the ratio kind would multiply it again. */}
-        <Unit value={value("%", coverage)} decimals={0} />
+            handing a percent to the ratio kind would multiply it again.
+            `<Unit>` draws its own null token for an absent value. */}
+        <Unit
+          value={coverage == null ? null : value("%", coverage)}
+          decimals={0}
+        />
       </span>
       {range?.bestRange ? (
         <span style={{ ...CHIP, color: "var(--color-status-go-fg)" }}>

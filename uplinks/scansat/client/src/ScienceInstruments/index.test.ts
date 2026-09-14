@@ -29,29 +29,29 @@ describe("parseScanScience", () => {
     expect(parseScanScience([SCAN_ENTRY])).toEqual([SCAN_ENTRY]);
   });
 
-  it("reads a missing flag as false rather than as unknown", () => {
-    // The slot takes plain booleans on purpose: the host draws a badge per flag
-    // and has no third state to draw, so an absent flag has to be decided here.
-    expect(parseScanScience([{ partId: "7" }])).toEqual([
-      {
-        partId: "7",
-        partTitle: "Unknown part",
-        expId: "",
-        deployed: false,
-        hasData: false,
-        rerunnable: false,
-        inoperable: false,
-      },
-    ]);
+  it("declines the frame rather than reading a missing flag as false", () => {
+    // The slot takes plain booleans and the host draws a badge per flag, so a
+    // row has no third state for "nobody read this". `=== true` decided it as
+    // OFF, and an absent `rerunnable` in particular drew a ONE-SHOT badge on a
+    // scanner SCANsat hard-codes as rerunnable. No row can say it, so the whole
+    // frame declines.
+    expect(parseScanScience([{ partId: "7" }])).toBeNull();
   });
 
-  it("skips an entry with no partId", () => {
-    // partId is the row's React key and the host's identity for it. An entry
-    // without one cannot be drawn, and inventing a key would make two of them
-    // collide.
-    expect(parseScanScience([{ partTitle: "Nameless" }, SCAN_ENTRY])).toEqual([
-      SCAN_ENTRY,
-    ]);
+  it("declines the frame rather than reading a non-boolean flag as false", () => {
+    expect(parseScanScience([{ ...SCAN_ENTRY, rerunnable: "yes" }])).toBeNull();
+  });
+
+  it("declines the frame rather than dropping an entry with no partId", () => {
+    // partId is the row's React key and the host's identity for it, so an
+    // entry without one cannot be drawn. Skipping it handed the host a SHORT
+    // list, which it counts in its own header as a complete one: the operator
+    // could not tell one scanner from two of which one was unreadable.
+    expect(parseScanScience([{ partTitle: "Nameless" }, SCAN_ENTRY])).toBeNull();
+  });
+
+  it("declines the frame rather than dropping an entry that is not an object", () => {
+    expect(parseScanScience([SCAN_ENTRY, 42])).toBeNull();
   });
 
   it("contributes nothing for a frame that is not a list", () => {

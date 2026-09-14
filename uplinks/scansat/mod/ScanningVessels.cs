@@ -60,6 +60,14 @@ namespace Gonogo.ScansatUplink
         /// UNREAD altitude or home radius, which are two of the FoV's inputs:
         /// see the note on those parameters.
         /// </summary>
+        /// <param name="vesselName">
+        /// v.vessel.vesselName, or <c>null</c> when SCANsat is tracking a
+        /// vessel whose KSP <c>Vessel</c> is not resolvable: the same cause as
+        /// an absent <paramref name="altitude"/>, and it takes the same answer.
+        /// An empty string was a DIFFERENT claim, that the craft carries no
+        /// name, and the widget drew it as "(unnamed)" for a craft whose name
+        /// had simply never been read.
+        /// </param>
         /// <param name="altitude">
         /// v.vessel.altitude, or <c>null</c> when SCANsat is tracking a vessel
         /// whose KSP <c>Vessel</c> is not resolvable. Emitted as-is, so the
@@ -78,7 +86,7 @@ namespace Gonogo.ScansatUplink
         /// </param>
         public static Dictionary<string, object?> Build(
             string vesselId,
-            string vesselName,
+            string? vesselName,
             string bodyName,
             double subLatitude,
             double subLongitude,

@@ -142,7 +142,14 @@ export interface SCANSensorEntry {
  */
 export interface SCANScanningVessel {
   vesselId: string;
-  vesselName: string;
+  /**
+   * Optional and nullable to match the generated `ScanningVesselEntry`, which
+   * is the authority on the wire shape. Null when SCANsat is tracking a vessel
+   * whose KSP `Vessel` does not resolve, the same cause as an absent
+   * `altitude`: a name nobody read, which is a different answer from a craft
+   * the player left unnamed.
+   */
+  vesselName?: string | null;
   body: string;
   /**
    * The vessel's sub-point. Optional and nullable to match the generated

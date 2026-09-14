@@ -21,8 +21,8 @@ namespace GonogoScansatUplink.Tests
             // 360x180, to prove the formula is width/height-driven, not a
             // hardcoded "ilon-180" 1-degree-per-cell shortcut.
             int w = 4, h = 2;
-            Func<double, double, double> encode = (lon, lat) => lon * 10 + lat;
-            var grid = ScanGrids.BuildHeights(w, h, encode);
+            Func<double, double, double?> encode = (lon, lat) => lon * 10 + lat;
+            var grid = ScanGrids.BuildHeights(w, h, encode)!.Value;
 
             double degPerCellLon = 360.0 / w; // 90.0
             double degPerCellLat = 180.0 / h; // 90.0
@@ -32,7 +32,7 @@ namespace GonogoScansatUplink.Tests
                 {
                     double lon = ilon * degPerCellLon - 180.0;
                     double lat = ilat * degPerCellLat - 90.0;
-                    Assert.Equal((short)Math.Round(encode(lon, lat)), grid.Metres[ilon * h + ilat]);
+                    Assert.Equal((short)Math.Round(encode(lon, lat)!.Value), grid.Metres[ilon * h + ilat]);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace GonogoScansatUplink.Tests
             // width=4 -> 90 deg/cell, so lon walks -180,-90,0,90 (NOT
             // integer-degree-contiguous: updated for the width-driven
             // degPerCell formula, see BuildHeightsWalksCellsAtDegPerCell...).
-            var grid = ScanGrids.BuildHeights(4, 2, (lon, lat) => lon);
+            var grid = ScanGrids.BuildHeights(4, 2, (lon, lat) => lon)!.Value;
             Assert.Equal((short)-180, grid.MinMetres);
             Assert.Equal((short)90, grid.MaxMetres);
         }
@@ -77,7 +77,7 @@ namespace GonogoScansatUplink.Tests
         [Fact]
         public void BuildHeightsClampsToInt16AndRounds()
         {
-            var grid = ScanGrids.BuildHeights(1, 1, (lon, lat) => 40000.6); // beyond Int16 max
+            var grid = ScanGrids.BuildHeights(1, 1, (lon, lat) => 40000.6)!.Value; // beyond Int16 max
             Assert.Equal(short.MaxValue, grid.Metres[0]);
         }
 
@@ -118,6 +118,25 @@ namespace GonogoScansatUplink.Tests
             Assert.Equal(180, payload["height"]);
             Assert.Equal(256, payload["type"]);
             Assert.Equal(Convert.ToBase64String(packed), payload["bits"]);
+        }
+
+        [Fact]
+        public void BuildHeightsAbandonsTheGridWhenNoCellsElevationWasRead()
+        {
+            // A body with no PQS controller: the sampler reads no cell at all.
+            // A packed Int16 array has no spelling for an unread cell, so a
+            // substituted 0 put every cell at sea level and published a flat
+            // world as a completed terrain survey.
+            Assert.Null(ScanGrids.BuildHeights(4, 2, (lon, lat) => null));
+        }
+
+        [Fact]
+        public void BuildHeightsAbandonsTheGridOnASingleUnreadCell()
+        {
+            // width=4 -> lon walks -180,-90,0,90; only the third column fails.
+            // One hole makes the grid a partial reading, and the wire carries no
+            // hole, so the keyframe is withheld whole rather than patched.
+            Assert.Null(ScanGrids.BuildHeights(4, 2, (lon, lat) => lon == 0.0 ? (double?)null : lon));
         }
 
         [Fact]

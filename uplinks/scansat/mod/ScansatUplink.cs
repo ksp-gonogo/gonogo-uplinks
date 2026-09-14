@@ -428,21 +428,30 @@ namespace Gonogo.ScansatUplink
                         var (sLon, sLat) = TerrainTiering.ResolveSampleCoordinate(lon, lat, hiRes, loRes);
                         return SampleElevation(body, sLon, sLat);
                     });
-                    var biomeEntries = BuildBiomeEntries(body);
-                    var biomeIndices = ScanGrids.BuildBiomeIndices(
-                        ScanGrids.Width, ScanGrids.Height, (lon, lat) => SampleBiomeIndex(body, lon, lat));
+                    // No height grid means the body's PQS controller was not
+                    // reachable, which is one of the not-ready failures the
+                    // once-per-body gate above is meant to survive: leave the
+                    // body unmarked so the whole keyframe is retried, rather
+                    // than publishing a biome legend beside no terrain and
+                    // never coming back for it.
+                    if (heightGrid.HasValue)
+                    {
+                        var biomeEntries = BuildBiomeEntries(body);
+                        var biomeIndices = ScanGrids.BuildBiomeIndices(
+                            ScanGrids.Width, ScanGrids.Height, (lon, lat) => SampleBiomeIndex(body, lon, lat));
 
-                    capture.IncludeHeightBiome = true;
-                    capture.HeightGrid = heightGrid;
-                    capture.BiomeEntries = biomeEntries;
-                    capture.BiomeIndices = biomeIndices;
-                    _heightBiomeCapturedBodies.Add(bodyName);
+                        capture.IncludeHeightBiome = true;
+                        capture.HeightGrid = heightGrid;
+                        capture.BiomeEntries = biomeEntries;
+                        capture.BiomeIndices = biomeIndices;
+                        _heightBiomeCapturedBodies.Add(bodyName);
+                    }
                 }
 
                 if (TryGetBodyCoverage(body, out var coverage))
                 {
                     capture.Coverage = coverage;
-                    var percents = new Dictionary<short, double>();
+                    var percents = new Dictionary<short, double?>();
                     foreach (var typeBit in ScanChannels.ClientScanTypes)
                     {
                         percents[typeBit] = GetCoveragePercent(typeBit, body);
@@ -534,19 +543,29 @@ namespace Gonogo.ScansatUplink
             var modules = vessel.FindPartModulesImplementing<SCANexperiment>();
             if (modules == null)
             {
-                return capture;
+                // Skip the tick, do not publish an empty capture. A capture with
+                // no entries contributes NO instrument rows to Experiments,
+                // which the operator reads as "this vessel carries no SCANsat
+                // scanners" for a vessel whose part modules we simply could not
+                // enumerate. The last published value standing is the honest
+                // answer, and the next tick retries.
+                return null;
             }
 
             foreach (var exp in modules)
             {
+                // Same rule, per module: the contributed list has no spelling
+                // for "one more scanner here that we could not read", so a
+                // `continue` hands Experiments a SHORT complement and the
+                // widget counts it in its header as a complete one.
                 if (exp == null)
                 {
-                    continue;
+                    return null;
                 }
                 var part = exp.part;
                 if (part == null)
                 {
-                    continue;
+                    return null;
                 }
                 capture.Entries.Add(ScanScience.Build(
                     part.flightID.ToString(),
@@ -634,38 +653,59 @@ namespace Gonogo.ScansatUplink
         /// Reads <c>SCANdata.Anomalies</c> for the body, SCANsat's own
         /// per-anomaly Known/Detail re-derivation off the coverage grid
         /// already happened by the time this property returns, so this is a
-        /// pure read + shape, no computation. Returns an empty list (never
-        /// null) when the body has no SCANdata yet, matching
-        /// <see cref="TryGetBodyCoverage"/>'s fail-soft convention.
+        /// pure read + shape, no computation.
+        ///
+        /// <para>Null when the array could not be read at all, and the caller
+        /// publishes no anomalies channel for the tick. It used to return an
+        /// EMPTY list, which the client draws as "None known." for the body: a
+        /// definite claim that this body has no anomalies. The two are not the
+        /// same answer, and this method only runs once
+        /// <see cref="TryGetBodyCoverage"/> has already proved SCANsat HAS data
+        /// for the body, so an unreadable array here is a read failure rather
+        /// than a never-scanned body.</para>
+        ///
+        /// <para>One unreadable element takes the whole array with it, for the
+        /// same reason: a short list presented as complete is indistinguishable
+        /// from a complete one, and the wire array has no per-element spelling
+        /// for "there is one more here that we could not read".</para>
         /// </summary>
-        private static List<object?> BuildAnomalies(CelestialBody body)
+        private static List<object?>? BuildAnomalies(CelestialBody body)
         {
             var data = SCANUtil.getData(body);
             var live = data?.Anomalies;
             if (live == null)
             {
-                return new List<object?>();
+                return null;
             }
             var inputs = new List<ScanAnomalies.AnomalyInput>(live.Length);
             foreach (var a in live)
             {
-                if (a == null) continue;
+                if (a == null)
+                {
+                    return null;
+                }
                 inputs.Add(new ScanAnomalies.AnomalyInput(a.Name ?? "", a.Longitude, a.Latitude, a.Known, a.Detail));
             }
             return ScanAnomalies.Build(inputs);
         }
 
-        private static double GetCoveragePercent(short scanTypeBit, CelestialBody body)
+        /// <summary>
+        /// SCANUtil.GetCoverage(int SCANtype, CelestialBody) -> double [0,100]
+        /// (SCANUtil.cs:163). Null when SCANsat throws on an odd type: 0.0 was
+        /// the fail-soft, and 0% is not a quiet value here. It is the figure an
+        /// operator plans a mapping campaign around, and it says this body is
+        /// untouched, so a substituted one sends them to fly a survey that may
+        /// already be done.
+        /// </summary>
+        private static double? GetCoveragePercent(short scanTypeBit, CelestialBody body)
         {
-            // SCANUtil.GetCoverage(int SCANtype, CelestialBody) -> double [0,100]
-            // (SCANUtil.cs:163). Fail-soft to 0 if SCANsat throws on an odd type.
             try
             {
                 return SCANUtil.GetCoverage(scanTypeBit, body);
             }
             catch
             {
-                return 0.0;
+                return null;
             }
         }
 
@@ -674,13 +714,19 @@ namespace Gonogo.ScansatUplink
         /// SCANUtil.getElevation, SCANUtil.cs:774-784): axis order
         /// x=cos(lat)cos(lon), y=sin(lat), z=cos(lat)sin(lon); subtract
         /// <c>pqsController.radius</c>; round to 0.1 m. SCANsat-independent.
+        ///
+        /// <para>Null when the body has no PQS controller, which is a whole-body
+        /// condition rather than a per-cell one: 0.0 put every cell of the grid
+        /// at sea level and drew a flat world as if it had been surveyed. The
+        /// grid builder abandons the keyframe on a null and the capture retries
+        /// it on the next visit.</para>
         /// </summary>
-        private static double SampleElevation(CelestialBody body, double lon, double lat)
+        private static double? SampleElevation(CelestialBody body, double lon, double lat)
         {
             var pqs = body.pqsController;
             if (pqs == null)
             {
-                return 0.0;
+                return null;
             }
             double rlon = Mathf.Deg2Rad * lon;
             double rlat = Mathf.Deg2Rad * lat;
@@ -785,7 +831,17 @@ namespace Gonogo.ScansatUplink
             var sensors = new List<ScanningVessels.SensorInput>(sensorList.Count);
             foreach (var s in sensorList)
             {
-                if (s == null) continue;
+                // One unreadable sensor takes the whole vessel with it. The
+                // wire's sensor array has no spelling for "one more here that
+                // we could not read", so a `continue` published a SHORT
+                // complement as a complete one, and it is not only the rows: the
+                // ground-track swath is DERIVED from this list, so a dropped
+                // sensor paints a footprint on the map narrower than the one
+                // SCANsat is actually scanning with.
+                if (s == null)
+                {
+                    return null;
+                }
                 sensors.Add(new ScanningVessels.SensorInput(
                     (int)s.sensor,
                     s.fov,
@@ -802,7 +858,12 @@ namespace Gonogo.ScansatUplink
             var tc = v.trackColor;
             return ScanningVessels.Build(
                 v.id.ToString(),
-                v.vessel?.vesselName ?? "",
+                // Null, not "", for the same reason and from the same cause as
+                // the altitude below: a Known_Vessels entry whose KSP Vessel
+                // does not resolve has a name nobody read. Published blank, the
+                // widget drew "(unnamed)" and told the operator the craft has no
+                // name.
+                v.vessel?.vesselName,
                 body.name,
                 v.latitude,
                 v.longitude,
