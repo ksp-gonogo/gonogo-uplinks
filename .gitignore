@@ -35,3 +35,7 @@ vendor/devkit/
 # would carry whichever machine's DevPath last built it.
 uplinks/*/mod/ClientSource.g.cs
 uplinks/*/mod/ExpectedClientHash.g.cs
+
+# The reference-set checkouts CI makes beside the tree: KSP's managed assemblies
+# and the gonogo commit the contract is built from.
+.refs/

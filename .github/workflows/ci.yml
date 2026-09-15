@@ -49,6 +49,10 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
     uses: ./.github/workflows/_uplink-tasks.yml
+    # A reusable workflow inherits no secret by default, and an omitted secret
+    # arrives as the empty string rather than as an error, so without this the
+    # reference-set checkout would 404 on a repository that is plainly there.
+    secrets: inherit
     with:
       name: ${{ matrix.name }}
       id: ${{ matrix.id }}

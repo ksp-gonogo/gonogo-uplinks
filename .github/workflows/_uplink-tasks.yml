@@ -29,20 +29,95 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "10.0.x" }
+
       # The reference set an Uplink compiles against: KSP's own managed
-      # assemblies plus the GameData of the mod this Uplink wraps. Neither is
-      # ours to redistribute, so both arrive from a private checkout and the
-      # build fails loudly rather than dropping a reference: MSB3245 is a
-      # WARNING, so a HintPath that does not exist takes the assembly off the
-      # compile surface and the build carries on and exits 0.
+      # assemblies, the GameData of the mod this Uplink wraps, and the Gonogo
+      # contract and devkit. None of it is ours to redistribute and all four
+      # directories are gitignored, so they are materialised here and then
+      # CHECKED before anything compiles: MSB3245 is a WARNING, so a HintPath
+      # that does not exist takes the assembly off the compile surface and the
+      # build carries on and exits 0.
+      #
+      # Asked as its own step, before the checkout that would consume it,
+      # because `actions/checkout` given an empty token reports a 404 on a
+      # private repository and a 404 reads as "no such repo" rather than "no
+      # credential". The commonest cause is not a missing secret at all: this is
+      # a reusable workflow, and a caller that omits `secrets: inherit` hands
+      # every secret through as the empty string.
+      - name: Reference set credential
+        env:
+          KSP_MANAGED_TOKEN: ${{ secrets.KSP_MANAGED_TOKEN }}
+        run: |
+          if [ -z "$KSP_MANAGED_TOKEN" ]; then
+            echo "::error title=No KSP_MANAGED_TOKEN::The KSP reference assemblies live in the private ksp-gonogo/ksp-managed, and this job has no credential for it. Either the organisation secret KSP_MANAGED_TOKEN is not visible to this repository, or the workflow calling _uplink-tasks.yml omits 'secrets: inherit'."
+            exit 1
+          fi
+
+      # A PAT rather than the job's own GITHUB_TOKEN: that token is scoped to
+      # this repository and ksp-managed is a different, private one.
+      - name: Check out the KSP reference assemblies
+        uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/ksp-managed
+          token: ${{ secrets.KSP_MANAGED_TOKEN }}
+          path: .refs/ksp-managed
+          persist-credentials: false
+
+      # gonogo is public, so the job's own token reaches it. The vendor script
+      # reads the commit with `git archive` and never the working tree, so
+      # checkout's default depth-1 fetch is the whole of what it needs.
+      - name: Check out gonogo
+        uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/gonogo
+          path: .refs/gonogo
+          persist-credentials: false
+
+      # Every root lands at the `vendor/<x>` path Directory.Build.props already
+      # defaults to, so no project needs a /p: override here that it would not
+      # get on the author's own machine.
       - name: Resolve the reference set
         id: refs
         run: |
-          echo "Reference set resolution is repo-owner specific."
-          echo "gonogo_contract=$PWD/vendor/contract" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          vendor="$GITHUB_WORKSPACE/vendor"
+          mkdir -p "$vendor"
+          rm -rf "$vendor/ksp-managed" "$vendor/gamedata"
+          cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/KSP_Data/Managed" "$vendor/ksp-managed"
+          cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/GameData" "$vendor/gamedata"
+          "$GITHUB_WORKSPACE/.refs/gonogo/scripts/vendor-uplinks-reference-set.sh" "$GITHUB_WORKSPACE"
+          echo "gonogo_contract=$vendor/contract" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: "10.0.x" }
+      # The gate the MSB3245 warning is not. Every HintPath in this Uplink's own
+      # projects names one of the four roots and nothing else, so expanding them
+      # here covers the whole compile surface, and a hole is named with the
+      # csproj that wanted it instead of arriving later as a CS0246 about a type
+      # nobody deleted.
+      - name: Every reference this Uplink names resolves
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          missing=0
+          for csproj in "uplinks/${{ inputs.name }}"/*/*.csproj; do
+            while IFS= read -r hint; do
+              path=$(printf '%s' "$hint" | sed \
+                -e 's#\\#/#g' \
+                -e 's#\$(GonogoContract)#vendor/contract#' \
+                -e 's#\$(GonogoDevkit)#vendor/devkit#' \
+                -e 's#\$(KspManaged)#vendor/ksp-managed#' \
+                -e 's#\$(KspGameData)#vendor/gamedata#')
+              if [ ! -f "$path" ]; then
+                echo "::error file=$csproj::$hint is not in the reference set (looked for $path)"
+                missing=$((missing + 1))
+              fi
+            done < <(grep -ho '<HintPath>[^<]*</HintPath>' "$csproj" | sed 's/<[^>]*>//g')
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "$missing reference(s) this Uplink names are absent from the resolved set; see the annotations above."
+            exit 1
+          fi
 
       - uses: actions/setup-node@v4
         if: inputs.client
