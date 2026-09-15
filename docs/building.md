@@ -4,16 +4,34 @@ Reference for the build, the CI checks and what each one is for.
 
 ## What you need before anything builds
 
-Four things, none of them ours to redistribute, all resolved through overridable
-MSBuild properties (`Directory.Build.props`) so you can point at a different
-install and re-run:
+Four things, all resolved through overridable MSBuild properties
+(`Directory.Build.props`) so you can point at a different install and re-run:
 
 | Property | What | Where from |
 |---|---|---|
 | `KspManaged` | KSP's managed assemblies | your own KSP install, `KSP_x64_Data/Managed` |
 | `KspGameData` | the mod this Uplink wraps | your own `GameData` |
-| `GonogoContract` | `Sitrep.Contract.dll`, per target framework | `GameData/Gonogo/Plugins/`, installed by GonogoCore |
-| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, and for one Uplink `Sitrep.Host.dll` plus the three assemblies it loads | see **What the devkit still owes** |
+| `GonogoContract` | `Sitrep.Contract.dll` per target framework, its codegen twin and `CodegenTwin.props` | `vendor/contract`, written by gonogo's vendoring script (below) |
+| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, the fakes and rule assertions a Tests project uses | `vendor/devkit`, written by the same script |
+
+The first two are not ours to redistribute and stay machine-local. The last two
+are gonogo's own, and both come from one run of a script in the gonogo repo, built
+from one gonogo commit:
+
+```bash
+# from a gonogo checkout; the ref defaults to HEAD
+scripts/vendor-uplinks-reference-set.sh <this checkout> [<gonogo ref>]
+```
+
+It builds from the COMMIT (`git archive`), not the working tree, replaces both
+directories wholesale, and writes the commit sha to `VENDORED_FROM` in each, so
+`vendor/contract` and `vendor/devkit` cannot disagree about where they came from
+and you can always tell which gonogo a build here was checked against. A Tests
+project that wants the shared fakes or the Unit-coverage sweep references
+`$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll` beside
+`$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll`; `xunit.assert`, the one
+other thing TestSupport needs, arrives with the Tests project's own xunit package.
+Both directories stay gitignored. Getting them onto CI runners is not solved yet.
 
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.
@@ -149,11 +167,14 @@ thing an author has to work out for themselves today, and each belongs upstream.
 3. **`Sitrep.Contract.TestSupport` is `IsPackable=false` and net10.0-only.** Ten
    of the twelve Uplink test projects in `gonogo` reference it, so ten of twelve
    cannot leave. Vendoring one DLL took this Uplink's 78 tests from
-   does-not-compile to green
+   does-not-compile to green. It still is not a package, but it is no longer a
+   hand copy: `scripts/vendor-uplinks-reference-set.sh` in gonogo writes it to
+   `vendor/devkit` from a named commit
 4. **Codegen needs two artifacts nobody ships**: `Sitrep.Contract.Codegen.dll`
    (the RT-attributed twin) and `CodegenTwin.props`. With both vendored, codegen
    from here is byte-identical to the monorepo's committed output, so this is a
-   packaging job rather than a design one
+   packaging job rather than a design one. The same script now writes both into
+   `vendor/contract`
 5. **ui-kit's published bundle cannot be loaded, and `server.deps.inline` only
    hides it.** Two named imports of CommonJS dependencies survive into its ESM
    dist: `styled` from styled-components (which publishes no `exports` field, so
