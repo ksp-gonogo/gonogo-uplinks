@@ -108,11 +108,15 @@ namespace Gonogo.KerbcastUplink
             },
             Commands = new List<CommandDeclaration>
             {
-                // Delayed: aiming or zooming a camera is an instruction to
-                // hardware on the craft, so it rides the signal-delay Courier
-                // exactly like a staging or SAS command.
-                new CommandDeclaration { Command = SetFieldOfViewCommand, Delayed = true },
-                new CommandDeclaration { Command = SetPanCommand, Delayed = true },
+                // Delay disposition lives on each args class's own
+                // [SitrepCommand] tag in KerbcastPayloads.cs (default
+                // DelayRole.Delayed: aiming or zooming a camera is an
+                // instruction to hardware on the craft, so it rides the
+                // signal-delay Courier exactly like a staging or SAS
+                // command). Restating it here is banned by
+                // styleguide-command-delay-single-source.test.ts.
+                new CommandDeclaration { Command = SetFieldOfViewCommand },
+                new CommandDeclaration { Command = SetPanCommand },
             },
         };
 
