@@ -68,10 +68,16 @@ jobs:
       # gonogo is public, so the job's own token reaches it. The vendor script
       # reads the commit with `git archive` and never the working tree, so
       # checkout's default depth-1 fetch is the whole of what it needs.
+      #
+      # `staging` and not the default branch. gonogo integrates on staging and
+      # its main has not moved since July, so a default checkout lands on a tree
+      # with no vendor script in it at all, and would have vendored a
+      # months-stale contract if it had one.
       - name: Check out gonogo
         uses: actions/checkout@v4
         with:
           repository: ksp-gonogo/gonogo
+          ref: staging
           path: .refs/gonogo
           persist-credentials: false
 
