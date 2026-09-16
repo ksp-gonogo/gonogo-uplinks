@@ -22,7 +22,7 @@ import {
   KerbcastProvider,
   type KerbcastSubscriptions,
 } from "@ksp-gonogo/kerbcast-react";
-import type { Reading, SlotProps } from "@ksp-gonogo/sitrep-sdk";
+import type { SlotProps, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import {
   getUplinkHandle,
   registerAugment,
@@ -51,9 +51,12 @@ import { selectDockingCamera } from "./selectDockingCamera.js";
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
  * and must not collapse into it.
+ *
+ * Typed on `TopicReading`, which is what `useTelemetry` answers with. `Reading`
+ * is the per-FIELD companion and only ever matched here structurally.
  */
 function stillTrue<T, A>(
-  reading: Reading<T>,
+  reading: TopicReading<T>,
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;

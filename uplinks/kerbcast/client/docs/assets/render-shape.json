@@ -3,39 +3,39 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "37af23b6fed25595",
+      "hash": "c90f1fe411ab15bd",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "869d3625168b888d",
+      "hash": "165707125324b766",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "2f52a7df695aa653",
+      "hash": "e06c092154c14fd4",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "1657d951259eb8bf",
+      "hash": "b815e1bdb3f34fdf",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "cc431caa984e1a51",
+      "hash": "915bbd01bbb17c75",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "51ff60a59bd61294",
+      "hash": "b301ee09c73f67d9",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "ea84a64c884d6235",
+      "hash": "4bb00edc8bcb6219",
       "elements": 54,
-      "text": "2999d337"
+      "text": "10338ace"
     }
   }
 }
