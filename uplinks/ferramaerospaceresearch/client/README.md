@@ -9,7 +9,7 @@ Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and 
 | --- | --- |
 | Uplink id | `aero` |
 | Version | `0.0.1` |
-| Built against | contract 15.0, api 1.0.0, ui-kit 0.1.0 |
+| Built against | contract 17.0, api 2.0.0, ui-kit 0.1.0 |
 
 ## Wire
 

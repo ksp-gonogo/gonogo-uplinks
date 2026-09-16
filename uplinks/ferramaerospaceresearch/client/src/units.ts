@@ -23,6 +23,31 @@
 import { registerUnit } from "@ksp-gonogo/sitrep-sdk";
 import { registerUnit as registerDisplayUnit } from "@ksp-gonogo/ui-kit";
 
+/**
+ * The TYPE half of the same two tokens, merged into the sdk's declarations
+ * table through the published package name.
+ *
+ * `registerUnit` types its argument FROM this declaration, so a symbol nobody
+ * declared is a compile error there rather than a unit the runtime knows and
+ * the compiler does not. That is also what makes `Value<"kg/m²">` legal in a
+ * widget's own code, and what lets `<Unit format>` and `as` check a ballistic
+ * coefficient the way they check a first-party quantity.
+ */
+declare module "@ksp-gonogo/sitrep-sdk" {
+  interface UnitDeclarations {
+    "kg/m²": {
+      kind: "arealDensity";
+      dim: { readonly kg: 1; readonly m: -2 };
+      ratio: 1;
+    };
+    "W/kg": {
+      kind: "specificPower";
+      dim: { readonly m: 2; readonly s: -3 };
+      ratio: 1;
+    };
+  }
+}
+
 /** Mass over the area presenting it to the airflow: what decides an entry's corridor. */
 registerUnit({
   symbol: "kg/m²",
