@@ -47,6 +47,7 @@ dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
 node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED, in bare node
 node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
+node tooling/minsize-gate.mjs --only scansat         # does every widget fit its own minSize
 node tooling/check-mod-version.mjs scansat           # parent mod, pinned vs newer
 node tooling/bundle-uplink-client.mjs scansat        # artifacts/<id>.client.js + descriptor
 node tooling/package-uplink-mod.mjs scansat          # artifacts/<GameData>.zip

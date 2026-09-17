@@ -39,3 +39,8 @@ uplinks/*/mod/ExpectedClientHash.g.cs
 # The reference-set checkouts CI makes beside the tree: KSP's managed assemblies
 # and the gonogo commit the contract is built from.
 .refs/
+
+# The min-size gate's planted canary, written into a client so its bare
+# specifiers resolve the way that client's own source does, and deleted again
+# when the sweep ends. Ignored so a crashed run cannot leave one committable.
+.minsize-probe.*.tsx

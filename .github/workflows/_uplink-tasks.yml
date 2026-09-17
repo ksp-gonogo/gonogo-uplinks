@@ -154,6 +154,24 @@ jobs:
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm test
 
+      # A `minSize` is the smallest tile the app will ever let an operator drag
+      # a widget to, so it is a promise, and gonogo holds the widgets living
+      # there to it. That gate reads its registration list from the bundle
+      # targets precisely so an Uplink which LEAVES gonogo leaves the check
+      # behind with it, which is why this side needs its own: without it the six
+      # Uplinks already moved lost it at their removal commit, and every one
+      # still to move would.
+      #
+      # The browser is the CLIENT's own playwright, for the reason the docs step
+      # below gives: run from the repo root, npx finds none and fetches the
+      # newest release, whose chromium revision is not the one the client's
+      # locked playwright launches.
+      - name: Widgets fit the minSize they declare
+        if: inputs.client
+        run: |
+          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
+          node tooling/minsize-gate.mjs --only "${{ inputs.name }}"
+
       # The mode a client does not check is the one that fails silently:
       # `declare module` bindings resolve under bundler and not under nodenext, so
       # a Topic declaration merge vanishes and takes its keys with it. Zero

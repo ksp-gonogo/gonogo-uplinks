@@ -43,6 +43,18 @@ import { EXAMPLE } from "../uplink.js";
  * instead still renders, but it is the retiring form and it gets the older
  * unpadded passthrough.
  */
+/**
+ * The shorter forms of the title, widest first, for a header too narrow to hold
+ * the full one.
+ *
+ * A widget's title is a fixed string its author chose, so unlike a vessel name
+ * it can always be made to fit, and `minSize` is a promise that it does. This
+ * widget declares it can live at 2x2, where "Heartbeat" ellipsised and lost
+ * 36px of its own name; Panel draws the widest of these that the header has
+ * room for.
+ */
+const COMPACT_TITLE = ["Heart", "HB"] as const;
+
 function HeartbeatWidget() {
   const heartbeat = useTelemetry("example.heartbeat");
 
@@ -50,6 +62,7 @@ function HeartbeatWidget() {
     return (
       <Panel
         panelTitle="Heartbeat"
+        compactTitle={COMPACT_TITLE}
         sections={
           <Section>
             <EmptyState>Waiting for the example Uplink</EmptyState>
@@ -62,6 +75,7 @@ function HeartbeatWidget() {
   return (
     <Panel
       panelTitle="Heartbeat"
+      compactTitle={COMPACT_TITLE}
       sections={
         <Section>
           <Text>
