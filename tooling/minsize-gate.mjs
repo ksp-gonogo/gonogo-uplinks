@@ -179,26 +179,32 @@ globalThis.__minsizeWidgets = () =>
 `;
 
 /**
- * Where an Uplink's OWN `@ksp-gonogo/ui-kit` subpath is, walking up from its
- * client package and reading the kit's `exports` map.
+ * Where an Uplink's OWN copy of a published `@ksp-gonogo` subpath is, walking up
+ * from its client package and reading that package's `exports` map.
  *
- * The map rather than a guessed `dist/render.js`, for the reason the sdk's CLI
- * gives for the same walk: guessing reaches past the map and keeps working right
- * up until the kit moves the file. `createRequire().resolve` is the wrong
- * instrument here, it applies the `require` condition and the kit declares only
- * `types` and `import`.
+ * Parameterised by package NAME because the render harness left `ui-kit` for
+ * `@ksp-gonogo/uplink-tools`: this used to hardcode the kit, and a refreshed
+ * reference set then made it throw on `./render` for every Uplink at once. The
+ * sdk's CLI took the same parameter for the same reason.
+ *
+ * The map rather than a guessed `dist/index.js`, for the reason that CLI gives
+ * for the same walk: guessing reaches past the map and keeps working right up
+ * until the package moves the file. `createRequire().resolve` is the wrong
+ * instrument here, it applies the `require` condition and these packages declare
+ * only `types` and `import`.
  */
-function kitSubpath(clientDir, subpath) {
+function packageSubpath(clientDir, pkgName, subpath) {
+  const [scope, name] = pkgName.split("/");
   let dir = resolve(clientDir);
   for (;;) {
-    const pkgDir = join(dir, "node_modules", "@ksp-gonogo", "ui-kit");
+    const pkgDir = join(dir, "node_modules", scope, name);
     const manifest = join(pkgDir, "package.json");
     if (existsSync(manifest)) {
       const entry = JSON.parse(readFileSync(manifest, "utf8")).exports?.[subpath];
       const file = typeof entry === "string" ? entry : (entry?.import ?? entry?.default);
       if (!file) {
         throw new Error(
-          `the @ksp-gonogo/ui-kit at ${pkgDir} exports no "${subpath}", so this version of it cannot run the min-size audit`,
+          `the ${pkgName} at ${pkgDir} exports no "${subpath}", so this version of it cannot run the min-size audit`,
         );
       }
       return join(pkgDir, file);
@@ -206,7 +212,7 @@ function kitSubpath(clientDir, subpath) {
     const parent = dirname(dir);
     if (parent === dir) {
       throw new Error(
-        `no @ksp-gonogo/ui-kit is installed in ${clientDir} or any directory above it; run npm ci in that client first`,
+        `no ${pkgName} is installed in ${clientDir} or any directory above it; run npm ci in that client first`,
       );
     }
     dir = parent;
@@ -231,7 +237,9 @@ function describe(widget, findings, cap = 4) {
 /** Sweep one Uplink. Returns its findings by widget id, or throws if BLIND. */
 async function sweep(name) {
   const clientDir = join(ROOT, "uplinks", name, "client");
-  const render = await import(pathToFileURL(kitSubpath(clientDir, "./render")).href);
+  const render = await import(
+    pathToFileURL(packageSubpath(clientDir, "@ksp-gonogo/uplink-tools", ".")).href,
+  );
   const { chromium } = createRequire(join(clientDir, "package.json"))("playwright");
   const { RENDER_PROBE_GLOBAL, buildProbePage, gridToPixels, resolveUplinkPackage } =
     render;
