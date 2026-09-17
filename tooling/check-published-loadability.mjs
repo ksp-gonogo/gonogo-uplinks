@@ -49,10 +49,17 @@ const EXEMPT = {
     'TypeError: styled.span is not a function, at module scope. The bundle does `import styled from "styled-components"`, which publishes no `exports` field, so Node takes its CJS `main` and the default arrives as the namespace object. Pinning does not help: 6.4.0 and 6.5.3 both lack it.',
   "@ksp-gonogo/ui-kit/testing":
     "Reaches the same chunk as the root barrel, so it dies on the same styled-components default.",
-  "@ksp-gonogo/ui-kit/render-probe":
-    "Same chunk, same cause as ./testing.",
-  "@ksp-gonogo/ui-kit/page-check":
-    "Same chunk, same cause as ./testing.",
+  // `@ksp-gonogo/uplink-tools` is the docs harness that used to BE the ui-kit
+  // subpaths above, so it inherits their defect rather than adding one: what it
+  // ships reaches ui-kit at module scope. Its ROOT barrel loads on its own and is
+  // deliberately absent below. Measured in an installed client rather than
+  // predicted, because that is the only place the answer is real.
+  "@ksp-gonogo/uplink-tools/render-probe":
+    "Same chunk, same cause as the kit's root barrel.",
+  "@ksp-gonogo/uplink-tools/page-check":
+    "Same chunk, same cause as the kit's root barrel.",
+  "@ksp-gonogo/uplink-tools/widgets":
+    "Same cause, and the least avoidable of the three: it is a single side-effect import of `@ksp-gonogo/components`, so it carries the app's whole widget graph, which evaluates `styled.span` at module scope for exactly the reason the kit does.",
 };
 
 /**
@@ -69,7 +76,10 @@ const EXEMPT = {
  * moment a client installs it the entry point is held to loading like any other.
  */
 const EXEMPT_WITHOUT_PEER = {
-  "@ksp-gonogo/ui-kit/render": "playwright",
+  // Empty since the docs harness left ui-kit: `@ksp-gonogo/ui-kit/render` was its
+  // only entry and the kit no longer publishes it. The mechanism stays, because
+  // the case recurs whenever a published entry point needs an optional peer, and
+  // a flat exemption is wrong in both directions when it does.
 };
 
 const name = process.argv[2];
@@ -89,16 +99,52 @@ if (!existsSync(modules)) {
 }
 
 /**
- * Every module subpath the two published packages export, read off the INSTALLED
- * manifests rather than listed here, so a new subpath joins by existing. A
- * hand-kept list whose failure mode is a missing entry agrees with the original
- * by omission, which is how `/spine` shipped unresolvable.
+ * Which `@ksp-gonogo` packages this client depends on, read off the CLIENT'S OWN
+ * manifest so a new one joins by being depended on rather than by being listed.
+ *
+ * This used to be three names in an array, and on 2026-09-17 that cost real
+ * coverage: `@ksp-gonogo/uplink-tools` arrived, the array did not know about it,
+ * its four entry points were never attempted, and the run reported a confident
+ * `14 of 14`. Four CORRECT exemptions written for it were reported STALE, which
+ * reads as "you added something unnecessary" rather than "I cannot see that
+ * package", and deleting them on that advice would have left the gate blind with
+ * one fewer thing pointing at it.
+ *
+ * The enclosing function already discovered SUBPATHS off the installed manifest,
+ * and cited `/spine` shipping unresolvable as why. It then hard-coded the package
+ * names three lines later: the same failure, one dimension up, in the file that
+ * documents it. So the question to ask of this check, and of any gate: what does
+ * it ENUMERATE, and what does it ASSUME? The assumed dimension is the blind spot,
+ * and the enumerated one is what makes it read as thorough.
+ */
+function dependedScopePackages() {
+  const pkg = JSON.parse(readFileSync(join(clientDir, "package.json"), "utf8"));
+  const names = new Set();
+  for (const field of ["dependencies", "devDependencies"]) {
+    for (const name of Object.keys(pkg[field] ?? {})) {
+      if (name.startsWith("@ksp-gonogo/")) names.add(name);
+    }
+  }
+  return [...names].sort();
+}
+
+/**
+ * Every module subpath those packages export, read off the INSTALLED manifests.
+ *
+ * A package the client DEPENDS on but has not installed fails rather than being
+ * skipped: a silent `continue` there is the same blindness in miniature, since a
+ * package that failed to install would simply not be checked and the total would
+ * still read as complete.
  */
 function publishedEntryPoints() {
   const specs = [];
-  for (const pkg of ["@ksp-gonogo/sitrep-sdk", "@ksp-gonogo/ui-kit"]) {
+  const missing = [];
+  for (const pkg of dependedScopePackages()) {
     const manifest = join(modules, pkg, "package.json");
-    if (!existsSync(manifest)) continue;
+    if (!existsSync(manifest)) {
+      missing.push(pkg);
+      continue;
+    }
     const { exports = {} } = JSON.parse(readFileSync(manifest, "utf8"));
     for (const key of Object.keys(exports)) {
       if (key === ".") {
@@ -114,6 +160,15 @@ function publishedEntryPoints() {
       }
       specs.push(`${pkg}/${sub}`);
     }
+  }
+  if (missing.length > 0) {
+    console.error(
+      `✖ depended on but not installed, so nothing about ${missing.length === 1 ? "it" : "them"} ` +
+        `would be attempted:\n    ${missing.join("\n    ")}\n` +
+        "  Run npm ci in the client. A skipped package is not a passing one, and the\n" +
+        "  total below would have read as complete without it.",
+    );
+    process.exit(1);
   }
   return specs;
 }
@@ -167,8 +222,17 @@ for (const spec of specs) {
     failures.push(`${spec}: ${cause(result.stderr)}`);
   }
 }
+/** The package an exempted specifier belongs to: `@scope/name` of `@scope/name/sub`. */
+const packageOf = (spec) => spec.split("/").slice(0, 2).join("/");
+
 for (const spec of [...Object.keys(EXEMPT), ...Object.keys(EXEMPT_WITHOUT_PEER)]) {
-  if (!specs.includes(spec)) stale.push(`${spec} is no longer a published entry point`);
+  if (specs.includes(spec)) continue;
+  // An exemption cannot be stale in a client that does not install the package at
+  // all. This is ONE list read by every Uplink, and realfuels installs no
+  // uplink-tools, so judging its entries there reported three false stales and
+  // would have pressured someone into deleting exemptions the other six need.
+  if (!existsSync(join(modules, packageOf(spec)))) continue;
+  stale.push(`${spec} is no longer a published entry point`);
 }
 
 for (const line of failures) console.error(`✖ ${line}`);
