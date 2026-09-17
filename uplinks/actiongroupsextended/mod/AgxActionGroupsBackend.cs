@@ -47,6 +47,12 @@ namespace Gonogo.ActionGroupsExtendedUplink
                     // the same "AG{n}" label the stock backend uses so the
                     // client stays visually consistent either way.
                     Name = g.Name ?? ("AG" + g.Index),
+                    // Null travels through unchanged. IActionGroupsBackend
+                    // requires a group whose state could not be read to be
+                    // reported present with a null State rather than dropped or
+                    // defaulted to false, and AGExt is the backend that can
+                    // actually produce one: it answers per group, so a single
+                    // group can fail while the rest read.
                     State = g.State,
                 });
             }

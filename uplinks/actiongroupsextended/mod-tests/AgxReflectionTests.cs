@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Gonogo.ActionGroupsExtendedUplink;
 using Xunit;
@@ -78,13 +79,52 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         }
 
         [Fact]
-        public void MapGroups_DeclinesTheTickWhenAGroupsStateIsNotABool()
+        public void MapGroups_ReportsAnUnreadableStatePerGroupAndKeepsTheRest()
         {
-            // The same collapse one rung along: a state AGExt did not answer
-            // with a bool drew a disengaged toggle for a group nobody read.
+            // A state AGExt did not answer with a bool drew a disengaged toggle
+            // for a group nobody read. It is reported per group rather than by
+            // declining the tick, because AGExt answers for each group
+            // separately: withholding the list took the groups that DID read
+            // off the operator's screen to describe the one that did not.
             var raw = new Hashtable { [1] = "Solar", [2] = "Gear" };
 
-            Assert.Null(AgxReflection.MapGroups(raw, index => index == 2 ? (object?)null : true));
+            var groups = AgxReflection.MapGroups(raw, index => index == 2 ? (object?)null : true);
+
+            Assert.NotNull(groups);
+            Assert.Equal(2, groups!.Count);
+            Assert.True(Assert.Single(groups, g => g.Index == 1).State);
+            Assert.Null(Assert.Single(groups, g => g.Index == 2).State);
+        }
+
+        [Fact]
+        public void MapGroups_ReportsAThrowingStateReadAsThatGroupsAbsenceOnly()
+        {
+            // AssignedGroups' outer catch would have turned one group's throw
+            // into the whole vessel's list going missing.
+            var raw = new Hashtable { [1] = "Solar", [2] = "Gear" };
+
+            var groups = AgxReflection.MapGroups(
+                raw,
+                index => index == 2 ? throw new InvalidOperationException("AGExt threw") : (object?)false);
+
+            Assert.NotNull(groups);
+            Assert.Equal(2, groups!.Count);
+            Assert.False(Assert.Single(groups, g => g.Index == 1).State);
+            Assert.Null(Assert.Single(groups, g => g.Index == 2).State);
+        }
+
+        [Fact]
+        public void MapGroups_SaysSoOnEveryEntryWhenNoStateCanBeRead()
+        {
+            // Per-group absence is not a licence to publish a list of unknowns
+            // as though it were a reading: it is simply what this shape produces
+            // when the state surface is wholly gone, and every entry says so.
+            var raw = new Hashtable { [1] = "Solar", [2] = "Gear" };
+
+            var groups = AgxReflection.MapGroups(raw, _ => (object?)null);
+
+            Assert.NotNull(groups);
+            Assert.All(groups!, g => Assert.Null(g.State));
         }
     }
 }

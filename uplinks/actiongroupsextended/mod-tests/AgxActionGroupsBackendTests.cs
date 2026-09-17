@@ -83,6 +83,32 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         }
 
         [Fact]
+        public void Groups_UnreadableState_IsPublishedAsNull_BesideTheGroupsThatRead()
+        {
+            // IActionGroupsBackend requires a group whose state could not be
+            // read to be present with a null State rather than dropped or
+            // defaulted to false. AGX is the backend that can produce one: a
+            // false here would draw a disengaged toggle the operator could act
+            // on, for a group nobody read.
+            var fake = new FakeAgxApi
+            {
+                Groups = new List<AgxGroup>
+                {
+                    new AgxGroup(1, "Solar Panels", true),
+                    new AgxGroup(2, "Radiators", null),
+                },
+            };
+            var backend = new AgxActionGroupsBackend(fake);
+
+            var result = backend.Groups();
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.Count);
+            Assert.True(result.Single(g => g.Index == 1).State);
+            Assert.Null(result.Single(g => g.Index == 2).State);
+        }
+
+        [Fact]
         public void SetGroup_DelegatesToActivate_AndReturnsTrueOnSuccess()
         {
             var fake = new FakeAgxApi { ActivateResult = true };

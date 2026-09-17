@@ -138,20 +138,21 @@ namespace Gonogo.ActionGroupsExtendedUplink
         /// the way the rest of this Uplink's logic already does; the live
         /// binding itself stays Deck-validated.
         ///
-        /// <para>Null on ANY element this cannot read, key or state alike. A
-        /// <c>continue</c> on an unreadable key dropped that group and published
-        /// the rest as a complete list, so the operator could not tell "AGX
-        /// reports eight groups" from "AGX reports ten and we read eight", and a
-        /// group the vessel HAS was not on screen to command. <c>is true</c> on
-        /// the state was the same collapse one rung along: it folded "AGExt
-        /// answered with something that is not a bool" into a definite off and
-        /// drew a disengaged toggle from a read that never happened.</para>
+        /// <para>An unreadable KEY still declines the whole tick. A
+        /// <c>continue</c> there dropped that group and published the rest as a
+        /// complete list, so the operator could not tell "AGX reports eight
+        /// groups" from "AGX reports ten and we read eight", and a group the
+        /// vessel HAS was not on screen to command. Without an index there is no
+        /// identity to report the group under either, so there is nothing finer
+        /// than the tick left to decline.</para>
         ///
-        /// <para>Both are read failures, and this method's own contract already
-        /// says what one means: null for the tick, retried on the next. Neither
-        /// can be said PER GROUP against the <c>Sitrep.Contract</c> this Uplink
-        /// compiles against, where <c>ActionGroupState.State</c> is a plain bool
-        /// with no spelling for "unknown".</para>
+        /// <para>An unreadable STATE is reported per group instead, as a null
+        /// <see cref="AgxGroup.State"/>. AGExt answers for each group through its
+        /// own surface, so one can fail while the rest read, and withholding the
+        /// tick took nine groups off the screen in order to describe the tenth.
+        /// Both a non-bool answer and a throwing read land there: <c>is true</c>
+        /// on the state used to fold either into a definite off and draw a
+        /// disengaged toggle from a read that never happened.</para>
         /// </summary>
         internal static IReadOnlyList<AgxGroup>? MapGroups(IDictionary raw, Func<int, object?> readState)
         {
@@ -163,13 +164,27 @@ namespace Gonogo.ActionGroupsExtendedUplink
                     return null;
                 }
                 var name = entry.Value as string;
-                if (readState(index) is not bool state)
-                {
-                    return null;
-                }
-                result.Add(new AgxGroup(index, name, state));
+                result.Add(new AgxGroup(index, name, ReadOneState(readState, index)));
             }
             return result;
+        }
+
+        /// <summary>
+        /// One group's state, or null when AGExt did not answer with a bool or
+        /// the read threw. The throw is caught HERE rather than by
+        /// <see cref="AssignedGroups"/>'s outer catch, so one group's failure
+        /// costs that group's state and not the whole vessel's list.
+        /// </summary>
+        private static bool? ReadOneState(Func<int, object?> readState, int index)
+        {
+            try
+            {
+                return readState(index) as bool?;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         /// <summary>Sets one group by AGExt's own 1-based index. Returns AGExt's own success bool, or false on any failure.</summary>
