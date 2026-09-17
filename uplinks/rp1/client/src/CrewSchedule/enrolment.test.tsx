@@ -554,8 +554,8 @@ describe("who RP-1 would refuse", () => {
 
   /**
    * Dropped rather than refused. A retiree is not a candidate whose turn has
-   * not come, and an applicant is not crew; the host already sorts both into
-   * their own tabs.
+   * not come, and an applicant is not crew; the host widget already sorts both
+   * into their own tabs.
    */
   it.each([
     ["a retiree", { standing: CrewStanding.Retired }],
@@ -698,8 +698,8 @@ describe("what it declines to draw", () => {
   });
 
   /**
-   * The crew roster is the HOST's channel and the Astronaut Complex says so
-   * above this already, so a second line here would repeat it.
+   * The crew roster is the HOST widget's channel and the Astronaut Complex says
+   * so above this already, so a second line here would repeat it.
    */
   it("renders nothing while the crew roster is unread", async () => {
     const { fixture, view } = mount();

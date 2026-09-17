@@ -51,7 +51,7 @@ export const RP1_SCRAP_COMMAND = "rp1.vehicle.scrap";
  * registered separately.</para>
  *
  * <para>An empty list draws nothing at all rather than an empty heading. The
- * host says "none built and none on order" once, for both lists together,
+ * host widget says "none built and none on order" once, for both lists together,
  * because that is one fact about the space centre rather than two.</para>
  */
 export function VehicleSection({

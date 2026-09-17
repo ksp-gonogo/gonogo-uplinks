@@ -15,7 +15,7 @@ import { VehicleSection } from "./VehicleSection.js";
  * sits in already says most of that and the badge only has to carry what is
  * left.</para>
  *
- * <para><b>Contributed rather than drawn by the host.</b> Vehicle Assembly
+ * <para><b>Contributed rather than drawn by the host widget.</b> Vehicle Assembly
  * mounts this through the same slot, and the same <c>registerAugment</c> call,
  * that an outside Uplink adding its own section would use. There is no private
  * path for the widget's own content, which is what makes the slot adequate by

@@ -48,7 +48,7 @@ interface PadRow {
 
 /**
  * A fixture's payload for one facility, in the fields the rules read. Both tier
- * shapes, because the host's parser takes both and fixtures use both.
+ * shapes, because the host widget's parser takes both and fixtures use both.
  */
 interface FacilityRow {
   currentTier?: number | null;
@@ -138,7 +138,7 @@ function inconsistencies(emits: readonly Emit[], surface = ""): string[] {
     );
   }
 
-  // A managed career whose HOST is still offering to buy a tier outright.
+  // A managed career whose HOST widget is still offering to buy a tier outright.
   //
   // `rp1.available` is not "RP-1 is installed": its channel source is
   // `IsAvailable && IsEnabledForSave()`, so `true` says RP-1 is MANAGING this
@@ -146,12 +146,12 @@ function inconsistencies(emits: readonly Emit[], surface = ""): string[] {
   // `career.facility.upgrade` every time, because RP-1 does not sell a tier at
   // all. So a fixture that puts a stock Upgrade control on screen without the
   // gate is photographing a space centre RP-1 could never produce, and the
-  // picture says two contradictory things at once: the host's grid offers a
+  // picture says two contradictory things at once: the host widget's grid offers a
   // purchase and colours the ones the balance cannot meet as unaffordable,
   // while the section below it says the same tier is queued and billed as it
   // builds and never refused for money.
   //
-  // Scoped to whether the CONTROL is on screen rather than to the host, unlike
+  // Scoped to whether the CONTROL is on screen rather than to the host widget, unlike
   // the craft-listing rule above. Every `space-center-status` scene mounts the
   // facility grid and most emit no facilities at all, so a cell with no tier
   // left draws no control and has nothing to contradict.
@@ -173,7 +173,7 @@ function inconsistencies(emits: readonly Emit[], surface = ""): string[] {
   // at completion. So for the whole life of the project the facility is still at
   // `currentLevel`, and the project is taking it to exactly one tier higher.
   //
-  // Worth a rule because both numbers reach one screen. The host's grid draws
+  // Worth a rule because both numbers reach one screen. The host widget's grid draws
   // the career's tier and this Uplink's SITE CONSTRUCTION card draws the
   // project's, so a fixture that disagrees with itself photographs one building
   // at two tiers, and one committed render had a VAB reading "2 / 3" over a card
@@ -224,7 +224,7 @@ function tierDisagreements(emits: readonly Emit[]): string[] {
 
 /**
  * A facility's current tier, from whichever shape the fixture writes. The
- * host's own parser takes both the wire's `currentTier`/`maxTier` and the
+ * host widget's own parser takes both the wire's `currentTier`/`maxTier` and the
  * legacy `level`/`max`, so a rule that read only one would silently pass every
  * fixture written in the other.
  */
@@ -242,11 +242,11 @@ const GATE_FAIL = 1;
 
 /**
  * The fixture describes a save RP-1 manages AND leaves a facility with a tier
- * left to buy, which is what puts the host's own Upgrade control on screen.
+ * left to buy, which is what puts the host widget's own Upgrade control on screen.
  *
- * <para>A PRICED tier, because that is what the host gates its own control on:
- * a facility whose `upgradeCost` did not arrive draws no Upgrade button and has
- * nothing to contradict.</para>
+ * <para>A PRICED tier, because that is what the host widget gates its own
+ * control on: a facility whose `upgradeCost` did not arrive draws no Upgrade
+ * button and has nothing to contradict.</para>
  */
 function offersAStockTierPurchase(emits: readonly Emit[]): boolean {
   if (!emits.some((e) => e.topic === "rp1.available" && e.payload === true)) {

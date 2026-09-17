@@ -12,7 +12,7 @@ import { KscConstruction } from "./KscConstruction/index.js";
 /**
  * The two RP-1 sections that put a facility's tier on screen, mounted together
  * because that is how the operator meets them: both land in
- * `SpaceCenterStatus`, one above the other, beside the host's own grid.
+ * `SpaceCenterStatus`, one above the other, beside the host widget's own grid.
  *
  * <para>Every tier on the wire is KSP's own zero-based facility level.
  * `career.facilities.facilities[x].currentTier` is `UpgradeableFacility.FacilityLevel`
@@ -20,8 +20,9 @@ import { KscConstruction } from "./KscConstruction/index.js";
  * `RP0.FacilityUpgradeProject.currentLevel`, which `Abort()` feeds straight to
  * `UpgradeableObject.SetLevel`, so the two are the same index in the same
  * domain. An operator counts from one, KSP's own R&amp;D dialog calls a fully
- * upgraded VAB "Level 3", and the host's grid draws `index + 1`. Anything here
- * that draws the raw index puts two numbers for one building on one screen.</para>
+ * upgraded VAB "Level 3", and the host widget's grid draws `index + 1`. Anything
+ * here that draws the raw index puts two numbers for one building on one
+ * screen.</para>
  */
 const TOPICS = [
   "rp1.available",
@@ -135,7 +136,7 @@ describe("RP-1 facility tiers are counted one way across the whole screen", () =
       expect(screen.getByText("FACILITY UPGRADES")).toBeInTheDocument();
     });
     const text = visibleText(view.container);
-    // The Launch Pad, at wire tier 1, which the host's grid draws "2 / 3".
+    // The Launch Pad, at wire tier 1, which the host widget's grid draws "2 / 3".
     expect(text).toContain("TIER 2");
     expect(text).not.toContain("TO TIER");
     expect(text).not.toContain("now at tier");

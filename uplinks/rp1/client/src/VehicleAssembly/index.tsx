@@ -64,9 +64,9 @@ type VehicleAssemblyConfig = Record<string, never>;
  * <para><b>The balance is drawn once, here.</b> Every control in the body
  * spends or refunds career funds, and the repo rule is that a spend control is
  * never visible without a balance visible in the same widget. Drawing it on the
- * host is what lets each contributed section carry none: three sections each
- * with their own copy is the same rule satisfied three times in one widget,
- * which reads as a defect rather than as care.</para>
+ * host widget is what lets each contributed section carry none: three sections
+ * each with their own copy is the same rule satisfied three times in one
+ * widget, which reads as a defect rather than as care.</para>
  *
  * <para><b>Starting a build lives in a section like the others.</b> It reads
  * `rp1.buildable`, which is the save's craft files measured against every
@@ -96,10 +96,10 @@ export function VehicleAssembly() {
     <Panel
       compactTitle={["VEHICLE ASSEMBLY", "ASSEMBLY"]}
       panelTitle="VEHICLE ASSEMBLY"
-      /* The host's own body is three caption lines; the readings come from the
-         Uplink sections Panel now mounts INSIDE the section grid, so they flow
-         into columns in a landscape tile instead of stacking under this. That
-         is also why the hand-placed `WidgetSections` and the
+      /* The host widget's own body is three caption lines; the readings come
+         from the Uplink sections Panel now mounts INSIDE the section grid, so
+         they flow into columns in a landscape tile instead of stacking under
+         this. That is also why the hand-placed `WidgetSections` and the
          `panelSections={false}` that went with it are gone: end-of-body is
          where Panel puts it anyway. */
       sections={
@@ -257,9 +257,9 @@ registerComponent<VehicleAssemblyConfig>({
     "rp1.pads",
     "rp1.operations",
     // The two editor channels, both read by contributed sections rather than by
-    // the host: what the vehicle on the table costs to fly, and what tooling it
-    // owes. Declared here because a widget's requirements are what the debug
-    // surfaces enumerate, and a section's reads are the widget's reads.
+    // the host widget: what the vehicle on the table costs to fly, and what
+    // tooling it owes. Declared here because a widget's requirements are what
+    // the debug surfaces enumerate, and a section's reads are the widget's reads.
     "rp1.buildCost",
     "rp1.tooling",
     // The spend rule: a rollout is billed as the vehicle moves, a scrap refunds

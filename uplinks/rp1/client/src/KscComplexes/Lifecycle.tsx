@@ -170,9 +170,9 @@ export function PadDismantleControl({
  * refusal RP-1 does not make.</para>
  *
  * <para>The balance itself is not drawn here. It is already in this widget's
- * body: the host draws career funds beside its pad line, and the repo rule is
- * per-widget. What the host cannot say is whether the balance covers THIS quote,
- * which is the half that belongs next to the press.</para>
+ * body: the host widget draws career funds beside its pad line, and the repo
+ * rule is per-widget. What the host widget cannot say is whether the balance
+ * covers THIS quote, which is the half that belongs next to the press.</para>
  *
  * <para>Absent price is not a free pad. `newPadCost` is absent for a hangar,
  * which has no pad, and whenever RP-1 would not price one; both draw no control

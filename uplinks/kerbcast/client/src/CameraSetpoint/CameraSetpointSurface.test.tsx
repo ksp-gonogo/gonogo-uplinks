@@ -94,7 +94,7 @@ describe("CameraSetpointSurface", () => {
 
   it("drops the framing preview when the cluster reaches past the centre line", () => {
     // 348x194, the picture the widget's own `defaultSize` tile produces now
-    // that its host takes no panel title: 32px wider than the 316x176 it drew
+    // that its host widget takes no panel title: 32px wider than the 316x176 it drew
     // with one, and it still does not fit. The cluster's left edge lands at
     // 187, where half a 64px tile plus 4px of clear air reaches 210. What
     // decides the 394 it would take is the commit: 63 of the cluster's 151px

@@ -75,7 +75,7 @@ function vessel(over: Partial<SCANScanningVessel>): SCANScanningVessel {
 
 // `map-view.sections` is the framework's universal segment and carries no
 // props: the mapped body reaches the augment through MapView's published SCOPE,
-// so a test stands that up the way the real host does.
+// so a test stands that up the way the real host widget does.
 function MappedBody({
   bodyName = "Kerbin" as string | undefined,
   children,

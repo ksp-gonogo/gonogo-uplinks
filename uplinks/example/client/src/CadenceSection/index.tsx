@@ -30,13 +30,13 @@ import { EXAMPLE } from "../uplink.js";
  *
  * `SlotProps<"space-center-status.sections">` resolves to `Record<string, never>`:
  * a body slot passes nothing, because an augment in one renders from its OWN
- * Topics and the host has nothing it needs to hand over. Other slots do pass
- * context, an overlay gets its host's projection so it can draw in the same
+ * Topics and the host widget has nothing it needs to hand over. Other slots do pass
+ * context, an overlay gets its host widget's projection so it can draw in the same
  * coordinate space, and the type tells you which kind you are in. Writing the
  * props type out rather than omitting it is what makes that visible at the top of
  * the file.
  *
- * The one thing an augment must not do is read the host's state by any route
+ * The one thing an augment must not do is read the host widget's state by any route
  * other than its props. There is no such route, and that is deliberate.
  */
 function CadenceSection(_props: SlotProps<"space-center-status.sections">) {

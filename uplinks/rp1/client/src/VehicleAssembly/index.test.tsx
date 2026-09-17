@@ -208,8 +208,8 @@ describe("VehicleAssembly", () => {
   it("draws the balance every control in it spends against", async () => {
     // The repo rule is per WIDGET: this one hosts a scrap, a rollout and a
     // repeat, so the balance an operator judges them against has to be in it.
-    // Drawn once, by the host, which is what lets both contributed sections
-    // carry none.
+    // Drawn once, by the host widget, which is what lets both contributed
+    // sections carry none.
     const { view } = await withOneBuiltVehicle();
 
     await waitFor(() => {
@@ -222,8 +222,8 @@ describe("VehicleAssembly", () => {
 
   it("mounts every section through the slot an outside Uplink would use", () => {
     // The whole of the self-contribution claim. If any section were drawn by
-    // the host directly it would not be here, and the slot could be inadequate
-    // without anything failing.
+    // the host widget directly it would not be here, and the slot could be
+    // inadequate without anything failing.
     //
     // The ORDER is asserted too, and the two editor sections lead on purpose:
     // they are about the craft being designed right now, and the three lists

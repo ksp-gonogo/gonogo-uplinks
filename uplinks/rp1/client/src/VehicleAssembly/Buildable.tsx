@@ -58,9 +58,9 @@ export const RP1_BUILD_START_COMMAND = "rp1.build.start";
  * PRESSABLE and lets the command refuse in RP-1's own words, which is strictly
  * better than a control drawn dark for a reason nobody could establish.</para>
  *
- * <para><b>Contributed rather than drawn by the host</b>, through the same slot
- * and the same `registerAugment` call an outside Uplink adding a section would
- * use.</para>
+ * <para><b>Contributed rather than drawn by the host widget</b>, through the
+ * same slot and the same `registerAugment` call an outside Uplink adding a
+ * section would use.</para>
  */
 export function BuildableSection() {
   const available = current(useTelemetry("rp1.available"));

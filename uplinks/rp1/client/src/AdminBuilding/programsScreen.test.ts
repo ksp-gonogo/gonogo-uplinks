@@ -2,18 +2,19 @@ import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN } from "./programsScreen.js";
 
 /**
- * The screen this Uplink adds to the Administration Building. What the host does
- * with it (orders the strip, filters the list, draws the tabs) is the host's own
- * suite; what belongs here is that the entry says the right things about RP-1.
+ * The screen this Uplink adds to the Administration Building. What the host
+ * widget does with it (orders the strip, filters the list, draws the tabs) is
+ * the host widget's own suite; what belongs here is that the entry says the
+ * right things about RP-1.
  */
 describe("RP-1 Programs screen", () => {
   it("claims the department name RP-1 actually puts on the wire", () => {
     /*
      * `Programs` is the `STRATEGY_DEPARTMENT` name in RP-1's Departments.cfg,
-     * and the same string reaches the host as `department` on every entry of
-     * `career.status`'s strategy list. Spelling it the way the department's
-     * `title` reads ("Select Programs") would claim a department that does not
-     * exist and quietly list nothing.
+     * and the same string reaches the host widget as `department` on every
+     * entry of `career.status`'s strategy list. Spelling it the way the
+     * department's `title` reads ("Select Programs") would claim a department
+     * that does not exist and quietly list nothing.
      */
     expect(PROGRAMS_SCREEN[0].departments).toEqual(["Programs"]);
   });

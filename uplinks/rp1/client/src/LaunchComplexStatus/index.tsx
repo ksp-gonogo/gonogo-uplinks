@@ -33,7 +33,7 @@ import "../topics.js";
  * <para>Stock's answer to "what is on this pad" is a vessel sitting at PRELAUNCH,
  * and RP-1's is three facts stock has no counterpart for: which launch complex
  * owns the pad, what the pad is currently doing, and which vehicle is standing
- * on it or on its way. The host reads the first from
+ * on it or on its way. The host widget reads the first from
  * <c>spaceCenter.launchSites</c>; the rest live here.</para>
  *
  * <para><b>Not the vehicle's build state.</b> Whether a vehicle has been

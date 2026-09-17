@@ -74,8 +74,8 @@ export function TrainingEnrolment() {
   const crew = current(useTelemetry("rp1.crew"));
   const courses = current(useTelemetry("rp1.training"));
   const program = current(useTelemetry("rp1.crewProgram"));
-  /* Named here rather than taken from the host, the way ProgramDetail names
-     `career.status`: an augment carries its own reads. */
+  /* Named here rather than taken from the host widget, the way ProgramDetail
+     names `career.status`: an augment carries its own reads. */
   const career = current(useTelemetry("career.status"));
 
   const [pickedTemplate, setPickedTemplate] = useState<string | null>(null);
@@ -94,8 +94,8 @@ export function TrainingEnrolment() {
   // Silent on an unread channel, both of them, rather than the one short line an
   // unreadable state is otherwise worth. A section offering no training is
   // indistinguishable from a career that has unlocked none, and neither is worth
-  // a row of chrome on the Astronaut Complex; the crew roster is the HOST's
-  // channel and the panel above already says when that has not arrived.
+  // a row of chrome on the Astronaut Complex; the crew roster is the HOST
+  // widget's channel and the panel above already says when that has not arrived.
   if (catalogue === undefined) {
     return null;
   }
@@ -380,8 +380,8 @@ interface Refusal {
  *
  * <para>An applicant and anyone off the books are dropped rather than refused.
  * They are not candidates whose turn has not come; a retiree is not somebody a
- * course can be started for at all, and the host already sorts both into their
- * own tabs.</para>
+ * course can be started for at all, and the host widget already sorts both into
+ * their own tabs.</para>
  *
  * <para>Pickable first, refused after, stable within each group so the roster's
  * own order survives. A reading order rather than a sort: the names an operator

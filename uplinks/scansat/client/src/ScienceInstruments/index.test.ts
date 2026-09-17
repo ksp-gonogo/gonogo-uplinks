@@ -30,7 +30,7 @@ describe("parseScanScience", () => {
   });
 
   it("declines the frame rather than reading a missing flag as false", () => {
-    // The slot takes plain booleans and the host draws a badge per flag, so a
+    // The slot takes plain booleans and the host widget draws a badge per flag, so a
     // row has no third state for "nobody read this". `=== true` decided it as
     // OFF, and an absent `rerunnable` in particular drew a ONE-SHOT badge on a
     // scanner SCANsat hard-codes as rerunnable. No row can say it, so the whole
@@ -43,8 +43,8 @@ describe("parseScanScience", () => {
   });
 
   it("declines the frame rather than dropping an entry with no partId", () => {
-    // partId is the row's React key and the host's identity for it, so an
-    // entry without one cannot be drawn. Skipping it handed the host a SHORT
+    // partId is the row's React key and the host widget's identity for it, so an
+    // entry without one cannot be drawn. Skipping it handed the host widget a SHORT
     // list, which it counts in its own header as a complete one: the operator
     // could not tell one scanner from two of which one was unreadable.
     expect(parseScanScience([{ partTitle: "Nameless" }, SCAN_ENTRY])).toBeNull();

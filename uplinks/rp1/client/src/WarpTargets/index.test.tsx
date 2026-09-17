@@ -115,9 +115,9 @@ describe("WarpTargets", () => {
     });
     /*
      * RP-1's controller destroys itself the moment it sees a warp rate of zero,
-     * so the host's own "1x" button ends an RP-1 warp. A second stop control
-     * would be two buttons doing one thing with the operator left to guess which
-     * one the mod respects.
+     * so the host widget's own "1x" button ends an RP-1 warp. A second stop
+     * control would be two buttons doing one thing with the operator left to
+     * guess which one the mod respects.
      */
     expect(
       screen.queryByRole("button", { name: /[Ss]top/ }),

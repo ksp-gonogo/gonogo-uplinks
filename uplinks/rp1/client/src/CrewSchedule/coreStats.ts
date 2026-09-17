@@ -10,19 +10,19 @@ import "../topics.js";
  * price and the roster cap.
  *
  * <para>Those three are the whole of what STOCK has to say about a complex, and
- * they are the whole of what the host's own strip carries. Under RP-1 the
+ * they are the whole of what the host widget's own strip carries. Under RP-1 the
  * complex is a scheduling problem: the number an operator wants first is how
  * much of the roster is unavailable because it is mid-course, and the second is
  * how many qualifications are about to expire out from under a crew that is
  * currently assigned. Neither is derivable from the stock roster, and neither
  * belongs in the vanilla widget's own code.</para>
  *
- * <para><b>Data, not React.</b> These are `StatEntry` rows on the host's
- * `astronaut-complex.readouts` contribution slot, so the host draws them with
- * its own `Stat` in its own grid and a figure of RP-1's lands in the same row
- * and the same treatment as the vanilla three. An augment would have rendered
- * its own markup into a slot beside them, which is how a strip ends up reading
- * as two widgets sharing a line.</para>
+ * <para><b>Data, not React.</b> These are `StatEntry` rows on the host widget's
+ * `astronaut-complex.readouts` contribution slot, so it draws them with its own
+ * `Stat` in its own grid and a figure of RP-1's lands in the same row and the
+ * same treatment as the vanilla three. An augment would have rendered its own
+ * markup into a slot beside them, which is how a strip ends up reading as two
+ * widgets sharing a line.</para>
  *
  * <para><b>The settings are HONOURED, not reported.</b> A save with mission
  * training switched off has no perishable training at all: RP-1 stops checking

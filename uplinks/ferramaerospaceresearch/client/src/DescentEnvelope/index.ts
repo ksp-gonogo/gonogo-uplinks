@@ -28,18 +28,19 @@ import { AERO } from "../uplink.js";
  *
  * It has been three things. It was a React overlay bound to a
  * `landing-status.envelope` augment slot, drawing its own `<svg>` in a
- * coordinate space the host handed it. Then it was a set of marks contributed
- * INTO the host's plot. It is now a plot of its own, contributed to `plots`,
- * because drawing into somebody else's instrument is not something the
- * framework offers: an author contributes a whole plot or nothing.
+ * coordinate space the host widget handed it. Then it was a set of marks
+ * contributed INTO the host widget's plot. It is now a plot of its own,
+ * contributed to `plots`, because drawing into somebody else's instrument is
+ * not something the framework offers: an author contributes a whole plot or
+ * nothing.
  *
  * The visible cost of that is honest and worth stating: the model's curve and
- * the back-out curve it disagrees with are on THIS plot now, beside the host's
- * own envelope rather than on it, so an operator with FAR installed sees two
- * envelopes. What it buys is that the two models are never silently blended
- * into one picture whose provenance you cannot read, and that nothing here
- * knows a pixel or a host: this file states metres and metres per second
- * against a frame it declared itself.
+ * the back-out curve it disagrees with are on THIS plot now, beside the host
+ * widget's own envelope rather than on it, so an operator with FAR installed
+ * sees two envelopes. What it buys is that the two models are never silently
+ * blended into one picture whose provenance you cannot read, and that nothing
+ * here knows a pixel or a host widget: this file states metres and metres per
+ * second against a frame it declared itself.
  *
  * Two marks, and each answers a question the first-party plot cannot:
  *
@@ -94,7 +95,7 @@ export interface AeroDescentInputs {
   /** True when the model holds no reading at all for this vessel. */
   noReading: boolean;
   /** The plot's own anchors, so the model's curve rides the SAME density column
-   *  the host's does and the two can only differ where the physics differs. */
+   *  the host widget's does and the two can only differ where the physics differs. */
   plotTerminal: number | null;
   plotTouchdown: number | null;
   altitude: number | null;
@@ -216,7 +217,7 @@ export function aeroDescentLayers(
     Math.abs(modelGround - plotGround) / plotGround > CURVE_DISAGREEMENT;
 
   if (disagree) {
-    // The back-out curve, faint, on THIS plot. It used to be the host's own
+    // The back-out curve, faint, on THIS plot. It used to be the host widget's own
     // mark and this contribution rode alongside it; a plot cannot draw into
     // another plot any more, so the reference has to be here or the parting
     // this whole mark exists to show has nothing to part from.
@@ -329,7 +330,7 @@ export function aeroBadges(
   return badges.length > 0 ? badges : null;
 }
 
-/** The burn datum, derived exactly as the host does: the vessel's LOWEST point
+/** The burn datum, derived exactly as the host widget does: the vessel's LOWEST point
  *  above terrain, falling back to the centre-of-mass radar altitude when
  *  `vessel.surface` is nulled by the capture guard. */
 function heightAboveTerrain(topics: Readonly<Record<string, unknown>>) {

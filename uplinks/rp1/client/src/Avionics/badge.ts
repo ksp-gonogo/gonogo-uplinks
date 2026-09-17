@@ -5,7 +5,7 @@ import { RP1 } from "../uplink.js";
 // ---------------------------------------------------------------------------
 // RP-1's avionics verdict, in the Navball's header badge row.
 //
-// The Navball is the host because it is already the widget that reports whether
+// The Navball hosts this because it is already the widget that reports whether
 // the craft can be flown: it reads `vessel.state.isControllable` and
 // `vessel.control.*`, and it already models NOT having control (162bd297 stopped
 // it drawing an attitude nobody has). This is the one loss of control on an RP-1

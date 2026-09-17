@@ -24,7 +24,7 @@ describe("crewCoreStats", () => {
     const [inTraining] = crewCoreStats(PROGRAM, []);
 
     expect(inTraining?.label).toBe("In Training");
-    // A `Value`, not a formatted number: the host draws it through its own
+    // A `Value`, not a formatted number: the host widget draws it through its own
     // `Unit` so a contributed figure ladders its unit like every other reading.
     expect(inTraining?.value?.magnitude).toBe(4);
     expect(inTraining?.value?.unit).toBe("count");

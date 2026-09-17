@@ -7,7 +7,7 @@ import { RP1 } from "../uplink.js";
  * strategy without `RP0conf`, and `Departments.cfg` replaces the departments
  * wholesale: `Programs` first, then the seven a Leader is hired into. So the
  * building an RP-1 operator opens has screens, and a stock one does not, which
- * is why the host asks rather than assumes.</para>
+ * is why the host widget asks rather than assumes.</para>
  *
  * <para>The screen is contributed whenever RP-1 is running, NOT when the career
  * happens to be carrying a Program. A career between Programs still has a

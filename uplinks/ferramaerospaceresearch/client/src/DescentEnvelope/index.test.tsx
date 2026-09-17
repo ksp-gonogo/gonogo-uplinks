@@ -125,7 +125,7 @@ describe("aero descent layers", () => {
     // The integration cannot run without it, so there is no settle tick rather
     // than a tick placed against a guessed body. The two curves stay: the
     // parting they show needs no gravity, and the reference one is drawn here
-    // now rather than by the host, since a plot cannot draw into another plot.
+    // now rather than by the host widget, since a plot cannot draw into another plot.
     const layers = aeroDescentLayers(
       entryReading({ surfaceGravity: null, stall: null }),
     );
@@ -159,8 +159,8 @@ describe("registration", () => {
       getContributionsForSlot(slot).map((c: AnyContribution) => c.id);
     // Namespaced by the client handle, which is what stops two Uplinks
     // colliding on an id somebody picked independently. Note the plot names no
-    // host: `plots` is one slot for the app, and this Uplink could not name
-    // `landing-status` here even if it wanted to.
+    // host widget: `plots` is one slot for the app, and this Uplink could not
+    // name `landing-status` here even if it wanted to.
     expect(ids("plots")).toContain("aero:descent-envelope");
     expect(ids("landing-status.badges")).toContain(
       "aero:descent-envelope-badges",

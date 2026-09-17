@@ -22,11 +22,11 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  * headings is what the Space Center already did and the operator read the
  * repetition as the defect it was.</para>
  *
- * <para>So the whole rule rests on the host, and no section's own tests can see
- * it break. That is what this file holds, and it is asked of a section that is
- * NOT one of the widget's own: an outside Uplink adding a spend control to this
- * slot is covered by the same one balance, and a check that only ever saw the
- * built-in two would not say so.</para>
+ * <para>So the whole rule rests on the host widget, and no section's own tests
+ * can see it break. That is what this file holds, and it is asked of a section
+ * that is NOT one of the widget's own: an outside Uplink adding a spend
+ * control to this slot is covered by the same one balance, and a check that
+ * only ever saw the built-in two would not say so.</para>
  */
 
 const TOPICS = [

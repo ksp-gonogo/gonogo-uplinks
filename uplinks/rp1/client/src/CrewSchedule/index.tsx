@@ -9,7 +9,7 @@ import { kindOf } from "./template.js";
 
 /**
  * One kerbal's RP-1 schedule, rendered into the Astronaut Complex row the host
- * already drew for them.
+ * widget already drew for them.
  *
  * <para>An RP-1 career is substantially a personnel-scheduling game and none of
  * it reached an operator. A kerbal has a date their career ends, a date the
@@ -32,9 +32,9 @@ import { kindOf } from "./template.js";
  * around those rows: the scenes press "Active" to reach them. A second tab strip
  * inside a row would be tabs over one kerbal, under the tabs that already sort
  * the kerbals. It used to draw a `Card` so the block read as one thing rather
- * than as loose lines; the host draws the roster row as a card now, so a card
- * here is a box inside a box, and what holds the lines together instead is that
- * each of them names itself.</para>
+ * than as loose lines; the host widget draws the roster row as a card now, so
+ * a card here is a box inside a box, and what holds the lines together instead
+ * is that each of them names itself.</para>
  *
  * <para><b>Labelled readings, not sentences.</b> Every line was a whole sentence
  * in `ReadoutCaption`, which is uppercase and muted by construction: three of
@@ -46,10 +46,10 @@ import { kindOf } from "./template.js";
  *
  * <para>It carries no standing and draws no fatality distinction. Whether a
  * kerbal is RETIRED rather than dead rides the stock roster's own `standing`
- * field through the crewStanding capability, so the host has already put a
- * retiree in their own tab before this renders. That is deliberate: a widget
- * that has never heard of RP-1 must not report a retiree as a fatality, and it
- * could not have been fixed from here.</para>
+ * field through the crewStanding capability, so the host widget has already
+ * put a retiree in their own tab before this renders. That is deliberate: a
+ * widget that has never heard of RP-1 must not report a retiree as a fatality,
+ * and it could not have been fixed from here.</para>
  */
 export function CrewSchedule({
   kerbalName,

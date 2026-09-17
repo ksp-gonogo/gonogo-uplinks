@@ -170,8 +170,8 @@ describe("starting a build from a saved craft", () => {
 
   it("names the price on the confirm wording, beside the balance the widget already draws", async () => {
     // The repo's funds rule: a control that spends is never visible without a
-    // balance visible in the same widget. The host draws the balance; this
-    // proves the two are on screen together.
+    // balance visible in the same widget. The host widget draws the balance;
+    // this proves the two are on screen together.
     await withOneSavedCraft();
     const user = userEvent.setup();
 

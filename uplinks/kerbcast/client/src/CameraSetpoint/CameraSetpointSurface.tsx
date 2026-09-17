@@ -10,7 +10,7 @@
  * gated, consistent with any uplink command under signal loss.
  *
  * It is drawn OVER the picture as TWO absolutely positioned siblings, and
- * neither takes a share of the layout, because the host is a video widget whose
+ * neither takes a share of the layout, because the host widget is a video one whose
  * content is the picture. The CLUSTER, in the bottom-right corner, is the
  * control: the wheels and the commit, sized to its own content. The PREVIEW is
  * not in it. It is a free-standing tile at the bottom CENTRE of the picture,
@@ -31,7 +31,7 @@
  * its zoom pair on the left edge, so a staged control that supersedes the live
  * one lands on top of the affordance it is replacing instead of somewhere else
  * on the shot. Both of those live controls stand down for as long as this
- * surface is up: the host passes `disableManualControls`, because a live pan
+ * surface is up: the host widget passes `disableManualControls`, because a live pan
  * pad above the delay threshold aims at where the craft is NOW while the
  * picture shows where it was a light-time ago, and two controls for one camera
  * with nothing on screen saying which is which is worse than either alone.
@@ -99,7 +99,7 @@ const CLUSTER_INSET_PX = 8;
 
 /** The SDK's own pan pad, read off its `PanControl`: a square inset from the
  *  bottom-right corner of the picture. The cluster takes that corner, and the
- *  pad stands down while it does (`disableManualControls` on the host), so the
+ *  pad stands down while it does (`disableManualControls` on the host widget), so the
  *  inset is what the two share rather than a clearance between them. */
 const SDK_PAN_PAD_INSET_PX = 10;
 
@@ -176,7 +176,7 @@ function previewSize(
  *
  * An imperative handle for the same reason `CameraFeed` already holds one onto
  * the SDK's feed: the draft is this component's own state, the serial actions
- * are declared on the host widget, and lifting the draft up to the host to join
+ * are declared on the host widget, and lifting the draft up to it to join
  * them would put the operator's in-progress target in the tree that re-renders
  * at stream rate and end the "props only, no data hooks" testability this
  * component is written for.
@@ -237,7 +237,7 @@ export const CameraSetpointSurface = forwardRef<
   // What is held, in state, because the ticker below is an effect and rest has
   // to be able to stop it.
   const [rates, setRates] = useState<AxisRates>(REST_RATES);
-  // Bounds read at tick time rather than closed over. The host rebuilds this
+  // Bounds read at tick time rather than closed over. The host widget rebuilds this
   // object every render (it is derived inline from the live `CameraState`), so
   // an effect depending on it would tear the timer down and stand it back up at
   // stream rate, and the draft would move in fits or not at all.
@@ -269,7 +269,7 @@ export const CameraSetpointSurface = forwardRef<
    * command.
    *
    * Torn down on release (rest empties the dependency), on unmount, and on a
-   * change of mode, which unmounts this whole surface from the host. A timer
+   * change of mode, which unmounts this whole surface from the host widget. A timer
    * that outlived any of the three would keep turning a wheel nobody is holding.
    */
   useEffect(() => {
@@ -354,7 +354,7 @@ export const CameraSetpointSurface = forwardRef<
  * delayed cluster cost in picture. That reasoning offered the operator a live
  * pan pad and a live zoom pair that, above the delay threshold, aim at where
  * the craft is now while the picture shows where it was a light-time ago. The
- * host passes `disableManualControls` now, so there is no second control to
+ * host widget passes `disableManualControls` now, so there is no second control to
  * stand beside and no yardstick to read: this IS the aim control, and it takes
  * the corner the aim control has always been in.
  *

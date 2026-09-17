@@ -229,9 +229,9 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
 
   /**
    * The house rule, and the reason this section carries its own figure rather
-   * than leaning on the host's the way the construction queue does: this one
-   * carries the press, and the host draws its balance only once the widget is
-   * four rows tall.
+   * than leaning on the host widget's the way the construction queue does: this
+   * one carries the press, and the host widget draws its balance only once it
+   * is four rows tall.
    */
   it("shows the funds balance beside the control", async () => {
     const stream = mount();

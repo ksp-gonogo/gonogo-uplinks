@@ -5,7 +5,7 @@
  * exists for every widget without one being declared. What is declared here is
  * its PROPS type: a plain marker carrying none, so a section decides for itself
  * what to read off the wire rather than being handed a projection of the
- * host's.</para>
+ * host widget's.</para>
  *
  * <para>In its own module rather than beside the widget, because the widget
  * side-effect-imports its own two sections and each of those names the slot it

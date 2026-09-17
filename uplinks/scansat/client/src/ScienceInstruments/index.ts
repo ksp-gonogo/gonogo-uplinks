@@ -7,8 +7,8 @@
 // SCANsat vessel's.
 //
 // This hands Experiments the instruments it cannot observe for itself. The host
-// draws the rows, counts them in its header and matches them against its own
-// filter, so a SCANsat scanner reads exactly like a stock one.
+// widget draws the rows, counts them in its header and matches them against
+// its own filter, so a SCANsat scanner reads exactly like a stock one.
 //
 // It used to be an augment on `experiments.actions`, rendering ui-kit's science
 // row into a floating list that the host panel's `overflow: hidden` clipped,
@@ -52,7 +52,7 @@ export type ScienceInstrumentTopics = ContributionTopics<
  * match), so the flags are read straight and the strings fall back.
  *
  * The slot's four lifecycle flags are plain booleans with no third state: the
- * host draws a badge per flag, so there is nowhere on a row to put "nobody
+ * host widget draws a badge per flag, so there is nowhere on a row to put "nobody
  * read this". That is what made `=== true` a lie by construction rather than a
  * convenience, because it turns an absent flag into a definite OFF, and an
  * absent `rerunnable` in particular flips a SCANsat scanner's badge to
@@ -60,7 +60,7 @@ export type ScienceInstrumentTopics = ContributionTopics<
  * an entry in the shape this Uplink speaks, and the whole FRAME declines: no
  * row fabricates a badge, and no row goes quietly missing either, since a
  * short list drawn as complete is the same defect one rung along and the host
- * counts these rows in its own header.
+ * widget counts these rows in its own header.
  *
  * `null` is therefore "this frame is not readable", the answer this function
  * already gives for a payload that is not a list, and it stays distinct from
@@ -77,7 +77,7 @@ export function parseScanScience(raw: unknown): InstrumentEntry[] | null {
   for (const entry of raw) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
     const e = entry as Record<string, unknown>;
-    // partId is the row's React key and the host's identity for it, so an
+    // partId is the row's React key and the host widget's identity for it, so an
     // entry without one cannot be drawn at all.
     if (typeof e.partId !== "string") return null;
     if (
@@ -106,8 +106,8 @@ export function parseScanScience(raw: unknown): InstrumentEntry[] | null {
  * hand it a topics bag, assert the rows.
  *
  * There is no staleness to judge. A contribution is handed payloads rather than
- * `Reading`s, and how old a row is belongs to the host: it draws the rows, so it
- * is the one that can say.
+ * `Reading`s, and how old a row is belongs to the host widget: it draws the
+ * rows, so it is the one that can say.
  */
 export function computeScanScienceInstruments(
   topics: ScienceInstrumentTopics,

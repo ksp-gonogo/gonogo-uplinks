@@ -49,11 +49,12 @@ export const RP1_FACILITY_UPGRADE_COMMAND = "rp1.facility.upgrade";
  * `Rp1CareerProjectGate` refuses it under a managed save for exactly that
  * reason.</para>
  *
- * <para><b>The balance is in this section rather than borrowed from the
- * host.</b> The construction queue beside this one deliberately leans on the
- * host's figure, because it carries no control at all. This one carries the
- * press, and the host draws its balance only once the widget is four rows tall,
- * so a short Space Center would show a commitment with no money on screen.</para>
+ * <para><b>The balance is in this section rather than borrowed from the host
+ * widget.</b> The construction queue beside this one deliberately leans on the
+ * host widget's figure, because it carries no control at all. This one carries
+ * the press, and the host widget draws its balance only once it is four rows
+ * tall, so a short Space Center would show a commitment with no money on
+ * screen.</para>
  *
  * <para><b>The tiers come off `rp1.facilities`, not off
  * `career.facilities`, and that is what lets this section answer away
@@ -298,7 +299,7 @@ function UpgradeCard({
   const label = facilityLabel(facility);
   return (
     <ProjectCard
-      /* The tier the building is AT, which is the same number the host's grid
+      /* The tier the building is AT, which is the same number the host widget's grid
          reads for it. This badge used to name the tier the press BUYS, sitting
          300px under a grid cell reading "2 / 3" for the same Launch Pad: both
          were right and an operator read them as two opinions. One number about

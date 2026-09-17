@@ -44,11 +44,11 @@ export type HeartbeatBlobTopics = ContributionTopics<
  *   an AUGMENT contributes a COMPONENT. It renders itself, inside a slot, and
  *   owns what it looks like.
  *
- *   a CONTRIBUTION contributes DATA. The host draws it, in the host's own visual
+ *   a CONTRIBUTION contributes DATA. The host widget draws it, in its own visual
  *   language, so many contributors land in one coherent picture instead of each
  *   drawing its own idea of a marker.
  *
- * Reach for a contribution whenever the host is already drawing a KIND of thing
+ * Reach for a contribution whenever the host widget is already drawing a KIND of thing
  * and you have another one of them. Here that is a system-view entity: the view
  * knows how to place something in a body's orbit frame, project it, and draw it
  * at the reader's zoom, and none of that is knowledge this Uplink should acquire.
@@ -56,9 +56,9 @@ export type HeartbeatBlobTopics = ContributionTopics<
  * ## `compute` is pure, and that is a hard requirement
  *
  * It takes the current value of every declared dep and returns entries. No hooks,
- * no fetches, no state: it is called during the host's render and re-run when its
- * inputs change, so a side effect here runs at a cadence nobody chose. Anything
- * that needs a hook belongs in an augment.
+ * no fetches, no state: it is called during the host widget's render and re-run
+ * when its inputs change, so a side effect here runs at a cadence nobody
+ * chose. Anything that needs a hook belongs in an augment.
  *
  * Returning `null` and returning `[]` mean the same thing, and both mean "nothing
  * to draw". Say it by returning nothing rather than by contributing an entry with

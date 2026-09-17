@@ -73,7 +73,7 @@ export const RP1_TOOLING_REFIT_COMMAND = "rp1.tooling.refit";
  * purchase through its unlock-credit pool before it reaches funds, so the funds
  * balance alone does not decide whether a price can be met, and the split is the
  * producer's to make. The command asks RP-1 and refuses in RP-1's own words. The
- * host draws both balances for the same reason.</para>
+ * host widget draws both balances for the same reason.</para>
  *
  * <para><b>Two ways to close the gap, and the second one is free.</b> A part can
  * have its tooling bought, or it can be RESHAPED to a size the career already
