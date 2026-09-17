@@ -37,6 +37,34 @@
  * the audit must name, and one that fits, because a check that called every
  * widget broken would pass the first canary and still be useless.
  *
+ * ## ITS VERDICT IS PLATFORM-SENSITIVE. Measure it on Linux, not on macOS
+ *
+ * This measures clipping in PIXELS, so macOS and Linux disagree at the margin
+ * and the disagreement is a pass/fail rather than a prettier picture. Measured
+ * 2026-09-17 on `3d8da9c`: CI reported scansat's `scanning` as `title-clipped
+ * 3px` while the same command on the same commit reported `0 do not fit` on
+ * macOS. A clean local run is NOT evidence, and that is not covered by the
+ * ruling about skipping macOS renders: a render can be skipped, a gate cannot.
+ *
+ * Reproduce CI in a container, which does agree with it byte for byte:
+ *
+ *   podman run --rm -v "$STAGE:/w:Z" -w /w \
+ *     mcr.microsoft.com/playwright:v<resolved>-noble \
+ *     bash -lc 'cd /w && node tooling/minsize-gate.mjs --only <id>'
+ *
+ * `$STAGE` is a scratch COPY holding `tooling/`, `scripts/`, `package.json`,
+ * the one `uplinks/<id>/` and the vendored `.tgz` pins, with `node_modules`
+ * excluded; `npm install` inside the container on the first pass. Three traps,
+ * each of which cost a run:
+ *
+ *   - stage a copy, never mount the live worktree: an `npm install` inside
+ *     Linux overwrites the macOS binaries your own runs depend on
+ *   - `scripts/uplink-matrix.mjs` must be staged. The gate discovers legs
+ *     through it, and omitting it fails as `Cannot find module`, which does
+ *     not look like a staging mistake
+ *   - match the RESOLVED playwright (`node_modules/playwright/package.json`),
+ *     not the `^` range the client's manifest asks for
+ *
  * Usage:
  *   node tooling/minsize-gate.mjs                 every client-bearing Uplink
  *   node tooling/minsize-gate.mjs --only <name>   one, for a CI leg
@@ -426,6 +454,12 @@ if (regressions.length > 0) {
       "      nothing to scroll; a field cut off wants room for its value\n" +
       "    - RAISE its minSize, when the honest answer is that the widget cannot be\n" +
       "      that small. Say so in the commit\n\n" +
+      "  Read the finding above rather than the two lines of advice: it names the\n" +
+      "  element that clipped, and the sweep renders STARVED, so a heading is often\n" +
+      "  at its widest because it is drawing an absent value.\n\n" +
+      "  If this passes on your machine and fails in CI, it is not flaky: the\n" +
+      "  measurement is in pixels and macOS disagrees with Linux at the margin. See\n" +
+      "  this file's header for the container that reproduces CI.\n\n" +
       "  Do NOT add it to KNOWN_MISFITS: that list is empty and shrink-only.",
   );
   process.exit(1);
