@@ -1,0 +1,29 @@
+{
+  "id": "mechjeb",
+  "name": "MechJeb",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoMechJebUplink",
+  "dll": "GonogoMechJebUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "MechJeb2",
+    "tier": "ckan",
+    "ckan": "MechJeb2",
+    "builtAgainst": "2.15.3.0",
+    "assembly": "MechJeb2/Plugins/MechJeb2.dll"
+  },
+  "codegen": {
+    "assembly": "GonogoMechJebUplink.Contract",
+    "configurationMethod": "Gonogo.MechJebUplink.MechJebRtConfig.Configure",
+    "emits": {
+      "SITREP_MECHJEB_COMMANDMAP_OUT": "command-map.ts",
+      "SITREP_MECHJEB_UNITMAP_OUT": "units.ts",
+      "SITREP_MECHJEB_UNITJSON_OUT": "units.json"
+    }
+  },
+  "csharpNamespace": "Gonogo.MechJebUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@mechjeb-v0.0.1/uplinks/mechjeb/release/mechjeb.client.js"
+  }
+}
