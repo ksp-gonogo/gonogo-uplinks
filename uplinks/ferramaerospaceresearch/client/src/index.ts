@@ -9,7 +9,7 @@ import "./topics.js";
 import "./AeroState/index.js";
 import "./DescentEnvelope/index.js";
 
-export { AeroStateComponent } from "./AeroState/index.js";
+export { aeroAttitudeLayers } from "./AeroState/index.js";
 export { aeroBadges, aeroDescentLayers } from "./DescentEnvelope/index.js";
 export { AERO_AVAILABLE_TOPIC, AERO_STATE_TOPIC } from "./topics.js";
 export { AERO } from "./uplink.js";

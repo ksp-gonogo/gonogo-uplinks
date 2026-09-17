@@ -1,16 +1,126 @@
 {
   "_meta": {
-    "notes": "The state a vessel the aerodynamics model holds no reading for sits in: on the pad before physics, in vacuum, or with no full-fidelity aerodynamics mod installed at all. Every field on the Topic is null, so the whole widget draws absence."
+    "notes": "The state a vessel the aerodynamics model holds no reading for sits in: on the pad before physics, in vacuum, or immediately after a scene change. Every field on the Topic is null. With neither alpha nor sideslip present there is no point to place, so this contribution draws nothing at all: it does not appear on Landing Status's board rather than showing an empty square. The descent envelope contributed by the same Uplink still draws its own NO AERO DATA caption, since it does not depend on this reading alone."
   },
   "_scene": {
-    "widget": "aero-state",
-    "caption": "No aerodynamic reading at all: every field absent, and absence drawn as absence rather than as a run of zeroes",
-    "expectsEmpty": "This scene IS the absent case, so it renders the same fed and starved by construction: a payload of nothing but nulls and no payload at all are the same picture, and that identity is the property being photographed. What must be visible is that the widget says NO AERO DATA and leaves eleven dashes rather than eleven zeroes, which a reader can check in the image.",
+    "contribution": "aero:aero-state",
+    "hostWidget": "landing-status",
+    "expectsEmpty": "No aero.state reading at all means no attitude to place, and this contribution's compute returns null rather than an empty gauge: the plot board shows only the descent envelope's own caption, and this contribution is absent from it by construction, not drawn faint or blank.",
     "modes": ["default"]
   },
   "_stream": {
     "pinnedUt": 1000000,
     "emits": [
+      {
+        "topic": "aero.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "name": "Kerbin",
+              "index": 1,
+              "parentIndex": 0,
+              "radius": 600000,
+              "surfaceGravity": 1,
+              "orbit": null
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "far-winged-entry",
+          "name": "Orbiter",
+          "vesselType": 0,
+          "situation": 6,
+          "parentBodyIndex": 1,
+          "launchUt": null
+        }
+      },
+      {
+        "topic": "vessel.orbit",
+        "payload": {
+          "referenceBodyIndex": 1,
+          "sma": 615000,
+          "ecc": 0.03,
+          "inc": 0,
+          "lan": 0,
+          "argPe": 0,
+          "meanAnomalyAtEpoch": 0,
+          "epoch": 1000000,
+          "mu": 3531600000000,
+          "horizon": {
+            "kind": 1,
+            "trajectoryKind": 1
+          }
+        }
+      },
+      {
+        "topic": "vessel.flight",
+        "payload": {
+          "latitude": -0.05,
+          "longitude": -74.6,
+          "altitudeAsl": 28000,
+          "altitudeTerrain": 28000,
+          "verticalSpeed": -240,
+          "surfaceSpeed": 2200,
+          "orbitalSpeed": 2210,
+          "gForce": 1.6,
+          "dynamicPressureKPa": 4.8,
+          "mach": 7.1,
+          "atmDensity": 0.02,
+          "atmosphericTemperature": 224.15,
+          "externalTemperature": 1450
+        }
+      },
+      {
+        "topic": "vessel.surface",
+        "payload": {
+          "biome": "Highlands",
+          "landedAt": null,
+          "heightFromTerrain": 28000
+        }
+      },
+      {
+        "topic": "vessel.propulsion",
+        "payload": {
+          "totalMass": 90,
+          "dryMass": 84,
+          "currentThrust": 0,
+          "availableThrust": 0
+        }
+      },
+      {
+        "topic": "dv.summary",
+        "payload": {
+          "totalDvActual": 120,
+          "totalDvVac": 130
+        }
+      },
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "source": 1,
+          "oneWaySeconds": 1.2
+        }
+      },
+      {
+        "topic": "vessel.landing",
+        "payload": {
+          "outcome": "atmosphere-modelled",
+          "sampleSource": null,
+          "terminalVelocity": 300,
+          "projectedTouchdownSpeed": 95,
+          "atmosphericTimeToImpact": 310,
+          "descentRegime": "decelerating",
+          "dragToWeightRatio": 2.4,
+          "parachuteState": "stowed"
+        }
+      },
       {
         "topic": "aero.state",
         "payload": {

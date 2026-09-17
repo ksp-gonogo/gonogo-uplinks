@@ -19,38 +19,27 @@ Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and 
 | `aero.state` | `AeroState` | lossy-latest | delayed |
 | `aero.available` | – | lossy-latest | true-now |
 
-## Widgets
-
-### Aerodynamics
-
-Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.
-
-| | |
-| --- | --- |
-| Widget id | `aero-state` |
-| Reads | `aero.state` |
-| Only while present | `flight` |
-| Default size | 4 × 7 |
-| Scenes | 4 |
-
-![Launch vehicle through max q, one tick after separation: no wing, so no stall fraction or lift, and the model is flagged stale](docs/assets/ascent-no-wings--default.png)
-
-![No aerodynamic reading at all: every field absent, and absence drawn as absence rather than as a run of zeroes](docs/assets/no-aero-model--default.png)
-
-![Re-entry at 40° alpha: partial stall, lift and drag near parity, indicated airspeed far below true](docs/assets/reentry-high-alpha--default.png)
-
-![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
-
-![The same widget at its minimum size](docs/assets/winged-subsonic-climb--min.png)
-
-![The same widget at 18 × 5](docs/assets/winged-subsonic-climb--landscape-18x5.png)
-
 ## Contributions
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
+| `aero:aero-state` | `plots` | `aero.state` | only while `aero` |
 | `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `system.bodies` | only while `aero` |
 | `aero:descent-envelope-badges` | `landing-status.badges` | `aero.state` | only while `aero` |
+
+![Booster core falling back through max q, one tick after separation: no wing, so no stall band or L/D caption, and the model is flagged stale](docs/assets/descent-no-wings--default.png)
+
+![The same widget at its minimum size](docs/assets/descent-no-wings--min.png)
+
+![no-aero-model](docs/assets/no-aero-model--default.png)
+
+![Entry at 40° alpha: the attitude point past the top of the frame, partial stall captioned, lift and drag near parity](docs/assets/reentry-high-alpha--default.png)
+
+![The same widget at its minimum size](docs/assets/reentry-high-alpha--min.png)
+
+![Winged vehicle in clean subsonic flight, attached flow: the attitude point sits near centre, L/D and terminal velocity both captioned](docs/assets/winged-subsonic-approach--default.png)
+
+![The same widget at its minimum size](docs/assets/winged-subsonic-approach--min.png)
 
 ![Atmospheric final approach over a sampled site: ONE descent envelope, carrying the host's terminal corridor and the aero model's own curve merged onto it, beside the same touchdown site and cross-section the vacuum board draws](docs/assets/atmospheric-final-approach-site--default.png)
 

@@ -1,0 +1,147 @@
+{
+  "_meta": {
+    "notes": "SYNTHETIC, hand-built from Atlas-class core-stage numbers: a 28-tonne booster falling back through max q on its own descent, 3.7 m core so 10.75 m² of reference area. A rocket has no wing area for a stall fraction to be a fraction of and no lift the model reports, so three fields are genuinely absent, and the tick shown is the one just after stage separation with the aerodynamics model not yet rebuilt. The attitude point still places, since alpha needs no wing to mean something; there is no stall band or L/D caption to go with it. Shown on Landing Status's own board, beside the descent envelope the same Uplink contributes.",
+    "sources": "Reference area is the frontal disc of a 3.7 m core; ballistic coefficient is m/(Cd·A) for the same mass, area and Cd 0.31."
+  },
+  "_scene": {
+    "contribution": "aero:aero-state",
+    "hostWidget": "landing-status",
+    "caption": "Booster core falling back through max q, one tick after separation: no wing, so no stall band or L/D caption, and the model is flagged stale",
+    "modes": ["default", "min"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "aero.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "name": "Kerbin",
+              "index": 1,
+              "parentIndex": 0,
+              "radius": 600000,
+              "surfaceGravity": 1,
+              "orbit": null
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "far-booster-core",
+          "name": "Booster Core",
+          "vesselType": 1,
+          "situation": 6,
+          "parentBodyIndex": 1,
+          "launchUt": null
+        }
+      },
+      {
+        "topic": "vessel.orbit",
+        "payload": {
+          "referenceBodyIndex": 1,
+          "sma": 611500,
+          "ecc": 0.01,
+          "inc": 0,
+          "lan": 0,
+          "argPe": 0,
+          "meanAnomalyAtEpoch": 0,
+          "epoch": 1000000,
+          "mu": 3531600000000,
+          "horizon": {
+            "kind": 1,
+            "trajectoryKind": 1
+          }
+        }
+      },
+      {
+        "topic": "vessel.flight",
+        "payload": {
+          "latitude": -0.05,
+          "longitude": -74.6,
+          "altitudeAsl": 11500,
+          "altitudeTerrain": 11500,
+          "verticalSpeed": -310,
+          "surfaceSpeed": 330,
+          "orbitalSpeed": 335,
+          "gForce": 1.3,
+          "dynamicPressureKPa": 34,
+          "mach": 1.02,
+          "atmDensity": 0.32,
+          "atmosphericTemperature": 235.15,
+          "externalTemperature": 250
+        }
+      },
+      {
+        "topic": "vessel.surface",
+        "payload": {
+          "biome": "Water",
+          "landedAt": null,
+          "heightFromTerrain": 11500
+        }
+      },
+      {
+        "topic": "vessel.propulsion",
+        "payload": {
+          "totalMass": 28,
+          "dryMass": 28,
+          "currentThrust": 0,
+          "availableThrust": 0
+        }
+      },
+      {
+        "topic": "dv.summary",
+        "payload": {
+          "totalDvActual": 0,
+          "totalDvVac": 0
+        }
+      },
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "source": 1,
+          "oneWaySeconds": 0.1
+        }
+      },
+      {
+        "topic": "vessel.landing",
+        "payload": {
+          "outcome": "atmosphere-modelled",
+          "sampleSource": null,
+          "terminalVelocity": 250,
+          "projectedTouchdownSpeed": 240,
+          "atmosphericTimeToImpact": 480,
+          "descentRegime": "decelerating",
+          "dragToWeightRatio": 1.1,
+          "parachuteState": "none"
+        }
+      },
+      {
+        "topic": "aero.state",
+        "payload": {
+          "angleOfAttack": 2.4,
+          "sideslip": 0.1,
+          "stallFraction": null,
+          "liftCoefficient": null,
+          "dragCoefficient": 0.312,
+          "liftToDragRatio": null,
+          "referenceArea": 10.75,
+          "liftForce": null,
+          "dragForce": 148.6,
+          "indicatedAirspeed": 320,
+          "equivalentAirspeed": 318,
+          "terminalVelocity": null,
+          "ballisticCoefficient": 8351,
+          "specificExcessPower": 941.2,
+          "aeroModelValid": false
+        }
+      }
+    ]
+  }
+}
