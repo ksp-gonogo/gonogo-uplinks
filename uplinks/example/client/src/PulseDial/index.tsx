@@ -1,4 +1,9 @@
-import { magnitudeOf, registerComponent, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  magnitudeOf,
+  registerComponent,
+  useTelemetry,
+  value,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Dial,
   EmptyState,
@@ -84,9 +89,9 @@ function PulseDialWidget() {
       sections={
         <Section>
           <Dial
-            value={ticks}
-            min={0}
-            max={SWEEP_TICKS}
+            value={value("count", ticks)}
+            min={value("count", 0)}
+            max={value("count", SWEEP_TICKS)}
             wrap
             valueLabel={String(ticks)}
             ticks={DIAL_TICKS}
@@ -110,10 +115,10 @@ const SWEEP_TICKS = 60;
 
 /** Quarters, so the sweep direction is readable without labelling every step. */
 const DIAL_TICKS = [
-  { value: 0, label: "0" },
-  { value: 15 },
-  { value: 30, label: "30" },
-  { value: 45 },
+  { value: value("count", 0), label: "0" },
+  { value: value("count", 15) },
+  { value: value("count", 30), label: "30" },
+  { value: value("count", 45) },
 ];
 
 registerComponent({
