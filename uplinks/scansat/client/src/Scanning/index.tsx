@@ -340,7 +340,17 @@ function ScanningComponent({
             )}
           </Section>,
 
-          <Section key="anomalies" title={`Anomalies: ${bodyName ?? "?"}`}>
+          /*
+           * The body is NAMED only when there is one. "Anomalies: ?" told an
+           * operator nothing a bare "Anomalies" does not, and those four
+           * characters are what pushed the title past the widget's own declared
+           * 3-column minimum: the heading clipped by 3px with no body focused,
+           * which is the state it is in most often.
+           */
+          <Section
+            key="anomalies"
+            title={bodyName ? `Anomalies: ${bodyName}` : "Anomalies"}
+          >
             {anomalies && anomalies.length > 0 ? (
               <Stack gap="xs">
                 {anomalies.map((a) => (
