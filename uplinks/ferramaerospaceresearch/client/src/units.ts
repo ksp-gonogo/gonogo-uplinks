@@ -21,7 +21,6 @@
 // power in the tens, across the whole range of craft either describes, so there
 // is nothing to climb and a kilo-prefix on either would be noise.
 import { registerUnit } from "@ksp-gonogo/sitrep-sdk";
-import { registerUnit as registerDisplayUnit } from "@ksp-gonogo/ui-kit";
 
 /**
  * The TYPE half of the same two tokens, merged into the sdk's declarations
@@ -64,5 +63,3 @@ registerUnit({
   ratio: 1,
 });
 
-registerDisplayUnit({ symbol: "kg/m²", kind: "arealDensity" });
-registerDisplayUnit({ symbol: "W/kg", kind: "specificPower" });
