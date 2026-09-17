@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "Ballistic capsule, no wings: no STALL word at all because there is no stall fraction to read, and a high ballistic coefficient that puts the settle deep. The plot is the Uplink's own, contributed to `plots`, beside the landing widget's"
   },

@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "rp1:rp1-avionics-badge",
-    "host": "navball",
+    "hostWidget": "navball",
     "caption": "AFTER: roll authority survives the tonnage check, in a caution tone and its own words",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },

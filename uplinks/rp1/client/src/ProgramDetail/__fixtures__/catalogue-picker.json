@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-program-detail",
-    "host": "strategies",
+    "hostWidget": "strategies",
     "caption": "The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes",
     "modes": ["default", "mobile-9x8", "portrait-5x18", "landscape-18x5"],
     "paints": [

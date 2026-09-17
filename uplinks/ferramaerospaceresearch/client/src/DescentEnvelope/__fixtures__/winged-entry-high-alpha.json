@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge"
   },

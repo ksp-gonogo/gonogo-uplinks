@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-program-detail",
-    "host": "strategies",
+    "hostWidget": "strategies",
     "caption": "A Program whose funding curve RP-1 has not published: the chart refuses to draw and says so, rather than drawing zero",
     "paints": [
       "PROGRAM DETAIL",

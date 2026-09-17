@@ -19,7 +19,7 @@
       "Nedcas Kerman off",
       "TRAINING COURSES"
     ],
-    "host": "astronaut-complex",
+    "hostWidget": "astronaut-complex",
     "before": [
       {
         "press": "Training"

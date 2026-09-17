@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-program-status",
-    "host": "career-economy",
+    "hostWidget": "career-economy",
     "size": { "w": 8, "h": 18 },
     "caption": "Both Program slots committed, the running Program past its deadline and losing reputation by the year, and the next one out of Confidence reach",
     "paints": [

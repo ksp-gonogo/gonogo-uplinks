@@ -11,7 +11,7 @@
 // nobody else could write, which is what this file is for.
 import { type MockCameraInit, MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import { dispatchAction, registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
-import { defineRenderSetup } from "@ksp-gonogo/ui-kit/render-probe";
+import { defineRenderSetup } from "@ksp-gonogo/uplink-tools/render-probe";
 import { KerbcastDataSource } from "./src/KerbcastDataSource";
 
 /**

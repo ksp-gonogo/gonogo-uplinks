@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-warp-targets",
-    "host": "warp-control",
+    "hostWidget": "warp-control",
     "size": {
       "w": 6,
       "h": 10

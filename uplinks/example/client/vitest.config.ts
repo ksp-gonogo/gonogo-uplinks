@@ -23,7 +23,11 @@ export default defineConfig({
     // first-party clients get for free and an installed copy does not.
     server: {
       deps: {
-        inline: ["@ksp-gonogo/ui-kit", "@ksp-gonogo/sitrep-sdk"],
+        inline: [
+          "@ksp-gonogo/ui-kit",
+          "@ksp-gonogo/sitrep-sdk",
+          "@ksp-gonogo/uplink-tools",
+        ],
       },
     },
   },

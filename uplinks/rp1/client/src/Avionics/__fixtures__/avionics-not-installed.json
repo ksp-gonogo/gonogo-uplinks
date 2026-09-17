@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "rp1:rp1-avionics-badge",
-    "host": "navball",
+    "hostWidget": "navball",
     "caption": "BEFORE: no RP-1 on the game, so the Navball header carries only its own SAS and RCS badges",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },

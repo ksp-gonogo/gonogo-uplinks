@@ -5,7 +5,7 @@
   },
   "_scene": {
     "augment": "rp1-training-enrolment",
-    "host": "astronaut-complex",
+    "hostWidget": "astronaut-complex",
     "size": {
       "w": 12,
       "h": 16

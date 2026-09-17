@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "rp1:crew-core-stats",
-    "host": "astronaut-complex",
+    "hostWidget": "astronaut-complex",
     "modes": ["default"],
     "size": {
       "w": 10,

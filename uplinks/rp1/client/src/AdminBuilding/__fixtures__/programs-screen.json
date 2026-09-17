@@ -4,7 +4,7 @@
   },
   "_scene": {
     "contribution": "rp1:programs-screen",
-    "host": "strategies",
+    "hostWidget": "strategies",
     "size": {
       "w": 9,
       "h": 16

@@ -1,7 +1,7 @@
 {
   "_scene": {
     "augment": "rp1-start-research",
-    "host": "tech-tree",
+    "hostWidget": "tech-tree",
     "size": {
       "w": 12,
       "h": 16

@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "Subsonic final approach with the wing departing: a solid trace because the transonic region is behind, and STALL up the left edge in the nogo tone"
   },

@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-contract-payload",
-    "host": "contract-manager",
+    "hostWidget": "contract-manager",
     "size": {
       "w": 8,
       "h": 14

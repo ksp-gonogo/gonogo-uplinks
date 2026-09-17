@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope-badges",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget"
   },

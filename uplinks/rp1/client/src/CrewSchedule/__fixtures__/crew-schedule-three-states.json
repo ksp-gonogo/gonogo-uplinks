@@ -5,7 +5,7 @@
   },
   "_scene": {
     "augment": "rp1-crew-schedule",
-    "host": "astronaut-complex",
+    "hostWidget": "astronaut-complex",
     "size": {
       "w": 10,
       "h": 18

@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "No aerodynamics model installed: the presence gate stays shut, this Uplink contributes no plot at all, and the landing widget arranges only its own"
   },

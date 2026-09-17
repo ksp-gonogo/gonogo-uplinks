@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "aero:descent-envelope",
-    "host": "landing-status",
+    "hostWidget": "landing-status",
     "modes": ["default"],
     "caption": "Mun final approach, no atmosphere: the aero model contributes nothing and there is no descent envelope to contribute to. The touchdown site and the terrain cross-section carry the board, both in metres"
   },

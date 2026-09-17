@@ -5,7 +5,7 @@
   },
   "_scene": {
     "contribution": "rp1:rp1-avionics-badge",
-    "host": "navball",
+    "hostWidget": "navball",
     "caption": "AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
