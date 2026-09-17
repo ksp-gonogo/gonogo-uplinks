@@ -1,0 +1,29 @@
+{
+  "id": "rp1",
+  "name": "RP-1",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoRp1Uplink",
+  "dll": "GonogoRp1Uplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "RP-1",
+    "tier": "ckan",
+    "ckan": "RP-1",
+    "builtAgainst": "4.6.0.0"
+  },
+  "codegen": {
+    "assembly": "GonogoRp1Uplink.Contract",
+    "configurationMethod": "GonogoRp1Uplink.Rp1RtConfig.Configure",
+    "emits": {
+      "SITREP_RP1_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_RP1_UNITMAP_OUT": "units.ts",
+      "SITREP_RP1_UNITJSON_OUT": "units.json",
+      "SITREP_RP1_COMMANDMAP_OUT": "command-map.ts"
+    }
+  },
+  "csharpNamespace": "GonogoRp1Uplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@rp1-v0.0.1/uplinks/rp1/release/rp1.client.js"
+  }
+}

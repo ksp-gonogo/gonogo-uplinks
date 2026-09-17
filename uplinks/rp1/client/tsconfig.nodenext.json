@@ -1,0 +1,10 @@
+{
+  "//": "The same sources under moduleResolution nodenext. The two modes disagree SILENTLY: a `declare module` binds under bundler and does not under nodenext, so a declaration merge vanishes and every key it contributed goes with it. This client's commands.ts declares its CommandArgsMap/CommandReplyMap entries through exactly that mechanism, so it is the pattern most worth holding to both modes.",
+  "extends": "@ksp-gonogo/sitrep-sdk/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src"]
+}

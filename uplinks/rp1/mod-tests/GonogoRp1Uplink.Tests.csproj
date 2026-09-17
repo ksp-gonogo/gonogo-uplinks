@@ -1,0 +1,144 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- The WHOLE uplink compiles here, reflection layer included, because none of
+       it references KSP or Unity: everything it reads is RP-1's own state
+       reached by reflection. So the graph walk is exercised headless against the
+       stand-in RP-1 types in Rp0Fixture.cs rather than being the one part that
+       only a live game could test. -->
+  <ItemGroup>
+    <Compile Include="..\mod\Rp1Types.cs" />
+    <Compile Include="..\mod\Rp1ScRaw.cs" />
+    <Compile Include="..\mod\Rp1ScMath.cs" />
+    <Compile Include="..\mod\Rp1ScCapture.cs" />
+    <Compile Include="..\mod\Rp1ScReflection.cs" />
+    <Compile Include="..\mod\Rp1FacilitiesReflection.cs" />
+    <Compile Include="..\mod\Rp1ProgramsRaw.cs" />
+    <Compile Include="..\mod\Rp1ProgramsMath.cs" />
+    <Compile Include="..\mod\Rp1ProgramsCapture.cs" />
+    <Compile Include="..\mod\Rp1ProgramsReflection.cs" />
+    <Compile Include="..\mod\Rp1CrewRaw.cs" />
+    <Compile Include="..\mod\Rp1CrewMath.cs" />
+    <Compile Include="..\mod\Rp1CrewCapture.cs" />
+    <Compile Include="..\mod\Rp1CrewReflection.cs" />
+    <Compile Include="..\mod\Rp1CrewStandingBackend.cs" />
+    <Compile Include="..\mod\Rp1TrainingCatalogueReflection.cs" />
+    <Compile Include="..\mod\Rp1TrainingCommands.cs" />
+    <Compile Include="..\mod\Rp1ToolingRaw.cs" />
+    <Compile Include="..\mod\Rp1ToolingCapture.cs" />
+    <Compile Include="..\mod\Rp1ToolingReflection.cs" />
+    <Compile Include="..\mod\Rp1ToolingCommands.cs" />
+    <Compile Include="..\mod\Rp1CareerCostRaw.cs" />
+    <Compile Include="..\mod\Rp1CareerCostCapture.cs" />
+    <Compile Include="..\mod\Rp1CareerCostReflection.cs" />
+    <Compile Include="..\mod\Rp1AvionicsRaw.cs" />
+    <Compile Include="..\mod\Rp1AvionicsCapture.cs" />
+    <Compile Include="..\mod\Rp1AvionicsReflection.cs" />
+    <Compile Include="..\mod\Rp1ScUplink.cs" />
+    <Compile Include="..\mod\Rp1EconomyBackend.cs" />
+    <Compile Include="..\mod\Rp1EconomyUpkeepQuery.cs" />
+    <Compile Include="..\mod\Rp1LaunchGate.cs" />
+    <Compile Include="..\mod\Rp1CareerProjectGate.cs" />
+    <Compile Include="..\mod\Rp1Envelope.cs" />
+    <Compile Include="..\mod\Rp1Buildable.cs" />
+    <Compile Include="..\mod\Rp1Pricing.cs" />
+    <Compile Include="..\mod\Rp1BuildCommands.cs" />
+    <Compile Include="..\mod\Rp1BuildStartCommands.cs" />
+    <Compile Include="..\mod\Rp1VehicleCommands.cs" />
+    <Compile Include="..\mod\Rp1ComplexWrites.cs" />
+    <Compile Include="..\mod\Rp1LcCostModel.cs" />
+    <Compile Include="..\mod\Rp1ComplexLifecycleCommands.cs" />
+    <Compile Include="..\mod\Rp1ComplexConstructionCommands.cs" />
+    <Compile Include="..\mod\Rp1WarpCommands.cs" />
+    <Compile Include="..\mod\Rp1ContractCommands.cs" />
+    <Compile Include="..\mod\Rp1PersonnelCommands.cs" />
+    <Compile Include="..\mod\Rp1StrategyWrites.cs" />
+    <Compile Include="..\mod\Rp1StrategyCommands.cs" />
+    <Compile Include="..\mod\Rp1TargetCommands.cs" />
+    <Compile Include="..\mod\Rp1FacilityUpgradeCommands.cs" />
+    <Compile Include="..\mod\Rp1ResearchCommands.cs" />
+    <Compile Include="..\mod\Rp1SimulationBackend.cs" />
+    <Compile Include="..\mod\Rp1DerivedCurrencyWithholder.cs" />
+    <Compile Include="..\mod\Rp1ConfidenceThresholdSource.cs" />
+    <Compile Include="..\mod\Rp1HomeCommand.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+    <ProjectReference Include="..\mod-contract\GonogoRp1Uplink.Contract.csproj" />
+    <!-- The shared Unit-coverage sweep every relocated Uplink's own coverage
+         test calls; the [Fact]s stay here, naming this Uplink's types. -->
+    <Reference Include="Sitrep.Contract.TestSupport">
+      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- THE INSTALLED-RP-1 COMPATIBILITY GUARD, and why it is gated rather than
+       always on. This Uplink reaches RP-1 entirely by reflection, private fields
+       included, so nothing in the compiler and nothing in the rest of this suite
+       notices a future RP-1 release renaming what the walk reads. Rp0Fixture
+       cannot notice either: it carries RP-1's names in RP-1's namespaces, so a
+       rename on RP-1's side makes it wrong in the same direction it makes
+       production wrong and every test stays green.
+
+       Rp1InstalledCompatibilityTests opens the SHIPPED RP0.dll and checks the
+       manifest against it, which needs an install. CI has none: the reference
+       set carries KSP's managed assemblies and the GameData of the mods an
+       Uplink wraps, and RP-1 is a 300MB career overhaul nobody vendors to build
+       a client against. A test that PASSED when it could not find the assembly
+       would report compatibility it never looked at, so the file is not
+       compiled at all in that case and the Warning below fires on every build
+       instead: a build warning is printed at normal verbosity and shows up as a
+       CI annotation, where a passing test's console output does not.
+
+       Rp1ReflectionManifestTests is NOT gated: it holds the manifest to the
+       production walk, needs no install, and fails a run that declared
+       GONOGO_RP1_COMPAT_REQUIRED without the guard compiled. -->
+  <PropertyGroup>
+    <Rp1Plugins Condition="'$(Rp1Plugins)' == '' And '$(GONOGO_RP1_PLUGINS)' != ''">$(GONOGO_RP1_PLUGINS)</Rp1Plugins>
+    <Rp1Plugins Condition="'$(Rp1Plugins)' == '' And '$(KSP_GAMEDATA)' != '' And Exists('$(KSP_GAMEDATA)/RP-1/Plugins/RP0.dll')">$(KSP_GAMEDATA)/RP-1/Plugins</Rp1Plugins>
+    <Rp1Plugins Condition="'$(Rp1Plugins)' == '' And Exists('$(KspGameData)/RP-1/Plugins/RP0.dll')">$(KspGameData)/RP-1/Plugins</Rp1Plugins>
+    <Rp1PluginsAvailable Condition="'$(Rp1Plugins)' != '' And Exists('$(Rp1Plugins)/RP0.dll')">true</Rp1PluginsAvailable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Rp1PluginsAvailable)' != 'true'">
+    <Compile Remove="InstalledAssembly.cs" />
+    <Compile Remove="Rp1InstalledCompatibilityTests.cs" />
+  </ItemGroup>
+
+  <!-- The directory is baked in rather than read from the environment at run
+       time, so the binary that ran cannot disagree with the build that decided
+       the check was possible. -->
+  <ItemGroup Condition="'$(Rp1PluginsAvailable)' == 'true'">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Rp1Plugins</_Parameter1>
+      <_Parameter2>$(Rp1Plugins)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Rp1PluginsAvailable)' == 'true'">
+    <DefineConstants>$(DefineConstants);RP1_COMPAT_GUARD</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="WarnIfRp1PluginsMissing" BeforeTargets="Build" Condition="'$(Rp1PluginsAvailable)' != 'true'">
+    <Warning Text="RP0.dll not found (Rp1Plugins=$(Rp1Plugins)): RP-1 COMPATIBILITY NOT VERIFIED. Rp1InstalledCompatibilityTests is not compiled, so nothing in this run checked that the installed RP-1 still carries the members this Uplink reaches by reflection - a rename on RP-1's side would leave every other test green. Pass /p:Rp1Plugins=&lt;dir containing RP0.dll&gt;, or set GONOGO_RP1_PLUGINS or KSP_GAMEDATA, to compile and run it." />
+  </Target>
+
+</Project>
