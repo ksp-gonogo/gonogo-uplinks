@@ -52,7 +52,14 @@ describe("generated contract.ts: Value/Vec3Of usage resolves to core", () => {
     expect(source).toMatch(/trackColor\?:\s*ScanTrackColor;/);
     // The deepest declared quantities on the SCANsat surface: if these ever
     // stop being Value<"m">, the nested-hydration path has nothing left to prove.
-    expect(source).toMatch(/minAlt\?:\s*Value<"m">;/);
-    expect(source).toMatch(/bestAlt\?:\s*Value<"m">;/);
+    //
+    // The `| null` is optional in the pattern rather than required, because what
+    // is being pinned is the UNIT-CARRYING type and not its nullability. Codegen
+    // widens a nullable value-typed member to `Value<"m"> | null` so the type can
+    // hold the null the wire sends; that is a different property, guarded
+    // elsewhere, and a pattern that demanded it here would fail the day a member
+    // legitimately became non-nullable.
+    expect(source).toMatch(/minAlt\?:\s*Value<"m">(?:\s*\|\s*null)?;/);
+    expect(source).toMatch(/bestAlt\?:\s*Value<"m">(?:\s*\|\s*null)?;/);
   });
 });

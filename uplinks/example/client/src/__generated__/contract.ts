@@ -6,6 +6,6 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
 export interface ExampleHeartbeat
 {
-	ut?: Value<"ut">;
-	ticks?: Value<"count">;
+	ut?: Value<"ut"> | null;
+	ticks?: Value<"count"> | null;
 }

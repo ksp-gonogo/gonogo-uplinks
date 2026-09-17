@@ -6,32 +6,32 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
 export interface ScanSensorEntry
 {
-	type?: number;
-	fov?: Value<"°">;
-	minAlt?: Value<"m">;
-	maxAlt?: Value<"m">;
-	bestAlt?: Value<"m">;
-	inRange?: boolean;
-	bestRange?: boolean;
+	type?: number | null;
+	fov?: Value<"°"> | null;
+	minAlt?: Value<"m"> | null;
+	maxAlt?: Value<"m"> | null;
+	bestAlt?: Value<"m"> | null;
+	inRange?: boolean | null;
+	bestRange?: boolean | null;
 }
 export interface ScanTrackColor
 {
-	r?: Value<"count">;
-	g?: Value<"count">;
-	b?: Value<"count">;
-	a?: Value<"count">;
+	r?: Value<"count"> | null;
+	g?: Value<"count"> | null;
+	b?: Value<"count"> | null;
+	a?: Value<"count"> | null;
 }
 export interface ScanningVesselEntry
 {
 	vesselId?: string;
 	vesselName?: string;
 	body?: string;
-	subLatitude?: Value<"°">;
-	subLongitude?: Value<"°">;
-	altitude?: Value<"m">;
+	subLatitude?: Value<"°"> | null;
+	subLongitude?: Value<"°"> | null;
+	altitude?: Value<"m"> | null;
 	sensors?: ScanSensorEntry[];
-	groundTrackWidthDeg?: Value<"°">;
-	groundTrackLonHalfDeg?: Value<"°">;
+	groundTrackWidthDeg?: Value<"°"> | null;
+	groundTrackLonHalfDeg?: Value<"°"> | null;
 	trackColor?: ScanTrackColor;
 }
 export interface ScanScienceEntry
@@ -40,16 +40,16 @@ export interface ScanScienceEntry
 	partTitle?: string;
 	expId?: string;
 	title?: string;
-	deployed?: boolean;
-	hasData?: boolean;
-	rerunnable?: boolean;
-	inoperable?: boolean;
+	deployed?: boolean | null;
+	hasData?: boolean | null;
+	rerunnable?: boolean | null;
+	inoperable?: boolean | null;
 }
 export interface ScanAnomalyEntry
 {
 	name?: string;
-	latitude?: Value<"°">;
-	longitude?: Value<"°">;
-	known?: boolean;
-	detail?: boolean;
+	latitude?: Value<"°"> | null;
+	longitude?: Value<"°"> | null;
+	known?: boolean | null;
+	detail?: boolean | null;
 }

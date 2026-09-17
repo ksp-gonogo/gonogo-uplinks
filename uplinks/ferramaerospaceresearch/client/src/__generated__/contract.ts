@@ -41,25 +41,25 @@ export interface AeroState
 	* pitch plane. The number an ascent is flown to and a re-entry is held on, and
 	* the one no channel carried before.
 	*/
-	angleOfAttack?: Value<"°">;
+	angleOfAttack?: Value<"°"> | null;
 	/** Angle between the airflow and the vessel's plane of symmetry, in yaw. */
-	sideslip?: Value<"°">;
+	sideslip?: Value<"°"> | null;
 	/**
 	* How much of the vessel's wing area is stalled, weighted by area: 0 is fully
 	* attached flow, 1 is every wing stalled. Absent on a craft with no
 	* aerodynamic wing surfaces at all, which is most rockets, because the
 	* quantity is a fraction OF wing area and there is none.
 	*/
-	stallFraction?: Value<"ratio">;
+	stallFraction?: Value<"ratio"> | null;
 	/** Whole-vessel lift coefficient, referenced to `AeroState.referenceArea`. */
-	liftCoefficient?: Value<"1">;
+	liftCoefficient?: Value<"1"> | null;
 	/** Whole-vessel drag coefficient, referenced to `AeroState.referenceArea`. */
-	dragCoefficient?: Value<"1">;
+	dragCoefficient?: Value<"1"> | null;
 	/**
 	* Lift over drag: how far the vessel travels per unit of height it gives up,
 	* and the figure a glide or a lifting entry is flown by.
 	*/
-	liftToDragRatio?: Value<"1">;
+	liftToDragRatio?: Value<"1"> | null;
 	/**
 	* The area the two coefficients above are referenced to: total wing area on a
 	* winged craft, otherwise the maximum cross-section the aerodynamics model
@@ -75,42 +75,42 @@ export interface AeroState
 	* with suspicion on a craft with no wings, and read the coefficients as
 	* relative rather than absolute.
 	*/
-	referenceArea?: Value<"m²">;
+	referenceArea?: Value<"m²"> | null;
 	/** Total aerodynamic lift, perpendicular to the airflow. */
-	liftForce?: Value<"kN">;
+	liftForce?: Value<"kN"> | null;
 	/** Total aerodynamic drag, along the airflow. */
-	dragForce?: Value<"kN">;
+	dragForce?: Value<"kN"> | null;
 	/**
 	* Indicated airspeed: what a pitot tube on this vehicle would read, from the
 	* stagnation pressure at the current Mach and ambient pressure. The speed an
 	* airframe's limits are written against, unlike the surface speed on
 	* `vessel.flight`.
 	*/
-	indicatedAirspeed?: Value<"m/s">;
+	indicatedAirspeed?: Value<"m/s"> | null;
 	/**
 	* Equivalent airspeed: surface speed scaled by the square root of density
 	* ratio to sea level, so a given value means the same dynamic pressure at any
 	* altitude.
 	*/
-	equivalentAirspeed?: Value<"m/s">;
+	equivalentAirspeed?: Value<"m/s"> | null;
 	/**
 	* Terminal velocity at the current attitude, altitude and mass: the speed at
 	* which drag balances weight. Absent while the vessel produces no drag to
 	* balance against, which includes every vacuum coast.
 	*/
-	terminalVelocity?: Value<"m/s">;
+	terminalVelocity?: Value<"m/s"> | null;
 	/**
 	* Ballistic coefficient: mass over drag area. Low decelerates high and early,
 	* high drives the deceleration deeper into the atmosphere, which is what makes
 	* it the number an entry corridor is judged on.
 	*/
-	ballisticCoefficient?: Value<"kg/m²">;
+	ballisticCoefficient?: Value<"kg/m²"> | null;
 	/**
 	* Specific excess power: thrust less drag, per unit mass, at the current
 	* speed. Positive means the vehicle can still climb or accelerate on the power
 	* it has; crossing to negative is where an X-plane's climb stops.
 	*/
-	specificExcessPower?: Value<"W/kg">;
+	specificExcessPower?: Value<"W/kg"> | null;
 	/**
 	* Whether the aerodynamics model's voxelisation of this vessel is current.
 	* False after a stage separation, a deployment or a docking until the model
@@ -123,5 +123,5 @@ export interface AeroState
 	* it as `=== false` rather than for truthiness, or a vessel nobody could read
 	* becomes a vessel whose model has gone stale.
 	*/
-	aeroModelValid?: boolean;
+	aeroModelValid?: boolean | null;
 }

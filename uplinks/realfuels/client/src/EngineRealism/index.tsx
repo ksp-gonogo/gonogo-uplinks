@@ -123,7 +123,7 @@ function UllageState({
   simulated,
 }: {
   engine: RealFuelsEngineEntry;
-  simulated: boolean | undefined;
+  simulated: boolean | null | undefined;
 }) {
   if (simulated === false) {
     return (
@@ -134,9 +134,9 @@ function UllageState({
   }
   // The same three rungs IgnitionState draws under, for the same reason: a band
   // only means something once the game-wide regime is known. `false` above is a
-  // positive statement that ullage is off, but undefined is the Uplink failing
-  // to read the switch, and with the switch unknown a RISKY badge is either a
-  // real risk or a simulator sitting at its untouched initial value.
+  // positive statement that ullage is off, where null and undefined are both the
+  // Uplink failing to read the switch, and with the switch unknown a RISKY badge
+  // is either a real risk or a simulator sitting at its untouched initial value.
   if (simulated == null) {
     return (
       <Text size="xs" tone="muted">
@@ -177,7 +177,7 @@ function EngineRow({
   simulated,
 }: {
   engine: RealFuelsEngineEntry;
-  simulated: boolean | undefined;
+  simulated: boolean | null | undefined;
 }) {
   return (
     <>

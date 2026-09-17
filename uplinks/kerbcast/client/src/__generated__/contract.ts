@@ -28,13 +28,13 @@ export interface KerbcastCameraEntry
 	* multi-camera part. Use `KerbcastCameraEntry.partId` when you want part
 	* identity; use this when you want to talk to kerbcast.
 	*/
-	cameraId?: number;
+	cameraId?: number | null;
 	/**
 	* The real stock-KSP `Part.flightID` the camera is mounted on
 	* (`KerbcastCameraView.PartFlightId`): the join key onto `vessel.parts`. Null
 	* when the camera's part could not be read.
 	*/
-	partId?: number;
+	partId?: number | null;
 	/**
 	* kerbcast's camera name. NOT unique: Hullcam's docking-port patch names every
 	* docking-port camera "NavCam", which is precisely why
@@ -52,30 +52,30 @@ export interface KerbcastCameraEntry
 	* Whether the camera can zoom, kerbcast runtime-detects this from the part
 	* type.
 	*/
-	supportsZoom?: boolean;
+	supportsZoom?: boolean | null;
 	/**
 	* Whether the camera can pan. kerbcast derives this from a hardcoded per-part
 	* capability table, so it is false for most stock camera parts.
 	*/
-	supportsPan?: boolean;
+	supportsPan?: boolean | null;
 	/** Current field of view, degrees. */
-	fieldOfView?: Value<"°">;
+	fieldOfView?: Value<"°"> | null;
 	/** Narrowest field of view the camera allows, degrees (fully zoomed in). */
-	fieldOfViewMinimum?: Value<"°">;
+	fieldOfViewMinimum?: Value<"°"> | null;
 	/** Widest field of view the camera allows, degrees (fully zoomed out). */
-	fieldOfViewMaximum?: Value<"°">;
+	fieldOfViewMaximum?: Value<"°"> | null;
 	/** Current pan yaw, degrees. */
-	panYaw?: Value<"°">;
+	panYaw?: Value<"°"> | null;
 	/** Current pan pitch, degrees. */
-	panPitch?: Value<"°">;
+	panPitch?: Value<"°"> | null;
 	/** Minimum pan yaw the camera allows, degrees. */
-	panYawMinimum?: Value<"°">;
+	panYawMinimum?: Value<"°"> | null;
 	/** Maximum pan yaw the camera allows, degrees. */
-	panYawMaximum?: Value<"°">;
+	panYawMaximum?: Value<"°"> | null;
 	/** Minimum pan pitch the camera allows, degrees. */
-	panPitchMinimum?: Value<"°">;
+	panPitchMinimum?: Value<"°"> | null;
 	/** Maximum pan pitch the camera allows, degrees. */
-	panPitchMaximum?: Value<"°">;
+	panPitchMaximum?: Value<"°"> | null;
 	/**
 	* Whether this camera is mounted on a docking port, the operator-facing
 	* question "which of my cameras can I dock with".
@@ -90,7 +90,7 @@ export interface KerbcastCameraEntry
 	* Null means "could not determine" (the part was unreadable), distinct from
 	* `false`, "read the part, it has no docking node".
 	*/
-	isDockingCamera?: boolean;
+	isDockingCamera?: boolean | null;
 	/**
 	* The docking node's `nodeType` (e.g. `size1`, `size2`) when
 	* `KerbcastCameraEntry.isDockingCamera` is true, what this port can mate with.
