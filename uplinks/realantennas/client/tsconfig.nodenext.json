@@ -1,0 +1,10 @@
+{
+  "//": "The SAME sources under moduleResolution nodenext. An author who picks it is not doing anything exotic, and the two modes disagree SILENTLY: `declare module \"./types\"` binds under bundler and does not bind under nodenext, so a declaration merge vanishes and every key it contributed goes with it. Typechecking one mode and shipping to both is how that reaches a consumer.",
+  "extends": "@ksp-gonogo/sitrep-sdk/tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+  },
+  "include": ["src"]
+}
