@@ -68,9 +68,14 @@
 // LCSpaceCenter.AssociatedGroundStation calls KSCSwitcherInterop
 // .GetGroundStationForKSC, whose body IS read (it returns null outright when
 // KSCSwitcher is absent, and memoises otherwise) but which then invokes
-// KSCSwitcher's own GetSiteByName, and KSCSwitcher is not installed anywhere
-// reachable. So it is called at most ONCE per centre name, its result memoised
-// here as well, and a throw degrades that one field to absent.
+// KSCSwitcher's own GetSiteByName, whose body was not. So it is called at most
+// ONCE per centre name, its result memoised here as well, and a throw degrades
+// that one field to absent.
+//
+// KSCSwitcher IS installed (2.2.0, GameData/KSCSwitcher/Plugins), so that call
+// reaches a real site lookup rather than the null early-return, and the field
+// is normally populated. Treat absent here as a failed read, never as "the mod
+// is not there".
 using System;
 using System.Collections;
 using System.Collections.Generic;
