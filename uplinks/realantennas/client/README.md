@@ -9,7 +9,7 @@ Elects RealAntennas as the comms backend when it is installed, so the comms read
 | --- | --- |
 | Uplink id | `realantennas` |
 | Version | `0.0.1` |
-| Wraps | RealAntennas UNKNOWN (ckan) |
+| Wraps | RealAntennas 2.11.1.0 (ckan) |
 | Built against | contract 17.0, api 2.0.0, ui-kit 0.1.0 |
 
 ## Wire
