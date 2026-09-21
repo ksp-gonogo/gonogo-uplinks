@@ -1,0 +1,28 @@
+{
+  "id": "principia",
+  "name": "Principia",
+  "author": "Jon Pepler",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoPrincipiaUplink",
+  "dll": "GonogoPrincipiaUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "Principia",
+    "tier": "manual",
+    "builtAgainst": "2026081218-Levi-Civita"
+  },
+  "codegen": {
+    "assembly": "GonogoPrincipiaUplink.Contract",
+    "configurationMethod": "GonogoPrincipiaUplink.PrincipiaRtConfig.Configure",
+    "emits": {
+      "SITREP_PRINCIPIA_TOPICMAP_OUT": "topic-map.ts",
+      "SITREP_PRINCIPIA_UNITMAP_OUT": "units.ts",
+      "SITREP_PRINCIPIA_UNITJSON_OUT": "units.json",
+      "SITREP_PRINCIPIA_COMMANDMAP_OUT": "command-map.ts"
+    }
+  },
+  "csharpNamespace": "GonogoPrincipiaUplink",
+  "client": {
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@principia-v0.0.1/uplinks/principia/release/principia.client.js"
+  }
+}
