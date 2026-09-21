@@ -13,7 +13,7 @@ built and released on its own, and loaded by the app at runtime.
 | [Kerbcast](uplinks/kerbcast/client/README.md) | `kerbcast` | kerbcast 1.8.1 (manual) | Jon Pepler |
 | [MechJeb](uplinks/mechjeb/client/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) | Jon Pepler |
 | [Principia](uplinks/principia/client/README.md) | `principia` | Principia 2026081218-Levi-Civita (manual) | Jon Pepler |
-| [RealAntennas](uplinks/realantennas/client/README.md) | `realantennas` | RealAntennas UNKNOWN (ckan) | Jon Pepler |
+| [RealAntennas](uplinks/realantennas/client/README.md) | `realantennas` | RealAntennas 2.11.1.0 (ckan) | Jon Pepler |
 | [RealFuels](uplinks/realfuels/client/README.md) | `realfuels` | RealFuels 15.15.0 (ckan) | Jon Pepler |
 | [RP-1](uplinks/rp1/client/README.md) | `rp1` | RP-1 4.6.0.0 (ckan) | Jon Pepler |
 | [SCANsat](uplinks/scansat/client/README.md) | `scansat` | SCANsat 20.4 (ckan) | Jon Pepler |

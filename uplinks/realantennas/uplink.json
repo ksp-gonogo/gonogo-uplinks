@@ -10,7 +10,7 @@
     "name": "RealAntennas",
     "tier": "ckan",
     "ckan": "RealAntennas",
-    "builtAgainst": "UNKNOWN"
+    "builtAgainst": "2.11.1.0"
   },
   "codegen": {
     "assembly": "GonogoRealAntennasUplink.Contract",
