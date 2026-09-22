@@ -12,7 +12,7 @@ Four things, all resolved through overridable MSBuild properties
 | `KspManaged` | KSP's managed assemblies | your own KSP install, `KSP_x64_Data/Managed` |
 | `KspGameData` | the mod this Uplink wraps | your own `GameData` |
 | `GonogoContract` | `Sitrep.Contract.dll` per target framework, its codegen twin and `CodegenTwin.props` | `vendor/contract`, written by gonogo's vendoring script (below) |
-| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, the fakes and rule assertions a Tests project uses | `vendor/devkit`, written by the same script |
+| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, the fakes and rule assertions a Tests project uses, and `Sitrep.Core.dll`, the real Courier/Archive delay engine | `vendor/devkit`, written by the same script |
 
 The first two are not ours to redistribute and stay machine-local. The last two
 are gonogo's own, and both come from one run of a script in the gonogo repo, built
@@ -31,7 +31,11 @@ project that wants the shared fakes or the Unit-coverage sweep references
 `$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll` beside
 `$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll`; `xunit.assert`, the one
 other thing TestSupport needs, arrives with the Tests project's own xunit package.
-Both directories stay gitignored. Getting them onto CI runners is not solved yet.
+A Tests project that drives the delay engine end to end references
+`$(GonogoDevkit)\Sitrep.Core.dll` as well; it reaches nothing but `Sitrep.Contract`,
+so no satellite assemblies come with it. Both directories stay gitignored, and CI
+runs the same script to materialise them, then fails on any `HintPath` the resolved
+set does not carry.
 
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.
