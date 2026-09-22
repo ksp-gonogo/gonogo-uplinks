@@ -19,7 +19,9 @@
  *
  * Each listing entry: `{ name, size, isDir }`. `isDir` lets a caller
  * recurse into subdirectories (the picker itself doesn't; see
- * `useKosScriptListing`'s doc comment).
+ * `useKosScriptListing`'s doc comment). `size` and `isDir` are both JSON
+ * null when the volume could not report them, never a substituted 0 or
+ * false: see `KosFileEntry`.
  *
  * Escaping notes: `;` is the [KOSDATA] field delimiter, so file contents
  * containing `;` would otherwise truncate. We escape `;` as `;` along
@@ -63,17 +65,25 @@ IF op = "list" {
   FOR f IN items {
     IF NOT first { SET json TO json + ",". }
     SET first TO FALSE.
-    LOCAL size IS 0.
+    // Same three states as isDir below, for the same reason: a volume that
+    // has not told us how big a file is has not told us it is empty. A 0
+    // there is a definite claim, indistinguishable from a file that really is
+    // zero bytes, and the day a picker renders a size column every unreadable
+    // file would read "0 B" with nothing to connect it to this default.
+    LOCAL size IS "null".
     IF f:HASSUFFIX("SIZE") { SET size TO f:SIZE. }
-    // VolumeItems expose :ISFILE: false means a directory. Older kOS
-    // versions may not have the suffix, in which case we conservatively
-    // treat everything as a file.
-    LOCAL isDir IS FALSE.
-    IF f:HASSUFFIX("ISFILE") { SET isDir TO NOT f:ISFILE. }
+    // VolumeItems expose :ISFILE: false means a directory. An older kOS
+    // without the suffix has not told us which this is, and that goes on the
+    // wire as JSON null: an ABSENT kind. Writing false there instead is a
+    // definite claim, indistinguishable from a volume that positively
+    // reported ISFILE, which is how a directory named lib.ks reached the
+    // picker as a runnable script.
+    LOCAL isDir IS "null".
+    IF f:HASSUFFIX("ISFILE") { SET isDir TO (CHOOSE "true" IF NOT f:ISFILE ELSE "false"). }
     SET json TO json + "{"
       + quoteChar + "name" + quoteChar + ":" + quoteChar + f:NAME + quoteChar + ","
       + quoteChar + "size" + quoteChar + ":" + size + ","
-      + quoteChar + "isDir" + quoteChar + ":" + (CHOOSE "true" IF isDir ELSE "false")
+      + quoteChar + "isDir" + quoteChar + ":" + isDir
       + "}".
   }
   SET json TO json + "]".
@@ -104,9 +114,36 @@ IF op = "list" {
 
 export interface KosFileEntry {
   name: string;
-  size: number;
-  /** True for subdirectories (kOS volumes that report ISDIR). */
-  isDir?: boolean;
+  /**
+   * The entry's size in bytes, or null/absent when the volume could not say
+   * (an older kOS with no SIZE suffix, or a listing written by an older copy
+   * of this script). Optional rather than `number`, because the field could
+   * not carry the absence at all while it was declared non-optional, and a
+   * substituted 0 reads as a file that is genuinely empty.
+   */
+  size?: number | null;
+  /**
+   * The entry's kind, as three states rather than two: true for a
+   * subdirectory, false for a file, and null or absent when the volume could
+   * not say (an older kOS with no ISFILE suffix, or a listing written by an
+   * older copy of this script). Null is not a file, and a caller that treats
+   * it as one offers a directory as something to run.
+   */
+  isDir?: boolean | null;
+}
+
+/** What a listing entry is, once the two-state flag is read as three. */
+export type KosEntryKind = "file" | "directory" | "unknown";
+
+/**
+ * Which of the three an entry reported. Kept beside the script that emits the
+ * field so the encoding and the decoding cannot drift apart: only an explicit
+ * `false` is evidence the entry is a file.
+ */
+export function kosEntryKind(entry: KosFileEntry): KosEntryKind {
+  if (entry.isDir === true) return "directory";
+  if (entry.isDir === false) return "file";
+  return "unknown";
 }
 
 /** Default script path on the kOS Archive volume. */

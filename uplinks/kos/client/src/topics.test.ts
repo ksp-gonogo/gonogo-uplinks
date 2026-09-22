@@ -21,12 +21,12 @@ import type { KosProcessorInfo } from "./__generated__/contract.js";
 // relocated unit registry.
 import { KOS_PROCESSORS_TOPIC } from "./topics.js";
 
-// src -> client -> kos -> mod, where the C# half of this Uplink lives
-const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");
+// src -> client -> kos
+const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /** The value of a `const string <name>` in KosChannels.cs, as the C# declares it. */
 function csTopic(constName: string): string {
-  const src = readFileSync(join(MOD_ROOT, "KosChannels.cs"), "utf8");
+  const src = readFileSync(join(UPLINK_ROOT, "mod", "KosChannels.cs"), "utf8");
   const m = src.match(
     new RegExp(`const\\s+string\\s+${constName}\\s*=\\s*"([^"]+)"`),
   );

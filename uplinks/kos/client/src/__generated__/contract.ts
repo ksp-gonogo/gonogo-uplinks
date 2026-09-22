@@ -29,7 +29,7 @@ export interface KosProcessorInfo
 	* `kOSProcessor.Tag` (from the companion `KOSNameTag`): null when the part
 	* carries no name-tag.
 	*/
-	tag?: string;
+	tag?: string | null;
 	/**
 	* `kOSProcessor.HasBooted`: false while the CPU is still running its boot
 	* script.
@@ -39,7 +39,7 @@ export interface KosProcessorInfo
 	* `kOSProcessor.BootFilePath`, stringified: null when no boot file is
 	* selected.
 	*/
-	bootFilePath?: string;
+	bootFilePath?: string | null;
 	/** `kOSProcessor.ProcessorMode` as its enum name (`READY`/`OFF`/`STARVED`). */
 	processorMode: string;
 	/**
@@ -48,7 +48,7 @@ export interface KosProcessorInfo
 	* picker label a CPU by what it IS when it carries no name-tag, instead of a
 	* bare "CPU <id>".
 	*/
-	partName?: string;
+	partName?: string | null;
 }
 /**
 * Out-of-band status for one centralised compute topic
@@ -71,11 +71,11 @@ export interface KosComputeStatus
 	* UT of the last successful `[KOSDATA]` parse, null until the first good
 	* parse.
 	*/
-	lastGoodAt?: Value<"ut">;
+	lastGoodAt?: Value<"ut"> | null;
 	/** Last script-author fault (runtime exception / `[KOSERROR]`), null when none. */
-	scriptError?: string;
+	scriptError?: string | null;
 	/** Last `[KOSDATA]` parse failure: null when none. */
-	parseError?: string;
+	parseError?: string | null;
 	/**
 	* The per-topic breaker has tripped (three consecutive script faults) and
 	* dispatch is paused. No command clears it: the re-arm half was never built.
@@ -145,9 +145,9 @@ export interface KosRunResult
 	/** Echoes the triggering `KosRunArgs.requestId`. */
 	requestId: string;
 	/** Parsed `[KOSDATA]` field map: null on an error result. */
-	fields?: { [key:string]: any };
+	fields?: { [key: string]: any } | null;
 	/** Explicit `[KOSERROR]` message: null on a data result. */
-	error?: string;
+	error?: string | null;
 }
 /**
 * One frame of interactive-terminal output for a single kOS CPU, delivered on
@@ -178,12 +178,10 @@ export interface KosRunResult
 * be (which, mid-session, is usually an ordinary incremental diff with no
 * baseline of its own to apply it to). This is what lets a late/returning
 * viewer see something immediately instead of waiting out a fresh reveal-delay
-* window for its own forced reseed to mature: see
-* local_docs/kos-terminal-feedback-2026-07-15.md's "Loading / connection"
-* section for the full root-cause writeup. A genuinely first-ever subscribe to
-* a CPU's terminal (nothing has EVER been recorded for it) still has to wait
-* out that first reseed's own delay window, there is no way around that; there
-* is nothing earlier to be sticky about.
+* window for its own forced reseed to mature. A genuinely first-ever subscribe
+* to a CPU's terminal (nothing has EVER been recorded for it) still has to
+* wait out that first reseed's own delay window, there is no way around that;
+* there is nothing earlier to be sticky about.
 *
 * `KosTerminalFrame.coreId` echoes the emitting CPU's
 * `KosProcessorInfo.coreId` so a client reading several CPUs can disambiguate

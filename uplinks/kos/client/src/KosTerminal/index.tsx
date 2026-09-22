@@ -39,6 +39,9 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { Terminal } from "@xterm/xterm";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+// Named, not default: `styled-components@6` ships no `exports` map, so under
+// nodenext the default import binds to the CJS namespace and `styled.div` is a
+// type error. The named export binds in both modes.
 import { styled } from "styled-components";
 import type {
   KosKeystrokeArgs,
@@ -568,6 +571,21 @@ function KosTerminalComponent(
   return <KosTerminalLive {...props} />;
 }
 
+/**
+ * What to say when there is no CPU to attach to. Three states, because the
+ * wire carries three: nothing reported yet, a reported-empty list, and a
+ * reported list that simply lacks the pinned tagname.
+ */
+function noCpuMessage(reported: boolean, cpuName: string | undefined): string {
+  if (!reported) {
+    return "Waiting on kos.processors: the CPU list has not been reported yet.";
+  }
+  if (cpuName) {
+    return `Waiting for kOS CPU "${cpuName}"...`;
+  }
+  return "No kOS CPUs detected. Boot a kOS processor in-flight.";
+}
+
 function KosTerminalLive({
   config,
 }: Readonly<ComponentProps<KosTerminalConfig>>) {
@@ -576,8 +594,20 @@ function KosTerminalLive({
   const lineMode = config?.lineMode ?? true;
   const scriptPaths = config?.scriptPaths ?? [];
 
-  // Live CPU list from the mod's kos.processors channel (no telnet menu-scrape).
-  const processors = useStream<KosProcessorInfo[]>("kos.processors") ?? [];
+  /*
+   * Live CPU list from the mod's kos.processors channel (no telnet
+   * menu-scrape). Absent is a THIRD state, not an empty list: `useStream`
+   * yields nothing until a push lands (or while no provider is mounted), and
+   * KosExtension.Ksp.cs publishes an explicit EMPTY list on its
+   * kOS-unavailable path precisely so a client can draw a definite "no kOS"
+   * instead of hanging. Flattening the two with `?? []` made that empty
+   * publish indistinguishable from silence, so a channel that had said
+   * nothing rendered as a confirmed absence of CPUs. `reported` keeps them
+   * apart for the copy; everything downstream wants a concrete array.
+   */
+  const reportedProcessors = useStream<KosProcessorInfo[]>("kos.processors");
+  const reported = reportedProcessors != null;
+  const processors = reportedProcessors ?? [];
   const [pickedCoreId, setPickedCoreId] = useState<number | null>(null);
   const coreId = useMemo(
     () => resolveCoreId(processors, cpuName, pickedCoreId),
@@ -603,9 +633,7 @@ function KosTerminalLive({
           <Section full>
             {processors.length === 0 ? (
               <EmptyState layout="fill" role="status" aria-live="polite">
-                {cpuName
-                  ? `Waiting for kOS CPU "${cpuName}"...`
-                  : "No kOS CPUs detected. Boot a kOS processor in-flight."}
+                {noCpuMessage(reported, cpuName)}
               </EmptyState>
             ) : (
               <CpuPicker role="group" aria-label="Pick a kOS CPU">
@@ -653,7 +681,7 @@ function KosTerminalLive({
 interface KosTerminalScreenProps {
   coreId: number;
   /** The resolved CPU's tagname, if it has one; see the `/`-picker's live listing hook. */
-  cpuTag: string | undefined;
+  cpuTag: string | null | undefined;
   readOnly: boolean;
   lineMode: boolean;
   scriptPaths: string[];
@@ -727,7 +755,15 @@ function KosTerminalScreen({
   );
   const effectiveScriptPaths =
     scriptPaths.length > 0 ? scriptPaths : liveListing.paths;
-  const scriptListHint = scriptPaths.length > 0 ? null : liveListing.hint;
+  /*
+   * `hint` only ever describes a settled outcome, so a listing still in
+   * flight needs its own line here rather than falling through to it.
+   */
+  const scriptListHint = (() => {
+    if (scriptPaths.length > 0) return null;
+    if (liveListing.loading) return "Reading the CPU's drives...";
+    return liveListing.hint;
+  })();
   // scriptPaths can change at runtime (the live drive listing),
   // read via ref for the same mount-only-closure reason as `lineModeRef`.
   const scriptPathsRef = useRef<string[]>(effectiveScriptPaths);
@@ -790,10 +826,14 @@ function KosTerminalScreen({
   //
   // `CommsDelay`, not a hand-written `{ oneWaySeconds: number | null }`. The
   // local shape said the field was a bare number and it never was: this hook
-  // hands back the WRAPPED payload, so `oneWaySeconds` is a `Value<"s">`. The
-  // old badge only worked because it reached the figure through `2 * x`, and
-  // multiplication coerces through `valueOf`; a comparison against the same
-  // field would silently have been comparing an object.
+  // hands back the WRAPPED payload, so `oneWaySeconds` is a `Value<"s">`, and
+  // under the real type TypeScript rejects arithmetic and relational operators
+  // on it outright. That refusal is what the lying `number` was throwing away,
+  // not the coercion: `valueOf` sits on the Value prototype, so `2 * x` and
+  // `x > 0` both compiled against the local shape and both read the magnitude
+  // correctly. What a declared `number` hides is the STRICT comparison, which
+  // does not coerce: `x === 0` tests an object against a number and is false
+  // for every delay there is, including the zero it is looking for.
   const commsDelay = useLatestValue<CommsDelay>("comms.delay");
 
   // The in-transit strip's PURE prediction fuel, scoped to this terminal's
@@ -1248,8 +1288,15 @@ function KosTerminalScreen({
           row height on top of everything else in `TerminalShell` and could push
           the composition bar past the widget's visible bounds on a short
           widget. They stay the widget's, because a character grid is the only
-          surface in the app with a spare top-LEFT and bottom-right, and a slot
-          per corner would be an API guessed at from one caller.
+          surface in the app with spare corners, and a slot per corner would be
+          an API guessed at from one caller.
+
+          CHARACTER mode is the one state here that pays for the delay reading
+          in height: it composes nothing, so there is no composition bar for the
+          frame to hang the chip on and the chip takes a line of its own at the
+          foot. Line mode gets it free, over the bar's top border. That is
+          the console's trade, not this widget's, and the alternative was the
+          chip back on the emulator screen.
 
           `tone` is the widget's whole colour decision, and nothing paints with
           it directly: it declares the accent that the composition bar's border,
@@ -1493,7 +1540,11 @@ const TerminalShell = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 0;
-  gap: var(--space-6);
+  /* Draws nothing today: the console is the shell's only child, both overlays
+     being pinned inside it rather than stacked as flex siblings. It is here so
+     a second child would land on the house rhythm rather than on whatever the
+     author of that child picked. */
+  gap: var(--gap-related);
 `;
 
 // The xterm mount, and NOT a bordered box: `Console` draws the one border this
@@ -1589,19 +1640,25 @@ const CompositionBar__Cursor = styled.span`
 const CpuPicker = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-8);
+  gap: var(--gap-related);
   align-items: center;
   padding: var(--space-12);
 `;
 
-// Larger, icon-leading CPU buttons (2026-07-15 feedback: the bare picker read
-// as "drab"). Composes the ui-kit GhostButton, enlarging its hit area and
-// pairing the label with a decorative computer icon.
+// Larger, icon-leading CPU buttons. Composes the ui-kit GhostButton,
+// enlarging its hit area and pairing the label with a decorative computer
+// icon.
 const CpuPicker__Button = styled(GhostButton)`
   display: inline-flex;
   align-items: center;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-12);
+  gap: var(--gap-related);
+  /*
+   * --inset-control-prominent, not --inset-control: the latter is the pressable
+   * class AT the --control-height floor, which is the (6,12) this button already
+   * inherits from the kit and is deliberately above. The enlargement is the whole
+   * point of the override, so the floor name would undo it.
+   */
+  padding: var(--inset-control-prominent);
   font-size: var(--font-size-lg);
 `;
 
@@ -1610,15 +1667,17 @@ const CpuPicker__Button = styled(GhostButton)`
 // comment). Error/danger tone (the same `--color-status-nogo-*` pair
 // `CommSignal` uses for its "lost" state) so it reads unambiguously as a
 // blocking condition, not an informational badge like `DelayBadge` below it.
-// Pinned inside `Console`'s scrollback surface, in the corner opposite the
-// console's own delay corner so the two never overlap on the (rare) render where
-// both are showing: a stale delay reading can still be latched (see
-// `delay-authority.ts`) through a connectivity drop, so both badges legitimately
-// co-render. "Opposite corner" alone isn't enough at narrow widths (e.g. the
-// widget's own registered minSize, 8x6): this badge's text is the longer of the
-// two, and with no width cap it grows straight across the frame into the delay
-// reading's corner instead of stopping short. Capped + truncated so it always
-// leaves that corner clear.
+// Pinned inside `Console`'s scrollback surface, top-left. It used to share this
+// surface with the console's delay reading in the opposite corner, and the two
+// legitimately co-render: this badge reads `comms.link`, which is Delayed
+// (freeze-exempt) and so reveals its edges at the light-time horizon, while the
+// delay reading comes off TrueNow `comms.delay`, so a link coming back is
+// measurable again before this badge clears. It was capped and truncated to
+// leave that corner clear at the widget's registered minSize of 8x6. The delay
+// reading is at the foot now and the top-right is free, but the cap stays: this
+// badge's text is long enough to run the full width of a narrow tile, and a
+// warning that reaches the far edge of the pane reads as a banner rather than
+// as a badge.
 const NoPathBadge = styled.div`
   position: absolute;
   top: var(--space-8);
@@ -1626,7 +1685,7 @@ const NoPathBadge = styled.div`
   /* Local ordering inside the frame only, over xterm's own layers. Not
      app-global chrome, so no named z rung. */
   z-index: 1;
-  padding: var(--space-2) var(--space-8);
+  padding: var(--inset-chip);
   font-family: monospace;
   font-size: var(--font-size-xs);
   font-weight: bold;
@@ -1655,6 +1714,6 @@ const ChangeCpuButton = styled(GhostButton)`
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--gap-related);
   font-size: var(--font-size-xs);
 `;

@@ -8,6 +8,7 @@
  */
 
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -20,7 +21,7 @@ import { FakeKosUplink } from "../dataSource/__fixtures__/FakeKosUplink.js";
 import { kosSource } from "../dataSource/kos.js";
 import { KosScriptTriggerComponent } from "./index.js";
 
-const CARRIED = ["kos.processors"];
+const CARRIED = ["kos.processors", "comms.delay"];
 
 function renderWidget(config: { cpuName?: string; scriptPath?: string } = {}) {
   const fake = FakeKosUplink.install();
@@ -110,13 +111,70 @@ describe("KosScriptTrigger", () => {
     expect(fake.invocations()[0].cpu.tagname).toBe("probe");
   });
 
-  it("degrades gracefully with no CPU: Run is disabled and a clear reason is shown", async () => {
+  it("degrades gracefully before kos.processors has reported: Run is disabled and the silence is named", async () => {
     renderWidget();
-    // No setCpus(): the widget sees an empty processor list.
+    // No setCpus(): the channel has said NOTHING. That is not evidence the
+    // vessel carries no CPU, so the copy must not claim it is.
+    await waitFor(() =>
+      expect(screen.getByText(/kos\.processors/i)).toBeInTheDocument(),
+    );
+    expect(screen.queryByText(/No kOS CPU available/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Run" })).toBeDisabled();
+  });
+
+  it("degrades gracefully with a reported-empty CPU list: Run is disabled and a clear reason is shown", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([]);
     await waitFor(() =>
       expect(screen.getByText(/No kOS CPU available/)).toBeInTheDocument(),
     );
     expect(screen.getByRole("button", { name: "Run" })).toBeDisabled();
+  });
+
+  /*
+   * The round-trip chip beside Run had no coverage at all: no match for
+   * `comms.delay`, `round-trip` or `oneWay` anywhere in this file. It reads a
+   * WRAPPED `Value<"s">`, and nothing here would have noticed the widget
+   * reaching for the wrong field of it, or quoting the one-way figure where
+   * the operator waits out two.
+   */
+  it("quotes the DOUBLED round-trip beside Run when a one-way delay is being published", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+
+    act(() =>
+      fake.transport.emit("comms.delay", {
+        oneWaySeconds: 3.8,
+        source: "SignalDelay",
+      }),
+    );
+
+    const chip = await screen.findByLabelText("Signal round-trip");
+    // 2 x 3.8, the wait the operator actually sits through: dispatch out and
+    // result back.
+    expect(chip.textContent).toContain("7.6");
+  });
+
+  it("draws no round-trip chip when nothing is publishing a delay, and says so for a measured zero", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+
+    // Nothing on comms.delay: no figure exists, so none is quoted.
+    expect(screen.queryByLabelText("Signal round-trip")).toBeNull();
+
+    // A measured zero is a different fact from silence: the link IS instant,
+    // and the operator is told so rather than shown the same blank.
+    act(() =>
+      fake.transport.emit("comms.delay", {
+        oneWaySeconds: 0,
+        source: "NoCommsModel",
+      }),
+    );
+
+    const chip = await screen.findByLabelText("Signal round-trip");
+    expect(chip.textContent).toContain("instant");
   });
 
   it("has no accessibility violations", async () => {

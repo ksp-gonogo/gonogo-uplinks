@@ -12,7 +12,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using kOS.Module;
 using kOS.Safe.Screen;
 using Sitrep.Contract;
@@ -98,6 +100,12 @@ namespace Gonogo.KosUplink
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
+                    // Keyed by coreId, not by craft, so routing needs the map
+                    // CaptureProcessors maintains: without the resolver this
+                    // would read the coreId AS a vessel id and address a node
+                    // nothing writes a delay for.
+                    PerVesselNode = true,
+                    VesselIdForKey = VesselIdForCore,
                 });
 
             // Subscription short-circuit source for OnPrint: every kerboscript
@@ -107,6 +115,13 @@ namespace Gonogo.KosUplink
             // thread (adversarial-review I1). Reads the engine's thread-safe
             // subscribed-topics mirror.
             _computeSubscribed = () => host.IsAnyTopicSubscribed(KosChannels.ComputePrefix);
+
+            // The instant every compute publish is stamped with. Same seam and
+            // same reason as the terminal downlink below and the processor
+            // capture above: a Delayed channel is revealed and keyframed
+            // against its stamp, so it has to be the game's clock rather than
+            // a constant.
+            _nowUt = host.NowUt;
 
             if (guard.ComputePostfixAvailable)
             {
@@ -127,8 +142,8 @@ namespace Gonogo.KosUplink
 
             // Interactive terminal: kos.terminal.<coreId> ReliableOrdered
             // screen downlink + single-owner keystroke/resize/open/close.
-            // Replaces the standalone telnet proxy: the mod reads the CPU screen
-            // in-process (spec §P3), no telnet/node-pty anywhere in the path.
+            // The mod reads the CPU screen in-process, no telnet/node-pty
+            // anywhere in the path.
             _terminalSource = host.RegisterDynamicNamespace(
                 KosChannels.TerminalPrefix,
                 new ChannelDeclaration
@@ -140,12 +155,17 @@ namespace Gonogo.KosUplink
                     // reveal clock exactly like vessel.flight (comms authority).
                     Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
-                    // Sticky-reveal fix (2026-07-15 feedback, "black screen for
-                    // one signal-delay after a CPU button press"): the screen
-                    // is a cursor-relative diff stream, so a late/returning
-                    // subscriber's catch-up must land on a self-contained
-                    // FullRepaint frame, never a bare incremental diff with no
-                    // baseline: see ChannelDeclaration.IsKeyframe and
+                    // Keyed by coreId, not by craft, so routing needs the map
+                    // CaptureProcessors maintains: without the resolver this
+                    // would read the coreId AS a vessel id and address a node
+                    // nothing writes a delay for.
+                    PerVesselNode = true,
+                    VesselIdForKey = VesselIdForCore,
+                    // The screen is a cursor-relative diff stream, so a
+                    // late/returning subscriber's catch-up must land on a
+                    // self-contained FullRepaint frame, never a bare
+                    // incremental diff with no baseline: see
+                    // ChannelDeclaration.IsKeyframe and
                     // Sitrep.Core.Courier's sticky-keyframe cache. Checks the
                     // flattened dictionary (KosTerminalFrameBuilder), not the
                     // KosTerminalFrame POCO: the dictionary is what actually
@@ -209,6 +229,12 @@ namespace Gonogo.KosUplink
                     Delivery = Delivery.ReliableOrdered,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
+                    // Keyed by coreId, not by craft, so routing needs the map
+                    // CaptureProcessors maintains: without the resolver this
+                    // would read the coreId AS a vessel id and address a node
+                    // nothing writes a delay for.
+                    PerVesselNode = true,
+                    VesselIdForKey = VesselIdForCore,
                 });
             // Flattened here, at the actual publish boundary, via
             // KosRunResultBuilder: KosRunManager itself stays typed in terms
@@ -239,15 +265,51 @@ namespace Gonogo.KosUplink
             return ids;
         }
 
+        /// <summary>
+        /// Which craft each CPU is aboard, keyed by <c>KOSCoreId</c> as a string
+        /// because that is the form a topic segment arrives in.
+        ///
+        /// <para>Written whole on the main thread by <see cref="CaptureProcessors"/>
+        /// and swapped in by reference; read on the Courier thread by
+        /// <see cref="VesselIdForCore"/>. Never mutated in place, so a reader
+        /// always sees one complete pass rather than a half-updated map, and no
+        /// lock is needed on a path that runs per topic.</para>
+        /// </summary>
+        private Dictionary<string, string> _coreVessels = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// The vessel a kOS topic's <c>coreId</c> segment belongs to, or null
+        /// when the last main-thread pass did not see that CPU.
+        ///
+        /// <para>Null routes the topic to the active craft, which is where every
+        /// kOS topic sat before this existed. The alternative, handing back the
+        /// coreId itself, would mint <c>fleet.&lt;coreId&gt;</c>: a node no
+        /// delay is ever written for, which is a quieter wrong answer than the
+        /// one being fixed.</para>
+        /// </summary>
+        internal string? VesselIdForCore(string coreId) =>
+            Volatile.Read(ref _coreVessels).TryGetValue(coreId, out var vesselId) ? vesselId : null;
+
         /// <summary>MAIN-THREAD capture: read <c>AllInstances()</c> into a plain, KSP-handle-free list.</summary>
         internal object? CaptureProcessors(KspSnapshot? snapshot)
         {
             var list = new List<KosProcessorInfo>();
+            // Rebuilt whole rather than patched: a CPU that has gone (craft
+            // unloaded, part destroyed) must LEAVE the map, and a map that only
+            // ever gains entries would keep routing its topics at a craft that
+            // is no longer carrying it.
+            var coreVessels = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var p in kOSProcessor.AllInstances())
             {
                 if (p == null)
                 {
                     continue;
+                }
+                var vesselId = p.part?.vessel?.id;
+                if (vesselId != null && vesselId != Guid.Empty)
+                {
+                    coreVessels[p.KOSCoreId.ToString(CultureInfo.InvariantCulture)] =
+                        vesselId.Value.ToString();
                 }
                 list.Add(new KosProcessorInfo
                 {
@@ -259,6 +321,11 @@ namespace Gonogo.KosUplink
                     PartName = p.part?.partInfo?.title,
                 });
             }
+            // Published before the snapshot guard below: the routing map is
+            // useful whether or not there is a game clock to stamp a payload
+            // with, and returning early without swapping it would leave routing
+            // reading a pass older than the one just walked.
+            Volatile.Write(ref _coreVessels, coreVessels);
             // Carry the capture UT alongside the list (mirrors
             // CommsCoreUplink.CommsCapture.Ut). Publishing at the real UT (not a
             // hardcoded 0.0) keeps this Delayed channel on the same UT-indexed
@@ -266,7 +333,19 @@ namespace Gonogo.KosUplink
             // keyframe cadence and the server reveal gate both work; a fixed 0.0
             // froze the emitter's keyframe clock and made a "Delayed" channel
             // reveal as if TrueNow.
-            return new ProcessorsCapture { Ut = snapshot?.Ut ?? 0.0, List = list };
+            //
+            // No snapshot means no game clock to stamp, and there is no
+            // honest substitute: a 0.0 would re-arm exactly the frozen
+            // keyframe clock described above, on a fallback nothing
+            // downstream can see. Return null instead, which HandleProcessors
+            // already ignores (its `is ProcessorsCapture` pattern), so the
+            // tick publishes nothing and the last good frame stands rather
+            // than a real list arriving under a fabricated timestamp.
+            if (snapshot == null)
+            {
+                return null;
+            }
+            return new ProcessorsCapture { Ut = snapshot.Ut, List = list };
         }
 
         /// <summary>
@@ -326,23 +405,14 @@ namespace Gonogo.KosUplink
                     return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
                 }
 
-                // Arm BEFORE typing: a trivial one-tick script could complete
-                // its [KOSDATA] block synchronously inside ProcessOneInputChar
-                // below (OnPrint runs inline inside kOS's PRINT), so the
-                // manager must already be expecting this request's result
-                // before any character reaches the interpreter.
-                if (!_runManager.TryArm(args.CoreId, args.RequestId))
-                {
-                    // Another kos.run is already in flight for this CPU. The
-                    // client's own per-CPU serialization (mirroring
-                    // KosComputeSession's FIFO queue) is expected to prevent
-                    // this in the steady state: reject rather than silently
-                    // clobbering the earlier request's correlation.
-                    return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
-                }
-
-                TypeCommand(proc, args.Command);
-                return CommandResult.Ok();
+                // Arming, typing, and disarming again when there was no window
+                // to type into all live in KosRunManager.ArmAndType, which is
+                // KSP-free and therefore testable: see its doc comment for the
+                // ordering and for why an untyped run must be left unarmed.
+                return _runManager.ArmAndType(
+                    args.CoreId,
+                    args.RequestId,
+                    () => TypeCommand(proc, args.Command));
             });
         }
 
@@ -362,13 +432,20 @@ namespace Gonogo.KosUplink
         /// (never double-submits): <c>Command</c> is caller-built kerboscript
         /// text, not raw keyboard bytes, so CRLF normalisation is the mod's
         /// job, not the caller's.
+        ///
+        /// <para>Returns false when the CPU has no terminal window and nothing
+        /// could be typed at all. That is the same condition
+        /// <see cref="KosProcessorScreen.TypeChars"/> already reports as a
+        /// failure on the <c>kos.keystroke</c> path, and the caller turns it
+        /// into the same refusal rather than acking a run that never
+        /// happened.</para>
         /// </summary>
-        private static void TypeCommand(kOSProcessor proc, string command)
+        private static bool TypeCommand(kOSProcessor proc, string command)
         {
             var window = proc.GetWindow();
             if (window == null)
             {
-                return;
+                return false;
             }
             foreach (var ch in command)
             {
@@ -382,6 +459,7 @@ namespace Gonogo.KosUplink
             {
                 window.ProcessOneInputChar('\r', null, true, true);
             }
+            return true;
         }
 
         private static kOSProcessor? FindProcessor(int coreId)
