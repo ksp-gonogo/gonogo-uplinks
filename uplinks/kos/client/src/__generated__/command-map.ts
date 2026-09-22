@@ -10,6 +10,13 @@
 // several commands, which is why the reflection is over ATTRIBUTES rather
 // than over types.
 //
+// GENERATED_COMMAND_RAIL below carries the same reflection's answer to the two
+// questions the delay rail asks of a command: whether anything answers it, and
+// whether it rides signal delay. Both are DATA a client reads, so no consumer
+// holds its own list of which commands are which. What a command IS on the
+// rail's other two axes is derived: a dispatch is a point, and the direction
+// is which map it came out of.
+//
 // WHAT THE COUNT COUNTS, because a grep gets it wrong. It is one entry per
 // [SitrepCommand] ATTRIBUTE, not per tagged type: SetEnabledArgs alone carries
 // six. Counting `AddCommandHandler` call sites instead misses the ones the
@@ -69,6 +76,45 @@ export interface GeneratedCommandReplyMap {
   "kos.terminal.open": CommandResult;
   "kos.terminal.resize": CommandResult;
 }
+
+/**
+ * What the delay rail needs to know about a command, as DATA: a client asks
+ * this table rather than carrying a list of ids it recognises.
+ */
+export interface GeneratedCommandRail {
+  /** Whether the dispatch resolves with anything, i.e. whether an ack comes back. */
+  readonly replies: boolean;
+  /**
+   * Whether the host holds this command for the signal delay before running it,
+   * off the same `[SitrepCommand(Delayed = ...)]` the host itself dispatches by.
+   */
+  readonly delayed: boolean;
+}
+
+/**
+ * The rail columns for every command above, keyed the same way.
+ *
+ * An Uplink's own commands come out of ITS map, and its client feeds them to
+ * the SDK through `registerUplinkCommand`.
+ *
+ * `replies` reads `true` on every row here, and that is a finding rather than
+ * a placeholder: `Sitrep.Contract/CommandResult.cs` rules that results are
+ * always delivered, never a fire-and-forget void, so no declared command can
+ * be unacked. The column exists because a client must READ that rather than
+ * assume it; the day the contract declares a command that answers nothing,
+ * this is where it says so.
+ *
+ * `delayed` is the mod's own dispatch decision, not a client-side opinion of
+ * it. A `false` row runs the instant it arrives, so drawing it a countdown or
+ * an in-flight queue entry would be a fiction about the operator's own order.
+ */
+export const GENERATED_COMMAND_RAIL = {
+  "kos.keystroke": { replies: true, delayed: true },
+  "kos.run": { replies: true, delayed: true },
+  "kos.terminal.close": { replies: true, delayed: true },
+  "kos.terminal.open": { replies: true, delayed: true },
+  "kos.terminal.resize": { replies: true, delayed: true },
+} as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
   "kos.keystroke",

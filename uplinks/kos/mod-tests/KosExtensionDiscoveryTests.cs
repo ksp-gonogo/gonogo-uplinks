@@ -1,8 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Gonogo.KosUplink;
 using Sitrep.Contract;
-using Sitrep.Host;
 using Xunit;
 
 namespace GonogoKosUplink.Tests
@@ -10,11 +11,14 @@ namespace GonogoKosUplink.Tests
     /// <summary>
     /// Guards the regression the Uplink-foundation review caught: without
     /// <c>[SitrepUplink("kos")]</c> and a parameterless constructor,
-    /// <see cref="UplinkDiscovery"/>'s assembly scan silently skips
+    /// <c>Sitrep.Host.UplinkDiscovery</c>'s assembly scan silently skips
     /// <see cref="KosExtension"/> and the whole uplink is inert dead code
-    /// in a live game. These assertions touch only the attribute + ctor
-    /// metadata and the reflection scan: never <see cref="KosExtension.Register"/>
-    /// or the Unity GameObject path: so they run headlessly.
+    /// in a live game. That scan itself is host-side and proved generically
+    /// there (<c>UplinkDiscoveryTests.DiscoversAttributedUplinkWithParameterlessConstructor</c>);
+    /// these assertions pin the two facts about THIS uplink that scan
+    /// depends on: the attribute and the constructor. Never touches
+    /// <see cref="KosExtension.Register"/> or the Unity GameObject path, so
+    /// they run headlessly.
     /// </summary>
     public class KosExtensionDiscoveryTests
     {
@@ -37,14 +41,6 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
-        public void Discover_FindsKosUplink_InGonogoKosAssembly()
-        {
-            var discovered = UplinkDiscovery.Discover(new[] { typeof(KosExtension).Assembly });
-
-            Assert.Contains(discovered, d => d.Uplink.Manifest.Id == "kos");
-        }
-
-        [Fact]
         public void Manifest_ExpectedClientHash_MirrorsTheGeneratedConst()
         {
             /*
@@ -60,10 +56,7 @@ namespace GonogoKosUplink.Tests
              * the first byte of drift. A test pinned to the unarmed state failed the moment
              * arming landed, having described a transient condition as a rule.
              */
-            var manifest = UplinkDiscovery
-                .Discover(new[] { typeof(KosExtension).Assembly })
-                .Single(d => d.Uplink.Manifest.Id == "kos")
-                .Uplink.Manifest;
+            var manifest = new KosExtension().Manifest;
 
             var expected = string.IsNullOrEmpty(ExpectedClientHash.Value)
                 ? null
@@ -72,25 +65,45 @@ namespace GonogoKosUplink.Tests
             Assert.Equal(expected, manifest.ExpectedClientHash);
         }
 
+        /// <summary>
+        /// Every kOS command rides the signal delay, resize included, and the
+        /// manifest is not where that is said.
+        ///
+        /// <para>A terminal is a cursor-addressed screen diff computed at
+        /// the mod's width, so a delayed resize leaves the mod diffing at the old
+        /// width for a light-time round trip and the client draws those diffs at
+        /// the wrong column until the new width lands. That is a real cost and it
+        /// is the lesser one. Instant, a resize would let one console reflow a terminal
+        /// another console is reading in real time, and a resize is an order like
+        /// any other: it changes no scene and it is not a presentation choice,
+        /// which is the whole of the rule for an instant command.</para>
+        ///
+        /// <para>Read off the <c>[SitrepCommand]</c> rather than the manifest
+        /// because that is the declaration the SDK codegen hands the client, so
+        /// this is the same fact a console's countdown is drawn from.</para>
+        /// </summary>
         [Fact]
-        public void TerminalResizeCommand_IsNotDelayed_SoRenderWidthConvergesImmediately()
+        public void EveryCommandIsTaggedDelayedInTheContract()
         {
-            // The terminal downlink is a cursor-addressed screen diff computed at
-            // the mod's screen width; a delayed resize leaves the mod diffing at a
-            // stale width for a full light-time round-trip, so the client renders
-            // those diffs at the wrong column and the terminal reads as garbled.
-            // Resize is a local viewport concern, so it must reach the mod
-            // immediately: unlike a keystroke, which is genuine remote input.
-            var manifest = UplinkDiscovery
-                .Discover(new[] { typeof(KosExtension).Assembly })
-                .Single(d => d.Uplink.Manifest.Id == "kos")
-                .Uplink.Manifest;
+            var tagged = new Dictionary<string, DelayRole>(StringComparer.Ordinal);
+            foreach (var type in typeof(KosTerminalResizeArgs).Assembly.GetTypes())
+            {
+                foreach (SitrepCommandAttribute attr in
+                         type.GetCustomAttributes(typeof(SitrepCommandAttribute), false))
+                {
+                    tagged[attr.CommandId] = attr.Delay;
+                }
+            }
 
-            var resize = manifest.Commands.Single(c => c.Command == KosChannels.TerminalResizeCommand);
-            Assert.False(resize.Delayed);
+            var manifest = new KosExtension().Manifest;
 
-            var keystroke = manifest.Commands.Single(c => c.Command == KosChannels.KeystrokeCommand);
-            Assert.True(keystroke.Delayed);
+            var declared = manifest.Commands.Select(c => c.Command).ToArray();
+            Assert.NotEmpty(declared);
+            Assert.Empty(declared.Where(id => !tagged.ContainsKey(id)));
+            Assert.Empty(declared.Where(id => tagged[id] != DelayRole.Delayed));
+
+            Assert.Equal(DelayRole.Delayed, tagged[KosChannels.TerminalResizeCommand]);
+            Assert.Equal(DelayRole.Delayed, tagged[KosChannels.KeystrokeCommand]);
         }
     }
 }

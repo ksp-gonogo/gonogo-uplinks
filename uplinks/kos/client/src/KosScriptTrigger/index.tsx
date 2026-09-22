@@ -1,4 +1,5 @@
 import type {
+  CommsDelay,
   ComponentProps,
   ConfigComponentProps,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -6,7 +7,6 @@ import {
   registerComponent,
   useLatestValue,
   useStream,
-  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -25,6 +25,9 @@ import {
   useModalSaveBar,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+// Named, not default: `styled-components@6` ships no `exports` map, so under
+// nodenext the default import binds to the CJS namespace and `styled.div` is a
+// type error. The named export binds in both modes.
 import { styled } from "styled-components";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
@@ -88,9 +91,19 @@ function errorMessage(err: unknown): string {
 function KosScriptTriggerComponent({
   config,
 }: Readonly<ComponentProps<KosScriptTriggerConfig>>) {
-  // Only CPUs that carry a tagname are dispatchable: `executeScript` resolves
-  // its target by tag, so an untagged CPU has no address to run on.
-  const processors = useStream<KosProcessorInfo[]>("kos.processors") ?? [];
+  /*
+   * Only CPUs that carry a tagname are dispatchable: `executeScript` resolves
+   * its target by tag, so an untagged CPU has no address to run on.
+   *
+   * Absent is a THIRD state, not an empty list. `useStream` yields nothing
+   * until a push lands, while the mod publishes an explicit EMPTY list when
+   * it knows there is no kOS, and only the second of those is evidence about
+   * the vessel. `?? []` alone told the operator to go boot a processor on the
+   * strength of a channel that had not spoken.
+   */
+  const reportedProcessors = useStream<KosProcessorInfo[]>("kos.processors");
+  const reported = reportedProcessors != null;
+  const processors = reportedProcessors ?? [];
   const runnable = useMemo(
     () =>
       processors.filter((p): p is KosProcessorInfo & { tag: string } =>
@@ -122,9 +135,15 @@ function KosScriptTriggerComponent({
   // `useLatestValue` (comms.delay is TrueNow command-centre bookkeeping, not a
   // reveal-gated stream): surfaced as a round-trip readout so the operator
   // understands why the result is a wait, not an instant reply.
-  const commsDelay = useLatestValue<{ oneWaySeconds: number | null }>(
-    "comms.delay",
-  );
+  //
+  // `CommsDelay`, not a hand-written `{ oneWaySeconds: number | null }`. The
+  // hook hands back the WRAPPED payload, so `oneWaySeconds` is a `Value<"s">`,
+  // not a number. The old local shape read correctly only because a wrapped
+  // value coerces through `valueOf` and every arm below went through
+  // arithmetic or a comparison; it typechecked `2 * oneWay` as arithmetic on
+  // an object and was one prototype-losing hop from quietly reading NaN.
+  // Stay in the algebra (`isPositive`, `times`) rather than unwrapping.
+  const commsDelay = useLatestValue<CommsDelay>("comms.delay");
   const oneWay = commsDelay?.oneWaySeconds ?? null;
 
   const noCpu = runnable.length === 0;
@@ -174,8 +193,9 @@ function KosScriptTriggerComponent({
             <FieldLabel htmlFor={cpuId}>CPU</FieldLabel>
             {noCpu ? (
               <NoCpuNotice id={cpuId} role="status" aria-live="polite">
-                No kOS CPU available. Boot a kOS processor in flight, and check
-                the telemetry stream is connected.
+                {reported
+                  ? "No kOS CPU available. Boot a kOS processor in flight."
+                  : "Waiting on kos.processors: the CPU list has not been reported yet. Check the telemetry stream is connected."}
               </NoCpuNotice>
             ) : config?.cpuName || runnable.length === 1 ? (
               <StaticCpu id={cpuId}>{selectedTag}</StaticCpu>
@@ -231,14 +251,24 @@ function KosScriptTriggerComponent({
             <PrimaryButton type="button" onClick={dispatch} disabled={!canRun}>
               {run.status === "running" ? "Running..." : "Run"}
             </PrimaryButton>
-            {oneWay !== null && oneWay > 0 && (
+            {/*
+              Three rungs, because a missing reading and a measured zero are
+              different facts. No reading at all (no comms model publishing,
+              or no measurable ControlPath) draws nothing, there is nothing to
+              quote. A measured zero says the link is instant and says so, so
+              the operator can tell "the round-trip is nil" from "we could not
+              tell you". Anything above zero quotes the doubled figure.
+            */}
+            {oneWay !== null && (
               <RoundTrip aria-label="Signal round-trip">
-                round-trip ~
-                <Unit
-                  value={value("s", 2 * oneWay)}
-                  scale="never"
-                  decimals={1}
-                />
+                {oneWay.isPositive() ? (
+                  <>
+                    round-trip ~
+                    <Unit value={oneWay.times(2)} scale="never" decimals={1} />
+                  </>
+                ) : (
+                  "round-trip instant"
+                )}
               </RoundTrip>
             )}
           </FormActions>
@@ -391,7 +421,7 @@ const ResultRegion = styled.div`
 const Running = styled.div`
   display: flex;
   align-items: center;
-  gap: var(--space-8);
+  gap: var(--gap-related);
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
 `;
@@ -399,18 +429,18 @@ const Running = styled.div`
 const Result = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--gap-related);
 `;
 
 const Fields = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--gap-related);
 `;
 
 const FieldRowLine = styled.div`
   display: flex;
-  gap: var(--space-8);
+  gap: var(--gap-related);
   font-family: monospace;
   font-size: var(--font-size-sm);
 `;

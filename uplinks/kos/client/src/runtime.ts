@@ -8,7 +8,7 @@
 // from the package root (`@ksp-gonogo/gonogo-kos-uplink`), which forced evaluation of the
 // WHOLE `index.ts` module: ES module evaluation always runs a module's full
 // top-level code once, regardless of which named export the importer actually
-// uses, including `export * from "./KosTerminal"`, which self-registers the
+// uses, including `export * from "./KosTerminal/index.js"`, which self-registers the
 // "kos-terminal" widget via `registerComponent`. `@ksp-gonogo/core` makes that
 // call THROW on a duplicate id (by design, component ids must be unique), so
 // under the runtime-loader flag the loader's OWN dynamically-imported

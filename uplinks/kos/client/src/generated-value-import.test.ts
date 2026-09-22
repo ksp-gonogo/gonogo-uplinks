@@ -44,7 +44,11 @@ describe("generated contract.ts: Value usage resolves to core", () => {
   // vacuous. If this slice ever gains a second quantity, this is where it is
   // recorded.
   it("keeps the slice's one declared quantity typed as a Value", () => {
-    expect(source()).toMatch(/lastGoodAt\?:\s*Value<"ut">;/);
+    // `| null` as well as optional, because `LastGoodAt` is a `double?` and the
+    // wire keeps the key: a status with no good sample yet arrives as an
+    // explicit null. What this assertion is about is the `Value<"ut">` wrap,
+    // and the union rides alongside it.
+    expect(source()).toMatch(/lastGoodAt\?:\s*Value<"ut"> \| null;/);
   });
 
   // The other side of the accounting, asserted rather than left as prose,
@@ -61,7 +65,10 @@ describe("generated contract.ts: Value usage resolves to core", () => {
     );
 
     expect(processorInfo).toMatch(/coreId:\s*number;/);
-    expect(processorInfo).toMatch(/tag\?:\s*string;/);
+    /* The one nullable field of the six, and the union is the point of it: the
+       tag is null when the part carries no name-tag, which is not the same as a
+       part whose tag nobody read. */
+    expect(processorInfo).toMatch(/tag\?:\s*string \| null;/);
     expect(processorInfo).toMatch(/hasBooted:\s*boolean;/);
     expect(processorInfo).toMatch(/processorMode:\s*string;/);
     expect(processorInfo).not.toMatch(/Value</);

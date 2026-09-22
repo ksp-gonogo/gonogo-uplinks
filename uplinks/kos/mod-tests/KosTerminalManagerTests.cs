@@ -97,9 +97,10 @@ namespace GonogoKosUplink.Tests
             public readonly List<KosTerminalFrame> Published = new List<KosTerminalFrame>();
             public readonly List<double> PublishedUts = new List<double>();
             // Constant by default: reproduces production's "the terminal's
-            // ~20Hz poll runs faster than the UT source advances" shape,
-            // see KosTerminalCourierBurstTests for the end-to-end proof this
-            // matters for.
+            // ~20Hz poll runs faster than the UT source advances" shape, see
+            // Sitrep.Core.Tests.CourierReliableOrderedDeliveryTests and
+            // GonogoKosUplink.Tests.Headless.KosTerminalHeadlessHarnessTests
+            // for the Courier-side proof this matters for.
             public double Now;
             public readonly KosTerminalManager Manager;
 
@@ -216,6 +217,32 @@ namespace GonogoKosUplink.Tests
             Assert.Equal((80, 24), h.Screens[7].LastResize);
 
             Assert.False(h.Manager.Resize(7, "nope", 100, 40).Success);
+        }
+
+        /// <summary>
+        /// <c>KosTerminalResizeArgs.Cols</c>/<c>Rows</c> are non-nullable ints,
+        /// so an omitted key, a null and a blank field all reach the mod as 0.
+        /// An ack would report a resize that never happened, to a client that
+        /// has no other way to learn its size request was unreadable.
+        /// </summary>
+        [Theory]
+        [InlineData(0, 24)]
+        [InlineData(80, 0)]
+        [InlineData(0, 0)]
+        [InlineData(-1, 24)]
+        [InlineData(80, -1)]
+        public void Resize_WithANonPositiveDimension_IsRefusedNotAcked(int cols, int rows)
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+            Assert.True(h.Manager.Resize(7, "tokenA", 80, 24).Success);
+
+            var r = h.Manager.Resize(7, "tokenA", cols, rows);
+
+            Assert.False(r.Success);
+            Assert.Equal(CommandErrorCode.Range, r.ErrorCode);
+            // The screen keeps the size it actually has.
+            Assert.Equal((80, 24), h.Screens[7].LastResize);
         }
 
         [Fact]
@@ -366,9 +393,10 @@ namespace GonogoKosUplink.Tests
             // therefore no longer manufactures strictly-increasing stamps: it
             // publishes at the raw clock UT. A constant nowUt across a burst
             // yields identical stamps, which is fine (see
-            // KosTerminalCourierBurstTests for the Courier-backed proof the
-            // burst still delivers in order). This pins that the Fix #1 bump is
-            // gone: same nowUt -> same published UT, no epsilon drift.
+            // Sitrep.Core.Tests.CourierReliableOrderedDeliveryTests for the
+            // Courier-side proof a same-ValidAt burst still delivers in
+            // order). This pins that the Fix #1 bump is gone: same nowUt ->
+            // same published UT, no epsilon drift.
             var h = new Harness();
             h.Subscribed.Add(7);
             h.Now = 500.0;
