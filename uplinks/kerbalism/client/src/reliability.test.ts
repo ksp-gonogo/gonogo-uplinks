@@ -15,13 +15,8 @@ import {
   readKerbalismReliabilityExt,
 } from "./reliability.js";
 
-// src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
-const MOD_ROOT = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "..",
-  "mod",
-);
+// src -> client -> kerbalism
+const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIXTURE = join(
   MOD_ROOT,
   "golden-fixtures",
@@ -61,7 +56,7 @@ function serverFrame(): { topic: string; payload: ReliabilitySummary } {
 describe("kerbalism's namespace of reliability.summary's provider extension bag", () => {
   it("is written under the same provider id the C# backend registers with", () => {
     const src = readFileSync(
-      join(MOD_ROOT, "KerbalismReliabilityMap.cs"),
+      join(MOD_ROOT, "mod", "KerbalismReliabilityMap.cs"),
       "utf8",
     );
     const m = src.match(/const\s+string\s+ProviderId\s*=\s*"([^"]+)"/);

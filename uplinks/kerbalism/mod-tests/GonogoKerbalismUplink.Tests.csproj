@@ -56,27 +56,15 @@
     <Compile Include="..\mod\KerbalismMoveDestinationSelector.cs" />
   </ItemGroup>
 
-  <!-- KerbalismReliabilityMap builds Sitrep.Contract POCOs (KSP-free).
-       Sitrep.Core: ReliabilityExtensionWireTests serialises those POCOs through
-       the REAL EnvelopeCodec/JsonWriter rather than asserting on a hand-written
-       string, which is the only way the provider-extension proof is end-to-end
-       instead of a restatement of the producer. -->
+  <!-- KerbalismReliabilityMap builds Sitrep.Contract POCOs (KSP-free). The wire
+       tests still serialise those POCOs through the REAL codec rather than
+       asserting on a hand-written string, which is the only way the
+       provider-extension proof is end-to-end instead of a restatement of the
+       producer: they reach it through Sitrep.Contract.TestSupport's WirePayload,
+       which is shipped, so the proof travels with the Uplink. -->
   <ItemGroup>
     <Reference Include="Sitrep.Contract">
       <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
-    <!-- Sitrep.Core is vendored rather than reached as a project, and it is the
-         ONE assembly here an Uplink is not otherwise entitled to. The three wire
-         tests below serialise this Uplink's POCOs through the REAL EnvelopeCodec
-         and JsonWriter, which is what makes the golden fixture a proof rather than
-         a restatement of the producer: a stub codec would assert that the test
-         agrees with itself. Flagged in docs/building.md and in the arrival commit,
-         and if the operator would rather drop the coverage, deleting this
-         reference and those three [Fact]s is the whole change. Sitrep.Core reaches
-         nothing but Sitrep.Contract, which is already on the compile surface
-         above, so no further satellite assemblies are needed. -->
-    <Reference Include="Sitrep.Core">
-      <HintPath>$(GonogoDevkit)\Sitrep.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -86,9 +74,9 @@
        shared-JSON-both-sides pattern as mod/golden-fixtures/README.md describes,
        run in the C#-to-TS direction. -->
   <ItemGroup>
-    <None Include="..\mod\golden-fixtures\reliability-extensions.json" Link="golden-fixtures/reliability-extensions.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\mod\golden-fixtures\science-extensions.json" Link="golden-fixtures/science-extensions.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\mod\golden-fixtures\isru-extensions.json" Link="golden-fixtures/isru-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\golden-fixtures\reliability-extensions.json" Link="golden-fixtures/reliability-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\golden-fixtures\science-extensions.json" Link="golden-fixtures/science-extensions.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\golden-fixtures\isru-extensions.json" Link="golden-fixtures/isru-extensions.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- GonogoKerbalismUplink.Contract: this Uplink's own wire types (relocated

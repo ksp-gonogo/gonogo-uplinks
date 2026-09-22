@@ -29,6 +29,16 @@ namespace Gonogo.KerbalismUplink
         private const string CrewTopic = "kerbalism.crew";
         private const string ProfileTopic = "kerbalism.profile";
 
+        /// <summary>
+        /// The <c>science.experiments</c> channel topic every File Manager
+        /// command's Subject resolves its node through: each command acts on a
+        /// file/sample aboard the craft, the same craft that channel reads.
+        /// Declared as a literal rather than referencing
+        /// <c>Sitrep.Host.ScienceViewProvider.ExperimentsTopic</c>, which this
+        /// Uplink cannot reference under the isolation rule.
+        /// </summary>
+        private const string ScienceExperimentsSubject = "science.experiments";
+
         private readonly KerbalismReflection _k = new();
 
         /// <summary>
@@ -107,7 +117,8 @@ namespace Gonogo.KerbalismUplink
         /// The five File Manager commands: every one actuates Kerbalism state
         /// ON the vessel (flag a file, delete it, flag/dump a sample, move a
         /// sample to another drive), so all ride the same light-time delay
-        /// every other vessel actuation does, delayed: true.
+        /// every other vessel actuation does. Declared on their args types in
+        /// this Uplink's contract slice, see SitrepCommandAttribute.Delay.
         /// </summary>
         private static List<CommandDeclaration> FileManagerCommands() => new()
         {
@@ -121,7 +132,7 @@ namespace Gonogo.KerbalismUplink
         private static CommandDeclaration Command(string command) => new()
         {
             Command = command,
-            Delayed = true,
+            Subject = ScienceExperimentsSubject,
         };
 
         private static ChannelDeclaration TrueNow(string topic) => new()
@@ -420,9 +431,15 @@ namespace Gonogo.KerbalismUplink
             if (captured is ScienceRaw raw) _science.Stash(raw);
         }
 
-        /// <summary>MAIN-THREAD capture: read live Kerbalism into a plain bundle (no KSP handles cross threads).</summary>
+        /// <summary>
+        /// MAIN-THREAD capture: read live Kerbalism into a plain bundle (no KSP
+        /// handles cross threads). No snapshot means no capture: every reading in
+        /// the bundle is published AT the snapshot's UT, and a substituted zero
+        /// stamps the whole thing at the epoch, which dates a live reading to
+        /// before the save began.
+        /// </summary>
         private object? CaptureOnMain(KspSnapshot? snapshot) =>
-            CaptureVessel(ScopedVessel(), snapshot?.Ut ?? 0.0);
+            snapshot == null ? null : CaptureVessel(ScopedVessel(), snapshot.Ut);
 
         /// <summary>
         /// MAIN-THREAD capture of ONE craft, active or not. Every read here
@@ -444,39 +461,24 @@ namespace Gonogo.KerbalismUplink
         {
             if (v == null || !_k.IsAvailable) return null;
 
-            double R(string res) => _k.ApiResource("ResourceAmount", v, res) ?? 0;
-            double Cap(string res) => _k.ApiResource("ResourceCapacity", v, res) ?? 0;
-            double Rate(string res) => _k.ApiResource("ResourceAverageRate", v, res) ?? 0;
-
-            var s = new KerbalismSnapshot
-            {
-                Radiation = _k.Api("Radiation", v) ?? 0,
-                HabitatRadiation = _k.Api("HabitatRadiation", v) ?? 0,
-                Magnetosphere = _k.ApiBool("Magnetosphere", v) ?? false,
-                InnerBelt = _k.ApiBool("InnerBelt", v) ?? false,
-                OuterBelt = _k.ApiBool("OuterBelt", v) ?? false,
-                StormIncoming = _k.ApiBool("StormIncoming", v) ?? false,
-                StormInProgress = _k.ApiBool("StormInProgress", v) ?? false,
-                Blackout = _k.ApiBool("Blackout", v) ?? false,
-                InSunlight = _k.ApiBool("InSunlight", v) ?? false,
-                ShieldingAmount = R("Shielding"),
-                ShieldingCapacity = Cap("Shielding"),
-                // One rate per resource the LOADED PROFILE mentions, not per name
-                // we picked. `ResourceAverageRate` needs a name to ask about, so
-                // something must enumerate; the only honest enumerator is the
-                // profile itself, and it is the same list kerbalism.profile
-                // publishes so the two cannot drift.
-                Rates = RatesFor(Rate),
-                Pressure = _k.Api("Pressure", v) ?? 0,
-                Poisoning = _k.Api("Poisoning", v) ?? 0,
-                Shielding = _k.Api("Shielding", v) ?? 0,
-                LivingSpace = _k.Api("LivingSpace", v) ?? 0,
-                Comfort = _k.Api("Comfort", v) ?? 0,
-                Volume = _k.Api("Volume", v) ?? 0,
-                Surface = _k.Api("Surface", v) ?? 0,
-            };
+            double? R(string res) => _k.ApiResource("ResourceAmount", v, res);
+            double? Cap(string res) => _k.ApiResource("ResourceCapacity", v, res);
+            double? Rate(string res) => _k.ApiResource("ResourceAverageRate", v, res);
 
             var profile = Profile();
+            // One rate per resource the LOADED PROFILE mentions, not per name we
+            // picked. `ResourceAverageRate` needs a name to ask about, so
+            // something must enumerate; the only honest enumerator is the profile
+            // itself, and it is the same list kerbalism.profile publishes so the
+            // two cannot drift.
+            var s = KerbalismCapture.BuildSnapshot(
+                name => _k.Api(name, v),
+                name => _k.ApiBool(name, v),
+                R,
+                Cap,
+                KerbalismCapture.ResourceNames(profile),
+                Rate);
+
             var modifierCtx = _k.BeginModifierContext(v);
             List<ProcessRaw>? processes = null;
             if (v.loaded)
@@ -502,7 +504,7 @@ namespace Gonogo.KerbalismUplink
                 RuleEnvModifiers = RuleEnvModifiers(profile, v, modifierCtx),
                 AsOfUt = sinceEval.HasValue ? ut - sinceEval.Value : (double?)null,
                 Rules = profile.Rules,
-                RuleInputAmounts = RuleInputAmounts(profile, R),
+                RuleInputAmounts = KerbalismCapture.RuleInputAmounts(profile, R),
             };
         }
 
@@ -557,39 +559,6 @@ namespace Gonogo.KerbalismUplink
                 if (k.HasValue) result[rule.Name] = k.Value;
             }
             return result;
-        }
-
-        /// <summary>
-        /// Ask Kerbalism for a net rate per resource the loaded profile mentions.
-        /// Resources it will not answer for are simply absent from the map, which
-        /// is the channel's documented "no rate reported" case, distinct from a
-        /// present zero.
-        /// </summary>
-        /// <summary>
-        /// The amount held of each resource a RULE consumes, which is what the
-        /// death clock's first stage needs (how long until degeneration starts)
-        /// and the only reason amounts are read at all: the life-support channel
-        /// deliberately carries rates only, because <c>vessel.resources</c>
-        /// already carries amounts for the active craft. Rule inputs rather than
-        /// every profile resource, so the read stays a handful of lookups.
-        /// </summary>
-        private static Dictionary<string, double> RuleInputAmounts(ProfileRaw profile, Func<string, double> amount)
-        {
-            var map = new Dictionary<string, double>(StringComparer.Ordinal);
-            foreach (var rule in profile.Rules)
-            {
-                if (rule == null || rule.Input.Length == 0 || map.ContainsKey(rule.Input)) continue;
-                map[rule.Input] = amount(rule.Input);
-            }
-            return map;
-        }
-
-        private Dictionary<string, double> RatesFor(Func<string, double> rate)
-        {
-            var names = KerbalismCapture.ResourceNames(Profile());
-            var map = new Dictionary<string, double>(names.Count, StringComparer.Ordinal);
-            foreach (var name in names) map[name] = rate(name);
-            return map;
         }
 
         /// <summary>

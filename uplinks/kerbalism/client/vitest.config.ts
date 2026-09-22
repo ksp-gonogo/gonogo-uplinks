@@ -32,7 +32,11 @@ export default defineConfig({
     // setup with "styled.span is not a function", before one assertion runs.
     server: {
       deps: {
-        inline: ["@ksp-gonogo/ui-kit", "@ksp-gonogo/sitrep-sdk"],
+        inline: [
+          "@ksp-gonogo/ui-kit",
+          "@ksp-gonogo/sitrep-sdk",
+          "@ksp-gonogo/uplink-tools",
+        ],
       },
     },
   },

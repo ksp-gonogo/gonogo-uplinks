@@ -7,8 +7,6 @@ using Xunit;
 
 public class KerbalismCaptureTests
 {
-    // All values grounded in local_docs/kerbalism-fixtures/kerbalism-fixture-baseline-crp.json.
-
     [Fact]
     public void BuildSpaceWeather_maps_baseline_crp_fixture()
     {
@@ -131,14 +129,10 @@ public class KerbalismCaptureTests
     }
 
     /// <summary>
-    /// kerbalism.spaceweather names no vessel, and that is DELIBERATE, not an
-    /// oversight and not a gap waiting to be filled in by whoever reads this next.
     /// Solar activity is SUN-sourced: the storms, the ejection speed and the star
-    /// geometry describe what the Sun is doing, and the intended shape for this
-    /// channel is a sun-sourced one delayed by its own Sun-to-observer geometry
-    /// (local_docs/design/2026-08-10-spaceweather-sun-and-vantage.md). Stamping a
-    /// vessel guid on it would encode the wrong subject and have to be unpicked
-    /// when that reframe lands.
+    /// geometry describe what the Sun is doing, and the channel is delayed by its
+    /// own Sun-to-observer geometry. Stamping a vessel guid on it would encode the
+    /// wrong subject and have to be unpicked.
     /// </summary>
     [Fact]
     public void Spaceweather_names_no_vessel_pending_the_sun_sourced_reframe()
@@ -507,7 +501,10 @@ public class KerbalismReliabilityMapTests
     public void Parts_call_the_preventive_state_service_rather_than_repair()
     {
         var parts = KerbalismReliabilityMap.Parts(
-            Captured(new ReliabilityPartRaw { PartId = "7", Title = "Antenna", NeedsService = true }),
+            Captured(new ReliabilityPartRaw
+            {
+                PartId = "7", Title = "Antenna", Broken = false, NeedsService = true,
+            }),
             ReliabilityCoverage.Modeled,
             Prefs.RequireRepairKits);
 
@@ -562,7 +559,10 @@ public class KerbalismReliabilityMapTests
     public void Parts_omit_the_service_budget_when_either_input_is_missing()
     {
         var parts = KerbalismReliabilityMap.Parts(
-            Captured(new ReliabilityPartRaw { PartId = "7", NeedsService = true, MtbfSeconds = 1_000_000 }),
+            Captured(new ReliabilityPartRaw
+            {
+                PartId = "7", Broken = false, NeedsService = true, MtbfSeconds = 1_000_000,
+            }),
             ReliabilityCoverage.Modeled,
             Prefs.RequireRepairKits);
 

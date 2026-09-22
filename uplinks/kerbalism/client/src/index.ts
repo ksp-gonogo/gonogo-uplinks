@@ -5,9 +5,9 @@
 // (see ./topics.ts). RE-EXPORTED rather than
 // imported for side effect alone, and that is load-bearing in two ways: it keeps
 // bundlers from tree-shaking the registration calls, AND it puts a real
-// `export ... from "./topics"` into the built `dist/index.d.ts`, which is what
+// `export ... from "./topics.js"` into the built `dist/index.d.ts`, which is what
 // carries topics.ts's `declare module "@ksp-gonogo/sitrep-sdk"` TopicPayloadMap
-// augmentation across the package boundary. A bare `import "./topics"` is elided
+// augmentation across the package boundary. A bare `import "./topics.js"` is elided
 // from the emitted declaration, so a consumer would silently see
 // `useTelemetry("kerbalism.spaceweather")` resolve to `unknown` with nothing
 // going red here (the same failure mode ui-kit's styledComponentsTheme.ts
@@ -105,6 +105,11 @@ export {
   KERBALISM_PROFILE_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
 } from "./topics.js";
+// The megabyte units this Uplink declares. RE-EXPORTED for the same reason as
+// ./topics below: the module carries a `declare module "@ksp-gonogo/sitrep-sdk"`
+// UnitDeclarations augmentation, and only a named export carries it into
+// `dist/index.d.ts`.
+export { KERBALISM_UNIT_SYMBOLS } from "./units.js";
 
 // The Uplink client identity, then the per-frame `summarise` Processor that
 // stamps against it. Bare side-effect imports so the registrations survive
@@ -170,6 +175,15 @@ export {
   type KerbalSurvival,
   type SurvivalTone,
 } from "./CrewSurvival/processor.js";
+// The crew survival forward model, re-exported for the same reason: a bare
+// side-effect import is elided from the emitted declaration and bundlers
+// tree-shake the registration with it.
+export {
+  CREW_DEGENERATION_HORIZON_SECONDS,
+  CREW_HISTORY,
+  fitSlope,
+  reckonCrewAccumulators,
+} from "./crewReckoning.js";
 export type {
   DiagnosisGroup,
   DiagnosisInput,
@@ -204,16 +218,16 @@ export {
 // The Ship Systems Processor handle + its result type, the single per-frame
 // derivation the widget and its badge both consume.
 export { SHIP_SYSTEMS, type ShipSystems } from "./processor.js";
-// The consumable projection channel, re-exported rather than imported for side
-// effect alone for the same reason `./topics` is: a bare side-effect import is
-// elided from the emitted declaration and bundlers tree-shake the registration
-// with it. Registering here is what puts `kerbalism.resourceProjection` on any
-// store a TelemetryProvider builds.
+// The consumable-level forward model, re-exported rather than imported for
+// side effect alone for the same reason `./topics` is: a bare side-effect
+// import is elided from the emitted declaration and bundlers
+// tree-shake the registration with it. Registering here is what elects this
+// Uplink's model over core's vanilla for `vessel.resources` on any store a
+// TelemetryProvider builds.
 export {
-  deriveResourceProjectionReckoning,
-  deriveResourceProjections,
-  KERBALISM_RESOURCE_PROJECTION_TOPIC,
-  type KerbalismResourceProjection,
-  type KerbalismResourceProjections,
-  kerbalismResourceProjectionChannel,
-} from "./resourceProjection.js";
+  RESOURCE_RATE_HORIZON_SECONDS,
+  type ResourceBoundary,
+  type ResourceBoundaryCrossing,
+  reckonResourceLevels,
+  resourceBoundaryCrossings,
+} from "./resourceReckoning.js";

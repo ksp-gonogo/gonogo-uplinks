@@ -56,13 +56,12 @@ export interface ResourceFacts {
 /**
  * The flow modes that pool across the whole vessel, by ORDINAL.
  *
- * This compared KSP's `ResourceFlowMode` NAME against a two-entry set until
- * 2026-08-21, and the failure was the one answer this field's own doc rules out.
- * A renamed member missed the set and produced `false` - a confident "not
- * pooled" - rather than the `undefined` that means "vessel-wide pool, mode
- * unknown". So a resource that pools vessel-wide would have been given a
- * per-part meter presented as a reading rather than as bookkeeping, which is
- * precisely what the field exists to prevent.
+ * Comparing by NAME instead would let a renamed `ResourceFlowMode` member
+ * miss the set and produce `false` - a confident "not pooled" - rather than
+ * the `undefined` that means "vessel-wide pool, mode unknown". A resource
+ * that pools vessel-wide would then be given a per-part meter presented as
+ * a reading rather than as bookkeeping, which is precisely what the field
+ * exists to prevent.
  */
 const POOLED_MODES: ReadonlySet<number> = new Set([
   KspResourceFlowMode.ALL_VESSEL,
@@ -537,7 +536,31 @@ export function diagnose({
     });
 }
 
-/** Seconds until a resource runs out at its current rate; null while not draining. */
+/**
+ * Seconds until a resource runs out at its current rate; null while not draining.
+ *
+ * Divides the LAST OBSERVED level by the last observed rate, so the countdown
+ * runs from the observation and not from the frame's view time. The reckoner
+ * over `vessel.resources` (`resourceReckoning.ts`) carries that same pair
+ * corrected to the view time, which makes it read like the obvious source for
+ * this number. `resourceCountdown.test.ts` is the standing answer to that, and
+ * its reasons are arithmetic: the model advances a level and never a time, and
+ * it offers no band, so it says nothing about how wrong the rate might be,
+ * which is the uncertainty a countdown actually has.
+ *
+ * The sharpest of those reasons used to be that the model's level CLAMPED at
+ * zero while still inside the horizon, so a countdown off it read "empty NOW"
+ * on a craft whose last observation saw a full tank. It no longer does: it
+ * withdraws at the crossing and hands the level back as observed, and publishes
+ * the crossing as a UT (`resourceBoundaryCrossings`). That UT is this same
+ * division off the same observed level, so taking it would not change the
+ * number here; what it would buy is the anchor and the other end of the range,
+ * which a "time to empty" does not have a spelling for.
+ *
+ * What is left is the age of the levels, and that is reported rather than
+ * modelled: `ShipSystems.levels` carries the state, the observation's own UT
+ * and the age in seconds, for the levels every figure here derives from.
+ */
 export function timeToEmptySeconds(
   resource: string,
   lifeSupport: KerbalismLifeSupport | undefined,
