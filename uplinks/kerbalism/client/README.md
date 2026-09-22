@@ -9,7 +9,8 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | --- | --- |
 | Uplink id | `kerbalism` |
 | Version | `0.0.1` |
-| Built against | contract 15.0, api 1.0.0, ui-kit 0.1.0 |
+| Wraps | Kerbalism 3.32 (ckan) |
+| Built against | contract 17.0, api 2.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -111,18 +112,20 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | `life-support-greenhouse` | `ship-systems.life-support` | – |  | 1 |  |
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
-| `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 1 |  |
+| `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](docs/assets/file-and-sample-on-one-subject--default.png)
+
+![File Manager with all three Kerbalism flags unread: the two reversible controls disable themselves instead of guessing a direction, and the transmit state says so](docs/assets/unread-send-and-analyze-flags--default.png)
 
 ## Contributions
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `kerbalism:ship-systems-badge` | `ship-systems.badges` | `processor:kerbalism:ship-systems` | only while `flight` |
-| `kerbalism:crew-survival-meters` | `crew-status.meters` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
+| `kerbalism:crew-survival-meters` | `crew-status.meters` | `processor:kerbalism:crew-survival`, `processor:kerbalism:crew-rule-readings` | only while `kerbalism` |
 | `kerbalism:crew-survival-badge` | `crew-status.badges` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:crew-survival-row-tone` | `crew-status.row-tone` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:space-weather-badge` | `space-weather.badges` | `kerbalism.spaceweather` | only while `kerbalism` |
@@ -131,7 +134,15 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
 
+![A reckoned one-sigma band drawn on the meter it is about: one mark per bound, at that bound's own distance from the bar's end](docs/assets/dose-band-from-a-fitted-rate--default.png)
+
+![The same roster over a two-sample window: the model still carries the accumulators, offers no interval, and the meters draw no marks](docs/assets/dose-band-the-model-declines--default.png)
+
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](docs/assets/radiation-dose-critical--default.png)
+
+![Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border](docs/assets/supply-tank-meters--default.png)
+
+![One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters](docs/assets/a-filter-term-per-process--default.png)
 
 ## Models
 
@@ -139,5 +150,7 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | --- | --- |
 | processor | `kerbalism:ship-systems` |
 | processor | `kerbalism:crew-survival` |
-| derived channel | `kerbalism.resourceProjection` |
+| processor | `kerbalism:crew-rule-readings` |
+| forward model | `kerbalism.crew` |
+| forward model | `vessel.resources` |
 

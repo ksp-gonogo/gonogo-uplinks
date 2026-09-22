@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import type {
   IsruConverterEntry,
   IsruDrillEntry,
-  Reading,
   TopicPayloadMap,
+  TopicReading,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -22,13 +22,8 @@ import {
   readKerbalismIsruDrillExt,
 } from "./isru.js";
 
-// src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
-const MOD_ROOT = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "..",
-  "mod",
-);
+// src -> client -> kerbalism
+const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIXTURE = join(MOD_ROOT, "golden-fixtures", "isru-extensions.json");
 
 /**
@@ -64,7 +59,7 @@ async function decoded<T>(
   // cast says only what this function's own signature already says.
   const { result } = renderHook(
     () => {
-      const reading = useTelemetry(topic) as Reading<T>;
+      const reading = useTelemetry(topic) as TopicReading<T>;
       return reading.state === "observed" ? reading.value : undefined;
     },
     { wrapper: fixture.Provider },
@@ -85,7 +80,7 @@ async function decoded<T>(
 describe("kerbalism's namespaces of the elected isru.* payloads", () => {
   it("are written under the same provider id the C# map keys them by", () => {
     const src = readFileSync(
-      join(MOD_ROOT, "KerbalismIsruMap.cs"),
+      join(MOD_ROOT, "mod", "KerbalismIsruMap.cs"),
       "utf8",
     );
     expect(src.match(/const\s+string\s+ProviderId\s*=\s*"([^"]+)"/)?.[1]).toBe(

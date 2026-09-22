@@ -1,4 +1,4 @@
-import type { ComponentProps } from "@ksp-gonogo/sitrep-sdk";
+import type { ComponentProps, Value } from "@ksp-gonogo/sitrep-sdk";
 import {
   AugmentSlot,
   registerComponent,
@@ -82,6 +82,20 @@ type Tone = "neutral" | "go" | "info" | "warn" | "nogo";
  * transient, short enough that it fires with time left to actually act.
  */
 const SOON_EMPTY_SEC = 600;
+
+/**
+ * A fill fraction as the `ratio` quantity `<Meter>` takes, or `null` where the
+ * craft reported none.
+ *
+ * The wrapping is the whole change: these figures are derived by this widget
+ * from a resource ledger rather than read off one topic, so they carry no
+ * currency of their own and a `Reading` here would be one this file invented.
+ * `null` is the same statement it always was, that there is no fraction, which
+ * the primitive draws as absence rather than as an empty tank.
+ */
+function fill(fraction: number | null): Value<"ratio"> | null {
+  return fraction === null ? null : value("ratio", fraction);
+}
 
 /** Whole numbers drop decimals; smaller values keep enough precision to read. */
 export function fmtAmt(n: number): string {
@@ -179,7 +193,7 @@ function wearValueLabel(w: WearRow): string {
   return `${fmtAmt(w.amount)} / ${fmtAmt(w.capacity)} · ${formatTimeToEmpty(w.secondsRemaining)}`;
 }
 
-type ProcessRunState = "idle" | "running" | "broken";
+type ProcessRunState = "idle" | "running" | "broken" | "unknown";
 
 interface ProcessRow {
   id: string;
@@ -187,19 +201,36 @@ interface ProcessRow {
   state: ProcessRunState;
 }
 
+/**
+ * Both flags are three-valued on the wire, and the truthiness ladder this
+ * replaced collapsed the third value into "idle": a scrubber whose module
+ * could not be read reported as fitted and switched off, which is a state an
+ * operator fixes by pressing a button rather than by looking closer.
+ *
+ * Positive readings win over the unknown arm, on the same order SpaceWeather's
+ * storm pair uses: broken is broken whatever its neighbour did.
+ */
 function toProcessRow(p: KerbalismProcessEntry, index: number): ProcessRow {
   return {
     id: p.resource || p.title || `process-${index}`,
     name: p.title || p.resource || "Process",
-    state: p.broken ? "broken" : p.running ? "running" : "idle",
+    state:
+      p.broken === true
+        ? "broken"
+        : p.running === true
+          ? "running"
+          : p.broken == null || p.running == null
+            ? "unknown"
+            : "idle",
   };
 }
 
-/** Only a BROKEN process carries a severity; running and idle are both
- *  ordinary operating states and render as decorative grey chips (severity
- *  omitted), so a healthy process list adds no colour at all. */
+/** A BROKEN process is critical and an UNREAD one is a warning; running and
+ *  idle are both ordinary operating states and render as decorative grey chips
+ *  (severity omitted), so a healthy process list adds no colour at all. */
 function processSeverity(state: ProcessRunState): Severity | undefined {
-  return state === "broken" ? "critical" : undefined;
+  if (state === "broken") return "critical";
+  return state === "unknown" ? "warning" : undefined;
 }
 
 /** Mirrors GreenhouseSection's own `GreenhouseRow`, ported field-for-field so
@@ -222,6 +253,9 @@ function toGreenhouseRow(g: KerbalismGreenhouseEntry): GreenhouseRow {
     cropResource: g.cropResource || "Food",
     natural: magnitudeOf(g.natural),
     artificial: magnitudeOf(g.artificial),
+    // Unreachable today rather than justified: no producer fills `greenhouses`
+    // at all (the contract says so on the field), so this coerces nothing. It
+    // needs revisiting the day the capture starts emitting them.
     active: g.active ?? false,
     issue: g.issue ?? "",
     radiationToleranceRadPerSec: magnitudeOr(g.radiationToleranceRadPerSec, 0),
@@ -328,7 +362,8 @@ function ShipSystemsBody({
   const rowsByDisplayName = new Map(
     [...summary.supplies, ...summary.other].map((r) => [r.displayName, r]),
   );
-  const habitat: KerbalismHabitat | undefined = ship.lifeSupport?.habitat;
+  const habitat: KerbalismHabitat | null | undefined =
+    ship.lifeSupport?.habitat;
   const processes = (ship.lifeSupport?.processes ?? []).map(toProcessRow);
   const greenhouses = (ship.lifeSupport?.greenhouses ?? []).map(
     toGreenhouseRow,
@@ -355,10 +390,15 @@ function ShipSystemsBody({
 
   const runningCount = processes.filter((p) => p.state === "running").length;
   const brokenCount = processes.filter((p) => p.state === "broken").length;
+  const unknownCount = processes.filter((p) => p.state === "unknown").length;
+  // An unread row is called out in the header rather than folded into the
+  // running fraction, where "3 / 5 running" would report it as switched off.
   const processSummary =
     brokenCount > 0
       ? `${runningCount} running · ${brokenCount} broken`
-      : `${runningCount} / ${processes.length} running`;
+      : unknownCount > 0
+        ? `${runningCount} running · ${unknownCount} unread`
+        : `${runningCount} / ${processes.length} running`;
 
   // Null, not false: an unreported pressure is neither pressurised nor
   // unpressurised, and a LIFE SUPPORT panel that answers "Unpressurized"
@@ -407,11 +447,14 @@ function ShipSystemsBody({
         ecRow && (
           <Meter
             label="Power"
-            value={ecRow.fraction ?? 0}
+            // Null, not 0: `fraction` is null when the craft carries no tank
+            // for the resource, and a Power bar sitting at zero is the one
+            // readout on this widget an operator would act on immediately. The
+            // kit draws the absence and drops `role="meter"` with it.
+            value={fill(ecRow.fraction)}
             tone={toneForRow(ecRow)}
             valueLabel={rowValueLabel(ecRow)}
             valueLabelNode={<RowValueDisplay row={ecRow} />}
-            size="md"
           />
         )
       }
@@ -518,10 +561,9 @@ function ShipSystemsBody({
                 <Meter
                   key={w.name}
                   label={w.process}
-                  value={w.fraction ?? 0}
+                  value={fill(w.fraction)}
                   tone={wearTone(w)}
                   valueLabel={wearValueLabel(w)}
-                  size="sm"
                 />
               ))}
             </MeterStack>
@@ -549,21 +591,18 @@ function ShipSystemsBody({
           <Grid minColWidth="10rem" gap="md">
             <Meter
               label="Comfort"
-              value={comfort}
+              value={fill(comfort)}
               tone={comfort !== null && comfort < 0.25 ? "warn" : "neutral"}
-              size="sm"
             />
             <Meter
               label="Living space"
-              value={magnitudeOf(habitat?.livingSpace)}
+              value={fill(magnitudeOf(habitat?.livingSpace))}
               tone="neutral"
-              size="sm"
             />
             <Meter
               label="CO2 poisoning"
-              value={poisoning}
+              value={fill(poisoning)}
               tone={poisoning !== null && poisoning >= 0.5 ? "nogo" : "neutral"}
-              size="sm"
             />
           </Grid>
         </Section>,
@@ -571,7 +610,7 @@ function ShipSystemsBody({
           <SectionHead
             label="Processes"
             value={processSummary}
-            tone={brokenCount > 0 ? "nogo" : "go"}
+            tone={brokenCount > 0 ? "nogo" : unknownCount > 0 ? "warn" : "go"}
           />
           <Stack gap="xs">
             {processes.map((p) => (
@@ -676,11 +715,12 @@ function ResourceLedgerRow({
       <Stack gap="sm">
         <Meter
           label={row.displayName}
-          value={row.fraction ?? 0}
+          // See the Power footer: a resource the craft has no tank for has no
+          // fill fraction, and drawing one at zero says the tank is empty.
+          value={fill(row.fraction)}
           tone={toneForRow(row)}
           valueLabel={rowValueLabel(row)}
           valueLabelNode={<RowValueDisplay row={row} />}
-          size="sm"
         />
         {row.role === "downstream" && row.blockedBy.length > 0 && (
           // `tone="warn"` alone renders --color-status-warning-fg, a
@@ -758,9 +798,9 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
   // `DivergingBar` ports the design from: the biggest term reaches the
   // half-bar mark, everything else is relative to it. 0 when there are no
   // terms (the "No modelled sources" branch never reaches `DivergingBar`).
-  const maxAbsRate = Math.max(
-    0,
-    ...ledger.terms.map((t) => Math.abs(t.ratePerSecond)),
+  const maxAbsRate = value(
+    "units/s",
+    Math.max(0, ...ledger.terms.map((t) => Math.abs(t.ratePerSecond))),
   );
   return (
     // No `minWidth`: a fixed floor forces this panel wider than the row that
@@ -797,7 +837,10 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
                 content-sized) width `DivergingBar`'s own `flex: 0 0 auto`
                 gives this inner row. */}
             <Cluster gap="xs" justify="start">
-              <DivergingBar value={term.ratePerSecond} maxAbs={maxAbsRate} />
+              <DivergingBar
+                value={value("units/s", term.ratePerSecond)}
+                maxAbs={maxAbsRate}
+              />
               {/* The DivergingBar already paints the sign; a red/green
                   NUMBER beside a red/green bar doubled the same reading and
                   fed the widget's colour pile-up. The signed prefix keeps

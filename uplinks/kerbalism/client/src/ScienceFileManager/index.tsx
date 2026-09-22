@@ -1,7 +1,7 @@
 import type {
   ExperimentEntry,
-  Reading,
   SlotProps,
+  TopicReading,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   registerAugment,
@@ -39,7 +39,7 @@ interface DriveEntries {
  * and must not collapse into it.
  */
 function stillTrue<T, A>(
-  reading: Reading<T>,
+  reading: TopicReading<T>,
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
@@ -75,10 +75,11 @@ function findDriveEntries(
  *  whichever entry carries the fields (file and sample on the same subject
  *  normally share one drive, so either suffices). */
 function DriveCapacity({ ext }: { ext: KerbalismScienceExperimentExt }) {
-  const hasStorage =
-    ext.storageCapacityMB !== undefined && ext.storageUsedMB !== undefined;
-  const hasSlots =
-    ext.sampleSlotsTotal !== undefined && ext.sampleSlotsUsed !== undefined;
+  /* `!= null`, not `!== undefined`: the mod writes an unread figure as JSON
+     null and the key stays on the wire, so the strict-undefined form let a null
+     through and rendered "Drive  / " with two empty readouts. */
+  const hasStorage = ext.storageCapacityMB != null && ext.storageUsedMB != null;
+  const hasSlots = ext.sampleSlotsTotal != null && ext.sampleSlotsUsed != null;
   if (!hasStorage && !hasSlots) return null;
   return (
     <Text size="xs" tone="muted">
@@ -98,6 +99,31 @@ function DriveCapacity({ ext }: { ext: KerbalismScienceExperimentExt }) {
       )}
     </Text>
   );
+}
+
+const UNREAD_FLAG_TITLE =
+  "Kerbalism did not report this flag, so its current state is unknown";
+
+/**
+ * A reversible flag's three states, and the desired next state to send.
+ *
+ * `!flag` reads an UNREAD `bool?` as false, so a file whose send flag failed to
+ * read got a button labelled "Send" that dispatched `flag: true`: if the file
+ * was in fact already queued, the press re-affirmed the queue instead of
+ * cancelling it. Both flags come off reflection that returns null on failure
+ * (`Drive.GetFileSend`, `Sample.analyze`), so a null is "we could not read it",
+ * never "it is off".
+ *
+ * An unread flag therefore disables the control rather than guessing a
+ * direction, on the same terms as `ShipSystems`' `unknown` process state.
+ */
+function flagState(flag: boolean | null | undefined): {
+  read: boolean;
+  on: boolean;
+  next: boolean;
+} {
+  if (flag == null) return { read: false, on: false, next: false };
+  return { read: true, on: flag, next: !flag };
 }
 
 /**
@@ -148,6 +174,8 @@ function ScienceDataAboardRowAugment({
   // fail every time.
   const hasLab = (labs?.length ?? 0) > 0;
   const driveExt = file ?? sample;
+  const send = flagState(file?.sendFlagged);
+  const analyze = flagState(sample?.analyze);
 
   return (
     <Section
@@ -157,7 +185,7 @@ function ScienceDataAboardRowAugment({
       {file && (
         <Stack gap="xs">
           <Cluster gap="xs" wrap justify="start">
-            {file.dataSizeMB !== undefined && (
+            {file.dataSizeMB != null && (
               <Text size="xs">
                 <Unit value={file.dataSizeMB} />
               </Text>
@@ -167,7 +195,7 @@ function ScienceDataAboardRowAugment({
                 <Unit value={file.transmitRateMBps} />
               </Text>
             )}
-            {file.transmitting && (
+            {file.transmitting === true && (
               <Badge
                 severity="nominal"
                 size="sm"
@@ -177,19 +205,32 @@ function ScienceDataAboardRowAugment({
                 Transmitting
               </Badge>
             )}
+            {/* Derived from `transmitRate`, so it is null whenever that read
+                failed. Drawing nothing there claimed "not transmitting". */}
+            {file.transmitting == null && (
+              <Badge severity="warning" size="sm">
+                Transmit unknown
+              </Badge>
+            )}
           </Cluster>
           <Cluster gap="xs" wrap justify="start">
             <CommandButton
               size="sm"
               tone="go"
               handle={sendCmd}
-              args={{ subjectId, flag: !file.sendFlagged }}
-              commandLabel={file.sendFlagged ? "Cancel send" : "Send"}
-              active={file.sendFlagged === true}
-              label={file.sendFlagged ? "Queued" : "Send"}
-              pendingLabel={file.sendFlagged ? "Cancelling..." : "Queueing..."}
+              args={{ subjectId, flag: send.next }}
+              commandLabel={send.on ? "Cancel send" : "Send"}
+              active={send.on}
+              disabled={!send.read}
+              title={send.read ? undefined : UNREAD_FLAG_TITLE}
+              label={send.read ? (send.on ? "Queued" : "Send") : "Unknown"}
+              pendingLabel={send.on ? "Cancelling..." : "Queueing..."}
               aria-label={
-                file.sendFlagged ? "Cancel send for file" : "Send file"
+                send.read
+                  ? send.on
+                    ? "Cancel send for file"
+                    : "Send file"
+                  : "Send file (send flag could not be read)"
               }
             />
             <CommandButton
@@ -210,7 +251,7 @@ function ScienceDataAboardRowAugment({
       {sample && (
         <Stack gap="xs">
           <Cluster gap="xs" wrap justify="start">
-            {sample.sampleMass !== undefined && (
+            {sample.sampleMass != null && (
               <Text size="xs">
                 <Unit value={sample.sampleMass} />
               </Text>
@@ -221,15 +262,25 @@ function ScienceDataAboardRowAugment({
               size="sm"
               tone="go"
               handle={analyzeCmd}
-              args={{ subjectId, flag: !sample.analyze }}
-              commandLabel={sample.analyze ? "Cancel analyze" : "Analyze"}
-              active={sample.analyze === true}
-              label={sample.analyze ? "Analyzing" : "Analyze"}
-              pendingLabel={sample.analyze ? "Cancelling..." : "Flagging..."}
+              args={{ subjectId, flag: analyze.next }}
+              commandLabel={analyze.on ? "Cancel analyze" : "Analyze"}
+              active={analyze.on}
+              disabled={!analyze.read}
+              title={analyze.read ? undefined : UNREAD_FLAG_TITLE}
+              label={
+                analyze.read
+                  ? analyze.on
+                    ? "Analyzing"
+                    : "Analyze"
+                  : "Unknown"
+              }
+              pendingLabel={analyze.on ? "Cancelling..." : "Flagging..."}
               aria-label={
-                sample.analyze
-                  ? "Cancel analyze for sample"
-                  : "Flag sample for analysis"
+                analyze.read
+                  ? analyze.on
+                    ? "Cancel analyze for sample"
+                    : "Flag sample for analysis"
+                  : "Flag sample for analysis (analyze flag could not be read)"
               }
             />
             <CommandButton

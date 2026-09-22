@@ -24,12 +24,12 @@ import {
   KERBALISM_SPACEWEATHER_TOPIC,
 } from "./topics.js";
 
-// src -> client -> kerbalism -> mod, where the C# half of this Uplink lives
-const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "mod");
+// src -> client -> kerbalism
+const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 /** The value of a `const string <name>` in KerbalismUplink.cs, as the C# declares it. */
 function csTopic(constName: string): string {
-  const src = readFileSync(join(MOD_ROOT, "KerbalismUplink.cs"), "utf8");
+  const src = readFileSync(join(UPLINK_ROOT, "mod", "KerbalismUplink.cs"), "utf8");
   const m = src.match(
     new RegExp(`const\\s+string\\s+${constName}\\s*=\\s*"([^"]+)"`),
   );

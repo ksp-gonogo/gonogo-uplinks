@@ -60,8 +60,18 @@ namespace Gonogo.KerbalismUplink
                 return CommandResult.Fail(error);
             }
 
+            // Two causes, and they were one arm. An unread subject id means the
+            // send was never attempted and nothing is known about the drive; a
+            // send that came back false means Kerbalism was asked and would not
+            // say why. Only the second is ModeUnavailable.
             var internalId = _k.SubjectInternalId(subject);
-            if (internalId == null || !_k.DriveSend(drive, internalId, flag))
+            if (internalId == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "Kerbalism's own id for this result could not be read, so nothing was sent.");
+            }
+            if (!_k.DriveSend(drive, internalId, flag))
             {
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
             }
@@ -121,6 +131,15 @@ namespace Gonogo.KerbalismUplink
         /// lab-adjacent drive (other than the source) has room for the FULL
         /// sample; a partial move would leave the sample split across two
         /// drives, a worse state than refusing.</para>
+        ///
+        /// <para>Fails <see cref="CommandErrorCode.Unreadable"/> when the
+        /// sample's size, mass or crediting flag cannot be read: those three are
+        /// what the destination copy is written FROM, so a substituted one would
+        /// be recorded into the save rather than merely displayed wrong.
+        /// <see cref="CommandErrorCode.NotFound"/> is kept for a sample that
+        /// reads as zero-sized, and for one no drive holds: an unread sample is
+        /// on the drive, so answering "nothing here answers to that" was a claim
+        /// about the vessel that the failed read never established.</para>
         /// </summary>
         public CommandResult MoveToLab(string subjectId)
         {
@@ -155,9 +174,30 @@ namespace Gonogo.KerbalismUplink
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
 
-            var size = _k.SampleSize(sample);
-            var mass = _k.SampleMass(sample);
-            var useStockCrediting = _k.SampleUsesStockCrediting(sample);
+            // A move REWRITES the sample onto the destination drive from these
+            // three reads, so a substituted one is not a display error, it is
+            // recorded into the save: a mass of 0 makes the sample weightless,
+            // and a fabricated crediting flag changes what recovery pays. Refuse
+            // rather than write a sample nobody described.
+            //
+            // Two refusals, because there were two causes on one arm and it
+            // answered NotFound to both. A sample nobody could read IS on the
+            // drive, so "nothing here answers to that" is a false claim about
+            // the vessel; a sample that reads as zero-sized is the honest
+            // NotFound. The guard BINDS the three values it checks, so removing
+            // it does not compile rather than reintroducing a substitution.
+            var sizeRead = _k.SampleSize(sample);
+            var massRead = _k.SampleMass(sample);
+            var creditingRead = _k.SampleUsesStockCrediting(sample);
+            if (sizeRead is not { } size
+                || massRead is not { } mass
+                || creditingRead is not { } useStockCrediting)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "Kerbalism would not say this sample's size, mass and crediting, "
+                        + "and a move rewrites all three.");
+            }
             if (size <= 0)
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound);

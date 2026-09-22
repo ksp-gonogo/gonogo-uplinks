@@ -10,6 +10,7 @@ built and released on its own, and loaded by the app at runtime.
 | [ActionGroupsExtended](uplinks/actiongroupsextended/) | `actionGroupsExtended` | Action Groups Extended 2.4.1.4 (ckan) | Jon Pepler |
 | [Example](uplinks/example/client/README.md) | `example` | nothing, self-contained | your name here |
 | [Aerodynamics](uplinks/ferramaerospaceresearch/client/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) | Jon Pepler |
+| [Kerbalism](uplinks/kerbalism/client/README.md) | `kerbalism` | Kerbalism 3.32 (ckan) | Jon Pepler |
 | [Kerbcast](uplinks/kerbcast/client/README.md) | `kerbcast` | kerbcast 1.8.1 (manual) | Jon Pepler |
 | [kOS](uplinks/kos/client/README.md) | `kos` | kOS 1.6.0.1 (ckan) | Jon Pepler |
 | [MechJeb](uplinks/mechjeb/client/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) | Jon Pepler |

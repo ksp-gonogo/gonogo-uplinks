@@ -15,11 +15,8 @@ namespace Gonogo.KerbalismUplink
     /// <summary>
     /// Reflection-only bridge to Kerbalism. No compile-time reference to
     /// Kerbalism.dll: every call degrades to null/empty on a moved/absent
-    /// surface, so the uplink loads presence-safe. The reflection calls are
-    /// ported verbatim from the proven mod/GonogoDevTools/GonogoDevKerbalismDump.cs,
-    /// which performed exactly these reads against live Kerbalism 3.32 + CRP v112
-    /// to produce local_docs/kerbalism-fixtures/. Mirrors the RaReflection.cs shape
-    /// (probe assembly by name; cache handles once; typed-absence readers).
+    /// surface, so the uplink loads presence-safe. Mirrors the RaReflection.cs
+    /// shape (probe assembly by name; cache handles once; typed-absence readers).
     /// </summary>
     public sealed class KerbalismReflection
     {
@@ -194,6 +191,7 @@ namespace Gonogo.KerbalismUplink
             foreach (var f in _featuresType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (f.FieldType != typeof(bool)) continue;
+                // The ?? is unreachable and substitutes for nothing: the line above admits only bool fields, and a bool always boxes to a value. It exists to satisfy the unbox cast.
                 try { result[f.Name] = (bool)(f.GetValue(null) ?? false); } catch { }
             }
             return result;
@@ -255,6 +253,12 @@ namespace Gonogo.KerbalismUplink
                     string? name = null;
                     try { name = t.GetField("name")?.GetValue(rule) as string; } catch { }
                     if (string.IsNullOrEmpty(name)) continue;
+                    // Zero here IS the absence signal, not a substituted fact.
+                    // Kerbalism's own defaults are non-zero on both (a fatal
+                    // threshold of 1.0, a degeneration rate that has to be
+                    // positive to count down at all), so KerbalismDeathClock
+                    // reads a zero threshold as this read having failed and a
+                    // zero degeneration as a rule that is not closing in.
                     double degen = 0, fatal = 0;
                     try { degen = AsDouble(t.GetField("degeneration")?.GetValue(rule)) ?? 0; } catch { }
                     try { fatal = AsDouble(t.GetField("fatal_threshold")?.GetValue(rule)) ?? 0; } catch { }
@@ -284,11 +288,11 @@ namespace Gonogo.KerbalismUplink
                     {
                         Resource = MemberString(pm, "resource") ?? "",
                         Title = MemberString(pm, "title") ?? "",
-                        Capacity = MemberDouble(pm, "capacity") ?? 0,
-                        Running = MemberBool(pm, "running") ?? MemberBool(pm, "toggle") ?? false,
-                        Broken = MemberBool(pm, "broken") ?? false,
+                        Capacity = MemberDouble(pm, "capacity"),
+                        Running = MemberBool(pm, "running") ?? MemberBool(pm, "toggle"),
+                        Broken = MemberBool(pm, "broken"),
                         FlightId = part.flightID,
-                        ValveIndex = (int)(MemberDouble(pm, "valve_i") ?? 0),
+                        ValveIndex = AsIndex(MemberDouble(pm, "valve_i")),
                     };
                 }
             }
@@ -325,13 +329,13 @@ namespace Gonogo.KerbalismUplink
                     {
                         FlightId = part.flightID,
                         Resource = MemberString(pm, "resource") ?? "",
-                        Deployed = MemberBool(pm, "deployed") ?? false,
-                        Running = MemberBool(pm, "running") ?? false,
+                        Deployed = MemberBool(pm, "deployed"),
+                        Running = MemberBool(pm, "running"),
                         Issue = MemberString(pm, "issue") ?? "",
-                        Type = (int)(MemberDouble(pm, "type") ?? 0),
+                        Type = AsIndex(MemberDouble(pm, "type")),
                         Rate = MemberDouble(pm, "rate") ?? 0,
                         AbundanceRate = MemberDouble(pm, "abundance_rate") ?? 0,
-                        EcRate = MemberDouble(pm, "ec_rate") ?? 0,
+                        EcRate = MemberDouble(pm, "ec_rate"),
                         Abundance = MemberDouble(pm, "abundance"),
                         AdjustedRate = MemberDouble(pm, "AdjustedRate") ?? InvokeDoubleMethod(pm, "AdjustedRate"),
                     };
@@ -376,7 +380,7 @@ namespace Gonogo.KerbalismUplink
                     Interval = FieldDouble(rule, t, "interval"),
                     Degeneration = FieldDouble(rule, t, "degeneration"),
                     FatalThreshold = FieldDouble(rule, t, "fatal_threshold"),
-                    Breakdown = Field<bool?>(rule, t, "breakdown") ?? false,
+                    Breakdown = Field<bool?>(rule, t, "breakdown"),
                     Variance = FieldDouble(rule, t, "variance"),
                     Modifiers = StringList(rule, t, "modifiers"),
                 });
@@ -450,12 +454,27 @@ namespace Gonogo.KerbalismUplink
                 if (item != null) yield return item;
         }
 
+        /// <summary>
+        /// A reflected enum-ish or index field, absence kept. Zero is a real
+        /// index on both of the fields this reads (harvest type 0 is a surface
+        /// drill, valve combination 0 is the first one), so it cannot also be
+        /// this reader's way of saying it could not find the field.
+        /// </summary>
+        private static int? AsIndex(double? value) => value.HasValue ? (int)value.Value : (int?)null;
+
         private static T? Field<T>(object obj, Type t, string name)
         {
             try { return t.GetField(name)?.GetValue(obj) is T v ? v : default; }
             catch { return default; }
         }
 
+        /// <summary>
+        /// A static-profile double, an unread field read as 0. Every caller is a
+        /// <c>Profile</c> field loaded once from config, where zero is already
+        /// Kerbalism's own "not configured": interval 0 is continuous, variance 0
+        /// is no randomisation, and <c>KerbalismDeathClock</c> counts no deadline
+        /// from either a zero degeneration or a zero fatal threshold.
+        /// </summary>
         private static double FieldDouble(object obj, Type t, string name)
         {
             try { return AsDouble(t.GetField(name)?.GetValue(obj)) ?? 0; } catch { return 0; }
@@ -476,6 +495,12 @@ namespace Gonogo.KerbalismUplink
         /// A Process's inputs/outputs: Kerbalism holds these as
         /// <c>Dictionary&lt;string, double&gt;</c> of resource name -> rate per unit
         /// of process capacity, per second.
+        ///
+        /// <para>An unread rate lands as 0 rather than absent: the wire shape is a
+        /// map of plain doubles with no slot to carry the absence, and these are
+        /// NOMINAL config ratios in the first place. A term that came out wrong is
+        /// already visible client-side, where the ledger's <c>residual</c> is the
+        /// gap between the terms and Kerbalism's own reported net.</para>
         /// </summary>
         private static Dictionary<string, double> RateMap(object obj, Type t, string name)
         {
@@ -598,10 +623,10 @@ namespace Gonogo.KerbalismUplink
                     PartId = partId,
                     Title = title,
                     Group = MemberString(e, "group") ?? "",
-                    Broken = MemberBool(e, "broken") ?? false,
-                    Critical = MemberBool(e, "critical") ?? false,
+                    Broken = MemberBool(e, "broken"),
+                    Critical = MemberBool(e, "critical"),
                     MtbfSeconds = MemberDouble(e, "mtbf"),
-                    NeedsService = InvokeBoolMethod(e, "NeedsMaintenance") ?? false,
+                    NeedsService = InvokeBoolMethod(e, "NeedsMaintenance"),
                     LastInspection = paired?.LastInspection,
                     Quality = paired?.Quality,
                     RepairTrait = paired?.RepairSpec?.Trait,
@@ -1104,7 +1129,7 @@ namespace Gonogo.KerbalismUplink
                     DirX = dx,
                     DirY = dy,
                     DirZ = dz,
-                    Distance = MemberDouble(sunInfo, "Distance") ?? 0,
+                    Distance = MemberDouble(sunInfo, "Distance"),
                 });
                 stars.Add(new KeyValuePair<object, CelestialBody>(sunInfo, star));
             }
@@ -1120,8 +1145,15 @@ namespace Gonogo.KerbalismUplink
                 var storm = perVessel ? PerVesselStorm(vd, star) : BodyStorm(mainBody, star);
                 if (storm == null) continue;
 
-                int state = 0;
-                try { state = Convert.ToInt32(Member(storm, "storm_state") ?? 0); } catch { }
+                // Null, not zero, when the field is gone: zero is Kerbalism's
+                // positive all-clear, and a tracker filters those slots out, so
+                // an unread slot would vanish reading as "no storm here".
+                int? state = null;
+                var rawState = Member(storm, "storm_state");
+                if (rawState != null)
+                {
+                    try { state = Convert.ToInt32(rawState); } catch { }
+                }
 
                 var entry = new StormEntryRaw
                 {
@@ -1412,10 +1444,10 @@ namespace Gonogo.KerbalismUplink
                         {
                             PartId = partId,
                             PartName = partName,
-                            AnalysisRate = MemberDouble(pm, "analysis_rate") ?? 0,
-                            EffectiveRate = InvokeDoubleMethod(pm, "EffectiveRate") ?? MemberDouble(pm, "analysis_rate") ?? 0,
+                            AnalysisRate = MemberDouble(pm, "analysis_rate"),
+                            EffectiveRate = InvokeDoubleMethod(pm, "EffectiveRate") ?? MemberDouble(pm, "analysis_rate"),
                             Status = MemberEnumName(pm, "Status") ?? MemberString(pm, "status") ?? "",
-                            Running = MemberBool(pm, "running") ?? false,
+                            Running = MemberBool(pm, "running"),
                         });
                         continue;
                     }
@@ -1435,7 +1467,7 @@ namespace Gonogo.KerbalismUplink
                             // it through rather than re-deriving a number it would
                             // then have to unit-label without knowing the sensor type.
                             Readout = MemberString(pm, "Status") ?? MemberString(pm, "status") ?? "",
-                            Active = MemberBool(pm, "active") ?? true,
+                            Active = MemberBool(pm, "active"),
                         });
                     }
                 }
@@ -1445,6 +1477,11 @@ namespace Gonogo.KerbalismUplink
 
         private static ScienceExperimentRaw ExperimentOf(PartModule pm, string partId, string partName)
         {
+            // An unread sample_amount lands as 0, which is inert rather than a
+            // claim: it feeds only TakesSample, whose sole consumer (the science
+            // map's "depleted" flag) also needs a RemainingSampleMass gated on
+            // this same read, so an unread module comes out not-depleted whichever
+            // way the substitution goes.
             var sampleAmount = MemberDouble(pm, "sample_amount") ?? 0;
             return new ScienceExperimentRaw
             {
@@ -1458,8 +1495,8 @@ namespace Gonogo.KerbalismUplink
                 // (Modules/Experiment.cs's two-layer RunningState -> ExpStatus).
                 RunningState = MemberEnumName(pm, "State") ?? MemberEnumName(pm, "RunningState") ?? "",
                 ExpStatus = MemberEnumName(pm, "Status") ?? MemberEnumName(pm, "ExpStatus") ?? "",
-                DataRate = MemberDouble(pm, "data_rate") ?? 0,
-                ProdFactor = MemberDouble(pm, "prodFactor") ?? 0,
+                DataRate = MemberDouble(pm, "data_rate"),
+                ProdFactor = MemberDouble(pm, "prodFactor"),
                 TakesSample = sampleAmount > 0,
                 // Only meaningful for a finite-sample experiment: for a
                 // sample-less one the field is a zero that would read as
@@ -1545,10 +1582,14 @@ namespace Gonogo.KerbalismUplink
 
             var files = Pairs(Member(drive, "files") as IEnumerable);
             var samples = Pairs(Member(drive, "samples") as IEnumerable);
-            var usedMB = 0.0;
+            // One unreadable file makes the whole total unknown rather than
+            // short: "1.2 of 4 MB used" assembled from two files out of three
+            // understates how full the drive is, and the operator acts on it.
+            double? usedMB = 0.0;
             foreach (var entry in files)
             {
-                usedMB += MemberDouble(entry.Value, "size") ?? 0;
+                var size = MemberDouble(entry.Value, "size");
+                usedMB = size.HasValue && usedMB.HasValue ? usedMB + size : null;
             }
             // Kerbalism quantises sample capacity in SLOTS, one per stored sample,
             // not by mass or size.
@@ -1557,8 +1598,8 @@ namespace Gonogo.KerbalismUplink
             foreach (var entry in files)
             {
                 var row = StoredRow(entry.Key, entry.Value, partId, partName, "file");
-                row.TransmitRate = MemberDouble(entry.Value, "transmitRate") ?? 0;
-                row.Transmitting = row.TransmitRate > 0;
+                row.TransmitRate = MemberDouble(entry.Value, "transmitRate");
+                row.Transmitting = row.TransmitRate.HasValue ? row.TransmitRate > 0 : (bool?)null;
                 // GetFileSend wants the SubjectData's internal Id, not the
                 // StockSubjectId already carried on the row: Drive keys its
                 // fileSendFlags dictionary by the former.
@@ -1577,7 +1618,7 @@ namespace Gonogo.KerbalismUplink
             }
         }
 
-        private static void Fill(ScienceStoredRaw row, double? dataCapacity, double usedMB, double? sampleCapacity, int slotsUsed)
+        private static void Fill(ScienceStoredRaw row, double? dataCapacity, double? usedMB, double? sampleCapacity, int slotsUsed)
         {
             row.DriveCapacityMB = dataCapacity.HasValue && dataCapacity.Value >= 0 ? dataCapacity : null;
             row.DriveUsedMB = usedMB;
@@ -1597,7 +1638,7 @@ namespace Gonogo.KerbalismUplink
                 PartId = partId,
                 PartName = partName,
                 Kind = kind,
-                SizeMB = blob != null ? MemberDouble(blob, "size") ?? 0 : 0,
+                SizeMB = blob != null ? MemberDouble(blob, "size") : null,
             };
             if (subject == null) return row;
 
@@ -1605,12 +1646,16 @@ namespace Gonogo.KerbalismUplink
             // join against anything else, and it is what Kerbalism maintains for
             // exactly that interop reason.
             row.SubjectId = MemberString(subject, "StockSubjectId") ?? MemberString(subject, "Id") ?? "";
-            row.SciencePerMB = MemberDouble(subject, "SciencePerMB") ?? 0;
-            row.ScienceMaxValue = MemberDouble(subject, "ScienceMaxValue") ?? 0;
-            row.ScienceRemainingTotal = MemberDouble(subject, "ScienceRemainingTotal") ?? 0;
-            row.PercentCollectedTotal = MemberDouble(subject, "PercentCollectedTotal") ?? 0;
-            row.ScienceCollectedInFlight = MemberDouble(subject, "ScienceCollectedInFlight") ?? 0;
-            row.TimesCompleted = (int)(MemberDouble(subject, "TimesCompleted") ?? 0);
+            // Every one of these is a science-ledger figure an operator reads as
+            // a fact about the subject. Zero says "worth nothing", "none of it
+            // collected", "never completed"; absence says none of those things.
+            row.SciencePerMB = MemberDouble(subject, "SciencePerMB");
+            row.ScienceMaxValue = MemberDouble(subject, "ScienceMaxValue");
+            row.ScienceRemainingTotal = MemberDouble(subject, "ScienceRemainingTotal");
+            row.PercentCollectedTotal = MemberDouble(subject, "PercentCollectedTotal");
+            row.ScienceCollectedInFlight = MemberDouble(subject, "ScienceCollectedInFlight");
+            var timesCompleted = MemberDouble(subject, "TimesCompleted");
+            row.TimesCompleted = timesCompleted.HasValue ? (int)timesCompleted.Value : (int?)null;
 
             var expInfo = Member(subject, "ExpInfo");
             if (expInfo != null)
@@ -1741,14 +1786,14 @@ namespace Gonogo.KerbalismUplink
         /// <summary>A <c>SubjectData</c>'s internal <c>Id</c>, the key <c>Drive.Send</c>/<c>GetFileSend</c> want (never the stock-format id carried on the wire).</summary>
         public string? SubjectInternalId(object subjectData) => MemberString(subjectData, "Id");
 
-        /// <summary>A <c>Sample</c> blob's stored size in MB.</summary>
-        public double SampleSize(object sample) => MemberDouble(sample, "size") ?? 0;
+        /// <summary>A <c>Sample</c> blob's stored size in MB, or null when the field went unread.</summary>
+        public double? SampleSize(object sample) => MemberDouble(sample, "size");
 
-        /// <summary>A <c>Sample</c> blob's physical mass.</summary>
-        public double SampleMass(object sample) => MemberDouble(sample, "mass") ?? 0;
+        /// <summary>A <c>Sample</c> blob's physical mass, or null when the field went unread.</summary>
+        public double? SampleMass(object sample) => MemberDouble(sample, "mass");
 
-        /// <summary>Whether a <c>Sample</c> blob was created by the Hijacker and must keep the stock crediting formula on recovery (see Sample.cs).</summary>
-        public bool SampleUsesStockCrediting(object sample) => MemberBool(sample, "useStockCrediting") ?? false;
+        /// <summary>Whether a <c>Sample</c> blob was created by the Hijacker and must keep the stock crediting formula on recovery (see Sample.cs), or null when the field went unread.</summary>
+        public bool? SampleUsesStockCrediting(object sample) => MemberBool(sample, "useStockCrediting");
 
         /// <summary>Set (or clear) a file's queued-for-transmission flag: <c>Drive.Send(string subjectId, bool)</c>.</summary>
         public bool DriveSend(object drive, string internalSubjectId, bool flag)

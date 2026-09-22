@@ -1,8 +1,4 @@
-import type {
-  ComponentProps,
-  Reading,
-  VesselState,
-} from "@ksp-gonogo/sitrep-sdk";
+import type { ComponentProps, VesselState } from "@ksp-gonogo/sitrep-sdk";
 import {
   registerComponent,
   useStream,
@@ -20,7 +16,7 @@ import {
   Meter,
   MissionDate,
   magnitudeOf,
-  magnitudeOr,
+  NULL_DISPLAY,
   Panel,
   ProgressBar,
   ReadoutCaption,
@@ -33,6 +29,9 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
+// Named, not default: `styled-components@6` ships no `exports` map, so under
+// nodenext the default import binds to the CJS namespace and `styled.path` is
+// a type error. The named export binds in both modes.
 import { css, keyframes, styled } from "styled-components";
 // This Uplink's own wire shapes for the sun-vantage half of the payload, named
 // from the generated contract slice the same way Ship Systems names its own.
@@ -56,17 +55,43 @@ type SpaceWeatherConfig = Record<string, never>;
 // This hook is the only data boundary.
 // ---------------------------------------------------------------------------
 
-type StormState = "none" | "incoming" | "inprogress";
+/**
+ * `unknown` is a record that arrived without the storm flags, and it is a
+ * separate arm because `none` is a promise: it is what the board says when it
+ * is telling an operator no CME is inbound. Coercing an unreported flag to
+ * false made that promise from nothing.
+ */
+type StormState = "none" | "incoming" | "inprogress" | "unknown";
 
 interface SpaceWeatherData {
-  radiationRadPerHour: number;
+  /**
+   * Null when the record arrived without a dose rate. Not zero: "0.000 rad/h"
+   * next to a live board says the environment is clean, which is the reading an
+   * operator would act on least safely. `ShipSystems`' RadiationSection already
+   * carries the same field the same way; this widget was the one coercing it.
+   */
+  radiationRadPerHour: number | null;
   stormState: StormState;
+  /**
+   * The three environment flags are the diagram's own state and keep a STATED
+   * default of false at the point of use: a ring the mod did not report is a
+   * ring not drawn, and the coercion escalates rather than reassures
+   * (an unreported magnetosphere reads as "Unshielded"). {@link stormState}
+   * is the one flag pair where false reassured, so it has an unknown arm.
+   */
   innerBelt: boolean;
   outerBelt: boolean;
   magnetosphere: boolean;
+  /**
+   * Also a stated false, for a different reason from the three above: this is
+   * the GROUND's prediction off the star, never the vessel's own report (a
+   * blackout kills the downlink that would carry one). False draws no tag, which
+   * is "no blackout predicted" and not "the link is up".
+   */
   blackout: boolean;
-  shieldingValue: number;
-  shieldingCapacity: number;
+  /** Null when unreported: the pair is a FRACTION, and a fabricated denominator invents one. */
+  shieldingValue: number | null;
+  shieldingCapacity: number | null;
   /** null when the vessel's altitude is not current: the rings then draw no "you are here" dot */
   altitudeKm: number | null;
   seed: number;
@@ -94,11 +119,6 @@ const ABSENCE_TEXT: Record<WeatherAbsence, string> = {
 type SpaceWeatherRead =
   | { readable: true; data: SpaceWeatherData }
   | { readable: false; absence: WeatherAbsence };
-
-/** Whether a reading went stale, as opposed to never having arrived. */
-function notCurrent<T>(reading: Reading<T>): boolean {
-  return reading.state === "stale";
-}
 
 /**
  * Every field on this record is a judgement, so the record is judged as one.
@@ -131,9 +151,16 @@ function useSpaceWeather(): SpaceWeatherRead {
   // field is overlaid on the observation rather than replacing it. The dot below
   // is placed from the altitude, which is exactly the field the model moves, so
   // this is the read the mark exists for.
+  /* The observation first, because `reckoning.status` narrows the reckoning and
+     not the arm it sits on: a nested discriminant tells the compiler nothing
+     about which state carries a value. */
+  const flightValue =
+    flightReading.state === "observed" || flightReading.state === "stale"
+      ? flightReading.value
+      : undefined;
   const flight =
-    flightReading.reckoning === "available"
-      ? { ...flightReading.value, ...flightReading.reckoned.value }
+    flightValue && flightReading.reckoning.status === "available"
+      ? { ...flightValue, ...flightReading.reckoning.value }
       : flightReading.state === "observed"
         ? flightReading.value
         : undefined;
@@ -146,19 +173,25 @@ function useSpaceWeather(): SpaceWeatherRead {
   if (t === undefined) {
     return {
       readable: false,
-      absence: notCurrent(weatherReading)
-        ? "not-current"
-        : weatherReading.state === "absent"
-          ? "confirmed-none"
-          : "awaiting",
+      absence:
+        weatherReading.state === "stale"
+          ? "not-current"
+          : weatherReading.state === "absent"
+            ? "confirmed-none"
+            : "awaiting",
     };
   }
 
+  /* Order matters and the unknown arm goes LAST of the four: a flag that is
+     positively true is a storm whatever its neighbour did, so this only takes
+     cases off "none", which is the arm that was making a promise. */
   const stormState: StormState = t.stormInProgress
     ? "inprogress"
     : t.stormIncoming
       ? "incoming"
-      : "none";
+      : t.stormInProgress == null || t.stormIncoming == null
+        ? "unknown"
+        : "none";
   /**
    * The timeline renders the storm phase without a numeric countdown, because
    * the mod emits storm PRESENCE only: `stormIncoming` and `stormInProgress`
@@ -168,10 +201,11 @@ function useSpaceWeather(): SpaceWeatherRead {
    */
   // Reported per second, read per hour: a scale change the registry knows,
   // rather than a bare 3600 sitting next to a comment saying which end it is.
-  const radiationRadPerHour = value(
-    "rad/s",
-    magnitudeOr(t.radiationRadPerSecond, 0),
-  ).in("rad/h").magnitude;
+  const radiationRadPerSecond = magnitudeOf(t.radiationRadPerSecond);
+  const radiationRadPerHour =
+    radiationRadPerSecond === null
+      ? null
+      : value("rad/s", radiationRadPerSecond).in("rad/h").magnitude;
   const innerBelt = t.innerBelt ?? false;
   const outerBelt = t.outerBelt ?? false;
   const magnetosphere = t.magnetosphere ?? false;
@@ -187,17 +221,19 @@ function useSpaceWeather(): SpaceWeatherRead {
       outerBelt,
       magnetosphere,
       blackout: t.blackout ?? false,
-      shieldingValue: magnitudeOr(t.shieldingAmount, 0),
+      shieldingValue: magnitudeOf(t.shieldingAmount),
       // (stormTimeSec removed: see the FUTURE note above.)
-      shieldingCapacity: magnitudeOr(t.shieldingCapacity, 1),
+      shieldingCapacity: magnitudeOf(t.shieldingCapacity),
       altitudeKm: altitudeM === null ? null : altitudeM / 1000,
       stars: t.stars ?? [],
       storms: t.storms ?? [],
       stormEjectionSpeedMps: magnitudeOf(t.stormEjectionSpeed),
       // Deterministic noise seed derived from the weather state itself (stable
       // across renders for snapshots; no Math.random, no clock/provider needed).
+      // A seed, not a reading, so an unreported dose contributes nothing here
+      // rather than propagating an absence into the chart's PRNG.
       seed:
-        Math.round(radiationRadPerHour * 1000) +
+        Math.round((radiationRadPerHour ?? 0) * 1000) +
         (magnetosphere ? 7 : 0) +
         (innerBelt ? 13 : 0) +
         (outerBelt ? 29 : 0) +
@@ -236,7 +272,9 @@ function doseFraction(radPerHour: number): number {
 
 type Tone = "go" | "info" | "warn" | "nogo";
 
-function doseTone(radPerHour: number): Tone {
+/** An unmeasured dose is toned as a gap, never as the green end of the scale. */
+function doseTone(radPerHour: number | null): Tone {
+  if (radPerHour === null) return "info";
   if (radPerHour >= 3) return "nogo";
   if (radPerHour >= 0.5) return "warn";
   if (radPerHour >= 0.05) return "info";
@@ -250,12 +288,24 @@ const TONE_HEX: Record<Tone, string> = {
   nogo: "var(--color-status-nogo-bg)",
 };
 
+/**
+ * The verdict badge. The first three arms are unchanged and none of them needs
+ * a dose to fire, so the unread arm goes fourth, immediately above the one it
+ * takes cases from: "Sheltered" is the only claim here that a missing reading
+ * could make falsely, and it is the reassuring one. A craft sitting in a storm
+ * or a belt is still reported as such with no dose rate at all.
+ */
 function statusFor(d: SpaceWeatherData): { label: string; tone: Tone } {
-  if (d.stormState === "inprogress" || d.radiationRadPerHour >= 3)
+  if (
+    d.stormState === "inprogress" ||
+    (d.radiationRadPerHour !== null && d.radiationRadPerHour >= 3)
+  )
     return { label: "Storm in progress", tone: "nogo" };
   if (d.stormState === "incoming" || d.innerBelt || d.outerBelt)
     return { label: "Exposed", tone: "warn" };
   if (!d.magnetosphere) return { label: "Unshielded", tone: "info" };
+  if (d.radiationRadPerHour === null || d.stormState === "unknown")
+    return { label: "Storm watch unread", tone: "info" };
   return { label: "Sheltered", tone: "go" };
 }
 
@@ -281,15 +331,26 @@ function statusFor(d: SpaceWeatherData): { label: string; tone: Tone } {
 // stars, which reads fine as one list.
 // ---------------------------------------------------------------------------
 
-interface StormDerived {
+export interface StormDerived {
   key: string;
   star: string;
-  state: number;
+  /**
+   * 0 none, 1 inbound, 2 in progress. Null when the mod could not read the
+   * slot's state: 0 is Kerbalism's positive all-clear and the tracker drops
+   * those slots, so coercing to it made an unread slot disappear reading as
+   * "no CME here".
+   */
+  state: number | null;
   /** UT the CME departed the star; null when dist or the ejection speed is uncaptured. */
   departureUt: number | null;
-  /** 0..100, transit progress toward `dist`. Only meaningful when departureUt is set. */
-  progressPct: number;
-  /** stormTime - now, seconds. Negative once the CME has arrived. */
+  /**
+   * 0..100, transit progress toward `dist`. Null when departure could not be
+   * placed, and null when there is no view clock to measure the transit
+   * against: how far a CME has come is a statement about now, so without a now
+   * there is no answer, only a starting position.
+   */
+  progressPct: number | null;
+  /** stormTime - now, seconds. Null without a storm time or a view clock. Negative once the CME has arrived. */
   impactEtaSec: number | null;
   /** What the CME is aimed at; null on a stream whose mod predates named targets. */
   targetKind: KerbalismStormTargetKind | null;
@@ -297,19 +358,25 @@ interface StormDerived {
   targetName: string | null;
 }
 
-function deriveStorm(
+/**
+ * One tracked CME reduced to what the cards draw. Exported for its own test:
+ * the two time-dependent fields answer a clockless frame with null, and the
+ * only way to feed that frame directly is to call this.
+ */
+export function deriveStorm(
   entry: KerbalismStormEntry,
   index: number,
-  nowUt: number,
+  nowUt: number | null,
   stormEjectionSpeedMps: number | null,
 ): StormDerived {
-  const state = magnitudeOf(entry.stormState) ?? 0;
+  const state = magnitudeOf(entry.stormState);
   const stormTime = magnitudeOf(entry.stormTime);
   const dist = magnitudeOf(entry.dist);
-  const impactEtaSec = stormTime !== null ? stormTime - nowUt : null;
+  const impactEtaSec =
+    stormTime !== null && nowUt !== null ? stormTime - nowUt : null;
 
   let departureUt: number | null = null;
-  let progressPct = 0;
+  let progressPct: number | null = null;
   if (
     stormTime !== null &&
     dist !== null &&
@@ -318,10 +385,15 @@ function deriveStorm(
   ) {
     const transitSec = dist / stormEjectionSpeedMps;
     departureUt = stormTime - transitSec;
-    progressPct =
-      transitSec > 0
-        ? Math.max(0, Math.min(100, ((nowUt - departureUt) / transitSec) * 100))
-        : 100;
+    if (nowUt !== null) {
+      progressPct =
+        transitSec > 0
+          ? Math.max(
+              0,
+              Math.min(100, ((nowUt - departureUt) / transitSec) * 100),
+            )
+          : 100;
+    }
   }
 
   return {
@@ -336,11 +408,15 @@ function deriveStorm(
   };
 }
 
-function stormSeverity(state: number): Severity {
+/** An unread slot is surfaced, not alarmed: nothing about it says a CME is out
+ *  there, only that the slot could not be asked. */
+function stormSeverity(state: number | null): Severity {
+  if (state === null) return "info";
   return state >= 2 ? "critical" : "warning";
 }
 
-function stormLabel(state: number): string {
+function stormLabel(state: number | null): string {
+  if (state === null) return "Unread";
   return state >= 2 ? "Impact" : "Inbound";
 }
 
@@ -418,14 +494,20 @@ function starActivity(
 ): StarActivity {
   const mine = allStorms.filter((s) => s.star === starName && s.state !== 0);
   if (mine.length === 0) return { level: 0, severity: "nominal", storms: [] };
-  const severity: Severity = mine.some((s) => s.state >= 2)
+  /* An unread slot is carried into `storms` so its card is drawn, but it never
+     drives the ring: not knowing is not evidence the star is active, and a lit
+     ring would be this widget inventing a CME from a failed read. */
+  const read = mine.filter((s) => s.state !== null);
+  if (read.length === 0) return { level: 0, severity: "info", storms: mine };
+  const severity: Severity = read.some((s) => (s.state ?? 0) >= 2)
     ? "critical"
     : "warning";
   const level = Math.max(
-    ...mine.map((s) => {
-      if (s.state >= 2) return 1;
-      // Active, but transit has not been captured: half, so it never reads calm.
-      if (s.departureUt === null) return 0.5;
+    ...read.map((s) => {
+      if ((s.state ?? 0) >= 2) return 1;
+      // Active, but transit has not been captured, or there is no clock to
+      // measure it against: half, so it never reads calm.
+      if (s.departureUt === null || s.progressPct === null) return 0.5;
       return Math.max(0.15, Math.min(1, s.progressPct / 100));
     }),
   );
@@ -563,7 +645,9 @@ function StarDiagram({
  * pinned to red the instant it has arrived whatever the percentage says.
  */
 function transitThreatColor(storm: StormDerived): string {
-  if (storm.state >= 2) return "var(--color-status-nogo-bg)";
+  if (storm.state !== null && storm.state >= 2)
+    return "var(--color-status-nogo-bg)";
+  if (storm.progressPct === null) return "var(--color-status-info-fg)";
   if (storm.progressPct >= 66) return "var(--color-status-nogo-bg)";
   if (storm.progressPct >= 33) return "var(--color-status-warning-bg)";
   return "var(--color-status-info-fg)";
@@ -597,7 +681,12 @@ function StormCard({
 }) {
   const severity = stormSeverity(storm.state);
   const target = storm.targetName ?? fallbackBodyName ?? "current body";
-  const verb = storm.state >= 2 ? "Impacting" : "Inbound to";
+  const verb =
+    storm.state === null
+      ? "CME state unread for"
+      : storm.state >= 2
+        ? "Impacting"
+        : "Inbound to";
   // Only the per-vessel case gets a qualifier: a body target reads plainly.
   const qualifier =
     storm.targetKind === STORM_TARGET_VESSEL ? " (current vessel)" : "";
@@ -630,11 +719,17 @@ function StormCard({
                 </Text>
               </Cluster>
             )}
-            <ProgressBar
-              value={storm.progressPct}
-              ariaLabel={`Transit progress from ${storm.star}`}
-              fillColor={transitThreatColor(storm)}
-            />
+            {storm.progressPct !== null ? (
+              <ProgressBar
+                value={storm.progressPct}
+                ariaLabel={`Transit progress from ${storm.star}`}
+                fillColor={transitThreatColor(storm)}
+              />
+            ) : (
+              <Text tone="muted" size="xs">
+                Transit progress needs a mission clock.
+              </Text>
+            )}
           </>
         ) : (
           <Text tone="muted" size="xs">
@@ -647,7 +742,7 @@ function StormCard({
             Impact
           </Text>
           <Text
-            tone={storm.state >= 2 ? "nogo" : "warn"}
+            tone={storm.state !== null && storm.state >= 2 ? "nogo" : "warn"}
             size="xs"
             weight="semibold"
             // `warn` alone renders --color-status-warning-fg, a near-black
@@ -656,7 +751,7 @@ function StormCard({
             // functionally invisible. The `-fg-muted` override is the fix.
             // `nogo`'s own `-fg` is a light pink and needs none.
             style={
-              storm.state < 2
+              storm.state === null || storm.state < 2
                 ? { color: "var(--color-status-warning-fg-muted)" }
                 : undefined
             }
@@ -685,8 +780,17 @@ function StormTimeline({ state }: { state: StormState }) {
     { key: "inprogress", label: "Storm", tone: "nogo" as Tone, w: 22 },
     { key: "passed", label: "Passed", tone: "go" as Tone, w: 22 },
   ];
-  // "now" marker position (0..100) by state.
-  const nowPct = state === "none" ? 17 : state === "incoming" ? 45 : 67;
+  /* "now" marker position (0..100) by state. `unknown` places no marker at
+     all: every position on this axis is a claim about which phase the craft is
+     in, and the quiet end is the one an absent flag used to land on. */
+  const nowPct =
+    state === "unknown"
+      ? null
+      : state === "none"
+        ? 17
+        : state === "incoming"
+          ? 45
+          : 67;
   // Phase only: no numeric countdown (the mod emits storm presence, not a
   // clock; see the FUTURE note in useSpaceWeather).
   const headline =
@@ -694,13 +798,19 @@ function StormTimeline({ state }: { state: StormState }) {
       ? "Storm in progress"
       : state === "incoming"
         ? "CME inbound"
-        : "No storm activity";
+        : state === "unknown"
+          ? "Storm state unread"
+          : "No storm activity";
   let acc = 0;
   return (
     <Section style={STAT_SECTION}>
       <div style={SECTION_HEAD}>
         <span style={SECTION_LABEL}>Storm forecast</span>
-        <span style={sectionValueStyle(state === "none" ? "go" : "warn")}>
+        <span
+          style={sectionValueStyle(
+            state === "none" ? "go" : state === "unknown" ? "info" : "warn",
+          )}
+        >
           {headline}
         </span>
       </div>
@@ -728,15 +838,24 @@ function StormTimeline({ state }: { state: StormState }) {
             />
           );
         })}
-        <line
-          x1={nowPct}
-          y1={0}
-          x2={nowPct}
-          y2={14}
-          stroke="var(--color-text-primary)"
-          strokeWidth={0.8}
-        />
-        <circle cx={nowPct} cy={1.6} r={1.6} fill="var(--color-text-primary)" />
+        {nowPct !== null && (
+          <>
+            <line
+              x1={nowPct}
+              y1={0}
+              x2={nowPct}
+              y2={14}
+              stroke="var(--color-text-primary)"
+              strokeWidth={0.8}
+            />
+            <circle
+              cx={nowPct}
+              cy={1.6}
+              r={1.6}
+              fill="var(--color-text-primary)"
+            />
+          </>
+        )}
       </svg>
     </Section>
   );
@@ -907,7 +1026,10 @@ function SpaceWeatherComponent({
   const read = useSpaceWeather();
   // Both read unconditionally, ahead of the absence branch below, so the hook
   // order is the same on every render.
-  const nowUt = magnitudeOr(useViewUt(), 0);
+  // Null, never zero. `useViewUt` is undefined with no provider mounted AND
+  // before the first confirmed sample, and substituting UT 0 there measured
+  // every storm against year 1 day 1: an ETA years wide, stated to the second.
+  const nowUt = magnitudeOf(useViewUt());
   // Only the FALLBACK target name, for a stream whose mod predates the
   // named-target capture; see `StormCard`.
   const fallbackBodyName =
@@ -944,9 +1066,28 @@ function SpaceWeatherComponent({
   // compact sheds the solar-wind chart + env tags and shrinks the readout.
   const compact = cols < 7 || rows < 6;
 
-  const doseText = `${d.radiationRadPerHour.toFixed(d.radiationRadPerHour < 1 ? 3 : 2)} rad/h`;
-  const shieldFrac =
-    d.shieldingCapacity > 0 ? d.shieldingValue / d.shieldingCapacity : 0;
+  /* The placeholder, not "0.000 rad/h": the readout sits under a live caption
+     saying "habitat dose rate", and a number there is the one an operator acts
+     on. RadiationSection in ShipSystems reads the same field the same way. */
+  const doseText =
+    d.radiationRadPerHour === null
+      ? NULL_DISPLAY
+      : `${d.radiationRadPerHour.toFixed(d.radiationRadPerHour < 1 ? 3 : 2)} rad/h`;
+  /* Null, never 0, when either half is unreported: the meter draws absence
+     rather than an empty tank, and a bar assembled from one number we have and
+     one we do not is a verdict about a habitat (see useSpaceWeather's header).
+     The fraction and its label are narrowed together so neither can be built
+     from half a pair. */
+  const shielding =
+    d.shieldingValue !== null &&
+    d.shieldingCapacity !== null &&
+    d.shieldingCapacity > 0
+      ? {
+          fraction: d.shieldingValue / d.shieldingCapacity,
+          label: `${d.shieldingValue.toFixed(1)} / ${d.shieldingCapacity.toFixed(1)}`,
+        }
+      : null;
+  const shieldFrac = shielding?.fraction ?? null;
 
   const allStorms = d.storms.map((s, i) =>
     deriveStorm(s, i, nowUt, d.stormEjectionSpeedMps),
@@ -1071,11 +1212,21 @@ function SpaceWeatherComponent({
                 Solar-wind flux
               </ReadoutCaption>
               <div style={CHART_SLOT}>
-                <SolarWindChart
-                  radiation={d.radiationRadPerHour}
-                  storm={d.stormState === "inprogress"}
-                  seed={d.seed}
-                />
+                {/* The trace's amplitude IS the dose rate, so with no dose to
+                    draw from it would render a calm solar wind: the same claim
+                    the numeric readout above refuses to make, as a picture. */}
+                {/* No live region: the verdict badge above is this board's one
+                    `role="status"`, and a second one announces the same absence
+                    twice. */}
+                {d.radiationRadPerHour === null ? (
+                  <EmptyState>Flux needs a dose rate</EmptyState>
+                ) : (
+                  <SolarWindChart
+                    radiation={d.radiationRadPerHour}
+                    storm={d.stormState === "inprogress"}
+                    seed={d.seed}
+                  />
+                )}
               </div>
             </div>
           </Section>
@@ -1084,12 +1235,21 @@ function SpaceWeatherComponent({
           <div style={FOOTER_ROW}>
             <Meter
               label="Shielding"
-              value={shieldFrac}
+              /* A null fraction is drawn as absence by the kit: placeholder in
+                 the header, empty track, and no `role="meter"`, because a meter
+                 asserts an `aria-valuenow` and there is none to assert. `tone`
+                 and `valueLabel` are both unread on that path. */
+              value={shieldFrac === null ? null : value("ratio", shieldFrac)}
               tone={
-                shieldFrac >= 0.6 ? "go" : shieldFrac >= 0.3 ? "warn" : "nogo"
+                shieldFrac === null
+                  ? "info"
+                  : shieldFrac >= 0.6
+                    ? "go"
+                    : shieldFrac >= 0.3
+                      ? "warn"
+                      : "nogo"
               }
-              valueLabel={`${d.shieldingValue.toFixed(1)} / ${d.shieldingCapacity.toFixed(1)}`}
-              size={compact ? "sm" : "md"}
+              valueLabel={shielding?.label}
             />
             {!compact && (
               <div style={ENV_ROW}>
@@ -1123,7 +1283,7 @@ const SECTION_HEAD: CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "baseline",
-  gap: "var(--space-8)",
+  gap: "var(--gap-related)",
 };
 
 const SECTION_LABEL: CSSProperties = {
@@ -1154,7 +1314,10 @@ function midRowStyle(compact: boolean): CSSProperties {
       ? "minmax(64px, 36%) 1fr"
       : "minmax(90px, 42%) 1fr",
     alignItems: "stretch",
-    gap: "var(--space-12)",
+    // A belt diagram beside a numeric dose readout: two different kinds of
+    // thing sharing a row, which is the section gap rather than the related
+    // one. It is the column gap only, the row being single.
+    gap: "var(--gap-section)",
     marginTop: compact ? "var(--space-4)" : "var(--space-10)",
     minHeight: 0,
     overflow: "hidden",
@@ -1165,7 +1328,7 @@ const FLUX_SECTION: CSSProperties = {
   flex: "0 0 auto",
   display: "flex",
   flexDirection: "column",
-  gap: "var(--space-4)",
+  gap: "var(--gap-related)",
   marginTop: "var(--space-10)",
   minHeight: 0,
 };
@@ -1194,7 +1357,7 @@ const BLACKOUT_TAG: CSSProperties = {
   color: "var(--color-status-nogo-on-bg)",
   background: "var(--color-status-nogo-bg)",
   borderRadius: "var(--radius-sm)",
-  padding: "var(--space-hair) var(--space-6)",
+  padding: "var(--inset-chip)",
   whiteSpace: "nowrap",
 };
 
@@ -1212,7 +1375,7 @@ const POSITION_UNKNOWN_TAG: CSSProperties = {
   color: "var(--color-text-muted)",
   border: "1px solid var(--color-border-subtle)",
   borderRadius: "var(--radius-sm)",
-  padding: "var(--space-hair) var(--space-6)",
+  padding: "var(--inset-chip)",
   whiteSpace: "nowrap",
 };
 
@@ -1267,14 +1430,14 @@ const CHART_SLOT: CSSProperties = {
 const FOOTER_ROW: CSSProperties = {
   display: "flex",
   flexDirection: "column",
-  gap: "var(--space-6)",
+  gap: "var(--gap-related)",
   marginTop: "auto",
   paddingTop: "var(--space-6)",
 };
 
 const ENV_ROW: CSSProperties = {
   display: "flex",
-  gap: "var(--space-6)",
+  gap: "var(--gap-related)",
   flexWrap: "wrap",
 };
 
@@ -1284,7 +1447,7 @@ function envTagStyle(on: boolean, tone?: Tone): CSSProperties {
     fontSize: "var(--font-size-2xs)",
     letterSpacing: "0.05em",
     textTransform: "uppercase",
-    padding: "var(--space-hair) var(--space-6)",
+    padding: "var(--inset-chip)",
     borderRadius: "var(--radius-sm)",
     border: `1px solid ${on ? active : "var(--color-border-subtle)"}`,
     color: on ? active : "var(--color-text-muted)",
