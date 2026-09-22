@@ -113,12 +113,16 @@
     <Compile Remove="Headless\**\*.cs" />
   </ItemGroup>
 
+  <!-- Spelled out rather than through KosSafeDll/KosDll above: CI's
+       reference-set check reads these HintPaths as TEXT and expands only the
+       four root properties, so an intermediate property reads to it as a path
+       that does not exist. -->
   <ItemGroup Condition="'$(KosSafeAvailable)' == 'true'">
     <Reference Include="kOS.Safe">
-      <HintPath>$(KosSafeDll)</HintPath>
+      <HintPath>$(KspGameData)\kOS\Plugins\kOS.Safe.dll</HintPath>
     </Reference>
     <Reference Include="kOS">
-      <HintPath>$(KosDll)</HintPath>
+      <HintPath>$(KspGameData)\kOS\Plugins\kOS.dll</HintPath>
     </Reference>
     <Compile Include="..\mod\ScreenDiffMapper.cs" />
     <Compile Include="Headless\**\*.cs" />
