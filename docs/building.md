@@ -118,9 +118,14 @@ generated page references that path and a gitignored image is one GitHub draws a
 a broken icon. `renders/` is the other thing, gitignored: review output from
 `gonogo-uplink render`, regenerated on demand and never a gate.
 
-The commit-back stages assets by NAME, never by bytes. A PNG re-renders
-byte-identically on the same runner; a motion scene's GIF does not, so staging
-byte changes would commit a churn asset on every push to `main` forever.
+The commit-back splits a page into its two halves. The prose, the manifest and
+`render-shape.json` are staged by BYTES, because each is derived from the
+registrations and a change to one is always a real change. A picture is staged by
+whether its entry in `render-shape.json` moved, because a motion scene re-encodes
+to different bytes from an unchanged tree and staging that would commit a churn
+asset on every push to `main` forever. `tooling/stage-pages.mjs` is that rule, and
+the step runs `--check` before it pushes: a heal that leaves the checker failing
+has not healed.
 
 ## The parent mod version, declared per Uplink
 
