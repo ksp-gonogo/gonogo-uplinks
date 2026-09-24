@@ -244,8 +244,25 @@ jobs:
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
           node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
 
+      # The check renders into a throwaway directory, so when it fails the
+      # pictures that would explain why are already gone. Rendered again here,
+      # into what the upload below carries. Best effort: a leg that failed before
+      # the docs check may have nothing to render with, and that must not bury
+      # the failure that actually happened.
+      - name: Keep the renders of a failed docs check
+        if: failure() && inputs.client
+        continue-on-error: true
+        run: |
+          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- gonogo-uplink render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")
+
+      # Uploaded on failure as well as success: a leg that fails is the one whose
+      # output someone needs to read, and a success-only upload throws exactly
+      # that away. Named -FAILED so a red run's artefact stands out among green
+      # ones. A failed leg may have died before writing anything, so an empty
+      # directory is only an error on a leg that passed.
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: uplink-${{ inputs.id }}
+          name: uplink-${{ inputs.id }}${{ failure() && '-FAILED' || '' }}
           path: artifacts/
-          if-no-files-found: error
+          if-no-files-found: ${{ failure() && 'warn' || 'error' }}
