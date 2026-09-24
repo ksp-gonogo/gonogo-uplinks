@@ -242,7 +242,7 @@ export function TrainingEnrolment() {
               <CommandButton
                 args={{
                   crew: chosen.map((candidate) => candidate.name),
-                  templateId: selected.id,
+                  templateId: selected.id ?? undefined,
                 }}
                 /* Named by the student count while it can act, and the bare
                    visible label once it cannot: a refused control announcing an
@@ -494,6 +494,10 @@ function enrolRefusal(
   template: Rp1TrainingTemplateEntry,
   chosen: readonly Candidate[],
 ): string | null {
+  // A course with no id cannot be named in the command that starts it.
+  if (template.id == null) {
+    return "RP-1 reported this course without an id, so it cannot be started from here";
+  }
   const blocked = chosen.filter((candidate) => candidate.refusal !== null);
   if (blocked.length > 0) {
     return `${blocked.map((candidate) => candidate.name).join(", ")} cannot take this training, and RP-1 refuses the whole crew rather than starting a seat short`;

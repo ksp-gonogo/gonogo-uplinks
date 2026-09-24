@@ -20,7 +20,7 @@ export interface RealFuelsEngineEntry
 	*/
 	partId?: number | null;
 	/** The engine part's display title. */
-	partName?: string;
+	partName?: string | null;
 	/**
 	* Ignitions left in the budget, RAW: the live counter RealFuels decrements on
 	* each successful light.
@@ -142,7 +142,7 @@ export interface RealFuelsEngines
 	* engines on it; a NULL list is a vessel the Uplink could not read. The two
 	* are different and are kept different.
 	*/
-	engines?: RealFuelsEngineEntry[];
+	engines?: RealFuelsEngineEntry[] | null;
 }
 /**
 * The `realfuels.boiloff` channel: cryogenic propellant leaving the vessel

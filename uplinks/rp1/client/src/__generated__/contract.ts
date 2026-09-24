@@ -830,7 +830,7 @@ export interface Rp1ContractPayloadArgs
 export interface Rp1CentreEntry
 {
 	/** The centre's own name, and the join key every other rp1.* payload carries. */
-	kscName?: string;
+	kscName?: string | null;
 	/**
 	* What to CALL this centre. `Rp1CentreEntry.kscName` is an id and reads like
 	* one (`us_cape_canaveral`); this is the name KSCSwitcher's own site config
@@ -841,7 +841,7 @@ export interface Rp1CentreEntry
 	* name of its own. A client falls back to `Rp1CentreEntry.kscName` in both,
 	* which is what RP-1 does too.
 	*/
-	kscDisplayName?: string;
+	kscDisplayName?: string | null;
 	/** This is the centre RP-1 currently considers active. */
 	isActive?: boolean | null;
 	/** Engineers hired at this centre, assigned and unassigned together. */
@@ -862,7 +862,7 @@ export interface Rp1CentreEntry
 	* the command-centre roster. Null when KSCSwitcher is not installed, which is
 	* RP-1's own answer, and also when the lookup could not be made.
 	*/
-	groundStation?: string;
+	groundStation?: string | null;
 	/**
 	* What this centre's engineers draw per day, RP-1's own effective figure: an
 	* unassigned engineer counts at a fraction (see `Rp1Personnel.idleSalaryMult`)
@@ -892,7 +892,7 @@ export interface Rp1CentreEntry
 */
 export interface Rp1ComplexEntry
 {
-	kscName?: string;
+	kscName?: string | null;
 	/**
 	* The centre's display name, carried here as well as on
 	* `Rp1CentreEntry.kscDisplayName` for the same reason
@@ -900,12 +900,12 @@ export interface Rp1ComplexEntry
 	* never join to the centres channel, and those are exactly the ones that were
 	* printing an id at the operator. Absent on the same two conditions.
 	*/
-	kscDisplayName?: string;
+	kscDisplayName?: string | null;
 	/** The complex's stable GUID, and the key its queue, pads and operations carry. */
-	lcId?: string;
-	name?: string;
+	lcId?: string | null;
+	name?: string | null;
 	/** RP-1's `LaunchComplexType` name: "Pad" or "Hangar". */
-	lcType?: string;
+	lcType?: string | null;
 	isOperational?: boolean | null;
 	/**
 	* Rushing: work goes faster and salaries cost more, set per COMPLEX under
@@ -939,7 +939,7 @@ export interface Rp1ComplexEntry
 	* that leaves `Rp1ComplexEntry.efficiency` null. EMPTY is the different, real
 	* answer that the record exists and covers this complex alone.
 	*/
-	efficiencySharedWith?: string[];
+	efficiencySharedWith?: string[] | null;
 	/**
 	* Integration can proceed: no blocking rollout, rollback or repair is
 	* occupying the complex. False here is why a queue item's rate is zero.
@@ -1028,7 +1028,7 @@ export interface Rp1ComplexEntry
 	* The CAPACITIES behind these names are `Rp1ComplexEntry.resourceCapacities`,
 	* and a client renovating the complex needs those rather than these.
 	*/
-	resourcesHandled?: string[];
+	resourcesHandled?: string[] | null;
 	/**
 	* How much of each resource the complex is built to load, keyed by RP-1's own
 	* resource name, in units of that resource.
@@ -1057,7 +1057,7 @@ export interface Rp1ComplexEntry
 	* Null is RP-1 not having said. EMPTY is the real, different answer that the
 	* complex handles nothing, which is most early-career pads.
 	*/
-	resourceCapacities?: { [key:string]: number };
+	resourceCapacities?: { [key: string]: number } | null;
 	/**
 	* The identity RP-1 groups complexes by for crew rating: complexes sharing
 	* this key are on ONE efficiency record.
@@ -1088,7 +1088,7 @@ export interface Rp1ComplexEntry
 	* other record a share scaled by closeness, so a rating can climb where nobody
 	* worked. This key answers who shares a number, never what else moves it.
 	*/
-	efficiencyGroupKey?: string;
+	efficiencyGroupKey?: string | null;
 	/**
 	* What this complex's crew draws per day, at RP-1's own effective count: a
 	* rushing complex pays its working crew at the rush multiplier (see
@@ -1165,7 +1165,7 @@ export interface Rp1BuildItemEntry
 	* KCT version can be. A row with no id is readable and not commandable, and
 	* the client must render it that way rather than guessing a target.
 	*/
-	id?: string;
+	id?: string | null;
 	/**
 	* RP-1's `shipID`, and the ONLY key that joins this vehicle to the rollout,
 	* rollback or recovery moving it.
@@ -1183,10 +1183,10 @@ export interface Rp1BuildItemEntry
 	* and reporting something else under that name would be a lie about what RP-1
 	* stores.
 	*/
-	shipId?: string;
-	kscName?: string;
-	lcId?: string;
-	shipName?: string;
+	shipId?: string | null;
+	kscName?: string | null;
+	lcId?: string | null;
+	shipName?: string | null;
 	progress?: Value<"bp"> | null;
 	totalPoints?: Value<"bp"> | null;
 	/** Null rather than NaN on a project with no build points at all. */
@@ -1216,9 +1216,9 @@ export interface Rp1BuildItemEntry
 	* The launch site the vehicle is destined for, joining
 	* `rp1.pads[].launchSiteName`.
 	*/
-	launchSite?: string;
+	launchSite?: string | null;
 	/** RP-1's `ProjectType` name, e.g. "VAB", "SPH", "AirLaunch". */
-	projectType?: string;
+	projectType?: string | null;
 }
 /**
 * One finished vehicle sitting in a complex's warehouse. This is the honest
@@ -1232,14 +1232,14 @@ export interface Rp1WarehouseItemEntry
 	* addresses this and never a name; the warehouse is where the duplicate names
 	* pile up fastest, because a design flown twice was built twice.
 	*/
-	id?: string;
+	id?: string | null;
 	/**
 	* RP-1's `shipID`. See `Rp1BuildItemEntry.shipId` for why a vehicle carries
 	* two ids; this is the list where it matters, because a rollout only ever
 	* moves a FINISHED vehicle and so every rollout on the wire joins to a row
 	* here.
 	*/
-	shipId?: string;
+	shipId?: string | null;
 	/**
 	* RP-1's own reasons this vehicle cannot be rolled out of the complex holding
 	* it, in its own words. Null when it has none, which is the eligible case.
@@ -1266,10 +1266,10 @@ export interface Rp1WarehouseItemEntry
 	* refusal one step later, against the certainty of hiding a control that would
 	* have worked.
 	*/
-	rolloutRefusals?: string[];
-	kscName?: string;
-	lcId?: string;
-	shipName?: string;
+	rolloutRefusals?: string[] | null;
+	kscName?: string | null;
+	lcId?: string | null;
+	shipName?: string | null;
 	cost?: Value<"funds"> | null;
 	/**
 	* What moving this vehicle to a pad will cost, RP-1's own price for THIS
@@ -1290,8 +1290,8 @@ export interface Rp1WarehouseItemEntry
 	rolloutCost?: Value<"funds"> | null;
 	mass?: Value<"t"> | null;
 	humanRated?: boolean | null;
-	launchSite?: string;
-	projectType?: string;
+	launchSite?: string | null;
+	projectType?: string | null;
 }
 /**
 * One launch pad. State is the direct answer to "may I launch from here",
@@ -1300,12 +1300,12 @@ export interface Rp1WarehouseItemEntry
 */
 export interface Rp1PadEntry
 {
-	kscName?: string;
-	lcId?: string;
-	padId?: string;
-	name?: string;
+	kscName?: string | null;
+	lcId?: string | null;
+	padId?: string | null;
+	name?: string | null;
 	/** Joins `spaceCenter.launchSites[].name` client-side. */
-	launchSiteName?: string;
+	launchSiteName?: string | null;
 	level?: Value<"count"> | null;
 	fractionalLevel?: Value<"ratio"> | null;
 	/**
@@ -1313,7 +1313,7 @@ export interface Rp1PadEntry
 	* "Rollback", "Reconditioning", "Free", or "None". Anything but "Free" means a
 	* launch aimed here will not work.
 	*/
-	status?: string;
+	status?: string | null;
 	/**
 	* The pad is in service, as opposed to still being built.
 	*
@@ -1355,7 +1355,7 @@ export interface Rp1PadEntry
 	* say WHICH craft is in the way. Null whenever `Rp1PadEntry.hasVesselWaiting`
 	* is not true.
 	*/
-	waitingVesselName?: string;
+	waitingVesselName?: string | null;
 }
 /**
 * One rollout, rollback, reconditioning or air-launch operation on a complex:
@@ -1363,17 +1363,17 @@ export interface Rp1PadEntry
 */
 export interface Rp1OperationEntry
 {
-	kscName?: string;
-	lcId?: string;
+	kscName?: string | null;
+	lcId?: string | null;
 	/** The pad this operation is for, matching `rp1.pads[].name`. */
-	launchPadId?: string;
+	launchPadId?: string | null;
 	/**
 	* RP-1's `RolloutReconType` name. SEVEN arms, not the five a KCT-shaped client
 	* would map: "Reconditioning", "Rollout", "Rollback", "Recovery", "None",
 	* "AirlaunchMount", "AirlaunchUnmount". A table missing the last two renders
 	* an air-launched programme as unknown.
 	*/
-	type?: string;
+	type?: string | null;
 	progress?: Value<"bp"> | null;
 	totalPoints?: Value<"bp"> | null;
 	/**
@@ -1421,7 +1421,7 @@ export interface Rp1OperationEntry
 	*/
 	costRemaining?: Value<"funds"> | null;
 	/** The vehicle this operation is moving, or null for reconditioning. */
-	associatedVesselId?: string;
+	associatedVesselId?: string | null;
 }
 /**
 * One thing being BUILT at a space centre, as opposed to one vehicle being
@@ -1449,28 +1449,28 @@ export interface Rp1OperationEntry
 */
 export interface Rp1ConstructionEntry
 {
-	kscName?: string;
+	kscName?: string | null;
 	/**
 	* The launch complex this construction concerns, joining
 	* `rp1.complexes[].lcId`: the complex being built for a `LaunchComplex` row,
 	* the complex gaining a pad for a `Pad` row. Absent on a facility upgrade,
 	* which belongs to the centre rather than to any complex.
 	*/
-	lcId?: string;
+	lcId?: string | null;
 	/**
 	* Which of RP-1's three construction projects this is: `FacilityUpgrade`,
 	* `LaunchComplex` or `Pad`. These are this contract's own names, not RP-1 enum
 	* members, because RP-1 draws the distinction with three separate types rather
 	* than one enum.
 	*/
-	kind?: string;
+	kind?: string | null;
 	/**
 	* What is being built, in RP-1's own words: the facility's short name, the
 	* launch complex's name, or the new pad's name. Read from the project's stored
 	* name rather than through RP-1's display helper, which localises a facility
 	* name and walks the centre roster for a pad.
 	*/
-	name?: string;
+	name?: string | null;
 	/**
 	* The `SpaceCenterFacility` enum name being upgraded, e.g.
 	* "VehicleAssemblyBuilding". Present only on a `FacilityUpgrade` row: RP-1's
@@ -1478,7 +1478,7 @@ export interface Rp1ConstructionEntry
 	* category, which is not a claim about a facility and must not arrive looking
 	* like one.
 	*/
-	facilityType?: string;
+	facilityType?: string | null;
 	/** The level the facility is at now. FacilityUpgrade rows only. */
 	currentLevel?: Value<"count"> | null;
 	/** The level it is being taken to. FacilityUpgrade rows only. */
@@ -1496,7 +1496,7 @@ export interface Rp1ConstructionEntry
 	*/
 	engineersToReadd?: Value<"count"> | null;
 	/** The pad being built, joining `rp1.pads[].padId`. Pad rows only. */
-	padId?: string;
+	padId?: string | null;
 	progress?: Value<"bp"> | null;
 	totalPoints?: Value<"bp"> | null;
 	/** Null rather than NaN on a project with no build points at all. */
@@ -1559,8 +1559,8 @@ export interface Rp1ConstructionEntry
 */
 export interface Rp1ResearchEntry
 {
-	techId?: string;
-	techName?: string;
+	techId?: string | null;
+	techName?: string | null;
 	scienceCost?: Value<"count"> | null;
 	progress?: Value<"count"> | null;
 	progressRatio?: Value<"ratio"> | null;
@@ -1656,7 +1656,7 @@ export interface Rp1Personnel
 	* `Rp1HireTarget.isResearch` says which kind it hires, so setting a researcher
 	* target replaces an engineer one.
 	*/
-	hireTarget?: Rp1HireTarget;
+	hireTarget?: Rp1HireTarget | null;
 }
 /**
 * What it costs to BUILD here: the terms a client needs to price a complex the
@@ -1703,7 +1703,7 @@ export interface Rp1LcPricing
 	* than treat as an empty list: a complex quoted without its resources is
 	* quoted under its true cost.
 	*/
-	resources?: Rp1LcResourcePrice[];
+	resources?: Rp1LcResourcePrice[] | null;
 }
 /**
 * One fluid a complex can be built to handle, and what a unit of it adds to
@@ -1712,7 +1712,7 @@ export interface Rp1LcPricing
 export interface Rp1LcResourcePrice
 {
 	/** The KSP resource name, which is the key the command takes. */
-	name?: string;
+	name?: string | null;
 	/**
 	* Funds per unit of capacity, for a PAD complex.
 	*
@@ -1788,23 +1788,23 @@ export interface Rp1ProgramEntry
 	* RP-1's internal program name, stable across releases and the join key for
 	* this row.
 	*/
-	name?: string;
+	name?: string | null;
 	/** The name RP-1 shows an operator, e.g. "X-Plane Research". */
-	title?: string;
+	title?: string | null;
 	/**
 	* Where this Program sits: `active`, `completed`, `offerable` (requirements
 	* met, could be accepted now), `locked` (requirements not met) or `disabled`
 	* (RP-1 has ruled it out, usually because accepting a rival Program closed it
 	* off).
 	*/
-	status?: string;
+	status?: string | null;
 	/**
 	* RP-1's `Program.Speed` name: "Slow", "Normal" or "Fast". Speed is chosen at
 	* accept time and fixes both the duration and the Confidence price, so on an
 	* offerable row this is the speed currently selected in the Administration
 	* building rather than a commitment.
 	*/
-	speed?: string;
+	speed?: string | null;
 	/** Program slots this occupies, against the ceiling in `Rp1ProgramSlots`. */
 	slots?: Value<"count"> | null;
 	/** A crewed-spaceflight Program, which is RP-1's `isHSF` flag. */
@@ -1862,7 +1862,7 @@ export interface Rp1ProgramEntry
 	* "BimodalBackloaded". It decides whether the money arrives evenly or in the
 	* back half, which is what a payload schedule has to be planned around.
 	*/
-	fundingCurve?: string;
+	fundingCurve?: string | null;
 	/**
 	* Confidence this Program costs at `Rp1ProgramEntry.speed`, read from RP-1's
 	* own per-speed table. This is the RAW cost: RP-1's Administration building
@@ -1904,12 +1904,12 @@ export interface Rp1ProgramEntry
 	* RP-1's own prose for what this Program needs before it can be accepted.
 	* Absent when the Program declares none. May carry KSP rich-text markup.
 	*/
-	requirementsText?: string;
+	requirementsText?: string | null;
 	/**
 	* RP-1's own prose for what this Program asks you to achieve. May carry KSP
 	* rich-text markup.
 	*/
-	objectivesText?: string;
+	objectivesText?: string | null;
 	/**
 	* The duration actually in force, which is what the deadline, the funding
 	* curve and the payment schedule are all measured against.
@@ -1937,14 +1937,14 @@ export interface Rp1ProgramEntry
 	* table the choice was made from rather than a choice still open: RP-1 fixes
 	* speed at accept and `SetSpeed` refuses to move it afterwards.
 	*/
-	speedOptions?: Rp1ProgramSpeedOption[];
+	speedOptions?: Rp1ProgramSpeedOption[] | null;
 	/**
 	* Programs accepting this one closes off, by RP-1's internal name. This is the
 	* cost that appears in neither currency: a rival Program taken off the table
 	* is funding the career can no longer ever draw. Absent rather than empty when
 	* the Program closes nothing off.
 	*/
-	programsToDisableOnAccept?: string[];
+	programsToDisableOnAccept?: string[] | null;
 	/**
 	* The per-year funding schedule, as RP-1's own Administration building
 	* tabulates it: the funding curve sampled at each year boundary of
@@ -1954,7 +1954,7 @@ export interface Rp1ProgramEntry
 	* here: a Program that has finished paying has no schedule left, and a table
 	* of what it once would have paid reads as money still coming.
 	*/
-	fundingPayments?: Rp1ProgramPaymentEntry[];
+	fundingPayments?: Rp1ProgramPaymentEntry[] | null;
 }
 /**
 * How much Program capacity the career has and how much of it is committed. A
@@ -1998,7 +1998,7 @@ export interface Rp1ProgramSlots
 export interface Rp1ProgramSpeedOption
 {
 	/** RP-1's `Program.Speed` name: "Slow", "Normal" or "Fast". */
-	speed?: string;
+	speed?: string | null;
 	/**
 	* Confidence this speed costs, straight out of RP-1's per-speed table. Zero is
 	* a real price and the shipped catalogue charges it for `Slow`; absent means
@@ -2087,7 +2087,7 @@ export interface Rp1FundingCurveEntry
 	* The curve's name, which is what `Rp1ProgramEntry.fundingCurve` names, e.g.
 	* "Flat" or "BimodalBackloaded".
 	*/
-	name?: string;
+	name?: string | null;
 	/**
 	* This is the curve RP-1 falls back to. It matters because the fallback is not
 	* an error path: `ProgramHandlerSettings.FundingCurve` returns it for an empty
@@ -2101,7 +2101,7 @@ export interface Rp1FundingCurveEntry
 	* when the curve could not be read: a curve with no keys pays nothing at all,
 	* which no Program in the catalogue does.
 	*/
-	keys?: Rp1FundingCurveKey[];
+	keys?: Rp1FundingCurveKey[] | null;
 }
 /**
 * One kerbal's RP-1 schedule: when their career ends, what they are training
@@ -2123,7 +2123,7 @@ export interface Rp1CrewEntry
 	* The kerbal's `ProtoCrewMember.name`: the join key to
 	* `spaceCenter.crewRoster`.
 	*/
-	name?: string;
+	name?: string | null;
 	/**
 	* Whether RP-1 counts this kerbal as a retiree. The SAME fact the crewStanding
 	* capability puts on the stock roster, carried here as well because this
@@ -2158,18 +2158,18 @@ export interface Rp1CrewEntry
 	* Name of the training course this kerbal is enrolled on; absent when they are
 	* not training.
 	*/
-	trainingCourse?: string;
+	trainingCourse?: string | null;
 	/**
 	* Which kind of training: `"Proficiency"` (permanent, on a part) or
 	* `"Mission"` (perishable, and the reason `Rp1CrewEntry.nextTrainingExpiryUt`
 	* exists). Absent when not training.
 	*/
-	trainingType?: string;
+	trainingType?: string | null;
 	/**
 	* What the course trains on, RP-1's own target string (a part, or a mission
 	* profile). Absent when not training.
 	*/
-	trainingTarget?: string;
+	trainingTarget?: string | null;
 	/**
 	* Whether the course has actually begun. A course a kerbal is enrolled on but
 	* which has not started makes no progress and has no finish date, and an
@@ -2204,7 +2204,7 @@ export interface Rp1CrewEntry
 	* What lapses at `Rp1CrewEntry.nextTrainingExpiryUt`: RP-1's own target string
 	* for that training.
 	*/
-	nextTrainingExpiryTarget?: string;
+	nextTrainingExpiryTarget?: string | null;
 	/**
 	* How many perishable trainings this kerbal holds. Zero when none, so a client
 	* can say "none" rather than infer it from an absent date.
@@ -2292,12 +2292,12 @@ export interface Rp1BuildableCraftEntry
 	* is addressed with. See `Rp1BuildStartArgs.craftFile` for why it is not the
 	* ship name.
 	*/
-	craftFile?: string;
+	craftFile?: string | null;
 	/**
 	* The name inside the file, which is what the game shows and what an operator
 	* reads.
 	*/
-	shipName?: string;
+	shipName?: string | null;
 	/**
 	* Which editor built it. Sent straight back as the command's `facility`
 	* argument.
@@ -2325,21 +2325,21 @@ export interface Rp1BuildableCraftEntry
 	* Parts the craft names that this install does not have, so nothing can build
 	* it. An empty array when it is whole.
 	*/
-	missingParts?: string[];
+	missingParts?: string[] | null;
 	/**
 	* Parts whose tech node is not researched yet. The remedy is the research
 	* queue.
 	*/
-	lockedParts?: string[];
+	lockedParts?: string[] | null;
 	/** Parts researched but not bought. The remedy is money, spent at R&D. */
-	unpurchasedParts?: string[];
+	unpurchasedParts?: string[] | null;
 	/**
 	* What each launch complex would do with it, one entry per complex at every
 	* space centre. Empty when RP-1 has no complexes, which is a real state a new
 	* career starts in and is why a widget must not read an empty list as an
 	* outage.
 	*/
-	complexes?: Rp1BuildableComplex[];
+	complexes?: Rp1BuildableComplex[] | null;
 }
 /**
 * One launch complex's answer about one craft: whether it would take it, and
@@ -2351,17 +2351,17 @@ export interface Rp1BuildableComplex
 	* The complex, by the GUID `rp1.complexes[].lcId` publishes and the command
 	* takes.
 	*/
-	lcId?: string;
+	lcId?: string | null;
 	/** Its name, so a control can be labelled without joining to another channel. */
-	name?: string;
+	name?: string | null;
 	/** The space centre it stands at, because two centres may each have an LC-1. */
-	kscName?: string;
+	kscName?: string | null;
 	/**
 	* That centre's display name, travelling with the id for the reason the id
 	* travels here at all: a refusal is labelled from this row alone, and a label
 	* reading `us_cape_canaveral` names the place to nobody.
 	*/
-	kscDisplayName?: string;
+	kscDisplayName?: string | null;
 	/**
 	* Nothing this preview can see stops the build.
 	*
@@ -2376,7 +2376,7 @@ export interface Rp1BuildableComplex
 	* for a complex that answered: an absent list and an empty one would read the
 	* same and only one of them means "no objection".
 	*/
-	refusals?: string[];
+	refusals?: string[] | null;
 }
 /**
 * A standing instruction to keep hiring until the staff reaches a number, and
@@ -2422,7 +2422,7 @@ export interface Rp1HireTarget
 	* The complex being staffed, absent when this hires researchers. The key
 	* `Rp1ComplexEntry.lcId` carries.
 	*/
-	lcId?: string;
+	lcId?: string | null;
 	/**
 	* RP-1's estimate of how long until the target is met, which is really a
 	* forecast of when the funds will exist. An INTERVAL, so seconds.
@@ -2484,22 +2484,22 @@ export interface Rp1FundTarget
 export interface Rp1TrainingCourseEntry
 {
 	/** RP-1's template id, and the key an enrolment names. */
-	id?: string;
+	id?: string | null;
 	/** The course's display name, RP-1's own. */
-	name?: string;
-	description?: string;
+	name?: string | null;
+	description?: string | null;
 	/**
 	* `Proficiency` or `Mission`. Proficiency training is on a part and lasts;
 	* mission training is for a flight and expires.
 	*/
-	type?: string;
+	type?: string | null;
 	/** What the course trains on, RP-1's own target string. */
-	target?: string;
+	target?: string | null;
 	/**
 	* The enrolled kerbals by name, joining to `spaceCenter.crewRoster`. Empty is
 	* a real answer: a course can exist with nobody on it.
 	*/
-	students?: string[];
+	students?: string[] | null;
 	/**
 	* The fewest students the course can run with. Above one, the only way out is
 	* cancelling the whole course.
@@ -2567,17 +2567,17 @@ export interface Rp1TrainingCourseEntry
 export interface Rp1TrainingTemplateEntry
 {
 	/** RP-1's template id, and the key `rp1.training.enrol` names. */
-	id?: string;
+	id?: string | null;
 	/** The training's display name, RP-1's own. */
-	name?: string;
-	description?: string;
+	name?: string | null;
+	description?: string | null;
 	/**
 	* `Proficiency` or `Mission`. Proficiency training is on a part and lasts;
 	* mission training is for a flight and expires.
 	*/
-	type?: string;
+	type?: string | null;
 	/** What the training is on, RP-1's own target string. */
-	target?: string;
+	target?: string | null;
 	/**
 	* How long the course takes with nobody on it yet. An INTERVAL, so seconds.
 	*
@@ -2633,15 +2633,15 @@ export interface Rp1TrainingTemplateEntry
 export interface Rp1ToolingEntry
 {
 	/** The part carrying the module, by its display title. */
-	partTitle?: string;
+	partTitle?: string | null;
 	/**
 	* RP-1's own tooling-type key, and what makes two parts share a tooling. Rows
 	* with the same type and the same `Rp1ToolingEntry.parameterSummary` are one
 	* purchase between them.
 	*/
-	toolingType?: string;
+	toolingType?: string | null;
 	/** The type as RP-1 titles it for a human. */
-	toolingTypeTitle?: string;
+	toolingTypeTitle?: string | null;
 	/**
 	* The tooling's parameters, as RP-1 renders them: `3.000m x 5.000m`, or `12.5
 	* t x 3.000m x 5.000m` for a type that takes three.
@@ -2655,7 +2655,7 @@ export interface Rp1ToolingEntry
 	* numbers would mean mirroring RP-1's type hierarchy and would misreport
 	* silently the day a subclass adds a parameter.
 	*/
-	parameterSummary?: string;
+	parameterSummary?: string | null;
 	/**
 	* Whether this tooling is already owned, which is RP-1's own `IsUnlocked`
 	* rather than anything derived here.
@@ -2686,7 +2686,7 @@ export interface Rp1ToolingEntry
 	*/
 	untooledSurcharge?: Value<"funds"> | null;
 	/** The part's craft id, and what `rp1.tooling.refit` names. */
-	partId?: string;
+	partId?: string | null;
 	/**
 	* How many OTHER parts a refit of this one would take with it.
 	*
@@ -2729,7 +2729,7 @@ export interface Rp1ToolingEntry
 	* RP-1 offers no refit for. EMPTY is the real, different answer that the
 	* career owns nothing this part could move to.
 	*/
-	refitTargets?: Rp1ToolingRefitTarget[];
+	refitTargets?: Rp1ToolingRefitTarget[] | null;
 }
 /**
 * One owned tooling a part could be reshaped to fit, and the material the
@@ -2756,7 +2756,7 @@ export interface Rp1ToolingRefitTarget
 	* offered with nothing to move to. Pass it as `Rp1ToolingRefitArgs.rfType`
 	* unchanged.
 	*/
-	rfType?: string;
+	rfType?: string | null;
 }
 /**
 * The `rp1.tooling` channel: what the ship on the editor's table would cost to
@@ -2799,7 +2799,7 @@ export interface Rp1Tooling
 	* could not tell an operator that a part is covered, which is the half of the
 	* answer that says the money has already been spent.
 	*/
-	parts?: Rp1ToolingEntry[];
+	parts?: Rp1ToolingEntry[] | null;
 }
 /**
 * The `rp1.buildCost` channel: what putting the vehicle on the editor's table
@@ -2875,7 +2875,7 @@ export interface Rp1BuildCost
 	* neither what the node is called nor what about the vehicle is blocked by it.
 	* Both are answerable and both are here.
 	*/
-	requiredTechs?: Rp1RequiredTechEntry[];
+	requiredTechs?: Rp1RequiredTechEntry[] | null;
 }
 /**
 * One tech node the editor vehicle needs and the career has not researched.
@@ -2895,7 +2895,7 @@ export interface Rp1RequiredTechEntry
 	* player searches a tech tree for and what any other surface would join on. A
 	* title is a display string and is not a key.
 	*/
-	id?: string;
+	id?: string | null;
 	/**
 	* The node as the career's own tech tree titles it, e.g. "Supersonic Flight".
 	*
@@ -2912,7 +2912,7 @@ export interface Rp1RequiredTechEntry
 	* it is. A client already holds `Rp1RequiredTechEntry.id` and can fall back to
 	* it itself, so absence is the honest answer and the only one it can act on.
 	*/
-	title?: string;
+	title?: string | null;
 	/**
 	* The parts on the editor's table that are waiting for this node, by their
 	* display titles.
@@ -2930,7 +2930,7 @@ export interface Rp1RequiredTechEntry
 	* empty list is therefore never suppressed, because an operator who saw the
 	* row vanish would go looking for a fault behind it.
 	*/
-	parts?: string[];
+	parts?: string[] | null;
 }
 /**
 * One thing RP-1 recorded as having happened in the career, with the instant
@@ -2949,7 +2949,7 @@ export interface Rp1CareerEventEntry
 	* Which of RP-1's six logs this came from: `contract`, `launch`, `failure`,
 	* `facilityConstruction`, `techResearch` or `leader`.
 	*/
-	kind?: string;
+	kind?: string | null;
 	/**
 	* What happened, in RP-1's own words: a contract's display name, a vessel's
 	* name, a tech node, a leader, a facility, or the PART that failed.
@@ -2960,14 +2960,14 @@ export interface Rp1CareerEventEntry
 	* id, a part and a failure mode. Neither has a display name, a vessel name, a
 	* node name or a leader name, so both used to arrive nameless.
 	*/
-	name?: string;
+	name?: string | null;
 	/**
 	* The kind's own sub-type where it has one: a contract's accepted / completed
 	* / failed, a failure's failure mode, a construction's state. Passed through
 	* as the producer's own value rather than mapped, because the sets are its
 	* vocabulary and a stale mapping here would mislabel history.
 	*/
-	detail?: string;
+	detail?: string | null;
 	/**
 	* The launch this row belongs to, on the two kinds that carry one.
 	*
@@ -2976,7 +2976,7 @@ export interface Rp1CareerEventEntry
 	* to answer. A shape that dropped this would carry both rows and be unable to
 	* say they were the same flight.
 	*/
-	launchId?: string;
+	launchId?: string | null;
 	/** Reputation gained or lost, on a contract. Absent elsewhere. */
 	repChange?: Value<"rep"> | null;
 	/** What it cost, on a leader appointment. Absent elsewhere. */
@@ -2997,7 +2997,7 @@ export interface Rp1CareerEventEntry
 	* One word, and it is the only thing on the row that separates a rocket from a
 	* spaceplane.
 	*/
-	builtAt?: string;
+	builtAt?: string | null;
 }
 /**
 * The `rp1.careerEvents` channel: RP-1's own record of what has happened in
@@ -3027,7 +3027,7 @@ export interface Rp1CareerEvents
 	* `Rp1CareerEventEntry.ut` is absent placed after all the dated ones rather
 	* than among them. Read the tail as undated, not as the newest.
 	*/
-	events?: Rp1CareerEventEntry[];
+	events?: Rp1CareerEventEntry[] | null;
 }
 /**
 * One of the space centre's buildings, as RP-1 knows it: the tier it is at,
@@ -3056,7 +3056,7 @@ export interface Rp1FacilityEntry
 	* same key `career.status.facilities` is indexed by, so a client can read one
 	* where the other is silent.
 	*/
-	facility?: string;
+	facility?: string | null;
 	/**
 	* The tier it is at now, zero-based, the same counting
 	* `career.status.facilities[].currentTier` uses.
@@ -3113,7 +3113,7 @@ export interface Rp1Avionics
 	* no steering) or `"Unlocked"` (full control). Absent for a level this build
 	* does not recognise, which is not a level to draw a go/no-go from.
 	*/
-	lockLevel?: string;
+	lockLevel?: string | null;
 	/**
 	* The mass the fitted avionics support, in tonnes. RP-1's own `maxMass`: the
 	* largest single part's summed avionics rating, counting only units
@@ -3194,7 +3194,7 @@ export interface Rp1LeaderEntry
 	* The strategy this prices, by the id `career.status.strategies.all[].id`
 	* publishes.
 	*/
-	strategyId?: string;
+	strategyId?: string | null;
 	/** Funds RP-1 charges to appoint, absent when it charges none. */
 	setupFunds?: Value<"funds"> | null;
 	/** Science RP-1 charges to appoint. */

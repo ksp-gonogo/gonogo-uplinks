@@ -162,7 +162,11 @@ function SurchargeRow({ cost }: { cost: Rp1BuildCost }) {
  * <para>A node blocking four parts would otherwise repeat itself down four rows,
  * turning a four-node answer into a twelve-row list on the same facts.</para>
  */
-function RequiredTechs({ techs }: { techs?: Rp1RequiredTechEntry[] }) {
+function RequiredTechs({
+  techs,
+}: {
+  techs?: Rp1RequiredTechEntry[] | null;
+}) {
   if (techs == null || techs.length === 0) {
     return null;
   }

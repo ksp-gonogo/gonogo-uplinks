@@ -379,7 +379,7 @@ function PadRow({
 }: Readonly<{
   complex: Rp1ComplexEntry;
   dismantlePad: Parameters<typeof CommandButton>[0]["handle"];
-  lcId: string | undefined;
+  lcId: string | null | undefined;
   pad: Rp1PadEntry;
   renamePad: Parameters<typeof CommandButton>[0]["handle"];
   taken: readonly string[];

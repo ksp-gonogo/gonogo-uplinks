@@ -23,23 +23,23 @@ export interface ScanTrackColor
 }
 export interface ScanningVesselEntry
 {
-	vesselId?: string;
-	vesselName?: string;
-	body?: string;
+	vesselId?: string | null;
+	vesselName?: string | null;
+	body?: string | null;
 	subLatitude?: Value<"°"> | null;
 	subLongitude?: Value<"°"> | null;
 	altitude?: Value<"m"> | null;
-	sensors?: ScanSensorEntry[];
+	sensors?: ScanSensorEntry[] | null;
 	groundTrackWidthDeg?: Value<"°"> | null;
 	groundTrackLonHalfDeg?: Value<"°"> | null;
-	trackColor?: ScanTrackColor;
+	trackColor?: ScanTrackColor | null;
 }
 export interface ScanScienceEntry
 {
-	partId?: string;
-	partTitle?: string;
-	expId?: string;
-	title?: string;
+	partId?: string | null;
+	partTitle?: string | null;
+	expId?: string | null;
+	title?: string | null;
 	deployed?: boolean | null;
 	hasData?: boolean | null;
 	rerunnable?: boolean | null;
@@ -47,7 +47,7 @@ export interface ScanScienceEntry
 }
 export interface ScanAnomalyEntry
 {
-	name?: string;
+	name?: string | null;
 	latitude?: Value<"°"> | null;
 	longitude?: Value<"°"> | null;
 	known?: boolean | null;

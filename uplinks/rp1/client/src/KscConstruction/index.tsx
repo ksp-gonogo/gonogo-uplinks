@@ -59,7 +59,7 @@ export function KscConstruction() {
   // comes off the centres channel this section already reads.
   const centreNames = new Map(
     (centres ?? []).flatMap((centre) =>
-      centre.kscName === undefined || centre.kscDisplayName === undefined
+      centre.kscName == null || centre.kscDisplayName == null
         ? []
         : [[centre.kscName, centre.kscDisplayName] as const],
     ),

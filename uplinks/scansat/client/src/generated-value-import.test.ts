@@ -48,8 +48,9 @@ describe("generated contract.ts: Value/Vec3Of usage resolves to core", () => {
   it("keeps ScanningVesselEntry nesting the sensor and track-colour shapes", () => {
     const source = readFileSync(generatedContractPath, "utf8");
 
-    expect(source).toMatch(/sensors\?:\s*ScanSensorEntry\[\];/);
-    expect(source).toMatch(/trackColor\?:\s*ScanTrackColor;/);
+    // Nullability optional in both, for the reason given for minAlt below.
+    expect(source).toMatch(/sensors\?:\s*ScanSensorEntry\[\](?:\s*\|\s*null)?;/);
+    expect(source).toMatch(/trackColor\?:\s*ScanTrackColor(?:\s*\|\s*null)?;/);
     // The deepest declared quantities on the SCANsat surface: if these ever
     // stop being Value<"m">, the nested-hydration path has nothing left to prove.
     //

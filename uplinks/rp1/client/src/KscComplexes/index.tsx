@@ -138,7 +138,7 @@ export function KscComplexes() {
    */
   const complexNames = new Map(
     complexRows.flatMap((complex) =>
-      complex.lcId === undefined || complex.name === undefined
+      complex.lcId == null || complex.name == null
         ? []
         : [[complex.lcId, complex.name] as const],
     ),

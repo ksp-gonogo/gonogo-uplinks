@@ -824,7 +824,7 @@ function SpeedLadder({
   chosen,
   confidenceHeld,
 }: Readonly<{
-  options: readonly Rp1ProgramSpeedOption[] | undefined;
+  options: readonly Rp1ProgramSpeedOption[] | null | undefined;
   chosen: Rp1ProgramEntry["speed"];
   confidenceHeld: number | null;
 }>) {
