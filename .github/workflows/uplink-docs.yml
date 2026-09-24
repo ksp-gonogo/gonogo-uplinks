@@ -97,14 +97,21 @@ jobs:
 
       # The same script the PR check runs with `--check`, so what heals main and
       # what fails a pull request cannot disagree about which Uplinks they cover.
+      #
+      # Carries on past a failure so the pages that DID render are committed: one
+      # Uplink that cannot render used to discard every other Uplink's good page.
+      # A failed leg's own page is put back untouched by the script, its name is
+      # recorded for the steps below, and the last step still fails the run.
       - name: Regenerate every Uplink page
-        run: node tooling/uplink-docs.mjs
+        id: regen
+        continue-on-error: true
+        run: node tooling/uplink-docs.mjs --record-failures "$RUNNER_TEMP/uplink-docs-failed.txt"
 
       # Asking whether the run actually left a page behind. Not the same question
       # as the step above, which fails when the CLI errors: this one fails when it
       # exited 0 having written nothing.
       - name: Every Uplink has a generated page
-        run: node tooling/uplink-docs.mjs --gate
+        run: node tooling/uplink-docs.mjs --gate --skip "$RUNNER_TEMP/uplink-docs-failed.txt"
 
       # The front door lists the Uplinks and links each row at its own README, so
       # an Uplink that just gained one changes the table.
@@ -129,7 +136,7 @@ jobs:
           # before the push rather than leaving main to find out. It is the same
           # `--check` each CI leg runs, and it reads the working tree, which the
           # step above has just made agree with the index.
-          node tooling/uplink-docs.mjs --check
+          node tooling/uplink-docs.mjs --check --skip "$RUNNER_TEMP/uplink-docs-failed.txt"
 
           if git diff --cached --quiet; then
             echo "Every Uplink page already describes the code. Nothing to commit."
@@ -138,3 +145,12 @@ jobs:
             git commit -m "chore: regenerate Uplink pages"
             git push origin HEAD:${{ github.ref_name }}
           fi
+
+      # The pages that rendered are committed above; the run still goes red for
+      # the ones that did not, naming them.
+      - name: Every Uplink page regenerated
+        if: steps.regen.outcome == 'failure'
+        run: |
+          echo "::error::These Uplink pages could not be regenerated; their committed pages were left untouched:"
+          cat "$RUNNER_TEMP/uplink-docs-failed.txt" 2>/dev/null || echo "(the regenerate step failed before recording any)"
+          exit 1

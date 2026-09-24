@@ -223,9 +223,57 @@ if (legs.length === 0) {
   process.exit(1);
 }
 
+/*
+ * Uplinks that failed to regenerate earlier in the SAME run, as the file
+ * `--record-failures` wrote. Their committed page was put back untouched, so a
+ * check or a gate over them would judge a page this run did not produce, and
+ * fail the commit of every page it did.
+ */
+const skipFile = args.includes("--skip")
+  ? args[args.indexOf("--skip") + 1]
+  : undefined;
+const skipped = new Set(
+  skipFile && existsSync(skipFile)
+    ? readFileSync(skipFile, "utf8")
+        .split("\n")
+        .map((name) => name.trim())
+        .filter(Boolean)
+    : [],
+);
+for (const leg of legs) {
+  if (skipped.has(leg.name)) {
+    console.log(
+      `── ${leg.name}: not judged. It failed to regenerate in this run, and its committed page ` +
+        "was left exactly as it was.",
+    );
+  }
+}
+const judged = legs.filter((leg) => !skipped.has(leg.name));
+
+/**
+ * Put one Uplink's page back as committed, after a render that failed part-way.
+ * `docs` clears the asset directory before it renders, so without this a failed
+ * leg leaves its images deleted beside every other Uplink's good page, and
+ * committing the good ones would commit that deletion too.
+ */
+function restorePage(name) {
+  const client = join("uplinks", name, "client");
+  const assets = join(client, "docs", "assets");
+  for (const path of [join(client, "README.md"), join(client, "gonogo-uplink.json"), assets]) {
+    const tracked = execFileSync("git", ["ls-files", "--", path], {
+      cwd: ROOT,
+      encoding: "utf8",
+    }).trim();
+    if (tracked) execFileSync("git", ["checkout", "--", path], { cwd: ROOT });
+  }
+  if (existsSync(join(ROOT, assets))) {
+    execFileSync("git", ["clean", "-fdq", "--", assets], { cwd: ROOT });
+  }
+}
+
 if (mode === "gate") {
   selfCheck();
-  const rows = legs.map((leg) => ({
+  const rows = judged.map((leg) => ({
     name: leg.name,
     reasons: missingPageReasons(join(ROOT, "uplinks", leg.name, "client")),
   }));
@@ -247,7 +295,8 @@ if (mode === "gate") {
     process.exit(1);
   }
   console.log(
-    `\nall ${rows.length} client-bearing Uplink(s) have a generated page.`,
+    `\nall ${rows.length} client-bearing Uplink(s) have a generated page` +
+      `${skipped.size > 0 ? `; ${legs.length - judged.length} not judged, having failed to regenerate in this run` : ""}.`,
   );
   process.exit(0);
 }
@@ -256,7 +305,7 @@ const verb = mode === "check" ? ["docs", "--check"] : ["docs"];
 const failed = [];
 const unexpectedPass = [];
 
-for (const leg of legs) {
+for (const leg of judged) {
   /*
    * An excused Uplink is SKIPPED when writing, never run and excused.
    *
@@ -281,11 +330,25 @@ for (const leg of legs) {
     stdio: "inherit",
   });
   const ok = result.status === 0;
-  if (!ok && !RENDER_DEBT.has(leg.name)) failed.push(leg.name);
+  if (!ok && !RENDER_DEBT.has(leg.name)) {
+    failed.push(leg.name);
+    if (mode === "write") restorePage(leg.name);
+  }
   if (ok && RENDER_DEBT.has(leg.name)) unexpectedPass.push(leg.name);
   if (!ok && RENDER_DEBT.has(leg.name)) {
     console.log(`   excused by RENDER_DEBT: ${RENDER_DEBT.get(leg.name)}`);
   }
+}
+
+/*
+ * Recorded before any exit below, so the steps after this one can commit every
+ * page that rendered and leave out only the legs that did not.
+ */
+const recordFile = args.includes("--record-failures")
+  ? args[args.indexOf("--record-failures") + 1]
+  : undefined;
+if (recordFile) {
+  writeFileSync(recordFile, failed.map((name) => `${name}\n`).join(""));
 }
 
 // Both directions, like every other ratchet here.
@@ -300,22 +363,31 @@ if (unexpectedPass.length > 0) {
 
 if (failed.length > 0) {
   console.error(
-    `\n✖ ${failed.length} of ${legs.length} Uplink page(s) ` +
+    `\n✖ ${failed.length} of ${judged.length} Uplink page(s) ` +
       `${mode === "check" ? "no longer describe the code" : "could not be generated"}:\n` +
       failed.map((n) => `    ${n}`).join("\n") +
       (mode === "check"
         ? "\n\n  Regenerate and commit the result. The page is derived, so the fix is never to\n" +
           "  edit it:\n    node tooling/uplink-docs.mjs"
-        : ""),
+        : `\n\n  Their committed pages were put back untouched. Regenerated and ready to commit: ${
+            judged
+              .map((leg) => leg.name)
+              .filter((name) => !failed.includes(name) && !RENDER_DEBT.has(name))
+              .join(", ") || "none"
+          }.`),
   );
   process.exit(1);
 }
 
-const excused = legs.filter((leg) => RENDER_DEBT.has(leg.name)).length;
+const excused = judged.filter((leg) => RENDER_DEBT.has(leg.name)).length;
+const notJudged =
+  skipped.size > 0
+    ? `; ${legs.length - judged.length} not judged, having failed to regenerate in this run`
+    : "";
 console.log(
   mode === "check"
-    ? `\nall ${legs.length} Uplink page(s) match the code` +
-        `${excused > 0 ? `; ${excused} render failure(s) excused by RENDER_DEBT` : ""}.`
-    : `\n${legs.length - excused} Uplink page(s) regenerated` +
-        `${excused > 0 ? `; ${excused} skipped, in RENDER_DEBT` : ""}.`,
+    ? `\nall ${judged.length} Uplink page(s) match the code` +
+        `${excused > 0 ? `; ${excused} render failure(s) excused by RENDER_DEBT` : ""}${notJudged}.`
+    : `\n${judged.length - excused} Uplink page(s) regenerated` +
+        `${excused > 0 ? `; ${excused} skipped, in RENDER_DEBT` : ""}${notJudged}.`,
 );
