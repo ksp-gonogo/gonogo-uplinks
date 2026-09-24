@@ -69,8 +69,17 @@ const RECONNECT_MAX_MS = 30_000;
 // binds a free slot at runtime via subscribeCamera(); the spare slots let the
 // operator switch cameras with no renegotiation. The Deck only renders/encodes
 // the cameras actually bound to a slot, so the pool size is a cap on
-// simultaneous on-screen feeds, not a steady-state cost.
-const SLOT_COUNT = 6;
+// simultaneous on-screen feeds, not a steady-state cost: an idle slot is one
+// parked RTCP-drain task and an unbound RTP sender in the sidecar, nothing
+// rendered or encoded. Was 6, which a six-Kerbal crew bar alone exhausted
+// before the camera widget or the docking-cam augment got a slot (gonogo
+// tracker #112). The sidecar has no pool cap of its own — it builds exactly
+// as many transceivers as this number asks for — so this is sized well above
+// any plausible crew-bar + camera-tile + docking-cam combination rather than
+// tuned tightly, since the idle headroom costs next to nothing. Only a new
+// peer connection (connect() or a reconnect) picks up a change here; a
+// session already connected keeps the pool it negotiated at its own connect.
+export const SLOT_COUNT = 32;
 
 /**
  * A camera the sidecar would not bind because every slot in this connection's

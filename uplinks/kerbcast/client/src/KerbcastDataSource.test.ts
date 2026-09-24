@@ -7,7 +7,11 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { act } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource, kerbcastSource } from "./KerbcastDataSource.js";
+import {
+  KerbcastDataSource,
+  kerbcastSource,
+  SLOT_COUNT,
+} from "./KerbcastDataSource.js";
 import {
   createMockKerbcastSession,
   kerbcastFetchImpl,
@@ -401,7 +405,7 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
       slots?: number;
       cameras?: number[];
     };
-    expect(body.slots).toBe(6);
+    expect(body.slots).toBe(SLOT_COUNT);
     expect(body.cameras).toEqual([42]);
 
     ds.disconnect();
@@ -409,9 +413,13 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
 });
 
 describe("KerbcastDataSource: slot refusal", () => {
-  const SIX_SLOTS = ["0", "1", "2", "3", "4", "5"];
-  const POOL = [41, 42, 43, 44, 45, 46];
-  const SEVENTH = 47;
+  // Derived from SLOT_COUNT rather than a hand-picked size: the sidecar has
+  // no pool cap of its own, so a real connection always negotiates exactly
+  // SLOT_COUNT slots, and a fixture pinned to a different number stops
+  // matching what "pool full" actually means the moment the constant moves.
+  const FULL_POOL_MIDS = Array.from({ length: SLOT_COUNT }, (_, i) => String(i));
+  const POOL = Array.from({ length: SLOT_COUNT }, (_, i) => 41 + i);
+  const OVERFLOW = 41 + SLOT_COUNT;
 
   function fetchAnswering(bound: number[]): void {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
@@ -423,12 +431,12 @@ describe("KerbcastDataSource: slot refusal", () => {
     );
   }
 
-  async function connectedSixSlotSidecar(): Promise<{
+  async function connectedFullPoolSidecar(): Promise<{
     ds: KerbcastDataSource;
     sidecar: MockSidecar;
   }> {
-    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
-    for (const flightId of [...POOL, SEVENTH]) sidecar.addCamera({ flightId });
+    const sidecar = new MockSidecar().withSlots(FULL_POOL_MIDS);
+    for (const flightId of [...POOL, OVERFLOW]) sidecar.addCamera({ flightId });
     fetchAnswering([]);
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
     await ds.connect();
@@ -438,55 +446,55 @@ describe("KerbcastDataSource: slot refusal", () => {
   }
 
   it("records the sidecar's refusal against the camera whose bind was refused", async () => {
-    const { ds } = await connectedSixSlotSidecar();
+    const { ds } = await connectedFullPoolSidecar();
     const changes = vi.fn();
     ds.onSlotRefusalChange(changes);
 
     for (const flightId of POOL) ds.subscribeCamera(flightId);
     expect(changes).not.toHaveBeenCalled();
 
-    ds.subscribeCamera(SEVENTH);
+    ds.subscribeCamera(OVERFLOW);
 
-    expect(ds.getSlotRefusal(SEVENTH)).toEqual({ slotsInUse: 6 });
+    expect(ds.getSlotRefusal(OVERFLOW)).toEqual({ slotsInUse: SLOT_COUNT });
     for (const flightId of POOL) expect(ds.getSlotRefusal(flightId)).toBeNull();
     expect(changes).toHaveBeenCalled();
   });
 
   it("binds the refused camera once a slot frees, and clears its refusal", async () => {
-    const { ds, sidecar } = await connectedSixSlotSidecar();
-    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
-    expect(ds.getSlotRefusal(SEVENTH)).not.toBeNull();
+    const { ds, sidecar } = await connectedFullPoolSidecar();
+    for (const flightId of [...POOL, OVERFLOW]) ds.subscribeCamera(flightId);
+    expect(ds.getSlotRefusal(OVERFLOW)).not.toBeNull();
 
     ds.unsubscribeCamera(POOL[0]);
 
-    expect(ds.getSlotRefusal(SEVENTH)).toBeNull();
-    expect(sidecar.slotMidFor(SEVENTH)).toBeDefined();
+    expect(ds.getSlotRefusal(OVERFLOW)).toBeNull();
+    expect(sidecar.slotMidFor(OVERFLOW)).toBeDefined();
   });
 
   it("forgets a refusal once nothing displays that camera", async () => {
-    const { ds } = await connectedSixSlotSidecar();
-    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
+    const { ds } = await connectedFullPoolSidecar();
+    for (const flightId of [...POOL, OVERFLOW]) ds.subscribeCamera(flightId);
 
-    ds.unsubscribeCamera(SEVENTH);
+    ds.unsubscribeCamera(OVERFLOW);
 
-    expect(ds.getSlotRefusal(SEVENTH)).toBeNull();
+    expect(ds.getSlotRefusal(OVERFLOW)).toBeNull();
   });
 
   it("records a refusal from the initial bind set, where the sidecar only leaves the camera out of the answer", async () => {
-    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
-    for (const flightId of [...POOL, SEVENTH]) sidecar.addCamera({ flightId });
+    const sidecar = new MockSidecar().withSlots(FULL_POOL_MIDS);
+    for (const flightId of [...POOL, OVERFLOW]) sidecar.addCamera({ flightId });
     fetchAnswering(POOL);
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
 
-    for (const flightId of [...POOL, SEVENTH]) ds.subscribeCamera(flightId);
+    for (const flightId of [...POOL, OVERFLOW]) ds.subscribeCamera(flightId);
     await ds.connect();
 
-    expect(ds.getSlotRefusal(SEVENTH)).toEqual({ slotsInUse: 6 });
+    expect(ds.getSlotRefusal(OVERFLOW)).toEqual({ slotsInUse: SLOT_COUNT });
     for (const flightId of POOL) expect(ds.getSlotRefusal(flightId)).toBeNull();
   });
 
   it("does not read a short answer as a refusal when the pool was not full", async () => {
-    const sidecar = new MockSidecar().withSlots(SIX_SLOTS);
+    const sidecar = new MockSidecar().withSlots(FULL_POOL_MIDS);
     fetchAnswering([41]);
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
 
