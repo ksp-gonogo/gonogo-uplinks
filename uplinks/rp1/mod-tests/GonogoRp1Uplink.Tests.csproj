@@ -52,6 +52,7 @@
     <Compile Include="..\mod\Rp1ScUplink.cs" />
     <Compile Include="..\mod\Rp1EconomyBackend.cs" />
     <Compile Include="..\mod\Rp1EconomyUpkeepQuery.cs" />
+    <Compile Include="..\mod\Rp1HirePriceQuery.cs" />
     <Compile Include="..\mod\Rp1LaunchGate.cs" />
     <Compile Include="..\mod\Rp1CareerProjectGate.cs" />
     <Compile Include="..\mod\Rp1Envelope.cs" />
