@@ -28,13 +28,8 @@ import {
   registerAugment,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import { Badge } from "@ksp-gonogo/ui-kit";
 import { useEffect, useMemo, useRef } from "react";
 import { useDelayedKerbcastStream } from "../CameraFeed/useDelayedKerbcastStream.js";
-import {
-  describeSlotRefusal,
-  useSlotRefusal,
-} from "../hooks/useSlotRefusal.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { KERBCAST } from "../uplink.js";
 // Side-effect import: registers kerbcast.cameras's unit map into the SDK's
@@ -129,7 +124,6 @@ function DockingCameraVideo({ flightId }: { flightId: number }) {
   // delayed output available) draws no backdrop rather than falling back to
   // live.
   const stream = useDelayedKerbcastStream(flightId);
-  const slotRefusal = useSlotRefusal(flightId);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -142,26 +136,6 @@ function DockingCameraVideo({ flightId }: { flightId: number }) {
     }
   }, [stream]);
 
-  if (slotRefusal) {
-    // Positioned so it paints over the HUD's tinted reticle layer rather than
-    // under it, in the corner the reticle and its ticks leave clear.
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        aria-label={describeSlotRefusal(slotRefusal)}
-        style={{
-          position: "absolute",
-          left: "var(--space-8)",
-          bottom: "var(--space-8)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      >
-        <Badge severity="warning">{describeSlotRefusal(slotRefusal)}</Badge>
-      </div>
-    );
-  }
   if (!stream) return null;
   // Absolutely positioned over the HudPanel (AugmentSlot renders a bare
   // fragment, so this <video> is a direct HudPanel child, exactly where the

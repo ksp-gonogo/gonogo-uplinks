@@ -184,53 +184,6 @@ describe("KerbcastAvatarAugment: kerbal correlation", () => {
   });
 });
 
-describe("KerbcastAvatarAugment: no free video slot", () => {
-  it("says the pool is full on the avatar and in the spotlight when the face camera's bind is refused", async () => {
-    const pool = [41, 42, 43, 44, 45, 46];
-    const sidecar = new MockSidecar().withSlots(["0", "1", "2", "3", "4", "5"]);
-    const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
-    registerUplinkHandle("kerbcast", ds);
-    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
-      Promise.resolve(
-        String(input).includes("/ice-config")
-          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
-          : MockSidecar.makeOfferResponse([]),
-      ),
-    );
-    await act(async () => {
-      await ds.connect();
-      sidecar.open();
-      sidecar.setConnectionState("connected");
-      sidecar.setCameras([
-        ...pool.map((flightId) => ({ flightId, kind: CameraKind.Part })),
-        {
-          flightId: 47,
-          kind: CameraKind.Kerbal,
-          cameraName: "Jebediah Kerman",
-          crewLocation: CrewLocation.Seat,
-        },
-      ]);
-    });
-    for (const flightId of pool) ds.subscribeCamera(flightId);
-
-    const { container } = render(
-      <Wrapper embedded>
-        <KerbcastAvatarAugment crewName="Jebediah Kerman" crewIndex={0} />
-      </Wrapper>,
-    );
-
-    const button = await screen.findByRole("button", {
-      name: /jebediah kerman's seated face camera\. no video slot free \(6 in use\)/i,
-    });
-    expect(screen.getByText("NO SLOT")).not.toBeNull();
-    await expectNoA11yViolations(container);
-
-    fireEvent.click(button);
-    const dialog = await screen.findByRole("dialog");
-    expect(dialog).toHaveTextContent("No video slot free (6 in use)");
-  });
-});
-
 describe("KerbcastAvatarAugment: a11y smoke", () => {
   it("has no axe violations for a live seated-camera avatar", async () => {
     const { sidecar } = await connectedDataSource();

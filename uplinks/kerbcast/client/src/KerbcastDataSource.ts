@@ -81,18 +81,6 @@ const RECONNECT_MAX_MS = 30_000;
 // session already connected keeps the pool it negotiated at its own connect.
 export const SLOT_COUNT = 32;
 
-/**
- * A camera the sidecar would not bind because every slot in this connection's
- * pool was already carrying another camera.
- */
-export interface SlotRefusal {
-  /** Slots bound when the bind was refused, which is the whole negotiated pool. */
-  slotsInUse: number;
-}
-
-/** The sidecar's `error` message when a `subscribe` finds every slot bound. */
-const NO_FREE_SLOT_PREFIX = "no free slot";
-
 /** The sidecar's `error` message when a `subscribe` names a camera it does not have. */
 const NO_LIVE_CAMERA = /^no live camera with flight_id=(\d+)/;
 
@@ -431,12 +419,6 @@ export class KerbcastDataSource {
   private desiredSubs = new Map<number, number>();
 
   /**
-   * Cameras the sidecar refused a slot to, oldest first, so a freed slot goes
-   * to the camera that has waited longest.
-   */
-  private slotRefusals = new Map<number, SlotRefusal>();
-  private slotRefusalListeners = new Set<() => void>();
-  /**
    * `subscribe`s sent and not yet answered, in send order. The sidecar answers
    * each one in turn with a `slot-map` or an `error`, and its "no free slot"
    * error carries no flightId, so the oldest unanswered bind is the one it
@@ -545,7 +527,6 @@ export class KerbcastDataSource {
       reconnectEnabled: this.reconnectEnabled,
       brokered: !!this.broker,
       desiredSubs: [...this.desiredSubs.entries()],
-      slotRefusals: [...this.slotRefusals.keys()],
       dynamicMode: c.dynamicMode ?? null,
       cameras: c.cameras?.map((cam) => cam.flightId) ?? null,
       slotTracks: c.trackByMid
@@ -640,28 +621,11 @@ export class KerbcastDataSource {
       return;
     }
     this.desiredSubs.delete(flightId);
-    if (this.slotRefusals.delete(flightId)) this.notifySlotRefusals();
     if (this.status === "connected") {
       void this.client.unsubscribe(flightId).catch(() => {
         /* already tearing down */
       });
     }
-  }
-
-  /**
-   * Why `flightId` has no video, when the reason is that the sidecar refused it
-   * a slot: `null` while it holds one, is waiting on an answer, or is not
-   * wanted at all. Cleared when a slot frees and the camera is bound into it,
-   * when nothing displays the camera any more, and when the connection drops.
-   */
-  getSlotRefusal(flightId: number): SlotRefusal | null {
-    return this.slotRefusals.get(flightId) ?? null;
-  }
-
-  /** Notified whenever any camera's {@link getSlotRefusal} answer changes. */
-  onSlotRefusalChange(cb: () => void): () => void {
-    this.slotRefusalListeners.add(cb);
-    return () => this.slotRefusalListeners.delete(cb);
   }
 
   /**
@@ -817,7 +781,6 @@ export class KerbcastDataSource {
           const answer = broker
             ? await broker.negotiate(offer)
             : await this.relayOffer(offer);
-          this.noteInitialBinds(offer, answer);
           return answer;
         },
       },
@@ -830,7 +793,7 @@ export class KerbcastDataSource {
     this.clientUnsubs.push(
       client.on("state-change", (s) => {
         // The slot pool belongs to the peer, so a lost peer takes every
-        // binding and every refusal with it; the next answer restates them.
+        // binding with it; the next answer restates them.
         if (s === "disconnected" || s === "failed") this.forgetSlotState();
         const status = mapStatus(s);
         this.setStatus(status);
@@ -938,77 +901,18 @@ export class KerbcastDataSource {
   private observeSlotMessage(msg: { type?: string; content?: unknown }): void {
     if (msg.type === "slot-map") {
       const { flightId } = (msg.content ?? {}) as { flightId?: number | null };
-      if (flightId == null) {
-        this.bindLongestRefused();
-      } else {
-        this.dropAwaiting(flightId);
-      }
+      if (flightId != null) this.dropAwaiting(flightId);
       return;
     }
     if (msg.type !== "error") return;
     const message = (msg.content as { message?: unknown } | undefined)?.message;
     if (typeof message !== "string") return;
     const missing = NO_LIVE_CAMERA.exec(message);
-    if (missing) {
-      this.dropAwaiting(Number(missing[1]));
-      return;
-    }
-    if (!message.startsWith(NO_FREE_SLOT_PREFIX)) return;
-    const refused = this.awaitingSlot.shift();
-    if (refused === undefined || !this.desiredSubs.has(refused)) return;
-    this.slotRefusals.set(refused, { slotsInUse: SLOT_COUNT });
-    this.notifySlotRefusals();
-  }
-
-  /** A slot has freed: offer it to the camera that has been refused longest. */
-  private bindLongestRefused(): void {
-    if (this.status !== "connected") return;
-    for (const flightId of this.slotRefusals.keys()) {
-      this.slotRefusals.delete(flightId);
-      this.notifySlotRefusals();
-      this.requestSlot(flightId);
-      return;
-    }
-  }
-
-  /**
-   * The initial cameras ride the offer, and the sidecar binds them into free
-   * slots in order, skipping any it does not have and stopping when the pool is
-   * full. A refusal there sends no `error`; the camera is only missing from the
-   * answer. So a full answer means every requested camera left out of it was
-   * refused, and a short one means none were.
-   */
-  private noteInitialBinds(
-    offer: { cameras: number[]; slots?: number },
-    answer: { cameras?: number[] },
-  ): void {
-    if (!Array.isArray(answer.cameras)) return;
-    const pool = offer.slots ?? SLOT_COUNT;
-    const bound = new Set(answer.cameras);
-    const poolFull = bound.size >= pool;
-    let changed = false;
-    for (const flightId of offer.cameras) {
-      if (poolFull && !bound.has(flightId)) {
-        this.slotRefusals.set(flightId, { slotsInUse: pool });
-        changed = true;
-      } else if (this.slotRefusals.delete(flightId)) {
-        changed = true;
-      }
-    }
-    if (changed) this.notifySlotRefusals();
+    if (missing) this.dropAwaiting(Number(missing[1]));
   }
 
   private forgetSlotState(): void {
     this.awaitingSlot = [];
-    if (this.slotRefusals.size === 0) return;
-    this.slotRefusals.clear();
-    this.notifySlotRefusals();
-  }
-
-  private notifySlotRefusals(): void {
-    this.slotRefusalListeners.forEach((cb) => {
-      cb();
-    });
   }
 
   private setStatus(status: DataSourceStatus): void {

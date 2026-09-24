@@ -722,39 +722,6 @@ describe("CameraFeed: debug info toggle", () => {
   });
 });
 
-describe("CameraFeed: no free video slot", () => {
-  it("names the full pool when its bind is the seventh", async () => {
-    const pool = [41, 42, 43, 44, 45, 46];
-    const sidecar = new MockSidecar().withSlots(["0", "1", "2", "3", "4", "5"]);
-    for (const flightId of [...pool, 47]) {
-      sidecar.addCamera(
-        toInit(makeCamera({ flightId, cameraName: `Cam ${flightId}` })),
-      );
-    }
-    const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
-    registerUplinkHandle("kerbcast", ds);
-    createdSources.push(ds);
-    vi.spyOn(globalThis, "fetch").mockImplementation(kerbcastFetch([]));
-    await act(async () => {
-      await ds.connect();
-    });
-    await act(async () => {
-      sidecar.open();
-      sidecar.setConnectionState("connected");
-    });
-    // Six surfaces already hold every slot the pool negotiated.
-    for (const flightId of pool) ds.subscribeCamera(flightId);
-
-    const { container } = renderFeed({ flightId: 47 });
-
-    const status = await screen.findByRole("status", {
-      name: "No video slot free (6 in use)",
-    });
-    expect(status).toHaveTextContent("No video slot free (6 in use)");
-    await expectNoA11yViolations(container);
-  });
-});
-
 describe("CameraFeed: empty state and status", () => {
   it("shows the no-cameras empty state and hides the menu trigger when connected with no cameras", async () => {
     await buildConnectedSource([]);

@@ -17,10 +17,6 @@ import { Badge, TextButton, useModal } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo } from "react";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
-import {
-  describeSlotRefusal,
-  useSlotRefusal,
-} from "../hooks/useSlotRefusal.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { KERBCAST } from "../uplink.js";
 import { selectKerbalCamera } from "./selectKerbalCamera.js";
@@ -115,8 +111,6 @@ function FacecamAvatarFeed({
   // `KerbcastProvider`, same reasoning).
   const client = useKerbcastClient();
   const subscriptions = useKerbcastSubscriptions();
-  const slotRefusal = useSlotRefusal(flightId);
-  const refusalText = slotRefusal ? describeSlotRefusal(slotRefusal) : null;
 
   return (
     <TextButton
@@ -130,56 +124,18 @@ function FacecamAvatarFeed({
                 {crewLocation && (
                   <LocationBadge isEva={isEva} corner="spotlight" />
                 )}
-                <SpotlightSlotRefusal flightId={flightId} />
               </KerbalFaceFeed>
             </div>
           </KerbcastProvider>,
           { title: crewName, width: "360px" },
         )
       }
-      aria-label={`Spotlight ${crewName}'s ${isEva ? "EVA" : "seated"} face camera${refusalText ? `. ${refusalText}` : ""}`}
-      title={refusalText ?? undefined}
+      aria-label={`Spotlight ${crewName}'s ${isEva ? "EVA" : "seated"} face camera`}
     >
-      <KerbalFaceFeed
-        flightId={flightId}
-        showActions={false}
-        showStandby={!slotRefusal}
-      >
-        {refusalText && (
-          // The roster cell is too small for the sentence, so the cell carries
-          // the short form and the button's name and title carry all of it.
-          <Badge
-            severity="warning"
-            size="sm"
-            aria-hidden="true"
-            style={AVATAR_NO_SLOT_POSITION}
-          >
-            NO SLOT
-          </Badge>
-        )}
+      <KerbalFaceFeed flightId={flightId} showActions={false}>
         {crewLocation && <LocationBadge isEva={isEva} corner="avatar" />}
       </KerbalFaceFeed>
     </TextButton>
-  );
-}
-
-/**
- * The full refusal sentence over the spotlight's face, read live so it clears
- * the moment a slot frees while the modal is open.
- */
-function SpotlightSlotRefusal({ flightId }: { flightId: number }) {
-  const slotRefusal = useSlotRefusal(flightId);
-  if (!slotRefusal) return null;
-  const text = describeSlotRefusal(slotRefusal);
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label={text}
-      style={SPOTLIGHT_NO_SLOT_STYLE}
-    >
-      <Badge severity="warning">{text}</Badge>
-    </div>
   );
 }
 
@@ -253,30 +209,8 @@ const AVATAR_BADGE_POSITION: CSSProperties = {
   lineHeight: 1.3,
 };
 
-/**
- * The location badge's tuned numbers, in the opposite corner so the two never
- * overlap on a ~40px cell.
- */
-const AVATAR_NO_SLOT_POSITION: CSSProperties = {
-  ...AVATAR_BADGE_POSITION,
-  bottom: undefined,
-  right: undefined,
-  top: 1,
-  left: 1,
-};
-
 const SPOTLIGHT_BADGE_POSITION: CSSProperties = {
   position: "absolute",
   bottom: "var(--space-6)",
   right: "var(--space-6)",
-};
-
-/** Centred over the spotlight's face, clear of the location badge's corner. */
-const SPOTLIGHT_NO_SLOT_STYLE: CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  pointerEvents: "none",
 };
