@@ -6,10 +6,10 @@
 import "./uplink.js";
 import "./units.js";
 import "./topics.js";
-import "./AeroState/index.js";
+import "./Aerodynamics/index.js";
 import "./DescentEnvelope/index.js";
 
-export { AeroStateComponent } from "./AeroState/index.js";
+export { AerodynamicsComponent } from "./Aerodynamics/index.js";
 export { aeroBadges, aeroDescentLayers } from "./DescentEnvelope/index.js";
 export { AERO_AVAILABLE_TOPIC, AERO_STATE_TOPIC } from "./topics.js";
 export { AERO } from "./uplink.js";

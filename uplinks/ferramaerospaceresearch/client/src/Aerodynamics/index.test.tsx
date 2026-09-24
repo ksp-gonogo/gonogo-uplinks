@@ -9,7 +9,7 @@ import {
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
-import { AeroStateComponent } from "./index.js";
+import { AerodynamicsComponent } from "./index.js";
 
 const TOPIC = "aero.state";
 
@@ -39,13 +39,13 @@ function mount() {
   const fixture = setupStreamFixture({ carriedChannels: [TOPIC] });
   const view = render(
     <fixture.Provider>
-      <AeroStateComponent id="aero" config={{}} />
+      <AerodynamicsComponent id="aero" config={{}} />
     </fixture.Provider>,
   );
   return { fixture, view };
 }
 
-describe("AeroState", () => {
+describe("Aerodynamics", () => {
   it("shows the attitude to the airflow and what it is costing", async () => {
     const { fixture, view } = mount();
     fixture.emit(TOPIC, flying());

@@ -4,7 +4,7 @@
     "sources": "Weight 108 kN and lift 108 kN balance at 1 g; L/D 9.3 and Cd 0.041 are clean-configuration subsonic figures; ballistic coefficient is m/(Cd·A) for the same mass and area."
   },
   "_scene": {
-    "widget": "aero-state",
+    "widget": "aerodynamics",
     "caption": "Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated",
     "modes": ["default", "min", "landscape-18x5"]
   },

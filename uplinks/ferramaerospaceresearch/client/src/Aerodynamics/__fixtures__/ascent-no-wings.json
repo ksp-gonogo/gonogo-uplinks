@@ -4,7 +4,7 @@
     "sources": "Reference area is the frontal disc of a 3.7 m core; ballistic coefficient is m/(Cd·A) for the same mass, area and Cd 0.31."
   },
   "_scene": {
-    "widget": "aero-state",
+    "widget": "aerodynamics",
     "caption": "Launch vehicle through max q, one tick after separation: no wing, so no stall fraction or lift, and the model is flagged stale",
     "modes": ["default"]
   },

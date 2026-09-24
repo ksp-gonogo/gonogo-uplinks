@@ -27,7 +27,7 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 
 | | |
 | --- | --- |
-| Widget id | `aero-state` |
+| Widget id | `aerodynamics` |
 | Reads | `aero.state` |
 | Only while present | `flight` |
 | Default size | 4 × 7 |

@@ -4,7 +4,7 @@
     "sources": "Orbiter reference wing area 249.9 m²; entry alpha 40°; hypersonic L/D near 1; specific excess power is -D·V/m with D 204 kN, V 6 km/s, m 90 t."
   },
   "_scene": {
-    "widget": "aero-state",
+    "widget": "aerodynamics",
     "caption": "Re-entry at 40° alpha: partial stall, lift and drag near parity, indicated airspeed far below true",
     "modes": ["default"]
   },

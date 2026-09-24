@@ -95,7 +95,7 @@ function stallBand(fraction: Value<"ratio">): {
  * numbers still describe the vehicle's previous shape until the aerodynamics
  * model catches up.</p>
  */
-export function AeroStateComponent(_props: ComponentProps<AeroConfig>) {
+export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
   // Only a current observation is drawn: an attitude to the airflow cannot be
   // dated, and an operator reads a stall band as the situation NOW.
   const reading = useTelemetry("aero.state");
@@ -196,14 +196,14 @@ export function AeroStateComponent(_props: ComponentProps<AeroConfig>) {
 }
 
 registerComponent<AeroConfig>({
-  id: "aero-state",
+  id: "aerodynamics",
   name: "Aerodynamics",
   description:
     "Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.",
   tags: ["flight", "ro"],
   defaultSize: { w: 4, h: 7 },
   minSize: { w: 3, h: 5 },
-  component: AeroStateComponent,
+  component: AerodynamicsComponent,
   channels: ["aero.state"],
   defaultConfig: {},
   actions: [],
