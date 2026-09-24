@@ -21,12 +21,34 @@
  * the Uplink declared, and refuses rather than publishing to a path no one will
  * ask for.
  *
+ * ## A jsDelivr branch URL publishes into that branch's tree
+ *
+ * Raw GitHub URLs are refused by browsers on CORS, and jsDelivr's `/gh/` endpoint
+ * serves a BRANCH (`/gh/<owner>/<repo>@<branch>/<path>`) as well as a tag, which
+ * is what lets releases live on a `releases` branch and never touch main. For a
+ * URL of that shape `--to` is a checkout of the ref it names, branch or tag, and
+ * the file lands at `<path>` inside it rather than under a `gh/...` directory
+ * nothing serves.
+ *
+ * The bundle is written under the URL's own file name, so the author's
+ * `client.url` decides the layout (`<uplink>/<release>/<client-version>.js`).
+ * The sidecar goes beside it as `gonogo-uplink.json`, where the loader derives
+ * it from the bundle's URL.
+ *
+ * ## A published release is never overwritten
+ *
+ * An app already running an old client version fetches that URL, so rewriting
+ * the bytes behind it changes what a user is running without anything saying
+ * so. An existing file is left alone when it is byte-identical, which keeps a
+ * re-run harmless, and refused when it is not: a changed bundle is a new client
+ * version, with its own URL.
+ *
  * Usage:
- *   publish-release.mjs <uplink-dir-name> --to <release host dir> [--base <url>]
+ *   publish-release.mjs <uplink-dir-name> --to <release host dir, or a checkout of the branch a jsDelivr URL names> [--base <url>]
  */
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -83,7 +105,13 @@ if (!existsSync(join(from, bundleName))) {
 const declaredPath = (
   URL.canParse(url) ? new URL(url).pathname : url
 ).replace(/^\/+/, "");
-const target = resolve(to, dirname(declaredPath));
+const jsdelivrBranch =
+  URL.canParse(url) && new URL(url).host === "cdn.jsdelivr.net"
+    ? /^gh\/[^/]+\/[^/]+@[^/]+\/(.+)$/.exec(declaredPath)
+    : null;
+const treePath = jsdelivrBranch ? jsdelivrBranch[1] : declaredPath;
+const target = resolve(to, dirname(treePath));
+const publishedBundle = basename(treePath);
 
 // Only checkable when the declared URL has an origin to compare against. A bare
 // same-origin path is published as-is: there is no host in it to disagree with.
@@ -103,17 +131,37 @@ if (base && URL.canParse(url)) {
   }
 }
 
-mkdirSync(target, { recursive: true });
-for (const file of [bundleName, "gonogo-uplink.json"]) {
-  const src = join(from, file);
-  if (!existsSync(src)) {
+const copies = [
+  [bundleName, publishedBundle],
+  ["gonogo-uplink.json", "gonogo-uplink.json"],
+];
+for (const [file] of copies) {
+  if (!existsSync(join(from, file))) {
     console.error(
       `✖ ${declared.id}: ${file} is missing from ${from}. The loader derives the sidecar's URL from\n` +
         "  the bundle's own, so both must be published together or the fetch half-succeeds.",
     );
     process.exit(1);
   }
-  copyFileSync(src, join(target, file));
+}
+for (const [file, as] of copies) {
+  const dest = join(target, as);
+  if (
+    existsSync(dest) &&
+    !readFileSync(dest).equals(readFileSync(join(from, file)))
+  ) {
+    console.error(
+      `✖ ${declared.id}: ${dest} is already published with different bytes.\n` +
+        "  A published client version is never overwritten: an app running it fetches that URL, and\n" +
+        "  new bytes behind it would change what a user runs without anything saying so. Cut a new\n" +
+        "  client version, with its own URL in uplink.json.",
+    );
+    process.exit(1);
+  }
+}
+mkdirSync(target, { recursive: true });
+for (const [file, as] of copies) {
+  copyFileSync(join(from, file), join(target, as));
 }
 
 console.log(`${declared.id}: published to ${target}`);
