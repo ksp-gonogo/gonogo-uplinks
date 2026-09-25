@@ -19,9 +19,17 @@ are gonogo's own, and both come from one run of a script in the gonogo repo, bui
 from one gonogo commit:
 
 ```bash
-# from a gonogo checkout; the ref defaults to HEAD
-scripts/vendor-uplinks-reference-set.sh <this checkout> [<gonogo ref>]
+# from a gonogo checkout; pass the pin so you build what CI builds
+scripts/vendor-uplinks-reference-set.sh <this checkout> "$(cat <this checkout>/vendor/gonogo-ref)"
 ```
+
+`vendor/gonogo-ref` names the one gonogo commit CI vendors from. The set carries
+the TypeScript emitter as well as the contract, so a different gonogo commit can
+write different `__generated__` files from an unchanged Uplink, and "Codegen is
+current" judges them against the pin. To move to a newer gonogo, change the sha,
+re-vendor, run `node tooling/codegen-uplink.mjs <uplink>` for every Uplink with a
+codegen twin, typecheck each client against what it wrote, and commit all of it
+together.
 
 It builds from the COMMIT (`git archive`), not the working tree, replaces both
 directories wholesale, and writes the commit sha to `VENDORED_FROM` in each, so

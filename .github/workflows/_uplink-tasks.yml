@@ -65,19 +65,31 @@ jobs:
           path: .refs/ksp-managed
           persist-credentials: false
 
+      # The gonogo commit the reference set is built from, pinned in
+      # vendor/gonogo-ref. That set carries the TypeScript emitter behind every
+      # committed __generated__ file, so a floating ref let any generator change
+      # on gonogo's staging turn "Codegen is current" red in every Uplink at once
+      # with nothing here having changed. Moving the pin is a reviewed commit
+      # that regenerates in the same change.
+      - name: Read the gonogo pin
+        id: gonogo
+        run: |
+          set -euo pipefail
+          sha=$(tr -d '[:space:]' < vendor/gonogo-ref)
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error file=vendor/gonogo-ref::expected one full 40-character gonogo commit sha, found '$sha'"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
       # gonogo is public, so the job's own token reaches it. The vendor script
       # reads the commit with `git archive` and never the working tree, so
       # checkout's default depth-1 fetch is the whole of what it needs.
-      #
-      # `staging` and not the default branch. gonogo integrates on staging and
-      # its main has not moved since July, so a default checkout lands on a tree
-      # with no vendor script in it at all, and would have vendored a
-      # months-stale contract if it had one.
       - name: Check out gonogo
         uses: actions/checkout@v4
         with:
           repository: ksp-gonogo/gonogo
-          ref: staging
+          ref: ${{ steps.gonogo.outputs.sha }}
           path: .refs/gonogo
           persist-credentials: false
 
@@ -93,7 +105,12 @@ jobs:
           rm -rf "$vendor/ksp-managed" "$vendor/gamedata"
           cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/KSP_Data/Managed" "$vendor/ksp-managed"
           cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/GameData" "$vendor/gamedata"
-          "$GITHUB_WORKSPACE/.refs/gonogo/scripts/vendor-uplinks-reference-set.sh" "$GITHUB_WORKSPACE"
+          "$GITHUB_WORKSPACE/.refs/gonogo/scripts/vendor-uplinks-reference-set.sh" "$GITHUB_WORKSPACE" "${{ steps.gonogo.outputs.sha }}"
+          vendored=$(tr -d '[:space:]' < "$vendor/contract/VENDORED_FROM")
+          if [ "$vendored" != "${{ steps.gonogo.outputs.sha }}" ]; then
+            echo "::error::the reference set was built from gonogo $vendored, not the pinned ${{ steps.gonogo.outputs.sha }}"
+            exit 1
+          fi
           echo "gonogo_contract=$vendor/contract" >> "$GITHUB_OUTPUT"
 
       # The gate the MSB3245 warning is not. Every HintPath in this Uplink's own
