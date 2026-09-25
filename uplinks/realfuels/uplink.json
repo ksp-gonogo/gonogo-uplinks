@@ -24,6 +24,6 @@
   },
   "csharpNamespace": "GonogoRealFuelsUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@realfuels-v0.0.1/uplinks/realfuels/release/realfuels.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/realfuels/0.0.1/realfuels.client.js"
   }
 }

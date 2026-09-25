@@ -23,6 +23,6 @@
   },
   "csharpNamespace": "GonogoFerramAerospaceResearchUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@ferramaerospaceresearch-v0.0.1/uplinks/ferramaerospaceresearch/release/ferramaerospaceresearch.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/aero/0.0.1/aero.client.js"
   }
 }
