@@ -99,13 +99,16 @@
        kOS references, the extracted ScreenDiffMapper source, and the whole
        Headless/ folder are dropped and a build warning is emitted, so the
        KSP-free suite still builds and passes: the visual-gate soft-pass model.
-       The CI job supplies the DLLs by checking out ksp-gonogo/ksp-managed and
-       passing /p:KspGameData; see .github/workflows/ci.yml's mod job and
-       docs/superpowers/plans/2026-07-13-kos-headless-harness-report.md. -->
+       CI supplies the DLLs by copying ksp-gonogo/ksp-managed's GameData into
+       vendor/gamedata, the default KspGameData; see
+       .github/workflows/_uplink-tasks.yml. -->
   <PropertyGroup>
     <KosSafeDll>$(KspGameData)\kOS\Plugins\kOS.Safe.dll</KosSafeDll>
     <KosDll>$(KspGameData)\kOS\Plugins\kOS.dll</KosDll>
     <KosSafeAvailable Condition="Exists('$(KosSafeDll)') And Exists('$(KosDll)')">true</KosSafeAvailable>
+    <!-- Compiled into KosReferenceCoverage.cs as a skipped test, so a run
+         without the harness says so in the same summary line as Passed!. -->
+    <DefineConstants Condition="'$(KosSafeAvailable)' != 'true'">$(DefineConstants);KOS_REFERENCES_ABSENT</DefineConstants>
   </PropertyGroup>
 
   <!-- The SDK auto-globs Headless/**; drop it unless the kOS DLLs are present. -->
