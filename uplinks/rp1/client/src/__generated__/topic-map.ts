@@ -113,3 +113,24 @@ export const GENERATED_TOPIC_IDS = [
   "rp1.trainingCatalogue",
   "rp1.warehouse",
 ] as const;
+
+// The Topics whose payload is a bare JSON array of the element type, so a
+// field path under one names a field of an element and not of the Topic.
+// The `[]` above says the same to the type system, and a type is erased.
+export const GENERATED_COLLECTION_TOPIC_IDS = [
+  "rp1.buildQueue",
+  "rp1.buildable",
+  "rp1.centres",
+  "rp1.complexes",
+  "rp1.constructions",
+  "rp1.crew",
+  "rp1.facilities",
+  "rp1.operations",
+  "rp1.pads",
+  "rp1.programFundingCurves",
+  "rp1.programs",
+  "rp1.research",
+  "rp1.training",
+  "rp1.trainingCatalogue",
+  "rp1.warehouse",
+] as const;

@@ -44,3 +44,8 @@ export const GENERATED_TOPIC_IDS = [
   "principia.plan",
   "principia.settings",
 ] as const;
+
+// The Topics whose payload is a bare JSON array of the element type, so a
+// field path under one names a field of an element and not of the Topic.
+// The `[]` above says the same to the type system, and a type is erased.
+export const GENERATED_COLLECTION_TOPIC_IDS = [] as const;

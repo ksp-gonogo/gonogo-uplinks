@@ -41,13 +41,13 @@ export interface KerbcastCameraEntry
 	* `KerbcastCameraEntry.isDockingCamera` is derived from the part's modules
 	* rather than sniffed from this string.
 	*/
-	cameraName?: string;
+	cameraName?: string | null;
 	/** The part's internal name (`Part.partInfo.name`), e.g. `DC.TurretCam`. */
-	partName?: string;
+	partName?: string | null;
 	/** The part's display title, e.g. `Clamp-O-Tron Docking Port Jr.`. */
-	partTitle?: string;
+	partTitle?: string | null;
 	/** The vessel this camera is on, as `vessel:<guid>`. Null when unreadable. */
-	vesselId?: string;
+	vesselId?: string | null;
 	/**
 	* Whether the camera can zoom, kerbcast runtime-detects this from the part
 	* type.
@@ -96,13 +96,13 @@ export interface KerbcastCameraEntry
 	* `KerbcastCameraEntry.isDockingCamera` is true, what this port can mate with.
 	* Null for a non-docking camera.
 	*/
-	dockingPortNodeType?: string;
+	dockingPortNodeType?: string | null;
 	/**
 	* The docking node's live `state` (e.g. `Ready`, `Docked`, `Acquire`) when
 	* `KerbcastCameraEntry.isDockingCamera` is true. Null for a non-docking
 	* camera.
 	*/
-	dockingPortState?: string;
+	dockingPortState?: string | null;
 }
 /**
 * Args for the `kerbcast.setFieldOfView` command: zoom one camera. Delayed
