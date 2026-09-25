@@ -24,6 +24,6 @@
   },
   "csharpNamespace": "Gonogo.RealAntennasUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/realantennas/0.0.1/realantennas.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/realantennas/0.0.1/realantennas.client.js"
   }
 }

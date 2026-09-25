@@ -24,6 +24,6 @@
   },
   "csharpNamespace": "GonogoRp1Uplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/rp1/0.0.1/rp1.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/rp1/0.0.1/rp1.client.js"
   }
 }

@@ -60,7 +60,7 @@ if (!url?.split("/").includes(version)) {
       `    ${url ?? "(none)"}\n` +
       `  which has no /${version}/ directory. The URL is baked into the DLL, so this release would\n` +
       "  fetch a client published for some other version. Point client.url at\n" +
-      `  .../@releases/${id}/${version}/${id}.client.js and tag that commit.`,
+      `  .../@releases/uplinks/releases/${id}/${version}/${id}.client.js and tag that commit.`,
   );
   process.exit(1);
 }

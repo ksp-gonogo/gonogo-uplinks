@@ -23,6 +23,6 @@
   },
   "csharpNamespace": "Gonogo.KerbcastUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/kerbcast/0.0.1/kerbcast.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/kerbcast/0.0.1/kerbcast.client.js"
   }
 }

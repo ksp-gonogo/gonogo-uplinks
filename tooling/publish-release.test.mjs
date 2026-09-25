@@ -11,6 +11,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   writeFileSync,
 } from "node:fs";
@@ -19,7 +20,9 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "publish-release.mjs");
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SCRIPT = join(HERE, "publish-release.mjs");
+const REPO_ROOT = join(HERE, "..");
 const URL_ON_RELEASES =
   "https://cdn.jsdelivr.net/gh/o/r@releases/fixture/0.0.2/fixture.client.js";
 
@@ -110,4 +113,29 @@ test("a published version is never overwritten, and an identical re-run is harml
     readFileSync(join(to, "fixture", "0.0.2", "fixture.client.js"), "utf8"),
     "export {};\n",
   );
+});
+
+test("every Uplink released on the releases branch declares the uplinks/releases/<id>/<version>/ layout", () => {
+  const names = readdirSync(join(REPO_ROOT, "uplinks"));
+  const onReleasesBranch = [];
+  for (const name of names) {
+    const path = join(REPO_ROOT, "uplinks", name, "uplink.json");
+    if (!existsSync(path)) continue;
+    const declared = JSON.parse(readFileSync(path, "utf8"));
+    const url = declared.client?.url;
+    if (!url || !URL.canParse(url)) continue;
+    const parsed = new URL(url);
+    if (parsed.host !== "cdn.jsdelivr.net") continue;
+    const match = /^\/gh\/[^/]+\/[^/]+@releases\/(.+)$/.exec(parsed.pathname);
+    if (!match) continue; // a URL on some other ref (e.g. a tag) predates this layout
+    onReleasesBranch.push([declared.id, match[1]]);
+  }
+  assert.ok(onReleasesBranch.length > 0, "expected at least one Uplink on the releases branch");
+  for (const [id, treePath] of onReleasesBranch) {
+    assert.match(
+      treePath,
+      new RegExp(`^uplinks/releases/${id}/\\d+\\.\\d+\\.\\d+/${id}\\.client\\.js$`),
+      `${id}: ${treePath} is not under uplinks/releases/${id}/<version>/`,
+    );
+  }
 });

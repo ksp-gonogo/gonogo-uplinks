@@ -23,6 +23,6 @@
   },
   "csharpNamespace": "GonogoPrincipiaUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/principia/0.0.1/principia.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/principia/0.0.1/principia.client.js"
   }
 }
