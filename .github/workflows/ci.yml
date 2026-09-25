@@ -42,6 +42,7 @@ jobs:
       # warning, a second of hashing before twelve legs each spend a minute
       # discovering the same missing tarball at `npm ci`.
       - run: node scripts/check-vendor-pins.mjs
+      - run: node --test "tooling/*.test.mjs"
 
   uplink:
     needs: discover

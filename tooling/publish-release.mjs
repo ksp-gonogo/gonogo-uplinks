@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Copies one Uplink's built client bundle and its sidecar to a release host.
+ * Copies one Uplink's built client bundle and its sidecar to where its declared
+ * `client.url` is served from.
  *
- * Stands in for uploading a GitHub release asset. The point is not the copy, it
- * is that after this runs the bundle lives somewhere **neither repo owns**, which
- * is what makes the declared `ClientSource.Url` a release URL rather than a path
- * into a working tree.
+ * The point is not the copy, it is that after this runs the bundle lives
+ * somewhere **no working tree owns**, which is what makes the declared
+ * `ClientSource.Url` a release URL rather than a path into a checkout.
  *
  * That is the whole acceptance property: rename, move or delete `gonogo-uplinks`
  * and an app that loads this Uplink is unaffected, because nothing it depends on
@@ -26,14 +26,22 @@
  * Raw GitHub URLs are refused by browsers on CORS, and jsDelivr's `/gh/` endpoint
  * serves a BRANCH (`/gh/<owner>/<repo>@<branch>/<path>`) as well as a tag, which
  * is what lets releases live on a `releases` branch and never touch main. For a
- * URL of that shape `--to` is a checkout of the ref it names, branch or tag, and
- * the file lands at `<path>` inside it rather than under a `gh/...` directory
- * nothing serves.
+ * URL of that shape `--to` is the root of a checkout of the ref it names, branch
+ * or tag, and the file lands at `<path>` inside it rather than under a `gh/...`
+ * directory nothing serves. A checkout of any other ref is refused: the files
+ * would be committed where jsDelivr never looks. So is a URL with no `@<ref>`,
+ * which jsDelivr resolves against the default branch, the one tree release
+ * bytes must stay out of.
  *
  * The bundle is written under the URL's own file name, so the author's
- * `client.url` decides the layout (`<uplink>/<release>/<client-version>.js`).
- * The sidecar goes beside it as `gonogo-uplink.json`, where the loader derives
- * it from the bundle's URL.
+ * `client.url` decides the layout (`<uplink>/<version>/<uplink>.client.js`). The
+ * sidecar goes beside it as `gonogo-uplink.json`, where the loader derives it
+ * from the bundle's URL, so each client version needs a directory of its own:
+ * two bundles in one directory would share one sidecar, and one integrity.
+ *
+ * jsDelivr caches a branch's head for twelve hours, so a file just committed to
+ * the branch can 404 until that lapses. The release workflow purges the new URLs
+ * after pushing.
  *
  * ## A published release is never overwritten
  *
@@ -47,7 +55,14 @@
  *   publish-release.mjs <uplink-dir-name> --to <release host dir, or a checkout of the branch a jsDelivr URL names> [--base <url>]
  */
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+} from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -62,7 +77,7 @@ const base = flag("--base");
 
 if (!name || !to) {
   console.error(
-    "usage: publish-release.mjs <uplink-dir-name> --to <release host dir> [--base <url>]",
+    "usage: publish-release.mjs <uplink-dir-name> --to <release host dir, or a checkout of the branch a jsDelivr URL names> [--base <url>]",
   );
   process.exit(2);
 }
@@ -105,11 +120,38 @@ if (!existsSync(join(from, bundleName))) {
 const declaredPath = (
   URL.canParse(url) ? new URL(url).pathname : url
 ).replace(/^\/+/, "");
-const jsdelivrBranch =
-  URL.canParse(url) && new URL(url).host === "cdn.jsdelivr.net"
-    ? /^gh\/[^/]+\/[^/]+@[^/]+\/(.+)$/.exec(declaredPath)
-    : null;
-const treePath = jsdelivrBranch ? jsdelivrBranch[1] : declaredPath;
+const onJsdelivr = URL.canParse(url) && new URL(url).host === "cdn.jsdelivr.net";
+const jsdelivr = onJsdelivr
+  ? /^gh\/[^/]+\/[^/]+@([^/]+)\/(.+)$/.exec(declaredPath)
+  : null;
+if (onJsdelivr && !jsdelivr) {
+  console.error(
+    `✖ ${declared.id}: ${url} names no @<ref>.\n` +
+      "  jsDelivr serves a ref-less /gh/ URL from the default branch, which is where release bytes must\n" +
+      "  never be committed. Name the releases branch: /gh/<owner>/<repo>@releases/<path>.",
+  );
+  process.exit(1);
+}
+if (jsdelivr) {
+  const ref = jsdelivr[1];
+  const git = (...gitArgs) =>
+    spawnSync("git", ["-C", to, ...gitArgs], { encoding: "utf8" });
+  const top = git("rev-parse", "--show-toplevel").stdout.trim();
+  const branch = git("symbolic-ref", "--quiet", "--short", "HEAD").stdout.trim();
+  const tags = git("tag", "--points-at", "HEAD").stdout.split("\n").filter(Boolean);
+  const isRoot =
+    top !== "" && existsSync(to) && realpathSync(top) === realpathSync(to);
+  if (!isRoot || (branch !== ref && !tags.includes(ref))) {
+    console.error(
+      `✖ ${declared.id}: ${url} is served from ref ${ref}, but ${to} is\n` +
+        `    ${isRoot ? `a checkout of ${branch || tags.join(", ") || "a detached HEAD"}` : "not the root of a git checkout"}\n` +
+        "  Files committed there are never fetched by anyone. Pass the root of a checkout of\n" +
+        `  ${ref}: git worktree add <dir> ${ref}`,
+    );
+    process.exit(1);
+  }
+}
+const treePath = jsdelivr ? jsdelivr[2] : declaredPath;
 const target = resolve(to, dirname(treePath));
 const publishedBundle = basename(treePath);
 
@@ -154,7 +196,8 @@ for (const [file, as] of copies) {
       `✖ ${declared.id}: ${dest} is already published with different bytes.\n` +
         "  A published client version is never overwritten: an app running it fetches that URL, and\n" +
         "  new bytes behind it would change what a user runs without anything saying so. Cut a new\n" +
-        "  client version, with its own URL in uplink.json.",
+        "  client version, with its own URL in uplink.json, in a directory of its own so its sidecar\n" +
+        "  is its own too.",
     );
     process.exit(1);
   }
@@ -168,5 +211,7 @@ console.log(`${declared.id}: published to ${target}`);
 console.log(`  bundle   ${url}`);
 console.log(`  sidecar  ${url.replace(/[^/]+$/, "gonogo-uplink.json")}`);
 console.log(
-  "\nThis directory is outside both repos on purpose: it is what lets the folder-move test pass.",
+  jsdelivr
+    ? `\nCommit and push ${to} to ${jsdelivr[1]}, then purge both URLs on purge.jsdelivr.net.`
+    : "\nThis directory is outside both repos on purpose: it is what lets the folder-move test pass.",
 );
