@@ -1,4 +1,9 @@
-import { magnitudeOf, registerComponent, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  magnitudeOf,
+  registerComponent,
+  useTelemetry,
+  value,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Dial,
   EmptyState,
@@ -36,11 +41,11 @@ import { EXAMPLE } from "../uplink.js";
  * ## `magnitudeOf`, and why the raw number is only for arithmetic
  *
  * Values arrive WRAPPED, carrying the unit the C# contract declared.
- * `<Unit>` renders one and is the only thing that should; `magnitudeOf` unwraps
- * one when a number is genuinely needed, which here is the modulus the dial
- * sweeps on. Unwrapping to render is how a unit change in the contract stops
- * reaching the screen, so the unwrap here feeds geometry and the readout below
- * still goes through `<Unit>`.
+ * `<Unit>` renders one and `<Dial>` takes one, bounds and ticks included, so the
+ * count reaches the needle still carrying its unit. `magnitudeOf` unwraps one
+ * when a number is genuinely needed, which here is the centre label and the
+ * accessible name. Unwrapping to render is how a unit change in the contract
+ * stops reaching the screen, so the UT readout below still goes through `<Unit>`.
  */
 function PulseDialWidget() {
   const heartbeat = useTelemetry("example.heartbeat");
@@ -64,8 +69,9 @@ function PulseDialWidget() {
   // and the centre read "0", which is the picture of an Uplink that has
   // published nothing, not the picture of a count nobody sent. Same reason the
   // pending state above draws no dial, one step further in.
-  const ticks = magnitudeOf(heartbeat.value.ticks);
-  if (ticks == null) {
+  const ticks = heartbeat.value.ticks;
+  const count = magnitudeOf(ticks);
+  if (ticks == null || count == null) {
     return (
       <Panel
         panelTitle="Pulse"
@@ -85,12 +91,12 @@ function PulseDialWidget() {
         <Section>
           <Dial
             value={ticks}
-            min={0}
-            max={SWEEP_TICKS}
+            min={SWEEP_START}
+            max={SWEEP_END}
             wrap
-            valueLabel={String(ticks)}
+            valueLabel={String(count)}
             ticks={DIAL_TICKS}
-            ariaLabel={`${ticks} publishes since load`}
+            ariaLabel={`${count} publishes since load`}
           />
           <Text>
             UT <Unit value={heartbeat.value.ut} />
@@ -106,14 +112,15 @@ function PulseDialWidget() {
  * arbitrary BECAUSE the needle is not claiming a magnitude: it says where in the
  * cycle the last publish fell, and the centre readout carries the quantity.
  */
-const SWEEP_TICKS = 60;
+const SWEEP_START = value("count", 0);
+const SWEEP_END = value("count", 60);
 
 /** Quarters, so the sweep direction is readable without labelling every step. */
 const DIAL_TICKS = [
-  { value: 0, label: "0" },
-  { value: 15 },
-  { value: 30, label: "30" },
-  { value: 45 },
+  { value: value("count", 0), label: "0" },
+  { value: value("count", 15) },
+  { value: value("count", 30), label: "30" },
+  { value: value("count", 45) },
 ];
 
 registerComponent({
