@@ -280,6 +280,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: uplink-${{ inputs.id }}${{ failure() && '-FAILED' || '' }}
+          name: uplink-${{ inputs.id }}${{ job.status == 'failure' && '-FAILED' || '' }}
           path: artifacts/
-          if-no-files-found: ${{ failure() && 'warn' || 'error' }}
+          if-no-files-found: ${{ job.status == 'failure' && 'warn' || 'error' }}
