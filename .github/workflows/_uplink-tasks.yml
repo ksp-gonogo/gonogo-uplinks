@@ -1,5 +1,5 @@
 # THE reusable per-Uplink task set. One invocation runs the whole lifecycle for
-# ONE uplinks/<name>, and `ci.yml` / `publish.yml` invoke it in a matrix whose
+# ONE uplinks/<name>, and `ci.yml` / `release.yml` invoke it in a matrix whose
 # entries come from `scripts/uplink-matrix.mjs`.
 #
 # Every capability fact arrives as an input computed from disk by that script.
@@ -213,11 +213,18 @@ jobs:
       # that reads them does not compile without them, so they are baked first,
       # in the release shape with no hash: the bundle is not built until later.
       - name: Build mod
-        if: inputs.mod_csproj != ''
+        if: inputs.mod_csproj != '' && !inputs.publish
         run: |
           node tooling/bake-client-source.mjs "${{ inputs.name }}"
           dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo \
             -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+
+      # A release DLL vouches for its client by carrying the bundle's sha256, so
+      # the bundle is built and hashed before the DLL compiles, and packaged from
+      # that same compile. The tests below then run against the DLL that ships.
+      - name: Build the release pair
+        if: inputs.publish
+        run: node tooling/release-uplink.mjs "${{ inputs.name }}"
 
       - name: Test mod
         if: inputs.tests_csproj != ''
@@ -232,11 +239,11 @@ jobs:
         run: node tooling/check-mod-version.mjs "${{ inputs.name }}"
 
       - name: Bundle client
-        if: inputs.bundle
+        if: inputs.bundle && !inputs.publish
         run: node tooling/bundle-uplink-client.mjs "${{ inputs.name }}"
 
       - name: Package mod
-        if: inputs.mod_csproj != ''
+        if: inputs.mod_csproj != '' && !inputs.publish
         run: node tooling/package-uplink-mod.mjs "${{ inputs.name }}"
 
       # Gated on `client` and nothing else. It used to be gated on a `docs_check`
