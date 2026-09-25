@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "ascent-command-in-flight--default.png": {
-      "hash": "fde68b6269f03b7b",
+      "hash": "f84b2d3c9c8183be",
       "elements": 30,
       "text": "9d9ba87f"
     },
@@ -18,7 +18,7 @@
       "text": "717aac6a"
     },
     "remote-autopilot--default.png": {
-      "hash": "2cc7bf5c56aafe43",
+      "hash": "9cd48a0464225dac",
       "elements": 29,
       "text": "a4321ee0"
     },
