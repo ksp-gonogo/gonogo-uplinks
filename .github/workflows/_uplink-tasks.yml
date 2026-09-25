@@ -162,6 +162,9 @@ jobs:
       # file in setup), and inlining makes Vite perform the extension search Node
       # refuses to. A dependency no Node process can import passes vitest with
       # inlining on, which is how six weeks of an unimportable sdk went unnoticed.
+      # A dependency from outside gonogo that the client bundle inlines is linked
+      # with the bundle's own esbuild settings instead, since the bundle is the
+      # only thing that ever loads it.
       - name: Published dependencies load
         if: inputs.client
         run: node tooling/check-published-loadability.mjs "${{ inputs.name }}"

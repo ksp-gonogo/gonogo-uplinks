@@ -17,21 +17,11 @@
  * is the strongest case in the pilot for what the devkit still owes: every line
  * below is a line an author had to work out for themselves.
  *
- * ## The externals list is the one thing that is not derivable
- *
  * The four compatibility fields ARE derivable from published packages:
  * `EXTENSION_API_VERSION`, `CONTRACT_MAJOR` and `CONTRACT_MINOR` come off
  * `@ksp-gonogo/sitrep-sdk`, and `uiKitVersion` off the installed ui-kit's own
- * manifest. Nothing here has to be told them, which is the design working.
- *
- * The externalised specifiers are the exception. They live in
- * `packages/app/src/uplinks/externals/entries.ts` and are published nowhere, so
- * the list below is a HAND COPY, and a hand copy of a list whose defect mode is
- * a MISSING entry agrees with the original by omission. A missing entry survives
- * typecheck, the isolation ratchets and this build, then throws at
- * `import(bundleUrl)`, which is exactly how `/spine` shipped unresolvable. The
- * fix is for the sdk to export it; until then the copy is a known liability and
- * this comment is the record of it.
+ * manifest. Nothing here has to be told them, which is the design working. The
+ * externals list is the exception; see `uplink-bundle-settings.mjs`.
  */
 
 import { createHash } from "node:crypto";
@@ -39,30 +29,9 @@ import { createRequire } from "node:module";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { BUNDLE_OPTIONS, clientEntry, EXTERNALS } from "./uplink-bundle-settings.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-
-/** See the header: a hand copy of an unpublished list, and a liability until it is exported. */
-const EXTERNALS = [
-  "react",
-  "react-dom",
-  "react/jsx-runtime",
-  "styled-components",
-  "@ksp-gonogo/core",
-  "@ksp-gonogo/components",
-  "@ksp-gonogo/data",
-  "@ksp-gonogo/ui",
-  "@ksp-gonogo/ui-kit",
-  "@ksp-gonogo/sitrep-client",
-  "@ksp-gonogo/sitrep-sdk",
-  "@ksp-gonogo/sitrep-sdk/frames",
-  "@ksp-gonogo/sitrep-sdk/media",
-  "@ksp-gonogo/sitrep-sdk/spine",
-  "@ksp-gonogo/logger",
-  // Externalised so esbuild leaves them alone; nothing resolves them at load.
-  "react-dom/client",
-  "react/jsx-dev-runtime",
-];
 
 const name = process.argv[2];
 const outDir = resolve(process.argv[3] ?? join(ROOT, "artifacts"));
@@ -113,26 +82,6 @@ const sdk = await import(
 );
 const uiKitVersion = installed("@ksp-gonogo/ui-kit").pkg.version;
 
-/**
- * Every CSS import folded into the single JS bundle as a self-injecting
- * <style>. The loader fetches only the JS, so a sibling `.css` esbuild emitted
- * would never be applied and the widget would render unstyled with nothing
- * failing. Folding it in also keeps the whole client under ONE integrity hash.
- */
-const cssInject = {
-  name: "gonogo-css-inject",
-  setup(pluginBuild) {
-    pluginBuild.onLoad({ filter: /\.css$/ }, (args) => ({
-      loader: "js",
-      contents:
-        'if (typeof document !== "undefined") {' +
-        "const s = document.createElement('style');" +
-        `s.textContent = ${JSON.stringify(readFileSync(args.path, "utf8"))};` +
-        "document.head.appendChild(s);}",
-    }));
-  },
-};
-
 /*
  * One directory per Uplink, and that is not tidiness.
  *
@@ -147,15 +96,9 @@ mkdirSync(bundleDir, { recursive: true });
 const outFile = join(bundleDir, `${declared.id}.client.js`);
 
 await build({
-  entryPoints: [join(clientDir, "src/index.ts")],
+  ...BUNDLE_OPTIONS,
+  entryPoints: [clientEntry(clientDir)],
   outfile: outFile,
-  bundle: true,
-  format: "esm",
-  platform: "browser",
-  target: "es2022",
-  jsx: "automatic",
-  external: EXTERNALS,
-  plugins: [cssInject],
   logLevel: "warning",
 });
 

@@ -1,8 +1,31 @@
 #!/usr/bin/env node
 /**
- * Can the packages this Uplink depends on actually be IMPORTED?
+ * Can the packages this Uplink depends on actually be USED the way they are used?
  *
- * ## Why this is separate from `npm test`, and must stay separate
+ * ## Two questions, one per kind of dependency
+ *
+ * gonogo's own published packages (the sdk, ui-kit, uplink-tools) are LOADED: an
+ * outside author may import them in Node, and the app serves the sdk and the kit
+ * to every bundle through its import map. So for those the question is a bare
+ * `node` import, and nothing weaker answers it.
+ *
+ * A package from anywhere else that the client's esbuild bundle INLINES reaches
+ * nobody except through that bundle. Extensionless relative imports are normal
+ * there and fatal in bare Node, so a Node import asks a question nobody depends
+ * on the answer to, and fails on a package that works. For those the question is
+ * whether the bundle LINKS: esbuild, with the client bundle's own settings,
+ * resolves every import of every entry point and finds every name imported.
+ *
+ * Which question a package gets is derived, never listed:
+ *
+ *   - its installed manifest's `repository` is gonogo's    → load
+ *   - otherwise, the client bundle inlines it              → link
+ *   - otherwise (something outside the bundle consumes it) → load
+ *
+ * A package whose manifest names no repository fails: guessing would quietly
+ * decide which check it gets.
+ *
+ * ## Why loading is separate from `npm test`, and must stay separate
  *
  * A green test run is not evidence that a dependency is loadable, and treating it
  * as such is a trap with a measured shape. Every Uplink client here sets
@@ -21,19 +44,28 @@
  * The whole tree could therefore be green while the package it depends on was
  * unimportable, which is exactly what happened for six weeks.
  *
- * So loadability is asked in a bare `node` process, with no bundler anywhere near
- * it, and the answer is reported on its own. A test run answers "does my code
- * work"; this answers "can anyone install what my code needs".
+ * So loading is asked in a bare `node` process, with no bundler anywhere near it,
+ * and the answer is reported on its own. A test run answers "does my code work";
+ * this answers "can anyone install what my code needs".
  *
- * Exit 0 when every non-exempt entry point loads, 1 otherwise.
+ * Exit 0 when every non-exempt entry point loads or links, 1 otherwise.
  */
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { BUNDLE_OPTIONS, clientEntry } from "./uplink-bundle-settings.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * gonogo's repository, as its published manifests name it. A package whose
+ * manifest says this is one an outside author may load in Node, so it is held to
+ * loading whatever the bundle does with it.
+ */
+const GONOGO_REPOSITORY = "github.com/ksp-gonogo/gonogo";
 
 /**
  * Entry points not attempted, with the cause. Each EXPIRES BY ITSELF: this fails
@@ -137,16 +169,18 @@ function dependedScopePackages() {
  * still read as complete.
  */
 function publishedEntryPoints() {
-  const specs = [];
+  const byPackage = new Map();
   const missing = [];
+  const empty = [];
   for (const pkg of dependedScopePackages()) {
     const manifest = join(modules, pkg, "package.json");
     if (!existsSync(manifest)) {
       missing.push(pkg);
       continue;
     }
-    const { exports = {} } = JSON.parse(readFileSync(manifest, "utf8"));
-    for (const key of Object.keys(exports)) {
+    const parsed = JSON.parse(readFileSync(manifest, "utf8"));
+    const specs = [];
+    for (const key of Object.keys(parsed.exports ?? {})) {
       if (key === ".") {
         specs.push(pkg);
         continue;
@@ -160,6 +194,10 @@ function publishedEntryPoints() {
       }
       specs.push(`${pkg}/${sub}`);
     }
+    // No exports map, or one naming no module, would contribute nothing and
+    // leave the total reading as complete without it.
+    if (specs.length === 0) empty.push(pkg);
+    byPackage.set(pkg, { manifest: parsed, specs });
   }
   if (missing.length > 0) {
     console.error(
@@ -170,10 +208,19 @@ function publishedEntryPoints() {
     );
     process.exit(1);
   }
-  return specs;
+  if (empty.length > 0) {
+    console.error(
+      `✖ no module entry point found in the exports map of:\n    ${empty.join("\n    ")}\n` +
+        "  so nothing about it would be attempted. Read its manifest before teaching this\n" +
+        "  check a second way to find entry points.",
+    );
+    process.exit(1);
+  }
+  return byPackage;
 }
 
-const specs = publishedEntryPoints();
+const byPackage = publishedEntryPoints();
+const specs = [...byPackage.values()].flatMap((entry) => entry.specs);
 
 /*
  * A run that attempts nothing reports success, and that is this check's own
@@ -189,6 +236,128 @@ if (specs.length < 6) {
   );
   process.exit(1);
 }
+
+/** `git+https://github.com/x/y.git` and its spellings, reduced to `github.com/x/y`. */
+const repositoryOf = (manifest) => {
+  const raw =
+    typeof manifest.repository === "string"
+      ? manifest.repository
+      : manifest.repository?.url;
+  if (!raw) return undefined;
+  return raw
+    .replace(/^git\+/, "")
+    .replace(/^[a-z]+:\/\//, "")
+    .replace(/^git@([^:]+):/, "$1/")
+    .replace(/^github:/, "github.com/")
+    .replace(/\.git$/, "")
+    .replace(/\/+$/, "");
+};
+
+const clientRequire = createRequire(join(clientDir, "package.json"));
+
+/** Error text for esbuild's messages, one line each. */
+const describe = (messages) =>
+  messages
+    .map((m) => `${m.text}${m.location ? ` (${m.location.file}:${m.location.line})` : ""}`)
+    .join("; ");
+
+/**
+ * esbuild with the client bundle's own settings, written nowhere. A name imported
+ * from a module that does not export it is an error in ESM and only a warning
+ * (`import-is-undefined`) when the target is CommonJS or TypeScript, so the
+ * warning counts as a failure too: either way the bundle calls something that is
+ * not there.
+ */
+const bundle = async (options) => {
+  const { build } = clientRequire("esbuild");
+  try {
+    const result = await build({
+      ...BUNDLE_OPTIONS,
+      ...options,
+      absWorkingDir: clientDir,
+      write: false,
+      logLevel: "silent",
+    });
+    const undefinedImports = result.warnings.filter(
+      (w) => w.id === "import-is-undefined",
+    );
+    if (undefinedImports.length > 0) return { error: describe(undefinedImports) };
+    return { result };
+  } catch (err) {
+    return { error: err.errors ? describe(err.errors) : String(err) };
+  }
+};
+
+/**
+ * Which packages decide their check by what the bundle does with them: every one
+ * not published from gonogo. The bundle is built only when there is one, so an
+ * Uplink depending on gonogo's packages alone runs exactly the bare-Node check.
+ */
+const classification = new Map();
+const unowned = [];
+const undecided = [];
+for (const [pkg, { manifest }] of byPackage) {
+  const repository = repositoryOf(manifest);
+  if (repository === undefined) unowned.push(pkg);
+  else if (repository === GONOGO_REPOSITORY) {
+    classification.set(pkg, { check: "load", why: "published from gonogo" });
+  } else undecided.push(pkg);
+}
+if (unowned.length > 0) {
+  console.error(
+    `✖ no \`repository\` in the installed manifest of:\n    ${unowned.join("\n    ")}\n` +
+      "  so whether it is gonogo's, and held to loading in bare Node, cannot be told.",
+  );
+  process.exit(1);
+}
+if (undecided.length > 0) {
+  const { result, error } = await bundle({
+    entryPoints: [clientEntry(clientDir)],
+    outfile: "client.js",
+    metafile: true,
+  });
+  if (error) {
+    console.error(
+      `✖ the client bundle does not build, so which packages it inlines cannot be read: ${error}`,
+    );
+    process.exit(1);
+  }
+  const inputs = Object.keys(result.metafile.inputs);
+  for (const pkg of undecided) {
+    const inlined = inputs.some((input) => input.includes(`node_modules/${pkg}/`));
+    classification.set(
+      pkg,
+      inlined
+        ? { check: "link", why: "not gonogo's, and the client bundle inlines it" }
+        : { check: "load", why: "not gonogo's, and consumed outside the client bundle" },
+    );
+  }
+}
+for (const [pkg, { check, why }] of classification) {
+  console.log(`  ${check}  ${pkg}  (${why})`);
+}
+
+/** The package an entry point belongs to: `@scope/name` of `@scope/name/sub`. */
+const packageOf = (spec) => spec.split("/").slice(0, 2).join("/");
+const checkFor = (spec) => classification.get(packageOf(spec)).check;
+
+/**
+ * One entry point, bundled the way the client would bundle it: every import
+ * resolves, and the namespace is kept whole so none of it is tree-shaken out of
+ * the question.
+ */
+const link = (spec) =>
+  bundle({
+    stdin: {
+      contents:
+        `import * as entry from ${JSON.stringify(spec)};\n` +
+        `export * from ${JSON.stringify(spec)};\nexport { entry };\n`,
+      resolveDir: clientDir,
+      sourcefile: `link:${spec}`,
+      loader: "js",
+    },
+    outfile: "link.js",
+  });
 
 const load = (spec) =>
   spawnSync(
@@ -212,18 +381,26 @@ const peerMissing = (spec) => {
 const failures = [];
 const stale = [];
 let loaded = 0;
+let linked = 0;
+let exempted = 0;
 for (const spec of specs) {
-  const result = load(spec);
   const exempt = spec in EXEMPT || peerMissing(spec);
+  if (checkFor(spec) === "link") {
+    // EXEMPT describes bare-Node loads; one naming a linked entry point
+    // describes a check this entry point no longer gets.
+    if (exempt) stale.push(`${spec} is linked, not loaded`);
+    const { error } = await link(spec);
+    if (error) failures.push(`${spec}: does not link: ${error}`);
+    else linked += 1;
+    continue;
+  }
+  const result = load(spec);
   if (result.status === 0) {
     if (exempt) stale.push(`${spec} now loads`);
-    else loaded += 1;
-  } else if (!exempt) {
-    failures.push(`${spec}: ${cause(result.stderr)}`);
-  }
+    loaded += 1;
+  } else if (exempt) exempted += 1;
+  else failures.push(`${spec}: ${cause(result.stderr)}`);
 }
-/** The package an exempted specifier belongs to: `@scope/name` of `@scope/name/sub`. */
-const packageOf = (spec) => spec.split("/").slice(0, 2).join("/");
 
 for (const spec of [...Object.keys(EXEMPT), ...Object.keys(EXEMPT_WITHOUT_PEER)]) {
   if (specs.includes(spec)) continue;
@@ -243,20 +420,22 @@ if (stale.length > 0) {
   );
 }
 /*
- * loaded + exempt must equal the total, and the arithmetic is printed rather than
- * asserted quietly. `Object.keys(EXEMPT).length` was wrong here for one run: it
- * omits the peer-conditional entries, so the numbers did not close and a specifier
- * could have gone unaccounted for without the line looking odd.
+ * Every entry point lands in exactly one of four counts, and they must sum to the
+ * total. The arithmetic is printed rather than asserted quietly, because a count
+ * that omits a bucket reads as plausible: `Object.keys(EXEMPT).length` was wrong
+ * here for one run, omitting the peer-conditional entries, and the numbers did
+ * not close without the line looking odd.
  */
-const exempt = specs.filter((spec) => spec in EXEMPT || peerMissing(spec)).length;
+const failed = failures.length;
+const counted = loaded + linked + exempted + failed;
 console.log(
-  `${loaded} load + ${exempt} exempt = ${loaded + exempt} of ${specs.length} published entry ` +
-    "point(s), in a bare node process with no bundler involved.",
+  `${loaded} load + ${linked} link + ${exempted} exempt + ${failed} fail = ${counted} of ${specs.length} ` +
+    "published entry point(s): loaded in a bare node process, linked with the client's own esbuild settings.",
 );
-if (loaded + exempt !== specs.length) {
+if (counted !== specs.length) {
   console.error(
-    `✖ the arithmetic does not close: ${loaded} + ${exempt} is not ${specs.length}. Some entry point\n` +
-      "  was neither loaded nor accounted for, so this run's numbers describe less than they appear to.",
+    `✖ the arithmetic does not close: ${counted} is not ${specs.length}. Some entry point was\n` +
+      "  neither loaded, linked, exempted nor failed, so this run's numbers describe less than they appear to.",
   );
   process.exit(1);
 }

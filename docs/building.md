@@ -57,7 +57,7 @@ npm run typecheck && npm test                        # client half
 cd - && node tooling/codegen-uplink.mjs scansat      # regenerate committed types
 dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
-node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED, in bare node
+node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED (or, if bundled, LINKED)
 node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
 node tooling/minsize-gate.mjs --only scansat         # does every widget fit its own minSize (Linux only, see below)
 node tooling/check-mod-version.mjs scansat           # parent mod, pinned vs newer
@@ -183,6 +183,14 @@ green. So `tooling/check-published-loadability.mjs` asks the question in a bare
 `node` process with no bundler anywhere near it, and reports it separately. Two
 different claims: the tests say your code works, that says anyone can install what
 it needs.
+
+That bare-Node load is the check for gonogo's own published packages, the ones
+whose manifest names gonogo's repository, because an outside author may load them
+in Node. A package from anywhere else that the client bundle inlines reaches nobody
+except through that bundle, where an extensionless import is normal, so it is
+LINKED instead: esbuild, with the bundler's own settings
+(`tooling/uplink-bundle-settings.mjs`), must resolve every import of each of its
+entry points and find every name imported.
 
 The same split applies to typechecking. `bundler` and `nodenext` disagree
 SILENTLY: `declare module "./types"` binds under one and not the other, so a
