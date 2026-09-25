@@ -84,20 +84,7 @@ namespace Gonogo.KerbalismUplink.Tests
                 .Where(line => !line.TrimStart().StartsWith("///", StringComparison.Ordinal))
                 .Count(line => line.Contains(DirectRead));
 
-        private static string Read(string fileName)
-        {
-            // Anchored on this Uplink's OWN root (the uplink.json beside its mod/
-            // and client/ halves) rather than on any repo-layout marker, so the
-            // walk lands the same wherever the Uplink is checked out.
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null && !File.Exists(Path.Combine(dir.FullName, "uplink.json")))
-            {
-                dir = dir.Parent;
-            }
-            Assert.NotNull(dir);
-            var path = Path.Combine(dir!.FullName, "mod", fileName);
-            Assert.True(File.Exists(path), fileName + " not found at " + path);
-            return File.ReadAllText(path);
-        }
+        private static string Read(string fileName) =>
+            global::GonogoKerbalismUplink.Tests.UplinkSource.Read(fileName);
     }
 }

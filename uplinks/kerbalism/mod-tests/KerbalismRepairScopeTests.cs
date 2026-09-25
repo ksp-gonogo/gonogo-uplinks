@@ -130,20 +130,7 @@ namespace Gonogo.KerbalismUplink.Tests
             Assert.Contains("KerbalismRepairScope.Shortfall", source);
         }
 
-        private static string ReflectionSourcePath()
-        {
-            // Anchored on this Uplink's OWN root (the uplink.json beside its mod/
-            // and client/ halves) rather than on any repo-layout marker, so the
-            // walk lands the same wherever the Uplink is checked out.
-            var dir = new DirectoryInfo(System.AppContext.BaseDirectory);
-            while (dir != null && !File.Exists(Path.Combine(dir.FullName, "uplink.json")))
-            {
-                dir = dir.Parent;
-            }
-            Assert.NotNull(dir);
-            var path = Path.Combine(dir!.FullName, "mod", "KerbalismReflection.cs");
-            Assert.True(File.Exists(path), "KerbalismReflection.cs not found at " + path);
-            return path;
-        }
+        private static string ReflectionSourcePath() =>
+            global::GonogoKerbalismUplink.Tests.UplinkSource.PathOf("KerbalismReflection.cs");
     }
 }

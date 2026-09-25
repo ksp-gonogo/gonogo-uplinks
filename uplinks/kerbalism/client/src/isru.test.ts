@@ -24,7 +24,12 @@ import {
 
 // src -> client -> kerbalism
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const FIXTURE = join(MOD_ROOT, "golden-fixtures", "isru-extensions.json");
+const FIXTURE = join(
+  MOD_ROOT,
+  "mod-tests",
+  "golden-fixtures",
+  "isru-extensions.json",
+);
 
 /**
  * A frame the SERVER actually produced, read off disk.
