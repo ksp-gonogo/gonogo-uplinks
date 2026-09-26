@@ -158,7 +158,7 @@ function useActiveVesselBodyName(): string | undefined {
   return useMemo(() => {
     const index = identity?.parentBodyIndex;
     if (index == null) return undefined;
-    return systemBodies?.bodies.find((b) => b.index === index)?.name;
+    return systemBodies?.bodies.find((b) => b.index === index)?.name ?? undefined;
   }, [identity, systemBodies]);
 }
 
