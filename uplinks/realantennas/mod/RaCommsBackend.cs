@@ -109,11 +109,12 @@ namespace Gonogo.RealAntennasUplink
         /// because <c>RACommLink : CommNet.CommLink</c> and
         /// <c>RACommNode : CommNet.CommNode</c>: the objects RA solves over ARE
         /// stock's, so <c>ControlPath</c> and <c>precisePosition</c> need no RA
-        /// reflection at all.
+        /// reflection at all. Any vessel's path, loaded or not, since CommNet
+        /// solves every vessel's route, not only the scoped one's.
         /// </summary>
-        protected override IReadOnlyList<CommsLinkView>? ControlPath()
+        protected override IReadOnlyList<CommsLinkView>? ControlPath(object? vessel)
         {
-            var path = Connection()?.ControlPath;
+            var path = (vessel as Vessel)?.connection?.ControlPath;
             if (path == null)
             {
                 return null;
