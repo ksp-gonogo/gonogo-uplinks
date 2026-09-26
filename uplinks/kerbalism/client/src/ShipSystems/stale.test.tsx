@@ -1,4 +1,8 @@
-import { setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  fireEvent,
+  screen,
+  setupStreamFixture,
+} from "@ksp-gonogo/sitrep-sdk/testing";
 import { renderWidget, visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -82,5 +86,31 @@ describe("Ship Systems says a held ledger is held", () => {
     expect(text).not.toMatch(/at last contact|· held/i);
     expect(text).not.toContain("run state held");
     expect(container.querySelectorAll("[data-not-current]")).toHaveLength(0);
+  });
+
+  it("dims every ledger term's bar once the ledger is held", async () => {
+    const container = await scene(held);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show rate breakdown for Water" }),
+    );
+    const bars = [
+      ...container.querySelectorAll('[data-testid="diverging-bar"]'),
+    ];
+    expect(bars.length).toBeGreaterThan(0);
+    for (const bar of bars) expect(bar).toHaveAttribute("data-not-current");
+  });
+
+  it("leaves the ledger's bars undimmed while it is current", async () => {
+    const container = await scene(live);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Show rate breakdown for Water" }),
+    );
+    const bars = [
+      ...container.querySelectorAll('[data-testid="diverging-bar"]'),
+    ];
+    expect(bars.length).toBeGreaterThan(0);
+    for (const bar of bars) {
+      expect(bar).not.toHaveAttribute("data-not-current");
+    }
   });
 });

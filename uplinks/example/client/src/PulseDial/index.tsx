@@ -46,11 +46,20 @@ import { EXAMPLE } from "../uplink.js";
  * when a number is genuinely needed, which here is the centre label and the
  * accessible name. Unwrapping to render is how a unit change in the contract
  * stops reaching the screen, so the UT readout below still goes through `<Unit>`.
+ *
+ * ## Hand over the reading, not the value inside it
+ *
+ * Each field of a Topic's reading is itself a reading, carrying the Topic's
+ * currency, and `<Dial>` and `<Unit>` both take one whole. Once the heartbeat stops
+ * arriving, the last count stays on the dial and the dial marks it as no longer
+ * current, which is the instrument's decision rather than this widget's: there
+ * is no branch here on how current the reading is.
  */
 function PulseDialWidget() {
   const heartbeat = useTelemetry("example.heartbeat");
+  const { ticks, ut } = heartbeat;
 
-  if (heartbeat.state !== "observed") {
+  if (!("value" in heartbeat)) {
     return (
       <Panel
         panelTitle="Pulse"
@@ -63,15 +72,14 @@ function PulseDialWidget() {
     );
   }
 
-  // Observed is not the same as complete. Every field on a Topic is
+  // A payload is not the same as a complete one. Every field on a Topic is
   // independently optional, so a payload can arrive without the one this
   // instrument is about. Coalesced to 0 the dial drew a needle at the minimum
   // and the centre read "0", which is the picture of an Uplink that has
   // published nothing, not the picture of a count nobody sent. Same reason the
   // pending state above draws no dial, one step further in.
-  const ticks = heartbeat.value.ticks;
-  const count = magnitudeOf(ticks);
-  if (ticks == null || count == null) {
+  const count = "value" in ticks ? magnitudeOf(ticks.value) : null;
+  if (count == null) {
     return (
       <Panel
         panelTitle="Pulse"
@@ -99,7 +107,7 @@ function PulseDialWidget() {
             ariaLabel={`${count} publishes since load`}
           />
           <Text>
-            UT <Unit value={heartbeat.value.ut} />
+            UT <Unit value={ut} />
           </Text>
         </Section>
       }

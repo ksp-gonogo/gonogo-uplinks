@@ -839,6 +839,7 @@ function LimitedByMessage({
 }
 
 function LedgerBody({ ledger }: { ledger: Ledger }) {
+  const ledgerReading = useContext(LedgerReadingContext);
   const hasResidual =
     ledger.residual !== undefined && Math.abs(ledger.residual) > 1e-6;
   // Every bar in this ledger scales against the largest |rate| among ITS OWN
@@ -887,7 +888,13 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
                 gives this inner row. */}
             <Cluster justify="start">
               <DivergingBar
-                value={value("units/s", term.ratePerSecond)}
+                value={
+                  ledgerReading
+                    ? combineReadings([ledgerReading], () =>
+                        value("units/s", term.ratePerSecond),
+                      )
+                    : value("units/s", term.ratePerSecond)
+                }
                 maxAbs={maxAbsRate}
               />
               {/* The DivergingBar already paints the sign; a red/green
