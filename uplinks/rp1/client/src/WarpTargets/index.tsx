@@ -38,7 +38,7 @@ export const RP1_WARP_TO_COMPLETE_COMMAND = "rp1.warp.toComplete";
  * <para><b>RP-1 drives warp for ONE thing now, and asks for an alarm for the
  * other.</b> <c>rp1.warp.toFundTarget</c> and <c>rp1.fundTarget.set</c> are
  * gone: they were one controller wearing two names, and what they achieved is
- * what a SCET threshold on the career balance achieves, in the operator's own
+ * what a threshold alarm on the career balance achieves, in the operator's own
  * alarm list rather than under a mod's control. See
  * <c>FundTarget.tsx</c>.</para>
  *

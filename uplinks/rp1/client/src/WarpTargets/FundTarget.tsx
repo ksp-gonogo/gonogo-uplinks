@@ -20,10 +20,10 @@ import { RP1 } from "../uplink.js";
 export const RP1_FUND_TARGET_CANCEL_COMMAND = "rp1.fundTarget.cancel";
 
 /**
- * The Topic carrying the career balance, and the path to it. `career.status` is
- * one of the Topics a SCET threshold may be armed against, and the balance is a
- * plain number on it, so the alarm below is a condition the simulation can read
- * for itself rather than one the ground has to poll.
+ * The Topic carrying the career balance, and the path to it. The balance is a
+ * plain number on `career.status`, so the alarm below is a condition the
+ * simulation reads for itself at the command centre rather than one this screen
+ * has to poll.
  */
 const CAREER_TOPIC = "career.status";
 const FUNDS_PATH = "economy.funds";
@@ -43,10 +43,11 @@ const ALARM_KEY = "fund-target";
  * <c>rp1.fundTarget.set</c> wrote a stop-condition into RP-1's career and
  * <c>rp1.warp.toFundTarget</c> handed that condition to RP-1's own warp
  * controller. Both are gone. The two were one controller wearing two names, and
- * the thing they achieved is a thing the app already owns: a SCET threshold is
- * evaluated inside the simulation and sets <c>StopWarp</c> on the tick the
- * condition matches, which is the same halt on the same frame, in the operator's
- * own alarm list where it can be renamed, retargeted or deleted.</para>
+ * the thing they achieved is a thing the app already owns: a threshold alarm at
+ * the active command centre is evaluated inside the simulation and stops the
+ * warp on the tick that centre learns the balance, which is the same halt on the
+ * same frame, in the operator's own alarm list where it can be renamed,
+ * retargeted or deleted.</para>
  *
  * <para><b>The figure is the operator's, typed here.</b> It is not taken from
  * RP-1's standing target alone, because with the set command gone one only
@@ -134,53 +135,13 @@ export function FundTargetControl({
                     op: ">=",
                     value: wantedFunds,
                     /*
-                     * NOT because funds are a craft reading. They are not, and a
-                     * light-time is not what this escapes: `career.status` is held
-                     * at the home command, so a ground centre is told the balance
-                     * the instant it changes and a crewed-vessel centre after its
-                     * own path home, which is the tick that centre learns it.
-                     *
-                     * What "scet" buys is PRECISION UNDER WARP, and only that. The
-                     * mod's roster reads the balance on the tick and sets
-                     * ScetAlarmTick.StopWarp in that same tick. The client
-                     * evaluator ticks at 1 Hz, so one tick moves the game clock by
-                     * the warp rate: at KSP's top stock rate a funds threshold is
-                     * seen up to ~28 game-hours late, and only then pays a command
-                     * round-trip to drop the warp. For an alarm whose whole job is
-                     * halting a months-long RP-1 build the moment the next thing is
-                     * affordable, that gap is the entire argument.
-                     *
-                     * So the command vantage is the honest DESCRIPTION of this
-                     * alarm and still costs precision today, for two reasons that
-                     * are not this widget's to fix. A command-vantage threshold is
-                     * evaluated mod-side in SHADOW only, the client staying
-                     * authoritative; and ScetAlarmUplink.HandleOnCourier discards
-                     * an audience roster's StopWarp deliberately, on the ground
-                     * that one vantage's light-time-old reading is not a fact about
-                     * the simulation. That ground does not hold for a zero-delay
-                     * "game" subject, where the two verdicts ARE the same verdict,
-                     * but exempting one is a decision to take rather than a flip to
-                     * make. Note also that the shadow read would not currently
-                     * agree with this screen: Courier.ReadRawAtVantage applies
-                     * DelayTo(vantage, "system"), which for a command centre falls
-                     * through to the whole-network default, i.e. the ACTIVE
-                     * VESSEL's signal delay, a number with nothing to do with the
-                     * career.
-                     *
-                     * Revisit when an audience verdict can stop the warp for a
-                     * subject at zero delay. Until then this stays "scet".
-                     *
-                     * Unconditional on purpose, and safe to be: the request is
-                     * carried through untouched, armed on the mod, and fired off
-                     * the simulation's own reading, at every delay including
-                     * none. Under a second of light time `useTimeContexts`
-                     * reports no `scet` qualifier, but that is about a LABEL on
-                     * a rendered instant and nothing on the arming path consults
-                     * it. Pinned by "arms and fires an Uplink's SCET threshold
-                     * on a screen with no SCET clock" in
-                     * `packages/app/src/alarms/scet-alarm.integration.test.ts`.
+                     * The active command centre, not the craft's clock: the
+                     * balance belongs to the career, not to a craft. The
+                     * simulation judges the alarm against what that centre has
+                     * been told and stops the warp on the tick it learns the
+                     * balance, with no command from the client.
                      */
-                    vantage: "scet",
+                    vantage: "command",
                   },
                 })
               }

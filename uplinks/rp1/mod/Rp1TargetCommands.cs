@@ -20,13 +20,13 @@
 // IncrementProgress returns zero and it spends no currency, so writing one was
 // only ever a way to aim rp1.warp.toFundTarget, which went at the same time.
 // RP-1 should not be controlling warp on the app's behalf, and the stop itself
-// is a thing the app already owns: a SCET threshold on career.status /
-// economy.funds halts the warp inside the simulation on the tick the balance is
-// reached. RP-1's client asks for that alarm now. The CANCEL survives because it
-// is not the other half of anything: RP-1's own Maintenance screen still stands
-// targets up ("Warp to Fund Target" on MaintenanceGUI.RenderSummaryTab), and
-// withdrawing one from the dashboard beats going back for the screen that set
-// it.
+// is a thing the app already owns: a threshold alarm on career.status /
+// economy.funds at the active command centre halts the warp inside the
+// simulation on the tick that centre learns the balance. RP-1's client asks for
+// that alarm now. The CANCEL survives because it is not the other half of
+// anything: RP-1's own Maintenance screen still stands targets up ("Warp to Fund
+// Target" on MaintenanceGUI.RenderSummaryTab), and withdrawing one from the
+// dashboard beats going back for the screen that set it.
 //
 // WHAT MAKES CANCELLING SAFE. Both Clear() implementations are pure field
 // resets, read on the shipped RP-1 v4.6.0.0 RP0.dll:

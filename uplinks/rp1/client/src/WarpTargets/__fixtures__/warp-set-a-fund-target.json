@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The form that asks the app for an alarm on the career balance, which is what replaced driving RP-1's warp. It spends nothing: RP-1's FundTargetProject returns project type None, its IncrementProgress returns zero and its Clear() is a pure field reset, so the figure in the form is the BALANCE the alarm is measured against rather than a price. The alarm is armed on the craft's own clock, so the simulation halts the warp on the tick the balance is reached rather than a light-time and a poll later."
+    "notes": "The form that asks the app for an alarm on the career balance, which is what replaced driving RP-1's warp. It spends nothing: RP-1's FundTargetProject returns project type None, its IncrementProgress returns zero and its Clear() is a pure field reset, so the figure in the form is the BALANCE the alarm is measured against rather than a price. The alarm is armed at the active command centre, and the simulation halts the warp on the tick that centre learns the balance rather than a poll and a command round trip later."
   },
   "_scene": {
     "augment": "rp1-warp-targets",

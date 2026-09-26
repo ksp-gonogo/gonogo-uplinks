@@ -20,12 +20,13 @@
 //
 // There is no rp1.warp.toFundTarget either, and that one was BUILT and then
 // removed. RP-1 should not be controlling warp on the app's behalf: the thing
-// the command achieved is a stop at a balance, and a SCET threshold on
-// career.status/economy.funds is that same stop, decided inside the simulation
-// on the tick the balance is reached, in the operator's own alarm list rather
-// than under a mod's control. RP-1's client asks for that alarm now (see
-// client/src/WarpTargets/FundTarget.tsx), and rp1.fundTarget.set went with it:
-// the two were one controller wearing two names. Nothing was stranded. RP-1's
+// the command achieved is a stop at a balance, and a threshold alarm on
+// career.status/economy.funds at the active command centre is that same stop,
+// decided inside the simulation on the tick that centre learns the balance, in
+// the operator's own alarm list rather than under a mod's control. RP-1's client
+// asks for that alarm now (see client/src/WarpTargets/FundTarget.tsx), and
+// rp1.fundTarget.set went with it: the two were one controller wearing two
+// names. Nothing was stranded. RP-1's
 // own Maintenance screen still carries the whole feature, a "Warp to Fund
 // Target" button on MaintenanceGUI.RenderSummaryTab whose dialog offers both
 // "Yes, Warp" and "Add Warp Target".

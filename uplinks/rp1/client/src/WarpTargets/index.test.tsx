@@ -153,11 +153,10 @@ describe("WarpTargets", () => {
           op: ">=",
           value: 250_000,
           /*
-           * The craft's own clock: the simulation halts the warp on the tick the
-           * balance is reached, which is the stop the deleted command gave and
-           * the one a ground-side watch cannot.
+           * The active command centre: the simulation halts the warp on the
+           * tick that centre learns the balance.
            */
-          vantage: "scet",
+          vantage: "command",
         },
       },
     ]);

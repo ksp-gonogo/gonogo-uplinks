@@ -944,9 +944,10 @@ public class Rp1PadDismantleArgs
 /// them RP-1 respects. It respects both.</para>
 ///
 /// <para><b>There is no <c>rp1.warp.toFundTarget</c> either.</b> Warping until
-/// the balance reaches a figure is not a command: it is a SCET threshold on
-/// <c>career.status</c> / <c>economy.funds</c>, which halts the warp inside the
-/// simulation on the tick the balance is reached. Warping to the next completion
+/// the balance reaches a figure is not a command: it is a threshold alarm on
+/// <c>career.status</c> / <c>economy.funds</c> at the active command centre,
+/// which halts the warp inside the simulation on the tick that centre learns the
+/// balance. Warping to the next completion
 /// has no such spelling, because nothing publishes the next project to finish as
 /// an instant a threshold could address: the candidates live across four array
 /// Topics, and a dotted path cannot index a list.

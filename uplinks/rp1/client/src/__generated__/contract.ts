@@ -703,12 +703,13 @@ export interface Rp1PadDismantleArgs
 * RP-1 respects. It respects both.
 *
 * **There is no `rp1.warp.toFundTarget` either.** Warping until the balance
-* reaches a figure is not a command: it is a SCET threshold on `career.status`
-* / `economy.funds`, which halts the warp inside the simulation on the tick
-* the balance is reached. Warping to the next completion has no such spelling,
-* because nothing publishes the next project to finish as an instant a
-* threshold could address: the candidates live across four array Topics, and a
-* dotted path cannot index a list.
+* reaches a figure is not a command: it is a threshold alarm on
+* `career.status` / `economy.funds` at the active command centre, which halts
+* the warp inside the simulation on the tick that centre learns the balance.
+* Warping to the next completion has no such spelling, because nothing
+* publishes the next project to finish as an instant a threshold could
+* address: the candidates live across four array Topics, and a dotted path
+* cannot index a list.
 *
 * **INSTANT, and the only `rp1.*` command that is.** Every other command in
 * this Uplink is an order a second command centre can issue, so it crosses the
