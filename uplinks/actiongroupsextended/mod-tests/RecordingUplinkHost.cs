@@ -253,7 +253,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         public void SetConnectivitySource(Func<KspSnapshot?, bool?> computeOnMainThread) =>
             throw NotExpected("SetConnectivitySource");
 
-        public void SetPathBreakSource(Func<KspSnapshot?, double, PathBreak?> computeOnMainThread) =>
+        public void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread) =>
             throw NotExpected("SetPathBreakSource");
 
         public void ForceKeyframe(string topic) => throw NotExpected("ForceKeyframe");
