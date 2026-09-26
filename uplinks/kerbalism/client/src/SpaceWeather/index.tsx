@@ -698,7 +698,7 @@ function transitThreatColor(storm: StormDerived): string {
  * qualifier, which says the CME is aimed at this craft in deep space rather
  * than at a body it happens to be near.
  *
- * `vessel.state.parentBodyName` remains a fallback only, for a stream whose mod
+ * The body `vessel.identity` names remains a fallback only, for a stream whose mod
  * predates the named-target capture. A stream carrying neither degrades to
  * "current body".
  */

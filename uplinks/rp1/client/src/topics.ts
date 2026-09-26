@@ -268,9 +268,9 @@ export const RP1_CAREER_EVENTS_TOPIC = "rp1.careerEvents";
  * centre, and so the only one that is delay-gated.
  *
  * It is here because nothing stock carries it. RP-1 takes control away with an
- * input lock, which leaves `vessel.state.isControllable` true, so a dashboard
- * reading only the stock flag shows an operator full control while the stick
- * does nothing. RP-1's own flight signal is a screen message shown once for
+ * input lock, which leaves `vessel.comms.controlState` at full control, so a
+ * dashboard reading only the stock level shows an operator full control while
+ * the stick does nothing. RP-1's own flight signal is a screen message shown once for
  * eight seconds on the transition; miss it and there is no way back to the fact.
  *
  * Absent is not `Unlocked`: outside flight and the editor RP-1 does not evaluate

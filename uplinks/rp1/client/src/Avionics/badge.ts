@@ -6,17 +6,17 @@ import { RP1 } from "../uplink.js";
 // RP-1's avionics verdict, in the Navball's header badge row.
 //
 // The Navball hosts this because it is already the widget that reports whether
-// the craft can be flown: it reads `vessel.state.isControllable` and
+// the craft can be flown: it reads `vessel.comms.controlState` and
 // `vessel.control.*`, and it already models NOT having control (162bd297 stopped
 // it drawing an attitude nobody has). This is the one loss of control on an RP-1
-// career that the stock flag cannot see.
+// career that the stock control level cannot see.
 //
-// **It cannot be folded into `isControllable`, and that is why it is a badge.**
-// `vessel.state.isControllable` is derived from `vessel.comms.controlState`,
-// which is KSP's crew/probe/signal control LEVEL. RP-1 takes the controls with
-// `InputLockManager.SetControlLock` plus a per-frame zeroing of the flight
-// control state in `OnPostAutopilotUpdate`; neither touches the control level,
-// so the stock flag reads TRUE throughout an avionics lock. Verified against the
+// **It cannot be folded into the control level, and that is why it is a badge.**
+// `vessel.comms.controlState` is KSP's crew/probe/signal control LEVEL. RP-1
+// takes the controls with `InputLockManager.SetControlLock` plus a per-frame
+// zeroing of the flight control state in `OnPostAutopilotUpdate`; neither
+// touches the control level, so it reads full control throughout an avionics
+// lock. Verified against the
 // shipped RP-1 v4.6.0.0 RP0.dll, 2026-09-10. RP-1's own flight signal is one
 // eight-second screen message on the transition, and nothing after it.
 //

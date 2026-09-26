@@ -3228,7 +3228,7 @@ public sealed class Rp1FacilityEntry
 /// by an input lock. <b>Nothing stock says this has happened.</b> The lock is an
 /// <c>InputLockManager</c> control lock plus a per-frame zeroing of the flight
 /// control state, and neither touches the vessel's control LEVEL, so
-/// <c>vessel.state.isControllable</c> stays true throughout. RP-1's only flight
+/// <c>vessel.comms.controlState</c> reads full control throughout. RP-1's only flight
 /// signal is a screen message posted once, for eight seconds, on the transition.
 /// This channel is the persistent readout that gap leaves missing.</para>
 ///

@@ -8,35 +8,22 @@ import { describe, expect, it } from "vitest";
  * What shape a derived channel has to be in for a chart to reach it.
  *
  * Written against `kerbalism.resourceProjection`, which carried seven scalars
- * per resource and could not be plotted: the answer given in review was "it has
- * no scalar field to plot", and that was false. The real reasons are one
- * mechanical and one design, neither of which is a shortage of numbers, and
- * both outlive that channel, which is why they are pinned here on probes rather
- * than deleted with it.
+ * per resource and could not be plotted, though not for a shortage of numbers.
+ * The reason outlives that channel, which is why it is pinned here on a probe.
  *
- * 1. **Scalars inside an ARRAY are unreachable.** `TimelineStore`'s
- *    `resolveDerivedTopic` splits a subtopic on its LAST dot and takes exactly
- *    one segment, so a payload rooted at `{resources: [...]}` offers exactly one
- *    subtopic, whose value is the array. There is no syntax that indexes an
- *    element, and keying by name instead would still need two segments
- * 2. **A bare dashed line is the wrong render for a banded model anyway.**
- *    `Graph` drops `reckoned` on a band series, so a point estimate drawn
- *    dashed beside a widening interval would present itself as the whole claim
+ * Scalars inside an ARRAY are unreachable. `TimelineStore`'s
+ * `resolveDerivedTopic` splits a subtopic on its LAST dot and takes exactly one
+ * segment, so a payload rooted at `{resources: [...]}` offers exactly one
+ * subtopic, whose value is the array. There is no syntax that indexes an
+ * element, and keying by name instead would still need two segments.
  *
- * The first is fixable and the second is the reason not to rush it.
- *
- * A THIRD barrier stood here and is gone: `sampleReckonedTail` emitted only for
- * a finite bare `number`, so every `Value`-typed channel was excluded whatever
- * its paths looked like. The last case below used to pin that exclusion and now
- * pins its removal, because a probe one wrapper apart is the same evidence read
- * the other way round and losing it would leave nothing watching the barrier
- * that actually moved: no other test in the tree asserts that a tail arrives
- * still carrying its unit.
+ * A derived channel grows no reckoned tail at all: `sampleReckonedTail` walks a
+ * raw topic's own model, and a derived channel declares none.
  */
 
 const INPUT = "vessel.resources";
 
-const CARRIED = [INPUT, "probe.collection", "probe.wrapped", "probe.bare"];
+const CARRIED = [INPUT, "probe.collection"];
 
 const AMOUNTS = {
   resources: {
@@ -73,7 +60,6 @@ const collection: DerivedChannelDefinition<{
       ],
     };
   },
-  deriveReckoning: () => "rate-integration",
   fields: true,
 };
 
@@ -104,68 +90,5 @@ describe("why an array-rooted channel reaches no chart", () => {
     expect(fixture.store.sample("probe.collection.projected")?.payload).toBe(
       undefined,
     );
-  });
-
-  it("draws no tail on the one subtopic that does resolve", () => {
-    const fixture = fixtureWithProbes(1600);
-
-    // `.resources` resolves, and its value is the array. A line through a
-    // collection is not a thing, so the continuity test excludes it.
-    expect(
-      fixture.store.sampleReckonedTail(
-        "probe.collection.resources",
-        1000,
-        1600,
-      ),
-    ).toEqual([]);
-  });
-});
-
-describe("what a reachable scalar does get", () => {
-  it("draws a tail whether or not it is wrapped, unit and all", () => {
-    /*
-     * The barrier that is gone, isolated so it is not hidden behind the one
-     * that is not. Two probe channels one wrapper apart: both grow a tail, and
-     * the wrapped one arrives still carrying its unit, which is what flattening
-     * an array-rooted payload would buy. Read the other way round this is also
-     * the guard on the wrapper surviving the walk, since a tail that quietly
-     * unwrapped would satisfy a length assertion just as well.
-     */
-    const wrapped: DerivedChannelDefinition<{ level: unknown }> = {
-      topic: "probe.wrapped",
-      inputs: [INPUT],
-      derive: (get, viewUt) => {
-        const point = get<unknown>(INPUT);
-        if (!point || point.payload === null) return undefined;
-        return { level: value("units", viewUt - point.validAt) };
-      },
-      deriveReckoning: () => "rate-integration",
-      fields: true,
-    };
-    const bare: DerivedChannelDefinition<{ level: number }> = {
-      ...wrapped,
-      topic: "probe.bare",
-      derive: (get, viewUt) => {
-        const point = get<unknown>(INPUT);
-        if (!point || point.payload === null) return undefined;
-        return { level: viewUt - point.validAt };
-      },
-    };
-
-    const fixture = fixtureWithProbes(1600);
-    fixture.store.registerDerivedChannel(wrapped);
-    fixture.store.registerDerivedChannel(bare);
-    fixture.store.beginFrame();
-
-    expect(
-      fixture.store.sampleReckonedTail("probe.bare.level", 1000, 1600).length,
-    ).toBeGreaterThan(0);
-    const wrappedTail = fixture.store.sampleReckonedTail<Value<"units">>(
-      "probe.wrapped.level",
-      1000,
-      1600,
-    );
-    expect(wrappedTail.length).toBeGreaterThan(0);
-    expect(wrappedTail.every((s) => s.value.unit === "units")).toBe(true);
   });
 });

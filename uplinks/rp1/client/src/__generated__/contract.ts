@@ -3094,8 +3094,8 @@ export interface Rp1FacilityEntry
 * an input lock. **Nothing stock says this has happened.** The lock is an
 * `InputLockManager` control lock plus a per-frame zeroing of the flight
 * control state, and neither touches the vessel's control LEVEL, so
-* `vessel.state.isControllable` stays true throughout. RP-1's only flight
-* signal is a screen message posted once, for eight seconds, on the
+* `vessel.comms.controlState` reads full control throughout. RP-1's only
+* flight signal is a screen message posted once, for eight seconds, on the
 * transition. This channel is the persistent readout that gap leaves missing.
 *
 * **Three states, not two.** `Axial` keeps roll authority and loses steering,
