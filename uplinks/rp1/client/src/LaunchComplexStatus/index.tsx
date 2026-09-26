@@ -98,7 +98,7 @@ export function LaunchComplexStatus({
   return (
     <Section>
       <SectionTitle>LAUNCH COMPLEX</SectionTitle>
-      <Stack as="ul" gap="sm" style={LIST_STYLE}>
+      <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
         <Row>
           <RowName>Complex</RowName>
           <Text>

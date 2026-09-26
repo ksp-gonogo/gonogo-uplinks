@@ -80,8 +80,8 @@ export function WarpTargets() {
   }
 
   return (
-    <Stack gap="xs">
-      <Inline gap="xs">
+    <Stack gap="caption">
+      <Inline gap="related-packed">
         {/*
         Named for WHAT it warps to, on the operator's ruling that "next" alone did
         not say. The specific project would be better still and is not on this

@@ -427,7 +427,7 @@ function PeriodRow({
       {seconds == null ? (
         <Text>{NULL_DISPLAY}</Text>
       ) : (
-        <Cluster justify="end" gap="sm">
+        <Cluster justify="end" gap="related-dense">
           <Countdown value={seconds} />
           {offset !== null && offset !== 0 && (
             <Text tone="faint" size="sm">
@@ -467,7 +467,7 @@ function HazardRow({
   return (
     <Row as="div">
       <RowName>{label}</RowName>
-      <Cluster justify="end" gap="sm">
+      <Cluster justify="end" gap="related-dense">
         <Countdown value={instant - viewUt} clock />
         <Badge severity={severity}>{label}</Badge>
       </Cluster>

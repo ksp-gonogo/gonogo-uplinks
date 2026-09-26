@@ -32,7 +32,7 @@ export interface FramingPreviewProps {
 
 const AMBER = "var(--color-status-warning-bg)";
 const WHITE = "var(--color-text-primary)";
-const MORPH = "var(--duration-slow, 400ms)";
+const MORPH = "var(--duration-slow)";
 
 const pointsOf = (c: FrameCorners): string =>
   `${c.tl[0]},${c.tl[1]} ${c.tr[0]},${c.tr[1]} ${c.br[0]},${c.br[1]} ${c.bl[0]},${c.bl[1]}`;

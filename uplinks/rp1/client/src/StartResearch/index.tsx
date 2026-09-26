@@ -116,14 +116,14 @@ export function StartResearch() {
   const short = cost !== null && science !== null && science < cost;
 
   return (
-    <Section gap="sm">
+    <Section gap="related-dense">
       <SectionTitle>START RESEARCH</SectionTitle>
 
       {/* The balance in this section rather than borrowed from the host: this is
           the only control in the widget that spends science at the press, and
           the host draws its own figure only once the widget is tall enough for
           a subtitle. */}
-      <Cluster gap="md" justify="start" wrap>
+      <Cluster gap="related-comfortable" justify="start" wrap>
         <Readout>
           <ReadoutCaption>Science</ReadoutCaption>
           <Unit value={careerReading.economy.science} />
@@ -141,8 +141,8 @@ export function StartResearch() {
           Nothing the tree can reach is left to queue.
         </Text>
       ) : (
-        <Stack gap="xs">
-          <Cluster gap="sm" justify="start" wrap>
+        <Stack gap="caption">
+          <Cluster gap="related-dense" justify="start" wrap>
             <Select
               aria-label="Tech node to research"
               onChange={(e) => setPicked(e.target.value)}

@@ -66,7 +66,7 @@ export function KscConstruction() {
   );
 
   return (
-    <Section gap="sm">
+    <Section gap="related-dense">
       {/* SITE, because this section builds the ground: facilities, launch
           complexes and pads. Headed plain CONSTRUCTION it fought with the
           vehicles being integrated elsewhere in the career for the same word,

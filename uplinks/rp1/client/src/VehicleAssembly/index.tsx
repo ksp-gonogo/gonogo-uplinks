@@ -103,7 +103,7 @@ export function VehicleAssembly() {
          `panelSections={false}` that went with it are gone: end-of-body is
          where Panel puts it anyway. */
       sections={
-        <Section full gap="lg">
+        <Section full gap="section-compact">
           {/* In the BODY rather than the header aside, and that is the funds rule
             deciding it rather than taste: a panel narrow enough that its title
             and its aside do not fit collapses the aside behind a chevron, so at

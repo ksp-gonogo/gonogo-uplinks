@@ -266,7 +266,7 @@ function ModifyForm({
       panelHeight="auto"
       variant="inline"
     >
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         {!isHangar && (
           <>
             <UnitInput

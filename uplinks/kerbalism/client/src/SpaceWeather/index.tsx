@@ -1340,7 +1340,9 @@ function SpaceWeatherComponent({
 
 // Same shape as LifeSupportSystems': the kit's Section plus the spacing
 // above it, which is the only part that is this widget's business.
-const STAT_SECTION: CSSProperties = { marginTop: "var(--space-8)" };
+const STAT_SECTION: CSSProperties = {
+  marginTop: "var(--gap-related-comfortable)",
+};
 
 const SECTION_HEAD: CSSProperties = {
   display: "flex",
@@ -1381,7 +1383,7 @@ function midRowStyle(compact: boolean): CSSProperties {
     // thing sharing a row, which is the section gap rather than the related
     // one. It is the column gap only, the row being single.
     gap: "var(--gap-section)",
-    marginTop: compact ? "var(--space-4)" : "var(--space-10)",
+    marginTop: compact ? "var(--gap-sub-readout)" : "var(--gap-readout-groups)",
     minHeight: 0,
     overflow: "hidden",
   };
@@ -1392,7 +1394,7 @@ const FLUX_SECTION: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "var(--gap-related)",
-  marginTop: "var(--space-10)",
+  marginTop: "var(--gap-readout-groups)",
   minHeight: 0,
 };
 
@@ -1481,7 +1483,7 @@ const DOSE_CAPTION: CSSProperties = {
 // spacing above is this widget's; the type treatment is the kit's.
 const SPACED_CAPTION: CSSProperties = {
   display: "block",
-  marginTop: "var(--space-8)",
+  marginTop: "var(--gap-related-comfortable)",
 };
 
 const CHART_SLOT: CSSProperties = {
@@ -1495,7 +1497,7 @@ const FOOTER_ROW: CSSProperties = {
   flexDirection: "column",
   gap: "var(--gap-related)",
   marginTop: "auto",
-  paddingTop: "var(--space-6)",
+  paddingTop: "var(--gap-related-compact)",
 };
 
 const ENV_ROW: CSSProperties = {

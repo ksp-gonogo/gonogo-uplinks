@@ -163,8 +163,8 @@ const COVERAGE_COLUMN: CSSProperties = {
   // vertical row gap is deliberately half the horizontal cell gap. Both stay
   // literal because the 3 -> 2 snap alone would turn that 2:1 into 3:1.
   gap: "3px",
-  paddingTop: "var(--space-6)",
-  marginTop: "var(--space-6)",
+  paddingTop: "var(--inset-below-rule)",
+  marginTop: "var(--gap-related-compact)",
   borderTop: "1px solid var(--color-surface-raised)",
 };
 

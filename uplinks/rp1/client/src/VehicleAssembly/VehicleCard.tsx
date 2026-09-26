@@ -285,7 +285,7 @@ function ComplexRate({
      * the widget's minimum width the two together are wider than the card, and
      * a badge on a line that cannot wrap is one an operator never sees.
      */
-    <Cluster gap="xs" justify="start" wrap>
+    <Cluster gap="related-packed" justify="start" wrap>
       <Text size="xs" tone="muted">
         <Unit value={complex.engineers} /> /{" "}
         <Unit value={complex.maxEngineers} /> engineers
@@ -390,14 +390,14 @@ function VehicleActions({
   });
 
   return (
-    <Stack gap="sm">
+    <Stack gap="related-dense">
       {/* Above the buttons rather than below them, because it is what the press
           costs rather than an explanation of a press that is not offered. */}
       {(eligiblePads.length > 0 || operation?.type === "Rollback") && (
         <RolloutPrice bill={rolloutBill} />
       )}
 
-      <Cluster gap="sm" justify="start" wrap>
+      <Cluster gap="related-dense" justify="start" wrap>
         <RolloutControls
           handle={handles.rollout}
           id={id}

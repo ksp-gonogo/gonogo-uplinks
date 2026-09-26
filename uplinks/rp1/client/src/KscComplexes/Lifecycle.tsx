@@ -133,7 +133,7 @@ export function PadDismantleControl({
       : null;
 
   return (
-    <Inline gap="xs">
+    <Inline gap="related-packed">
       <CommandButton
         args={{ lcId, padId }}
         aria-label={blockedBecause ?? `Dismantle ${padName}, permanently`}
@@ -209,7 +209,7 @@ export function PadNewControl({
   const short = funds !== null && funds < cost;
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <TextField
         invalid={invalid}
         label={`New pad at ${complex.name ?? NULL_DISPLAY}`}
@@ -324,7 +324,7 @@ export function RenameControl({
   const unchanged = trimmed === currentName;
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <TextField
         invalid={duplicate ? "that name is already in use here" : undefined}
         label={`New name for ${label}`}
@@ -332,7 +332,7 @@ export function RenameControl({
         onChange={setNext}
         value={next}
       />
-      <Inline gap="xs">
+      <Inline gap="related-packed">
         <CommandButton
           args={{ ...args, name: trimmed }}
           aria-label={
@@ -410,7 +410,7 @@ function PadRow({
         {padName} at level <Unit value={pad.level} />
         {pad.isOperational === false && " · not in service"}
       </Text>
-      <Inline gap="xs">
+      <Inline gap="related-packed">
         {canRename && (
           <ActionButton
             aria-label={`Rename ${padName}`}
@@ -469,7 +469,7 @@ export function PadRows({
   // needs to: a pad complex without a pad cannot launch anything.
   if (pads.length === 0) {
     return (
-      <Stack gap="xs">
+      <Stack gap="caption">
         <Text size="xs" tone="muted">
           no pads
         </Text>
@@ -484,11 +484,11 @@ export function PadRows({
   }
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <Text size="xs" tone="muted">
         pads · <Unit value={complex.launchPadCount} /> operational
       </Text>
-      <Stack as="ul" gap="xs" style={LIST_STYLE}>
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
         {pads.map((pad, index) => (
           <PadRow
             complex={complex}

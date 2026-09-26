@@ -114,7 +114,7 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
       panelTitle="Aerodynamics"
       compactTitle={["AERO"]}
       sections={[
-        <Section key="state" full gap="sm" role="status" aria-live="polite">
+        <Section key="state" full gap="related-dense" role="status" aria-live="polite">
           <Cluster wrap>
             <StatusPill $tone={band?.tone ?? "default"}>
               {band?.label ?? "NO AERO DATA"}

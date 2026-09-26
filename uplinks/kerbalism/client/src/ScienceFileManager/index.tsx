@@ -203,7 +203,7 @@ function ScienceDataAboardRowAugment({
 
   return (
     <Section
-      style={{ paddingLeft: "var(--space-12)" }}
+      style={{ paddingLeft: "var(--indent-row)" }}
       aria-label="Kerbalism file manager"
     >
       {file && (

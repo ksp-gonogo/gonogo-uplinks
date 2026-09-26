@@ -121,7 +121,7 @@ export function PlanComposer() {
     <>
       <Section>
         <SectionTitle>Ready to upload</SectionTitle>
-        <Stack gap="sm">
+        <Stack gap="related-dense">
           {ready.length === 0 ? (
             <Text tone="faint" size="sm">
               Nothing saved. A plan reaches the vessel only from here.
@@ -149,7 +149,7 @@ export function PlanComposer() {
 
       <Section>
         <SectionTitle>Composing</SectionTitle>
-        <Stack gap="sm">
+        <Stack gap="related-dense">
           <PrimaryButton
             onClick={() =>
               store.create({
@@ -170,7 +170,7 @@ export function PlanComposer() {
           ) : null}
 
           {composing.map((draft, planIndex) => (
-            <Stack gap="xs" key={draft.id}>
+            <Stack gap="caption" key={draft.id}>
               <Row>
                 {/* A sequence position, not a name. Nothing edits it and nothing
                   sends it: the vessel has no use for what a draft was called. */}
@@ -179,7 +179,7 @@ export function PlanComposer() {
 
               {draft.burns.map((burn, index) => (
                 // biome-ignore lint/suspicious/noArrayIndexKey: position IS a burn's identity in a plan; two burns can share an instant and every other field
-                <Stack gap="xs" key={`${draft.id}-${index}`}>
+                <Stack gap="caption" key={`${draft.id}-${index}`}>
                   <FieldLabel>Burn {index + 1}</FieldLabel>
                   {/* A minute a notch, and a minute a second held over: the
                     transfer-finding loop is nudging an ignition a few minutes
@@ -333,7 +333,7 @@ function ReadyPlan({
   };
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <Row>
         <RowName>Plan {ordinal}</RowName>
         <Unit value={totalDeltaV(draft)} />

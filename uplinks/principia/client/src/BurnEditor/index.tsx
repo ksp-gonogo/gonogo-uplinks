@@ -155,7 +155,7 @@ function DeltaVRow({
   onChange: (next: number | null) => void;
 }) {
   return (
-    <Cluster gap="sm" justify="start">
+    <Cluster gap="related-dense" justify="start">
       <FieldLabel htmlFor={id}>
         <Icon size={14} />
         {label}
@@ -394,7 +394,7 @@ export function BurnEditor() {
         {/* The plan's identity first. Every number below belongs to whichever
             slot this names, and an operator reading a plan they are not flying
             is the failure mode ten parallel plans creates. */}
-        <Cluster wrap justify="start" gap="sm">
+        <Cluster wrap justify="start" gap="related-dense">
           <Badge severity="info">
             {`PLAN ${(magnitudeOf(plan.selectedPlan) ?? -1) + 1} OF ${
               magnitudeOf(plan.planCount) ?? 0
@@ -427,8 +427,8 @@ export function BurnEditor() {
 
         {/* Arming is a real write of Principia's own burn back into the plan, so
             it confirms rather than firing on the first press. */}
-        <Stack gap="xs">
-          <Cluster gap="sm" wrap justify="start">
+        <Stack gap="caption">
+          <Cluster gap="related-dense" wrap justify="start">
             <CommandButton
               size="sm"
               tone="go"
@@ -460,7 +460,7 @@ export function BurnEditor() {
               either way. Live-regioned because it is the outcome of something
               the operator just pressed and it contradicts the badge above. */}
           {nothingWasWritten(lastArm) && (
-            <Stack gap="xs" role="status" aria-live="polite">
+            <Stack gap="caption" role="status" aria-live="polite">
               <Cluster justify="start">
                 <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
               </Cluster>
@@ -479,7 +479,7 @@ export function BurnEditor() {
           )}
         </Stack>
 
-        <Stack gap="xs">
+        <Stack gap="caption">
           <Text tone="faint" size="sm">
             {`PLAN ENDS ${plan.desiredFinalTimeUt == null ? NULL_DISPLAY : ""}`}
             {plan.desiredFinalTimeUt != null && (
@@ -505,7 +505,7 @@ export function BurnEditor() {
                 <RowName>
                   {index === null ? NULL_DISPLAY : `#${index + 1}`}
                 </RowName>
-                <Cluster justify="end" gap="sm">
+                <Cluster justify="end" gap="related-dense">
                   {/* To IGNITION, never to a node. Principia anchors a burn to
                       its start and honouring that is the whole point. */}
                   {ignition === null || viewUt === null ? (
@@ -559,8 +559,8 @@ export function BurnEditor() {
         </Stack>
 
         {draft !== null && selected && (
-          <Stack gap="md" data-burn-editor-form="">
-            <Cluster wrap justify="start" gap="sm">
+          <Stack gap="related-comfortable" data-burn-editor-form="">
+            <Cluster wrap justify="start" gap="related-dense">
               <Badge severity="info">{`BURN ${draft.burnIndex + 1}`}</Badge>
               {/* The burn's own manoeuvring frame, which is routinely NOT the
                   plotting frame, and the only reliable warning that it differs
@@ -603,7 +603,7 @@ export function BurnEditor() {
             {/* The planned profile. An integrated burn's arc depends on the
                 propulsion, so a stage or engine change moves the trajectory and
                 these are part of the plan rather than trivia. */}
-            <Stack gap="xs">
+            <Stack gap="caption">
               <ProfileRow
                 name="THRUST"
                 value={selected.thrustKilonewtons}
@@ -635,8 +635,8 @@ export function BurnEditor() {
                 decides whether composing an edit at all is worth doing, so it is
                 read before anything is typed. */}
             {draftWindow !== null && (
-              <Stack gap="xs" data-edit-window="">
-                <Cluster gap="sm" wrap justify="start">
+              <Stack gap="caption" data-edit-window="">
+                <Cluster gap="related-dense" wrap justify="start">
                   {draftWindow.shut ? (
                     <Badge severity="warning">EDIT WINDOW SHUT</Badge>
                   ) : (
@@ -660,7 +660,7 @@ export function BurnEditor() {
               </Stack>
             )}
 
-            <Stack gap="xs">
+            <Stack gap="caption">
               <SectionTitle>IGNITION</SectionTitle>
               <MissionDateField
                 label="Ignition"
@@ -670,7 +670,7 @@ export function BurnEditor() {
               />
             </Stack>
 
-            <Stack gap="xs">
+            <Stack gap="caption">
               <SectionTitle>DELTA-V</SectionTitle>
               {/* Beside the boxes rather than instead of them: the numbers are
                   what the producer holds and hiding them would leave an
@@ -742,7 +742,7 @@ export function BurnEditor() {
             {/* A direction locked to the stars behaves differently from one that
                 rotates with the orbit, and that difference is the whole point of
                 the setting, so it is a named pair rather than a checkbox. */}
-            <Cluster gap="sm" wrap justify="start">
+            <Cluster gap="related-dense" wrap justify="start">
               <ToggleButton
                 size="sm"
                 active={draft.inertiallyFixed}
@@ -768,7 +768,7 @@ export function BurnEditor() {
               </ToggleButton>
             </Cluster>
 
-            <Cluster gap="sm" wrap justify="start">
+            <Cluster gap="related-dense" wrap justify="start">
               <CommandButton
                 size="sm"
                 tone="go"
@@ -969,7 +969,7 @@ export function BurnEditor() {
                 outcome of something the operator just pressed, and it
                 contradicts what the button beside it is showing. */}
             {nothingWasWritten(lastWrite) && (
-              <Stack gap="xs" role="status" aria-live="polite">
+              <Stack gap="caption" role="status" aria-live="polite">
                 <Cluster justify="start">
                   <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
                 </Cluster>

@@ -123,7 +123,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
   }
 
   return (
-    <Section gap="md">
+    <Section gap="related-comfortable">
       <SectionTitle>PROGRAM DETAIL</SectionTitle>
 
       {/* Wrapping, because three balances do not fit across a narrow panel and
@@ -133,7 +133,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
           In the BODY rather than in a `Panel` aside: an aside collapses at
           narrow widths and would take the Confidence balance with it, and
           Confidence is what the Accept control below actually spends. */}
-      <Cluster align="start" gap="md" justify="start" wrap>
+      <Cluster align="start" gap="related-comfortable" justify="start" wrap>
         <Balance caption="Funds">
           <Unit value={careerReading.economy.funds} />
         </Balance>
@@ -170,7 +170,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
          * and its one accept control (`KSP.UI.Screens.Administration`:
          * `scrollListStrategies` + `SetSelectedStrategy` + `btnAcceptCancel`).
          */
-        <Grid cols={MASTER_DETAIL_COLUMNS} gap="md" align="start">
+        <Grid cols={MASTER_DETAIL_COLUMNS} gap="related-comfortable" align="start">
           <ProgramCatalogue
             chosen={chosen}
             onPick={setPicked}
@@ -203,7 +203,7 @@ function Balance({
   children,
 }: Readonly<{ caption: string; children: ReactNode }>) {
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <ReadoutCaption>{caption}</ReadoutCaption>
       <Readout>{children}</Readout>
     </Stack>
@@ -290,7 +290,7 @@ function ProgramCatalogue({
   );
 
   return (
-    <Section gap="xs">
+    <Section gap="caption">
       <SectionTitle>CATALOGUE</SectionTitle>
       {shown.length === 0 ? (
         // A marker, not a paragraph: the operator can see what they typed, so
@@ -299,7 +299,7 @@ function ProgramCatalogue({
       ) : (
         <Stack
           aria-label="Program catalogue"
-          gap="xs"
+          gap="caption"
           role="group"
           style={CATALOGUE_SCROLL}
         >
@@ -343,7 +343,7 @@ function ChosenProgram({
 }>) {
   const closes = program.programsToDisableOnAccept ?? [];
   return (
-    <Stack gap="md">
+    <Stack gap="related-comfortable">
       {/* The pane's subject, named where the pane is. It sat beside the section
           heading while the catalogue was hidden and there was only ever one
           Program on screen; with the list standing open next to it, the name
@@ -379,10 +379,10 @@ function ChosenProgram({
 
       {/* The readings, left to right when the pane is wide enough for two
           columns of them and stacked when it is not. */}
-      <Grid cols={DETAIL_COLUMNS} gap="md" align="start">
+      <Grid cols={DETAIL_COLUMNS} gap="related-comfortable" align="start">
         <Section>
           <SectionTitle>TERMS</SectionTitle>
-          <Stack as="ul" gap="xs" style={LIST_STYLE}>
+          <Stack as="ul" gap="rows" style={LIST_STYLE}>
             <Row wrap>
               <RowName>Speed</RowName>
               <Text>{program.speed ?? NULL_DISPLAY}</Text>
@@ -435,7 +435,7 @@ function ChosenProgram({
 
         <Section>
           <SectionTitle>FUNDING</SectionTitle>
-          <Stack as="ul" gap="xs" style={LIST_STYLE}>
+          <Stack as="ul" gap="rows" style={LIST_STYLE}>
             <Row wrap>
               <RowName>Total</RowName>
               <Text>
@@ -495,7 +495,7 @@ function ChosenProgram({
               is funding the career can never draw, and nothing else on any
               screen says so before the decision is made. */}
             <SectionTitle>CLOSES OFF ON ACCEPT</SectionTitle>
-            <Stack as="ul" gap="xs" style={LIST_STYLE}>
+            <Stack as="ul" gap="rows" style={LIST_STYLE}>
               {closes.map((name) => (
                 <Row key={name}>
                   <RowName>{name}</RowName>
@@ -558,7 +558,7 @@ function AcceptControl({
   return (
     <Section>
       <SectionTitle>ACCEPT</SectionTitle>
-      <Cluster gap="sm" justify="start" wrap>
+      <Cluster gap="related-dense" justify="start" wrap>
         <Text size="sm" tone="muted">
           {program.confidenceCost == null ? (
             <>{NULL_DISPLAY} RP-1 did not price this Program</>
@@ -670,7 +670,7 @@ function FundingCurveChart({
             : "no funding curve for this Program"}
         </GraphNotice>
       ) : (
-        <Stack gap="xs">
+        <Stack gap="caption">
           <LineGraph
             height={140}
             ariaLabel={
@@ -708,7 +708,7 @@ function FundingCurveChart({
               stretched viewBox: `Unit` renders the quantity with its own ladder
               and its own screen-reader wording, and a <text> element in a
               non-uniformly scaled SVG would be stretched with it. */}
-          <Cluster gap="sm" wrap>
+          <Cluster gap="related-dense" wrap>
             {/* The anchors describe the SERIES, so they change with it: a rate
                 chart does not start at zero funds and does not end at the
                 total, which is what the cumulative one is bounded by. */}

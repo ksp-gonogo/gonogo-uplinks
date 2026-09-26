@@ -57,9 +57,9 @@ export function BuildCostSection() {
   }
 
   return (
-    <Section gap="sm" data-build-cost-section="">
+    <Section gap="related-dense" data-build-cost-section="">
       <SectionTitle>LAUNCH COST</SectionTitle>
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         <CostRow name="Vehicle" value={cost.vehicleCost} />
         <SurchargeRow cost={cost} />
         <CostRow name="Tooling" value={cost.toolingCost} />
@@ -176,7 +176,7 @@ function RequiredTechs({
        the badges beside it: an operator saw a line of tech names with nothing
        saying what they were. A list of badges is a sub-list rather than a value,
        and it cannot compete with its own label for the same line. */
-    <Stack gap="xs" data-required-techs="">
+    <Stack gap="caption" data-required-techs="">
       {/* ONE badge, and it is the STATE rather than the contents.
 
           This drew a critical badge per tech id, so a vehicle missing five nodes
@@ -187,7 +187,7 @@ function RequiredTechs({
 
           Its own label went with the change. The badge IS the label now, and
           "Needs tech" over a badge reading NEEDS TECH said it twice. */}
-      <Cluster justify="start" gap="sm">
+      <Cluster justify="start" gap="related-dense">
         <Badge severity="critical">Needs tech</Badge>
       </Cluster>
       {/* Plain text, which WRAPS, and that is a better answer to the truncation
@@ -230,7 +230,7 @@ function BlockingNode({ tech }: { tech: Rp1RequiredTechEntry }) {
     return null;
   }
   return (
-    <Stack gap="xs" data-blocking-node="">
+    <Stack gap="caption" data-blocking-node="">
       {/* `tone="default"` and NOT the default tone, which is `accent`: a bare
           `<Text>` renders in the theme's green. That is the other half of what
           the operator reported, and it was a separate defect from the badges:

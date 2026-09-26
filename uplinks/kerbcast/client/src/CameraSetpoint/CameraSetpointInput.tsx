@@ -84,9 +84,9 @@ const AXIS_GAP_PX = 4;
  * 55 against a then-67px button, which would have under-reported the cluster's
  * width by 12px to every caller asking whether a tile fits.
  *
- * The gap is `--space-8`, which {@link CommitScope} sets to 4 so the cluster
- * keeps one rhythm; the width is what "Commit" measures in the uppercase mono
- * that scope also hands the button.
+ * The gap is `--gap-control-row`, which {@link CommitScope} sets to 4 so the
+ * cluster keeps one rhythm; the width is what "Commit" measures in the
+ * uppercase mono that scope also hands the button.
  *
  * Its HEIGHT is not written down here because nothing needs it: the commit is
  * shorter than the wheels it stands beside, so the cluster's depth is theirs.
@@ -325,9 +325,9 @@ const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
  * button is drawn in, in two parts.
  *
  * <p><b>Two spacing tokens, which inside this subtree only the commit reads.</b>
- * `--space-8` is `CommandGroup`'s gap between its inputs and its commit (its
- * inputs gap too, but there is one input here) and `--space-12` is the button's
- * side padding. At the kit's own values the commit sat 8px from the wheels in a
+ * `--gap-control-row` is `CommandGroup`'s gap between its inputs and its commit
+ * (its inputs gap too, but there is one input here) and `--inset-commit-button`
+ * is the button's padding, whose sides this narrows from 12 to 8. At the kit's own values the commit sat 8px from the wheels in a
  * cluster whose own rhythm is 4, so it read as a slab set down beside the
  * control rather than as the last element of it; at 4 the cluster keeps one
  * rhythm throughout.</p>
@@ -352,11 +352,11 @@ const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
  */
 const CommitScope = styled.div`
   display: flex;
-  --space-8: 4px;
-  --space-12: 8px;
+  --gap-control-row: 4px;
+  --inset-commit-button: 4px 8px;
 
   & button {
-    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-family: var(--font-family-mono);
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }

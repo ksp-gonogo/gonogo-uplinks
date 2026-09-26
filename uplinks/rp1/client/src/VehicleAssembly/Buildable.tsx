@@ -77,7 +77,7 @@ export function BuildableSection() {
   }
 
   return (
-    <Section gap="sm">
+    <Section gap="related-dense">
       <SectionTitle>START A BUILD</SectionTitle>
       {buildable === undefined ? (
         // RP-1 has answered and this channel has not. Said rather than left
@@ -161,8 +161,8 @@ function CraftCard({
           No craft file name for this design
         </Text>
       ) : (
-        <Stack gap="sm">
-          <Cluster gap="sm" justify="start" wrap>
+        <Stack gap="related-dense">
+          <Cluster gap="related-dense" justify="start" wrap>
             {eligible.map((complex) => (
               <CommandButton
                 args={{

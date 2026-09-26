@@ -93,8 +93,8 @@ const PREVIEW_WIDTH_PX = 64;
 /** Shortest a preview tile may get before it stops saying anything. */
 const PREVIEW_MIN_HEIGHT_PX = 28;
 
-/** How far the cluster keeps off each edge of the picture: `--space-8`, in the
- *  CSS px the arithmetic below needs it in. */
+/** How far the cluster keeps off each edge of the picture, in the CSS px the
+ *  arithmetic below needs it in. */
 const CLUSTER_INSET_PX = 8;
 
 /** The SDK's own pan pad, read off its `PanControl`: a square inset from the
@@ -103,13 +103,13 @@ const CLUSTER_INSET_PX = 8;
  *  inset is what the two share rather than a clearance between them. */
 const SDK_PAN_PAD_INSET_PX = 10;
 
-/** Clear air between the centred preview tile and the cluster beside it, CSS px
- *  (`--space-4`). Two pieces of chrome on one picture with no gap read as one
+/** Clear air between the centred preview tile and the cluster beside it, CSS
+ *  px. Two pieces of chrome on one picture with no gap read as one
  *  piece of chrome with a seam in it. */
 const PREVIEW_CLEARANCE_PX = 4;
 
-/** What the `Box` below adds around its content on each axis: `pad="xs"`
- *  (`--space-2`) plus the 1px `bordered` rule, both sides. */
+/** What the `Box` below adds around its content on each axis: its 2px
+ *  `--inset-switch-panel` padding plus the 1px `bordered` rule, both sides. */
 const CLUSTER_CHROME_PX = 2 * (2 + 1);
 
 /** The cluster's own box, now that it holds the control and nothing else. It is
@@ -313,7 +313,6 @@ export const CameraSetpointSurface = forwardRef<
   return (
     <>
       <Box
-        pad="xs"
         radius="regular"
         bordered
         style={CLUSTER_STYLE}
@@ -391,6 +390,7 @@ const CLUSTER_STYLE: CSSProperties = {
   bottom: `${SDK_PAN_PAD_INSET_PX}px`,
   maxWidth: `calc(100% - ${SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX}px)`,
   overflow: "hidden",
+  padding: "var(--inset-switch-panel)",
   background: "rgba(0, 0, 0, 0.72)",
   pointerEvents: "auto",
 };

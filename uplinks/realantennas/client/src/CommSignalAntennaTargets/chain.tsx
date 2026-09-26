@@ -199,8 +199,8 @@ export function AntennaChain({
   const laps = magnitudeOr(chain?.laps, 0);
 
   return (
-    <Stack gap="sm">
-      <Cluster gap="md" wrap align="center">
+    <Stack gap="related-dense">
+      <Cluster gap="related-comfortable" wrap align="center">
         <Text size="xs" tone="muted" style={LABEL_STYLE}>
           Fallback chain
         </Text>
@@ -274,7 +274,7 @@ export function AntennaChain({
         </ol>
       ) : null}
 
-      <Cluster gap="md" wrap justify="start">
+      <Cluster gap="related-comfortable" wrap justify="start">
         <GhostButton type="button" onClick={onStage}>
           ADD TARGET ABOVE
         </GhostButton>

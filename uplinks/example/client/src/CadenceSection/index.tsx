@@ -52,8 +52,8 @@ function CadenceSection(_props: SlotProps<"space-center-status.sections">) {
   if (heartbeat.state !== "observed") return null;
 
   return (
-    <Stack gap="xs">
-      <Cluster gap="sm">
+    <Stack gap="caption">
+      <Cluster gap="related-dense">
         <Badge severity="info">example</Badge>
         <Text>
           publishing, last at UT <Unit value={heartbeat.value.ut} />

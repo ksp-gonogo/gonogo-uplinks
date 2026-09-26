@@ -91,10 +91,10 @@ export function ComplexCard({
 
   return (
     <Card tone={unstaffed ? "warning" : operational ? "go" : "default"}>
-      <Stack gap="lg">
-        <Cluster gap="xs" wrap>
+      <Stack gap="section-compact">
+        <Cluster gap="related-packed" wrap>
           <Text weight="semibold">{name}</Text>
-          <Inline gap="xs">
+          <Inline gap="related-packed">
             {complex.humanRated === true && (
               <Badge severity="info">HUMAN-RATED</Badge>
             )}
@@ -150,11 +150,11 @@ export function ComplexCard({
           panelHeight="auto"
           variant="inline"
         >
-          <Stack gap="sm">
+          <Stack gap="related-dense">
             <Envelope complex={complex} />
             <Costs complex={complex} />
             {complex.lcId != null && (
-              <Inline gap="xs">
+              <Inline gap="related-packed">
                 <RenameControl
                   args={{ lcId: complex.lcId }}
                   currentName={name}
@@ -177,9 +177,9 @@ export function ComplexCard({
                  fix: the payroll a rush commits the career to used to be drawn
                  only once one was already running, three sections above the
                  control that starts it. */
-              <Stack gap="xs">
+              <Stack gap="caption">
                 <RushTerms complex={complex} terms={terms} />
-                <Inline gap="xs">
+                <Inline gap="related-packed">
                   <RushControl
                     complex={complex}
                     handle={rush}
@@ -243,8 +243,8 @@ function Crew({
       : null;
 
   return (
-    <Stack gap="xs">
-      <Cluster gap="xs" wrap>
+    <Stack gap="caption">
+      <Cluster gap="related-packed" wrap>
         <Text size="xs" tone="muted">
           crew
         </Text>
@@ -340,7 +340,7 @@ function AssignControl({
   const shrink = Math.min(size, engineers);
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       {/*
         RP-1's own layout, which the operator asked for by name. Its personnel
         window reads `Assigned: [-1] 44 [+1]  Max: 60`, with `Engineers: 50
@@ -354,8 +354,8 @@ function AssignControl({
         in "The 1 option is highlighted on every LC... it looks like 1 is already
         pressed". A Stepper has a value between two arrows and no pressed state.
       */}
-      <Cluster align="center" gap="sm" wrap>
-        <Inline gap="xs">
+      <Cluster align="center" gap="related-dense" wrap>
+        <Inline gap="related-packed">
           {/* The quantity, named. It read "step", which the operator answered
               with "Step what?": a bare "step" says the control moves something
               by an amount and leaves the something out, and the amount here is
@@ -377,7 +377,7 @@ function AssignControl({
           fell back to a bare glyph when it could not move: a disabled button that
           drops its number stops being the other half of a pair.
         */}
-        <Inline gap="xs">
+        <Inline gap="related-packed">
           <CommandButton
             args={{ engineers: engineers - shrink, lcId }}
             aria-label={
@@ -414,7 +414,7 @@ function AssignControl({
         ("free at Cape 0", "room here 16") were the operator's "too much flourish":
         a reading is a label and a number.
       */}
-      <Stack as="ul" gap="xs" style={LIST_STYLE}>
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
         <Row>
           <RowName>Unassigned</RowName>
           <Text size="xs" tone={free === 0 ? "warn" : undefined}>
@@ -467,7 +467,7 @@ function RushTerms({
 }>) {
   const extra = complex.rushSalaryDeltaPerDay;
   return (
-    <Cluster gap="xs" wrap>
+    <Cluster gap="related-packed" wrap>
       <Text size="xs" tone="muted">
         rushing costs
       </Text>
@@ -518,7 +518,7 @@ function SharedRating({
     return null;
   }
   return (
-    <Stack as="ul" gap="xs" style={LIST_STYLE}>
+    <Stack as="ul" gap="rows" style={LIST_STYLE}>
       <Row>
         <RowName>Shared with</RowName>
         <Text size="xs">
@@ -551,7 +551,7 @@ function Envelope({ complex }: Readonly<{ complex: Rp1ComplexEntry }>) {
   const resources = complex.resourcesHandled ?? [];
 
   return (
-    <Stack as="ul" gap="xs" style={LIST_STYLE}>
+    <Stack as="ul" gap="rows" style={LIST_STYLE}>
       <Row>
         <RowName>Mass</RowName>
         <Text size="xs">

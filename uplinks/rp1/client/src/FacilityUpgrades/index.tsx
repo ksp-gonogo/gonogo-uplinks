@@ -177,7 +177,7 @@ export function FacilityUpgrades() {
   }
 
   return (
-    <Section gap="sm">
+    <Section gap="related-dense">
       <SectionTitle>FACILITY UPGRADES</SectionTitle>
 
       {/* The balance, above the rows. What the money does here is carried by
@@ -309,7 +309,7 @@ function UpgradeCard({
       name={label}
       tone="go"
     >
-      <Cluster gap="sm" justify="start" wrap>
+      <Cluster gap="related-dense" justify="start" wrap>
         <Text size="xs" tone="muted">
           {step.cost == null ? (
             <>{NULL_DISPLAY} not priced</>

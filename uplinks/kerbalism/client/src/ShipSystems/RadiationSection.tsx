@@ -363,7 +363,7 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
           </GraphNotice>
         )}
       </Fill>
-      <Cluster justify="between" style={{ marginTop: "var(--space-2)" }}>
+      <Cluster justify="between" style={{ marginTop: "var(--gap-caption)" }}>
         {/* Identity tones at rest (grey/info-blue, matching the traces),
             escalation only over the threshold. `warn`'s bare -fg token is
             near-black on this dark surface, so the escalated ambient reads

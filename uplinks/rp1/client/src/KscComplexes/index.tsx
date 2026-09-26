@@ -145,12 +145,12 @@ export function KscComplexes() {
   );
 
   return (
-    <Section gap="lg">
+    <Section gap="section-compact">
       <SectionTitle>SPACE CENTRES</SectionTitle>
 
       {/* The career's books, named so the counts under a centre's own heading
           below are read as that centre's and not as these again. */}
-      <Stack gap="xs">
+      <Stack gap="caption">
         <SectionTitle>PAYROLL</SectionTitle>
         <Payroll personnel={personnel} />
         {/*
@@ -174,7 +174,7 @@ export function KscComplexes() {
         // report it.
         <EmptyState>No space centre reported</EmptyState>
       ) : (
-        <Stack as="ul" gap="xl" style={LIST_STYLE}>
+        <Stack as="ul" gap="section-comfortable" style={LIST_STYLE}>
           {centreRows.map((centre) => (
             <Centre
               assign={assign}
@@ -243,7 +243,7 @@ function Payroll({
   personnel,
 }: Readonly<{ personnel: Rp1Personnel | undefined }>) {
   return (
-    <Stack as="ul" gap="xs" style={LIST_STYLE}>
+    <Stack as="ul" gap="rows" style={LIST_STYLE}>
       <Row>
         <RowName>Engineers</RowName>
         <Text>

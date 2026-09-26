@@ -1565,7 +1565,7 @@ const Container = styled.div`
   /* xterm.js mounts a child div: make it fill the container */
   .xterm {
     height: 100%;
-    padding: var(--space-8);
+    padding: var(--inset-log);
   }
 `;
 
@@ -1586,7 +1586,7 @@ const CompositionBarWrap = styled.div`
 const ScriptComposerOptions = styled.div`
   display: flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4) 0;
+  padding: var(--gap-caption) var(--gap-actions) 0;
   font-size: var(--font-size-compact);
 `;
 
@@ -1648,7 +1648,7 @@ const CpuPicker = styled.div`
   flex-wrap: wrap;
   gap: var(--gap-related);
   align-items: center;
-  padding: var(--space-12);
+  padding: var(--inset-tile-message);
 `;
 
 // Larger, icon-leading CPU buttons. Composes the ui-kit GhostButton,
@@ -1686,8 +1686,8 @@ const CpuPicker__Button = styled(GhostButton)`
 // as a badge.
 const NoPathBadge = styled.div`
   position: absolute;
-  top: var(--space-8);
-  left: var(--space-8);
+  top: var(--inset-log);
+  left: var(--inset-log);
   /* Local ordering inside the frame only, over xterm's own layers. Not
      app-global chrome, so no named z rung. */
   z-index: 1;
@@ -1712,8 +1712,8 @@ const NoPathBadge = styled.div`
  */
 const ChangeCpuButton = styled(GhostButton)`
   position: absolute;
-  bottom: var(--space-8);
-  right: var(--space-8);
+  bottom: var(--inset-log);
+  right: var(--inset-log);
   /* Local ordering inside the frame only, same as the two badges: lift this
      overlay above xterm's own layers in the Container beneath it. Not
      app-global chrome, so a named z rung would be wrong here. */

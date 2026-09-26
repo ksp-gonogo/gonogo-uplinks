@@ -72,12 +72,12 @@ export function ContractPayload() {
   const legalPair = legal(comms) && legal(weather);
 
   return (
-    <Stack gap="sm">
+    <Stack gap="related-dense">
       <Text size="xs" tone="muted">
         the payload a repeating satellite contract will require
       </Text>
 
-      <Inline gap="sm" wrap>
+      <Inline gap="related-dense" wrap>
         <UnitInput
           label="CommSat payload"
           onChange={(next) => setComms(kilograms(next))}

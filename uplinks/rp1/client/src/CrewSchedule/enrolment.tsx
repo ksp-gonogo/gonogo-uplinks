@@ -143,8 +143,8 @@ export function TrainingEnrolment() {
             live, which is exactly what an operator reported. A training, then
             the crew, then what it costs, then the press: each step sits above
             the one it decides. */}
-        <Stack gap="md">
-          <Stack gap="xs">
+        <Stack gap="related-comfortable">
+          <Stack gap="caption">
             <ReadoutCaption>Training</ReadoutCaption>
             {/* EVERY offered training on screen at once, one press to pick one,
                 which is the gesture RP-1's own Astronaut Complex uses.
@@ -169,7 +169,7 @@ export function TrainingEnrolment() {
                 one short name: chipped, the titles wrap mid-name and the row
                 stops being scannable. `SelectableRow` is the kit's pick-one list
                 row and sets `aria-pressed` from `selected` itself. */}
-            <Stack aria-label="Training to start" gap="xs" role="group">
+            <Stack aria-label="Training to start" gap="caption" role="group">
               {offered.map((template) => (
                 <SelectableRow
                   key={template.id}
@@ -206,11 +206,11 @@ export function TrainingEnrolment() {
               <Seats template={selected} />
             </ReadoutCaption>
           </Stack>
-          <Stack gap="xs">
+          <Stack gap="caption">
             <ReadoutCaption>Students</ReadoutCaption>
             <Cluster
               aria-label={`Students for ${name}`}
-              gap="xs"
+              gap="related-packed"
               justify="start"
               role="group"
               wrap
@@ -225,7 +225,7 @@ export function TrainingEnrolment() {
               ))}
             </Cluster>
           </Stack>
-          <Stack gap="xs">
+          <Stack gap="caption">
             <TrainingUpkeep career={career} />
             {/* The refusal on SCREEN, not only in `title`. The dark-control-with
                 -its-reason-in-the-title pattern assumes a pointer, and the
@@ -238,7 +238,7 @@ export function TrainingEnrolment() {
                 {refusal}
               </Text>
             )}
-            <Cluster gap="sm" justify="start" wrap>
+            <Cluster gap="related-dense" justify="start" wrap>
               <CommandButton
                 args={{
                   crew: chosen.map((candidate) => candidate.name),

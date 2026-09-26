@@ -60,7 +60,7 @@ export function ProjectCard({
           and the controls read as one block of text with a button in it: the
           operator's word for it was bunched. The card's own padding is the
           kit's and is not a knob, so the air has to come from here. */}
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         {/* The name WRAPS rather than truncating, which is what separates a
             card's heading from a row's label. `RowName` ellipsises and flexes
             to fill, so at the minimum width a widget promises "Atlas" rendered
@@ -69,7 +69,7 @@ export function ProjectCard({
             piece of work it is, so it is the last thing that may go. The
             cluster wraps for the same reason: a badge that will not fit beside
             a long name drops under it instead of squeezing it. */}
-        <Cluster align="start" gap="sm" wrap>
+        <Cluster align="start" gap="related-dense" wrap>
           <Text tone="default">{name}</Text>
           {badge}
         </Cluster>
@@ -111,7 +111,7 @@ export function ProjectCardList({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <Stack as="ul" gap="md" style={LIST_STYLE}>
+    <Stack as="ul" gap="related-comfortable" style={LIST_STYLE}>
       {children}
     </Stack>
   );

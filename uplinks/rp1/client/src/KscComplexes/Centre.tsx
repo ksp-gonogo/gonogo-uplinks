@@ -85,10 +85,10 @@ export function Centre({
     hired === null || unassigned === null ? null : hired - unassigned;
 
   return (
-    <Stack as="li" gap="md">
-      <Cluster gap="xs" wrap>
+    <Stack as="li" gap="related-comfortable">
+      <Cluster gap="related-packed" wrap>
         <Text weight="semibold">{name}</Text>
-        <Inline gap="xs">
+        <Inline gap="related-packed">
           {centre.isActive === true && <Badge severity="info">ACTIVE</Badge>}
           {unassigned !== null && unassigned > 0 && (
             <Badge severity="caution">{unassigned} IDLE</Badge>
@@ -96,7 +96,7 @@ export function Centre({
         </Inline>
       </Cluster>
 
-      <Stack as="ul" gap="xs" style={LIST_STYLE}>
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
         <Row>
           <RowName>Engineers</RowName>
           <Text size="xs">
@@ -131,7 +131,7 @@ export function Centre({
            stacked cards left most of that width empty however many complexes a
            career has. The tracks collapse to one column below the minimum, which
            is the layout the cards had before. */
-        <Grid align="start" gap="lg" minColWidth="17rem">
+        <Grid align="start" gap="section-compact" minColWidth="17rem">
           {complexes.map((complex) => (
             <ComplexCard
               assign={assign}

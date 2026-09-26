@@ -229,7 +229,7 @@ function ScanningComponent({
 
           <Section key="coverage" title={`Coverage: ${bodyName ?? "?"}`}>
             {bodyName ? (
-              <Stack gap="xs">
+              <Stack gap="caption">
                 {DISPLAY_SCAN_TYPES.map((type) => (
                   <CoverageRow
                     key={type}
@@ -251,10 +251,10 @@ function ScanningComponent({
 
           <Section key="vessels" title="Scanning vessels">
             {scanningVessels && scanningVessels.length > 0 ? (
-              <Stack gap="md">
+              <Stack gap="related-comfortable">
                 {scanningVessels.map((v) => (
                   <Card key={v.vesselId}>
-                    <Stack gap="xs">
+                    <Stack gap="caption">
                       <Cluster>
                         {/* Three answers, not two: a name, a craft the player
                             left unnamed, and a craft whose name was never read
@@ -283,7 +283,7 @@ function ScanningComponent({
                           measurement. */}
                         <Unit value={v.altitude} format="km" decimals={0} />
                       </Text>
-                      <Stack gap="xs">
+                      <Stack gap="caption">
                         {v.sensors.length === 0 ? (
                           <EmptyState>No scanners.</EmptyState>
                         ) : (
@@ -292,7 +292,7 @@ function ScanningComponent({
                               // biome-ignore lint/suspicious/noArrayIndexKey: sensors don't have a stable id; index is the natural order
                               key={i}
                               cols="140px 1fr auto"
-                              gap="md"
+                              gap="related-comfortable"
                             >
                               <Text size="xs" tone="default">
                                 {SCAN_TYPE_LABELS[s.type] ?? `type=${s.type}`}
@@ -352,7 +352,7 @@ function ScanningComponent({
             title={bodyName ? `Anomalies: ${bodyName}` : "Anomalies"}
           >
             {anomalies && anomalies.length > 0 ? (
-              <Stack gap="xs">
+              <Stack gap="caption">
                 {anomalies.map((a) => (
                   <Grid
                     key={`${a.name}-${magnitudeOf(a.latitude)}`}
@@ -402,7 +402,7 @@ function CoverageRow({
   // was already done.
   const coverage = typeof pct === "number" ? pct : null;
   return (
-    <Grid cols="120px 1fr 60px" gap="md">
+    <Grid cols="120px 1fr 60px" gap="related-comfortable">
       <Text size="xs" tone="default">
         {SCAN_TYPE_LABELS[scanType]}
       </Text>

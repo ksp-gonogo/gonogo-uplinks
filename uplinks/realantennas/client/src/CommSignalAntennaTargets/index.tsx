@@ -140,7 +140,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
 
   return (
     <Card>
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         {/*
           Only the omni is labelled. The targeting controls below already mark
           a dish as one, so a badge saying so repeated what the card shows; the
@@ -167,7 +167,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
         {/* The antenna's own facts. Tech level sits here rather than beside the
             name: it is a property of the hardware, and the heading's status slot
             is for what an antenna is currently doing. */}
-        <Grid cols="auto 1fr" gap="lg" rowGap="sm" align="baseline">
+        <Grid cols="auto 1fr" gap="section-compact" rowGap="related-dense" align="baseline">
           {antenna.techLevel != null ? (
             <>
               <Text size="xs" tone="muted" style={LABEL_STYLE}>
@@ -232,8 +232,8 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
             actions a step further out. A press that lands as close to the last
             field as the fields do to one another reads as another field.
           */
-          <Stack gap="lg">
-            <Stack gap="sm">
+          <Stack gap="section-compact">
+            <Stack gap="related-dense">
               <Field>
                 <FieldLabel htmlFor={`${fieldId}-mode`}>Mode</FieldLabel>
                 <Select
@@ -290,7 +290,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               ) : null}
 
               {mode === "BodyLatLonAlt" ? (
-                <Cluster gap="md" wrap>
+                <Cluster gap="related-comfortable" wrap>
                   <Field>
                     <FieldLabel htmlFor={`${fieldId}-lat`}>Lat °</FieldLabel>
                     <Input
@@ -322,7 +322,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               ) : null}
 
               {mode === "AzEl" ? (
-                <Cluster gap="md" wrap>
+                <Cluster gap="related-comfortable" wrap>
                   <Field>
                     <FieldLabel htmlFor={`${fieldId}-az`}>Az °</FieldLabel>
                     <Input
@@ -345,7 +345,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               ) : null}
 
               {mode === "OrbitRelative" ? (
-                <Cluster gap="md" wrap>
+                <Cluster gap="related-comfortable" wrap>
                   <Field>
                     <FieldLabel htmlFor={`${fieldId}-fwd`}>
                       Prograde °
@@ -370,7 +370,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               ) : null}
             </Stack>
 
-            <Cluster gap="md" wrap justify="start">
+            <Cluster gap="related-comfortable" wrap justify="start">
               {/* Armed: a slew is a signal to the craft and the dish stops
                   hearing whatever it was on when it moves. */}
               <CommandButton
@@ -460,7 +460,7 @@ function CommSignalAntennaTargets() {
       : [];
 
   return (
-    <Stack gap="sm" aria-label="Antenna targeting">
+    <Stack gap="related-dense" aria-label="Antenna targeting">
       <SectionTitle>Antenna targeting</SectionTitle>
       {antennas.map((antenna) => (
         <AntennaCard

@@ -89,7 +89,7 @@ export function FundTargetControl({
   const spoken = wantedFunds.toLocaleString("en-GB");
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       {standing && target !== undefined && (
         <StandingTarget handle={cancel} target={target} />
       )}
@@ -105,7 +105,7 @@ export function FundTargetControl({
         panelHeight="auto"
         variant="inline"
       >
-        <Stack gap="xs">
+        <Stack gap="caption">
           {funds !== null && (
             <Row as="div">
               <RowName>Balance now</RowName>

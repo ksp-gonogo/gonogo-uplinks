@@ -67,7 +67,7 @@ export function ProgramStatus() {
   return (
     <Section>
       <SectionTitle>PROGRAMS</SectionTitle>
-      <Stack as="ul" gap="sm" style={LIST_STYLE}>
+      <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
         <Row wrap>
           <RowName>Slots</RowName>
           <Text>
@@ -103,9 +103,9 @@ export function ProgramStatus() {
         )}
 
         {offerable.length > 0 && (
-          <Stack as="li" gap="xs">
+          <Stack as="li" gap="caption">
             <RowName>Acceptable now</RowName>
-            <Stack as="ul" gap="xs" style={LIST_STYLE}>
+            <Stack as="ul" gap="rows" style={LIST_STYLE}>
               {offerable.map((program) => (
                 <Row key={program.name ?? ""} wrap>
                   <RowName>
@@ -142,8 +142,8 @@ function ActiveProgram({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
   const ratio = magnitudeOf(program.fracElapsed);
   const overrun = ratio !== null && ratio >= 1;
   return (
-    <Stack as="li" gap="xs">
-      <Stack as="ul" gap="xs" style={LIST_STYLE}>
+    <Stack as="li" gap="caption">
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
         <Row wrap>
           <RowName>{program.title ?? program.name ?? NULL_DISPLAY}</RowName>
           <Text>

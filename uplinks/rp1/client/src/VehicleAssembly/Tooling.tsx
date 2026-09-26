@@ -123,7 +123,7 @@ export function ToolingSection() {
   const outstanding = magnitudeOf(tooling.untooledCount) ?? 0;
 
   return (
-    <Section gap="sm" data-tooling-section="">
+    <Section gap="related-dense" data-tooling-section="">
       <SectionTitle>TOOLING</SectionTitle>
 
       {/* The whole-ship price and the control that spends it, together and
@@ -131,7 +131,7 @@ export function ToolingSection() {
           is not: the fuzzy match makes RP-1's figure the smaller number by
           however much one size covers another. */}
       {outstanding > 0 && (
-        <Cluster gap="sm" justify="start" wrap data-tooling-header="">
+        <Cluster gap="related-dense" justify="start" wrap data-tooling-header="">
           <Text size="sm" tone="muted">
             Tool all{" "}
             {tooling.toolAllCost == null ? (
@@ -322,7 +322,7 @@ function PartCharge({
     );
   }
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <Row as="div" nested wrap data-tooling-per-build="">
         <Text size="xs" tone="muted">
           {name} · <Unit value={part.untooledSurcharge} decimals={0} /> per
@@ -387,7 +387,7 @@ function RefitControl({
       panelHeight="auto"
       variant="inline"
     >
-      <Stack gap="xs">
+      <Stack gap="caption">
         {/*
           One line rather than a paragraph and a warning band, on the repo's own
           compress-the-rows rule and on a render: three lines of warn tone above

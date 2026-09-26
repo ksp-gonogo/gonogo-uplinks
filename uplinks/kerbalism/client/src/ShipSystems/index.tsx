@@ -514,7 +514,7 @@ function ShipSystemsBody({
              this site no longer carries a hand-written role and aria-live. */
           <Section key="causes" full>
             <Notice tone="alert" title="Limiting factors">
-              <Stack gap="xs">
+              <Stack gap="caption">
                 {summary.causes.flatMap((cause) =>
                   cause.explains.length > 0
                     ? cause.explains.map((explained) => {
@@ -621,7 +621,7 @@ function ShipSystemsBody({
               the "cluster" was three stacked bars at every width. Grid
               tracks give them even side-by-side columns wherever the panel
               is wide enough and a clean stack where it isn't. */}
-          <Grid minColWidth="10rem" gap="md">
+          <Grid minColWidth="10rem" gap="related-comfortable">
             <Meter
               label="Comfort"
               value={fill(comfort)}

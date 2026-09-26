@@ -89,7 +89,7 @@ export function CrewSchedule({
   }
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       {retirement}
       {training}
       {expiry}

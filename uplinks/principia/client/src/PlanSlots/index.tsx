@@ -196,7 +196,7 @@ export function PlanSlots() {
     <Section data-plan-slots="">
       <SectionTitle>PLAN SLOTS</SectionTitle>
       <Stack>
-        <Cluster wrap justify="start" gap="sm">
+        <Cluster wrap justify="start" gap="related-dense">
           {/* Which slot, out of how many. Every number the sections below show
               belongs to whichever this names, and an operator reading a plan
               they are not flying is the failure mode ten parallel plans
@@ -245,7 +245,7 @@ export function PlanSlots() {
           </Text>
         )}
 
-        <Stack gap="xs">
+        <Stack gap="caption">
           {/* The slot's extent. `initialTimeUt` is where Principia began
               integrating this plan and appears nowhere else on the board; the
               length below it is the same pair read as a duration, which is the
@@ -297,7 +297,7 @@ export function PlanSlots() {
             create and install share and a second copy could disagree with the
             first. */}
         {!planExists && (
-          <Stack gap="xs">
+          <Stack gap="caption">
             <SectionTitle>NEW PLAN ENDS AT</SectionTitle>
             {endUt === null ? (
               <Text tone="faint" size="sm">
@@ -329,7 +329,7 @@ export function PlanSlots() {
                 )}
               </>
             )}
-            <Cluster gap="sm" wrap justify="start">
+            <Cluster gap="related-dense" wrap justify="start">
               <CommandButton
                 size="sm"
                 tone="go"
@@ -380,7 +380,7 @@ export function PlanSlots() {
             operator just pressed and it contradicts what the button beside it is
             showing. */}
         {nothingWasWritten(lastWrite) && (
-          <Stack gap="xs" role="status" aria-live="polite">
+          <Stack gap="caption" role="status" aria-live="polite">
             <Cluster justify="start">
               <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
             </Cluster>
@@ -471,8 +471,8 @@ function ExistingPlan({
   const nextBurnWindow = commandWindow(nextIgnitionUt, viewUt, oneWaySeconds);
 
   return (
-    <Stack gap="xs" data-plan-slots-existing="">
-      <Cluster gap="sm" wrap justify="start">
+    <Stack gap="caption" data-plan-slots-existing="">
+      <Cluster gap="related-dense" wrap justify="start">
         <CommandButton
           size="sm"
           handle={duplicateCmd}
@@ -584,7 +584,7 @@ function InstallDrafts({
   onWrite: (receipt: PrincipiaPlanWriteReceipt | null) => void;
 }>) {
   return (
-    <Stack gap="xs" data-plan-slots-install="">
+    <Stack gap="caption" data-plan-slots-install="">
       <SectionTitle>INSTALL A COMPOSED PLAN</SectionTitle>
       {drafts.length === 0 ? (
         <Text tone="faint" size="sm">
@@ -684,10 +684,10 @@ function InstallRow({
     (arrivalUt !== null && planEndUt <= arrivalUt);
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <Row as="div">
         <RowName>{`SAVED PLAN ${ordinal}`}</RowName>
-        <Cluster justify="end" gap="sm">
+        <Cluster justify="end" gap="related-dense">
           <Unit value={value("count", draft.burns.length)} decimals={0} />
           {first ? <MissionDate value={first.ignitionUt} /> : null}
         </Cluster>

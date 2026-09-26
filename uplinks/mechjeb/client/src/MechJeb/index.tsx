@@ -166,7 +166,7 @@ function CommandRow({
 }>) {
   const chip = commandChip(phase);
   return (
-    <Cluster justify="between" gap="sm">
+    <Cluster justify="between" gap="related-dense">
       <Button
         type="button"
         onClick={onFire}

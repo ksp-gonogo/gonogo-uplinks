@@ -126,7 +126,7 @@ function StandingTarget({
   const where = at?.name == null ? "" : ` at ${at.name}`;
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <Row as="div">
         <RowName>
           Hiring to {kind}
@@ -306,7 +306,7 @@ function HireTargetForm({
       panelHeight="auto"
       variant="inline"
     >
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         {/*
           Researchers first, because a career hires them from the moment it has an
           R&D building and the engineer half needs a complex that exists.
@@ -318,7 +318,7 @@ function HireTargetForm({
           one appearance, so `aria-pressed` moved and nothing on screen did, and
           an operator could not see which half the form was on.
         */}
-        <Cluster gap="xs" wrap>
+        <Cluster gap="related-packed" wrap>
           <Switch
             checked={at === undefined}
             label="researchers"

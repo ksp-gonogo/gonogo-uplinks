@@ -818,8 +818,8 @@ const FEED_BADGES_STYLE: CSSProperties = {
   right: 0,
   zIndex: 3,
   display: "flex",
-  gap: "var(--space-4)",
-  padding: "var(--space-4)",
+  gap: "var(--gap-chips)",
+  padding: "var(--offset-corner)",
   pointerEvents: "none",
 };
 
@@ -867,8 +867,8 @@ const FEED_UNAVAILABLE_STYLE: CSSProperties = {
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  gap: "var(--space-8)",
-  padding: "var(--space-16)",
+  gap: "var(--gap-related-comfortable)",
+  padding: "var(--gutter-overlay)",
   textAlign: "center",
   background: "rgba(0, 0, 0, 0.92)",
   pointerEvents: "auto",

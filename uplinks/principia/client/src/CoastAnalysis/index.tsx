@@ -71,7 +71,7 @@ function CoastRow({
       : `coast ${index + 1}`;
 
   const label = (
-    <Cluster justify="start" gap="sm" wrap>
+    <Cluster justify="start" gap="related-dense" wrap>
       <RowName>{isFinal ? "FINAL" : name.toUpperCase()}</RowName>
       {description === null ? (
         // An absence with a reason. A coast that follows a burn the integrator
@@ -168,7 +168,7 @@ export function CoastAnalysisSection() {
   return (
     <Section data-coast-analysis="">
       <SectionTitle>PLANNED ORBITS</SectionTitle>
-      <Stack gap="xs">
+      <Stack gap="caption">
         {coasts.map((coast, position) => (
           <CoastRow
             key={magnitudeOf(coast.index) ?? position}

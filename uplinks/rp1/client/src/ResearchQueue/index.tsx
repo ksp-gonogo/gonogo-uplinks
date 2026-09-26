@@ -57,7 +57,7 @@ export function ResearchQueue() {
   return (
     <Section>
       <SectionTitle>RESEARCH QUEUE</SectionTitle>
-      <Stack as="ul" gap="sm" style={LIST_STYLE}>
+      <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
         {queue.map((node) => (
           <ResearchRow key={node.techId ?? ""} node={node} />
         ))}
@@ -74,8 +74,8 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
   const ratio = magnitudeOf(node.progressRatio);
   const workRate = magnitudeOf(node.workRate);
   return (
-    <Stack as="li" gap="xs">
-      <Stack as="ul" gap="xs" style={LIST_STYLE}>
+    <Stack as="li" gap="caption">
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
         <Row wrap>
           <RowName>{node.techName ?? node.techId ?? NULL_DISPLAY}</RowName>
           <Text>

@@ -109,9 +109,9 @@ export function NewComplexControl({
       panelHeight="auto"
       variant="inline"
     >
-      <Stack gap="sm">
+      <Stack gap="related-dense">
         {named.length > 1 && (
-          <Inline gap="xs">
+          <Inline gap="related-packed">
             <Text size="xs" tone="muted">
               centre
             </Text>

@@ -415,7 +415,7 @@ function shortestLonDelta(a: number, b: number): number {
 const MinimapRoot = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--gap-related-dense);
   width: 100%;
   max-width: ${MAX_MINIMAP_PX}px;
 `;

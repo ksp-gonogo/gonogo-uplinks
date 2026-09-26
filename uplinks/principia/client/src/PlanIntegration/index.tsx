@@ -173,7 +173,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
     endUt !== null && startUt !== null && endUt <= startUt;
 
   return (
-    <Stack gap="xs" data-plan-integration="">
+    <Stack gap="caption" data-plan-integration="">
       <Row as="div">
         <RowName>PLAN ENDS</RowName>
         {plan.desiredFinalTimeUt == null ? (
@@ -201,7 +201,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
       {/* The second remedy, beside the first. Moving the end is the cheapest
           mutator on the plan: it recomputes only the final coast. */}
       {endUt !== null && (
-        <Stack gap="xs" data-plan-horizon="">
+        <Stack gap="caption" data-plan-horizon="">
           {/* A heading, because five bare date boxes under a row of instants say
               nothing about which instant they edit. The rows above are what the
               plan HOLDS; this is the one that can be changed. */}
@@ -219,7 +219,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             <RowName>BURNS DROPPED</RowName>
             <Unit value={value("count", strandedBurns)} decimals={0} />
           </Row>
-          <Cluster justify="end" gap="sm" wrap>
+          <Cluster justify="end" gap="related-dense" wrap>
             <CommandButton
               size="sm"
               handle={horizonCmd}
@@ -274,7 +274,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
 
       <Row as="div">
         <RowName>MAX STEPS</RowName>
-        <Cluster justify="end" gap="sm" wrap>
+        <Cluster justify="end" gap="related-dense" wrap>
           {/* The Stepper holds the null rather than being replaced by a bare
               NULL_DISPLAY, so the readout says the limit was not read AND the
               operator can still step onto a value and send it. Its own doc
@@ -354,7 +354,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
           the operator just pressed and it contradicts what the control beside it
           is showing. */}
       {nothingWasWritten(lastWrite) && (
-        <Stack gap="xs" role="status" aria-live="polite">
+        <Stack gap="caption" role="status" aria-live="polite">
           <Cluster justify="start">
             <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
           </Cluster>

@@ -60,7 +60,7 @@ export function CourseControls({
   return (
     /* No Card of its own: the courses section already carries one around each
        course, and a second would draw a border inside a border. */
-    <Cluster gap="sm" justify="start" wrap>
+    <Cluster gap="related-dense" justify="start" wrap>
       {/* RP-1 addresses a course by ONE of its students rather than by an id
           (`Rp1TrainingLeaveArgs.crewName` selects the course for cancel), so
           the first student names it and every student comes off. */}

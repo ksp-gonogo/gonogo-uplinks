@@ -242,9 +242,9 @@ export function EngineRealismSection() {
   if (rows == null || rows.length === 0) return null;
 
   return (
-    <Stack gap="xs">
+    <Stack gap="caption">
       <ReadoutCaption>Ignition & ullage</ReadoutCaption>
-      <Grid cols="minmax(0, 1fr) auto auto" gap="sm" align="baseline">
+      <Grid cols="minmax(0, 1fr) auto auto" gap="related-dense" align="baseline">
         {rows.map((engine, index) => (
           <EngineRow
             // The part id is the identity; the index is only reached for a row

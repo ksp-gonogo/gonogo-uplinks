@@ -170,7 +170,7 @@ function BurnRow({
     // down one quantity. `Row` pins the group instead.
     <Row as="div" data-burn-row="">
       <RowName>{index === null ? NULL_DISPLAY : `#${index + 1}`}</RowName>
-      <Cluster justify="end" gap="sm">
+      <Cluster justify="end" gap="related-dense">
         {untilIgnition === null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
@@ -321,7 +321,7 @@ function VantageTrajectoryRow({ viewUt }: { viewUt: number | null }) {
 
   return (
     <Stack>
-      <Cluster justify="start" gap="sm">
+      <Cluster justify="start" gap="related-dense">
         <Button
           onClick={() => {
             if (horizon !== null) {
@@ -406,7 +406,7 @@ export function FlightPlanSection() {
             unwrapped cluster clips the last one at the edge rather than dropping
             it to the next. A half-visible INTEGRATION FAILED is the worst of the
             three outcomes. */}
-        <Cluster wrap justify="start" gap="sm">
+        <Cluster wrap justify="start" gap="related-dense">
           {/* The age is the headline, not a footnote. A zero-age plan is being
               drawn right now; anything else is a snapshot and says so. */}
           {age === null ? (

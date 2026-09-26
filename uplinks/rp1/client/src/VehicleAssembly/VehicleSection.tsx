@@ -84,7 +84,7 @@ export function VehicleSection({
   const handles = { rollback, rollout, scrap };
 
   return (
-    <Section gap="sm">
+    <Section gap="related-dense">
       <SectionTitle>{title}</SectionTitle>
       <ProjectCardList>
         {byComplex(items, complexes).map((item) => (
