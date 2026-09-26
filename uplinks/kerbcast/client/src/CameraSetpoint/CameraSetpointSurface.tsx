@@ -314,7 +314,7 @@ export const CameraSetpointSurface = forwardRef<
     <>
       <Box
         pad="xs"
-        radius="sm"
+        radius="regular"
         bordered
         style={CLUSTER_STYLE}
         aria-label="Delayed camera control"

@@ -3,37 +3,37 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "c90f1fe411ab15bd",
+      "hash": "dfab455349245e71",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "165707125324b766",
+      "hash": "7615ecdca0554002",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "e06c092154c14fd4",
+      "hash": "43c521052a358a48",
       "elements": 31,
       "text": "5a036dc9"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "b815e1bdb3f34fdf",
+      "hash": "143c863895f1c587",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "915bbd01bbb17c75",
+      "hash": "7ed452f1b864a1c4",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "b301ee09c73f67d9",
+      "hash": "3bee2a14258fbfd6",
       "elements": 54,
       "text": "493dba11"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "4bb00edc8bcb6219",
+      "hash": "fc6563dc8beaaa43",
       "elements": 54,
       "text": "10338ace"
     }
