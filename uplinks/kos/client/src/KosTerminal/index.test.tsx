@@ -11,13 +11,13 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
+  installFixedSizeResizeObserver,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { Terminal } from "@xterm/xterm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
-import { installFixedSizeResizeObserver } from "../test/fixedSizeResizeObserver.js";
 import { sentCommand, sentCommands } from "../test/recordedCommands.js";
 import { KosTerminalComponent } from "./index.js";
 

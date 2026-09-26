@@ -6,9 +6,9 @@ import {
   setupStreamFixture,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { installFixedSizeResizeObserver } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
-import { installFixedSizeResizeObserver } from "../test/fixedSizeResizeObserver.js";
 import { sentCommand, sentCommands } from "../test/recordedCommands.js";
 import { KosTerminalComponent } from "./index.js";
 
