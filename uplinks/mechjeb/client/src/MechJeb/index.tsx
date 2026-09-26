@@ -206,8 +206,12 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
   const oneWay =
     delay.state === "observed" ? delay.value.oneWaySeconds : undefined;
 
+  // A held roster is still the roster: uplinks do not come and go with the link.
+  const healthReading = useStream<SystemUplinkHealth>("system.uplinkHealth");
   const unavailable = unavailableReason(
-    useStream<SystemUplinkHealth>("system.uplinkHealth"),
+    healthReading.state === "observed" || healthReading.state === "stale"
+      ? healthReading.value
+      : undefined,
   );
 
   // Held as the RAW string, not as a number, because `Number("")` is 0 and
