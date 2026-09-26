@@ -3,133 +3,133 @@
   "engine": "chromium",
   "assets": {
     "a-filter-term-per-process--default.png": {
-      "hash": "b77b4ee89091966c",
-      "elements": 174,
+      "hash": "a9155a281f9e8024",
+      "elements": 175,
       "text": "f6a1f5a9"
     },
     "binary--default.png": {
-      "hash": "b09282827fef5ee0",
-      "elements": 106,
+      "hash": "519a296a3677c288",
+      "elements": 107,
       "text": "52c0d842"
     },
     "dose-band-from-a-fitted-rate--default.png": {
-      "hash": "cd7c8fa6deb1163f",
-      "elements": 78,
-      "text": "d2c6c88e"
+      "hash": "cc96c27d8512476b",
+      "elements": 79,
+      "text": "28bafc1c"
     },
     "dose-band-reaching-critical--default.png": {
-      "hash": "7b1554e44cb10cbe",
-      "elements": 71,
-      "text": "6a85901a"
+      "hash": "6779e27ff3d245f3",
+      "elements": 72,
+      "text": "aa158eb5"
     },
     "dose-band-the-model-declines--default.png": {
-      "hash": "64ce9c59956dae61",
-      "elements": 63,
-      "text": "d97157a2"
+      "hash": "b50aff4a1d92e29f",
+      "elements": 64,
+      "text": "8dfeb729"
     },
     "ec-shortage-limits-water--default.png": {
-      "hash": "b7d9c344972fcdbc",
-      "elements": 172,
+      "hash": "41e1c523a570cd14",
+      "elements": 173,
       "text": "ca2969e0"
     },
     "ec-shortage-limits-water--min.png": {
-      "hash": "8de9cb2dcd716f4e",
-      "elements": 172,
+      "hash": "9b7f22bdf6fed2d2",
+      "elements": 173,
       "text": "ca2969e0"
     },
     "ec-shortage-limits-water-stopped-arriving--default.png": {
-      "hash": "0b1000905262c06b",
-      "elements": 175,
+      "hash": "0115c53288f6dcdd",
+      "elements": 176,
       "text": "405db9bf"
     },
     "ec-shortage-limits-water-stopped-arriving--min.png": {
-      "hash": "57c7163d6e30ed10",
-      "elements": 175,
+      "hash": "61b8d2b0908070d0",
+      "elements": 176,
       "text": "405db9bf"
     },
     "file-and-sample-on-one-subject--default.png": {
-      "hash": "51bdc96b7177898b",
-      "elements": 94,
+      "hash": "20fe5b6896a078f5",
+      "elements": 96,
       "text": "1f3d9756"
     },
     "file-and-sample-on-one-subject-stopped-arriving--default.png": {
-      "hash": "8e70a20aaece952a",
-      "elements": 109,
-      "text": "1c4fce1f"
+      "hash": "42304e99ef8bbb3b",
+      "elements": 111,
+      "text": "be4691fb"
     },
     "greenhouse-halted-in-the-dark--default.png": {
-      "hash": "726fde596191500c",
-      "elements": 117,
+      "hash": "9602f5c6fe72d72f",
+      "elements": 118,
       "text": "1a15f8e3"
     },
     "inner-belt--default.png": {
-      "hash": "727c58164d236ec3",
-      "elements": 80,
+      "hash": "64a789c5b49fda49",
+      "elements": 81,
       "text": "2e0d06fc"
     },
     "inner-belt-link-lost--default.png": {
-      "hash": "cab23bf6bfbda332",
-      "elements": 79,
+      "hash": "baac9fc1638f5cad",
+      "elements": 80,
       "text": "420b115d"
     },
     "interplanetary--default.png": {
-      "hash": "a43aabf7e569b4e6",
-      "elements": 94,
+      "hash": "d263d97816ff4338",
+      "elements": 95,
       "text": "5db7f31e"
     },
     "no-profile-for-this-vessel--default.png": {
-      "hash": "7ca0d9e726a871e7",
-      "elements": 13,
+      "hash": "7cca4b730571d75c",
+      "elements": 14,
       "text": "55062b4e"
     },
     "nominal--default.png": {
-      "hash": "ca1cb1f81dd5a718",
-      "elements": 79,
+      "hash": "a816a04f3e9865ed",
+      "elements": 80,
       "text": "62b67fb2"
     },
     "nominal--min.png": {
-      "hash": "7f4419eff98d8fe7",
-      "elements": 68,
+      "hash": "c49d1fef054c862d",
+      "elements": 69,
       "text": "970d0f26"
     },
     "radiation-dose-critical--default.png": {
-      "hash": "3a67671fdc54be96",
-      "elements": 143,
-      "text": "806f8490"
+      "hash": "78752b42276966db",
+      "elements": 144,
+      "text": "ae01a8d2"
     },
     "radiation-dose-critical-stopped-arriving--default.png": {
-      "hash": "971f1bcb718c6f83",
-      "elements": 153,
-      "text": "701964bd"
+      "hash": "3e08049077906b14",
+      "elements": 154,
+      "text": "c15c1b27"
     },
     "radiation-rising--default.png": {
-      "hash": "74ca0cc31171072f",
-      "elements": 92,
-      "text": "4b4340cc"
+      "hash": "f842a183acb51c83",
+      "elements": 93,
+      "text": "7a8d89e3"
     },
     "radiation-rising-stopped-arriving--default.png": {
-      "hash": "e6a0838ecdacc4b1",
-      "elements": 97,
-      "text": "1575942a"
+      "hash": "09a2651d1663b151",
+      "elements": 98,
+      "text": "206afcc2"
     },
     "radiation-rising-stopped-arriving-later--default.png": {
-      "hash": "e77f9a72679cf80f",
-      "elements": 105,
-      "text": "89fdb662"
+      "hash": "e4c17c9e16ad76af",
+      "elements": 106,
+      "text": "6d979200"
     },
     "storm-inbound--default.png": {
-      "hash": "28bed650787c3f73",
-      "elements": 94,
+      "hash": "a56b326e9fb225da",
+      "elements": 95,
       "text": "e04b2f39"
     },
     "storm-inbound-stopped-arriving--default.png": {
-      "hash": "84fbec7b3d2e51f8",
-      "elements": 94,
+      "hash": "3897ae62dbdce9bb",
+      "elements": 95,
       "text": "82d5fe85"
     },
     "storm-peak--default.png": {
-      "hash": "823ff78dc67f506f",
-      "elements": 95,
+      "hash": "3a6d0cf3d51e81da",
+      "elements": 96,
       "text": "78bd6f8c"
     },
     "supply-tank-meters--default.png": {
@@ -138,13 +138,13 @@
       "text": "50714c7e"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "67006b2acb2233aa",
+      "hash": "9b9d8de0b69edab2",
       "elements": 36,
       "text": "50714c7e"
     },
     "unread-send-and-analyze-flags--default.png": {
-      "hash": "74105164c33c7818",
-      "elements": 91,
+      "hash": "078234f41c605362",
+      "elements": 93,
       "text": "c738f880"
     }
   }

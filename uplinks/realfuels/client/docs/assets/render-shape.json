@@ -3,18 +3,18 @@
   "engine": "chromium",
   "assets": {
     "finite-ignition-budget--default.png": {
-      "hash": "610163e50ca705fe",
-      "elements": 26,
+      "hash": "8cfab7366539c1a7",
+      "elements": 27,
       "text": "64231d9b"
     },
     "ground-ignition-only--default.png": {
-      "hash": "10950c9a826bfeda",
-      "elements": 28,
+      "hash": "2ce05cf02698da1d",
+      "elements": 29,
       "text": "9fb00742"
     },
     "unlimited-relights--default.png": {
-      "hash": "75a6518a04fc02fc",
-      "elements": 17,
+      "hash": "d9d0436494e62919",
+      "elements": 18,
       "text": "6a2781b7"
     }
   }
