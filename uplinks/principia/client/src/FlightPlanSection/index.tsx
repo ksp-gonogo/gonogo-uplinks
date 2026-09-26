@@ -357,7 +357,12 @@ export function FlightPlanSection() {
   // for the same plan at the same instant.
   const view = planView(useTelemetry("principia.plan"));
   const identity = useTelemetry("vessel.identity");
-  const buildHealth = useStream<SystemUplinkHealth>("system.uplinkHealth");
+  // A held roster is still the roster: uplinks do not come and go with the link.
+  const healthReading = useStream<SystemUplinkHealth>("system.uplinkHealth");
+  const buildHealth =
+    healthReading.state === "observed" || healthReading.state === "stale"
+      ? healthReading.value
+      : undefined;
   const viewUt = magnitudeOf(useViewUt());
 
   if (view.kind === "unread") {

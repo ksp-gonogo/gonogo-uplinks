@@ -90,6 +90,29 @@ export interface GeneratedCommandReplyMap {
 }
 
 /**
+ * The same mapping as a RUNTIME value: command id -> the NAME of the type
+ * its dispatch resolves with, spelled exactly as the interface above spells
+ * it, `CommandResultOf<T>` envelope included.
+ *
+ * An interface is erased before a client runs, and a command reply arrives
+ * carrying a requestId and nothing else, so the command that was dispatched
+ * is the only route back to a type. Anything that has to treat a reply by
+ * its declared shape, unit hydration first among them, reads this.
+ */
+export const GENERATED_COMMAND_REPLY_TYPES = {
+  "principia.plan.arm": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.burn.insert": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.burn.remove": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.burn.replace": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.create": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.delete": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.duplicate": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.horizon": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.integrator": "CommandResultOf<Record<string, unknown>>",
+  "principia.plan.send": "CommandResultOf<Record<string, unknown>>",
+} as const satisfies Record<string, string>;
+
+/**
  * What the delay rail needs to know about a command, as DATA: a client asks
  * this table rather than carrying a list of ids it recognises.
  */
