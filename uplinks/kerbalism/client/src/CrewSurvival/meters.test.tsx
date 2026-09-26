@@ -44,23 +44,28 @@ function crew(radiation: number, asOfUt: number) {
     {
       name: "Jebediah Kerman",
       trait: "Pilot",
-      asOfUt,
+      rulesAsOfKerbalismUt: asOfUt,
       rules: [
         {
           name: "radiation",
-          value: radiation,
+          problem: radiation,
           degenPerSec: 0.002,
           fatalThreshold: 50,
         },
-        { name: "stress", value: 0.2, degenPerSec: 0.001, fatalThreshold: 1 },
+        { name: "stress", problem: 0.2, degenPerSec: 0.001, fatalThreshold: 1 },
       ],
     },
     {
       name: "Bob Kerman",
       trait: "Scientist",
-      asOfUt,
+      rulesAsOfKerbalismUt: asOfUt,
       rules: [
-        { name: "stress", value: 0.08, degenPerSec: 0.001, fatalThreshold: 1 },
+        {
+          name: "stress",
+          problem: 0.08,
+          degenPerSec: 0.001,
+          fatalThreshold: 1,
+        },
       ],
     },
   ];
@@ -98,10 +103,10 @@ function ReadingProbe({
  * reading the tree ends up seeing. The tree exists BEFORE the first sample
  * lands, which is the order production runs in.
  */
-function readingOver(run: Run, children?: ReactNode) {
+function readingOver(run: Run, children?: ReactNode, viewUt = VIEW_UT) {
   const fixture = setupStreamFixture({
     carriedChannels: CARRIED,
-    pinnedUt: VIEW_UT,
+    pinnedUt: viewUt,
   });
   for (const topic of CARRIED) fixture.subscribe(topic);
   let latest: TopicReading<Crew> | undefined;
@@ -146,15 +151,15 @@ const ROSTER = {
 } as never;
 
 /** The meters this Uplink contributes over `run`, keyed by entry id. */
-async function metersOver(run: Run = SCATTERED) {
-  const reading = await readingOver(run).feed();
+async function metersOver(run: Run = SCATTERED, viewUt = VIEW_UT) {
+  const reading = await readingOver(run, undefined, viewUt).feed();
   const observed =
     reading.state === "observed" || reading.state === "stale"
       ? reading.value
       : undefined;
   const entries =
     survivalMeters(
-      deriveCrewSurvival(ROSTER, observed, VIEW_UT),
+      deriveCrewSurvival(ROSTER, observed, viewUt),
       ruleReadings(reading),
     ) ?? [];
   return new Map(entries.map((entry) => [entry.id, entry]));
@@ -226,7 +231,14 @@ describe("what a survival meter carries", () => {
 
 describe("what the meter says with it", () => {
   it("announces the interval beside the figure the bar is drawing", async () => {
-    const dose = (await metersOver()).get("Jebediah Kerman:radiation");
+    /*
+     * Far enough past the last sample that the model has carried the dose
+     * visibly off the bar: closer than that, the meter draws no marks and says
+     * no bands.
+     */
+    const dose = (await metersOver(SCATTERED, 1200)).get(
+      "Jebediah Kerman:radiation",
+    );
     const { container } = render(
       <Meter label={dose?.label ?? ""} value={dose?.value ?? null} />,
     );
@@ -236,8 +248,19 @@ describe("what the meter says with it", () => {
 
     // The marks themselves are a shape and say nothing, so the sentence on the
     // track is the only place a screen reader learns the interval exists.
-    expect(said).toMatch(/between/i);
-    expect(said).toMatch(/two thirds of the time/i);
+    expect(said).toMatch(/with bands at/i);
+    await act(async () => {});
+  });
+
+  it("says no bands where the model has barely moved the dose off the bar", async () => {
+    const dose = (await metersOver()).get("Jebediah Kerman:radiation");
+    const { container } = render(
+      <Meter label={dose?.label ?? ""} value={dose?.value ?? null} />,
+    );
+    expect(container.querySelectorAll("[data-bound]")).toHaveLength(0);
+    expect(
+      container.querySelector("[role=meter]")?.getAttribute("aria-valuetext"),
+    ).not.toMatch(/bands/i);
     await act(async () => {});
   });
 });

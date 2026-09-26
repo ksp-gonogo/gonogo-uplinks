@@ -14,6 +14,7 @@ import {
   RELIABILITY_SUMMARY_TOPIC,
   readKerbalismReliabilityExt,
 } from "./reliability.js";
+import { goldenFrame } from "./test/goldenFrame.js";
 
 // src -> client -> kerbalism
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -34,23 +35,10 @@ const FIXTURE = join(
  * without one of them going red.
  */
 function serverFrame(): { topic: string; payload: ReliabilitySummary } {
-  // The frame is held as a JSON STRING inside the fixture: the C# side asserts
-  // byte equality against it, and a nested object would be reformatted by the
-  // repo's JSON formatter.
-  const vectors = JSON.parse(readFileSync(FIXTURE, "utf8")) as {
-    name: string;
-    json: string;
-  }[];
-  const vector = vectors.find(
-    (v) => v.name === "summary-with-provider-namespace",
+  return goldenFrame<ReliabilitySummary>(
+    FIXTURE,
+    "summary-with-provider-namespace",
   );
-  if (vector === undefined) {
-    throw new Error("fixture vector summary-with-provider-namespace not found");
-  }
-  return JSON.parse(vector.json) as {
-    topic: string;
-    payload: ReliabilitySummary;
-  };
 }
 
 describe("kerbalism's namespace of reliability.summary's provider extension bag", () => {

@@ -1,6 +1,8 @@
-import type { ComponentProps, VesselState } from "@ksp-gonogo/sitrep-sdk";
+import type { ComponentProps, VesselIdentity } from "@ksp-gonogo/sitrep-sdk";
 import {
+  CELESTIAL_FACTS,
   registerComponent,
+  useProcessor,
   useStream,
   useTelemetry,
   useViewUt,
@@ -104,41 +106,50 @@ interface SpaceWeatherData {
 }
 
 /** Why the board is not being drawn, in the operator's terms. */
-type WeatherAbsence = "not-current" | "confirmed-none" | "awaiting";
+type WeatherAbsence = "confirmed-none" | "awaiting";
 
 const ABSENCE_TEXT: Record<WeatherAbsence, string> = {
-  // Three different sentences on purpose. "The link dropped" and "this is the
-  // first paint" are not the same accusation, and a vessel whose subject
-  // confirms it has no space-weather record (no Kerbalism, or nothing loaded)
-  // is not waiting for anything.
-  "not-current": "Space weather no longer current",
+  /* Two different sentences on purpose: a vessel whose subject confirms it has
+     no space-weather record (no Kerbalism, or nothing loaded) is not waiting for
+     anything. There used to be a third, "Space weather no longer current", for a
+     record that had stopped arriving. That case no longer empties the board, so
+     the sentence has nothing left to label. */
   "confirmed-none": "No space-weather data reported",
   awaiting: "Awaiting space weather",
 };
 
 type SpaceWeatherRead =
-  | { readable: true; data: SpaceWeatherData }
+  /** `notCurrent`: the record is the last delivered rather than the current one. */
+  | { readable: true; data: SpaceWeatherData; notCurrent: boolean }
   | { readable: false; absence: WeatherAbsence };
 
 /**
- * Every field on this record is a judgement, so the record is judged as one.
+ * The JUDGEMENTS on this record cannot be dated. The measurements can, and are.
  *
- * The dose rate picks a tone band, the storm bools pick a headline, the three
- * environment bools light the belt rings and drive the header verdict, and the
- * shielding pair becomes a toned meter. Not one of them is a fact that holds
- * until an event changes it: they are all functions of where the craft currently
- * sits in a magnetic field and a storm timeline, and every one of them can drift
- * while nobody is looking.
+ * <p>What genuinely cannot survive a dropped link is the craft's POSITION in the
+ * environment: the three belt flags say where it sits in a magnetic field right
+ * now, and it has since moved. `stormState`'s `none` is a promise, so it goes to
+ * `unknown` rather than keeping a reassurance nobody can still vouch for. Both
+ * feed the header verdict, which already carries an unknown arm for exactly this
+ * case.</p>
  *
- * `shieldingCapacity` is the one plausible fact (fitted hardware), and it is
- * still withheld with the rest, because it is only ever drawn as the denominator
- * of a ratio whose numerator is withheld. "0.0 / 3.3" with a red bar is a
- * verdict about a habitat, assembled from one number we have and one we do not.
+ * <p>The dose rate, the shielding pair, every star and every CME slot are
+ * measurements and timeline facts, so they are held and marked. The rule here
+ * used to be that they "can drift while nobody is looking", and that proves too
+ * much: a heat-shield temperature drifts the same way, and a widget that throws
+ * a figure away rather than marking it is the shape this sweep exists to
+ * remove.</p>
  *
- * Withholding the record therefore withholds the whole board, which is the
- * honest outcome: the alternative is the pre-migration behaviour, where an
- * absent record coerced to a confident "Sheltered, no storm activity, 0.000
- * rad/h" board built from nothing at all.
+ * <p>The old objection to keeping `shieldingCapacity` was that it is only drawn
+ * as the denominator of a ratio whose numerator is withheld, making "0.0 / 3.3"
+ * a verdict assembled from one number we have and one we do not. That dissolves
+ * once the record is held WHOLE: both halves come from the same delivery and
+ * carry the same date, so the meter draws a dated ratio rather than a mixed one.
+ * The objection was to a half-held panel, which is not what this is.</p>
+ *
+ * <p>The file already demonstrated the split on one field: `vessel.flight` is
+ * carried through `stale` and merged with its reckoning just below, for the
+ * altitude alone.</p>
  */
 function useSpaceWeather(): SpaceWeatherRead {
   const weatherReading = useTelemetry("kerbalism.spaceweather");
@@ -164,21 +175,20 @@ function useSpaceWeather(): SpaceWeatherRead {
       : flightReading.state === "observed"
         ? flightReading.value
         : undefined;
-  // A verdict may only be drawn from a CURRENT observation. A stale reading gives
-  // nothing, because `kerbalism.spaceweather` declares no model and a judgement
-  // cannot be dated: the operator reads a band or a pill as the situation NOW.
+  /* The record is held through `stale`; what a stale reading costs is the
+     positional half, applied where the record is mapped below. `notCurrent`
+     carries that decision and the caption that says so. */
   const t =
-    weatherReading.state === "observed" ? weatherReading.value : undefined;
+    weatherReading.state === "observed" || weatherReading.state === "stale"
+      ? weatherReading.value
+      : undefined;
+  const notCurrent = weatherReading.state === "stale";
 
   if (t === undefined) {
     return {
       readable: false,
       absence:
-        weatherReading.state === "stale"
-          ? "not-current"
-          : weatherReading.state === "absent"
-            ? "confirmed-none"
-            : "awaiting",
+        weatherReading.state === "absent" ? "confirmed-none" : "awaiting",
     };
   }
 
@@ -206,17 +216,25 @@ function useSpaceWeather(): SpaceWeatherRead {
     radiationRadPerSecond === null
       ? null
       : value("rad/s", radiationRadPerSecond).in("rad/h").magnitude;
-  const innerBelt = t.innerBelt ?? false;
-  const outerBelt = t.outerBelt ?? false;
-  const magnetosphere = t.magnetosphere ?? false;
+  /* The positional half, withheld once the record stops arriving. These three
+     say where the craft sits in a magnetic field NOW, and it has moved since;
+     false is already the "ring not drawn" state the mapping uses for a flag the
+     mod did not report, so an unlit diagram is a shape the widget already has. */
+  const innerBelt = notCurrent ? false : (t.innerBelt ?? false);
+  const outerBelt = notCurrent ? false : (t.outerBelt ?? false);
+  const magnetosphere = notCurrent ? false : (t.magnetosphere ?? false);
 
   const altitudeM = magnitudeOf(flight?.altitudeAsl);
 
   return {
     readable: true,
+    notCurrent,
     data: {
       radiationRadPerHour,
-      stormState,
+      /* `none` is a promise and a dated one is worth nothing, so a stale record
+         reports the state it actually has: unknown. The header verdict reads
+         this and already answers unknown for it. */
+      stormState: notCurrent ? "unknown" : stormState,
       innerBelt,
       outerBelt,
       magnetosphere,
@@ -224,7 +242,9 @@ function useSpaceWeather(): SpaceWeatherRead {
       shieldingValue: magnitudeOf(t.shieldingAmount),
       // (stormTimeSec removed: see the FUTURE note above.)
       shieldingCapacity: magnitudeOf(t.shieldingCapacity),
-      altitudeKm: altitudeM === null ? null : altitudeM / 1000,
+      // The "you are here" dot: a dated altitude would place the craft in a band
+      // it may have left, so the rings draw no dot rather than a stale one.
+      altitudeKm: notCurrent || altitudeM === null ? null : altitudeM / 1000,
       stars: t.stars ?? [],
       storms: t.storms ?? [],
       stormEjectionSpeedMps: magnitudeOf(t.stormEjectionSpeed),
@@ -294,8 +314,20 @@ const TONE_HEX: Record<Tone, string> = {
  * takes cases from: "Sheltered" is the only claim here that a missing reading
  * could make falsely, and it is the reassuring one. A craft sitting in a storm
  * or a belt is still reported as such with no dose rate at all.
+ *
+ * <p>`notCurrent` outranks all of them, because EVERY arm here is a claim about
+ * the situation now and none of them survives a dropped link. Withholding via
+ * the record's own fields was not enough: the first arm fires on a held dose of
+ * 3 rad/h alone, so a board whose belts had gone dark and whose storm state had
+ * gone unknown still wore a red "Storm in progress". A render caught it; the
+ * stale test did not, because its fixture is a sheltered vessel whose dose never
+ * reaches that arm.</p>
  */
-function statusFor(d: SpaceWeatherData): { label: string; tone: Tone } {
+function statusFor(
+  d: SpaceWeatherData,
+  notCurrent: boolean,
+): { label: string; tone: Tone } {
+  if (notCurrent) return { label: "Not current", tone: "info" };
   if (
     d.stormState === "inprogress" ||
     (d.radiationRadPerHour !== null && d.radiationRadPerHour >= 3)
@@ -692,17 +724,16 @@ function StormCard({
     storm.targetKind === STORM_TARGET_VESSEL ? " (current vessel)" : "";
 
   return (
-    <Card tone={SEVERITY_CARD_TONE[severity]}>
+    <Card
+      tone={SEVERITY_CARD_TONE[severity]}
+      title={storm.star}
+      titleRight={
+        <Badge severity={severity} size="sm">
+          {stormLabel(storm.state)}
+        </Badge>
+      }
+    >
       <Stack>
-        <Cluster justify="between" align="baseline">
-          <Text tone="default" weight="semibold" size="sm">
-            {storm.star}
-          </Text>
-          <Badge severity={severity} size="sm">
-            {stormLabel(storm.state)}
-          </Badge>
-        </Cluster>
-
         <Text tone="muted" size="xs">
           {`${verb} ${target}${qualifier}`}
         </Text>
@@ -1030,10 +1061,28 @@ function SpaceWeatherComponent({
   // before the first confirmed sample, and substituting UT 0 there measured
   // every storm against year 1 day 1: an ETA years wide, stated to the second.
   const nowUt = magnitudeOf(useViewUt());
-  // Only the FALLBACK target name, for a stream whose mod predates the
-  // named-target capture; see `StormCard`.
+  /*
+   * Only the FALLBACK target name, for a stream whose mod predates the
+   * named-target capture; see `StormCard`.
+   *
+   * The catalogue's own index map answers which body an index is, and the
+   * catalogue is a FACT, so a held one is still the catalogue and both
+   * value-bearing arms are read. Written out rather than taken from a hook
+   * because the hook the app uses for this is app-side.
+   */
+  const factsReading = useProcessor(CELESTIAL_FACTS);
+  const facts =
+    factsReading?.state === "observed" || factsReading?.state === "stale"
+      ? factsReading.value
+      : undefined;
+  // Which body the craft is around does not change down a quiet link.
+  const identityReading = useStream<VesselIdentity>("vessel.identity");
+  const parentIndex =
+    identityReading.state === "observed" || identityReading.state === "stale"
+      ? identityReading.value.parentBodyIndex
+      : undefined;
   const fallbackBodyName =
-    useStream<VesselState>("vessel.state")?.parentBodyName ?? undefined;
+    parentIndex == null ? undefined : facts?.nameByIndex[parentIndex];
 
   if (!read.readable) {
     // No verdict badge in the header either: "Sheltered" is a claim about a
@@ -1055,7 +1104,7 @@ function SpaceWeatherComponent({
   }
 
   const d = read.data;
-  const status = statusFor(d);
+  const status = statusFor(d, read.notCurrent);
   // The rings can place the dot from a belt bool alone, so the altitude only
   // goes missing from the diagram when neither belt claims the craft.
   const positionUnknown = d.altitudeKm === null && !d.innerBelt && !d.outerBelt;
@@ -1114,6 +1163,18 @@ function SpaceWeatherComponent({
         </Badge>
       }
       sections={[
+        read.notCurrent && (
+          <Section key="dated" full>
+            {/* Names which half is dated. The figures below are the last
+                delivered and still worth reading; what is gone is the craft's
+                position in the environment, because it has moved since. */}
+            <Text tone="warn" size="xs" role="status" aria-live="polite">
+              Space weather no longer current: the dose, shielding, stars and
+              CMEs are the last reported, and the craft's position in the belts
+              is unknown.
+            </Text>
+          </Section>
+        ),
         /* Sun vantage first: the widget's subject is what the STAR is doing,
            and the vessel-local consequence below is downstream of it. */
         <Section key="stars">
@@ -1139,20 +1200,22 @@ function SpaceWeatherComponent({
                     // predictably. flexShrink 0 keeps that width honest under
                     // `wrap`, so the browser wraps rather than squeezing.
                     style={{ width: 128, flexShrink: 0 }}
-                  >
-                    <Stack>
+                    // The diagram is the picture this card is OF, so it sits
+                    // across the top and the name captions it. A top aside is
+                    // already stacked, so it is the one slot that never moves
+                    // however narrow the row gets.
+                    top={
                       <StarDiagram
                         starName={name}
                         activity={activity}
                         compact={compact}
                       />
-                      <Text tone="default" weight="semibold" size="sm">
-                        {name}
-                      </Text>
-                      <Text tone="muted" size="xs">
-                        <Unit value={star.distance} />
-                      </Text>
-                    </Stack>
+                    }
+                    title={name}
+                  >
+                    <Text tone="muted" size="xs">
+                      <Unit value={star.distance} />
+                    </Text>
                   </Card>
                 );
               })}
@@ -1287,7 +1350,7 @@ const SECTION_HEAD: CSSProperties = {
 };
 
 const SECTION_LABEL: CSSProperties = {
-  fontSize: "var(--font-size-xs)",
+  fontSize: "var(--font-size-caption)",
   color: "var(--color-text-muted)",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
@@ -1295,7 +1358,7 @@ const SECTION_LABEL: CSSProperties = {
 
 function sectionValueStyle(tone: Tone): CSSProperties {
   return {
-    fontSize: "var(--font-size-xs)",
+    fontSize: "var(--font-size-caption)",
     color: TONE_HEX[tone],
     fontVariantNumeric: "tabular-nums",
     textAlign: "right",
@@ -1349,14 +1412,14 @@ const BLACKOUT_TAG: CSSProperties = {
   bottom: "2px",
   left: "50%",
   transform: "translateX(-50%)",
-  fontSize: "var(--font-size-2xs)",
+  fontSize: "var(--font-size-caption)",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
   // Text sitting ON the nogo-bg fill, not beside it: -fg (2.61:1 here) fails
   // the 4.5:1 AA floor. -on-bg is the token for exactly this case.
   color: "var(--color-status-nogo-on-bg)",
   background: "var(--color-status-nogo-bg)",
-  borderRadius: "var(--radius-sm)",
+  borderRadius: "var(--radius-regular)",
   padding: "var(--inset-chip)",
   whiteSpace: "nowrap",
 };
@@ -1369,12 +1432,12 @@ const POSITION_UNKNOWN_TAG: CSSProperties = {
   top: "2px",
   left: "50%",
   transform: "translateX(-50%)",
-  fontSize: "var(--font-size-2xs)",
+  fontSize: "var(--font-size-caption)",
   letterSpacing: "0.06em",
   textTransform: "uppercase",
   color: "var(--color-text-muted)",
   border: "1px solid var(--color-border-subtle)",
-  borderRadius: "var(--radius-sm)",
+  borderRadius: "var(--radius-regular)",
   padding: "var(--inset-chip)",
   whiteSpace: "nowrap",
 };
@@ -1407,7 +1470,7 @@ function doseValueStyle(tone: Tone, compact: boolean): CSSProperties {
 }
 
 const DOSE_CAPTION: CSSProperties = {
-  fontSize: "var(--font-size-xs)",
+  fontSize: "var(--font-size-caption)",
   color: "var(--color-text-muted)",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
@@ -1444,11 +1507,11 @@ const ENV_ROW: CSSProperties = {
 function envTagStyle(on: boolean, tone?: Tone): CSSProperties {
   const active = TONE_HEX[tone ?? "go"];
   return {
-    fontSize: "var(--font-size-2xs)",
+    fontSize: "var(--font-size-caption)",
     letterSpacing: "0.05em",
     textTransform: "uppercase",
     padding: "var(--inset-chip)",
-    borderRadius: "var(--radius-sm)",
+    borderRadius: "var(--radius-regular)",
     border: `1px solid ${on ? active : "var(--color-border-subtle)"}`,
     color: on ? active : "var(--color-text-muted)",
     opacity: on ? 1 : 0.5,

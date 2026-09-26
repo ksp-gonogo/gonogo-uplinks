@@ -1,6 +1,6 @@
 import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
 import { KERBALISM } from "../uplink.js";
-import { CREW_SURVIVAL, type CrewSurvival } from "./processor.js";
+import { CREW_SURVIVAL, type CrewSurvival, survivalFrom } from "./processor.js";
 
 // ---------------------------------------------------------------------------
 // CrewStatus's `crew-status.row-tone` contribution (packages/components/src/
@@ -39,7 +39,8 @@ KERBALISM.registerContribution({
   contributes: "crew-status.row-tone",
   deps: [CREW_SURVIVAL],
   requires: "kerbalism",
-  compute: (topics) => rowTones(topics[CREW_SURVIVAL.id]),
+  compute: (topics) =>
+    rowTones(survivalFrom(topics[CREW_SURVIVAL.id])?.survival),
 });
 
 export { rowTones };

@@ -28,6 +28,7 @@ import {
   SCIENCE_INSTRUMENTS_TOPIC,
   SCIENCE_LAB_TOPIC,
 } from "./science.js";
+import { goldenFrame } from "./test/goldenFrame.js";
 
 // src -> client -> kerbalism
 const MOD_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -48,15 +49,7 @@ const FIXTURE = join(
  * without one of them going red.
  */
 function serverFrame<T>(name: string): { topic: string; payload: T } {
-  const vectors = JSON.parse(readFileSync(FIXTURE, "utf8")) as {
-    name: string;
-    json: string;
-  }[];
-  const vector = vectors.find((v) => v.name === name);
-  if (vector === undefined) {
-    throw new Error(`fixture vector ${name} not found`);
-  }
-  return JSON.parse(vector.json) as { topic: string; payload: T };
+  return goldenFrame<T>(FIXTURE, name);
 }
 
 /** Drive one frame through the real client pipeline and hand back what a widget would see. */
