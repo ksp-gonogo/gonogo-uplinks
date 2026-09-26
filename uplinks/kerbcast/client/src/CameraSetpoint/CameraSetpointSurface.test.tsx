@@ -53,7 +53,7 @@ describe("CameraSetpointSurface", () => {
       />,
     );
     const commit = screen.getByRole("button", { name: /commit/i });
-    expect((commit as HTMLButtonElement).disabled).toBe(true);
+    expect(commit.getAttribute("aria-disabled")).toBe("true");
   });
 
   it("draws the framing preview at the bottom centre, outside the cluster", () => {

@@ -220,7 +220,6 @@ export function CameraSetpointInput({
     <CommitScope>
       <CommandGroup
         value={value}
-        onChange={onChange}
         onCommit={onCommit}
         gated={gated}
         gatedReason={gatedReason}

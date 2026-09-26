@@ -10,7 +10,7 @@ Flies the vessel from the console: engage MechJeb's ascent autopilot, execute th
 | Uplink id | `mechjeb` |
 | Version | `0.0.1` |
 | Wraps | MechJeb2 2.15.3.0 (ckan) |
-| Built against | contract 18.12, api 3.0.0, ui-kit 0.1.0 |
+| Built against | contract 18.12, api 4.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
