@@ -142,6 +142,46 @@ export interface GeneratedCommandReplyMap {
 }
 
 /**
+ * The same mapping as a RUNTIME value: command id -> the NAME of the type
+ * its dispatch resolves with, spelled exactly as the interface above spells
+ * it, `CommandResultOf<T>` envelope included.
+ *
+ * An interface is erased before a client runs, and a command reply arrives
+ * carrying a requestId and nothing else, so the command that was dispatched
+ * is the only route back to a type. Anything that has to treat a reply by
+ * its declared shape, unit hydration first among them, reads this.
+ */
+export const GENERATED_COMMAND_REPLY_TYPES = {
+  "rp1.build.repeat": "CommandResult",
+  "rp1.build.start": "CommandResult",
+  "rp1.complex.dismantle": "CommandResultOf<Record<string, unknown>>",
+  "rp1.complex.modify": "CommandResultOf<Record<string, unknown>>",
+  "rp1.complex.new": "CommandResultOf<Record<string, unknown>>",
+  "rp1.complex.rename": "CommandResult",
+  "rp1.complex.rush": "CommandResult",
+  "rp1.contracts.setPayload": "CommandResultOf<Record<string, unknown>>",
+  "rp1.facility.upgrade": "CommandResultOf<Record<string, unknown>>",
+  "rp1.fundTarget.cancel": "CommandResult",
+  "rp1.hireTarget.cancel": "CommandResult",
+  "rp1.hireTarget.set": "CommandResult",
+  "rp1.pad.dismantle": "CommandResult",
+  "rp1.pad.new": "CommandResultOf<Record<string, unknown>>",
+  "rp1.pad.rename": "CommandResult",
+  "rp1.personnel.assign": "CommandResult",
+  "rp1.strategy.activate": "CommandResult",
+  "rp1.tech.research": "CommandResult",
+  "rp1.tooling.refit": "CommandResult",
+  "rp1.tooling.toolAll": "CommandResult",
+  "rp1.training.cancel": "CommandResult",
+  "rp1.training.enrol": "CommandResult",
+  "rp1.training.remove": "CommandResult",
+  "rp1.vehicle.rollback": "CommandResult",
+  "rp1.vehicle.rollout": "CommandResult",
+  "rp1.vehicle.scrap": "CommandResult",
+  "rp1.warp.toComplete": "CommandResult",
+} as const satisfies Record<string, string>;
+
+/**
  * What the delay rail needs to know about a command, as DATA: a client asks
  * this table rather than carrying a list of ids it recognises.
  */

@@ -99,7 +99,7 @@ export function StartResearch() {
   /* No tree is not an empty tree. `career.status` without a `tech` group is a
      producer that has not answered, and drawing "nothing left to research" over
      it would state the one thing this channel is silent about. */
-  if (career?.tech === undefined) {
+  if (career?.tech == null) {
     return null;
   }
 
@@ -217,7 +217,7 @@ export function StartResearch() {
 function startable(
   nodes: readonly CareerTechNode[],
   queued: ReadonlySet<string>,
-): CareerTechNode[] {
+): Array<CareerTechNode & { id: string }> {
   const owned = new Set(
     nodes.flatMap((node) =>
       node.unlocked === true && node.id !== undefined && node.id !== null
@@ -227,7 +227,7 @@ function startable(
   );
   return nodes
     .filter(
-      (node) =>
+      (node): node is CareerTechNode & { id: string } =>
         node.id !== undefined &&
         node.id !== null &&
         node.unlocked !== true &&

@@ -6,7 +6,6 @@
 import "./uplink.js";
 import "./units.js";
 import "./topics.js";
-import "./settings/rp1SimulationSettings.js";
 import "./Avionics/badge.js";
 import "./AdminBuilding/programsScreen.js";
 import "./CrewSchedule/index.js";
@@ -68,7 +67,6 @@ export {
   RP1_TECH_RESEARCH_COMMAND,
   StartResearch,
 } from "./StartResearch/index.js";
-export { RP1_DELAY_IN_SIMULATION_SETTING } from "./settings/rp1SimulationSettings.js";
 export {
   RP1_AVAILABLE_TOPIC,
   RP1_AVIONICS_TOPIC,

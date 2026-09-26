@@ -58,7 +58,11 @@ function mountSchedule(kerbalName = "Wernher Kerman") {
   const fixture = setupStreamFixture({ carriedChannels: TOPICS });
   const view = render(
     <fixture.Provider>
-      <CrewSchedule kerbalName={kerbalName} />
+      <CrewSchedule
+        isApplicant={false}
+        kerbalName={kerbalName}
+        standing={null}
+      />
     </fixture.Provider>,
   );
   /* An EMPTY catalogue, not an absent one, so a test that says nothing about
