@@ -90,13 +90,6 @@
         }
       },
       {
-        "topic": "vessel.control",
-        "payload": {
-          "gear": true,
-          "brakes": false
-        }
-      },
-      {
         "topic": "dv.summary",
         "payload": {
           "totalDvActual": 900,

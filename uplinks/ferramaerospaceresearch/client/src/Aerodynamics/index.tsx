@@ -202,7 +202,7 @@ registerComponent<AeroConfig>({
     "Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.",
   tags: ["flight", "ro"],
   defaultSize: { w: 4, h: 7 },
-  minSize: { w: 3, h: 5 },
+  minSize: { w: 4, h: 5 },
   component: AerodynamicsComponent,
   channels: ["aero.state"],
   defaultConfig: {},
