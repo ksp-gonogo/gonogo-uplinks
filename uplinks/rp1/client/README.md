@@ -360,7 +360,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
 | `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
-| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `rp1.crew`, `rp1.crewProgram` | only while `rp1` |
+| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](docs/assets/avionics-controls-locked--default.png)
@@ -374,4 +374,11 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 ![RP-1's two core stats in the Astronaut Complex's own strip: how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before](docs/assets/crew-core-stats--default.png)
 
 ![The space centre read from orbit. "career.status" comes off the live UpgradeableFacility objects, which KSP puts in the scene only at the space centre, so every tier on it is absent here and the grid used to be empty. RP-1 denormalises the level the save persists against its own tier count and bills the career off it in all four scenes, so this contribution answers wherever the operator is standing and takes the grid over rather than repeating it underneath. Mission Control is one of the five RP-1 prices at a single fund under a "cosmetic only" comment: its tier is a reading and is shown, its price is for a step nothing will take and is withheld. The Upgrade controls stay dark because the stock command needs the building in the scene](docs/assets/facility-tiers-in-flight--default.png)
+
+## Models
+
+| Kind | Id |
+| --- | --- |
+| processor | `rp1:crew-reading` |
+| processor | `rp1:crew-program-reading` |
 

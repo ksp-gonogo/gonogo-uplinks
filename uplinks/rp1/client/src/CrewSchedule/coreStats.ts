@@ -1,4 +1,9 @@
-import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
+import type {
+  ContributionEntry,
+  Reading,
+  TopicPayload,
+  TopicReading,
+} from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import type { Rp1CrewEntry, Rp1CrewProgram } from "../__generated__/contract.js";
@@ -56,9 +61,21 @@ function lapsingCrew(crew: readonly Rp1CrewEntry[]): number {
     .length;
 }
 
+/** Joins a figure's qualifier with the held note, either of which may be absent. */
+function withHeld(detail: string | undefined, held: boolean) {
+  if (!held) return detail;
+  return detail === undefined
+    ? HELD_DETAIL
+    : `${detail} · ${HELD_DETAIL}`;
+}
+
+// A stat's value is a bare quantity, so the kit cannot mark a held one itself.
+const HELD_DETAIL = "HELD";
+
 export function crewCoreStats(
   program: Rp1CrewProgram | undefined,
   crew: readonly Rp1CrewEntry[] | undefined,
+  held: { program: boolean; crew: boolean } = { program: false, crew: false },
 ): readonly StatEntry[] {
   const stats: StatEntry[] = [];
 
@@ -68,7 +85,7 @@ export function crewCoreStats(
       id: "in-training",
       label: "In Training",
       value: value("count", inTraining),
-      detail: coursesDetail(program),
+      detail: withHeld(coursesDetail(program), held.program),
     });
   }
 
@@ -80,6 +97,7 @@ export function crewCoreStats(
       id: "training-lapsing",
       label: "Training Lapsing",
       value: value("count", lapsing),
+      detail: withHeld(undefined, held.crew),
       // Toned only when there is something to act on. A permanent amber zero
       // is an alarm about nothing, and it spends the emphasis the strip needs
       // for the case where the figure is real.
@@ -90,16 +108,49 @@ export function crewCoreStats(
   return stats;
 }
 
+function lastValue<T>(
+  reading: TopicReading<T> | Reading<T> | undefined,
+): T | undefined {
+  return reading?.state === "observed" || reading?.state === "stale"
+    ? reading.value
+    : undefined;
+}
+
+/*
+ * The two channels with their currency, since a contribution's own topic deps
+ * arrive as bare payloads and a stat cannot carry a reading.
+ */
+const CREW_READING = RP1.registerProcessor({
+  id: "crew-reading",
+  deps: [{ reading: "rp1.crew" }] as const,
+  compute: ([reading]: readonly [TopicReading<TopicPayload<"rp1.crew">>]) =>
+    lastValue(reading),
+});
+
+const CREW_PROGRAM_READING = RP1.registerProcessor({
+  id: "crew-program-reading",
+  deps: [{ reading: "rp1.crewProgram" }] as const,
+  compute: ([reading]: readonly [
+    TopicReading<TopicPayload<"rp1.crewProgram">>,
+  ]) => lastValue(reading),
+});
+
 RP1.registerContribution({
   id: "crew-core-stats",
   contributes: "astronaut-complex.readouts",
-  deps: ["rp1.crew", "rp1.crewProgram"],
+  deps: [CREW_READING, CREW_PROGRAM_READING],
   /*
    * The domain gate rather than a dep on `rp1.available`: the aggregation
    * subscribes it itself for anything naming `requires`, so the cells appear and
    * disappear with RP-1 while this stays a plain function of the two channels.
    */
   requires: "rp1",
-  compute: (topics) =>
-    crewCoreStats(topics["rp1.crewProgram"], topics["rp1.crew"]),
+  compute: (topics) => {
+    const program = topics[CREW_PROGRAM_READING.id];
+    const crew = topics[CREW_READING.id];
+    return crewCoreStats(lastValue(program), lastValue(crew), {
+      program: program?.state === "stale",
+      crew: crew?.state === "stale",
+    });
+  },
 });

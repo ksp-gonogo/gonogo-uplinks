@@ -7,6 +7,7 @@
       "h": 16
     },
     "caption": "The same career with neither tier channel answering. \"career.status\" reads the live buildings, which KSP puts in the scene only at the space centre, and RP-1's own cost table has not loaded. This section draws nothing at all rather than a paragraph about why: the host carries ONE absence marker for the whole facilities area, and it is keyed on whether that area drew anything, so the construction queue standing in it answers for it here. What an operator gets is the work that is real and no sentence about the reading that is not",
+    "unchangedWhenStale": "Neither tier channel answers, so the section draws nothing to hold, live or with the link dropped.",
     "paints": ["SITE CONSTRUCTION", "Nothing being built"]
   },
   "_stream": {

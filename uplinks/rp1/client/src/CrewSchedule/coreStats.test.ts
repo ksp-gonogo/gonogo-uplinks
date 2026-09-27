@@ -106,6 +106,54 @@ describe("crewCoreStats", () => {
     expect(stats.map((s) => s.id)).not.toContain("in-training");
   });
 
+  it("says a figure is held once its channel is", () => {
+    const held = crewCoreStats(PROGRAM, [crewRow()], {
+      program: true,
+      crew: true,
+    });
+    expect(held.find((s) => s.id === "in-training")?.detail).toBe(
+      "3 courses · HELD",
+    );
+    expect(held.find((s) => s.id === "training-lapsing")?.detail).toBe(
+      "HELD",
+    );
+    const live = crewCoreStats(PROGRAM, [crewRow()]);
+    expect(
+      live.find((s) => s.id === "training-lapsing")?.detail,
+    ).toBeUndefined();
+  });
+
+  it("reads each channel's currency off its reading", () => {
+    const contribution = getContributionsForSlot(
+      "astronaut-complex.readouts",
+    ).find((c: AnyContribution) => c.id === "rp1:crew-core-stats");
+    if (!contribution) throw new Error("crew-core-stats is not registered");
+    const reading = (state: "observed" | "stale", payload: unknown) =>
+      state === "observed"
+        ? {
+            state,
+            value: payload,
+            atUt: value("ut", 0),
+            reckoning: { status: "none" },
+          }
+        : {
+            state,
+            value: payload,
+            asOfUt: value("ut", 0),
+            grade: "disconnected",
+            reckoning: { status: "none" },
+          };
+    const detailOf = (state: "observed" | "stale") =>
+      (
+        contribution.compute({
+          "rp1:crew-reading": reading(state, [crewRow()]),
+          "rp1:crew-program-reading": reading(state, PROGRAM),
+        } as never) as { id: string; detail?: string }[]
+      ).find((s) => s.id === "training-lapsing")?.detail;
+    expect(detailOf("observed")).toBeUndefined();
+    expect(detailOf("stale")).toBe("HELD");
+  });
+
   it("registers itself into the Astronaut Complex's core-stat strip", () => {
     const ids = getContributionsForSlot("astronaut-complex.readouts").map(
       (c: AnyContribution) => c.id,
