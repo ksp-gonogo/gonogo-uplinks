@@ -5,7 +5,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { aeroBadges, aeroDescentLayers } from "./index.js";
+import { AERO_STATE, aeroBadges, aeroDescentLayers } from "./index.js";
 
 /**
  * The plot's own anchors, describing a Kerbin entry at 28 km whose
@@ -32,6 +32,7 @@ function entryReading(
     modelTerminal: 180,
     ballistic: 391,
     stale: false,
+    held: false,
     noReading: false,
     ...overrides,
   };
@@ -103,6 +104,16 @@ describe("aero descent layers", () => {
     expect(byId(layers, "model-settle")?.emphasis).toBe("faint");
   });
 
+  it("tags the plot HELD and draws every mark faintly once the reading is held", () => {
+    const layers = aeroDescentLayers(entryReading({ held: true }));
+    expect(
+      layers.some((l) => l.kind === "caption" && l.text === "HELD"),
+    ).toBe(true);
+    expect(byId(layers, "model-terminal")?.emphasis).toBe("faint");
+    expect(byId(layers, "model-settle")?.emphasis).toBe("faint");
+    expect(byId(aeroDescentLayers(entryReading()), "held")).toBeUndefined();
+  });
+
   it("has no STALL word at all on a craft with no stall fraction", () => {
     // A rocket has no wing to separate, and that is not a stall reading of
     // nought: the word simply is not contributed.
@@ -143,6 +154,16 @@ describe("aero badges", () => {
     expect(badges?.map((b) => b.id)).toEqual(["alpha", "stall"]);
     expect(badges?.[0].label).toContain("40");
     expect(badges?.[1].tone).toBe("nogo");
+  });
+
+  it("adds a HELD tag once the reading is held", () => {
+    const state = {
+      angleOfAttack: { magnitude: 40.2, unit: "°" },
+      stallFraction: { magnitude: 0.45, unit: "ratio" },
+      aeroModelValid: true,
+    } as never;
+    expect(aeroBadges(state, true)?.map((b) => b.label)).toContain("HELD");
+    expect(aeroBadges(state)?.map((b) => b.id)).not.toContain("held");
   });
 
   it("reports nothing at all rather than a zero, with no reading", () => {
@@ -205,12 +226,17 @@ describe("surface gravity", () => {
    * (`.in`, `.minus`) fails against the fixture while working in the app.
    */
   const topicsForBody = (name: string, gees: number | null) => ({
-    "aero.state": {
-      angleOfAttack: value("°", 40.2),
-      stallFraction: value("ratio", 0.18),
-      terminalVelocity: value("m/s", 180),
-      ballisticCoefficient: value("kg/m²", 391),
-      aeroModelValid: true,
+    [AERO_STATE.id]: {
+      state: "observed",
+      atUt: value("ut", 0),
+      reckoning: { status: "none" },
+      value: {
+        angleOfAttack: value("°", 40.2),
+        stallFraction: value("ratio", 0.18),
+        terminalVelocity: value("m/s", 180),
+        ballisticCoefficient: value("kg/m²", 391),
+        aeroModelValid: true,
+      },
     },
     "vessel.landing": {
       terminalVelocity: value("m/s", PLOT.plotTerminal),
@@ -255,6 +281,30 @@ describe("surface gravity", () => {
 
   it("projects the descent for a body no static table knows", () => {
     expect(layerIds("Earth", 1)).toContain("model-settle");
+  });
+
+  it("says the plot is held when the aero reading is", () => {
+    const plot = descentPlot();
+    if (!plot) throw new Error("the descent-envelope contribution is missing");
+    const topics = topicsForBody("Kerbin", 1);
+    const live = topics[AERO_STATE.id];
+    const held = {
+      ...topics,
+      [AERO_STATE.id]: {
+        state: "stale",
+        asOfUt: value("ut", 0),
+        grade: "transport",
+        reckoning: live.reckoning,
+        value: live.value,
+      },
+    };
+    const ids = (input: unknown) =>
+      (
+        (plot.compute(input as never) as { layers: PlotLayer[] }[] | null)?.[0]
+          ?.layers ?? []
+      ).map((l) => l.id);
+    expect(ids(topics)).not.toContain("held");
+    expect(ids(held)).toContain("held");
   });
 
   /* Nothing to read and nothing to guess from: the projection is withheld

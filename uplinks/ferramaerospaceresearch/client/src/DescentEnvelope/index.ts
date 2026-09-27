@@ -1,7 +1,9 @@
 import type {
   BadgeEntry,
   PlotLayer,
+  Reading,
   TopicPayload,
+  TopicReading,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   getBody,
@@ -92,6 +94,8 @@ export interface AeroDescentInputs {
   ballistic: number | null;
   /** False once the coefficients describe a shape the vessel no longer has. */
   stale: boolean;
+  /** The aero reading is no longer arriving. */
+  held: boolean;
   /** True when the model holds no reading at all for this vessel. */
   noReading: boolean;
   /** The plot's own anchors, so the model's curve rides the SAME density column
@@ -125,6 +129,7 @@ export function aeroDescentLayers(
     modelTerminal,
     ballistic,
     stale,
+    held,
     noReading,
     plotTerminal,
     plotTouchdown,
@@ -133,7 +138,7 @@ export function aeroDescentLayers(
     surfaceGravity,
   } = inputs;
   const layers: PlotLayer[] = [];
-  const emphasis = stale ? ("faint" as const) : ("normal" as const);
+  const emphasis = stale || held ? ("faint" as const) : ("normal" as const);
 
   // The qualifier, up the LEFT edge, mirroring the plot's own word on the
   // right. The edges are the only strips of a plot reliably clear of its curves
@@ -148,6 +153,16 @@ export function aeroDescentLayers(
       description: "aerodynamics: no reading for this vessel",
     });
     return layers;
+  }
+  if (held) {
+    layers.push({
+      kind: "caption",
+      id: "held",
+      anchor: "left-edge",
+      text: "HELD",
+      tone: "warn",
+      description: "aerodynamics held",
+    });
   }
   if (stale) {
     layers.push({
@@ -300,6 +315,7 @@ export function aeroDescentLayers(
  */
 export function aeroBadges(
   state: TopicPayload<"aero.state"> | undefined,
+  held = false,
 ): BadgeEntry[] | null {
   if (!state) return null;
   const badges: BadgeEntry[] = [];
@@ -310,7 +326,7 @@ export function aeroBadges(
     badges.push({
       id: "alpha",
       label: `α ${writeQuantity(value("°", alpha), { decimals: 0 })}`,
-      tone: stale ? "neutral" : "info",
+      tone: stale || held ? "neutral" : "info",
     });
   }
   // A craft with no wings reports no stall fraction, and gets NO badge: an
@@ -327,7 +343,10 @@ export function aeroBadges(
             : "neutral",
     });
   }
-  return badges.length > 0 ? badges : null;
+  if (badges.length === 0) return null;
+  // A badge label is a string, so the kit cannot mark these figures held itself.
+  if (held) badges.push({ id: "held", label: "HELD", tone: "warn" });
+  return badges;
 }
 
 /** The burn datum, derived exactly as the host widget does: the vessel's LOWEST point
@@ -384,12 +403,35 @@ function surfaceGravityOf(topics: Readonly<Record<string, unknown>>) {
     : null;
 }
 
+/**
+ * `aero.state` with its currency, since a contribution's own topic deps arrive
+ * as bare payloads and these marks must say when the reading is held.
+ */
+export const AERO_STATE = AERO.registerProcessor({
+  id: "aero-state-reading",
+  deps: [{ reading: "aero.state" }] as const,
+  compute: ([reading]: readonly [
+    TopicReading<TopicPayload<"aero.state">>,
+  ]): TopicPayload<"aero.state"> | undefined =>
+    reading.state === "observed" || reading.state === "stale"
+      ? reading.value
+      : undefined,
+});
+
+function aeroStateOf(
+  reading: Reading<TopicPayload<"aero.state">> | undefined,
+) {
+  return reading?.state === "observed" || reading?.state === "stale"
+    ? reading.value
+    : undefined;
+}
+
 AERO.registerContribution({
   id: "descent-envelope",
   contributes: "plots",
   requires: "aero",
   deps: [
-    "aero.state",
+    AERO_STATE,
     "vessel.landing",
     "vessel.flight",
     "vessel.surface",
@@ -397,9 +439,8 @@ AERO.registerContribution({
     "system.bodies",
   ],
   compute: (topics) => {
-    const state = topics["aero.state"] as
-      | TopicPayload<"aero.state">
-      | undefined;
+    const reading = topics[AERO_STATE.id];
+    const state = aeroStateOf(reading);
     const landing = topics["vessel.landing"] as
       | TopicPayload<"vessel.landing">
       | undefined;
@@ -415,6 +456,7 @@ AERO.registerContribution({
       modelTerminal,
       ballistic: state?.ballisticCoefficient?.magnitude ?? null,
       stale: state != null && state.aeroModelValid === false,
+      held: reading?.state === "stale",
       noReading:
         state == null ||
         (alpha == null && stall == null && modelTerminal == null),
@@ -439,11 +481,9 @@ AERO.registerContribution({
   id: "descent-envelope-badges",
   contributes: "landing-status.badges",
   requires: "aero",
-  deps: ["aero.state"],
-  // Cast for the same reason the sibling contribution above casts: the slot
-  // declares the core topics every contributor gets and deliberately never names
-  // a mod's channel, so `aero.state` arrives as `unknown` and the reader is the
-  // one that knows its shape.
-  compute: (topics) =>
-    aeroBadges(topics["aero.state"] as TopicPayload<"aero.state"> | undefined),
+  deps: [AERO_STATE],
+  compute: (topics) => {
+    const reading = topics[AERO_STATE.id];
+    return aeroBadges(aeroStateOf(reading), reading?.state === "stale");
+  },
 });

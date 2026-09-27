@@ -7,7 +7,8 @@
     "contribution": "aero:descent-envelope",
     "hostWidget": "landing-status",
     "modes": ["default"],
-    "caption": "No aerodynamics model installed: the presence gate stays shut, this Uplink contributes no plot at all, and the landing widget arranges only its own"
+    "caption": "No aerodynamics model installed: the presence gate stays shut, this Uplink contributes no plot at all, and the landing widget arranges only its own",
+    "unchangedWhenStale": "No aerodynamics model is present, so the presence gate stays shut and the contribution draws nothing to hold, live or with the link dropped."
   },
   "_stream": {
     "pinnedUt": 1000000,
