@@ -7,15 +7,8 @@ using System.Reflection;
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// The arm's-length REFLECTION surface onto kerbcast. NO compile-time
-    /// reference to kerbcast's assembly exists anywhere in this project, every
-    /// kerbcast member is reached by runtime reflection against the loaded
-    /// <c>Kerbcast</c> assembly, so the CC-BY-NC-SA-4.0 NonCommercial/ShareAlike
-    /// boundary is never crossed: we USE the running mod's public API, we don't
-    /// INCORPORATE its code. This mirrors the arm's-length reflection surface
-    /// this repo already maintains against another copyleft-licensed mod's
-    /// assembly for the same reason; see the .csproj header and
-    /// NOTICE-KERBCAST.txt for the full licence rationale.
+    /// Reads kerbcast's runtime state by reflection against the loaded
+    /// <c>Kerbcast</c> assembly.
     ///
     /// <para>Target surface: kerbcast's <c>Kerbcast.KerbcastControl</c>,
     /// a public STATIC facade the mod already maintains as its in-process
