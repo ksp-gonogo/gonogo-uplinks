@@ -1385,8 +1385,40 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
       });
     });
 
-    expect(await screen.findByText("3.8 s")).toBeTruthy();
+    expect(
+      (await screen.findByLabelText("Signal delay: 3.8 s one-way")).textContent,
+    ).toContain("3.8");
     expect(screen.getByLabelText("Signal delay: 3.8 s one-way")).toBeTruthy();
+  });
+
+  it("marks the delay held once the link drops", async () => {
+    await buildConnectedSource();
+
+    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    act(() => {
+      emitComms(stream, {
+        signalStrength: 1.0,
+        connected: true,
+        signalDelay: 3.8,
+      });
+    });
+    expect(
+      (await screen.findByLabelText("Signal delay: 3.8 s one-way")).textContent,
+    ).toContain("3.8");
+
+    act(() => {
+      stream.store.setTransportConnected(false);
+      stream.store.beginFrame();
+    });
+    await waitFor(() =>
+      expect(
+        screen
+          .getByLabelText("Signal delay: 3.8 s one-way")
+          .querySelector("[data-not-current]"),
+      ).not.toBeNull(),
+    );
   });
 
   it("shows a multi-unit one-way signal delay (e.g. deep-space distances)", async () => {
@@ -1403,7 +1435,10 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
       });
     });
 
-    expect(await screen.findByText("1min 20s")).toBeTruthy();
+    expect(
+      (await screen.findByLabelText("Signal delay: 1min 20s one-way"))
+        .textContent,
+    ).toContain("20");
     expect(
       screen.getByLabelText("Signal delay: 1min 20s one-way"),
     ).toBeTruthy();

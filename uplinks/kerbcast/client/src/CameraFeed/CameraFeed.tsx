@@ -8,6 +8,7 @@ import {
 import type {
   ActionDefinition,
   ComponentProps,
+  Reading,
   TopicPayload,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -17,6 +18,7 @@ import {
   getUplinkHandle,
   logger,
   observedValue,
+  readingOf,
   useActionInput,
   useLatestValue,
   useTelemetry,
@@ -289,6 +291,9 @@ export function CameraFeed({
   // one-way-delay late (see `useLatestValue`'s own doc).
   const signalDelay =
     useLatestValue<TopicPayload<"comms.delay">>("comms.delay")?.oneWaySeconds;
+  /* The latest value carries no currency and runs ahead of the gated reading,
+     so the reading dates the figure only once it has gone stale. */
+  const delayReading = useTelemetry("comms.delay");
   const degradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Delayed camera control (#35): live vs. staged vs. no-path off the same
@@ -460,7 +465,12 @@ export function CameraFeed({
   };
   // Always-on status chips, intrinsic to a delayed downlink feed (not a
   // cross-mod augment): every camera feed shows both, unobtrusively.
-  const delayBadge = describeSignalDelay(signalDelay);
+  const delayBadge = describeSignalDelay(
+    signalDelay,
+    signalDelay != null && delayReading.state === "stale"
+      ? readingOf(delayReading, () => signalDelay)
+      : signalDelay,
+  );
   const qualityBadge = describeSignalQuality(commConnected, signalStrength);
 
   // Delayed camera control (#35). `currentMode` (derived above, where the
@@ -696,21 +706,24 @@ interface QualityBadgeInfo extends StatusBadgeInfo {
 // fix), matching the "unobtrusive" brief: nothing to show, show nothing.
 function describeSignalDelay(
   signalDelay: Value<"s"> | null | undefined,
+  dated: Value<"s"> | Reading<Value<"s">> | null | undefined,
 ): StatusBadgeInfo | null {
   const seconds = signalDelay?.magnitude;
   if (seconds === undefined || !Number.isFinite(seconds) || seconds <= 0) {
     return null;
   }
-  // A string because it is a `Badge` label and an `aria-label`, and both are
-  // attributes. A delay is a READOUT, not a countdown, so keep one decimal
-  // where it matters (sub-minute, the common case) rather than letting the
-  // time ladder truncate to whole units: 3.8s must not read as "3s". Above a
-  // minute the decimal is noise, so the ladder takes over.
-  const label = writeQuantity(
-    signalDelay,
-    seconds < 60 ? { scale: "never", decimals: 1 } : {},
-  );
-  return { label, ariaLabel: `Signal delay: ${label} one-way` };
+  // A delay is a READOUT, not a countdown, so keep one decimal where it
+  // matters (sub-minute, the common case) rather than letting the time ladder
+  // truncate to whole units: 3.8s must not read as "3s". Above a minute the
+  // decimal is noise, so the ladder takes over.
+  const format = seconds < 60 ? { scale: "never" as const, decimals: 1 } : {};
+  const spoken = writeQuantity(signalDelay, format);
+  return {
+    label: (
+      <Unit value={dated} {...format} />
+    ),
+    ariaLabel: `Signal delay: ${spoken} one-way`,
+  };
 }
 
 // Signal-quality badge: craft-side CommNet strength, 0..1 -> percentage.
