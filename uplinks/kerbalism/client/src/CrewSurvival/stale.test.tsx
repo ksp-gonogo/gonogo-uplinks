@@ -159,13 +159,13 @@ describe("the dose meter over a carried trend", () => {
 describe("the survival badges say a held death clock is held", () => {
   it("marks every row badge once the link drops", async () => {
     const text = await rowBadges(held);
-    expect(text).toMatch(/to fatal · held/i);
+    expect(text).toMatch(/to act · held/i);
     expect(text).toMatch(/radiation dose critical · held/i);
   });
 
   it("carries no mark while the crew reading is current", async () => {
     const text = await rowBadges(live);
-    expect(text).toMatch(/to fatal/i);
+    expect(text).toMatch(/to act/i);
     expect(text).not.toMatch(/· held/i);
   });
 
@@ -177,11 +177,11 @@ describe("the survival badges say a held death clock is held", () => {
           trait: "Pilot",
           rules: [],
           worstRule: undefined,
-          deathClockSec: 240,
+          marginToActSec: 240,
           tone: "nogo",
         },
       ],
-      soonestDeathClockSec: 240,
+      soonestMarginToActSec: 240,
     };
     expect(survivalBadges(survival, "held")?.[0]?.label).toBe(
       "Critical · held",
@@ -202,7 +202,7 @@ describe("the survival badges say a held death clock is held", () => {
     it("holds the death clock and has nothing critical to carry yet", async () => {
       const tree = await rowBadgeTree(risingHeld);
       const text = visibleText(tree);
-      expect(text).toMatch(/to fatal · held/i);
+      expect(text).toMatch(/to act · held/i);
       expect(text).not.toMatch(/radiation dose critical/i);
       expect(tree.querySelectorAll("[data-reckoning-basis]")).toHaveLength(0);
     });
@@ -210,7 +210,7 @@ describe("the survival badges say a held death clock is held", () => {
     it("raises the dose badge once the carried dose crosses the line, and says it is modelled", async () => {
       const tree = await rowBadgeTree(risingLater);
       expect(visibleText(tree)).toMatch(/radiation dose critical · modelled/i);
-      expect(visibleText(tree)).toMatch(/to fatal · held/i);
+      expect(visibleText(tree)).toMatch(/to act · held/i);
       const modelled = [...tree.querySelectorAll("[data-reckoning-basis]")];
       expect(
         modelled.map((el) => el.getAttribute("data-reckoning-basis")),
@@ -227,14 +227,14 @@ describe("the survival badges say a held death clock is held", () => {
   describe("the panel badge's count", () => {
     const kerbal = (
       name: string,
-      deathClockSec: number | null,
+      marginToActSec: number | null,
       worst: { fraction: number; carried?: boolean },
     ) => ({
       name,
       trait: "Pilot",
       rules: [{ name: "radiation", ...worst }],
       worstRule: { name: "radiation", ...worst },
-      deathClockSec,
+      marginToActSec,
       tone: "nogo" as const,
     });
 
@@ -245,7 +245,7 @@ describe("the survival badges say a held death clock is held", () => {
             kerbal("Jebediah Kerman", null, { fraction: 0.83, carried: true }),
             kerbal("Bill Kerman", 120, { fraction: 0.2 }),
           ],
-          soonestDeathClockSec: 120,
+          soonestMarginToActSec: 120,
           basis: "rate-integration",
         },
         stale: true,
@@ -258,7 +258,7 @@ describe("the survival badges say a held death clock is held", () => {
       const label = survivalBadgesFor({
         survival: {
           kerbals: [kerbal("Bill Kerman", 240, { fraction: 0.2 })],
-          soonestDeathClockSec: 240,
+          soonestMarginToActSec: 240,
           basis: "rate-integration",
         },
         stale: true,

@@ -174,7 +174,7 @@ describe("deriveCrewSurvival", () => {
     );
     expect(result.kerbals).toHaveLength(1);
     expect(result.kerbals[0].worstRule).toBeUndefined();
-    expect(result.kerbals[0].deathClockSec).toBeNull();
+    expect(result.kerbals[0].marginToActSec).toBeNull();
     expect(result.kerbals[0].tone).toBe("go");
   });
 
@@ -192,7 +192,7 @@ describe("deriveCrewSurvival", () => {
     );
     expect(result.kerbals).toHaveLength(1);
     expect(result.kerbals[0].tone).toBe("go");
-    expect(result.soonestDeathClockSec).toBeNull();
+    expect(result.soonestMarginToActSec).toBeNull();
   });
 
   it("turns the wire's death-clock INSTANT into time remaining, and forces nogo when soon", () => {
@@ -206,9 +206,9 @@ describe("deriveCrewSurvival", () => {
       [{ name: "Val", deathClockUt: deadlineIn(120) }],
       VIEW_UT,
     );
-    expect(result.kerbals[0].deathClockSec).toBe(120);
+    expect(result.kerbals[0].marginToActSec).toBe(120);
     expect(result.kerbals[0].tone).toBe("nogo");
-    expect(result.soonestDeathClockSec).toBe(120);
+    expect(result.soonestMarginToActSec).toBe(120);
   });
 
   it("takes the soonest death clock across the whole crew", () => {
@@ -225,7 +225,7 @@ describe("deriveCrewSurvival", () => {
       ],
       VIEW_UT,
     );
-    expect(result.soonestDeathClockSec).toBe(300);
+    expect(result.soonestMarginToActSec).toBe(300);
   });
 
   it("renders no crew when vessel.crew is undefined", () => {
@@ -242,7 +242,7 @@ describe("deriveCrewSurvival", () => {
       VIEW_UT,
     );
     expect(result.kerbals).toEqual([]);
-    expect(result.soonestDeathClockSec).toBeNull();
+    expect(result.soonestMarginToActSec).toBeNull();
   });
 });
 

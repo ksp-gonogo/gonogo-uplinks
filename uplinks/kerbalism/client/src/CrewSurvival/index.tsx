@@ -46,10 +46,14 @@ function warningFor(
   kerbal: KerbalSurvival,
 ): { label: string; severity: Severity } | null {
   if (kerbal.tone !== "nogo") return null;
-  if (kerbal.deathClockSec !== null) {
+  if (kerbal.marginToActSec !== null) {
+    // A command sent now would land after the deadline, so there is no margin left to count.
+    if (kerbal.marginToActSec <= 0) {
+      return { label: "too late", severity: "critical" };
+    }
     /**
-     * A death clock is a DURATION, so it renders on the composite time ladder
-     * ("2h 15m"), never as a scalar with a symbol beside it: "~4M TO FATAL"
+     * The margin is a DURATION, so it renders on the composite time ladder
+     * ("2h 15m"), never as a scalar with a symbol beside it: "~4M TO ACT"
      * would be an "M" indistinguishable from metres once the Badge's
      * `text-transform: uppercase` gets hold of it.
      *
@@ -57,11 +61,11 @@ function warningFor(
      * here, and the `time` kind is exactly where the two agree: the ladder
      * interleaves its own parts with the number, so the symbol comes back
      * empty and nothing is appended. The unit is game seconds (`s`, a
-     * six-hour KSP day), not `irl:s`: `deathClockSec` is a span of UT the mod
+     * six-hour KSP day), not `irl:s`: `marginToActSec` is a span of UT the mod
      * derived from `deathClockUt`, not desk time.
      */
     return {
-      label: `~${writeQuantity(value("s", Math.max(0, kerbal.deathClockSec)))} to fatal`,
+      label: `~${writeQuantity(value("s", kerbal.marginToActSec))} to act`,
       severity: "critical",
     };
   }
@@ -109,7 +113,7 @@ function CrewSurvivalBadgeAugment({
    */
   const modelled =
     answer.stale &&
-    kerbal.deathClockSec === null &&
+    kerbal.marginToActSec === null &&
     criticalCause(kerbal) === "carried-rule"
       ? answer.basis
       : undefined;

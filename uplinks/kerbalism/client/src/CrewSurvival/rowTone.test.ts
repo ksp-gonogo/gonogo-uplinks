@@ -8,14 +8,14 @@ function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
     trait: "Pilot",
     rules: [],
     worstRule: undefined,
-    deathClockSec: null,
+    marginToActSec: null,
     tone: "go",
     ...overrides,
   };
 }
 
 function survival(kerbals: KerbalSurvival[]): CrewSurvival {
-  return { kerbals, soonestDeathClockSec: null };
+  return { kerbals, soonestMarginToActSec: null };
 }
 
 describe("rowTones", () => {

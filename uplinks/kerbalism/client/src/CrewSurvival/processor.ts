@@ -37,8 +37,8 @@ import { KERBALISM } from "../uplink.js";
 // `kerbalism.lifesupport`/`kerbalism.profile`/`vessel.resources`: that is Ship
 // Systems' own domain (`summarise`/`timeToEmptySeconds` in `../ecosystem`), and
 // deriving it here too would be a second derivation of the same fact.
-// `deathClockSec` below is read straight off the wire's own
-// `KerbalismCrewEntry.deathClockSec`, which the mod fills in: it is the
+// `marginToActSec` below is measured to the wire's own
+// `KerbalismCrewEntry.deathClockUt`, which the mod fills in: it is the
 // soonest FATAL rule, and only the mod can compute it because its first stage
 // needs resource amounts that no per-craft channel carries. Null still means
 // not derivable and must keep rendering differently from a long deadline.
@@ -68,25 +68,26 @@ export interface KerbalSurvival {
    *  worst one, not the full list. */
   worstRule: KerbalRuleState | undefined;
   /**
-   * Seconds until this kerbal dies, measured from the FRAME's view time.
+   * The margin to act: how long before this kerbal's death clock a command sent
+   * now would land. Measured to the frame's command-arrival instant (SCET plus
+   * the one-way light-time), so it is the time left to do something about it,
+   * not the time left at the craft. Zero once a command can no longer arrive
+   * in time: too late.
    *
    * The wire carries `deathClockUt`, the instant itself, so this is a
    * subtraction the processor does once with the frame's own clock rather than
-   * a duration each consumer re-anchors (or forgets to). Carrying the remaining
-   * SECONDS on the wire instead would be true only measured from the payload's
-   * `asOfUt`, and read as current wherever anyone rendered it raw.
-   * Null while not resolved, and null is never a large number: a kerbal whose
-   * deadline cannot be computed and one with years of supplies must not render
-   * the same.
+   * a duration each consumer re-anchors (or forgets to). Null while not
+   * resolved, and null is never a large number: a kerbal whose deadline cannot
+   * be computed and one with years of supplies must not render the same.
    */
-  deathClockSec: number | null;
+  marginToActSec: number | null;
   tone: SurvivalTone;
 }
 
 export interface CrewSurvival {
   kerbals: KerbalSurvival[];
-  /** Soonest reported death clock across the crew, or null when none is reported. */
-  soonestDeathClockSec: number | null;
+  /** Smallest margin to act across the crew, or null when no death clock is reported. */
+  soonestMarginToActSec: number | null;
   /**
    * The model that carried the survival accumulators forward, when the crew
    * reading had stopped arriving and a model answered for it. Absent when the
@@ -100,10 +101,10 @@ export interface CrewSurvival {
 }
 
 /**
- * Below this many seconds to a reported death, a kerbal reads critical
- * regardless of their worst rule's fraction: mirrors Ship Systems'
- * `SOON_EMPTY_SEC` reasoning (10 minutes: long enough not to fire on a
- * warp-time transient, short enough to act on).
+ * Below this margin to act, a kerbal reads critical regardless of their worst
+ * rule's fraction: mirrors Ship Systems' `SOON_EMPTY_SEC` reasoning (10
+ * minutes: long enough not to fire on a warp-time transient, short enough to
+ * act on).
  */
 const SOON_DEATH_SEC = 600;
 
@@ -126,9 +127,9 @@ export function toneFor(fraction: number): SurvivalTone {
 
 function kerbalTone(
   worstFraction: number,
-  deathClockSec: number | null,
+  marginToActSec: number | null,
 ): SurvivalTone {
-  if (deathClockSec !== null && deathClockSec < SOON_DEATH_SEC) return "nogo";
+  if (marginToActSec !== null && marginToActSec < SOON_DEATH_SEC) return "nogo";
   return toneFor(worstFraction);
 }
 
@@ -192,7 +193,7 @@ function toKerbalSurvival(
   name: string,
   trait: string | null | undefined,
   entry: KerbalismCrewEntry | undefined,
-  viewUt: number,
+  commandArrivalUt: number,
   carried: ReadonlySet<string>,
 ): KerbalSurvival {
   const rules: KerbalRuleState[] = [];
@@ -212,20 +213,18 @@ function toKerbalSurvival(
   // alarming rule first when it has to collapse the rest behind a disclosure.
   rules.sort((a, b) => b.fraction - a.fraction);
   const worstRule = rules[0];
-  // An INSTANT on the wire, so the remaining time is it minus the frame's view
-  // time. Clamped at zero: a deadline already behind us is "now", never a
-  // negative countdown.
+  // Clamped at zero: a command that would land after the deadline is too late, never a negative countdown.
   const deathClockUt = magnitudeOr(entry?.deathClockUt, Number.NaN);
-  const deathClockSec = Number.isFinite(deathClockUt)
-    ? Math.max(0, deathClockUt - viewUt)
+  const marginToActSec = Number.isFinite(deathClockUt)
+    ? Math.max(0, deathClockUt - commandArrivalUt)
     : null;
   return {
     name,
     trait,
     rules,
     worstRule,
-    deathClockSec,
-    tone: kerbalTone(worstRule?.fraction ?? 0, deathClockSec),
+    marginToActSec,
+    tone: kerbalTone(worstRule?.fraction ?? 0, marginToActSec),
   };
 }
 
@@ -239,7 +238,7 @@ function toKerbalSurvival(
 export function deriveCrewSurvival(
   crew: VesselCrew | undefined,
   kerbals: KerbalismCrewEntry[] | undefined,
-  viewUt: number,
+  commandArrivalUt: number,
   carried: ReadonlySet<string> = new Set(),
 ): CrewSurvival {
   const byName = new Map<string, KerbalismCrewEntry>();
@@ -252,16 +251,16 @@ export function deriveCrewSurvival(
       name,
       member.trait,
       byName.get(name),
-      viewUt,
+      commandArrivalUt,
       carried,
     );
   });
   const clocks = kerbalsOut
-    .map((k) => k.deathClockSec)
+    .map((k) => k.marginToActSec)
     .filter((s): s is number => s !== null);
   return {
     kerbals: kerbalsOut,
-    soonestDeathClockSec: clocks.length > 0 ? Math.min(...clocks) : null,
+    soonestMarginToActSec: clocks.length > 0 ? Math.min(...clocks) : null,
   };
 }
 
@@ -288,10 +287,8 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
       VesselCrew | undefined,
       TopicReading<KerbalismCrewEntry[]>,
     ],
-    // The frame's frozen view time, which is what turns the wire's death-clock
-    // INSTANT into a remaining duration. Reaching for a wall clock here would
-    // let two readouts in one frame disagree about the same deadline.
-    frame: { viewUt: number },
+    // The frame's frozen command-arrival instant, which turns the wire's death-clock INSTANT into a margin to act; a wall clock here would let two readouts in one frame disagree about the same deadline.
+    frame: { commandArrivalUt: number },
   ): CrewSurvival => {
     /*
      * A reading that has stopped arriving is carried forward where the crew
@@ -306,7 +303,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
         ...deriveCrewSurvival(
           crew,
           projected,
-          frame.viewUt,
+          frame.commandArrivalUt,
           carriedRules(projected, kerbals.reckoning.modelled),
         ),
         basis: kerbals.reckoning.basis,
@@ -317,7 +314,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
       kerbals.state === "observed" || kerbals.state === "stale"
         ? kerbals.value
         : undefined,
-      frame.viewUt,
+      frame.commandArrivalUt,
     );
   },
 });
@@ -384,7 +381,7 @@ export function criticalCause(
   kerbal: KerbalSurvival,
 ): "death-clock" | "carried-rule" | "rule" | null {
   if (kerbal.tone !== "nogo") return null;
-  if (kerbal.deathClockSec !== null && kerbal.deathClockSec < SOON_DEATH_SEC) {
+  if (kerbal.marginToActSec !== null && kerbal.marginToActSec < SOON_DEATH_SEC) {
     return "death-clock";
   }
   return kerbal.worstRule?.carried ? "carried-rule" : "rule";

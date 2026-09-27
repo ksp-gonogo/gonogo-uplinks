@@ -318,7 +318,7 @@ describe("CrewSurvivalBadgeAugment", () => {
     // the badge's absence right beside it is the meaningful negative.
     await screen.findByRole("meter", { name: "Stress" });
     expect(screen.queryByText(/critical/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/to fatal/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/to act/i)).not.toBeInTheDocument();
   });
 
   it("shows no badge for a merely-elevated (warn-tier) kerbal", async () => {
@@ -357,17 +357,17 @@ describe("CrewSurvivalBadgeAugment", () => {
     expect(screen.queryByText(/90/)).not.toBeInTheDocument();
   });
 
-  it("flags an imminent death clock as a countdown to fatal", async () => {
+  it("flags an imminent death clock as the margin left to act", async () => {
     const fixture = newFixture();
     renderBadgeAugment(fixture, "Jebediah Kerman", 0);
     emit(fixture, CREW, [{ name: "Jebediah Kerman", deathClockUt: 130 }]);
-    // The whole caption, not just "to fatal": the badge's job is to say HOW
+    // The whole caption, not just "to act": the badge's job is to say HOW
     // LONG, and an assertion on the trailing words alone passes just as
     // happily with the duration missing. 130 UT against the fixture's pinned
     // view time of 10 is 120 seconds, which the composite time ladder reads
     // as "2min" (no unit symbol beside it: the ladder interleaves its own).
-    const badge = await screen.findByText(/to fatal/i);
-    expect(badge.textContent).toBe("~2min to fatal");
+    const badge = await screen.findByText(/to act/i);
+    expect(badge.textContent).toBe("~2min to act");
   });
 
   it("has no axe violations when flagging a critical kerbal", async () => {
@@ -382,5 +382,40 @@ describe("CrewSurvivalBadgeAugment", () => {
     await screen.findByText("Radiation dose critical");
 
     await expectNoA11yViolations(container);
+  });
+});
+
+describe("CrewSurvivalBadgeAugment under signal delay", () => {
+  /** A crew whose frames left the craft a minute before its present of UT 1000, with one kerbal's death clock at `deathClockUt`. */
+  function mountDelayed(deathClockUt: number) {
+    const owlt = 60;
+    const fixture = setupStreamFixture({
+      carriedChannels: CARRIED,
+      delaySeconds: owlt,
+    });
+    for (const topic of CARRIED) fixture.subscribe(topic);
+    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    const meta = { validAt: 1000 - owlt, deliveredAt: 1000 };
+    act(() => {
+      fixture.emit("vessel.crew", CREW, meta);
+      fixture.emit(
+        "kerbalism.crew",
+        [{ name: "Jebediah Kerman", deathClockUt }],
+        meta,
+      );
+      fixture.emit("kerbalism.available", true, meta);
+    });
+  }
+
+  it("measures the margin to when a command sent now would land", async () => {
+    // SCET is 1000 and a command lands at 1060, so a death at 1300 leaves four minutes to act.
+    mountDelayed(1300);
+    const badge = await screen.findByText(/to act/i);
+    expect(badge.textContent).toBe("~4min to act");
+  });
+
+  it("says too late once a command would land after the deadline", async () => {
+    mountDelayed(1030);
+    expect(await screen.findByText("too late")).toBeInTheDocument();
   });
 });
