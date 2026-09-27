@@ -9,7 +9,7 @@ Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar.
 | --- | --- |
 | Uplink id | `kerbcast` |
 | Version | `0.0.1` |
-| Wraps | kerbcast 1.8.1 (manual) |
+| Wraps | kerbcast 1.8.1 (ckan) |
 | Built against | contract 18.13, api 5.0.0, ui-kit 0.1.0 |
 
 ## Wire

@@ -11,7 +11,7 @@ built and released on its own, and loaded by the app at runtime.
 | [Example](uplinks/example/client/README.md) | `example` | nothing, self-contained |
 | [Aerodynamics](uplinks/ferramaerospaceresearch/client/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) |
 | [Kerbalism](uplinks/kerbalism/client/README.md) | `kerbalism` | Kerbalism 3.32 (ckan) |
-| [Kerbcast](uplinks/kerbcast/client/README.md) | `kerbcast` | kerbcast 1.8.1 (manual) |
+| [Kerbcast](uplinks/kerbcast/client/README.md) | `kerbcast` | kerbcast 1.8.1 (ckan) |
 | [kOS](uplinks/kos/client/README.md) | `kos` | kOS 1.6.0.1 (ckan) |
 | [MechJeb](uplinks/mechjeb/client/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) |
 | [Principia](uplinks/principia/client/README.md) | `principia` | Principia 2026081218-Levi-Civita (manual) |
