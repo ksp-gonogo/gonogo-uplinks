@@ -15,14 +15,14 @@ function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
     trait: "Pilot",
     rules: [],
     worstRule: undefined,
-    deathClockSec: null,
+    marginToActSec: null,
     tone: "go",
     ...overrides,
   };
 }
 
 function survival(kerbals: KerbalSurvival[]): CrewSurvival {
-  return { kerbals, soonestDeathClockSec: null };
+  return { kerbals, soonestMarginToActSec: null };
 }
 
 describe("survivalBadges", () => {
@@ -85,6 +85,8 @@ function banded(
     atUt: value("ut", 100),
     reckoning: {
       status: "available",
+      atUt: value("ut", 100),
+      beyondReceived: false,
       modelled: value("ratio", figure),
       basis: "rate-integration",
       band: {
@@ -152,7 +154,7 @@ describe("bandBadges", () => {
       bandBadges(
         { [ruleKey("Jebediah Kerman", "hunger")]: banded(0.6, 0.45, 0.85) },
         survival([
-          kerbal({ name: "Jebediah Kerman", tone: "nogo", deathClockSec: 300 }),
+          kerbal({ name: "Jebediah Kerman", tone: "nogo", marginToActSec: 300 }),
         ]),
       ),
     ).toBeNull();

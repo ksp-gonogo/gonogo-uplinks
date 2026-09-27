@@ -192,6 +192,8 @@ function fractionReckoning(
   const band = bandIn(bandFor(reckoned, path), "units");
   return {
     status: "available",
+    atUt: reckoned.atUt,
+    beyondReceived: reckoned.beyondReceived,
     modelled:
       carried == null || magnitudeOf(carried) === null
         ? value("ratio", 0)
