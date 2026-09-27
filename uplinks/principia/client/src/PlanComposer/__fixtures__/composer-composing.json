@@ -2,6 +2,7 @@
   "_scene": {
     "augment": "principia-plan-composer",
     "caption": "A plan being composed, driven through the composer's own buttons: two burns seeded at instants the craft can still act on",
+    "unchangedWhenStale": "Every figure in a draft being composed is the operator's own input, burn instants, components and their total, held in the command centre rather than read off the stream. The send window of a saved plan is the figure measured against telemetry, and it is marked held.",
     "before": [
       {
         "press": "Draft plan"

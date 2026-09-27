@@ -3,11 +3,13 @@ import type {
   PlanDraft,
   TopicReading,
   UseCommandResult,
+  VesselOrbit,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   draftAsPlan,
   ManeuverFrame,
   observedAt,
+  readingOf,
   registerAugment,
   usePlanDrafts,
   useSendPlan,
@@ -133,6 +135,7 @@ export function PlanComposer() {
               draft={draft}
               ordinal={index + 1}
               viewUt={viewUt?.magnitude ?? null}
+              source={orbit}
               command={send.command}
               oneWaySeconds={send.command.effectiveDelaySeconds}
               pending={send.pending}
@@ -285,6 +288,7 @@ function ReadyPlan({
   draft,
   ordinal,
   viewUt,
+  source,
   command,
   oneWaySeconds,
   pending,
@@ -295,6 +299,8 @@ function ReadyPlan({
   draft: PlanDraft;
   ordinal: number;
   viewUt: number | null;
+  /** The reading `viewUt` advances with, so a window measured against a frozen one is marked held. */
+  source: TopicReading<VesselOrbit>;
   /** The send's own dispatch, for the delay state the armed control renders. */
   command: UseCommandResult;
   /** Null when there is no measurable one, which is not a zero: see the sdk handle's `effectiveDelaySeconds`. */
@@ -358,7 +364,11 @@ function ReadyPlan({
               arrives after ignition
             </Text>
           ) : (
-            <Countdown value={window.remainingSeconds} />
+            <Countdown
+              value={readingOf(source, () =>
+                value("s", window.remainingSeconds),
+              )}
+            />
           )}
         </Row>
       ) : null}

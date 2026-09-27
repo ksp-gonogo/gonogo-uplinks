@@ -2,6 +2,7 @@
   "_scene": {
     "augment": "principia-plan-composer",
     "caption": "The rate wheel, which a still cannot show at all: displacement sets a SPEED, so the instant keeps running while the handle is held off centre and stops dead on release",
+    "unchangedWhenStale": "Every figure in a draft being composed is the operator's own input, burn instants, components and their total, held in the command centre rather than read off the stream.",
     "before": [
       {
         "press": "Draft plan"

@@ -344,6 +344,28 @@ describe("PlanComposer", () => {
     expect(screen.queryByText("Too late")).toBeNull();
   });
 
+  it("marks the send window held once the link drops", async () => {
+    // The window is measured against the received edge, which stops with the link.
+    const { fixture } = await setup();
+    act(() => {
+      fixture.emit("comms.delay", { oneWaySeconds: 600 }, { validAt: VIEW_UT });
+    });
+    press("Draft plan");
+    press("Add burn");
+    press("Save draft");
+    await act(async () => {});
+    const windowRow = () =>
+      screen.getByText("Send within").parentElement as HTMLElement;
+    expect(windowRow().querySelector("[data-not-current]")).toBeNull();
+
+    act(() => {
+      fixture.store.setTransportConnected(false);
+      fixture.store.beginFrame();
+    });
+    await act(async () => {});
+    expect(windowRow().querySelector("[data-not-current]")).not.toBeNull();
+  });
+
   it("seeds a second burn after the first rather than on top of it", async () => {
     // Two burns at one instant are not in time order, which the mod refuses on
     // its own account: a plan whose burns are not ordered was either composed

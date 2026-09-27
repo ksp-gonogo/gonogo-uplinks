@@ -1,8 +1,10 @@
-import type { TopicReading } from "@ksp-gonogo/sitrep-sdk";
+import type { Reading, TopicReading, Value } from "@ksp-gonogo/sitrep-sdk";
 import {
+  readingOf,
   registerAugment,
   useTelemetry,
   useViewUt,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -42,6 +44,25 @@ type AnalysisView =
   | { kind: "unobserved" }
   | { kind: "notAnalysing" }
   | { kind: "analysed"; orbit: PrincipiaOrbitAnalysis };
+
+/** A figure carried with the currency of the reading it came from, so the kit marks a held one. */
+export type Dated = <U extends string>(
+  figure: Value<U> | null | undefined,
+) => Reading<Value<U>> | null;
+
+export function datedBy(reading: TopicReading<PrincipiaAnalysis>): Dated {
+  return (figure) =>
+    figure == null ? null : readingOf(reading, () => figure);
+}
+
+/** A held state with no figure to carry the kit's mark. */
+export function HeldTag() {
+  return (
+    <Badge severity="caution" size="sm">
+      HELD
+    </Badge>
+  );
+}
 
 function analysisView(reading: TopicReading<PrincipiaAnalysis>): AnalysisView {
   switch (reading.state) {
@@ -89,9 +110,11 @@ function analysisView(reading: TopicReading<PrincipiaAnalysis>): AnalysisView {
 function AgeLine({
   orbit,
   viewUt,
+  dated,
 }: {
   orbit: PrincipiaOrbitAnalysis;
   viewUt: number | null;
+  dated: Dated;
 }) {
   const epochUt = magnitudeOf(orbit.elementsEpochUt);
   if (epochUt === null || viewUt === null) {
@@ -115,7 +138,7 @@ function AgeLine({
     // of a planned coast and exactly the thing an unlabelled band would blur.
     return (
       <Text tone="info" size="sm" data-elements-age="ahead">
-        Measured from <Countdown value={-age} /> ahead
+        Measured from <Countdown value={dated(value("s", -age))} /> ahead
       </Text>
     );
   }
@@ -127,7 +150,7 @@ function AgeLine({
       size="sm"
       data-elements-age={withinOneRevolution ? "current" : "stale"}
     >
-      Measured from <Countdown value={age} /> ago
+      Measured from <Countdown value={dated(value("s", age))} /> ago
     </Text>
   );
 }
@@ -146,7 +169,13 @@ function AgeLine({
  * lighting: both are what the adjectives in the phrase above are read from, so
  * showing them lets an operator see WHY the phrase says what it says.</p>
  */
-function GroundTrackRows({ orbit }: { orbit: PrincipiaOrbitAnalysis }) {
+function GroundTrackRows({
+  orbit,
+  dated,
+}: {
+  orbit: PrincipiaOrbitAnalysis;
+  dated: Dated;
+}) {
   const hasRecurrence = orbit.recurrenceCycleRotations != null;
   const hasCrossings = orbit.ascendingCrossingDegrees != null;
   const hasSolarTimes = orbit.ascendingNodeSolarTimeDegrees != null;
@@ -162,7 +191,7 @@ function GroundTrackRows({ orbit }: { orbit: PrincipiaOrbitAnalysis }) {
           <Row as="div">
             <RowName>REPEATS IN</RowName>
             <Cluster>
-              <Unit value={orbit.recurrenceCycleRotations} />
+              <Unit value={dated(orbit.recurrenceCycleRotations)} />
               <Text tone="faint" size="sm">
                 turns
               </Text>
@@ -170,14 +199,14 @@ function GroundTrackRows({ orbit }: { orbit: PrincipiaOrbitAnalysis }) {
           </Row>
           <Row as="div">
             <RowName>REVS/CYCLE</RowName>
-            <Unit value={orbit.recurrenceRevolutions} />
+            <Unit value={dated(orbit.recurrenceRevolutions)} />
           </Row>
           {/* What an operator plans revisits around: the shorter run after which
               the track very nearly repeats. */}
           <Row as="div">
             <RowName>SUBCYCLE</RowName>
             <Cluster>
-              <Unit value={orbit.recurrenceSubcycleRotations} />
+              <Unit value={dated(orbit.recurrenceSubcycleRotations)} />
               <Text tone="faint" size="sm">
                 turns
               </Text>
@@ -235,17 +264,24 @@ function GroundTrackRows({ orbit }: { orbit: PrincipiaOrbitAnalysis }) {
 export function OrbitAnalysisRows({
   orbit,
   viewUt,
+  source,
 }: {
   orbit: PrincipiaOrbitAnalysis;
   viewUt: number | null;
+  /** The reading `orbit` was taken from, which dates every figure drawn. */
+  source: TopicReading<PrincipiaAnalysis>;
 }) {
+  const dated = datedBy(source);
   if (orbit.elementsPresent !== true) {
     return (
       <Stack>
-        <Text tone="warn" size="sm">
-          Elements not determined
-        </Text>
-        <AgeLine orbit={orbit} viewUt={viewUt} />
+        <Cluster justify="start" gap="related-dense">
+          <Text tone="warn" size="sm">
+            Elements not determined
+          </Text>
+          {source.state === "stale" && <HeldTag />}
+        </Cluster>
+        <AgeLine orbit={orbit} viewUt={viewUt} dated={dated} />
         {/* The interesting cause, and the one an operator can act on: the
             analysis integrates forward from the craft's present state, and it
             refuses a span shorter than one revolution. Waiting fixes it; looking
@@ -266,7 +302,7 @@ export function OrbitAnalysisRows({
           shown in two places: here under the current orbit, and again inside a
           coast row of the flight plan. A qualifier left in one header is a
           qualifier the other surface silently drops. */}
-      <AgeLine orbit={orbit} viewUt={viewUt} />
+      <AgeLine orbit={orbit} viewUt={viewUt} dated={dated} />
       {orbit.gravitationallyBound === false && (
         <Text tone="warn" size="sm">
           Not gravitationally bound
@@ -280,24 +316,30 @@ export function OrbitAnalysisRows({
         {orbit.missionDurationSeconds == null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
-          <Countdown value={orbit.missionDurationSeconds} />
+          <Countdown value={dated(orbit.missionDurationSeconds)} />
         )}
       </Row>
       {/* Three periods, each with its offset from the first. The whole content
           of this group is that they DIFFER, and on a low orbit they differ by
           seconds, which a two-tier duration renders as the same "1h 30min"
           three times over. The offset is the number that survives that. */}
-      <PeriodRow name="SIDEREAL" seconds={orbit.siderealPeriodSeconds} />
+      <PeriodRow
+        name="SIDEREAL"
+        seconds={orbit.siderealPeriodSeconds}
+        dated={dated}
+      />
       {/* The one an operator planning a node crossing needs specifically. */}
       <PeriodRow
         name="NODAL"
         seconds={orbit.nodalPeriodSeconds}
         relativeTo={orbit.siderealPeriodSeconds}
+        dated={dated}
       />
       <PeriodRow
         name="ANOMALISTIC"
         seconds={orbit.anomalisticPeriodSeconds}
         relativeTo={orbit.siderealPeriodSeconds}
+        dated={dated}
       />
       <Row as="div">
         <RowName>NODE DRIFT</RowName>
@@ -307,7 +349,10 @@ export function OrbitAnalysisRows({
           // Four decimals, because two would print a fifth of a degree an hour
           // and a near-polar orbit's much smaller drift as the same number, and
           // "does this orbit precess" is the question the row answers.
-          <Unit value={orbit.nodalPrecessionDegreesPerHour} decimals={4} />
+          <Unit
+            value={dated(orbit.nodalPrecessionDegreesPerHour)}
+            decimals={4}
+          />
         )}
       </Row>
 
@@ -373,28 +418,31 @@ export function OrbitAnalysisRows({
         {orbit.lowestAltitudeMetres == null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
-          <Unit value={orbit.lowestAltitudeMetres} />
+          <Unit value={dated(orbit.lowestAltitudeMetres)} />
         )}
       </Row>
 
-      <GroundTrackRows orbit={orbit} />
+      <GroundTrackRows orbit={orbit} dated={dated} />
 
       <HazardRow
         label="COLLISION"
         ut={orbit.firstCollisionUt}
         viewUt={viewUt}
+        dated={dated}
         severity="critical"
       />
       <HazardRow
         label="COLLISION RISK"
         ut={orbit.firstCollisionRiskUt}
         viewUt={viewUt}
+        dated={dated}
         severity="warning"
       />
       <HazardRow
         label="REENTRY"
         ut={orbit.firstReentryUt}
         viewUt={viewUt}
+        dated={dated}
         severity="warning"
       />
     </Stack>
@@ -413,10 +461,12 @@ function PeriodRow({
   name,
   seconds,
   relativeTo,
+  dated,
 }: {
   name: string;
   seconds: PrincipiaOrbitAnalysis["siderealPeriodSeconds"];
   relativeTo?: PrincipiaOrbitAnalysis["siderealPeriodSeconds"];
+  dated: Dated;
 }) {
   const own = magnitudeOf(seconds);
   const reference = magnitudeOf(relativeTo);
@@ -428,11 +478,11 @@ function PeriodRow({
         <Text>{NULL_DISPLAY}</Text>
       ) : (
         <Cluster justify="end" gap="related-dense">
-          <Countdown value={seconds} />
+          <Countdown value={dated(seconds)} />
           {offset !== null && offset !== 0 && (
             <Text tone="faint" size="sm">
               {offset > 0 ? "+" : "−"}
-              <Countdown value={Math.abs(offset)} />
+              <Countdown value={dated(value("s", Math.abs(offset)))} />
             </Text>
           )}
         </Cluster>
@@ -453,11 +503,13 @@ function HazardRow({
   label,
   ut,
   viewUt,
+  dated,
   severity,
 }: {
   label: string;
   ut: PrincipiaOrbitAnalysis["firstCollisionUt"];
   viewUt: number | null;
+  dated: Dated;
   severity: "critical" | "warning";
 }) {
   const instant = magnitudeOf(ut);
@@ -468,7 +520,7 @@ function HazardRow({
     <Row as="div">
       <RowName>{label}</RowName>
       <Cluster justify="end" gap="related-dense">
-        <Countdown value={instant - viewUt} clock />
+        <Countdown value={dated(value("s", instant - viewUt))} clock />
         <Badge severity={severity}>{label}</Badge>
       </Cluster>
     </Row>
@@ -493,7 +545,8 @@ function HazardRow({
  * under the phrase for that reason.</p>
  */
 export function OrbitAnalysisSection() {
-  const view = analysisView(useTelemetry("principia.analysis"));
+  const reading = useTelemetry("principia.analysis");
+  const view = analysisView(reading);
   const viewUt = magnitudeOf(useViewUt());
 
   if (view.kind === "unobserved") {
@@ -517,9 +570,12 @@ export function OrbitAnalysisSection() {
       <Section data-orbit-analysis="">
         <SectionTitle>N-BODY ORBIT ANALYSIS</SectionTitle>
         <Stack role="status" aria-live="polite">
-          <Text tone="warn" size="sm">
-            Not being analysed
-          </Text>
+          <Cluster justify="start" gap="related-dense">
+            <Text tone="warn" size="sm">
+              Not being analysed
+            </Text>
+            {reading.state === "stale" && <HeldTag />}
+          </Cluster>
           {/* A positive observation, not silence: Principia knows this craft and
               is running no analysis of it. It starts one while its own main
               window is open and destroys it outright when asked to analyse a
@@ -551,7 +607,11 @@ export function OrbitAnalysisSection() {
           </Text>
         )}
 
-        <OrbitAnalysisRows orbit={orbit} viewUt={viewUt} />
+        <OrbitAnalysisRows
+          orbit={orbit}
+          viewUt={viewUt}
+          source={reading}
+        />
 
         {/* The list is EMPTY now, so this renders nothing, and the guard is why
             it renders nothing rather than an empty accusation.

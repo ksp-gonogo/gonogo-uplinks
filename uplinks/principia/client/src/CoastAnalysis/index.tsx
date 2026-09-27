@@ -3,6 +3,7 @@ import {
   registerAugment,
   useTelemetry,
   useViewUt,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -21,7 +22,11 @@ import type {
   PrincipiaAnalysis,
   PrincipiaCoastAnalysis,
 } from "../__generated__/contract.js";
-import { OrbitAnalysisRows } from "../OrbitAnalysis/index.js";
+import {
+  datedBy,
+  HeldTag,
+  OrbitAnalysisRows,
+} from "../OrbitAnalysis/index.js";
 import { orbitDescription } from "../orbitDescription.js";
 import { PRINCIPIA } from "../uplink.js";
 // Side-effect import: hydrates this Topic's units at decode time.
@@ -52,11 +57,14 @@ function CoastRow({
   coast,
   isFinal,
   viewUt,
+  source,
 }: {
   coast: PrincipiaCoastAnalysis;
   isFinal: boolean;
   viewUt: number | null;
+  source: TopicReading<PrincipiaAnalysis>;
 }) {
+  const dated = datedBy(source);
   const index = magnitudeOf(coast.index);
   const starts = magnitudeOf(coast.startsAtUt);
   const ends = magnitudeOf(coast.endsAtUt);
@@ -88,7 +96,7 @@ function CoastRow({
       )}
       {duration !== null && (
         <Text tone="faint" size="sm">
-          <Countdown value={duration} />
+          <Countdown value={dated(value("s", duration))} />
         </Text>
       )}
     </Cluster>
@@ -110,7 +118,11 @@ function CoastRow({
       label={label}
       ariaLabel={`Show the mean elements of ${name}`}
     >
-      <OrbitAnalysisRows orbit={coast.analysis} viewUt={viewUt} />
+      <OrbitAnalysisRows
+        orbit={coast.analysis}
+        viewUt={viewUt}
+        source={source}
+      />
     </Disclosure>
   );
 }
@@ -134,7 +146,8 @@ function CoastRow({
  * instant rather than presented as live.</p>
  */
 export function CoastAnalysisSection() {
-  const coasts = coastsOf(useTelemetry("principia.analysis"));
+  const reading = useTelemetry("principia.analysis");
+  const coasts = coastsOf(reading);
   const viewUt = magnitudeOf(useViewUt());
 
   if (coasts === null) {
@@ -158,9 +171,12 @@ export function CoastAnalysisSection() {
       <Section data-coast-analysis="">
         <SectionTitle>PLANNED ORBITS</SectionTitle>
         {/* A positive observation of no plan, not silence about one. */}
-        <Text tone="faint" size="sm">
-          No flight plan, so no planned orbits.
-        </Text>
+        <Cluster justify="start" gap="related-dense">
+          <Text tone="faint" size="sm">
+            No flight plan, so no planned orbits.
+          </Text>
+          {reading.state === "stale" && <HeldTag />}
+        </Cluster>
       </Section>
     );
   }
@@ -180,6 +196,7 @@ export function CoastAnalysisSection() {
              */
             isFinal={position === coasts.length - 1 && coasts.length > 1}
             viewUt={viewUt}
+            source={reading}
           />
         ))}
       </Stack>

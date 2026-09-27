@@ -338,6 +338,34 @@ describe("OrbitAnalysisSection", () => {
     expect(await visibleText(hazard.container)).toContain("REENTRY");
   });
 
+  it("marks its figures held once the link drops", async () => {
+    const stream = mount();
+    await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
+    expect(stream.container.querySelector("[data-not-current]")).toBeNull();
+
+    act(() => {
+      stream.store.setTransportConnected(false);
+      stream.store.beginFrame();
+    });
+    await waitFor(() => {
+      expect(
+        stream.container.querySelectorAll("[data-not-current]").length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it("tags a held not-analysing state HELD", async () => {
+    const stream = mount();
+    await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: null });
+    act(() => {
+      stream.store.setTransportConnected(false);
+      stream.store.beginFrame();
+    });
+    await waitFor(() => {
+      expect(stream.container.textContent).toContain("HELD");
+    });
+  });
+
   it("has no accessibility violations", async () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
