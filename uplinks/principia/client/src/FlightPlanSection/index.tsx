@@ -8,6 +8,7 @@ import {
   useStream,
   useTelemetry,
   useVantageTrajectory,
+  useScetUt,
   useViewUt,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -152,16 +153,16 @@ function integrationBadge(plan: PrincipiaPlan) {
  */
 function BurnRow({
   burn,
-  viewUt,
+  scetUt,
   isNext,
 }: {
   burn: PrincipiaPlannedBurn;
-  viewUt: number | null;
+  scetUt: number | null;
   isNext: boolean;
 }) {
   const ignitionUt = magnitudeOf(burn.ignitionUt);
   const untilIgnition =
-    ignitionUt === null || viewUt === null ? null : ignitionUt - viewUt;
+    ignitionUt === null || scetUt === null ? null : ignitionUt - scetUt;
   const index = magnitudeOf(burn.index);
   return (
     // The burn number anchors left and everything else groups right, rather than
@@ -364,6 +365,8 @@ export function FlightPlanSection() {
       ? healthReading.value
       : undefined;
   const viewUt = magnitudeOf(useViewUt());
+  // A burn fires at the craft, so its countdown runs from the craft's present; a reply's age stays on the received edge.
+  const scetUt = magnitudeOf(useScetUt());
 
   if (view.kind === "unread") {
     return (
@@ -452,7 +455,7 @@ export function FlightPlanSection() {
               <BurnRow
                 key={magnitudeOf(burn.index) ?? String(burn.ignitionUt)}
                 burn={burn}
-                viewUt={viewUt}
+                scetUt={scetUt}
                 isNext={isNextBurn(burn, plan)}
               />
             ))}

@@ -1,6 +1,7 @@
 import {
   registerAugment,
   useCommand,
+  useScetUt,
   useTelemetry,
   useViewUt,
   value,
@@ -261,6 +262,8 @@ export function deltaVMagnitude(draft: Draft): number | null {
 export function BurnEditor() {
   const view = planView(useTelemetry("principia.plan"));
   const viewUt = magnitudeOf(useViewUt());
+  // The burn fires at the craft, so its countdown runs from the craft's present; the edit window's round trip stays on the received edge.
+  const scetUt = magnitudeOf(useScetUt());
 
   const armCmd = useCommand("principia.plan.arm");
   const replaceCmd = useCommand("principia.plan.burn.replace");
@@ -508,10 +511,10 @@ export function BurnEditor() {
                 <Cluster justify="end" gap="related-dense">
                   {/* To IGNITION, never to a node. Principia anchors a burn to
                       its start and honouring that is the whole point. */}
-                  {ignition === null || viewUt === null ? (
+                  {ignition === null || scetUt === null ? (
                     <Text>{NULL_DISPLAY}</Text>
                   ) : (
-                    <Countdown value={ignition - viewUt} clock />
+                    <Countdown value={ignition - scetUt} clock />
                   )}
                   {burn.deltaV == null ? (
                     <Text>{NULL_DISPLAY}</Text>

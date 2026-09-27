@@ -581,3 +581,28 @@ describe("what a completed vantage solve says", () => {
     expect(visibleText(result.container)).toBe("");
   });
 });
+
+describe("FlightPlanSection under signal delay", () => {
+  it("counts down to ignition from the craft's present, not from the received edge", async () => {
+    const owlt = 120;
+    const stream = setupStreamFixture({
+      carriedChannels: CARRIED,
+      delaySeconds: owlt,
+    });
+    const result = render(
+      <stream.Provider>
+        <FlightPlanSection />
+      </stream.Provider>,
+    );
+    renderedTrees.push(result.unmount);
+    // The plan left the craft a light-time before its present of VIEW_UT, and the burn fires ten minutes after it.
+    act(() => {
+      stream.emit("principia.plan", plan({ sampledAtUt: VIEW_UT - owlt }), {
+        validAt: VIEW_UT - owlt,
+        deliveredAt: VIEW_UT,
+      });
+    });
+    await screen.findByText(/T.10min/);
+    expect(visibleText(result.container)).not.toMatch(/T.12min/);
+  });
+});
