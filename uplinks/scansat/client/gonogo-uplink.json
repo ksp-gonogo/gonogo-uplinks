@@ -2,7 +2,7 @@
   "id": "scansat",
   "name": "SCANsat",
   "description": "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",

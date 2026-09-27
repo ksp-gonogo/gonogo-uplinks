@@ -1,7 +1,7 @@
 {
   "id": "realantennas",
   "name": "RealAntennas",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoRealAntennasUplink",
   "dll": "GonogoRealAntennasUplink.dll",

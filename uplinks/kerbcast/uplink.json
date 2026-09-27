@@ -1,7 +1,7 @@
 {
   "id": "kerbcast",
   "name": "Kerbcast",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoKerbcastUplink",
   "dll": "GonogoKerbcastUplink.dll",

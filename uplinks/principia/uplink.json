@@ -1,7 +1,7 @@
 {
   "id": "principia",
   "name": "Principia",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoPrincipiaUplink",
   "dll": "GonogoPrincipiaUplink.dll",

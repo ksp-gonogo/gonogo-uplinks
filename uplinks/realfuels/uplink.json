@@ -1,7 +1,7 @@
 {
   "id": "realfuels",
   "name": "RealFuels",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoRealFuelsUplink",
   "dll": "GonogoRealFuelsUplink.dll",

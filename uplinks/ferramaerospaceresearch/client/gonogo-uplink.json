@@ -2,7 +2,7 @@
   "id": "aero",
   "name": "Aerodynamics",
   "description": "Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and drag.",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",

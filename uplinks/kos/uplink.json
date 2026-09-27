@@ -1,7 +1,7 @@
 {
   "id": "kos",
   "name": "kOS",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoKosUplink",
   "dll": "GonogoKosUplink.dll",

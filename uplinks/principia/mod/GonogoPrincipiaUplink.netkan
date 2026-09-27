@@ -3,7 +3,7 @@
   "identifier": "GonogoPrincipiaUplink",
   "name": "Gonogo Principia Uplink",
   "abstract": "Publishes Principia's n-body state over the Gonogo telemetry connection (trajectory arcs, the flight plan and its burns, integrator settings) and accepts flight-plan edits from the console.",
-  "author": "jonpepler",
+  "author": "jpeps",
   "license": "MIT",
   "release_status": "development",
   "resources": {

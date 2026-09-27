@@ -2,7 +2,7 @@
   "id": "principia",
   "name": "Principia",
   "description": "Publishes Principia's n-body state: trajectory arcs, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",

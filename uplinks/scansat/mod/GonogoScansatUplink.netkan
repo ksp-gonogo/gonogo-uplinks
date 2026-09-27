@@ -3,7 +3,7 @@
   "identifier": "GonogoScansatUplink",
   "name": "Gonogo SCANsat Uplink",
   "abstract": "Streams SCANsat coverage/anomaly/vessel data as scansat.* channels over the Gonogo telemetry connection.",
-  "author": "jonpepler",
+  "author": "jpeps",
   "license": "GPL-3.0",
   "release_status": "development",
   "resources": {

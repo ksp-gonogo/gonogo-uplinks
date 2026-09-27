@@ -3,7 +3,7 @@
   "identifier": "GonogoMechJebUplink",
   "name": "Gonogo MechJeb Uplink",
   "abstract": "Bridges MechJeb2's ascent autopilot, node executor, and landing autopilot to remote mechjeb.* commands over the Gonogo telemetry connection.",
-  "author": "jonpepler",
+  "author": "jpeps",
   "license": "GPL-3.0",
   "release_status": "development",
   "resources": {

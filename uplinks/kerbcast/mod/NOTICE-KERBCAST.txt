@@ -27,5 +27,5 @@ The docking-port association this uplink publishes on kerbcast.cameras is NOT
 read from kerbcast: it is derived independently from stock KSP's own
 ModuleDockingNode on the camera's part. kerbcast carries no docking concept.
 
-kerbcast author: Jon Pepler. See the project's repository and CKAN metadata for
+kerbcast author: jpeps. See the project's repository and CKAN metadata for
 the full author list.

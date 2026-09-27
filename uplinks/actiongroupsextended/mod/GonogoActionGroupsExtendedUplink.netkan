@@ -3,7 +3,7 @@
   "identifier": "GonogoActionGroupsExtendedUplink",
   "name": "Gonogo Action Groups Extended Uplink",
   "abstract": "Elects Action Groups Extended (AGX) as the Gonogo action-groups backend when installed, so the client renders the player's real named groups (up to 250) instead of stock AG1..AG10.",
-  "author": "jonpepler",
+  "author": "jpeps",
   "license": "MIT",
   "release_status": "development",
   "resources": {

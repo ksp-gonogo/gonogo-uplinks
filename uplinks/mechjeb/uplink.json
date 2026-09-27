@@ -1,7 +1,7 @@
 {
   "id": "mechjeb",
   "name": "MechJeb",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoMechJebUplink",
   "dll": "GonogoMechJebUplink.dll",

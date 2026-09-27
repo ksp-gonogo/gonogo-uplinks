@@ -1,7 +1,7 @@
 {
   "id": "testflight",
   "name": "TestFlight",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoTestFlightUplink",
   "dll": "GonogoTestFlightUplink.dll",

@@ -2,7 +2,7 @@
   "id": "kerbcast",
   "name": "Kerbcast",
   "description": "Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar. Aim and zoom ride the Uplink; the video stays on kerbcast's own WebRTC path.",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",

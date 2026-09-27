@@ -1,7 +1,7 @@
 {
   "id": "rp1",
   "name": "RP-1",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoRp1Uplink",
   "dll": "GonogoRp1Uplink.dll",

@@ -3,7 +3,7 @@
   "identifier": "GonogoKerbcastUplink",
   "name": "Gonogo kerbcast Uplink",
   "abstract": "Publishes kerbcast's camera inventory, capabilities, docking-port association and health over the Gonogo telemetry connection, and carries camera aim/zoom commands. Video keeps streaming over kerbcast's own WebRTC path.",
-  "author": "jonpepler",
+  "author": "jpeps",
   "license": "MIT",
   "release_status": "development",
   "resources": {

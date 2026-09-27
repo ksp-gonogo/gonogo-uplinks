@@ -2,7 +2,7 @@
   "id": "realantennas",
   "name": "RealAntennas",
   "description": "Elects RealAntennas as the comms backend when it is installed, so the comms readouts carry RF link geometry, data rate and a re-derived link margin.",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",

@@ -1,7 +1,7 @@
 {
   "id": "aero",
   "name": "Aerodynamics",
-  "author": "Jon Pepler",
+  "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoFerramAerospaceResearchUplink",
   "dll": "GonogoFerramAerospaceResearchUplink.dll",
