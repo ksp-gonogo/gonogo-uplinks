@@ -3,7 +3,7 @@ import type {
   ResourceAmount,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { observedAt, value } from "@ksp-gonogo/sitrep-sdk";
+import { observedAt } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOr } from "@ksp-gonogo/ui-kit";
 import type {
   KerbalismLifeSupport,
@@ -55,8 +55,6 @@ export interface LevelsProvenance {
   state: ReadingState;
   /** UT the levels were observed at; undefined when nothing has been observed. */
   asOfUt: Value<"ut"> | undefined;
-  /** Seconds between that observation and the frame this was derived for. */
-  ageSec: number | undefined;
 }
 
 /**
@@ -72,21 +70,17 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     // A READING, not the payload. Every figure this derivation produces is a
     // function of the resource levels, so whether those levels are current is
     // part of the answer rather than a detail a consumer can look up
-    // separately. It also carries the observation's own UT, which is what
-    // makes the age below honest.
+    // separately. It also carries the observation's own UT.
     { reading: "vessel.resources" },
     "vessel.crew",
   ] as const,
-  compute: (
-    [profile, lifeSupport, resourcesReading, crew],
-    frame,
-  ): ShipSystems => {
+  compute: ([profile, lifeSupport, resourcesReading, crew]): ShipSystems => {
     // `stored`/`capacity` were never Kerbalism-specific: they come off the
     // generic `vessel.resources` levels, keyed by KSP resource name.
     //
     // The LAST OBSERVED levels on every arm that has a value, never a modelled
     // figure: this derivation does not forward-model, it reports what it was
-    // working from and how old that is, and `levels` below is what says so.
+    // working from and when it was observed, and `levels` below is what says so.
     const resources =
       resourcesReading.state === "observed" ||
       resourcesReading.state === "stale"
@@ -117,19 +111,6 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
       levels: {
         state: resourcesReading.state,
         asOfUt: observedAtUt,
-        // Never negative: a sample can sit marginally ahead of the frame's view
-        // time, and a negative age is not a thing to render.
-        // An instant minus an instant is a duration, and the affine rules make
-        // that the type; `.magnitude` because this field is declared in seconds.
-        // Still clamped: a sample can sit marginally ahead of the frame's view
-        // time, and a negative age is not a thing to render.
-        ageSec:
-          observedAtUt === undefined
-            ? undefined
-            : Math.max(
-                0,
-                value("ut", frame.viewUt).minus(observedAtUt).magnitude,
-              ),
       },
     };
   },

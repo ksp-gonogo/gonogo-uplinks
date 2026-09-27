@@ -241,7 +241,7 @@ describe("the notify guard's own gate, seen from inside an Uplink", () => {
 describe("the registered Kerbalism processors, on an advancing wire", () => {
   it("keeps handing SHIP_SYSTEMS' consumer new snapshots when the SAME levels arrive at a later UT", () => {
     // The levels are byte-identical every time; only the observation's UT moves.
-    // `SHIP_SYSTEMS` carries `levels.asOfUt`/`ageSec` precisely so a consumer
+    // `SHIP_SYSTEMS` carries `levels.asOfUt` precisely so a consumer
     // can tell a fresh reading from a twenty-minute-old one, so a later
     // observation of the same numbers IS a different answer and must be
     // delivered. Gating on the RESULT rather than on the inputs is what keeps

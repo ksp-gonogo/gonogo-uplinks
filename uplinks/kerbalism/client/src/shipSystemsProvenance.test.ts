@@ -115,10 +115,8 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     store.beginFrame();
 
     expect(read()?.levels.state).toBe("observed");
-    // The instant, not a bare number: `asOfUt` carries `Value<"ut">` now, which is
-    // what lets an age be a subtraction rather than a helper.
+    // The instant, not a bare number: `asOfUt` carries `Value<"ut">`.
     expect(read()?.levels.asOfUt).toEqual(value("ut", 100));
-    expect(read()?.levels.ageSec).toBe(0);
   });
 
   it("dates its own answer, not just the levels inside it", () => {
@@ -187,8 +185,6 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     // The OBSERVATION's UT, not the frame's: the whole point is that these two
     // have come apart.
     expect(levels?.asOfUt).toEqual(value("ut", 100));
-    // Measured to the received edge, which stops where the last sample landed.
-    expect(levels?.ageSec).toBe(0);
   });
 
   it("still derives from the last observed levels rather than blanking", () => {
@@ -211,9 +207,8 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     expect(read()?.levels.state).toBe("stale");
   });
 
-  it("has no age before anything has arrived", () => {
-    // `pending` is a real arm and not a zero: a summary with no levels yet must
-    // not report an age of zero seconds, which reads as "just now".
+  it("has no observation instant before anything has arrived", () => {
+    // `pending` is a real arm: a summary with no levels yet names no instant.
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
@@ -224,6 +219,5 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     const levels = read()?.levels;
     expect(levels?.state).toBe("pending");
     expect(levels?.asOfUt).toBeUndefined();
-    expect(levels?.ageSec).toBeUndefined();
   });
 });
