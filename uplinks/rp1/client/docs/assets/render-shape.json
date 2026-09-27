@@ -3,527 +3,527 @@
   "engine": "chromium",
   "assets": {
     "assembly-empty--default.png": {
-      "hash": "be345ac01d347fd2",
-      "elements": 21,
+      "hash": "87ad91bab62a17c2",
+      "elements": 23,
       "text": "27d0a64d"
     },
     "assembly-empty--landscape-18x5.png": {
-      "hash": "be345ac01d347fd2",
-      "elements": 21,
+      "hash": "87ad91bab62a17c2",
+      "elements": 23,
       "text": "27d0a64d"
     },
     "assembly-empty--min.png": {
-      "hash": "611b0d06d5266621",
-      "elements": 21,
+      "hash": "f4689e3974cb1ff3",
+      "elements": 23,
       "text": "e5528d12"
     },
     "assembly-empty--mobile-9x8.png": {
-      "hash": "be345ac01d347fd2",
-      "elements": 21,
+      "hash": "87ad91bab62a17c2",
+      "elements": 23,
       "text": "27d0a64d"
     },
     "assembly-empty--portrait-5x18.png": {
-      "hash": "be345ac01d347fd2",
-      "elements": 21,
+      "hash": "87ad91bab62a17c2",
+      "elements": 23,
       "text": "27d0a64d"
     },
     "assembly-pad-occupied--default.png": {
-      "hash": "33899df222d819f5",
-      "elements": 58,
+      "hash": "1e1918e2e11314ad",
+      "elements": 60,
       "text": "5db79f38"
     },
     "assembly-pad-occupied--landscape-18x5.png": {
-      "hash": "7f8169c7a15a3517",
-      "elements": 58,
+      "hash": "9c6b2f4985669698",
+      "elements": 60,
       "text": "5db79f38"
     },
     "assembly-pad-occupied--min.png": {
-      "hash": "14fd892348de974b",
-      "elements": 58,
+      "hash": "b55e3d183a6f5539",
+      "elements": 60,
       "text": "113e3a1d"
     },
     "assembly-pad-occupied--mobile-9x8.png": {
-      "hash": "7f8169c7a15a3517",
-      "elements": 58,
+      "hash": "9c6b2f4985669698",
+      "elements": 60,
       "text": "5db79f38"
     },
     "assembly-pad-occupied--portrait-5x18.png": {
-      "hash": "33899df222d819f5",
-      "elements": 58,
+      "hash": "1e1918e2e11314ad",
+      "elements": 60,
       "text": "5db79f38"
     },
     "assembly-rollout-refused--default.png": {
-      "hash": "38ee92bdce9b360c",
-      "elements": 41,
+      "hash": "1bea4999665c747e",
+      "elements": 43,
       "text": "a75f39ab"
     },
     "assembly-rollout-refused--landscape-18x5.png": {
-      "hash": "e26596b67f21e9bc",
-      "elements": 41,
+      "hash": "36f0e47cd073a0dc",
+      "elements": 43,
       "text": "a75f39ab"
     },
     "assembly-rollout-refused--min.png": {
-      "hash": "5dd49a2860a002a0",
-      "elements": 41,
+      "hash": "1655ca5eac9d89ff",
+      "elements": 43,
       "text": "6caea6ed"
     },
     "assembly-rollout-refused--mobile-9x8.png": {
-      "hash": "e26596b67f21e9bc",
-      "elements": 41,
+      "hash": "36f0e47cd073a0dc",
+      "elements": 43,
       "text": "a75f39ab"
     },
     "assembly-rollout-refused--portrait-5x18.png": {
-      "hash": "38ee92bdce9b360c",
-      "elements": 41,
+      "hash": "1bea4999665c747e",
+      "elements": 43,
       "text": "a75f39ab"
     },
     "assembly-rushing--default.png": {
-      "hash": "3e78d9a26b522389",
-      "elements": 67,
+      "hash": "032bac46cd43779f",
+      "elements": 69,
       "text": "cb82dd17"
     },
     "assembly-rushing--landscape-18x5.png": {
-      "hash": "6da3dbf703a08ca0",
-      "elements": 67,
+      "hash": "9023f640a889e502",
+      "elements": 69,
       "text": "cb82dd17"
     },
     "assembly-rushing--min.png": {
-      "hash": "9864a519cf4d9cb8",
-      "elements": 67,
+      "hash": "6cd43f2e5ee0db57",
+      "elements": 69,
       "text": "7781d624"
     },
     "assembly-rushing--mobile-9x8.png": {
-      "hash": "6da3dbf703a08ca0",
-      "elements": 67,
+      "hash": "9023f640a889e502",
+      "elements": 69,
       "text": "cb82dd17"
     },
     "assembly-rushing--portrait-5x18.png": {
-      "hash": "6da3dbf703a08ca0",
-      "elements": 67,
+      "hash": "9023f640a889e502",
+      "elements": 69,
       "text": "cb82dd17"
     },
     "assembly-start-a-build--default.png": {
-      "hash": "affcbba8a10a1855",
-      "elements": 72,
+      "hash": "c86fdca3caff9409",
+      "elements": 74,
       "text": "144e86cc"
     },
     "assembly-start-a-build--landscape-18x5.png": {
-      "hash": "df3d810e2067cf1e",
-      "elements": 72,
+      "hash": "d19d761e46fb3333",
+      "elements": 74,
       "text": "144e86cc"
     },
     "assembly-start-a-build--min.png": {
-      "hash": "da93d14532f24ea1",
-      "elements": 72,
+      "hash": "92c6ec58a8c2b60d",
+      "elements": 74,
       "text": "4bc5e735"
     },
     "assembly-start-a-build--mobile-9x8.png": {
-      "hash": "df3d810e2067cf1e",
-      "elements": 72,
+      "hash": "d19d761e46fb3333",
+      "elements": 74,
       "text": "144e86cc"
     },
     "assembly-start-a-build--portrait-5x18.png": {
-      "hash": "affcbba8a10a1855",
-      "elements": 72,
+      "hash": "c86fdca3caff9409",
+      "elements": 74,
       "text": "144e86cc"
     },
     "assembly-two-complexes--default.png": {
-      "hash": "b91915355120ba8f",
-      "elements": 124,
+      "hash": "7195acf1159297e9",
+      "elements": 126,
       "text": "cf0fe457"
     },
     "assembly-two-complexes--landscape-18x5.png": {
-      "hash": "b91915355120ba8f",
-      "elements": 124,
+      "hash": "7195acf1159297e9",
+      "elements": 126,
       "text": "cf0fe457"
     },
     "assembly-two-complexes--min.png": {
-      "hash": "0bb89d3680dbd250",
-      "elements": 124,
+      "hash": "34636076eba20e88",
+      "elements": 126,
       "text": "d07732dc"
     },
     "assembly-two-complexes--mobile-9x8.png": {
-      "hash": "b91915355120ba8f",
-      "elements": 124,
+      "hash": "7195acf1159297e9",
+      "elements": 126,
       "text": "cf0fe457"
     },
     "assembly-two-complexes--portrait-5x18.png": {
-      "hash": "b91915355120ba8f",
-      "elements": 124,
+      "hash": "7195acf1159297e9",
+      "elements": 126,
       "text": "cf0fe457"
     },
     "assembly-unstaffed--default.png": {
-      "hash": "a65f452382deaa4c",
-      "elements": 43,
+      "hash": "d9689f014f941e72",
+      "elements": 45,
       "text": "942b1ca1"
     },
     "assembly-unstaffed--landscape-18x5.png": {
-      "hash": "5290ecef5335c8e6",
-      "elements": 43,
+      "hash": "46f0573d53ec56d8",
+      "elements": 45,
       "text": "942b1ca1"
     },
     "assembly-unstaffed--min.png": {
-      "hash": "176536ea7f69a372",
-      "elements": 43,
+      "hash": "ea03e8e8854e77bd",
+      "elements": 45,
       "text": "510334fa"
     },
     "assembly-unstaffed--mobile-9x8.png": {
-      "hash": "5290ecef5335c8e6",
-      "elements": 43,
+      "hash": "46f0573d53ec56d8",
+      "elements": 45,
       "text": "942b1ca1"
     },
     "assembly-unstaffed--portrait-5x18.png": {
-      "hash": "a65f452382deaa4c",
-      "elements": 43,
+      "hash": "d9689f014f941e72",
+      "elements": 45,
       "text": "942b1ca1"
     },
     "avionics-controls-locked--default.png": {
-      "hash": "5096fed192408b4d",
-      "elements": 269,
-      "text": "3144de2c"
+      "hash": "15241d62ee0d71d1",
+      "elements": 271,
+      "text": "202f9bec"
     },
     "avionics-not-installed--default.png": {
-      "hash": "8dea6b0e00746a05",
-      "elements": 262,
+      "hash": "c5238b846f1786cd",
+      "elements": 264,
       "text": "3204177e"
     },
     "avionics-roll-only--default.png": {
-      "hash": "9c282720b07d9262",
-      "elements": 269,
-      "text": "6d4cf359"
+      "hash": "3c79492a055aa2b5",
+      "elements": 271,
+      "text": "f2a146c3"
     },
     "build-cost-absences-and-tech-gate--default.png": {
-      "hash": "76d4e50afee5ed31",
-      "elements": 52,
+      "hash": "0172c2f813cc8ddb",
+      "elements": 54,
       "text": "47bff3a0"
     },
     "build-cost-mostly-surcharge--default.png": {
-      "hash": "0212f6355607325f",
-      "elements": 49,
+      "hash": "87240466351186ac",
+      "elements": 51,
       "text": "1bd44075"
     },
     "build-cost-mostly-surcharge--landscape-18x5.png": {
-      "hash": "399ae3c28aea0244",
-      "elements": 49,
+      "hash": "011344fe5080e0f5",
+      "elements": 51,
       "text": "1bd44075"
     },
     "build-cost-mostly-surcharge--mobile-9x8.png": {
-      "hash": "399ae3c28aea0244",
-      "elements": 49,
+      "hash": "011344fe5080e0f5",
+      "elements": 51,
       "text": "1bd44075"
     },
     "build-cost-mostly-surcharge--portrait-5x18.png": {
-      "hash": "0212f6355607325f",
-      "elements": 49,
+      "hash": "87240466351186ac",
+      "elements": 51,
       "text": "1bd44075"
     },
     "buildable-blocked-and-buildable--default.png": {
-      "hash": "eca51b380065493d",
-      "elements": 62,
+      "hash": "6f9d36194ef364d0",
+      "elements": 64,
       "text": "fff155db"
     },
     "building-three-clocks--default.png": {
-      "hash": "88ac1df4993ba233",
-      "elements": 92,
+      "hash": "afadd6260de659b0",
+      "elements": 94,
       "text": "b6c63acd"
     },
     "catalogue-picker--default.png": {
-      "hash": "5457ad6a80db3d02",
-      "elements": 259,
+      "hash": "061ec88dbaaee9f7",
+      "elements": 261,
       "text": "78d44ad2"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "b11cf6ede7cd7d1c",
-      "elements": 274,
+      "hash": "bf6ed3ad045378bb",
+      "elements": 276,
       "text": "dd1b6dec"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "52992ca3a5fa5e67",
-      "elements": 274,
+      "hash": "f9626f493d7e5a48",
+      "elements": 276,
       "text": "dd1b6dec"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "9d929217a4f6d807",
-      "elements": 259,
+      "hash": "ec58b0d7865a4da9",
+      "elements": 261,
       "text": "78d44ad2"
     },
     "completed-program--default.png": {
-      "hash": "f36725646dc5c170",
-      "elements": 279,
+      "hash": "ab74a2b0ecbed8f7",
+      "elements": 281,
       "text": "e53ebc78"
     },
     "complexes-add-pad--default.png": {
-      "hash": "416fd4c5acde59f0",
-      "elements": 265,
+      "hash": "b4a4b8fc5158159d",
+      "elements": 267,
       "text": "34a60c07"
     },
     "complexes-dismantle-warnings--default.png": {
-      "hash": "6393bd7d12053161",
-      "elements": 209,
+      "hash": "450c725391eaf571",
+      "elements": 211,
       "text": "510a6444"
     },
     "complexes-last-pad--default.png": {
-      "hash": "90282327c86e9851",
-      "elements": 248,
+      "hash": "0ae27aca37c43be9",
+      "elements": 250,
       "text": "2c4db57f"
     },
     "complexes-new--default.png": {
-      "hash": "204ed3844e2c1dd8",
-      "elements": 236,
+      "hash": "e9579c9337149bb3",
+      "elements": 238,
       "text": "7331e7db"
     },
     "complexes-rename--default.png": {
-      "hash": "4c8a1bab4010f24f",
-      "elements": 266,
+      "hash": "0ca5028735444de1",
+      "elements": 268,
       "text": "46a7048d"
     },
     "complexes-renovate--default.png": {
-      "hash": "e39750640678bd7a",
-      "elements": 244,
+      "hash": "e9fffe79d9780ac7",
+      "elements": 246,
       "text": "24b7797f"
     },
     "complexes-rushing--default.png": {
-      "hash": "df6e1341053f12b3",
-      "elements": 266,
+      "hash": "2b8320dff3e4abc9",
+      "elements": 268,
       "text": "130a706c"
     },
     "construction-complex-modify--default.png": {
-      "hash": "d603c4075f37fe0f",
-      "elements": 166,
+      "hash": "3bb839e1ef8f8990",
+      "elements": 168,
       "text": "46d02683"
     },
     "construction-empty--default.png": {
-      "hash": "180878a480bf0bdf",
-      "elements": 148,
+      "hash": "98b777937f0be7c3",
+      "elements": 150,
       "text": "984aa56a"
     },
     "construction-full-queue--default.png": {
-      "hash": "d8f90173aa759f2b",
-      "elements": 207,
+      "hash": "19ec6907534d84a1",
+      "elements": 209,
       "text": "4b2083e8"
     },
     "construction-not-costed--default.png": {
-      "hash": "7521c3b132efeb89",
-      "elements": 156,
+      "hash": "11fd3bf012fac6ef",
+      "elements": 158,
       "text": "4664f431"
     },
     "construction-rushing-and-stalled--default.png": {
-      "hash": "82dede13928ea754",
-      "elements": 174,
+      "hash": "d61644cf64a33cd6",
+      "elements": 176,
       "text": "8e6707ec"
     },
     "contract-payload--default.png": {
-      "hash": "3372df47f2224cd2",
-      "elements": 31,
+      "hash": "b2323e56dd9fe564",
+      "elements": 33,
       "text": "3b941eca"
     },
     "crew-core-stats--default.png": {
-      "hash": "7fdc3c26b43c6baa",
-      "elements": 74,
+      "hash": "9b01fb285baea5bb",
+      "elements": 76,
       "text": "8348fe0e"
     },
     "crew-enrolment-blocked--default.png": {
-      "hash": "68598f22aaf178bc",
-      "elements": 35,
+      "hash": "0f69ab681aae7763",
+      "elements": 37,
       "text": "206699b0"
     },
     "crew-enrolment-ready--default.png": {
-      "hash": "4ea7c5190b833f2e",
-      "elements": 34,
+      "hash": "49b6e93c4f92ff19",
+      "elements": 36,
       "text": "a8239cff"
     },
     "crew-schedule-three-states--default.png": {
-      "hash": "9ffaf41b1396af92",
-      "elements": 170,
+      "hash": "eb62d0ecedcd9e3c",
+      "elements": 172,
       "text": "635c1033"
     },
     "crew-settings-honoured--default.png": {
-      "hash": "b2f8acce3e0b08a5",
-      "elements": 153,
+      "hash": "501e0cf8219e125f",
+      "elements": 155,
       "text": "55ccb5e1"
     },
     "crew-training-both-ways-out--default.png": {
-      "hash": "62f9dee1fc991545",
-      "elements": 76,
+      "hash": "be7749b173fbc261",
+      "elements": 78,
       "text": "97e2f0a5"
     },
     "crew-training-corner--default.png": {
-      "hash": "0ad8898cccf4fd77",
-      "elements": 186,
+      "hash": "96b82ee383f46dca",
+      "elements": 188,
       "text": "65afb8ef"
     },
     "crew-training-refused--default.png": {
-      "hash": "be97a37695203cb5",
-      "elements": 76,
+      "hash": "7b3b20e7e8ec41d6",
+      "elements": 78,
       "text": "9004816b"
     },
     "crew-training-tab--default.png": {
-      "hash": "25611a1facf5563d",
-      "elements": 108,
+      "hash": "0328541c60cb38c0",
+      "elements": 110,
       "text": "9f625d5b"
     },
     "facility-tiers-in-flight--default.png": {
-      "hash": "ffae3aa649aa7771",
-      "elements": 117,
+      "hash": "4730779aa53e1982",
+      "elements": 119,
       "text": "0d547105"
     },
     "facility-upgrades-at-centre--default.png": {
-      "hash": "beb16984b49df6cf",
-      "elements": 165,
+      "hash": "ef1f198bbafa4263",
+      "elements": 167,
       "text": "ff786031"
     },
     "facility-upgrades-away--default.png": {
-      "hash": "b25599ffd443222e",
-      "elements": 48,
+      "hash": "e474602fd2148f5b",
+      "elements": 50,
       "text": "cccad8e3"
     },
     "facility-upgrades-away-rp1-answers--default.png": {
-      "hash": "1e73edf4c0dc0ae0",
-      "elements": 104,
+      "hash": "ba03d06d3aa87220",
+      "elements": 106,
       "text": "a7fed400"
     },
     "hire-target-standing--default.png": {
-      "hash": "dc20dfac95308b54",
-      "elements": 159,
+      "hash": "5c39c2a4b5c3b99b",
+      "elements": 161,
       "text": "53a4144a"
     },
     "hire-target-standing-order--default.png": {
-      "hash": "6fc4a48b844e4b1c",
-      "elements": 176,
+      "hash": "467b8b5307ffc928",
+      "elements": 178,
       "text": "3fad0c42"
     },
     "no-curve-table--default.png": {
-      "hash": "2ef1e9984d4da2a5",
-      "elements": 267,
+      "hash": "4dd69e393b29c1a8",
+      "elements": 269,
       "text": "35f51d36"
     },
     "offer-frontloaded--default.png": {
-      "hash": "82e5b83b2aa8c733",
-      "elements": 270,
+      "hash": "08b9ec01acbdffea",
+      "elements": 272,
       "text": "0deca1e4"
     },
     "pad-holding-a-finished-vehicle--default.png": {
-      "hash": "36a1311802e31733",
-      "elements": 70,
+      "hash": "e469ce84d2762d40",
+      "elements": 72,
       "text": "df5ec576"
     },
     "pad-rolling-out--default.png": {
-      "hash": "542e4702c27ff002",
-      "elements": 67,
+      "hash": "c83d53ede99f12b8",
+      "elements": 69,
       "text": "141b257d"
     },
     "personnel-staffed--default.png": {
-      "hash": "648f8f1cd1c8212f",
-      "elements": 178,
+      "hash": "34a3aab9fb4ef6bd",
+      "elements": 180,
       "text": "8e375793"
     },
     "personnel-unanswered--default.png": {
-      "hash": "1521e992e3cf9e98",
-      "elements": 72,
+      "hash": "1b2cf4bca474edec",
+      "elements": 74,
       "text": "7061a871"
     },
     "programs-overrun-and-unaffordable--default.png": {
-      "hash": "4861d32b638bab01",
-      "elements": 114,
+      "hash": "4c5a1a8ec5c5dca2",
+      "elements": 115,
       "text": "6f53e3af"
     },
     "programs-screen--default.png": {
-      "hash": "30bd22971847f409",
-      "elements": 137,
+      "hash": "35f2514c6182ccb1",
+      "elements": 139,
       "text": "3245c11e"
     },
     "research-queue-throttled-and-stalled--default.png": {
-      "hash": "0a17e2a0e706357d",
-      "elements": 64,
+      "hash": "55a43ed5d2277987",
+      "elements": 66,
       "text": "a8b3e662"
     },
     "running-backloaded--default.png": {
-      "hash": "5051c844d98aa701",
-      "elements": 281,
+      "hash": "aa7d7bcba920b10c",
+      "elements": 283,
       "text": "a25642b1"
     },
     "start-research-affordable--default.png": {
-      "hash": "e6e061b6baacb764",
-      "elements": 137,
+      "hash": "2f58439e8e86b405",
+      "elements": 139,
       "text": "563fbf97"
     },
     "start-research-short--default.png": {
-      "hash": "1983372e79c34aca",
-      "elements": 138,
+      "hash": "03067e43e3fa7d2e",
+      "elements": 140,
       "text": "bad0110d"
     },
     "tooling-nothing-outstanding--default.png": {
-      "hash": "6f3085f9a17d20fe",
-      "elements": 33,
+      "hash": "74f504b9803c3732",
+      "elements": 35,
       "text": "9178446d"
     },
     "tooling-one-purchase-two-parts--default.png": {
-      "hash": "20a5cbea14f81955",
-      "elements": 78,
+      "hash": "60cef333eeee6025",
+      "elements": 80,
       "text": "a779cc0f"
     },
     "tooling-one-purchase-two-parts--landscape-18x5.png": {
-      "hash": "20a5cbea14f81955",
-      "elements": 78,
+      "hash": "60cef333eeee6025",
+      "elements": 80,
       "text": "a779cc0f"
     },
     "tooling-one-purchase-two-parts--mobile-9x8.png": {
-      "hash": "20a5cbea14f81955",
-      "elements": 78,
+      "hash": "60cef333eeee6025",
+      "elements": 80,
       "text": "a779cc0f"
     },
     "tooling-one-purchase-two-parts--portrait-5x18.png": {
-      "hash": "20a5cbea14f81955",
-      "elements": 78,
+      "hash": "60cef333eeee6025",
+      "elements": 80,
       "text": "a779cc0f"
     },
     "tooling-refit-instead--default.png": {
-      "hash": "238f03a576606f35",
-      "elements": 90,
+      "hash": "491b478dbeb66635",
+      "elements": 92,
       "text": "e91f2657"
     },
     "tooling-refit-instead--landscape-18x5.png": {
-      "hash": "235a826166582155",
-      "elements": 90,
+      "hash": "5cc828ba302f1a81",
+      "elements": 92,
       "text": "e91f2657"
     },
     "tooling-refit-instead--min.png": {
-      "hash": "3ed660dd707e5c21",
-      "elements": 90,
+      "hash": "96ceb7a81b8672cd",
+      "elements": 92,
       "text": "17f84f3f"
     },
     "tooling-refit-instead--mobile-9x8.png": {
-      "hash": "3d8a966bfb7d0807",
-      "elements": 90,
+      "hash": "1415d13188783523",
+      "elements": 92,
       "text": "e91f2657"
     },
     "tooling-refit-instead--portrait-5x18.png": {
-      "hash": "dc0b7d959339dbd1",
-      "elements": 90,
+      "hash": "ad78496e630f238a",
+      "elements": 92,
       "text": "e91f2657"
     },
     "two-centres-unstaffed--default.png": {
-      "hash": "657e877d656ed859",
-      "elements": 202,
+      "hash": "f70858cdf09399c9",
+      "elements": 204,
       "text": "21d9408b"
     },
     "warehouse-three-places--default.png": {
-      "hash": "1d7280a9bc5cb017",
-      "elements": 87,
+      "hash": "e6e0a331a26bc770",
+      "elements": 89,
       "text": "000c1a89"
     },
     "warp-fund-target-standing--default.png": {
-      "hash": "1ecca308dc048ee1",
+      "hash": "1733788f49d7fad4",
       "elements": 40,
       "text": "9103bb06"
     },
     "warp-no-fund-target--default.png": {
-      "hash": "065e7ae862477666",
+      "hash": "bcdf44fc00aabfae",
       "elements": 33,
       "text": "23733d97"
     },
     "warp-set-a-fund-target--default.png": {
-      "hash": "115ddea65dd1e8e7",
+      "hash": "eb2a6592c2d0ca1e",
       "elements": 47,
       "text": "991c2c04"
     }
