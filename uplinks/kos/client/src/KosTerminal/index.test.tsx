@@ -242,6 +242,26 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     );
   });
 
+  it("tags the screen HELD once the link drops", async () => {
+    const fixture = terminalFixture();
+    render(
+      <fixture.Provider>
+        <KosTerminalComponent id="kos-terminal" config={{}} />
+      </fixture.Provider>,
+    );
+    act(() => fixture.emit("kos.processors", ONE_CPU, { validAt: 10 }));
+    await waitFor(() =>
+      expect(fixture.transport.isSubscribed("kos.terminal.7")).toBe(true),
+    );
+    expect(screen.queryByText("HELD")).toBeNull();
+
+    act(() => {
+      fixture.store.setTransportConnected(false);
+      fixture.store.beginFrame();
+    });
+    expect(await screen.findByText("HELD")).toBeTruthy();
+  });
+
   it("acquires the write lease (kos.terminal.open) on attach", async () => {
     const fixture = terminalFixture();
     render(

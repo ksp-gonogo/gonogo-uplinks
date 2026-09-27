@@ -15,6 +15,7 @@ import {
   useStreamEvent,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Badge,
   ComboboxListbox,
   type ComboboxOption,
   ComposerBar,
@@ -614,6 +615,8 @@ function KosTerminalLive({
       : undefined;
   const reported = reportedProcessors != null;
   const processors = reportedProcessors ?? [];
+  // The screen rides the same stream, so once this reading is held the screen is too.
+  const screenHeld = processorsReading.state === "stale";
   const [pickedCoreId, setPickedCoreId] = useState<number | null>(null);
   const coreId = useMemo(
     () => resolveCoreId(processors, cpuName, pickedCoreId),
@@ -679,6 +682,7 @@ function KosTerminalLive({
       readOnly={readOnly}
       lineMode={lineMode}
       scriptPaths={scriptPaths}
+      screenHeld={screenHeld}
       onChangeCpu={canChangeCpu ? () => setPickedCoreId(null) : undefined}
     />
   );
@@ -691,6 +695,8 @@ interface KosTerminalScreenProps {
   readOnly: boolean;
   lineMode: boolean;
   scriptPaths: string[];
+  /** The stream this screen rides is no longer arriving. */
+  screenHeld: boolean;
   /**
    * When provided, render a "Change CPU" control that invokes this to return
    * to the picker. Omitted (undefined) when there is no real choice to return
@@ -705,6 +711,7 @@ function KosTerminalScreen({
   readOnly,
   lineMode,
   scriptPaths,
+  screenHeld,
   onChangeCpu,
 }: Readonly<KosTerminalScreenProps>) {
   // One opaque write-lease token per attach: the mod uses it to arbitrate the
@@ -1445,6 +1452,11 @@ function KosTerminalScreen({
             No path: commands are not being sent
           </NoPathBadge>
         )}
+        {screenHeld && (
+          <HeldCorner role="status">
+            <Badge severity="caution">HELD</Badge>
+          </HeldCorner>
+        )}
         {onChangeCpu && (
           <ChangeCpuButton type="button" onClick={onChangeCpu}>
             <ComputerIcon />
@@ -1703,6 +1715,15 @@ const NoPathBadge = styled.div`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+`;
+
+/** Pinned top-right, the corner the no-path badge and the delay reading leave free. */
+const HeldCorner = styled.div`
+  position: absolute;
+  top: var(--inset-log);
+  right: var(--inset-log);
+  /* Local ordering inside the frame only, over xterm's own layers. */
+  z-index: 1;
 `;
 
 /*

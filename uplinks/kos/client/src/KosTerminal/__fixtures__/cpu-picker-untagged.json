@@ -5,6 +5,7 @@
   "_scene": {
     "widget": "kos-terminal",
     "caption": "Three CPUs and no pinned tagname: the picker names an untagged processor by its part, and tells two copies of the same part apart",
+    "unchangedWhenStale": "The CPU picker before any screen is attached: a choice of CPUs, which change only with the craft's parts, so a held list is still the list.",
     "config": { "lineMode": true },
     "modes": ["default"],
     "paints": ["kOS TERMINAL", "lander", "Probe Core (1)", "Probe Core (2)"]
