@@ -39,14 +39,18 @@ function fakeWall(start = 0) {
   };
 }
 
-/** A store whose view clock is free to run ahead of the newest sample. */
-function predictedStore(wall: { now: () => number }): TimelineStore {
+/** The one-way light-time every sample here travels. */
+const LIGHT_TIME_SECONDS = 600;
+
+/** When a sample stamped at `validAt` reaches the console. */
+const deliveredAt = (validAt: number) => validAt + LIGHT_TIME_SECONDS;
+
+function lightDelayedStore(wall: { now: () => number }): TimelineStore {
   const clock = new ViewClock({
     nowWall: wall.now,
     warpRate: () => 1,
-    delaySeconds: () => 0,
+    delaySeconds: () => LIGHT_TIME_SECONDS,
   });
-  clock.setMode("predicted");
   return new TimelineStore(clock);
 }
 
@@ -62,7 +66,7 @@ function resourcesPoint(validAt: number, water: number) {
       source: "vessel:abc",
       validAt,
       seq: 0,
-      deliveredAt: validAt,
+      deliveredAt: deliveredAt(validAt),
       vantage: "ksc",
       quality: Quality.OnRails,
       active: true,
@@ -102,8 +106,8 @@ function read(): ShipSystems | undefined {
 
 describe("a Ship Systems summary reports the currency of its levels", () => {
   it("says observed while the levels are current", () => {
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
@@ -124,8 +128,8 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
      * it reasoned across; this is the reading the consumer is handed, and a
      * widget marks its panel from it without reaching inside.
      */
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
@@ -152,8 +156,8 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
      * whether there is one. Gating here would blank a summary the derivation
      * deliberately produced.
      */
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
@@ -161,12 +165,12 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     expect(readReading()?.value).toBeDefined();
   });
 
-  it("says STALE, and how old, once the levels stop arriving", () => {
+  it("says STALE, dated by the observation, once the levels stop arriving", () => {
     // The bug. Before this the summary was identical either way, so a
     // time-to-empty computed off twenty-minute-old levels rendered exactly like
     // one computed off a live reading.
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
@@ -183,15 +187,16 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     // The OBSERVATION's UT, not the frame's: the whole point is that these two
     // have come apart.
     expect(levels?.asOfUt).toEqual(value("ut", 100));
-    expect(levels?.ageSec).toBe(1200);
+    // Measured to the received edge, which stops where the last sample landed.
+    expect(levels?.ageSec).toBe(0);
   });
 
   it("still derives from the last observed levels rather than blanking", () => {
     // Reporting staleness must not mean throwing the numbers away: "80 units at
     // last contact, 20 minutes ago" is the useful statement, and the operator
     // specifically wants the last real value reachable.
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
@@ -209,8 +214,8 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
   it("has no age before anything has arrived", () => {
     // `pending` is a real arm and not a zero: a summary with no levels yet must
     // not report an age of zero seconds, which reads as "just now".
-    const wall = fakeWall();
-    const store = predictedStore(wall);
+    const wall = fakeWall(deliveredAt(100));
+    const store = lightDelayedStore(wall);
     setActiveTimelineStore(store);
     deactivate = activateProcessor(SHIP_SYSTEMS.id);
 
