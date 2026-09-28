@@ -35,14 +35,13 @@ namespace GonogoMechJebUplink.Tests
             var ran = 0;
 
             // Never drained before the wait expires -> the waiter times out.
-            var result = uplink.RunOnMainThread(() =>
+            var fault = Assert.Throws<CommandFaultException>(() => uplink.RunOnMainThread(() =>
             {
                 Interlocked.Increment(ref ran);
                 return CommandResult.Ok();
-            });
+            }));
 
-            Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.Timeout, result.ErrorCode);
+            Assert.Equal(FaultCode.MainThreadTimeout, fault.Code);
             Assert.Equal(0, ran);
 
             // The dispatcher only now drains the deferred action (production: the
@@ -129,7 +128,7 @@ namespace GonogoMechJebUplink.Tests
 
             Assert.True(result.Success,
                 "a mechjeb command invoked on the main thread must succeed, not self-deadlock into a Timeout");
-            Assert.Equal(CommandErrorCode.None, result.ErrorCode);
+            Assert.Null(result.ErrorCode);
             Assert.Equal(1, ran);
             Assert.Empty(drainErrors);
         }
@@ -214,7 +213,7 @@ namespace GonogoMechJebUplink.Tests
         }
 
         [Fact]
-        public void RunOnMainThread_WorkThrows_ReturnsUnknownFailure_NeverThrows()
+        public void RunOnMainThread_WorkThrows_AnswersWithAFaultThatKeepsTheCommandAvailable()
         {
             var dispatcher = new MainThreadDispatcher();
             var uplink = new MechJebUplink(dispatcher, _ => { })
@@ -226,10 +225,11 @@ namespace GonogoMechJebUplink.Tests
             // inline (deterministic, no background pump needed).
             dispatcher.Drain();
 
-            var result = uplink.RunOnMainThread(() => throw new InvalidOperationException("boom"));
+            var fault = Assert.Throws<CommandFaultException>(
+                () => uplink.RunOnMainThread(() => throw new InvalidOperationException("boom")));
 
-            Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.Unknown, result.ErrorCode);
+            Assert.Equal(FaultCode.CommandUnavailable, fault.Code);
+            Assert.Contains("boom", fault.Message);
         }
     }
 }

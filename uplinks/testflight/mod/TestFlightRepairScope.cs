@@ -97,7 +97,7 @@ namespace GonogoTestFlightUplink
         /// the button sat beside each other. It refuses as <c>not-modelled</c>,
         /// the same token an unbound failure-list member already produces.</para>
         /// </summary>
-        public static string? RefusalFor(bool coreFound, int? activeFailures, int repairable)
+        public static RefusalCode? RefusalFor(bool coreFound, int? activeFailures, int repairable)
         {
             if (!coreFound) return RepairRefusal.NoSuchPart;
             if (activeFailures == null) return RepairRefusal.NotModelled;

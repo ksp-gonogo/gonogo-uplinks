@@ -57,7 +57,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (!TryResolveFile(subjectId, out var drive, out var subject, out var error))
             {
-                return CommandResult.Fail(error);
+                return CommandResult.Fail(error!);
             }
 
             // Two causes, and they were one arm. An unread subject id means the
@@ -83,7 +83,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (!TryResolveFile(subjectId, out var drive, out var subject, out var error))
             {
-                return CommandResult.Fail(error);
+                return CommandResult.Fail(error!);
             }
 
             return _k.DriveDeleteFile(drive, subject)
@@ -95,7 +95,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (!TryResolveSample(subjectId, out var drive, out var subject, out var error))
             {
-                return CommandResult.Fail(error);
+                return CommandResult.Fail(error!);
             }
 
             return _k.DriveAnalyze(drive, subject, flag)
@@ -107,7 +107,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (!TryResolveSample(subjectId, out var drive, out var subject, out var error))
             {
-                return CommandResult.Fail(error);
+                return CommandResult.Fail(error!);
             }
 
             return _k.DriveDeleteSample(drive, subject)
@@ -238,7 +238,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>Resolve a wire subject id to the live drive that currently holds it as a FILE, or a typed failure.</summary>
-        private bool TryResolveFile(string subjectId, out object drive, out object subject, out CommandErrorCode error)
+        private bool TryResolveFile(string subjectId, out object drive, out object subject, out RefusalCode? error)
         {
             drive = null!;
             subject = null!;
@@ -266,12 +266,12 @@ namespace Gonogo.KerbalismUplink
 
             drive = found;
             subject = resolved;
-            error = CommandErrorCode.None;
+            error = null;
             return true;
         }
 
         /// <summary>Resolve a wire subject id to the live drive that currently holds it as a SAMPLE, or a typed failure.</summary>
-        private bool TryResolveSample(string subjectId, out object drive, out object subject, out CommandErrorCode error)
+        private bool TryResolveSample(string subjectId, out object drive, out object subject, out RefusalCode? error)
         {
             drive = null!;
             subject = null!;
@@ -299,7 +299,7 @@ namespace Gonogo.KerbalismUplink
 
             drive = found;
             subject = resolved;
-            error = CommandErrorCode.None;
+            error = null;
             return true;
         }
     }

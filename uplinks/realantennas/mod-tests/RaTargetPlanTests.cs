@@ -100,7 +100,7 @@ namespace GonogoRealAntennasUplink.Tests
         public void ADishProceeds()
         {
             Assert.True(RaTargetPlan.TrySteerable(true, "HG-55", out var error, out var detail));
-            Assert.Equal(CommandErrorCode.None, error);
+            Assert.Null(error);
             Assert.Null(detail);
         }
 
@@ -521,7 +521,7 @@ namespace GonogoRealAntennasUplink.Tests
         private static bool Build(
             RealAntennasTargetArgs args,
             out Dictionary<string, string> values,
-            out CommandErrorCode error,
+            out RefusalCode? error,
             string? ownVesselId = "aaaaaaaa-1111-2222-3333-444444444444",
             string? bodyName = "Kerbin",
             double bodyRadius = 600000.0) =>
@@ -530,7 +530,7 @@ namespace GonogoRealAntennasUplink.Tests
         private static bool Build(
             RealAntennasTargetArgs args,
             out Dictionary<string, string> values,
-            out CommandErrorCode error,
+            out RefusalCode? error,
             out string? detail,
             string? ownVesselId = "aaaaaaaa-1111-2222-3333-444444444444",
             string? bodyName = "Kerbin",

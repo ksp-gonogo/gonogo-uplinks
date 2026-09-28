@@ -6,7 +6,7 @@ import type {
   UncertaintyBand,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { bandFor, bandIn, value } from "@ksp-gonogo/sitrep-sdk";
+import { bandIn, value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 // Side-effect: registers the model whose interval this module exists to carry.
 // A module that reads bands and can load without the thing that mints them
@@ -189,7 +189,7 @@ function fractionReckoning(
   const moved = reckoned.modelled.find((field) => field.path === path);
   if (!moved) return { status: "none" };
   const carried = reckoned.value[kerbal]?.rules?.[index]?.problem;
-  const band = bandIn(bandFor(reckoned, path), "units");
+  const band = bandIn(reckoned.bands?.[path], "units");
   return {
     status: "available",
     atUt: reckoned.atUt,

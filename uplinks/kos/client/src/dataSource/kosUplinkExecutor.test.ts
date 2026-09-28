@@ -46,7 +46,7 @@ function captureDispatches(transport: StubTransport): DispatchedCommand[] {
   const commands: DispatchedCommand[] = [];
   transport.setCommandHandler((command, args) => {
     recordDispatch<"kos.run">(commands, command, args);
-    return { success: true, errorCode: 0 };
+    return { success: true };
   });
   return commands;
 }
@@ -281,7 +281,7 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    transport.setCommandHandler(() => ({ success: false, errorCode: 4 }));
+    transport.setCommandHandler(() => ({ success: false, errorCode: "range" }));
 
     const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
 

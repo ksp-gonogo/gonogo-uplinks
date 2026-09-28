@@ -227,7 +227,7 @@ namespace Gonogo.KerbalismUplink
     public sealed class RepairAttemptRaw
     {
         public bool Repaired;
-        public string? Refusal;
+        public RefusalCode? Refusal;
         public int KitsUsed;
         public string? KitsFrom;
     }

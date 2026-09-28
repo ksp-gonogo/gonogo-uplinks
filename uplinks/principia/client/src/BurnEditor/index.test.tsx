@@ -74,7 +74,7 @@ async function emitPlan(
  * shape.
  */
 function planWriteReply(receipt: Record<string, unknown>) {
-  return { success: true, errorCode: 0, payload: receipt };
+  return { success: true, payload: receipt };
 }
 
 /** The last `command-request` this widget put on the wire, verbatim. */

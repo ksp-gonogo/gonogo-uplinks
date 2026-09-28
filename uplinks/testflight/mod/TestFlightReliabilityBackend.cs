@@ -88,7 +88,7 @@ namespace GonogoTestFlightUplink
         /// has nothing to check it against, not because the check was skipped. See
         /// <see cref="TestFlightReflection.Repair"/>.</para>
         /// </summary>
-        public RepairOutcome Repair(string partId, string crewName) =>
+        public CommandResult<RepairOutcome> Repair(string partId, string crewName) =>
             _tf.Repair(ScopedVessel(), partId);
 
     }

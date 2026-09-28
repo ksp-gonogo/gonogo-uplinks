@@ -204,7 +204,7 @@ namespace Gonogo.RealAntennasUplink
                     out var error,
                     out var detail))
             {
-                refusal = CommandResult.Fail(error, detail);
+                refusal = CommandResult.Fail(error!, detail);
                 antenna = null;
                 values = null;
                 return false;
@@ -268,8 +268,8 @@ namespace Gonogo.RealAntennasUplink
 
             if (!_ra.InvokeVoid(antenna, "SetDefaultTarget"))
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.Unknown,
+                throw new CommandFaultException(
+                    FaultCode.CommandUnavailable,
                     "RealAntennas' SetDefaultTarget could not be invoked.");
             }
 
@@ -308,8 +308,8 @@ namespace Gonogo.RealAntennasUplink
             }
             if (!_ra.SetTarget(antenna, target))
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.Unknown,
+                throw new CommandFaultException(
+                    FaultCode.CommandUnavailable,
                     "The target was built but could not be assigned to the antenna.");
             }
 
@@ -365,7 +365,7 @@ namespace Gonogo.RealAntennasUplink
                     out var error,
                     out var detail))
             {
-                refusal = CommandResult.Fail(error, detail);
+                refusal = CommandResult.Fail(error!, detail);
                 antenna = null;
                 return false;
             }

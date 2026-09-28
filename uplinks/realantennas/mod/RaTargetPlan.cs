@@ -114,10 +114,10 @@ namespace Gonogo.RealAntennasUplink
         public static bool TrySteerable(
             bool? steerable,
             string? antennaName,
-            out CommandErrorCode error,
+            out RefusalCode? error,
             out string? detail)
         {
-            error = CommandErrorCode.None;
+            error = null;
             detail = null;
             var name = antennaName ?? "";
             if (steerable == true)
@@ -187,11 +187,11 @@ namespace Gonogo.RealAntennasUplink
             string? resolvedBodyName,
             double bodyRadiusMetres,
             out Dictionary<string, string> values,
-            out CommandErrorCode error,
+            out RefusalCode? error,
             out string? detail)
         {
             values = new Dictionary<string, string>();
-            error = CommandErrorCode.None;
+            error = null;
             detail = null;
 
             var mode = args.Mode ?? "";

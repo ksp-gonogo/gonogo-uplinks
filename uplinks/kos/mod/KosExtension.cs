@@ -268,7 +268,7 @@ namespace Gonogo.KosUplink
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
             return RunOnMainThread(() =>
-                _terminalManager?.Open(args.CoreId, args.LeaseToken) ?? CommandResult.Fail(CommandErrorCode.Unknown));
+                _terminalManager?.Open(args.CoreId, args.LeaseToken) ?? CommandResult.Fail(CommandErrorCode.ModeUnavailable));
         }
 
         private CommandResult Keystroke(KosKeystrokeArgs args)
@@ -278,7 +278,7 @@ namespace Gonogo.KosUplink
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
             return RunOnMainThread(() =>
-                _terminalManager?.Keystroke(args.CoreId, args.LeaseToken, args.Chars) ?? CommandResult.Fail(CommandErrorCode.Unknown));
+                _terminalManager?.Keystroke(args.CoreId, args.LeaseToken, args.Chars) ?? CommandResult.Fail(CommandErrorCode.ModeUnavailable));
         }
 
         private CommandResult TerminalResize(KosTerminalResizeArgs args)
@@ -288,7 +288,7 @@ namespace Gonogo.KosUplink
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
             return RunOnMainThread(() =>
-                _terminalManager?.Resize(args.CoreId, args.LeaseToken, args.Cols, args.Rows) ?? CommandResult.Fail(CommandErrorCode.Unknown));
+                _terminalManager?.Resize(args.CoreId, args.LeaseToken, args.Cols, args.Rows) ?? CommandResult.Fail(CommandErrorCode.ModeUnavailable));
         }
 
         private CommandResult TerminalClose(KosTerminalCloseArgs args)
@@ -298,7 +298,7 @@ namespace Gonogo.KosUplink
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
             return RunOnMainThread(() =>
-                _terminalManager?.Close(args.CoreId, args.LeaseToken) ?? CommandResult.Fail(CommandErrorCode.Unknown));
+                _terminalManager?.Close(args.CoreId, args.LeaseToken) ?? CommandResult.Fail(CommandErrorCode.ModeUnavailable));
         }
 
         /// <summary>
@@ -505,10 +505,10 @@ namespace Gonogo.KosUplink
         /// <summary>
         /// Marshals <paramref name="work"/> onto the main-thread dispatcher and
         /// blocks the Courier thread until it completes or
-        /// <see cref="CommandMainThreadTimeout"/> elapses (returning
-        /// <see cref="CommandErrorCode.Timeout"/>). Any exception from
-        /// <paramref name="work"/> becomes a typed <c>Unknown</c> failure, a
-        /// command must always return a structured result, never throw.
+        /// <see cref="CommandMainThreadTimeout"/> elapses, which answers with the
+        /// <see cref="FaultCode.MainThreadTimeout"/> fault. An exception from
+        /// <paramref name="work"/> answers with <see cref="FaultCode.CommandUnavailable"/>:
+        /// nothing was decided, and the command stays available.
         ///
         /// <para><b>Timeout is drop-not-run</b> (adversarial-review M1, mirroring
         /// the engine's F2/F3 fix): the naive <c>using var done</c> form had two
@@ -516,7 +516,7 @@ namespace Gonogo.KosUplink
         /// expired: (1) the deferred action's <c>Set()</c> hit an already-
         /// disposed handle (a spurious <see cref="ObjectDisposedException"/>),
         /// and (2) the kOS <c>RUNPATH</c> mutation STILL executed, seconds after
-        /// the client was told <see cref="CommandErrorCode.Timeout"/>, so a
+        /// the client was told the command timed out, so a
         /// client retry double-fired the script. Here the waiter marks the job
         /// <see cref="MainThreadJob.Abandoned"/> on timeout and does NOT dispose
         /// the handle; the dispatcher then DROPS an abandoned job (never runs
@@ -535,7 +535,7 @@ namespace Gonogo.KosUplink
             // thread: and Dispatch-and-block would park that thread inside
             // Done.Wait, where it can never reach the Drain that would run
             // `work`. The whole main thread wedges; the engine's own 4s backstop
-            // fires first and the client sees CommandErrorCode.Timeout while the
+            // fires first and the client sees a timeout while the
             // kOS side effect (TypeCommand/RUNPATH) is abandoned and never runs,
             // exactly the live kos.run failure. When already on the drain thread,
             // run inline: no second hop, no block, no deadlock. The Courier-thread
@@ -549,7 +549,7 @@ namespace Gonogo.KosUplink
                 catch (Exception ex)
                 {
                     _logError("[Gonogo.KosUplink] command main-thread work threw: " + ex);
-                    return CommandResult.Fail(CommandErrorCode.Unknown);
+                    throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work threw: " + ex.Message);
                 }
             }
 
@@ -572,7 +572,7 @@ namespace Gonogo.KosUplink
                 catch (Exception ex)
                 {
                     _logError("[Gonogo.KosUplink] command main-thread work threw: " + ex);
-                    job.Result = CommandResult.Fail(CommandErrorCode.Unknown);
+                    job.Error = ex;
                 }
                 finally
                 {
@@ -594,12 +594,18 @@ namespace Gonogo.KosUplink
                 // throws. The abandoned flag routes both the drop and the
                 // disposal to whichever side drains the job.
                 job.Abandoned = true;
-                return CommandResult.Fail(CommandErrorCode.Timeout);
+                throw new CommandFaultException(
+                    FaultCode.MainThreadTimeout,
+                    "the game's main thread did not run the command within " + CommandMainThreadTimeout.TotalSeconds + "s");
             }
 
             try
             {
-                return job.Result ?? CommandResult.Fail(CommandErrorCode.Unknown);
+                if (job.Error != null)
+                {
+                    throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work threw: " + job.Error.Message);
+                }
+                return job.Result ?? throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work returned no result");
             }
             finally
             {
@@ -622,6 +628,7 @@ namespace Gonogo.KosUplink
             public readonly ManualResetEventSlim Done = new ManualResetEventSlim(false);
             public volatile bool Abandoned;
             public CommandResult? Result;
+            public Exception? Error;
         }
     }
 }

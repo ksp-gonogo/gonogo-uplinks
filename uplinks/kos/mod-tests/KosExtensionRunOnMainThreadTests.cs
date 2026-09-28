@@ -32,14 +32,13 @@ namespace GonogoKosUplink.Tests
             var ran = 0;
 
             // Never drained before the wait expires → the waiter times out.
-            var result = ext.RunOnMainThread(() =>
+            var fault = Assert.Throws<CommandFaultException>(() => ext.RunOnMainThread(() =>
             {
                 Interlocked.Increment(ref ran);
                 return CommandResult.Ok();
-            });
+            }));
 
-            Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.Timeout, result.ErrorCode);
+            Assert.Equal(FaultCode.MainThreadTimeout, fault.Code);
             Assert.Equal(0, ran);
 
             // The dispatcher only now drains the deferred action (production: the
@@ -86,7 +85,7 @@ namespace GonogoKosUplink.Tests
         /// <summary>
         /// Regression for the kos-uplink-gap self-deadlock: every kos command
         /// (kos.run/kos.terminal.*) timed out with
-        /// <see cref="CommandErrorCode.Timeout"/> (errorCode:6) after ~4s and
+        /// a timeout after ~4s and
         /// its kOS side effect (TypeCommand/RUNPATH) never executed.
         ///
         /// <para>Root cause is a DOUBLE main-thread marshal. In production the
@@ -137,7 +136,7 @@ namespace GonogoKosUplink.Tests
 
             Assert.True(result.Success,
                 "a kos command invoked on the main thread must succeed, not self-deadlock into a Timeout");
-            Assert.Equal(CommandErrorCode.None, result.ErrorCode);
+            Assert.Null(result.ErrorCode);
             Assert.Equal(1, ran);
             Assert.Empty(drainErrors);
         }
@@ -156,7 +155,7 @@ namespace GonogoKosUplink.Tests
         ///
         /// <para>With the bug the main thread parks inside the handler's
         /// <c>Done.Wait</c> and never returns to drain the dispatcher, so the
-        /// work is stranded and the command comes back <see cref="CommandErrorCode.Timeout"/>;
+        /// work is stranded and the command comes back timed out;
         /// the fix runs the work inline on the main thread and the command
         /// succeeds.</para>
         /// </summary>

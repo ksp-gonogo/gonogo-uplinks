@@ -58,7 +58,7 @@ describe("KosDataSource.executeScript: Uplink cutover", () => {
     }> = [];
     transport.setCommandHandler((command, args) => {
       recordDispatch<"kos.run">(dispatched, command, args);
-      return { success: true, errorCode: 0 };
+      return { success: true };
     });
     const runArgs = () => dispatched.map((c) => c.args);
     setActiveTelemetryClientForTests(client);
@@ -128,7 +128,7 @@ describe("kos.ts module: registerUplinkHandle('kos', ...) registration", () => {
     }> = [];
     transport.setCommandHandler((command, args) => {
       recordDispatch<"kos.run">(dispatched, command, args);
-      return { success: true, errorCode: 0 };
+      return { success: true };
     });
     const runArgs = () => dispatched.map((c) => c.args);
     setActiveTelemetryClientForTests(client);

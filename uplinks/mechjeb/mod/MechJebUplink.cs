@@ -189,10 +189,10 @@ namespace Gonogo.MechJebUplink
         /// <summary>
         /// Marshals <paramref name="work"/> onto the main-thread dispatcher
         /// and blocks the Courier thread until it completes or
-        /// <see cref="CommandMainThreadTimeout"/> elapses (returning
-        /// <see cref="CommandErrorCode.Timeout"/>). Any exception from
-        /// <paramref name="work"/> becomes a typed <c>Unknown</c> failure: a
-        /// command must always return a structured result, never throw.
+        /// <see cref="CommandMainThreadTimeout"/> elapses, which answers with the
+        /// <see cref="FaultCode.MainThreadTimeout"/> fault. An exception from
+        /// <paramref name="work"/> answers with <see cref="FaultCode.CommandUnavailable"/>:
+        /// nothing was decided, and the command stays available.
         ///
         /// <para><b>Timeout is drop-not-run</b> (mirrors
         /// <c>GonogoKosUplink.KosExtension.RunOnMainThread</c>'s M1 fix): the
@@ -222,7 +222,7 @@ namespace Gonogo.MechJebUplink
                 catch (Exception ex)
                 {
                     _logError("[Gonogo.MechJebUplink] command main-thread work threw: " + ex);
-                    return CommandResult.Fail(CommandErrorCode.Unknown);
+                    throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work threw: " + ex.Message);
                 }
             }
 
@@ -242,7 +242,7 @@ namespace Gonogo.MechJebUplink
                 catch (Exception ex)
                 {
                     _logError("[Gonogo.MechJebUplink] command main-thread work threw: " + ex);
-                    job.Result = CommandResult.Fail(CommandErrorCode.Unknown);
+                    job.Error = ex;
                 }
                 finally
                 {
@@ -257,12 +257,18 @@ namespace Gonogo.MechJebUplink
             if (!job.Done.Wait(CommandMainThreadTimeout))
             {
                 job.Abandoned = true;
-                return CommandResult.Fail(CommandErrorCode.Timeout);
+                throw new CommandFaultException(
+                    FaultCode.MainThreadTimeout,
+                    "the game's main thread did not run the command within " + CommandMainThreadTimeout.TotalSeconds + "s");
             }
 
             try
             {
-                return job.Result ?? CommandResult.Fail(CommandErrorCode.Unknown);
+                if (job.Error != null)
+                {
+                    throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work threw: " + job.Error.Message);
+                }
+                return job.Result ?? throw new CommandFaultException(FaultCode.CommandUnavailable, "the command's main-thread work returned no result");
             }
             finally
             {
@@ -283,6 +289,7 @@ namespace Gonogo.MechJebUplink
             public readonly ManualResetEventSlim Done = new ManualResetEventSlim(false);
             public volatile bool Abandoned;
             public CommandResult? Result;
+            public Exception? Error;
         }
     }
 }

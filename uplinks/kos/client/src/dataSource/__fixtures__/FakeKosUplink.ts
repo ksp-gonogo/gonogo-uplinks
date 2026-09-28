@@ -133,9 +133,9 @@ export class FakeKosUplink {
   }
 
   private handleCommand(command: string, rawArgs: unknown): CommandResult {
-    if (command !== "kos.run") return { success: true, errorCode: 0 };
+    if (command !== "kos.run") return { success: true };
     const run = asRunArgs(rawArgs);
-    if (!run) return { success: false, errorCode: 1 };
+    if (!run) return { success: false, errorCode: "notFound" };
     const { coreId, requestId, command: text } = run;
     const lines = text
       .trim()
@@ -148,7 +148,7 @@ export class FakeKosUplink {
       this.respond(coreId, requestId, {
         error: `FakeKosUplink: could not parse a RUNPATH call from: ${last}`,
       });
-      return { success: true, errorCode: 0 };
+      return { success: true };
     }
     const [, path, argText] = match;
     const invocation: FakeKosInvocation = {
@@ -163,12 +163,12 @@ export class FakeKosUplink {
       this.respond(coreId, requestId, {
         error: `Cannot open file '${path}'.`,
       });
-      return { success: true, errorCode: 0 };
+      return { success: true };
     }
     void Promise.resolve(handler(invocation)).then((output) => {
       this.respond(coreId, requestId, outputToResult(output));
     });
-    return { success: true, errorCode: 0 };
+    return { success: true };
   }
 
   private respond(

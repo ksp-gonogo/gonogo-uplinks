@@ -1316,10 +1316,10 @@ namespace GonogoPrincipiaUplink
         /// named FACILITY and a plan slot is not one, so the numbers ride in the
         /// sentence instead.</para>
         /// </summary>
-        private static CommandErrorCode Code(PrincipiaWriteResult result) =>
+        private static RefusalCode Code(PrincipiaWriteResult result) =>
             Code(result.Outcome, result.Refusal);
 
-        private static CommandErrorCode Code(
+        private static RefusalCode Code(
             PrincipiaWriteOutcome outcome, PrincipiaWriteRefusal refusal) =>
             outcome == PrincipiaWriteOutcome.Rejected
                 ? CommandErrorCode.WrongState
@@ -1338,14 +1338,7 @@ namespace GonogoPrincipiaUplink
                     PrincipiaWriteRefusal.OptimisationRunning => CommandErrorCode.NotClearToProceed,
                     PrincipiaWriteRefusal.ValueNotFinite => CommandErrorCode.Range,
                     PrincipiaWriteRefusal.ThrustNotPositive => CommandErrorCode.Range,
-                    // The read SUCCEEDED and came back with a pair outside the
-                    // vocabulary this build knows, so it is neither
-                    // Unreadable (the provider answered) nor
-                    // CapabilityMismatch (nothing was established about the
-                    // craft). ModeUnavailable claims neither, which is the most
-                    // this enum can currently say: a value the producer
-                    // answered with and we do not recognise has no arm of its
-                    // own yet.
+                    // The read succeeded with a pair outside this build's vocabulary: neither Unreadable nor CapabilityMismatch.
                     PrincipiaWriteRefusal.IntegratorKindUnexpected =>
                         CommandErrorCode.ModeUnavailable,
                     PrincipiaWriteRefusal.IntegratorBoundsExceeded => CommandErrorCode.Range,
@@ -1357,7 +1350,7 @@ namespace GonogoPrincipiaUplink
                     // the vessel was established here, and the operator's own
                     // craft is the last place they should be sent looking.
                     PrincipiaWriteRefusal.PluginShapeChanged => CommandErrorCode.Unreadable,
-                    _ => CommandErrorCode.Unknown,
+                    _ => CommandErrorCode.ModeUnavailable,
                 };
 
         private bool Replay(

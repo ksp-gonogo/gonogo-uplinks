@@ -251,19 +251,16 @@ namespace GonogoTestFlightUplink
         /// part's config), which is why this must never be simulated: the state
         /// change belongs to TestFlight.</para>
         /// </summary>
-        public RepairOutcome Repair(Vessel? v, string partId)
+        public CommandResult<RepairOutcome> Repair(Vessel? v, string partId)
         {
-            var outcome = new RepairOutcome();
             if (!IsAvailable || _forceRepair == null || _getActiveFailures == null)
             {
-                outcome.Refusal = RepairRefusal.NotModelled;
-                return outcome;
+                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NotModelled);
             }
             if (!TestFlightRepairScope.TryParsePartId(partId, out var flightId, out var occurrence)
                 || v?.parts == null)
             {
-                outcome.Refusal = RepairRefusal.NoSuchPart;
-                return outcome;
+                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NoSuchPart);
             }
 
             var core = CoreAt(v, flightId, occurrence);
@@ -272,8 +269,7 @@ namespace GonogoTestFlightUplink
                 core != null, ActiveFailureCount(core), repairable.Count);
             if (refusal != null)
             {
-                outcome.Refusal = refusal;
-                return outcome;
+                return CommandResult<RepairOutcome>.Fail(refusal);
             }
 
             foreach (var failure in repairable)
@@ -281,16 +277,14 @@ namespace GonogoTestFlightUplink
                 Invoke(_forceRepair, core, failure);
             }
 
-            outcome.Repaired = TestFlightRepairScope.Cleared(
-                repairable.Count, RepairableFailures(core).Count);
-            if (!outcome.Repaired)
+            if (!TestFlightRepairScope.Cleared(repairable.Count, RepairableFailures(core).Count))
             {
                 // TestFlight gates a repair on nothing an operator can change, so
                 // a ForceRepair that left the failure standing is the mod
                 // declining without saying more, not a fact about the crew.
-                outcome.Refusal = RepairRefusal.Refused;
+                return CommandResult<RepairOutcome>.Fail(CommandErrorCode.ModeUnavailable);
             }
-            return outcome;
+            return CommandResult<RepairOutcome>.Ok(new RepairOutcome { Repaired = true });
         }
 
         /// <summary>

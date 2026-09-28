@@ -32,7 +32,7 @@ import { PlanSlots } from "./index.js";
  * hide.
  */
 function planWriteReply(receipt: Record<string, unknown>) {
-  return { success: true, errorCode: 0, payload: receipt };
+  return { success: true, payload: receipt };
 }
 
 const renderedTrees: Array<() => void> = [];

@@ -1,6 +1,5 @@
 import type { TopicPayload, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import {
-  bandFor,
   bandIn,
   bandIsWellFormed,
   value,
@@ -470,7 +469,7 @@ describe("how well it says it knows the answer", () => {
   ) {
     const reading = readRun(viewUt, run, threshold);
     if (reading.reckoning.status !== "available") throw new Error("no model");
-    return bandIn(bandFor(reading.reckoning, "0.rules.0.problem"), "units");
+    return bandIn(reading.reckoning.bands?.["0.rules.0.problem"], "units");
   }
 
   it("keys the band by the same path `modelled` names", () => {
@@ -505,7 +504,7 @@ describe("how well it says it knows the answer", () => {
     const reading = readRun(1060, SCATTERED, 1e6);
     if (reading.reckoning.status !== "available") throw new Error("no model");
     const band = bandIn(
-      bandFor(reading.reckoning, "0.rules.0.problem"),
+      reading.reckoning.bands?.["0.rules.0.problem"],
       "units",
     );
 

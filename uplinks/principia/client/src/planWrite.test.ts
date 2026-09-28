@@ -12,7 +12,7 @@ import {
 
 /** A write's answer as the wire carries it: the envelope, receipt on `payload`. */
 function reply(payload?: Record<string, unknown>): PrincipiaPlanWriteReply {
-  return { success: true, errorCode: 0, payload };
+  return { success: true, payload };
 }
 
 /** The receipt inside a reply that is meant to carry one, or a failed test. */

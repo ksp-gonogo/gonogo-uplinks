@@ -115,27 +115,30 @@ namespace Gonogo.KerbalismUplink
         /// backend withdraws from the capability entirely in that case, so this
         /// is belt and braces for the indeterminate window.</para>
         /// </summary>
-        public RepairOutcome Repair(string partId, string crewName)
+        public CommandResult<RepairOutcome> Repair(string partId, string crewName)
         {
             if (Coverage != ReliabilityCoverage.Modeled)
             {
-                return new RepairOutcome { Repaired = false, Refusal = RepairRefusal.NotModelled };
+                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NotModelled);
             }
 
             var v = ScopedVessel();
             if (v == null)
             {
-                return new RepairOutcome { Repaired = false, Refusal = RepairRefusal.NoSuchPart };
+                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NoSuchPart);
             }
 
             var raw = _k.AttemptRepair(v, partId, crewName);
-            return new RepairOutcome
+            if (!raw.Repaired)
             {
-                Repaired = raw.Repaired,
-                Refusal = raw.Refusal,
+                return CommandResult<RepairOutcome>.Fail(raw.Refusal ?? CommandErrorCode.ModeUnavailable);
+            }
+            return CommandResult<RepairOutcome>.Ok(new RepairOutcome
+            {
+                Repaired = true,
                 KitsUsed = raw.KitsUsed,
                 KitsFrom = raw.KitsFrom,
-            };
+            });
         }
 
         public IReadOnlyList<ReliabilityPartEntry> Parts()

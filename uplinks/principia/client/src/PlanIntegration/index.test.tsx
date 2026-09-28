@@ -36,7 +36,7 @@ const VIEW_UT = 1_000_000;
  * `PlanCommands.Settle`/`Ok`, which is what puts the receipt there.
  */
 function planWriteReply(receipt: Record<string, unknown>) {
-  return { success: true, errorCode: 0, payload: receipt };
+  return { success: true, payload: receipt };
 }
 
 /**

@@ -880,7 +880,7 @@ namespace GonogoRp1Uplink.Tests
             levels[level] = tech;
         }
 
-        private static void Refused(CommandResult<Dictionary<string, object?>> result, CommandErrorCode code)
+        private static void Refused(CommandResult<Dictionary<string, object?>> result, RefusalCode code)
         {
             Assert.False(result.Success);
             Assert.Equal(code, result.ErrorCode);

@@ -19,7 +19,7 @@ public class KerbcastAimOutcomeTests
         var result = KerbcastAimOutcome.For(true);
 
         Assert.True(result.Success);
-        Assert.Equal(CommandErrorCode.None, result.ErrorCode);
+        Assert.Null(result.ErrorCode);
     }
 
     /// <summary>

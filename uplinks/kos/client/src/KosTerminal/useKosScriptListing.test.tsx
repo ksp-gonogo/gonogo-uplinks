@@ -60,7 +60,7 @@ function harness() {
   const dispatches: Dispatched[] = [];
   transport.setCommandHandler((_command, args) => {
     if (isDispatched(args)) dispatches.push(args);
-    return { success: true, errorCode: 0 };
+    return { success: true };
   });
   setActiveTelemetryClientForTests(client);
   kosSource.attachTelemetryClient(client);

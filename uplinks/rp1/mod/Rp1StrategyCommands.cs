@@ -401,8 +401,8 @@ namespace GonogoRp1Uplink
                  * Factor back would describe a rollback that did not happen. Say
                  * what was attempted instead.
                  */
-                return CommandResult.Fail(
-                    CommandErrorCode.Unknown,
+                throw new CommandFaultException(
+                    FaultCode.CommandUnavailable,
                     "RP-1 threw while committing, and the career may be part-way through it: "
                         + Rp1Types.ExceptionReason(ex));
             }

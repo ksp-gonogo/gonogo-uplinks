@@ -212,13 +212,13 @@ namespace GonogoRp1Uplink.Tests
         }
 
         [Theory]
-        [InlineData(LaunchPadState.Destroyed, CommandErrorCode.FacilityDamaged)]
-        [InlineData(LaunchPadState.Nonoperational, CommandErrorCode.NotReady)]
-        [InlineData(LaunchPadState.Reconditioning, CommandErrorCode.NotReady)]
-        [InlineData(LaunchPadState.Rollout, CommandErrorCode.SiteOccupied)]
+        [InlineData(LaunchPadState.Destroyed, "facilityDamaged")]
+        [InlineData(LaunchPadState.Nonoperational, "notReady")]
+        [InlineData(LaunchPadState.Reconditioning, "notReady")]
+        [InlineData(LaunchPadState.Rollout, "siteOccupied")]
         public void Tells_a_pad_that_needs_repair_from_one_that_needs_waiting(
             LaunchPadState state,
-            CommandErrorCode expected)
+            string expected)
         {
             var lc = Centre();
             lc.LaunchPads[0].StateValue = state;
@@ -230,7 +230,7 @@ namespace GonogoRp1Uplink.Tests
             // Four different next moves hide behind RP-1's one enum, and an
             // operator does entirely different things about "repair it" and
             // "wait for the vehicle already there".
-            Assert.Equal(expected, result.ErrorCode);
+            Assert.Equal(expected, result.ErrorCode?.Id);
             Assert.Empty(lc.Recon_Rollout);
         }
 

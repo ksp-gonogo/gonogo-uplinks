@@ -57,16 +57,16 @@ namespace GonogoTestFlightUplink.Tests
 
         [Theory]
         // No core answered to the id at all.
-        [InlineData(false, 0, 0, RepairRefusal.NoSuchPart)]
+        [InlineData(false, 0, 0, "repair.noSuchPart")]
         // The core is there and nothing is wrong with it.
-        [InlineData(true, 0, 0, RepairRefusal.NoSuchPart)]
+        [InlineData(true, 0, 0, "repair.noSuchPart")]
         // Failures, none of which TestFlight will repair: an exploded part.
-        [InlineData(true, 2, 0, RepairRefusal.Unrepairable)]
+        [InlineData(true, 2, 0, "repair.unrepairable")]
         [InlineData(true, 2, 1, null)]
         public void ARefusalSaysWhichOfTheThreeThingsWentWrong(
             bool coreFound, int active, int repairable, string? expected)
         {
-            Assert.Equal(expected, TestFlightRepairScope.RefusalFor(coreFound, active, repairable));
+            Assert.Equal(expected, TestFlightRepairScope.RefusalFor(coreFound, active, repairable)?.Id);
         }
 
         /// <summary>
@@ -163,9 +163,9 @@ namespace GonogoTestFlightUplink.Tests
         {
             var source = File.ReadAllText(BackendSourcePath());
 
-            Assert.Contains("public RepairOutcome Repair(", source);
+            Assert.Contains("public CommandResult<RepairOutcome> Repair(", source);
             Assert.Contains("_tf.Repair(", source);
-            Assert.DoesNotContain("Refusal = \"refused\"", source);
+            Assert.DoesNotContain("CommandResult<RepairOutcome>.Fail(", source);
         }
 
         private static string ReflectionSourcePath() =>

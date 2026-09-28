@@ -1446,10 +1446,10 @@ namespace GonogoRp1Uplink
             }
         }
 
-        private static CommandResult<Dictionary<string, object?>> Fail(CommandErrorCode code, string detail) =>
+        private static CommandResult<Dictionary<string, object?>> Fail(RefusalCode code, string detail) =>
             CommandResult<Dictionary<string, object?>>.Fail(code, detail);
 
-        private static CommandResult<Dictionary<string, object?>> Fail(CommandErrorCode code, LimitBreach breach) =>
+        private static CommandResult<Dictionary<string, object?>> Fail(RefusalCode code, LimitBreach breach) =>
             CommandResult<Dictionary<string, object?>>.Fail(code, breach);
 
         /// <summary>Grouped, because these are read by a person.</summary>
