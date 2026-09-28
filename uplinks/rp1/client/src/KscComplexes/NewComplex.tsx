@@ -117,7 +117,6 @@ export function NewComplexControl({
             </Text>
             {named.map((n) => (
               <Switch
-                aria-label={`Build at ${n}`}
                 checked={chosen === n}
                 key={n}
                 label={n}
