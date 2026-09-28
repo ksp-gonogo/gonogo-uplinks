@@ -33,7 +33,7 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 | Default size | 4 × 7 |
 | Scenes | 4 |
 
-![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--mobile-9x8.png)
+![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
 
 ## Contributions
 
