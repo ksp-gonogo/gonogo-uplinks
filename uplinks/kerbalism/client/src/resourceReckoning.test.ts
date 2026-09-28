@@ -18,8 +18,8 @@ import {
  * production asks it, through `sampleReading`, so the decline the STORE raises
  * for an absent dep is exercised alongside the ones the model raises itself.
  *
- * The interval integrated over is `viewUt - lifesupport.asOfUt`, never
- * `viewUt - point.validAt`, so the fixtures below deliberately put the two a
+ * The interval integrated over is `reckonUt - lifesupport.asOfUt`, never
+ * `reckonUt - point.validAt`, so the fixtures below deliberately put the two a
  * long way apart: every one of them ingests at UT 1000 and stamps the
  * accumulators at UT 900, and a model reading the wrong clock gets an answer
  * 100 seconds out.
@@ -351,5 +351,55 @@ describe("the moment a level leaves the range it can occupy", () => {
     const unstamped = lifeSupport({ asOfKerbalismUt: undefined });
 
     expect(resourceBoundaryCrossings(AMOUNTS, unstamped)).toEqual([]);
+  });
+});
+
+/**
+ * Under light time the received edge is a one-way trip behind the craft's
+ * present, so a reading that is current on arrival still has that trip to be
+ * carried across.
+ */
+describe("under a one-way light time", () => {
+  const OWLT = 60;
+  const RECEIVED_UT = 1000;
+
+  /** Both topics sent at the received edge and delivered one light time later, the accumulators advanced at `asOfUt`. */
+  function readDelayed(asOfUt: number, delaySeconds: number) {
+    const fixture = setupStreamFixture({
+      carriedChannels: CARRIED,
+      delaySeconds,
+    });
+    const deliver = (topic: string, payload: unknown) =>
+      fixture.store.ingest(topic, {
+        validAt: RECEIVED_UT,
+        payload,
+        meta: makeMeta({
+          validAt: RECEIVED_UT,
+          deliveredAt: RECEIVED_UT + delaySeconds,
+        }),
+        epoch: 0,
+      });
+    deliver("vessel.resources", AMOUNTS);
+    deliver(
+      "kerbalism.lifesupport",
+      lifeSupport({ asOfKerbalismUt: value("ut", asOfUt) }),
+    );
+    fixture.store.beginFrame();
+    return fixture.store.sampleReading<Resources>("vessel.resources");
+  }
+
+  it("carries a current reading across the light time to the craft's present", () => {
+    const reading = readDelayed(RECEIVED_UT, OWLT);
+    if (reading.reckoning.status !== "available") {
+      throw new Error(`expected a model, got "${reading.reckoning.status}"`);
+    }
+    // 100 units at -0.1/s for the 60 s the reading spent in flight.
+    expect(
+      reading.reckoning.value.resources.Food.current.magnitude,
+    ).toBeCloseTo(94, 6);
+  });
+
+  it("offers nothing for a current reading when there is no light time to cross", () => {
+    expect(readDelayed(RECEIVED_UT, 0).reckoning.status).toBe("none");
   });
 });

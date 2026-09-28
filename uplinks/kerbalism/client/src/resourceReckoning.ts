@@ -38,8 +38,9 @@ import { KERBALISM } from "./uplink.js";
  * background craft it sits well behind the read time: unloaded vessels take
  * their Kerbalism turn one per physics tick, in rotation. So a payload can be
  * perfectly live on the wire and already minutes old as a model, and the
- * interval to integrate over is `viewUt - asOfUt`, never `viewUt` minus the
- * sample's `validAt`.
+ * interval to integrate over is `reckonUt - asOfUt`, never `reckonUt` minus
+ * the sample's `validAt`. `reckonUt` is the craft's present, which a current
+ * reading under light time is a one-way trip behind.
  *
  * That is also why this model does NOT follow `core-reckoners`'
  * `elapsedOrDecline` and withhold itself on a live reading. That posture is
@@ -146,7 +147,7 @@ export type ResourceBoundary = "floor" | "ceiling";
  * move as the view time does.
  *
  * It sits on its own entry point rather than on the model's answer for exactly
- * that reason: it is not a function of `viewUt`, so a caller needs no frame to
+ * that reason: it is not a function of `reckonUt`, so a caller needs no frame to
  * ask for it, and it is still there on the frames where the model has withdrawn
  * and has no answer to hang it off.
  *
@@ -235,26 +236,26 @@ export function resourceBoundaryCrossings(
 /**
  * The interval to carry the accumulators across, or the reason not to.
  *
- * Never negative: a stamp can sit marginally ahead of the frame's view time,
- * and "carried for -0.4 s" is not a thing to model. Zero is a DECLINE rather
- * than an identity projection, because a model that answers with the
- * observation has modelled nothing and should not claim to have.
+ * Never negative: a stamp can sit marginally ahead of the instant the frame
+ * reckons to, and "carried for -0.4 s" is not a thing to model. Zero is a
+ * DECLINE rather than an identity projection, because a model that answers
+ * with the observation has modelled nothing and should not claim to have.
  */
 function intervalOrDecline(
   asOfUt: number,
-  viewUt: number,
+  reckonUt: number,
 ): number | ReckoningDecline {
-  const elapsed = viewUt - asOfUt;
+  const elapsed = reckonUt - asOfUt;
   if (!Number.isFinite(elapsed)) {
     return {
       reason: "model-inapplicable",
-      note: "the view time is not a number",
+      note: "the instant to reckon to is not a number",
     };
   }
   if (elapsed <= 0) {
     return {
       reason: "model-inapplicable",
-      note: "Kerbalism advanced these accumulators at this frame's view time, so there is no interval to carry them across",
+      note: "Kerbalism advanced these accumulators at the instant this frame reckons to, so there is no interval to carry them across",
     };
   }
   if (elapsed > RESOURCE_RATE_HORIZON_SECONDS) {
@@ -268,7 +269,8 @@ function intervalOrDecline(
 }
 
 /**
- * The model itself, as a pure function of the two payloads and the view time.
+ * The model itself, as a pure function of the two payloads and the instant it
+ * reckons to.
  *
  * Lifted out of the registration rather than written inside it so its DECLINE
  * REASONS are testable. `vessel.resources` carries no `[SitrepReckonable]` mark
@@ -281,7 +283,7 @@ function intervalOrDecline(
 export function reckonResourceLevels(
   observed: Resources | null,
   lifeSupport: LifeSupport | null | undefined,
-  viewUt: number,
+  reckonUt: number,
 ): ReckonerAnswer<Resources> {
   if (observed == null) {
     return {
@@ -325,7 +327,7 @@ export function reckonResourceLevels(
       },
     };
   }
-  const elapsed = intervalOrDecline(asOfUt, viewUt);
+  const elapsed = intervalOrDecline(asOfUt, reckonUt);
   if (typeof elapsed !== "number") return { declined: elapsed };
 
   // Which levels actually move, settled BEFORE the model is offered.
@@ -348,7 +350,7 @@ export function reckonResourceLevels(
    * level rather than on the clock: reaching for a second reason code would
    * imply a consumer should treat the two differently, and it should not.
    */
-  const moving = rated.filter((level) => viewUt < level.crossesAtUt);
+  const moving = rated.filter((level) => reckonUt < level.crossesAtUt);
   if (moving.length === 0) {
     const last = rated.reduce((a, b) =>
       a.crossesAtUt >= b.crossesAtUt ? a : b,
@@ -381,9 +383,11 @@ export function reckonResourceLevels(
        */
       const resources: Resources["resources"] = { ...observed.resources };
       for (const { name, perSecond, current, crossesAtUt } of moving) {
-        // The filter above settles COVERAGE, for the frame's own view time.
-        // This settles the VALUE, for whatever time the caller asks at, so a
-        // pull at some other `at` cannot get a level out of its range either.
+        /*
+         * The filter above settles COVERAGE, for the instant the frame reckons
+         * to. This settles the VALUE, for whatever time the caller asks at, so
+         * a pull at some other `at` cannot get a level out of its range either.
+         */
         if (at >= crossesAtUt) continue;
         resources[name] = {
           ...observed.resources[name],
@@ -397,6 +401,6 @@ export function reckonResourceLevels(
 
 KERBALISM.registerReckoner("vessel.resources", {
   deps: [KERBALISM_LIFESUPPORT_TOPIC],
-  reckon: (point, [lifeSupportPoint], { viewUt }) =>
-    reckonResourceLevels(point.payload, lifeSupportPoint?.payload, viewUt),
+  reckon: (point, [lifeSupportPoint], { reckonUt }) =>
+    reckonResourceLevels(point.payload, lifeSupportPoint?.payload, reckonUt),
 });
