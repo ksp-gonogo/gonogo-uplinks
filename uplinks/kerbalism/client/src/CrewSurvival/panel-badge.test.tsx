@@ -12,6 +12,7 @@ import {
   WidgetMetaContext,
 } from "@ksp-gonogo/ui-kit";
 import { afterEach, describe, expect, it } from "vitest";
+import { KerbalismPresent } from "../test/kerbalismPresent.js";
 // Importing the real module runs its module-load
 // `KERBALISM.registerContribution(...)` (the panel badge under test).
 import "./badge.js";
@@ -31,7 +32,7 @@ import "./badge.js";
  * included, ever appears in a rendered PNG.
  */
 
-const CARRIED = ["vessel.crew", "kerbalism.crew", "kerbalism.available"];
+const CARRIED = ["vessel.crew", "kerbalism.crew", "comms.delay"];
 
 function CrewStatusPanelHeader() {
   const badges = useWidgetBadges();
@@ -57,9 +58,11 @@ function renderPanel(fixture: ReturnType<typeof newFixture>) {
       <WidgetMetaContext.Provider
         value={{ componentId: "crew-status", contributionSlots: [] }}
       >
-        <ContributionsProvider>
-          <CrewStatusPanelHeader />
-        </ContributionsProvider>
+        <KerbalismPresent>
+          <ContributionsProvider>
+            <CrewStatusPanelHeader />
+          </ContributionsProvider>
+        </KerbalismPresent>
       </WidgetMetaContext.Provider>
     </fixture.Provider>,
   );
@@ -73,11 +76,7 @@ function emit(
   act(() => {
     fixture.emit("vessel.crew", crew);
     fixture.emit("kerbalism.crew", kerbals);
-    // The contribution's `requires: "kerbalism"` gate reads this directly
-    // off the client (`contributionsRuntime.tsx`), unlike an augment's own
-    // `RequiresGuard`; a raw-component augment test can skip it, this one
-    // cannot.
-    fixture.emit("kerbalism.available", true);
+    fixture.emit("comms.delay", { oneWaySeconds: 0 });
   });
 }
 

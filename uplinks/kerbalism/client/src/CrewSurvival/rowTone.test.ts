@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { observedMargin } from "../test/observedMargin.js";
 import type { CrewSurvival, KerbalSurvival } from "./processor.js";
 import { rowTones } from "./rowTone.js";
 
@@ -8,7 +9,7 @@ function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
     trait: "Pilot",
     rules: [],
     worstRule: undefined,
-    marginToActSec: null,
+    marginToAct: observedMargin(null),
     tone: "go",
     ...overrides,
   };

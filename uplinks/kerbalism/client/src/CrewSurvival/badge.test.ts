@@ -5,6 +5,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
+import { observedMargin } from "../test/observedMargin.js";
 import { bandBadges, survivalBadges } from "./badge.js";
 import type { CrewSurvival, KerbalSurvival } from "./processor.js";
 import { ruleKey } from "./ruleReadings.js";
@@ -15,7 +16,7 @@ function kerbal(overrides: Partial<KerbalSurvival> = {}): KerbalSurvival {
     trait: "Pilot",
     rules: [],
     worstRule: undefined,
-    marginToActSec: null,
+    marginToAct: observedMargin(null),
     tone: "go",
     ...overrides,
   };
@@ -154,7 +155,11 @@ describe("bandBadges", () => {
       bandBadges(
         { [ruleKey("Jebediah Kerman", "hunger")]: banded(0.6, 0.45, 0.85) },
         survival([
-          kerbal({ name: "Jebediah Kerman", tone: "nogo", marginToActSec: 300 }),
+          kerbal({
+            name: "Jebediah Kerman",
+            tone: "nogo",
+            marginToAct: observedMargin(300),
+          }),
         ]),
       ),
     ).toBeNull();

@@ -6,6 +6,8 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
+import { observedMargin } from "../test/observedMargin.js";
+import { KerbalismPresent } from "../test/kerbalismPresent.js";
 import {
   flushProviderFrame,
   replayStreamBlock,
@@ -92,9 +94,11 @@ async function meterTree(
       <WidgetMetaContext.Provider
         value={{ componentId: "crew-status", contributionSlots: [] }}
       >
-        <ContributionsProvider>
-          <WidgetMeters row={row} />
-        </ContributionsProvider>
+        <KerbalismPresent>
+          <ContributionsProvider>
+            <WidgetMeters row={row} />
+          </ContributionsProvider>
+        </KerbalismPresent>
       </WidgetMetaContext.Provider>
     </stream.Provider>,
   );
@@ -116,8 +120,8 @@ function meterParts(tree: HTMLElement, label: string) {
     root,
     header: visibleText(root.firstElementChild as HTMLElement),
     fillWidth: fill?.style.width,
-    fillDimmed: fill?.hasAttribute("data-fill-not-current") ?? false,
-    notCurrentMark: root.querySelector("[data-not-current-mark]"),
+    fillDimmed: fill?.hasAttribute("data-fill-held") ?? false,
+    heldMark: root.querySelector("[data-held-mark]"),
     bounds: [...root.querySelectorAll("[data-bound]")].map(
       (el) => (el as HTMLElement).style.left,
     ),
@@ -137,7 +141,7 @@ describe("the dose meter over a carried trend", () => {
 
     expect(dose.fillWidth).toBe("78%");
     expect(dose.fillDimmed).toBe(true);
-    expect(dose.notCurrentMark).not.toBeNull();
+    expect(dose.heldMark).not.toBeNull();
     expect(dose.header).toMatch(/^Radiation dose\s*78\s*%\s*\(~83\s*%\)$/);
     expect(dose.bounds).toHaveLength(2);
     for (const left of dose.bounds) {
@@ -151,7 +155,7 @@ describe("the dose meter over a carried trend", () => {
 
     expect(dose.fillWidth).toBe("78%");
     expect(dose.fillDimmed).toBe(false);
-    expect(dose.notCurrentMark).toBeNull();
+    expect(dose.heldMark).toBeNull();
     expect(dose.header).toMatch(/^Radiation dose\s*78\s*%$/);
   });
 });
@@ -177,7 +181,7 @@ describe("the survival badges say a held death clock is held", () => {
           trait: "Pilot",
           rules: [],
           worstRule: undefined,
-          marginToActSec: 240,
+          marginToAct: observedMargin(240),
           tone: "nogo",
         },
       ],
@@ -227,14 +231,14 @@ describe("the survival badges say a held death clock is held", () => {
   describe("the panel badge's count", () => {
     const kerbal = (
       name: string,
-      marginToActSec: number | null,
+      marginSeconds: number | null,
       worst: { fraction: number; carried?: boolean },
     ) => ({
       name,
       trait: "Pilot",
       rules: [{ name: "radiation", ...worst }],
       worstRule: { name: "radiation", ...worst },
-      marginToActSec,
+      marginToAct: observedMargin(marginSeconds),
       tone: "nogo" as const,
     });
 

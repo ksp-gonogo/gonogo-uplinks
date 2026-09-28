@@ -1,6 +1,7 @@
 import { type PayloadMeta, Quality, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { deriveCrewSurvival, toneFor } from "./processor.js";
+import type { KerbalismCrewEntry } from "../__generated__/contract.js";
+import { deriveCrewSurvival, marginToAct, toneFor } from "./processor.js";
 
 /**
  * The provenance every `vessel.crew` payload carries. Nothing here reads it,
@@ -22,9 +23,31 @@ const units = (n: number) => value("units", n);
 const VIEW_UT = 1_000_000;
 const deadlineIn = (n: number) => value("ut", VIEW_UT + n);
 
+/** The derivation over a current crew reading at `VIEW_UT`, across a link with no light time. */
+function derive(
+  crew: Parameters<typeof deriveCrewSurvival>[0],
+  kerbals: KerbalismCrewEntry[] | undefined,
+) {
+  return deriveCrewSurvival(crew, kerbals, (name) =>
+    marginToAct(
+      kerbals === undefined
+        ? { state: "pending", reckoning: { status: "none" } }
+        : {
+            state: "observed",
+            value: kerbals,
+            atUt: value("ut", VIEW_UT),
+            reckoning: { status: "none" },
+          },
+      name,
+      value("ut", VIEW_UT),
+      value("s", 0),
+    ),
+  );
+}
+
 describe("deriveCrewSurvival", () => {
   it("joins vessel.crew's roster against kerbalism.crew by name", () => {
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 2),
@@ -52,7 +75,6 @@ describe("deriveCrewSurvival", () => {
           ],
         },
       ],
-      VIEW_UT,
     );
 
     expect(result.kerbals).toHaveLength(2);
@@ -71,7 +93,7 @@ describe("deriveCrewSurvival", () => {
   });
 
   it("carries every rule, not just the worst, sorted worst-first", () => {
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -91,7 +113,6 @@ describe("deriveCrewSurvival", () => {
           ],
         },
       ],
-      VIEW_UT,
     );
     // Worst (radiation, 0.9) first, regardless of wire order.
     expect(result.kerbals[0].rules).toEqual([
@@ -105,7 +126,7 @@ describe("deriveCrewSurvival", () => {
     // Kerbalism's default profile gives radiation a fatal threshold of 50
     // while stress uses 1; a rule reader that assumed 1.0 for everything
     // would read this radiation accumulator as 4500% instead of 90%.
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -124,7 +145,6 @@ describe("deriveCrewSurvival", () => {
           ],
         },
       ],
-      VIEW_UT,
     );
     expect(result.kerbals[0].worstRule?.fraction).toBeCloseTo(0.9);
   });
@@ -133,7 +153,7 @@ describe("deriveCrewSurvival", () => {
     // A rule name outside the old base widget's hardcoded 7-name allowlist
     // (e.g. a custom rule under a non-stock profile) must still surface as
     // the worst rule if it is in fact the worst.
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -153,7 +173,6 @@ describe("deriveCrewSurvival", () => {
           ],
         },
       ],
-      VIEW_UT,
     );
     expect(result.kerbals[0].worstRule).toEqual({
       name: "some-custom-rule",
@@ -162,7 +181,7 @@ describe("deriveCrewSurvival", () => {
   });
 
   it("gives a kerbal with no reported rules a stable entry, not a dropped row", () => {
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -170,17 +189,16 @@ describe("deriveCrewSurvival", () => {
         crew: [{ name: "Bob" }],
       },
       [],
-      VIEW_UT,
     );
     expect(result.kerbals).toHaveLength(1);
     expect(result.kerbals[0].worstRule).toBeUndefined();
-    expect(result.kerbals[0].marginToActSec).toBeNull();
+    expect(result.kerbals[0].marginToAct.value).toBeUndefined();
     expect(result.kerbals[0].tone).toBe("go");
   });
 
   it("gives a kerbal with no kerbalism.crew entry at all the same stable default", () => {
     // kerbalism.crew undefined entirely (mod not installed, or absent this frame).
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -188,7 +206,6 @@ describe("deriveCrewSurvival", () => {
         crew: [{ name: "Bob" }],
       },
       undefined,
-      VIEW_UT,
     );
     expect(result.kerbals).toHaveLength(1);
     expect(result.kerbals[0].tone).toBe("go");
@@ -196,7 +213,7 @@ describe("deriveCrewSurvival", () => {
   });
 
   it("turns the wire's death-clock INSTANT into time remaining, and forces nogo when soon", () => {
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 1),
@@ -204,15 +221,14 @@ describe("deriveCrewSurvival", () => {
         crew: [{ name: "Val" }],
       },
       [{ name: "Val", deathClockUt: deadlineIn(120) }],
-      VIEW_UT,
     );
-    expect(result.kerbals[0].marginToActSec).toBe(120);
+    expect(result.kerbals[0].marginToAct.value?.magnitude).toBe(120);
     expect(result.kerbals[0].tone).toBe("nogo");
     expect(result.soonestMarginToActSec).toBe(120);
   });
 
   it("takes the soonest death clock across the whole crew", () => {
-    const result = deriveCrewSurvival(
+    const result = derive(
       {
         meta: CREW_META,
         count: value("count", 2),
@@ -223,24 +239,19 @@ describe("deriveCrewSurvival", () => {
         { name: "Val", deathClockUt: deadlineIn(9000) },
         { name: "Bob", deathClockUt: deadlineIn(300) },
       ],
-      VIEW_UT,
     );
     expect(result.soonestMarginToActSec).toBe(300);
   });
 
   it("renders no crew when vessel.crew is undefined", () => {
-    const result = deriveCrewSurvival(
-      undefined,
-      [
-        {
-          name: "Val",
-          rules: [
-            { name: "stress", problem: units(0.9), fatalThreshold: units(1) },
-          ],
-        },
-      ],
-      VIEW_UT,
-    );
+    const result = derive(undefined, [
+      {
+        name: "Val",
+        rules: [
+          { name: "stress", problem: units(0.9), fatalThreshold: units(1) },
+        ],
+      },
+    ]);
     expect(result.kerbals).toEqual([]);
     expect(result.soonestMarginToActSec).toBeNull();
   });

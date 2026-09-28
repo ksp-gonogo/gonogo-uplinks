@@ -1,6 +1,11 @@
-import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
+import type { Reading, SlotProps, Value } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment, useProcessor, value } from "@ksp-gonogo/sitrep-sdk";
-import { Badge, type Severity, writeQuantity } from "@ksp-gonogo/ui-kit";
+import {
+  Badge,
+  ModelledAlongside,
+  type Severity,
+  writeQuantity,
+} from "@ksp-gonogo/ui-kit";
 import { KERBALISM } from "../uplink.js";
 // Side-effect: registers the per-kerbal survival METERS, which were the
 // `crew-status.survival` augment in this file until they became data. See that
@@ -12,6 +17,7 @@ import {
   type CrewSurvival,
   criticalCause,
   type KerbalSurvival,
+  marginSecondsOf,
   survivalFrom,
 } from "./processor.js";
 
@@ -44,11 +50,12 @@ function findKerbal(
  */
 function warningFor(
   kerbal: KerbalSurvival,
-): { label: string; severity: Severity } | null {
+): { label: string; severity: Severity; modelled?: Value<"s"> } | null {
   if (kerbal.tone !== "nogo") return null;
-  if (kerbal.marginToActSec !== null) {
+  const margin = marginSecondsOf(kerbal);
+  if (margin !== null) {
     // A command sent now would land after the deadline, so there is no margin left to count.
-    if (kerbal.marginToActSec <= 0) {
+    if (margin <= 0) {
       return { label: "too late", severity: "critical" };
     }
     /**
@@ -61,12 +68,13 @@ function warningFor(
      * here, and the `time` kind is exactly where the two agree: the ladder
      * interleaves its own parts with the number, so the symbol comes back
      * empty and nothing is appended. The unit is game seconds (`s`, a
-     * six-hour KSP day), not `irl:s`: `marginToActSec` is a span of UT the mod
-     * derived from `deathClockUt`, not desk time.
+     * six-hour KSP day), not `irl:s`: the margin is a span of UT measured to
+     * the mod's `deathClockUt`, not desk time.
      */
     return {
-      label: `~${writeQuantity(value("s", kerbal.marginToActSec))} to act`,
+      label: `~${writeQuantity(value("s", margin))} to act`,
       severity: "critical",
+      modelled: modelledBeyondReceived(kerbal.marginToAct),
     };
   }
   if (kerbal.worstRule) {
@@ -76,6 +84,16 @@ function warningFor(
     };
   }
   return null;
+}
+
+/** The model's figure for the craft's present, where it reaches past the received edge. */
+function modelledBeyondReceived(
+  reading: Reading<Value<"s">>,
+): Value<"s"> | undefined {
+  const { reckoning } = reading;
+  return reckoning.status === "available" && reckoning.beyondReceived
+    ? reckoning.modelled
+    : undefined;
 }
 
 /**
@@ -113,7 +131,7 @@ function CrewSurvivalBadgeAugment({
    */
   const modelled =
     answer.stale &&
-    kerbal.marginToActSec === null &&
+    marginSecondsOf(kerbal) === null &&
     criticalCause(kerbal) === "carried-rule"
       ? answer.basis
       : undefined;
@@ -129,6 +147,11 @@ function CrewSurvivalBadgeAugment({
       data-reckoning-basis={modelled}
     >
       {label}
+      {warning.modelled !== undefined && (
+        <ModelledAlongside>
+          ~{writeQuantity(warning.modelled)}
+        </ModelledAlongside>
+      )}
     </Badge>
   );
 }

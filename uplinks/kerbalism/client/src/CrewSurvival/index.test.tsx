@@ -12,15 +12,12 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
+import { KerbalismPresent } from "../test/kerbalismPresent.js";
 // Importing the real module runs its module-load registerAugment(...) and,
 // through `./meters`, the `crew-status.meters` registerContribution(...).
 import { CrewSurvivalBadgeAugment } from "./index.js";
 
-// `kerbalism.available` is here for the METERS half: a contribution's
-// `requires` gate is read straight off the client by the aggregation
-// (`contributionsRuntime.tsx`), where an augment's is a render-time check on
-// ui-kit's own availability store. Same reason `panel-badge.test.tsx` carries it.
-const CARRIED = ["vessel.crew", "kerbalism.crew", "kerbalism.available"];
+const CARRIED = ["vessel.crew", "kerbalism.crew", "comms.delay"];
 
 const renderedTrees: Array<() => void> = [];
 
@@ -54,9 +51,11 @@ function CrewRow({ crewName }: { crewName: string }) {
     <WidgetMetaContext.Provider
       value={{ componentId: "crew-status", contributionSlots: [] }}
     >
-      <ContributionsProvider>
-        <WidgetMeters row={crewName} />
-      </ContributionsProvider>
+      <KerbalismPresent>
+        <ContributionsProvider>
+          <WidgetMeters row={crewName} />
+        </ContributionsProvider>
+      </KerbalismPresent>
     </WidgetMetaContext.Provider>
   );
 }
@@ -96,11 +95,7 @@ function emit(
   act(() => {
     fixture.emit("vessel.crew", crew);
     fixture.emit("kerbalism.crew", kerbals);
-    // The meters contribution's `requires: "kerbalism"` gate reads this
-    // directly off the client, so without it the aggregation skips the
-    // contribution entirely and every meter assertion below would fail for a
-    // reason that has nothing to do with what it is testing.
-    fixture.emit("kerbalism.available", true);
+    fixture.emit("comms.delay", { oneWaySeconds: 0 });
   });
 }
 
@@ -371,36 +366,66 @@ describe("CrewSurvivalBadgeAugment", () => {
 });
 
 describe("CrewSurvivalBadgeAugment under signal delay", () => {
-  /** A crew whose frames left the craft a minute before its present of UT 1000, with one kerbal's death clock at `deathClockUt`. */
-  function mountDelayed(deathClockUt: number) {
-    const owlt = 60;
+  const OWLT = 60;
+  /** Frames that left the craft one light time before its present of UT 1000, so the received edge is UT 940. */
+  const RECEIVED_UT = 1000 - OWLT;
+
+  /** Crew frames stamped at each of `stamps`, Jebediah's radiation climbing between them, with his death clock at `deathClockUt`. */
+  function mountDelayed(
+    deathClockUt: number,
+    stamps: number[] = [RECEIVED_UT],
+  ) {
     const fixture = setupStreamFixture({
       carriedChannels: CARRIED,
-      delaySeconds: owlt,
+      delaySeconds: OWLT,
     });
     for (const topic of CARRIED) fixture.subscribe(topic);
-    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
-    const meta = { validAt: 1000 - owlt, deliveredAt: 1000 };
+    const { container } = renderBadgeAugment(fixture, "Jebediah Kerman", 0);
     act(() => {
-      fixture.emit("vessel.crew", CREW, meta);
-      fixture.emit(
-        "kerbalism.crew",
-        [{ name: "Jebediah Kerman", deathClockUt }],
-        meta,
-      );
-      fixture.emit("kerbalism.available", true, meta);
+      stamps.forEach((stamp, i) => {
+        const meta = { validAt: stamp, deliveredAt: stamp + OWLT };
+        fixture.emit("vessel.crew", CREW, meta);
+        fixture.emit(
+          "kerbalism.crew",
+          [
+            {
+              name: "Jebediah Kerman",
+              rulesAsOfKerbalismUt: stamp,
+              rules: [
+                { name: "radiation", fatalThreshold: 50, problem: 10 + i },
+              ],
+              deathClockUt,
+            },
+          ],
+          meta,
+        );
+        fixture.emit("comms.delay", { oneWaySeconds: OWLT }, meta);
+      });
     });
+    return container;
   }
 
-  it("measures the margin to when a command sent now would land", async () => {
-    // SCET is 1000 and a command lands at 1060, so a death at 1300 leaves four minutes to act.
-    mountDelayed(1300);
+  it("measures the margin from the received edge, less the light time a command crosses", async () => {
+    // Received at 940, a death at 1300 is 360 s out, and a command crossing 60 s leaves five minutes.
+    const container = mountDelayed(1300);
     const badge = await screen.findByText(/to act/i);
-    expect(badge.textContent).toBe("~4min to act");
+    expect(badge.textContent).toBe("~5min to act");
+    // One frame is no trend, so the crew model declines and nothing is drawn for the craft's present.
+    expect(container.querySelector("[data-modelled-alongside]")).toBeNull();
+  });
+
+  it("draws the model's margin from the craft's present beside it, marked", async () => {
+    // Carried to the craft's present of 1000, the same death leaves four minutes.
+    const container = mountDelayed(1300, [RECEIVED_UT - 60, RECEIVED_UT]);
+    const badge = await screen.findByText(/to act/i);
+    expect(badge.textContent).toMatch(/^~5min to act/);
+    const modelled = container.querySelector("[data-modelled-alongside]");
+    expect(modelled?.textContent).toMatch(/^~4min/);
+    expect(modelled?.querySelector("[data-held-mark]")).not.toBeNull();
   });
 
   it("says too late once a command would land after the deadline", async () => {
-    mountDelayed(1030);
+    mountDelayed(RECEIVED_UT + 30);
     expect(await screen.findByText("too late")).toBeInTheDocument();
   });
 });

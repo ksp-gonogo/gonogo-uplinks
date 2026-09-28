@@ -23,6 +23,12 @@
         "payload": true
       },
       {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 0
+        }
+      },
+      {
         "topic": "vessel.crew",
         "payload": {
           "count": 3,

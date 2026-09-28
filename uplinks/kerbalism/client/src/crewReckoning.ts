@@ -240,13 +240,14 @@ function movingAccumulators(
   observed: Crew,
   history: readonly TimelinePoint<Crew>[],
   subject: string,
-  viewUt: number,
+  reckonUt: number,
 ): Moving[] {
   const moving: Moving[] = [];
   observed.forEach((entry, kerbal) => {
     const asOfUt = magnitudeOf(entry.rulesAsOfKerbalismUt);
     if (asOfUt === null) return;
-    const elapsed = viewUt - asOfUt;
+    // Measured to the instant the model is asked to reach, the craft's present, which a current reading under light time is behind.
+    const elapsed = reckonUt - asOfUt;
     if (
       !Number.isFinite(elapsed) ||
       elapsed <= 0 ||
@@ -287,7 +288,7 @@ function movingAccumulators(
  */
 export function reckonCrewAccumulators(
   point: TimelinePoint<Crew>,
-  { viewUt, history }: ReckonerFrame<Crew>,
+  { reckonUt, history }: ReckonerFrame<Crew>,
 ) {
   const observed = point.payload;
   if (observed == null) {
@@ -302,7 +303,7 @@ export function reckonCrewAccumulators(
     observed,
     history,
     point.meta.source,
-    viewUt,
+    reckonUt,
   );
   if (moving.length === 0) {
     return {

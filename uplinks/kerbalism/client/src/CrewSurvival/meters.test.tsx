@@ -4,7 +4,7 @@ import type {
   TopicReading,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { bandIn, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import { bandIn, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   render,
@@ -15,7 +15,7 @@ import { Meter } from "@ksp-gonogo/ui-kit";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { survivalMeters } from "./meters.js";
-import { deriveCrewSurvival } from "./processor.js";
+import { deriveCrewSurvival, marginToAct } from "./processor.js";
 import { ruleReadings } from "./ruleReadings.js";
 
 /**
@@ -159,7 +159,9 @@ async function metersOver(run: Run = SCATTERED, viewUt = VIEW_UT) {
       : undefined;
   const entries =
     survivalMeters(
-      deriveCrewSurvival(ROSTER, observed, viewUt),
+      deriveCrewSurvival(ROSTER, observed, (name) =>
+        marginToAct(reading, name, value("ut", viewUt), value("s", 0)),
+      ),
       ruleReadings(reading),
     ) ?? [];
   return new Map(entries.map((entry) => [entry.id, entry]));
