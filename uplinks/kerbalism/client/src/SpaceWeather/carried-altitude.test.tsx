@@ -37,18 +37,6 @@ function spaceWeather() {
 const { def: SW, topic: TOPIC } = spaceWeather();
 
 /**
- * The conic's two inputs alongside the widget's own channels: the model
- * declines outright without the elements and the body roster to solve them
- * against, and a declined model is a green case that measured nothing.
- */
-const CARRIED = [
-  ...(SW.channels ?? []),
-  ...(SW.optionalChannels ?? []),
-  "vessel.orbit",
-  "system.bodies",
-];
-
-/**
  * A craft climbing out of the periapsis of a strongly eccentric Kerbin orbit,
  * read twenty minutes after its last packet.
  *
@@ -198,7 +186,6 @@ function vesselMarkCx(tree: WidgetTree): number {
 describe("SpaceWeather places the vessel from the carried altitude", () => {
   beforeEach(() => {
     stream = setupStreamFixture({
-      carriedChannels: CARRIED,
       pinnedUt: VIEW_UT,
     });
   });

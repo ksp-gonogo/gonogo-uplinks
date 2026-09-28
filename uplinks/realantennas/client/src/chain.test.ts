@@ -51,9 +51,7 @@ describe("the realantennas.antennaChains channel", () => {
    * kind of regression that survives a typecheck.
    */
   it("decodes as an array of chains, with the nested entries hydrated", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALANTENNAS_CHAINS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(REALANTENNAS_CHAINS_TOPIC);
@@ -107,9 +105,7 @@ describe("the realantennas.antennaChains channel", () => {
    * LossyLatest and the previous craft's chains would otherwise stand.
    */
   it("decodes an empty array as an observed value rather than absence", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALANTENNAS_CHAINS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => useTelemetry(REALANTENNAS_CHAINS_TOPIC).state,
       { wrapper: fixture.Provider },
@@ -128,9 +124,7 @@ describe("the realantennas.antennaChains channel", () => {
    * entry.
    */
   it("keeps an unstarted walk and an unread link distinguishable from zero and false", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALANTENNAS_CHAINS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(REALANTENNAS_CHAINS_TOPIC);

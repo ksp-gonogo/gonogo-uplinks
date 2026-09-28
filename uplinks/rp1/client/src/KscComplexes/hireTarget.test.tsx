@@ -14,17 +14,6 @@ import {
 } from "./HireTarget.js";
 import { KscComplexes } from "./index.js";
 
-const TOPICS = [
-  "career.status",
-  "rp1.available",
-  "rp1.centres",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.personnel",
-  RP1_HIRE_TARGET_CANCEL_COMMAND,
-  RP1_HIRE_TARGET_SET_COMMAND,
-];
-
 const CAPE = {
   anyOperational: true,
   engineers: 30,
@@ -50,7 +39,7 @@ function mount(
   personnel: Record<string, unknown>,
   funds: number | null = 120_000,
 ) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <KscComplexes />

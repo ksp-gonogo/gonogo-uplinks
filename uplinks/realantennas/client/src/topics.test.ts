@@ -91,9 +91,7 @@ describe("the realantennas.available presence gate", () => {
 // every `toMatchObject({ magnitude, unit })` below fails with a bare number.
 describe("registerTopicUnits: hydration at decode time", () => {
   it('hydrates the margin into a Value<"dB">, not a bare number', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [COMMS_LINK_MARGIN_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     /**
      * The hook returns the PAYLOAD rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
@@ -132,9 +130,7 @@ describe("registerTopicUnits: hydration at decode time", () => {
   });
 
   it("hydrates both data-rate directions", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [COMMS_DATA_RATE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(COMMS_DATA_RATE_TOPIC);
@@ -166,9 +162,7 @@ describe("registerTopicUnits: hydration at decode time", () => {
   });
 
   it('hydrates the quality ratio into a Value<"ratio">', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [COMMS_LINK_QUALITY_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(COMMS_LINK_QUALITY_TOPIC);

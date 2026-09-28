@@ -22,7 +22,6 @@ const VIEW_UT = 1_000_000;
 
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: ["principia.analysis"],
     pinnedUt: VIEW_UT,
   });
   const result = render(

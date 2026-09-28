@@ -17,11 +17,9 @@ afterEach(() => {
 });
 
 const VIEW_UT = 1_000_000;
-const CARRIED = ["principia.analysis"];
 
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: VIEW_UT,
   });
   const result = render(

@@ -25,8 +25,6 @@ import {
  * 100 seconds out.
  */
 
-const CARRIED = ["vessel.resources", "kerbalism.lifesupport"];
-
 const AMOUNTS: Resources = {
   resources: {
     Food: {
@@ -78,7 +76,6 @@ function readAt(
   amounts: unknown = AMOUNTS,
 ): TopicReading<Resources> {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: viewUt,
   });
   ingest(fixture, "vessel.resources", amounts);
@@ -366,7 +363,6 @@ describe("under a one-way light time", () => {
   /** Both topics sent at the received edge and delivered one light time later, the accumulators advanced at `asOfUt`. */
   function readDelayed(asOfUt: number, delaySeconds: number) {
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED,
       delaySeconds,
     });
     const deliver = (topic: string, payload: unknown) =>

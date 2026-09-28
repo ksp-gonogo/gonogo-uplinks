@@ -21,8 +21,6 @@ import { installFixedSizeResizeObserver } from "@ksp-gonogo/ui-kit/testing";
  * authority for what a snapshot shows.
  */
 export interface StreamFixtureBlock {
-  /** Topics this fixture carries, forwarded to `setupStreamFixture`. */
-  carriedChannels: string[];
   /** UT to pin the view clock at. */
   pinnedUt?: number;
   /** Fixed network/display delay in seconds. */

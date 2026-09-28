@@ -32,16 +32,8 @@ afterEach(() => {
 
 const VIEW_UT = 4_000;
 
-const CARRIED = [
-  "vessel.identity",
-  "vessel.orbit",
-  "vessel.maneuver.plan.send",
-  "comms.delay",
-];
-
 async function setup() {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: VIEW_UT,
   });
   const view = render(

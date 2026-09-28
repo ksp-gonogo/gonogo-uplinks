@@ -14,23 +14,6 @@ import {
   RP1_COMPLEX_RUSH_COMMAND,
   RP1_PERSONNEL_ASSIGN_COMMAND,
 } from "./index.js";
-import {
-  RP1_COMPLEX_DISMANTLE_COMMAND,
-  RP1_PAD_DISMANTLE_COMMAND,
-} from "./Lifecycle.js";
-
-const TOPICS = [
-  "rp1.available",
-  "rp1.centres",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.personnel",
-  "rp1.rushTerms",
-  RP1_COMPLEX_RUSH_COMMAND,
-  RP1_PERSONNEL_ASSIGN_COMMAND,
-  RP1_COMPLEX_DISMANTLE_COMMAND,
-  RP1_PAD_DISMANTLE_COMMAND,
-];
 
 const CAPE = {
   anyOperational: true,
@@ -98,7 +81,7 @@ const PADS = [
 ];
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <KscComplexes />

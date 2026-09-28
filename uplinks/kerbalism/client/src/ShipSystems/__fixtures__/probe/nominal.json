@@ -5,12 +5,6 @@
     "notes": "SYNTHETIC probe fixture for the Ship Systems widget: the NOMINAL/healthy counterpart to resource-shortage.json, same profile shape and channel envelope. Every supply sits well above its low threshold with a flat or positive rate, so `diagnose()` finds nothing short: no root cause, no downstream block, overall status reads Nominal. Both processes are running (not broken) and the greenhouse is active, so Processes/Habitat/Greenhouse all read healthy too. Crew is aboard (3/4) to exercise the crew-rule ledger term on a non-shortage vessel."
   },
   "_stream": {
-    "carriedChannels": [
-      "kerbalism.profile",
-      "kerbalism.lifesupport",
-      "vessel.resources",
-      "vessel.crew"
-    ],
     "pinnedUt": 10,
     "emits": [
       {

@@ -29,14 +29,13 @@ const COMMANDS = [
   "mechjeb.executeNextNode",
   "mechjeb.landAtTarget",
 ];
-const CARRIED = ["comms.delay", "system.uplinks", ...COMMANDS];
 
 afterEach(() => {
   clearActionHandlers();
 });
 
 function renderMechJeb(defaultAscentAltitudeKm = 100) {
-  const fixture = setupStreamFixture({ carriedChannels: CARRIED });
+  const fixture = setupStreamFixture();
   // The delay-rail store, the item context and the rest of the dashboard's
   // stack all come from `renderWidget`, which mounts them in GridItemContent's
   // own order rather than this test reproducing a subset of it.

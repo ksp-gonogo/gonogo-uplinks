@@ -45,7 +45,6 @@ function spaceWeather() {
   return { def, topic };
 }
 const { def: SW, topic: TOPIC } = spaceWeather();
-const CARRIED = [...(SW.channels ?? []), ...(SW.optionalChannels ?? [])];
 
 const NOT_CURRENT = "Space weather no longer current";
 const AWAITING = "Awaiting space weather";
@@ -95,7 +94,6 @@ function loseContact(): void {
 describe("SpaceWeather when its readings are not current", () => {
   beforeEach(() => {
     stream = setupStreamFixture({
-      carriedChannels: CARRIED,
       pinnedUt: 149_489,
     });
   });

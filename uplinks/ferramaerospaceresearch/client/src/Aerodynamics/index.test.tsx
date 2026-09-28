@@ -36,7 +36,7 @@ function flying(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: [TOPIC] });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <AerodynamicsComponent id="aero" config={{}} />

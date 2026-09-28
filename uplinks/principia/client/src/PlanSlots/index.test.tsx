@@ -50,12 +50,6 @@ afterEach(() => {
 
 const VIEW_UT = 10_000;
 
-// `comms.delay` is carried because it is what `useCommand` reads its one-way
-// delay off, and both the plan's arrival instant and the first burn's window are
-// derived from that one-way. A fixture that left it out would report every
-// vantage as instant, which is the state those two exist to distinguish from.
-const CARRIED = ["principia.plan", "comms.delay"];
-
 /**
  * The screen's draft store, reached the only way a client can: through the hook
  * that hands it over.
@@ -73,7 +67,6 @@ function DraftProbe({ onStore }: { onStore: (store: PlanDraftStore) => void }) {
 
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: VIEW_UT,
   });
   let store: PlanDraftStore | null = null;

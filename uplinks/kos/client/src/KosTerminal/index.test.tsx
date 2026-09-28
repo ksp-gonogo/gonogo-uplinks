@@ -88,14 +88,6 @@ const TWO_CPUS: KosProcessorInfo[] = [
   },
 ];
 
-const CARRIED = [
-  "kos.processors",
-  "kos.terminal.7",
-  "kos.terminal.9",
-  "comms.delay",
-  "system.uplink.pending",
-];
-
 /**
  * A fixture wired to record every command the widget dispatches, so the tests
  * assert the real open/keystroke/close/resize round-trips (not a mocked
@@ -106,7 +98,6 @@ const CARRIED = [
  */
 function terminalFixture(opts?: { pinnedUt?: number }) {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: opts?.pinnedUt ?? 10,
   });
   const commands: Array<{ command: string; args: unknown }> = [];
@@ -1074,7 +1065,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
       expect(screen.getByLabelText("Uplink queue")).toHaveTextContent("↓"),
     );
 
-    // A LATER-arriving sample on an UNRELATED carried channel (ordinary
+    // A LATER-arriving sample on an UNRELATED channel (ordinary
     // network jitter: nothing to do with this terminal's own CPU) reports
     // an EARLIER `deliveredAt` than the fit already anchored to.
     // `ViewClock.observeSample` re-anchors `utNowEstimate()` to THAT
@@ -1236,7 +1227,6 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
     // `setupStreamFixture`'s own doc: a non-zero `delaySeconds` requires a
     // live, unscrubbed clock).
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED,
       delaySeconds: 20,
     });
     fixture.transport.setCommandHandler(() => ({ success: true }));
@@ -1343,11 +1333,8 @@ describe("KosTerminal: blocks a send with no comms path", () => {
     clearRegistry();
   });
 
-  const CARRIED_WITH_CONNECTIVITY = [...CARRIED, "comms.link"];
-
   function connectivityFixture() {
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED_WITH_CONNECTIVITY,
       pinnedUt: 10,
     });
     const commands: Array<{ command: string; args: unknown }> = [];
@@ -1718,7 +1705,6 @@ describe("kOS terminal: `/` script-run composer (RUNPATH injection)", () => {
 
   it("no comms path blocks the final RUNPATH send but keeps the composer intact for when the path returns", async () => {
     const fixture = setupStreamFixture({
-      carriedChannels: [...CARRIED, "comms.link"],
       pinnedUt: 10,
     });
     const commands: Array<{ command: string; args: unknown }> = [];
@@ -1787,7 +1773,6 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
   /** Carries "kos.run.7" too, so a test can answer the live listing's own kos.run dispatch. */
   function scriptListingFixture() {
     const fixture = setupStreamFixture({
-      carriedChannels: [...CARRIED, "kos.run.7"],
       pinnedUt: 10,
     });
     const commands: Array<{ command: string; args: unknown }> = [];

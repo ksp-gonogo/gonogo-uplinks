@@ -12,13 +12,6 @@ import {
 import { describe, expect, it } from "vitest";
 import { KscConstruction } from "./index.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.constructions",
-  "rp1.centres",
-  "career.status",
-];
-
 const CENTRES = [
   {
     kscName: "Cape",
@@ -63,7 +56,7 @@ function construction(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <KscConstruction />

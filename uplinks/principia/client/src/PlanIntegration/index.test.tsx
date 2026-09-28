@@ -30,11 +30,6 @@ afterEach(() => {
 
 const VIEW_UT = 1_000_000;
 
-// `comms.delay` is carried because it is what `useCommand` reads its one-way
-// delay off, and both controls here freeze on a delay-aware handle. A fixture
-// that left it out would report every vantage as instant.
-const CARRIED = ["principia.plan", "comms.delay"];
-
 /**
  * A plan write's answer as the mod actually sends it: a `CommandResult` whose
  * `payload` is the receipt. See `JsonWriter.AppendCommandResult`, and
@@ -57,7 +52,7 @@ function planWriteReply(receipt: Record<string, unknown>) {
  * reachable only from inside a provider.</p>
  */
 function mount(plan: PrincipiaPlan | null) {
-  const stream = setupStreamFixture({ carriedChannels: CARRIED });
+  const stream = setupStreamFixture();
   const result = render(
     <stream.Provider>
       <PlanIntegrationBlock plan={plan} />

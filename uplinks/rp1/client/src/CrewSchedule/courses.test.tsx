@@ -21,14 +21,6 @@ import {
 const NAUT = "Ludrey Kerman";
 const MATE = "Nedcas Kerman";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.crew",
-  "rp1.training",
-  RP1_TRAINING_CANCEL_COMMAND,
-  RP1_TRAINING_REMOVE_COMMAND,
-];
-
 /** One live course, with a second student on it by default. */
 function course(overrides: Record<string, unknown> = {}) {
   return {
@@ -64,7 +56,7 @@ function studentRow(name: string, overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <TrainingCourses />

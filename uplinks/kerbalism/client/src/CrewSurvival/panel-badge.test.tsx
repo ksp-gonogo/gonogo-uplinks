@@ -45,7 +45,6 @@ function CrewStatusPanelHeader() {
 
 function newFixture() {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 10,
   });
   for (const topic of CARRIED) fixture.subscribe(topic);

@@ -100,9 +100,7 @@ describe("decode-time unit hydration", () => {
   // while ./__generated__/contract.ts still types them Value<"bp">, and nothing
   // else in the tree would notice.
   it('hydrates the build queue into Value<"bp"> and Value<"bp/s">', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_BUILD_QUEUE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     /**
      * The hook returns the PAYLOAD rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
@@ -156,9 +154,7 @@ describe("decode-time unit hydration", () => {
   });
 
   it('hydrates confidence into Value<"confidence">, including a real zero', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_CONFIDENCE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_CONFIDENCE_TOPIC);
@@ -186,9 +182,7 @@ describe("decode-time unit hydration", () => {
   });
 
   it("carries an absent rate through as absent rather than as a zero", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_BUILD_QUEUE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_BUILD_QUEUE_TOPIC);
@@ -234,9 +228,7 @@ describe("decode-time unit hydration", () => {
 
 describe("the constructions channel", () => {
   it("hydrates the money and the work, and leaves the kind bare", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_CONSTRUCTIONS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_CONSTRUCTIONS_TOPIC);
@@ -294,9 +286,7 @@ describe("the constructions channel", () => {
 
 describe("the programs channel", () => {
   it("hydrates the money and the dates, and leaves status and speed bare", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_PROGRAMS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_PROGRAMS_TOPIC);
@@ -392,9 +382,7 @@ describe("the programs channel", () => {
    * own rather than arriving as a bare string.
    */
   it("reaches a Program's status THROUGH the field accessor, beside the currency", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_PROGRAMS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(() => useTelemetry(RP1_PROGRAMS_TOPIC), {
       wrapper: fixture.Provider,
     });
@@ -417,9 +405,7 @@ describe("the programs channel", () => {
   });
 
   it("carries the offer's absences through as absences", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_PROGRAMS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_PROGRAMS_TOPIC);
@@ -483,9 +469,7 @@ describe("the programs channel", () => {
   });
 
   it("hydrates the slot ceiling and keeps a real zero of free slots", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_PROGRAM_SLOTS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_PROGRAM_SLOTS_TOPIC);
@@ -531,9 +515,7 @@ describe("the programs channel", () => {
      * plain numbers while its type still said `Value<"ratio">`, and `<Unit>` would
      * render every axis label as absent.
      */
-    const fixture = setupStreamFixture({
-      carriedChannels: [RP1_PROGRAM_FUNDING_CURVES_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RP1_PROGRAM_FUNDING_CURVES_TOPIC);

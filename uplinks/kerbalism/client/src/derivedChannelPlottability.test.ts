@@ -23,8 +23,6 @@ import { describe, expect, it } from "vitest";
 
 const INPUT = "vessel.resources";
 
-const CARRIED = [INPUT, "probe.collection"];
-
 const AMOUNTS = {
   resources: {
     Food: { current: value("units", 100), max: value("units", 400) },
@@ -64,7 +62,7 @@ const collection: DerivedChannelDefinition<{
 };
 
 function fixtureWithProbes(pinnedUt: number) {
-  const fixture = setupStreamFixture({ carriedChannels: CARRIED, pinnedUt });
+  const fixture = setupStreamFixture({ pinnedUt });
   fixture.store.registerDerivedChannel(collection);
   ingest(fixture, INPUT, AMOUNTS);
   fixture.store.beginFrame();

@@ -93,9 +93,7 @@ describe("kerbalism's namespace of reliability.summary's provider extension bag"
   // than about wrapTopicPayload called in isolation.
   it('hydrates the extension\'s quantity into Value<"s"> at decode time', async () => {
     const frame = serverFrame();
-    const fixture = setupStreamFixture({
-      carriedChannels: [RELIABILITY_SUMMARY_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RELIABILITY_SUMMARY_TOPIC);
@@ -135,9 +133,7 @@ describe("kerbalism's namespace of reliability.summary's provider extension bag"
 
   it("leaves the payload's own core fields exactly as the wire sent them", async () => {
     const frame = serverFrame();
-    const fixture = setupStreamFixture({
-      carriedChannels: [RELIABILITY_SUMMARY_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(RELIABILITY_SUMMARY_TOPIC);

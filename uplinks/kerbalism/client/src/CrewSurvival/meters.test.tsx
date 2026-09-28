@@ -105,7 +105,6 @@ function ReadingProbe({
  */
 function readingOver(run: Run, children?: ReactNode, viewUt = VIEW_UT) {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: viewUt,
   });
   for (const topic of CARRIED) fixture.subscribe(topic);

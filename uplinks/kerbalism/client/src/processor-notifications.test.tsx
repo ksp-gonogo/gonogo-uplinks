@@ -97,7 +97,7 @@ afterEach(() => {
 });
 
 function newFixture(pinnedUt?: number) {
-  const fixture = setupStreamFixture({ carriedChannels: CARRIED, pinnedUt });
+  const fixture = setupStreamFixture({ pinnedUt });
   for (const topic of CARRIED) fixture.subscribe(topic);
   return fixture;
 }

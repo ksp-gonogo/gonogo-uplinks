@@ -19,11 +19,8 @@ afterEach(() => {
   renderedTrees.length = 0;
 });
 
-const CARRIED = ["rp1.available", "rp1.tooling"];
-
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 1000,
   });
   const result = render(

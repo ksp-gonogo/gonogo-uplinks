@@ -8,11 +8,7 @@ import {
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import {
-  KscComplexes,
-  RP1_COMPLEX_RUSH_COMMAND,
-  RP1_PERSONNEL_ASSIGN_COMMAND,
-} from "./index.js";
+import { KscComplexes } from "./index.js";
 import {
   RP1_COMPLEX_DISMANTLE_COMMAND,
   RP1_COMPLEX_RENAME_COMMAND,
@@ -21,25 +17,6 @@ import {
   RP1_PAD_RENAME_COMMAND,
 } from "./Lifecycle.js";
 import { RP1_COMPLEX_NEW_COMMAND } from "./NewComplex.js";
-
-const TOPICS = [
-  "rp1.available",
-  "rp1.centres",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.personnel",
-  "rp1.rushTerms",
-  RP1_COMPLEX_RUSH_COMMAND,
-  RP1_PERSONNEL_ASSIGN_COMMAND,
-  RP1_COMPLEX_DISMANTLE_COMMAND,
-  RP1_PAD_DISMANTLE_COMMAND,
-  RP1_PAD_NEW_COMMAND,
-  RP1_COMPLEX_RENAME_COMMAND,
-  RP1_PAD_RENAME_COMMAND,
-  RP1_COMPLEX_NEW_COMMAND,
-  "career.status",
-  "rp1.lcPricing",
-];
 
 const CAPE = {
   engineers: 30,
@@ -86,7 +63,7 @@ function withCentre(
   pads: readonly Record<string, unknown>[] = PADS,
   career: Record<string, unknown> = { economy: { funds: 289_848 } },
 ) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <KscComplexes />

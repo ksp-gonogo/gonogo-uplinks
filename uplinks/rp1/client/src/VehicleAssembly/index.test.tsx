@@ -21,20 +21,6 @@ import {
   RP1_SCRAP_COMMAND,
 } from "./VehicleSection.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.warehouse",
-  "rp1.buildQueue",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.operations",
-  "career.status",
-  RP1_BUILD_REPEAT_COMMAND,
-  RP1_ROLLOUT_COMMAND,
-  RP1_ROLLBACK_COMMAND,
-  RP1_SCRAP_COMMAND,
-];
-
 const CAREER = {
   economy: { funds: 289_848, reputation: 40, science: 12 },
 };
@@ -143,7 +129,7 @@ function operation(overrides: Record<string, unknown> = {}) {
  * below would be made against an empty body.</para>
  */
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <WidgetHost widgetId="rp1-vehicle-assembly">

@@ -25,15 +25,8 @@ afterEach(() => {
 
 const VIEW_UT = 10_000;
 
-// `comms.delay` is carried because it is what `useCommand` reads its one-way
-// delay off, and the editable-until deadline is derived from that one-way. A
-// fixture that left it out would report every vantage as instant, which is the
-// state the deadline exists to distinguish from.
-const CARRIED = ["principia.plan", "comms.delay"];
-
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: VIEW_UT,
   });
   const result = render(

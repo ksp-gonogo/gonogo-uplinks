@@ -21,9 +21,7 @@ import { KERBALISM_CREW_TOPIC, KERBALISM_LIFESUPPORT_TOPIC } from "./topics.js";
  */
 describe("the renamed reserved leaves are reachable through the reading", () => {
   it("reads a life-support as-of time as the payload's own field", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_LIFESUPPORT_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => useTelemetry(KERBALISM_LIFESUPPORT_TOPIC),
       { wrapper: fixture.Provider },
@@ -48,9 +46,7 @@ describe("the renamed reserved leaves are reachable through the reading", () => 
   });
 
   it("reads a crew entry's rules-as-of time and a rule's problem", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_CREW_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(() => useTelemetry(KERBALISM_CREW_TOPIC), {
       wrapper: fixture.Provider,
     });

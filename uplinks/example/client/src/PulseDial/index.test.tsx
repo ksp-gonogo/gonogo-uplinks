@@ -33,7 +33,6 @@ describe("PulseDialWidget", () => {
 
   it("draws the dial as a current reading while the heartbeat arrives", async () => {
     const stream = setupStreamFixture({
-      carriedChannels: ["example.heartbeat"],
       pinnedUt: 1_000_000,
     });
     render(<PulseDialWidget />, { wrapper: stream.Provider });
@@ -49,7 +48,6 @@ describe("PulseDialWidget", () => {
 
   it("holds the last count once the heartbeat stops, and the dial marks it", async () => {
     const stream = setupStreamFixture({
-      carriedChannels: ["example.heartbeat"],
       pinnedUt: 1_000_000,
     });
     render(<PulseDialWidget />, { wrapper: stream.Provider });

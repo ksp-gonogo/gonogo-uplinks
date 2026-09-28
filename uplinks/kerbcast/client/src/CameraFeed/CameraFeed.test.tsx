@@ -116,9 +116,6 @@ function renderFeed(
 // signalDelay) are native topics, so they need a mounted stream fixture.
 // ---------------------------------------------------------------------------
 
-/** The three native topics CameraFeed reads its comms state off. */
-const COMMS_TOPICS = ["vessel.comms", "comms.link", "comms.delay"] as const;
-
 function renderFeedWithComms(
   config: Partial<CameraFeedConfig>,
   stream: StreamFixture,
@@ -778,7 +775,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
       sidecar.updateCamera(42, { supportsZoom: true, fov: 60 });
     });
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -813,7 +810,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
       sidecar.updateCamera(42, { supportsZoom: true, fov: 60 });
     });
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -843,7 +840,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     // Default camera fixture has supportsZoom: false -- handle guard blocks the command.
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -874,7 +871,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
       });
     });
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -907,7 +904,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
       });
     });
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -931,7 +928,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     // Default camera fixture has supportsPan: false -- handle guard blocks the command.
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: LIVE_DELAY_S });
@@ -977,7 +974,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
 
   async function stagedFeed(): Promise<{ sidecar: MockSidecar }> {
     const { sidecar } = await buildConnectedSource([STEERABLE]);
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: STAGED_DELAY_S });
@@ -1098,7 +1095,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     // Crossing back under the threshold takes the whole surface off the
     // picture, and with it the timer that was turning the wheel.
     const { sidecar } = await buildConnectedSource([STEERABLE]);
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     act(() => {
       emitComms(stream, { connected: true, signalDelay: STAGED_DELAY_S });
@@ -1138,7 +1135,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
 describe("CameraFeed -- live pan/zoom against the staged cluster", () => {
   async function feedAtDelay(oneWaySeconds: number): Promise<void> {
     await buildConnectedSource([STEERABLE]);
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
     await act(async () => {
       emitComms(stream, { connected: true, signalDelay: oneWaySeconds });
@@ -1194,7 +1191,7 @@ describe("CameraFeed: CommNet degrade", () => {
   it("CommNet degrade 0 when signal is full strength", async () => {
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     // Reads are native topics now: emit after mount so the widget's already
@@ -1229,7 +1226,7 @@ describe("CameraFeed: CommNet degrade", () => {
   it("weak signal maps to a proportional degrade level (1 - signalStrength)", async () => {
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     await act(async () => {
@@ -1253,7 +1250,7 @@ describe("CameraFeed: CommNet degrade", () => {
   it("comm disconnected applies maximum degrade (level 1.0)", async () => {
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     await act(async () => {
@@ -1282,7 +1279,7 @@ describe("CameraFeed: CommNet degrade", () => {
       makeCamera({ flightId: 42, cameraName: "Starboard Cam" }),
     ]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     // Auto mode: no explicit flightId configured.
     renderFeedWithComms({ flightId: null }, stream);
 
@@ -1316,7 +1313,7 @@ describe("CameraFeed: CommNet degrade", () => {
     // once connected, falling back to 0 with no strength reading.
     const { sidecar } = await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     await act(async () => {
@@ -1365,7 +1362,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("shows the one-way signal delay badge as a one-decimal readout (sub-minute)", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1389,7 +1386,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("marks the delay held once the link drops", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1419,7 +1416,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("shows a multi-unit one-way signal delay (e.g. deep-space distances)", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1442,7 +1439,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("hides the delay badge when the delay is zero (LAN / no delay authority)", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1460,7 +1457,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("hides the delay badge when no delay data has ever arrived", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1474,7 +1471,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("shows the signal quality badge as a percentage", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1493,7 +1490,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
   it("shows a clear no-signal state when comm.connected is false", async () => {
     await buildConnectedSource();
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1674,7 +1671,7 @@ describe("CameraFeed: delayed aim controls", () => {
     // moves into the container's own top band rather than the header's.
     await buildConnectedSource([STEERABLE]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     await screen.findByRole("button", { name: /starboard cam/i });
@@ -1684,7 +1681,7 @@ describe("CameraFeed: delayed aim controls", () => {
   it("takes no panel title, because the picker already names it", async () => {
     await buildConnectedSource([STEERABLE]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     // The name is the picker's, and it is a real control rather than a label:
@@ -1721,7 +1718,7 @@ describe("CameraFeed: delayed aim controls", () => {
   it("gives a steerable camera an aim surface once the link is delayed", async () => {
     await buildConnectedSource([STEERABLE]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1741,7 +1738,7 @@ describe("CameraFeed: delayed aim controls", () => {
       makeCamera({ flightId: 42, cameraName: "Nose Cam" }),
     ]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1755,7 +1752,7 @@ describe("CameraFeed: delayed aim controls", () => {
   it("keeps the aim controls off the picture until the pointer moves over it", async () => {
     await buildConnectedSource([STEERABLE]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {
@@ -1781,7 +1778,7 @@ describe("CameraFeed: delayed aim controls", () => {
     // `display: none` one would leave them unable to reach it at all.
     await buildConnectedSource([STEERABLE]);
 
-    const stream = setupStreamFixture({ carriedChannels: COMMS_TOPICS });
+    const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
     act(() => {

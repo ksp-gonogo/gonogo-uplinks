@@ -11,16 +11,6 @@ import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
 import { RP1_COMPLEX_MODIFY_COMMAND } from "./Modify.js";
 
-const TOPICS = [
-  "career.status",
-  "rp1.available",
-  "rp1.centres",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.personnel",
-  RP1_COMPLEX_MODIFY_COMMAND,
-];
-
 const CAPE = {
   anyOperational: true,
   engineers: 30,
@@ -54,7 +44,7 @@ function mount(
   complex: Record<string, unknown> = LC1,
   funds: number | null = 120_000,
 ) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <KscComplexes />

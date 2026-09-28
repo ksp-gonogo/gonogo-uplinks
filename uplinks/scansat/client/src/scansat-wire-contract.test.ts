@@ -1,11 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  DEFAULT_SITREP_CARRIED_TOPICS,
-  DYNAMIC_CARRIED_TOPIC_PREFIXES,
-  isTopicCarried,
-} from "@ksp-gonogo/sitrep-sdk";
+import { DYNAMIC_WHOLE_TOPIC_PREFIXES } from "@ksp-gonogo/sitrep-sdk";
 import {
   mapTopic,
   TimelineStore,
@@ -16,22 +12,13 @@ import { SCAN_TYPE } from "./schema.js";
 
 // Client-half round-trip for the SCANsat dynamic wire contract, against the REAL
 // TimelineStore configured exactly as the live TelemetryProvider configures it
-// (dynamic-namespace prefixes injected into both the store resolution and the
-// carried set). This reproduced the full break red before the two client fixes
-// (Bug B: 2-segment mis-parse; Bug A: literal-only carry gate); it is the client
-// definition-of-done that both are in place and agree on the canonical wire string.
-
-// The carried set as the provider folds it: the literal promotion list PLUS the
-// dynamic-namespace prefixes.
-const carried = new Set([
-  ...DEFAULT_SITREP_CARRIED_TOPICS,
-  ...DYNAMIC_CARRIED_TOPIC_PREFIXES,
-]);
+// (dynamic-namespace prefixes injected into the store resolution): a dynamic
+// topic subscribes as its own canonical wire string.
 
 function liveStore(): TimelineStore {
   return new TimelineStore(
     new ViewClock({ delaySeconds: () => 0, warpRate: () => 1 }),
-    { dynamicWholeTopicPrefixes: DYNAMIC_CARRIED_TOPIC_PREFIXES },
+    { dynamicWholeTopicPrefixes: DYNAMIC_WHOLE_TOPIC_PREFIXES },
   );
 }
 
@@ -70,20 +57,20 @@ describe("scansat wire contract: mod emits <-> client subscribes", () => {
     ]);
   });
 
-  it("[Bug A+B] the dynamic coverage/mask/height topics ROUTE TO THE STREAM", () => {
+  it("the dynamic coverage/mask/height topics subscribe as their own wire topic", () => {
     const store = liveStore();
     const body = "Kerbin";
     for (const bit of csClientScanTypes()) {
-      const coverage = mapTopic(`scansat.coverage.${body}.${bit}`);
-      const mask = mapTopic(`scansat.mask.${body}.${bit}`);
+      const coverage = mapTopic(`scansat.coverage.${body}.${bit}`) as string;
+      const mask = mapTopic(`scansat.mask.${body}.${bit}`) as string;
       expect(coverage).toBe(`scansat.coverage.${body}.${bit}`);
       expect(
-        isTopicCarried(store, carried, coverage as string),
-        `scansat.coverage.${body}.${bit} must route to the stream`,
-      ).toBe(true);
-      expect(isTopicCarried(store, carried, mask as string)).toBe(true);
+        store.resolveSubscriptionTopics(coverage),
+        `scansat.coverage.${body}.${bit} must subscribe whole`,
+      ).toEqual([coverage]);
+      expect(store.resolveSubscriptionTopics(mask)).toEqual([mask]);
     }
     const height = mapTopic(`scansat.height.${body}`) as string;
-    expect(isTopicCarried(store, carried, height)).toBe(true);
+    expect(store.resolveSubscriptionTopics(height)).toEqual([height]);
   });
 });

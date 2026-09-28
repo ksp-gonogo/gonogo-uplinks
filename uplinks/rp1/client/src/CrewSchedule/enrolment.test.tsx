@@ -15,17 +15,6 @@ import { describe, expect, it } from "vitest";
 import { TrainingEnrolment } from "./enrolment.js";
 import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.crew",
-  "rp1.training",
-  "rp1.trainingCatalogue",
-  "rp1.crewProgram",
-  "spaceCenter.crewRoster",
-  "career.status",
-  RP1_TRAINING_ENROL_COMMAND,
-];
-
 /** RP-1's own crew rules: every mechanic on, both training rates at 1. */
 const DEFAULT_RULES = {
   crewRnREnabled: true,
@@ -96,7 +85,7 @@ function rosterRow(name: string, overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <TrainingEnrolment />

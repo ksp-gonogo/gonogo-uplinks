@@ -1,17 +1,16 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { DYNAMIC_WHOLE_TOPIC_PREFIXES } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 
 /**
  * Cross-boundary contract test for SCANsat's dynamic per-(body, type)
  * namespaces. Both sides of the wire must describe them with the SAME canonical
  * prefix strings, or a future namespace desyncs silently: the mod publishing
- * under one string while the client carries and resolves another.
+ * under one string while the client resolves another.
  *
- * This locks the MOD side to the canonical list, and documents the client-side
- * cross-check to enable once the client exports its own shared prefix list as
- * `DYNAMIC_CARRIED_TOPIC_PREFIXES` in `@ksp-gonogo/sitrep-client`'s
- * `default-carried-topics.ts`.
+ * This locks the MOD side to the canonical list, and the client side to the
+ * same list through the SDK's `DYNAMIC_WHOLE_TOPIC_PREFIXES`.
  */
 
 // The single source of truth. These are the dynamic-namespace whole-topic
@@ -58,13 +57,9 @@ describe("SCANsat dynamic-topic prefix contract", () => {
     }
   });
 
-  // GREEN when unified-plan Tasks 1+2 land: assert the client's shared prefix
-  // list equals the canonical list (and hence the mod's), so the carried-gate
-  // (Bug A) and TimelineStore resolution (Bug B) can never drift from what the
-  // mod publishes. Enable by importing `DYNAMIC_CARRIED_TOPIC_PREFIXES` from
-  // `@ksp-gonogo/sitrep-client` and asserting `.sort()` deep-equals
-  // `CANONICAL_DYNAMIC_PREFIXES.sort()`.
-  it.todo(
-    "client DYNAMIC_CARRIED_TOPIC_PREFIXES equals the canonical mod prefixes",
-  );
+  it("the client's dynamic prefixes include every canonical one", () => {
+    for (const prefix of CANONICAL_DYNAMIC_PREFIXES) {
+      expect(DYNAMIC_WHOLE_TOPIC_PREFIXES).toContain(prefix);
+    }
+  });
 });

@@ -50,7 +50,6 @@ async function rowBadgeTree(
   const block = resolveStreamBlock(fixture);
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
-    carriedChannels: block.emits.map((e) => e.topic),
     ...streamClockOptions(block),
   });
   /*
@@ -87,7 +86,6 @@ async function meterTree(
   const block = resolveStreamBlock(fixture);
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
-    carriedChannels: block.emits.map((e) => e.topic),
     ...streamClockOptions(block),
   });
   for (const e of block.emits) stream.subscribe(e.topic);

@@ -17,13 +17,6 @@ afterEach(() => {
   renderedTrees.length = 0;
 });
 
-/**
- * `comms.delay` is carried because `useCommand` reads its one-way delay off it,
- * and a targeting command is delayed. A fixture without it reports every vantage
- * as instant.
- */
-const CARRIED = ["realantennas.antennas", "comms.delay"];
-
 /** One antenna as the mod publishes it, hydrated the way the decode path leaves it. */
 function antenna(overrides: Record<string, unknown> = {}) {
   return {
@@ -48,7 +41,7 @@ function antenna(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const stream = setupStreamFixture({ carriedChannels: CARRIED });
+  const stream = setupStreamFixture();
   const result = render(
     <stream.Provider>
       <CommSignalAntennaTargets />

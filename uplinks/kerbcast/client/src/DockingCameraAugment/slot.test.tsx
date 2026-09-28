@@ -59,9 +59,6 @@ function KerbcastAvailabilityFeeder() {
   return null;
 }
 
-/** The topics this slot's availability gate and inventory read run on. */
-const SLOT_TOPICS = ["kerbcast.available", "kerbcast.cameras"] as const;
-
 function renderSlot(stream: StreamFixture) {
   return render(
     <stream.Provider>
@@ -80,7 +77,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
   });
 
   it("does not subscribe to the camera inventory before kerbcast announces availability", () => {
-    const stream = setupStreamFixture({ carriedChannels: SLOT_TOPICS });
+    const stream = setupStreamFixture();
     renderSlot(stream);
 
     // Presence-gated: with no `kerbcast.available`, the augment never mounts,
@@ -90,7 +87,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
   });
 
   it("subscribes to kerbcast.cameras once the domain is live", async () => {
-    const stream = setupStreamFixture({ carriedChannels: SLOT_TOPICS });
+    const stream = setupStreamFixture();
     renderSlot(stream);
 
     act(() => {
@@ -106,7 +103,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
   });
 
   it("renders no video layer when the inventory is empty, the HUD composes without it", async () => {
-    const stream = setupStreamFixture({ carriedChannels: SLOT_TOPICS });
+    const stream = setupStreamFixture();
     const { container } = renderSlot(stream);
 
     act(() => {
@@ -163,7 +160,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
     };
     registerUplinkHandle("kerbcast", fakeSource);
 
-    const stream = setupStreamFixture({ carriedChannels: SLOT_TOPICS });
+    const stream = setupStreamFixture();
     renderSlot(stream);
 
     act(() => {

@@ -12,8 +12,6 @@ import {
 import { describe, expect, it } from "vitest";
 import { CrewTrainingBadge } from "./badge.js";
 
-const TOPICS = ["rp1.available", "rp1.crew"];
-
 function crewRow(overrides: Record<string, unknown> = {}) {
   return {
     name: "Wernher Kerman",
@@ -27,7 +25,7 @@ function crewRow(overrides: Record<string, unknown> = {}) {
 }
 
 function mountBadge(kerbalName = "Wernher Kerman") {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <CrewTrainingBadge

@@ -73,7 +73,7 @@ describe("realantennas' namespace of CommsHop's provider extension bag", () => {
   // the generated TYPE units in. Delete either and the quantities below arrive bare.
   it("hydrates the namespace's quantities at decode time, off the real frame", async () => {
     const frame = serverFrame();
-    const fixture = setupStreamFixture({ carriedChannels: [COMMS_PATH_TOPIC] });
+    const fixture = setupStreamFixture();
     /**
      * The hook returns the PAYLOAD rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
@@ -110,7 +110,7 @@ describe("realantennas' namespace of CommsHop's provider extension bag", () => {
 
   it("leaves the shared hop fields exactly as the wire sent them", async () => {
     const frame = serverFrame();
-    const fixture = setupStreamFixture({ carriedChannels: [COMMS_PATH_TOPIC] });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(COMMS_PATH_TOPIC);

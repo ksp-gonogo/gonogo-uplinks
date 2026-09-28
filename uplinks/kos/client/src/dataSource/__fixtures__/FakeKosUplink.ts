@@ -17,7 +17,7 @@
  * What it handles:
  *   - `kos.processors`: publishes the coreId/tag list `setCpus()` is given.
  *     Subscribed eagerly on construction (a dummy listener) so it stays
- *     "carried": `KosUplinkExecutor`'s own lazy subscribe then replays the
+ *     flowing: `KosUplinkExecutor`'s own lazy subscribe then replays the
  *     current list SYNCHRONOUSLY instead of racing an empty cache, this
  *     mirrors the real app, where something (e.g. the KosProcessors widget)
  *     already has `kos.processors` flowing before a user triggers a script.

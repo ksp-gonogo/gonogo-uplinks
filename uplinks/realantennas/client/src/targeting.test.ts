@@ -49,9 +49,7 @@ describe("the realantennas.antennas targeting channel", () => {
    * the decode path is what distinguishes the two.
    */
   it("decodes as an array of antennas, with its angles hydrated", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALANTENNAS_ANTENNAS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(REALANTENNAS_ANTENNAS_TOPIC);
@@ -103,9 +101,7 @@ describe("the realantennas.antennas targeting channel", () => {
    * makes a claim about the hardware out of a read that never happened.
    */
   it("carries an unread flag through decode as null, not false", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALANTENNAS_ANTENNAS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(REALANTENNAS_ANTENNAS_TOPIC);

@@ -155,13 +155,10 @@ describe("doseRateDecimals", () => {
 // RadiationSection component
 // ---------------------------------------------------------------------------
 
-const CARRIED = ["kerbalism.spaceweather"];
-
 const renderedTrees: Array<() => void> = [];
 
 function newFixture() {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 10,
   });
   fixture.subscribe("kerbalism.spaceweather");

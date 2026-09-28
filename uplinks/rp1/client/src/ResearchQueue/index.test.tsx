@@ -12,8 +12,6 @@ import {
 import { describe, expect, it } from "vitest";
 import { ResearchQueue } from "./index.js";
 
-const TOPICS = ["rp1.available", "rp1.research"];
-
 function node(overrides: Record<string, unknown> = {}) {
   return {
     techId: "start",
@@ -32,7 +30,7 @@ function node(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <ResearchQueue />

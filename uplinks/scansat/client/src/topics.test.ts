@@ -75,9 +75,7 @@ describe("scansat structured Topics (relocated out of Sitrep.Contract)", () => {
   // even though ../__generated__/contract.ts still types them
   // Value<"°">/Value<"m">.
   it('hydrates the vessel\'s own fields into Value<"°">/Value<"m"> at decode time', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [SCANSAT_SCANNING_VESSELS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(SCANSAT_SCANNING_VESSELS_TOPIC)),
       { wrapper: fixture.Provider },
@@ -126,9 +124,7 @@ describe("scansat structured Topics (relocated out of Sitrep.Contract)", () => {
   // registerTypeUnits is dropped from topics.ts (or from the SDK), and the test
   // above would stay green throughout: the two are not interchangeable.
   it("hydrates NESTED sensor and track-colour fields, not just the vessel's own", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [SCANSAT_SCANNING_VESSELS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(SCANSAT_SCANNING_VESSELS_TOPIC)),
       { wrapper: fixture.Provider },
@@ -171,9 +167,7 @@ describe("scansat structured Topics (relocated out of Sitrep.Contract)", () => {
   // so "nothing wrapped" is a stated property of this Topic rather than an
   // indistinguishable-from-broken silence.
   it("leaves scansat.science bare: it declares no quantities", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [SCANSAT_SCIENCE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(SCANSAT_SCIENCE_TOPIC)),
       {

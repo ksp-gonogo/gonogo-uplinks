@@ -56,7 +56,7 @@ describe("the aero.* Topic registrations", () => {
 
 describe("decode-time unit hydration", () => {
   it("hydrates every declared quantity, this Uplink's own two tokens included", async () => {
-    const fixture = setupStreamFixture({ carriedChannels: [AERO_STATE_TOPIC] });
+    const fixture = setupStreamFixture();
     /**
      * The hook returns the PAYLOAD rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
@@ -118,7 +118,7 @@ describe("decode-time unit hydration", () => {
   });
 
   it("carries the mod's absences through as absent rather than as zeros", async () => {
-    const fixture = setupStreamFixture({ carriedChannels: [AERO_STATE_TOPIC] });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(AERO_STATE_TOPIC);

@@ -5,12 +5,6 @@
     "notes": "TEMP repro fixture for the visual-backlog pass (bounds/layout items) - adds comms.delay + comms.connectivity emits on top of basic-session so the char-mode RTT badge and no-path badge actually render."
   },
   "_stream": {
-    "carriedChannels": [
-      "kos.processors",
-      "kos.terminal.7",
-      "comms.delay",
-      "comms.link"
-    ],
     "pinnedUt": 10,
     "emits": [
       {

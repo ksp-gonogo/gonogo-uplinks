@@ -9,14 +9,6 @@ import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
 import { LaunchComplexStatus } from "./index.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.pads",
-  "rp1.complexes",
-  "rp1.warehouse",
-  "rp1.operations",
-];
-
 const SLOT_PROPS = {
   siteName: "Cape Canaveral",
   displayName: "Cape Canaveral LC-1",
@@ -103,7 +95,7 @@ function padOp(overrides: Record<string, unknown> = {}) {
 }
 
 function mount(props: Partial<typeof SLOT_PROPS> = {}) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <LaunchComplexStatus {...SLOT_PROPS} {...props} />

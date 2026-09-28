@@ -20,10 +20,8 @@ afterEach(() => {
 /** The instant every fixture pins the view clock to. */
 const VIEW_UT = 10_000;
 
-const CARRIED = ["principia.plan", "vessel.identity", "system.uplinks"];
-
 function mount(pinnedUt = VIEW_UT) {
-  const stream = setupStreamFixture({ carriedChannels: CARRIED, pinnedUt });
+  const stream = setupStreamFixture({ pinnedUt });
   const result = render(
     <stream.Provider>
       <FlightPlanSection />
@@ -586,7 +584,6 @@ describe("FlightPlanSection under signal delay", () => {
   it("counts down to ignition from the received edge, with no figure for the craft's present where no model carries the plan", async () => {
     const owlt = 120;
     const stream = setupStreamFixture({
-      carriedChannels: CARRIED,
       delaySeconds: owlt,
     });
     const result = render(

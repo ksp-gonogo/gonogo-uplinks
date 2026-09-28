@@ -15,18 +15,6 @@ import { describe, expect, it } from "vitest";
 import { RP1_BUILD_START_COMMAND } from "./Buildable.js";
 import { VehicleAssembly } from "./index.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.warehouse",
-  "rp1.buildQueue",
-  "rp1.buildable",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.operations",
-  "career.status",
-  RP1_BUILD_START_COMMAND,
-];
-
 const CAREER = {
   economy: { funds: 289_848, reputation: 40, science: 12 },
 };
@@ -77,7 +65,7 @@ function craft(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <WidgetHost widgetId="rp1-vehicle-assembly">

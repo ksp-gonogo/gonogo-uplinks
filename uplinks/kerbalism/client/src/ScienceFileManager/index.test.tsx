@@ -15,22 +15,12 @@ import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
 import { findDriveEntries, ScienceDataAboardRowAugment } from "./index.js";
 
-const CARRIED = [
-  "science.experiments",
-  "science.lab",
-  "kerbalism.file.send",
-  "kerbalism.file.delete",
-  "kerbalism.sample.analyze",
-  "kerbalism.sample.dump",
-  "kerbalism.sample.moveToLab",
-];
-
 const SUBJECT_ID = "mysteryGoo@KerbinInSpaceLow";
 
 const renderedTrees: Array<() => void> = [];
 
 function newFixture() {
-  return setupStreamFixture({ carriedChannels: CARRIED, pinnedUt: 10 });
+  return setupStreamFixture({ pinnedUt: 10 });
 }
 
 function renderAugment(

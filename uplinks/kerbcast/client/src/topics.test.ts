@@ -75,9 +75,7 @@ describe("kerbcast.cameras Topic (relocated out of Sitrep.Contract)", () => {
   // types them Value<"deg">: see AvionicsRtConfig.Configure's/topics.ts's
   // doc comments for the exact gap this closes.
   it('hydrates fieldOfView into a Value<"°"> at decode time, not a bare number', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBCAST_CAMERAS_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(KERBCAST_CAMERAS_TOPIC)),
       {

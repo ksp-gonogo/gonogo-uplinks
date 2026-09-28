@@ -17,16 +17,6 @@ afterEach(() => {
   renderedTrees.length = 0;
 });
 
-/**
- * `comms.delay` is carried because the chain command is delayed like the two
- * single-target ones, and `useCommand` reads its one-way delay off that channel.
- */
-const CARRIED = [
-  "realantennas.antennas",
-  "realantennas.antennaChains",
-  "comms.delay",
-];
-
 function antenna(overrides: Record<string, unknown> = {}) {
   return {
     antennaId: "4021/0",
@@ -77,7 +67,7 @@ function chain(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const stream = setupStreamFixture({ carriedChannels: CARRIED });
+  const stream = setupStreamFixture();
   const result = render(
     <stream.Provider>
       <CommSignalAntennaTargets />

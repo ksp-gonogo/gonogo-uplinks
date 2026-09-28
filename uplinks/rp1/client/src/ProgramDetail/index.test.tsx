@@ -16,15 +16,6 @@ import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { ProgramDetail } from "./index.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.programs",
-  "rp1.programSlots",
-  "rp1.programFundingCurves",
-  "rp1.confidence",
-  "career.status",
-];
-
 const YEAR = 31_557_600;
 
 /**
@@ -101,7 +92,7 @@ function slots(overrides: Record<string, unknown> = {}) {
 }
 
 function mount(screenId: string = PROGRAMS_SCREEN_ID) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <ProgramDetail screenId={screenId} />

@@ -64,7 +64,6 @@ describe("SpaceWeatherComponent", () => {
 
   beforeEach(() => {
     stream = setupStreamFixture({
-      carriedChannels: ["kerbalism.spaceweather", "vessel.flight"],
       pinnedUt: 149_489,
     });
   });

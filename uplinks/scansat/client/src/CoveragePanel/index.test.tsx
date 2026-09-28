@@ -154,8 +154,8 @@ describe("CoveragePanel: map-view.sections slot", () => {
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
-    // Coverage rides the STREAM (the dynamic `scansat.coverage.*` prefix is
-    // carried), and so does the vessel list. The per-type rows only subscribe
+    // Coverage rides the STREAM (the dynamic `scansat.coverage.*` prefix
+    // resolves whole), and so does the vessel list. The per-type rows only subscribe
     // once the panel is mounted (availability live), so emit availability first,
     // wait for the row subscriptions, THEN emit coverage on the transport.
     const meta = { quality: Quality.Loaded, source: "scansat" };

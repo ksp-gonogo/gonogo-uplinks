@@ -57,7 +57,7 @@ async function decoded<T>(
   topic: keyof TopicPayloadMap,
   payload: unknown,
 ): Promise<T> {
-  const fixture = setupStreamFixture({ carriedChannels: [topic] });
+  const fixture = setupStreamFixture();
   // `topic` is the WHOLE TopicId union here, so the read distributes over every
   // payload and, for the ones the contract declares reckonable, over their
   // projections too. Nothing at this call site knows which topic it holds; the

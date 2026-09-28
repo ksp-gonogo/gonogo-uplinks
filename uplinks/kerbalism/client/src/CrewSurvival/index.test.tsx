@@ -23,7 +23,6 @@ const renderedTrees: Array<() => void> = [];
 
 function newFixture() {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 10,
   });
   // `useProcessor`'s dependency resolution reads straight off the
@@ -376,7 +375,6 @@ describe("CrewSurvivalBadgeAugment under signal delay", () => {
     stamps: number[] = [RECEIVED_UT],
   ) {
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED,
       delaySeconds: OWLT,
     });
     for (const topic of CARRIED) fixture.subscribe(topic);

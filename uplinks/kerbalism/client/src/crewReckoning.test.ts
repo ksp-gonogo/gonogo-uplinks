@@ -31,8 +31,6 @@ import {
  * nothing here may depend on a fixed interval.
  */
 
-const CARRIED = ["kerbalism.crew"];
-
 type Crew = TopicPayload<"kerbalism.crew">;
 
 /** One kerbal carrying one rule: accumulator `at`, stamped at `asOfUt`. */
@@ -79,7 +77,6 @@ function readRun(
   threshold = 1,
 ): TopicReading<Crew> {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: viewUt,
   });
   for (const [validAt, at, asOfUt] of run) {
@@ -296,7 +293,6 @@ describe("joining the window to the observation", () => {
     run: readonly (readonly [number, Crew])[],
   ): TopicReading<Crew> {
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED,
       pinnedUt: viewUt,
     });
     for (const [validAt, payload] of run) {
@@ -357,7 +353,6 @@ describe("joining the window to the observation", () => {
      * that respects it declines.
      */
     const fixture = setupStreamFixture({
-      carriedChannels: CARRIED,
       pinnedUt: 1060,
     });
     const runs: readonly (readonly [number, string, number, number])[] = [

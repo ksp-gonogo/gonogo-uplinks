@@ -14,7 +14,6 @@
  * If the widget output intentionally changes, regenerate with
  * `pnpm --filter @ksp-gonogo/gonogo-kerbalism-uplink exec vitest run src/SpaceWeather/snapshots -u`.
  */
-import { getComponent } from "@ksp-gonogo/sitrep-sdk";
 import { setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { renderWidget } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
@@ -50,16 +49,6 @@ const FIXTURES: Record<string, Record<string, unknown>> = {
   interplanetary,
 };
 
-/**
- * The carried set is read off the widget's own registration rather than
- * repeated per fixture, so a scene cannot silently carry a topic the widget
- * has stopped reading. Same source the render harness derives its own carried
- * set from.
- */
-const SW = getComponent("space-weather");
-if (!SW) throw new Error("space-weather is not registered");
-const CARRIED = [...(SW.channels ?? []), ...(SW.optionalChannels ?? [])];
-
 async function snapshotSpaceWeatherMode(
   fixture: Record<string, unknown>,
   mode: { name: string; w: number; h: number },
@@ -67,7 +56,6 @@ async function snapshotSpaceWeatherMode(
   const block = resolveStreamBlock(fixture);
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     ...streamClockOptions(block),
   });
   const restoreResizeObserver = installSizedResizeObserver(modePixels(mode));

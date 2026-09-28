@@ -55,11 +55,6 @@ interface Mode {
   forFixtures?: readonly string[];
 }
 
-/**
- * The carried set is the fixture's own, not the widget's registration: the
- * terminal frame topic is `kos.terminal.<coreId>`, addressed per CPU, so it
- * has no fixed member on `channels` for a registration-derived set to find.
- */
 async function snapshotMode(
   fixture: Record<string, unknown>,
   mode: Mode,
@@ -67,7 +62,6 @@ async function snapshotMode(
   const block = resolveStreamBlock(fixture);
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
-    carriedChannels: block.carriedChannels,
     pinnedUt: block.pinnedUt,
     delaySeconds: block.delaySeconds,
   });

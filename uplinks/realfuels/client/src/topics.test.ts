@@ -67,9 +67,7 @@ describe("the three RealFuels Topics", () => {
 // and one of the two describes below fails with a bare number.
 describe("unit hydration at decode time", () => {
   it('hydrates the boiloff rate into a Value<"kg/s">', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALFUELS_BOILOFF_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(REALFUELS_BOILOFF_TOPIC)),
       { wrapper: fixture.Provider },
@@ -98,9 +96,7 @@ describe("unit hydration at decode time", () => {
    * generated contract still types it Value<"ratio">.
    */
   it("hydrates units on the nested engine rows, not just the payload's own fields", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [REALFUELS_ENGINES_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => observedValue(useTelemetry(REALFUELS_ENGINES_TOPIC)),
       { wrapper: fixture.Provider },

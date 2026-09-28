@@ -145,7 +145,6 @@ const renderedTrees: Array<() => void> = [];
 
 function newFixture() {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 10,
   });
   primeSubscriptions(fixture);
@@ -167,9 +166,8 @@ function renderWidget(fixture: ReturnType<typeof newFixture>) {
  * `TimelineStore` (`store.sample`), it does not itself call
  * `client.subscribe` for its raw Topic deps the way `useTelemetry`/
  * `useStream` do. `StubTransport.emit` mirrors the real wire protocol's
- * subscription gate (nothing streams for a topic nobody has subscribed to,
- * see `default-carried-topics.ts`'s "Promotion here is an allowlist, not a
- * subscription" doc comment), so a bare `emit` here would silently no-op.
+ * subscription gate (nothing streams for a topic nobody has subscribed to),
+ * so a bare `emit` here would silently no-op.
  * A dummy `client.subscribe` per topic flips that gate exactly the way a
  * companion widget reading the same topic would in production, this is a
  * TEST concern only: see this file's own report for the production-side

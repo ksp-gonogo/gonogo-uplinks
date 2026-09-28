@@ -168,7 +168,7 @@ globalThis.__minsizeWidgets = () =>
     id: def.id,
     name: def.name,
     minSize: def.minSize ? { ...def.minSize } : undefined,
-    carried: [
+    declaredTopics: [
       ...new Set([
         ...(def.channels ?? []),
         ...(def.optionalChannels ?? []),
@@ -278,7 +278,7 @@ async function sweep(name) {
             target: { kind: "widget", id: widget.id },
             fixture: `${widget.id}@min`,
             pinnedUt: PINNED_UT,
-            carriedChannels: widget.carried,
+            declaredTopics: widget.declaredTopics,
             emits: [],
             config: {},
             slotProps: {},

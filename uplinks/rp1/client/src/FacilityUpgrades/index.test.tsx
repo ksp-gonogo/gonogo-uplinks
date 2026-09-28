@@ -20,17 +20,8 @@ afterEach(() => {
   renderedTrees.length = 0;
 });
 
-const CARRIED = [
-  "rp1.available",
-  "career.status",
-  "career.facilities",
-  "rp1.constructions",
-  "rp1.facilities",
-];
-
 function mount() {
   const stream = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 1000,
   });
   const result = render(

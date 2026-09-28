@@ -82,9 +82,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   // stormEjectionSpeed would arrive as bare numbers here even though
   // ./__generated__/contract.ts still types them Value<"rad/s">/Value<"m/s">.
   it('hydrates spaceweather\'s own fields into Value<"rad/s">/Value<"m/s"> at decode time', async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_SPACEWEATHER_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_SPACEWEATHER_TOPIC);
@@ -150,9 +148,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   // Value<"m">, a habitat volume of 3.5 instead of Value<"m³">, a resource
   // density of 1 instead of Value<"kg/m³">.
   it("hydrates the per-kerbal rule dose nested two levels down", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_CREW_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_CREW_TOPIC);
@@ -215,9 +211,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   });
 
   it("hydrates a star's distance and carries its Vec3 unit to the three leaves", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_SPACEWEATHER_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_SPACEWEATHER_TOPIC);
@@ -277,9 +271,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   });
 
   it("hydrates the life-support habitat, processes and greenhouses", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_LIFESUPPORT_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_LIFESUPPORT_TOPIC);
@@ -346,9 +338,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   // and `profile.resources` is a map of nested SHAPES (the `*`-prefixed shape
   // entry), which only the TYPE registry can resolve.
   it("wraps every value of a name-keyed rate map, keys untouched", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_LIFESUPPORT_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_LIFESUPPORT_TOPIC);
@@ -386,9 +376,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   });
 
   it("hydrates a profile resource definition through the map-of-shapes entry", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_PROFILE_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_PROFILE_TOPIC);
@@ -471,9 +459,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
   // wrapped" is a stated property of this Topic rather than an
   // indistinguishable-from-broken silence.
   it("leaves kerbalism.features bare: it declares no quantities", async () => {
-    const fixture = setupStreamFixture({
-      carriedChannels: [KERBALISM_FEATURES_TOPIC],
-    });
+    const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
         const reading = useTelemetry(KERBALISM_FEATURES_TOPIC);

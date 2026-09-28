@@ -21,12 +21,10 @@ import { FakeKosUplink } from "../dataSource/__fixtures__/FakeKosUplink.js";
 import { kosSource } from "../dataSource/kos.js";
 import { KosScriptTriggerComponent } from "./index.js";
 
-const CARRIED = ["kos.processors", "comms.delay"];
-
 function renderWidget(config: { cpuName?: string; scriptPath?: string } = {}) {
   const fake = FakeKosUplink.install();
   const utils = render(
-    <TelemetryProvider client={fake.client} carriedChannels={CARRIED}>
+    <TelemetryProvider client={fake.client}>
       <KosScriptTriggerComponent id="kos-script-trigger-1" config={config} />
     </TelemetryProvider>,
   );

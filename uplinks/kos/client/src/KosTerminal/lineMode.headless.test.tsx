@@ -125,7 +125,6 @@ describe("KosTerminal line mode: faithful VT (real @xterm/headless)", () => {
 
   function fixture() {
     return setupStreamFixture({
-      carriedChannels: ["kos.processors", "kos.terminal.7"],
       pinnedUt: 10,
     });
   }
@@ -585,7 +584,6 @@ describe("KosTerminal line mode: no comms path (kos-nopath-block-input fix)", ()
 
   function fixture() {
     return setupStreamFixture({
-      carriedChannels: ["kos.processors", "kos.terminal.7", "comms.link"],
       pinnedUt: 10,
     });
   }

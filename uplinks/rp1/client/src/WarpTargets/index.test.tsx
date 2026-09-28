@@ -14,19 +14,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { RP1_FUND_TARGET_CANCEL_COMMAND } from "./FundTarget.js";
 import { RP1_WARP_TO_COMPLETE_COMMAND, WarpTargets } from "./index.js";
 
-const TOPICS = [
-  "career.status",
-  "rp1.available",
-  "rp1.fundTarget",
-  RP1_FUND_TARGET_CANCEL_COMMAND,
-  RP1_WARP_TO_COMPLETE_COMMAND,
-];
-
 function mount(
   fundTarget?: Record<string, unknown>,
   funds: number | null = 120_000,
 ) {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <WarpTargets />
@@ -73,7 +65,7 @@ describe("WarpTargets", () => {
   });
 
   it("renders nothing at all until RP-1 says it is there", async () => {
-    const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+    const fixture = setupStreamFixture();
     const view = render(
       <fixture.Provider>
         <WarpTargets />

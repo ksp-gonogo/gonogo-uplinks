@@ -5,12 +5,6 @@
     "notes": "SYNTHETIC probe fixture for the Ship Systems widget, dedicated to reviewing the per-source rate ledger's diverging red/green DivergingBar treatment. nominal.json's Electric Charge ledger only has ONE term (Water Recycler drawing power), which is not enough to judge a bar design meant to diverge either side of zero. This fixture keeps the same healthy/no-shortage vessel shape as nominal.json (diagnose() finds nothing short, overall status still reads Nominal) but gives Electric Charge FIVE producers/consumers of varied magnitude and sign, sorted by |rate|: Fuel Cell (+0.45/s, the dominant producer), Radio Transmitter (-0.05/s), CO2 Scrubber (-0.02/s, now also drawing a trickle of Electric Charge alongside its existing scrubber-cartridge draw), Generator (+0.02/s), Water Recycler (-0.01/s). Signs alternate down the list (+ - - + -) so the diverging left/right treatment reads clearly rather than clustering all one colour together. Expand Electric Charge's row (widgets.ts 'ledger-showcase' mode clicks its Disclosure trigger) to see all five bars at once, from a half-bar-dominant producer down to a small trickle, both colours represented at multiple lengths."
   },
   "_stream": {
-    "carriedChannels": [
-      "kerbalism.profile",
-      "kerbalism.lifesupport",
-      "vessel.resources",
-      "vessel.crew"
-    ],
     "pinnedUt": 10,
     "emits": [
       {

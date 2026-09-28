@@ -24,14 +24,6 @@ import { KscConstruction } from "./KscConstruction/index.js";
  * here that draws the raw index puts two numbers for one building on one
  * screen.</para>
  */
-const TOPICS = [
-  "rp1.available",
-  "rp1.constructions",
-  "rp1.centres",
-  "career.status",
-  "career.facilities",
-];
-
 const CENTRES = [
   {
     kscName: "Cape",
@@ -86,7 +78,7 @@ const RD_UNDER_CONSTRUCTION = [
 ];
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <FacilityUpgrades />

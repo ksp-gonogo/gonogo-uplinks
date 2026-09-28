@@ -95,7 +95,6 @@ const renderedTrees: Array<() => void> = [];
  */
 function mount(resources: Record<string, unknown>) {
   const fixture = setupStreamFixture({
-    carriedChannels: CARRIED,
     pinnedUt: 10,
   });
   for (const topic of CARRIED) fixture.subscribe(topic);

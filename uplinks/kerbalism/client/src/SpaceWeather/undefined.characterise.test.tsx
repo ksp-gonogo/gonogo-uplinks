@@ -56,7 +56,6 @@ const SW = getComponent("space-weather");
 if (!SW) throw new Error("space-weather is not registered");
 const TOPIC = SW.channels?.[0];
 if (!TOPIC) throw new Error("space-weather declares no primary channel");
-const CARRIED = [...(SW.channels ?? []), ...(SW.optionalChannels ?? [])];
 
 let stream: ReturnType<typeof setupStreamFixture>;
 
@@ -81,7 +80,6 @@ function vesselDotCx(container: HTMLElement): string | null {
 describe("SpaceWeather: what undefined means today", () => {
   beforeEach(() => {
     stream = setupStreamFixture({
-      carriedChannels: CARRIED,
       pinnedUt: 149_489,
     });
   });

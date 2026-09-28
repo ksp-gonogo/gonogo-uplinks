@@ -13,8 +13,6 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { CrewSchedule } from "./index.js";
 
-const TOPICS = ["rp1.available", "rp1.crew", "rp1.crewProgram"];
-
 // Year 1 day 1 in KSP's calendar is UT 0, so these are deliberately far apart
 // enough that two rendered dates can never collide in an assertion.
 const RETIRES_AT = 200_000_000;
@@ -55,7 +53,7 @@ const PROGRAM = {
 };
 
 function mountSchedule(kerbalName = "Wernher Kerman") {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <CrewSchedule

@@ -12,13 +12,6 @@ import {
 import { describe, expect, it } from "vitest";
 import { ProgramStatus } from "./index.js";
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.programs",
-  "rp1.programSlots",
-  "rp1.confidence",
-];
-
 function program(overrides: Record<string, unknown> = {}) {
   return {
     name: "EarlyXPlanes",
@@ -64,7 +57,7 @@ function slots(overrides: Record<string, unknown> = {}) {
 }
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
       <ProgramStatus />

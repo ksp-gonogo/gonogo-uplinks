@@ -29,16 +29,6 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  * only ever saw the built-in two would not say so.</para>
  */
 
-const TOPICS = [
-  "rp1.available",
-  "rp1.warehouse",
-  "rp1.buildQueue",
-  "rp1.complexes",
-  "rp1.pads",
-  "rp1.operations",
-  "career.status",
-];
-
 /** A stand-in for any Uplink section that spends: it exists and it is findable. */
 const SPENDING_SECTION_TEXT = "a contributed section with a spend control";
 
@@ -51,7 +41,7 @@ beforeAll(() => {
 });
 
 function mount() {
-  const fixture = setupStreamFixture({ carriedChannels: TOPICS });
+  const fixture = setupStreamFixture();
   render(
     <fixture.Provider>
       <WidgetHost widgetId="rp1-vehicle-assembly">

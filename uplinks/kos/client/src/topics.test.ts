@@ -53,7 +53,6 @@ describe("kos.processors Topic (relocated out of Sitrep.Contract)", () => {
 
   it("still carries its payload down the real stream pipeline", async () => {
     const fixture = setupStreamFixture({
-      carriedChannels: [KOS_PROCESSORS_TOPIC],
       pinnedUt: 1000,
     });
 
