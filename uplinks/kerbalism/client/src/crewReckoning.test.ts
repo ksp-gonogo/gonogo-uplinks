@@ -1,9 +1,5 @@
 import type { TopicPayload, TopicReading } from "@ksp-gonogo/sitrep-sdk";
-import {
-  bandIn,
-  bandIsWellFormed,
-  value,
-} from "@ksp-gonogo/sitrep-sdk";
+import { bandIn, bandIsWellFormed, value } from "@ksp-gonogo/sitrep-sdk";
 import { makeMeta, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
 import "./crewReckoning.js";
@@ -95,6 +91,13 @@ function reckonedRun(
     throw new Error(`expected a model, got reckoning "${reading.reckoning}"`);
   }
   return reading.reckoning.value;
+}
+
+/** The band the model gives the first kerbal's first rule, in the accumulator's units. */
+function problemBand(reading: TopicReading<Crew>) {
+  const problem = reading[0]?.rules[0]?.problem.reckoning;
+  if (problem?.status !== "available") throw new Error("no model");
+  return bandIn(problem.band, "units");
 }
 
 /** Climbing by 0.01/s of STAMP time, sampled at three uneven wire instants. */
@@ -467,9 +470,7 @@ describe("how well it says it knows the answer", () => {
     run: readonly (readonly [number, number, number])[] = SCATTERED,
     threshold = 1e6,
   ) {
-    const reading = readRun(viewUt, run, threshold);
-    if (reading.reckoning.status !== "available") throw new Error("no model");
-    return bandIn(reading.reckoning.bands?.["0.rules.0.problem"], "units");
+    return problemBand(readRun(viewUt, run, threshold));
   }
 
   it("keys the band by the same path `modelled` names", () => {
@@ -503,10 +504,7 @@ describe("how well it says it knows the answer", () => {
      */
     const reading = readRun(1060, SCATTERED, 1e6);
     if (reading.reckoning.status !== "available") throw new Error("no model");
-    const band = bandIn(
-      reading.reckoning.bands?.["0.rules.0.problem"],
-      "units",
-    );
+    const band = problemBand(reading);
 
     expect(band?.value.magnitude).toBe(
       reading.reckoning.value[0].rules?.[0].problem?.magnitude,

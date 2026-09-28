@@ -19,34 +19,13 @@ import { KERBALISM_CREW_TOPIC } from "../topics.js";
 import { KERBALISM } from "../uplink.js";
 import { onFatalAxis, ruleFraction } from "./processor.js";
 
-// ---------------------------------------------------------------------------
-// Each survival rule's 0..1 figure AS A READING: how current it is, and how
-// well the crew model knows it.
-//
-// This was an augment. `crewReckoning.ts` is the one model in this tree that
-// mints a real uncertainty interval, and `CrewSurvival`'s Processor flattens
-// each rule to a bare `fraction`, which has nowhere to put the second end. So
-// the interval used to be drawn as TEXT on the roster row, beside a meter that
-// was already drawing the number it bounds, and the operator rejected that
-// picture twice.
-//
-// `Meter` now takes a whole `Reading` and draws the band itself, one mark per
-// bound on the track the bar is already on, so the second end has somewhere to
-// go that is not a second row. What was missing between the model and the
-// meter is this: a contribution is handed its Topic deps as PAYLOADS and never
-// as readings (`DepValue` in the sdk says so), so nothing downstream of the
-// Processor could see a reckoning at all.
-//
-// ## Why a Processor may hand back a `Reading` here
-//
-// `ReadingDep`'s own doc says a Processor should not return one, and gives the
-// reason: a `Reading` is ONE Topic's currency, and a conclusion drawn across
-// several is not any single Topic's anything. That is the test, and this is
-// inside it. Every figure here is one field of `kerbalism.crew` divided by
-// another field of the same rule of the same Topic, so its currency and its
-// model are exactly that Topic's. Nothing from `vessel.crew` reaches these
-// numbers; the roster only supplies names, and it does that next door.
-// ---------------------------------------------------------------------------
+/*
+ * Each survival rule's 0..1 toward-fatal figure as a Reading, so a meter draws
+ * the crew model's interval on the bar itself. A Processor may hand back a
+ * Reading here because every figure is one field of `kerbalism.crew` divided by
+ * another field of the same rule, so its currency and its model are exactly
+ * that Topic's.
+ */
 
 type Crew = TopicPayload<typeof KERBALISM_CREW_TOPIC>;
 
@@ -178,33 +157,19 @@ function fractionReckoning(
   index: number,
   threshold: Value<"units">,
 ): Reckoning<Value<"ratio">> {
-  if (reading.reckoning.status !== "available") return { status: "none" };
-  const reckoned = reading.reckoning;
-  const path = `${kerbal}.rules.${index}.problem`;
-  // The model's own path vocabulary, read back verbatim: `crewReckoning.ts`
-  // keys both `modelled` and `bands` by this string, dotted from the payload
-  // root. A rule missing from `modelled` is one the model copied rather than
-  // carried, and claiming a basis for it would be a modelled label over an
-  // observation.
-  const moved = reckoned.modelled.find((field) => field.path === path);
-  if (!moved) return { status: "none" };
-  const carried = reckoned.value[kerbal]?.rules?.[index]?.problem;
-  const band = bandIn(reckoned.bands?.[path], "units");
+  const problem = reading[kerbal]?.rules[index]?.problem.reckoning;
+  if (problem?.status !== "available") return { status: "none" };
+  const carried = problem.modelled;
+  const band = bandIn(problem.band, "units");
   return {
     status: "available",
-    atUt: reckoned.atUt,
-    beyondReceived: reckoned.beyondReceived,
+    atUt: problem.atUt,
+    beyondReceived: problem.beyondReceived,
     modelled:
       carried == null || magnitudeOf(carried) === null
         ? value("ratio", 0)
         : onFatalAxis(carried, threshold),
-    // The basis of the entry covering THIS rule, not the one covering the
-    // root: the two agree in this model and nothing makes them.
-    basis: moved.basis,
-    // A plain field, because this reading IS the one figure. The path the crew
-    // model keys by names a field of a roster, and a consumer holding a lone
-    // fraction has no roster to walk; the per-value reading has nowhere to put
-    // one and needs nowhere.
+    basis: problem.basis,
     band: band === undefined ? undefined : onAxis(band, threshold),
   };
 }
