@@ -196,9 +196,7 @@ function overlayProps(
 describe("FootprintOverlay: map-view.overlay slot", () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
-  // No `DataSource`: the overlay's only read is the vessel list, which rides the
-  // stream. It used to be fed here off a `MockDataSource` registered under the
-  // flat id `"data"`, which is an id the app has not had for some time.
+  // No `DataSource`: the overlay's only read is the vessel list, which rides the stream.
   beforeEach(() => {
     clearRegistry();
     originalGetContext = HTMLCanvasElement.prototype.getContext;

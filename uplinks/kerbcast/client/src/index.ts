@@ -21,9 +21,8 @@
 // Importing this package's entry point side-effects four registrations
 // into @ksp-gonogo/core's global registries:
 //
-//   - `KerbcastDataSource` → registerDataSource("kerbcast", ...) so the
-//     sidecar connection appears in the Data Sources widget alongside the
-//     other registered sources.
+//   - `KerbcastDataSource` → registerUplinkHandle("kerbcast", ...) so the
+//     rest of the app can reach the sidecar connection by id.
 //   - `CameraFeed` component → registerComponent({ id: "camera-feed", ... })
 //     so it's placeable from the dashboard widget picker.
 //   - `DockingCameraAugment` → registerAugment({ id: "kerbcast-docking-camera",

@@ -18,13 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SCANScanningVessel } from "../schema.js";
 import { ScanningComponent } from "./index.js";
 
-// Every channel this widget reads rides the native TelemetryClient stream, so
-// every emit here goes over `transport`. That includes `scansat.scanningVessels`,
-// which until recently was read through the two-arg `useTelemetry("data", key)`
-// shim and fed here off a `MockDataSource`: the shim resolves no Topic for a bare
-// Topic id and the app registers nothing under the flat id `"data"`, so the list
-// was dead in production while this file's legacy source kept the tests green.
-// See `useScanLayers.ts`'s `useScanningVessels`.
+// Every channel this widget reads rides the native TelemetryClient stream, so every emit here goes over `transport`.
 
 /** `system.bodies` fixture carrying just the one body the tests need. */
 const SYSTEM_BODIES = { bodies: [{ index: 1, name: "Kerbin" }] };

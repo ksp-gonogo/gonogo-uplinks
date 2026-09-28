@@ -1,17 +1,12 @@
 import {
   AugmentSlot,
-  BufferedDataSource,
   clearRegistry,
-  type DataKey,
-  MemoryStore,
   Quality,
-  registerDataSource,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   render,
   StubTransport,
   screen,
@@ -92,11 +87,6 @@ function MappedBody({
 
 const NO_PROPS: Record<string, never> = {};
 
-// Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
-// the buffered source. RTL auto-cleanup runs after this file's afterEach, so it
-// can't be relied on to unmount first, disconnecting a live source while the
-// widget is still mounted fires a status change into it, a state update outside
-// act() (the documented anti-pattern in CLAUDE.md).
 const renderedTrees: Array<() => void> = [];
 
 function renderSlot(ui: ReactElement) {
@@ -106,29 +96,13 @@ function renderSlot(ui: ReactElement) {
 }
 
 describe("CoveragePanel: map-view.sections slot", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
-
-  beforeEach(async () => {
+  beforeEach(() => {
     clearRegistry();
-    const keys: DataKey[] = [
-      { key: "scansat.scanningVessels" },
-      { key: "scansat.coverage.Kerbin.2" },
-      { key: "scansat.coverage.Kerbin.1" },
-      { key: "scansat.coverage.Kerbin.8" },
-      { key: "scansat.coverage.Kerbin.256" },
-      { key: "scansat.coverage.Kerbin.128" },
-    ];
-    source = new MockDataSource({ keys });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
   });
 
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
   });
 
   it("does not render while the scansat domain has not announced availability", () => {
@@ -145,7 +119,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       </TelemetryProvider>,
     );
     act(() => {
-      source.emit("scansat.coverage.Kerbin.2", 45.6);
+      transport.emit("scansat.coverage.Kerbin.2", 45.6);
     });
 
     expect(
@@ -161,9 +135,6 @@ describe("CoveragePanel: map-view.sections slot", () => {
         <AugmentSlot name="map-view.sections" props={NO_PROPS} />
       </MappedBody>,
     );
-    act(() => {
-      source.emit("scansat.coverage.Kerbin.2", 45.6);
-    });
 
     expect(
       screen.queryByRole("region", { name: /Scan coverage for Kerbin/i }),

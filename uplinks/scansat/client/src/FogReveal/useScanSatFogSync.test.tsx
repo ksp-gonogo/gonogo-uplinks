@@ -6,13 +6,11 @@ import {
   type FogMaskCache,
   FogMaskCacheProvider,
   FogMaskStore,
-  registerDataSource,
   useFogMaskCache,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   render,
   StubTransport,
   TelemetryProvider,
@@ -21,6 +19,7 @@ import {
 import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SCAN_TYPE, type SCANCoverageBitmap } from "../schema.js";
+import "../topics.js";
 import { useScanSatFogSync } from "./useScanSatFogSync.js";
 
 const BODY: BodyDefinition = {
@@ -65,7 +64,6 @@ function Harness({
 }
 
 describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSource)", () => {
-  let legacySource: MockDataSource;
   let client: ReturnType<typeof createTestTelemetryClient>;
   let transport: StubTransport;
   let store: FogMaskStore;
@@ -74,15 +72,6 @@ describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSour
 
   beforeEach(() => {
     clearRegistry();
-    // `scansat.available` still reads through the legacy `useTelemetry("data", ...)`
-    // gate at the top of the hook (untouched by this migration), a MockDataSource
-    // registered under the default "data" id lets the test flip it on.
-    legacySource = new MockDataSource({
-      id: "data",
-      keys: [{ key: "scansat.available" }],
-    });
-    registerDataSource(legacySource);
-
     transport = new StubTransport();
     client = createTestTelemetryClient(transport);
     store = new FogMaskStore({ dbName: `gonogo-fog-test-${Math.random()}` });
@@ -115,7 +104,7 @@ describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSour
   it("subscribes to scansat.mask.<body>.<type> on the real TelemetryClient once scansat.available flips true, and merges an arriving bitmap into the fog mask", async () => {
     renderHarness(BODY);
     act(() => {
-      legacySource.emit("scansat.available", true);
+      transport.emit("scansat.available", true);
     });
 
     const key = `scansat.mask.${BODY.name}.${SCAN_TYPE.AltimetryHiRes}`;
@@ -147,7 +136,7 @@ describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSour
   it("tears down the mask subscription when the widget unmounts", async () => {
     const { unmount } = renderHarness(BODY);
     act(() => {
-      legacySource.emit("scansat.available", true);
+      transport.emit("scansat.available", true);
     });
     const key = `scansat.mask.${BODY.name}.${SCAN_TYPE.AltimetryHiRes}`;
     await waitFor(() => expect(transport.isSubscribed(key)).toBe(true));

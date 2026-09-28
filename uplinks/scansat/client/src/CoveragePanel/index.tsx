@@ -9,14 +9,14 @@
 // `map-view.sections` is a below-content panel slot: MapView passes down
 // only the mapped body name (plus per-namespace augment settings, unused
 // here): this augment reads its own `scansat.coverage.<body>.<type>` and
-// `scansat.scanningVessels` Topics directly, through `useTelemetry` and
+// `scansat.scanningVessels` Topics directly, through `useStream` and
 // `useScanningVessels`.
 //
 // Presence-gated on `requires: "scansat"`: renders only while
 // `scansat.available` is live, so an install without SCANsat never mounts
 // it: zero impact on MapView for non-SCANsat users.
 
-import { registerAugment, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
+import { registerAugment, useStream, value } from "@ksp-gonogo/sitrep-sdk";
 import { NULL_DISPLAY, Unit, useWidgetScope } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
@@ -99,10 +99,11 @@ function CoverageRow({
   label: string;
   range: { inRange: boolean; bestRange: boolean } | undefined;
 }>) {
-  const pct = useTelemetry<number>(
-    "data",
-    `scansat.coverage.${bodyName}.${scanType}`,
-  );
+  const reading = useStream<number>(`scansat.coverage.${bodyName}.${scanType}`);
+  const pct =
+    reading.state === "observed" || reading.state === "stale"
+      ? reading.value
+      : undefined;
   // Null, not 0. "0% scanned" says this body is untouched, and it is the
   // figure an operator plans a whole mapping campaign around: read off a scan
   // type whose percentage never arrived, it sends them to fly a survey that

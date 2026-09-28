@@ -3,6 +3,7 @@ import {
   getBody,
   observedValue,
   registerComponent,
+  useStream,
   useTelemetry,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -392,10 +393,11 @@ function CoverageRow({
   bodyName,
   scanType,
 }: Readonly<{ bodyName: string; scanType: SCANType }>) {
-  const pct = useTelemetry<number>(
-    "data",
-    `scansat.coverage.${bodyName}.${scanType}`,
-  );
+  const reading = useStream<number>(`scansat.coverage.${bodyName}.${scanType}`);
+  const pct =
+    reading.state === "observed" || reading.state === "stale"
+      ? reading.value
+      : undefined;
   // Null, not 0. "0% scanned" says this body is untouched, and it is the
   // figure an operator plans a whole mapping campaign around: read off a scan
   // type whose percentage never arrived, it sends them to fly a survey that

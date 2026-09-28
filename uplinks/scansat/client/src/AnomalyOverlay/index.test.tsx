@@ -1,13 +1,11 @@
 import {
   clearRegistry,
   getMapPoiProviders,
-  registerDataSource,
   TargetKind,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   renderHook,
   StubTransport,
   TelemetryProvider,
@@ -36,12 +34,7 @@ function wrapper(client: ReturnType<typeof createTestTelemetryClient>) {
   };
 }
 
-// Rendered hook trees, tracked so afterEach can unmount them BEFORE
-// clearRegistry() notifies the DataSource-registry subscribers: every
-// useTelemetry call keeps its legacy useDataSourceSubscription wired
-// unconditionally, so clearRegistry() firing on a still-mounted hook tree is
-// a state update outside act(). RTL auto-cleanup runs after this file's
-// afterEach, too late to unmount first.
+// Rendered hook trees, unmounted before clearRegistry() so no registry subscriber is notified while still mounted.
 const renderedTrees: Array<() => void> = [];
 
 afterEach(() => {
@@ -56,8 +49,6 @@ describe("scansat:anomalies map POI provider", () => {
   });
 
   it("maps known anomalies to MapPois, excluding undiscovered ones", async () => {
-    const anomalySource = new MockDataSource({ id: "data" });
-    registerDataSource(anomalySource);
     const transport = new StubTransport();
     const client = createTestTelemetryClient(transport);
     const provider = getProvider();
@@ -123,8 +114,6 @@ describe("scansat:anomalies map POI provider", () => {
   // action guard was already written for this absence and already refused
   // to dispatch; it never stopped the marker being drawn.
   it("drops a known anomaly with no readable coordinates, rather than placing it at 0°N 0°E", async () => {
-    const anomalySource = new MockDataSource({ id: "data" });
-    registerDataSource(anomalySource);
     const transport = new StubTransport();
     const client = createTestTelemetryClient(transport);
     const provider = getProvider();
@@ -224,8 +213,6 @@ describe("scansat:anomalies map POI provider", () => {
   });
 
   it("returns [] (no actions dispatched) once loaded with no anomalies for the body", async () => {
-    const anomalySource = new MockDataSource({ id: "data" });
-    registerDataSource(anomalySource);
     const transport = new StubTransport();
     const client = createTestTelemetryClient(transport);
     const provider = getProvider();

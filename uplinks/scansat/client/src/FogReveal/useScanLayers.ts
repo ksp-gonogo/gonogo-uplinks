@@ -1,4 +1,4 @@
-import { useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import { useStream, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import { useMemo } from "react";
 import type {
   SCANAnomalyEntry,
@@ -18,6 +18,22 @@ import {
   decodeCoverage,
   decodeHeightGrid,
 } from "./scanDecode.js";
+import { SCANSAT_AVAILABLE_TOPIC } from "../topics.js";
+
+/**
+ * One per-body layer's last payload, or `undefined` with no body or before the
+ * first push. A per-body key is a dynamic Topic with no `TopicId` member, so it
+ * is read with `useStream`; with no body the hook still subscribes, to the
+ * availability flag, and ignores it, so the hook order holds. A `stale` payload
+ * still answers: coverage, terrain and the anomaly list only change on a push.
+ */
+function useBodyLayer<T>(topic: string | undefined): T | undefined {
+  const reading = useStream<T>(topic ?? SCANSAT_AVAILABLE_TOPIC);
+  if (topic === undefined) return undefined;
+  return reading.state === "observed" || reading.state === "stale"
+    ? reading.value
+    : undefined;
+}
 
 /**
  * Live snapshot of SCANsat's per-tile coverage bitfield for the named
@@ -28,11 +44,9 @@ import {
 export function useScanCoverage(
   bodyName: string | undefined,
   scanType: SCANType,
-  dataSourceId = "data",
 ): DecodedCoverage | null | undefined {
-  const raw = useTelemetry<SCANCoverageBitmap | null>(
-    dataSourceId,
-    bodyName ? `scansat.mask.${bodyName}.${scanType}` : "scansat.available",
+  const raw = useBodyLayer<SCANCoverageBitmap | null>(
+    bodyName ? `scansat.mask.${bodyName}.${scanType}` : undefined,
   );
   return useMemo(() => {
     if (!bodyName) return undefined;
@@ -47,11 +61,9 @@ export function useScanCoverage(
  */
 export function useScanHeightGrid(
   bodyName: string | undefined,
-  dataSourceId = "data",
 ): DecodedHeights | null | undefined {
-  const raw = useTelemetry<SCANHeightGrid | null>(
-    dataSourceId,
-    bodyName ? `scansat.height.${bodyName}` : "scansat.available",
+  const raw = useBodyLayer<SCANHeightGrid | null>(
+    bodyName ? `scansat.height.${bodyName}` : undefined,
   );
   return useMemo(() => {
     if (!bodyName) return undefined;
@@ -66,11 +78,9 @@ export function useScanHeightGrid(
  */
 export function useScanBiomeGrid(
   bodyName: string | undefined,
-  dataSourceId = "data",
 ): DecodedBiomes | null | undefined {
-  const raw = useTelemetry<SCANBiomeGrid | null>(
-    dataSourceId,
-    bodyName ? `scansat.biome.${bodyName}` : "scansat.available",
+  const raw = useBodyLayer<SCANBiomeGrid | null>(
+    bodyName ? `scansat.biome.${bodyName}` : undefined,
   );
   return useMemo(() => {
     if (!bodyName) return undefined;
@@ -87,11 +97,9 @@ export function useScanBiomeGrid(
  */
 export function useScanAnomalies(
   bodyName: string | undefined,
-  dataSourceId = "data",
 ): SCANAnomalyEntry[] | null | undefined {
-  const raw = useTelemetry<SCANAnomalyEntry[] | null>(
-    dataSourceId,
-    bodyName ? `scansat.anomalies.${bodyName}` : "scansat.available",
+  const raw = useBodyLayer<SCANAnomalyEntry[] | null>(
+    bodyName ? `scansat.anomalies.${bodyName}` : undefined,
   );
   if (!bodyName) return undefined;
   if (raw == null) return raw as null | undefined;
@@ -104,16 +112,8 @@ export function useScanAnomalies(
  * single-body fog mask, but the Scanning widget surfaces the per-
  * vessel scanner + footprint detail.
  *
- * Read through the canonical one-arg Topic form, unlike the per-body hooks
- * above. Those name a key in a DYNAMIC namespace (`scansat.mask.<body>.<type>`
- * and friends), which no `[SitrepTopic]` type can enumerate, so the two-arg
- * form's `resolveValueTopic` vouches for them by pattern. `scansat.scanningVessels`
- * is a declared Topic of this Uplink's own contract slice, and the two-arg form
- * cannot reach one: `mapTopic` answers only for those dynamic patterns, and
- * `isKnownFieldPath` walks a topic root plus a FIELD path, so a bare Topic id
- * resolves to nothing on either arm. It then fell through to a `DataSource`
- * registered under the flat id `"data"`, which the app has not had since the
- * stream became the sole telemetry path, so this list read `undefined` for ever.
+ * `scansat.scanningVessels` is a declared Topic of this Uplink's contract
+ * slice, so it is read through `useTelemetry`, unlike the per-body layers above.
  */
 export function useScanningVessels(): SCANScanningVessel[] | undefined {
   const reading = useTelemetry("scansat.scanningVessels");

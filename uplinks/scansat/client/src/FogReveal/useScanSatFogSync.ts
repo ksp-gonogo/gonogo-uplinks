@@ -1,6 +1,7 @@
 import {
   type BodyDefinition,
   registerFogRevealSource,
+  stillTrue,
   useFogMaskCache,
   useLateTelemetrySubscribe,
   useTelemetry,
@@ -65,14 +66,9 @@ for (const { layerId, weight } of FOG_SCAN_TYPES) {
  * each per-type mask reflects the union of every scanner of that type
  * that has ever flown over the body.
  */
-export function useScanSatFogSync(
-  body: BodyDefinition | undefined,
-  dataSourceId = "data",
-): void {
-  const scanAvailable = useTelemetry<boolean>(
-    dataSourceId,
-    "scansat.available",
-  );
+export function useScanSatFogSync(body: BodyDefinition | undefined): void {
+  const scanAvailable =
+    stillTrue(useTelemetry("scansat.available"), undefined) === true;
   const cache = useFogMaskCache();
   const subscribe = useLateTelemetrySubscribe();
 

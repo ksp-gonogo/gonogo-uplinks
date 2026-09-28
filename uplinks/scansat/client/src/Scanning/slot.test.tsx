@@ -26,10 +26,7 @@ import { ScanningComponent } from "./index.js";
  * slot props.
  */
 
-// Every channel the widget reads rides the native TelemetryClient stream, so
-// this suite needs no `DataSource` at all. It used to register one for
-// `scansat.scanningVessels`, back when that list was read through the two-arg
-// shim; the slot assertions never depended on it.
+// Every channel the widget reads rides the native TelemetryClient stream, so this suite needs no `DataSource` at all.
 
 const SYSTEM_BODIES = { bodies: [{ index: 1, name: "Kerbin" }] };
 const VESSEL_IDENTITY_AT_KERBIN = { parentBodyIndex: 1 };

@@ -113,10 +113,7 @@ function renderFeed(
 // ---------------------------------------------------------------------------
 // Comms-topic test double for the CommNet-degrade + signal-delay/quality
 // badge tests below: those three reads (signalStrength/connected/
-// signalDelay) were migrated off the legacy two-arg `useTelemetry("data",
-// "comm.*")` shim onto native topics, so they need a mounted
-// the stream fixture, not the `makeDataSource("data", ...)` fake the rest
-// of this file's `dataRequirements` still use.
+// signalDelay) are native topics, so they need a mounted stream fixture.
 // ---------------------------------------------------------------------------
 
 /** The three native topics CameraFeed reads its comms state off. */
@@ -139,9 +136,7 @@ function renderFeedWithComms(
  * Fans a partial `{ signalStrength, connected, signalDelay }` fixture out to
  * the three native topics CameraFeed actually reads: `vessel.comms`
  * (`.signalStrength`), `comms.link` (`.connected`), `comms.delay`
- * (`.oneWaySeconds`). Mirrors the old `makeDataSource("data", { "comm.foo":
- * ... })` fixture shape one field at a time so existing call sites only need
- * their key names updated.
+ * (`.oneWaySeconds`), one field at a time.
  */
 function emitComms(
   stream: StreamFixture,
@@ -190,8 +185,8 @@ function renderStatefulFeed(
 }
 
 // Note: importing KerbcastDataSource class directly (not the barrel index)
-// avoids the module-level registerDataSource() side effect. Tests register
-// their own instance explicitly via registerDataSource() in each fixture.
+// avoids the module-level registerUplinkHandle() side effect. Tests register
+// their own instance explicitly via registerUplinkHandle() in each fixture.
 
 // ---------------------------------------------------------------------------
 // Camera-state fixture factory: the sidecar's CameraState has ~25 fields;

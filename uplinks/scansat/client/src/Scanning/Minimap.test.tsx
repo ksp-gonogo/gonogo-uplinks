@@ -1,20 +1,21 @@
 import "fake-indexeddb/auto";
-import type { BodyDefinition, DataKey } from "@ksp-gonogo/sitrep-sdk";
+import type { BodyDefinition } from "@ksp-gonogo/sitrep-sdk";
 import {
-  BufferedDataSource,
   clearFogRevealSources,
   clearRegistry,
+  DEFAULT_MASK_HEIGHT,
+  DEFAULT_MASK_WIDTH,
   DEFAULT_PROFILE_ID,
   FogMaskCacheProvider,
   FogMaskStore,
-  MemoryStore,
-  registerDataSource,
   registerFogRevealSource,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
-  MockDataSource,
+  createTestTelemetryClient,
   render,
+  StubTransport,
+  TelemetryProvider,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type { ReactElement } from "react";
@@ -61,29 +62,25 @@ interface RecordedCall {
 }
 
 describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no components-package canvas hooks)", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
+  let transport: StubTransport;
+  let client: ReturnType<typeof createTestTelemetryClient>;
   let store: FogMaskStore;
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
   let calls: RecordedCall[];
   const renderedTrees: Array<() => void> = [];
 
   function renderMinimap(ui: ReactElement) {
-    const result = render(ui);
+    const result = render(
+      <TelemetryProvider client={client}>{ui}</TelemetryProvider>,
+    );
     renderedTrees.push(result.unmount);
     return result;
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     clearRegistry();
-    const keys: DataKey[] = [
-      { key: "scansat.biome.Kerbin" },
-      { key: "scansat.anomalies.Kerbin" },
-    ];
-    source = new MockDataSource({ keys });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
+    transport = new StubTransport();
+    client = createTestTelemetryClient(transport);
 
     store = new FogMaskStore({ dbName: `gonogo-fog-test-${Math.random()}` });
 
@@ -146,7 +143,6 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
     clearFogRevealSources();
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
@@ -186,7 +182,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
       </FogMaskCacheProvider>,
     );
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
     });
 
     await waitFor(() => {
@@ -205,7 +201,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
       </FogMaskCacheProvider>,
     );
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
     });
 
     await waitFor(() => {
@@ -216,13 +212,14 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
 
   it("shows the biome colormap at full opacity for tiles a registered coverage source reports as fully covered", async () => {
     registerFogRevealSource({ id: LAYER_ID, weight: 255 });
+    // The cache discards a stored mask whose dimensions differ from its own, so the fixture is full size.
     await store.save(
       DEFAULT_PROFILE_ID,
       BODY.id,
       LAYER_ID,
-      new Uint8Array(4).fill(255),
-      2,
-      2,
+      new Uint8Array(DEFAULT_MASK_WIDTH * DEFAULT_MASK_HEIGHT).fill(255),
+      DEFAULT_MASK_WIDTH,
+      DEFAULT_MASK_HEIGHT,
     );
     renderMinimap(
       <FogMaskCacheProvider store={store}>
@@ -230,7 +227,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
       </FogMaskCacheProvider>,
     );
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
     });
 
     await waitFor(() => {
@@ -248,7 +245,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
       </FogMaskCacheProvider>,
     );
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
     });
 
     await waitFor(() => {
@@ -268,8 +265,8 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
       </FogMaskCacheProvider>,
     );
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
-      source.emit("scansat.anomalies.Kerbin", [
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.anomalies.Kerbin", [
         // In-window and fully readable: the control, so a count of 1 below
         // means "one was filtered", not "nothing rendered at all".
         { name: "Monolith", latitude: 5, longitude: 5, known: true, detail: true },

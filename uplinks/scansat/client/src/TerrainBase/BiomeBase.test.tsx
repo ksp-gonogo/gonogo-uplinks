@@ -1,18 +1,13 @@
 import {
   AugmentSlot,
-  BufferedDataSource,
   clearRegistry,
-  type DataKey,
-  MemoryStore,
   Quality,
-  registerDataSource,
   registerStockBodies,
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   createTestTelemetryClient,
-  MockDataSource,
   render,
   StubTransport,
   TelemetryProvider,
@@ -107,8 +102,6 @@ describe("packedColourToComponents", () => {
 });
 
 describe("BiomeBase: map-view.base slot", () => {
-  let source: MockDataSource;
-  let buffered: BufferedDataSource;
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
   // Shared across every getContext("2d") call in a test; see
   // AltimetryBase.test.tsx's identical setup for why a fresh object literal
@@ -118,14 +111,9 @@ describe("BiomeBase: map-view.base slot", () => {
   let paintCalls: string[];
   let paintFillStyles: string[];
 
-  beforeEach(async () => {
+  beforeEach(() => {
     clearRegistry();
     registerStockBodies();
-    const keys: DataKey[] = [{ key: "scansat.biome.Kerbin" }];
-    source = new MockDataSource({ keys });
-    buffered = new BufferedDataSource({ source, store: new MemoryStore() });
-    registerDataSource(buffered);
-    await buffered.connect();
 
     paintCalls = [];
     paintFillStyles = [];
@@ -153,7 +141,6 @@ describe("BiomeBase: map-view.base slot", () => {
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    buffered.disconnect();
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
@@ -172,11 +159,9 @@ describe("BiomeBase: map-view.base slot", () => {
 
   it("never calls onLayer while the scansat domain has not announced availability", () => {
     const onLayer = vi.fn();
-    renderSlot(
-      <AugmentSlot name="map-view.base" props={baseLayerProps({ onLayer })} />,
-    );
+    const { transport } = mountWithAvailability(baseLayerProps({ onLayer }));
     act(() => {
-      source.emit("scansat.biome.Kerbin", biomeGridFixture());
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
     });
     expect(onLayer).not.toHaveBeenCalled();
   });
