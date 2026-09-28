@@ -31,6 +31,23 @@ describe("computeHeartbeatBlob", () => {
     expect(computeHeartbeatBlob(topicsWith(["Kerbin"]))).toBeNull();
   });
 
+  it("contributes nothing when the mod confirms either topic absent", () => {
+    // A tombstone arrives as `null`, and absence is not a zero-sized blob.
+    const heartbeat = topicsWith(["Kerbin"], 42)["example.heartbeat"];
+    expect(
+      computeHeartbeatBlob({
+        "system.bodies": null,
+        "example.heartbeat": heartbeat,
+      }),
+    ).toBeNull();
+    expect(
+      computeHeartbeatBlob({
+        ...topicsWith(["Kerbin"]),
+        "example.heartbeat": null,
+      }),
+    ).toBeNull();
+  });
+
   it("contributes nothing when it does not know where to put the mark", () => {
     // The position needs a parent body. Guessing one would draw the blob
     // somewhere real, which is worse than drawing nothing.

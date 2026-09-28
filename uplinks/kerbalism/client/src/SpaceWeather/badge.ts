@@ -20,7 +20,7 @@ import { KERBALISM } from "../uplink.js";
 // ---------------------------------------------------------------------------
 
 function spaceWeatherBadges(
-  weather: KerbalismSpaceWeather | undefined,
+  weather: KerbalismSpaceWeather | null | undefined,
 ): BadgeEntry[] | null {
   if (!weather) return null;
   if (weather.stormInProgress === true) {

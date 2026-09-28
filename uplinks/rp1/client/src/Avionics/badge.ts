@@ -70,7 +70,7 @@ import { RP1 } from "../uplink.js";
  * file's header. The masses and the second lock reason stay on the topic.</para>
  */
 export function avionicsBadges(
-  avionics: Rp1Avionics | undefined,
+  avionics: Rp1Avionics | null | undefined,
 ): BadgeEntry[] | null {
   const level = avionics?.lockLevel;
   if (level !== "Locked" && level !== "Axial") return null;

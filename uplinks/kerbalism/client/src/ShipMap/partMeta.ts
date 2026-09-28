@@ -32,7 +32,7 @@ type PartMetaEntry = ContributionEntry<"ship-map.part-meta">;
  * `spaceWeatherBadges`'s export-the-pure-core pattern).
  */
 export function computeKerbalismPartMeta(
-  lifeSupport: KerbalismLifeSupport | undefined,
+  lifeSupport: KerbalismLifeSupport | null | undefined,
 ): PartMetaEntry[] {
   if (!lifeSupport) return [];
   const entries: PartMetaEntry[] = [];

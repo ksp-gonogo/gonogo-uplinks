@@ -33,7 +33,7 @@ type HopRateEntry = ContributionEntry<"comm-signal.hop-rates">;
  * number in `<Unit>` itself.
  */
 export function computeRealAntennasHopRates(
-  wire: readonly RealAntennasHopRate[] | undefined,
+  wire: readonly RealAntennasHopRate[] | null | undefined,
 ): HopRateEntry[] {
   if (!wire) return [];
   const entries: HopRateEntry[] = [];
@@ -55,9 +55,5 @@ REALANTENNAS.registerContribution({
   requires: "realantennas",
   deps: [REALANTENNAS_HOP_RATES_TOPIC],
   compute: (topics) =>
-    computeRealAntennasHopRates(
-      topics[REALANTENNAS_HOP_RATES_TOPIC] as
-        | readonly RealAntennasHopRate[]
-        | undefined,
-    ),
+    computeRealAntennasHopRates(topics[REALANTENNAS_HOP_RATES_TOPIC]),
 });

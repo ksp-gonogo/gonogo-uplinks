@@ -75,6 +75,7 @@ describe("facilityTiers", () => {
   /** No channel, no rows, and never a fabricated one. */
   it("contributes nothing when the channel is silent", () => {
     expect(facilityTiers(undefined)).toEqual([]);
+    expect(facilityTiers(null)).toEqual([]);
   });
 
   /**

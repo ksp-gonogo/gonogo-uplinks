@@ -161,6 +161,12 @@ describe("computeKerbalismPartMeters", () => {
     expect(
       computeKerbalismPartMeters(wire([part("1", {})]), undefined),
     ).toEqual([]);
+    expect(
+      computeKerbalismPartMeters(
+        wire([part("3", { Water: { amount: 42.3, maxAmount: 180 } })]),
+        null,
+      ),
+    ).toEqual([]);
   });
 });
 
@@ -202,6 +208,20 @@ describe("kerbalismPartMeterReadings", () => {
       state: "observed",
       atUt: value("ut", 900),
     });
+  });
+
+  it("draws nothing when the mod confirms the profile absent", () => {
+    expect(
+      kerbalismPartMeterReadings(
+        {
+          state: "observed",
+          value: tank,
+          atUt: value("ut", 900),
+          reckoning: { status: "none" },
+        },
+        null,
+      ),
+    ).toEqual([]);
   });
 
   it("draws nothing before the parts have arrived", () => {

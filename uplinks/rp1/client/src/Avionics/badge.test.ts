@@ -29,6 +29,7 @@ describe("avionicsBadges", () => {
    */
   it("draws nothing when nothing was read", () => {
     expect(avionicsBadges(undefined)).toBeNull();
+    expect(avionicsBadges(null)).toBeNull();
     expect(avionicsBadges({})).toBeNull();
   });
 

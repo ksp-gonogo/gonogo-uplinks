@@ -352,13 +352,10 @@ export function aeroBadges(
 /** The burn datum, derived exactly as the host widget does: the vessel's LOWEST point
  *  above terrain, falling back to the centre-of-mass radar altitude when
  *  `vessel.surface` is nulled by the capture guard. */
-function heightAboveTerrain(topics: Readonly<Record<string, unknown>>) {
-  const surface = topics["vessel.surface"] as
-    | TopicPayload<"vessel.surface">
-    | undefined;
-  const flight = topics["vessel.flight"] as
-    | TopicPayload<"vessel.flight">
-    | undefined;
+function heightAboveTerrain(
+  surface: TopicPayload<"vessel.surface"> | null | undefined,
+  flight: TopicPayload<"vessel.flight"> | null | undefined,
+) {
   return (
     surface?.heightFromTerrain?.magnitude ??
     flight?.altitudeTerrain?.magnitude ??
@@ -382,13 +379,10 @@ function heightAboveTerrain(topics: Readonly<Record<string, unknown>>) {
  * and only in that order: one authority, with a named second-best behind
  * it.</p>
  */
-function surfaceGravityOf(topics: Readonly<Record<string, unknown>>) {
-  const identity = topics["vessel.identity"] as
-    | TopicPayload<"vessel.identity">
-    | undefined;
-  const bodies = topics["system.bodies"] as
-    | TopicPayload<"system.bodies">
-    | undefined;
+function surfaceGravityOf(
+  identity: TopicPayload<"vessel.identity"> | null | undefined,
+  bodies: TopicPayload<"system.bodies"> | null | undefined,
+) {
   const index = identity?.parentBodyIndex;
   if (index == null || !bodies) return null;
   const entry = bodies.bodies.find((b) => b.index === index);
@@ -441,12 +435,8 @@ AERO.registerContribution({
   compute: (topics) => {
     const reading = topics[AERO_STATE.id];
     const state = aeroStateOf(reading);
-    const landing = topics["vessel.landing"] as
-      | TopicPayload<"vessel.landing">
-      | undefined;
-    const flight = topics["vessel.flight"] as
-      | TopicPayload<"vessel.flight">
-      | undefined;
+    const landing = topics["vessel.landing"];
+    const flight = topics["vessel.flight"];
     const alpha = state?.angleOfAttack?.magnitude ?? null;
     const stall = state?.stallFraction?.magnitude ?? null;
     const modelTerminal = state?.terminalVelocity?.magnitude ?? null;
@@ -462,9 +452,12 @@ AERO.registerContribution({
         (alpha == null && stall == null && modelTerminal == null),
       plotTerminal: landing?.terminalVelocity?.magnitude ?? null,
       plotTouchdown: landing?.projectedTouchdownSpeed?.magnitude ?? null,
-      altitude: heightAboveTerrain(topics),
+      altitude: heightAboveTerrain(topics["vessel.surface"], flight),
       speed: flight?.surfaceSpeed?.magnitude ?? null,
-      surfaceGravity: surfaceGravityOf(topics),
+      surfaceGravity: surfaceGravityOf(
+        topics["vessel.identity"],
+        topics["system.bodies"],
+      ),
     };
     const layers = aeroDescentLayers(inputs);
     if (layers.length === 0) return null;

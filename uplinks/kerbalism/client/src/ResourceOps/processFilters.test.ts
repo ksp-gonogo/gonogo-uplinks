@@ -50,6 +50,7 @@ describe("computeKerbalismProcessTerms", () => {
 
   it("is empty for no converters", () => {
     expect(computeKerbalismProcessTerms(undefined)).toEqual([]);
+    expect(computeKerbalismProcessTerms(null)).toEqual([]);
     expect(computeKerbalismProcessTerms([])).toEqual([]);
   });
 });

@@ -116,5 +116,6 @@ describe("computeKerbalismPartMeta", () => {
 
   it("returns an empty list without a lifesupport payload", () => {
     expect(computeKerbalismPartMeta(undefined)).toEqual([]);
+    expect(computeKerbalismPartMeta(null)).toEqual([]);
   });
 });

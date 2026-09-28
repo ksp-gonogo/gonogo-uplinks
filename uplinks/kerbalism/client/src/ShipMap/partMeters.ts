@@ -86,7 +86,7 @@ function partMeterStatus(
  */
 export function computeKerbalismPartMeters(
   wire: VesselParts | undefined,
-  profile: KerbalismProfile | undefined,
+  profile: KerbalismProfile | null | undefined,
 ): PartMeterEntry[] {
   if (!wire || !profile) return [];
   const facts = resourceFacts(profile);
@@ -154,7 +154,7 @@ function amountReading(
  */
 export function kerbalismPartMeterReadings(
   parts: Reading<VesselParts | undefined> | undefined,
-  profile: KerbalismProfile | undefined,
+  profile: KerbalismProfile | null | undefined,
 ): PartMeterEntry[] {
   if (parts?.state !== "observed" && parts?.state !== "stale") return [];
   return computeKerbalismPartMeters(parts.value, profile).map((entry) => ({

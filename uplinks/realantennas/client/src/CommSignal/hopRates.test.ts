@@ -37,6 +37,10 @@ describe("computeRealAntennasHopRates", () => {
     expect(computeRealAntennasHopRates(undefined)).toEqual([]);
   });
 
+  it("yields nothing when the mod confirms the rates absent", () => {
+    expect(computeRealAntennasHopRates(null)).toEqual([]);
+  });
+
   it("drops a hop whose rate is non-finite rather than emitting a bad entry", () => {
     const entries = computeRealAntennasHopRates([
       hop("a", "b", Number.NaN),

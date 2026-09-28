@@ -30,5 +30,6 @@ describe("spaceWeatherBadges", () => {
   it("shows no badge when sheltered or when there is no data", () => {
     expect(spaceWeatherBadges({ magnetosphere: true })).toBeNull();
     expect(spaceWeatherBadges(undefined)).toBeNull();
+    expect(spaceWeatherBadges(null)).toBeNull();
   });
 });

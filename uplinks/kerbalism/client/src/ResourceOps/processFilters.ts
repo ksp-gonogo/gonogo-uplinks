@@ -40,7 +40,7 @@ import { KERBALISM } from "../uplink.js";
  * exported for tests the same way `computeKerbalismPartMeters` is.
  */
 export function computeKerbalismProcessTerms(
-  converters: readonly IsruConverterEntry[] | undefined,
+  converters: readonly IsruConverterEntry[] | null | undefined,
 ): string[] {
   const titles = new Set<string>();
   for (const converter of converters ?? []) {

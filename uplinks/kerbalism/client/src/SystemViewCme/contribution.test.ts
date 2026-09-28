@@ -19,6 +19,7 @@ function starDirection(x: number, y: number, z: number) {
 describe("computeCmeEntities", () => {
   it("renders nothing when there is no space-weather payload (Kerbalism absent)", () => {
     expect(computeCmeEntities(undefined)).toEqual([]);
+    expect(computeCmeEntities(null)).toEqual([]);
   });
 
   it("renders nothing when there are no storms", () => {

@@ -1,7 +1,4 @@
-import type {
-  ContributionEntry,
-  ContributionTopics,
-} from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, DepTopics } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/sitrep-sdk";
 import { EXAMPLE } from "../uplink.js";
 
@@ -29,10 +26,7 @@ type SystemViewEntity = ContributionEntry<"system-view.entities">;
 const DEPS = ["system.bodies", "example.heartbeat"] as const;
 
 /** The bag `compute` is handed, exported so a test can build one without respelling the deps. */
-export type HeartbeatBlobTopics = ContributionTopics<
-  "system-view.entities",
-  typeof DEPS
->;
+export type HeartbeatBlobTopics = DepTopics<typeof DEPS>;
 
 /**
  * A CONTRIBUTION: data this Uplink hands to another widget's renderer, with no
@@ -72,16 +66,16 @@ EXAMPLE.registerContribution({
   /*
    * TWO deps, from two different places, and both arrive precisely typed.
    *
-   * `system.bodies` is one of the topics the SLOT declares, so it would be in
-   * the bag whether or not this contribution asked for it.
+   * `system.bodies` is a stock topic and `example.heartbeat` is THIS Uplink's
+   * own, which the slot's author had never heard of. The slot names neither:
+   * `deps` is the only way a contribution asks for data, and declaring a topic
+   * here is what types it, because `DepTopics` resolves the deps tuple against
+   * `TopicPayloadMap`. So an Uplink's own channel comes back as its payload type
+   * with no assertion anywhere, and a topic this list does not name is not
+   * readable at all, rather than readable as `unknown`.
    *
-   * `example.heartbeat` is THIS Uplink's own topic, which the slot's author had
-   * never heard of and could not have enumerated. Declaring it here is what
-   * types it: `ContributionTopics` resolves the deps tuple against
-   * `TopicPayloadMap`, so an Uplink's own channel comes back as its payload
-   * type with no assertion anywhere. The other side of that is what a slot
-   * declaration is not: a topic nobody declared is not readable at all, rather
-   * than readable as `unknown`.
+   * Each value is `undefined` until a point arrives and `null` once the mod
+   * confirms it absent. Both mean there is nothing to draw.
    */
   deps: DEPS,
   compute: computeHeartbeatBlob,

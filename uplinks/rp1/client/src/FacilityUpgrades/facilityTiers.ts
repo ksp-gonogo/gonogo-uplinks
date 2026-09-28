@@ -36,7 +36,9 @@ import { RP1 } from "../uplink.js";
  * price would be for a step nothing will take, so it is withheld and the grid
  * draws no control beside it.</para>
  */
-export function facilityTiers(rows: readonly Rp1FacilityEntry[] | undefined) {
+export function facilityTiers(
+  rows: readonly Rp1FacilityEntry[] | null | undefined,
+) {
   if (!Array.isArray(rows)) return [];
   return rows.flatMap((row) => {
     const facility = row.facility;

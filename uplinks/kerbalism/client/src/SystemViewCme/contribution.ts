@@ -131,7 +131,7 @@ function bearingMetres(
  * already applies to a vessel with no resolvable body.
  */
 export function computeCmeEntities(
-  weather: KerbalismSpaceWeather | undefined,
+  weather: KerbalismSpaceWeather | null | undefined,
 ): CmeEntity[] {
   if (!weather) return [];
   const ejectionSpeedMps = magnitudeOf(weather.stormEjectionSpeed);

@@ -18,10 +18,7 @@
 // Presence-gated on `requires: "scansat"`, so an install without the SCANsat
 // mod contributes nothing.
 
-import type {
-  ContributionEntry,
-  ContributionTopics,
-} from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, DepTopics } from "@ksp-gonogo/sitrep-sdk";
 import { SCANSAT } from "../uplink.js";
 
 /**
@@ -40,10 +37,7 @@ type InstrumentEntry = ContributionEntry<"experiments.instruments">;
 const DEPS = ["scansat.science"] as const;
 
 /** The bag `compute` is handed. Exported so a test can build one without respelling the deps. */
-export type ScienceInstrumentTopics = ContributionTopics<
-  "experiments.instruments",
-  typeof DEPS
->;
+export type ScienceInstrumentTopics = DepTopics<typeof DEPS>;
 
 /**
  * Parses `scansat.science` (`GonogoScansatUplink.ScanScienceEntry[]`, built by
