@@ -74,8 +74,8 @@ describe("scansat wire contract: mod emits <-> client subscribes", () => {
     const store = liveStore();
     const body = "Kerbin";
     for (const bit of csClientScanTypes()) {
-      const coverage = mapTopic("data", `scansat.coverage.${body}.${bit}`);
-      const mask = mapTopic("data", `scansat.mask.${body}.${bit}`);
+      const coverage = mapTopic(`scansat.coverage.${body}.${bit}`);
+      const mask = mapTopic(`scansat.mask.${body}.${bit}`);
       expect(coverage).toBe(`scansat.coverage.${body}.${bit}`);
       expect(
         isTopicCarried(store, carried, coverage as string),
@@ -83,7 +83,7 @@ describe("scansat wire contract: mod emits <-> client subscribes", () => {
       ).toBe(true);
       expect(isTopicCarried(store, carried, mask as string)).toBe(true);
     }
-    const height = mapTopic("data", `scansat.height.${body}`) as string;
+    const height = mapTopic(`scansat.height.${body}`) as string;
     expect(isTopicCarried(store, carried, height)).toBe(true);
   });
 });
