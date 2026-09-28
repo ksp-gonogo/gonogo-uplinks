@@ -1411,7 +1411,7 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
       expect(
         screen
           .getByLabelText("Signal delay: 3.8 s one-way")
-          .querySelector("[data-not-current]"),
+          .querySelector("[data-held]"),
       ).not.toBeNull(),
     );
   });

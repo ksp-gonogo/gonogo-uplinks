@@ -158,7 +158,7 @@ describe("ProgramDetail", () => {
     expect(visibleText()).toContain("289,848");
     // And marked, which the bare value it used to be handed could not carry.
     expect(
-      document.querySelector("[data-not-current-mark]"),
+      document.querySelector("[data-held-mark]"),
     ).toBeInTheDocument();
   });
 

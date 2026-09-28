@@ -171,12 +171,12 @@ describe("ScienceDataAboardRowAugment", () => {
       fixture.emit("science.experiments", [FILE_ENTRY]);
     });
     await screen.findByLabelText("Kerbalism file manager");
-    expect(container.querySelectorAll("[data-not-current]")).toHaveLength(0);
+    expect(container.querySelectorAll("[data-held]")).toHaveLength(0);
     act(() => {
       stopArriving(fixture);
     });
     expect(await screen.findByText("Transmitting · held")).toBeInTheDocument();
-    const marks = [...container.querySelectorAll("[data-not-current]")];
+    const marks = [...container.querySelectorAll("[data-held]")];
     expect(marks.length).toBeGreaterThan(0);
     for (const mark of marks) {
       expect(mark.querySelector("[data-unit-currency]")).not.toBeNull();

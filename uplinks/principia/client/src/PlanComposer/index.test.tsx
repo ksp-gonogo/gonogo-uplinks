@@ -356,14 +356,14 @@ describe("PlanComposer", () => {
     await act(async () => {});
     const windowRow = () =>
       screen.getByText("Send within").parentElement as HTMLElement;
-    expect(windowRow().querySelector("[data-not-current]")).toBeNull();
+    expect(windowRow().querySelector("[data-held]")).toBeNull();
 
     act(() => {
       fixture.store.setTransportConnected(false);
       fixture.store.beginFrame();
     });
     await act(async () => {});
-    expect(windowRow().querySelector("[data-not-current]")).not.toBeNull();
+    expect(windowRow().querySelector("[data-held]")).not.toBeNull();
   });
 
   it("seeds a second burn after the first rather than on top of it", async () => {

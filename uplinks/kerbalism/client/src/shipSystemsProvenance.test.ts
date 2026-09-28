@@ -5,7 +5,6 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  type ProcessorRuntime,
   processorRuntimeFor,
   TimelineStore,
   ViewClock,
@@ -76,7 +75,7 @@ function resourcesPoint(validAt: number, water: number) {
 }
 
 let deactivate: (() => void) | undefined;
-let runtime: ProcessorRuntime | undefined;
+let runtime: ReturnType<typeof processorRuntimeFor> | undefined;
 
 afterEach(() => {
   deactivate?.();

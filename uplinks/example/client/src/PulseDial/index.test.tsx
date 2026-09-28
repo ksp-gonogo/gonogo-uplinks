@@ -44,7 +44,7 @@ describe("PulseDialWidget", () => {
     const dial = await screen.findByRole("meter", {
       name: /^42 publishes since load$/,
     });
-    expect(dial).not.toHaveAttribute("data-not-current");
+    expect(dial).not.toHaveAttribute("data-held");
   });
 
   it("holds the last count once the heartbeat stops, and the dial marks it", async () => {
@@ -64,7 +64,7 @@ describe("PulseDialWidget", () => {
     });
 
     const dial = screen.getByRole("meter", { name: /^42 publishes since load, / });
-    expect(dial).toHaveAttribute("data-not-current");
+    expect(dial).toHaveAttribute("data-held");
     expect(screen.queryByText(/waiting for the example uplink/i)).toBeNull();
   });
 });

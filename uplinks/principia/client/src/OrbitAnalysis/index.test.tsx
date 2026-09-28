@@ -341,7 +341,7 @@ describe("OrbitAnalysisSection", () => {
   it("marks its figures held once the link drops", async () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
-    expect(stream.container.querySelector("[data-not-current]")).toBeNull();
+    expect(stream.container.querySelector("[data-held]")).toBeNull();
 
     act(() => {
       stream.store.setTransportConnected(false);
@@ -349,7 +349,7 @@ describe("OrbitAnalysisSection", () => {
     });
     await waitFor(() => {
       expect(
-        stream.container.querySelectorAll("[data-not-current]").length,
+        stream.container.querySelectorAll("[data-held]").length,
       ).toBeGreaterThan(0);
     });
   });

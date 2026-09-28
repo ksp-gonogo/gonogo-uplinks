@@ -72,7 +72,7 @@ describe("Ship Systems says a held ledger is held", () => {
      * The time-to-empty figures carry the kit's own mark, and it announces:
      * the dot is aria-hidden and the grade and instant are said beside it.
      */
-    const marks = [...container.querySelectorAll("[data-not-current]")];
+    const marks = [...container.querySelectorAll("[data-held]")];
     expect(marks.length).toBeGreaterThan(0);
     for (const mark of marks) {
       expect(mark.querySelector("[data-unit-currency]")).not.toBeNull();
@@ -85,7 +85,7 @@ describe("Ship Systems says a held ledger is held", () => {
 
     expect(text).not.toMatch(/at last contact|· held/i);
     expect(text).not.toContain("run state held");
-    expect(container.querySelectorAll("[data-not-current]")).toHaveLength(0);
+    expect(container.querySelectorAll("[data-held]")).toHaveLength(0);
   });
 
   it("dims every ledger term's bar once the ledger is held", async () => {
@@ -97,7 +97,7 @@ describe("Ship Systems says a held ledger is held", () => {
       ...container.querySelectorAll('[data-testid="diverging-bar"]'),
     ];
     expect(bars.length).toBeGreaterThan(0);
-    for (const bar of bars) expect(bar).toHaveAttribute("data-not-current");
+    for (const bar of bars) expect(bar).toHaveAttribute("data-held");
   });
 
   it("leaves the ledger's bars undimmed while it is current", async () => {
@@ -110,7 +110,7 @@ describe("Ship Systems says a held ledger is held", () => {
     ];
     expect(bars.length).toBeGreaterThan(0);
     for (const bar of bars) {
-      expect(bar).not.toHaveAttribute("data-not-current");
+      expect(bar).not.toHaveAttribute("data-held");
     }
   });
 });
