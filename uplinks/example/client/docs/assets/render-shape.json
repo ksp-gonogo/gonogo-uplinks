@@ -3,27 +3,27 @@
   "engine": "chromium",
   "assets": {
     "beating--default.png": {
-      "hash": "6e681d5deced1d9d",
+      "hash": "4bf88ca03a4b660e",
       "elements": 17,
       "text": "4e6e8b05"
     },
     "beating--min.png": {
-      "hash": "2e5bb8bfbaebeed7",
+      "hash": "3b98436afa9d4caa",
       "elements": 17,
       "text": "cf31762a"
     },
     "mid-sweep--default.png": {
-      "hash": "1edd06b4cfec8035",
+      "hash": "bec9ec3068e0eb33",
       "elements": 31,
       "text": "b9892b07"
     },
     "mid-sweep--min.png": {
-      "hash": "1edd06b4cfec8035",
+      "hash": "bec9ec3068e0eb33",
       "elements": 31,
       "text": "b9892b07"
     },
     "publishing--default.png": {
-      "hash": "41e1af8dca68efd5",
+      "hash": "f08109f40640d9f8",
       "elements": 19,
       "text": "31e3587c"
     }
