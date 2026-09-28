@@ -1,5 +1,6 @@
 {
   "_scene": {
+    "hero": true,
     "augment": "rp1-ksc-construction",
     "hostWidget": "space-center-status",
     "size": {

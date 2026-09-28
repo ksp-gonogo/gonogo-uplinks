@@ -3,6 +3,7 @@
     "notes": "Three builds whose clocks say three different things, which is the whole reason this section splits the clock into four states rather than printing a bare duration. One has an ETA at a complex that is rushing, so its date is the rushed one; one is stalled for a reason an operator can fix from the Space Center, and the card names the complex nobody is assigned to rather than reporting a fault; one RP-1 has not costed at all, which is not a stall and does not read as one"
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-vehicle-assembly-building",
     "size": { "w": 10, "h": 20 },
     "caption": "Three builds under integration: one with a date at a rushing complex, one stalled because nobody is assigned to its complex, and one RP-1 has not costed yet",

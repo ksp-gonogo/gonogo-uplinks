@@ -7,7 +7,8 @@
     "contribution": "aero:descent-envelope",
     "hostWidget": "landing-status",
     "modes": ["default"],
-    "caption": "Atmospheric final approach over a sampled site: ONE descent envelope, carrying the host's terminal corridor and the aero model's own curve merged onto it, beside the same touchdown site and cross-section the vacuum board draws"
+    "caption": "Atmospheric final approach over a sampled site: ONE descent envelope, carrying the host's terminal corridor and the aero model's own curve merged onto it, beside the same touchdown site and cross-section the vacuum board draws",
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

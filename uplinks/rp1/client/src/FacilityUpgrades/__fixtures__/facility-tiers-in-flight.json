@@ -1,5 +1,6 @@
 {
   "_scene": {
+    "hero": true,
     "contribution": "rp1:facility-tiers",
     "hostWidget": "space-center-status",
     "size": {

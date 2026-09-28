@@ -1,6 +1,7 @@
 {
   "_scene": {
     "augment": "principia-flight-plan",
+    "hero": true,
     "caption": "A plan mid-mission: one burn behind, one imminent, one a day out",
     "size": {
       "w": 12,

@@ -4,6 +4,7 @@
     "notes": "SYNTHETIC. The same vessel and attitude as the not-installed scene, now on an RP-1 career where the avionics fitted support 1.5 t and the craft weighs 2.3 t. RP-1's own ControlLockerUtils.ShouldLock answers Locked for that pair, the input lock goes on, and NOTHING stock changes: `vessel.comms.controlState` is still 4, so the Navball's own control reading stays true. The badge is the only thing on the screen that knows. The overage rides the topic and not the pill: a second badge collapses the whole header row behind a chevron at this width, alert included."
   },
   "_scene": {
+    "hero": true,
     "contribution": "rp1:rp1-avionics-badge",
     "hostWidget": "navball",
     "caption": "AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so",

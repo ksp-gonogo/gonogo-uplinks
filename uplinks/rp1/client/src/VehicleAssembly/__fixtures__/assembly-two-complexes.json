@@ -3,6 +3,7 @@
     "notes": "The state the widget exists for: work in flight at two launch complexes at once, which no per-complex view can show and which the Space Center had no room to draw."
   },
   "_scene": {
+    "hero": true,
     "widget": "rp1-vehicle-assembly",
     "size": {
       "w": 8,

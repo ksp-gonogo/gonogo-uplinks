@@ -32,8 +32,6 @@ The example Uplink's one channel: how many times it has published, and the unive
 
 ![The example Uplink publishing: 42 ticks since load, at UT 1,000,000](docs/assets/beating--default.png)
 
-![The same widget at its minimum size](docs/assets/beating--min.png)
-
 ### Pulse
 
 The example Uplink's publish cadence on a dial: the needle sweeps once per sixty publishes and the centre carries the true total.
@@ -46,8 +44,6 @@ The example Uplink's publish cadence on a dial: the needle sweeps once per sixty
 | Scenes | 1 |
 
 ![42 publishes since load: the needle two-thirds through its sweep, the true total in the centre](docs/assets/mid-sweep--default.png)
-
-![The same widget at its minimum size](docs/assets/mid-sweep--min.png)
 
 ## Augments
 

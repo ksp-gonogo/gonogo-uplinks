@@ -8,6 +8,7 @@
     "hostWidget": "crew-status",
     "caption": "Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy",
     "modes": ["default"],
+    "hero": true,
     "size": {
       "w": 8,
       "h": 12

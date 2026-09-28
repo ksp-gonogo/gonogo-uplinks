@@ -3,6 +3,7 @@
     "notes": "RP-1 draws this as two sliders and withdraws the matching pre-generated contract offers from a comparison it makes EVERY DRAW FRAME, so a drag across its range crosses ninety-six hundred-unit steps and withdraws at every one. What it reaches is pre-generated offers rather than accepted contracts, so the cost is churn rather than loss, but nothing on RP-1's tab says either thing. Two typed fields and one arm-then-confirm press make the act once, and the line above the press is the only place the churn is named before it happens."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-contract-payload",
     "hostWidget": "contract-manager",
     "size": {

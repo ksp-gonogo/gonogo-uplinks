@@ -4,6 +4,7 @@
     "notes2": "No career record is emitted, and it is not an omission: this section draws no balance of its own. The funds and the unlock credit belong to the host, once, and the widget-scoped scene beside this is where they are shown."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-vehicle-assembly-tooling",
     "size": {
       "w": 7,

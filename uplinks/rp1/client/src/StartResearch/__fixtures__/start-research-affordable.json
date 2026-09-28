@@ -1,5 +1,6 @@
 {
   "_scene": {
+    "hero": true,
     "augment": "rp1-start-research",
     "hostWidget": "tech-tree",
     "size": {

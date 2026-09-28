@@ -3,6 +3,7 @@
     "notes": "A representative slice of an RP-1 Administration Building: six Programs, a hired Leader, four hireable ones and two of the six leaderLocked* placeholders. Trimmed from packages/components/src/Strategies/__fixtures__/rp1-full-admin-building.json, which carries the full 91 rows; this one is sized so the whole tab strip and both screens fit one picture. Descriptions are truncated for the same reason."
   },
   "_scene": {
+    "hero": true,
     "contribution": "rp1:programs-screen",
     "hostWidget": "strategies",
     "size": {

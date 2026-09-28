@@ -3,6 +3,7 @@
     "notes": "Hosted on Programme Funding, because the section's whole argument is that the subsidy alone misreads a career's income and the comparison only exists with the host's own readouts above it. The state is a career in trouble on both halves: both Program slots are taken, the one that is running is past its nominal duration so the reputation penalty has started being assessed, and the Program that would replace it costs more Confidence than the career holds. Every conditional this section draws (FULL, OVERRUN, the overrun-cost row, SHORT) is on screen at once, which is also the layout worth looking at: four badges across a four-column widget"
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-program-status",
     "hostWidget": "career-economy",
     "size": { "w": 8, "h": 18 },

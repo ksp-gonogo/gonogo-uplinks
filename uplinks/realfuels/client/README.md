@@ -10,7 +10,7 @@ Reports per-engine RealFuels limits: ignitions remaining, ullage stability and p
 | Uplink id | `realfuels` |
 | Version | `0.0.1` |
 | Wraps | RealFuels 15.15.0 (ckan) |
-| Built against | contract 18.13, api 5.0.0, ui-kit 0.1.0 |
+| Built against | contract 18.14, api 5.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -31,8 +31,4 @@ Reports per-engine RealFuels limits: ignitions remaining, ullage stability and p
 | `realfuels-fuel-status-section` | `fuel-status.sections` | `realfuels.engines`, `realfuels.boiloff` | only while `realfuels` | 3 |  |
 
 ![A restartable upper stage with two lights left, its propellant settling in the risky band after a coast](docs/assets/finite-ignition-budget--default.png)
-
-![A ground-start-only first stage: a zero budget rendered as the restriction it is, beside an engine whose reading is absent](docs/assets/ground-ignition-only--default.png)
-
-![A hypergolic service engine: relights without limit and is not subject to ullage, so neither reading is a number](docs/assets/unlimited-relights--default.png)
 

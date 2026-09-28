@@ -9,7 +9,8 @@
     "caption": "File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once",
     "modes": ["default"],
     "size": { "w": 10, "h": 12 },
-    "paints": ["SCIENCE", "Mystery Goo"]
+    "paints": ["SCIENCE", "Mystery Goo"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

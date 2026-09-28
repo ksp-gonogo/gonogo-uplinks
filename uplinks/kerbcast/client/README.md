@@ -10,7 +10,7 @@ Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar.
 | Uplink id | `kerbcast` |
 | Version | `0.0.1` |
 | Wraps | kerbcast 1.8.1 (ckan) |
-| Built against | contract 18.13, api 5.0.0, ui-kit 0.1.0 |
+| Built against | contract 18.14, api 5.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -47,18 +47,6 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Scenes | 3 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
-
-![The same widget at its minimum size](docs/assets/camera-feed-fixed--min.png)
-
-![The same widget at 9 × 8](docs/assets/camera-feed-fixed--mobile-9x8.png)
-
-![A camera that can be aimed, above the staged delay threshold: yaw and zoom stack beside a pitch wheel that is the same wheel turned a quarter turn, with the commit on the same line, in the picture's bottom-right corner. The kerbcast feed's own live pan pad and zoom pair have stood down for as long as this is up, so the corner they held is the corner this takes and there is only ever one control aiming the camera. The framing preview is no longer inside that cluster: it stands on its own at the bottom centre of the picture, where nothing clips the quad it deliberately draws outside the feed frame, and it appears on any picture whose centre line is clear of the control](docs/assets/camera-feed-steerable--default.png)
-
-![The same widget at its minimum size](docs/assets/camera-feed-steerable--min.png)
-
-![The same widget at 9 × 8](docs/assets/camera-feed-steerable--mobile-9x8.png)
-
-![A bound analog stick held right, then released. Above the staged delay threshold the input aims the DRAFT rather than the camera: the yaw wheel turns at 30 degrees per second for as long as the stick is held, stops where it is when the stick centres, and nothing has been sent to the camera at any point in this film. The operator commits once, when the number is the one they want](docs/assets/camera-feed-stick-hold--default.gif)
 
 ## Augments
 

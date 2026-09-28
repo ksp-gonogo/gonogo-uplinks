@@ -4,6 +4,7 @@
     "why-not-the-schedule-block": "The mark used to lead the 'Course' line in the block under the name. That block is read once an operator has settled on a kerbal; whether a kerbal is on a course at all is what decides which one they settle on, and on a card with no other RP-1 dates the block does not render at all. crew-schedule-three-states is the picture of the block; this is the picture of the corner."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-crew-training-badge",
     "hostWidget": "astronaut-complex",
     "size": {

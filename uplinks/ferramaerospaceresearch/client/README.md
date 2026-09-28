@@ -10,7 +10,7 @@ Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and 
 | Uplink id | `aero` |
 | Version | `0.0.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 18.13, api 5.0.0, ui-kit 0.1.0 |
+| Built against | contract 18.14, api 5.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -33,17 +33,7 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 | Default size | 4 × 7 |
 | Scenes | 4 |
 
-![Launch vehicle through max q, one tick after separation: no wing, so no stall fraction or lift, and the model is flagged stale](docs/assets/ascent-no-wings--default.png)
-
-![No aerodynamic reading at all: every field absent, and absence drawn as absence rather than as a run of zeroes](docs/assets/no-aero-model--default.png)
-
-![Re-entry at 40° alpha: partial stall, lift and drag near parity, indicated airspeed far below true](docs/assets/reentry-high-alpha--default.png)
-
 ![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
-
-![The same widget at its minimum size](docs/assets/winged-subsonic-climb--min.png)
-
-![The same widget at 18 × 5](docs/assets/winged-subsonic-climb--landscape-18x5.png)
 
 ## Contributions
 
@@ -53,16 +43,6 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 | `aero:descent-envelope-badges` | `landing-status.badges` | `processor:aero:aero-state-reading` | only while `aero` |
 
 ![Atmospheric final approach over a sampled site: ONE descent envelope, carrying the host's terminal corridor and the aero model's own curve merged onto it, beside the same touchdown site and cross-section the vacuum board draws](docs/assets/atmospheric-final-approach-site--default.png)
-
-![Ballistic capsule, no wings: no STALL word at all because there is no stall fraction to read, and a high ballistic coefficient that puts the settle deep. The plot is the Uplink's own, contributed to `plots`, beside the landing widget's](docs/assets/ballistic-capsule--default.png)
-
-![No aerodynamics model installed: the presence gate stays shut, this Uplink contributes no plot at all, and the landing widget arranges only its own](docs/assets/no-aero-model-installed--default.png)
-
-![Subsonic final approach with the wing departing: a solid trace because the transonic region is behind, and STALL up the left edge in the nogo tone](docs/assets/subsonic-final-approach--default.png)
-
-![Mun final approach, no atmosphere: the aero model contributes nothing and there is no descent envelope to contribute to. The touchdown site and the terrain cross-section carry the board, both in metres](docs/assets/vacuum-final-approach-mun--default.png)
-
-![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](docs/assets/winged-entry-high-alpha--default.png)
 
 ![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](docs/assets/entry-badges--default.png)
 

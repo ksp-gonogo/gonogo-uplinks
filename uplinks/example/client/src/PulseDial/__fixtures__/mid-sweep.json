@@ -4,6 +4,7 @@
   },
   "_scene": {
     "widget": "example-pulse-dial",
+    "hero": true,
     "caption": "42 publishes since load: the needle two-thirds through its sweep, the true total in the centre",
     "modes": ["default", "min"]
   },

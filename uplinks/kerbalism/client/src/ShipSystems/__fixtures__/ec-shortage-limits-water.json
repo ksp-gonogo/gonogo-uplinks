@@ -7,7 +7,8 @@
     "widget": "ship-systems",
     "caption": "Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it",
     "modes": ["default", "min"],
-    "paints": ["Electric Charge", "Water"]
+    "paints": ["Electric Charge", "Water"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

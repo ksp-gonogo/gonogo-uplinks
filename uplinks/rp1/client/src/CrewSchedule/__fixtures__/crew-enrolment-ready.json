@@ -4,6 +4,7 @@
     "why-not-the-happy-path": "The happy path here is a one-seat proficiency training, which the naut's row already started and which says nothing about the seat arithmetic this section exists for"
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-training-enrolment",
     "size": {
       "w": 11,

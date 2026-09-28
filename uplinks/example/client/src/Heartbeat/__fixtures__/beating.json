@@ -4,6 +4,7 @@
   },
   "_scene": {
     "widget": "example-heartbeat",
+    "hero": true,
     "caption": "The example Uplink publishing: 42 ticks since load, at UT 1,000,000",
     "modes": ["default", "min"]
   },

@@ -7,7 +7,8 @@
   "_scene": {
     "widget": "scanning",
     "caption": "Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies",
-    "modes": ["default", "min"]
+    "modes": ["default", "min"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

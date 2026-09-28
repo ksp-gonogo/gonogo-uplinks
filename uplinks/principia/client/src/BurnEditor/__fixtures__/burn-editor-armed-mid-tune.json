@@ -4,6 +4,7 @@
   },
   "_scene": {
     "augment": "principia-burn-editor",
+    "hero": true,
     "size": {
       "w": 13,
       "h": 30

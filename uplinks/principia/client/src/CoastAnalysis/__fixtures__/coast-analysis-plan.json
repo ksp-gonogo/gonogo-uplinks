@@ -1,6 +1,7 @@
 {
   "_scene": {
     "augment": "principia-coast-analysis",
+    "hero": true,
     "caption": "What each stretch of the plan leaves the craft flying: a parking orbit, a transfer the integrator could not analyse, and the capture the plan ends in",
     "size": {
       "w": 12,

@@ -3,6 +3,7 @@
     "notes": "The management view: a centre, its complexes, who is assigned to each, what each costs, and the two controls that change those. Vehicle Assembly shows the consequences and administers nothing. The wording of a press carries the price, because the decision is made here."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-ksc-complexes",
     "hostWidget": "space-center-status",
     "size": {

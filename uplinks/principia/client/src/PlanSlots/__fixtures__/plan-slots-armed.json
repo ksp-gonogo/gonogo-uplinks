@@ -4,6 +4,7 @@
   },
   "_scene": {
     "augment": "principia-plan-slots",
+    "hero": true,
     "size": {
       "w": 13,
       "h": 16

@@ -44,11 +44,3 @@ Remote MechJeb autopilot control (engage ascent, execute next node, land at targ
 
 ![Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle](docs/assets/ascent-command-in-flight--default.png)
 
-![Every command idle, with the one-way light time in the subtitle so an operator knows what a press actually costs](docs/assets/duna-uplink-delay--default.png)
-
-![The same widget at its minimum size](docs/assets/duna-uplink-delay--min.png)
-
-![No one-way delay reading: the subtitle says nothing about light time rather than reporting 0.0 s](docs/assets/remote-autopilot--default.png)
-
-![The same widget at its minimum size](docs/assets/remote-autopilot--min.png)
-

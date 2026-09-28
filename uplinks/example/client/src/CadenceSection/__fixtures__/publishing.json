@@ -4,6 +4,7 @@
   },
   "_scene": {
     "augment": "example-cadence-section",
+    "hero": true,
     "caption": "The example Uplink section as it renders in a host panel: a badge, the last publish, and the count",
     "modes": [
       "default"

@@ -4,6 +4,7 @@
     "why-a-contribution": "The cells are DATA on `astronaut-complex.readouts`, so the host draws them with its own `Stat` in its own grid. An augment would have rendered RP-1's own markup beside the row, which is how a strip ends up reading as two widgets sharing a line."
   },
   "_scene": {
+    "hero": true,
     "contribution": "rp1:crew-core-stats",
     "hostWidget": "astronaut-complex",
     "modes": ["default"],

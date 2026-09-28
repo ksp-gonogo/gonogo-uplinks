@@ -42,10 +42,6 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 
 ![Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies](docs/assets/kerbin-partial-scan--default.png)
 
-![The same widget at its minimum size](docs/assets/kerbin-partial-scan--min.png)
-
-![SCANsat is not installed, so the widget says what it would show if it were](docs/assets/scansat-absent--default.png)
-
 ## Augments
 
 | Augment | Into | Reads | Presence | Scenes | Notes |

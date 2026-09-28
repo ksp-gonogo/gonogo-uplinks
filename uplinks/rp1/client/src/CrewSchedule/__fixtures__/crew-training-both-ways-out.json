@@ -5,6 +5,7 @@
     "why-hosted": "Hosted on the real Astronaut Complex, behind the Training tab an operator has to press to reach it. It could not be until the render harness learned to feed a topic a press has just subscribed to: a tab's content is not mounted when the fixture emits, so `rp1.training` was dropped in silence and the only scene that could be written was one of the section floating in a stand-in host. A picture of markup rather than of a screen, which is why nobody could see that the tab had none of the spacing the other two got."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-training-courses",
     "size": {
       "w": 12,

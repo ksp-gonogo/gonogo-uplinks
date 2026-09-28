@@ -1,5 +1,6 @@
 {
   "_scene": {
+    "hero": true,
     "augment": "rp1-facility-upgrades",
     "hostWidget": "space-center-status",
     "size": {

@@ -4,6 +4,7 @@
     "modes": ["default", "min", "mobile-9x8"],
     "config": { "flightId": 42 },
     "caption": "A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay",
+    "hero": true,
     "before": [{ "hover": "video" }],
     "paints": ["Nose Cam"]
   },

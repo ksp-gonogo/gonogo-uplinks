@@ -5,7 +5,8 @@
   "_scene": {
     "widget": "space-weather",
     "caption": "A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere",
-    "modes": ["default", "min"]
+    "modes": ["default", "min"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 149489,

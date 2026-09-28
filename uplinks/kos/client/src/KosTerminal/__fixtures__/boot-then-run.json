@@ -4,6 +4,7 @@
   },
   "_scene": {
     "widget": "kos-terminal",
+    "hero": true,
     "caption": "A script running: kOS redraws the screen in chunks and the terminal repaints as they land",
     "config": { "cpuName": "lander", "lineMode": true },
     "modes": ["default"],

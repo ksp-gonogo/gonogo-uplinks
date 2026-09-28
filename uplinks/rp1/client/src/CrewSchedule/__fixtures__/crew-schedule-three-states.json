@@ -4,6 +4,7 @@
     "why-no-controls-on-a-row": "A row states WHERE a kerbal is and nothing else. It used to carry a training picker and two leave buttons under the dates, which put a whole enrolment form on every idle naut and drew one shared course's cancel button once per student. The way onto a course is the START A TRAINING section, which can name a crew where a row can only name one kerbal; a running course's specifics and the two ways off it are the TRAINING COURSES section"
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-crew-schedule",
     "hostWidget": "astronaut-complex",
     "size": {

@@ -3,6 +3,7 @@
     "notes": "The section alone, because what it has to answer is what the heading does NOT say: two of these three finished vehicles are not in the warehouse at all. RP-1 keeps a rolled-out vehicle on the same list, so the operation outranks the list and each card has to say where the vehicle actually is. The third is the case an operator goes looking for a fault behind, a vehicle that is finished, standing still, and has no rollout button, so the refusal is on the card. No funds line here on purpose: the balance is drawn once by the host, which is what lets a contributed section carry none"
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-vehicle-assembly-warehouse",
     "size": { "w": 10, "h": 21 },
     "caption": "Three finished vehicles in three different places: one standing on the pad, one still moving to it, and one RP-1 will not release at all with its reason on the card",

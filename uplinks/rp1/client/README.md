@@ -132,101 +132,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | Default size | 7 × 16 |
 | Scenes | 10 |
 
-![Nothing built and nothing on order, which is where a career starts](docs/assets/assembly-empty--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-empty--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-empty--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-empty--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-empty--landscape-18x5.png)
-
-![Two built vehicles and one pad with Vanguard already standing on it: no rollout is offered, and the sentence that replaces the button names the vehicle in the way rather than saying no pad is free](docs/assets/assembly-pad-occupied--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-pad-occupied--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-pad-occupied--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-pad-occupied--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-pad-occupied--landscape-18x5.png)
-
-![A vehicle its complex will not release: every one of RP-1's reasons at once rather than the first, no rollout offered against a pad that is standing free, and the scrap that is the operator's actual next move](docs/assets/assembly-rollout-refused--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-rollout-refused--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-rollout-refused--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-rollout-refused--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-rollout-refused--landscape-18x5.png)
-
-![A rushing launch complex: both its cards carry the status, the rollout as well as the integration, because RP-1 rushes a complex rather than a build](docs/assets/assembly-rushing--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-rushing--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-rushing--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-rushing--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-rushing--landscape-18x5.png)
-
-![A career whose centre has a name rather than a site id, with nothing built and three saved craft: Atlas buildable at either complex, Redstone at LC-2 only with LC-1's mass floor spelled out, and Saturn I too heavy for both with each complex's limit named, every button confirming a price against the balance drawn at the top](docs/assets/assembly-start-a-build--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-start-a-build--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-start-a-build--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-start-a-build--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-start-a-build--landscape-18x5.png)
-
 ![Four craft across two launch complexes: one flying-ready and one still integrating at each, the key line at the top saying what LC-1 and LC-2 are and where they stand, and every card naming its complex and the staffing that sets its rate](docs/assets/assembly-two-complexes--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-two-complexes--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-two-complexes--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-two-complexes--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-two-complexes--landscape-18x5.png)
-
-![A launch complex with nobody assigned to it: the build has no end date, and the card says which of the two reasons that is, rather than reporting a stall an operator would go hunting behind](docs/assets/assembly-unstaffed--default.png)
-
-![The same widget at its minimum size](docs/assets/assembly-unstaffed--min.png)
-
-![The same widget at 9 × 8](docs/assets/assembly-unstaffed--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/assembly-unstaffed--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/assembly-unstaffed--landscape-18x5.png)
-
-![Most of what this vehicle costs is the penalty for flying it untooled: the indent says that figure is part of the one above rather than added to it](docs/assets/build-cost-mostly-surcharge--default.png)
-
-![The same widget at 9 × 8](docs/assets/build-cost-mostly-surcharge--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/build-cost-mostly-surcharge--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/build-cost-mostly-surcharge--landscape-18x5.png)
-
-![Two tanks of one size are one purchase, priced once, with the standing charge each still carries; RP-1's whole-ship price is lower than the cards add up to, which is why it sits on the button](docs/assets/tooling-one-purchase-two-parts--default.png)
-
-![The same widget at 9 × 8](docs/assets/tooling-one-purchase-two-parts--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/tooling-one-purchase-two-parts--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/tooling-one-purchase-two-parts--landscape-18x5.png)
-
-![The refit expander open on a tank the career owns two sizes for: what it drops per build, how many parts it takes with it, and a press per owned size](docs/assets/tooling-refit-instead--default.png)
-
-![The same widget at its minimum size](docs/assets/tooling-refit-instead--min.png)
-
-![The same widget at 9 × 8](docs/assets/tooling-refit-instead--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/tooling-refit-instead--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/tooling-refit-instead--landscape-18x5.png)
 
 ## Augments
 
@@ -254,89 +160,29 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![Three kerbals' RP-1 schedules inside the roster rows the Astronaut Complex already draws, each on one card of its own with the sack control at the end of the identity line: a retirement and the two things that will push it out, a course being worked and a course nobody has started, and mission training lapsing before either finishes. Each line names itself, and only the lapse is toned](docs/assets/crew-schedule-three-states--default.png)
 
-![Retirement and mission training both switched off: no retirement date, no extension line, no lapse date and no mention that any of them are disabled, because on this save they are not concepts an operator has to hold](docs/assets/crew-settings-honoured--default.png)
-
 ![Four kerbals KSP calls Available, two of them on RP-1 courses: the corner of each card says which, and tells a course being worked from one nobody has started, with nothing else on any card to tell them apart](docs/assets/crew-training-corner--default.png)
 
 ![One course two kerbals share, carrying its own progress, the date the course ends, the later date its crew comes free, and RP-1's two ways off it: one cancel that ends it for both and one removal per student, with the roster rows above stating only where each kerbal stands](docs/assets/crew-training-both-ways-out--default.png)
 
-![Mission training for Gemini seats exactly two, so RP-1 withholds both removals rather than stranding whoever is left, and cancelling the whole course is the only way off it](docs/assets/crew-training-refused--default.png)
-
-![Gemini seats two and the career has one naut free: Valentina is off-world and Nedcas is standing down after a flight, so the enrolment is dark with the count rather than failing at the press](docs/assets/crew-enrolment-blocked--default.png)
-
 ![Two of three idle nauts picked for Gemini, which seats exactly two: the crew fits its bounds, so the enrolment is one press away and the third name is still there to swap in](docs/assets/crew-enrolment-ready--default.png)
-
-![The Training tab open on the Astronaut Complex: the courses the career is running, then the crew and the training to put them through](docs/assets/crew-training-tab--default.png)
 
 ![The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions](docs/assets/contract-payload--default.png)
 
 ![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid's own Upgrade controls read Blocked, because the tier they would buy is not for sale under RP-1 at all](docs/assets/facility-upgrades-at-centre--default.png)
 
-![The same career, in flight, with RP-1's own tier channel answering. "career.status" reads the live buildings KSP instantiates at the space centre only, so the host's grid has nothing; RP-1 denormalises the level KSP persists in the save against its own config in every scene, so the tiers and the prices are here. The absence marker is keyed on whether the facilities area drew ANYTHING, not on this widget's own channel, so it is off screen: an operator flying an RP-1 career used to be told there were no facility tiers directly above a list of their facility tiers](docs/assets/facility-upgrades-away-rp1-answers--default.png)
-
-![The same career with neither tier channel answering. "career.status" reads the live buildings, which KSP puts in the scene only at the space centre, and RP-1's own cost table has not loaded. This section draws nothing at all rather than a paragraph about why: the host carries ONE absence marker for the whole facilities area, and it is keyed on whether that area drew anything, so the construction queue standing in it answers for it here. What an operator gets is the work that is real and no sentence about the reading that is not](docs/assets/facility-upgrades-away--default.png)
-
-![LC-1's detail open on a career with 400f against a 14,118f pad: the quote, the reading that it is more than the balance, and a press that is still live because RP-1 slows the build rather than refusing it](docs/assets/complexes-add-pad--default.png)
-
-![The dismantle armed, which is the only state its warning appears in: everything below the crew is behind the detail expander, and the warning is the confirm step itself](docs/assets/complexes-dismantle-warnings--default.png)
-
-![LC-1's detail open, down to its last working pad: the dismantle is dark with the reason rather than live and silently inert, which is what RP-1 leaves it as](docs/assets/complexes-last-pad--default.png)
-
-![The new-complex form open at its defaults: every field priced, the tonnage limit stating the renovation range it fixes for life, and a 26,453f quote against a 400f balance that slows the build rather than refusing it](docs/assets/complexes-new--default.png)
-
-![A pad rename open on LP-1, showing the field holding the current name and the press refused as unchanged; LP-1B still shows the closed one-button state, now the same bordered control as the Dismantle beside it](docs/assets/complexes-rename--default.png)
-
-![The renovation form open on LC-1, every field starting at what the complex already is, so the quote is 0f until something moves; beside it the 18 engineers it takes off for the whole build and the toggle that puts them back](docs/assets/complexes-renovate--default.png)
-
 ![LC-1 rushing with its detail open, so the terms in force and the way out of rush mode are both on screen; LC-2 stays collapsed, which is what a complex costs to read when nobody is asking about it](docs/assets/complexes-rushing--default.png)
-
-![The hire-target form open on the researcher half: the count it is measured against, the target, the reserve hiring will not spend below, and what that bounds the spend to](docs/assets/hire-target-standing-order--default.png)
-
-![A standing researcher hire instruction: the headcount it is reaching, how many are still to hire, what the rest of them cost, RP-1's own forecast of when the funds exist, and the one press that withdraws it](docs/assets/hire-target-standing--default.png)
-
-![A payroll mid-career with six engineers assigned to nothing, the daily charge that pool carries, and the stepped controls that would move them onto either complex](docs/assets/personnel-staffed--default.png)
-
-![RP-1 is present and has answered for nothing: every count reads as the null token and the missing centre is stated rather than left as a gap](docs/assets/personnel-unanswered--default.png)
-
-![Two space centres with their launch complexes columnised under each, each named the way an operator names it rather than by the site id the save keys it on, and SLC-3 staffed by nobody while Vandenberg's whole pool sits idle](docs/assets/two-centres-unstaffed--default.png)
-
-![A modification, which takes the complex out of service and idles its engineers: the one row whose detail line is a warning rather than a label](docs/assets/construction-complex-modify--default.png)
-
-![Nothing queued, which is where a career starts: the section has to read as an answer rather than as one that failed to draw](docs/assets/construction-empty--default.png)
 
 ![The state a first-decade RP-1 career sits in: a VAB upgrade, a second launch complex and a pad all building at once, appended under the space centre's own facility list, each row naming the centre it belongs to by the name an operator uses rather than the site id the save keys it on](docs/assets/construction-full-queue--default.png)
 
-![A construction RP-1 has not priced yet, a real state on a freshly loaded save, proving it does not read as stalled](docs/assets/construction-not-costed--default.png)
-
-![The two clock states that are not an ETA, side by side: money being spent faster on purpose, and a throttle wound shut](docs/assets/construction-rushing-and-stalled--default.png)
-
 ![Three pads across two RP-1 complexes: one holding a vehicle that has finished rolling out, one being reconditioned, and a stock runway RP-1 does not model](docs/assets/pad-holding-a-finished-vehicle--default.png)
 
-![A rollout in progress: the pad row names the vehicle by joining the operation's vessel id against the warehouse, and counts down what is left of the haul](docs/assets/pad-rolling-out--default.png)
-
 ![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](docs/assets/catalogue-picker--default.png)
-
-![The same widget at 9 × 8](docs/assets/catalogue-picker--mobile-9x8.png)
-
-![The same widget at 5 × 18](docs/assets/catalogue-picker--portrait-5x18.png)
-
-![The same widget at 18 × 5](docs/assets/catalogue-picker--landscape-18x5.png)
-
-![A Program that has closed: the deadline row becomes the completion date, the funding is paid out in full, and nothing remains to plan against](docs/assets/completed-program--default.png)
-
-![A Program whose funding curve RP-1 has not published: the chart refuses to draw and says so, rather than drawing zero](docs/assets/no-curve-table--default.png)
-
-![An offer the career cannot yet afford at any paid speed, with the front-loaded curve that would fund its first two years and the accept control dark on the Confidence it is short of](docs/assets/offer-frontloaded--default.png)
-
-![A running Program part paid, on a strongly back-loaded curve: the chart is why the total alone cannot be planned against, almost none of this money arrives before the fourth year](docs/assets/running-backloaded--default.png)
 
 ![Both Program slots committed, the running Program past its deadline and losing reputation by the year, and the next one out of Confidence reach](docs/assets/programs-overrun-and-unaffordable--default.png)
 
 ![Three queued nodes: one being worked with a countdown and its era window, one throttled down to a fifth of full rate, and one stalled with nothing to date it from](docs/assets/research-queue-throttled-and-stalled--default.png)
 
 ![The same frontier against a balance that can meet it, with a node already on the queue withheld from the picker: RP-1 refuses a second press ahead of the charge, so offering one would be offering a press that cannot land](docs/assets/start-research-affordable--default.png)
-
-![The reachable frontier of an RP-1 tree, cheapest first, against a science balance that cannot meet even that: RP-1 charges the whole cost at ENQUEUE, so the control is dark on state with the shortfall named](docs/assets/start-research-short--default.png)
 
 ![A fully tooled spaceplane: no rollout because it does not roll out, no surcharge row because there is no surcharge, and four blocking tech nodes under ONE severity badge, each named and each showing what on the vehicle is waiting for it](docs/assets/build-cost-absences-and-tech-gate--default.png)
 
@@ -350,10 +196,6 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![A fund target standing: its figure and RP-1's own ETA, the press that withdraws it, and the balance alarm that replaces warping toward it.](docs/assets/warp-fund-target-standing--default.png)
 
-![No fund target standing, so there is nothing to cancel and the balance alarm is the only thing under the warp press.](docs/assets/warp-no-fund-target--default.png)
-
-![The balance-alarm form open: the balance the alarm is measured against, the field, and one press. No cost line anywhere, because a stop condition spends nothing.](docs/assets/warp-set-a-fund-target--default.png)
-
 ## Contributions
 
 | Contribution | Into | Computed from | Presence |
@@ -364,10 +206,6 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](docs/assets/avionics-controls-locked--default.png)
-
-![BEFORE: no RP-1 on the game, so the Navball header carries only its own SAS and RCS badges](docs/assets/avionics-not-installed--default.png)
-
-![AFTER: roll authority survives the tonnage check, in a caution tone and its own words](docs/assets/avionics-roll-only--default.png)
 
 ![The tab strip this Uplink's contribution puts on the Administration Building: Programs is the screen it names, the host draws the strip and lists the Programs department under it with its own Activate and Deactivate controls, and the Leaders no screen has claimed stay reachable on Other rather than disappearing. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here](docs/assets/programs-screen--default.png)
 

@@ -7,7 +7,8 @@
     "contribution": "aero:descent-envelope-badges",
     "hostWidget": "landing-status",
     "modes": ["default"],
-    "caption": "Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget"
+    "caption": "Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget",
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

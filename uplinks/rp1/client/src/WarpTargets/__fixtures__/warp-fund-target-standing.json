@@ -3,6 +3,7 @@
     "notes": "A target RP-1 is holding, which only its own Maintenance screen can stand up now: rp1.fundTarget.set and rp1.warp.toFundTarget are both deleted, on the ruling that RP-1 must not manage warp. What survives is the readout, the cancel, and a request for an ALARM on the balance. Nothing here stops warp either: RP-1's controller destroys itself the moment it sees a rate of zero, so the host widget's existing 1x button already ends an RP-1 warp and a second control would be two buttons doing one thing."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-warp-targets",
     "hostWidget": "warp-control",
     "size": {

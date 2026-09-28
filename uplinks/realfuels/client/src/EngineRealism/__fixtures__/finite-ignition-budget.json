@@ -7,7 +7,8 @@
     "augment": "realfuels-fuel-status-section",
     "caption": "A restartable upper stage with two lights left, its propellant settling in the risky band after a coast",
     "modes": ["default"],
-    "paints": ["Ignition & ullage", "LEFT", "RISKY", "Boiloff"]
+    "paints": ["Ignition & ullage", "LEFT", "RISKY", "Boiloff"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

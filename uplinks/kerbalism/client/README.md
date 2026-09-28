@@ -72,15 +72,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Default size | 9 × 15 |
 | Scenes | 3 |
 
-![The same shortage once the link drops: the ledger is drawn as held, and says when it was last current](docs/assets/ec-shortage-limits-water-stopped-arriving--default.png)
-
-![The same widget at its minimum size](docs/assets/ec-shortage-limits-water-stopped-arriving--min.png)
-
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](docs/assets/ec-shortage-limits-water--default.png)
-
-![The same widget at its minimum size](docs/assets/ec-shortage-limits-water--min.png)
-
-![Telemetry arrived, no profile for this vessel: the panel names that state rather than sitting on the waiting message or drawing empty meters](docs/assets/no-profile-for-this-vessel--default.png)
 
 ### Space Weather
 
@@ -95,23 +87,7 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | Default size | 8 × 11 |
 | Scenes | 8 |
 
-![Two stars, one quiet and one with an inbound CME, each on its own activity diagram](docs/assets/binary--default.png)
-
-![The same vessel after the link drops: dose, shielding and CMEs held and dated, the belt position and the verdict withheld](docs/assets/inner-belt-link-lost--default.png)
-
-![The craft inside the inner radiation belt, dose an order of magnitude up and the belt ring lit](docs/assets/inner-belt--default.png)
-
-![A craft in solar orbit with no SOI, so the CME's named target is the vessel itself](docs/assets/interplanetary--default.png)
-
 ![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](docs/assets/nominal--default.png)
-
-![The same widget at its minimum size](docs/assets/nominal--min.png)
-
-![The same storm once the link drops: the forecast is withdrawn rather than held](docs/assets/storm-inbound-stopped-arriving--default.png)
-
-![A CME in transit, the tracker naming its target body, its transit progress and its impact ETA](docs/assets/storm-inbound--default.png)
-
-![A storm in progress: peak dose, comms blackout, and the magnetosphere gone](docs/assets/storm-peak--default.png)
 
 ## Augments
 
@@ -124,11 +100,7 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](docs/assets/greenhouse-halted-in-the-dark--default.png)
 
-![The same records once the link drops: the archive reads offline and the situation is awaited again](docs/assets/file-and-sample-on-one-subject-stopped-arriving--default.png)
-
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](docs/assets/file-and-sample-on-one-subject--default.png)
-
-![File Manager with all three Kerbalism flags unread: the two reversible controls disable themselves instead of guessing a direction, and the transmit state says so](docs/assets/unread-send-and-analyze-flags--default.png)
 
 ## Contributions
 
@@ -145,23 +117,9 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `processor:kerbalism:vessel-parts-reading`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
 
-![A reckoned one-sigma band drawn on the meter it is about: one mark per bound, at that bound's own distance from the bar's end](docs/assets/dose-band-from-a-fitted-rate--default.png)
-
-![The same roster over a two-sample window: the model still carries the accumulators, offers no interval, and the meters draw no marks](docs/assets/dose-band-the-model-declines--default.png)
-
-![The same crew once the link drops: every survival badge says it is held](docs/assets/radiation-dose-critical-stopped-arriving--default.png)
-
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](docs/assets/radiation-dose-critical--default.png)
 
-![Two minutes after the link dropped: the carried dose has crossed the critical line, so its badge appears, modelled](docs/assets/radiation-rising-stopped-arriving-later--default.png)
-
-![The same crew as the link drops: the dose is carried forward by its own trend, and the death clock is held](docs/assets/radiation-rising-stopped-arriving--default.png)
-
-![A crew dose still climbing: one kerbal just under the critical line, one on a death clock](docs/assets/radiation-rising--default.png)
-
 ![A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it](docs/assets/dose-band-reaching-critical--default.png)
-
-![The same tanks once the link drops](docs/assets/supply-tank-meters-stopped-arriving--default.png)
 
 ![Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border](docs/assets/supply-tank-meters--default.png)
 

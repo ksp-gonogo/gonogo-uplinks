@@ -9,6 +9,7 @@
     "caption": "One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters",
     "unchangedWhenStale": "The contribution is filter vocabulary, one search term per process title, and draws no figure. The process rows it narrows are Resource Ops' own, and Resource Ops marks them held.",
     "modes": ["default"],
+    "hero": true,
     "size": {
       "w": 12,
       "h": 10

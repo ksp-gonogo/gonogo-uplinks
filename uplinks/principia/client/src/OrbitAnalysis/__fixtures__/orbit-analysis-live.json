@@ -1,6 +1,7 @@
 {
   "_scene": {
     "augment": "principia-orbit-analysis",
+    "hero": true,
     "caption": "A near-circular polar orbit as Principia's own analyser sees it: mean elements as bands, three periods that differ, and the node drift that makes them differ",
     "size": {
       "w": 12,

@@ -3,6 +3,7 @@
     "notes": "The scene the pad section was rekeyed for. Vanguard has FINISHED rolling out to LC-1 and is standing on the pad: RP-1 has taken the rollout operation away and left the vehicle in the warehouse list, which is why a section reading the warehouse alone called it 'BUILT, in the warehouse, ready to roll out'. LC-5 is being reconditioned after its last launch, and the runway is not an RP-1 complex at all."
   },
   "_scene": {
+    "hero": true,
     "augment": "rp1-launch-complex-status",
     "hostWidget": "launch-director",
     "size": {

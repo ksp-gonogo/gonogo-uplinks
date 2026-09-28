@@ -8,7 +8,8 @@
     "hostWidget": "ship-systems",
     "caption": "Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate",
     "modes": ["default"],
-    "paints": ["Greenhouse", "insufficient lighting"]
+    "paints": ["Greenhouse", "insufficient lighting"],
+    "hero": true
   },
   "_stream": {
     "pinnedUt": 1000000,

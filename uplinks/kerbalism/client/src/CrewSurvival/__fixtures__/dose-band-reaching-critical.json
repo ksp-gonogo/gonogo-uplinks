@@ -8,6 +8,7 @@
     "hostWidget": "crew-status",
     "caption": "A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it",
     "modes": ["default"],
+    "hero": true,
     "size": {
       "w": 14,
       "h": 10
