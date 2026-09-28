@@ -5,14 +5,12 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  activateProcessor,
-  clearProcessorRuntime,
-  getProcessorValue,
-  setActiveTimelineStore,
+  type ProcessorRuntime,
+  processorRuntimeFor,
   TimelineStore,
   ViewClock,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { SHIP_SYSTEMS, type ShipSystems } from "./processor.js";
 
 /**
@@ -78,21 +76,22 @@ function resourcesPoint(validAt: number, water: number) {
 }
 
 let deactivate: (() => void) | undefined;
-
-beforeEach(() => {
-  clearProcessorRuntime();
-});
+let runtime: ProcessorRuntime | undefined;
 
 afterEach(() => {
   deactivate?.();
   deactivate = undefined;
-  setActiveTimelineStore(undefined);
+  runtime = undefined;
 });
 
-// Reads whatever store `setActiveTimelineStore` last made active, which is why
-// it takes no store: the one it used to accept was never looked at.
+/** Activates the summary against `store` for the rest of the case. */
+function activateOn(store: TimelineStore): void {
+  runtime = processorRuntimeFor(store);
+  deactivate = runtime.activate(SHIP_SYSTEMS.id);
+}
+
 function readReading(): Reading<ShipSystems> | undefined {
-  return getProcessorValue(SHIP_SYSTEMS.id) as Reading<ShipSystems> | undefined;
+  return runtime?.value<Reading<ShipSystems>>(SHIP_SYSTEMS.id);
 }
 
 /* The summary itself. This processor deps on a reading, so what it answers with
@@ -108,8 +107,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
   it("says observed while the levels are current", () => {
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.ingest("vessel.resources", resourcesPoint(100, 80));
     store.beginFrame();
@@ -128,8 +126,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
      */
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.ingest("vessel.resources", resourcesPoint(100, 80));
     store.beginFrame();
@@ -156,8 +153,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
      */
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.beginFrame();
     expect(readReading()?.value).toBeDefined();
@@ -169,8 +165,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     // one computed off a live reading.
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.ingest("vessel.resources", resourcesPoint(100, 80));
     store.beginFrame();
@@ -193,8 +188,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     // specifically wants the last real value reachable.
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.ingest("vessel.resources", resourcesPoint(100, 80));
     store.beginFrame();
@@ -211,8 +205,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     // `pending` is a real arm: a summary with no levels yet names no instant.
     const wall = fakeWall(deliveredAt(100));
     const store = lightDelayedStore(wall);
-    setActiveTimelineStore(store);
-    deactivate = activateProcessor(SHIP_SYSTEMS.id);
+    activateOn(store);
 
     store.beginFrame();
 

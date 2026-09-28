@@ -1,6 +1,5 @@
 import {
   act,
-  clearProcessorRuntime,
   render,
   screen,
   setupStreamFixture,
@@ -12,7 +11,7 @@ import {
   WidgetMeters,
 } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...) and,
 // through `./meters`, the `crew-status.meters` registerContribution(...).
 import { CrewSurvivalBadgeAugment } from "./index.js";
@@ -104,20 +103,6 @@ function emit(
     fixture.emit("kerbalism.available", true);
   });
 }
-
-beforeEach(() => {
-  // The Processor evaluator's runtime cache (evaluated value + frame
-  // generation) is a MODULE-GLOBAL singleton keyed by Processor id, shared
-  // across every fixture in this file. Each test below mounts its own fresh
-  // TelemetryProvider/TimelineStore whose frame-generation counter restarts
-  // at 0, so without a reset a later test's frame can coincide with an
-  // earlier test's `lastFrameGeneration` and silently keep serving that
-  // earlier test's stale computed value forever (see clearProcessorRuntime's
-  // own doc comment in sitrep-client for the full mechanism). Resetting
-  // before each test is the same isolation sitrep-client's own Processor
-  // tests use.
-  clearProcessorRuntime();
-});
 
 afterEach(() => {
   for (const unmount of renderedTrees) unmount();

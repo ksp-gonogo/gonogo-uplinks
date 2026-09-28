@@ -1,6 +1,5 @@
 import {
   act,
-  clearProcessorRuntime,
   render,
   screen,
   setupStreamFixture,
@@ -12,7 +11,7 @@ import {
   useWidgetBadges,
   WidgetMetaContext,
 } from "@ksp-gonogo/ui-kit";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load
 // `KERBALISM.registerContribution(...)` (the panel badge under test).
 import "./badge.js";
@@ -81,12 +80,6 @@ function emit(
     fixture.emit("kerbalism.available", true);
   });
 }
-
-beforeEach(() => {
-  // Same module-global Processor cache reset `index.test.tsx` performs;
-  // see that file's own comment for why it matters across fixtures.
-  clearProcessorRuntime();
-});
 
 let unmount: (() => void) | undefined;
 afterEach(() => {
