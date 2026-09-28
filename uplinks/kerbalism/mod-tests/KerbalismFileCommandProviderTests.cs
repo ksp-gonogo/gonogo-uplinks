@@ -80,26 +80,26 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void HandleSend_KerbalismNotModeled_FailsModeUnavailable()
+        public void HandleSend_KerbalismNotModeled_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleSend(
                 actuator, new ScienceRaw { Modeled = false }, new KerbalismSubjectFlagArgs { SubjectId = FileSubject, Flag = true });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
             Assert.Null(actuator.LastSendSubjectId);
         }
 
         [Fact]
-        public void HandleSend_NoSnapshotYet_FailsModeUnavailable()
+        public void HandleSend_NoSnapshotYet_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleSend(
                 actuator, stored: null, new KerbalismSubjectFlagArgs { SubjectId = FileSubject, Flag = true });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
         }
 
         // ---- kerbalism.file.delete ----
@@ -140,14 +140,14 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void HandleDelete_KerbalismNotModeled_FailsModeUnavailable()
+        public void HandleDelete_KerbalismNotModeled_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleDelete(
                 actuator, new ScienceRaw { Modeled = false }, new KerbalismSubjectActionArgs { SubjectId = FileSubject });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
         }
 
         // ---- kerbalism.sample.analyze ----
@@ -189,14 +189,14 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void HandleAnalyze_KerbalismNotModeled_FailsModeUnavailable()
+        public void HandleAnalyze_KerbalismNotModeled_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleAnalyze(
                 actuator, new ScienceRaw { Modeled = false }, new KerbalismSubjectFlagArgs { SubjectId = SampleSubject, Flag = true });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
         }
 
         // ---- kerbalism.sample.dump ----
@@ -237,14 +237,14 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void HandleDump_KerbalismNotModeled_FailsModeUnavailable()
+        public void HandleDump_KerbalismNotModeled_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleDump(
                 actuator, new ScienceRaw { Modeled = false }, new KerbalismSubjectActionArgs { SubjectId = SampleSubject });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
         }
 
         // ---- kerbalism.sample.moveToLab ----
@@ -285,14 +285,14 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void HandleMoveToLab_KerbalismNotModeled_FailsModeUnavailable()
+        public void HandleMoveToLab_KerbalismNotModeled_FailsScienceNotModelled()
         {
             var actuator = new FakeKerbalismFileActuator();
             var result = KerbalismFileCommandProvider.HandleMoveToLab(
                 actuator, new ScienceRaw { Modeled = false }, new KerbalismSubjectActionArgs { SubjectId = SampleSubject });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ScienceNotModelled, result.ErrorCode);
         }
 
         // ---- an already-failing actuator result must still pass through untouched ----

@@ -110,6 +110,7 @@ namespace Gonogo.KerbalismUplink
                 // install, the same registering-is-the-gate rule Register()
                 // already applies to the provider registrations.
                 Commands = _k.IsAvailable ? FileManagerCommands() : Array.Empty<CommandDeclaration>(),
+                ErrorCodes = ErrorCodeCatalog.Of(typeof(KerbalismErrorCodes)),
             };
         }
 

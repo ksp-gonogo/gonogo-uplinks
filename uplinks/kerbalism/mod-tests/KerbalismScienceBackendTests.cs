@@ -100,9 +100,9 @@ namespace GonogoKerbalismUplink.Tests
             var transmit = backend.TransmitExperiment(args);
 
             Assert.False(deploy.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, deploy.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ContinuousScience, deploy.ErrorCode);
             Assert.False(transmit.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, transmit.ErrorCode);
+            Assert.Equal(KerbalismErrorCodes.ContinuousScience, transmit.ErrorCode);
         }
     }
 }

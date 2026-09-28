@@ -208,6 +208,18 @@ public static class KerbalismRtConfig
                 typeof(KerbalismRtConfig).Assembly,
                 resultImportFrom: "@ksp-gonogo/sitrep-sdk");
         }
+
+        // The refinements in KerbalismErrorCodes, for the client to register.
+        var errorCodesOut = Environment.GetEnvironmentVariable("SITREP_KERBALISM_ERRORCODES_OUT");
+        if (!string.IsNullOrEmpty(errorCodesOut))
+        {
+            Sitrep.Contract.RtConfig.EmitErrorCodeMap(
+                errorCodesOut!,
+                builder.Context.DocumentationFilePath,
+                typeof(KerbalismRtConfig).Assembly,
+                declarationImportFrom: "@ksp-gonogo/sitrep-sdk",
+                tableName: "KERBALISM_ERROR_CODES");
+        }
     }
 }
 #endif

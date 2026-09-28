@@ -136,3 +136,12 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | forward model | `kerbalism.crew` |
 | forward model | `vessel.resources` |
 
+## Error codes
+
+| Code | Refines | Reads as | Meaning |
+| --- | --- | --- | --- |
+| `kerbalism.continuousScience` | `modeUnavailable` | Kerbalism runs and transmits experiments on its own | Kerbalism runs and transmits experiments continuously on its own, so a one-shot deploy or transmit has nothing to act on. |
+| `kerbalism.scienceNotModelled` | `modeUnavailable` | Kerbalism is not modelling science here | Kerbalism is not modelling science on this vessel, so there is no file or sample to act on. |
+| `kerbalism.noDriveSpace` | `limitReached` | no drive beside a lab has room for the whole sample | No drive beside a lab, other than the one holding it, has room for the whole sample. |
+| `kerbalism.driveRefused` | `modeUnavailable` | the Kerbalism drive did not make the change | A Kerbalism drive was asked to change a file or sample and reported that it had not. |
+

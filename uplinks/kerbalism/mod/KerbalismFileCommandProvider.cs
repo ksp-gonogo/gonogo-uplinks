@@ -87,7 +87,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (stored == null || !stored.Modeled)
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KerbalismErrorCodes.ScienceNotModelled);
             }
 
             if (string.IsNullOrEmpty(subjectId))

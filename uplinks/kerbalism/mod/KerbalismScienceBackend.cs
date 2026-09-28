@@ -1,3 +1,4 @@
+using GonogoKerbalismUplink;
 using Sitrep.Contract;
 
 namespace Gonogo.KerbalismUplink
@@ -97,7 +98,7 @@ namespace Gonogo.KerbalismUplink
         /// or by its automation, and gated on the requirements the
         /// <c>issue</c> field reports. There is no honest actuation for this command
         /// to perform, so it refuses with a typed
-        /// <see cref="CommandErrorCode.ModeUnavailable"/> rather than reporting a
+        /// <see cref="KerbalismErrorCodes.ContinuousScience"/> rather than reporting a
         /// success that changed nothing.
         ///
         /// <para>A start/stop command surface that fits BOTH models is the right fix
@@ -106,7 +107,7 @@ namespace Gonogo.KerbalismUplink
         /// touch.</para>
         /// </summary>
         public CommandResult DeployExperiment(ExperimentActionArgs args) =>
-            CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+            CommandResult.Fail(KerbalismErrorCodes.ContinuousScience);
 
         /// <summary>
         /// Same as <see cref="DeployExperiment"/>: Kerbalism transmits continuously,
@@ -117,6 +118,6 @@ namespace Gonogo.KerbalismUplink
         /// that does nothing.
         /// </summary>
         public CommandResult TransmitExperiment(ExperimentActionArgs args) =>
-            CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+            CommandResult.Fail(KerbalismErrorCodes.ContinuousScience);
     }
 }

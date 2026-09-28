@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GonogoKerbalismUplink;
 using Sitrep.Contract;
 
 namespace Gonogo.KerbalismUplink
@@ -73,7 +74,7 @@ namespace Gonogo.KerbalismUplink
             }
             if (!_k.DriveSend(drive, internalId, flag))
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
             }
 
             return CommandResult.Ok();
@@ -88,7 +89,7 @@ namespace Gonogo.KerbalismUplink
 
             return _k.DriveDeleteFile(drive, subject)
                 ? CommandResult.Ok()
-                : CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                : CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
         }
 
         public CommandResult SetAnalyzeFlagged(string subjectId, bool flag)
@@ -100,7 +101,7 @@ namespace Gonogo.KerbalismUplink
 
             return _k.DriveAnalyze(drive, subject, flag)
                 ? CommandResult.Ok()
-                : CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                : CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
         }
 
         public CommandResult DumpSample(string subjectId)
@@ -112,7 +113,7 @@ namespace Gonogo.KerbalismUplink
 
             return _k.DriveDeleteSample(drive, subject)
                 ? CommandResult.Ok()
-                : CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                : CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace Gonogo.KerbalismUplink
         /// a prerequisite for <c>analyze</c> to work: the two commands are
         /// deliberately independent.
         ///
-        /// <para>Fails <see cref="CommandErrorCode.ModeUnavailable"/> when no
+        /// <para>Fails <see cref="KerbalismErrorCodes.NoDriveSpace"/> when no
         /// lab-adjacent drive (other than the source) has room for the FULL
         /// sample; a partial move would leave the sample split across two
         /// drives, a worse state than refusing.</para>
@@ -214,14 +215,14 @@ namespace Gonogo.KerbalismUplink
             var chosen = KerbalismMoveDestinationSelector.Select(candidates, size);
             if (chosen == null)
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KerbalismErrorCodes.NoDriveSpace);
             }
 
             var destination = drives[chosen.Value].Drive;
 
             if (!_k.DriveRecordSample(destination, subject, size, mass, useStockCrediting))
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
             }
 
             // The destination copy is already committed, so a failed source delete
@@ -231,7 +232,7 @@ namespace Gonogo.KerbalismUplink
             if (!_k.DriveDeleteSample(sourceDrive, subject, size))
             {
                 _k.DriveDeleteSample(destination, subject, size);
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KerbalismErrorCodes.DriveRefused);
             }
 
             return CommandResult.Ok();
