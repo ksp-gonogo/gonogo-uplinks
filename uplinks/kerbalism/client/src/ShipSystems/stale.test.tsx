@@ -144,6 +144,10 @@ describe("Ship Systems across a light time", () => {
     );
     const water = screen.getByTestId("resource-card-Water");
     expect(water.querySelector("[data-modelled-alongside]")).toBeNull();
+    expect(screen.getByRole("meter", { name: "Water" })).toHaveAttribute(
+      "aria-valuetext",
+      expect.not.stringContaining("modelled"),
+    );
     expect(container.querySelectorAll("[data-held]").length).toBe(
       container.querySelectorAll("[data-modelled-alongside]").length,
     );

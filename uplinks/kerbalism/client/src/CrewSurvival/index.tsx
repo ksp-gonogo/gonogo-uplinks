@@ -1,8 +1,9 @@
-import type { Reading, SlotProps, Value } from "@ksp-gonogo/sitrep-sdk";
+import type { SlotProps, Value } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment, useProcessor, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   ModelledAlongside,
+  modelledBeyondReceived,
   type Severity,
   writeQuantity,
 } from "@ksp-gonogo/ui-kit";
@@ -48,9 +49,12 @@ function findKerbal(
  * exists for the case that actually threatens the kerbal, so a nominal or
  * warn-tier kerbal carries no redundant badge next to their name.
  */
-function warningFor(
-  kerbal: KerbalSurvival,
-): { label: string; severity: Severity; modelled?: Value<"s"> } | null {
+function warningFor(kerbal: KerbalSurvival): {
+  label: string;
+  severity: Severity;
+  observed?: Value<"s">;
+  modelled?: Value<"s">;
+} | null {
   if (kerbal.tone !== "nogo") return null;
   const margin = marginSecondsOf(kerbal);
   if (margin !== null) {
@@ -74,6 +78,7 @@ function warningFor(
     return {
       label: `~${writeQuantity(value("s", margin))} to act`,
       severity: "critical",
+      observed: value("s", margin),
       modelled: modelledBeyondReceived(kerbal.marginToAct),
     };
   }
@@ -84,16 +89,6 @@ function warningFor(
     };
   }
   return null;
-}
-
-/** The model's figure for the craft's present, where it reaches past the received edge. */
-function modelledBeyondReceived(
-  reading: Reading<Value<"s">>,
-): Value<"s"> | undefined {
-  const { reckoning } = reading;
-  return reckoning.status === "available" && reckoning.beyondReceived
-    ? reckoning.modelled
-    : undefined;
 }
 
 /**
@@ -147,13 +142,17 @@ function CrewSurvivalBadgeAugment({
       data-reckoning-basis={modelled}
     >
       {label}
-      {warning.modelled !== undefined && (
-        <ModelledAlongside>
-          ~{writeQuantity(warning.modelled)}
-        </ModelledAlongside>
-      )}
+      <ModelledAlongside
+        observed={warning.observed}
+        modelled={warning.modelled}
+        write={writeMargin}
+      />
     </Badge>
   );
+}
+
+function writeMargin(margin: Value<"s">): string {
+  return `~${writeQuantity(margin)}`;
 }
 
 registerAugment({

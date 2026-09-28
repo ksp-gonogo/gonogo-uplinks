@@ -31,9 +31,11 @@ import {
   Stack,
   severityFromBadgeEntryTone,
   speakQuantity,
+  standsApart,
   Text,
   Unit,
-  writeQuantity,
+  writtenAs,
+  writtenQuantity,
 } from "@ksp-gonogo/ui-kit";
 import { createContext, useContext, useMemo } from "react";
 import type {
@@ -158,10 +160,7 @@ function toneForRow(row: ResourceRow): Tone {
   return "neutral";
 }
 
-/**
- * The resource model's figures for one row at the craft's present, each only
- * where it reads differently from the observation at the precision drawn.
- */
+/** The resource model's figures for one row at the craft's present. */
 interface ModelledRow {
   amount?: number;
   secondsToEmpty?: number;
@@ -173,19 +172,15 @@ function modelledRow(
 ): ModelledRow {
   const figure = modelled?.[row.name];
   if (figure === undefined || row.capacity <= 0) return {};
-  const out: ModelledRow = {};
-  if (fmtAmt(figure.amount) !== fmtAmt(row.amount)) out.amount = figure.amount;
   const sec = figure.secondsToEmpty;
-  if (sec === null || !Number.isFinite(sec)) return out;
-  const reckoned = value("s", Math.max(0, sec));
-  const observed = row.secondsToEmpty;
-  if (
-    observed === null ||
-    writeQuantity(reckoned) !== writeQuantity(value("s", Math.max(0, observed)))
-  ) {
-    out.secondsToEmpty = reckoned.magnitude;
-  }
-  return out;
+  if (sec === null || !Number.isFinite(sec)) return { amount: figure.amount };
+  return { amount: figure.amount, secondsToEmpty: Math.max(0, sec) };
+}
+
+/** An observed time to empty as a quantity, or null while the level is not draining. */
+function observedSeconds(sec: number | null): Value<"s"> | null {
+  if (sec === null || !Number.isFinite(sec)) return null;
+  return value("s", Math.max(0, sec));
 }
 
 /** "12 / 40 · 3m 20s" style meter caption; "not fitted" for a tankless resource.
@@ -196,10 +191,18 @@ function rowValueLabel(row: ResourceRow, modelled: ModelledRow = {}): string {
   if (row.capacity <= 0) return "not fitted";
   const observed = `${fmtAmt(row.amount)} / ${fmtAmt(row.capacity)} · ${formatTimeToEmpty(row.secondsToEmpty)}`;
   const reckoned = [
-    modelled.amount === undefined ? undefined : fmtAmt(modelled.amount),
-    modelled.secondsToEmpty === undefined
-      ? undefined
-      : formatTimeToEmpty(modelled.secondsToEmpty),
+    modelled.amount !== undefined &&
+    standsApart(row.amount, modelled.amount, writtenAs(fmtAmt))
+      ? fmtAmt(modelled.amount)
+      : undefined,
+    modelled.secondsToEmpty !== undefined &&
+    standsApart(
+      observedSeconds(row.secondsToEmpty),
+      value("s", modelled.secondsToEmpty),
+      writtenQuantity(),
+    )
+      ? formatTimeToEmpty(modelled.secondsToEmpty)
+      : undefined,
   ].filter((part) => part !== undefined);
   return reckoned.length === 0
     ? observed
@@ -224,9 +227,11 @@ function RowValueDisplay({
   return (
     <>
       {fmtAmt(row.amount)}
-      {modelled.amount !== undefined && (
-        <ModelledAlongside>{fmtAmt(modelled.amount)}</ModelledAlongside>
-      )}
+      <ModelledAlongside
+        observed={row.amount}
+        modelled={modelled.amount}
+        write={fmtAmt}
+      />
       {" / "}
       {fmtAmt(row.capacity)} ·{" "}
       {sec == null || !Number.isFinite(sec) ? (
@@ -234,18 +239,24 @@ function RowValueDisplay({
       ) : (
         <Unit value={ledger ? combineReadings([ledger], () => left) : left} />
       )}
-      <ModelledSeconds seconds={modelled.secondsToEmpty} />
+      <ModelledSeconds observed={sec} seconds={modelled.secondsToEmpty} />
     </>
   );
 }
 
-/** A modelled time to empty beside the observed one, where there is one. */
-function ModelledSeconds({ seconds }: { seconds: number | undefined }) {
-  if (seconds === undefined) return null;
+/** A modelled time to empty beside the observed one it was carried from. */
+function ModelledSeconds({
+  observed,
+  seconds,
+}: {
+  observed: number | null;
+  seconds: number | undefined;
+}) {
   return (
-    <ModelledAlongside>
-      <Unit value={value("s", seconds)} />
-    </ModelledAlongside>
+    <ModelledAlongside
+      observed={observedSeconds(observed)}
+      modelled={seconds === undefined ? undefined : value("s", seconds)}
+    />
   );
 }
 
@@ -632,6 +643,7 @@ function ShipSystemsBody({
                                 )}
                               />
                               <ModelledSeconds
+                                observed={cause.secondsToEmpty}
                                 seconds={
                                   modelledRow(cause, modelled).secondsToEmpty
                                 }
@@ -926,8 +938,11 @@ function LimitedByMessage({
         <>
           {" "}
           ~<Unit value={value("s", Math.max(0, secondsToEmpty))} />
-          <ModelledSeconds seconds={modelledSecondsToEmpty} /> of{" "}
-          {subjectDisplayName} left
+          <ModelledSeconds
+            observed={secondsToEmpty}
+            seconds={modelledSecondsToEmpty}
+          />{" "}
+          of {subjectDisplayName} left
         </>
       )}
     </>

@@ -287,4 +287,13 @@ describe("the survival badges across a light time", () => {
     expect(alongside).not.toBeNull();
     expect(alongside?.querySelector("[data-held-mark]")).not.toBeNull();
   });
+
+  it("draws no modelled margin beside a held one", async () => {
+    const tree = await rowBadgeTree({
+      ...risingLightTime,
+      _stream: { ...risingLightTime._stream, stopsArriving: true },
+    });
+    expect(visibleText(tree)).toMatch(/to act · held/i);
+    expect(tree.querySelector("[data-modelled-alongside]")).toBeNull();
+  });
 });
