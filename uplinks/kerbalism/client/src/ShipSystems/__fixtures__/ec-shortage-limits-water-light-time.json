@@ -1,0 +1,177 @@
+{
+  "_meta": {
+    "scenario": "ec-shortage-limits-water-light-time",
+    "synthetic": true,
+    "notes": "SYNTHETIC. ec-shortage-limits-water under a 60 s one-way light time: every reading is delivered 60 s after it was sent, so the resource model carries each draining level to the craft's present and Ship Systems draws the observed level and time to empty with the model's figures beside them."
+  },
+  "_scene": {
+    "widget": "ship-systems",
+    "caption": "The same shortage under a 60 s light time: each draining level and its time to empty as observed, with the resource model's figures for the craft's present beside them",
+    "modes": ["default"],
+    "paints": ["Electric Charge", "Water"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.profile",
+        "payload": {
+          "name": "Default",
+          "resources": {
+            "Water": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Water",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "ElectricCharge": {
+              "flowMode": "ALL_VESSEL_BALANCE",
+              "flowModeOrdinal": 4,
+              "displayName": "Electric Charge",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "Oxygen": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Oxygen",
+              "isSupply": true
+            },
+            "WasteWater": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Waste Water",
+              "isSupply": false
+            },
+            "_NonRegenScrubber": {
+              "flowMode": "",
+              "displayName": "Scrubber Cartridge",
+              "isSupply": false
+            }
+          },
+          "rules": [
+            {
+              "name": "drinking",
+              "input": "Water",
+              "output": "WasteWater",
+              "ratePerSecond": 1e-5
+            }
+          ],
+          "processes": [
+            {
+              "name": "Water Recycler",
+              "modifiers": ["_WaterRecycler"],
+              "inputs": {
+                "WasteWater": 0.0002,
+                "ElectricCharge": 0.01
+              },
+              "outputs": {
+                "Water": 0.00018
+              }
+            },
+            {
+              "name": "CO2 Scrubber",
+              "modifiers": ["_Scrubber"],
+              "inputs": {
+                "_NonRegenScrubber": 2e-5
+              },
+              "outputs": {}
+            }
+          ]
+        }
+      },
+      {
+        "topic": "kerbalism.lifesupport",
+        "payload": {
+          "rates": {
+            "Water": -0.0005,
+            "ElectricCharge": -0.05
+          },
+          "habitat": {
+            "pressure": 0.9,
+            "poisoning": 0.05,
+            "comfort": 0.6,
+            "livingSpace": 0.7
+          },
+          "processes": [
+            {
+              "resource": "_WaterRecycler",
+              "title": "Water Recycler",
+              "capacity": 1,
+              "running": true,
+              "broken": false
+            },
+            {
+              "resource": "_Scrubber",
+              "title": "CO2 Scrubber",
+              "capacity": 1,
+              "running": true,
+              "broken": false
+            }
+          ],
+          "greenhouses": [],
+          "asOfKerbalismUt": 1000000
+        }
+      },
+      {
+        "topic": "vessel.resources",
+        "payload": {
+          "resources": {
+            "Water": {
+              "current": 50,
+              "max": 500,
+              "active": true
+            },
+            "ElectricCharge": {
+              "current": 20,
+              "max": 400,
+              "active": true
+            },
+            "Oxygen": {
+              "current": 380,
+              "max": 400,
+              "active": true
+            },
+            "WasteWater": {
+              "current": 10,
+              "max": 200,
+              "active": true
+            },
+            "_NonRegenScrubber": {
+              "current": 30,
+              "max": 100,
+              "active": true
+            }
+          },
+          "meta": {
+            "source": "vessel:1",
+            "quality": 1
+          }
+        }
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": {
+          "count": 2,
+          "capacity": 4,
+          "crew": [
+            {
+              "name": "Jebediah Kerman",
+              "trait": "Pilot"
+            },
+            {
+              "name": "Bill Kerman",
+              "trait": "Engineer"
+            }
+          ],
+          "meta": {
+            "source": "vessel:1",
+            "quality": 1
+          }
+        }
+      }
+    ],
+    "delaySeconds": 60
+  }
+}

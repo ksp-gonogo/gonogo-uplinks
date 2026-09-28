@@ -559,7 +559,9 @@ export function diagnose({
  *
  * What is left is the age of the levels, and that is reported rather than
  * modelled: `ShipSystems.levels` carries the state, the observation's own UT
- * and the age in seconds, for the levels every figure here derives from.
+ * and the age in seconds, for the levels every figure here derives from. The
+ * same division over the model's levels is `ShipSystems.figures`' reckoned
+ * figure, drawn beside this one and never in its place.
  */
 export function timeToEmptySeconds(
   resource: string,

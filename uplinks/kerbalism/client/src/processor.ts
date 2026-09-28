@@ -1,15 +1,18 @@
 import type {
+  Reading,
   ReadingState,
   ResourceAmount,
+  TopicPayload,
+  TopicReading,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { observedAt } from "@ksp-gonogo/sitrep-sdk";
+import { deriveReading, observedAt } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOr } from "@ksp-gonogo/ui-kit";
 import type {
   KerbalismLifeSupport,
   KerbalismProfile,
 } from "./__generated__/contract.js";
-import { type Summary, summarise } from "./ecosystem.js";
+import { type Summary, summarise, timeToEmptySeconds } from "./ecosystem.js";
 import { KERBALISM } from "./uplink.js";
 
 // The single per-frame derivation the Ship Systems widget AND its panel badge
@@ -47,7 +50,25 @@ export interface ShipSystems {
    * nothing anywhere saying so.
    */
   levels: LevelsProvenance;
+  /**
+   * Each resource's level and time to empty, derived from the `vessel.resources`
+   * reading. The reckoned figures come from that reading's own model and name
+   * only the levels it moved, at the instant it reckoned to.
+   */
+  figures: Reading<LevelFigures>;
 }
+
+/** One resource's level and time to empty. */
+export interface LevelFigure {
+  amount: number;
+  /** Null while the level is not draining. */
+  secondsToEmpty: number | null;
+}
+
+/** Level figures keyed by KSP resource name. */
+export type LevelFigures = Readonly<Record<string, LevelFigure>>;
+
+type Resources = TopicPayload<"vessel.resources">;
 
 /** Where the resource levels behind a summary came from, and when. */
 export interface LevelsProvenance {
@@ -79,8 +100,8 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     // generic `vessel.resources` levels, keyed by KSP resource name.
     //
     // The LAST OBSERVED levels on every arm that has a value, never a modelled
-    // figure: this derivation does not forward-model, it reports what it was
-    // working from and when it was observed, and `levels` below is what says so.
+    // figure: the summary reports what it was working from and when it was
+    // observed, and the reading's own model reaches a consumer through `figures`.
     const resources =
       resourcesReading.state === "observed" ||
       resourcesReading.state === "stale"
@@ -97,6 +118,15 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
       capacity[name] = magnitudeOr(amount.max, 0);
     }
     const crewCount = magnitudeOr(crew?.count, 0);
+    const moved = movedLevels(resourcesReading);
+    const figures = deriveReading(
+      resourcesReading,
+      (observed) => levelFigures(observed, lifeSupport, () => true),
+      (modelled) =>
+        moved.size === 0
+          ? undefined
+          : levelFigures(modelled, lifeSupport, (name) => moved.has(name)),
+    );
     return {
       summary: summarise({
         profile,
@@ -112,6 +142,40 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
         state: resourcesReading.state,
         asOfUt: observedAtUt,
       },
+      figures,
     };
   },
 });
+
+/** The resources whose level the reading's model moved, off the paths it names. */
+function movedLevels(reading: TopicReading<Resources>): ReadonlySet<string> {
+  const moved = new Set<string>();
+  if (reading.state !== "observed" && reading.state !== "stale") return moved;
+  if (reading.reckoning.status !== "available") return moved;
+  for (const { path } of reading.reckoning.modelled) {
+    const match = /^resources\.(.+)\.current$/.exec(path);
+    if (match?.[1] !== undefined) moved.add(match[1]);
+  }
+  return moved;
+}
+
+/** Level and time to empty off one resource map, for each name `include` admits. */
+function levelFigures(
+  payload: Resources,
+  lifeSupport: KerbalismLifeSupport | undefined,
+  include: (name: string) => boolean,
+): LevelFigures {
+  const stored: Record<string, number> = {};
+  for (const [name, amount] of Object.entries(payload.resources ?? {})) {
+    stored[name] = magnitudeOr(amount.current, 0);
+  }
+  const figures: Record<string, LevelFigure> = {};
+  for (const [name, amount] of Object.entries(stored)) {
+    if (!include(name)) continue;
+    figures[name] = {
+      amount,
+      secondsToEmpty: timeToEmptySeconds(name, lifeSupport, stored),
+    };
+  }
+  return figures;
+}

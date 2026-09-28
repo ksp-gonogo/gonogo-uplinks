@@ -19,8 +19,10 @@ import {
   Grid,
   Meter,
   MeterStack,
+  ModelledAlongside,
   magnitudeOf,
   magnitudeOr,
+  modelledBeyondReceived,
   Notice,
   NULL_DISPLAY,
   Panel,
@@ -31,6 +33,7 @@ import {
   speakQuantity,
   Text,
   Unit,
+  writeQuantity,
 } from "@ksp-gonogo/ui-kit";
 import { createContext, useContext, useMemo } from "react";
 import type {
@@ -45,7 +48,11 @@ import {
   type ResourceRow,
   type WearRow,
 } from "../ecosystem.js";
-import { SHIP_SYSTEMS, type ShipSystems } from "../processor.js";
+import {
+  type LevelFigures,
+  SHIP_SYSTEMS,
+  type ShipSystems,
+} from "../processor.js";
 import { KERBALISM } from "../uplink.js";
 // Side-effect import: registers the `ship-systems.life-support` augment filler
 // (the Greenhouse section) and the SlotRegistry declaration merge for that
@@ -151,33 +158,94 @@ function toneForRow(row: ResourceRow): Tone {
   return "neutral";
 }
 
+/**
+ * The resource model's figures for one row at the craft's present, each only
+ * where it reads differently from the observation at the precision drawn.
+ */
+interface ModelledRow {
+  amount?: number;
+  secondsToEmpty?: number;
+}
+
+function modelledRow(
+  row: ResourceRow,
+  modelled: LevelFigures | undefined,
+): ModelledRow {
+  const figure = modelled?.[row.name];
+  if (figure === undefined || row.capacity <= 0) return {};
+  const out: ModelledRow = {};
+  if (fmtAmt(figure.amount) !== fmtAmt(row.amount)) out.amount = figure.amount;
+  const sec = figure.secondsToEmpty;
+  if (sec === null || !Number.isFinite(sec)) return out;
+  const reckoned = value("s", Math.max(0, sec));
+  const observed = row.secondsToEmpty;
+  if (
+    observed === null ||
+    writeQuantity(reckoned) !== writeQuantity(value("s", Math.max(0, observed)))
+  ) {
+    out.secondsToEmpty = reckoned.magnitude;
+  }
+  return out;
+}
+
 /** "12 / 40 · 3m 20s" style meter caption; "not fitted" for a tankless resource.
  *  Kept as a plain string for `Meter`'s `aria-valuetext` (an attribute, so it
  *  can only hold text); the visible header reads `RowValueDisplay` instead,
  *  which renders the same content through `<Unit>`. */
-function rowValueLabel(row: ResourceRow): string {
+function rowValueLabel(row: ResourceRow, modelled: ModelledRow = {}): string {
   if (row.capacity <= 0) return "not fitted";
-  return `${fmtAmt(row.amount)} / ${fmtAmt(row.capacity)} · ${formatTimeToEmpty(row.secondsToEmpty)}`;
+  const observed = `${fmtAmt(row.amount)} / ${fmtAmt(row.capacity)} · ${formatTimeToEmpty(row.secondsToEmpty)}`;
+  const reckoned = [
+    modelled.amount === undefined ? undefined : fmtAmt(modelled.amount),
+    modelled.secondsToEmpty === undefined
+      ? undefined
+      : formatTimeToEmpty(modelled.secondsToEmpty),
+  ].filter((part) => part !== undefined);
+  return reckoned.length === 0
+    ? observed
+    : `${observed}, modelled to SCET ${reckoned.join(" · ")}`;
 }
 
 /** Visible counterpart to `rowValueLabel`: same "amount / capacity · time"
  *  shape, but the time-to-empty renders through `<Unit>` (the canonical
  *  duration path, `formatQuantity` → `formatDuration`) instead of the
  *  hand-rolled `speakQuantity` string that function returns. */
-function RowValueDisplay({ row }: { row: ResourceRow }) {
+function RowValueDisplay({
+  row,
+  modelled = {},
+}: {
+  row: ResourceRow;
+  modelled?: ModelledRow;
+}) {
   const ledger = useContext(LedgerReadingContext);
   if (row.capacity <= 0) return <>not fitted</>;
   const sec = row.secondsToEmpty;
   const left = value("s", Math.max(0, sec ?? 0));
   return (
     <>
-      {fmtAmt(row.amount)} / {fmtAmt(row.capacity)} ·{" "}
+      {fmtAmt(row.amount)}
+      {modelled.amount !== undefined && (
+        <ModelledAlongside>{fmtAmt(modelled.amount)}</ModelledAlongside>
+      )}
+      {" / "}
+      {fmtAmt(row.capacity)} ·{" "}
       {sec == null || !Number.isFinite(sec) ? (
         "steady"
       ) : (
         <Unit value={ledger ? combineReadings([ledger], () => left) : left} />
       )}
+      <ModelledSeconds seconds={modelled.secondsToEmpty} />
     </>
+  );
+}
+
+/** A modelled time to empty beside the observed one, where there is one. */
+function ModelledSeconds({ seconds }: { seconds: number | undefined }) {
+  if (seconds === undefined) return null;
+  return (
+    <ModelledAlongside>
+      <Unit value={value("s", seconds)} />
+    </ModelledAlongside>
   );
 }
 
@@ -351,6 +419,7 @@ function ShipSystemsComponent(
         weather={weather}
         utNow={utNow}
         held={shipReading?.state === "stale"}
+        modelled={modelledBeyondReceived(ship.figures)}
       />
     </LedgerReadingContext.Provider>
   );
@@ -381,12 +450,15 @@ function ShipSystemsBody({
   weather,
   utNow,
   held,
+  modelled,
 }: {
   ship: ShipSystems;
   weather: KerbalismSpaceWeather | undefined;
   utNow: number | undefined;
   /** Whether the ledger is the last one there was rather than a current one. */
   held: boolean;
+  /** The resource model's level figures at the craft's present, past the received edge. */
+  modelled: LevelFigures | undefined;
 }) {
   const { summary } = ship;
   // The "Limiting factors" banner names a cause's ROOT resource but the
@@ -488,8 +560,13 @@ function ShipSystemsBody({
             // kit draws the absence and drops `role="meter"` with it.
             value={fill(ecRow.fraction)}
             tone={toneForRow(ecRow)}
-            valueLabel={rowValueLabel(ecRow)}
-            valueLabelNode={<RowValueDisplay row={ecRow} />}
+            valueLabel={rowValueLabel(ecRow, modelledRow(ecRow, modelled))}
+            valueLabelNode={
+              <RowValueDisplay
+                row={ecRow}
+                modelled={modelledRow(ecRow, modelled)}
+              />
+            }
           />
         )
       }
@@ -531,6 +608,12 @@ function ShipSystemsBody({
                               secondsToEmpty={
                                 explainedRow?.secondsToEmpty ?? null
                               }
+                              modelledSecondsToEmpty={
+                                explainedRow
+                                  ? modelledRow(explainedRow, modelled)
+                                      .secondsToEmpty
+                                  : undefined
+                              }
                             />
                           </Text>
                         );
@@ -547,6 +630,11 @@ function ShipSystemsBody({
                                   "s",
                                   Math.max(0, cause.secondsToEmpty),
                                 )}
+                              />
+                              <ModelledSeconds
+                                seconds={
+                                  modelledRow(cause, modelled).secondsToEmpty
+                                }
                               />{" "}
                               left)
                             </>
@@ -566,6 +654,7 @@ function ShipSystemsBody({
                 key={row.name}
                 row={row}
                 ship={ship}
+                modelled={modelledRow(row, modelled)}
                 identityColor={resourceColors.get(row.name)}
               />
             ))}
@@ -580,6 +669,7 @@ function ShipSystemsBody({
                   key={row.name}
                   row={row}
                   ship={ship}
+                  modelled={modelledRow(row, modelled)}
                   identityColor={resourceColors.get(row.name)}
                 />
               ))}
@@ -731,10 +821,12 @@ function SectionHead({
 function ResourceLedgerRow({
   row,
   ship,
+  modelled,
   identityColor,
 }: {
   row: ResourceRow;
   ship: ShipSystems;
+  modelled: ModelledRow;
   /** This resource's colour from `useResourceColorMap`, rendered as the
    *  Card's top-edge identity tab. `undefined` renders no tab (the colour map
    *  is always populated for a row present in `summary`, this is just the
@@ -768,8 +860,8 @@ function ResourceLedgerRow({
           // fill fraction, and drawing one at zero says the tank is empty.
           value={fill(row.fraction)}
           tone={toneForRow(row)}
-          valueLabel={rowValueLabel(row)}
-          valueLabelNode={<RowValueDisplay row={row} />}
+          valueLabel={rowValueLabel(row, modelled)}
+          valueLabelNode={<RowValueDisplay row={row} modelled={modelled} />}
         />
         {row.role === "downstream" && row.blockedBy.length > 0 && (
           // `tone="warn"` alone renders --color-status-warning-fg, a
@@ -787,6 +879,7 @@ function ResourceLedgerRow({
               subjectDisplayName={row.displayName}
               blockedBy={row.blockedBy}
               secondsToEmpty={row.secondsToEmpty}
+              modelledSecondsToEmpty={modelled.secondsToEmpty}
             />
           </Text>
         )}
@@ -819,10 +912,12 @@ function LimitedByMessage({
   subjectDisplayName,
   blockedBy,
   secondsToEmpty,
+  modelledSecondsToEmpty,
 }: {
   subjectDisplayName: string;
   blockedBy: string[];
   secondsToEmpty: number | null;
+  modelledSecondsToEmpty: number | undefined;
 }) {
   return (
     <>
@@ -830,7 +925,8 @@ function LimitedByMessage({
       {secondsToEmpty !== null && (
         <>
           {" "}
-          ~<Unit value={value("s", Math.max(0, secondsToEmpty))} /> of{" "}
+          ~<Unit value={value("s", Math.max(0, secondsToEmpty))} />
+          <ModelledSeconds seconds={modelledSecondsToEmpty} /> of{" "}
           {subjectDisplayName} left
         </>
       )}

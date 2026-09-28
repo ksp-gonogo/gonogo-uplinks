@@ -70,7 +70,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Slots | `ship-systems.life-support` |
 | Only while present | `flight` |
 | Default size | 9 × 15 |
-| Scenes | 3 |
+| Scenes | 4 |
 
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](docs/assets/ec-shortage-limits-water--default.png)
 
