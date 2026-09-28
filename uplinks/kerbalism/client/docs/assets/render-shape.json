@@ -28,37 +28,42 @@
       "text": "8dfeb729"
     },
     "ec-shortage-limits-water--default.png": {
-      "hash": "9c01d4c906209cf7",
+      "hash": "4aa0d7ca2075422d",
       "elements": 174,
       "text": "9e274288"
     },
     "ec-shortage-limits-water--min.png": {
-      "hash": "37f4b1a084566d0f",
+      "hash": "ce6cd2cf6d57530f",
       "elements": 174,
       "text": "9e274288"
     },
+    "ec-shortage-limits-water-light-time--default.png": {
+      "hash": "1521cee842e68001",
+      "elements": 188,
+      "text": "c4435a04"
+    },
     "ec-shortage-limits-water-stopped-arriving--default.png": {
-      "hash": "8e33300078c7a4a8",
+      "hash": "f9172af5f0b64dbc",
       "elements": 177,
       "text": "a20098a5"
     },
     "ec-shortage-limits-water-stopped-arriving--min.png": {
-      "hash": "6edc3feaf71f7cb6",
+      "hash": "c2c897dfdd5c4dea",
       "elements": 177,
       "text": "a20098a5"
     },
     "file-and-sample-on-one-subject--default.png": {
-      "hash": "4e1e08ba43f250a5",
+      "hash": "8fd9ed1cf432a0de",
       "elements": 101,
       "text": "1f3d9756"
     },
     "file-and-sample-on-one-subject-stopped-arriving--default.png": {
-      "hash": "deb7728d603fe26a",
+      "hash": "eab7b132ec1a3881",
       "elements": 116,
       "text": "be4691fb"
     },
     "greenhouse-halted-in-the-dark--default.png": {
-      "hash": "32e40b4cd06a50b7",
+      "hash": "fd9871d7eee31d03",
       "elements": 119,
       "text": "4061a529"
     },
@@ -107,6 +112,11 @@
       "elements": 93,
       "text": "56cafb6d"
     },
+    "radiation-rising-light-time--default.png": {
+      "hash": "bf3530ff7ac78703",
+      "elements": 101,
+      "text": "ee534bbe"
+    },
     "radiation-rising-stopped-arriving--default.png": {
       "hash": "e056c8d4800557a1",
       "elements": 98,
@@ -143,7 +153,7 @@
       "text": "50714c7e"
     },
     "unread-send-and-analyze-flags--default.png": {
-      "hash": "f17d86dde20c2a4d",
+      "hash": "2d722ad39cc12197",
       "elements": 98,
       "text": "c738f880"
     }
