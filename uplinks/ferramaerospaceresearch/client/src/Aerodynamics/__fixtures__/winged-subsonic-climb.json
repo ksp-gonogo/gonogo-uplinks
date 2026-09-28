@@ -6,7 +6,7 @@
   "_scene": {
     "widget": "aerodynamics",
     "caption": "Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated",
-    "modes": ["default", "min", "landscape-18x5"],
+    "modes": ["mobile-9x8", "default", "min", "landscape-18x5"],
     "hero": true
   },
   "_stream": {

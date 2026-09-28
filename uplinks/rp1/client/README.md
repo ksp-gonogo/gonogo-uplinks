@@ -176,7 +176,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![Three pads across two RP-1 complexes: one holding a vehicle that has finished rolling out, one being reconditioned, and a stock runway RP-1 does not model](docs/assets/pad-holding-a-finished-vehicle--default.png)
 
-![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](docs/assets/catalogue-picker--default.png)
+![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](docs/assets/catalogue-picker--landscape-18x5.png)
 
 ![Both Program slots committed, the running Program past its deadline and losing reputation by the year, and the next one out of Confidence reach](docs/assets/programs-overrun-and-unaffordable--default.png)
 

@@ -33,7 +33,7 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 | Default size | 4 × 7 |
 | Scenes | 4 |
 
-![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
+![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--mobile-9x8.png)
 
 ## Contributions
 
@@ -42,7 +42,7 @@ Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fi
 | `aero:descent-envelope` | `plots` | `processor:aero:aero-state-reading`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `system.bodies` | only while `aero` |
 | `aero:descent-envelope-badges` | `landing-status.badges` | `processor:aero:aero-state-reading` | only while `aero` |
 
-![Atmospheric final approach over a sampled site: ONE descent envelope, carrying the host's terminal corridor and the aero model's own curve merged onto it, beside the same touchdown site and cross-section the vacuum board draws](docs/assets/atmospheric-final-approach-site--default.png)
+![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](docs/assets/winged-entry-high-alpha--default.png)
 
 ![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](docs/assets/entry-badges--default.png)
 
