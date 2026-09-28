@@ -239,6 +239,8 @@ jobs:
       # than from anything central. `mod.tier` decides whether a newer published
       # version can be discovered at all; see tooling/check-mod-version.mjs.
       - name: Parent mod version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node tooling/check-mod-version.mjs "${{ inputs.name }}"
 
       - name: Bundle client

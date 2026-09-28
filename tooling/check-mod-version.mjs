@@ -42,8 +42,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CKAN_META =
-  "https://raw.githubusercontent.com/KSP-CKAN/CKAN-meta/master/";
+const CKAN_META = "https://api.github.com/repos/KSP-CKAN/CKAN-meta/contents/";
 
 const name = process.argv[2];
 if (!name) {
@@ -106,13 +105,20 @@ if (!mod.ckan) {
  * CKAN's metadata repository, not a mod page. It is structured, versioned and
  * meant to be read by tools; scraping a SpaceDock page is a gate that breaks when
  * somebody changes their markup, and a flaky gate gets switched off.
+ *
+ * Authenticated whenever a token is present: an anonymous call to the GitHub API
+ * shares a 60-an-hour budget with every other job on the runner's address, and
+ * answers 403 when that is spent.
  */
+const token = process.env.GITHUB_TOKEN;
 let versions;
 try {
-  const response = await fetch(
-    `https://api.github.com/repos/KSP-CKAN/CKAN-meta/contents/${mod.ckan}`,
-    { headers: { accept: "application/vnd.github+json" } },
-  );
+  const response = await fetch(`${CKAN_META}${mod.ckan}`, {
+    headers: {
+      accept: "application/vnd.github+json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
+  });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const entries = await response.json();
   versions = entries
