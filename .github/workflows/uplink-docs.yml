@@ -136,7 +136,21 @@ jobs:
           # before the push rather than leaving main to find out. It is the same
           # `--check` each CI leg runs, and it reads the working tree, which the
           # step above has just made agree with the index.
-          node tooling/uplink-docs.mjs --check --skip "$RUNNER_TEMP/uplink-docs-failed.txt"
+          #
+          # An Uplink that fails it is put back as committed and left out, so it
+          # cannot hold back every other Uplink's healed page; the last step
+          # fails naming it. A failure that names no Uplink commits nothing.
+          unhealed="$RUNNER_TEMP/uplink-docs-unhealed.txt"
+          check=0
+          node tooling/uplink-docs.mjs --check --skip "$RUNNER_TEMP/uplink-docs-failed.txt" \
+            --record-failures "$unhealed" || check=$?
+          if [ "$check" -ne 0 ]; then
+            if [ ! -s "$unhealed" ]; then
+              echo "::error::The heal check failed without naming an Uplink, so nothing was committed."
+              exit 1
+            fi
+            node tooling/uplink-docs.mjs --restore "$unhealed"
+          fi
 
           if git diff --cached --quiet; then
             echo "Every Uplink page already describes the code. Nothing to commit."
@@ -146,11 +160,19 @@ jobs:
             git push origin HEAD:${{ github.ref_name }}
           fi
 
-      # The pages that rendered are committed above; the run still goes red for
-      # the ones that did not, naming them.
-      - name: Every Uplink page regenerated
-        if: steps.regen.outcome == 'failure'
+      # The pages that rendered and verified are committed above; the run still
+      # goes red for the ones that did not, naming them.
+      - name: Every Uplink page regenerated and verified
         run: |
-          echo "::error::These Uplink pages could not be regenerated; their committed pages were left untouched:"
-          cat "$RUNNER_TEMP/uplink-docs-failed.txt" 2>/dev/null || echo "(the regenerate step failed before recording any)"
-          exit 1
+          status=0
+          if [ "${{ steps.regen.outcome }}" = "failure" ]; then
+            echo "::error::These Uplink pages could not be regenerated; their committed pages were left untouched:"
+            cat "$RUNNER_TEMP/uplink-docs-failed.txt" 2>/dev/null || echo "(the regenerate step failed before recording any)"
+            status=1
+          fi
+          if [ -s "$RUNNER_TEMP/uplink-docs-unhealed.txt" ]; then
+            echo "::error::These Uplink pages regenerated but still failed the check, so they were left as committed:"
+            cat "$RUNNER_TEMP/uplink-docs-unhealed.txt"
+            status=1
+          fi
+          exit "$status"

@@ -35,6 +35,7 @@
  *   node tooling/uplink-docs.mjs --check            fail on any page that drifted
  *   node tooling/uplink-docs.mjs --gate             fail on any Uplink with no page
  *   node tooling/uplink-docs.mjs --check --only <name>   one Uplink, for a CI leg
+ *   node tooling/uplink-docs.mjs --restore <file>   put back the pages the file names
  *
  * `--only` exists so a per-Uplink CI leg can run this rather than the CLI
  * directly, and still get `RENDER_DEBT` applied. A leg calling
@@ -251,15 +252,21 @@ for (const leg of legs) {
 const judged = legs.filter((leg) => !skipped.has(leg.name));
 
 /**
- * Put one Uplink's page back as committed, after a render that failed part-way.
- * `docs` clears the asset directory before it renders, so without this a failed
- * leg leaves its images deleted beside every other Uplink's good page, and
- * committing the good ones would commit that deletion too.
+ * Put one Uplink's page back as committed, after a render that failed part-way
+ * or a staged page that still fails `--check`. `docs` clears the asset directory
+ * before it renders, so without this a failed leg leaves its images deleted
+ * beside every other Uplink's good page, and committing the good ones would
+ * commit that deletion too.
+ *
+ * The index is reset first because a page may already be staged, and a checkout
+ * restores from the index rather than from HEAD.
  */
 function restorePage(name) {
   const client = join("uplinks", name, "client");
   const assets = join(client, "docs", "assets");
-  for (const path of [join(client, "README.md"), join(client, "gonogo-uplink.json"), assets]) {
+  const paths = [join(client, "README.md"), join(client, "gonogo-uplink.json"), assets];
+  execFileSync("git", ["reset", "-q", "HEAD", "--", ...paths], { cwd: ROOT });
+  for (const path of paths) {
     const tracked = execFileSync("git", ["ls-files", "--", path], {
       cwd: ROOT,
       encoding: "utf8",
@@ -269,6 +276,38 @@ function restorePage(name) {
   if (existsSync(join(ROOT, assets))) {
     execFileSync("git", ["clean", "-fdq", "--", assets], { cwd: ROOT });
   }
+}
+
+/*
+ * `--restore <file>` puts back, as committed, the page of every Uplink the file
+ * names, one per line. The regenerate workflow uses it on the Uplinks whose
+ * staged page still failed `--check`, so they leave the commit and every page
+ * that did verify stays in it.
+ */
+if (args.includes("--restore")) {
+  const restoreFile = args[args.indexOf("--restore") + 1];
+  if (!restoreFile || !existsSync(restoreFile)) {
+    console.error(`✖ --restore needs a file of Uplink names; got ${restoreFile ?? "nothing"}.`);
+    process.exit(1);
+  }
+  const names = readFileSync(restoreFile, "utf8")
+    .split("\n")
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const known = new Set(discovered.map((leg) => leg.name));
+  const unknown = names.filter((name) => !known.has(name));
+  if (unknown.length > 0) {
+    console.error(
+      `✖ --restore names no client-bearing Uplink: ${unknown.join(", ")}. Known: ` +
+        `${[...known].join(", ")}`,
+    );
+    process.exit(1);
+  }
+  for (const name of names) {
+    restorePage(name);
+    console.log(`── ${name}: page put back as committed.`);
+  }
+  process.exit(0);
 }
 
 if (mode === "gate") {
