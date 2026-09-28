@@ -95,7 +95,7 @@ export { KERBCAST } from "./uplink.js";
 import "./CameraFeed/index.js";
 import "./CrewAvatarGate/index.js"; // registerAugment("kerbcast-crew-avatar" -> crew-status.avatar)
 import "./DockingCameraAugment/index.js";
-import "./settings/registerKerbcastSettings.js"; // registerSetting × 2 (declarative "Kerbcast" category)
+import "./settings/registerKerbcastSettings.js";
 
 // This Uplink's own commands: the `CommandArgsMap`/`CommandReplyMap`
 // augmentation and the runtime registration. RE-EXPORTED rather than imported

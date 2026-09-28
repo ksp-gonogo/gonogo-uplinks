@@ -1,22 +1,8 @@
-import { registerSetting } from "@ksp-gonogo/sitrep-sdk";
-import type { KerbcastDataSource } from "../KerbcastDataSource.js";
-
-/*
- * kerbcast's declarative settings: two rows under one "Kerbcast" category in
- * the app's General settings surface. Declarative rather than a bespoke
- * `registerSettingsTab` panel, which is the preferred path (see
- * @ksp-gonogo/core's settings/registry.ts), so kerbcast carries ZERO bespoke
- * settings UI.
- *
- * Side-effect module: importing it runs both registrations once, the same
- * lifecycle as the package's other `registerX` module-load calls.
- */
+import { registerSetting, registerSettingsTab } from "@ksp-gonogo/sitrep-sdk";
+import { KerbcastSettingsTab } from "./KerbcastSettingsTab.js";
 
 registerSetting({
-  // (1) The embedded-facecam kill-switch: a pure client-pref preference
-  // (no mod round-trip). Gates ambient crew facecams (the crew-status.avatar
-  // augment); the dedicated Facecam Wall widget is exempt (placing it is the
-  // opt-in). Default ON to match the always-live UX.
+  // Gates ambient crew facecams; the Facecam Wall widget is exempt, since placing it is the opt-in.
   id: "kerbcast.embeddedFacecams",
   type: "boolean",
   defaultValue: true,
@@ -27,23 +13,9 @@ registerSetting({
   screens: ["main"],
 });
 
-registerSetting({
-  // (2) The throttle: a source-backed setting bound to the existing
-  // KerbcastDataSource methods (mod round-trip, persists save-side). The
-  // methods are unchanged; only the rendering moves to the registry. Resolved
-  // via the uplink-handle registry (`registerUplinkHandle("kerbcast", …)`).
-  id: "kerbcast.throttleMainRender",
-  backing: "source-backed",
-  type: "boolean",
-  sourceId: "kerbcast",
-  read: (s) => (s as KerbcastDataSource).getThrottleMainScreen(),
-  write: (s, v) => {
-    void (s as KerbcastDataSource).setThrottleMainScreen(v);
-  },
-  subscribe: (s, cb) => (s as KerbcastDataSource).onThrottleChange(cb),
-  category: "Kerbcast",
-  label: "Throttle KSP main render",
-  description:
-    "Disables the main KSP flight cameras to free GPU headroom for kerbcast streams. Persists across saves.",
+registerSettingsTab({
+  id: "kerbcast",
+  label: "Kerbcast",
+  component: KerbcastSettingsTab,
   screens: ["main"],
 });
