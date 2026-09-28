@@ -583,7 +583,7 @@ describe("what a completed vantage solve says", () => {
 });
 
 describe("FlightPlanSection under signal delay", () => {
-  it("counts down to ignition from the craft's present, not from the received edge", async () => {
+  it("counts down to ignition from the received edge, with no figure for the craft's present where no model carries the plan", async () => {
     const owlt = 120;
     const stream = setupStreamFixture({
       carriedChannels: CARRIED,
@@ -595,14 +595,16 @@ describe("FlightPlanSection under signal delay", () => {
       </stream.Provider>,
     );
     renderedTrees.push(result.unmount);
-    // The plan left the craft a light-time before its present of VIEW_UT, and the burn fires ten minutes after it.
+    // The plan left the craft a light-time before its present of VIEW_UT, and the burn fires ten minutes after that present.
     act(() => {
       stream.emit("principia.plan", plan({ sampledAtUt: VIEW_UT - owlt }), {
         validAt: VIEW_UT - owlt,
         deliveredAt: VIEW_UT,
       });
     });
-    await screen.findByText(/T.10min/);
-    expect(visibleText(result.container)).not.toMatch(/T.12min/);
+    await screen.findByText(/T.12min/);
+    expect(
+      result.container.querySelector("[data-modelled-alongside]"),
+    ).toBeNull();
   });
 });

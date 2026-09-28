@@ -1,6 +1,7 @@
 import type {
   SystemUplinkHealth,
   TopicReading,
+  Value,
   VantagePlanReply,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -8,7 +9,6 @@ import {
   useStream,
   useTelemetry,
   useVantageTrajectory,
-  useScetUt,
   useViewUt,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -34,6 +34,7 @@ import type {
   PrincipiaPlan,
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
+import { untilIgnition } from "../ignitionCountdown.js";
 import { PlanIntegrationBlock } from "../PlanIntegration/index.js";
 import { PRINCIPIA } from "../uplink.js";
 // Side-effect import: hydrates this Topic's units at decode time and augments
@@ -141,28 +142,22 @@ function integrationBadge(plan: PrincipiaPlan) {
 /**
  * One burn row.
  *
- * The ignition instant is turned into a duration before it reaches
- * `<Countdown>`, which is the operation that makes an instant a countdown at
- * all: an absolute UT handed straight to a duration renderer reads as a
- * plausible interval decades long.
- *
- * The countdown is measured from the VIEW instant, not from the plan's
+ * The countdown is measured from the received edge, not from the plan's
  * observation instant. An ignition four minutes after a snapshot taken six
  * hours ago is not four minutes away, it is long past, and the operator needs
  * the second answer.
  */
 function BurnRow({
   burn,
-  scetUt,
+  planReading,
+  receivedUt,
   isNext,
 }: {
   burn: PrincipiaPlannedBurn;
-  scetUt: number | null;
+  planReading: TopicReading<PrincipiaPlan>;
+  receivedUt: Value<"ut"> | undefined;
   isNext: boolean;
 }) {
-  const ignitionUt = magnitudeOf(burn.ignitionUt);
-  const untilIgnition =
-    ignitionUt === null || scetUt === null ? null : ignitionUt - scetUt;
   const index = magnitudeOf(burn.index);
   return (
     // The burn number anchors left and everything else groups right, rather than
@@ -172,11 +167,10 @@ function BurnRow({
     <Row as="div" data-burn-row="">
       <RowName>{index === null ? NULL_DISPLAY : `#${index + 1}`}</RowName>
       <Cluster justify="end" gap="related-dense">
-        {untilIgnition === null ? (
-          <Text>{NULL_DISPLAY}</Text>
-        ) : (
-          <Countdown value={untilIgnition} clock />
-        )}
+        <Countdown
+          value={untilIgnition(planReading, index, receivedUt)}
+          clock
+        />
         {burn.deltaV == null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
@@ -356,7 +350,8 @@ export function FlightPlanSection() {
   // and the two could disagree about the same plan while each was internally
   // consistent. The window mirror is gone: everything below is the plugin's answer
   // for the same plan at the same instant.
-  const view = planView(useTelemetry("principia.plan"));
+  const planReading = useTelemetry("principia.plan");
+  const view = planView(planReading);
   const identity = useTelemetry("vessel.identity");
   // A held roster is still the roster: uplinks do not come and go with the link.
   const healthReading = useStream<SystemUplinkHealth>("system.uplinkHealth");
@@ -364,9 +359,8 @@ export function FlightPlanSection() {
     healthReading.state === "observed" || healthReading.state === "stale"
       ? healthReading.value
       : undefined;
-  const viewUt = magnitudeOf(useViewUt());
-  // A burn fires at the craft, so its countdown runs from the craft's present; a reply's age stays on the received edge.
-  const scetUt = magnitudeOf(useScetUt());
+  const receivedUt = useViewUt();
+  const viewUt = magnitudeOf(receivedUt);
 
   if (view.kind === "unread") {
     return (
@@ -455,7 +449,8 @@ export function FlightPlanSection() {
               <BurnRow
                 key={magnitudeOf(burn.index) ?? String(burn.ignitionUt)}
                 burn={burn}
-                scetUt={scetUt}
+                planReading={planReading}
+                receivedUt={receivedUt}
                 isNext={isNextBurn(burn, plan)}
               />
             ))}
