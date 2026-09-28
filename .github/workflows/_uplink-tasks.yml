@@ -267,8 +267,15 @@ jobs:
       # revision is not the one the client's locked playwright launches, so the
       # render dies at `browserType.launch: Executable doesn't exist`. `--no`
       # refuses that fetch rather than installing the wrong revision.
+      #
+      # Blocking on a pull request and on a release, red but not failing on a
+      # branch push. A push that moves a picture is healed by `uplink-docs.yml`,
+      # whose GITHUB_TOKEN commit starts no run of this workflow, so a blocking
+      # check here would leave main red after the heal until the next push.
       - name: Docs are current
+        id: docs
         if: inputs.client
+        continue-on-error: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
           node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
@@ -279,7 +286,7 @@ jobs:
       # the docs check may have nothing to render with, and that must not bury
       # the failure that actually happened.
       - name: Keep the renders of a failed docs check
-        if: failure() && inputs.client
+        if: (failure() || steps.docs.outcome == 'failure') && inputs.client
         continue-on-error: true
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- gonogo-uplink render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")
@@ -292,6 +299,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: uplink-${{ inputs.id }}${{ job.status == 'failure' && '-FAILED' || '' }}
+          name: uplink-${{ inputs.id }}${{ (job.status == 'failure' || steps.docs.outcome == 'failure') && '-FAILED' || '' }}
           path: artifacts/
-          if-no-files-found: ${{ job.status == 'failure' && 'warn' || 'error' }}
+          if-no-files-found: ${{ (job.status == 'failure' || steps.docs.outcome == 'failure') && 'warn' || 'error' }}
