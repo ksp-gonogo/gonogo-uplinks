@@ -53,18 +53,6 @@ export interface MockKerbcastSession {
    * not pre-serialised strings.
    */
   sendServerMessage(msg: object): void;
-  /**
-   * Fire the peer's `onTrack` handler with a real `MediaStreamTrack`,
-   * the WebRTC video path the SDK turns into `camera.mediaStream`. jsdom
-   * can't produce a track, so this is only useful in a real browser (the
-   * render harness uses `canvas.captureStream()`). `idx` maps to the
-   * camera order from the `/offer` answer's `cameras` array (default 0).
-   *
-   * Slot-aware (dynamic-mode) delivery and the subscribe → slot-map round-trip
-   * live in the SDK's canonical `MockSidecar` (`@ksp-gonogo/kerbcast/testing`),
-   * use that for dynamic-subscription tests rather than extending this fake.
-   */
-  deliverTrack(track: MediaStreamTrack, idx?: number): void;
 }
 
 export function createMockKerbcastSession(): MockKerbcastSession {
@@ -73,9 +61,6 @@ export function createMockKerbcastSession(): MockKerbcastSession {
   let _messageHandler: ((raw: string) => void) | undefined;
   let _stateHandler:
     | ((s: "disconnected" | "connecting" | "connected" | "failed") => void)
-    | undefined;
-  let _trackHandler:
-    | ((track: MediaStreamTrack, idx: number, mid: string) => void)
     | undefined;
   let _closed = false;
   let _iceServers: RTCIceServer[] | undefined;
@@ -94,9 +79,7 @@ export function createMockKerbcastSession(): MockKerbcastSession {
   const peer: KerbcastPeer = {
     addRecvOnlyTransceiver: () => {},
     createDataChannel: () => channel,
-    onTrack: (h) => {
-      _trackHandler = h;
-    },
+    onTrack: () => {},
     onStateChange: (h) => {
       _stateHandler = h;
     },
@@ -136,11 +119,6 @@ export function createMockKerbcastSession(): MockKerbcastSession {
     },
     sendServerMessage(msg) {
       _messageHandler?.(JSON.stringify(msg));
-    },
-    deliverTrack(track, idx = 0) {
-      // mid is unused in legacy index-routed mode (gonogo's current path);
-      // pass the index as a placeholder mid for the 3-arg handler.
-      _trackHandler?.(track, idx, String(idx));
     },
   };
 }

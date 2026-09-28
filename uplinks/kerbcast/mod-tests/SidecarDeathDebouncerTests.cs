@@ -84,11 +84,8 @@ public class SidecarDeathDebouncerTests
     }
 
     /// <summary>
-    /// A null tick is kerbcast declining to say, which is what every tick of a
-    /// pre-<c>SidecarAlive</c> install reports. Counted as not-alive it latched
-    /// on the second tick and no later tick could clear it, so the Uplink told
-    /// an operator with a perfectly good feed that their video sidecar was dead
-    /// for the rest of the session.
+    /// A null tick is kerbcast declining to say. Counted as not-alive, a run
+    /// of them would latch a verdict that no later tick could clear.
     /// </summary>
     [Fact]
     public void NeverConfirmsDead_WhenNoTickCanSayEitherWay()

@@ -43,15 +43,11 @@ namespace Gonogo.KerbcastUplink
         /// per capture tick, in tick order; the debounce logic is stateful
         /// and order-dependent.
         ///
-        /// <para>A NULL reading is kerbcast declining to say (the property is
-        /// absent on this build, or the read threw), and it is evidence in
-        /// neither direction: it neither advances the streak nor clears a
-        /// verdict. Only a positive "alive" clears one, and only two
-        /// consecutive reads that actually said not-alive reach one. Counted as
-        /// not-alive it latched <see cref="ConfirmedDead"/> on the second tick
-        /// of every pre-<c>SidecarAlive</c> install, where no later tick could
-        /// ever clear it, so a working feed carried a permanent black-feed
-        /// diagnosis.</para>
+        /// <para>A NULL reading is kerbcast declining to say (the read threw
+        /// or was not a bool), and it is evidence in neither direction: it
+        /// neither advances the streak nor clears a verdict. Only a positive
+        /// "alive" clears one, and only two consecutive reads that actually
+        /// said not-alive reach one.</para>
         /// </summary>
         public void Observe(bool? aliveNow)
         {

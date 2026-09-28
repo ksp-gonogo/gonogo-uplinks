@@ -11,10 +11,9 @@
  * so if we see more than one the later one is always newer.
  *
  * Topics: blocks may optionally carry a topic id like `[KOSDATA:shipmap]...
- * [/KOSDATA]`, used by the centralised kOS compute fanout to multiplex
- * several feeds on a single CPU's print stream. `parseKosData` ignores
- * the topic and returns the body of the last block found (matching the
- * legacy single-block contract); `parseKosDataTopics` returns one entry
+ * [/KOSDATA]`, which multiplexes several feeds on one CPU's print stream.
+ * `parseKosData` is the last-block contract: it ignores the topic and returns
+ * the body of the last block found. `parseKosDataTopics` returns one entry
  * per topic, with bare `[KOSDATA]` keyed under `default`.
  */
 

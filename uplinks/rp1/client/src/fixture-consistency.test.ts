@@ -46,16 +46,11 @@ interface PadRow {
   lcId?: string | null;
 }
 
-/**
- * A fixture's payload for one facility, in the fields the rules read. Both tier
- * shapes, because the host widget's parser takes both and fixtures use both.
- */
+/** A fixture's payload for one facility, in the fields the rules read. */
 interface FacilityRow {
   currentTier?: number | null;
   maxTier?: number | null;
   upgradeCost?: number | null;
-  level?: number | null;
-  max?: number | null;
 }
 
 /** A fixture's payload for one construction, in the fields the rules read. */
@@ -204,10 +199,10 @@ function tierDisagreements(emits: readonly Emit[]): string[] {
     if (name === undefined || name === null) continue;
     const from = row.currentLevel;
     if (typeof from !== "number") continue;
-    const at = facilityTier(facilities[name]);
-    if (at !== undefined && at !== from) {
+    const at = facilities[name]?.currentTier;
+    if (typeof at === "number" && at !== from) {
       problems.push(
-        `${name} is being built from level ${from} while "career.status" says ` +
+        `${name} is being built from level ${from} while "career.facilities" says ` +
           `it is at level ${at}, so the host's grid and this Uplink's card ` +
           "state two different tiers for one building",
       );
@@ -220,18 +215,6 @@ function tierDisagreements(emits: readonly Emit[]): string[] {
     }
   }
   return problems;
-}
-
-/**
- * A facility's current tier, from whichever shape the fixture writes. The
- * host widget's own parser takes both the wire's `currentTier`/`maxTier` and the
- * legacy `level`/`max`, so a rule that read only one would silently pass every
- * fixture written in the other.
- */
-function facilityTier(facility: FacilityRow | undefined): number | undefined {
-  if (typeof facility?.currentTier === "number") return facility.currentTier;
-  if (typeof facility?.level === "number") return facility.level;
-  return undefined;
 }
 
 /** The stock purchase RP-1 re-models as a construction project. */
@@ -263,13 +246,13 @@ function offersAStockTierPurchase(emits: readonly Emit[]): boolean {
   );
 }
 
-/** The facilities map off the last `career.status` the fixture emits. */
+/** The facilities map off the last `career.facilities` the fixture emits. */
 function careerFacilities(
   emits: readonly Emit[],
 ): Record<string, FacilityRow | undefined> {
   let found: Record<string, FacilityRow | undefined> = {};
   for (const emit of emits) {
-    if (emit.topic !== "career.status") continue;
+    if (emit.topic !== "career.facilities") continue;
     const payload = emit.payload as
       | { facilities?: Record<string, FacilityRow> | null }
       | undefined;
@@ -480,17 +463,15 @@ describe("RP-1 fixture consistency", () => {
   });
 
   it("catches a construction whose facility says it is at another tier", () => {
-    /* The planted violation for the tier rule, and it is planted in the LEGACY
-       facility shape on purpose: three of the four fixtures carrying a
-       construction row write `level`/`max`, so a rule that only read
-       `currentTier` would report a clean sweep over exactly the fixtures that
-       were wrong. */
+    // The planted violation for the tier rule.
     const problems = inconsistencies([
       {
         payload: {
-          facilities: { VehicleAssemblyBuilding: { level: 1, max: 2 } },
+          facilities: {
+            VehicleAssemblyBuilding: { currentTier: 1, maxTier: 2 },
+          },
         },
-        topic: "career.status",
+        topic: "career.facilities",
       },
       {
         payload: [
@@ -536,7 +517,7 @@ describe("RP-1 fixture consistency", () => {
     // operator stands is a scene worth having.
     expect(
       inconsistencies([
-        { payload: { facilities: {} }, topic: "career.status" },
+        { payload: { facilities: {} }, topic: "career.facilities" },
         {
           payload: [
             {

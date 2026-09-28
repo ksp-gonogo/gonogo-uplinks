@@ -127,7 +127,7 @@ describe("parseKosData", () => {
     expect(parseKosData(chunk)).toEqual({ dv: 1234 });
   });
 
-  it("accepts a topic-tagged block and ignores the topic id (legacy contract)", () => {
+  it("accepts a topic-tagged block and ignores the topic id (last-block contract)", () => {
     expect(parseKosData("[KOSDATA:shipmap] parts=[] [/KOSDATA]")).toEqual({
       parts: "[]",
     });
