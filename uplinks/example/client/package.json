@@ -26,7 +26,7 @@
   "devDependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-3a09b6f50e3c.tgz",
-    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-1fa609167efe.tgz",
+    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-2d1e2bc7f47a.tgz",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.28",
