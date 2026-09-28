@@ -88,7 +88,7 @@ export function ToolingSection() {
   const available = current(useTelemetry("rp1.available"));
   /*
    * The reading beside the value: the cost below takes the field's own reading,
-   * so a price that is no longer current says so instead of reading live.
+   * so a price that is held says so instead of reading live.
    */
   const toolingReading = useTelemetry("rp1.tooling");
   const tooling = current(toolingReading);

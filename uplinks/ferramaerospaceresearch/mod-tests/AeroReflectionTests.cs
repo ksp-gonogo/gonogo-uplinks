@@ -141,7 +141,7 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         /// two apart, not to stop reporting a stale model.
         /// </summary>
         [Fact]
-        public void AQueuedVoxelisationIsReportedAsNotCurrent()
+        public void AQueuedVoxelisationIsReportedAsInvalid()
         {
             var vessel = VesselWith(
                 FlightGuiHolding(new VesselFlightInfo { dynPres = 5.0 }),

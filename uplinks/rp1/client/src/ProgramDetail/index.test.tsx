@@ -118,7 +118,7 @@ async function feed(
 }
 
 describe("ProgramDetail", () => {
-  it("marks a balance that is no longer current, instead of drawing it as live", async () => {
+  it("marks a balance that is held, instead of drawing it as live", async () => {
     /*
      * What handing the primitive the READING buys, and the only thing that
      * changes on screen: the plain value under it answered the same number

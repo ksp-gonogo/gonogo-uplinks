@@ -94,7 +94,7 @@ interface SpaceWeatherData {
   /** Null when unreported: the pair is a FRACTION, and a fabricated denominator invents one. */
   shieldingValue: number | null;
   shieldingCapacity: number | null;
-  /** null when the vessel's altitude is not current: the rings then draw no "you are here" dot */
+  /** null when the vessel's altitude is held: the rings then draw no "you are here" dot */
   altitudeKm: number | null;
   seed: number;
   /** Every star this vessel sees, its own vantage on each. 1..N, uniform for a binary pack. */
@@ -111,16 +111,15 @@ type WeatherAbsence = "confirmed-none" | "awaiting";
 const ABSENCE_TEXT: Record<WeatherAbsence, string> = {
   /* Two different sentences on purpose: a vessel whose subject confirms it has
      no space-weather record (no Kerbalism, or nothing loaded) is not waiting for
-     anything. There used to be a third, "Space weather no longer current", for a
-     record that had stopped arriving. That case no longer empties the board, so
-     the sentence has nothing left to label. */
+     anything. A held record does not empty the board, so it has no sentence
+     here. */
   "confirmed-none": "No space-weather data reported",
   awaiting: "Awaiting space weather",
 };
 
 type SpaceWeatherRead =
-  /** `notCurrent`: the record is the last delivered rather than the current one. */
-  | { readable: true; data: SpaceWeatherData; notCurrent: boolean }
+  /** `held`: the record is the last delivered rather than the current one. */
+  | { readable: true; data: SpaceWeatherData; held: boolean }
   | { readable: false; absence: WeatherAbsence };
 
 /**
@@ -176,13 +175,13 @@ function useSpaceWeather(): SpaceWeatherRead {
         ? flightReading.value
         : undefined;
   /* The record is held through `stale`; what a stale reading costs is the
-     positional half, applied where the record is mapped below. `notCurrent`
+     positional half, applied where the record is mapped below. `held`
      carries that decision and the caption that says so. */
   const t =
     weatherReading.state === "observed" || weatherReading.state === "stale"
       ? weatherReading.value
       : undefined;
-  const notCurrent = weatherReading.state === "stale";
+  const held = weatherReading.state === "stale";
 
   if (t === undefined) {
     return {
@@ -220,21 +219,21 @@ function useSpaceWeather(): SpaceWeatherRead {
      say where the craft sits in a magnetic field NOW, and it has moved since;
      false is already the "ring not drawn" state the mapping uses for a flag the
      mod did not report, so an unlit diagram is a shape the widget already has. */
-  const innerBelt = notCurrent ? false : (t.innerBelt ?? false);
-  const outerBelt = notCurrent ? false : (t.outerBelt ?? false);
-  const magnetosphere = notCurrent ? false : (t.magnetosphere ?? false);
+  const innerBelt = held ? false : (t.innerBelt ?? false);
+  const outerBelt = held ? false : (t.outerBelt ?? false);
+  const magnetosphere = held ? false : (t.magnetosphere ?? false);
 
   const altitudeM = magnitudeOf(flight?.altitudeAsl);
 
   return {
     readable: true,
-    notCurrent,
+    held,
     data: {
       radiationRadPerHour,
       /* `none` is a promise and a dated one is worth nothing, so a stale record
          reports the state it actually has: unknown. The header verdict reads
          this and already answers unknown for it. */
-      stormState: notCurrent ? "unknown" : stormState,
+      stormState: held ? "unknown" : stormState,
       innerBelt,
       outerBelt,
       magnetosphere,
@@ -244,7 +243,7 @@ function useSpaceWeather(): SpaceWeatherRead {
       shieldingCapacity: magnitudeOf(t.shieldingCapacity),
       // The "you are here" dot: a dated altitude would place the craft in a band
       // it may have left, so the rings draw no dot rather than a stale one.
-      altitudeKm: notCurrent || altitudeM === null ? null : altitudeM / 1000,
+      altitudeKm: held || altitudeM === null ? null : altitudeM / 1000,
       stars: t.stars ?? [],
       storms: t.storms ?? [],
       stormEjectionSpeedMps: magnitudeOf(t.stormEjectionSpeed),
@@ -315,7 +314,7 @@ const TONE_HEX: Record<Tone, string> = {
  * could make falsely, and it is the reassuring one. A craft sitting in a storm
  * or a belt is still reported as such with no dose rate at all.
  *
- * <p>`notCurrent` outranks all of them, because EVERY arm here is a claim about
+ * <p>`held` outranks all of them, because EVERY arm here is a claim about
  * the situation now and none of them survives a dropped link. Withholding via
  * the record's own fields was not enough: the first arm fires on a held dose of
  * 3 rad/h alone, so a board whose belts had gone dark and whose storm state had
@@ -325,9 +324,9 @@ const TONE_HEX: Record<Tone, string> = {
  */
 function statusFor(
   d: SpaceWeatherData,
-  notCurrent: boolean,
+  held: boolean,
 ): { label: string; tone: Tone } {
-  if (notCurrent) return { label: "Not current", tone: "info" };
+  if (held) return { label: "Held", tone: "info" };
   if (
     d.stormState === "inprogress" ||
     (d.radiationRadPerHour !== null && d.radiationRadPerHour >= 3)
@@ -1104,7 +1103,7 @@ function SpaceWeatherComponent({
   }
 
   const d = read.data;
-  const status = statusFor(d, read.notCurrent);
+  const status = statusFor(d, read.held);
   // The rings can place the dot from a belt bool alone, so the altitude only
   // goes missing from the diagram when neither belt claims the craft.
   const positionUnknown = d.altitudeKm === null && !d.innerBelt && !d.outerBelt;
@@ -1163,15 +1162,14 @@ function SpaceWeatherComponent({
         </Badge>
       }
       sections={[
-        read.notCurrent && (
+        read.held && (
           <Section key="dated" full>
             {/* Names which half is dated. The figures below are the last
                 delivered and still worth reading; what is gone is the craft's
                 position in the environment, because it has moved since. */}
             <Text tone="warn" size="xs" role="status" aria-live="polite">
-              Space weather no longer current: the dose, shielding, stars and
-              CMEs are the last reported, and the craft's position in the belts
-              is unknown.
+              Space weather held: the dose, shielding, stars and CMEs are the
+              last reported, and the craft's position in the belts is unknown.
             </Text>
           </Section>
         ),

@@ -46,7 +46,7 @@ function spaceWeatherTopic() {
 }
 const TOPIC = spaceWeatherTopic();
 
-const NOT_CURRENT = "Space weather no longer current";
+const HELD = "Space weather held";
 const AWAITING = "Awaiting space weather";
 const CONFIRMED_NONE = "No space-weather data reported";
 
@@ -91,7 +91,7 @@ function loseContact(): void {
   });
 }
 
-describe("SpaceWeather when its readings are not current", () => {
+describe("SpaceWeather when its readings are held", () => {
   beforeEach(() => {
     stream = setupStreamFixture({
       pinnedUt: 149_489,
@@ -107,7 +107,7 @@ describe("SpaceWeather when its readings are not current", () => {
       expect(visibleText(container)).toContain("0.014 rad/h"),
     );
     expect(screen.getByRole("status")).toHaveTextContent("Sheltered");
-    expect(visibleText(container)).not.toContain(NOT_CURRENT);
+    expect(visibleText(container)).not.toContain(HELD);
   });
 
   it("holds every measurement on the board and says they are dated", async () => {
@@ -124,7 +124,7 @@ describe("SpaceWeather when its readings are not current", () => {
 
     loseContact();
 
-    await waitFor(() => expect(visibleText(container)).toContain(NOT_CURRENT));
+    await waitFor(() => expect(visibleText(container)).toContain(HELD));
     // The dose survives, which is the figure an operator on a dropped link most
     // wants: it is the rate their crew is still accumulating.
     expect(visibleText(container)).toContain("0.014 rad/h");
@@ -143,7 +143,7 @@ describe("SpaceWeather when its readings are not current", () => {
 
     loseContact();
 
-    await waitFor(() => expect(visibleText(container)).toContain(NOT_CURRENT));
+    await waitFor(() => expect(visibleText(container)).toContain(HELD));
     expect(visibleText(container)).not.toContain("Sheltered");
     /* "No storm activity" is the other reassurance on this board, and a dated
        one is worth nothing: `stormState` goes to `unknown` rather than keeping
@@ -184,18 +184,18 @@ describe("SpaceWeather when its readings are not current", () => {
 
     loseContact();
 
-    await waitFor(() => expect(visibleText(container)).toContain(NOT_CURRENT));
+    await waitFor(() => expect(visibleText(container)).toContain(HELD));
     expect(visibleText(container)).not.toContain("Storm in progress");
     // And the figure that would have fired it is still on screen, dated.
     expect(visibleText(container)).toContain("10.38 rad/h");
   });
 
   it("does not accuse the link of dropping before anything has arrived", async () => {
-    // A cold start is not a loss of contact. This is the mistake `notCurrent`
+    // A cold start is not a loss of contact. This is the mistake `held`
     // exists to prevent, and it would fire on every page load.
     const { container } = mount();
     await waitFor(() => expect(visibleText(container)).toContain(AWAITING));
-    expect(visibleText(container)).not.toContain(NOT_CURRENT);
+    expect(visibleText(container)).not.toContain(HELD);
   });
 
   it("distinguishes a link that dropped from a subject with no weather record", async () => {
@@ -215,7 +215,7 @@ describe("SpaceWeather when its readings are not current", () => {
     await waitFor(() =>
       expect(visibleText(container)).toContain(CONFIRMED_NONE),
     );
-    expect(visibleText(container)).not.toContain(NOT_CURRENT);
+    expect(visibleText(container)).not.toContain(HELD);
     expect(visibleText(container)).not.toContain(AWAITING);
   });
 

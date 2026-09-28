@@ -133,7 +133,7 @@ function AgeLine({
     );
   }
   if (age < 0) {
-    // A coast that has not started yet. Not stale, and not current either: these
+    // A coast that has not started yet, neither stale nor live: these
     // elements describe an orbit the craft is not in, which is the whole point
     // of a planned coast and exactly the thing an unlabelled band would blur.
     return (

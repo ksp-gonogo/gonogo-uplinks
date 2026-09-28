@@ -88,7 +88,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
   const programs = current(useTelemetry("rp1.programs"));
   /*
    * The READING, not the value under it. Each balance below is handed the
-   * field's own reading, so a figure that is no longer current is drawn as
+   * field's own reading, so a figure that is held is drawn as
    * such instead of passing for a live one. Nothing here branches on these
    * numbers, so nothing here asks `current()` to strip them.
    */

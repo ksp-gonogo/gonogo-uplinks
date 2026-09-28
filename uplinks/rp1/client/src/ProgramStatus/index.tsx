@@ -42,7 +42,7 @@ export function ProgramStatus() {
   const programs = current(useTelemetry("rp1.programs"));
   /*
    * The READING is kept beside the value it carries. Each figure below is
-   * handed the field's own reading, so one that is no longer current is drawn
+   * handed the field's own reading, so one that is held is drawn
    * as such rather than passing for a live one, while the branching still
    * compares a plain value through `current()`.
    */

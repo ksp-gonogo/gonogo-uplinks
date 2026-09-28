@@ -81,7 +81,7 @@ export function VehicleAssembly() {
   const complexes = current(useTelemetry("rp1.complexes"));
   /*
    * The reading beside the value: both balances below take their field's own
-   * reading, so a figure that is no longer current is drawn as such, while the
+   * reading, so a figure that is held is drawn as such, while the
    * branch deciding whether the credit exists at all reads a plain value.
    */
   const careerReading = useTelemetry("career.status");

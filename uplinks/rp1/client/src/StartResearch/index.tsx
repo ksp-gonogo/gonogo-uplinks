@@ -77,7 +77,7 @@ export function StartResearch() {
   const available = current(useTelemetry("rp1.available"));
   /*
    * The reading beside the value: the Science balance below takes the field's
-   * own reading, so a balance that is no longer current says so, while the
+   * own reading, so a balance that is held says so, while the
    * tree walk and the affordability test still work on plain values.
    */
   const careerReading = useTelemetry("career.status");
