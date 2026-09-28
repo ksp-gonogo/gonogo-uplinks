@@ -1662,13 +1662,6 @@ function aimLayer(): HTMLElement {
 
 describe("CameraFeed: delayed aim controls", () => {
   it("is a panel, so the aim it commands has a delay rail to travel in", async () => {
-    // The widget was a bare `FramedDisplay` and had no rail band, no status
-    // dots, no `panelBadges` and neither universal augment segment. There is no
-    // media exemption from `Panel`. What it does NOT take from the panel is a
-    // title: the picker inside the picture already names the instrument, and a
-    // panel title beside it is a second name for the same thing, paid for in
-    // picture. The rail is the half that has to survive that, and it does: it
-    // moves into the container's own top band rather than the header's.
     await buildConnectedSource([STEERABLE]);
 
     const stream = setupStreamFixture();
@@ -1678,41 +1671,28 @@ describe("CameraFeed: delayed aim controls", () => {
     expect(document.querySelector("[data-panel-rail-frame]")).toBeTruthy();
   });
 
-  it("takes no panel title, because the picker already names it", async () => {
+  it("carries its resting name as the panel title, beside the picker that names the camera", async () => {
     await buildConnectedSource([STEERABLE]);
 
     const stream = setupStreamFixture();
     renderFeedWithComms({ flightId: 42 }, stream);
 
-    // The name is the picker's, and it is a real control rather than a label:
-    // the only route to the camera list is through the thing that names the
-    // widget. It is also the widget's ONLY heading, which is what dropping the
-    // panel title was for: two headings for one instrument, one of them a name
-    // the operator cannot act on.
     const picker = await screen.findByRole("button", { name: /starboard cam/i });
     expect(picker.getAttribute("aria-haspopup")).toBe("menu");
-    const headings = screen.getAllByRole("heading");
-    expect(headings).toHaveLength(1);
-    expect(headings[0]?.contains(picker)).toBe(true);
-    // The panel takes its headerless path rather than drawing an empty header
-    // row, which is the half the picture is paid out of: an empty row would
-    // cost the same 47px of height while naming nothing.
-    expect(document.querySelector("[data-panel-sticky-top]")).toBeNull();
+    const title = document.querySelector("[data-panel-header] h3");
+    expect(title?.textContent).toBe("Camera Feed");
+    expect(title?.contains(picker)).toBe(false);
   });
 
   it("still names itself when there is no camera to name", async () => {
-    // The state where the picker has no camera name to show. The SDK falls back
-    // to the words "Camera Feed" as the same heading, so the widget that has
-    // given up its panel title still says what it is once it is reached for.
-    // (Reached for is the caveat, and it is the SDK's rule rather than ours:
-    // the whole top overlay is revealed on hover, focus or a pinning click.)
     await buildConnectedSource([]);
 
     renderFeed({ flightId: null });
 
-    const heading = await screen.findByRole("heading", { name: "Camera Feed" });
-    expect(heading).toBeTruthy();
-    expect(document.querySelector("[data-panel-sticky-top]")).toBeNull();
+    await screen.findAllByRole("heading", { name: "Camera Feed" });
+    expect(document.querySelector("[data-panel-header] h3")?.textContent).toBe(
+      "Camera Feed",
+    );
   });
 
   it("gives a steerable camera an aim surface once the link is delayed", async () => {
