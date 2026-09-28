@@ -748,10 +748,10 @@ namespace GonogoRp1Uplink.Tests
             SpaceCenterManagement.Instance!.enabledForSave = false;
 
             Assert.Equal(
-                CommandErrorCode.ModeUnavailable,
+                Rp1ErrorCodes.NotManaging,
                 Rename(lc, "X").ErrorCode);
             Assert.Equal(
-                CommandErrorCode.ModeUnavailable,
+                Rp1ErrorCodes.NotManaging,
                 Dismantle(lc).ErrorCode);
             Assert.Equal("LC-1", lc.Name);
             Assert.NotEmpty(lc.LaunchPads);
@@ -763,8 +763,8 @@ namespace GonogoRp1Uplink.Tests
             var lc = Complex();
             SpaceCenterManagement.Instance = null;
 
-            Assert.Equal(CommandErrorCode.ModeUnavailable, Rename(lc, "X").ErrorCode);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, Dismantle(lc).ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, Rename(lc, "X").ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, Dismantle(lc).ErrorCode);
         }
 
         [Fact]

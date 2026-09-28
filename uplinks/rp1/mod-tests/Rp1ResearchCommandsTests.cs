@@ -575,7 +575,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Research();
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, result.ErrorCode);
             Assert.Empty(ResearchAndDevelopment.Instance!.Charges);
         }
 
@@ -620,7 +620,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Research();
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, result.ErrorCode);
         }
 
         // ── availability and diagnosis ─────────────────────────────────────

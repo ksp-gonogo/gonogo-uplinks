@@ -635,7 +635,7 @@ namespace GonogoRp1Uplink
             var scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                return Fail(CommandErrorCode.ModeUnavailable, "RP-1's space centre is not loaded");
+                return CommandResult<Dictionary<string, object?>>.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
@@ -645,8 +645,7 @@ namespace GonogoRp1Uplink
                 // of what happens, and core's career.facility.upgrade is the
                 // command for it: Rp1CareerProjectGate passes in exactly this
                 // case, so the two commands are never both refused.
-                return Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return Fail(Rp1ErrorCodes.NotManaging,
                     "RP-1 is not managing this save, so a facility upgrade is the outright purchase "
                     + "career.facility.upgrade makes rather than a construction project");
             }
@@ -805,8 +804,7 @@ namespace GonogoRp1Uplink
                     // is unknown, and Unknown refuses here as it does everywhere
                     // else on this Uplink: the operator loses a queueing they can
                     // still do in game.
-                    return Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no facility tech gate this Uplink recognises, so whether "
                         + leaf + " tier " + Number(targetLevel) + " is unlocked could not be decided");
                 }
@@ -845,8 +843,7 @@ namespace GonogoRp1Uplink
             var inProgress = AlreadyQueued(id);
             if (inProgress == null)
             {
-                return Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no in-progress check this Uplink recognises, so a second queue entry "
                     + "for " + leaf + " could not be ruled out");
             }
@@ -891,8 +888,7 @@ namespace GonogoRp1Uplink
                 var constructor = Rp1Types.Constructor(_project!, 5);
                 if (constructor == null)
                 {
-                    return Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no facility upgrade project this Uplink recognises");
                 }
                 // The last id segment as the display name, which is what
@@ -914,8 +910,7 @@ namespace GonogoRp1Uplink
                 var setBp = Rp1Types.InstanceMethod(project, "SetBP", 2);
                 if (setBp == null)
                 {
-                    return Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no construction-duration formula this Uplink recognises, so "
                         + leaf + " was not queued");
                 }
@@ -965,8 +960,7 @@ namespace GonogoRp1Uplink
                 var add = queue == null ? null : Rp1Types.InstanceMethod(queue, "Add", 1);
                 if (add == null)
                 {
-                    return Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no facility construction queue this Uplink recognises");
                 }
                 add.Invoke(queue, new[] { project });

@@ -130,6 +130,19 @@ public static class Rp1RtConfig
                 typeof(Rp1RtConfig).Assembly,
                 resultImportFrom: "@ksp-gonogo/sitrep-sdk");
         }
+
+        // The refinements in Rp1ErrorCodes, with each one's sentence and meaning,
+        // for the client to register so a refusal reads as RP-1 said it.
+        var errorCodesOut = Environment.GetEnvironmentVariable("SITREP_RP1_ERRORCODES_OUT");
+        if (!string.IsNullOrEmpty(errorCodesOut))
+        {
+            Sitrep.Contract.RtConfig.EmitErrorCodeMap(
+                errorCodesOut!,
+                builder.Context.DocumentationFilePath,
+                typeof(Rp1RtConfig).Assembly,
+                declarationImportFrom: "@ksp-gonogo/sitrep-sdk",
+                tableName: "RP1_ERROR_CODES");
+        }
     }
 }
 #endif

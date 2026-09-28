@@ -302,17 +302,13 @@ namespace GonogoRp1Uplink
             var scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
                 return false;
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.NotManaging);
                 return false;
             }
 
@@ -345,8 +341,7 @@ namespace GonogoRp1Uplink
             var create = Rp1Types.StaticMethod(_warpController!, "Create", 1);
             if (create == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no warp controller this Uplink recognises, so nothing was warped");
             }
 

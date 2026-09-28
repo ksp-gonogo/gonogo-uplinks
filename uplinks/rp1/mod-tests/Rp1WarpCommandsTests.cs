@@ -212,7 +212,7 @@ namespace GonogoRp1Uplink.Tests
             scm.enabledForSave = false;
             KCTUtilities.NextThing = new FakeProject();
 
-            Assert.Equal(CommandErrorCode.ModeUnavailable, ToComplete().ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, ToComplete().ErrorCode);
             Assert.Empty(KCTWarpController.Created);
         }
 
@@ -221,7 +221,7 @@ namespace GonogoRp1Uplink.Tests
         {
             KCTUtilities.NextThing = new FakeProject();
 
-            Assert.Equal(CommandErrorCode.ModeUnavailable, ToComplete().ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, ToComplete().ErrorCode);
             Assert.Empty(KCTWarpController.Created);
         }
 

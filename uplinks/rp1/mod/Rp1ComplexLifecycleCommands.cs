@@ -260,8 +260,7 @@ namespace GonogoRp1Uplink
             var rename = Rp1Types.InstanceMethodOn(complex, "Rename", "System.String", 1);
             if (rename == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no launch-complex rename this Uplink recognises, so nothing was changed");
             }
 
@@ -410,8 +409,7 @@ namespace GonogoRp1Uplink
             var delete = Rp1Types.InstanceMethod(complex, "Delete", 0);
             if (delete == null)
             {
-                return Refuse(CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return Refuse(CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no launch-complex delete this Uplink recognises, and " + name
                     + "'s pads have already been removed, so check the complex"));
             }
@@ -491,8 +489,7 @@ namespace GonogoRp1Uplink
             var rename = Rp1Types.InstanceMethodOn(pad, "Rename", "System.String", 1);
             if (rename == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no launch-pad rename this Uplink recognises, so nothing was changed");
             }
 
@@ -579,8 +576,7 @@ namespace GonogoRp1Uplink
             var delete = Rp1Types.InstanceMethod(pad, "Delete", 1);
             if (delete == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no launch-pad delete this Uplink recognises, so nothing was changed");
             }
 
@@ -649,17 +645,13 @@ namespace GonogoRp1Uplink
             var scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
                 return false;
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.NotManaging);
                 return false;
             }
 
@@ -741,8 +733,7 @@ namespace GonogoRp1Uplink
                 var delete = Rp1Types.InstanceMethod(pad, "Delete", 1);
                 if (delete == null)
                 {
-                    refusal = CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    refusal = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no launch-pad delete this Uplink recognises, so " + complexName
                         + " was left as it was");
                     return false;

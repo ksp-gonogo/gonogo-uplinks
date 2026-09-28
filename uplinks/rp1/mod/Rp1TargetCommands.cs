@@ -110,7 +110,7 @@ namespace GonogoRp1Uplink
                 var instance = _scm == null ? null : Rp1Types.StaticValue(_scm, "Instance");
                 if (instance == null)
                 {
-                    return CommandResult.Fail(CommandErrorCode.ModeUnavailable, "RP-1's space centre is not loaded.");
+                    return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
                 }
 
                 object? complex = null;
@@ -209,7 +209,7 @@ namespace GonogoRp1Uplink
                 var instance = _scm == null ? null : Rp1Types.StaticValue(_scm, "Instance");
                 if (instance == null)
                 {
-                    return CommandResult.Fail(CommandErrorCode.ModeUnavailable, $"RP-1's space centre is not loaded, so there is no {what} to cancel.");
+                    return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded, $"RP-1's space centre is not loaded, so there is no {what} to cancel.");
                 }
 
                 var project = Rp1Types.Member(instance, field);

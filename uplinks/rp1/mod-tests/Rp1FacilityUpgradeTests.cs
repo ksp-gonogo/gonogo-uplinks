@@ -700,7 +700,7 @@ namespace GonogoRp1Uplink.Tests
 
             var result = _commands.Upgrade(new Rp1FacilityUpgradeArgs { Facility = "LaunchPad" });
 
-            Refused(result, CommandErrorCode.ModeUnavailable);
+            Refused(result, Rp1ErrorCodes.NotManaging);
             Assert.Empty(centre.FacilityUpgrades);
 
             var stock = new Rp1CareerProjectGate().Evaluate(
@@ -715,7 +715,7 @@ namespace GonogoRp1Uplink.Tests
 
             var result = _commands.Upgrade(new Rp1FacilityUpgradeArgs { Facility = "LaunchPad" });
 
-            Refused(result, CommandErrorCode.ModeUnavailable);
+            Refused(result, Rp1ErrorCodes.SpaceCentreNotLoaded);
         }
 
         [Fact]

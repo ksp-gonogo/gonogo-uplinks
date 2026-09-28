@@ -259,16 +259,12 @@ namespace GonogoRp1Uplink
             var scm = ScmInstance();
             if (scm == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
             }
 
             var catalogue = Resolve();
@@ -363,8 +359,7 @@ namespace GonogoRp1Uplink
                 var constructor = Rp1Types.Constructor(_vesselProject!, 4);
                 if (constructor == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no craft-measuring step this Uplink recognises");
                 }
                 vessel = constructor.Invoke(new object?[]
@@ -388,8 +383,7 @@ namespace GonogoRp1Uplink
             // assignment RP-1's own overrideLC argument makes.
             if (!Rp1Types.WriteMember(vessel, "LCID", Rp1Types.Member(complex, "ID")))
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no way to bind a vehicle to a chosen complex, "
                     + "so nothing was started");
             }
@@ -430,8 +424,7 @@ namespace GonogoRp1Uplink
                 var add = Rp1Types.StaticMethod(_utilities!, "AddVesselToBuildList", 2);
                 if (add == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no build-list add this Uplink recognises");
                 }
                 add.Invoke(null, new object[] { vessel, true });

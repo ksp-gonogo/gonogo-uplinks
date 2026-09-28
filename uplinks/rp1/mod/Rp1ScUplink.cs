@@ -604,6 +604,7 @@ namespace GonogoRp1Uplink
                 trainingModelResolved, complexLifecycleModelResolved,
                 complexConstructionModelResolved, padConstructionModelResolved,
                 warpModelResolved, toolingModelResolved, contractModelResolved),
+            ErrorCodes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes)),
         };
 
         /// <summary>

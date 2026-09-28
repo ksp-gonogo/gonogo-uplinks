@@ -920,9 +920,9 @@ namespace GonogoRp1Uplink.Tests
             var lc = ComplexAt(ksc, massMax: 100f);
             SpaceCenterManagement.Instance!.enabledForSave = false;
 
-            Assert.Equal(CommandErrorCode.ModeUnavailable, New().ErrorCode);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, Modify(lc).ErrorCode);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, NewPad(lc).ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, New().ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, Modify(lc).ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, NewPad(lc).ErrorCode);
             Assert.Empty(ksc.LCConstructions);
         }
 
@@ -933,9 +933,9 @@ namespace GonogoRp1Uplink.Tests
             var lc = ComplexAt(ksc, massMax: 100f);
             SpaceCenterManagement.Instance = null;
 
-            Assert.Equal(CommandErrorCode.ModeUnavailable, New().ErrorCode);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, Modify(lc).ErrorCode);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, NewPad(lc).ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, New().ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, Modify(lc).ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.SpaceCentreNotLoaded, NewPad(lc).ErrorCode);
         }
 
         [Fact]

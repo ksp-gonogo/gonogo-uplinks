@@ -338,16 +338,12 @@ namespace GonogoRp1Uplink
             var scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
             }
 
             var queues = QueuesResearch();
@@ -598,8 +594,7 @@ namespace GonogoRp1Uplink
                 var has = Rp1Types.InstanceMethod(scm, "TechListHas", 1);
                 if (has == null)
                 {
-                    failure = CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    failure = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no research-queue membership test this Uplink recognises, so nothing was queued");
                     return null;
                 }
@@ -864,8 +859,7 @@ namespace GonogoRp1Uplink
                 var ctor = Rp1Types.Constructor(_project!, 0);
                 if (ctor == null)
                 {
-                    failure = CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    failure = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no research project this Uplink can build, so nothing was queued");
                     return null;
                 }
@@ -874,8 +868,7 @@ namespace GonogoRp1Uplink
                 var load = Rp1Types.InstanceMethod(project, "Load", 1);
                 if (load == null)
                 {
-                    failure = CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    failure = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no research-project load step this Uplink recognises, so nothing was queued");
                     return null;
                 }

@@ -407,8 +407,7 @@ namespace GonogoRp1Uplink
                 var rollout = Enum.Parse(_rolloutReconType!, RolloutState);
                 if (constructor == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no rollout this Uplink recognises");
                 }
                 project = constructor.Invoke(new object[] { vessel, rollout, shipId!, padName })!;
@@ -437,8 +436,7 @@ namespace GonogoRp1Uplink
                 var add = list == null ? null : Rp1Types.InstanceMethod(list, "Add", 1);
                 if (add == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no operations list this Uplink recognises");
                 }
                 add.Invoke(list, new[] { project });
@@ -547,8 +545,7 @@ namespace GonogoRp1Uplink
                 var scrap = Rp1Types.StaticMethod(_utilities!, "ScrapVessel", 1);
                 if (scrap == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no scrap this Uplink recognises");
                 }
                 scrap.Invoke(null, new[] { vessel });
@@ -629,8 +626,7 @@ namespace GonogoRp1Uplink
                 var changeEngineers = RushChangeEngineers();
                 if (changeEngineers == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no rate recalculation this Uplink recognises, so "
                         + complexName + " has been set and may not act on it until RP-1 next recalculates");
                 }
@@ -713,17 +709,13 @@ namespace GonogoRp1Uplink
             scm = _scm == null ? null : Rp1Types.StaticValue(_scm, "Instance");
             if (scm == null)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
                 return false;
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.NotManaging);
                 return false;
             }
 
@@ -905,8 +897,7 @@ namespace GonogoRp1Uplink
                 var switchDirection = Rp1Types.InstanceMethod(operation, "SwitchDirection", 0);
                 if (switchDirection == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no way to reverse an operation that this Uplink recognises");
                 }
                 switchDirection.Invoke(operation, null);

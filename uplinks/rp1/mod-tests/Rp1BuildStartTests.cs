@@ -115,7 +115,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotManaging, result.ErrorCode);
             Assert.Empty(lc.BuildList);
         }
 

@@ -220,3 +220,11 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | processor | `rp1:crew-reading` |
 | processor | `rp1:crew-program-reading` |
 
+## Error codes
+
+| Code | Refines | Reads as | Meaning |
+| --- | --- | --- | --- |
+| `rp1.notManaging` | `careerModeRequired` | RP-1 is not managing this save | RP-1 is installed but is not managing this save, so none of its career commands apply to it. A property of the save rather than of the moment. |
+| `rp1.spaceCentreNotLoaded` | `modeUnavailable` | RP-1's space centre is not loaded | RP-1's space centre, which holds every queue and complex these commands act on, is not loaded in the current scene. |
+| `rp1.buildUnrecognised` | `unreadable` | this RP-1 build is not one this Uplink recognises | The installed RP-1 build lacks a member this Uplink reads or calls, so the command could not be carried out. The detail names which one. |
+

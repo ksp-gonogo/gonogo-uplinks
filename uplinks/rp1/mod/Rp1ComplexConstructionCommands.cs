@@ -617,8 +617,7 @@ namespace GonogoRp1Uplink
                 var modify = Rp1Types.InstanceMethodOn(complex, "Modify", LcDataTypeName, 2);
                 if (modify == null)
                 {
-                    return Refuse(CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Refuse(CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no complex renovation this Uplink recognises, so nothing was changed"));
                 }
                 try
@@ -676,8 +675,7 @@ namespace GonogoRp1Uplink
                 var changeEngineers = Rp1ComplexWrites.ChangeEngineers(_utilities);
                 if (changeEngineers == null)
                 {
-                    return Refuse(CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return Refuse(CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no engineer assignment this Uplink recognises, so "
                         + name + " was left as it was"));
                 }
@@ -915,17 +913,13 @@ namespace GonogoRp1Uplink
             scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
                 return false;
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                refusal = CommandResult.Fail(Rp1ErrorCodes.NotManaging);
                 return false;
             }
 
@@ -952,8 +946,7 @@ namespace GonogoRp1Uplink
                 : Rp1Types.StaticMethod(_kspUtils, "CurrentGameIsCareer", 0);
             if (test == null)
             {
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                refusal = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no career test this Uplink recognises, and construction behaves "
                     + "differently in a career, so nothing was queued");
                 return false;
@@ -1354,8 +1347,7 @@ namespace GonogoRp1Uplink
                 // The duration, by RP-1's own curve. Refused rather than left at
                 // zero: a project with no build points is one RP-1 treats as already
                 // finished.
-                refusal = CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                refusal = CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no construction timing this Uplink recognises, so " + name
                     + " was left as it was");
                 return false;

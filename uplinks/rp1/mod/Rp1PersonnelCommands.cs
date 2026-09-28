@@ -161,16 +161,12 @@ namespace GonogoRp1Uplink
             var scm = Rp1Types.StaticValue(_scm!, "Instance");
             if (scm == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
             }
 
             if (!Rp1ComplexWrites.TryFind(scm, lcId!, out var complex))
@@ -249,8 +245,7 @@ namespace GonogoRp1Uplink
 
             if (changeEngineers == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                     "this RP-1 build has no engineer assignment this Uplink recognises, so nothing was changed");
             }
 

@@ -19,7 +19,8 @@
       "SITREP_RP1_TOPICMAP_OUT": "topic-map.ts",
       "SITREP_RP1_UNITMAP_OUT": "units.ts",
       "SITREP_RP1_UNITJSON_OUT": "units.json",
-      "SITREP_RP1_COMMANDMAP_OUT": "command-map.ts"
+      "SITREP_RP1_COMMANDMAP_OUT": "command-map.ts",
+      "SITREP_RP1_ERRORCODES_OUT": "error-codes.ts"
     }
   },
   "csharpNamespace": "GonogoRp1Uplink",

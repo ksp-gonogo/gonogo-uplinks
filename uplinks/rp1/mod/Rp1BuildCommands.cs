@@ -247,16 +247,12 @@ namespace GonogoRp1Uplink
             var scm = ScmInstance();
             if (scm == null)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1's space centre is not loaded");
+                return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
             }
 
             if (Rp1Types.ReadBool(scm, "enabledForSave") != true)
             {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 is not managing this save");
+                return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
             }
 
             if (!TryFind(scm, id!, out var vessel, out var complex))
@@ -320,8 +316,7 @@ namespace GonogoRp1Uplink
                 var createCopy = Rp1Types.InstanceMethod(vessel, "CreateCopy", 0);
                 if (createCopy == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no vehicle-copy step this Uplink recognises");
                 }
                 copy = createCopy.Invoke(vessel, null)!;
@@ -338,8 +333,7 @@ namespace GonogoRp1Uplink
                 var add = Rp1Types.StaticMethod(_utilities!, "AddVesselToBuildList", 2);
                 if (add == null)
                 {
-                    return CommandResult.Fail(
-                        CommandErrorCode.ModeUnavailable,
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no build-list add this Uplink recognises");
                 }
                 add.Invoke(null, new object[] { copy, true });
