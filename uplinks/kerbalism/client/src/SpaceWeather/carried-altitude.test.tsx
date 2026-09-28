@@ -27,14 +27,14 @@ import "./index.js";
  * to prevent.
  */
 
-function spaceWeather() {
+function spaceWeatherTopic() {
   const def = getComponent("space-weather");
   if (!def) throw new Error("space-weather is not registered");
   const topic = def.channels?.[0];
   if (!topic) throw new Error("space-weather declares no primary channel");
-  return { def, topic };
+  return topic;
 }
-const { def: SW, topic: TOPIC } = spaceWeather();
+const TOPIC = spaceWeatherTopic();
 
 /**
  * A craft climbing out of the periapsis of a strongly eccentric Kerbin orbit,

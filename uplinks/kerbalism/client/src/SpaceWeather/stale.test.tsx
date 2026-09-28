@@ -37,14 +37,14 @@ import "./index.js";
  * so their "it is there" checks reach the emit calls below: a module-level
  * guard narrows the module body only, and every use here is inside a closure.
  */
-function spaceWeather() {
+function spaceWeatherTopic() {
   const def = getComponent("space-weather");
   if (!def) throw new Error("space-weather is not registered");
   const topic = def.channels?.[0];
   if (!topic) throw new Error("space-weather declares no primary channel");
-  return { def, topic };
+  return topic;
 }
-const { def: SW, topic: TOPIC } = spaceWeather();
+const TOPIC = spaceWeatherTopic();
 
 const NOT_CURRENT = "Space weather no longer current";
 const AWAITING = "Awaiting space weather";

@@ -24,12 +24,6 @@ import "./index.js";
  * lifecycle (in-flight → confirmed) surfaces on its row, with no module mocks.
  */
 
-const COMMANDS = [
-  "mechjeb.engageAscentAutopilot",
-  "mechjeb.executeNextNode",
-  "mechjeb.landAtTarget",
-];
-
 afterEach(() => {
   clearActionHandlers();
 });
