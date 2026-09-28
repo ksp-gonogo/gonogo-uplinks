@@ -43,6 +43,14 @@ const CAMERAS: Record<string, MockCameraInit> = {
     supportsZoom: false,
     supportsPan: false,
   },
+  "docking-camera-behind-reticle": {
+    ...base(),
+    flightId: 42,
+    partTitle: "Clamp-O-Tron Docking Port",
+    cameraName: "Port Cam",
+    supportsZoom: false,
+    supportsPan: false,
+  },
   "camera-feed-stick-hold": {
     ...base(),
     supportsZoom: true,

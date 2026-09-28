@@ -1,0 +1,53 @@
+{
+  "_scene": {
+    "augment": "kerbcast-docking-camera",
+    "hostWidget": "targeting",
+    "hero": true,
+    "modes": ["default"],
+    "caption": "Targeting's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle",
+    "paints": ["DOCKING"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      { "topic": "kerbcast.available", "payload": true },
+      {
+        "topic": "kerbcast.cameras",
+        "payload": [
+          {
+            "cameraId": 42,
+            "partId": 7,
+            "cameraName": "Port Cam",
+            "partName": "dockingPort2",
+            "partTitle": "Clamp-O-Tron Docking Port",
+            "vesselId": "vessel:3f2c9a10-0000-4000-8000-000000000042",
+            "supportsZoom": false,
+            "supportsPan": false,
+            "isDockingCamera": true
+          }
+        ]
+      },
+      {
+        "topic": "vessel.target",
+        "payload": {
+          "name": "Docking Port Mk2",
+          "kind": 0,
+          "vesselId": "target-vessel",
+          "bodyIndex": null,
+          "relativePosition": { "x": 0, "y": 0, "z": 62 },
+          "relativeVelocity": { "x": 0, "y": 0, "z": -0.4 },
+          "closestApproach": { "time": 0, "distance": 0 }
+        }
+      },
+      {
+        "topic": "vessel.dock",
+        "payload": {
+          "relativePosition": { "x": 2.1, "y": -1.2, "z": 62 },
+          "relativeVelocity": { "x": 0, "y": 0, "z": -0.4 },
+          "distance": 62,
+          "forwardDot": 0.9991
+        }
+      }
+    ]
+  }
+}

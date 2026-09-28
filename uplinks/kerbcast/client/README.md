@@ -53,6 +53,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `kerbcast-crew-avatar` | `crew-status.avatar` | – | only while `kerbcast` | 0 |  |
-| `kerbcast-docking-camera` | `targeting.camera` | `kerbcast.cameras` | only while `kerbcast` | 0 |  |
+| `kerbcast-docking-camera` | `targeting.camera` | `kerbcast.cameras` | only while `kerbcast` | 1 |  |
 
+![Targeting's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](docs/assets/docking-camera-behind-reticle--default.png)
 
