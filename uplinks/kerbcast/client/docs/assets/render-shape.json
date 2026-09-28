@@ -3,37 +3,37 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "b5278fa6c118db6c",
+      "hash": "5aae69642ce50b8a",
       "elements": 34,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "f18510364bab2bcb",
+      "hash": "b1748b3fba3f6671",
       "elements": 34,
       "text": "5a036dc9"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "3e75161d7a24c9d1",
+      "hash": "5aae69642ce50b8a",
       "elements": 34,
       "text": "5a036dc9"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "d0d9cc21820bdd57",
+      "hash": "b78aebc632e8ece5",
       "elements": 58,
       "text": "493dba11"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "8c78b98be9edd9db",
+      "hash": "47bfb8d132f59848",
       "elements": 58,
       "text": "493dba11"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "82b9ee0c039c58d7",
+      "hash": "b78aebc632e8ece5",
       "elements": 58,
       "text": "493dba11"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "977d826faf3c3e01",
+      "hash": "a539da3424f3e622",
       "elements": 58,
       "text": "10338ace"
     }
