@@ -74,7 +74,7 @@ describe("the realantennas.antennaChains channel", () => {
           },
         ],
         activeStep: 1,
-        state: "settling",
+        walkPhase: "settling",
         detail: "Waiting to see whether the target in place gives a link.",
         settleSeconds: 30,
         lastAppliedUt: 9001.5,
@@ -138,7 +138,7 @@ describe("the realantennas.antennaChains channel", () => {
         antennaId: "4021/0",
         steps: [{ mode: "BodyCenter" }],
         activeStep: null,
-        state: "blocked",
+        walkPhase: "blocked",
         detail: "The craft would not say whether it has a link.",
         settleSeconds: 30,
         lastAppliedUt: null,
@@ -155,6 +155,39 @@ describe("the realantennas.antennaChains channel", () => {
     expect(chain.lastAppliedUt ?? null).toBeNull();
     expect(chain.connected ?? null).toBeNull();
     expect(chain.carrying ?? null).toBeNull();
+  });
+
+  /**
+   * An element field spelled like a `Reading` currency member cannot be reached
+   * as a field reading, because the accessor resolves that name to the
+   * currency. Reaching the walk's phase through the indexed accessor is what
+   * the old `state` spelling made impossible.
+   */
+  it("reaches the walk phase as a field reading of the element", async () => {
+    const fixture = setupStreamFixture();
+    const { result } = renderHook(
+      () => useTelemetry(REALANTENNAS_CHAINS_TOPIC),
+      { wrapper: fixture.Provider },
+    );
+
+    fixture.emit(REALANTENNAS_CHAINS_TOPIC, [
+      {
+        antennaId: "4021/0",
+        steps: [{ mode: "BodyCenter" }],
+        activeStep: null,
+        walkPhase: "walking",
+        detail: null,
+        settleSeconds: 30,
+        lastAppliedUt: null,
+        laps: 0,
+        connected: false,
+        carrying: false,
+        meta: { source: "vessel:1", quality: 2 },
+      },
+    ]);
+
+    await waitFor(() => expect(result.current.state).toBe("observed"));
+    expect(result.current[0]?.walkPhase.value).toBe("walking");
   });
 });
 

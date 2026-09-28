@@ -150,7 +150,7 @@ namespace Gonogo.RealAntennasUplink
                     ["antennaId"] = chain.AntennaId,
                     ["steps"] = Steps(chain.Steps),
                     ["activeStep"] = chain.ActiveStep,
-                    ["state"] = chain.State,
+                    ["walkPhase"] = chain.WalkPhase,
                     ["detail"] = chain.Detail,
                     ["settleSeconds"] = chain.SettleSeconds,
                     ["lastAppliedUt"] = chain.LastAppliedUt,

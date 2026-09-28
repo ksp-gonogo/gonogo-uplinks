@@ -40,7 +40,7 @@ namespace GonogoRealAntennasUplink.Tests
                 },
             },
             ActiveStep = 1,
-            State = RaChainPolicy.StateSettling,
+            WalkPhase = RaChainPolicy.StateSettling,
             Detail = "Waiting to see whether the target in place gives the craft a link.",
             SettleSeconds = 30.0,
             LastAppliedUt = 9001.5,
@@ -67,7 +67,7 @@ namespace GonogoRealAntennasUplink.Tests
 
             Assert.Equal("4021/0", entry.GetProperty("antennaId").GetString());
             Assert.Equal(1, entry.GetProperty("activeStep").GetInt32());
-            Assert.Equal(RaChainPolicy.StateSettling, entry.GetProperty("state").GetString());
+            Assert.Equal(RaChainPolicy.StateSettling, entry.GetProperty("walkPhase").GetString());
             Assert.Equal(30.0, entry.GetProperty("settleSeconds").GetDouble());
             Assert.Equal(9001.5, entry.GetProperty("lastAppliedUt").GetDouble());
             Assert.Equal(2, entry.GetProperty("laps").GetInt32());

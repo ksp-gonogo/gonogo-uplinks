@@ -105,7 +105,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     laps: "count",
     lastAppliedUt: "ut",
     settleSeconds: "s",
-    state: "text",
+    walkPhase: "text",
   },
   "RealAntennasAntennaState": {
     antennaId: "id",
@@ -212,7 +212,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     laps: "count",
     lastAppliedUt: "ut",
     settleSeconds: "s",
-    state: "text",
+    walkPhase: "text",
   },
   "realantennas.antennas": {
     antennaId: "id",

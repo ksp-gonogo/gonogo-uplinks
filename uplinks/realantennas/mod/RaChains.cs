@@ -178,10 +178,10 @@ namespace Gonogo.RealAntennasUplink
                     AntennaId = ids[i],
                     Steps = Reported(entry.Steps),
                     ActiveStep = entry.Walk.ActiveStep,
-                    // The blocker wins the state. A chain that cannot act must not
+                    // The blocker wins the phase. A chain that cannot act must not
                     // report "walking" while standing still, which reads as a
                     // fallback doing its job.
-                    State = blocked != null && connected != true ? RaChainPolicy.StateBlocked : decision.State,
+                    WalkPhase = blocked != null && connected != true ? RaChainPolicy.StateBlocked : decision.State,
                     Detail = blocked ?? decision.Detail,
                     SettleSeconds = entry.SettleSeconds,
                     LastAppliedUt = entry.Walk.LastAppliedUt,

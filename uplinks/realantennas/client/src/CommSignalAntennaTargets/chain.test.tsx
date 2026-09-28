@@ -54,7 +54,7 @@ function chain(overrides: Record<string, unknown> = {}) {
       },
     ],
     activeStep: undefined,
-    state: "holding",
+    walkPhase: "holding",
     detail: undefined,
     settleSeconds: value("s", 30),
     lastAppliedUt: undefined,
@@ -144,7 +144,7 @@ describe("an antenna holding a fallback chain", () => {
 
   it("names the walk's state in words rather than the wire's own token", async () => {
     const stream = mount();
-    await emit(stream, [antenna()], [chain({ state: "walking" })]);
+    await emit(stream, [antenna()], [chain({ walkPhase: "walking" })]);
 
     expect(screen.getByText("Walking")).toBeTruthy();
     expect(screen.queryByText("walking")).toBeNull();
@@ -160,7 +160,7 @@ describe("an antenna holding a fallback chain", () => {
     await emit(
       stream,
       [antenna()],
-      [chain({ state: "walking", activeStep: value("count", 1) })],
+      [chain({ walkPhase: "walking", activeStep: value("count", 1) })],
     );
 
     const entries = screen
@@ -192,7 +192,7 @@ describe("an antenna holding a fallback chain", () => {
       [antenna()],
       [
         chain({
-          state: "blocked",
+          walkPhase: "blocked",
           connected: false,
           detail: "This craft is not loaded, so the chain is held until it is.",
         }),
@@ -214,7 +214,11 @@ describe("an antenna holding a fallback chain", () => {
 
     act(() => {
       stream.emit("realantennas.antennaChains", [
-        chain({ state: "walking", connected: false, laps: value("count", 3) }),
+        chain({
+          walkPhase: "walking",
+          connected: false,
+          laps: value("count", 3),
+        }),
       ]);
     });
 
@@ -242,7 +246,7 @@ describe("an antenna holding a fallback chain", () => {
     await emit(
       stream,
       [antenna()],
-      [chain({ state: "walking", activeStep: value("count", 1) })],
+      [chain({ walkPhase: "walking", activeStep: value("count", 1) })],
     );
 
     await expectNoA11yViolations(stream.container);

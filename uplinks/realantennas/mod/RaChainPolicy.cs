@@ -98,7 +98,7 @@ namespace Gonogo.RealAntennasUplink
             /// <summary>The entry to aim at, meaningful only for <see cref="Move.Apply"/>.</summary>
             public int Step { get; }
 
-            /// <summary>The wire word for <c>RealAntennasAntennaChain.State</c>.</summary>
+            /// <summary>The wire word for <c>RealAntennasAntennaChain.WalkPhase</c>.</summary>
             public string State { get; }
 
             /// <summary>The wire sentence for <c>RealAntennasAntennaChain.Detail</c>.</summary>

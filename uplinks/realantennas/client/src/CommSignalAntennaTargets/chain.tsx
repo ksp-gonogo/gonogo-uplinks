@@ -205,8 +205,8 @@ export function AntennaChain({
           Fallback chain
         </Text>
         {chain ? (
-          <Badge severity={STATE_SEVERITY[chain.state] ?? "info"} size="sm">
-            {STATE_LABELS[chain.state] ?? chain.state}
+          <Badge severity={STATE_SEVERITY[chain.walkPhase] ?? "info"} size="sm">
+            {STATE_LABELS[chain.walkPhase] ?? chain.walkPhase}
           </Badge>
         ) : (
           <Text size="xs" tone="muted">

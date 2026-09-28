@@ -71,7 +71,7 @@
       "laps": "count",
       "lastAppliedUt": "ut",
       "settleSeconds": "s",
-      "state": "text"
+      "walkPhase": "text"
     },
     "RealAntennasAntennaState": {
       "antennaId": "id",
@@ -173,7 +173,7 @@
       "laps": "count",
       "lastAppliedUt": "ut",
       "settleSeconds": "s",
-      "state": "text"
+      "walkPhase": "text"
     },
     "realantennas.antennas": {
       "antennaId": "id",

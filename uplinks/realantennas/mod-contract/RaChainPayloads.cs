@@ -265,12 +265,12 @@ public class RealAntennasAntennaChain
     /// <see cref="Detail"/> saying why).
     /// </summary>
     [SitrepUnit(Units.Text)]
-    public string State { get; set; } = "";
+    public string WalkPhase { get; set; } = "";
 
     /// <summary>
-    /// Why the walk is in the state it is, in one sentence for an operator.
+    /// Why the walk is in the phase it is, in one sentence for an operator.
     /// Always present for <c>blocked</c>, because a chain that cannot act is
-    /// the one case where the state alone is not enough to act on.
+    /// the one case where the phase alone is not enough to act on.
     /// </summary>
     [SitrepUnit(Units.Text)]
     public string? Detail { get; set; }

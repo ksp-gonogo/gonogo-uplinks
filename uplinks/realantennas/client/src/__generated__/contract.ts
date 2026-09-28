@@ -172,11 +172,11 @@ export interface RealAntennasAntennaChain
 	* link and the chain cannot act, with `RealAntennasAntennaChain.detail` saying
 	* why).
 	*/
-	state: string;
+	walkPhase: string;
 	/**
-	* Why the walk is in the state it is, in one sentence for an operator. Always
+	* Why the walk is in the phase it is, in one sentence for an operator. Always
 	* present for `blocked`, because a chain that cannot act is the one case where
-	* the state alone is not enough to act on.
+	* the phase alone is not enough to act on.
 	*/
 	detail?: string | null;
 	/** The settle time in force for this chain (seconds of game time). */
