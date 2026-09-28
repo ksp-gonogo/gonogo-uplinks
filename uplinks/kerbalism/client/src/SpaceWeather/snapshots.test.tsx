@@ -27,6 +27,7 @@ import {
   replayStreamBlock,
   resolveStreamBlock,
   stripVolatile,
+  streamClockOptions,
 } from "../test/widgetDomSnapshot.js";
 import binary from "./__fixtures__/binary.json" with { type: "json" };
 import innerBelt from "./__fixtures__/inner-belt.json" with { type: "json" };
@@ -67,8 +68,7 @@ async function snapshotSpaceWeatherMode(
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
     carriedChannels: CARRIED,
-    pinnedUt: block.pinnedUt,
-    delaySeconds: block.delaySeconds,
+    ...streamClockOptions(block),
   });
   const restoreResizeObserver = installSizedResizeObserver(modePixels(mode));
   try {

@@ -9,6 +9,7 @@ import {
   flushProviderFrame,
   replayStreamBlock,
   resolveStreamBlock,
+  streamClockOptions,
 } from "../test/widgetDomSnapshot.js";
 import live from "./__fixtures__/ec-shortage-limits-water.json" with { type: "json" };
 import held from "./__fixtures__/ec-shortage-limits-water-stopped-arriving.json" with { type: "json" };
@@ -34,7 +35,7 @@ async function scene(fixture: Record<string, unknown>): Promise<HTMLElement> {
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
     carriedChannels: block.emits.map((e) => e.topic),
-    pinnedUt: block.pinnedUt,
+    ...streamClockOptions(block),
   });
   /*
    * `useProcessor` reads its inputs straight off the store and never

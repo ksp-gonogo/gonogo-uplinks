@@ -12,12 +12,14 @@ import {
   flushProviderFrame,
   replayStreamBlock,
   resolveStreamBlock,
+  streamClockOptions,
 } from "../test/widgetDomSnapshot.js";
 import live from "./__fixtures__/radiation-dose-critical.json" with { type: "json" };
 import held from "./__fixtures__/radiation-dose-critical-stopped-arriving.json" with { type: "json" };
 import rising from "./__fixtures__/radiation-rising.json" with { type: "json" };
 import risingHeld from "./__fixtures__/radiation-rising-stopped-arriving.json" with { type: "json" };
 import risingLater from "./__fixtures__/radiation-rising-stopped-arriving-later.json" with { type: "json" };
+import risingLightTime from "./__fixtures__/radiation-rising-light-time.json" with { type: "json" };
 import { survivalBadges, survivalBadgesFor } from "./badge.js";
 import { CrewSurvivalBadgeAugment } from "./index.js";
 import type { CrewSurvival } from "./processor.js";
@@ -49,7 +51,7 @@ async function rowBadgeTree(
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
     carriedChannels: block.emits.map((e) => e.topic),
-    pinnedUt: block.pinnedUt,
+    ...streamClockOptions(block),
   });
   /*
    * `useProcessor` reads its inputs straight off the store and never
@@ -86,7 +88,7 @@ async function meterTree(
   if (!block) throw new Error("fixture carries no _stream block");
   const stream = setupStreamFixture({
     carriedChannels: block.emits.map((e) => e.topic),
-    pinnedUt: block.pinnedUt,
+    ...streamClockOptions(block),
   });
   for (const e of block.emits) stream.subscribe(e.topic);
   const { container, unmount } = render(
@@ -270,5 +272,21 @@ describe("the survival badges say a held death clock is held", () => {
       })?.[0]?.label;
       expect(label).toBe("Critical · held");
     });
+  });
+});
+
+/**
+ * The same climbing scene seen across a 60 s light time. The margin to act is
+ * the observed figure from the received edge, and the crew model's margin for
+ * the craft's present sits beside it under the modelled mark, a light time
+ * shorter.
+ */
+describe("the survival badges across a light time", () => {
+  it("draws the observed margin with the model's margin for the craft's present beside it", async () => {
+    const tree = await rowBadgeTree(risingLightTime);
+    expect(visibleText(tree)).toMatch(/^~3min to act\s*~2min$/i);
+    const alongside = tree.querySelector("[data-modelled-alongside]");
+    expect(alongside).not.toBeNull();
+    expect(alongside?.querySelector("[data-held-mark]")).not.toBeNull();
   });
 });

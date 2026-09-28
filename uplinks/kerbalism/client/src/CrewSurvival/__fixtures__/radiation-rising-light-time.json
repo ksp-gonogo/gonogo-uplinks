@@ -1,0 +1,218 @@
+{
+  "_meta": {
+    "scenario": "radiation-rising-light-time",
+    "synthetic": true,
+    "notes": "SYNTHETIC. radiation-rising under a 60 s one-way light time: every reading is delivered 60 s after it was sent, so the crew model carries it to the craft's present and Bill's margin to act is drawn from the received edge with the model's figure beside it."
+  },
+  "_scene": {
+    "contribution": "kerbalism:crew-survival-meters",
+    "hostWidget": "crew-status",
+    "caption": "A crew under a 60 s light time: the margin to act from the received edge, and the crew model's margin for the craft's present beside it",
+    "modes": ["default"],
+    "size": {
+      "w": 8,
+      "h": 12
+    },
+    "paints": ["CREW", "Jebediah Kerman", "Bill Kerman", "to act"]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.available",
+        "payload": true
+      },
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 60
+        }
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": {
+          "count": 3,
+          "capacity": 4,
+          "crew": [
+            {
+              "name": "Jebediah Kerman",
+              "trait": "Pilot"
+            },
+            {
+              "name": "Bill Kerman",
+              "trait": "Engineer"
+            },
+            {
+              "name": "Bob Kerman",
+              "trait": "Scientist"
+            }
+          ],
+          "meta": {
+            "source": "vessel:4",
+            "quality": 1
+          }
+        }
+      },
+      {
+        "topic": "kerbalism.crew",
+        "payload": [
+          {
+            "name": "Jebediah Kerman",
+            "trait": "Pilot",
+            "rulesAsOfKerbalismUt": 999870,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 36.4
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.3
+              }
+            ]
+          },
+          {
+            "name": "Bill Kerman",
+            "trait": "Engineer",
+            "rulesAsOfKerbalismUt": 999870,
+            "rules": [
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.2
+              }
+            ],
+            "deathClockUt": 1000240
+          },
+          {
+            "name": "Bob Kerman",
+            "trait": "Scientist",
+            "rulesAsOfKerbalismUt": 999870,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 6
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.08
+              }
+            ]
+          }
+        ],
+        "validAt": 999870
+      },
+      {
+        "topic": "kerbalism.crew",
+        "payload": [
+          {
+            "name": "Jebediah Kerman",
+            "trait": "Pilot",
+            "rulesAsOfKerbalismUt": 999930,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 37.6
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.3
+              }
+            ]
+          },
+          {
+            "name": "Bill Kerman",
+            "trait": "Engineer",
+            "rulesAsOfKerbalismUt": 999930,
+            "rules": [
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.2
+              }
+            ],
+            "deathClockUt": 1000240
+          },
+          {
+            "name": "Bob Kerman",
+            "trait": "Scientist",
+            "rulesAsOfKerbalismUt": 999930,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 6
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.08
+              }
+            ]
+          }
+        ],
+        "validAt": 999930
+      },
+      {
+        "topic": "kerbalism.crew",
+        "payload": [
+          {
+            "name": "Jebediah Kerman",
+            "trait": "Pilot",
+            "rulesAsOfKerbalismUt": 999990,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 38.8
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.3
+              }
+            ]
+          },
+          {
+            "name": "Bill Kerman",
+            "trait": "Engineer",
+            "rulesAsOfKerbalismUt": 999990,
+            "rules": [
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.2
+              }
+            ],
+            "deathClockUt": 1000240
+          },
+          {
+            "name": "Bob Kerman",
+            "trait": "Scientist",
+            "rulesAsOfKerbalismUt": 999990,
+            "rules": [
+              {
+                "name": "radiation",
+                "fatalThreshold": 50,
+                "problem": 6
+              },
+              {
+                "name": "stress",
+                "fatalThreshold": 1,
+                "problem": 0.08
+              }
+            ]
+          }
+        ],
+        "validAt": 999990
+      }
+    ],
+    "delaySeconds": 60
+  }
+}

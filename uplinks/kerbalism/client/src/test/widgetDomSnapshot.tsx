@@ -10,6 +10,7 @@
 import {
   act,
   type StreamFixture,
+  type StreamFixtureOptions,
   stopArriving,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { installFixedSizeResizeObserver } from "@ksp-gonogo/ui-kit/testing";
@@ -22,18 +23,49 @@ import { installFixedSizeResizeObserver } from "@ksp-gonogo/ui-kit/testing";
  * drifting apart.
  */
 export interface StreamFixtureBlock {
-  /** UT to pin the view clock at. */
+  /**
+   * UT to pin the view clock at. Under `delaySeconds` the clock is left live
+   * and this is instead the instant an emit naming no `validAt` was sent.
+   */
   pinnedUt?: number;
-  /** Fixed network/display delay in seconds. */
+  /**
+   * A one-way light time in seconds: each emit is delivered this long after
+   * its `validAt`, the view time is the received edge and the craft's present
+   * runs one light time ahead of it. Zero is the same as absent.
+   */
   delaySeconds?: number;
   /** Stage the link dropping once the emits have landed: see `stopArriving`. */
   stopsArriving?: boolean;
   /**
-   * Replayed in order, one `StubTransport.emit` per entry, post-mount. An entry
-   * naming a `validAt` is stamped with it, which is how a scene carries a
-   * history for a model to fit; one naming none keeps the stub's default.
+   * Replayed one `StubTransport.emit` per entry, post-mount, in the order
+   * written, or in the order sent under `delaySeconds`. An entry naming a
+   * `validAt` is stamped with it, which is how a scene carries a history for a
+   * model to fit; one naming none keeps the stub's default when undelayed.
    */
   emits: Array<{ topic: string; payload: unknown; validAt?: number }>;
+}
+
+/** The render harness's own default for a scene naming no `pinnedUt`, so one fixture draws the same instant in both. */
+const DEFAULT_PINNED_UT = 1_000_000;
+
+/** A block's light time, or `undefined` when it has none. */
+function lightTime(block: StreamFixtureBlock): number | undefined {
+  const delay = block.delaySeconds;
+  return delay === undefined || delay === 0 ? undefined : delay;
+}
+
+/**
+ * The clock half of `setupStreamFixture`'s options for a block: pinned at
+ * `pinnedUt` when undelayed, live under a light time, because a pinned clock
+ * wins outright over the delay and would turn it into a no-op.
+ */
+export function streamClockOptions(
+  block: StreamFixtureBlock,
+): Pick<StreamFixtureOptions, "pinnedUt" | "delaySeconds"> {
+  const delaySeconds = lightTime(block);
+  return delaySeconds === undefined
+    ? { pinnedUt: block.pinnedUt }
+    : { delaySeconds };
 }
 
 /** Extracts and narrows the `_stream` block off a fixture. */
@@ -68,27 +100,45 @@ async function waitForSubscription(
   }
 }
 
-/** Replay a fixture's declared emits in order, each after its topic is subscribed. */
+/**
+ * Replay a fixture's declared emits, each after its topic is subscribed. The
+ * stream must have been built with {@link streamClockOptions} for the same
+ * block, or a light time is staged against a pinned clock and shows nothing.
+ */
 export async function replayStreamBlock(
   stream: StreamFixture,
   block: StreamFixtureBlock,
 ): Promise<void> {
+  const delay = lightTime(block);
+  const sentAt = (e: StreamFixtureBlock["emits"][number]): number =>
+    e.validAt ?? block.pinnedUt ?? DEFAULT_PINNED_UT;
+  // A link delivers in the order it sent, and a delayed clock re-anchors on each delivery.
+  const emits =
+    delay === undefined
+      ? block.emits
+      : [...block.emits].sort((a, b) => sentAt(a) - sentAt(b));
   await act(async () => {
-    for (const e of block.emits) {
+    for (const e of emits) {
       await waitForSubscription(stream.transport, e.topic);
-      stream.emit(
-        e.topic,
-        e.payload,
-        e.validAt === undefined
-          ? undefined
-          : { validAt: e.validAt, deliveredAt: e.validAt },
-      );
+      stream.emit(e.topic, e.payload, emitMeta(e, delay, sentAt(e)));
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => resolve());
       });
     }
     if (block.stopsArriving === true) stopArriving(stream);
   });
+}
+
+function emitMeta(
+  e: StreamFixtureBlock["emits"][number],
+  delay: number | undefined,
+  sentAt: number,
+): { validAt: number; deliveredAt: number } | undefined {
+  if (delay !== undefined) {
+    return { validAt: sentAt, deliveredAt: sentAt + delay };
+  }
+  if (e.validAt === undefined) return undefined;
+  return { validAt: e.validAt, deliveredAt: e.validAt };
 }
 
 /**
