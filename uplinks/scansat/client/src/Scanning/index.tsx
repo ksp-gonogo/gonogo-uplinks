@@ -284,20 +284,38 @@ function ScanningComponent({
                           measurement. */}
                         <Unit value={v.altitude} format="km" decimals={0} />
                       </Text>
-                      <Stack gap="caption">
+                      <Stack gap="related">
                         {v.sensors.length === 0 ? (
                           <EmptyState>No scanners.</EmptyState>
                         ) : (
                           v.sensors.map((s, i) => (
-                            <Grid
+                            <Stack
                               // biome-ignore lint/suspicious/noArrayIndexKey: sensors don't have a stable id; index is the natural order
                               key={i}
-                              cols="140px 1fr auto"
-                              gap="related-comfortable"
+                              gap="caption"
                             >
-                              <Text size="xs" tone="default">
-                                {SCAN_TYPE_LABELS[s.type] ?? `type=${s.type}`}
-                              </Text>
+                              <Cluster>
+                                <Text size="xs" tone="default">
+                                  {SCAN_TYPE_LABELS[s.type] ??
+                                    `type=${s.type}`}
+                                </Text>
+                                <Badge
+                                  size="sm"
+                                  severity={
+                                    s.bestRange
+                                      ? "nominal"
+                                      : s.inRange
+                                        ? "info"
+                                        : undefined
+                                  }
+                                >
+                                  {s.bestRange
+                                    ? "best"
+                                    : s.inRange
+                                      ? "scanning"
+                                      : "out of range"}
+                                </Badge>
+                              </Cluster>
                               <Text size="xs" tone="muted">
                                 FoV <Unit value={s.fov} decimals={1} /> · alt{" "}
                                 <Unit
@@ -312,23 +330,7 @@ function ScanningComponent({
                                   decimals={0}
                                 />
                               </Text>
-                              <Badge
-                                size="sm"
-                                severity={
-                                  s.bestRange
-                                    ? "nominal"
-                                    : s.inRange
-                                      ? "info"
-                                      : undefined
-                                }
-                              >
-                                {s.bestRange
-                                  ? "best"
-                                  : s.inRange
-                                    ? "scanning"
-                                    : "out of range"}
-                              </Badge>
-                            </Grid>
+                            </Stack>
                           ))
                         )}
                       </Stack>

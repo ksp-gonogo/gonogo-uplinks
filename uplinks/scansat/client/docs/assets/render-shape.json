@@ -3,14 +3,14 @@
   "engine": "chromium",
   "assets": {
     "kerbin-partial-scan--default.png": {
-      "hash": "a1357cb55eaa1834",
-      "elements": 86,
-      "text": "4474db60"
+      "hash": "09a9879539189545",
+      "elements": 134,
+      "text": "6ee75d6d"
     },
     "kerbin-partial-scan--min.png": {
-      "hash": "a1357cb55eaa1834",
-      "elements": 86,
-      "text": "4474db60"
+      "hash": "09a9879539189545",
+      "elements": 134,
+      "text": "6ee75d6d"
     },
     "scansat-absent--default.png": {
       "hash": "c73e99dc6d96cde8",
