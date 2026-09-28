@@ -98,6 +98,13 @@ export interface GeneratedCommandRail {
    * off the same `[SitrepCommand(Delayed = ...)]` the host itself dispatches by.
    */
   readonly delayed: boolean;
+  /**
+   * The args field holding the UT this command acts at, off
+   * `[SitrepCommand(ArriveBefore = ...)]`. A client refuses to send the command
+   * when it would reach the craft at or after that UT. Absent for every other
+   * command.
+   */
+  readonly arriveBefore?: string;
 }
 
 /**
