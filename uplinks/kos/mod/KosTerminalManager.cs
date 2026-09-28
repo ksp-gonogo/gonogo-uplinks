@@ -90,7 +90,7 @@ namespace Gonogo.KosUplink
     /// <para><b>Uplink lease:</b> one holder per CPU, keyed by the caller's
     /// opaque lease token (<see cref="KosTerminalOpenArgs.LeaseToken"/>). A
     /// second <c>open</c> by a different token is rejected
-    /// (<see cref="CommandErrorCode.ModeUnavailable"/>): never a silent steal;
+    /// (<see cref="KosErrorCodes.TerminalHeld"/>): never a silent steal;
     /// keystrokes/resizes from a non-holder are rejected the same way.</para>
     /// </summary>
     internal sealed class KosTerminalManager
@@ -306,8 +306,8 @@ namespace Gonogo.KosUplink
             }
             if (_leases.TryGetValue(coreId, out var holder) && holder != leaseToken)
             {
-                // Q-P3-2: reject-with-notification, never a silent steal.
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                // Rejected with a reason, never a silent steal.
+                return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
             _leases[coreId] = leaseToken;
             // Seed a clean full repaint to the opener on the next poll.
@@ -320,7 +320,7 @@ namespace Gonogo.KosUplink
         {
             if (!HoldsLease(coreId, leaseToken))
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
             var screen = GetOrCreateSession(coreId).Screen;
             if (screen == null)
@@ -349,7 +349,7 @@ namespace Gonogo.KosUplink
         {
             if (!HoldsLease(coreId, leaseToken))
             {
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
             if (cols <= 0 || rows <= 0)
             {

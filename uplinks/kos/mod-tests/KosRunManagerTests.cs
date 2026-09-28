@@ -201,7 +201,7 @@ namespace GonogoKosUplink.Tests
             var result = mgr.ArmAndType(7, "req-1", () => false);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KosErrorCodes.NoTerminal, result.ErrorCode);
         }
 
         /// <summary>
@@ -232,7 +232,7 @@ namespace GonogoKosUplink.Tests
             var result = mgr.ArmAndType(7, "req-2", () => { typed = true; return true; });
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
+            Assert.Equal(KosErrorCodes.CpuBusy, result.ErrorCode);
             Assert.False(typed);
             // The first request's correlation survives the rejection.
             Assert.True(mgr.IsArmed(7));

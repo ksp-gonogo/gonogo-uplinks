@@ -402,7 +402,7 @@ namespace Gonogo.KosUplink
                 // Guard: never type into a booting or busy prompt (spec §4(a)).
                 if (!proc.HasBooted || !(proc.GetScreen() is IInterpreter interp) || !interp.IsWaitingForCommand())
                 {
-                    return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                    return CommandResult.Fail(KosErrorCodes.CpuBusy);
                 }
 
                 // Arming, typing, and disarming again when there was no window

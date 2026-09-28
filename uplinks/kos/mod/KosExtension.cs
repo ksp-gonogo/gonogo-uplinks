@@ -250,6 +250,7 @@ namespace Gonogo.KosUplink
                 // on the main thread.
                 new CommandDeclaration { Command = KosChannels.RunCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}" },
             },
+            ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
         };
 
         // ----------------------------------------------------------------

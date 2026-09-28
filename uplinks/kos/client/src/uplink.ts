@@ -3,7 +3,8 @@
 // registers stamps this handle as `owner`, so the widget picker's mod
 // search tags (effectiveSearchTags) derive "kos" automatically instead of
 // relying on a per-widget field someone has to remember to set.
-import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
+import { KOS_ERROR_CODES } from "./__generated__/error-codes.js";
 
 /**
  * This client's one version line, and it must equal `package.json`'s. The
@@ -25,3 +26,5 @@ export const KOS = defineUplinkClient({
     "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no " +
     "proxy to run, and dispatches kerboscripts to a chosen CPU.",
 });
+
+registerErrorCodes(KOS_ERROR_CODES);

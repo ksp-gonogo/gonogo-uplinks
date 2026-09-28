@@ -70,3 +70,11 @@ Interactive or read-only terminal for a kOS CPU, streamed in-process over the Up
 
 ![A script running: kOS redraws the screen in chunks and the terminal repaints as they land](docs/assets/boot-then-run--default.gif)
 
+## Error codes
+
+| Code | Refines | Reads as | Meaning |
+| --- | --- | --- | --- |
+| `kos.terminalHeld` | `notClearToProceed` | another screen is using this CPU's terminal | Another screen holds this CPU's terminal. A terminal is leased to one screen at a time and never taken from it; it frees when that screen closes it. |
+| `kos.cpuBusy` | `notClearToProceed` | the CPU is busy and not at its prompt | The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one. |
+| `kos.noTerminal` | `capabilityMismatch` | that CPU has no terminal window to type into | The CPU has no terminal window a script could be typed into. |
+

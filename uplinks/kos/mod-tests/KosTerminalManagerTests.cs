@@ -164,7 +164,7 @@ namespace GonogoKosUplink.Tests
 
             var second = h.Manager.Open(7, "tokenB");
             Assert.False(second.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, second.ErrorCode);
+            Assert.Equal(KosErrorCodes.TerminalHeld, second.ErrorCode);
 
             // The original holder still owns the lease (no silent steal).
             Assert.True(h.Manager.Keystroke(7, "tokenA", "x").Success);
@@ -191,7 +191,7 @@ namespace GonogoKosUplink.Tests
 
             var reject = h.Manager.Keystroke(7, "wrong", "x");
             Assert.False(reject.Success);
-            Assert.Equal(CommandErrorCode.ModeUnavailable, reject.ErrorCode);
+            Assert.Equal(KosErrorCodes.TerminalHeld, reject.ErrorCode);
             Assert.Single(h.Screens[7].Typed);
         }
 

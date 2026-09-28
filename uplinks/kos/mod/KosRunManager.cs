@@ -105,15 +105,13 @@ namespace Gonogo.KosUplink
                 // KosComputeSession's FIFO queue) is expected to prevent this
                 // in the steady state: reject rather than silently clobbering
                 // the earlier request's correlation.
-                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult.Fail(KosErrorCodes.CpuBusy);
             }
 
             if (!type())
             {
                 Cancel(coreId);
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "That CPU has no terminal window to type into, so the script was never run.");
+                return CommandResult.Fail(KosErrorCodes.NoTerminal);
             }
 
             return CommandResult.Ok();

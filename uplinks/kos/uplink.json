@@ -20,7 +20,8 @@
       "SITREP_KOS_TOPICMAP_OUT": "topic-map.ts",
       "SITREP_KOS_UNITMAP_OUT": "units.ts",
       "SITREP_KOS_UNITJSON_OUT": "units.json",
-      "SITREP_KOS_COMMANDMAP_OUT": "command-map.ts"
+      "SITREP_KOS_COMMANDMAP_OUT": "command-map.ts",
+      "SITREP_KOS_ERRORCODES_OUT": "error-codes.ts"
     }
   },
   "csharpNamespace": "Gonogo.KosUplink",
