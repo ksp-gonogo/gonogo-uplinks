@@ -387,16 +387,23 @@
       "strategyId": "id"
     },
     "Rp1LeaderEntry": {
+      "active": "flag",
+      "appointBlockedReason": "text",
+      "canAppoint": "flag",
       "canRemoveFromUt": "ut",
       "deactivateReputation": "rep",
+      "department": "text",
+      "dismissSubsidyLossPerDay": "f/day",
       "freeToRemoveFromUt": "ut",
       "reactivateCooldown": "s",
+      "rehireFromUt": "ut",
       "removeOnDeactivate": "flag",
       "setupConfidence": "confidence",
       "setupFunds": "funds",
       "setupReputation": "rep",
       "setupScience": "science",
-      "strategyId": "id"
+      "strategyId": "id",
+      "title": "text"
     },
     "Rp1OperationEntry": {
       "associatedVesselId": "id",
@@ -824,6 +831,25 @@
     },
     "rp1.lcPricing": {
       "additionalPadCostMult": "ratio"
+    },
+    "rp1.leaders": {
+      "active": "flag",
+      "appointBlockedReason": "text",
+      "canAppoint": "flag",
+      "canRemoveFromUt": "ut",
+      "deactivateReputation": "rep",
+      "department": "text",
+      "dismissSubsidyLossPerDay": "f/day",
+      "freeToRemoveFromUt": "ut",
+      "reactivateCooldown": "s",
+      "rehireFromUt": "ut",
+      "removeOnDeactivate": "flag",
+      "setupConfidence": "confidence",
+      "setupFunds": "funds",
+      "setupReputation": "rep",
+      "setupScience": "science",
+      "strategyId": "id",
+      "title": "text"
     },
     "rp1.operations": {
       "associatedVesselId": "id",

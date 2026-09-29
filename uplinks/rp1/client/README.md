@@ -33,6 +33,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.facilities` | `Rp1FacilityEntry[]` | lossy-latest | delayed |
 | `rp1.fundTarget` | `Rp1FundTarget` | lossy-latest | delayed |
 | `rp1.lcPricing` | `Rp1LcPricing` | lossy-latest | delayed |
+| `rp1.leaders` | `Rp1LeaderEntry[]` | lossy-latest | delayed |
 | `rp1.operations` | `Rp1OperationEntry[]` | lossy-latest | delayed |
 | `rp1.pads` | `Rp1PadEntry[]` | lossy-latest | delayed |
 | `rp1.personnel` | `Rp1Personnel` | lossy-latest | delayed |
@@ -66,7 +67,6 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1FundingCurveKey` | `frac` ratio, `inTangent` 1, `outTangent` 1, `paidFraction` ratio |
 | `Rp1HireTarget` | `active` flag, `currentCount` count, `isResearch` flag, `lcId` id, `leftToHire` count, `targetCount` count, `timeLeft` s |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
-| `Rp1LeaderEntry` | `canRemoveFromUt` ut, `deactivateReputation` rep, `freeToRemoveFromUt` ut, `reactivateCooldown` s, `removeOnDeactivate` flag, `setupConfidence` confidence, `setupFunds` funds, `setupReputation` rep, `setupScience` science, `strategyId` id |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
@@ -175,6 +175,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 5 |  |
+| `rp1-leader-detail` | `strategies.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
@@ -201,6 +202,8 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 ![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid's own Upgrade controls read Blocked, because the tier they would buy is not for sale under RP-1 at all](docs/assets/facility-upgrades-at-centre--default.png)
 
 ![An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon](docs/assets/early-career--default.png)
+
+![A serving leader: Dismiss carries the reputation RP-1 would take right now, what that costs in subsidy per day, when dismissal stops costing anything and the re-hire cooldown it starts](docs/assets/serving-leader--default.png)
 
 ![LC-1 rushing with its detail open, so the terms in force and the way out of rush mode are both on screen; LC-2 stays collapsed, which is what a complex costs to read when nobody is asking about it](docs/assets/complexes-rushing--default.png)
 
@@ -237,7 +240,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](docs/assets/avionics-controls-locked--default.png)
 
-![The tab strip this Uplink's contribution puts on the Administration Building: Programs is the screen it names, the host draws the strip and lists the Programs department under it with its own Activate and Deactivate controls, and the Leaders no screen has claimed stay reachable on Other rather than disappearing. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here](docs/assets/programs-screen--default.png)
+![The tab strip this Uplink's contribution puts on the Administration Building: Programs, Leaders and Finances are the screens it names, and the host draws the strip and lists each screen's departments under it. The leader departments list on Leaders, whose own body carries Appoint and Dismiss. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here](docs/assets/programs-screen--default.png)
 
 ![RP-1's three core stats in the Astronaut Complex's own strip: what each hire adds to upkeep per day, beside the price of the next one, how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before](docs/assets/crew-core-stats--default.png)
 

@@ -2670,6 +2670,112 @@ export interface Rp1BuildableComplex
 	refusals?: string[] | null;
 }
 /**
+* One RP-1 leader: whether RP-1 would appoint it now, what appointing it
+* charges, and what dismissing it would take.
+*
+* **Why this is not on `career.status.strategies`.** That entry is built by
+* core from plain stock `Strategy` getters, and every field here lives on
+* `StrategyConfigRP0`, which core may not reach. Publishing them beside the
+* stock entry would put an RP-1 type in core's walk; publishing them here
+* keeps the boundary and lets a client join on `Rp1LeaderEntry.strategyId` for
+* the description and effect lines core already carries.
+*
+* **Why the setup costs are here.** The stock entry carries
+* `initialCostFunds`, `initialCostScience` and `initialCostReputation`, and
+* RP-1 NEVER CHARGES THEM: `PerformActivate` spends `ConfigRP0.SetupCosts` and
+* nothing else. On shipped content both are zero, so a control reading the
+* stock fields as "the price" is right by accident and would go on saying "no
+* cost" the moment a config set one.
+*
+* One row per leader on the career's roster, whether serving or not; a Program
+* is never a row. The dismissal fields are present only on a serving leader
+* and the appointment verdict only on one that is not, because each answers a
+* question only that state can ask.
+*/
+export interface Rp1LeaderEntry
+{
+	/**
+	* The leader's strategy, by the id `career.status.strategies.all[].id`
+	* publishes.
+	*/
+	strategyId?: string | null;
+	/** The leader's name, as RP-1's Leaders tab titles it. */
+	title?: string | null;
+	/**
+	* The department RP-1 hires it into, by the name
+	* `career.status.strategies.all[].department` carries.
+	*/
+	department?: string | null;
+	/** Whether the leader is serving now. */
+	active?: boolean | null;
+	/**
+	* Whether RP-1 would offer this leader for appointment now. Absent on a
+	* serving leader.
+	*
+	* RP-1's own answer to the three rules its Administration list applies and
+	* `CanBeActivated` does not: the leader is not disabled, its requirements are
+	* met (`IsUnlocked`), and it is not in a re-hire cooldown or dismissed for
+	* good (`IsAvailable`). `rp1.leader.appoint` asks the same question at the
+	* press and refuses with `Rp1LeaderEntry.appointBlockedReason`.
+	*/
+	canAppoint?: boolean | null;
+	/** Why `Rp1LeaderEntry.canAppoint` is false, in a sentence. */
+	appointBlockedReason?: string | null;
+	/**
+	* The instant a dismissed leader's re-hire cooldown ends. An INSTANT, so a UT.
+	* Absent when the leader was never dismissed or has no cooldown.
+	*/
+	rehireFromUt?: Value<"ut"> | null;
+	/** Funds RP-1 charges to appoint; zero when it charges none. */
+	setupFunds?: Value<"funds"> | null;
+	/** Science RP-1 charges to appoint. */
+	setupScience?: Value<"science"> | null;
+	/** Reputation RP-1 charges to appoint. */
+	setupReputation?: Value<"rep"> | null;
+	/** Confidence RP-1 charges to appoint. */
+	setupConfidence?: Value<"confidence"> | null;
+	/**
+	* The reputation dismissal costs RIGHT NOW, on a serving leader.
+	*
+	* RP-1's own `DeactivateCost()`, the figure dismissal takes. Never funds and
+	* never a refund, and a fraction of CURRENT reputation rather than a fixed
+	* figure, so it moves as reputation does: a flat 20% until the leader's least
+	* duration, then falling to zero over the removal penalty window. A client
+	* must show it at the moment of the decision rather than caching it.
+	*/
+	deactivateReputation?: Value<"rep"> | null;
+	/**
+	* What that reputation is worth in income: the subsidy per day RP-1 would pay
+	* at today's reputation less `Rp1LeaderEntry.deactivateReputation` subtracted
+	* from what it pays at today's, both from RP-1's own `FillSubsidyDetails`
+	* through the Subsidy query.
+	*
+	* Zero at or above the reputation where subsidy caps with room to spare, which
+	* is a real answer: that dismissal costs no income today.
+	*/
+	dismissSubsidyLossPerDay?: Value<"f/day"> | null;
+	/**
+	* Whether dismissing takes the leader off the roster, i.e. whether this is a
+	* decision that cannot be undone by re-appointing at once.
+	*/
+	removeOnDeactivate?: boolean | null;
+	/**
+	* How long after dismissal the leader can be hired again. An INTERVAL, so
+	* seconds rather than a UT. Zero on a leader that is removed for good.
+	*/
+	reactivateCooldown?: Value<"s"> | null;
+	/**
+	* The instant dismissal becomes possible at all, on a serving leader. An
+	* INSTANT, so a UT.
+	*/
+	canRemoveFromUt?: Value<"ut"> | null;
+	/**
+	* The instant dismissal stops costing reputation, on a serving leader. An
+	* INSTANT, so a UT.
+	*/
+	freeToRemoveFromUt?: Value<"ut"> | null;
+}
+/**
 * A standing instruction to keep hiring until the staff reaches a number, and
 * how far off it is.
 *
@@ -3871,62 +3977,4 @@ export interface Rp1ProgramCompleteArgs
 	* `career.status.strategies.all[].id` both publish.
 	*/
 	strategyId?: string;
-}
-/**
-* What RP-1 charges for a leader, and what it costs to let one go.
-*
-* **Why this is not on `career.status.strategies`.** That entry is built by
-* core from plain stock `Strategy` getters, and every field here lives on
-* `StrategyConfigRP0`, which core may not reach. Publishing them beside the
-* stock entry would put an RP-1 type in core's walk; publishing them here
-* keeps the boundary and lets a client join on `Rp1LeaderEntry.strategyId`.
-*
-* **Why it exists at all.** The stock entry carries `initialCostFunds`,
-* `initialCostScience` and `initialCostReputation`, and RP-1 NEVER CHARGES
-* THEM: `PerformActivate` spends `ConfigRP0.SetupCosts` and nothing else.
-* Those stock fields are still a live GATE, because RP-1 leaves stock's
-* affordability arms in place, so both quantities matter and neither is dead.
-* They are simply different questions: one is what refuses you, the other is
-* what you pay.
-*
-* On shipped content both are zero, so a control reading the stock fields as
-* "the price" is right by accident and would go on saying "no setup cost" the
-* moment a config set one. That is a fact about today's CONTENT standing in
-* for a fact about our CODE, which is the shape this Uplink keeps finding.
-*/
-export interface Rp1LeaderEntry
-{
-	/**
-	* The strategy this prices, by the id `career.status.strategies.all[].id`
-	* publishes.
-	*/
-	strategyId?: string | null;
-	/** Funds RP-1 charges to appoint, absent when it charges none. */
-	setupFunds?: Value<"funds"> | null;
-	/** Science RP-1 charges to appoint. */
-	setupScience?: Value<"science"> | null;
-	/** Reputation RP-1 charges to appoint. */
-	setupReputation?: Value<"rep"> | null;
-	/** Confidence RP-1 charges to appoint. */
-	setupConfidence?: Value<"confidence"> | null;
-	/**
-	* The reputation dismissal costs RIGHT NOW.
-	*
-	* Never funds and never a refund, and a fraction of CURRENT reputation rather
-	* than a fixed figure, so it moves as reputation does: a flat share for the
-	* first thirty days, decaying over ten years. A client must therefore show it
-	* at the moment of the decision rather than caching it.
-	*/
-	deactivateReputation?: Value<"rep"> | null;
-	/**
-	* Whether dismissing starts a re-hire cooldown, i.e. whether this is a
-	* decision that cannot be undone by re-appointing.
-	*/
-	removeOnDeactivate?: boolean | null;
-	/** How long that cooldown lasts. An INTERVAL, so seconds rather than a UT. */
-	reactivateCooldown?: Value<"s"> | null;
-	/** The instant dismissal becomes possible at all. An INSTANT, so a UT. */
-	canRemoveFromUt?: Value<"ut"> | null;
-	/** The instant dismissal stops costing reputation. An INSTANT, so a UT. */
-	freeToRemoveFromUt?: Value<"ut"> | null;
 }

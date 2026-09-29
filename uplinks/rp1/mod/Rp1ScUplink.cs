@@ -103,6 +103,12 @@ namespace GonogoRp1Uplink
         public const string ResearchRatesTopic = "rp1.researchRates";
 
         /// <summary>
+        /// Every leader on the career's roster: whether RP-1 would appoint it now,
+        /// and what dismissing a serving one would take in reputation and income.
+        /// </summary>
+        public const string LeadersTopic = "rp1.leaders";
+
+        /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
         /// here whose subject is a craft in flight rather than the space centre,
         /// and the one that is <see cref="DelayRole.Delayed"/>.
@@ -111,10 +117,9 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Core's career channel, held at home, which carries the strategy roster
-        /// and the contract offers. The Subject of the two commands whose effect
-        /// lands there rather than on a channel of this Uplink's: appointing a
-        /// strategy, and the payload change that withdraws pending contract
-        /// offers. A literal because this Uplink cannot reference the core
+        /// and the contract offers. The Subject of the command whose effect lands
+        /// there rather than on a channel of this Uplink's: the payload change
+        /// that withdraws pending contract offers. A literal because this Uplink cannot reference the core
         /// provider that declares it.
         /// </summary>
         private const string CareerStatusSubject = "career.status";
@@ -145,6 +150,7 @@ namespace GonogoRp1Uplink
         /// subscription gate is for.
         /// </summary>
         private readonly Rp1ProgramsReflection _programs = new Rp1ProgramsReflection();
+        private readonly Rp1LeadersReflection _leaders = new Rp1LeadersReflection();
 
         /// <summary>
         /// RP-1's crew bookkeeping, on its own reader for the same reason Programs
@@ -496,6 +502,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _budgetBreakdownPublisher;
         private IChannelPublisher? _constructionRatesPublisher;
         private IChannelPublisher? _researchRatesPublisher;
+        private IChannelPublisher? _leadersPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -663,6 +670,7 @@ namespace GonogoRp1Uplink
                 AtHome(BudgetBreakdownTopic, absenceIsData: true),
                 AtHome(ConstructionRatesTopic, absenceIsData: true),
                 AtHome(ResearchRatesTopic, absenceIsData: true),
+                AtHome(LeadersTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -816,7 +824,7 @@ namespace GonogoRp1Uplink
             if (strategyModelResolved)
             {
                 commands.Add(Declare(Rp1StrategyCommands.AcceptCommand, ProgramsTopic));
-                commands.Add(Declare(Rp1StrategyCommands.AppointCommand, CareerStatusSubject));
+                commands.Add(Declare(Rp1StrategyCommands.AppointCommand, LeadersTopic));
                 commands.Add(Declare(Rp1StrategyCommands.CompleteCommand, ProgramsTopic));
             }
             if (targetModelResolved)
@@ -1444,6 +1452,7 @@ namespace GonogoRp1Uplink
             _budgetBreakdownPublisher = host.Publisher(BudgetBreakdownTopic);
             _constructionRatesPublisher = host.Publisher(ConstructionRatesTopic);
             _researchRatesPublisher = host.Publisher(ResearchRatesTopic);
+            _leadersPublisher = host.Publisher(LeadersTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1558,6 +1567,10 @@ namespace GonogoRp1Uplink
                 CaptureResearchRatesOnMain,
                 HandleResearchRatesOnCourier,
                 ResearchRatesTopic);
+            host.AddSampledSource(
+                CaptureLeadersOnMain,
+                HandleLeadersOnCourier,
+                LeadersTopic);
 
             // UNGATED, and the two captures above say why by contrast: their whole
             // effect is their return value, and this one's is not. It feeds the
@@ -1973,6 +1986,33 @@ namespace GonogoRp1Uplink
             _constructionRatesPublisher?.Publish(Rp1ConstructionRatesCapture.Build(cap.Raw), cap.Ut);
         }
 
+        /// <summary>
+        /// MAIN-THREAD capture of RP-1's leaders. On the main thread because each
+        /// leader's requirements predicate reaches KSP's own tech, contract and
+        /// facility state; see <see cref="Rp1LeadersReflection"/>'s header.
+        /// </summary>
+        /// <remarks>
+        /// Returns an unread raw carrying the tick's UT rather than null, for the
+        /// reason <see cref="CaptureProgramsOnMain"/> spells out.
+        /// </remarks>
+        internal object? CaptureLeadersOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            return _leaders.Read(ut) ?? new Rp1LeadersRaw { Ut = ut };
+        }
+
+        /// <summary>COURIER-THREAD handle: map to wire dicts and publish. No game API.</summary>
+        internal void HandleLeadersOnCourier(object? captured)
+        {
+            if (!(captured is Rp1LeadersRaw raw))
+            {
+                return;
+            }
+            var rows = Rp1LeadersCapture.BuildLeaders(raw);
+            Rp1RowBudget.Record(rows?.Count ?? 0, raw.Ut);
+            _leadersPublisher?.Publish(rows, raw.Ut);
+        }
+
         private sealed class Rp1ConstructionRatesCaptureData
         {
             public double Ut;
@@ -2021,6 +2061,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("SpaceCenterManagement", _rp1.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("Confidence", _rp1.ConfidenceTypeResolved ? "present" : "absent"),
                 new UplinkHealthFact("ProgramHandler", _programs.IsAvailable ? "resolved" : "type not found"),
+                new UplinkHealthFact("leaders", _leaders.IsAvailable ? "resolved" : "RP-1 strategy types not found"),
                 new UplinkHealthFact("CrewHandler", _crew.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("budget", _budget.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact("budget breakdown", _budgetBreakdown.IsAvailable ? "resolved" : "maintenance or currency types not found"),

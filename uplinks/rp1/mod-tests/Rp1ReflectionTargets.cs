@@ -478,6 +478,15 @@ namespace GonogoRp1Uplink.Tests
             // Two parameters, the step count defaulted to RP-1's one-a-month.
             new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "GetAverageSubsidyForPeriod", 2, true, "Rp1BudgetReflection"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1BudgetReflection"),
+            // rp1.leaders and the appoint refusal. IsUnlocked and IsAvailable are
+            // the two rules RP-1's Administration list applies outside
+            // CanBeActivated; DeactivateCost is the reputation DeactivateOverride
+            // takes; the subsidy pair prices that reputation as income.
+            new Rp1MethodTarget(Rp0, "RP0.StrategyConfigRP0", "IsUnlocked", 0, false, "Rp1LeadersReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.StrategyConfigRP0", "IsAvailable", 1, false, "Rp1LeadersReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.StrategyRP0", "DeactivateCost", 0, false, "Rp1LeadersReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "FillSubsidyDetails", 3, true, "Rp1LeadersReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1LeadersReflection"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Rep", 3, true, "Rp1BudgetReflection"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Rate", 2, true, "Rp1BudgetReflection"),
             // RP-1's own net, called rather than reproduced.
@@ -782,6 +791,9 @@ namespace GonogoRp1Uplink.Tests
             ["Strategies"] = "stock StrategySystem.Strategies, the roster walked to resolve a strategy by name",
             ["Name"] = "stock StrategyConfig.Name, the id a command names a strategy by, and the id career.status.strategies publishes",
             ["Config"] = "stock Strategies.Strategy.Config, which is where that id lives: the Strategy itself has no Name of its own",
+            ["DepartmentName"] = "stock Strategies.Strategy.DepartmentName, the department a leader is listed under",
+            ["DateActivated"] = "stock Strategies.Strategy.DateActivated, from which a leader's dismissal windows are counted",
+            ["LeastDuration"] = "stock Strategies.Strategy.LeastDuration, below which stock's CanBeDeactivated refuses a dismissal",
             ["Title"] = "stock Strategies.Strategy.Title, the display string, matched as a fallback for a caller holding one instead of an id",
             // KSP's own facility and difficulty tables. GetStrategyCommitRange is
             // the method Administration.Start caches arm 3's ceiling from, and it
@@ -1518,6 +1530,21 @@ namespace GonogoRp1Uplink.Tests
             // Read after the deactivation, so a Program RP-1's own OnUnregister
             // has already completed is not completed a second time.
             Add("RP0.Programs.Program", "IsComplete", Rp1Reader.Bool, StrategyWrites);
+
+            // ── Leaders ────────────────────────────────────────────────────
+            const string Leaders = "Rp1LeadersReflection";
+            Add("RP0.StrategyRP0", "ConfigRP0", Rp1Reader.Presence, Leaders);
+            // Handed to IsAvailable, which reads -1 as serving.
+            Add("RP0.StrategyRP0", "DateDeactivated", Rp1Reader.Numeric, Leaders);
+            Add("RP0.StrategyRP0", "RemovePenaltyDuration", Rp1Reader.Numeric, Leaders);
+            Add("RP0.StrategyConfigRP0", "IsDisabled", Rp1Reader.Bool, Leaders);
+            Add("RP0.StrategyConfigRP0", "SetupCosts", Rp1Reader.Presence, Leaders);
+            Add("RP0.StrategyConfigRP0", "RemoveOnDeactivate", Rp1Reader.Bool, Leaders);
+            Add("RP0.StrategyConfigRP0", "RemoveOnDeactivateTag", Rp1Reader.Text, Leaders);
+            Add("RP0.StrategyConfigRP0", "ReactivateCooldown", Rp1Reader.Numeric, Leaders);
+            // The dismissal stamps IsAvailable compares, read to date a cooldown.
+            Add("RP0.Programs.ProgramHandler", "ActivatedStrategies", Rp1Reader.Presence, Leaders);
+            Add("RP0.MaintenanceHandler+SubsidyDetails", "subsidy", Rp1Reader.Numeric, Leaders);
             Add("RP0.Programs.ProgramHandler", "Programs", Rp1Reader.Presence, Programs, @static: true);
             Add("RP0.Programs.ProgramHandler", "Settings", Rp1Reader.Presence, Programs, @static: true);
             Add("RP0.Programs.ProgramHandler", "ProgramModifiers", Rp1Reader.Presence, Programs, @static: true);

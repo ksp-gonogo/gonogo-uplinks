@@ -1,21 +1,31 @@
 {
   "_meta": {
-    "notes": "A representative slice of an RP-1 Administration Building: six Programs, a hired Leader, four hireable ones and two of the six leaderLocked* placeholders. Trimmed from rp1-full-admin-building.json beside it, which carries the full 91 rows; this one is sized so the whole tab strip and both screens fit one picture. Descriptions are truncated for the same reason."
+    "notes": "The Administration Building slice programs-screen.json carries, with the rp1.leaders rows RP-1 would publish for it. The dismissal figures are illustrative, in the shape RP-1's DeactivateCost and FillSubsidyDetails produce."
   },
   "_scene": {
     "hero": true,
-    "contribution": "rp1:programs-screen",
+    "augment": "rp1-leader-detail",
     "hostWidget": "strategies",
     "size": {
-      "w": 9,
-      "h": 16
+      "w": 8,
+      "h": 14
     },
-    "caption": "The tab strip this Uplink's contribution puts on the Administration Building: Programs, Leaders and Finances are the screens it names, and the host draws the strip and lists each screen's departments under it. The leader departments list on Leaders, whose own body carries Appoint and Dismiss. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here",
+    "caption": "A serving leader: Dismiss carries the reputation RP-1 would take right now, what that costs in subsidy per day, when dismissal stops costing anything and the re-hire cooldown it starts",
+    "before": [
+      {
+        "press": "Leaders"
+      },
+      {
+        "rest": true
+      }
+    ],
     "paints": [
-      "Programs",
-      "Leaders",
-      "X-Plane Research",
-      "Early Rocket Development"
+      "LEADER DETAIL",
+      "Vladimir Chelomey",
+      "SERVING",
+      "DISMISS",
+      "reputation now",
+      "Free to dismiss"
     ]
   },
   "_stream": {
@@ -24,6 +34,144 @@
       {
         "topic": "rp1.available",
         "payload": true
+      },
+      {
+        "topic": "rp1.leaders",
+        "payload": [
+          {
+            "strategyId": "leaderChelomeyAdmin",
+            "title": "Vladimir Chelomey",
+            "department": "Administration",
+            "active": true,
+            "canAppoint": null,
+            "appointBlockedReason": null,
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": 162.4,
+            "dismissSubsidyLossPerDay": 10.9,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": 6100000,
+            "freeToRemoveFromUt": 321676000
+          },
+          {
+            "strategyId": "leaderKorolevAdmin",
+            "title": "Sergei Korolev",
+            "department": "Administration",
+            "active": false,
+            "canAppoint": true,
+            "appointBlockedReason": null,
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          },
+          {
+            "strategyId": "leaderRosenAdmin",
+            "title": "Milton Rosen",
+            "department": "Administration",
+            "active": false,
+            "canAppoint": true,
+            "appointBlockedReason": null,
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          },
+          {
+            "strategyId": "leaderVonBraunAdmin",
+            "title": "Wernher von Braun",
+            "department": "Administration",
+            "active": false,
+            "canAppoint": true,
+            "appointBlockedReason": null,
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          },
+          {
+            "strategyId": "leaderDhawanAdmin",
+            "title": "Satish Dhawan",
+            "department": "Administration",
+            "active": false,
+            "canAppoint": true,
+            "appointBlockedReason": null,
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          },
+          {
+            "strategyId": "leaderLockedAdmin",
+            "title": "Reach the Karman Line First",
+            "department": "Administration",
+            "active": false,
+            "canAppoint": false,
+            "appointBlockedReason": "RP-1 has not unlocked this leader: its requirements are not met yet",
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          },
+          {
+            "strategyId": "leaderLockedContractor",
+            "title": "Research MatSci First",
+            "department": "MainContractor",
+            "active": false,
+            "canAppoint": false,
+            "appointBlockedReason": "RP-1 has not unlocked this leader: its requirements are not met yet",
+            "rehireFromUt": null,
+            "setupFunds": 0,
+            "setupScience": 0,
+            "setupReputation": 0,
+            "setupConfidence": 0,
+            "deactivateReputation": null,
+            "dismissSubsidyLossPerDay": null,
+            "removeOnDeactivate": true,
+            "reactivateCooldown": 31557600,
+            "canRemoveFromUt": null,
+            "freeToRemoveFromUt": null
+          }
+        ]
       },
       {
         "topic": "career.status",

@@ -46,7 +46,7 @@ namespace GonogoRp1Uplink.Tests
             // strategy's id and where the command looks for it.
             var leader = new RP0.StrategyRP0
             {
-                Config = new Strategies.StrategyConfig { Name = name, Title = name },
+                Config = new RP0.StrategyConfigRP0 { Name = name, Title = name },
             };
             Seed(leader);
             return leader;
@@ -424,7 +424,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var leader = new RP0.StrategyRP0WithUnreadableFactor
             {
-                Config = new Strategies.StrategyConfig { Name = "leaderKorolev", Title = "Korolev" },
+                Config = new RP0.StrategyConfigRP0 { Name = "leaderKorolev", Title = "Korolev" },
             };
             Seed(leader);
             GameVariables.Instance = new GameVariables { StrategyCommitRange = 0.5f };
@@ -451,7 +451,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var leader = new RP0.StrategyRP0WithUnreadableFactor
             {
-                Config = new Strategies.StrategyConfig { Name = "leaderKorolev", Title = "Korolev" },
+                Config = new RP0.StrategyConfigRP0 { Name = "leaderKorolev", Title = "Korolev" },
             };
             Seed(leader);
             GameVariables.Instance = null;

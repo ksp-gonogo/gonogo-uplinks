@@ -37,6 +37,7 @@ import type {
   Rp1FundingCurveEntry,
   Rp1FundTarget,
   Rp1LcPricing,
+  Rp1LeaderEntry,
   Rp1OperationEntry,
   Rp1PadEntry,
   Rp1Personnel,
@@ -329,6 +330,14 @@ export const RP1_CONSTRUCTION_RATES_TOPIC = "rp1.constructionRates";
  */
 export const RP1_RESEARCH_RATES_TOPIC = "rp1.researchRates";
 
+/**
+ * Every leader on the career's roster: whether RP-1 would appoint it now and,
+ * when it would not, why; and for a serving one, the reputation dismissing it
+ * takes right now, what that reputation is worth in subsidy per day, and the
+ * re-hire cooldown that follows.
+ */
+export const RP1_LEADERS_TOPIC = "rp1.leaders";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "rp1.available": boolean;
@@ -362,6 +371,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.budgetBreakdown": Rp1BudgetBreakdown;
     "rp1.constructionRates": Rp1ConstructionRates;
     "rp1.researchRates": Rp1ResearchRates;
+    "rp1.leaders": Rp1LeaderEntry[];
   }
 }
 
@@ -396,6 +406,7 @@ registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
 registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
 registerBarePrimitiveTopic(RP1_RESEARCH_RATES_TOPIC);
+registerBarePrimitiveTopic(RP1_LEADERS_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both
@@ -512,4 +523,7 @@ export type _ResolvesRp1ConstructionRates = Expect<
 >;
 export type _ResolvesRp1ResearchRates = Expect<
   Equal<TopicPayload<"rp1.researchRates">, Rp1ResearchRates>
+>;
+export type _ResolvesRp1Leaders = Expect<
+  Equal<TopicPayload<"rp1.leaders">, Rp1LeaderEntry[]>
 >;

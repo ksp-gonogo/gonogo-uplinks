@@ -19,6 +19,7 @@ import {
   FINANCES_SCREEN,
   FINANCES_SCREEN_ID,
 } from "../AdminBuilding/financesScreen.js";
+import { LEADERS_SCREEN_ID } from "../AdminBuilding/leadersScreen.js";
 import {
   PROGRAMS_SCREEN_ID,
   RP1_ADMIN_SCREENS,
@@ -77,9 +78,10 @@ describe("Finances screen", () => {
     expect(Object.isFrozen(FINANCES_SCREEN[0])).toBe(true);
   });
 
-  it("is contributed after Programs, in the same frozen entry list", () => {
+  it("is contributed after Programs and Leaders, in the same frozen entry list", () => {
     expect(RP1_ADMIN_SCREENS.map((screen) => screen.id)).toEqual([
       PROGRAMS_SCREEN_ID,
+      LEADERS_SCREEN_ID,
       FINANCES_SCREEN_ID,
     ]);
     expect(Object.isFrozen(RP1_ADMIN_SCREENS)).toBe(true);

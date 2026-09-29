@@ -9,10 +9,10 @@
       "w": 9,
       "h": 16
     },
-    "caption": "The Programs screen at the scale RP-1 actually reaches: all 91 rows of a career's Administration Building, 31 Programs and 60 Leaders across six departments, with the Leaders no screen claims swept onto Other.",
+    "caption": "The Programs screen at the scale RP-1 actually reaches: all 91 rows of a career's Administration Building, 31 Programs and 60 Leaders across six departments, with the Leaders listed on their own screen.",
     "paints": [
       "Programs",
-      "Other",
+      "Leaders",
       "X-Plane Research"
     ]
   },

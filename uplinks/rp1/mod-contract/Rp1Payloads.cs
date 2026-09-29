@@ -2460,40 +2460,85 @@ public sealed class Rp1BuildableComplex
 }
 
 /// <summary>
-/// What RP-1 charges for a leader, and what it costs to let one go.
+/// One RP-1 leader: whether RP-1 would appoint it now, what appointing it
+/// charges, and what dismissing it would take.
 /// </summary>
 /// <remarks>
 /// <para><b>Why this is not on <c>career.status.strategies</c>.</b> That entry is
 /// built by core from plain stock <c>Strategy</c> getters, and every field here
 /// lives on <c>StrategyConfigRP0</c>, which core may not reach. Publishing them
 /// beside the stock entry would put an RP-1 type in core's walk; publishing them
-/// here keeps the boundary and lets a client join on <see cref="StrategyId"/>.</para>
+/// here keeps the boundary and lets a client join on <see cref="StrategyId"/>
+/// for the description and effect lines core already carries.</para>
 ///
-/// <para><b>Why it exists at all.</b> The stock entry carries
+/// <para><b>Why the setup costs are here.</b> The stock entry carries
 /// <c>initialCostFunds</c>, <c>initialCostScience</c> and
 /// <c>initialCostReputation</c>, and RP-1 NEVER CHARGES THEM:
 /// <c>PerformActivate</c> spends <c>ConfigRP0.SetupCosts</c> and nothing else.
-/// Those stock fields are still a live GATE, because RP-1 leaves stock's
-/// affordability arms in place, so both quantities matter and neither is dead.
-/// They are simply different questions: one is what refuses you, the other is
-/// what you pay.</para>
+/// On shipped content both are zero, so a control reading the stock fields as
+/// "the price" is right by accident and would go on saying "no cost" the moment
+/// a config set one.</para>
 ///
-/// <para>On shipped content both are zero, so a control reading the stock fields
-/// as "the price" is right by accident and would go on saying "no setup cost"
-/// the moment a config set one. That is a fact about today's CONTENT standing in
-/// for a fact about our CODE, which is the shape this Uplink keeps finding.</para>
+/// <para>One row per leader on the career's roster, whether serving or not; a
+/// Program is never a row. The dismissal fields are present only on a serving
+/// leader and the appointment verdict only on one that is not, because each
+/// answers a question only that state can ask.</para>
 /// </remarks>
 [SitrepContract]
+[SitrepTopic("rp1.leaders", isArray: true)]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
 public class Rp1LeaderEntry
 {
     /// <summary>
-    /// The strategy this prices, by the id
+    /// The leader's strategy, by the id
     /// <c>career.status.strategies.all[].id</c> publishes.
     /// </summary>
     [SitrepUnit(Units.Id)]
     public string? StrategyId { get; set; }
 
-    /// <summary>Funds RP-1 charges to appoint, absent when it charges none.</summary>
+    /// <summary>The leader's name, as RP-1's Leaders tab titles it.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// The department RP-1 hires it into, by the name
+    /// <c>career.status.strategies.all[].department</c> carries.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? Department { get; set; }
+
+    /// <summary>Whether the leader is serving now.</summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? Active { get; set; }
+
+    /// <summary>
+    /// Whether RP-1 would offer this leader for appointment now. Absent on a
+    /// serving leader.
+    ///
+    /// <para>RP-1's own answer to the three rules its Administration list
+    /// applies and <c>CanBeActivated</c> does not: the leader is not disabled,
+    /// its requirements are met (<c>IsUnlocked</c>), and it is not in a re-hire
+    /// cooldown or dismissed for good (<c>IsAvailable</c>).
+    /// <c>rp1.leader.appoint</c> asks the same question at the press and refuses
+    /// with <see cref="AppointBlockedReason"/>.</para>
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? CanAppoint { get; set; }
+
+    /// <summary>Why <see cref="CanAppoint"/> is false, in a sentence.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? AppointBlockedReason { get; set; }
+
+    /// <summary>
+    /// The instant a dismissed leader's re-hire cooldown ends. An INSTANT, so a
+    /// UT. Absent when the leader was never dismissed or has no cooldown.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? RehireFromUt { get; set; }
+
+    /// <summary>Funds RP-1 charges to appoint; zero when it charges none.</summary>
     [SitrepUnit(Sitrep.Contract.Units.Funds)]
     public double? SetupFunds { get; set; }
 
@@ -2510,40 +2555,56 @@ public class Rp1LeaderEntry
     public double? SetupConfidence { get; set; }
 
     /// <summary>
-    /// The reputation dismissal costs RIGHT NOW.
+    /// The reputation dismissal costs RIGHT NOW, on a serving leader.
     ///
-    /// <para>Never funds and never a refund, and a fraction of CURRENT
-    /// reputation rather than a fixed figure, so it moves as reputation does: a
-    /// flat share for the first thirty days, decaying over ten years. A client
-    /// must therefore show it at the moment of the decision rather than caching
-    /// it.</para>
+    /// <para>RP-1's own <c>DeactivateCost()</c>, the figure dismissal takes.
+    /// Never funds and never a refund, and a fraction of CURRENT reputation
+    /// rather than a fixed figure, so it moves as reputation does: a flat 20%
+    /// until the leader's least duration, then falling to zero over the removal
+    /// penalty window. A client must show it at the moment of the decision
+    /// rather than caching it.</para>
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.Reputation)]
     public double? DeactivateReputation { get; set; }
 
     /// <summary>
-    /// Whether dismissing starts a re-hire cooldown, i.e. whether this is a
-    /// decision that cannot be undone by re-appointing.
+    /// What that reputation is worth in income: the subsidy per day RP-1 would
+    /// pay at today's reputation less <see cref="DeactivateReputation"/>
+    /// subtracted from what it pays at today's, both from RP-1's own
+    /// <c>FillSubsidyDetails</c> through the Subsidy query.
+    ///
+    /// <para>Zero at or above the reputation where subsidy caps with room to
+    /// spare, which is a real answer: that dismissal costs no income today.</para>
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.FundsPerDay)]
+    public double? DismissSubsidyLossPerDay { get; set; }
+
+    /// <summary>
+    /// Whether dismissing takes the leader off the roster, i.e. whether this is
+    /// a decision that cannot be undone by re-appointing at once.
     /// </summary>
     [SitrepUnit(Units.Flag)]
     public bool? RemoveOnDeactivate { get; set; }
 
     /// <summary>
-    /// How long that cooldown lasts. An INTERVAL, so seconds rather than a UT.
+    /// How long after dismissal the leader can be hired again. An INTERVAL, so
+    /// seconds rather than a UT. Zero on a leader that is removed for good.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.Seconds)]
     public double? ReactivateCooldown { get; set; }
 
     /// <summary>
-    /// The instant dismissal becomes possible at all. An INSTANT, so a UT.
+    /// The instant dismissal becomes possible at all, on a serving leader. An
+    /// INSTANT, so a UT.
     /// </summary>
-    [SitrepUnit("ut")]
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
     public double? CanRemoveFromUt { get; set; }
 
     /// <summary>
-    /// The instant dismissal stops costing reputation. An INSTANT, so a UT.
+    /// The instant dismissal stops costing reputation, on a serving leader. An
+    /// INSTANT, so a UT.
     /// </summary>
-    [SitrepUnit("ut")]
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
     public double? FreeToRemoveFromUt { get; set; }
 }
 

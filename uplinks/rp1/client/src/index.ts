@@ -17,6 +17,7 @@ import "./ContractPayload/index.js";
 import "./FacilityUpgrades/index.js";
 import "./FacilityUpgrades/facilityTiers.js";
 import "./Finances/index.js";
+import "./LeaderDetail/index.js";
 import "./KscComplexes/index.js";
 import "./KscConstruction/index.js";
 import "./LaunchComplexStatus/index.js";
@@ -51,6 +52,7 @@ export {
   RP1_FACILITY_UPGRADE_COMMAND,
 } from "./FacilityUpgrades/index.js";
 export { Finances } from "./Finances/index.js";
+export { LeaderDetail } from "./LeaderDetail/index.js";
 export {
   KscComplexes,
   RP1_COMPLEX_RUSH_COMMAND,

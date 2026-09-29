@@ -239,6 +239,18 @@ namespace GonogoRp1Uplink
                     $"\"{args!.StrategyId!.Trim()}\" is a Program rather than a leader; accept it with {AcceptCommand} and a speed");
             }
 
+            /*
+             * The rules RP-1 keeps outside CanBeActivated: requirements met, not
+             * in a re-hire cooldown, not dismissed for good. Its Administration
+             * screen applies them by leaving such a leader off the list, so the
+             * press here is the only place left to apply them.
+             */
+            var offered = Rp1LeadersReflection.AppointVerdict(strategy, handler);
+            if (offered.Refusal != null)
+            {
+                return CommandResult.Fail(CommandErrorCode.NotClearToProceed, offered.Refusal);
+            }
+
             var gate = Refusal(system, strategy, args?.Factor);
             if (gate != null) return gate;
 

@@ -52,6 +52,14 @@ namespace Strategies
 
         public double Factor { get; set; }
 
+        /// <summary>The department the strategy is listed under, by its config name.</summary>
+        public string DepartmentName { get; set; } = "";
+
+        public double DateActivated { get; set; }
+
+        /// <summary>How long stock refuses a dismissal after appointment.</summary>
+        public double LeastDuration { get; set; }
+
         public List<string> GroupTags { get; set; } = new List<string>();
 
         /// <summary>

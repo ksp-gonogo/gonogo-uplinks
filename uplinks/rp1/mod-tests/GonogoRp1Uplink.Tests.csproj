@@ -32,6 +32,8 @@
     <Compile Include="..\mod\Rp1ProgramsRaw.cs" />
     <Compile Include="..\mod\Rp1ProgramsMath.cs" />
     <Compile Include="..\mod\Rp1ProgramsCapture.cs" />
+    <Compile Include="..\mod\Rp1LeadersReflection.cs" />
+    <Compile Include="..\mod\Rp1LeadersCapture.cs" />
     <Compile Include="..\mod\Rp1ProgramsReflection.cs" />
     <Compile Include="..\mod\Rp1CrewRaw.cs" />
     <Compile Include="..\mod\Rp1CrewMath.cs" />

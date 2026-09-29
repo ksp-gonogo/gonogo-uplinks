@@ -1,5 +1,6 @@
 import { RP1 } from "../uplink.js";
 import { FINANCES_SCREEN } from "./financesScreen.js";
+import { LEADERS_SCREEN } from "./leadersScreen.js";
 
 /**
  * RP-1's Programs screen in the Administration Building.
@@ -46,6 +47,7 @@ export const PROGRAMS_SCREEN = Object.freeze([
 /** Every screen RP-1 adds to the building, in one entry list. */
 export const RP1_ADMIN_SCREENS = Object.freeze([
   ...PROGRAMS_SCREEN,
+  ...LEADERS_SCREEN,
   ...FINANCES_SCREEN,
 ]);
 
