@@ -104,6 +104,7 @@ function mount() {
 async function present(
   fixture: ReturnType<typeof setupStreamFixture>,
   {
+    breakdown = undefined as Record<string, unknown> | undefined,
     career = undefined as Record<string, unknown> | undefined,
     catalogue = [PAIR, SOLO],
     courses = [] as Record<string, unknown>[],
@@ -111,6 +112,9 @@ async function present(
     program = {} as Record<string, unknown>,
     roster = [rosterRow(LUDREY), rosterRow(NEDCAS)],
   }: {
+    /* RP-1's budget breakdown, for the training fees. Undefined by default,
+       for the reason `career` is. */
+    breakdown?: Record<string, unknown>;
     /* The career's own economy. Undefined by default, because a save with no
        RP-1 economy reading is a real state and most tests here are not about
        it. */
@@ -138,6 +142,9 @@ async function present(
     fixture.emit("rp1.trainingCatalogue", catalogue);
     if (career !== undefined) {
       fixture.emit("career.status", career);
+    }
+    if (breakdown !== undefined) {
+      fixture.emit("rp1.budgetBreakdown", breakdown);
     }
   });
 }
@@ -793,5 +800,58 @@ describe("the way onto a course, in the order an operator meets it", () => {
 
     await screen.findByRole("button", { name: LUDREY });
     expect(visibleText()).not.toContain("Upkeep");
+  });
+});
+
+describe("what the course adds per day", () => {
+  /** Signed as the mod sends it: a fee is money going out, so negative. */
+  const FEES = {
+    trainingFees: [
+      { templateId: "tt-gemini", perStudent: { day: -300 } },
+      { templateId: "tt-mercury", perStudent: { day: -120 } },
+    ],
+  };
+
+  /** Nobody picked yet: the fee the pick will multiply. */
+  it("quotes the picked training's fee per student before anyone is picked", async () => {
+    const { fixture } = mount();
+    await present(fixture, { breakdown: FEES });
+
+    await screen.findByRole("button", { name: LUDREY });
+    expect(visibleText()).toContain("Course");
+    expect(visibleText()).toMatch(/300\s*f\/day per student/);
+  });
+
+  it("multiplies the fee by the students picked", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await present(fixture, { breakdown: FEES });
+
+    await pick(user, LUDREY, NEDCAS);
+    expect(visibleText()).toMatch(/600\s*f\/day · 300\s*f\/day per student/);
+  });
+
+  it("follows the training that was picked", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await present(fixture, { breakdown: FEES });
+
+    await user.click(
+      await screen.findByRole("button", { name: "Proficiency: Mercury-Redstone" }),
+    );
+    await pick(user, LUDREY);
+    expect(visibleText()).toMatch(/Course\s*120\s*f\/day/);
+    expect(visibleText()).not.toContain("per student");
+  });
+
+  /** A fee nobody sent is not a free course. */
+  it("draws no course line while the fee is unread", async () => {
+    const { fixture } = mount();
+    await present(fixture, {
+      breakdown: { trainingFees: [{ templateId: "tt-mercury", perStudent: { day: -120 } }] },
+    });
+
+    await screen.findByRole("button", { name: LUDREY });
+    expect(visibleText()).not.toContain("f/day");
   });
 });

@@ -164,7 +164,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-crew-schedule` | `astronaut-complex.crew` | – |  | 2 |  |
 | `rp1-crew-training-badge` | `astronaut-complex.crew-badge` | `rp1.available`, `rp1.crew` |  | 1 |  |
 | `rp1-training-courses` | `astronaut-complex.training` | `rp1.available`, `rp1.training`, `rp1.crew` |  | 2 |  |
-| `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status` |  | 3 |  |
+| `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 3 |  |
@@ -187,7 +187,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![One course two kerbals share, carrying its own progress, the date the course ends, the later date its crew comes free, and RP-1's two ways off it: one cancel that ends it for both and one removal per student, with the roster rows above stating only where each kerbal stands](docs/assets/crew-training-both-ways-out--default.png)
 
-![Two of three idle nauts picked for Gemini, which seats exactly two: the crew fits its bounds, so the enrolment is one press away and the third name is still there to swap in](docs/assets/crew-enrolment-ready--default.png)
+![Two of three idle nauts picked for Gemini, which seats exactly two: the crew fits its bounds, so the enrolment is one press away, priced at what the course adds per day, and the third name is still there to swap in](docs/assets/crew-enrolment-ready--default.png)
 
 ![The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions](docs/assets/contract-payload--default.png)
 
@@ -225,14 +225,14 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
 | `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
-| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading` | only while `rp1` |
+| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](docs/assets/avionics-controls-locked--default.png)
 
 ![The tab strip this Uplink's contribution puts on the Administration Building: Programs is the screen it names, the host draws the strip and lists the Programs department under it with its own Activate and Deactivate controls, and the Leaders no screen has claimed stay reachable on Other rather than disappearing. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here](docs/assets/programs-screen--default.png)
 
-![RP-1's two core stats in the Astronaut Complex's own strip: how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before](docs/assets/crew-core-stats--default.png)
+![RP-1's three core stats in the Astronaut Complex's own strip: what each hire adds to upkeep per day, beside the price of the next one, how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before](docs/assets/crew-core-stats--default.png)
 
 ![The space centre read from orbit. "career.status" comes off the live UpgradeableFacility objects, which KSP puts in the scene only at the space centre, so every tier on it is absent here and the grid used to be empty. RP-1 denormalises the level the save persists against its own tier count and bills the career off it in all four scenes, so this contribution answers wherever the operator is standing and takes the grid over rather than repeating it underneath. Mission Control is one of the five RP-1 prices at a single fund under a "cosmetic only" comment: its tier is a reading and is shown, its price is for a step nothing will take and is withheld. The Upgrade controls stay dark because the stock command needs the building in the scene](docs/assets/facility-tiers-in-flight--default.png)
 
@@ -241,6 +241,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | Kind | Id |
 | --- | --- |
 | processor | `rp1:crew-reading` |
+| processor | `rp1:budget-breakdown-reading` |
 | processor | `rp1:crew-program-reading` |
 
 ## Error codes

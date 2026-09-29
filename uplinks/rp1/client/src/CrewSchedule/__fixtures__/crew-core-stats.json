@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "Hosted on the real Astronaut Complex, because the claim is about the host's OWN core-stat strip: RP-1's two cells have to sit in that row, in that cell treatment, indistinguishable from the three the widget draws itself. An isolated render would show two boxes and prove nothing about the row they are supposed to be part of.",
+    "notes": "Hosted on the real Astronaut Complex, because the claim is about the host's OWN core-stat strip: RP-1's three cells have to sit in that row, in that cell treatment, indistinguishable from the three the widget draws itself. An isolated render would show three boxes and prove nothing about the row they are supposed to be part of.",
     "why-a-contribution": "The cells are DATA on `astronaut-complex.readouts`, so the host draws them with its own `Stat` in its own grid. An augment would have rendered RP-1's own markup beside the row, which is how a strip ends up reading as two widgets sharing a line."
   },
   "_scene": {
@@ -12,11 +12,13 @@
       "w": 10,
       "h": 10
     },
-    "caption": "RP-1's two core stats in the Astronaut Complex's own strip: how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before",
+    "caption": "RP-1's three core stats in the Astronaut Complex's own strip: what each hire adds to upkeep per day, beside the price of the next one, how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before",
     "paints": [
       "Funds",
       "Next Hire",
       "Active Kerbals",
+      "Salary per Naut",
+      "added by each hire",
       "In Training",
       "3 courses",
       "not started",
@@ -151,6 +153,16 @@
             "trainingExpiryCount": 1
           }
         ]
+      },
+      {
+        "topic": "rp1.budgetBreakdown",
+        "payload": {
+          "nautBaseSalary": {
+            "day": -8.21,
+            "month": -246.4,
+            "year": -3000
+          }
+        }
       }
     ]
   }

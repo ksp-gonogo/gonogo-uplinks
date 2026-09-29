@@ -5,6 +5,7 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Card,
@@ -23,6 +24,7 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import type {
+  Rp1BudgetBreakdown,
   Rp1CrewEntry,
   Rp1TrainingCourseEntry,
   Rp1TrainingTemplateEntry,
@@ -62,9 +64,8 @@ import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
  * miss. Starting a course puts a line on `MaintenanceHandler.TrainingUpkeepPerDay`
  * that `FixedUpdate` deducts every tick with no balance test at all, so the press
  * commits the career to a per-day drain for the length of the training and a
- * shortfall neither slows it nor refuses it. `TrainingUpkeep` draws that rate; see
- * it for why the rate and not a balance, and why RP-1's own line rather than a
- * marginal figure derived here.</para>
+ * shortfall neither slows it nor refuses it. `TrainingUpkeep` draws that rate, and
+ * `CourseCost` what the course being assembled adds to it.</para>
  */
 export function TrainingEnrolment() {
   const available = current(useTelemetry("rp1.available"));
@@ -73,6 +74,7 @@ export function TrainingEnrolment() {
   const crew = current(useTelemetry("rp1.crew"));
   const courses = current(useTelemetry("rp1.training"));
   const program = current(useTelemetry("rp1.crewProgram"));
+  const breakdown = current(useTelemetry("rp1.budgetBreakdown"));
   /* Named here rather than taken from the host widget, the way ProgramDetail
      names `career.status`: an augment carries its own reads. */
   const career = current(useTelemetry("career.status"));
@@ -225,6 +227,11 @@ export function TrainingEnrolment() {
           </Stack>
           <Stack gap="caption">
             <TrainingUpkeep career={career} />
+            <CourseCost
+              breakdown={breakdown}
+              students={chosen.length}
+              template={selected}
+            />
             {/* The refusal on SCREEN, not only in `title`. The dark-control-with
                 -its-reason-in-the-title pattern assumes a pointer, and the
                 picture this section exists for is one where a dark Enrol sat
@@ -283,11 +290,8 @@ export function TrainingEnrolment() {
  * negative. So the honest reading is the rate the career already pays, which is
  * the figure this press moves.</para>
  *
- * <para>RP-1's own line rather than one derived here. The marginal cost of one
- * more student is <c>nautTrainingCostPerFacLevel[ACLevel]</c> plus an adder that
- * depends on what the target covers, and computing that client-side would mean
- * mirroring an expression that mutates RP-1's own shared settings bools on the
- * way through. The standing line is exact and costs nothing.</para>
+ * <para>RP-1's own line rather than one summed here from the running
+ * courses.</para>
  *
  * <para>Absent, never zero, when the career reports no economy: a money model
  * with no upkeep concept does not levy nothing, it levies nothing KNOWN, and a
@@ -303,6 +307,51 @@ function TrainingUpkeep({
   return (
     <DataLine aligned label="Upkeep">
       <Unit value={training} />
+    </DataLine>
+  );
+}
+
+/**
+ * What the course being assembled would add to the career's upkeep, per day,
+ * for as long as it runs.
+ *
+ * <para>RP-1 builds a course only at the press, so there is no course yet to
+ * price: this is the picked training's per-student fee from
+ * `rp1.budgetBreakdown`, which applies `UpdateUpkeep`'s own arithmetic to every
+ * template, times the students picked. Before anyone is picked it is the fee
+ * per student, which is what the pick will multiply.</para>
+ *
+ * <para>A rate and not a balance, for the reason `TrainingUpkeep` gives: nothing
+ * is charged at the press and RP-1 never refuses a course on funds.</para>
+ */
+function CourseCost({
+  breakdown,
+  students,
+  template,
+}: Readonly<{
+  breakdown: Rp1BudgetBreakdown | undefined;
+  students: number;
+  template: Rp1TrainingTemplateEntry;
+}>) {
+  const fee = breakdown?.trainingFees?.find(
+    (row) => row.templateId === template.id,
+  );
+  // Signed as a funds change, so money going out is negative.
+  const perDay = magnitudeOf(fee?.perStudent?.day);
+  if (perDay === null) {
+    return null;
+  }
+  const perStudent = <Unit decimals={0} value={value("f/day", -perDay)} />;
+  return (
+    <DataLine aligned label="Course">
+      {students === 0 ? (
+        <>{perStudent} per student</>
+      ) : (
+        <>
+          <Unit decimals={0} value={value("f/day", -perDay * students)} />
+          {students > 1 && <> · {perStudent} per student</>}
+        </>
+      )}
     </DataLine>
   );
 }
@@ -556,6 +605,9 @@ registerAugment({
     /* What training draws from the career per day. RP-1's own upkeep line, read
        for the rate beside the press; see `TrainingUpkeep`. */
     "career.status",
+    /* Each training's fee per student, for what the course being assembled
+       adds; see `CourseCost`. */
+    "rp1.budgetBreakdown",
   ],
   component: TrainingEnrolment,
   // After the running courses. An operator opens the tab to read what is

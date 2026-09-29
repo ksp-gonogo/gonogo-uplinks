@@ -1,7 +1,7 @@
 import type { AnyContribution } from "@ksp-gonogo/sitrep-sdk";
 import { getContributionsForSlot, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { crewCoreStats } from "./coreStats.js";
+import { crewCoreStats, nautSalaryStat } from "./coreStats.js";
 
 /* Real `Value`s, not bare magnitudes: the contract types every count as
    `Value<"count">`, and a fixture that hands over a number typechecks only
@@ -13,6 +13,15 @@ const PROGRAM = {
   courses: value("count", 3),
   coursesStarted: value("count", 3),
   crewInTraining: value("count", 4),
+};
+
+/** RP-1's breakdown as the mod sends it: signed, so pay going out is negative. */
+const BREAKDOWN = {
+  nautBaseSalary: {
+    day: value("funds", -41.07),
+    month: value("funds", -1232.03),
+    year: value("funds", -15000),
+  },
 };
 
 function crewRow(overrides: Record<string, unknown> = {}) {
@@ -148,10 +157,34 @@ describe("crewCoreStats", () => {
         contribution.compute({
           "rp1:crew-reading": reading(state, [crewRow()]),
           "rp1:crew-program-reading": reading(state, PROGRAM),
+          "rp1:budget-breakdown-reading": reading(state, BREAKDOWN),
         } as never) as { id: string; detail?: string }[]
       ).find((s) => s.id === "training-lapsing")?.detail;
     expect(detailOf("observed")).toBeUndefined();
     expect(detailOf("held")).toBe("HELD");
+  });
+
+  it("leads the strip with what a hire adds per day", () => {
+    const contribution = getContributionsForSlot(
+      "astronaut-complex.readouts",
+    ).find((c: AnyContribution) => c.id === "rp1:crew-core-stats");
+    if (!contribution) throw new Error("crew-core-stats is not registered");
+    const observed = (payload: unknown) => ({
+      state: "observed",
+      value: payload,
+      atUt: value("ut", 0),
+      reckoning: { status: "none" },
+    });
+    const stats = contribution.compute({
+      "rp1:crew-reading": observed([crewRow()]),
+      "rp1:crew-program-reading": observed(PROGRAM),
+      "rp1:budget-breakdown-reading": observed(BREAKDOWN),
+    } as never) as { id: string }[];
+    expect(stats.map((s) => s.id)).toEqual([
+      "naut-salary",
+      "in-training",
+      "training-lapsing",
+    ]);
   });
 
   it("registers itself into the Astronaut Complex's core-stat strip", () => {
@@ -161,5 +194,32 @@ describe("crewCoreStats", () => {
     // Namespaced by the client handle, which is what stops two Uplinks
     // colliding on an id somebody picked independently.
     expect(ids).toContain("rp1:crew-core-stats");
+  });
+});
+
+describe("nautSalaryStat", () => {
+  /**
+   * A new hire holds no proficiency, so RP-1's `GetNautCost` bills them the
+   * Astronaut Complex's base pay alone: the standing cost pressing Hire adds.
+   */
+  it("quotes a hire's pay per day as a cost", () => {
+    const stat = nautSalaryStat(BREAKDOWN);
+
+    expect(stat?.label).toBe("Salary per Naut");
+    expect(stat?.value?.unit).toBe("f/day");
+    expect(stat?.value?.magnitude).toBeCloseTo(41.07);
+    expect(stat?.detail).toBe("added by each hire");
+  });
+
+  /** RP-1 pays every naut something, so an unread figure is not a free hire. */
+  it("draws nothing while the breakdown is unread", () => {
+    expect(nautSalaryStat(undefined)).toBeNull();
+    expect(nautSalaryStat({ nautBaseSalary: null })).toBeNull();
+  });
+
+  it("says the figure is held once its channel is", () => {
+    expect(nautSalaryStat(BREAKDOWN, true)?.detail).toBe(
+      "added by each hire · HELD",
+    );
   });
 });

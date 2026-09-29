@@ -6,7 +6,11 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
-import type { Rp1CrewEntry, Rp1CrewProgram } from "../__generated__/contract.js";
+import type {
+  Rp1BudgetBreakdown,
+  Rp1CrewEntry,
+  Rp1CrewProgram,
+} from "../__generated__/contract.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 
@@ -72,6 +76,34 @@ function withHeld(detail: string | undefined, held: boolean) {
 // A stat's value is a bare quantity, so the kit cannot mark a held one itself.
 const HELD_DETAIL = "HELD";
 
+/**
+ * What pressing Hire adds to the career's upkeep, per day, beside the host's
+ * "Next Hire" price.
+ *
+ * <para>RP-1's `GetNautCost` bills every kerbal on the ground the Astronaut
+ * Complex's per-tier yearly pay plus the upkeep of each proficiency they hold,
+ * and a new hire holds none, so the base pay at the complex's tier is exactly
+ * the standing cost a hire adds. It is RP-1's own figure through its salary
+ * modifiers, so a leader who changes crew pay changes it too.</para>
+ *
+ * <para>Absent, never zero, while the breakdown is unread: RP-1 pays every naut
+ * something, and a zero would say hiring is free.</para>
+ */
+export function nautSalaryStat(
+  breakdown: Rp1BudgetBreakdown | undefined,
+  held = false,
+): StatEntry | null {
+  // Signed as a funds change, so money going out is negative.
+  const perDay = magnitudeOf(breakdown?.nautBaseSalary?.day);
+  if (perDay === null) return null;
+  return {
+    id: "naut-salary",
+    label: "Salary per Naut",
+    value: value("f/day", -perDay),
+    detail: withHeld("added by each hire", held),
+  };
+}
+
 export function crewCoreStats(
   program: Rp1CrewProgram | undefined,
   crew: readonly Rp1CrewEntry[] | undefined,
@@ -117,7 +149,7 @@ function lastValue<T>(
 }
 
 /*
- * The two channels with their currency, since a contribution's own topic deps
+ * The three channels with their currency, since a contribution's own topic deps
  * arrive as bare payloads and a stat cannot carry a reading.
  */
 const CREW_READING = RP1.registerProcessor({
@@ -125,6 +157,14 @@ const CREW_READING = RP1.registerProcessor({
   deps: [{ reading: "rp1.crew" }] as const,
   compute: ([reading]: readonly [TopicReading<TopicPayload<"rp1.crew">>]) =>
     lastValue(reading),
+});
+
+const BUDGET_BREAKDOWN_READING = RP1.registerProcessor({
+  id: "budget-breakdown-reading",
+  deps: [{ reading: "rp1.budgetBreakdown" }] as const,
+  compute: ([reading]: readonly [
+    TopicReading<TopicPayload<"rp1.budgetBreakdown">>,
+  ]) => lastValue(reading),
 });
 
 const CREW_PROGRAM_READING = RP1.registerProcessor({
@@ -138,19 +178,27 @@ const CREW_PROGRAM_READING = RP1.registerProcessor({
 RP1.registerContribution({
   id: "crew-core-stats",
   contributes: "astronaut-complex.readouts",
-  deps: [CREW_READING, CREW_PROGRAM_READING],
+  deps: [CREW_READING, CREW_PROGRAM_READING, BUDGET_BREAKDOWN_READING],
   /*
    * The domain gate rather than a dep on `rp1.available`: the aggregation
    * subscribes it itself for anything naming `requires`, so the cells appear and
-   * disappear with RP-1 while this stays a plain function of the two channels.
+   * disappear with RP-1 while this stays a plain function of the three channels.
    */
   requires: "rp1",
   compute: (topics) => {
     const program = topics[CREW_PROGRAM_READING.id];
     const crew = topics[CREW_READING.id];
-    return crewCoreStats(lastValue(program), lastValue(crew), {
+    const breakdown = topics[BUDGET_BREAKDOWN_READING.id];
+    // First, so it sits in the strip straight after the host's own three and
+    // as near "Next Hire" as a contributed cell can.
+    const salary = nautSalaryStat(
+      lastValue(breakdown),
+      breakdown?.state === "held",
+    );
+    const stats = crewCoreStats(lastValue(program), lastValue(crew), {
       program: program?.state === "held",
       crew: crew?.state === "held",
     });
+    return salary === null ? stats : [salary, ...stats];
   },
 });
