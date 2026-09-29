@@ -55,12 +55,14 @@ public sealed class Rp1CentreEntry
     /// <summary>
     /// What to CALL this centre. <see cref="KscName"/> is an id and reads like
     /// one (<c>us_cape_canaveral</c>); this is the name KSCSwitcher's own site
-    /// config gives it, and the one a surface should render.
+    /// config gives it, localised as RP-1's Budget tab localises it, and the one
+    /// a surface should render.
     ///
     /// <para>Null when KSCSwitcher is not installed, which is a whole class of
-    /// RP-1 career rather than an edge case, and null when the site declares no
-    /// display name of its own. A client falls back to <see cref="KscName"/> in
-    /// both, which is what RP-1 does too.</para>
+    /// RP-1 career rather than an edge case, null when the site declares no
+    /// display name of its own, and null when its display name is a localisation
+    /// tag the loaded language does not carry. A client falls back to
+    /// <see cref="KscName"/> in all three, which is what RP-1 does too.</para>
     /// </summary>
     [SitrepUnit(Units.Text)]
     public string? KscDisplayName { get; set; }
@@ -3765,6 +3767,15 @@ public sealed class Rp1ComplexUpkeepEntry
     public string? KscName { get; set; }
 
     /// <summary>
+    /// What RP-1's Facilities tab heads the centre with: KSCSwitcher's display
+    /// name for it, localised. Absent on the same conditions as
+    /// <see cref="Rp1ComplexEntry.KscDisplayName"/>, and a client falls back to
+    /// <see cref="KscName"/> as RP-1 does.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? KscDisplayName { get; set; }
+
+    /// <summary>
     /// Whether it is operational. A complex under construction is billed the
     /// share of its upkeep its construction has reached, and a complex being
     /// modified is billed its new upkeep in full.
@@ -3856,6 +3867,17 @@ public sealed class Rp1ProgramFundingEntry
     /// <summary>The Program's name, the key <c>rp1.programs</c> uses.</summary>
     [SitrepUnit(Units.Id)]
     public string? Name { get; set; }
+
+    /// <summary>The Program's title, the heading RP-1's Programs tab gives it.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// The Programs tab's Nominal Deadline: when the funding runs out and the
+    /// reputation penalty starts, as <see cref="Rp1ProgramEntry.DeadlineUt"/>.
+    /// </summary>
+    [SitrepUnit(Units.UniversalTime)]
+    public double? DeadlineUt { get; set; }
 
     /// <summary>
     /// What it pays over each horizon, positive. Read off its funding curve, so a

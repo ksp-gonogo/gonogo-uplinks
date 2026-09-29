@@ -16,7 +16,8 @@
  *       scaled by the period's day count before the query, and one
  *       StructureRepairLC query per launch complex on the public LCUpkeep(lc).
  *       The tab skips a complex that is not operational; UpdateUpkeep bills it
- *       its construction share all the same, so it is read here too.
+ *       its construction share all the same, so it is read here too. Each
+ *       centre is headed by its LocalizeSiteName, which Rp1SiteNames reproduces.
  *
  *   MaintenanceGUI.RenderNautList and RenderAstronautsTab
  *       GetNautCost per crew member, base and flight summed then put through
@@ -42,7 +43,9 @@
  *   MaintenanceGUI.RenderProgramTab
  *       Funds(ProgramFunding) on GetFundsForFutureTimestamp at the horizon less
  *       the same at now, per Program. The sum of these is ProgramHandler's
- *       GetProgramFunding, which is the Budget tab's Program Budget row.
+ *       GetProgramFunding, which is the Budget tab's Program Budget row. Each
+ *       Program is headed by its title, over its deadlineUT as the Nominal
+ *       Deadline.
  *
  * AT RP-1'S UPKEEP CADENCE, as rp1.budget: recomputed only when
  * MaintenanceHandler.lastUpdate moves. RP-1 refreshes FacilityMaintenanceCosts
@@ -105,6 +108,7 @@ namespace GonogoRp1Uplink
         private readonly MethodInfo? _fillBools;
         private readonly MethodInfo? _resetBools;
         private readonly MethodInfo? _facilityLevel;
+        private readonly Rp1SiteNames _siteNames = new Rp1SiteNames();
 
         private object? _lastMaintenance;
         private double? _lastRefresh;
@@ -248,6 +252,7 @@ namespace GonogoRp1Uplink
                         LcId = Rp1Types.ReadGuidString(lc, "ID"),
                         Name = Rp1Types.ReadString(lc, "Name"),
                         KscName = kscName,
+                        KscDisplayName = _siteNames.For(kscName),
                         Operational = Rp1Types.ReadBool(lc, "IsOperational"),
                         Upkeep = Upkeep("StructureRepairLC", Invoke(_lcUpkeep, maintenance, lc)),
                     });
@@ -493,6 +498,11 @@ namespace GonogoRp1Uplink
                 rows.Add(new Rp1ProgramFundingRaw
                 {
                     Name = Rp1Types.ReadString(program, "name"),
+                    Title = Rp1Types.ReadString(program, "title"),
+                    // Zero until RP-1 stamps it on accepting, and a zero is no date at all.
+                    DeadlineUt = Rp1Types.ReadDouble(program, "deadlineUT") is double deadline && deadline != 0d
+                        ? deadline
+                        : (double?)null,
                     Funding = Horizons(days =>
                     {
                         var then = Invoke(_fundsAt, program, ut + days * SecondsPerDay);

@@ -28,6 +28,7 @@ namespace GonogoRp1Uplink
                     ["lcId"] = c.LcId,
                     ["name"] = c.Name,
                     ["kscName"] = c.KscName,
+                    ["kscDisplayName"] = c.KscDisplayName,
                     ["operational"] = c.Operational,
                     ["upkeep"] = Horizons(c.Upkeep),
                 }),
@@ -55,6 +56,8 @@ namespace GonogoRp1Uplink
                 ["programs"] = Rows(raw.Programs, p => new Dictionary<string, object?>
                 {
                     ["name"] = p.Name,
+                    ["title"] = p.Title,
+                    ["deadlineUt"] = p.DeadlineUt,
                     ["funding"] = Horizons(p.Funding),
                 }),
             };

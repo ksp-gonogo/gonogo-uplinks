@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GonogoRp1Uplink;
+using KSP.Localization;
 using RP0;
 using RP0.Crew;
 using RP0.Programs;
@@ -37,6 +38,8 @@ public class Rp1BudgetBreakdownTests : IDisposable
         KCTUtilities.FacilityLevels.Clear();
         Database.SettingsSC.ResetBreakdown();
         TrainingDatabase.Fills.Clear();
+        KSCSwitcherInterop.Sites = null;
+        Localizer.Tags = null;
     }
 
     private static MaintenanceHandler ACareer()
@@ -133,6 +136,43 @@ public class Rp1BudgetBreakdownTests : IDisposable
         // One complex RP-1 will not price is a line with no figure, not a zero.
         Assert.Null(complexes[2].Upkeep!.Day);
         Assert.Null(complexes[2].Upkeep!.Year);
+    }
+
+    [Fact]
+    public void A_complex_carries_the_name_the_Facilities_tab_heads_its_centre_with()
+    {
+        ACareer();
+        foreach (var ksc in new[] { "us_cape_canaveral", "ru_baikonur", "cn_jiuquan" })
+        {
+            SpaceCenterManagement.Instance!.KSCs.Add(new LCSpaceCenter { KSCName = ksc, LaunchComplexes = { new LaunchComplex() } });
+        }
+        // RSS writes its site names as localisation tags, which KSP never
+        // translates on load, so RP-1's getter hands the tag back as it stands.
+        KSCSwitcherInterop.Sites = new List<(string, string)>
+        {
+            ("us_cape_canaveral", "#RSS_Site_cape_canaveral_name"),
+            ("ru_baikonur", "KZ - Baikonur"),
+            ("cn_jiuquan", "#RSS_Site_jiuquan_name"),
+        };
+        Localizer.Tags = new Dictionary<string, string> { ["#RSS_Site_cape_canaveral_name"] = "US - Cape Canaveral" };
+
+        var complexes = Read().Complexes!;
+
+        // A tag the loaded language lacks comes back as the tag, which is no name.
+        Assert.Equal(new[] { "US - Cape Canaveral", "KZ - Baikonur", null }, complexes.Select(c => c.KscDisplayName));
+        Assert.Equal(new[] { "us_cape_canaveral", "ru_baikonur", "cn_jiuquan" }, complexes.Select(c => c.KscName));
+    }
+
+    [Fact]
+    public void Without_KSCSwitcher_a_complex_carries_no_display_name_and_its_centre_id_stands()
+    {
+        ACareer();
+        SpaceCenterManagement.Instance!.KSCs.Add(new LCSpaceCenter { KSCName = "Stock", LaunchComplexes = { new LaunchComplex() } });
+
+        var complex = Read().Complexes!.Single();
+
+        Assert.Null(complex.KscDisplayName);
+        Assert.Equal("Stock", complex.KscName);
     }
 
     [Fact]
@@ -328,6 +368,22 @@ public class Rp1BudgetBreakdownTests : IDisposable
         Assert.Equal(0.0, programs[1].Funding!.Year);
         Assert.Equal(Ut, paying.FundsAsks[0]);
         Assert.Contains(Ut + 30 * Day, paying.FundsAsks);
+    }
+
+    [Fact]
+    public void A_Program_carries_the_title_and_Nominal_Deadline_the_Programs_tab_heads_it_with()
+    {
+        ACareer();
+        ProgramHandler.Instance = new ProgramHandler();
+        ProgramHandler.Instance.ActivePrograms.Add(new Program { name = "EarlyXPlanes", title = "X-Plane Research", deadlineUT = Ut + 400 * Day });
+        // Accepted this instant and not yet stamped by a funding tick.
+        ProgramHandler.Instance.ActivePrograms.Add(new Program { name = "EarlySatellites", title = "Early Satellites" });
+
+        var programs = Read().Programs!;
+
+        Assert.Equal(new[] { "EarlyXPlanes", "EarlySatellites" }, programs.Select(p => p.Name));
+        Assert.Equal(new[] { "X-Plane Research", "Early Satellites" }, programs.Select(p => p.Title));
+        Assert.Equal(new double?[] { Ut + 400 * Day, null }, programs.Select(p => p.DeadlineUt));
     }
 
     [Fact]

@@ -50,13 +50,11 @@ function mount(screenId: string = FINANCES_SCREEN_ID) {
 async function feed(
   fixture: ReturnType<typeof setupStreamFixture>,
   budget: Record<string, unknown> = BUDGET,
+  breakdown: Record<string, unknown> = BREAKDOWN,
 ) {
   fixture.emit("rp1.available", true);
   fixture.emit("rp1.budget", budget);
-  fixture.emit("rp1.budgetBreakdown", BREAKDOWN);
-  fixture.emit("rp1.programs", [
-    { name: "EarlySatellites", title: "Early Satellites" },
-  ]);
+  fixture.emit("rp1.budgetBreakdown", breakdown);
   fixture.emit("rp1.training", []);
   fixture.emit("rp1.research", []);
   await waitFor(() => {
@@ -204,13 +202,58 @@ describe("Finances", () => {
     expect(screen.getByText("UNDER CONSTRUCTION")).toBeInTheDocument();
   });
 
-  it("names a running Program by its title", async () => {
+  it("names a running Program by the title and deadline the breakdown carries", async () => {
     const { fixture } = mount();
     await feed(fixture);
 
     await userEvent.click(screen.getByRole("button", { name: /2 Programs/ }));
-    expect(screen.getByText("Early Satellites")).toBeInTheDocument();
-    expect(screen.getByText("SuborbitalHSF")).toBeInTheDocument();
+    const row = screen.getByRole("rowheader", { name: /Early Satellites/ });
+    expect(row.textContent).toMatch(/deadline/);
+    expect(
+      screen.getByRole("rowheader", { name: /Suborbital Human Spaceflight/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/SuborbitalHSF/)).toBeNull();
+  });
+
+  it("falls back to a Program's id when the breakdown carries no title", async () => {
+    const { fixture } = mount();
+    const programs = (BREAKDOWN.programs as Record<string, unknown>[]).map(
+      ({ title: _title, deadlineUt: _deadline, ...rest }) => rest,
+    );
+    await feed(fixture, BUDGET, { ...BREAKDOWN, programs });
+
+    await userEvent.click(screen.getByRole("button", { name: /2 Programs/ }));
+    const row = screen.getByRole("rowheader", { name: "SuborbitalHSF" });
+    expect(row.textContent).not.toMatch(/deadline/);
+  });
+
+  it("names each complex's centre once there is more than one", async () => {
+    const { fixture } = mount();
+    const complexes = BREAKDOWN.complexes as Record<string, unknown>[];
+    await feed(fixture, BUDGET, {
+      ...BREAKDOWN,
+      complexes: [
+        ...complexes,
+        {
+          ...complexes[0],
+          lcId: "baikonur-lc-1",
+          name: "LC-1",
+          kscName: "ru_baikonur",
+          kscDisplayName: null,
+        },
+      ],
+    });
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /4 buildings, 4 complexes/ }),
+    );
+    expect(
+      screen.getByRole("rowheader", { name: "LC-5 · US - Cape Canaveral" }),
+    ).toBeInTheDocument();
+    // No display name from KSCSwitcher: the id, as RP-1's own tab falls back.
+    expect(
+      screen.getByRole("rowheader", { name: "LC-1 · ru_baikonur" }),
+    ).toBeInTheDocument();
   });
 
   it("marks a zero accrual with an idle research queue", async () => {

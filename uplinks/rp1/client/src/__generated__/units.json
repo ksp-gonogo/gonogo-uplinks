@@ -236,6 +236,7 @@
       "sizeMaxWidth": "m"
     },
     "Rp1ComplexUpkeepEntry": {
+      "kscDisplayName": "text",
       "kscName": "id",
       "lcId": "id",
       "name": "text",
@@ -485,7 +486,9 @@
       "totalFunding": "funds"
     },
     "Rp1ProgramFundingEntry": {
-      "name": "id"
+      "deadlineUt": "ut",
+      "name": "id",
+      "title": "text"
     },
     "Rp1ProgramPaymentEntry": {
       "cumulativeFunds": "funds",

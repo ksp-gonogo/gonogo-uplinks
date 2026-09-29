@@ -27,6 +27,7 @@
     <Compile Include="..\mod\Rp1ScMath.cs" />
     <Compile Include="..\mod\Rp1ScCapture.cs" />
     <Compile Include="..\mod\Rp1ScReflection.cs" />
+    <Compile Include="..\mod\Rp1SiteNames.cs" />
     <Compile Include="..\mod\Rp1FacilitiesReflection.cs" />
     <Compile Include="..\mod\Rp1ProgramsRaw.cs" />
     <Compile Include="..\mod\Rp1ProgramsMath.cs" />

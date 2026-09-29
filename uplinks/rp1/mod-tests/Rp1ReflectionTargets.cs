@@ -182,7 +182,7 @@ namespace GonogoRp1Uplink.Tests
             // reproduced it shipped four defects because of them.
             new Rp1TypeTarget(Rp0, "RP0.ControlLockerUtils", "Rp1AvionicsReflection"),
             new Rp1TypeTarget(Rp0, "RP0.LCEfficiency", "Rp1ScReflection"),
-            new Rp1TypeTarget(Rp0, "RP0.KSCSwitcherInterop", "Rp1ScReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.KSCSwitcherInterop", "Rp1SiteNames"),
             new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1ScReflection, Rp1CrewReflection, Rp1EconomyBackend"),
             new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler", "Rp1EconomyBackend, Rp1ScReflection"),
             new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler+SubsidyDetails", "Rp1EconomyBackend"),
@@ -461,7 +461,7 @@ namespace GonogoRp1Uplink.Tests
             // The only route to a space centre's DISPLAY name. RP-1 keeps the id
             // on LCSpaceCenter and nothing else, and its shim is what reads
             // KSCSwitcher's site config for the name beside it.
-            new Rp1MethodTarget(Rp0, "RP0.KSCSwitcherInterop", "GetAvailableSites", 0, true, "Rp1ScReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.KSCSwitcherInterop", "GetAvailableSites", 0, true, "Rp1SiteNames"),
             new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "FillSubsidyDetails", 3, true, "Rp1EconomyBackend"),
             new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "FillSubsidyDetails", 3, true, "Rp1BudgetReflection"),
             // Two parameters, the step count defaulted to RP-1's one-a-month.
@@ -778,6 +778,7 @@ namespace GonogoRp1Uplink.Tests
             ["name"] = "checked on RP-1's own types; ALSO KSP's ProtoCrewMember.name, read off the students in a training course",
             ["Item1"] = "System.ValueTuple, the (id, displayName) pair KSCSwitcherInterop.GetAvailableSites returns; RP-1 names neither half",
             ["Item2"] = "System.ValueTuple, the (id, displayName) pair KSCSwitcherInterop.GetAvailableSites returns; RP-1 names neither half",
+            ["Format"] = "KSP.Localization.Localizer.Format(string), which resolves a KSCSwitcher displayName tag as RP-1's MaintenanceGUI.LocalizeSiteName does",
             // KSP's own, and the reason the research command needs them: it does
             // not merely read RP-1, it AUTHORS a ConfigNode and charges a
             // currency, and both of those are KSP's to declare. Nothing in RP0.dll
@@ -1631,6 +1632,8 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.Programs.ProgramHandler", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
             Add("RP0.Programs.ProgramHandler", "ActivePrograms", Rp1Reader.Presence, Breakdown);
             Add("RP0.Programs.Program", "name", Rp1Reader.Text, Breakdown);
+            Add("RP0.Programs.Program", "title", Rp1Reader.Text, Breakdown);
+            Add("RP0.Programs.Program", "deadlineUT", Rp1Reader.Numeric, Breakdown);
 
             // ── The construction rate tables ────────────────────────────────
             const string Rates = "Rp1ConstructionRatesReflection";

@@ -2600,3 +2600,22 @@ public class EventData<T1, T2>
         }
     }
 }
+
+namespace KSP.Localization
+{
+    /// <summary>
+    /// KSP's Localizer, the one member Rp1SiteNames calls. The real Format(string)
+    /// answers "" before the Localizer exists and the tag itself for a tag the
+    /// loaded language lacks; both are reproduced.
+    /// </summary>
+    public static class Localizer
+    {
+        /// <summary>Null is no Localizer instance yet.</summary>
+        public static Dictionary<string, string>? Tags;
+
+        public static string Format(string template) =>
+            Tags == null ? "" : Tags.TryGetValue(template, out var value) ? value : template;
+
+        public static string Format(string template, params string[] list) => Format(template);
+    }
+}

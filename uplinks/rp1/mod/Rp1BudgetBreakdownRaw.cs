@@ -43,6 +43,7 @@ namespace GonogoRp1Uplink
         public string? LcId;
         public string? Name;
         public string? KscName;
+        public string? KscDisplayName;
         public bool? Operational;
         public Rp1HorizonsRaw? Upkeep;
     }
@@ -70,6 +71,8 @@ namespace GonogoRp1Uplink
     public sealed class Rp1ProgramFundingRaw
     {
         public string? Name;
+        public string? Title;
+        public double? DeadlineUt;
         public Rp1HorizonsRaw? Funding;
     }
 }

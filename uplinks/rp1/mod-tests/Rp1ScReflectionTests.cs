@@ -27,6 +27,7 @@ public class Rp1ScReflectionTests : IDisposable
         // The default install: no KSCSwitcher, so no centre has a display name.
         // Every test that wants one says so.
         KSCSwitcherInterop.Sites = null;
+        KSP.Localization.Localizer.Tags = null;
         ClearUnreadableFlags();
     }
 
@@ -36,6 +37,7 @@ public class Rp1ScReflectionTests : IDisposable
         Confidence.Instance = null;
         MaintenanceHandler.Instance = null;
         KSCSwitcherInterop.Sites = null;
+        KSP.Localization.Localizer.Tags = null;
         ClearUnreadableFlags();
     }
 
@@ -905,6 +907,32 @@ public class Rp1ScReflectionTests : IDisposable
         // row do not all join to the centres channel.
         Assert.Equal("Cape Canaveral", Single(raw.Complexes).KscDisplayName);
         Assert.Equal("us_cape_canaveral", Single(raw.Centres).KscName);
+    }
+
+    [Fact]
+    public void A_site_named_by_a_localisation_tag_publishes_what_the_Localizer_makes_of_it()
+    {
+        // Every RSS site, and so every real RP-1 career: KSCSwitcher's config
+        // carries a tag, and RP-1's Budget tab puts it through Localizer.Format.
+        KSCSwitcherInterop.Sites = new List<(string, string)> { ("us_cape_canaveral", "#RSS_Site_cape_canaveral_name") };
+        KSP.Localization.Localizer.Tags = new Dictionary<string, string> { ["#RSS_Site_cape_canaveral_name"] = "US - Cape Canaveral" };
+        var ksc = new LCSpaceCenter { KSCName = "us_cape_canaveral", Engineers = 5, LaunchComplexes = { new LaunchComplex { Name = "LC-1" } } };
+        SpaceCenterManagement.Instance = new SpaceCenterManagement { KSCs = { ksc }, ActiveSC = ksc };
+
+        var raw = new Rp1ScReflection().Read(1.0);
+
+        Assert.Equal("US - Cape Canaveral", Single(raw.Centres).KscDisplayName);
+        Assert.Equal("US - Cape Canaveral", Single(raw.Complexes).KscDisplayName);
+    }
+
+    [Fact]
+    public void A_tag_read_before_the_Localizer_exists_publishes_nothing_rather_than_the_tag()
+    {
+        KSCSwitcherInterop.Sites = new List<(string, string)> { ("us_cape_canaveral", "#RSS_Site_cape_canaveral_name") };
+        var ksc = new LCSpaceCenter { KSCName = "us_cape_canaveral", Engineers = 5 };
+        SpaceCenterManagement.Instance = new SpaceCenterManagement { KSCs = { ksc }, ActiveSC = ksc };
+
+        Assert.Null(Single(new Rp1ScReflection().Read(1.0).Centres).KscDisplayName);
     }
 
     [Fact]

@@ -15,6 +15,7 @@ import {
   type DataTableColumn,
   Disclosure,
   EmptyState,
+  MissionDate,
   magnitudeOf,
   Section,
   Stat,
@@ -96,7 +97,6 @@ export function Finances({ screenId }: { screenId: string }) {
   const budgetReading = useTelemetry("rp1.budget");
   const budget = current(budgetReading);
   const breakdown = current(useTelemetry("rp1.budgetBreakdown"));
-  const programs = current(useTelemetry("rp1.programs"));
   const training = current(useTelemetry("rp1.training"));
   const research = current(useTelemetry("rp1.research"));
 
@@ -132,7 +132,6 @@ export function Finances({ screenId }: { screenId: string }) {
               budget={budgetReading}
               courseNames={namesById(training, "id")}
               periods={periods}
-              programTitles={namesById(programs, "name", "title")}
             />
           </Section>
           <Reputation budget={budgetReading} />
@@ -200,13 +199,11 @@ function BudgetTable({
   budget,
   breakdown,
   periods,
-  programTitles,
   courseNames,
 }: Readonly<{
   budget: BudgetReading;
   breakdown: Rp1BudgetBreakdown | undefined;
   periods: readonly Period[];
-  programTitles: ReadonlyMap<string, string>;
   courseNames: ReadonlyMap<string, string>;
 }>) {
   const rows: BudgetRow[] = RP1_ROWS.map(({ key, label, drill }) => ({
@@ -260,7 +257,6 @@ function BudgetTable({
             courseNames={courseNames}
             drill={row.drill}
             periods={periods}
-            programTitles={programTitles}
           />
         )
       }
@@ -281,21 +277,14 @@ function DrillDown({
   drill,
   breakdown,
   periods,
-  programTitles,
   courseNames,
 }: Readonly<{
   drill: Drill;
   breakdown: Rp1BudgetBreakdown;
   periods: readonly Period[];
-  programTitles: ReadonlyMap<string, string>;
   courseNames: ReadonlyMap<string, string>;
 }>) {
-  const { lines, summary } = linesFor(
-    drill,
-    breakdown,
-    programTitles,
-    courseNames,
-  );
+  const { lines, summary } = linesFor(drill, breakdown, courseNames);
   if (lines.length === 0) {
     return null;
   }
@@ -331,12 +320,18 @@ function DrillDown({
 function linesFor(
   drill: Drill,
   breakdown: Rp1BudgetBreakdown,
-  programTitles: ReadonlyMap<string, string>,
   courseNames: ReadonlyMap<string, string>,
 ): { lines: Line[]; summary: string } {
   if (drill === "facilities") {
     const buildings = breakdown.buildings ?? [];
     const complexes = breakdown.complexes ?? [];
+    // RP-1's Facilities tab heads each centre's complexes with the centre's
+    // name. One centre needs no heading, and two can each have an LC-1.
+    const centres = new Set(complexes.map((c) => c.kscName));
+    const named = (c: (typeof complexes)[number]) =>
+      centres.size > 1
+        ? `${c.name} · ${c.kscDisplayName ?? c.kscName}`
+        : c.name;
     return {
       summary: `${count(buildings.length, "building")}, ${count(complexes.length, "complex", "complexes")}`,
       lines: [
@@ -350,10 +345,10 @@ function linesFor(
           label:
             c.operational === false ? (
               <>
-                {c.name} <Badge tone="info">UNDER CONSTRUCTION</Badge>
+                {named(c)} <Badge tone="info">UNDER CONSTRUCTION</Badge>
               </>
             ) : (
-              c.name
+              named(c)
             ),
           amounts: c.upkeep,
         })),
@@ -396,7 +391,17 @@ function linesFor(
     summary: count(running.length, "Program"),
     lines: running.map((p, i) => ({
       id: `program:${p.name ?? i}`,
-      label: programTitles.get(p.name ?? "") ?? p.name,
+      label: (
+        <>
+          {p.title ?? p.name}
+          {p.deadlineUt != null && (
+            <>
+              {" · deadline "}
+              <MissionDate value={p.deadlineUt} />
+            </>
+          )}
+        </>
+      ),
       amounts: p.funding,
     })),
   };
@@ -563,7 +568,6 @@ registerAugment({
     "rp1.available",
     "rp1.budget",
     "rp1.budgetBreakdown",
-    "rp1.programs",
     "rp1.training",
     "rp1.research",
   ],

@@ -276,6 +276,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     sizeMaxWidth: "m",
   },
   "Rp1ComplexUpkeepEntry": {
+    kscDisplayName: "text",
     kscName: "id",
     lcId: "id",
     name: "text",
@@ -525,7 +526,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     totalFunding: "funds",
   },
   "Rp1ProgramFundingEntry": {
+    deadlineUt: "ut",
     name: "id",
+    title: "text",
   },
   "Rp1ProgramPaymentEntry": {
     cumulativeFunds: "funds",

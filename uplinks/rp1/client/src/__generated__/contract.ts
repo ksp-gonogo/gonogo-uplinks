@@ -876,12 +876,14 @@ export interface Rp1CentreEntry
 	/**
 	* What to CALL this centre. `Rp1CentreEntry.kscName` is an id and reads like
 	* one (`us_cape_canaveral`); this is the name KSCSwitcher's own site config
-	* gives it, and the one a surface should render.
+	* gives it, localised as RP-1's Budget tab localises it, and the one a surface
+	* should render.
 	*
 	* Null when KSCSwitcher is not installed, which is a whole class of RP-1
-	* career rather than an edge case, and null when the site declares no display
-	* name of its own. A client falls back to `Rp1CentreEntry.kscName` in both,
-	* which is what RP-1 does too.
+	* career rather than an edge case, null when the site declares no display name
+	* of its own, and null when its display name is a localisation tag the loaded
+	* language does not carry. A client falls back to `Rp1CentreEntry.kscName` in
+	* all three, which is what RP-1 does too.
 	*/
 	kscDisplayName?: string | null;
 	/** This is the centre RP-1 currently considers active. */
@@ -3542,6 +3544,13 @@ export interface Rp1ComplexUpkeepEntry
 	/** The space centre it belongs to. */
 	kscName?: string | null;
 	/**
+	* What RP-1's Facilities tab heads the centre with: KSCSwitcher's display name
+	* for it, localised. Absent on the same conditions as
+	* `Rp1ComplexEntry.kscDisplayName`, and a client falls back to
+	* `Rp1ComplexUpkeepEntry.kscName` as RP-1 does.
+	*/
+	kscDisplayName?: string | null;
+	/**
 	* Whether it is operational. A complex under construction is billed the share
 	* of its upkeep its construction has reached, and a complex being modified is
 	* billed its new upkeep in full.
@@ -3602,6 +3611,13 @@ export interface Rp1ProgramFundingEntry
 {
 	/** The Program's name, the key `rp1.programs` uses. */
 	name?: string | null;
+	/** The Program's title, the heading RP-1's Programs tab gives it. */
+	title?: string | null;
+	/**
+	* The Programs tab's Nominal Deadline: when the funding runs out and the
+	* reputation penalty starts, as `Rp1ProgramEntry.deadlineUt`.
+	*/
+	deadlineUt?: Value<"ut"> | null;
 	/**
 	* What it pays over each horizon, positive. Read off its funding curve, so a
 	* Program pays unevenly across its life and a year is not twelve months of

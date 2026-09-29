@@ -576,6 +576,7 @@
               "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a01",
               "name": "LC-5",
               "kscName": "us_cape_canaveral",
+              "kscDisplayName": "US - Cape Canaveral",
               "operational": true,
               "upkeep": {
                 "day": -900.0,
@@ -587,6 +588,7 @@
               "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a02",
               "name": "LC-14",
               "kscName": "us_cape_canaveral",
+              "kscDisplayName": "US - Cape Canaveral",
               "operational": false,
               "upkeep": {
                 "day": -500.0,
@@ -598,6 +600,7 @@
               "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a03",
               "name": "Hangar",
               "kscName": "us_cape_canaveral",
+              "kscDisplayName": "US - Cape Canaveral",
               "operational": true,
               "upkeep": {
                 "day": -200.0,
@@ -704,6 +707,8 @@
           "programs": [
             {
               "name": "EarlySatellites",
+              "title": "Early Satellites",
+              "deadlineUt": 347200000,
               "funding": {
                 "day": 6000.0,
                 "month": 180000.0,
@@ -712,6 +717,8 @@
             },
             {
               "name": "SuborbitalHSF",
+              "title": "Suborbital Human Spaceflight",
+              "deadlineUt": 331600000,
               "funding": {
                 "day": 3500.0,
                 "month": 101000.0,
