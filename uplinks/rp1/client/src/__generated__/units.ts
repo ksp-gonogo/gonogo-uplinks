@@ -584,6 +584,19 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     timeLeftSeconds: "s",
     workRate: "ratio",
   },
+  "Rp1ResearchRateArgs": {
+    workRate: "ratio",
+  },
+  "Rp1ResearchRateStep": {
+    finishesAt: "ut",
+    researcherSalaryPerDay: "f/day",
+    unlockCreditPerDay: "f/day",
+    workRate: "ratio",
+  },
+  "Rp1ResearchRates": {
+    refreshedAt: "ut",
+    techId: "id",
+  },
   "Rp1RolloutArgs": {
     id: "id",
     pad: "id",
@@ -957,6 +970,10 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     timeLeftSeconds: "s",
     workRate: "ratio",
   },
+  "rp1.researchRates": {
+    refreshedAt: "ut",
+    techId: "id",
+  },
   "rp1.rushTerms": {
     rateMult: "ratio",
     salaryMult: "ratio",
@@ -1105,6 +1122,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1ProgramFundingEntry": {
     funding: "Rp1BudgetHorizons",
   },
+  "Rp1ResearchRates": {
+    steps: "Rp1ResearchRateStep[]",
+  },
   "Rp1Tooling": {
     parts: "Rp1ToolingEntry[]",
   },
@@ -1161,6 +1181,9 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "rp1.programs": {
     fundingPayments: "Rp1ProgramPaymentEntry[]",
     speedOptions: "Rp1ProgramSpeedOption[]",
+  },
+  "rp1.researchRates": {
+    steps: "Rp1ResearchRateStep[]",
   },
   "rp1.tooling": {
     parts: "Rp1ToolingEntry[]",

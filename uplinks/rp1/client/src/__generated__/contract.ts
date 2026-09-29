@@ -306,6 +306,32 @@ export interface Rp1ConstructionCancelArgs
 	id?: string;
 }
 /**
+* Args for `rp1.research.setRate`: set the research queue's work rate, the
+* throttle RP-1 draws as one slider under its research list.
+*
+* **One rate for the whole queue.** RP-1's slider writes the same rate onto
+* every queued node, and only the node being researched progresses, so there
+* is no per-node rate to aim at and no id.
+*
+* **A progressive spend, so nothing is refused on affordability.** Researchers
+* are paid every day whatever the rate: a lower rate pays them the idle share
+* of their salary and earns proportionally less Unlock Credit, and the node
+* finishes later. What each step pays, earns and finishes is on
+* `rp1.researchRates`.
+*
+* A SET rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
+* aimed from a stale view lands where it was aimed.
+*/
+export interface Rp1ResearchRateArgs
+{
+	/**
+	* The work rate, 0 to 1 in steps of 0.05, as RP-1's slider allows. A value
+	* between steps is refused rather than rounded, so what lands is what was
+	* shown.
+	*/
+	workRate?: number;
+}
+/**
 * Args for `rp1.tech.research`: put a tech node on RP-1's research queue.
 *
 * **Why this exists rather than `career.tech.unlock`.** Under a managed save
@@ -1726,6 +1752,64 @@ export interface Rp1FacilityUpgradeRate
 	* met.
 	*/
 	buildSeconds?: Value<"s"> | null;
+}
+/**
+* What the research queue would pay its researchers per day, earn in Unlock
+* Credit per day, and when the node being researched would finish, at every
+* work rate RP-1's slider offers.
+*
+* **Research is a PROGRESSIVE spend.** Setting the rate charges nothing.
+* Researchers draw their salary every day, the idle share of it when stopped,
+* and the rate trades that salary against research speed and Unlock Credit
+* accrual. So the readout beside a rate control is the pay, the credit and the
+* finish date, and there is no "cannot afford" anywhere in it.
+*
+* The salary is RP-1's own `MaintenanceHandler.UpdateUpkeep` arithmetic at
+* each rate, put through the researcher salary currency query as the Budget
+* tab's Research Teams row is, and the credit is
+* `UnlockCreditHandler.CreditForTime`'s arithmetic over a day at each rate,
+* with the Unlock Credit rate modifier the Budget tab applies. On RP-1's
+* upkeep cadence, as `rp1.budget`, and again whenever the queue, its rate or
+* the researcher count changes.
+*
+* Absent when RP-1 is not managing a career in the loaded scene.
+*/
+export interface Rp1ResearchRates
+{
+	/**
+	* The universal time these figures were computed at, which every finish date
+	* here is measured from.
+	*/
+	refreshedAt?: Value<"ut"> | null;
+	/**
+	* The node being researched, whose finish date each step carries, joining
+	* `rp1.research[].techId`. Absent on an empty queue.
+	*/
+	techId?: string | null;
+	/**
+	* From 0 to 1 in steps of 0.05, ascending: the values `rp1.research.setRate`
+	* accepts. Empty on an empty queue, where RP-1 draws no slider and there is no
+	* rate to set.
+	*/
+	steps?: Rp1ResearchRateStep[] | null;
+}
+/** One research work rate, and what it pays, earns and buys. */
+export interface Rp1ResearchRateStep
+{
+	workRate?: Value<"ratio"> | null;
+	/**
+	* What the researchers are paid per day at this rate, as the Budget tab's
+	* Research Teams row would show it. Never zero while any are hired: a stopped
+	* queue still pays the idle share.
+	*/
+	researcherSalaryPerDay?: Value<"f/day"> | null;
+	/** Unlock Credit earned per day at this rate. Zero at a rate of zero. */
+	unlockCreditPerDay?: Value<"f/day"> | null;
+	/**
+	* When the node being researched would finish at this rate. Absent at a rate
+	* of zero, which never finishes, and before RP-1 has costed the node.
+	*/
+	finishesAt?: Value<"ut"> | null;
 }
 /**
 * One node on RP-1's research queue. Global across centres, so no centre key:

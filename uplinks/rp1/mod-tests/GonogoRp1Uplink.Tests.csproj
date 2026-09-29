@@ -59,6 +59,9 @@
     <Compile Include="..\mod\Rp1ConstructionRatesReflection.cs" />
     <Compile Include="..\mod\Rp1ConstructionRatesCapture.cs" />
     <Compile Include="..\mod\Rp1ConstructionCommands.cs" />
+    <Compile Include="..\mod\Rp1ResearchRatesReflection.cs" />
+    <Compile Include="..\mod\Rp1ResearchRatesCapture.cs" />
+    <Compile Include="..\mod\Rp1ResearchRateCommands.cs" />
     <Compile Include="..\mod\Rp1ScUplink.cs" />
     <Compile Include="..\mod\Rp1EconomyBackend.cs" />
     <Compile Include="..\mod\Rp1EconomyUpkeepQuery.cs" />

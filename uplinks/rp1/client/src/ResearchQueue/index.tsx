@@ -1,4 +1,8 @@
-import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  registerAugment,
+  useCommand,
+  useTelemetry,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Countdown,
@@ -17,6 +21,10 @@ import type { Rp1ResearchEntry } from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
+import {
+  RP1_RESEARCH_SET_RATE_COMMAND,
+  ResearchRateControl,
+} from "./RateControl.js";
 
 /**
  * RP-1's research QUEUE, beside a tech tree that can only show which nodes are
@@ -35,6 +43,11 @@ import "../topics.js";
 export function ResearchQueue() {
   const available = current(useTelemetry("rp1.available"));
   const research = current(useTelemetry("rp1.research"));
+  const rates = current(useTelemetry("rp1.researchRates"));
+
+  // Unconditional and above the early return: a hook after one would change
+  // count on the first frame RP-1 answers.
+  const setRate = useCommand(RP1_RESEARCH_SET_RATE_COMMAND);
 
   // Invisible without RP-1, rather than an empty section on a stock game.
   if (available !== true) {
@@ -57,6 +70,7 @@ export function ResearchQueue() {
   return (
     <Section>
       <SectionTitle>RESEARCH QUEUE</SectionTitle>
+      <ResearchRateControl queue={queue} rates={rates} handle={setRate} />
       <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
         {queue.map((node) => (
           <ResearchRow key={node.techId ?? ""} node={node} />

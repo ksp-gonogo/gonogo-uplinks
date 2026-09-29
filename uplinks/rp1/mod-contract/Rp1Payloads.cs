@@ -1181,6 +1181,83 @@ public sealed class Rp1FacilityUpgradeRate
 }
 
 /// <summary>
+/// What the research queue would pay its researchers per day, earn in Unlock
+/// Credit per day, and when the node being researched would finish, at every
+/// work rate RP-1's slider offers.
+///
+/// <para><b>Research is a PROGRESSIVE spend.</b> Setting the rate charges
+/// nothing. Researchers draw their salary every day, the idle share of it when
+/// stopped, and the rate trades that salary against research speed and Unlock
+/// Credit accrual. So the readout beside a rate control is the pay, the credit
+/// and the finish date, and there is no "cannot afford" anywhere in it.</para>
+///
+/// <para>The salary is RP-1's own <c>MaintenanceHandler.UpdateUpkeep</c>
+/// arithmetic at each rate, put through the researcher salary currency query as
+/// the Budget tab's Research Teams row is, and the credit is
+/// <c>UnlockCreditHandler.CreditForTime</c>'s arithmetic over a day at each
+/// rate, with the Unlock Credit rate modifier the Budget tab applies. On RP-1's
+/// upkeep cadence, as <c>rp1.budget</c>, and again whenever the queue, its
+/// rate or the researcher count changes.</para>
+///
+/// <para>Absent when RP-1 is not managing a career in the loaded scene.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.researchRates")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ResearchRates
+{
+    /// <summary>The universal time these figures were computed at, which every finish date here is measured from.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? RefreshedAt { get; set; }
+
+    /// <summary>
+    /// The node being researched, whose finish date each step carries, joining
+    /// <c>rp1.research[].techId</c>. Absent on an empty queue.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? TechId { get; set; }
+
+    /// <summary>
+    /// From 0 to 1 in steps of 0.05, ascending: the values
+    /// <c>rp1.research.setRate</c> accepts. Empty on an empty queue, where RP-1
+    /// draws no slider and there is no rate to set.
+    /// </summary>
+    public List<Rp1ResearchRateStep>? Steps { get; set; }
+}
+
+/// <summary>One research work rate, and what it pays, earns and buys.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ResearchRateStep
+{
+    [SitrepUnit(Units.Ratio)]
+    public double? WorkRate { get; set; }
+
+    /// <summary>
+    /// What the researchers are paid per day at this rate, as the Budget tab's
+    /// Research Teams row would show it. Never zero while any are hired: a
+    /// stopped queue still pays the idle share.
+    /// </summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? ResearcherSalaryPerDay { get; set; }
+
+    /// <summary>Unlock Credit earned per day at this rate. Zero at a rate of zero.</summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? UnlockCreditPerDay { get; set; }
+
+    /// <summary>
+    /// When the node being researched would finish at this rate. Absent at a
+    /// rate of zero, which never finishes, and before RP-1 has costed the node.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? FinishesAt { get; set; }
+}
+
+/// <summary>
 /// One node on RP-1's research queue. Global across centres, so no centre key:
 /// researchers are hired once for the programme, not per space centre.
 /// </summary>

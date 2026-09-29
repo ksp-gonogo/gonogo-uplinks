@@ -397,6 +397,7 @@ namespace GonogoRp1Uplink.Tests
                     Rp1ContractCommands.SetPayloadCommand,
                     Rp1ConstructionCommands.SetRateCommand,
                     Rp1ConstructionCommands.CancelCommand,
+                    Rp1ResearchRateCommands.SetRateCommand,
                 },
                 declarations.Select(d => d.Command).ToArray());
             Assert.All(declarations, declaration =>

@@ -380,6 +380,10 @@ namespace GonogoRp1Uplink.Tests
             // construction list prices it: a complex or pad, and a building.
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureConstruction", "Rp1ConstructionRatesReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureConstructionLC", "Rp1ConstructionRatesReflection"),
+            // The researcher salary at each research work rate, as the Budget
+            // tab's Research Teams row prices it, and the Unlock Credit modifier.
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryResearchers", "Rp1ResearchRatesReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "RateUnlockCreditIncrease", "Rp1ResearchRatesReflection"),
         };
 
         public static IReadOnlyList<Rp1ConstructorTarget> Constructors { get; } = new[]
@@ -504,6 +508,13 @@ namespace GonogoRp1Uplink.Tests
             new Rp1MethodTarget(RoUtils, "ROUtils.HermiteCurve", "Evaluate", 1, false, "Rp1ConstructionRatesReflection"),
             // RP-1's own "X": the kind's ProcessCancel, which refunds nothing.
             new Rp1MethodTarget(Rp0, "RP0.ConstructionProject", "Cancel", 0, false, "Rp1ConstructionCommands"),
+            // The research rate table's two currency queries, with their
+            // defaulted last arguments passed.
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1ResearchRatesReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Rate", 2, true, "Rp1ResearchRatesReflection"),
+            // RP-1's own slider schedules this after writing the rate, so the
+            // researcher salary is repriced on the next tick.
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "ScheduleMaintenanceUpdate", 0, false, "Rp1ResearchRateCommands"),
             // The fill and reset that bracket RP-1's own per-course training cost,
             // both writing its scratch list on SettingsSC.
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingDatabase", "FillBools", 3, true, "Rp1BudgetBreakdownReflection"),
@@ -1311,7 +1322,9 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.ResearchProject", "techName", Rp1Reader.Text, Sc);
             Add("RP0.ResearchProject", "scienceCost", Rp1Reader.Numeric, Sc);
             Add("RP0.ResearchProject", "progress", Rp1Reader.Numeric, Sc);
-            Add("RP0.ResearchProject", "workRate", Rp1Reader.Numeric, Sc);
+            // WRITTEN onto every queued node by rp1.research.setRate, which is
+            // all RP-1's own slider does.
+            Add("RP0.ResearchProject", "workRate", Rp1Reader.NumericWrite, Sc + ", Rp1ResearchRateCommands");
             Add("RP0.ResearchProject", "_buildRate", Rp1Reader.Numeric, Sc);
             Add("RP0.ResearchProject", "startYear", Rp1Reader.Numeric, Sc);
             Add("RP0.ResearchProject", "endYear", Rp1Reader.Numeric, Sc);
@@ -1672,6 +1685,30 @@ namespace GonogoRp1Uplink.Tests
                 // as LaunchPad: the reason RP-1 prices them under.
                 Add(construction, "FacilityType", Rp1Reader.EnumText, Rates);
             }
+
+            // ── The research rate table and its command ─────────────────────
+            const string ResearchRates = "Rp1ResearchRatesReflection";
+            const string ResearchRateWrites = "Rp1ResearchRateCommands";
+            Add("RP0.MaintenanceHandler", "Instance", Rp1Reader.Presence, ResearchRates + ", " + ResearchRateWrites, @static: true);
+            Add("RP0.MaintenanceHandler", "lastUpdate", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, ResearchRates + ", " + ResearchRateWrites, @static: true);
+            Add("RP0.SpaceCenterManagement", "TechList", Rp1Reader.Presence, ResearchRates + ", " + ResearchRateWrites);
+            Add("RP0.SpaceCenterManagement", "Researchers", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, ResearchRates, @static: true);
+            Add("RP0.SpaceCenterSettings", "salaryResearchers", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.SpaceCenterSettings", "ResearcherIdleSalaryMult", Rp1Reader.Numeric, ResearchRates);
+            // A PersistentSortedListValueTypes<int, double>, walked as a bare
+            // IEnumerable of KeyValuePairs in key order, as CreditForTime walks it.
+            Add("RP0.SpaceCenterSettings", "researchersToUnlockCreditSalaryMultipliers", Rp1Reader.Presence, ResearchRates);
+            Add("RP0.UnlockCreditHandler", "Instance", Rp1Reader.Presence, ResearchRates, @static: true);
+            // Private, set from the difficulty settings on load. CreditForTime
+            // reads it and takes no rate, so its arithmetic is repeated here.
+            Add("RP0.UnlockCreditHandler", "_unlockCredRate", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.ResearchProject", "techID", Rp1Reader.Text, ResearchRates);
+            Add("RP0.ResearchProject", "workRate", Rp1Reader.NumericWrite, ResearchRates);
+            Add("RP0.ResearchProject", "_buildRate", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.ResearchProject", "scienceCost", Rp1Reader.Numeric, ResearchRates);
+            Add("RP0.ResearchProject", "progress", Rp1Reader.Numeric, ResearchRates);
 
             // ── ROUtils, which ships beside RP-1 and owns these two shapes ──
             AddRo("ROUtils.HermiteCurve+Key", "time", Rp1Reader.Numeric, Programs);

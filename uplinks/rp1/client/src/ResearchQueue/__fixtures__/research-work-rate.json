@@ -1,19 +1,18 @@
 {
   "_meta": {
-    "notes": "A queue doing all three things at once, which is the state the tech tree cannot show any of: the node at the head is being worked and has a date, the one behind it has been throttled down by the operator so its progress is real but slow, and the third is stalled with no rate to quote a date from. The era rows are on the first two and absent on the third, which is also what a node RP-1 records no era for looks like"
+    "notes": "A career with sixty researchers on RP-1's shipped salary of 750 a year and its first Unlock Credit tier of 0.6, running the queue at 60%. The readout under the stepper is the table rp1.researchRates carries at that step: the pay the Budget tab's Research Teams row would show, the Unlock Credit it earns per day, and when the node at the head finishes. A render cannot step the control, so the comparison against the current rate is held by rate.test.tsx"
   },
   "_scene": {
-    "hero": true,
     "augment": "rp1-research-queue",
-    "size": { "w": 10, "h": 14 },
-    "caption": "Three queued nodes: one being worked with a countdown and its era window, one throttled down to a fifth of full rate, and one stalled with nothing to date it from",
+    "size": { "w": 10, "h": 10 },
+    "caption": "The research queue at 60%: what the researchers are paid per day, the Unlock Credit it earns, and when the node being worked finishes, beside the stepper and Set rate",
     "paints": [
       "RESEARCH QUEUE",
-      "Early Rocketry",
-      "Progress",
-      "Era",
-      "throttled to",
-      "STALLED"
+      "60%",
+      "researchers paid",
+      "Unlock Credit",
+      "Early Rocketry done",
+      "Set rate"
     ]
   },
   "_stream": {
@@ -29,9 +28,9 @@
             "scienceCost": 40,
             "progress": 26.5,
             "progressRatio": 0.6625,
-            "workRate": 1,
-            "rate": 0.0000041,
-            "timeLeftSeconds": 3283000,
+            "workRate": 0.6,
+            "rate": 0.00000246,
+            "timeLeftSeconds": 5471667,
             "stalled": false,
             "startYear": 1951,
             "endYear": 1955
@@ -40,23 +39,12 @@
             "techId": "basicRocketry",
             "techName": "Basic Rocketry",
             "scienceCost": 90,
-            "progress": 12,
-            "progressRatio": 0.1333,
-            "workRate": 0.2,
-            "rate": 0.0000008,
-            "timeLeftSeconds": 97500000,
+            "progress": 0,
+            "progressRatio": 0,
+            "workRate": 0.6,
             "stalled": false,
             "startYear": 1953,
             "endYear": 1958
-          },
-          {
-            "techId": "earlyFlightControl",
-            "techName": "Early Flight Control",
-            "scienceCost": 45,
-            "progress": 0,
-            "progressRatio": 0,
-            "workRate": 1,
-            "stalled": true
           }
         ]
       },

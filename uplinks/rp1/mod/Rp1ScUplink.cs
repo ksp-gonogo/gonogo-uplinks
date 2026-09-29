@@ -97,6 +97,12 @@ namespace GonogoRp1Uplink
         public const string ConstructionRatesTopic = "rp1.constructionRates";
 
         /// <summary>
+        /// What the research queue pays its researchers, earns in Unlock Credit
+        /// and finishes at every work rate.
+        /// </summary>
+        public const string ResearchRatesTopic = "rp1.researchRates";
+
+        /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
         /// here whose subject is a craft in flight rather than the space centre,
         /// and the one that is <see cref="DelayRole.Delayed"/>.
@@ -204,6 +210,9 @@ namespace GonogoRp1Uplink
         /// a currency query, and on the budget's cadence for the same reason.
         /// </summary>
         private readonly Rp1ConstructionRatesReflection _constructionRates = new Rp1ConstructionRatesReflection();
+
+        /// <summary>The research rate table, on its own reader and the budget's cadence for the same reason.</summary>
+        private readonly Rp1ResearchRatesReflection _researchRates = new Rp1ResearchRatesReflection();
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
@@ -351,6 +360,13 @@ namespace GonogoRp1Uplink
         private readonly Rp1ConstructionCommands _constructionWrites = new Rp1ConstructionCommands();
 
         /// <summary>
+        /// The research queue's work rate. Its own class because it throttles the
+        /// whole queue rather than queueing a node, which is what
+        /// <see cref="_researchCommands"/> does.
+        /// </summary>
+        private readonly Rp1ResearchRateCommands _researchRateWrites = new Rp1ResearchRateCommands();
+
+        /// <summary>
         /// Putting a crew through a training and taking them back off it. Its own
         /// class for the reason every write here has one, and because it is the
         /// only one that constructs an RP-1 project and then hands it to RP-1's own
@@ -479,6 +495,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _budgetPublisher;
         private IChannelPublisher? _budgetBreakdownPublisher;
         private IChannelPublisher? _constructionRatesPublisher;
+        private IChannelPublisher? _researchRatesPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -521,7 +538,7 @@ namespace GonogoRp1Uplink
                 _trainingWrites.IsAvailable, _complexLifecycle.IsAvailable,
                 _complexConstruction.IsAvailable, _complexConstruction.IsPadAvailable,
                 _warp.IsAvailable, _toolingWrites.IsAvailable, _contracts.IsAvailable,
-                _constructionWrites.IsAvailable);
+                _constructionWrites.IsAvailable, _researchRateWrites.IsAvailable);
             _crewStanding = new Rp1CrewStandingBackend(_crew);
             _economy = new Rp1EconomyBackend(_upkeepQuery);
         }
@@ -543,7 +560,8 @@ namespace GonogoRp1Uplink
             bool warpModelResolved,
             bool toolingModelResolved,
             bool contractModelResolved,
-            bool constructionModelResolved) => new UplinkManifest
+            bool constructionModelResolved,
+            bool researchRateModelResolved) => new UplinkManifest
         {
             Id = "rp1",
             Version = "1.0.0",
@@ -644,6 +662,7 @@ namespace GonogoRp1Uplink
                 AtHome(BudgetTopic, absenceIsData: true),
                 AtHome(BudgetBreakdownTopic, absenceIsData: true),
                 AtHome(ConstructionRatesTopic, absenceIsData: true),
+                AtHome(ResearchRatesTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -680,7 +699,7 @@ namespace GonogoRp1Uplink
                 trainingModelResolved, complexLifecycleModelResolved,
                 complexConstructionModelResolved, padConstructionModelResolved,
                 warpModelResolved, toolingModelResolved, contractModelResolved,
-                constructionModelResolved),
+                constructionModelResolved, researchRateModelResolved),
             ErrorCodes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes)),
         };
 
@@ -720,7 +739,8 @@ namespace GonogoRp1Uplink
             bool warpModelResolved,
             bool toolingModelResolved,
             bool contractModelResolved,
-            bool constructionModelResolved)
+            bool constructionModelResolved,
+            bool researchRateModelResolved)
         {
             var commands = new List<CommandDeclaration>();
             if (buildModelResolved)
@@ -884,6 +904,12 @@ namespace GonogoRp1Uplink
             {
                 commands.Add(Declare(Rp1ConstructionCommands.SetRateCommand, ConstructionsTopic));
                 commands.Add(Declare(Rp1ConstructionCommands.CancelCommand, ConstructionsTopic));
+            }
+            // Its own flag, on RP-1's space centre alone. The rate it sets is
+            // each queued node's workRate, which rp1.research carries.
+            if (researchRateModelResolved)
+            {
+                commands.Add(Declare(Rp1ResearchRateCommands.SetRateCommand, ResearchTopic));
             }
             return commands;
         }
@@ -1075,7 +1101,7 @@ namespace GonogoRp1Uplink
                     || _researchCommands.IsAvailable
                     || _strategies.IsAvailable || _targets.IsAvailable
                     || _trainingWrites.IsAvailable || _toolingWrites.IsAvailable
-                    || _constructionWrites.IsAvailable)
+                    || _constructionWrites.IsAvailable || _researchRateWrites.IsAvailable)
                 {
                     host.AddGateEvaluator(_build);
                 }
@@ -1232,6 +1258,14 @@ namespace GonogoRp1Uplink
                         Rp1ConstructionCommands.SetRateCommand, _constructionWrites.SetRate);
                     host.AddCommandHandler<Rp1ConstructionCancelArgs, CommandResult>(
                         Rp1ConstructionCommands.CancelCommand, _constructionWrites.Cancel);
+                }
+            });
+            Register(() =>
+            {
+                if (_researchRateWrites.IsAvailable)
+                {
+                    host.AddCommandHandler<Rp1ResearchRateArgs, CommandResult>(
+                        Rp1ResearchRateCommands.SetRateCommand, _researchRateWrites.SetRate);
                 }
             });
             Register(() =>
@@ -1409,6 +1443,7 @@ namespace GonogoRp1Uplink
             _budgetPublisher = host.Publisher(BudgetTopic);
             _budgetBreakdownPublisher = host.Publisher(BudgetBreakdownTopic);
             _constructionRatesPublisher = host.Publisher(ConstructionRatesTopic);
+            _researchRatesPublisher = host.Publisher(ResearchRatesTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1519,6 +1554,10 @@ namespace GonogoRp1Uplink
                 CaptureConstructionRatesOnMain,
                 HandleConstructionRatesOnCourier,
                 ConstructionRatesTopic);
+            host.AddSampledSource(
+                CaptureResearchRatesOnMain,
+                HandleResearchRatesOnCourier,
+                ResearchRatesTopic);
 
             // UNGATED, and the two captures above say why by contrast: their whole
             // effect is their return value, and this one's is not. It feeds the
@@ -1941,6 +1980,33 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// MAIN-THREAD capture: the research rate table, recomputed only when RP-1
+        /// has refreshed its upkeep or the queue has changed.
+        /// </summary>
+        internal object? CaptureResearchRatesOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            return new Rp1ResearchRatesCaptureData { Ut = ut, Raw = _researchRates.CaptureOnMain(ut) };
+        }
+
+        /// <summary>COURIER-THREAD handle: map to a wire dict and publish. No game API.</summary>
+        internal void HandleResearchRatesOnCourier(object? captured)
+        {
+            if (captured is not Rp1ResearchRatesCaptureData cap)
+            {
+                return;
+            }
+            Rp1RowBudget.Record(cap.Raw?.Steps.Count ?? 0, cap.Ut);
+            _researchRatesPublisher?.Publish(Rp1ResearchRatesCapture.Build(cap.Raw), cap.Ut);
+        }
+
+        private sealed class Rp1ResearchRatesCaptureData
+        {
+            public double Ut;
+            public Rp1ResearchRatesRaw? Raw;
+        }
+
+        /// <summary>
         /// Health, and WHICH RP-1. The version caveat at the top of
         /// <see cref="Rp1ScReflection"/> is why these facts are load-bearing
         /// rather than decorative: RP-1 ships roughly monthly, this Uplink is
@@ -1959,6 +2025,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("budget", _budget.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact("budget breakdown", _budgetBreakdown.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact("construction rates", _constructionRates.IsAvailable ? "resolved" : "space centre or currency types not found"),
+                new UplinkHealthFact("research rates", _researchRates.IsAvailable ? "resolved" : "space centre, settings or currency types not found"),
                 new UplinkHealthFact(
                     "control locker",
                     _avionics.IsAvailable

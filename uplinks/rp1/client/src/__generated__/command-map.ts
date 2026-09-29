@@ -71,6 +71,7 @@ import type {
   Rp1PersonnelHeadcountArgs,
   Rp1ProgramAcceptArgs,
   Rp1ProgramCompleteArgs,
+  Rp1ResearchRateArgs,
   Rp1RolloutArgs,
   Rp1TargetCancelArgs,
   Rp1TechResearchArgs,
@@ -110,6 +111,7 @@ export interface GeneratedCommandArgsMap {
   "rp1.personnel.hire": Rp1PersonnelHeadcountArgs;
   "rp1.program.accept": Rp1ProgramAcceptArgs;
   "rp1.program.complete": Rp1ProgramCompleteArgs;
+  "rp1.research.setRate": Rp1ResearchRateArgs;
   "rp1.tech.research": Rp1TechResearchArgs;
   "rp1.tooling.refit": Rp1ToolingRefitArgs;
   "rp1.tooling.toolAll": Rp1ToolAllArgs;
@@ -146,6 +148,7 @@ export interface GeneratedCommandReplyMap {
   "rp1.personnel.hire": CommandResult;
   "rp1.program.accept": CommandResult;
   "rp1.program.complete": CommandResult;
+  "rp1.research.setRate": CommandResult;
   "rp1.tech.research": CommandResult;
   "rp1.tooling.refit": CommandResult;
   "rp1.tooling.toolAll": CommandResult;
@@ -192,6 +195,7 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.personnel.hire": "CommandResult",
   "rp1.program.accept": "CommandResult",
   "rp1.program.complete": "CommandResult",
+  "rp1.research.setRate": "CommandResult",
   "rp1.tech.research": "CommandResult",
   "rp1.tooling.refit": "CommandResult",
   "rp1.tooling.toolAll": "CommandResult",
@@ -266,6 +270,7 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.personnel.hire": { replies: true, delayed: true },
   "rp1.program.accept": { replies: true, delayed: true },
   "rp1.program.complete": { replies: true, delayed: true },
+  "rp1.research.setRate": { replies: true, delayed: true },
   "rp1.tech.research": { replies: true, delayed: true },
   "rp1.tooling.refit": { replies: true, delayed: true },
   "rp1.tooling.toolAll": { replies: true, delayed: true },
@@ -302,6 +307,7 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.personnel.hire",
   "rp1.program.accept",
   "rp1.program.complete",
+  "rp1.research.setRate",
   "rp1.tech.research",
   "rp1.tooling.refit",
   "rp1.tooling.toolAll",

@@ -70,7 +70,7 @@ public class Rp1ScUplinkTests : IDisposable
         var atHome = manifest.Channels
             .Where(c => c.Topic != Rp1ScUplink.AvionicsTopic && c.Topic != Rp1ScUplink.AvailableTopic)
             .ToList();
-        Assert.Equal(28, atHome.Count);
+        Assert.Equal(29, atHome.Count);
         Assert.All(atHome, c =>
         {
             Assert.Equal(DelayRole.Delayed, c.Delay);

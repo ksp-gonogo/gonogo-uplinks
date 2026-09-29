@@ -40,6 +40,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.programSlots` | `Rp1ProgramSlots` | lossy-latest | delayed |
 | `rp1.programs` | `Rp1ProgramEntry[]` | lossy-latest | delayed |
 | `rp1.research` | `Rp1ResearchEntry[]` | lossy-latest | delayed |
+| `rp1.researchRates` | `Rp1ResearchRates` | lossy-latest | delayed |
 | `rp1.rushTerms` | `Rp1RushTerms` | lossy-latest | delayed |
 | `rp1.tooling` | `Rp1Tooling` | lossy-latest | delayed |
 | `rp1.training` | `Rp1TrainingCourseEntry[]` | lossy-latest | delayed |
@@ -70,6 +71,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
 | `Rp1RequiredTechEntry` | `id` id, `parts` text, `title` text |
+| `Rp1ResearchRateStep` | `finishesAt` ut, `researcherSalaryPerDay` f/day, `unlockCreditPerDay` f/day, `workRate` ratio |
 | `Rp1ToolingEntry` | `parameterSummary` text, `partId` id, `partTitle` text, `refitTargets` Rp1ToolingRefitTarget[], `refittable` flag, `symmetryCounterparts` count, `tooled` flag, `toolingCost` funds, `toolingType` id, `toolingTypeTitle` text, `untooledSurcharge` funds |
 | `Rp1ToolingRefitTarget` | `diameter` m, `length` m, `rfType` id |
 | `Rp1TrainingFeeEntry` | `perStudent` Rp1BudgetHorizons, `templateId` id |
@@ -101,6 +103,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.personnel.hire` | `Rp1PersonnelHeadcountArgs` | `CommandResult` |
 | `rp1.program.accept` | `Rp1ProgramAcceptArgs` | `CommandResult` |
 | `rp1.program.complete` | `Rp1ProgramCompleteArgs` | `CommandResult` |
+| `rp1.research.setRate` | `Rp1ResearchRateArgs` | `CommandResult` |
 | `rp1.tech.research` | `Rp1TechResearchArgs` | `CommandResult` |
 | `rp1.tooling.refit` | `Rp1ToolingRefitArgs` | `CommandResult` |
 | `rp1.tooling.toolAll` | `Rp1ToolAllArgs` | `CommandResult` |
@@ -134,6 +137,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1PersonnelHeadcountArgs` | `count` count, `kscName` id, `research` flag |
 | `Rp1ProgramAcceptArgs` | `speed` enum, `strategyId` id |
 | `Rp1ProgramCompleteArgs` | `strategyId` id |
+| `Rp1ResearchRateArgs` | `workRate` ratio |
 | `Rp1RolloutArgs` | `id` id, `pad` id |
 | `Rp1TargetCancelArgs` | – |
 | `Rp1TechResearchArgs` | `techId` id |
@@ -175,7 +179,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
 | `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
-| `rp1-research-queue` | `tech-tree.sections` | – |  | 1 |  |
+| `rp1-research-queue` | `tech-tree.sections` | – |  | 2 |  |
 | `rp1-start-research` | `tech-tree.sections` | `rp1.available`, `career.status`, `rp1.research` | only while `rp1` | 2 |  |
 | `rp1-vehicle-assembly-build-cost` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-vehicle-assembly-building` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |

@@ -85,6 +85,9 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1FacilityUpgradeRate),
                 nameof(Rp1ConstructionRateArgs),
                 nameof(Rp1ConstructionCancelArgs),
+                nameof(Rp1ResearchRates),
+                nameof(Rp1ResearchRateStep),
+                nameof(Rp1ResearchRateArgs),
                 nameof(Rp1HireTargetSetArgs),
                 // The shapes here that are not Topic payloads: the command
                 // args. They are held to the same rule because they cross the

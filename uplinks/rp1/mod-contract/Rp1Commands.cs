@@ -504,6 +504,39 @@ public class Rp1ConstructionCancelArgs
 }
 
 /// <summary>
+/// Args for <c>rp1.research.setRate</c>: set the research queue's work rate, the
+/// throttle RP-1 draws as one slider under its research list.
+///
+/// <para><b>One rate for the whole queue.</b> RP-1's slider writes the same rate
+/// onto every queued node, and only the node being researched progresses, so
+/// there is no per-node rate to aim at and no id.</para>
+///
+/// <para><b>A progressive spend, so nothing is refused on affordability.</b>
+/// Researchers are paid every day whatever the rate: a lower rate pays them the
+/// idle share of their salary and earns proportionally less Unlock Credit, and
+/// the node finishes later. What each step pays, earns and finishes is on
+/// <c>rp1.researchRates</c>.</para>
+///
+/// <para>A SET rather than a delta, for the reason <see cref="Rp1ComplexRushArgs"/>
+/// gives: a rate aimed from a stale view lands where it was aimed.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.research.setRate")]
+public class Rp1ResearchRateArgs
+{
+    /// <summary>
+    /// The work rate, 0 to 1 in steps of 0.05, as RP-1's slider allows. A value
+    /// between steps is refused rather than rounded, so what lands is what was
+    /// shown.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? WorkRate { get; set; }
+}
+
+/// <summary>
 /// Args for <c>rp1.tech.research</c>: put a tech node on RP-1's research queue.
 ///
 /// <para><b>Why this exists rather than <c>career.tech.unlock</c>.</b> Under a
