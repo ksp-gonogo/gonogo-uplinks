@@ -107,6 +107,12 @@ public static class Rp1RtConfig
             typeof(Rp1CourseCostEntry),
             typeof(Rp1TrainingFeeEntry),
             typeof(Rp1ProgramFundingEntry),
+            typeof(Rp1ConstructionRateArgs),
+            typeof(Rp1ConstructionCancelArgs),
+            typeof(Rp1ConstructionRates),
+            typeof(Rp1ConstructionRateTable),
+            typeof(Rp1ConstructionRateStep),
+            typeof(Rp1FacilityUpgradeRate),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

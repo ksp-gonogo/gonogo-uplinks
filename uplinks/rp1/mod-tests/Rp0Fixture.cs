@@ -775,6 +775,10 @@ namespace RP0
         /// <summary>Researching a tech node, the reason RP-1's own R&D tooltip prices against.</summary>
         RnDTechResearch = 0x4000L,
 
+        /// <summary>The two a construction is charged under: a building, and a complex or pad.</summary>
+        StructureConstruction = 0x2000L,
+        StructureConstructionLC = 1L,
+
         /// <summary>
         /// Buying a head, and the two bits RP-1 gives them: not adjacent, and not
         /// in role order. Copied off the shipped enum rather than renumbered,
@@ -1243,6 +1247,38 @@ namespace RP0
 
         /// <summary>How many times the duration was set, so a test can pin RP-1's order rather than only its inputs.</summary>
         public int BpCalls;
+
+        /// <summary>How many times the project was cancelled.</summary>
+        public int CancelCalls;
+
+        /// <summary>
+        /// RP-1's public cancel, which runs the kind's ProcessCancel. The stand-in
+        /// takes the project off whichever list holds it, which is the part of
+        /// every ProcessCancel a caller can observe; it refunds nothing, as RP-1
+        /// refunds nothing.
+        /// </summary>
+        public virtual void Cancel()
+        {
+            CancelCalls++;
+            foreach (var ksc in SpaceCenterManagement.Instance?.KSCs ?? new List<LCSpaceCenter>())
+            {
+                if (this is FacilityUpgradeProject fu)
+                {
+                    ksc.FacilityUpgrades.Remove(fu);
+                }
+                if (this is LCConstructionProject lcc)
+                {
+                    ksc.LCConstructions.Remove(lcc);
+                }
+                foreach (var lc in ksc.LaunchComplexes)
+                {
+                    if (this is PadConstructionProject pc)
+                    {
+                        lc.PadConstructions.Remove(pc);
+                    }
+                }
+            }
+        }
     }
 
     public class FacilityUpgradeProject : ConstructionProject
@@ -1250,6 +1286,9 @@ namespace RP0
         public int upgradeLevel;
         public int currentLevel;
         public string id = "";
+
+        /// <summary>Set by the five-argument constructor on the real type and left empty by the loader's.</summary>
+        public Guid uid;
 
         protected SpaceCenterFacility sFacilityType;
 
@@ -1266,6 +1305,7 @@ namespace RP0
         /// </summary>
         public FacilityUpgradeProject(SpaceCenterFacility type, string facilityID, int newLevel, int oldLevel, string name)
         {
+            uid = Guid.NewGuid();
             sFacilityType = type;
             id = facilityID;
             upgradeLevel = newLevel;

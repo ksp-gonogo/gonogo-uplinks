@@ -393,6 +393,8 @@ namespace GonogoRp1Uplink
     /// </summary>
     public sealed class Rp1ConstructionRaw
     {
+        /// <summary>The project's own id, per <see cref="Rp1ConstructionIds"/>.</summary>
+        public string? Id;
         public string? KscName;
         public string? LcId;
         public string? Kind;

@@ -307,6 +307,11 @@
       "elements": 176,
       "text": "4664f431"
     },
+    "construction-rate-and-cancel--default.png": {
+      "hash": "3d52ea036069a15d",
+      "elements": 290,
+      "text": "acf1d46f"
+    },
     "construction-rushing-and-stalled--default.png": {
       "hash": "b0e10c71d89fc34e",
       "elements": 194,
@@ -373,9 +378,9 @@
       "text": "0d547105"
     },
     "facility-upgrades-at-centre--default.png": {
-      "hash": "dd3331c201d95529",
-      "elements": 173,
-      "text": "ff786031"
+      "hash": "dd54b5c35542a56f",
+      "elements": 181,
+      "text": "580ce0fb"
     },
     "facility-upgrades-away--default.png": {
       "hash": "fa43d5c33446b0fe",
@@ -383,9 +388,9 @@
       "text": "cccad8e3"
     },
     "facility-upgrades-away-rp1-answers--default.png": {
-      "hash": "01159a26ec50962b",
-      "elements": 112,
-      "text": "a7fed400"
+      "hash": "330d18d435db88eb",
+      "elements": 120,
+      "text": "5b71d424"
     },
     "hire-target-standing--default.png": {
       "hash": "195c972306511676",

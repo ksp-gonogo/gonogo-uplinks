@@ -26,6 +26,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.centres` | `Rp1CentreEntry[]` | lossy-latest | delayed |
 | `rp1.complexes` | `Rp1ComplexEntry[]` | lossy-latest | delayed |
 | `rp1.confidence` | `Rp1Confidence` | lossy-latest | delayed |
+| `rp1.constructionRates` | `Rp1ConstructionRates` | lossy-latest | delayed |
 | `rp1.constructions` | `Rp1ConstructionEntry[]` | lossy-latest | delayed |
 | `rp1.crew` | `Rp1CrewEntry[]` | lossy-latest | delayed |
 | `rp1.crewProgram` | `Rp1CrewProgram` | lossy-latest | delayed |
@@ -56,8 +57,11 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |
 | `Rp1ComplexUpkeepEntry` | `kscName` id, `lcId` id, `name` text, `operational` flag, `upkeep` Rp1BudgetHorizons |
+| `Rp1ConstructionRateStep` | `costMultiplier` ratio, `costPerDay` f/day, `finishesAt` ut, `workRate` ratio |
+| `Rp1ConstructionRateTable` | `id` id, `steps` Rp1ConstructionRateStep[] |
 | `Rp1CourseCostEntry` | `cost` Rp1BudgetHorizons, `id` id, `students` count |
 | `Rp1CrewCostEntry` | `cost` Rp1BudgetHorizons, `inFlight` flag, `name` id |
+| `Rp1FacilityUpgradeRate` | `buildSeconds` s, `costPerDay` f/day, `facility` enum |
 | `Rp1FundingCurveKey` | `frac` ratio, `inTangent` 1, `outTangent` 1, `paidFraction` ratio |
 | `Rp1HireTarget` | `active` flag, `currentCount` count, `isResearch` flag, `lcId` id, `leftToHire` count, `targetCount` count, `timeLeft` s |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
@@ -81,6 +85,8 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.complex.new` | `Rp1ComplexNewArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.complex.rename` | `Rp1ComplexRenameArgs` | `CommandResult` |
 | `rp1.complex.rush` | `Rp1ComplexRushArgs` | `CommandResult` |
+| `rp1.construction.cancel` | `Rp1ConstructionCancelArgs` | `CommandResult` |
+| `rp1.construction.setRate` | `Rp1ConstructionRateArgs` | `CommandResult` |
 | `rp1.contracts.setPayload` | `Rp1ContractPayloadArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.facility.upgrade` | `Rp1FacilityUpgradeArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.fundTarget.cancel` | `Rp1TargetCancelArgs` | `CommandResult` |
@@ -111,6 +117,8 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1ComplexNewArgs` | `assignEngineersOnComplete` flag, `humanRated` flag, `kscName` id, `massMax` t, `name` id, `size` Rp1ComplexSizeArgs |
 | `Rp1ComplexRenameArgs` | `lcId` id, `name` id |
 | `Rp1ComplexRushArgs` | `lcId` id, `rushing` flag |
+| `Rp1ConstructionCancelArgs` | `id` id |
+| `Rp1ConstructionRateArgs` | `id` id, `workRate` ratio |
 | `Rp1ContractPayloadArgs` | `commsPayload` kg, `weatherPayload` kg |
 | `Rp1FacilityUpgradeArgs` | `facility` id |
 | `Rp1HireTargetSetArgs` | `lcId` id, `reserveFunds` funds, `targetCount` count |
@@ -154,10 +162,10 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-courses` | `astronaut-complex.training` | `rp1.available`, `rp1.training`, `rp1.crew` |  | 2 |  |
 | `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
-| `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities` | only while `rp1` | 3 |  |
+| `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.programs`, `rp1.training`, `rp1.research` | only while `rp1` | 3 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 12 |  |
-| `rp1-ksc-construction` | `space-center-status.sections` | – |  | 5 |  |
+| `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
 | `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
 | `rp1-research-queue` | `tech-tree.sections` | – |  | 1 |  |

@@ -30,6 +30,7 @@ import type {
   Rp1ComplexEntry,
   Rp1Confidence,
   Rp1ConstructionEntry,
+  Rp1ConstructionRates,
   Rp1CrewEntry,
   Rp1CrewProgram,
   Rp1FacilityEntry,
@@ -307,6 +308,16 @@ export const RP1_BUDGET_TOPIC = "rp1.budget";
  */
 export const RP1_BUDGET_BREAKDOWN_TOPIC = "rp1.budgetBreakdown";
 
+/**
+ * Each construction's draw per day and finish date at every work rate RP-1's
+ * slider offers, keyed by `rp1.constructions[].id`, and each facility's next
+ * tier at the full rate. A construction draws as it progresses, so these are
+ * the figures beside a rate control, never an affordability verdict.
+ * Refreshed with `rp1.budget` and whenever a construction is queued, cancelled
+ * or re-rated.
+ */
+export const RP1_CONSTRUCTION_RATES_TOPIC = "rp1.constructionRates";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "rp1.available": boolean;
@@ -338,6 +349,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.avionics": Rp1Avionics;
     "rp1.budget": Rp1Budget;
     "rp1.budgetBreakdown": Rp1BudgetBreakdown;
+    "rp1.constructionRates": Rp1ConstructionRates;
   }
 }
 
@@ -370,6 +382,7 @@ registerBarePrimitiveTopic(RP1_CAREER_EVENTS_TOPIC);
 registerBarePrimitiveTopic(RP1_AVIONICS_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
+registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both
@@ -480,4 +493,7 @@ export type _ResolvesRp1Budget = Expect<
 >;
 export type _ResolvesRp1BudgetBreakdown = Expect<
   Equal<TopicPayload<"rp1.budgetBreakdown">, Rp1BudgetBreakdown>
+>;
+export type _ResolvesRp1ConstructionRates = Expect<
+  Equal<TopicPayload<"rp1.constructionRates">, Rp1ConstructionRates>
 >;

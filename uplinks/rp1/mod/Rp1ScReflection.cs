@@ -40,9 +40,9 @@
 // is called either. GetBuildRate writes _buildRate and reaches .KSC, which
 // memoises a centre found by walking the whole roster; RemainingCost runs a
 // CurrencyModifierQueryRP0 that broadcasts to every modifier in the save;
-// RushMultiplier evaluates a HermiteCurve from a separate assembly whose body
-// could not be read, so the throttle is published and the cost multiplier it
-// buys is not; PadConstructionProject.LC memoises the same way GetBuildRate's
+// RushMultiplier is left to Rp1ConstructionRatesReflection, which evaluates its
+// curve at every slider step on the budget's cadence alongside the currency
+// queries a draw needs; PadConstructionProject.LC memoises the same way GetBuildRate's
 // centre does; and the two GetItemName overrides localise a facility name and
 // walk to the complex respectively, where the stored `name` field answers
 // already.
@@ -527,6 +527,7 @@ namespace GonogoRp1Uplink
                 var row = ReadConstruction(kscName, pc, "Pad");
                 row.LcId = lcId;
                 row.PadId = ReadGuidString(pc, "id");
+                row.Id = Rp1ConstructionIds.Of(pc, "Pad");
                 raw.Constructions.Add(row);
             }
 
@@ -766,6 +767,7 @@ namespace GonogoRp1Uplink
                 row.FacilityType = ReadEnumName(fu, "FacilityType");
                 row.CurrentLevel = ReadInt(fu, "currentLevel");
                 row.TargetLevel = ReadInt(fu, "upgradeLevel");
+                row.Id = Rp1ConstructionIds.Of(fu, "FacilityUpgrade");
                 raw.Constructions.Add(row);
             }
 
@@ -773,6 +775,7 @@ namespace GonogoRp1Uplink
             {
                 var row = ReadConstruction(kscName, lcc, "LaunchComplex");
                 row.LcId = ReadGuidString(lcc, "lcID");
+                row.Id = Rp1ConstructionIds.Of(lcc, "LaunchComplex");
                 row.IsModify = ReadBool(lcc, "isModify");
                 row.EngineersToReadd = ReadInt(lcc, "engineersToReadd");
                 raw.Constructions.Add(row);

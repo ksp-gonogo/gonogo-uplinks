@@ -917,6 +917,17 @@ public sealed class Rp1OperationEntry
 #endif
 public sealed class Rp1ConstructionEntry
 {
+    /// <summary>
+    /// The construction's own id, which <c>rp1.construction.setRate</c> and
+    /// <c>rp1.construction.cancel</c> take and <c>rp1.constructionRates</c> is
+    /// keyed on. RP-1 gives each kind its own: a facility upgrade's
+    /// <c>uid</c>, the complex's <c>lcID</c> for a complex being built or
+    /// renovated, and the pad's <c>id</c> for a pad. Absent when RP-1 holds no id
+    /// for the project, which leaves the row readable and unaddressable.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+
     [SitrepUnit(Units.Id)]
     public string? KscName { get; set; }
 
@@ -1000,12 +1011,9 @@ public sealed class Rp1ConstructionEntry
     /// The operator's own throttle on this construction, 0 to 1.5. Above 1 is
     /// RUSHING, which buys speed at a higher daily cost.
     ///
-    /// <para>RP-1 shows the cost multiplier that buys beside this figure, and
-    /// this contract does not carry it: the multiplier comes off a curve in an
-    /// assembly whose body could not be read, and a fabricated cost on a
-    /// months-long commitment is worse than an absent one. The throttle itself is
-    /// a plain stored field and is the fact that says a construction is being
-    /// rushed at all.</para>
+    /// <para>The cost multiplier a rate above 1 buys, and the draw per day and
+    /// finish date at every rate, are on <c>rp1.constructionRates</c>, which
+    /// reads them on RP-1's upkeep cadence rather than every tick.</para>
     /// </summary>
     [SitrepUnit(Units.Ratio)]
     public double? WorkRate { get; set; }
@@ -1055,11 +1063,119 @@ public sealed class Rp1ConstructionEntry
     public double? SpentCost { get; set; }
 
     /// <summary>
-    /// Of what has been paid, how much went on rushing. Equal to
-    /// <see cref="SpentCost"/> on a construction that was never rushed.
+    /// The funds actually drawn so far, the rush premium included. Equal to
+    /// <see cref="SpentCost"/> on a construction that was never rushed. This is
+    /// the figure RP-1's own cancel confirmation names as already spent, and
+    /// cancelling returns none of it.
     /// </summary>
     [SitrepUnit(Units.Funds)]
     public double? SpentRushCost { get; set; }
+}
+
+/// <summary>
+/// What each construction would draw per day and when it would finish at every
+/// work rate RP-1 offers, and what each facility's next tier would draw and take
+/// at the full rate.
+///
+/// <para><b>A construction is a PROGRESSIVE spend.</b> Nothing is charged when
+/// one is queued or its rate is set: RP-1 draws the funds as the work advances,
+/// and slows the work when the career cannot meet the draw. So the readout beside
+/// a rate control is the draw per day and the finish date, and there is no
+/// "cannot afford" anywhere in it.</para>
+///
+/// <para>Every draw is RP-1's own construction list "Cost/day" arithmetic: the
+/// project's build rate at that work rate, over its build points, times its
+/// price with the rush multiplier applied and put through RP-1's currency
+/// query. That query is why this is its own Topic rather than part of
+/// <c>rp1.constructions</c>: it runs on RP-1's upkeep cadence, as
+/// <c>rp1.budget</c> does, and again whenever a construction is queued, cancelled
+/// or re-rated.</para>
+///
+/// <para>Absent when RP-1 is not managing a career in the loaded scene.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.constructionRates")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ConstructionRates
+{
+    /// <summary>The universal time these figures were computed at, which every finish date here is measured from.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? RefreshedAt { get; set; }
+
+    /// <summary>Every construction under way at every space centre, keyed by <c>rp1.constructions[].id</c>.</summary>
+    public List<Rp1ConstructionRateTable>? Constructions { get; set; }
+
+    /// <summary>Every building RP-1 upgrades that has a tier left, priced at the full work rate.</summary>
+    public List<Rp1FacilityUpgradeRate>? FacilityUpgrades { get; set; }
+}
+
+/// <summary>One construction's draw and finish at every work rate RP-1's slider offers.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ConstructionRateTable
+{
+    /// <summary>The construction, joining <c>rp1.constructions[].id</c>.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+
+    /// <summary>From 0 to 1.5 in steps of 0.05, ascending: the values <c>rp1.construction.setRate</c> accepts.</summary>
+    public List<Rp1ConstructionRateStep>? Steps { get; set; }
+}
+
+/// <summary>One work rate, and what it costs and buys.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ConstructionRateStep
+{
+    [SitrepUnit(Units.Ratio)]
+    public double? WorkRate { get; set; }
+
+    /// <summary>
+    /// RP-1's rush multiplier on the daily cost: 1 at or below the full rate, and
+    /// rising along its own settings curve above it.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? CostMultiplier { get; set; }
+
+    /// <summary>
+    /// Funds drawn per day at this rate, while the career can meet it. Zero at a
+    /// rate of zero, and absent when RP-1 has not costed the project yet.
+    /// </summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? CostPerDay { get; set; }
+
+    /// <summary>
+    /// When the work would finish at this rate, if the career meets every day's
+    /// draw. Absent at a rate of zero, which never finishes.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? FinishesAt { get; set; }
+}
+
+/// <summary>A facility's next tier, as RP-1 would build it at the full work rate.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1FacilityUpgradeRate
+{
+    /// <summary>The <c>SpaceCenterFacility</c> enum name, the key <c>rp1.facilities</c> uses.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public string? Facility { get; set; }
+
+    /// <summary>Funds the upgrade would draw per day at the full rate, while the career can meet it.</summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? CostPerDay { get; set; }
+
+    /// <summary>How long the upgrade would take at the full rate, if every day's draw is met.</summary>
+    [SitrepUnit(Units.Seconds)]
+    public double? BuildSeconds { get; set; }
 }
 
 /// <summary>

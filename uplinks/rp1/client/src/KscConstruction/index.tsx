@@ -1,4 +1,8 @@
-import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import {
+  registerAugment,
+  useCommand,
+  useTelemetry,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Countdown,
@@ -10,11 +14,20 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
-import type { Rp1ConstructionEntry } from "../__generated__/contract.js";
+import type {
+  Rp1ConstructionEntry,
+  Rp1ConstructionRateTable,
+} from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { FACILITY_LABEL } from "../shared/facilityLabels.js";
 import { ProjectCard, ProjectCardList } from "../shared/ProjectCard.js";
 import { RP1 } from "../uplink.js";
+import {
+  CancelControl,
+  RateControl,
+  RP1_CONSTRUCTION_CANCEL_COMMAND,
+  RP1_CONSTRUCTION_SET_RATE_COMMAND,
+} from "./RateControl.js";
 // Side-effect import: hydrates these Topics' units at decode time. Here rather
 // than left to the entry point's import order, because this file is the consumer
 // that would silently receive bare numbers without it.
@@ -35,6 +48,12 @@ import "../topics.js";
  * drawn once in its header. A copy in this section was the same rule satisfied a
  * second time inside one widget, and read as a defect rather than as care.</para>
  *
+ * <para><b>The rate and the cancel are here, beside the work they act on.</b>
+ * Each is RP-1's own control from its construction list, the slider and the
+ * "X". The rate is a progressive spend, so the readout beside it is the draw
+ * per day and the finish date at the rate chosen; the cancel names what has
+ * been spent, because RP-1 refunds none of it.</para>
+ *
  * <para><b>Constructions run at once; the build and research queues do not.</b>
  * RP-1 zeroes a vehicle's rate and a research node's at any queue position but
  * the head, so those two advance one item at a time. A construction's rate does
@@ -45,6 +64,12 @@ export function KscConstruction() {
   const available = current(useTelemetry("rp1.available"));
   const constructions = current(useTelemetry("rp1.constructions"));
   const centres = current(useTelemetry("rp1.centres"));
+  const rates = current(useTelemetry("rp1.constructionRates"));
+
+  // Unconditional and above the early return: a hook after one would change
+  // count on the first frame RP-1 answers.
+  const setRate = useCommand(RP1_CONSTRUCTION_SET_RATE_COMMAND);
+  const cancel = useCommand(RP1_CONSTRUCTION_CANCEL_COMMAND);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {
@@ -62,6 +87,11 @@ export function KscConstruction() {
       centre.kscName == null || centre.kscDisplayName == null
         ? []
         : [[centre.kscName, centre.kscDisplayName] as const],
+    ),
+  );
+  const tables = new Map(
+    (rates?.constructions ?? []).flatMap((table) =>
+      table.id == null ? [] : [[table.id, table] as const],
     ),
   );
 
@@ -84,10 +114,13 @@ export function KscConstruction() {
         <ProjectCardList>
           {rows.map((row) => (
             <ConstructionRow
+              cancel={cancel}
               centreNames={centreNames}
               key={rowKey(row)}
               nameCentre={nameCentres}
               row={row}
+              setRate={setRate}
+              table={row.id == null ? undefined : tables.get(row.id)}
             />
           ))}
         </ProjectCardList>
@@ -113,10 +146,16 @@ function ConstructionRow({
   row,
   nameCentre,
   centreNames,
+  table,
+  setRate,
+  cancel,
 }: Readonly<{
   row: Rp1ConstructionEntry;
   nameCentre: boolean;
   centreNames: ReadonlyMap<string, string>;
+  table: Rp1ConstructionRateTable | undefined;
+  setRate: Parameters<typeof RateControl>[0]["handle"];
+  cancel: Parameters<typeof CancelControl>[0]["handle"];
 }>) {
   const ratio = magnitudeOf(row.progressRatio);
   const label = rowLabel(row);
@@ -158,6 +197,9 @@ function ConstructionRow({
           finishes
         </Text>
       )}
+
+      <RateControl handle={setRate} label={label} row={row} table={table} />
+      <CancelControl handle={cancel} label={label} row={row} />
     </ProjectCard>
   );
 }
@@ -284,8 +326,11 @@ function rowLabel(row: Rp1ConstructionEntry): string {
   return row.name ?? NULL_DISPLAY;
 }
 
-/** A stable key without inventing an identity the wire does not carry. */
+/** RP-1's own id where it has one, and a composite of what the row says otherwise. */
 function rowKey(row: Rp1ConstructionEntry): string {
+  if (row.id != null) {
+    return row.id;
+  }
   return `${row.kind ?? ""}:${row.kscName ?? ""}:${row.lcId ?? ""}:${row.padId ?? ""}:${row.name ?? ""}`;
 }
 

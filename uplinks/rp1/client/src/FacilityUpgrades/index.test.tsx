@@ -424,4 +424,38 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
 
     await expectNoA11yViolations(stream.container);
   });
+
+  /**
+   * A progressive spend's cost is how fast it drains and when it is done, so
+   * both sit on the card beside the press, and nothing on it says whether the
+   * career can afford the tier: RP-1 slows a short career's build rather than
+   * refusing it.
+   */
+  it("shows the draw per day and the finish date beside Queue, never an affordability verdict", async () => {
+    const stream = mount();
+
+    emit(stream, AT_CENTRE);
+    act(() => {
+      stream.emit(
+        "rp1.constructionRates",
+        {
+          refreshedAt: 1000,
+          constructions: [],
+          facilityUpgrades: [
+            { facility: "LaunchPad", costPerDay: 580.95, buildSeconds: 16_731_288 },
+          ],
+        },
+        { validAt: 1000 },
+      );
+    });
+    await screen.findByText("FACILITY UPGRADES");
+
+    const text = visibleText(stream.container);
+    expect(text).toContain("581");
+    expect(text).toContain("at full rate");
+    expect(text).toContain("if queued now");
+    expect(text).not.toMatch(/afford/i);
+    // A tier the rates channel has not priced gets no draw line at all.
+    expect(text.match(/at full rate/g)).toHaveLength(1);
+  });
 });

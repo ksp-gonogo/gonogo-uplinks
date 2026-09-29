@@ -10,6 +10,7 @@ import {
   Cluster,
   CommandButton,
   EmptyState,
+  MissionDate,
   NULL_DISPLAY,
   Readout,
   ReadoutCaption,
@@ -18,6 +19,10 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
+import type {
+  Rp1ConstructionRates,
+  Rp1FacilityUpgradeRate,
+} from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { facilityLabel } from "../shared/facilityLabels.js";
 import { ProjectCard, ProjectCardList } from "../shared/ProjectCard.js";
@@ -73,6 +78,12 @@ export const RP1_FACILITY_UPGRADE_COMMAND = "rp1.facility.upgrade";
  * can price a tier. See `Rp1FacilityUpgradeCommands`' header for the
  * member-by-member equivalence.</para>
  *
+ * <para><b>The rate is beside the price.</b> A progressive spend's real cost is
+ * how fast it drains and when it finishes, so each card carries the draw per
+ * day at the full work rate and the date the tier would be done if queued now,
+ * both off `rp1.constructionRates`, which prices them as the command queues
+ * them. The rate itself is set on the construction once it exists.</para>
+ *
  * <para><b>One of RP-1's two refusals is now drawn before the press and the
  * other still cannot be.</b> RP-1 declines to upgrade five of the nine buildings
  * as buildings at all, and `rp1.facilities[].upgradedByRp1` carries that off
@@ -92,6 +103,7 @@ export function FacilityUpgrades() {
   const stockTiers = current(useTelemetry("career.facilities"));
   const constructions = current(useTelemetry("rp1.constructions"));
   const facilityTiers = current(useTelemetry("rp1.facilities"));
+  const rates = current(useTelemetry("rp1.constructionRates"));
 
   // Unconditional and above the early returns: a hook after one would change
   // count on the first frame RP-1 answers.
@@ -135,6 +147,13 @@ export function FacilityUpgrades() {
     ),
   );
 
+  const upgradeRates = new Map(
+    (rates?.facilityUpgrades ?? []).flatMap((row) =>
+      row.facility == null ? [] : [[row.facility, row] as const],
+    ),
+  );
+  const pricedAt = rates?.refreshedAt;
+
   const names = Array.from(
     new Set([...rp1Tiers.keys(), ...Object.keys(stockFacilities)]),
   ).sort((a, b) => facilityLabel(a).localeCompare(facilityLabel(b)));
@@ -153,7 +172,9 @@ export function FacilityUpgrades() {
       rp1 === undefined
         ? nextTier(stockFacilities[name])
         : (nextTier(rp1) ?? nextTier(stockFacilities[name]));
-    return step === null || queued.has(name) ? [] : [{ name, step }];
+    return step === null || queued.has(name)
+      ? []
+      : [{ name, step, rate: upgradeRates.get(name) }];
   });
 
   /* Neither channel answered, so there is nothing to draw and the section draws
@@ -194,11 +215,13 @@ export function FacilityUpgrades() {
         <EmptyState>Nothing left to queue</EmptyState>
       ) : (
         <ProjectCardList>
-          {rows.map(({ name, step }) => (
+          {rows.map(({ name, step, rate }) => (
             <UpgradeCard
               facility={name}
               handle={upgrade}
               key={name}
+              pricedAt={pricedAt}
+              rate={rate}
               step={step}
             />
           ))}
@@ -289,10 +312,14 @@ function UpgradeCard({
   facility,
   handle,
   step,
+  rate,
+  pricedAt,
 }: Readonly<{
   facility: string;
   handle: Parameters<typeof CommandButton>[0]["handle"];
   step: NextTier;
+  rate: Rp1FacilityUpgradeRate | undefined;
+  pricedAt: Rp1ConstructionRates["refreshedAt"];
 }>) {
   const label = facilityLabel(facility);
   return (
@@ -331,7 +358,36 @@ function UpgradeCard({
           size="sm"
         />
       </Cluster>
+      <UpgradeRate pricedAt={pricedAt} rate={rate} />
     </ProjectCard>
+  );
+}
+
+/**
+ * How fast the tier would drain the career and when it would be done, at the
+ * full work rate. A shortfall slows the work rather than refusing it, which is
+ * why this is a rate and a date and never "cannot afford".
+ */
+function UpgradeRate({
+  rate,
+  pricedAt,
+}: Readonly<{
+  rate: Rp1FacilityUpgradeRate | undefined;
+  pricedAt: Rp1ConstructionRates["refreshedAt"];
+}>) {
+  const seconds = magnitudeOf(rate?.buildSeconds);
+  const from = magnitudeOf(pricedAt);
+  // Nothing rather than a second absence line under the price's own: a tier
+  // with no rate yet is one RP-1 has not priced, and the card already says so.
+  if (rate?.costPerDay == null || seconds === null || from === null) {
+    return null;
+  }
+  return (
+    <Text size="xs" level="muted">
+      draws <Unit decimals={0} value={rate.costPerDay} /> at full rate, done{" "}
+      <MissionDate value={from + seconds} /> if queued now; a short balance
+      slows it
+    </Text>
   );
 }
 
@@ -353,6 +409,8 @@ registerAugment({
     /* The tiers and prices again, read through RP-1 rather than through the
        scene. The only one of these that answers away from the space centre. */
     "rp1.facilities",
+    /* The draw per day and build time beside each Queue press. */
+    "rp1.constructionRates",
   ],
   requires: "rp1",
   /** Immediately above the construction queue this feeds; see `KscConstruction`

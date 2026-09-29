@@ -228,6 +228,47 @@ export interface Rp1FacilityUpgradeArgs
 	facility?: string;
 }
 /**
+* Args for `rp1.construction.setRate`: set the work rate on one construction
+* already under way, the throttle RP-1's own construction list draws as a
+* slider.
+*
+* **A progressive spend, so nothing is refused on affordability.** A
+* construction draws its funds as it advances, at the rate this sets, and RP-1
+* slows the work itself when the career cannot meet the draw. The operator's
+* question is how fast it drains and when it finishes, and both are on
+* `rp1.constructionRates` for every step this accepts.
+*
+* A SET rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
+* aimed from a stale view lands where it was aimed.
+*/
+export interface Rp1ConstructionRateArgs
+{
+	/** The construction, by the id `rp1.constructions[].id` publishes. */
+	id?: string;
+	/**
+	* The work rate, 0 to 1.5 in steps of 0.05, as RP-1's slider allows. Above 1
+	* is rushing, which costs more per day for each day saved. A value between
+	* steps is refused rather than rounded, so what lands is what was shown.
+	*/
+	workRate?: number;
+}
+/**
+* Args for `rp1.construction.cancel`: stop building one construction, as
+* RP-1's own "X" on its construction list does.
+*
+* **Nothing is refunded.** The funds already drawn stay spent, which RP-1's
+* own confirmation says in as many words; the figure is
+* `rp1.constructions[].spentRushCost`. A cancelled facility upgrade leaves the
+* building at its tier, a cancelled new complex is deleted, a cancelled
+* renovation puts the complex back in service as it was, and a cancelled pad
+* is removed.
+*/
+export interface Rp1ConstructionCancelArgs
+{
+	/** The construction, by the id `rp1.constructions[].id` publishes. */
+	id?: string;
+}
+/**
 * Args for `rp1.tech.research`: put a tech node on RP-1's research queue.
 *
 * **Why this exists rather than `career.tech.unlock`.** Under a managed save
@@ -1450,6 +1491,15 @@ export interface Rp1OperationEntry
 */
 export interface Rp1ConstructionEntry
 {
+	/**
+	* The construction's own id, which `rp1.construction.setRate` and
+	* `rp1.construction.cancel` take and `rp1.constructionRates` is keyed on. RP-1
+	* gives each kind its own: a facility upgrade's `uid`, the complex's `lcID`
+	* for a complex being built or renovated, and the pad's `id` for a pad. Absent
+	* when RP-1 holds no id for the project, which leaves the row readable and
+	* unaddressable.
+	*/
+	id?: string | null;
 	kscName?: string | null;
 	/**
 	* The launch complex this construction concerns, joining
@@ -1506,12 +1556,9 @@ export interface Rp1ConstructionEntry
 	* The operator's own throttle on this construction, 0 to 1.5. Above 1 is
 	* RUSHING, which buys speed at a higher daily cost.
 	*
-	* RP-1 shows the cost multiplier that buys beside this figure, and this
-	* contract does not carry it: the multiplier comes off a curve in an assembly
-	* whose body could not be read, and a fabricated cost on a months-long
-	* commitment is worse than an absent one. The throttle itself is a plain
-	* stored field and is the fact that says a construction is being rushed at
-	* all.
+	* The cost multiplier a rate above 1 buys, and the draw per day and finish
+	* date at every rate, are on `rp1.constructionRates`, which reads them on
+	* RP-1's upkeep cadence rather than every tick.
 	*/
 	workRate?: Value<"ratio"> | null;
 	/**
@@ -1549,10 +1596,97 @@ export interface Rp1ConstructionEntry
 	*/
 	spentCost?: Value<"funds"> | null;
 	/**
-	* Of what has been paid, how much went on rushing. Equal to
+	* The funds actually drawn so far, the rush premium included. Equal to
 	* `Rp1ConstructionEntry.spentCost` on a construction that was never rushed.
+	* This is the figure RP-1's own cancel confirmation names as already spent,
+	* and cancelling returns none of it.
 	*/
 	spentRushCost?: Value<"funds"> | null;
+}
+/**
+* What each construction would draw per day and when it would finish at every
+* work rate RP-1 offers, and what each facility's next tier would draw and
+* take at the full rate.
+*
+* **A construction is a PROGRESSIVE spend.** Nothing is charged when one is
+* queued or its rate is set: RP-1 draws the funds as the work advances, and
+* slows the work when the career cannot meet the draw. So the readout beside a
+* rate control is the draw per day and the finish date, and there is no
+* "cannot afford" anywhere in it.
+*
+* Every draw is RP-1's own construction list "Cost/day" arithmetic: the
+* project's build rate at that work rate, over its build points, times its
+* price with the rush multiplier applied and put through RP-1's currency
+* query. That query is why this is its own Topic rather than part of
+* `rp1.constructions`: it runs on RP-1's upkeep cadence, as `rp1.budget` does,
+* and again whenever a construction is queued, cancelled or re-rated.
+*
+* Absent when RP-1 is not managing a career in the loaded scene.
+*/
+export interface Rp1ConstructionRates
+{
+	/**
+	* The universal time these figures were computed at, which every finish date
+	* here is measured from.
+	*/
+	refreshedAt?: Value<"ut"> | null;
+	/**
+	* Every construction under way at every space centre, keyed by
+	* `rp1.constructions[].id`.
+	*/
+	constructions?: Rp1ConstructionRateTable[] | null;
+	/**
+	* Every building RP-1 upgrades that has a tier left, priced at the full work
+	* rate.
+	*/
+	facilityUpgrades?: Rp1FacilityUpgradeRate[] | null;
+}
+/** One construction's draw and finish at every work rate RP-1's slider offers. */
+export interface Rp1ConstructionRateTable
+{
+	/** The construction, joining `rp1.constructions[].id`. */
+	id?: string | null;
+	/**
+	* From 0 to 1.5 in steps of 0.05, ascending: the values
+	* `rp1.construction.setRate` accepts.
+	*/
+	steps?: Rp1ConstructionRateStep[] | null;
+}
+/** One work rate, and what it costs and buys. */
+export interface Rp1ConstructionRateStep
+{
+	workRate?: Value<"ratio"> | null;
+	/**
+	* RP-1's rush multiplier on the daily cost: 1 at or below the full rate, and
+	* rising along its own settings curve above it.
+	*/
+	costMultiplier?: Value<"ratio"> | null;
+	/**
+	* Funds drawn per day at this rate, while the career can meet it. Zero at a
+	* rate of zero, and absent when RP-1 has not costed the project yet.
+	*/
+	costPerDay?: Value<"f/day"> | null;
+	/**
+	* When the work would finish at this rate, if the career meets every day's
+	* draw. Absent at a rate of zero, which never finishes.
+	*/
+	finishesAt?: Value<"ut"> | null;
+}
+/** A facility's next tier, as RP-1 would build it at the full work rate. */
+export interface Rp1FacilityUpgradeRate
+{
+	/** The `SpaceCenterFacility` enum name, the key `rp1.facilities` uses. */
+	facility?: string | null;
+	/**
+	* Funds the upgrade would draw per day at the full rate, while the career can
+	* meet it.
+	*/
+	costPerDay?: Value<"f/day"> | null;
+	/**
+	* How long the upgrade would take at the full rate, if every day's draw is
+	* met.
+	*/
+	buildSeconds?: Value<"s"> | null;
 }
 /**
 * One node on RP-1's research queue. Global across centres, so no centre key:

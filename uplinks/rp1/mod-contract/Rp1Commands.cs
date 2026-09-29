@@ -332,6 +332,62 @@ public class Rp1FacilityUpgradeArgs
 }
 
 /// <summary>
+/// Args for <c>rp1.construction.setRate</c>: set the work rate on one construction
+/// already under way, the throttle RP-1's own construction list draws as a slider.
+///
+/// <para><b>A progressive spend, so nothing is refused on affordability.</b> A
+/// construction draws its funds as it advances, at the rate this sets, and RP-1
+/// slows the work itself when the career cannot meet the draw. The operator's
+/// question is how fast it drains and when it finishes, and both are on
+/// <c>rp1.constructionRates</c> for every step this accepts.</para>
+///
+/// <para>A SET rather than a delta, for the reason <see cref="Rp1ComplexRushArgs"/>
+/// gives: a rate aimed from a stale view lands where it was aimed.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.construction.setRate")]
+public class Rp1ConstructionRateArgs
+{
+    /// <summary>The construction, by the id <c>rp1.constructions[].id</c> publishes.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// The work rate, 0 to 1.5 in steps of 0.05, as RP-1's slider allows. Above 1
+    /// is rushing, which costs more per day for each day saved. A value between
+    /// steps is refused rather than rounded, so what lands is what was shown.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? WorkRate { get; set; }
+}
+
+/// <summary>
+/// Args for <c>rp1.construction.cancel</c>: stop building one construction, as
+/// RP-1's own "X" on its construction list does.
+///
+/// <para><b>Nothing is refunded.</b> The funds already drawn stay spent, which
+/// RP-1's own confirmation says in as many words; the figure is
+/// <c>rp1.constructions[].spentRushCost</c>. A cancelled facility upgrade leaves
+/// the building at its tier, a cancelled new complex is deleted, a cancelled
+/// renovation puts the complex back in service as it was, and a cancelled pad is
+/// removed.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.construction.cancel")]
+public class Rp1ConstructionCancelArgs
+{
+    /// <summary>The construction, by the id <c>rp1.constructions[].id</c> publishes.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+}
+
+/// <summary>
 /// Args for <c>rp1.tech.research</c>: put a tech node on RP-1's research queue.
 ///
 /// <para><b>Why this exists rather than <c>career.tech.unlock</c>.</b> Under a

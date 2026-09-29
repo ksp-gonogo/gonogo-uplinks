@@ -284,7 +284,7 @@ namespace RP0
     }
 
     /// <summary>The price of a resource tank, whose only property the cost model relies on is that a zero amount is free.</summary>
-    public static class Formula
+    public static partial class Formula
     {
         /// <summary>Funds per unit, per resource. A resource absent from this is free, as it is in the shipped formula.</summary>
         public static Dictionary<string, double> TankCostPerUnit = new Dictionary<string, double>();

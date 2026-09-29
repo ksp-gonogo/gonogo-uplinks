@@ -371,6 +371,10 @@ namespace GonogoRp1Uplink.Tests
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryCrew", "Rp1BudgetBreakdownReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "CrewTraining", "Rp1BudgetBreakdownReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "ProgramFunding", "Rp1BudgetBreakdownReflection"),
+            // The two a construction's draw is priced under, as RP-1's own
+            // construction list prices it: a complex or pad, and a building.
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureConstruction", "Rp1ConstructionRatesReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureConstructionLC", "Rp1ConstructionRatesReflection"),
         };
 
         public static IReadOnlyList<Rp1ConstructorTarget> Constructors { get; } = new[]
@@ -468,6 +472,18 @@ namespace GonogoRp1Uplink.Tests
             // The kerbal, then two out parameters: base pay and flight pay per day.
             new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "GetNautCost", 3, false, "Rp1BudgetBreakdownReflection"),
             new Rp1MethodTarget(Rp0, "RP0.Programs.Program", "GetFundsForFutureTimestamp", 1, false, "Rp1BudgetBreakdownReflection"),
+            // A construction's draw at each slider step and a facility's next
+            // tier. Funds with its defaulted last argument passed, as above.
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1ConstructionRatesReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.Formula", "GetConstructionBP", 3, true, "Rp1ConstructionRatesReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.Formula", "GetConstructionBuildRate", 3, true, "Rp1ConstructionRatesReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetFacilityLevel", 1, true, "Rp1ConstructionRatesReflection"),
+            // The rush multiplier's curve, a clamped cubic over its own ranges
+            // that writes nothing. ROUtils' own, beside EvaluateUnclamped, which
+            // is a different name.
+            new Rp1MethodTarget(RoUtils, "ROUtils.HermiteCurve", "Evaluate", 1, false, "Rp1ConstructionRatesReflection"),
+            // RP-1's own "X": the kind's ProcessCancel, which refunds nothing.
+            new Rp1MethodTarget(Rp0, "RP0.ConstructionProject", "Cancel", 0, false, "Rp1ConstructionCommands"),
             // The fill and reset that bracket RP-1's own per-course training cost,
             // both writing its scratch list on SettingsSC.
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingDatabase", "FillBools", 3, true, "Rp1BudgetBreakdownReflection"),
@@ -1224,7 +1240,9 @@ namespace GonogoRp1Uplink.Tests
                      })
             {
                 Add(construction, "progress", Rp1Reader.Numeric, Sc);
-                Add(construction, "workRate", Rp1Reader.Numeric, Sc);
+                // WRITTEN by rp1.construction.setRate, which is all RP-1's own
+                // slider does.
+                Add(construction, "workRate", Rp1Reader.NumericWrite, Sc + ", Rp1ConstructionCommands");
                 Add(construction, "_buildRate", Rp1Reader.Numeric, Sc);
                 Add(construction, "name", Rp1Reader.Text, Sc);
                 Add(construction, "spentCost", Rp1Reader.Numeric, Sc);
@@ -1256,6 +1274,9 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.LCConstructionProject", "isModify", Rp1Reader.Bool, Sc);
             Add("RP0.LCConstructionProject", "engineersToReadd", Rp1Reader.Numeric, Sc);
             Add("RP0.PadConstructionProject", "id", Rp1Reader.GuidText, Sc);
+            // The id a facility upgrade is addressed by. The other two kinds are
+            // addressed by lcID and id above.
+            Add("RP0.FacilityUpgradeProject", "uid", Rp1Reader.GuidText, Sc + ", Rp1ConstructionCommands");
 
             // ── Research ────────────────────────────────────────────────────
             Add("RP0.ResearchProject", "techID", Rp1Reader.Text, Sc);
@@ -1593,6 +1614,31 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.Programs.ProgramHandler", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
             Add("RP0.Programs.ProgramHandler", "ActivePrograms", Rp1Reader.Presence, Breakdown);
             Add("RP0.Programs.Program", "name", Rp1Reader.Text, Breakdown);
+
+            // ── The construction rate tables ────────────────────────────────
+            const string Rates = "Rp1ConstructionRatesReflection";
+            Add("RP0.MaintenanceHandler", "Instance", Rp1Reader.Presence, Rates, @static: true);
+            Add("RP0.MaintenanceHandler", "lastUpdate", Rp1Reader.Numeric, Rates);
+            Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Rates, @static: true);
+            Add("RP0.SpaceCenterManagement", "ActiveSC", Rp1Reader.Presence, Rates);
+            Add("RP0.LCSpaceCenter", "KSCName", Rp1Reader.Text, Rates);
+            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Rates, @static: true);
+            Add("RP0.Database", "FacilityLevelCosts", Rp1Reader.Presence, Rates, @static: true);
+            Add("RP0.Database", "LockedFacilities", Rp1Reader.Presence, Rates, @static: true);
+            Add("RP0.SpaceCenterSettings", "ConstructionRushCost", Rp1Reader.Presence, Rates);
+            foreach (var construction in new[]
+                     {
+                         "RP0.FacilityUpgradeProject",
+                         "RP0.LCConstructionProject",
+                         "RP0.PadConstructionProject",
+                     })
+            {
+                Add(construction, "progress", Rp1Reader.Numeric, Rates);
+                Add(construction, "_buildRate", Rp1Reader.Numeric, Rates);
+                // The base's virtual property, which a complex and a pad answer
+                // as LaunchPad: the reason RP-1 prices them under.
+                Add(construction, "FacilityType", Rp1Reader.EnumText, Rates);
+            }
 
             // ── ROUtils, which ships beside RP-1 and owns these two shapes ──
             AddRo("ROUtils.HermiteCurve+Key", "time", Rp1Reader.Numeric, Programs);

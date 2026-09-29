@@ -91,6 +91,12 @@ namespace GonogoRp1Uplink
         public const string BudgetBreakdownTopic = "rp1.budgetBreakdown";
 
         /// <summary>
+        /// Each construction's draw per day and finish date at every work rate,
+        /// and each facility's next tier at the full rate.
+        /// </summary>
+        public const string ConstructionRatesTopic = "rp1.constructionRates";
+
+        /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
         /// here whose subject is a craft in flight rather than the space centre,
         /// and the one that is <see cref="DelayRole.Delayed"/>.
@@ -192,6 +198,12 @@ namespace GonogoRp1Uplink
 
         /// <summary>The lines under the budget, on its own reader for the same reason, and on the same cadence.</summary>
         private readonly Rp1BudgetBreakdownReflection _budgetBreakdown = new Rp1BudgetBreakdownReflection();
+
+        /// <summary>
+        /// The construction rate tables, on their own reader because each step is
+        /// a currency query, and on the budget's cadence for the same reason.
+        /// </summary>
+        private readonly Rp1ConstructionRatesReflection _constructionRates = new Rp1ConstructionRatesReflection();
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
@@ -323,6 +335,13 @@ namespace GonogoRp1Uplink
         private readonly Rp1TargetCommands _targets = new Rp1TargetCommands();
 
         /// <summary>
+        /// A construction's work rate and its cancel. Its own class because it
+        /// acts on a project already under way rather than queueing one, which is
+        /// what the facility, complex and pad writes above do.
+        /// </summary>
+        private readonly Rp1ConstructionCommands _constructionWrites = new Rp1ConstructionCommands();
+
+        /// <summary>
         /// Putting a crew through a training and taking them back off it. Its own
         /// class for the reason every write here has one, and because it is the
         /// only one that constructs an RP-1 project and then hands it to RP-1's own
@@ -447,6 +466,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _avionicsStatus;
         private IChannelPublisher? _budgetPublisher;
         private IChannelPublisher? _budgetBreakdownPublisher;
+        private IChannelPublisher? _constructionRatesPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -488,7 +508,8 @@ namespace GonogoRp1Uplink
                 _researchCommands.IsAvailable, _strategies.IsAvailable, _targets.IsAvailable,
                 _trainingWrites.IsAvailable, _complexLifecycle.IsAvailable,
                 _complexConstruction.IsAvailable, _complexConstruction.IsPadAvailable,
-                _warp.IsAvailable, _toolingWrites.IsAvailable, _contracts.IsAvailable);
+                _warp.IsAvailable, _toolingWrites.IsAvailable, _contracts.IsAvailable,
+                _constructionWrites.IsAvailable);
             _crewStanding = new Rp1CrewStandingBackend(_crew);
             _economy = new Rp1EconomyBackend(_upkeepQuery);
         }
@@ -509,7 +530,8 @@ namespace GonogoRp1Uplink
             bool padConstructionModelResolved,
             bool warpModelResolved,
             bool toolingModelResolved,
-            bool contractModelResolved) => new UplinkManifest
+            bool contractModelResolved,
+            bool constructionModelResolved) => new UplinkManifest
         {
             Id = "rp1",
             Version = "1.0.0",
@@ -609,6 +631,7 @@ namespace GonogoRp1Uplink
                 // nothing and earns nothing.
                 AtHome(BudgetTopic, absenceIsData: true),
                 AtHome(BudgetBreakdownTopic, absenceIsData: true),
+                AtHome(ConstructionRatesTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -644,7 +667,8 @@ namespace GonogoRp1Uplink
                 researchModelResolved, strategyModelResolved, targetModelResolved,
                 trainingModelResolved, complexLifecycleModelResolved,
                 complexConstructionModelResolved, padConstructionModelResolved,
-                warpModelResolved, toolingModelResolved, contractModelResolved),
+                warpModelResolved, toolingModelResolved, contractModelResolved,
+                constructionModelResolved),
             ErrorCodes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes)),
         };
 
@@ -683,7 +707,8 @@ namespace GonogoRp1Uplink
             bool padConstructionModelResolved,
             bool warpModelResolved,
             bool toolingModelResolved,
-            bool contractModelResolved)
+            bool contractModelResolved,
+            bool constructionModelResolved)
         {
             var commands = new List<CommandDeclaration>();
             if (buildModelResolved)
@@ -836,6 +861,13 @@ namespace GonogoRp1Uplink
             if (contractModelResolved)
             {
                 commands.Add(Declare(Rp1ContractCommands.SetPayloadCommand, CareerStatusSubject));
+            }
+            // Its own flag, on RP-1's space centre alone: both act on a project
+            // already under way, reached through the centre's own lists.
+            if (constructionModelResolved)
+            {
+                commands.Add(Declare(Rp1ConstructionCommands.SetRateCommand, ConstructionsTopic));
+                commands.Add(Declare(Rp1ConstructionCommands.CancelCommand, ConstructionsTopic));
             }
             return commands;
         }
@@ -1008,7 +1040,8 @@ namespace GonogoRp1Uplink
                     || _facilities.IsAvailable
                     || _researchCommands.IsAvailable
                     || _strategies.IsAvailable || _targets.IsAvailable
-                    || _trainingWrites.IsAvailable || _toolingWrites.IsAvailable)
+                    || _trainingWrites.IsAvailable || _toolingWrites.IsAvailable
+                    || _constructionWrites.IsAvailable)
                 {
                     host.AddGateEvaluator(_build);
                 }
@@ -1147,6 +1180,16 @@ namespace GonogoRp1Uplink
                 {
                     host.AddCommandHandler<Rp1PadNewArgs, CommandResult<Dictionary<string, object?>>>(
                         Rp1ComplexConstructionCommands.NewPadCommand, _complexConstruction.NewPad);
+                }
+            });
+            Register(() =>
+            {
+                if (_constructionWrites.IsAvailable)
+                {
+                    host.AddCommandHandler<Rp1ConstructionRateArgs, CommandResult>(
+                        Rp1ConstructionCommands.SetRateCommand, _constructionWrites.SetRate);
+                    host.AddCommandHandler<Rp1ConstructionCancelArgs, CommandResult>(
+                        Rp1ConstructionCommands.CancelCommand, _constructionWrites.Cancel);
                 }
             });
             Register(() =>
@@ -1323,6 +1366,7 @@ namespace GonogoRp1Uplink
             _avionicsStatus = host.Publisher(AvionicsTopic);
             _budgetPublisher = host.Publisher(BudgetTopic);
             _budgetBreakdownPublisher = host.Publisher(BudgetBreakdownTopic);
+            _constructionRatesPublisher = host.Publisher(ConstructionRatesTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1429,6 +1473,10 @@ namespace GonogoRp1Uplink
                 CaptureBudgetBreakdownOnMain,
                 HandleBudgetBreakdownOnCourier,
                 BudgetBreakdownTopic);
+            host.AddSampledSource(
+                CaptureConstructionRatesOnMain,
+                HandleConstructionRatesOnCourier,
+                ConstructionRatesTopic);
 
             // UNGATED, and the two captures above say why by contrast: their whole
             // effect is their return value, and this one's is not. It feeds the
@@ -1824,6 +1872,33 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// MAIN-THREAD capture: the construction rate tables, recomputed only when
+        /// RP-1 has refreshed its upkeep or the constructions have changed.
+        /// </summary>
+        internal object? CaptureConstructionRatesOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            return new Rp1ConstructionRatesCaptureData { Ut = ut, Raw = _constructionRates.CaptureOnMain(ut) };
+        }
+
+        /// <summary>COURIER-THREAD handle: map to a wire dict and publish. No game API.</summary>
+        internal void HandleConstructionRatesOnCourier(object? captured)
+        {
+            if (captured is not Rp1ConstructionRatesCaptureData cap)
+            {
+                return;
+            }
+            Rp1RowBudget.Record((cap.Raw?.Constructions?.Count ?? 0) + (cap.Raw?.FacilityUpgrades?.Count ?? 0), cap.Ut);
+            _constructionRatesPublisher?.Publish(Rp1ConstructionRatesCapture.Build(cap.Raw), cap.Ut);
+        }
+
+        private sealed class Rp1ConstructionRatesCaptureData
+        {
+            public double Ut;
+            public Rp1ConstructionRatesRaw? Raw;
+        }
+
+        /// <summary>
         /// Health, and WHICH RP-1. The version caveat at the top of
         /// <see cref="Rp1ScReflection"/> is why these facts are load-bearing
         /// rather than decorative: RP-1 ships roughly monthly, this Uplink is
@@ -1841,6 +1916,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("CrewHandler", _crew.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("budget", _budget.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact("budget breakdown", _budgetBreakdown.IsAvailable ? "resolved" : "maintenance or currency types not found"),
+                new UplinkHealthFact("construction rates", _constructionRates.IsAvailable ? "resolved" : "space centre or currency types not found"),
                 new UplinkHealthFact(
                     "control locker",
                     _avionics.IsAvailable

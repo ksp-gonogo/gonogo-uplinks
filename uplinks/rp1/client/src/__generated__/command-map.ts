@@ -58,6 +58,8 @@ import type {
   Rp1ComplexNewArgs,
   Rp1ComplexRenameArgs,
   Rp1ComplexRushArgs,
+  Rp1ConstructionCancelArgs,
+  Rp1ConstructionRateArgs,
   Rp1ContractPayloadArgs,
   Rp1FacilityUpgradeArgs,
   Rp1HireTargetSetArgs,
@@ -89,6 +91,8 @@ export interface GeneratedCommandArgsMap {
   "rp1.complex.new": Rp1ComplexNewArgs;
   "rp1.complex.rename": Rp1ComplexRenameArgs;
   "rp1.complex.rush": Rp1ComplexRushArgs;
+  "rp1.construction.cancel": Rp1ConstructionCancelArgs;
+  "rp1.construction.setRate": Rp1ConstructionRateArgs;
   "rp1.contracts.setPayload": Rp1ContractPayloadArgs;
   "rp1.facility.upgrade": Rp1FacilityUpgradeArgs;
   "rp1.fundTarget.cancel": Rp1TargetCancelArgs;
@@ -119,6 +123,8 @@ export interface GeneratedCommandReplyMap {
   "rp1.complex.new": CommandResultOf<Record<string, unknown>>;
   "rp1.complex.rename": CommandResult;
   "rp1.complex.rush": CommandResult;
+  "rp1.construction.cancel": CommandResult;
+  "rp1.construction.setRate": CommandResult;
   "rp1.contracts.setPayload": CommandResultOf<Record<string, unknown>>;
   "rp1.facility.upgrade": CommandResultOf<Record<string, unknown>>;
   "rp1.fundTarget.cancel": CommandResult;
@@ -159,6 +165,8 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.complex.new": "CommandResultOf<Record<string, unknown>>",
   "rp1.complex.rename": "CommandResult",
   "rp1.complex.rush": "CommandResult",
+  "rp1.construction.cancel": "CommandResult",
+  "rp1.construction.setRate": "CommandResult",
   "rp1.contracts.setPayload": "CommandResultOf<Record<string, unknown>>",
   "rp1.facility.upgrade": "CommandResultOf<Record<string, unknown>>",
   "rp1.fundTarget.cancel": "CommandResult",
@@ -227,6 +235,8 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.complex.new": { replies: true, delayed: true },
   "rp1.complex.rename": { replies: true, delayed: true },
   "rp1.complex.rush": { replies: true, delayed: true },
+  "rp1.construction.cancel": { replies: true, delayed: true },
+  "rp1.construction.setRate": { replies: true, delayed: true },
   "rp1.contracts.setPayload": { replies: true, delayed: true },
   "rp1.facility.upgrade": { replies: true, delayed: true },
   "rp1.fundTarget.cancel": { replies: true, delayed: true },
@@ -257,6 +267,8 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.complex.new",
   "rp1.complex.rename",
   "rp1.complex.rush",
+  "rp1.construction.cancel",
+  "rp1.construction.setRate",
   "rp1.contracts.setPayload",
   "rp1.facility.upgrade",
   "rp1.fundTarget.cancel",

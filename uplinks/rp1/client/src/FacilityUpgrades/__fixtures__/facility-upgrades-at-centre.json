@@ -14,7 +14,8 @@
       "TIER 2",
       "over the build",
       "Queue upgrade",
-      "Blocked"
+      "Blocked",
+      "at full rate"
     ]
   },
   "_stream": {
@@ -169,6 +170,25 @@
             "isModify": false
           }
         ]
+      },
+      {
+        "topic": "rp1.constructionRates",
+        "payload": {
+          "refreshedAt": 1000000,
+          "constructions": [],
+          "facilityUpgrades": [
+            {
+              "facility": "LaunchPad",
+              "costPerDay": 580.95,
+              "buildSeconds": 16731288.1
+            },
+            {
+              "facility": "VehicleAssemblyBuilding",
+              "costPerDay": 200.0,
+              "buildSeconds": 17280000.0
+            }
+          ]
+        }
       }
     ]
   }

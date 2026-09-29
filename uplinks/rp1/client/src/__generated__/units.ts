@@ -285,11 +285,15 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     confidence: "confidence",
     earned: "confidence",
   },
+  "Rp1ConstructionCancelArgs": {
+    id: "id",
+  },
   "Rp1ConstructionEntry": {
     cost: "funds",
     currentLevel: "count",
     engineersToReadd: "count",
     facilityType: "enum",
+    id: "id",
     isModify: "flag",
     kind: "enum",
     kscName: "id",
@@ -306,6 +310,22 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     timeLeftSeconds: "s",
     totalPoints: "bp",
     workRate: "ratio",
+  },
+  "Rp1ConstructionRateArgs": {
+    id: "id",
+    workRate: "ratio",
+  },
+  "Rp1ConstructionRateStep": {
+    costMultiplier: "ratio",
+    costPerDay: "f/day",
+    finishesAt: "ut",
+    workRate: "ratio",
+  },
+  "Rp1ConstructionRateTable": {
+    id: "id",
+  },
+  "Rp1ConstructionRates": {
+    refreshedAt: "ut",
   },
   "Rp1ContractPayloadArgs": {
     commsPayload: "kg",
@@ -355,6 +375,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   },
   "Rp1FacilityUpgradeArgs": {
     facility: "id",
+  },
+  "Rp1FacilityUpgradeRate": {
+    buildSeconds: "s",
+    costPerDay: "f/day",
+    facility: "enum",
   },
   "Rp1FundTarget": {
     active: "flag",
@@ -741,11 +766,15 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     confidence: "confidence",
     earned: "confidence",
   },
+  "rp1.constructionRates": {
+    refreshedAt: "ut",
+  },
   "rp1.constructions": {
     cost: "funds",
     currentLevel: "count",
     engineersToReadd: "count",
     facilityType: "enum",
+    id: "id",
     isModify: "flag",
     kind: "enum",
     kscName: "id",
@@ -1022,6 +1051,13 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1ComplexUpkeepEntry": {
     upkeep: "Rp1BudgetHorizons",
   },
+  "Rp1ConstructionRateTable": {
+    steps: "Rp1ConstructionRateStep[]",
+  },
+  "Rp1ConstructionRates": {
+    constructions: "Rp1ConstructionRateTable[]",
+    facilityUpgrades: "Rp1FacilityUpgradeRate[]",
+  },
   "Rp1CourseCostEntry": {
     cost: "Rp1BudgetHorizons",
   },
@@ -1084,6 +1120,10 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "rp1.careerEvents": {
     events: "Rp1CareerEventEntry[]",
   },
+  "rp1.constructionRates": {
+    constructions: "Rp1ConstructionRateTable[]",
+    facilityUpgrades: "Rp1FacilityUpgradeRate[]",
+  },
   "rp1.lcPricing": {
     resources: "Rp1LcResourcePrice[]",
   },
@@ -1139,6 +1179,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
     kind: null,
   },
   "Rp1FacilityEntry": {
+    facility: null,
+  },
+  "Rp1FacilityUpgradeRate": {
     facility: null,
   },
   "Rp1OperationEntry": {

@@ -282,6 +282,7 @@ namespace GonogoRp1Uplink
             {
                 list.Add(new Dictionary<string, object?>
                 {
+                    ["id"] = c.Id,
                     ["kscName"] = c.KscName,
                     ["lcId"] = c.LcId,
                     ["kind"] = c.Kind,
