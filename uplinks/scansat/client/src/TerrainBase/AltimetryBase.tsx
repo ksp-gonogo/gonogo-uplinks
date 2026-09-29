@@ -28,9 +28,12 @@
 // vanilla is suppressed.
 
 import {
+  bodyNamed,
+  CELESTIAL_FACTS,
   getBody,
   registerAugment,
   type SlotProps,
+  useProcessor,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
 import { useScanHeightGrid } from "../FogReveal/useScanLayers.js";
@@ -43,20 +46,47 @@ import {
 
 export const ALTIMETRY_LAYER_ID = "scansat:altimetry";
 
+const DEEP_WATER = "20, 50, 110";
+const SHALLOW_WATER = "40, 100, 160";
+const LOWLAND = "80, 150, 90";
+const HIGHLAND = "140, 110, 60";
+const PEAK = "220, 220, 220";
+
 /**
- * Five-stop elevation ramp: deep ocean → shallow → land → highlands →
- * peaks. Same stops as the retired `useScanLayerCanvas.ts`'s
- * `elevationRamp`, minus the baked-in alpha (opacity now comes from the
- * coverage gate, see this module's header comment). Tweaked for
- * KSP-typical altitudes; the caller normalises with the grid's actual
- * min/max so airless bodies (Mun) still get the full range.
+ * Altimetry colour for a height in metres, given the grid's own min/max.
+ *
+ * On a body with an ocean the ramp is anchored at sea level (0 m), the way
+ * SCANsat's own palettes clamp an ocean body's terrain config at 0: the two
+ * water stops share `min..0` and the three land stops share `0..max`, so
+ * dry land never paints as water however deep the ocean floor goes. With no
+ * ocean (or none known) the five stops spread over the whole `min..max`
+ * span, so an airless body such as the Mun still gets the full range.
  */
-export function elevationToColour(t: number): string {
-  if (t < 0.2) return "20, 50, 110";
-  if (t < 0.4) return "40, 100, 160";
-  if (t < 0.6) return "80, 150, 90";
-  if (t < 0.8) return "140, 110, 60";
-  return "220, 220, 220";
+export function altimetryColour(
+  metres: number,
+  minMetres: number,
+  maxMetres: number,
+  hasOcean: boolean,
+): string {
+  if (!hasOcean) {
+    const t = fraction(metres, minMetres, maxMetres);
+    if (t < 0.2) return DEEP_WATER;
+    if (t < 0.4) return SHALLOW_WATER;
+    if (t < 0.6) return LOWLAND;
+    if (t < 0.8) return HIGHLAND;
+    return PEAK;
+  }
+  if (metres < 0) {
+    return fraction(metres, minMetres, 0) < 0.5 ? DEEP_WATER : SHALLOW_WATER;
+  }
+  const t = fraction(metres, 0, maxMetres);
+  if (t < 1 / 3) return LOWLAND;
+  if (t < 2 / 3) return HIGHLAND;
+  return PEAK;
+}
+
+function fraction(metres: number, lo: number, hi: number): number {
+  return Math.max(0, Math.min(1, (metres - lo) / Math.max(1, hi - lo)));
 }
 
 // The bottom of the SCANsat base-layer stack, fully opaque wherever it
@@ -69,6 +99,13 @@ const ALTIMETRY_LAYER_OPACITY = 1;
 function AltimetryBase(ctx: SlotProps<"map-view.base">) {
   const body = ctx.bodyId ? getBody(ctx.bodyId) : undefined;
   const heightGrid = useScanHeightGrid(body?.name);
+  // The body catalogue is a fact, so a held reading still says whether the body has an ocean.
+  const factsReading = useProcessor(CELESTIAL_FACTS);
+  const facts =
+    factsReading?.state === "observed" || factsReading?.state === "held"
+      ? factsReading.value
+      : undefined;
+  const hasOcean = bodyNamed(facts, body?.name)?.hasOcean === true;
   // Per-layer toggle (spec: SCANsat layers default ON; `map-view.actions`
   // and the settings-panel checkbox both read/write this SAME value).
   const show = ctx.augmentSettings?.[ALTIMETRY_LAYER_ID]?.show !== false;
@@ -88,7 +125,6 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
     const c2d = canvas.getContext("2d");
     if (!c2d) return;
 
-    const span = Math.max(1, heightGrid.maxMetres - heightGrid.minMetres);
     paintTile(
       c2d,
       heightGrid.width,
@@ -97,9 +133,12 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
       ctx.coverageGate,
       (iLon, iLat) => {
         const idx = iLon * heightGrid.height + iLat;
-        const m = heightGrid.metres[idx];
-        const t = Math.max(0, Math.min(1, (m - heightGrid.minMetres) / span));
-        return elevationToColour(t);
+        return altimetryColour(
+          heightGrid.metres[idx],
+          heightGrid.minMetres,
+          heightGrid.maxMetres,
+          hasOcean,
+        );
       },
       BASE_LAYER_CANVAS_W,
       BASE_LAYER_CANVAS_H,
@@ -113,7 +152,7 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
     // was harmless (the next selection just overwrote it); in the
     // stackable model nothing else would ever clear it.
     return () => ctx.onLayer(ALTIMETRY_LAYER_ID, null, 0);
-  }, [show, ctx.onLayer, ctx.coverageGate, heightGrid, body]);
+  }, [show, ctx.onLayer, ctx.coverageGate, heightGrid, body, hasOcean]);
 
   return null;
 }

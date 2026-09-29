@@ -17,7 +17,7 @@ import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SCANHeightGrid } from "../schema.js";
 import { WithScansatAvailability } from "../test/withScansatAvailability.js";
-import { ALTIMETRY_LAYER_ID } from "./AltimetryBase.js";
+import { ALTIMETRY_LAYER_ID, altimetryColour } from "./AltimetryBase.js";
 // Importing the real module (not a throwaway test double) runs its
 // module-load `registerAugment(...)` exactly once: same convention as
 // FootprintOverlay/index.test.tsx and CoveragePanel/index.test.tsx.
@@ -40,6 +40,17 @@ function heightGridFixture(): SCANHeightGrid {
     minMetres: 0,
     maxMetres: 1000,
     heights: encodeInt16LE([0, 250, 750, 1000]),
+  };
+}
+
+/** Kerbin's real height span, with grassland at 500 m and 1500 m. */
+function kerbinSpanFixture(): SCANHeightGrid {
+  return {
+    width: 2,
+    height: 2,
+    minMetres: -1400,
+    maxMetres: 6700,
+    heights: encodeInt16LE([-1400, 500, 1500, 6700]),
   };
 }
 
@@ -293,5 +304,74 @@ describe("AltimetryBase: map-view.base slot", () => {
     });
     await waitFor(() => expect(onLayer).toHaveBeenCalled());
     expect(paintCalls.some((c) => c.startsWith("fillRect"))).toBe(true);
+  });
+
+  it("paints Kerbin's grassland as land once the body catalogue says Kerbin has an ocean", async () => {
+    const onLayer = vi.fn();
+    const { transport } = mountWithAvailability(baseLayerProps({ onLayer }));
+    act(() => {
+      transport.emit("scansat.available", true, {
+        quality: Quality.Loaded,
+        source: "scansat",
+      });
+    });
+    await waitFor(() =>
+      expect(transport.isSubscribed("scansat.height.Kerbin")).toBe(true),
+    );
+    act(() => {
+      transport.emit("system.bodies", {
+        bodies: [{ index: 1, name: "Kerbin", hasOcean: true }],
+      });
+      transport.emit("scansat.height.Kerbin", kerbinSpanFixture(), {
+        quality: Quality.Loaded,
+        source: "scansat",
+      });
+    });
+    await waitFor(() => {
+      // Cells paint in grid order: -1400 m, 500 m, 1500 m, 6700 m.
+      expect(paintFillStyles.slice(-4)).toEqual([
+        "rgba(20, 50, 110, 1)",
+        "rgba(80, 150, 90, 1)",
+        "rgba(80, 150, 90, 1)",
+        "rgba(220, 220, 220, 1)",
+      ]);
+    });
+  });
+});
+
+describe("altimetryColour", () => {
+  const DEEP_WATER = "20, 50, 110";
+  const SHALLOW_WATER = "40, 100, 160";
+  const LOWLAND = "80, 150, 90";
+  const HIGHLAND = "140, 110, 60";
+  const PEAK = "220, 220, 220";
+
+  it("paints Kerbin's lowland above sea level as land, not shallow water", () => {
+    expect(altimetryColour(500, -1400, 6700, true)).toBe(LOWLAND);
+    expect(altimetryColour(1500, -1400, 6700, true)).toBe(LOWLAND);
+    expect(altimetryColour(0, -1400, 6700, true)).toBe(LOWLAND);
+  });
+
+  it("keeps water below sea level on an ocean body, deep then shallow", () => {
+    expect(altimetryColour(-1400, -1400, 6700, true)).toBe(DEEP_WATER);
+    expect(altimetryColour(-200, -1400, 6700, true)).toBe(SHALLOW_WATER);
+    expect(altimetryColour(-1, -1400, 6700, true)).toBe(SHALLOW_WATER);
+  });
+
+  it("spreads the land stops over sea level to the highest peak", () => {
+    expect(altimetryColour(3000, -1400, 6700, true)).toBe(HIGHLAND);
+    expect(altimetryColour(6700, -1400, 6700, true)).toBe(PEAK);
+  });
+
+  it("paints no water on an ocean body whose grid never dips below sea level", () => {
+    expect(altimetryColour(0, 0, 3000, true)).toBe(LOWLAND);
+  });
+
+  it("spreads all five stops over the whole span on a body with no ocean", () => {
+    expect(altimetryColour(-500, -500, 7000, false)).toBe(DEEP_WATER);
+    expect(altimetryColour(1500, -500, 7000, false)).toBe(SHALLOW_WATER);
+    expect(altimetryColour(3000, -500, 7000, false)).toBe(LOWLAND);
+    expect(altimetryColour(4500, -500, 7000, false)).toBe(HIGHLAND);
+    expect(altimetryColour(7000, -500, 7000, false)).toBe(PEAK);
   });
 });
