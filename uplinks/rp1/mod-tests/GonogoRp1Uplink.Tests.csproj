@@ -49,6 +49,9 @@
     <Compile Include="..\mod\Rp1CareerCostRaw.cs" />
     <Compile Include="..\mod\Rp1CareerCostCapture.cs" />
     <Compile Include="..\mod\Rp1CareerCostReflection.cs" />
+    <Compile Include="..\mod\Rp1CareerLedgerRaw.cs" />
+    <Compile Include="..\mod\Rp1CareerLedgerCapture.cs" />
+    <Compile Include="..\mod\Rp1CareerLedgerReflection.cs" />
     <Compile Include="..\mod\Rp1AvionicsRaw.cs" />
     <Compile Include="..\mod\Rp1AvionicsCapture.cs" />
     <Compile Include="..\mod\Rp1AvionicsReflection.cs" />

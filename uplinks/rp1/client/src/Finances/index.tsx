@@ -33,6 +33,8 @@ import type {
   Rp1BudgetBreakdown,
   Rp1BudgetHorizons,
   Rp1BudgetPeriod,
+  Rp1CareerLedger,
+  Rp1LedgerPeriodEntry,
 } from "../__generated__/contract.js";
 import { FINANCES_SCREEN_ID } from "../AdminBuilding/financesScreen.js";
 import { latest } from "../shared/current.js";
@@ -61,6 +63,11 @@ type PeriodKey = Exclude<keyof Rp1BudgetPeriod, "span">;
 type Drill = "facilities" | "astronauts" | "programs";
 type BudgetReading = TopicReading<Rp1Budget>;
 type BreakdownReading = TopicReading<Rp1BudgetBreakdown>;
+type LedgerReading = TopicReading<Rp1CareerLedger>;
+type LedgerKey = Exclude<keyof Rp1LedgerPeriodEntry, "startUt" | "endUt" | "open">;
+
+/** Months the career log shows before the operator asks for all of them. */
+const RECENT_MONTHS = 12;
 
 interface BudgetRow {
   id: string;
@@ -97,6 +104,9 @@ const RP1_ROWS: readonly { key: PeriodKey; label: string; drill?: Drill }[] = [
  *
  * <para>Every figure is handed to the kit as its reading, so while RP-1 is not
  * being heard the last budget it sent stays up with each figure marked held.</para>
+ *
+ * <para>Below the budget, RP-1's career log: the monthly ledger RP-1 keeps and
+ * only ever exports, month by month in its own categories.</para>
  */
 export function Finances({ screenId }: { screenId: string }) {
   const availableReading = useTelemetry("rp1.available");
@@ -104,6 +114,7 @@ export function Finances({ screenId }: { screenId: string }) {
   const budgetReading = useTelemetry("rp1.budget");
   const budget = latest(budgetReading);
   const breakdownReading = useTelemetry("rp1.budgetBreakdown");
+  const ledgerReading = useTelemetry("rp1.careerLedger");
   const training = latest(useTelemetry("rp1.training"));
   const research = latest(useTelemetry("rp1.research"));
 
@@ -152,6 +163,10 @@ export function Finances({ screenId }: { screenId: string }) {
             researchIdle={research !== undefined && research.length === 0}
           />
           <Forecast budget={budgetReading} />
+          <CareerLog
+            ledger={ledgerReading}
+            wide={size.w >= ALL_PERIODS_MIN_WIDTH}
+          />
         </Section>
       )}
     </div>
@@ -557,6 +572,197 @@ function Forecast({ budget }: Readonly<{ budget: BudgetReading }>) {
   );
 }
 
+/** One line of a month, by the name RP-1's own export gives its column. */
+interface LedgerLine {
+  key: LedgerKey;
+  label: string;
+}
+
+const LEDGER_IN: readonly LedgerLine[] = [
+  { key: "programFunds", label: "Program funds" },
+  { key: "subsidyPaidOut", label: "Subsidy paid out" },
+  { key: "vesselRecovery", label: "Vessel recovery" },
+  { key: "otherFundsEarned", label: "Other funds earned" },
+  { key: "repFromPrograms", label: "Reputation from Programs" },
+];
+
+/**
+ * The six upkeep lines come first and Maintenance after them, because RP-1
+ * books the same money twice: Maintenance is those six net of the subsidy.
+ */
+const LEDGER_OUT: readonly LedgerLine[] = [
+  { key: "salaryEngineers", label: "Salary, engineers" },
+  { key: "salaryResearchers", label: "Salary, researchers" },
+  { key: "salaryCrew", label: "Salary, crew" },
+  { key: "facilityMaintenance", label: "Facility maintenance" },
+  { key: "lcMaintenance", label: "LC maintenance" },
+  { key: "trainingFees", label: "Training" },
+  { key: "maintenanceFees", label: "Maintenance, net of subsidy" },
+  { key: "launchFees", label: "Launch fees" },
+  { key: "vesselPurchase", label: "Vessel purchase" },
+  { key: "toolingFees", label: "Tooling" },
+  { key: "entryCosts", label: "Entry costs" },
+  { key: "constructionFees", label: "Construction" },
+  { key: "hiringEngineers", label: "Hiring engineers" },
+  { key: "hiringResearchers", label: "Hiring researchers" },
+  { key: "otherFees", label: "Other fees" },
+  { key: "spentUnlockCredit", label: "Unlock Credit spent, in tooling and entry costs" },
+];
+
+const LEDGER_CLOSE: readonly LedgerLine[] = [
+  { key: "fundsAtClose", label: "Funds" },
+  { key: "unlockCreditAtClose", label: "Unlock Credit" },
+  { key: "subsidySize", label: "Subsidy size" },
+  { key: "scienceAtClose", label: "Science" },
+  { key: "scienceEarnedAtClose", label: "Science earned, career" },
+  { key: "engineersAtClose", label: "Engineers" },
+  { key: "researchersAtClose", label: "Researchers" },
+  { key: "confidenceAtClose", label: "Confidence" },
+  { key: "reputationAtClose", label: "Reputation" },
+];
+
+interface Month {
+  /** The period's index in the payload, so each figure is read off the reading and keeps its mark. */
+  at: number;
+  startUt: number | null | undefined;
+  open: boolean;
+}
+
+/**
+ * RP-1's career log, newest month first. Every figure is RP-1's as it booked
+ * it: its lines overlap, so nothing here adds them up. Narrow, each month shows
+ * only what it closed on, and the rest is one press away in its detail.
+ */
+function CareerLog({
+  ledger,
+  wide,
+}: Readonly<{ ledger: LedgerReading; wide: boolean }>) {
+  const [all, setAll] = useState(false);
+  const log = latest(ledger);
+  const months: Month[] = (log?.periods ?? [])
+    .map((p, at) => ({
+      at,
+      startUt: magnitudeOf(p.startUt),
+      open: p.open === true,
+    }))
+    .reverse();
+  const shown = all ? months : months.slice(0, RECENT_MONTHS);
+  const figure = (m: Month, key: LedgerKey) => ledger.periods[m.at][key];
+
+  const allColumns: DataTableColumn<Month>[] = [
+    {
+      key: "month",
+      header: "Month from",
+      rowHeader: true,
+      render: (m) => (
+        <>
+          <MissionDate value={ledger.periods[m.at].startUt} />
+          {m.open && (
+            <>
+              {" "}
+              <Badge tone="info">SO FAR</Badge>
+            </>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "programs",
+      header: "Program funds",
+      align: "end",
+      render: (m) => <Unit value={figure(m, "programFunds")} />,
+    },
+    {
+      key: "maintenance",
+      header: "Maintenance",
+      align: "end",
+      render: (m) => <Unit value={figure(m, "maintenanceFees")} />,
+    },
+    {
+      key: "funds",
+      header: "Funds at close",
+      align: "end",
+      render: (m) => <Unit value={figure(m, "fundsAtClose")} />,
+    },
+  ];
+  const columns = wide
+    ? allColumns
+    : allColumns.filter((c) => c.key === "month" || c.key === "funds");
+
+  const empty =
+    log === undefined
+      ? ledger.state === "held"
+        ? "RP-1 had sent no career log when the link dropped"
+        : "RP-1 has not sent its career log"
+      : log.enabled === false
+        ? "RP-1 is not keeping a career log in this save"
+        : "RP-1 has logged no months yet";
+
+  return (
+    <Section gap="related-dense" title="CAREER LOG">
+      {months.length > RECENT_MONTHS && (
+        <Cluster gap="related-dense" justify="start">
+          <ToggleButton active={all} onClick={() => setAll(!all)} size="sm">
+            All {months.length} months
+          </ToggleButton>
+        </Cluster>
+      )}
+      <DataTable
+        caption="RP-1 career log by month"
+        columns={columns}
+        empty={<EmptyState>{empty}</EmptyState>}
+        rowDetail={(m) => <MonthDetail ledger={ledger} month={m} />}
+        rowKey={(m) => String(m.startUt ?? `undated-${m.at}`)}
+        rows={shown}
+      />
+    </Section>
+  );
+}
+
+/** Every line RP-1 booked into one month, in and out, and what it closed on. */
+function MonthDetail({
+  ledger,
+  month,
+}: Readonly<{ ledger: LedgerReading; month: Month }>) {
+  const period = ledger.periods[month.at];
+  const columns: DataTableColumn<LedgerLine>[] = [
+    {
+      key: "line",
+      header: <VisuallyHidden>Line</VisuallyHidden>,
+      rowHeader: true,
+      render: (line) => line.label,
+    },
+    {
+      key: "amount",
+      header: <VisuallyHidden>Amount</VisuallyHidden>,
+      align: "end",
+      render: (line) => <Unit value={period[line.key]} />,
+    },
+  ];
+  const sections = [
+    { id: "in", title: "In", rows: [...LEDGER_IN] },
+    { id: "out", title: "Out", rows: [...LEDGER_OUT] },
+    ...(month.open
+      ? []
+      : [{ id: "close", title: "Closed on", rows: [...LEDGER_CLOSE] }]),
+  ];
+  return (
+    <Disclosure
+      asButton
+      chevron={false}
+      label={month.open ? "The month so far" : "Every line"}
+      variant="inline"
+    >
+      <DataTable
+        caption="RP-1 career log, one month"
+        columns={columns}
+        rowKey={(line) => line.key}
+        sections={sections}
+      />
+    </Disclosure>
+  );
+}
+
 /**
  * A funds change as RP-1 prints it: a cost in parentheses, a gain with a plus.
  */
@@ -628,6 +834,7 @@ registerAugment({
     "rp1.available",
     "rp1.budget",
     "rp1.budgetBreakdown",
+    "rp1.careerLedger",
     "rp1.training",
     "rp1.research",
   ],

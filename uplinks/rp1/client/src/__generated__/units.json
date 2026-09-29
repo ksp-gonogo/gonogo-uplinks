@@ -167,6 +167,9 @@
     "Rp1CareerEvents": {
       "enabled": "flag"
     },
+    "Rp1CareerLedger": {
+      "enabled": "flag"
+    },
     "Rp1CentreEntry": {
       "anyOperational": "flag",
       "engineers": "count",
@@ -404,6 +407,41 @@
       "setupScience": "science",
       "strategyId": "id",
       "title": "text"
+    },
+    "Rp1LedgerPeriodEntry": {
+      "confidenceAtClose": "confidence",
+      "constructionFees": "funds",
+      "endUt": "ut",
+      "engineersAtClose": "count",
+      "entryCosts": "funds",
+      "facilityMaintenance": "funds",
+      "fundsAtClose": "funds",
+      "hiringEngineers": "funds",
+      "hiringResearchers": "funds",
+      "launchFees": "funds",
+      "lcMaintenance": "funds",
+      "maintenanceFees": "funds",
+      "open": "flag",
+      "otherFees": "funds",
+      "otherFundsEarned": "funds",
+      "programFunds": "funds",
+      "repFromPrograms": "rep",
+      "reputationAtClose": "rep",
+      "researchersAtClose": "count",
+      "salaryCrew": "funds",
+      "salaryEngineers": "funds",
+      "salaryResearchers": "funds",
+      "scienceAtClose": "science",
+      "scienceEarnedAtClose": "science",
+      "spentUnlockCredit": "funds",
+      "startUt": "ut",
+      "subsidyPaidOut": "funds",
+      "subsidySize": "funds",
+      "toolingFees": "funds",
+      "trainingFees": "funds",
+      "unlockCreditAtClose": "funds",
+      "vesselPurchase": "funds",
+      "vesselRecovery": "funds"
     },
     "Rp1OperationEntry": {
       "associatedVesselId": "id",
@@ -715,6 +753,9 @@
       "unpurchasedParts": "text"
     },
     "rp1.careerEvents": {
+      "enabled": "flag"
+    },
+    "rp1.careerLedger": {
       "enabled": "flag"
     },
     "rp1.centres": {
@@ -1036,6 +1077,9 @@
     "Rp1CareerEvents": {
       "events": "Rp1CareerEventEntry[]"
     },
+    "Rp1CareerLedger": {
+      "periods": "Rp1LedgerPeriodEntry[]"
+    },
     "Rp1ComplexModifyArgs": {
       "size": "Rp1ComplexSizeArgs"
     },
@@ -1114,6 +1158,9 @@
     },
     "rp1.careerEvents": {
       "events": "Rp1CareerEventEntry[]"
+    },
+    "rp1.careerLedger": {
+      "periods": "Rp1LedgerPeriodEntry[]"
     },
     "rp1.constructionRates": {
       "constructions": "Rp1ConstructionRateTable[]",

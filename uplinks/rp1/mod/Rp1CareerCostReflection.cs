@@ -34,9 +34,8 @@
 //       prices by performing every purchase for real and reloading the database.
 //       See Rp1ToolingReflection's header; the cached total is used instead.
 //   CareerLog.CurrentPeriod and the period dictionary
-//       the monthly financial ledger. Read by nothing here on purpose: it is a
-//       balance sheet rather than a timeline, and it belongs on a budget surface
-//       rather than on an event feed.
+//       the monthly financial ledger. A balance sheet rather than a timeline, so
+//       Rp1CareerLedgerReflection reads it for rp1.careerLedger instead.
 using System;
 using System.Collections.Generic;
 

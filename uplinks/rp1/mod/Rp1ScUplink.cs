@@ -109,6 +109,12 @@ namespace GonogoRp1Uplink
         public const string LeadersTopic = "rp1.leaders";
 
         /// <summary>
+        /// RP-1's monthly ledger: what each month took in and paid out by RP-1's own
+        /// categories, and the funds, science and standing it closed on.
+        /// </summary>
+        public const string CareerLedgerTopic = "rp1.careerLedger";
+
+        /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
         /// here whose subject is a craft in flight rather than the space centre,
         /// and the one that is <see cref="DelayRole.Delayed"/>.
@@ -219,6 +225,12 @@ namespace GonogoRp1Uplink
 
         /// <summary>The research rate table, on its own reader and the budget's cadence for the same reason.</summary>
         private readonly Rp1ResearchRatesReflection _researchRates = new Rp1ResearchRatesReflection();
+
+        /// <summary>
+        /// The career log's monthly ledger, on its own reader because it keeps the
+        /// closed months it has already read.
+        /// </summary>
+        private readonly Rp1CareerLedgerReflection _careerLedger = new Rp1CareerLedgerReflection();
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
@@ -503,6 +515,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _constructionRatesPublisher;
         private IChannelPublisher? _researchRatesPublisher;
         private IChannelPublisher? _leadersPublisher;
+        private IChannelPublisher? _careerLedgerPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -671,6 +684,11 @@ namespace GonogoRp1Uplink
                 AtHome(ConstructionRatesTopic, absenceIsData: true),
                 AtHome(ResearchRatesTopic, absenceIsData: true),
                 AtHome(LeadersTopic, absenceIsData: true),
+                // The same three states as the career events beside it: nothing
+                // when the log handler could not be read, `enabled: false` when the
+                // career keeps no log, and enabled with no periods before any
+                // money has moved.
+                AtHome(CareerLedgerTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -1453,6 +1471,7 @@ namespace GonogoRp1Uplink
             _constructionRatesPublisher = host.Publisher(ConstructionRatesTopic);
             _researchRatesPublisher = host.Publisher(ResearchRatesTopic);
             _leadersPublisher = host.Publisher(LeadersTopic);
+            _careerLedgerPublisher = host.Publisher(CareerLedgerTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1538,6 +1557,14 @@ namespace GonogoRp1Uplink
                 CaptureCareerEventsOnMain,
                 HandleCareerEventsOnCourier,
                 CareerEventsTopic);
+
+            // Gated on its own topic: its whole effect is its return value, and the
+            // closed months it keeps are its own, so a tick nobody is watching
+            // starves nothing.
+            host.AddSampledSource(
+                CaptureCareerLedgerOnMain,
+                HandleCareerLedgerOnCourier,
+                CareerLedgerTopic);
 
             // Gated on its own topic, and its own capture because it is the only
             // read on this Uplink whose subject is a VESSEL. Whole effect is its
@@ -1856,6 +1883,24 @@ namespace GonogoRp1Uplink
 
             Rp1RowBudget.Record(raw.Events.Count, raw.Ut);
             _careerEvents?.Publish(Rp1CareerCostCapture.BuildEvents(raw), raw.Ut);
+        }
+
+        /// <summary>
+        /// MAIN-THREAD capture: RP-1's monthly ledger, or an unread raw carrying the
+        /// tick's UT when its log handler is not live.
+        /// </summary>
+        internal object? CaptureCareerLedgerOnMain(KspSnapshot? snapshot) =>
+            _careerLedger.Read(UtOf(snapshot));
+
+        /// <summary>COURIER-THREAD handle: map to a wire dict and publish. No game API.</summary>
+        internal void HandleCareerLedgerOnCourier(object? captured)
+        {
+            if (captured is not Rp1CareerLedgerRaw raw)
+            {
+                return;
+            }
+            Rp1RowBudget.Record(raw.Periods.Count, raw.Ut);
+            _careerLedgerPublisher?.Publish(Rp1CareerLedgerCapture.Build(raw), raw.Ut);
         }
 
         /// <summary>
@@ -2276,7 +2321,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact(
                     "career log",
                     _careerLog.IsLogAvailable
-                        ? "rp1.careerEvents published"
+                        ? "rp1.careerEvents and rp1.careerLedger published"
                         : "not published: RP-1 CareerLog type not found"),
             };
 

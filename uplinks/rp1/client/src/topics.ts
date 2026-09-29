@@ -26,6 +26,7 @@ import type {
   Rp1BuildCost,
   Rp1BuildItemEntry,
   Rp1CareerEvents,
+  Rp1CareerLedger,
   Rp1CentreEntry,
   Rp1ComplexEntry,
   Rp1Confidence,
@@ -338,6 +339,18 @@ export const RP1_RESEARCH_RATES_TOPIC = "rp1.researchRates";
  */
 export const RP1_LEADERS_TOPIC = "rp1.leaders";
 
+/**
+ * RP-1's monthly ledger from its career log, oldest month first: what each month
+ * took in and paid out by RP-1's own categories, and the funds, science and
+ * standing it closed on. RP-1 only exports this; it never draws it.
+ *
+ * Every money figure is positive, as RP-1 books it. The lines overlap
+ * (`maintenanceFees` is the six upkeep lines net of the subsidy paid, and
+ * tooling and entry costs include `spentUnlockCredit`), so they do not add up to
+ * a total. The open month has every `...AtClose` figure and `subsidySize` absent.
+ */
+export const RP1_CAREER_LEDGER_TOPIC = "rp1.careerLedger";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "rp1.available": boolean;
@@ -372,6 +385,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.constructionRates": Rp1ConstructionRates;
     "rp1.researchRates": Rp1ResearchRates;
     "rp1.leaders": Rp1LeaderEntry[];
+    "rp1.careerLedger": Rp1CareerLedger;
   }
 }
 
@@ -407,6 +421,7 @@ registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
 registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
 registerBarePrimitiveTopic(RP1_RESEARCH_RATES_TOPIC);
 registerBarePrimitiveTopic(RP1_LEADERS_TOPIC);
+registerBarePrimitiveTopic(RP1_CAREER_LEDGER_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both
@@ -526,4 +541,7 @@ export type _ResolvesRp1ResearchRates = Expect<
 >;
 export type _ResolvesRp1Leaders = Expect<
   Equal<TopicPayload<"rp1.leaders">, Rp1LeaderEntry[]>
+>;
+export type _ResolvesRp1CareerLedger = Expect<
+  Equal<TopicPayload<"rp1.careerLedger">, Rp1CareerLedger>
 >;

@@ -3403,8 +3403,8 @@ export interface Rp1CareerEventEntry
 * **Only half of RP-1's career log is here, and that is deliberate.** Its
 * `CareerLog` holds two unrelated things: six lists of dated events, and a
 * monthly FINANCIAL LEDGER of about thirty figures per period. The ledger is a
-* balance sheet and belongs on a budget surface; putting twelve rows a year of
-* accounts onto an event timeline would make both worse.
+* balance sheet and travels on `rp1.careerLedger`; putting twelve rows a year
+* of accounts onto an event timeline would make both worse.
 */
 export interface Rp1CareerEvents
 {
@@ -3892,6 +3892,117 @@ export interface Rp1ProgramFundingEntry
 	* today's rate. Zero once it has paid out in full.
 	*/
 	funding?: Rp1BudgetHorizons | null;
+}
+/**
+* The `rp1.careerLedger` channel: RP-1's monthly financial ledger, the half of
+* its `CareerLog` that `rp1.careerEvents` leaves out.
+*
+* **RP-1 never draws this.** Its Career Log tab only exports it, as CSV or as
+* a web upload. It is the one record of where the career's money went, month
+* by month and by RP-1's own categories.
+*
+* **The lines overlap, as RP-1 books them.** The six upkeep lines are booked
+* directly, and the same money also lands in
+* `Rp1LedgerPeriodEntry.maintenanceFees` net of the subsidy paid. Tooling and
+* entry costs include the Unlock Credit spent on them, which
+* `Rp1LedgerPeriodEntry.spentUnlockCredit` also counts. Adding the lines
+* together double-counts.
+*
+* Absent when RP-1's log handler could not be read. `Rp1CareerLedger.enabled`
+* false is a career keeping no log, which is not an empty one.
+*/
+export interface Rp1CareerLedger
+{
+	/**
+	* Whether RP-1 is keeping the log. False is a career that records nothing and
+	* never will, not one with nothing recorded yet.
+	*/
+	enabled?: boolean | null;
+	/** Every period RP-1 holds, oldest first; the last is usually the open one. */
+	periods?: Rp1LedgerPeriodEntry[] | null;
+}
+/**
+* One of RP-1's log periods, a calendar month under its default settings.
+* Every money figure is as RP-1 books it: what came in or went out over the
+* period, each a positive amount.
+*/
+export interface Rp1LedgerPeriodEntry
+{
+	/** When the period began. */
+	startUt?: Value<"ut"> | null;
+	/** When the period ends. */
+	endUt?: Value<"ut"> | null;
+	/**
+	* The period RP-1 is still booking into. Its figures are the month so far, and
+	* every closing figure is absent until RP-1 closes it.
+	*/
+	open?: boolean | null;
+	/** What the career's Programs paid. */
+	programFunds?: Value<"funds"> | null;
+	/** The subsidy RP-1 paid out, which it pays only as far as upkeep needs it. */
+	subsidyPaidOut?: Value<"funds"> | null;
+	/** Funds earned that RP-1 sorts under no other heading. */
+	otherFundsEarned?: Value<"funds"> | null;
+	/** What recovered vessels returned. */
+	vesselRecovery?: Value<"funds"> | null;
+	/** The integration teams' salaries. */
+	salaryEngineers?: Value<"funds"> | null;
+	/** The research teams' salaries. */
+	salaryResearchers?: Value<"funds"> | null;
+	/** Crew salaries, at base and in flight. */
+	salaryCrew?: Value<"funds"> | null;
+	/** Building upkeep. */
+	facilityMaintenance?: Value<"funds"> | null;
+	/** Launch-complex upkeep. */
+	lcMaintenance?: Value<"funds"> | null;
+	/** Crew training upkeep. */
+	trainingFees?: Value<"funds"> | null;
+	/**
+	* All of the upkeep above, net of the subsidy paid out: RP-1's "Maintenance"
+	* column. The same money as the six upkeep lines, not an addition to them.
+	*/
+	maintenanceFees?: Value<"funds"> | null;
+	/** Rollout and airlaunch preparation. */
+	launchFees?: Value<"funds"> | null;
+	/** Vessels bought. */
+	vesselPurchase?: Value<"funds"> | null;
+	/** Tooling, including the Unlock Credit spent on it. */
+	toolingFees?: Value<"funds"> | null;
+	/** Part and upgrade entry costs, including the Unlock Credit spent on them. */
+	entryCosts?: Value<"funds"> | null;
+	/** Facility and launch-complex construction. */
+	constructionFees?: Value<"funds"> | null;
+	/** Hiring engineers. */
+	hiringEngineers?: Value<"funds"> | null;
+	/** Hiring researchers. */
+	hiringResearchers?: Value<"funds"> | null;
+	/** Funds spent that RP-1 sorts under no other heading. */
+	otherFees?: Value<"funds"> | null;
+	/**
+	* Unlock Credit spent on tooling and entry costs, already inside those two
+	* lines.
+	*/
+	spentUnlockCredit?: Value<"funds"> | null;
+	/** Reputation the career's Programs earned. */
+	repFromPrograms?: Value<"rep"> | null;
+	/** The funds balance when RP-1 closed the period. */
+	fundsAtClose?: Value<"funds"> | null;
+	/** The unspent science when RP-1 closed the period. */
+	scienceAtClose?: Value<"science"> | null;
+	/** The Unlock Credit balance when RP-1 closed the period. */
+	unlockCreditAtClose?: Value<"funds"> | null;
+	/** All the science the career had earned when RP-1 closed the period. */
+	scienceEarnedAtClose?: Value<"science"> | null;
+	/** The subsidy RP-1 would pay over the whole period, written when it closes. */
+	subsidySize?: Value<"funds"> | null;
+	/** Engineers on the books when RP-1 closed the period. */
+	engineersAtClose?: Value<"count"> | null;
+	/** Researchers on the books when RP-1 closed the period. */
+	researchersAtClose?: Value<"count"> | null;
+	/** Confidence when RP-1 closed the period. */
+	confidenceAtClose?: Value<"confidence"> | null;
+	/** Reputation when RP-1 closed the period. */
+	reputationAtClose?: Value<"rep"> | null;
 }
 /**
 * Which Program to accept and at what speed, for `rp1.program.accept`.

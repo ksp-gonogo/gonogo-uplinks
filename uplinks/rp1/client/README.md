@@ -23,6 +23,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.buildQueue` | `Rp1BuildItemEntry[]` | lossy-latest | delayed |
 | `rp1.buildable` | `Rp1BuildableCraftEntry[]` | lossy-latest | delayed |
 | `rp1.careerEvents` | `Rp1CareerEvents` | lossy-latest | delayed |
+| `rp1.careerLedger` | `Rp1CareerLedger` | lossy-latest | delayed |
 | `rp1.centres` | `Rp1CentreEntry[]` | lossy-latest | delayed |
 | `rp1.complexes` | `Rp1ComplexEntry[]` | lossy-latest | delayed |
 | `rp1.confidence` | `Rp1Confidence` | lossy-latest | delayed |
@@ -67,6 +68,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1FundingCurveKey` | `frac` ratio, `inTangent` 1, `outTangent` 1, `paidFraction` ratio |
 | `Rp1HireTarget` | `active` flag, `currentCount` count, `isResearch` flag, `lcId` id, `leftToHire` count, `targetCount` count, `timeLeft` s |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
+| `Rp1LedgerPeriodEntry` | `confidenceAtClose` confidence, `constructionFees` funds, `endUt` ut, `engineersAtClose` count, `entryCosts` funds, `facilityMaintenance` funds, `fundsAtClose` funds, `hiringEngineers` funds, `hiringResearchers` funds, `launchFees` funds, `lcMaintenance` funds, `maintenanceFees` funds, `open` flag, `otherFees` funds, `otherFundsEarned` funds, `programFunds` funds, `repFromPrograms` rep, `reputationAtClose` rep, `researchersAtClose` count, `salaryCrew` funds, `salaryEngineers` funds, `salaryResearchers` funds, `scienceAtClose` science, `scienceEarnedAtClose` science, `spentUnlockCredit` funds, `startUt` ut, `subsidyPaidOut` funds, `subsidySize` funds, `toolingFees` funds, `trainingFees` funds, `unlockCreditAtClose` funds, `vesselPurchase` funds, `vesselRecovery` funds |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
@@ -174,7 +176,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 5 |  |
+| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 6 |  |
 | `rp1-leader-detail` | `strategies.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |

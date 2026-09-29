@@ -7,33 +7,29 @@
       "w": 9,
       "h": 24
     },
-    "caption": "The same career with the link down: the last budget RP-1 sent stays up, each figure marked held",
+    "caption": "RP-1's career log, which RP-1 itself only exports: each month's Program funds, net maintenance and closing funds, newest first, with December 1960 opened onto every line RP-1 booked and what the month closed on",
     "before": [
       {
         "press": "Finances"
+      },
+      {
+        "press": "Every line"
       },
       {
         "rest": true
       }
     ],
     "paints": [
-      "FUNDS CHANGE",
-      "BUDGET",
-      "Facilities",
-      "Total upkeep",
-      "Net (after subsidy)",
-      "Program Budget",
-      "Balance",
-      "MODIFIERS",
-      "REPUTATION AND SUBSIDY",
-      "UNLOCK CREDIT",
-      "FORECAST",
-      "CAREER LOG"
+      "CAREER LOG",
+      "SO FAR",
+      "Closed on",
+      "Maintenance, net of subsidy",
+      "Salary, engineers",
+      "Funds at close"
     ]
   },
   "_stream": {
     "pinnedUt": 315620000,
-    "stopsArriving": true,
     "emits": [
       {
         "topic": "rp1.available",

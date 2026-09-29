@@ -281,7 +281,7 @@ namespace GonogoRp1Uplink.Tests
             new Rp1TypeTarget(Rp0, "RP0.Tooling.Parameters", "Rp1ToolingReflection"),
             // The career's own history. Resolved by name because its handler is a
             // ScenarioModule and a save RP-1 does not manage has none.
-            new Rp1TypeTarget(Rp0, "RP0.CareerLog", "Rp1CareerCostReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.CareerLog", "Rp1CareerCostReflection, Rp1CareerLedgerReflection"),
             new Rp1TypeTarget(Rp0, "RP0.Programs.ProgramHandler", "Rp1ProgramsReflection"),
             // The construction project a facility upgrade IS under RP-1, and the
             // reason career.facility.upgrade is refused rather than allowed to
@@ -977,6 +977,7 @@ namespace GonogoRp1Uplink.Tests
             const string Tooling = "Rp1ToolingReflection";
             const string ToolingWrites = "Rp1ToolingCommands";
             const string CareerCost = "Rp1CareerCostReflection";
+            const string Ledger = "Rp1CareerLedgerReflection";
 
             // ── The space centre ────────────────────────────────────────────
             Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Sc + ", " + Gate + ", " + Projects + ", " + Build + ", " + Withhold + ", " + Facilities, @static: true);
@@ -1479,9 +1480,9 @@ namespace GonogoRp1Uplink.Tests
             // compressed craft node and then releases the buffer, which is a write.
             Add("RP0.VesselProject", "cost", Rp1Reader.Numeric, CareerCost);
 
-            Add("RP0.CareerLog", "Instance", Rp1Reader.Presence, CareerCost, @static: true);
+            Add("RP0.CareerLog", "Instance", Rp1Reader.Presence, CareerCost + ", " + Ledger, @static: true);
             // False is not an empty log, which is the whole reason it is read.
-            Add("RP0.CareerLog", "IsEnabled", Rp1Reader.Bool, CareerCost);
+            Add("RP0.CareerLog", "IsEnabled", Rp1Reader.Bool, CareerCost + ", " + Ledger);
             // Six PRIVATE lists. RP-1 exposes none of them; its own window reaches
             // them from inside the class.
             Add("RP0.CareerLog", "_contractDict", Rp1Reader.Presence, CareerCost);
@@ -1509,6 +1510,46 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.LeaderEvent", "Cost", Rp1Reader.Numeric, CareerCost);
             // Hired or dismissed. The name and the cost read identically without it.
             Add("RP0.LeaderEvent", "IsAdd", Rp1Reader.Bool, CareerCost);
+
+            // ── The career log's monthly ledger ─────────────────────────────
+            // PRIVATE, keyed by each period's start. Walked as a bare enumerable
+            // of pairs rather than cast to a dictionary type from another assembly.
+            Add("RP0.CareerLog", "_periodDict", Rp1Reader.Presence, Ledger);
+            // The open period, read from the field rather than the CurrentPeriod
+            // getter, which closes periods when it is read.
+            Add("RP0.CareerLog", "CurPeriodStart", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "StartUT", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "EndUT", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "ProgramFunds", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SubsidyPaidOut", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "OtherFundsEarned", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "VesselRecovery", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SalaryEngineers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SalaryResearchers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SalaryCrew", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "FacilityMaintenance", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "LCMaintenance", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "TrainingFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "MaintenanceFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "LaunchFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "VesselPurchase", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "ToolingFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "EntryCosts", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "ConstructionFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "HiringEngineers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "HiringResearchers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "OtherFees", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SpentUnlockCredit", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "RepFromPrograms", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "CurrentFunds", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "CurrentSci", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "CurrentUnlockCredit", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "ScienceEarned", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "SubsidySize", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "NumEngineers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "NumResearchers", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "Confidence", Rp1Reader.Numeric, Ledger);
+            Add("RP0.LogPeriod", "Reputation", Rp1Reader.Numeric, Ledger);
 
             // ── Programs ───────────────────────────────────────────────────
             Add("RP0.Programs.ProgramHandler", "Instance", Rp1Reader.Presence, Programs + ", " + StrategyWrites, @static: true);

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { Staleness } from "@ksp-gonogo/sitrep-sdk";
+import { kspCalendar, Staleness, setKspCalendar } from "@ksp-gonogo/sitrep-sdk";
 import {
   render,
   screen,
@@ -38,6 +38,8 @@ function payload(file: string) {
 
 const BUDGET = payload("rp1-budget.json");
 const BREAKDOWN = payload("rp1-budget-breakdown.json");
+const LEDGER = payload("rp1-career-ledger.json");
+const LEDGER_PERIODS = LEDGER.periods as Record<string, unknown>[];
 
 function mount(screenId: string = FINANCES_SCREEN_ID) {
   const fixture = setupStreamFixture();
@@ -53,10 +55,12 @@ async function feed(
   fixture: ReturnType<typeof setupStreamFixture>,
   budget: Record<string, unknown> = BUDGET,
   breakdown: Record<string, unknown> = BREAKDOWN,
+  ledger: Record<string, unknown> = LEDGER,
 ) {
   fixture.emit("rp1.available", true);
   fixture.emit("rp1.budget", budget);
   fixture.emit("rp1.budgetBreakdown", breakdown);
+  fixture.emit("rp1.careerLedger", ledger);
   fixture.emit("rp1.training", []);
   fixture.emit("rp1.research", []);
   await waitFor(() => {
@@ -392,6 +396,163 @@ describe("Finances", () => {
       "5",
     ]);
     expect(rows[4].textContent).toContain("4,426,594");
+  });
+
+  describe("career log", () => {
+    function logTable() {
+      return screen.getByRole("table", { name: "RP-1 career log by month" });
+    }
+
+    /** The month rows alone: each month's detail sits in a row of its own under it. */
+    function monthRows() {
+      return within(logTable())
+        .getAllByRole("row")
+        .slice(1)
+        .filter((row) => row.querySelector("th") !== null)
+        .filter((row) => row.closest("table") === logTable());
+    }
+
+    /** The row holding a month's detail, directly under the month. */
+    function detailOf(month: HTMLElement) {
+      return month.nextElementSibling as HTMLElement;
+    }
+
+    it("lists RP-1's months newest first, the open one marked as the month so far", async () => {
+      // RP-1 runs the Earth calendar from 1951, which the game publishes and
+      // this harness does not.
+      const original = kspCalendar();
+      try {
+        setKspCalendar({
+          minute: 60,
+          hour: 3_600,
+          day: 86_400,
+          year: 365 * 86_400,
+          epochMs: Date.UTC(1951, 0, 1),
+        });
+        const { fixture } = mount();
+        await feed(fixture);
+
+        const rows = monthRows();
+        expect(rows).toHaveLength(4);
+        expect(rows[0].querySelector("th")?.textContent).toMatch(
+          /Jan 1961.*SO FAR/,
+        );
+        expect(rows[1].querySelector("th")?.textContent).toMatch(/Dec 1960/);
+        expect(rows[3].querySelector("th")?.textContent).toMatch(/Oct 1960/);
+        expect(rows[1].textContent).toContain("1,403,400");
+        expect(rows[1].textContent).toContain("288,000");
+        expect(rows[1].textContent).toContain("170,900");
+        expect(rows[1].textContent).not.toMatch(/[-+(]/);
+      } finally {
+        setKspCalendar(original);
+      }
+    });
+
+    it("draws the open month's close as absent rather than as a zero", async () => {
+      const { fixture } = mount();
+      await feed(fixture);
+
+      const open = monthRows()[0];
+      const cells = open.querySelectorAll("td");
+      expect(cells[cells.length - 1].textContent).not.toMatch(/\d/);
+    });
+
+    it("draws RP-1's Maintenance as it booked it rather than adding up the upkeep lines", async () => {
+      const { fixture } = mount();
+      await feed(fixture, BUDGET, BREAKDOWN, {
+        ...LEDGER,
+        periods: LEDGER_PERIODS.map((p, i) =>
+          i === 2 ? { ...p, maintenanceFees: 12_345 } : p,
+        ),
+      });
+      expect(monthRows()[1].textContent).toContain("12,345");
+    });
+
+    it("opens a month onto every line RP-1 booked and what it closed on", async () => {
+      const { fixture } = mount();
+      await feed(fixture);
+
+      const december = monthRows()[1];
+      await userEvent.click(
+        within(detailOf(december)).getByRole("button", { name: "Every line" }),
+      );
+      const detail = screen.getByRole("table", {
+        name: "RP-1 career log, one month",
+      });
+      const line = (name: string) =>
+        within(detail).getByRole("rowheader", { name }).closest("tr")
+          ?.textContent ?? "";
+      expect(line("Salary, engineers")).toContain("93,000");
+      expect(line("Maintenance, net of subsidy")).toContain("170,900");
+      expect(line("Hiring engineers")).toContain("6,000");
+      expect(line("Funds")).toContain("1,403,400");
+      expect(line("Engineers")).toContain("330");
+      expect(within(detail).getByText("Closed on")).toBeInTheDocument();
+    });
+
+    it("gives the open month no closing figures to show", async () => {
+      const { fixture } = mount();
+      await feed(fixture);
+
+      await userEvent.click(
+        within(detailOf(monthRows()[0])).getByRole("button", {
+          name: "The month so far",
+        }),
+      );
+      const detail = screen.getByRole("table", {
+        name: "RP-1 career log, one month",
+      });
+      expect(within(detail).queryByText("Closed on")).toBeNull();
+      expect(
+        within(detail).getByRole("rowheader", { name: "Salary, engineers" }),
+      ).toBeInTheDocument();
+    });
+
+    it("shows the last twelve months until asked for all of them", async () => {
+      const { fixture } = mount();
+      const month = 2_678_400;
+      const periods = Array.from({ length: 15 }, (_, i) => ({
+        ...LEDGER_PERIODS[0],
+        startUt: i * month,
+        endUt: (i + 1) * month,
+      }));
+      await feed(fixture, BUDGET, BREAKDOWN, { enabled: true, periods });
+
+      expect(monthRows()).toHaveLength(12);
+      await userEvent.click(
+        screen.getByRole("button", { name: "All 15 months" }),
+      );
+      expect(monthRows()).toHaveLength(15);
+    });
+
+    it("tells a career keeping no log from one that has logged nothing yet", async () => {
+      const { fixture } = mount();
+      await feed(fixture, BUDGET, BREAKDOWN, { enabled: false, periods: [] });
+      expect(
+        screen.getByText("RP-1 is not keeping a career log in this save"),
+      ).toBeInTheDocument();
+
+      fixture.emit("rp1.careerLedger", { enabled: true, periods: [] });
+      await waitFor(() => {
+        expect(
+          screen.getByText("RP-1 has logged no months yet"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("keeps the last log up, marked held, while RP-1 is not being heard", async () => {
+      const { fixture } = mount();
+      const held = { staleness: Staleness.Held };
+      fixture.emit("rp1.available", true, held);
+      fixture.emit("rp1.budget", BUDGET, held);
+      fixture.emit("rp1.careerLedger", LEDGER, held);
+      await waitFor(() => {
+        expect(screen.getByText("CAREER LOG")).toBeInTheDocument();
+      });
+      const december = monthRows()[1];
+      expect(december.textContent).toContain("1,403,400");
+      expect(december.querySelector("[data-held-mark]")).toBeInTheDocument();
+    });
   });
 
   it("draws no funds balance of its own", async () => {

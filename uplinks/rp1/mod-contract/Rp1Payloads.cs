@@ -3421,8 +3421,8 @@ public sealed class Rp1CareerEventEntry
 /// <para><b>Only half of RP-1's career log is here, and that is deliberate.</b> Its
 /// <c>CareerLog</c> holds two unrelated things: six lists of dated events, and a
 /// monthly FINANCIAL LEDGER of about thirty figures per period. The ledger is a
-/// balance sheet and belongs on a budget surface; putting twelve rows a year of
-/// accounts onto an event timeline would make both worse.</para>
+/// balance sheet and travels on <c>rp1.careerLedger</c>; putting twelve rows a
+/// year of accounts onto an event timeline would make both worse.</para>
 /// </summary>
 [SitrepContract]
 [SitrepTopic("rp1.careerEvents")]
@@ -4083,4 +4083,190 @@ public sealed class Rp1ProgramFundingEntry
     /// today's rate. Zero once it has paid out in full.
     /// </summary>
     public Rp1BudgetHorizons? Funding { get; set; }
+}
+
+/// <summary>
+/// The <c>rp1.careerLedger</c> channel: RP-1's monthly financial ledger, the half
+/// of its <c>CareerLog</c> that <c>rp1.careerEvents</c> leaves out.
+///
+/// <para><b>RP-1 never draws this.</b> Its Career Log tab only exports it, as CSV
+/// or as a web upload. It is the one record of where the career's money went,
+/// month by month and by RP-1's own categories.</para>
+///
+/// <para><b>The lines overlap, as RP-1 books them.</b> The six upkeep lines are
+/// booked directly, and the same money also lands in
+/// <see cref="Rp1LedgerPeriodEntry.MaintenanceFees"/> net of the subsidy paid.
+/// Tooling and entry costs include the Unlock Credit spent on them, which
+/// <see cref="Rp1LedgerPeriodEntry.SpentUnlockCredit"/> also counts. Adding the
+/// lines together double-counts.</para>
+///
+/// <para>Absent when RP-1's log handler could not be read. <see cref="Enabled"/>
+/// false is a career keeping no log, which is not an empty one.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.careerLedger")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1CareerLedger
+{
+    /// <summary>
+    /// Whether RP-1 is keeping the log. False is a career that records nothing
+    /// and never will, not one with nothing recorded yet.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Flag)]
+    public bool? Enabled { get; set; }
+
+    /// <summary>Every period RP-1 holds, oldest first; the last is usually the open one.</summary>
+    public Rp1LedgerPeriodEntry[]? Periods { get; set; }
+}
+
+/// <summary>
+/// One of RP-1's log periods, a calendar month under its default settings. Every
+/// money figure is as RP-1 books it: what came in or went out over the period,
+/// each a positive amount.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1LedgerPeriodEntry
+{
+    /// <summary>When the period began.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? StartUt { get; set; }
+
+    /// <summary>When the period ends.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? EndUt { get; set; }
+
+    /// <summary>
+    /// The period RP-1 is still booking into. Its figures are the month so far,
+    /// and every closing figure is absent until RP-1 closes it.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Flag)]
+    public bool? Open { get; set; }
+
+    /// <summary>What the career's Programs paid.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? ProgramFunds { get; set; }
+
+    /// <summary>The subsidy RP-1 paid out, which it pays only as far as upkeep needs it.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SubsidyPaidOut { get; set; }
+
+    /// <summary>Funds earned that RP-1 sorts under no other heading.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? OtherFundsEarned { get; set; }
+
+    /// <summary>What recovered vessels returned.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? VesselRecovery { get; set; }
+
+    /// <summary>The integration teams' salaries.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SalaryEngineers { get; set; }
+
+    /// <summary>The research teams' salaries.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SalaryResearchers { get; set; }
+
+    /// <summary>Crew salaries, at base and in flight.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SalaryCrew { get; set; }
+
+    /// <summary>Building upkeep.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? FacilityMaintenance { get; set; }
+
+    /// <summary>Launch-complex upkeep.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? LcMaintenance { get; set; }
+
+    /// <summary>Crew training upkeep.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? TrainingFees { get; set; }
+
+    /// <summary>
+    /// All of the upkeep above, net of the subsidy paid out: RP-1's "Maintenance"
+    /// column. The same money as the six upkeep lines, not an addition to them.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? MaintenanceFees { get; set; }
+
+    /// <summary>Rollout and airlaunch preparation.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? LaunchFees { get; set; }
+
+    /// <summary>Vessels bought.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? VesselPurchase { get; set; }
+
+    /// <summary>Tooling, including the Unlock Credit spent on it.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? ToolingFees { get; set; }
+
+    /// <summary>Part and upgrade entry costs, including the Unlock Credit spent on them.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? EntryCosts { get; set; }
+
+    /// <summary>Facility and launch-complex construction.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? ConstructionFees { get; set; }
+
+    /// <summary>Hiring engineers.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? HiringEngineers { get; set; }
+
+    /// <summary>Hiring researchers.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? HiringResearchers { get; set; }
+
+    /// <summary>Funds spent that RP-1 sorts under no other heading.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? OtherFees { get; set; }
+
+    /// <summary>Unlock Credit spent on tooling and entry costs, already inside those two lines.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SpentUnlockCredit { get; set; }
+
+    /// <summary>Reputation the career's Programs earned.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Reputation)]
+    public double? RepFromPrograms { get; set; }
+
+    /// <summary>The funds balance when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? FundsAtClose { get; set; }
+
+    /// <summary>The unspent science when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Science)]
+    public double? ScienceAtClose { get; set; }
+
+    /// <summary>The Unlock Credit balance when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? UnlockCreditAtClose { get; set; }
+
+    /// <summary>All the science the career had earned when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Science)]
+    public double? ScienceEarnedAtClose { get; set; }
+
+    /// <summary>The subsidy RP-1 would pay over the whole period, written when it closes.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? SubsidySize { get; set; }
+
+    /// <summary>Engineers on the books when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Count)]
+    public double? EngineersAtClose { get; set; }
+
+    /// <summary>Researchers on the books when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Count)]
+    public double? ResearchersAtClose { get; set; }
+
+    /// <summary>Confidence when RP-1 closed the period.</summary>
+    [SitrepUnit(Contract.Units.Confidence)]
+    public double? ConfidenceAtClose { get; set; }
+
+    /// <summary>Reputation when RP-1 closed the period.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Reputation)]
+    public double? ReputationAtClose { get; set; }
 }

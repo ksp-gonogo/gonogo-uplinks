@@ -207,6 +207,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1CareerEvents": {
     enabled: "flag",
   },
+  "Rp1CareerLedger": {
+    enabled: "flag",
+  },
   "Rp1CentreEntry": {
     anyOperational: "flag",
     engineers: "count",
@@ -444,6 +447,41 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     setupScience: "science",
     strategyId: "id",
     title: "text",
+  },
+  "Rp1LedgerPeriodEntry": {
+    confidenceAtClose: "confidence",
+    constructionFees: "funds",
+    endUt: "ut",
+    engineersAtClose: "count",
+    entryCosts: "funds",
+    facilityMaintenance: "funds",
+    fundsAtClose: "funds",
+    hiringEngineers: "funds",
+    hiringResearchers: "funds",
+    launchFees: "funds",
+    lcMaintenance: "funds",
+    maintenanceFees: "funds",
+    open: "flag",
+    otherFees: "funds",
+    otherFundsEarned: "funds",
+    programFunds: "funds",
+    repFromPrograms: "rep",
+    reputationAtClose: "rep",
+    researchersAtClose: "count",
+    salaryCrew: "funds",
+    salaryEngineers: "funds",
+    salaryResearchers: "funds",
+    scienceAtClose: "science",
+    scienceEarnedAtClose: "science",
+    spentUnlockCredit: "funds",
+    startUt: "ut",
+    subsidyPaidOut: "funds",
+    subsidySize: "funds",
+    toolingFees: "funds",
+    trainingFees: "funds",
+    unlockCreditAtClose: "funds",
+    vesselPurchase: "funds",
+    vesselRecovery: "funds",
   },
   "Rp1OperationEntry": {
     associatedVesselId: "id",
@@ -760,6 +798,9 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     unpurchasedParts: "text",
   },
   "rp1.careerEvents": {
+    enabled: "flag",
+  },
+  "rp1.careerLedger": {
     enabled: "flag",
   },
   "rp1.centres": {
@@ -1110,6 +1151,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1CareerEvents": {
     events: "Rp1CareerEventEntry[]",
   },
+  "Rp1CareerLedger": {
+    periods: "Rp1LedgerPeriodEntry[]",
+  },
   "Rp1ComplexModifyArgs": {
     size: "Rp1ComplexSizeArgs",
   },
@@ -1190,6 +1234,9 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   },
   "rp1.careerEvents": {
     events: "Rp1CareerEventEntry[]",
+  },
+  "rp1.careerLedger": {
+    periods: "Rp1LedgerPeriodEntry[]",
   },
   "rp1.constructionRates": {
     constructions: "Rp1ConstructionRateTable[]",

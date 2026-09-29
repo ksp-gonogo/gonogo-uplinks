@@ -70,7 +70,7 @@ public class Rp1ScUplinkTests : IDisposable
         var atHome = manifest.Channels
             .Where(c => c.Topic != Rp1ScUplink.AvionicsTopic && c.Topic != Rp1ScUplink.AvailableTopic)
             .ToList();
-        Assert.Equal(30, atHome.Count);
+        Assert.Equal(31, atHome.Count);
         Assert.All(atHome, c =>
         {
             Assert.Equal(DelayRole.Delayed, c.Delay);
@@ -164,6 +164,7 @@ public class Rp1ScUplinkTests : IDisposable
     [InlineData(Rp1ScUplink.ToolingTopic)]
     [InlineData(Rp1ScUplink.BuildCostTopic)]
     [InlineData(Rp1ScUplink.CareerEventsTopic)]
+    [InlineData(Rp1ScUplink.CareerLedgerTopic)]
     [InlineData(Rp1ScUplink.BudgetTopic)]
     [InlineData(Rp1ScUplink.BudgetBreakdownTopic)]
     public void An_unread_courier_capture_publishes_its_absence_stamped_at_the_tick(string topic)
@@ -196,6 +197,7 @@ public class Rp1ScUplinkTests : IDisposable
         uplink.HandleCrewOnCourier(uplink.CaptureCrewOnMain(null));
         uplink.HandleToolingOnCourier(uplink.CaptureToolingOnMain(null));
         uplink.HandleCareerEventsOnCourier(uplink.CaptureCareerEventsOnMain(null));
+        uplink.HandleCareerLedgerOnCourier(uplink.CaptureCareerLedgerOnMain(null));
         uplink.HandleBudgetOnCourier(uplink.CaptureBudgetOnMain(null));
         uplink.HandleBudgetBreakdownOnCourier(uplink.CaptureBudgetBreakdownOnMain(null));
         return host;

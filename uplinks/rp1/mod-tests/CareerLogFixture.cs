@@ -7,10 +7,9 @@
 // them publicly would let a walk pass here that resolves nothing in a running
 // game, which is the one thing this fixture family exists to prevent.
 //
-// The monthly financial ledger (_periodDict of LogPeriod, about thirty figures a
-// period) is deliberately NOT modelled. Nothing reads it: it is a balance sheet
-// rather than a timeline and belongs on a budget surface, so a fixture for it here
-// would be scaffolding for a reading that does not exist.
+// The monthly financial ledger is modelled the same way: _periodDict is PRIVATE
+// and keyed by each period's start, and CurrentPeriod is a getter that closes
+// periods as a side effect, so the stand-in counts every read of it.
 using System;
 using System.Collections.Generic;
 
@@ -121,6 +120,43 @@ namespace RP0
     }
 
 
+    /// <summary>One month of RP-1's ledger, with the real type's field names.</summary>
+    public class LogPeriod
+    {
+        public double StartUT;
+        public double EndUT;
+        public double CurrentFunds;
+        public double CurrentSci;
+        public double CurrentUnlockCredit;
+        public double ProgramFunds;
+        public double OtherFundsEarned;
+        public double ScienceEarned;
+        public double SalaryEngineers;
+        public double SalaryResearchers;
+        public double SalaryCrew;
+        public double LaunchFees;
+        public double VesselPurchase;
+        public double VesselRecovery;
+        public double LCMaintenance;
+        public double FacilityMaintenance;
+        public double MaintenanceFees;
+        public double TrainingFees;
+        public double ToolingFees;
+        public double EntryCosts;
+        public double SpentUnlockCredit;
+        public double ConstructionFees;
+        public double HiringResearchers;
+        public double HiringEngineers;
+        public double OtherFees;
+        public double SubsidySize;
+        public double SubsidyPaidOut;
+        public double RepFromPrograms;
+        public int NumEngineers;
+        public int NumResearchers;
+        public double Confidence;
+        public double Reputation;
+    }
+
     /// <summary>
     /// RP-1's career log. A ScenarioModule on the real type, so a null
     /// <see cref="Instance"/> stands for a save it is not running in.
@@ -146,7 +182,38 @@ namespace RP0
         private readonly List<LeaderEvent> _leaderEvents = new List<LeaderEvent>();
         private readonly List<FacilityConstructionEvent> _facilityConstructionEvents =
             new List<FacilityConstructionEvent>();
+        private readonly Dictionary<double, LogPeriod> _periodDict = new Dictionary<double, LogPeriod>();
 #pragma warning restore IDE0044, CS0414
+
+        /// <summary>The start of the period RP-1 has not closed yet. Public and persisted on the real one.</summary>
+        public double CurPeriodStart;
+
+        /// <summary>How many times anything asked for <see cref="CurrentPeriod"/>.</summary>
+        public int CurrentPeriodReads;
+
+        /// <summary>
+        /// A write on the real type: while the clock is past the period's end it
+        /// closes periods and moves <see cref="CurPeriodStart"/>. Counted here so a
+        /// reading that calls it fails.
+        /// </summary>
+        public LogPeriod? CurrentPeriod
+        {
+            get
+            {
+                CurrentPeriodReads++;
+                return _periodDict.TryGetValue(CurPeriodStart, out var open) ? open : null;
+            }
+        }
+
+        public CareerLog AddPeriod(LogPeriod period, bool open = false)
+        {
+            _periodDict.Add(period.StartUT, period);
+            if (open)
+            {
+                CurPeriodStart = period.StartUT;
+            }
+            return this;
+        }
 
         public CareerLog AddLaunch(
             double ut,

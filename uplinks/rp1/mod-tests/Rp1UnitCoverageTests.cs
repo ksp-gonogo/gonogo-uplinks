@@ -66,6 +66,8 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1BuildCost),
                 nameof(Rp1RequiredTechEntry),
                 nameof(Rp1CareerEvents),
+                nameof(Rp1CareerLedger),
+                nameof(Rp1LedgerPeriodEntry),
                 nameof(Rp1CareerEventEntry),
                 nameof(Rp1Avionics),
                 nameof(Rp1Budget),
