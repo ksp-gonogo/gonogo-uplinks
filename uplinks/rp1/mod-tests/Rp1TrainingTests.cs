@@ -35,6 +35,7 @@ public class Rp1TrainingTests : IDisposable
         KCTUtilities.FacilityLevels.Clear();
         TrainingCourse.AddedByName.Clear();
         TrainingCourse.RemovedByName.Clear();
+        TrainingCourse.AllowInactiveAsked.Clear();
         TrainingCourse.Rewarded = 0;
         ProtoCrewMember.Ut = 0.0;
         HighLogic.Reset();
@@ -236,6 +237,68 @@ public class Rp1TrainingTests : IDisposable
     }
 
     /// <summary>
+    /// RP-1 4.7's gate takes a defaulted <c>allowInactive</c>, and true is how its
+    /// screen puts a kerbal on leave onto a QUEUED course. This command starts a
+    /// course, so it asks with false and a kerbal on leave stays refused.
+    /// </summary>
+    [Fact]
+    public void Asks_RP1s_gate_to_refuse_a_kerbal_on_leave()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var handler = Career(bob);
+        handler.TrainingTemplates.Add(Template());
+
+        Enrol("Bob");
+
+        Assert.Equal(new[] { false }, TrainingCourse.AllowInactiveAsked);
+    }
+
+    /// <summary>
+    /// RP-1 4.6's one-argument gate, found when the two-argument one is not
+    /// there. A course type of the test's own, since the fixture carries 4.7's.
+    /// </summary>
+    [Fact]
+    public void Still_finds_RP1_4_6s_one_argument_gate()
+    {
+        var course = new LegacyCourse();
+
+        var gate = Rp1TrainingCommands.StudentGate(course);
+
+        Assert.NotNull(gate);
+        Assert.Equal(true, gate!(new ProtoCrewMember("Bob")));
+        Assert.Equal(false, gate(new ProtoCrewMember("Jeb") { inactive = true }));
+    }
+
+    private sealed class LegacyCourse
+    {
+        public bool MeetsStudentReqs(ProtoCrewMember student) => !student.inactive;
+    }
+
+    /// <summary>
+    /// A kerbal on a queued course who is NOT on leave passes RP-1's gate: only the
+    /// students on leave are grounded. RP-1's screen keeps them off a second course
+    /// by not drawing them selectable, and this refusal is that.
+    /// </summary>
+    [Fact]
+    public void Refuses_a_kerbal_already_queued_for_a_training()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var jeb = new ProtoCrewMember("Jeb") { inactive = true };
+        var handler = Career(bob, jeb);
+        handler.TrainingTemplates.Add(Template());
+        handler.PendingTrainingCourses.Add(Queued(bob, jeb));
+
+        var result = new Rp1TrainingCommands().Enrol(
+            new Rp1TrainingEnrolArgs { TemplateId = "prof-capsule", Crew = new List<string> { "Bob" } });
+
+        Assert.False(result.Success);
+        Assert.Equal(CommandErrorCode.WrongState, result.ErrorCode);
+        Assert.Contains("Bob", result.Detail);
+        Assert.Empty(handler.TrainingCourses);
+        Assert.False(bob.inactive);
+    }
+
+    /// <summary>
     /// The gate RP-1 applies in its UI and NOT in <c>StartCourse</c>, so declining
     /// to ask it would quietly start a course RP-1's own screen refuses to create.
     /// The refusal states the tier the way RP-1 does, one above the index.
@@ -380,6 +443,45 @@ public class Rp1TrainingTests : IDisposable
         Assert.DoesNotContain(live, handler.TrainingCourses);
     }
 
+    /// <summary>
+    /// RP-1's Cancel for a queued course only takes it off the queue. Never
+    /// CompleteCourse: its un-grounding loop would end the leave the course was
+    /// waiting on, and the crew would be back on duty days early.
+    /// </summary>
+    [Fact]
+    public void Cancelling_a_queued_course_takes_it_off_the_queue_and_leaves_the_leave_alone()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var jeb = new ProtoCrewMember("Jeb") { inactive = true };
+        var handler = Career(bob, jeb);
+        handler.PendingTrainingCourses.Add(Queued(bob, jeb));
+
+        var result = new Rp1TrainingCommands().Cancel(new Rp1TrainingLeaveArgs { CrewName = "Bob" });
+
+        Assert.True(result.Success, result.Detail);
+        Assert.Empty(handler.PendingTrainingCourses);
+        Assert.True(jeb.inactive);
+        Assert.Equal(0, TrainingCourse.Rewarded);
+    }
+
+    /// <summary>RP-1 draws no Remove on a queued course, only a Cancel of the whole of it.</summary>
+    [Fact]
+    public void Refuses_to_remove_one_kerbal_from_a_queued_course()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var jeb = new ProtoCrewMember("Jeb") { inactive = true };
+        var handler = Career(bob, jeb);
+        var course = Queued(bob, jeb);
+        handler.PendingTrainingCourses.Add(course);
+
+        var result = new Rp1TrainingCommands().Remove(new Rp1TrainingLeaveArgs { CrewName = "Bob" });
+
+        Assert.Equal(CommandErrorCode.WrongState, result.ErrorCode);
+        Assert.Contains("Cancel", result.Detail);
+        Assert.Equal(new[] { course }, handler.PendingTrainingCourses);
+        Assert.Equal(new[] { bob, jeb }, course.Students);
+    }
+
     [Fact]
     public void Refuses_to_cancel_for_a_kerbal_who_is_not_training()
     {
@@ -497,6 +599,14 @@ public class Rp1TrainingTests : IDisposable
         Assert.Equal(
             CommandErrorCode.ModeUnavailable,
             commands.Remove(new Rp1TrainingLeaveArgs { CrewName = "Bob" }).ErrorCode);
+    }
+
+    /// <summary>A course RP-1 4.7 has queued: students on it, not started.</summary>
+    private static TrainingCourse Queued(params ProtoCrewMember[] students)
+    {
+        var course = new TrainingCourse(Template(seatMin: 1));
+        course.Students.AddRange(students);
+        return course;
     }
 
     private static void Enrol(params string[] crew)

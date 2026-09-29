@@ -250,6 +250,43 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
+    /// RP-1 4.7's queue: a course parked until its crew are back from leave is a
+    /// course the kerbal is committed to, so it is read as the enrolled and
+    /// unstarted course it is. The student's inactive window is their LEAVE,
+    /// which ends where the course begins, so it is not published as the date the
+    /// crew are free.
+    /// </summary>
+    [Fact]
+    public void AQueuedCourseIsAnUnstartedCourseWithNoFreeDate()
+    {
+        CrewHandler.Instance = new CrewHandler
+        {
+            PendingTrainingCourses =
+            {
+                new TrainingCourse
+                {
+                    id = "queued",
+                    Started = false,
+                    Students = { new ProtoCrewMember("Val Kerman") { inactive = true, inactiveTimeEnd = 5000.0 } },
+                }.Costed(progress: 0.0, totalPoints: 100.0, buildRate: 1.0),
+            },
+        };
+
+        var raw = new Rp1CrewReflection().Read(1000.0);
+
+        var kerbal = Assert.Single(raw!.Crew);
+        Assert.Equal("queued", kerbal.TrainingCourse);
+        Assert.Equal(false, kerbal.TrainingStarted);
+        var course = Assert.Single(raw.Courses);
+        Assert.Equal(new[] { "Val Kerman" }, course.Students);
+        Assert.Equal(false, course.Started);
+        Assert.Null(course.StudentsAvailableAtUt);
+        Assert.Equal(1, raw.Program!.Courses);
+        Assert.Equal(0, raw.Program.CoursesStarted);
+        Assert.Equal(1, raw.Program.CrewInTraining);
+    }
+
+    /// <summary>
     /// The SOONEST lapse, plus a count, because that is the one an operator acts
     /// on: mission training expiring is what turns a qualified crew into an
     /// unqualified one while the vehicle is still being integrated.

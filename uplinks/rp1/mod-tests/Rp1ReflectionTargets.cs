@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -48,13 +49,20 @@ namespace GonogoRp1Uplink.Tests
     public sealed record Rp1TypeTarget(string Assembly, string Type, string CallSite);
 
     /// <summary>A field or property the Uplink reads, or writes, by name.</summary>
+    /// <param name="Since">
+    /// The RP-1 release that introduced the member, for one production reads the
+    /// absence of as an older release's own behaviour. An install whose
+    /// <c>RP-1.version</c> is older is not held to it; an install with no
+    /// readable version is.
+    /// </param>
     public sealed record Rp1MemberTarget(
         string Assembly,
         string Type,
         string Member,
         Rp1Reader Reader,
         bool Static,
-        string CallSite);
+        string CallSite,
+        Version? Since = null);
 
     /// <summary>A method the Uplink invokes, matched by name and arity the way production matches it.</summary>
     /// <param name="Public">
@@ -68,6 +76,11 @@ namespace GonogoRp1Uplink.Tests
     /// found and the mismatch would read as a missing overload of a public one.
     /// Defaulted, so declaring a public method stays a five-field statement.
     /// </param>
+    /// <param name="FallbackArity">
+    /// The arity production asks for when <paramref name="Arity"/> finds nothing,
+    /// for a method an RP-1 release reshaped and production still matches in
+    /// both shapes. Either one present is a pass.
+    /// </param>
     public sealed record Rp1MethodTarget(
         string Assembly,
         string Type,
@@ -75,7 +88,8 @@ namespace GonogoRp1Uplink.Tests
         int Arity,
         bool Static,
         string CallSite,
-        bool Public = true);
+        bool Public = true,
+        int? FallbackArity = null);
 
     /// <summary>
     /// A constructor the Uplink invokes, matched by arity the way production
@@ -575,7 +589,10 @@ namespace GonogoRp1Uplink.Tests
             // control is AbortCourse, whose only caller in RP-1 is the path that
             // withdraws a template when its tech goes away: RP-1's own Cancel runs
             // CompleteCourse and then drops the course off the roster.
-            new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingCourse", "MeetsStudentReqs", 1, false, "Rp1TrainingCommands"),
+            // ARITY TWO on 4.7, which added a defaulted allowInactive that must
+            // be passed false, and ONE on 4.6. Production asks for both, in that
+            // order.
+            new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingCourse", "MeetsStudentReqs", 2, false, "Rp1TrainingCommands", FallbackArity: 1),
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingCourse", "AddStudent", 1, false, "Rp1TrainingCommands"),
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingCourse", "RemoveStudent", 1, false, "Rp1TrainingCommands"),
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingCourse", "StartCourse", 0, false, "Rp1TrainingCommands"),
@@ -1285,6 +1302,11 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.Crew.CrewHandler", "ProfTrainRate", Rp1Reader.Numeric, Crew);
             Add("RP0.Crew.CrewHandler", "MissionTrainRate", Rp1Reader.Numeric, Crew);
             Add("RP0.Crew.CrewHandler", "TrainingCourses", Rp1Reader.Presence, Crew + ", " + TrainingWrites);
+            // RP-1 4.7's queue of courses waiting on a student's leave. 4.6 has
+            // none and queues nothing, which is what its absence is read as.
+            members.Add(new Rp1MemberTarget(
+                Rp0, "RP0.Crew.CrewHandler", "PendingTrainingCourses", Rp1Reader.Presence, false,
+                Crew + ", " + TrainingWrites, Since: new Version(4, 7, 0, 0)));
 
             // Four PRIVATE collections, walked as bare enumerables and probed
             // rather than copied. Private is what the walk assumes, and a walk

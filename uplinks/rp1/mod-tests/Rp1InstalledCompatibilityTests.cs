@@ -30,6 +30,13 @@ namespace GonogoRp1Uplink.Tests
         /// </summary>
         public InstalledAssembly? RoUtils { get; }
 
+        /// <summary>
+        /// The release the install's <c>RP-1.version</c> states, or null when it
+        /// states none. The assembly calls itself 1.0.0.0 whatever the release, so
+        /// the version file is the only place a release number is written.
+        /// </summary>
+        public Version? Rp1Version { get; }
+
         public Rp1InstallFixture()
         {
             var plugins = typeof(Rp1InstallFixture).Assembly
@@ -53,6 +60,7 @@ namespace GonogoRp1Uplink.Tests
             }
 
             Rp0 = new InstalledAssembly(rp0Path);
+            Rp1Version = ReadRp1Version(Directory.GetParent(plugins)?.FullName);
 
             var gameData = Directory.GetParent(plugins)?.Parent?.FullName;
             var roUtilsPath = gameData == null
@@ -61,6 +69,29 @@ namespace GonogoRp1Uplink.Tests
             if (roUtilsPath != null && File.Exists(roUtilsPath))
             {
                 RoUtils = new InstalledAssembly(roUtilsPath);
+            }
+        }
+
+        private static Version? ReadRp1Version(string? rp1Folder)
+        {
+            var path = rp1Folder == null ? null : Path.Combine(rp1Folder, "RP-1.version");
+            if (path == null || !File.Exists(path))
+            {
+                return null;
+            }
+            try
+            {
+                using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+                var v = json.RootElement.GetProperty("VERSION");
+                return new Version(
+                    v.GetProperty("MAJOR").GetInt32(),
+                    v.GetProperty("MINOR").GetInt32(),
+                    v.GetProperty("PATCH").GetInt32(),
+                    v.GetProperty("BUILD").GetInt32());
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
@@ -151,6 +182,11 @@ namespace GonogoRp1Uplink.Tests
             var failures = new List<string>();
             foreach (var target in Rp1ReflectionTargets.Members)
             {
+                if (target.Since != null && _install.Rp1Version != null && _install.Rp1Version < target.Since)
+                {
+                    continue;
+                }
+
                 var assembly = AssemblyFor(target.Assembly);
                 if (assembly == null)
                 {
@@ -259,7 +295,7 @@ namespace GonogoRp1Uplink.Tests
                 // read as a missing overload of a member that is perfectly
                 // present.
                 var match = overloads.FirstOrDefault(m =>
-                    m.ParameterTypes.Length == target.Arity
+                    (m.ParameterTypes.Length == target.Arity || m.ParameterTypes.Length == target.FallbackArity)
                     && m.IsStatic == target.Static
                     && m.IsPublic == target.Public);
 
@@ -268,6 +304,7 @@ namespace GonogoRp1Uplink.Tests
                     failures.Add(
                         target.Type + "." + target.Method + " has no " + (target.Public ? "public " : "non-public ")
                         + (target.Static ? "static" : "instance") + " overload taking " + target.Arity
+                        + (target.FallbackArity == null ? "" : " or " + target.FallbackArity)
                         + " parameter(s), which is how " + target.CallSite + " finds it. Present instead: "
                         + string.Join(" | ", overloads.Select(Describe)));
                 }
@@ -324,7 +361,8 @@ namespace GonogoRp1Uplink.Tests
 
             Console.Error.WriteLine(
                 "RP-1 compatibility verified against " + _install.Rp0.Path + " ("
-                + _install.Rp0.Identity + ", sha256:" + _install.Rp0.Digest + ")"
+                + _install.Rp0.Identity + ", sha256:" + _install.Rp0.Digest + ", RP-1.version "
+                + (_install.Rp1Version?.ToString() ?? "unreadable, so every Since target was held") + ")"
                 + (_install.RoUtils == null
                     ? "; ROUtils.dll ABSENT, so its five targets were not checked"
                     : " and " + _install.RoUtils.Path + " (sha256:" + _install.RoUtils.Digest + ")"));

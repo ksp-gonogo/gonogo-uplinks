@@ -23,7 +23,11 @@
 //   _expireTimes    has no public getter at all: GetExpiration is private and
 //                   GetTrainingString formats it into prose.
 //
-// TrainingCourses is public and is read as itself.
+// TrainingCourses is public and is read as itself, and so is RP-1 4.7's
+// PendingTrainingCourses: the courses its screen queues until every student is
+// back from leave. A queued course has named students and has not started, which
+// is a state the walk already reports, so it reads through the same path. 4.6
+// has no such list and queues nothing.
 //
 // MEMBERS DELIBERATELY NOT CALLED, and why:
 //
@@ -221,7 +225,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         private static CourseRaw? CourseFor(object instance, string name, double ut)
         {
-            foreach (var course in Materialise(Rp1Types.Member(instance, "TrainingCourses")))
+            foreach (var course in HeldCourses(instance))
             {
                 if (ReadBool(course, "Completed") == true || !HasStudent(course, name))
                 {
@@ -240,6 +244,18 @@ namespace GonogoRp1Uplink
                         ut, started, progress, totalPoints, Rp1Types.ReadDouble(course, "_buildRate")));
             }
             return null;
+        }
+
+        /// <summary>
+        /// Every course RP-1 holds: the running roster, then the courses RP-1 4.7
+        /// queues until their crew return from leave. The queue reads as nothing
+        /// on 4.6, which has no such list.
+        /// </summary>
+        private static List<object> HeldCourses(object instance)
+        {
+            var courses = Materialise(Rp1Types.Member(instance, "TrainingCourses"));
+            courses.AddRange(Materialise(Rp1Types.Member(instance, "PendingTrainingCourses")));
+            return courses;
         }
 
         /// <summary>Whether one course's student list holds this name.</summary>
@@ -425,7 +441,7 @@ namespace GonogoRp1Uplink
             var rows = new List<Rp1TrainingCourseRaw>();
             var courses = 0;
             var coursesStarted = 0;
-            foreach (var course in Materialise(Rp1Types.Member(instance, "TrainingCourses")))
+            foreach (var course in HeldCourses(instance))
             {
                 if (ReadBool(course, "Completed") == true)
                 {
@@ -454,6 +470,9 @@ namespace GonogoRp1Uplink
                 // latest inactive window among them is the date a mission planner
                 // needs. RP-1 grounds each student for 120% of the course's base
                 // time at the moment it starts, so that date outlasts the course.
+                // An unstarted course has grounded nobody, and the window a queued
+                // course's students are on is their leave, which ends where the
+                // course begins rather than where the crew can fly: no date.
                 var studentNames = new List<string>();
                 double? availableAt = null;
                 foreach (var student in Materialise(Rp1Types.Member(course, "Students")))
@@ -465,7 +484,7 @@ namespace GonogoRp1Uplink
                         studentNames.Add(name);
                     }
 
-                    var inactiveUntil = Rp1Types.ReadDouble(student, "inactiveTimeEnd");
+                    var inactiveUntil = started ? Rp1Types.ReadDouble(student, "inactiveTimeEnd") : null;
                     if (inactiveUntil != null && (availableAt == null || inactiveUntil > availableAt))
                     {
                         availableAt = inactiveUntil;

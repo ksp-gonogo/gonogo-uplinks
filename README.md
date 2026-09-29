@@ -17,7 +17,7 @@ built and released on its own, and loaded by the app at runtime.
 | [Principia](uplinks/principia/client/README.md) | `principia` | Principia 2026081218-Levi-Civita (manual) |
 | [RealAntennas](uplinks/realantennas/client/README.md) | `realantennas` | RealAntennas 2.11.1.0 (ckan) |
 | [RealFuels](uplinks/realfuels/client/README.md) | `realfuels` | RealFuels 15.15.0 (ckan) |
-| [RP-1](uplinks/rp1/client/README.md) | `rp1` | RP-1 4.6.0.0 (ckan) |
+| [RP-1](uplinks/rp1/client/README.md) | `rp1` | RP-1 4.7.0.0 (ckan) |
 | [SCANsat](uplinks/scansat/client/README.md) | `scansat` | SCANsat 20.4 (ckan) |
 | [TestFlight](uplinks/testflight/) | `testflight` | TestFlight 2.12.0.0 (ckan) |
 

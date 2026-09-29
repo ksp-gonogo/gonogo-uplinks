@@ -8,7 +8,8 @@ using System.Collections.Generic;
 // reads, same enumeration of collections as bare IEnumerable.
 //
 // Every name, accessibility and shape below was taken from an ilspycmd
-// disassembly of the SHIPPED RP-1 v4.6.0.0 RP0.dll. The accessibilities are the
+// disassembly of the SHIPPED RP-1 v4.6.0.0 RP0.dll, and the training gate and
+// queue from v4.7.0.0's. The accessibilities are the
 // load-bearing part and are copied deliberately: _retirees, _retireTimes,
 // _retireIncreases and _expireTimes are PRIVATE on CrewHandler and
 // TrainingCourse.progress / .BP are private with _buildRate protected, so a walk
@@ -233,14 +234,15 @@ namespace RP0.Crew
         public int ACLevelRequirement => _template?.ACLevelRequirement ?? 0;
 
         /// <summary>
-        /// RP-1's student gate, in RP-1's order. Not a full copy: the real one also
-        /// reads a kerbal's type, roster status and career log, and what the
-        /// command has to get right is that it ASKS this before adding rather than
-        /// what the answer is made of.
+        /// RP-1's student gate, in RP-1's order and 4.7's shape. Not a full copy:
+        /// the real one also reads a kerbal's type, roster status and career log,
+        /// and what the command has to get right is that it ASKS this before
+        /// adding rather than what the answer is made of.
         /// </summary>
-        public bool MeetsStudentReqs(ProtoCrewMember student)
+        public bool MeetsStudentReqs(ProtoCrewMember student, bool allowInactive = false)
         {
-            if (student.inactive || Students.Contains(student))
+            AllowInactiveAsked.Add(allowInactive);
+            if ((!allowInactive && student.inactive) || Students.Contains(student))
             {
                 return false;
             }
@@ -263,6 +265,9 @@ namespace RP0.Crew
         }
 
         public void AddStudent(string student) => AddedByName.Add(student);
+
+        /// <summary>Every <c>allowInactive</c> the student gate was handed.</summary>
+        public static readonly List<bool> AllowInactiveAsked = new List<bool>();
 
         /// <summary>Names handed to the string overload, which nothing should reach.</summary>
         public static readonly List<string> AddedByName = new List<string>();
@@ -366,6 +371,12 @@ namespace RP0.Crew
         private List<TrainingExpiration> _expireTimes = new List<TrainingExpiration>();
 
         public List<TrainingCourse> TrainingCourses = new List<TrainingCourse>();
+
+        /// <summary>
+        /// RP-1 4.7's queue: courses its screen parked because a student was on
+        /// leave, started by RP-1 once every student is back.
+        /// </summary>
+        public List<TrainingCourse> PendingTrainingCourses = new List<TrainingCourse>();
 
         /// <summary>
         /// The enrolable catalogue: one entry per crewed part in the install, and

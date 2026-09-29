@@ -10,7 +10,7 @@
     "name": "RP-1",
     "tier": "ckan",
     "ckan": "RP-1",
-    "builtAgainst": "4.6.0.0"
+    "builtAgainst": "4.7.0.0"
   },
   "codegen": {
     "assembly": "GonogoRp1Uplink.Contract",

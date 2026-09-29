@@ -2,14 +2,16 @@
 //
 // PROVENANCE. Every sequence below was read out of an ilspycmd disassembly of the
 // SHIPPED RP-1 v4.6.0.0 RP0.dll, from RP0.Crew.TrainingGUI: the screen an
-// operator would otherwise be using. No compile-time reference to RP0.dll, the
-// same arm's-length reflection pattern as the rest of this Uplink.
+// operator would otherwise be using, and re-read against v4.7.0.0 for its
+// training queue. No compile-time reference to RP0.dll, the same arm's-length
+// reflection pattern as the rest of this Uplink.
 //
 // ENROL IS ONE ACT, NOT TWO, and that is RP-1's shape rather than a simplification
 // of it. TrainingGUI builds a course from a template, collects students into it,
-// and only calls TrainingCourses.Add once StartCourse has returned true. An
-// enrolled-but-unstarted course is never persisted, so there is no course to enrol
-// into and the command names a template and a crew together.
+// and only calls TrainingCourses.Add once StartCourse has returned true. The only
+// enrolled-but-unstarted course it persists is 4.7's queued one (below), which is
+// closed to new students, so there is no course to enrol into and the command
+// names a template and a crew together.
 //
 // The order below is TrainingGUI's own, and the order matters in one place:
 // StartCourse GROUNDS every student (SetInactive for 120% of the base time), so
@@ -22,7 +24,7 @@
 //   3  new TrainingCourse(template)
 //   4  ACLevelRequirement vs KCTUtilities.GetFacilityLevel(AstronautComplex)
 //   5  the named crew's size against SeatMin and SeatMax
-//   6  MeetsStudentReqs, then AddStudent, per kerbal
+//   6  MeetsStudentReqs (allowInactive false on 4.7), then AddStudent, per kerbal
 //   7  StartCourse
 //   8  TrainingCourses.Add
 //   9  MaintenanceHandler.ScheduleMaintenanceUpdate
@@ -64,6 +66,21 @@
 // sent at any moment, and CompleteCourse on a completed course runs the whole
 // reward path a second time and spawns a PopupDialog from a code path nobody
 // opened a screen for.
+//
+// RP-1 4.7'S QUEUE. Its screen can pick a kerbal who is on leave, and a course
+// with one on it is not started but parked on CrewHandler.PendingTrainingCourses
+// ("Queue Training"), which RP-1 starts once every student is back. Enrolment
+// here only ever starts a course, so a kerbal on leave is refused as on 4.6. The
+// queue still matters to all three commands:
+//
+//   enrol    refuses a kerbal already on a queued course. Only the students on
+//            leave are grounded, so the others pass MeetsStudentReqs, and RP-1's
+//            screen keeps them off a second course by its own map rather than
+//            by that gate
+//   cancel   on a queued course is TrainingGUI.CancelPendingCourse, which only
+//            drops the course off the queue. Never CompleteCourse: its
+//            un-grounding loop would end the leave the course is waiting on
+//   remove   refused on a queued course, which RP-1 offers no Remove for
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -91,6 +108,9 @@ namespace GonogoRp1Uplink
         private const string TemplateTypeName = "RP0.Crew.TrainingTemplate";
 
         private const string CrewMemberTypeName = "ProtoCrewMember";
+
+        /// <summary>RP-1 4.7's queue of courses waiting on a student's leave. Absent on 4.6.</summary>
+        private const string PendingCoursesMember = "PendingTrainingCourses";
 
         private const string UtilitiesTypeName = "RP0.KCTUtilities";
 
@@ -162,6 +182,12 @@ namespace GonogoRp1Uplink
                         return CommandResult.Fail(CommandErrorCode.NotFound, "No kerbal named " + (name ?? "(none)") + " is on the roster.");
                     }
                     students.Add(pcm);
+                }
+
+                var committed = CheckNotCommitted(instance, args.Crew);
+                if (committed != null)
+                {
+                    return committed;
                 }
 
                 var ctor = _course == null ? null : Rp1Types.ConstructorOn(_course, TemplateTypeName, 1);
@@ -247,6 +273,16 @@ namespace GonogoRp1Uplink
                 var found = FindCourseFor(courses, args!.CrewName!);
                 if (found.Course == null)
                 {
+                    var queue = Rp1Types.Member(instance, PendingCoursesMember);
+                    var queued = FindCourseFor(queue, args.CrewName!);
+                    if (queued.Course != null)
+                    {
+                        return whole
+                            ? CancelQueued(queued.Course, queue!)
+                            : CommandResult.Fail(
+                                CommandErrorCode.WrongState,
+                                args.CrewName + "'s training is queued until its crew are back from leave, and RP-1 only takes a queued course off whole. Cancel it instead.");
+                    }
                     return CommandResult.Fail(CommandErrorCode.NotFound, args.CrewName + " is not on a training course.");
                 }
 
@@ -280,6 +316,22 @@ namespace GonogoRp1Uplink
             complete.Invoke(course, null);
             remove.Invoke(courses, new[] { course });
             ScheduleUpkeepUpdate();
+            return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// RP-1's Cancel for a queued course, <c>TrainingGUI.CancelPendingCourse</c>:
+        /// the course comes off the queue and nothing else happens. It never
+        /// started, so nobody was grounded by it and it was never paid for.
+        /// </summary>
+        private static CommandResult CancelQueued(object course, object queue)
+        {
+            var remove = Rp1Types.InstanceMethod(queue, "Remove", 1);
+            if (remove == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.ModeUnavailable, "RP-1's training queue does not expose a way to take a course off it.");
+            }
+            remove.Invoke(queue, new[] { course });
             return CommandResult.Ok();
         }
 
@@ -442,7 +494,7 @@ namespace GonogoRp1Uplink
         /// </remarks>
         private static CommandResult? AddStudents(object course, IReadOnlyList<string> names, IReadOnlyList<object> students)
         {
-            var meets = Rp1Types.InstanceMethodOn(course, "MeetsStudentReqs", CrewMemberTypeName, 1);
+            var meets = StudentGate(course);
             var add = Rp1Types.InstanceMethodOn(course, "AddStudent", CrewMemberTypeName, 1);
             if (meets == null || add == null)
             {
@@ -451,13 +503,63 @@ namespace GonogoRp1Uplink
 
             for (var i = 0; i < students.Count; i++)
             {
-                if (!(meets.Invoke(course, new[] { students[i] }) is bool eligible) || !eligible)
+                if (!(meets(students[i]) is bool eligible) || !eligible)
                 {
                     return CommandResult.Fail(
                         CommandErrorCode.WrongState,
                         names[i] + " cannot take this training: RP-1 refuses a kerbal who is already training, grounded, off-world, not yet crew, or missing the training's own prerequisite.");
                 }
                 add.Invoke(course, new[] { students[i] });
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// RP-1's student gate as a call on one kerbal, whichever shape the
+        /// install declares, or null when it declares neither.
+        /// </summary>
+        /// <remarks>
+        /// RP-1 4.7 gave <c>MeetsStudentReqs</c> a defaulted <c>allowInactive</c>,
+        /// and reflection counts a defaulted parameter, so 4.7's two-argument
+        /// shape is asked for first and 4.6's one-argument shape after it. The flag
+        /// goes false: true is how RP-1's screen lets a kerbal on leave onto a
+        /// QUEUED course, and this command only starts one.
+        /// </remarks>
+        public static Func<object, object?>? StudentGate(object course)
+        {
+            var current = Rp1Types.InstanceMethodOn(course, "MeetsStudentReqs", CrewMemberTypeName, 2);
+            if (current != null && current.GetParameters()[1].ParameterType == typeof(bool))
+            {
+                return student => current.Invoke(course, new[] { student, false });
+            }
+            var legacy = Rp1Types.InstanceMethodOn(course, "MeetsStudentReqs", CrewMemberTypeName, 1);
+            return legacy == null ? (Func<object, object?>?)null : student => legacy.Invoke(course, new[] { student });
+        }
+
+        /// <summary>
+        /// A refusal naming the first kerbal already on a course RP-1 holds,
+        /// running or queued, or null when none is.
+        /// </summary>
+        /// <remarks>
+        /// A kerbal on a running course is grounded and <c>MeetsStudentReqs</c>
+        /// refuses them anyway. A kerbal on a queued course need not be: only
+        /// the students on leave are, so this is what keeps the rest off a
+        /// second course, as RP-1's screen does by not drawing them selectable.
+        /// </remarks>
+        private static CommandResult? CheckNotCommitted(object instance, IReadOnlyList<string> names)
+        {
+            foreach (var name in names)
+            {
+                if (FindCourseFor(Rp1Types.Member(instance, "TrainingCourses"), name).Course != null)
+                {
+                    return CommandResult.Fail(CommandErrorCode.WrongState, name + " is already on a training course.");
+                }
+                if (FindCourseFor(Rp1Types.Member(instance, PendingCoursesMember), name).Course != null)
+                {
+                    return CommandResult.Fail(
+                        CommandErrorCode.WrongState,
+                        name + " is already queued for a training that RP-1 starts when its crew are back from leave.");
+                }
             }
             return null;
         }
