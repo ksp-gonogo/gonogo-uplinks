@@ -45,7 +45,7 @@ namespace Gonogo.KerbcastUplink
     /// <c>Sitrep.Contract</c> + stock KSP only.</para>
     /// </summary>
     [SitrepUplink("kerbcast")]
-    public sealed class KerbcastUplink : ISitrepUplink
+    public sealed class KerbcastUplink : ISitrepUplink, IModSettingsSource, IModSettingsWriter
     {
         public const string AvailableTopic = "kerbcast.available";
         public const string CamerasTopic = "kerbcast.cameras";
@@ -54,6 +54,7 @@ namespace Gonogo.KerbcastUplink
 
         private KerbcastReflection? _kerbcast;
         private IChannelPublisher? _cameras;
+        private readonly KerbcastModSettings _modSettings;
 
         // Health state, written by the MAIN-THREAD capture and read by Health()
         // on the Courier thread. Volatile int/string rather than touching KSP:
@@ -119,6 +120,54 @@ namespace Gonogo.KerbcastUplink
                 new CommandDeclaration { Command = SetPanCommand },
             },
         };
+
+        public KerbcastUplink()
+        {
+            _modSettings = new KerbcastModSettings(
+                ThrottleUnavailable,
+                () => _kerbcast?.ReadThrottle(ThrottleNode()),
+                on => _kerbcast != null && _kerbcast.WriteThrottle(ThrottleNode(), on));
+        }
+
+        public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
+
+        public ModSettingValue ReadModSetting(string id) => _modSettings.ReadModSetting(id);
+
+        public CommandResult WriteModSetting(string id, ModSettingValue value) => _modSettings.WriteModSetting(id, value);
+
+        /// <summary>Why the throttle cannot be reached: Kerbcast absent, a Kerbcast without it, or no save to hold it.</summary>
+        private string? ThrottleUnavailable()
+        {
+            var kerbcast = _kerbcast;
+            if (kerbcast == null || !kerbcast.IsAvailable)
+            {
+                return _unavailableReason ?? "Kerbcast is not loaded";
+            }
+            if (!kerbcast.HasThrottle)
+            {
+                return "this Kerbcast has no main-render throttle";
+            }
+            return ThrottleNode() == null ? "no save loaded" : null;
+        }
+
+        /// <summary>The loaded save's Kerbcast difficulty-settings node, or null with no save. Main thread only.</summary>
+        private object? ThrottleNode()
+        {
+            var type = _kerbcast?.ThrottleParametersType;
+            var parameters = HighLogic.CurrentGame?.Parameters;
+            if (type == null || parameters == null)
+            {
+                return null;
+            }
+            try
+            {
+                return parameters.CustomParams(type);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
 
         public void Register(IUplinkHost host)
         {

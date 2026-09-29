@@ -36,6 +36,29 @@ public class KerbcastReflectionTests
     }
 
     [Fact]
+    public void ReadsAndSetsTheThrottleOnASavesSettingsNode()
+    {
+        var kerbcast = Bind();
+        var node = new global::Kerbcast.KerbcastGameParameters { ThrottleMainScreen = false };
+
+        Assert.True(kerbcast.HasThrottle);
+        Assert.Equal(typeof(global::Kerbcast.KerbcastGameParameters), kerbcast.ThrottleParametersType);
+        Assert.False(kerbcast.ReadThrottle(node));
+        Assert.True(kerbcast.WriteThrottle(node, true));
+        Assert.True(node.ThrottleMainScreen);
+        Assert.True(kerbcast.ReadThrottle(node));
+    }
+
+    [Fact]
+    public void NoSettingsNodeReadsNothingAndWritesNothing()
+    {
+        var kerbcast = Bind();
+
+        Assert.Null(kerbcast.ReadThrottle(null));
+        Assert.False(kerbcast.WriteThrottle(null, true));
+    }
+
+    [Fact]
     public void ReportsAReason_WhenTheAssemblyLacksKerbcastsSurface()
     {
         // An assembly with no Kerbcast.KerbcastControl at all, stands in for a

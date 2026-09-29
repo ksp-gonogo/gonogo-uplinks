@@ -426,9 +426,6 @@ export class KerbcastDataSource {
    */
   private awaitingSlot: number[] = [];
 
-  /* Listeners notified when the throttle state changes via settings-change. */
-  private throttleListeners = new Set<(enabled: boolean) => void>();
-
   private pingWatchdog: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
@@ -486,22 +483,6 @@ export class KerbcastDataSource {
     const track = stream.getVideoTracks()[0];
     if (!track) return undefined;
     return this.rtcTransport?.getReceiverForTrack(track);
-  }
-
-  /* Current plugin-reported throttle state. False until the first SettingsState arrives. */
-  getThrottleMainScreen(): boolean {
-    return this.client.throttleMainScreen;
-  }
-
-  /* Subscribe to throttle state changes. Returns an unsubscribe function. */
-  onThrottleChange(cb: (enabled: boolean) => void): () => void {
-    this.throttleListeners.add(cb);
-    return () => this.throttleListeners.delete(cb);
-  }
-
-  /* Send a set-throttle-main-screen command to the sidecar. */
-  async setThrottleMainScreen(enabled: boolean): Promise<void> {
-    await this.client.setThrottleMainScreen(enabled);
   }
 
   /**
@@ -827,9 +808,6 @@ export class KerbcastDataSource {
             payloadCaptureUt: payload.captureUt ?? null,
             clockCaptureUt: client.clock.captureUt,
           });
-        this.throttleListeners.forEach((cb) => {
-          cb(payload.throttleMainScreen);
-        });
       }),
     );
     // Synthesise `event`-primitive occurrences from this client's discrete

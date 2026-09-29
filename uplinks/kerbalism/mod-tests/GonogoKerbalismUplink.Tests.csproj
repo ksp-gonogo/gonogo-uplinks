@@ -42,6 +42,7 @@
          rules. -->
     <Compile Include="..\mod\KerbalismDeathClock.cs" />
     <Compile Include="..\mod\KerbalismReliabilityMap.cs" />
+    <Compile Include="..\mod\KerbalismModSettings.cs" />
     <!-- Which modules a repair acts on and what it charges, carved out of
          KerbalismReflection.AttemptRepair (whose walk reaches a live Part and
          Vessel) so the scope that made the Service verb dead is checkable. -->

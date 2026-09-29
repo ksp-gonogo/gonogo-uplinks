@@ -38,6 +38,7 @@ namespace Gonogo.KerbcastUplink
     {
         public const string KerbcastAssemblyName = "Kerbcast";
         private const string ControlTypeName = "Kerbcast.KerbcastControl";
+        private const string GameParametersTypeName = "Kerbcast.KerbcastGameParameters";
 
         private readonly PropertyInfo? _isActive;
         private readonly PropertyInfo? _sidecarAlive;
@@ -63,6 +64,18 @@ namespace Gonogo.KerbcastUplink
         private readonly FieldInfo? _panPitchMin;
         private readonly FieldInfo? _panPitchMax;
         private readonly FieldInfo? _part;
+
+        private readonly FieldInfo? _throttleMainScreen;
+
+        /// <summary>
+        /// Kerbcast's per-save difficulty-settings node, which holds the main-render
+        /// throttle. Null when this Kerbcast has none. Kerbcast applies a change to
+        /// it within a frame, so writing the node is how the throttle is set.
+        /// </summary>
+        public Type? ThrottleParametersType { get; }
+
+        /// <summary>Whether this Kerbcast has the main-render throttle at all.</summary>
+        public bool HasThrottle => _throttleMainScreen != null && _throttleMainScreen.FieldType == typeof(bool);
 
         /// <summary>Why the probe is unusable, or null when it is usable.</summary>
         public string? Reason { get; }
@@ -120,6 +133,13 @@ namespace Gonogo.KerbcastUplink
             _panPitchMin = Field(view, "PanPitchMin");
             _panPitchMax = Field(view, "PanPitchMax");
             _part = Field(view, "Part");
+
+            // Optional: a Kerbcast without the per-save throttle still streams, it just has no throttle setting.
+            ThrottleParametersType = SafeGetType(kerbcastAssembly, GameParametersTypeName);
+            if (ThrottleParametersType != null)
+            {
+                _throttleMainScreen = Field(ThrottleParametersType, "ThrottleMainScreen");
+            }
 
             // The members this uplink cannot do its job without. Every camera
             // view field besides FlightId degrades to a null field on one camera.
@@ -261,6 +281,28 @@ namespace Gonogo.KerbcastUplink
         /// camera id; null means the call could not be made at all.
         /// </summary>
         public bool? SetPan(uint flightId, float yaw, float pitch) => InvokeBool(_setPan, new object[] { flightId, yaw, pitch });
+
+        /// <summary>The throttle held by one save's <see cref="ThrottleParametersType"/> node, or null when it could not be read.</summary>
+        public bool? ReadThrottle(object? parametersNode) =>
+            HasThrottle ? ReadObject(_throttleMainScreen, parametersNode) as bool? : null;
+
+        /// <summary>Sets the throttle on one save's node. False when it could not be written.</summary>
+        public bool WriteThrottle(object? parametersNode, bool on)
+        {
+            if (!HasThrottle || parametersNode == null)
+            {
+                return false;
+            }
+            try
+            {
+                _throttleMainScreen!.SetValue(parametersNode, on);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Invokes one of kerbcast's bool-returning statics. Null when the

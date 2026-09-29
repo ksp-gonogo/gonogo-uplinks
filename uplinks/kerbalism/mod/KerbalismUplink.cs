@@ -20,7 +20,7 @@ namespace Gonogo.KerbalismUplink
     /// manifest itself so they never appear at all on a vanilla install.
     /// </summary>
     [SitrepUplink("kerbalism")]
-    public sealed class KerbalismUplink : ISitrepUplink
+    public sealed class KerbalismUplink : ISitrepUplink, IModSettingsSource
     {
         private const string AvailableTopic = "kerbalism.available";
         private const string FeaturesTopic = "kerbalism.features";
@@ -83,9 +83,16 @@ namespace Gonogo.KerbalismUplink
 
         public UplinkManifest Manifest { get; }
 
+        private readonly KerbalismModSettings _modSettings;
+
         public KerbalismUplink()
         {
             _fleet = new KerbalismFleetChannels(_k, CaptureVessel);
+            _modSettings = new KerbalismModSettings(
+                () => _k.IsAvailable ? null : "Kerbalism is not installed",
+                _k.Features,
+                () => HighLogic.CurrentGame != null,
+                _k.ReliabilityPreferences);
 
             Manifest = new UplinkManifest
             {
@@ -584,6 +591,10 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>Why the reliability provider is not registered, when registration itself threw. See the catch that sets it.</summary>
         private string? _reliabilityRegistrationError;
+
+        public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
+
+        public ModSettingValue ReadModSetting(string id) => _modSettings.ReadModSetting(id);
 
         public UplinkHealth Health()
         {

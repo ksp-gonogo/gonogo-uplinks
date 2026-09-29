@@ -1,5 +1,4 @@
-import { registerSetting, registerSettingsTab } from "@ksp-gonogo/sitrep-sdk";
-import { KerbcastSettingsTab } from "./KerbcastSettingsTab.js";
+import { registerSetting } from "@ksp-gonogo/sitrep-sdk";
 
 registerSetting({
   // Gates ambient crew facecams; the Facecam Wall widget is exempt, since placing it is the opt-in.
@@ -11,11 +10,5 @@ registerSetting({
   description:
     "Show live crew faces in CrewStatus avatars. Off means no ambient facecam streams; the dedicated Facecam Wall widget still works.",
   screens: ["main"],
-});
-
-registerSettingsTab({
-  id: "kerbcast",
-  label: "Kerbcast",
-  component: KerbcastSettingsTab,
-  screens: ["main"],
+  uplink: "kerbcast",
 });

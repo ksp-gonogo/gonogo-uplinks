@@ -77,4 +77,9 @@ namespace Kerbcast
             LastSetPan = null;
         }
     }
+
+    public sealed class KerbcastGameParameters
+    {
+        public bool ThrottleMainScreen;
+    }
 }
