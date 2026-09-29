@@ -34,6 +34,8 @@ export const PROGRAMS_SCREEN = Object.freeze([
     /* First, as it is in Departments.cfg, and as the building opens on it. */
     order: 10,
     departments: ["Programs"],
+    /* The screen's body carries Accept, so the host draws no Activate of its own. */
+    drawsOwnActions: true,
   }),
 ]);
 
