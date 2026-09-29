@@ -1668,6 +1668,17 @@ public sealed class Rp1ProgramEntry
     public double? RepDeltaOnCompletePerYearEarly { get; set; }
 
     /// <summary>
+    /// Reputation completing this Program now would earn, RP-1's
+    /// <c>Program.RepForComplete</c> at the tick's UT: the unelapsed fraction of
+    /// the term times its length in years times
+    /// <see cref="RepDeltaOnCompletePerYearEarly"/>, and zero once the term has
+    /// run out. Present only on a running Program. Before any leader's currency
+    /// modifier, which RP-1 applies in a query this Uplink does not run.
+    /// </summary>
+    [SitrepUnit(Units.Reputation)]
+    public double? RepForComplete { get; set; }
+
+    /// <summary>
     /// Reputation lost per year past the deadline, already scaled by speed:
     /// RP-1 charges a Fast Program half again as much for running late.
     /// </summary>

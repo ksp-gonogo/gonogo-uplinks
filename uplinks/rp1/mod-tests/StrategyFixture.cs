@@ -67,6 +67,19 @@ namespace Strategies
         public string? RefuseWith { get; set; }
 
         /// <summary>
+        /// Stock's deactivation gate, which carries the strategy's own
+        /// <see cref="CanDeactivate"/> words out through its out parameter.
+        /// </summary>
+        public bool CanBeDeactivated(out string reason)
+        {
+            reason = "generic stock refusal";
+            return CanDeactivate(ref reason);
+        }
+
+        /// <summary>The strategy's own deactivation rule, which RP-1 overrides for a Program.</summary>
+        public virtual bool CanDeactivate(ref string reason) => true;
+
+        /// <summary>
         /// Arm 9's population. Virtual on the game's side, so a mod's effect can
         /// refuse for a reason nothing here can enumerate.
         /// </summary>
@@ -104,7 +117,7 @@ namespace RP0
     /// RP-1's strategy, carrying the procedure the command calls instead of
     /// <c>ActivateOverride</c>.
     /// </summary>
-    public class StrategyRP0 : Strategies.Strategy
+    public partial class StrategyRP0 : Strategies.Strategy
     {
         /// <summary>
         /// The whole fresh-activation procedure. Records the call rather than
@@ -119,6 +132,29 @@ namespace RP0
             {
                 Programs.StrategyCallLog.AlarmDeadline = ps.Program?.deadlineUT;
             }
+        }
+    }
+
+    public partial class StrategyRP0
+    {
+        /// <summary>
+        /// The body RP-1's Harmony prefix substitutes for stock's
+        /// <c>Deactivate()</c>: gate, unstamp, <c>Unregister()</c>.
+        /// </summary>
+        public virtual bool DeactivateOverride()
+        {
+            if (!CanBeDeactivated(out _))
+            {
+                return false;
+            }
+            Programs.StrategyCallLog.Calls.Add("DeactivateOverride");
+            IsActive = false;
+            OnUnregister();
+            return true;
+        }
+
+        public virtual void OnUnregister()
+        {
         }
     }
 
@@ -142,6 +178,66 @@ namespace RP0.Programs
     public class ProgramStrategy : StrategyRP0
     {
         public Program? Program { get; set; }
+
+        /// <summary>RP-1's rule, in RP-1's words.</summary>
+        public override bool CanDeactivate(ref string reason)
+        {
+            if (Program == null || !Program.CanComplete)
+            {
+                reason = "This Program has unmet objectives.";
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Where RP-1 completes a Program, and only while the Administration
+        /// Building is open.
+        /// </summary>
+        public override void OnUnregister()
+        {
+            if (ProgramHandler.Instance != null && ProgramHandler.Instance.IsInAdmin && Program != null
+                && Program.CanComplete)
+            {
+                ProgramHandler.Instance.CompleteProgram(Program);
+            }
+        }
+    }
+
+    public partial class ProgramHandler
+    {
+        /// <summary>
+        /// Records the call and performs the moves the command relies on: the
+        /// Program leaves the active list for the completed one and stops
+        /// answering <c>CanComplete</c>.
+        /// </summary>
+        public void CompleteProgram(Program p)
+        {
+            StrategyCallLog.Calls.Add("CompleteProgram");
+            ActivePrograms.Remove(p);
+            CompletedPrograms.Add(p);
+            p.completedUT = 99999.0;
+            p.CanComplete = false;
+        }
+
+        /// <summary>The same-named overload beside it, which the command must not pick.</summary>
+        public Program? CompleteProgram(string programName)
+        {
+            StrategyCallLog.Calls.Add("CompleteProgram(string)");
+            return null;
+        }
+    }
+}
+
+namespace RP0.ModIntegrations
+{
+    public static class AlarmHelper
+    {
+        public static bool DeleteAllAlarmsWithTitle(string title, bool useStartsWith = false)
+        {
+            Programs.StrategyCallLog.Calls.Add("DeleteAlarms:" + title);
+            return true;
+        }
     }
 }
 

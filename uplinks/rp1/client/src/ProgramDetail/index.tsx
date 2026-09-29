@@ -62,15 +62,26 @@ import {
 export const RP1_STRATEGY_ACTIVATE_COMMAND = "rp1.strategy.activate";
 
 /**
+ * Complete a running Program. Must match `Rp1StrategyCommands.CompleteCommand`.
+ *
+ * <para>Its own command rather than core's `career.strategy.deactivate`, which
+ * the Uplink refuses for a Program: RP-1 completes one only from its own
+ * Administration Building dialog, and a bare deactivate anywhere else leaves
+ * the Program running, paying and holding its slots with no way back.</para>
+ */
+export const RP1_PROGRAM_COMPLETE_COMMAND = "rp1.program.complete";
+
+/**
  * One RP-1 Program in full: what it asks, what it pays, when, and what
  * accepting it costs and closes off.
  *
  * <para>The BODY of the Administration Building's Programs screen, contributed
  * as an augment on `strategies.screen-body`. It was a standalone widget until
  * the building grew screens, which made a second Programs surface out of the
- * one the operator already opens the building for. The strategy cards above it
- * on that screen carry the Activate and Deactivate verbs; this is the half that
- * says what accepting one costs and pays.</para>
+ * one the operator already opens the building for. It carries the RP-1 verbs
+ * itself, Accept and Complete, because the host card's Deactivate would strand
+ * a Program, and it is the half that says what accepting one costs and
+ * pays.</para>
  *
  * <para>The Administration building's own detail panel, minus the prose. RP-1
  * shows this as a rich-text blob with the figures formatted into sentences;
@@ -110,6 +121,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
   /* Unconditional and above the two early returns below: a hook after one would
      change count on the first frame RP-1 answers. */
   const accept = useCommand(RP1_STRATEGY_ACTIVATE_COMMAND);
+  const complete = useCommand(RP1_PROGRAM_COMPLETE_COMMAND);
 
   const rows = programs ?? [];
   const chosen = choose(rows, picked ?? "");
@@ -190,6 +202,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
           />
           <ChosenProgram
             accept={accept}
+            complete={complete}
             program={chosen}
             curves={curves}
             confidenceHeld={magnitudeOf(confidence?.confidence)}
@@ -343,11 +356,13 @@ function ProgramCatalogue({
 /** Everything about the Program the operator picked. */
 function ChosenProgram({
   accept,
+  complete,
   program,
   curves,
   confidenceHeld,
 }: Readonly<{
   accept: Parameters<typeof CommandButton>[0]["handle"];
+  complete: Parameters<typeof CommandButton>[0]["handle"];
   program: Rp1ProgramEntry;
   curves: readonly Rp1FundingCurveEntry[] | undefined;
   confidenceHeld: number | null;
@@ -387,7 +402,7 @@ function ChosenProgram({
         handle={accept}
         program={program}
       />
-      <RunningProgram program={program} />
+      <RunningProgram complete={complete} program={program} />
 
       {/* The readings, left to right when the pane is wide enough for two
           columns of them and stacked when it is not. */}
@@ -623,8 +638,19 @@ function AcceptControl({
  * Program's name, because both are the Program's commitment rather than its
  * terms: Accept is what taking it on costs, this is what holding it is costing
  * now and whether it can be closed.</para>
+ *
+ * <para>Closing it is the Complete control, RP-1's own act: the Program moves to
+ * Completed, pays the reputation beside the control and frees its slots, which
+ * the Slots balance at the head of the section then shows. Dark until RP-1
+ * reports the objectives met, and RP-1 asks again at the press.</para>
  */
-function RunningProgram({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
+function RunningProgram({
+  complete,
+  program,
+}: Readonly<{
+  complete: Parameters<typeof CommandButton>[0]["handle"];
+  program: Rp1ProgramEntry;
+}>) {
   if (program.status !== "active") {
     return null;
   }
@@ -674,7 +700,74 @@ function RunningProgram({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
           value={Math.min(ratio, 1) * 100}
         />
       )}
+      <CompleteControl
+        handle={complete}
+        overrun={overrun}
+        program={program}
+      />
     </Section>
+  );
+}
+
+/**
+ * Complete this Program, and what doing it now earns.
+ *
+ * <para>The reputation is RP-1's early-completion award, which shrinks as the
+ * term runs down and is zero once it has run out; past the deadline the figure
+ * that matters instead is what each further year unclaimed costs, so that is
+ * drawn beside it. Both are before any leader's currency modifier, which RP-1
+ * applies in a query the Uplink does not run.</para>
+ */
+function CompleteControl({
+  handle,
+  overrun,
+  program,
+}: Readonly<{
+  handle: Parameters<typeof CommandButton>[0]["handle"];
+  overrun: boolean;
+  program: Rp1ProgramEntry;
+}>) {
+  const ready = program.canComplete === true;
+  const name = label(program);
+  return (
+    <Cluster gap="related-dense" justify="start" wrap>
+      <Text size="sm" level="muted">
+        <Unit value={program.repForComplete} /> earned now
+        {ready && overrun && (
+          <>
+            , <Unit value={program.repPenaltyPerYearLate} /> lost per year
+            unclaimed
+          </>
+        )}
+      </Text>
+      <CommandButton
+        args={{ strategyId: program.name }}
+        aria-label={ready ? `Complete ${name}` : undefined}
+        commandLabel={`Complete ${name}`}
+        confirmAriaLabel={`Confirm completing ${name}`}
+        confirmLabel={<CompleteWording rep={program.repForComplete} />}
+        disabled={!ready}
+        handle={handle}
+        label="Complete"
+        size="sm"
+        title={
+          ready
+            ? undefined
+            : "RP-1 completes a Program only once its objectives are met"
+        }
+      />
+    </Cluster>
+  );
+}
+
+/** What the confirm press earns. */
+function CompleteWording({
+  rep,
+}: Readonly<{ rep: Rp1ProgramEntry["repForComplete"] }>) {
+  return (
+    <>
+      Earn <Unit value={rep} />
+    </>
   );
 }
 

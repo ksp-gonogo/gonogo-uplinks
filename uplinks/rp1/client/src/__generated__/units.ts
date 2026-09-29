@@ -489,6 +489,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     engineers: "count",
     lcId: "id",
   },
+  "Rp1ProgramCompleteArgs": {
+    strategyId: "id",
+  },
   "Rp1ProgramEntry": {
     acceptedUt: "ut",
     canAccept: "flag",
@@ -510,6 +513,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     objectivesText: "text",
     programsToDisableOnAccept: "id",
     repDeltaOnCompletePerYearEarly: "rep",
+    repForComplete: "rep",
     repPenaltyAssessed: "rep",
     repPenaltyPerYearLate: "rep",
     requirementsMet: "flag",
@@ -909,6 +913,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     objectivesText: "text",
     programsToDisableOnAccept: "id",
     repDeltaOnCompletePerYearEarly: "rep",
+    repForComplete: "rep",
     repPenaltyAssessed: "rep",
     repPenaltyPerYearLate: "rep",
     requirementsMet: "flag",

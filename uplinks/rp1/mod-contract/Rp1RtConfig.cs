@@ -81,6 +81,7 @@ public static class Rp1RtConfig
             typeof(Rp1PersonnelAssignArgs),
             typeof(Rp1BuildStartArgs),
             typeof(Rp1StrategyActivateArgs),
+            typeof(Rp1ProgramCompleteArgs),
             typeof(Rp1LeaderEntry),
             typeof(Rp1FacilityUpgradeArgs),
             typeof(Rp1TechResearchArgs),

@@ -1,4 +1,4 @@
-// RP-1 client-owned command registration: this Uplink's twenty-nine commands, both
+// RP-1 client-owned command registration: every command of this Uplink, both
 // halves.
 //
 // Its command args types live in THIS Uplink's own contract slice, never in

@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { DelayRailProvider } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
   visibleText,
@@ -95,7 +96,11 @@ function mount(screenId: string = PROGRAMS_SCREEN_ID) {
   const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
-      <ProgramDetail screenId={screenId} />
+      {/* The host panel's rail, which an augment is drawn beneath and every
+          command it dispatches reports its outcome to. */}
+      <DelayRailProvider>
+        <ProgramDetail screenId={screenId} />
+      </DelayRailProvider>
     </fixture.Provider>,
   );
   return { fixture, view };
@@ -616,6 +621,80 @@ describe("ProgramDetail", () => {
     ).toBeEnabled();
     // And no SHORT badge: an unknown balance cannot be compared with a price.
     expect(visibleText()).not.toContain("SHORT");
+  });
+
+  /*
+   * The Complete control, and the reason it exists: RP-1 completes a Program
+   * only from its own Administration dialog, and core's deactivate, which the
+   * host card used to offer, strands one. So the verb is RP-1's command, named
+   * by strategy id, behind a confirm that says what it earns.
+   */
+  it("completes a Program RP-1 reports ready, after a confirm that names what it earns", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await feed(fixture, [
+      program({ canComplete: true, objectivesMet: true, repForComplete: 97.5 }),
+    ]);
+
+    expect(visibleText()).toContain("READY TO COMPLETE");
+    expect(visibleText()).toMatch(/earned now/);
+    await user.click(
+      screen.getByRole("button", { name: "Complete X-Plane Research" }),
+    );
+    await user.click(
+      screen.getByRole("button", {
+        name: "Confirm completing X-Plane Research",
+      }),
+    );
+
+    const sent = fixture.transport.sentCommands.find(
+      (c) => c.command === "rp1.program.complete",
+    );
+    expect(sent?.args).toEqual({ strategyId: "EarlyXPlanes" });
+  });
+
+  it("keeps Complete dark until RP-1 reports the objectives met", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    expect(screen.getByRole("button", { name: /^complete$/i })).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /complete x-plane research/i }),
+    ).toBeNull();
+  });
+
+  /*
+   * Past the deadline the award is zero and the figure that matters is what
+   * each further year unclaimed costs, so that is what sits beside the control.
+   */
+  it("says what an overrun Program ready to complete loses per year unclaimed", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [
+      program({
+        canComplete: true,
+        objectivesMet: true,
+        fracElapsed: 1.2,
+        repForComplete: 0,
+        repPenaltyAssessed: 26,
+      }),
+    ]);
+
+    expect(visibleText()).toMatch(/lost per year unclaimed/);
+  });
+
+  it("offers no Complete control on a Program that is not running", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [
+      program({
+        status: "offerable",
+        canAccept: true,
+        acceptedUt: null,
+        fundsPaidOut: null,
+        fundsRemaining: null,
+      }),
+    ]);
+
+    expect(screen.queryByRole("button", { name: /^complete/i })).toBeNull();
   });
 
   /*

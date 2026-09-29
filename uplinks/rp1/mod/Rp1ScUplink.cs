@@ -260,6 +260,15 @@ namespace GonogoRp1Uplink
         private string? _careerProjectGateRegistrationError;
 
         /// <summary>
+        /// Core's strategy deactivate, refused for a Program in favour of
+        /// <c>rp1.program.complete</c>. Its own reader, like the two gates above.
+        /// </summary>
+        private readonly Rp1ProgramDeactivateGate _programDeactivate = new Rp1ProgramDeactivateGate();
+
+        /// <summary>Set when that contribution threw, so Health can say so rather than nothing.</summary>
+        private string? _programDeactivateGateRegistrationError;
+
+        /// <summary>
         /// The write half of RP-1's build queue: the repeat-build command and the
         /// gate that darkens it. Its own reader, like the launch gate beside it
         /// and for the same reason: a command answers from the model as it stands
@@ -413,6 +422,9 @@ namespace GonogoRp1Uplink
 
         /// <summary>The tech unlock RP-1 turns into a research project. Spelled out for the reason above.</summary>
         private const string CareerTechUnlockCommand = "career.tech.unlock";
+
+        /// <summary>The strategy deactivate that strands an RP-1 Program. Spelled out for the reason above.</summary>
+        private const string CareerStrategyDeactivateCommand = "career.strategy.deactivate";
         /// <summary>The same, for the simulation provider. Separate field because the two register independently.</summary>
         private string? _simulationRegistrationError;
 
@@ -782,6 +794,7 @@ namespace GonogoRp1Uplink
             if (strategyModelResolved)
             {
                 commands.Add(Declare(Rp1StrategyCommands.ActivateCommand, CareerStatusSubject));
+                commands.Add(Declare(Rp1StrategyCommands.CompleteCommand, ProgramsTopic));
             }
             if (targetModelResolved)
             {
@@ -1006,6 +1019,24 @@ namespace GonogoRp1Uplink
                 _careerProjectGateRegistrationError = ex.Message;
             }
 
+            // Core's strategy deactivate, which unregisters a Program without
+            // completing it. Contributed and fail-softed on the same terms as the
+            // career purchases above: a contribution that fails must not cost this
+            // Uplink its read surface, and must say so in Health.
+            try
+            {
+                if (_programDeactivate.IsAvailable)
+                {
+                    host.AddGateEvaluator(_programDeactivate);
+                    host.AddCommandRequirement(
+                        CareerStrategyDeactivateCommand, Rp1ProgramDeactivateGate.Requirement());
+                }
+            }
+            catch (Exception ex)
+            {
+                _programDeactivateGateRegistrationError = ex.Message;
+            }
+
             // The build queue's write half. Registered on the SAME condition the
             // manifest declared the command on, and that pairing is the whole
             // reason both are conditional: the engine validates once, after every
@@ -1097,6 +1128,8 @@ namespace GonogoRp1Uplink
                 {
                     host.AddCommandHandler<Rp1StrategyActivateArgs, CommandResult>(
                         Rp1StrategyCommands.ActivateCommand, _strategies.Activate);
+                    host.AddCommandHandler<Rp1ProgramCompleteArgs, CommandResult>(
+                        Rp1StrategyCommands.CompleteCommand, _strategies.Complete);
                 }
             });
             Register(() =>
@@ -1959,6 +1992,13 @@ namespace GonogoRp1Uplink
                         : _careerProjects.IsAvailable
                             ? "contributed to career.facility.upgrade and career.tech.unlock"
                             : "space centre types not found"),
+                new UplinkHealthFact(
+                    "program deactivate rule",
+                    _programDeactivateGateRegistrationError != null
+                        ? "not contributed: " + _programDeactivateGateRegistrationError
+                        : _programDeactivate.IsAvailable
+                            ? "contributed to career.strategy.deactivate"
+                            : "program strategy type not found"),
                 new UplinkHealthFact(
                     "build commands",
                     _buildCommandRegistrationError != null

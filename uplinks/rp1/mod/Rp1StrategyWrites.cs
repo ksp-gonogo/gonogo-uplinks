@@ -55,6 +55,9 @@
 // PROVENANCE. Every member here was read out of an ilspycmd disassembly of the
 // INSTALLED RP-1 v4.6.0.0 RP0.dll and of the installed Assembly-CSharp, and
 // PerformActivate and ActivateOverride were additionally confirmed at IL. The
+// completion members (CompleteProgram, DeactivateOverride, CanBeDeactivated and
+// AlarmHelper.DeleteAllAlarmsWithTitle) were read out of the installed v4.7.0.0
+// and are pinned against both releases by the installed-compatibility suite. The
 // disassembly verifies SHAPE and never VALUE: nothing here has been exercised
 // against a running game, so every hop is null-safe.
 using System;
@@ -116,6 +119,56 @@ namespace GonogoRp1Uplink
             programHandler == null
                 ? null
                 : Rp1Types.InstanceMethodOn(programHandler, "ActivateProgram", ProgramTypeName, 1);
+
+        /// <summary>
+        /// <c>ProgramHandler.CompleteProgram(Program p)</c>, resolved by
+        /// first-parameter type because a <c>CompleteProgram(string)</c> overload
+        /// sits beside it.
+        ///
+        /// <para>The half of completion <c>ProgramStrategy.OnUnregister</c>
+        /// performs only while <see cref="IsInAdmin"/> is true: it moves the
+        /// Program from <c>ActivePrograms</c> to <c>CompletedPrograms</c>, calls
+        /// <c>p.Complete()</c> (which stamps <c>completedUT</c> and pays the
+        /// early-completion reputation), resets contract generation failure and
+        /// announces the leaders the completion unlocks.</para>
+        /// </summary>
+        public static MethodInfo? CompleteProgram(object? programHandler) =>
+            programHandler == null
+                ? null
+                : Rp1Types.InstanceMethodOn(programHandler, "CompleteProgram", ProgramTypeName, 1);
+
+        /// <summary>
+        /// <c>StrategyRP0.DeactivateOverride()</c>, the body RP-1's Harmony prefix
+        /// substitutes for stock's <c>Strategy.Deactivate()</c>. For a Program it
+        /// asks <c>CanBeDeactivated</c>, stamps <c>dateDeactivated</c> and
+        /// <c>ActivatedStrategies</c>, and calls <c>Unregister()</c>, whose
+        /// <c>OnUnregister</c> completes the Program only when
+        /// <see cref="IsInAdmin"/> is true.
+        /// </summary>
+        public static MethodInfo? DeactivateOverride(object? strategy) =>
+            strategy == null ? null : Rp1Types.InstanceMethod(strategy, "DeactivateOverride", 0);
+
+        /// <summary>
+        /// Stock's <c>Strategy.CanBeDeactivated(out string reason)</c>, which asks
+        /// the strategy's own <c>CanDeactivate</c> and carries its words: for a
+        /// Program, RP-1's "This Program has unmet objectives.".
+        /// </summary>
+        public static MethodInfo? CanBeDeactivated(object? strategy) =>
+            strategy == null ? null : Rp1Types.InstanceMethod(strategy, "CanBeDeactivated", 1);
+
+        /// <summary>
+        /// <c>AlarmHelper.DeleteAllAlarmsWithTitle(string title, bool useStartsWith)</c>,
+        /// which RP-1's own Complete confirm calls with the Program's title to
+        /// clear the deadline alarm <c>PerformActivate</c> created.
+        /// </summary>
+        public static MethodInfo? DeleteAlarmsWithTitle()
+        {
+            var t = Rp1Types.Find(AlarmHelperTypeName);
+            return t == null ? null : Rp1Types.StaticMethod(t, "DeleteAllAlarmsWithTitle", 2);
+        }
+
+        /// <summary>RP-1's KAC and stock alarm helper.</summary>
+        public const string AlarmHelperTypeName = "RP0.ModIntegrations.AlarmHelper";
 
         /// <summary>
         /// Whether RP-1 currently considers itself to be in the Administration

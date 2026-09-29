@@ -2008,6 +2008,15 @@ export interface Rp1ProgramEntry
 	/** Reputation gained per year this Program is completed early. */
 	repDeltaOnCompletePerYearEarly?: Value<"rep"> | null;
 	/**
+	* Reputation completing this Program now would earn, RP-1's
+	* `Program.RepForComplete` at the tick's UT: the unelapsed fraction of the
+	* term times its length in years times
+	* `Rp1ProgramEntry.repDeltaOnCompletePerYearEarly`, and zero once the term has
+	* run out. Present only on a running Program. Before any leader's currency
+	* modifier, which RP-1 applies in a query this Uplink does not run.
+	*/
+	repForComplete?: Value<"rep"> | null;
+	/**
 	* Reputation lost per year past the deadline, already scaled by speed: RP-1
 	* charges a Fast Program half again as much for running late.
 	*/
@@ -3626,6 +3635,30 @@ export interface Rp1StrategyActivateArgs
 	* to show for it.
 	*/
 	factor?: number;
+}
+/**
+* Which Program to complete, for `rp1.program.complete`.
+*
+* Completing is how RP-1 closes a Program, and core's
+* `career.strategy.deactivate` is refused for one. RP-1 completes a Program
+* only from its Administration Building's own confirm dialog, so deactivating
+* the strategy anywhere else unregisters it and leaves the Program running,
+* paying out and holding its slots with no way back into RP-1's own screen.
+* This command performs both halves the dialog performs: the strategy's
+* deactivation and `ProgramHandler.CompleteProgram`, which moves the Program
+* to Completed, pays the early-completion reputation
+* (`rp1.programs[].repForComplete`) and unlocks the leaders it gates.
+*
+* Refused with RP-1's own sentence while the objectives are unmet ("This
+* Program has unmet objectives.").
+*/
+export interface Rp1ProgramCompleteArgs
+{
+	/**
+	* The Program's strategy, by the id `rp1.programs[].name` and
+	* `career.status.strategies.all[].id` both publish.
+	*/
+	strategyId?: string;
 }
 /**
 * What RP-1 charges for a leader, and what it costs to let one go.

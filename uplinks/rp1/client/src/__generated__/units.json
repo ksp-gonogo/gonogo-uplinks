@@ -449,6 +449,9 @@
       "engineers": "count",
       "lcId": "id"
     },
+    "Rp1ProgramCompleteArgs": {
+      "strategyId": "id"
+    },
     "Rp1ProgramEntry": {
       "acceptedUt": "ut",
       "canAccept": "flag",
@@ -470,6 +473,7 @@
       "objectivesText": "text",
       "programsToDisableOnAccept": "id",
       "repDeltaOnCompletePerYearEarly": "rep",
+      "repForComplete": "rep",
       "repPenaltyAssessed": "rep",
       "repPenaltyPerYearLate": "rep",
       "requirementsMet": "flag",
@@ -864,6 +868,7 @@
       "objectivesText": "text",
       "programsToDisableOnAccept": "id",
       "repDeltaOnCompletePerYearEarly": "rep",
+      "repForComplete": "rep",
       "repPenaltyAssessed": "rep",
       "repPenaltyPerYearLate": "rep",
       "requirementsMet": "flag",

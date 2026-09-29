@@ -168,6 +168,9 @@ namespace GonogoRp1Uplink.Tests
             // Tells the two ActivateProgram overloads apart by first-parameter
             // type; a lookup by arity alone could take either.
             new Rp1TypeTarget(Rp0, "RP0.Programs.Program", "Rp1StrategyWrites"),
+            // Clears a completed Program's deadline alarm, as RP-1's own Complete
+            // confirm does. Best effort in production, pinned here all the same.
+            new Rp1TypeTarget(Rp0, "RP0.ModIntegrations.AlarmHelper", "Rp1StrategyWrites"),
             // The two standing targets, resolved by name because the SET half
             // constructs one: RP-1 gives each a public constructor and the whole
             // instruction is those arguments, so a rename costs the command.
@@ -445,6 +448,16 @@ namespace GonogoRp1Uplink.Tests
             // because ActivateProgram(string, Program.Speed) sits beside it, and
             // a lookup by arity alone could take either.
             new Rp1MethodTarget(Rp0, "RP0.Programs.ProgramHandler", "ActivateProgram", 1, false, "Rp1StrategyWrites"),
+            // The completion half ProgramStrategy.OnUnregister performs only with
+            // the Administration screen open; without it a deactivated Program is
+            // stranded. Resolved by first-parameter TYPE in production because
+            // CompleteProgram(string) sits beside it at the same arity, so this
+            // pin holds while either overload survives.
+            new Rp1MethodTarget(Rp0, "RP0.Programs.ProgramHandler", "CompleteProgram", 1, false, "Rp1StrategyWrites"),
+            // The body RP-1's Harmony prefix substitutes for stock's Deactivate():
+            // gate, unstamp and Unregister().
+            new Rp1MethodTarget(Rp0, "RP0.StrategyRP0", "DeactivateOverride", 0, false, "Rp1StrategyWrites"),
+            new Rp1MethodTarget(Rp0, "RP0.ModIntegrations.AlarmHelper", "DeleteAllAlarmsWithTitle", 2, true, "Rp1StrategyWrites"),
             // The only route to a space centre's DISPLAY name. RP-1 keeps the id
             // on LCSpaceCenter and nothing else, and its shim is what reads
             // KSCSwitcher's site config for the name beside it.
@@ -739,6 +752,7 @@ namespace GonogoRp1Uplink.Tests
             ["Factor"] = "stock Strategies.Strategy.Factor, the commitment level, written before the gate and restored on a refusal",
             ["GroupTags"] = "stock Strategies.Strategy.GroupTags, handed to HasConflictingActiveStrategies as arm 2's input",
             ["CanActivate"] = "stock Strategies.Strategy.CanActivate(ref string), arm 8, where RP-1 puts its program slot cap by override",
+            ["CanBeDeactivated"] = "stock Strategies.Strategy.CanBeDeactivated(out string), which carries RP-1's ProgramStrategy.CanDeactivate words out to rp1.program.complete",
             ["Effects"] = "stock Strategies.Strategy.Effects, arm 9's roster: each StrategyEffect is asked its own CanActivate, and any mod's effect can refuse",
             ["HasConflictingActiveStrategies"] = "stock Strategies.StrategySystem's arm 2, the only arm that reads the system rather than the strategy",
             ["Strategies"] = "stock StrategySystem.Strategies, the roster walked to resolve a strategy by name",
@@ -1474,6 +1488,9 @@ namespace GonogoRp1Uplink.Tests
             // template, so anything reading it too early gets zero, which is how
             // a KAC alarm ends up minted at UT 0.
             Add("RP0.Programs.ProgramStrategy", "Program", Rp1Reader.Presence, StrategyWrites);
+            // Read after the deactivation, so a Program RP-1's own OnUnregister
+            // has already completed is not completed a second time.
+            Add("RP0.Programs.Program", "IsComplete", Rp1Reader.Bool, StrategyWrites);
             Add("RP0.Programs.ProgramHandler", "Programs", Rp1Reader.Presence, Programs, @static: true);
             Add("RP0.Programs.ProgramHandler", "Settings", Rp1Reader.Presence, Programs, @static: true);
             Add("RP0.Programs.ProgramHandler", "ProgramModifiers", Rp1Reader.Presence, Programs, @static: true);

@@ -511,6 +511,55 @@ public class Rp1ProgramFundingCaptureTests
         // on no curve at all, about an install that ships twelve.
         Assert.Null(Rp1ProgramsCapture.BuildFundingCurves(null));
     }
+
+    [Fact]
+    public void Completing_early_earns_the_unelapsed_share_of_the_term_at_the_yearly_rate()
+    {
+        // Program.RepForComplete: fracElapsed at the last payment plus the time
+        // since, over the duration, is the share used up. A four-year Program at
+        // 10 per year, a quarter paid and a further quarter of the term gone,
+        // has half its term left: 0.5 * 4 * 10.
+        var rep = Rp1ProgramsMath.RepForComplete(
+            ut: 1_000.0 + Year, fracElapsed: 0.25, lastPaymentUt: 1_000.0, durationSeconds: 4.0 * Year,
+            repPerYearEarly: 10.0);
+        Assert.Equal(20.0, rep!.Value, 9);
+    }
+
+    [Fact]
+    public void Completing_at_or_past_the_end_of_the_term_earns_nothing_even_with_no_duration()
+    {
+        Assert.Equal(0.0, Rp1ProgramsMath.RepForComplete(5_000.0, 1.2, 1_000.0, null, 10.0));
+        Assert.Equal(0.0, Rp1ProgramsMath.RepForComplete(1_000.0 + 4.0 * Year, 0.0, 1_000.0, 4.0 * Year, 10.0));
+    }
+
+    [Fact]
+    public void An_unreadable_input_leaves_the_reputation_absent_rather_than_zero()
+    {
+        Assert.Null(Rp1ProgramsMath.RepForComplete(1_000.0, null, 1_000.0, 4.0 * Year, 10.0));
+        Assert.Null(Rp1ProgramsMath.RepForComplete(1_000.0, 0.25, null, 4.0 * Year, 10.0));
+        Assert.Null(Rp1ProgramsMath.RepForComplete(1_000.0, 0.25, 1_000.0, null, 10.0));
+        Assert.Null(Rp1ProgramsMath.RepForComplete(1_000.0, 0.25, 1_000.0, 4.0 * Year, null));
+    }
+
+    [Fact]
+    public void A_running_Program_carries_the_reputation_completing_it_now_would_earn_and_an_offer_does_not()
+    {
+        // The duration comes from the deadline RP-1 left behind, as everywhere
+        // else on a running row: four years, a quarter elapsed at the tick's UT.
+        var running = Offer("Flat");
+        running.State = Rp1ProgramStates.Active;
+        running.IsActive = true;
+        running.AcceptedUt = 1.0;
+        running.LastPaymentUt = 1_000.0;
+        running.FracElapsed = 0.25;
+        running.DeadlineUt = 1_000.0 + 0.75 * 4.0 * Year;
+        running.RepDeltaOnCompletePerYearEarly = 10.0;
+        Assert.Equal(30.0, (double)Row(WithCurves(running))["repForComplete"]!, 6);
+
+        var offer = Offer("Flat");
+        offer.RepDeltaOnCompletePerYearEarly = 10.0;
+        Assert.Null(Row(WithCurves(offer))["repForComplete"]);
+    }
 }
 
 /// <summary>

@@ -96,6 +96,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.pad.new` | `Rp1PadNewArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.pad.rename` | `Rp1PadRenameArgs` | `CommandResult` |
 | `rp1.personnel.assign` | `Rp1PersonnelAssignArgs` | `CommandResult` |
+| `rp1.program.complete` | `Rp1ProgramCompleteArgs` | `CommandResult` |
 | `rp1.strategy.activate` | `Rp1StrategyActivateArgs` | `CommandResult` |
 | `rp1.tech.research` | `Rp1TechResearchArgs` | `CommandResult` |
 | `rp1.tooling.refit` | `Rp1ToolingRefitArgs` | `CommandResult` |
@@ -126,6 +127,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1PadNewArgs` | `lcId` id, `name` id |
 | `Rp1PadRenameArgs` | `lcId` id, `name` id, `padId` id |
 | `Rp1PersonnelAssignArgs` | `engineers` count, `lcId` id |
+| `Rp1ProgramCompleteArgs` | `strategyId` id |
 | `Rp1RolloutArgs` | `id` id, `pad` id |
 | `Rp1StrategyActivateArgs` | `factor` ratio, `strategyId` id |
 | `Rp1TargetCancelArgs` | – |

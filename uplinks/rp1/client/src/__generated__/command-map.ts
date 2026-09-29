@@ -67,6 +67,7 @@ import type {
   Rp1PadNewArgs,
   Rp1PadRenameArgs,
   Rp1PersonnelAssignArgs,
+  Rp1ProgramCompleteArgs,
   Rp1RolloutArgs,
   Rp1StrategyActivateArgs,
   Rp1TargetCancelArgs,
@@ -102,6 +103,7 @@ export interface GeneratedCommandArgsMap {
   "rp1.pad.new": Rp1PadNewArgs;
   "rp1.pad.rename": Rp1PadRenameArgs;
   "rp1.personnel.assign": Rp1PersonnelAssignArgs;
+  "rp1.program.complete": Rp1ProgramCompleteArgs;
   "rp1.strategy.activate": Rp1StrategyActivateArgs;
   "rp1.tech.research": Rp1TechResearchArgs;
   "rp1.tooling.refit": Rp1ToolingRefitArgs;
@@ -134,6 +136,7 @@ export interface GeneratedCommandReplyMap {
   "rp1.pad.new": CommandResultOf<Record<string, unknown>>;
   "rp1.pad.rename": CommandResult;
   "rp1.personnel.assign": CommandResult;
+  "rp1.program.complete": CommandResult;
   "rp1.strategy.activate": CommandResult;
   "rp1.tech.research": CommandResult;
   "rp1.tooling.refit": CommandResult;
@@ -176,6 +179,7 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.pad.new": "CommandResultOf<Record<string, unknown>>",
   "rp1.pad.rename": "CommandResult",
   "rp1.personnel.assign": "CommandResult",
+  "rp1.program.complete": "CommandResult",
   "rp1.strategy.activate": "CommandResult",
   "rp1.tech.research": "CommandResult",
   "rp1.tooling.refit": "CommandResult",
@@ -246,6 +250,7 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.pad.new": { replies: true, delayed: true },
   "rp1.pad.rename": { replies: true, delayed: true },
   "rp1.personnel.assign": { replies: true, delayed: true },
+  "rp1.program.complete": { replies: true, delayed: true },
   "rp1.strategy.activate": { replies: true, delayed: true },
   "rp1.tech.research": { replies: true, delayed: true },
   "rp1.tooling.refit": { replies: true, delayed: true },
@@ -278,6 +283,7 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.pad.new",
   "rp1.pad.rename",
   "rp1.personnel.assign",
+  "rp1.program.complete",
   "rp1.strategy.activate",
   "rp1.tech.research",
   "rp1.tooling.refit",

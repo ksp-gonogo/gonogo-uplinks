@@ -205,6 +205,46 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// The reputation completing a running Program at <paramref name="ut"/>
+        /// earns, which is RP-1's <c>Program.RepForComplete</c>:
+        /// <c>(1 - elapsed) * durationYears * repDeltaOnCompletePerYearEarly</c>,
+        /// where <c>elapsed = fracElapsed + (ut - lastPaymentUT) / duration</c>,
+        /// and zero once <c>elapsed</c> reaches 1.
+        ///
+        /// <para>Reproduced rather than called because RP-1's reads
+        /// <c>DurationYears</c>, which reaches <c>CurrencyUtils.Time</c> and fires
+        /// the modifier broadcast this Uplink does not run. The duration handed in
+        /// is the one <see cref="DerivedDurationSeconds"/> recovers from the
+        /// persisted deadline, which already carries that modifier.</para>
+        ///
+        /// <para>Zero past the term needs no duration, so an overrun Program
+        /// answers even though its derived duration is absent there.</para>
+        /// </summary>
+        public static double? RepForComplete(
+            double ut, double? fracElapsed, double? lastPaymentUt, double? durationSeconds, double? repPerYearEarly)
+        {
+            if (fracElapsed == null || repPerYearEarly == null)
+            {
+                return null;
+            }
+            if (fracElapsed.Value >= 1.0)
+            {
+                return 0.0;
+            }
+            if (lastPaymentUt == null || durationSeconds == null || durationSeconds.Value <= 0.0)
+            {
+                return null;
+            }
+            var elapsed = fracElapsed.Value + (ut - lastPaymentUt.Value) / durationSeconds.Value;
+            if (elapsed >= 1.0)
+            {
+                return 0.0;
+            }
+            var years = durationSeconds.Value / Rp1ProgramsReflection.JulianYearSeconds;
+            return (1.0 - elapsed) * years * repPerYearEarly.Value;
+        }
+
+        /// <summary>
         /// A funding curve at one point, as <c>HermiteCurve.Evaluate</c> reads
         /// it: the cumulative fraction of a Program's total funding paid by
         /// <paramref name="frac"/> of its duration.

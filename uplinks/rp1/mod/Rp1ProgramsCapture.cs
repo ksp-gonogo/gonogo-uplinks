@@ -56,6 +56,10 @@ namespace GonogoRp1Uplink
                     ["fundingCurve"] = p.FundingCurve,
                     ["confidenceCost"] = p.ConfidenceCost,
                     ["repDeltaOnCompletePerYearEarly"] = p.RepDeltaOnCompletePerYearEarly,
+                    ["repForComplete"] = p.IsActive
+                        ? Rp1ProgramsMath.RepForComplete(
+                            raw.Ut, p.FracElapsed, p.LastPaymentUt, duration, p.RepDeltaOnCompletePerYearEarly)
+                        : null,
                     ["repPenaltyPerYearLate"] = p.RepPenaltyPerYearLate,
                     ["repPenaltyAssessed"] = p.RepPenaltyAssessed,
                     ["requirementsMet"] = p.RequirementsMet,

@@ -45,12 +45,16 @@ namespace GonogoRp1Uplink
 {
     /// <summary>
     /// <c>rp1.strategy.activate</c>: commit to a leader or a program without the
-    /// Administration Building.
+    /// Administration Building. <c>rp1.program.complete</c>: close a running
+    /// program the way the building's own dialog does.
     /// </summary>
     public sealed class Rp1StrategyCommands
     {
         /// <summary>Commit to a strategy, leader or program alike.</summary>
         public const string ActivateCommand = "rp1.strategy.activate";
+
+        /// <summary>Complete a running Program, which is how RP-1 closes one.</summary>
+        public const string CompleteCommand = "rp1.program.complete";
 
         private const string ScmTypeName = "RP0.SpaceCenterManagement";
 
@@ -408,6 +412,166 @@ namespace GonogoRp1Uplink
             }
 
             return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// Complete a running Program: the strategy's deactivation and
+        /// <c>ProgramHandler.CompleteProgram</c>, which RP-1 performs together
+        /// only from its Administration Building's confirm dialog.
+        /// </summary>
+        /// <remarks>
+        /// <para>RP-1 completes a Program inside <c>ProgramStrategy.OnUnregister</c>
+        /// and only while <c>ProgramHandler.IsInAdmin</c> is true, so deactivating
+        /// the strategy anywhere else unregisters it and nothing more: the
+        /// Program stays in <c>ActivePrograms</c>, keeps paying, holds its slots,
+        /// and RP-1's own screen then offers no way to complete or re-accept it.
+        /// Seen on the rig on 2026-09-29 through core's
+        /// <c>career.strategy.deactivate</c>, which is why that command is gated
+        /// off Programs (<see cref="Rp1ProgramDeactivateGate"/>) and this one
+        /// exists.</para>
+        ///
+        /// <para>The order is RP-1's own dialog's: deactivate, then complete, then
+        /// clear the deadline alarm. It cannot run the other way round, because
+        /// <c>ProgramStrategy.CanDeactivate</c> requires <c>CanComplete</c> and a
+        /// completed Program no longer answers it.</para>
+        ///
+        /// <para>Every member is resolved and <c>CanBeDeactivated</c> is asked
+        /// before anything is written, so a refusal or an unrecognised member
+        /// leaves the career as it was. <c>IsInAdmin</c> is read first, as on the
+        /// accept side, and <c>CompleteProgram</c> is skipped only when RP-1's own
+        /// <c>OnUnregister</c> has already completed the Program; a command
+        /// arriving while the building is open settles nothing anyway, because
+        /// game time is frozen there.</para>
+        /// </remarks>
+        public CommandResult Complete(Rp1ProgramCompleteArgs? args)
+        {
+            var id = args?.StrategyId;
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound, "no Program was named");
+            }
+            if (!IsAvailable)
+            {
+                return CommandResult.Fail(CommandErrorCode.ModeUnavailable, "RP-1 strategy types are not present");
+            }
+
+            var system = StrategySystemInstance();
+            if (system == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.CareerModeRequired, "there is no strategy system");
+            }
+            if (!TryFindStrategy(system, id!, out var strategy))
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound, $"no strategy is named \"{id}\"");
+            }
+            if (!Rp1StrategyWrites.IsProgramStrategy(strategy, _programStrategy))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.WrongState,
+                    $"\"{id}\" is a leader rather than a Program, so there is nothing to complete");
+            }
+            if (Rp1Types.ReadBool(strategy, "IsActive") != true)
+            {
+                return CommandResult.Fail(CommandErrorCode.WrongState, "the Program is not running");
+            }
+
+            var handler = _programHandler == null ? null : Rp1Types.StaticValue(_programHandler, "Instance");
+            if (handler == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "RP-1's program handler is not loaded, and completing needs it to record the change");
+            }
+            var inAdmin = Rp1StrategyWrites.IsInAdmin(handler);
+            if (inAdmin == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "cannot tell whether the Administration Building is open, and a Program would be completed twice if it is");
+            }
+
+            var program = Rp1StrategyWrites.Program(strategy);
+            if (program == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.WrongState, "the Program this strategy carries could not be read");
+            }
+            var ask = Rp1StrategyWrites.CanBeDeactivated(strategy);
+            var deactivate = Rp1StrategyWrites.DeactivateOverride(strategy);
+            var complete = Rp1StrategyWrites.CompleteProgram(handler);
+            if (ask == null || deactivate == null || complete == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    "RP-1's " + (ask == null
+                        ? "Strategy.CanBeDeactivated(out string)"
+                        : deactivate == null
+                            ? "StrategyRP0.DeactivateOverride()"
+                            : "ProgramHandler.CompleteProgram(Program)") + " was not recognised");
+            }
+
+            try
+            {
+                var argv = new object?[] { null };
+                if (!(ask.Invoke(strategy, argv) is bool allowed) || !allowed)
+                {
+                    var said = argv[0] as string;
+                    return CommandResult.Fail(
+                        CommandErrorCode.NotClearToProceed,
+                        string.IsNullOrWhiteSpace(said) ? "RP-1 refused to complete the Program" : said!);
+                }
+            }
+            catch (Exception ex)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "RP-1 threw while judging whether the Program can be completed: " + Rp1Types.ExceptionReason(ex));
+            }
+
+            try
+            {
+                if (!(deactivate.Invoke(strategy, Array.Empty<object?>()) is bool closed) || !closed)
+                {
+                    return CommandResult.Fail(CommandErrorCode.NotClearToProceed, "RP-1 refused to complete the Program");
+                }
+                if (Rp1Types.ReadBool(program, "IsComplete") != true)
+                {
+                    complete.Invoke(handler, new[] { program });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Past DeactivateOverride the strategy is unregistered, so name
+                // the state the career may be left in rather than a rollback.
+                throw new CommandFaultException(
+                    FaultCode.CommandUnavailable,
+                    "RP-1 threw while completing, and the Program may be unregistered without being completed: "
+                        + Rp1Types.ExceptionReason(ex));
+            }
+
+            ClearDeadlineAlarm(strategy);
+            return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// The alarm clean-up RP-1's own Complete confirm performs. Best effort:
+        /// the Program is already complete, and a leftover alarm is not a reason
+        /// to report that it is not.
+        /// </summary>
+        private static void ClearDeadlineAlarm(object strategy)
+        {
+            try
+            {
+                var title = Rp1Types.ReadString(strategy, "Title");
+                var delete = Rp1StrategyWrites.DeleteAlarmsWithTitle();
+                if (!string.IsNullOrEmpty(title) && delete != null)
+                {
+                    delete.Invoke(null, new object?[] { title, false });
+                }
+            }
+            catch (Exception)
+            {
+                // fail-soft: see the summary
+            }
         }
 
         private static void Restore(object strategy, double? factor, double? previous)

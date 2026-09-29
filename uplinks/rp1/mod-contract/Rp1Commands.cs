@@ -283,6 +283,35 @@ public class Rp1StrategyActivateArgs
 }
 
 /// <summary>
+/// Which Program to complete, for <c>rp1.program.complete</c>.
+/// </summary>
+/// <remarks>
+/// <para>Completing is how RP-1 closes a Program, and core's
+/// <c>career.strategy.deactivate</c> is refused for one. RP-1 completes a Program
+/// only from its Administration Building's own confirm dialog, so deactivating
+/// the strategy anywhere else unregisters it and leaves the Program running,
+/// paying out and holding its slots with no way back into RP-1's own screen.
+/// This command performs both halves the dialog performs: the strategy's
+/// deactivation and <c>ProgramHandler.CompleteProgram</c>, which moves the
+/// Program to Completed, pays the early-completion reputation
+/// (<c>rp1.programs[].repForComplete</c>) and unlocks the leaders it gates.</para>
+///
+/// <para>Refused with RP-1's own sentence while the objectives are unmet
+/// ("This Program has unmet objectives.").</para>
+/// </remarks>
+[SitrepContract]
+[SitrepCommand("rp1.program.complete")]
+public class Rp1ProgramCompleteArgs
+{
+    /// <summary>
+    /// The Program's strategy, by the id <c>rp1.programs[].name</c> and
+    /// <c>career.status.strategies.all[].id</c> both publish.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? StrategyId { get; set; }
+}
+
+/// <summary>
 /// Args for <c>rp1.facility.upgrade</c>: queue a space-centre facility's next
 /// tier as an RP-1 construction project.
 ///
