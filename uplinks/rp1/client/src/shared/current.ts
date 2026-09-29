@@ -19,3 +19,18 @@ export function current<T>(reading: TopicReading<T>): T | undefined {
   if (reading.state === "observed") return reading.value;
   return undefined;
 }
+
+/**
+ * The value where one is current, or the last one heard where the reading is
+ * held.
+ *
+ * <para>For a widget that hands the fields of the same reading to the kit's
+ * primitives, which mark a held figure themselves. A held figure drawn with its
+ * mark is the last thing the space centre said; one read through
+ * {@link current} is dropped as if RP-1 had said nothing.</para>
+ */
+export function latest<T>(reading: TopicReading<T>): T | undefined {
+  const now = current(reading);
+  if (now !== undefined) return now;
+  return reading.state === "held" ? reading.value : undefined;
+}

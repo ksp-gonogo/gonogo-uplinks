@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Staleness } from "@ksp-gonogo/sitrep-sdk";
 import {
   render,
   screen,
@@ -115,6 +116,17 @@ describe("Finances", () => {
     });
   });
 
+  it("says the missing budget is as of the link dropping once RP-1 is not being heard", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true, { staleness: Staleness.Held });
+    await waitFor(() => {
+      expect(
+        screen.getByText("RP-1 had sent no budget when the link dropped"),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText("RP-1 has not sent a budget")).toBeNull();
+  });
+
   it("names RP-1's net as a gain or a drain rather than signing it", async () => {
     const { fixture } = mount();
     await feed(fixture, {
@@ -142,19 +154,20 @@ describe("Finances", () => {
     expect(budgetRow("Program Budget").textContent).toMatch(/\+9,500/);
   });
 
-  it("carries all eleven of RP-1's rows in its order", async () => {
+  it("carries all eleven of RP-1's rows in its order, with the upkeep totalled under its four", async () => {
     const { fixture } = mount();
     await feed(fixture);
 
     const labels = screen
       .getAllByRole("rowheader")
       .map((cell) => cell.textContent)
-      .slice(0, 11);
+      .slice(0, 12);
     expect(labels).toEqual([
       "Facilities",
       "Integration Teams",
       "Research Teams",
       "Astronauts",
+      "Total upkeep",
       "Avg. Subsidy",
       "Net (after subsidy)",
       "Rollout / Airlaunch Prep",
@@ -163,6 +176,98 @@ describe("Finances", () => {
       "Balance",
       "Unlock Credit",
     ]);
+  });
+
+  it("totals the upkeep in one row, as RP-1 carries it rather than summed here", async () => {
+    const { fixture } = mount();
+    await feed(fixture, {
+      ...BUDGET,
+      day: { ...(BUDGET.day as object), upkeep: -7777 },
+    });
+    // The fixture's four rows sum to 7,800: the row draws RP-1's figure.
+    expect(budgetRow("Total upkeep").textContent).toMatch(/\(7,777[^)]*\)/);
+  });
+
+  it("says in one line what leaders and strategies change in upkeep a day", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    const before = screen
+      .getByText("Upkeep before modifiers, day", { selector: "dt" })
+      .closest("dl") as HTMLElement;
+    expect(before.textContent).toContain("8,100");
+    const modifiers = screen
+      .getByText("Leaders and strategies, day", { selector: "dt" })
+      .closest("dl") as HTMLElement;
+    expect(modifiers.textContent).toContain("300");
+    expect(within(modifiers).getByText("Saved")).toBeInTheDocument();
+    expect(modifiers.textContent).not.toMatch(/[-+(]/);
+  });
+
+  it("closes the Astronauts lines on RP-1's base, operational and training costs", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /4 crew members/ }),
+    );
+    const line = (name: string) =>
+      screen.getByRole("rowheader", { name }).closest("tr")?.textContent ?? "";
+    expect(line("Astronaut base cost")).toMatch(/\(280[^)]*\)/);
+    expect(line("Astronaut operational cost")).toMatch(/\(100[^)]*\)/);
+    expect(line("Astronaut training cost")).toMatch(/\(220[^)]*\)/);
+  });
+
+  it("keeps the last budget up, marked held, while RP-1 is not being heard", async () => {
+    /*
+     * A dropped link holds every rp1 channel. The budget RP-1 last sent is still
+     * the best answer there is, so it stays drawn and the kit marks each figure
+     * held, rather than the tab claiming RP-1 never sent one.
+     */
+    const { fixture } = mount();
+    const held = { staleness: Staleness.Held };
+    fixture.emit("rp1.available", true, held);
+    fixture.emit("rp1.budget", BUDGET, held);
+    fixture.emit("rp1.budgetBreakdown", BREAKDOWN, held);
+    fixture.emit("rp1.training", [], held);
+    fixture.emit("rp1.research", [], held);
+
+    await waitFor(() => {
+      expect(screen.getByText("FUNDS CHANGE")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("RP-1 has not sent a budget")).toBeNull();
+    expect(budgetRow("Facilities").textContent).toMatch(/3,100/);
+    expect(
+      budgetRow("Facilities").querySelector("[data-held-mark]"),
+    ).toBeInTheDocument();
+    const forecast = screen.getByRole("table", { name: "RP-1 funds forecast" });
+    expect(
+      within(forecast).getAllByRole("row")[5].querySelector("[data-held-mark]"),
+    ).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /4 crew members/ }),
+    );
+    expect(
+      screen
+        .getByRole("rowheader", { name: "Astronaut base cost" })
+        .closest("tr")
+        ?.querySelector("[data-held-mark]"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps a held budget up while RP-1 itself is still heard", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.budget", BUDGET, { staleness: Staleness.Held });
+
+    await waitFor(() => {
+      expect(screen.getByText("FUNDS CHANGE")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("RP-1 has not sent a budget")).toBeNull();
+    expect(
+      budgetRow("Balance").querySelector("[data-held-mark]"),
+    ).toBeInTheDocument();
   });
 
   it("shows the subsidy the clamp withheld only when it bit, and never as income", async () => {

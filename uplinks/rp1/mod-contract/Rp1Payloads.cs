@@ -3594,6 +3594,29 @@ public sealed class Rp1BudgetPeriod
     public double? Astronauts { get; set; }
 
     /// <summary>
+    /// The four upkeep rows together: the total RP-1's Budget tab adds the
+    /// subsidy to before clamping, which the tab itself never prints.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Upkeep { get; set; }
+
+    /// <summary>
+    /// <see cref="Upkeep"/> as it would be with no leader or strategy modifying
+    /// it: RP-1's seven raw upkeep costs over the horizon, before its currency
+    /// query.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? UpkeepBeforeModifiers { get; set; }
+
+    /// <summary>
+    /// What the career's leaders and strategies change in upkeep over the
+    /// horizon: <see cref="Upkeep"/> less <see cref="UpkeepBeforeModifiers"/>.
+    /// Positive when they save money, negative when they cost it.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? UpkeepModifiers { get; set; }
+
+    /// <summary>
     /// Avg. Subsidy: the subsidy averaged across the horizon, one sample a month,
     /// as reputation decays and the curve climbs. Positive.
     /// </summary>

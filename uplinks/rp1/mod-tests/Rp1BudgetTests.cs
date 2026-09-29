@@ -155,6 +155,51 @@ public class Rp1BudgetTests : IDisposable
     }
 
     [Fact]
+    public void The_upkeep_total_is_the_four_rows_the_tab_adds_the_subsidy_to()
+    {
+        ACareer();
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.StructureRepair] = 0.5;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.CrewTraining] = 3.0;
+
+        var raw = Read();
+
+        foreach (var period in new[] { raw.Day!, raw.Month!, raw.Year! })
+        {
+            var rows = period.Facilities!.Value + period.IntegrationTeams!.Value
+                + period.ResearchTeams!.Value + period.Astronauts!.Value;
+            Assert.Equal(rows, period.Upkeep!.Value, 6);
+        }
+    }
+
+    [Fact]
+    public void Upkeep_before_modifiers_is_the_raw_costs_and_the_modifiers_are_what_the_query_changed()
+    {
+        ACareer();
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.SalaryResearchers] = 0.5;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.CrewTraining] = 3.0;
+
+        var raw = Read();
+
+        var perDay = 100.0 + 200.0 + 300.0 + 400.0 + 50.0 + 25.0 + 10.0;
+        Assert.Equal(-perDay, raw.Day!.UpkeepBeforeModifiers!.Value, 9);
+        Assert.Equal(-perDay * 30, raw.Month!.UpkeepBeforeModifiers!.Value, 6);
+        Assert.Equal(-perDay * 365.25, raw.Year!.UpkeepBeforeModifiers!.Value, 6);
+
+        // Researchers at half pay save 200 a day; training at triple costs 20 more.
+        Assert.Equal(200.0 - 20.0, raw.Day.UpkeepModifiers!.Value, 9);
+        Assert.Equal((200.0 - 20.0) * 30, raw.Month.UpkeepModifiers!.Value, 6);
+    }
+
+    [Fact]
+    public void With_no_modifier_the_modifiers_are_zero_rather_than_absent()
+    {
+        ACareer();
+        var day = Read().Day!;
+        Assert.Equal(0.0, day.UpkeepModifiers!.Value, 9);
+        Assert.Equal(day.Upkeep!.Value, day.UpkeepBeforeModifiers!.Value, 9);
+    }
+
+    [Fact]
     public void Net_never_rises_above_zero_because_the_subsidy_only_pays_down_upkeep()
     {
         ACareer();

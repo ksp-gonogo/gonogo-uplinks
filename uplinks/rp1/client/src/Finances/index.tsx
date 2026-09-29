@@ -1,5 +1,6 @@
 import {
   combineReadings,
+  type FieldReading,
   isValue,
   type Reading,
   registerAugment,
@@ -34,7 +35,7 @@ import type {
   Rp1BudgetPeriod,
 } from "../__generated__/contract.js";
 import { FINANCES_SCREEN_ID } from "../AdminBuilding/financesScreen.js";
-import { current } from "../shared/current.js";
+import { latest } from "../shared/current.js";
 import { facilityLabel } from "../shared/facilityLabels.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
@@ -59,6 +60,7 @@ type Amount = Funds | FundsReading | null | undefined;
 type PeriodKey = Exclude<keyof Rp1BudgetPeriod, "span">;
 type Drill = "facilities" | "astronauts" | "programs";
 type BudgetReading = TopicReading<Rp1Budget>;
+type BreakdownReading = TopicReading<Rp1BudgetBreakdown>;
 
 interface BudgetRow {
   id: string;
@@ -75,6 +77,7 @@ const RP1_ROWS: readonly { key: PeriodKey; label: string; drill?: Drill }[] = [
   { key: "integrationTeams", label: "Integration Teams" },
   { key: "researchTeams", label: "Research Teams" },
   { key: "astronauts", label: "Astronauts", drill: "astronauts" },
+  { key: "upkeep", label: "Total upkeep" },
   { key: "subsidy", label: "Avg. Subsidy" },
   { key: "net", label: "Net (after subsidy)" },
   { key: "rollout", label: "Rollout / Airlaunch Prep" },
@@ -86,19 +89,23 @@ const RP1_ROWS: readonly { key: PeriodKey; label: string; drill?: Drill }[] = [
 
 /**
  * RP-1's finances: its own net over a day, a month and a year, the Budget tab's
- * rows with the lines under them, the subsidy reputation buys, Unlock Credit,
- * and the forecast to five years.
+ * rows with the lines under them, what leaders and strategies change in upkeep,
+ * the subsidy reputation buys, Unlock Credit, and the forecast to five years.
  *
  * <para>The body of the Administration Building's Finances screen. It draws no
  * funds balance: the building's balance rail sits directly above the tabs.</para>
+ *
+ * <para>Every figure is handed to the kit as its reading, so while RP-1 is not
+ * being heard the last budget it sent stays up with each figure marked held.</para>
  */
 export function Finances({ screenId }: { screenId: string }) {
-  const available = current(useTelemetry("rp1.available"));
+  const availableReading = useTelemetry("rp1.available");
+  const available = latest(availableReading);
   const budgetReading = useTelemetry("rp1.budget");
-  const budget = current(budgetReading);
-  const breakdown = current(useTelemetry("rp1.budgetBreakdown"));
-  const training = current(useTelemetry("rp1.training"));
-  const research = current(useTelemetry("rp1.research"));
+  const budget = latest(budgetReading);
+  const breakdownReading = useTelemetry("rp1.budgetBreakdown");
+  const training = latest(useTelemetry("rp1.training"));
+  const research = latest(useTelemetry("rp1.research"));
 
   const { ref, size } = useElementSize<HTMLDivElement>({
     w: 1024,
@@ -119,7 +126,11 @@ export function Finances({ screenId }: { screenId: string }) {
   return (
     <div ref={ref}>
       {budget === undefined ? (
-        <EmptyState>RP-1 has not sent a budget</EmptyState>
+        <EmptyState>
+          {availableReading.state === "held"
+            ? "RP-1 had sent no budget when the link dropped"
+            : "RP-1 has not sent a budget"}
+        </EmptyState>
       ) : (
         <Section gap="section-compact">
           <FundsChange budget={budgetReading} />
@@ -128,18 +139,19 @@ export function Finances({ screenId }: { screenId: string }) {
               <PeriodPicker picked={picked} onPick={setPicked} />
             )}
             <BudgetTable
-              breakdown={breakdown}
+              breakdown={breakdownReading}
               budget={budgetReading}
               courseNames={namesById(training, "id")}
               periods={periods}
             />
           </Section>
+          <Modifiers budget={budgetReading} />
           <Reputation budget={budgetReading} />
           <UnlockCredit
             budget={budgetReading}
             researchIdle={research !== undefined && research.length === 0}
           />
-          <Forecast budget={budget} />
+          <Forecast budget={budgetReading} />
         </Section>
       )}
     </div>
@@ -202,7 +214,7 @@ function BudgetTable({
   courseNames,
 }: Readonly<{
   budget: BudgetReading;
-  breakdown: Rp1BudgetBreakdown | undefined;
+  breakdown: BreakdownReading;
   periods: readonly Period[];
   courseNames: ReadonlyMap<string, string>;
 }>) {
@@ -251,7 +263,7 @@ function BudgetTable({
       caption="RP-1 budget by period"
       columns={columns}
       rowDetail={(row) =>
-        row.drill === undefined || breakdown === undefined ? null : (
+        row.drill === undefined || latest(breakdown) === undefined ? null : (
           <DrillDown
             breakdown={breakdown}
             courseNames={courseNames}
@@ -266,10 +278,12 @@ function BudgetTable({
   );
 }
 
+type Horizons = FieldReading<Rp1BudgetHorizons>;
+
 interface Line {
   id: string;
   label: ReactNode;
-  amounts: Rp1BudgetHorizons | null | undefined;
+  amounts: Horizons;
 }
 
 /** The lines under one Budget row, from `rp1.budgetBreakdown`. */
@@ -280,7 +294,7 @@ function DrillDown({
   courseNames,
 }: Readonly<{
   drill: Drill;
-  breakdown: Rp1BudgetBreakdown;
+  breakdown: BreakdownReading;
   periods: readonly Period[];
   courseNames: ReadonlyMap<string, string>;
 }>) {
@@ -300,7 +314,9 @@ function DrillDown({
         key: period,
         header: periodLabel(period),
         align: "end",
-        render: (line) => <Signed amount={line.amounts?.[period]} />,
+        render: (line) => (
+          <Signed amount={line.amounts[period] as FundsReading} />
+        ),
       }),
     ),
   ];
@@ -317,11 +333,16 @@ function DrillDown({
   );
 }
 
+/**
+ * The lines under one Budget row. Labels come from the payload and amounts from
+ * the same reading's fields, so a held line keeps its mark.
+ */
 function linesFor(
   drill: Drill,
-  breakdown: Rp1BudgetBreakdown,
+  reading: BreakdownReading,
   courseNames: ReadonlyMap<string, string>,
 ): { lines: Line[]; summary: string } {
+  const breakdown = latest(reading) ?? {};
   if (drill === "facilities") {
     const buildings = breakdown.buildings ?? [];
     const complexes = breakdown.complexes ?? [];
@@ -338,7 +359,7 @@ function linesFor(
         ...buildings.map((b, i) => ({
           id: `building:${b.facility ?? i}`,
           label: facilityLabel(b.facility ?? ""),
-          amounts: b.upkeep,
+          amounts: reading.buildings[i].upkeep,
         })),
         ...complexes.map((c, i) => ({
           id: `complex:${c.lcId ?? i}`,
@@ -350,7 +371,7 @@ function linesFor(
             ) : (
               named(c)
             ),
-          amounts: c.upkeep,
+          amounts: reading.complexes[i].upkeep,
         })),
       ],
     };
@@ -358,6 +379,12 @@ function linesFor(
   if (drill === "astronauts") {
     const crew = breakdown.crew ?? [];
     const courses = breakdown.courses ?? [];
+    // RP-1's Astronauts tab closes on these three, the row's own parts.
+    const subtotal = (
+      key: "astronautBase" | "astronautOperational" | "astronautTraining",
+      label: string,
+    ): Line[] =>
+      breakdown[key] == null ? [] : [{ id: key, label, amounts: reading[key] }];
     return {
       summary: `${count(crew.length, "crew member")}, ${count(courses.length, "course")}`,
       lines: [
@@ -371,8 +398,10 @@ function linesFor(
             ) : (
               k.name
             ),
-          amounts: k.cost,
+          amounts: reading.crew[i].cost,
         })),
+        ...subtotal("astronautBase", "Astronaut base cost"),
+        ...subtotal("astronautOperational", "Astronaut operational cost"),
         ...courses.map((c, i) => ({
           id: `course:${c.id ?? i}`,
           label: (
@@ -381,8 +410,9 @@ function linesFor(
               <Unit value={c.students} /> students
             </>
           ),
-          amounts: c.cost,
+          amounts: reading.courses[i].cost,
         })),
+        ...subtotal("astronautTraining", "Astronaut training cost"),
       ],
     };
   }
@@ -402,9 +432,38 @@ function linesFor(
           )}
         </>
       ),
-      amounts: p.funding,
+      amounts: reading.programs[i].funding,
     })),
   };
+}
+
+/**
+ * What the career's leaders and strategies change in upkeep a day, beside the
+ * upkeep as it would be without them. Both are RP-1's figures, carried whole,
+ * and named rather than signed as the funds change is.
+ */
+function Modifiers({ budget }: Readonly<{ budget: BudgetReading }>) {
+  const change = budget.day.upkeepModifiers as FundsReading;
+  const sign = magnitudeOf(change.value);
+  return (
+    <Section gap="related-dense" title="MODIFIERS">
+      <StatStrip>
+        <Stat label="Upkeep before modifiers, day">
+          <Unit
+            value={unsignedOf(budget.day.upkeepBeforeModifiers as FundsReading)}
+          />
+        </Stat>
+        <Stat
+          detail={
+            sign === null || sign === 0 ? undefined : sign > 0 ? "Saved" : "Added"
+          }
+          label="Leaders and strategies, day"
+        >
+          <Unit value={unsignedOf(change)} />
+        </Stat>
+      </StatStrip>
+    </Section>
+  );
 }
 
 /** The subsidy the reputation buys, its floor and cap, and what reputation loses. */
@@ -459,13 +518,14 @@ function UnlockCredit({
 }
 
 /** RP-1's net at each whole year to five, the furthest it forecasts. */
-function Forecast({ budget }: Readonly<{ budget: Rp1Budget }>) {
-  const years = (budget.forecast ?? []).flatMap((sample) => {
+function Forecast({ budget }: Readonly<{ budget: BudgetReading }>) {
+  const samples = latest(budget)?.forecast ?? [];
+  const years = samples.flatMap((sample, i) => {
     const horizon = magnitudeOf(sample.horizon);
     if (horizon === null) return [];
     const year = horizon / JULIAN_YEAR;
     if (Math.abs(year - Math.round(year)) > 1e-6) return [];
-    return [{ year: Math.round(year), sample }];
+    return [{ year: Math.round(year), change: budget.forecast[i].fundsDelta }];
   });
 
   type Point = (typeof years)[number];
@@ -480,7 +540,7 @@ function Forecast({ budget }: Readonly<{ budget: Rp1Budget }>) {
       key: "change",
       header: "Funds change",
       align: "end",
-      render: (p) => <Signed amount={p.sample.fundsDelta} />,
+      render: (p) => <Signed amount={p.change as FundsReading} />,
     },
   ];
 

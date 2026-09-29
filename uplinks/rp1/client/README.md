@@ -51,7 +51,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | --- | --- |
 | `Rp1BudgetForecastSample` | `fundsDelta` funds, `horizon` s |
 | `Rp1BudgetHorizons` | `day` funds, `month` funds, `year` funds |
-| `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds |
+| `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds, `upkeep` funds, `upkeepBeforeModifiers` funds, `upkeepModifiers` funds |
 | `Rp1BuildableComplex` | `eligible` flag, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `refusals` text |
 | `Rp1BuildingUpkeepEntry` | `facility` enum, `upkeep` Rp1BudgetHorizons |
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
@@ -167,7 +167,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 3 |  |
+| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 5 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 12 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |

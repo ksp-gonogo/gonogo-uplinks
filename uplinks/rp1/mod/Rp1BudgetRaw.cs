@@ -38,6 +38,9 @@ namespace GonogoRp1Uplink
         public double? IntegrationTeams;
         public double? ResearchTeams;
         public double? Astronauts;
+        public double? Upkeep;
+        public double? UpkeepBeforeModifiers;
+        public double? UpkeepModifiers;
         public double? Subsidy;
         public double? Net;
         public double? Rollout;

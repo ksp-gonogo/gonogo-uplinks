@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "An early RP-1 career (1960), two Programs running and a construction under way, as rp1.budget carries it. Every relation between the figures is RP-1's own: net is the four upkeep rows plus the subsidy clamped at zero, balance adds rollouts, constructions and Program funding, the Day subsidy is the current subsidy, and the fourth forecast point is the Year column's net. Payload data for the Finances screen's scenes; it names no widget, so it is not a render fixture."
+    "notes": "An early RP-1 career (1960), two Programs running and a construction under way, as rp1.budget carries it. Every relation between the figures is RP-1's own: net is the four upkeep rows plus the subsidy clamped at zero, balance adds rollouts, constructions and Program funding, the Day subsidy is the current subsidy, and the fourth forecast point is the Year column's net. Upkeep is the four upkeep rows together, and the career's leaders save 300 a day on it: upkeepModifiers is upkeep less upkeepBeforeModifiers. Payload data for the Finances screen's scenes; it names no widget, so it is not a render fixture."
   },
   "topic": "rp1.budget",
   "payload": {
@@ -12,6 +12,9 @@
       "integrationTeams": -2400.0,
       "researchTeams": -1700.0,
       "astronauts": -600.0,
+      "upkeep": -7800.0,
+      "upkeepBeforeModifiers": -8100.0,
+      "upkeepModifiers": 300.0,
       "subsidy": 6800.0,
       "net": -1000.0,
       "rollout": -150.0,
@@ -27,6 +30,9 @@
       "integrationTeams": -72000.0,
       "researchTeams": -51000.0,
       "astronauts": -18000.0,
+      "upkeep": -234000.0,
+      "upkeepBeforeModifiers": -243000.0,
+      "upkeepModifiers": 9000.0,
       "subsidy": 205000.0,
       "net": -29000.0,
       "rollout": -2100.0,
@@ -42,6 +48,9 @@
       "integrationTeams": -876600.0,
       "researchTeams": -620925.0,
       "astronauts": -219150.0,
+      "upkeep": -2848950.0,
+      "upkeepBeforeModifiers": -2958525.0,
+      "upkeepModifiers": 109575.0,
       "subsidy": 2610000.0,
       "net": -238950.0,
       "rollout": -12000.0,

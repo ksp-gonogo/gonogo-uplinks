@@ -93,7 +93,10 @@
       "rollout": "funds",
       "span": "s",
       "subsidy": "funds",
-      "unlockCredit": "funds"
+      "unlockCredit": "funds",
+      "upkeep": "funds",
+      "upkeepBeforeModifiers": "funds",
+      "upkeepModifiers": "funds"
     },
     "Rp1BuildCost": {
       "rolloutCost": "funds",

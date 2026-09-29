@@ -134,6 +134,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     span: "s",
     subsidy: "funds",
     unlockCredit: "funds",
+    upkeep: "funds",
+    upkeepBeforeModifiers: "funds",
+    upkeepModifiers: "funds",
   },
   "Rp1BuildCost": {
     rolloutCost: "funds",

@@ -1,33 +1,28 @@
 {
   "_scene": {
-    "hero": true,
+    "hero": false,
     "augment": "rp1-finances",
     "hostWidget": "strategies",
     "size": {
       "w": 9,
-      "h": 24
+      "h": 30
     },
-    "caption": "An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon",
+    "caption": "The Astronauts row opened: each crew member and course, closed on RP-1's base, operational and training costs",
     "before": [
       {
         "press": "Finances"
+      },
+      {
+        "press": "4 crew members, 1 course"
       },
       {
         "rest": true
       }
     ],
     "paints": [
-      "FUNDS CHANGE",
-      "BUDGET",
-      "Facilities",
-      "Total upkeep",
-      "Net (after subsidy)",
-      "Program Budget",
-      "Balance",
-      "MODIFIERS",
-      "REPUTATION AND SUBSIDY",
-      "UNLOCK CREDIT",
-      "FORECAST"
+      "Astronaut base cost",
+      "Astronaut operational cost",
+      "Astronaut training cost"
     ]
   },
   "_stream": {

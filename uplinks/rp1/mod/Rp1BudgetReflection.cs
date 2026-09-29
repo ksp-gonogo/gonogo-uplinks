@@ -31,6 +31,13 @@
  *       each through the Subsidy query, the reputation at which the ceiling is
  *       reached, and the decay per day and over a year, compounding monthly.
  *
+ * TWO FIGURES NO RP-1 SCREEN PRINTS, carried beside the tab's rows: the four
+ * upkeep rows' own total (the running sum RenderSummaryTab adds the subsidy to),
+ * and the same upkeep with no currency query run, from the seven raw
+ * MaintenanceHandler costs UpdateUpkeep builds. Their difference is what the
+ * career's Strategies change in upkeep: the only listener RP-1 registers on the
+ * currency query is the leader effect CurrencyModifier.
+ *
  * MAIN THREAD, AND WHY. Every one of those runs CurrencyModifierQueryRP0, which
  * fires GameEvents.Modifiers.OnCurrencyModifierQuery at every modifier in the
  * save, and several read Planetarium. See Rp1EconomyUpkeepQuery's header for
@@ -226,8 +233,13 @@ namespace GonogoRp1Uplink
                     Upkeep("SalaryCrew", Rp1Types.ReadDouble(maintenance, "NautInFlightUpkeepPerDay"), days)),
                 Upkeep("CrewTraining", Rp1Types.ReadDouble(maintenance, "TrainingUpkeepPerDay"), days));
 
+            // The running total RenderSummaryTab adds the subsidy to. The tab
+            // never prints it; it is carried so the operator has one upkeep figure.
+            var upkeep = Add(Add(facilities, integration), Add(research, astronauts));
+            var beforeModifiers = UpkeepBeforeModifiers(maintenance, days);
+
             var subsidy = Subsidy(span, days);
-            var net = Add(Add(Add(facilities, integration), Add(research, astronauts)), subsidy);
+            var net = Add(upkeep, subsidy);
             if (net != null)
             {
                 net = Math.Min(0d, net.Value);
@@ -245,6 +257,9 @@ namespace GonogoRp1Uplink
                 IntegrationTeams = integration,
                 ResearchTeams = research,
                 Astronauts = astronauts,
+                Upkeep = upkeep,
+                UpkeepBeforeModifiers = beforeModifiers,
+                UpkeepModifiers = upkeep == null || beforeModifiers == null ? null : upkeep.Value - beforeModifiers.Value,
                 Subsidy = subsidy,
                 Net = net,
                 Rollout = rollout,
@@ -254,6 +269,32 @@ namespace GonogoRp1Uplink
                 UnlockCredit = UnlockCreditAccrual(spaceCenter, credit, span),
             };
         }
+
+        /// <summary>
+        /// The same seven MaintenanceHandler costs the upkeep rows price, over the
+        /// period with no currency query run on them: what the upkeep would be
+        /// with no leader or strategy modifying it. Absent when any one is.
+        /// </summary>
+        private static double? UpkeepBeforeModifiers(object maintenance, double days)
+        {
+            double? sum = 0d;
+            foreach (var field in RawUpkeepFields)
+            {
+                sum = Add(sum, Rp1Types.ReadDouble(maintenance, field));
+            }
+            return sum == null ? null : Finite(-sum.Value * days);
+        }
+
+        private static readonly string[] RawUpkeepFields =
+        {
+            "FacilityUpkeepPerDay",
+            "LCsCostPerDay",
+            "IntegrationSalaryPerDay",
+            "ResearchSalaryPerDay",
+            "NautBaseUpkeepPerDay",
+            "NautInFlightUpkeepPerDay",
+            "TrainingUpkeepPerDay",
+        };
 
         /// <summary>One upkeep line over the period, priced after scaling as the tab prices it.</summary>
         private double? Upkeep(string reason, double? perDay, double days) =>

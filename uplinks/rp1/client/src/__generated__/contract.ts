@@ -3406,6 +3406,23 @@ export interface Rp1BudgetPeriod
 	/** Astronauts: crew salaries at base and in flight, plus training. */
 	astronauts?: Value<"funds"> | null;
 	/**
+	* The four upkeep rows together: the total RP-1's Budget tab adds the subsidy
+	* to before clamping, which the tab itself never prints.
+	*/
+	upkeep?: Value<"funds"> | null;
+	/**
+	* `Rp1BudgetPeriod.upkeep` as it would be with no leader or strategy modifying
+	* it: RP-1's seven raw upkeep costs over the horizon, before its currency
+	* query.
+	*/
+	upkeepBeforeModifiers?: Value<"funds"> | null;
+	/**
+	* What the career's leaders and strategies change in upkeep over the horizon:
+	* `Rp1BudgetPeriod.upkeep` less `Rp1BudgetPeriod.upkeepBeforeModifiers`.
+	* Positive when they save money, negative when they cost it.
+	*/
+	upkeepModifiers?: Value<"funds"> | null;
+	/**
 	* Avg. Subsidy: the subsidy averaged across the horizon, one sample a month,
 	* as reputation decays and the curve climbs. Positive.
 	*/
