@@ -2,6 +2,11 @@
   "version": 1,
   "engine": "chromium",
   "assets": {
+    "appoint-roster--default.png": {
+      "hash": "d25f933a73efa2fa",
+      "elements": 205,
+      "text": "4eaf658f"
+    },
     "assembly-empty--default.png": {
       "hash": "f2e3d081dbff4b88",
       "elements": 25,
@@ -178,9 +183,9 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "e3d1d6542d3e0af2",
-      "elements": 377,
-      "text": "4dc9e403"
+      "hash": "7a1197f415546a7f",
+      "elements": 394,
+      "text": "2ddbb68d"
     },
     "avionics-controls-locked--default.png": {
       "hash": "3dbd5bf3ab9597e9",
@@ -232,30 +237,35 @@
       "elements": 100,
       "text": "b6c63acd"
     },
+    "career-log--default.png": {
+      "hash": "183b7c9b8070edab",
+      "elements": 576,
+      "text": "b06bd4b3"
+    },
     "catalogue-picker--default.png": {
-      "hash": "601f71a0ad4bab8c",
-      "elements": 289,
-      "text": "6f683025"
+      "hash": "027019fd67881a58",
+      "elements": 290,
+      "text": "db3cd217"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "2fd90d3764898df9",
-      "elements": 304,
-      "text": "f472f0e7"
+      "hash": "698c8eab677d5c63",
+      "elements": 305,
+      "text": "540f9ef5"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "2fd90d3764898df9",
-      "elements": 304,
-      "text": "f472f0e7"
+      "hash": "698c8eab677d5c63",
+      "elements": 305,
+      "text": "540f9ef5"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "601f71a0ad4bab8c",
-      "elements": 289,
-      "text": "6f683025"
+      "hash": "027019fd67881a58",
+      "elements": 290,
+      "text": "db3cd217"
     },
     "completed-program--default.png": {
-      "hash": "4eb5ade3e23e86a5",
-      "elements": 290,
-      "text": "bd3bce46"
+      "hash": "8ba0b70f6814a021",
+      "elements": 291,
+      "text": "dd96516d"
     },
     "complexes-add-pad--default.png": {
       "hash": "0a66ae65b43e7465",
@@ -373,9 +383,9 @@
       "text": "9f625d5b"
     },
     "early-career--default.png": {
-      "hash": "cd5d3baaf68fe328",
-      "elements": 314,
-      "text": "3c440331"
+      "hash": "11a6ca2507761994",
+      "elements": 366,
+      "text": "56e20f64"
     },
     "facility-tiers-in-flight--default.png": {
       "hash": "d2c21c3500c96460",
@@ -408,24 +418,24 @@
       "text": "359423e1"
     },
     "link-down--default.png": {
-      "hash": "e523be729c240063",
-      "elements": 341,
-      "text": "281a5fbd"
+      "hash": "ce3d0704a6cc6c98",
+      "elements": 405,
+      "text": "037eb6ef"
     },
     "no-budget--default.png": {
-      "hash": "83eccca1b681b143",
+      "hash": "b7c5e3baf046dea1",
       "elements": 68,
-      "text": "6c2689f3"
+      "text": "444b73a8"
     },
     "no-curve-table--default.png": {
-      "hash": "4d29b560ab5fd59c",
-      "elements": 299,
-      "text": "57646ca1"
+      "hash": "4e69f3b272863d0f",
+      "elements": 300,
+      "text": "7de10fa6"
     },
     "offer-frontloaded--default.png": {
-      "hash": "2cf32753e83de67a",
-      "elements": 271,
-      "text": "e548a3f0"
+      "hash": "da9295ad0d3b2568",
+      "elements": 272,
+      "text": "18de225b"
     },
     "pad-holding-a-finished-vehicle--default.png": {
       "hash": "544bd2ae4aa2dd7c",
@@ -453,9 +463,9 @@
       "text": "ff71b6be"
     },
     "programs-screen--default.png": {
-      "hash": "b7bf929825e2b262",
+      "hash": "ac60f36aa9afd832",
       "elements": 138,
-      "text": "46aea2db"
+      "text": "0e847c22"
     },
     "research-queue-throttled-and-stalled--default.png": {
       "hash": "b9c3ae92883c1aeb",
@@ -468,19 +478,24 @@
       "text": "b7b5e65f"
     },
     "rp1-full-admin-building--default.png": {
-      "hash": "67ef727ef703cdec",
+      "hash": "feed1ee83d6ed479",
       "elements": 495,
-      "text": "f12612c4"
+      "text": "c8a448dd"
     },
     "running-backloaded--default.png": {
-      "hash": "2d33b21cf84d20d2",
-      "elements": 313,
-      "text": "eb614208"
+      "hash": "e1fa1c7d409846e0",
+      "elements": 314,
+      "text": "9071f2ea"
     },
     "running-overrun-ready--default.png": {
-      "hash": "622e91a4fca5e0d2",
-      "elements": 233,
-      "text": "37066812"
+      "hash": "d7d9dd4ddea826a8",
+      "elements": 234,
+      "text": "b755ee80"
+    },
+    "serving-leader--default.png": {
+      "hash": "24645d37055ab176",
+      "elements": 221,
+      "text": "08186232"
     },
     "start-research-affordable--default.png": {
       "hash": "63ba4cabfc23349e",
@@ -493,9 +508,9 @@
       "text": "5152f63c"
     },
     "subsidy-clamped--default.png": {
-      "hash": "0ddc808a47dc1ef9",
-      "elements": 537,
-      "text": "eefaeaf9"
+      "hash": "920b01edcabcc23d",
+      "elements": 556,
+      "text": "f4d1c133"
     },
     "tooling-nothing-outstanding--default.png": {
       "hash": "563cd0610231c70d",
