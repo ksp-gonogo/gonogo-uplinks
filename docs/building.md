@@ -65,6 +65,18 @@ node tooling/bundle-uplink-client.mjs scansat        # artifacts/<id>.client.js 
 node tooling/package-uplink-mod.mjs scansat          # artifacts/<GameData>.zip
 ```
 
+## Rig-only dev tools: `mod-devtools/`
+
+An Uplink may carry a `mod-devtools/` project: KSPAddons that poll a request cfg on a
+test rig and drive or read the mod in ways no headless test can, such as stamping a
+scan, boosting an antenna, or crediting science through the mod's own path. Each one
+reaches its mod and gonogo purely by reflection and references only the KSP and Unity
+assemblies, so it builds with neither installed. CI builds it (`devtools_csproj` in the
+matrix) so it cannot rot, and nothing packages it: deploy it by hand to
+`GameData/<AssemblyName>/Plugins`, where each tool reads its cfg from `PluginData`
+beside the DLL. A verdict worth testing headlessly is carved into a KSP-free file the
+Uplink's `mod-tests` compiles in, as realantennas does with `AntennaProbeVerdicts.cs`.
+
 ## The minSize gate only answers honestly on Linux
 
 `minsize-gate.mjs` measures clipping in PIXELS, so macOS and Linux disagree at the

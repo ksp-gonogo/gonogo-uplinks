@@ -18,6 +18,7 @@ on:
       mod_csproj: { required: true, type: string }
       tests_csproj: { required: true, type: string }
       codegen_csproj: { required: true, type: string }
+      devtools_csproj: { required: false, type: string, default: "" }
       typecheck: { required: true, type: boolean }
       test: { required: true, type: boolean }
       bundle: { required: true, type: boolean }
@@ -228,6 +229,12 @@ jobs:
       - name: Build the release pair
         if: inputs.publish
         run: node tooling/release-uplink.mjs "${{ inputs.name }}"
+
+      # Rig-only tools that reach their mod by reflection. Nothing packages them,
+      # so this build is the only thing that notices when one stops compiling.
+      - name: Build dev tools
+        if: inputs.devtools_csproj != '' && !inputs.publish
+        run: dotnet build "${{ inputs.devtools_csproj }}" -c Release --nologo
 
       - name: Test mod
         if: inputs.tests_csproj != ''

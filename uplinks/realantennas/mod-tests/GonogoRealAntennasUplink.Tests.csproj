@@ -71,6 +71,14 @@
     <Compile Include="..\mod\RealAntennasManifest.cs" />
   </ItemGroup>
 
+  <!-- The dev-only antenna boost's standing-boost verdict. It names no KSP or
+       RealAntennas type, so AntennaProbeVerdictsTests runs headlessly; the same
+       tests read the addon's own source to pin the checks that keep the verdict
+       honest. -->
+  <ItemGroup>
+    <Compile Include="..\mod-devtools\AntennaProbeVerdicts.cs" />
+  </ItemGroup>
+
   <!-- RaRouting.cs is the RA route between two nodes, carved out of
        RaCommsBackend so a headless test can enter it: the backend itself needs
        RaReflection and a live vessel, while the route names only CommNet's

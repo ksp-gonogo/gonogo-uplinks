@@ -83,6 +83,8 @@ const legs = readdirSync(UPLINKS, { withFileTypes: true })
       contract_csproj: csproj("mod-contract"),
       codegen_csproj: csproj("mod-contract-codegen"),
       tests_csproj: csproj("mod-tests"),
+      /** Dev-only rig tooling: built so it cannot rot, never packaged. */
+      devtools_csproj: csproj("mod-devtools"),
       typecheck: scripts.includes("typecheck"),
       test: scripts.includes("test"),
       bundle: clientManifest !== null,

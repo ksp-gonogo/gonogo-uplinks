@@ -61,6 +61,7 @@ jobs:
       mod_csproj: ${{ matrix.mod_csproj }}
       tests_csproj: ${{ matrix.tests_csproj }}
       codegen_csproj: ${{ matrix.codegen_csproj }}
+      devtools_csproj: ${{ matrix.devtools_csproj }}
       typecheck: ${{ matrix.typecheck }}
       test: ${{ matrix.test }}
       bundle: ${{ matrix.bundle }}
