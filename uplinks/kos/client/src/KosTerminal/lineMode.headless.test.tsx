@@ -776,11 +776,11 @@ describe("KosTerminal line mode: no comms path (kos-nopath-block-input fix)", ()
     // Connected (or unreported): the normal accent tone, never the danger
     // one: a green/accent outline is what let this bug through unnoticed.
     expect(compositionBorderRule()).toContain("--color-accent-fg");
-    expect(compositionBorderRule()).not.toContain("--color-status-nogo-fg");
+    expect(compositionBorderRule()).not.toContain("--color-nogo-");
 
     act(() => f.emit("comms.link", { connected: false }));
     await waitFor(() =>
-      expect(compositionBorderRule()).toContain("--color-status-nogo-fg"),
+      expect(compositionBorderRule()).toContain("--color-nogo-"),
     );
     expect(compositionBorderRule()).not.toContain("--color-accent-fg");
 
@@ -788,7 +788,7 @@ describe("KosTerminal line mode: no comms path (kos-nopath-block-input fix)", ()
     await waitFor(() =>
       expect(compositionBorderRule()).toContain("--color-accent-fg"),
     );
-    expect(compositionBorderRule()).not.toContain("--color-status-nogo-fg");
+    expect(compositionBorderRule()).not.toContain("--color-nogo-");
   });
 
   // Bug 2: the outline alone doesn't say WHY the box turned red, operators

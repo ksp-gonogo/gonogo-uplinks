@@ -28,6 +28,24 @@ function sample(ut: number, ambient = 0, shielded = 0): RadiationSample {
 }
 
 /**
+ * The colour declaration styled-components injected for an element's own
+ * class, read from the document's stylesheets since jsdom does not resolve
+ * custom properties.
+ */
+function colourRule(el: HTMLElement): string {
+  const css = Array.from(document.querySelectorAll("style"))
+    .map((s) => s.textContent ?? "")
+    .join("\n");
+  for (const c of Array.from(el.classList)) {
+    if (c.startsWith("sc-")) continue;
+    const escaped = c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const rule = css.match(new RegExp(`\\.${escaped}[^{]*{([^}]*)}`));
+    if (rule) return rule[1];
+  }
+  return "";
+}
+
+/**
  * The unmeasured-arm hole. `toRadPerHourSeries` drops a sample the picked arm
  * did not measure, and its own comment claimed "a gap in the trace reads as a
  * gap": it did not, because nothing set `LineGraph.breaks` and the stroke
@@ -252,8 +270,8 @@ describe("RadiationSection", () => {
       />,
     );
     const quietAmbient = screen.getByText("Ambient", { exact: false });
-    // No alarm styling in quiet cruise: the warning-tone override is absent.
-    expect(quietAmbient.getAttribute("style")).toBeNull();
+    // No alarm styling in quiet cruise.
+    expect(colourRule(quietAmbient)).not.toContain("--color-warn-text");
     quiet.unmount();
 
     render(
@@ -268,9 +286,7 @@ describe("RadiationSection", () => {
       />,
     );
     const hotAmbient = screen.getByText("Ambient", { exact: false });
-    expect(hotAmbient.getAttribute("style")).toContain(
-      "--color-status-warning-fg-muted",
-    );
+    expect(colourRule(hotAmbient)).toContain("--color-warn-text");
   });
 
   it("rounds dose readouts to magnitude-aware decimals, not a fixed four", () => {

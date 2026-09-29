@@ -89,9 +89,9 @@ export function Centre({
       <Cluster gap="related-packed" wrap>
         <Text weight="semibold">{name}</Text>
         <Inline gap="related-packed">
-          {centre.isActive === true && <Badge severity="info">ACTIVE</Badge>}
+          {centre.isActive === true && <Badge tone="info">ACTIVE</Badge>}
           {unassigned !== null && unassigned > 0 && (
-            <Badge severity="caution">{unassigned} IDLE</Badge>
+            <Badge tone="caution">{unassigned} IDLE</Badge>
           )}
         </Inline>
       </Cluster>
@@ -122,7 +122,7 @@ export function Centre({
         // pads" line a complex draws for its own empty case: RP-1 starts a
         // career with a hangar and no pad complex at all, so the zero is a real
         // early-career state and not a widget that failed to draw.
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           no launch complexes
         </Text>
       ) : (

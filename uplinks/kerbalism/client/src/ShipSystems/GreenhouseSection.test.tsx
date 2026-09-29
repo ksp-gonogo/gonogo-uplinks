@@ -121,14 +121,14 @@ describe("GreenhouseSection: radiation-too-high badge", () => {
     // `Badge.test.tsx`'s own "applies a different class for different
     // tones" case already uses.
     const { unmount: unmountWarning } = render(
-      <Badge severity="warning" size="sm">
+      <Badge tone="warn" size="sm">
         ref
       </Badge>,
     );
     const warningClass = screen.getByText("ref").className;
     unmountWarning();
     const { unmount: unmountCritical } = render(
-      <Badge severity="critical" size="sm">
+      <Badge tone="nogo" size="sm">
         ref
       </Badge>,
     );

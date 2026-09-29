@@ -159,7 +159,9 @@ function useActiveVesselBodyName(): string | undefined {
   return useMemo(() => {
     const index = identity?.parentBodyIndex;
     if (index == null) return undefined;
-    return systemBodies?.bodies.find((b) => b.index === index)?.name ?? undefined;
+    return (
+      systemBodies?.bodies.find((b) => b.index === index)?.name ?? undefined
+    );
   }, [identity, systemBodies]);
 }
 
@@ -215,9 +217,7 @@ function ScanningComponent({
           biome ? (
             <Section key="biome">
               <Card>
-                <Text size="sm" tone="default">
-                  Biome: {biome}
-                </Text>
+                <Text size="sm">Biome: {biome}</Text>
               </Card>
             </Section>
           ) : null,
@@ -232,11 +232,7 @@ function ScanningComponent({
             {bodyName ? (
               <Stack gap="caption">
                 {DISPLAY_SCAN_TYPES.map((type) => (
-                  <CoverageRow
-                    key={type}
-                    bodyName={bodyName}
-                    scanType={type}
-                  />
+                  <CoverageRow key={type} bodyName={bodyName} scanType={type} />
                 ))}
               </Stack>
             ) : (
@@ -264,17 +260,17 @@ function ScanningComponent({
                             drawn as "(unnamed)". */}
                         <Text
                           size="sm"
-                          tone={v.vesselName == null ? "muted" : "default"}
+                          level={v.vesselName == null ? "muted" : undefined}
                         >
                           {v.vesselName == null
                             ? NULL_DISPLAY
                             : v.vesselName || "(unnamed)"}
                         </Text>
-                        <Text size="xs" tone="muted">
+                        <Text size="xs" level="muted">
                           {v.body}
                         </Text>
                       </Cluster>
-                      <Text size="xs" tone="muted">
+                      <Text size="xs" level="muted">
                         sub-point <Unit value={v.subLatitude} decimals={2} />,{" "}
                         <Unit value={v.subLongitude} decimals={2} /> · alt{" "}
                         {/* Pinned to km rather than left to the ladder: this
@@ -295,15 +291,14 @@ function ScanningComponent({
                               gap="caption"
                             >
                               <Cluster>
-                                <Text size="xs" tone="default">
-                                  {SCAN_TYPE_LABELS[s.type] ??
-                                    `type=${s.type}`}
+                                <Text size="xs">
+                                  {SCAN_TYPE_LABELS[s.type] ?? `type=${s.type}`}
                                 </Text>
                                 <Badge
                                   size="sm"
-                                  severity={
+                                  tone={
                                     s.bestRange
-                                      ? "nominal"
+                                      ? "go"
                                       : s.inRange
                                         ? "info"
                                         : undefined
@@ -316,7 +311,7 @@ function ScanningComponent({
                                       : "out of range"}
                                 </Badge>
                               </Cluster>
-                              <Text size="xs" tone="muted">
+                              <Text size="xs" level="muted">
                                 FoV <Unit value={s.fov} decimals={1} /> · alt{" "}
                                 <Unit
                                   value={s.minAlt}
@@ -361,14 +356,14 @@ function ScanningComponent({
                     key={`${a.name}-${magnitudeOf(a.latitude)}`}
                     cols="1fr auto"
                   >
-                    <Text size="xs" tone={a.known ? "default" : "muted"}>
+                    <Text size="xs" level={a.known ? undefined : "muted"}>
                       {a.detail
                         ? a.name
                         : a.known
                           ? "(unknown)"
                           : "(undetected)"}
                     </Text>
-                    <Text size="xs" tone="muted">
+                    <Text size="xs" level="muted">
                       {a.known ? (
                         <>
                           <Unit value={a.latitude} decimals={2} />,{" "}
@@ -407,14 +402,12 @@ function CoverageRow({
   const coverage = typeof pct === "number" ? pct : null;
   return (
     <Grid cols="120px 1fr 60px" gap="related-comfortable">
-      <Text size="xs" tone="default">
-        {SCAN_TYPE_LABELS[scanType]}
-      </Text>
+      <Text size="xs">{SCAN_TYPE_LABELS[scanType]}</Text>
       {/* No bar for an unread coverage: `ProgressBar` takes a number, and the
           only number available would be the 0 that reads as "nothing scanned
           here". An empty cell says nothing, which is the truth. */}
       {coverage == null ? (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {NULL_DISPLAY}
         </Text>
       ) : (
@@ -423,7 +416,7 @@ function CoverageRow({
           ariaLabel={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
         />
       )}
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Unit
           value={coverage == null ? null : value("%", coverage)}
           decimals={1}

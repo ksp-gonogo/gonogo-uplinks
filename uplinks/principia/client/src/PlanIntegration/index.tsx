@@ -188,7 +188,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
         )}
       </Row>
       {shortfall !== null && shortfall > 0 && (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           {"Stopped "}
           <Countdown value={shortfall} />
           {" short of the requested end."}
@@ -317,7 +317,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
       </Row>
       {/* The remedy, said where the failure is read rather than in a manual.
           Raising it costs integration time and nothing else. */}
-      <Text tone="faint" size="sm">
+      <Text level="faint" size="sm">
         Raise this when the plan stops short of its requested end.
       </Text>
       {/* Why the readout above is the absent token while the control beside it
@@ -353,16 +353,16 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
       {nothingWasWritten(lastWrite) && (
         <Stack gap="caption" role="status" aria-live="polite">
           <Cluster justify="start">
-            <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
+            <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
           </Cluster>
           {lastWrite.replayed === true ? (
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               This matched a request already sent, so the mod answered with the
               earlier receipt instead of writing again. The plan still holds
               whatever the last write that DID land put there.
             </Text>
           ) : (
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               {planWriteRefusalLine(lastWrite)}
             </Text>
           )}
@@ -372,7 +372,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
       {/* Once, under both, because it is one gate and repeating it beside each
           control would say the same thing twice. */}
       {frozenReason !== null && (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           {frozenReason}
         </Text>
       )}

@@ -345,7 +345,7 @@ function Student({
       onClick={onToggle}
       size="sm"
       title={candidate.refusal?.sentence}
-      tone={candidate.refusal === null ? "neutral" : "nogo"}
+      tone={candidate.refusal === null ? undefined : "nogo"}
     >
       {candidate.name}
       {candidate.refusal !== null && ` · ${candidate.refusal.tag}`}

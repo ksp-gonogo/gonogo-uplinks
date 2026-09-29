@@ -28,7 +28,7 @@ import {
   FieldLabel,
   filterComboboxOptions,
   flattenComboboxGroups,
-  GhostButton,
+  Button,
   groupComboboxOptions,
   type InFlightListItem,
   Input,
@@ -974,7 +974,7 @@ function KosTerminalScreen({
           background: "var(--color-surface-panel)",
           foreground: "var(--color-text-primary)",
           cursor: "var(--color-accent-fg)",
-          selectionBackground: "var(--color-status-go-bg)",
+          selectionBackground: "var(--color-go-status)",
         },
         fontFamily: "monospace",
         fontSize: TERMINAL_FONT_PX,
@@ -1304,10 +1304,7 @@ function KosTerminalScreen({
           `tone` is the widget's whole colour decision, and nothing paints with
           it directly: it declares the accent that the composition bar's border,
           its prompt and its caret all read. Green is the terminal's and stays.
-          A read-only screen takes `info`, which is the fact the old `Container`
-          border was already carrying, now said in the READABLE half of the info
-          pair: that border was drawn in `--color-status-info-bg`, a near-black
-          that said it to nobody.
+          A read-only screen takes `info`.
 
           The queue is derived from the LIVE route, so it has nothing to keep
           drawing once the reading behind it is gone: no
@@ -1444,7 +1441,7 @@ function KosTerminalScreen({
         )}
         {screenHeld && (
           <HeldCorner role="status">
-            <Badge severity="caution">HELD</Badge>
+            <Badge tone="caution">HELD</Badge>
           </HeldCorner>
         )}
         {onChangeCpu && (
@@ -1653,10 +1650,10 @@ const CpuPicker = styled.div`
   padding: var(--inset-tile-message);
 `;
 
-// Larger, icon-leading CPU buttons. Composes the ui-kit GhostButton,
+// Larger, icon-leading CPU buttons. Composes the ui-kit ghost Button,
 // enlarging its hit area and pairing the label with a decorative computer
 // icon.
-const CpuPicker__Button = styled(GhostButton)`
+const CpuPicker__Button = styled(Button).attrs({ variant: "ghost" })`
   display: inline-flex;
   align-items: center;
   gap: var(--gap-related);
@@ -1672,7 +1669,7 @@ const CpuPicker__Button = styled(GhostButton)`
 
 // Steady-state warning while `comms.link.connected === false`: a confirmed
 // line-of-sight loss, not merely "no link data yet" (see `noPath`'s own doc
-// comment). Error/danger tone (the same `--color-status-nogo-*` pair
+// comment). Error/danger tone (the same `--color-nogo-*` pair
 // `CommSignal` uses for its "lost" state) so it reads unambiguously as a
 // blocking condition, not an informational badge like `DelayBadge` below it.
 // Pinned inside `Console`'s scrollback surface, top-left. It used to share this
@@ -1697,9 +1694,9 @@ const NoPathBadge = styled.div`
   font-family: monospace;
   font-size: var(--font-size-caption);
   font-weight: bold;
-  color: var(--color-status-nogo-on-bg);
-  background: var(--color-status-nogo-bg);
-  border: 1px solid var(--color-status-nogo-on-bg);
+  color: var(--color-nogo-on-status);
+  background: var(--color-nogo-status);
+  border: 1px solid var(--color-nogo-on-status);
   border-radius: var(--radius-regular);
   max-width: 50%;
   overflow: hidden;
@@ -1721,7 +1718,7 @@ const HeldCorner = styled.div`
  * badges leave free, so it never adds a flex row that could push the
  * composition bar past the widget's visible bounds.
  */
-const ChangeCpuButton = styled(GhostButton)`
+const ChangeCpuButton = styled(Button).attrs({ variant: "ghost" })`
   position: absolute;
   bottom: var(--inset-log);
   right: var(--inset-log);

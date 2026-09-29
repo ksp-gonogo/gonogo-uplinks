@@ -150,34 +150,37 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
         <SubjectHeading
           status={
             isOmni ? (
-              <Text size="xs" tone="muted" style={LABEL_STYLE}>
+              <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Omni
               </Text>
             ) : null
           }
         >
-          <Text size="sm" tone="default">
-            {antennaName}
-          </Text>
+          <Text size="sm">{antennaName}</Text>
         </SubjectHeading>
 
         {/* The antenna's own facts. Tech level sits here rather than beside the
             name: it is a property of the hardware, and the heading's status slot
             is for what an antenna is currently doing. */}
-        <Grid cols="auto 1fr" gap="section-compact" rowGap="related-dense" align="baseline">
+        <Grid
+          cols="auto 1fr"
+          gap="section-compact"
+          rowGap="related-dense"
+          align="baseline"
+        >
           {antenna.techLevel != null ? (
             <>
-              <Text size="xs" tone="muted" style={LABEL_STYLE}>
+              <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Tech level
               </Text>
-              <Text size="sm" tone="default">
+              <Text size="sm">
                 <Unit value={antenna.techLevel} />
               </Text>
             </>
           ) : null}
           {!isOmni ? (
             <>
-              <Text size="xs" tone="muted" style={LABEL_STYLE}>
+              <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Aimed at
               </Text>
               {/*
@@ -187,7 +190,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               */}
               <Text
                 size="sm"
-                tone={antenna.targeted === true ? "default" : "muted"}
+                level={antenna.targeted === true ? undefined : "muted"}
               >
                 {antenna.targeted === true
                   ? antenna.targetLabel
@@ -199,10 +202,10 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
           ) : null}
           {!isOmni && magnitudeOf(antenna.cone10Db) !== null ? (
             <>
-              <Text size="xs" tone="muted" style={LABEL_STYLE}>
+              <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Beam
               </Text>
-              <Text size="sm" tone="default">
+              <Text size="sm">
                 <Unit value={antenna.cone10Db} />
               </Text>
             </>
@@ -217,7 +220,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
             card beside a stated reason is honest where a live-looking one that
             swallows the press is not.
           */
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             RealAntennas would not say whether this antenna can be aimed, so the
             targeting controls are held.
           </Text>

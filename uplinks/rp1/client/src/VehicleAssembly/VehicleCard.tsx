@@ -99,7 +99,7 @@ export function VehicleCard({
       }
       name={name}
       progress={progressOf(item, name, operation)}
-      tone={settled(item, waiting, operation) ? "go" : "warning"}
+      tone={settled(item, waiting, operation) ? "go" : "warn"}
     >
       <TimeLeft complex={complex} item={item} operation={operation} />
       <ComplexRate complex={complex} />
@@ -109,7 +109,7 @@ export function VehicleCard({
         // every vehicle it creates, so a card without one came out of a save
         // written before it did; guessing a target from the name would pick the
         // wrong one of two vehicles that share it.
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {NULL_DISPLAY} RP-1 has no id for this vehicle
         </Text>
       ) : (
@@ -194,7 +194,7 @@ function TimeLeft({
       return null;
     }
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Countdown value={operation.timeLeftSeconds} />{" "}
         {operation.type === "Rollback"
           ? "until it is back in the warehouse"
@@ -214,14 +214,14 @@ function TimeLeft({
   }
   if (build.timeLeftSeconds !== undefined && build.timeLeftSeconds !== null) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Countdown value={build.timeLeftSeconds} /> until integration finishes
       </Text>
     );
   }
   if (build.stalled === true) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {unstaffed(complex)
           ? `Integration cannot start: nobody is assigned to ${complex?.name ?? "this complex"}.`
           : "Integration is stalled and has no end date."}
@@ -243,13 +243,13 @@ function TimeLeft({
    */
   if (build.progress == null) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {NULL_DISPLAY} RP-1 has not said how far along this build is.
       </Text>
     );
   }
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       {NULL_DISPLAY} RP-1 has not costed this build yet.
     </Text>
   );
@@ -286,12 +286,12 @@ function ComplexRate({
      * a badge on a line that cannot wrap is one an operator never sees.
      */
     <Cluster gap="related-packed" justify="start" wrap>
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Unit value={complex.engineers} /> /{" "}
         <Unit value={complex.maxEngineers} /> engineers
       </Text>
       {complex.isRushing === true ? (
-        <Badge severity="caution">RUSHING</Badge>
+        <Badge tone="caution">RUSHING</Badge>
       ) : null}
     </Cluster>
   );
@@ -313,21 +313,21 @@ function VehicleState({
 }>) {
   if (operation?.type === "Rollout") {
     return atPad(operation) ? (
-      <Badge severity="nominal">AT PAD</Badge>
+      <Badge tone="go">AT PAD</Badge>
     ) : (
-      <Badge severity="caution">ROLLING OUT</Badge>
+      <Badge tone="caution">ROLLING OUT</Badge>
     );
   }
   if (operation?.type === "Rollback") {
-    return <Badge severity="caution">ROLLING BACK</Badge>;
+    return <Badge tone="caution">ROLLING BACK</Badge>;
   }
   if (!waiting) {
-    return <Badge severity="nominal">BUILT</Badge>;
+    return <Badge tone="go">BUILT</Badge>;
   }
   if ((item as Rp1BuildItemEntry).stalled === true) {
-    return <Badge severity="caution">STALLED</Badge>;
+    return <Badge tone="caution">STALLED</Badge>;
   }
-  return <Badge severity="caution">INTEGRATING</Badge>;
+  return <Badge tone="caution">INTEGRATING</Badge>;
 }
 
 /**
@@ -449,7 +449,7 @@ function VehicleActions({
       </Cluster>
 
       {withheld !== null && (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {NULL_DISPLAY} cannot roll out: {withheld}
         </Text>
       )}
@@ -476,7 +476,7 @@ function RolloutPrice({
   bill,
 }: Readonly<{ bill: Rp1WarehouseItemEntry["rolloutCost"] }>) {
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       {bill == null ? (
         <>{NULL_DISPLAY} RP-1 has not priced this rollout</>
       ) : (

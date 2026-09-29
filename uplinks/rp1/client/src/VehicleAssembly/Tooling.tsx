@@ -128,8 +128,13 @@ export function ToolingSection() {
           is not: the fuzzy match makes RP-1's figure the smaller number by
           however much one size covers another. */}
       {outstanding > 0 && (
-        <Cluster gap="related-dense" justify="start" wrap data-tooling-header="">
-          <Text size="sm" tone="muted">
+        <Cluster
+          gap="related-dense"
+          justify="start"
+          wrap
+          data-tooling-header=""
+        >
+          <Text size="sm" level="muted">
             Tool all{" "}
             {tooling.toolAllCost == null ? (
               NULL_DISPLAY
@@ -235,12 +240,10 @@ function PurchaseCard({
 }>) {
   return (
     <ProjectCard
-      badge={
-        purchase.tooled ? <Badge severity="nominal">Tooled</Badge> : undefined
-      }
+      badge={purchase.tooled ? <Badge tone="go">Tooled</Badge> : undefined}
       detail={purchase.size}
       name={purchase.heading}
-      tone={purchase.tooled ? "go" : "warning"}
+      tone={purchase.tooled ? "go" : "warn"}
     >
       {/* The once-off price, and only where there is one to pay. An owned
           tooling priced at zero would read as a purchase that happens to be
@@ -312,7 +315,7 @@ function PartCharge({
   if (owned || part.untooledSurcharge == null) {
     return (
       <Row as="div" nested wrap>
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {name}
         </Text>
       </Row>
@@ -321,7 +324,7 @@ function PartCharge({
   return (
     <Stack gap="caption">
       <Row as="div" nested wrap data-tooling-per-build="">
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {name} · <Unit value={part.untooledSurcharge} decimals={0} /> per
           build
         </Text>
@@ -392,7 +395,7 @@ function RefitControl({
           The reach is a FACT about what the press does, so it is stated in the
           same muted line as the money.
         */}
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           costs nothing, and drops the{" "}
           <Unit value={part.untooledSurcharge} decimals={0} /> per build
           {others === null ? (

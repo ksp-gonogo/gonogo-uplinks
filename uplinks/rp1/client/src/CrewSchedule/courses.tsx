@@ -140,12 +140,12 @@ function Course({
         <SubjectHeading
           align="start"
           status={
-            <Badge severity={started ? "nominal" : "caution"} size="sm">
+            <Badge tone={started ? "go" : "caution"} size="sm">
               {started ? "TRAINING" : "NOT STARTED"}
             </Badge>
           }
         >
-          <Text size="base" tone="default" weight="semibold">
+          <Text size="base" weight="semibold">
             {titleOf(course)}
           </Text>
         </SubjectHeading>

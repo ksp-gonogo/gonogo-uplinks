@@ -22,11 +22,7 @@ import type {
   PrincipiaAnalysis,
   PrincipiaCoastAnalysis,
 } from "../__generated__/contract.js";
-import {
-  datedBy,
-  HeldTag,
-  OrbitAnalysisRows,
-} from "../OrbitAnalysis/index.js";
+import { datedBy, HeldTag, OrbitAnalysisRows } from "../OrbitAnalysis/index.js";
 import { orbitDescription } from "../orbitDescription.js";
 import { PRINCIPIA } from "../uplink.js";
 // Side-effect import: hydrates this Topic's units at decode time.
@@ -86,16 +82,16 @@ function CoastRow({
         // could not compute has no valid initial state to analyse from, so the
         // producer has nothing to describe, and a blank row would read as a
         // coast in no particular orbit.
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           {coast.analysis == null
             ? "no analysis for this coast"
             : "orbit not described"}
         </Text>
       ) : (
-        <Badge severity="info">{description.toUpperCase()}</Badge>
+        <Badge tone="info">{description.toUpperCase()}</Badge>
       )}
       {duration !== null && (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           <Countdown value={dated(value("s", duration))} />
         </Text>
       )}
@@ -156,9 +152,9 @@ export function CoastAnalysisSection() {
         <SectionTitle>PLANNED ORBITS</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start">
-            <Badge severity="caution">ANALYSIS NOT OBSERVED</Badge>
+            <Badge tone="caution">ANALYSIS NOT OBSERVED</Badge>
           </Cluster>
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             No n-body analysis has reached this console for the active craft.
           </Text>
         </Stack>
@@ -172,7 +168,7 @@ export function CoastAnalysisSection() {
         <SectionTitle>PLANNED ORBITS</SectionTitle>
         {/* A positive observation of no plan, not silence about one. */}
         <Cluster justify="start" gap="related-dense">
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             No flight plan, so no planned orbits.
           </Text>
           {reading.state === "held" && <HeldTag />}

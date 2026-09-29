@@ -122,9 +122,9 @@ export function PlanSlots() {
         <SectionTitle>PLAN SLOTS</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start">
-            <Badge severity="caution">NO PLAN READING</Badge>
+            <Badge tone="caution">NO PLAN READING</Badge>
           </Cluster>
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {view.reason}
           </Text>
         </Stack>
@@ -201,33 +201,31 @@ export function PlanSlots() {
               minus one and a badge reading "PLAN 0 OF 0" beside the badge that
               says there is no plan is a second, worse way of saying so. */}
           {planExists ? (
-            <Badge severity="info">
+            <Badge tone="info">
               {`PLAN ${(magnitudeOf(plan.selectedPlan) ?? -1) + 1} OF ${planCount}`}
             </Badge>
           ) : (
-            <Badge severity="caution">NO PLAN ON THIS VESSEL</Badge>
+            <Badge tone="caution">NO PLAN ON THIS VESSEL</Badge>
           )}
           {slotsFull && (
-            <Badge severity="warning">{`SLOTS FULL AT ${MAX_FLIGHT_PLANS}`}</Badge>
+            <Badge tone="warn">{`SLOTS FULL AT ${MAX_FLIGHT_PLANS}`}</Badge>
           )}
           {plan.optimisationRunning === true && (
-            <Badge severity="warning">OPTIMISING</Badge>
+            <Badge tone="warn">OPTIMISING</Badge>
           )}
           {armed ? (
-            <Badge severity="nominal">ARMED</Badge>
+            <Badge tone="go">ARMED</Badge>
           ) : (
-            <Badge severity="caution">NOT ARMED</Badge>
+            <Badge tone="caution">NOT ARMED</Badge>
           )}
-          {outOfContact !== null && (
-            <Badge severity="warning">OUT OF CONTACT</Badge>
-          )}
+          {outOfContact !== null && <Badge tone="warn">OUT OF CONTACT</Badge>}
         </Cluster>
 
         {/* The mod's own sentence, not one composed here: it names the guard
             that is standing in the way, and for a craft with no plan it says
             which write is the one available. */}
         {surface?.reason && (
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {surface.reason}
           </Text>
         )}
@@ -235,7 +233,7 @@ export function PlanSlots() {
         {/* Beside the badge rather than instead of it: the badge catches the
             eye and the sentence says which of the three things to check. */}
         {outOfContact !== null && (
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {outOfContact}
           </Text>
         )}
@@ -295,7 +293,7 @@ export function PlanSlots() {
           <Stack gap="caption">
             <SectionTitle>NEW PLAN ENDS AT</SectionTitle>
             {endUt === null ? (
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 No view clock, so there is no instant to measure a plan's end
                 against.
               </Text>
@@ -377,16 +375,16 @@ export function PlanSlots() {
         {nothingWasWritten(lastWrite) && (
           <Stack gap="caption" role="status" aria-live="polite">
             <Cluster justify="start">
-              <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
+              <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
             </Cluster>
             {lastWrite.replayed === true ? (
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 This matched a request already sent, so the mod answered with
                 the earlier receipt instead of writing again. The slot still
                 holds whatever the last write that DID land put there.
               </Text>
             ) : (
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 {planWriteRefusalLine(lastWrite)}
               </Text>
             )}
@@ -395,7 +393,7 @@ export function PlanSlots() {
 
         {/* The values above came off a reading, and every write below is
             bounded against the slot count that reading carried. */}
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           Slot state as read at{" "}
           {plan.sampledAtUt == null ? (
             NULL_DISPLAY
@@ -505,7 +503,7 @@ function ExistingPlan({
           count is the BURNS row above; repeating it inside a sentence would put
           the same number on the panel twice. */}
       {burnCount > 0 && (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           Deleting this slot discards the burns above with it. Copying it first
           leaves the original in place.
         </Text>
@@ -513,7 +511,7 @@ function ExistingPlan({
 
       {executing && (
         <Cluster justify="start">
-          <Badge severity="critical">A BURN IS RUNNING</Badge>
+          <Badge tone="nogo">A BURN IS RUNNING</Badge>
         </Cluster>
       )}
 
@@ -522,7 +520,7 @@ function ExistingPlan({
           this already. */}
       {!executing && executionUnread && (
         <Cluster justify="start">
-          <Badge severity="caution">A BURN HERE MAY BE RUNNING, UNREAD</Badge>
+          <Badge tone="caution">A BURN HERE MAY BE RUNNING, UNREAD</Badge>
         </Cluster>
       )}
 
@@ -582,7 +580,7 @@ function InstallDrafts({
     <Stack gap="caption" data-plan-slots-install="">
       <SectionTitle>INSTALL A COMPOSED PLAN</SectionTitle>
       {drafts.length === 0 ? (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           No saved plan for this craft. A composed plan reaches Principia's
           flight plan from here; the composer's own upload writes stock
           manoeuvre nodes instead.
@@ -723,7 +721,7 @@ function InstallRow({
       {/* What an install REPLACES. A slot already holding burns is overwritten
           whole, and there is no undo from the operator's seat. */}
       {burnCount > 0 && plan.planExists === true && (
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           This overwrites the burns the slot holds now, whole.
         </Text>
       )}

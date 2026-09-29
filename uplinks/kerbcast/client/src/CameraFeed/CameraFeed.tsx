@@ -630,7 +630,7 @@ export function CameraFeed({
                     )}
                     {qualityBadge && (
                       <Badge
-                        severity={qualityBadge.tone}
+                        tone={qualityBadge.tone}
                         aria-label={qualityBadge.ariaLabel}
                       >
                         {qualityBadge.label}
@@ -649,7 +649,9 @@ export function CameraFeed({
                       style={{
                         ...FEED_SETPOINT_STYLE,
                         opacity: controlsRevealed ? 1 : 0,
-                        transition: reduceMotion ? undefined : "opacity 150ms ease",
+                        transition: reduceMotion
+                          ? undefined
+                          : "opacity 150ms ease",
                       }}
                     >
                       <CameraSetpointSurface
@@ -668,10 +670,7 @@ export function CameraFeed({
                       aria-live="polite"
                       style={FEED_UNAVAILABLE_STYLE}
                     >
-                      <Badge
-                        severity="critical"
-                        aria-label="Delayed feed unavailable"
-                      >
+                      <Badge tone="nogo" aria-label="Delayed feed unavailable">
                         DELAYED FEED UNAVAILABLE
                       </Badge>
                       <span style={FEED_UNAVAILABLE_REASON_STYLE}>
@@ -719,9 +718,7 @@ function describeSignalDelay(
   const format = seconds < 60 ? { scale: "never" as const, decimals: 1 } : {};
   const spoken = writeQuantity(signalDelay, format);
   return {
-    label: (
-      <Unit value={dated} {...format} />
-    ),
+    label: <Unit value={dated} {...format} />,
     ariaLabel: `Signal delay: ${spoken} one-way`,
   };
 }
@@ -747,7 +744,7 @@ function describeSignalQuality(
   if (connected === false || zeroSignal) {
     return {
       label: "NO SIGNAL",
-      tone: "critical",
+      tone: "nogo",
       ariaLabel: "Signal quality: no signal",
     };
   }
@@ -760,8 +757,7 @@ function describeSignalQuality(
   // "72 %".
   const clamped = value("ratio", Math.max(0, Math.min(1, strength)));
   const pct = Math.round(clamped.magnitude * 100);
-  const tone: Severity =
-    pct >= 66 ? "nominal" : pct >= 33 ? "warning" : "critical";
+  const tone: Severity = pct >= 66 ? "go" : pct >= 33 ? "warn" : "nogo";
   return {
     label: <Unit value={clamped} />,
     tone,

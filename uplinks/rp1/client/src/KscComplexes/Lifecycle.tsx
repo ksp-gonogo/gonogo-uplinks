@@ -1,5 +1,5 @@
 import {
-  ActionButton,
+  Button,
   CommandButton,
   Inline,
   magnitudeOf,
@@ -11,7 +11,10 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
-import type { Rp1ComplexEntry, Rp1PadEntry } from "../__generated__/contract.js";
+import type {
+  Rp1ComplexEntry,
+  Rp1PadEntry,
+} from "../__generated__/contract.js";
 
 /** Demolish a launch complex. Must match `Rp1ComplexLifecycleCommands.DismantleComplexCommand`. */
 export const RP1_COMPLEX_DISMANTLE_COMMAND = "rp1.complex.dismantle";
@@ -220,7 +223,7 @@ export function PadNewControl({
       />
       {/* Not in a list, unlike the pad rows above, so it does not render an li. */}
       <Row as="div">
-        <Text size="xs" tone={short ? "warn" : "muted"}>
+        <Text size="xs" tone={short ? "warn" : undefined} level="muted">
           <Unit value={complex.newPadCost} />
           {short && " · more than the balance, so it builds slower"}
         </Text>
@@ -296,13 +299,15 @@ export function RenameControl({
 
   if (!open) {
     return (
-      // An ActionButton, which is the kit's compact bordered control and matches
+      // A small ghost Button, the kit's compact bordered control, which matches
       // the Dismantle, Build and Rush presses this sits among. It was a
       // TextButton: bare lowercase text with no chrome next to a row of bordered
       // buttons, which is the "why is the rename button a different form to the
       // other buttons?" the operator asked. Not a CommandButton, because opening
       // an editor dispatches nothing.
-      <ActionButton
+      <Button
+        variant="ghost"
+        size="sm"
         aria-label={`Rename ${label}`}
         onClick={() => {
           setNext(currentName);
@@ -311,7 +316,7 @@ export function RenameControl({
         type="button"
       >
         Rename
-      </ActionButton>
+      </Button>
     );
   }
 
@@ -348,13 +353,15 @@ export function RenameControl({
           label="Rename"
           size="sm"
         />
-        <ActionButton
+        <Button
+          variant="ghost"
+          size="sm"
           aria-label={`Leave ${label} named ${currentName}`}
           onClick={close}
           type="button"
         >
           Cancel
-        </ActionButton>
+        </Button>
       </Inline>
     </Stack>
   );
@@ -412,13 +419,15 @@ function PadRow({
       </Text>
       <Inline gap="related-packed">
         {canRename && (
-          <ActionButton
+          <Button
+            variant="ghost"
+            size="sm"
             aria-label={`Rename ${padName}`}
             onClick={() => setRenaming(true)}
             type="button"
           >
             Rename
-          </ActionButton>
+          </Button>
         )}
         <PadDismantleControl
           complex={complex}
@@ -470,7 +479,7 @@ export function PadRows({
   if (pads.length === 0) {
     return (
       <Stack gap="caption">
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           no pads
         </Text>
         <PadNewControl
@@ -485,7 +494,7 @@ export function PadRows({
 
   return (
     <Stack gap="caption">
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         pads · <Unit value={complex.launchPadCount} /> operational
       </Text>
       <Stack as="ul" gap="rows" style={LIST_STYLE}>

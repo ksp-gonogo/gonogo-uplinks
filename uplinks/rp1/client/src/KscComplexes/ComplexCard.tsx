@@ -90,23 +90,21 @@ export function ComplexCard({
   const unstaffed = operational && engineers === 0;
 
   return (
-    <Card tone={unstaffed ? "warning" : operational ? "go" : "default"}>
+    <Card tone={unstaffed ? "warn" : operational ? "go" : undefined}>
       <Stack gap="section-compact">
         <Cluster gap="related-packed" wrap>
           <Text weight="semibold">{name}</Text>
           <Inline gap="related-packed">
             {complex.humanRated === true && (
-              <Badge severity="info">HUMAN-RATED</Badge>
+              <Badge tone="info">HUMAN-RATED</Badge>
             )}
-            {rushing && <Badge severity="caution">RUSHING</Badge>}
+            {rushing && <Badge tone="caution">RUSHING</Badge>}
             {/* Beside the card's other states rather than under the crew bar,
                 where it was a badge and a sentence about what the badge means.
                 Read off `unstaffed`, so a complex still being built does not
                 report a crew shortage on top of NOT YET BUILT. */}
-            {unstaffed && <Badge severity="caution">NOBODY ASSIGNED</Badge>}
-            {operational ? null : (
-              <Badge severity="offline">NOT YET BUILT</Badge>
-            )}
+            {unstaffed && <Badge tone="caution">NOBODY ASSIGNED</Badge>}
+            {operational ? null : <Badge tone="offline">NOT YET BUILT</Badge>}
           </Inline>
         </Cluster>
 
@@ -245,7 +243,7 @@ function Crew({
   return (
     <Stack gap="caption">
       <Cluster gap="related-packed" wrap>
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           crew
         </Text>
         <Text size="xs">
@@ -325,7 +323,7 @@ function AssignControl({
     // Said rather than left blank: a control that is simply not drawn reads as a
     // widget that forgot to draw it.
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {NULL_DISPLAY} RP-1 has not said how many engineers this complex holds
       </Text>
     );
@@ -360,7 +358,7 @@ function AssignControl({
               with "Step what?": a bare "step" says the control moves something
               by an amount and leaves the something out, and the amount here is
               engineers per press of the two buttons beside it. */}
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             engineers per press
           </Text>
           <Stepper
@@ -468,7 +466,7 @@ function RushTerms({
   const extra = complex.rushSalaryDeltaPerDay;
   return (
     <Cluster gap="related-packed" wrap>
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         rushing costs
       </Text>
       <Text size="xs">
@@ -594,7 +592,7 @@ function Envelope({ complex }: Readonly<{ complex: Rp1ComplexEntry }>) {
 /** What the complex draws per day, crew and structure kept apart because they move for different reasons. */
 function Costs({ complex }: Readonly<{ complex: Rp1ComplexEntry }>) {
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       crew <Unit value={complex.salaryPerDay} /> · complex{" "}
       <Unit value={complex.upkeepPerDay} />
     </Text>

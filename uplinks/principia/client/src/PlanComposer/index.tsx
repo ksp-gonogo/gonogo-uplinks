@@ -24,11 +24,11 @@ import {
   withoutReckoning,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Button,
   CommandButton,
   Countdown,
   FieldLabel,
   MissionDate,
-  PrimaryButton,
   Row,
   RowName,
   Section,
@@ -91,7 +91,7 @@ export function PlanComposer() {
     return (
       <Section>
         <SectionTitle>Compose a plan</SectionTitle>
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           No vessel is being read, so there is nothing to plan for.
         </Text>
       </Section>
@@ -127,7 +127,7 @@ export function PlanComposer() {
         <SectionTitle>Ready to upload</SectionTitle>
         <Stack gap="related-dense">
           {ready.length === 0 ? (
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               Nothing saved. A plan reaches the vessel only from here.
             </Text>
           ) : null}
@@ -155,7 +155,8 @@ export function PlanComposer() {
       <Section>
         <SectionTitle>Composing</SectionTitle>
         <Stack gap="related-dense">
-          <PrimaryButton
+          <Button
+            variant="primary"
             onClick={() =>
               store.create({
                 name: `Plan ${mine.length + 1}`,
@@ -166,10 +167,10 @@ export function PlanComposer() {
             }
           >
             Draft plan
-          </PrimaryButton>
+          </Button>
 
           {composing.length === 0 ? (
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               Nothing being composed.
             </Text>
           ) : null}
@@ -234,7 +235,8 @@ export function PlanComposer() {
                 </Stack>
               ))}
 
-              <PrimaryButton
+              <Button
+                variant="primary"
                 onClick={() =>
                   edit(draft, [
                     ...draft.burns,
@@ -251,7 +253,7 @@ export function PlanComposer() {
                 }
               >
                 Add burn
-              </PrimaryButton>
+              </Button>
 
               <Row>
                 <RowName>Total Δv</RowName>
@@ -263,11 +265,12 @@ export function PlanComposer() {
                 deliberate act. Two surfaces rather than one button, so the
                 difference between "written down" and "aboard a vessel" is
                 visible rather than something an operator has to remember. */}
-              <PrimaryButton
+              <Button
+                variant="primary"
                 onClick={() => store.update(draft.id, { saved: true })}
               >
                 Save draft
-              </PrimaryButton>
+              </Button>
             </Stack>
           ))}
         </Stack>
@@ -398,12 +401,14 @@ function ReadyPlan({
         aria-label="Upload this flight plan to the vessel"
         confirmAriaLabel="Confirm uploading this flight plan to the vessel"
       />
-      <PrimaryButton onClick={onReopen}>Reopen</PrimaryButton>
+      <Button variant="primary" onClick={onReopen}>
+        Reopen
+      </Button>
 
       {outcome === null ? null : (
         <Text
           role="status"
-          tone={outcome.accepted ? "default" : "warn"}
+          tone={outcome.accepted ? undefined : "warn"}
           size="sm"
         >
           {outcome.accepted

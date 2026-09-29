@@ -303,12 +303,12 @@ function UpgradeCard({
          were right and an operator read them as two opinions. One number about
          a facility's tier, on the card; the step is the CONTROL's, and the
          confirm below names the destination once the press is armed. */
-      badge={<Badge severity="info">TIER {step.current}</Badge>}
+      badge={<Badge tone="info">TIER {step.current}</Badge>}
       name={label}
       tone="go"
     >
       <Cluster gap="related-dense" justify="start" wrap>
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {step.cost == null ? (
             <>{NULL_DISPLAY} not priced</>
           ) : (

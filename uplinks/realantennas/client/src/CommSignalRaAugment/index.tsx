@@ -64,9 +64,9 @@ function CommSignalRaBadges() {
     // readings, not one run-on label, and `xs`'s 2px gap read as the rate
     // crowding the pill's rounded edge rather than sitting beside it.
     <Cluster gap="related-dense" align="center">
-      {ext?.band ? <Badge severity="info">{ext.band}-band</Badge> : null}
+      {ext?.band ? <Badge tone="info">{ext.band}-band</Badge> : null}
       {down !== undefined ? (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           <Unit value={down} />
         </Text>
       ) : null}
@@ -105,13 +105,18 @@ function CommSignalRaSection() {
     // Labelled "LINK BUDGET", not "RealAntennas": the operator gets the link
     // data this section presents, not which mod computed it.
     <Stack gap="caption" aria-label="Link budget detail">
-      <Text size="xs" tone="muted" style={LABEL_STYLE}>
+      <Text size="xs" level="muted" style={LABEL_STYLE}>
         Link budget
       </Text>
-      <Grid cols="auto 1fr" gap="label-value" rowGap="readout-row" align="baseline">
+      <Grid
+        cols="auto 1fr"
+        gap="label-value"
+        rowGap="readout-row"
+        align="baseline"
+      >
         {hasMargin ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Margin
             </Text>
             {/* A margin that does not close IS the failure, so the tone is the
@@ -125,50 +130,48 @@ function CommSignalRaSection() {
         ) : null}
         {ext?.encoder ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Encoder
             </Text>
-            <Text size="sm" tone="default">
-              {ext.encoder}
-            </Text>
+            <Text size="sm">{ext.encoder}</Text>
           </>
         ) : null}
         {ext?.modulationBits != null ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Modulation
             </Text>
-            <Text size="sm" tone="default">
+            <Text size="sm">
               <Unit value={ext.modulationBits} />
             </Text>
           </>
         ) : null}
         {ext?.techLevel != null ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Tech level
             </Text>
-            <Text size="sm" tone="default">
+            <Text size="sm">
               <Unit value={ext.techLevel} />
             </Text>
           </>
         ) : null}
         {ext?.requiredEbN0 != null ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Req Eb/N0
             </Text>
-            <Text size="sm" tone="default">
+            <Text size="sm">
               <Unit value={ext.requiredEbN0} />
             </Text>
           </>
         ) : null}
         {ext?.reverseBitsPerSec != null ? (
           <>
-            <Text size="xs" tone="muted" style={LABEL_STYLE}>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
               Uplink rate
             </Text>
-            <Text size="sm" tone="default">
+            <Text size="sm">
               <Unit value={ext.reverseBitsPerSec} />
             </Text>
           </>

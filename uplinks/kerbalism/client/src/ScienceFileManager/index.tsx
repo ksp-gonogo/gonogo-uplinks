@@ -98,7 +98,7 @@ function DriveCapacity({
   const hasSlots = ext.sampleSlotsTotal != null && ext.sampleSlotsUsed != null;
   if (!hasStorage && !hasSlots) return null;
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       Drive{" "}
       {hasStorage && (
         <>
@@ -209,13 +209,13 @@ function ScienceDataAboardRowAugment({
               </Text>
             )}
             {file.transmitRateMBps?.isPositive() && (
-              <Text size="xs" tone="muted">
+              <Text size="xs" level="muted">
                 <Unit value={dated(file.transmitRateMBps)} />
               </Text>
             )}
             {file.transmitting === true && (
               <Badge
-                severity={held ? "info" : "nominal"}
+                tone={held ? "info" : "go"}
                 size="sm"
                 role="status"
                 aria-live="polite"
@@ -226,7 +226,7 @@ function ScienceDataAboardRowAugment({
             {/* Derived from `transmitRate`, so it is null whenever that read
                 failed. Drawing nothing there claimed "not transmitting". */}
             {file.transmitting == null && (
-              <Badge severity="warning" size="sm">
+              <Badge tone="warn" size="sm">
                 Transmit unknown
               </Badge>
             )}

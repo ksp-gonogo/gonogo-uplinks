@@ -71,7 +71,7 @@ export function ContractPayload() {
 
   return (
     <Stack gap="related-dense">
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         the payload a repeating satellite contract will require
       </Text>
 
@@ -90,7 +90,7 @@ export function ContractPayload() {
         />
       </Inline>
 
-      <Text size="xs" tone={legalPair ? "muted" : "warn"}>
+      <Text size="xs" tone={legalPair ? undefined : "warn"} level="muted">
         {legalPair ? (
           "changing either withdraws the matching pending contract offers, once each, so they regenerate against the new requirement"
         ) : (

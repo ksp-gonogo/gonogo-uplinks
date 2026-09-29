@@ -60,7 +60,7 @@ export function CrewTrainingBadge({
   const kind = kindOf(row.trainingType);
   return (
     <Badge
-      severity={started ? "nominal" : "caution"}
+      tone={started ? "go" : "caution"}
       size="sm"
       title={kind === null ? target : `${kind}: ${target}`}
     >

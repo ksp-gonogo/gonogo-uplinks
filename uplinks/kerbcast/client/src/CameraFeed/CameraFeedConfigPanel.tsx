@@ -1,9 +1,9 @@
 import type { ConfigComponentProps } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Button,
   ConfigForm,
   Field,
   FieldHint,
-  PrimaryButton,
   Switch,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
@@ -37,13 +37,14 @@ export function CameraFeedConfigPanel({
           the feed. Off by default to keep the picture clean.
         </FieldHint>
       </Field>
-      <PrimaryButton
+      <Button
+        variant="primary"
         onClick={() =>
           onSave({ flightId: config?.flightId ?? null, showDebugInfo })
         }
       >
         Save
-      </PrimaryButton>
+      </Button>
     </ConfigForm>
   );
 }

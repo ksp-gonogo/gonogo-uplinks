@@ -39,7 +39,7 @@ describe("ProjectCard", () => {
         <ProjectCard
           name="Atlas"
           progress={{ label: "Integration progress, Atlas", ratio: 0.25 }}
-          tone="warning"
+          tone="warn"
         />
       </ProjectCardList>,
     );
@@ -61,7 +61,7 @@ describe("ProjectCard", () => {
         <ProjectCard
           badge={<span>INTEGRATING</span>}
           name="Vanguard"
-          tone="warning"
+          tone="warn"
         />
       </ProjectCardList>,
     );
@@ -82,7 +82,7 @@ describe("ProjectCard", () => {
           detail="LC-1 · costs 40,000f"
           name="Atlas"
           progress={{ label: "Integration progress, Atlas", ratio: 0.25 }}
-          tone="warning"
+          tone="warn"
         >
           <span>45d until integration finishes</span>
         </ProjectCard>

@@ -289,9 +289,9 @@ export function BurnEditor() {
         <SectionTitle>BURN EDITOR</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start">
-            <Badge severity="caution">NO PLAN READING</Badge>
+            <Badge tone="caution">NO PLAN READING</Badge>
           </Cluster>
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {view.reason}
           </Text>
         </Stack>
@@ -393,32 +393,30 @@ export function BurnEditor() {
             slot this names, and an operator reading a plan they are not flying
             is the failure mode ten parallel plans creates. */}
         <Cluster wrap justify="start" gap="related-dense">
-          <Badge severity="info">
+          <Badge tone="info">
             {`PLAN ${(magnitudeOf(plan.selectedPlan) ?? -1) + 1} OF ${
               magnitudeOf(plan.planCount) ?? 0
             }`}
           </Badge>
           {plan.planExists === false && (
-            <Badge severity="caution">NO PLAN ON THIS VESSEL</Badge>
+            <Badge tone="caution">NO PLAN ON THIS VESSEL</Badge>
           )}
           {plan.optimisationRunning === true && (
-            <Badge severity="warning">OPTIMISING</Badge>
+            <Badge tone="warn">OPTIMISING</Badge>
           )}
           {armed ? (
-            <Badge severity="nominal">ARMED</Badge>
+            <Badge tone="go">ARMED</Badge>
           ) : (
-            <Badge severity="caution">NOT ARMED</Badge>
+            <Badge tone="caution">NOT ARMED</Badge>
           )}
-          {outOfContact !== null && (
-            <Badge severity="warning">OUT OF CONTACT</Badge>
-          )}
+          {outOfContact !== null && <Badge tone="warn">OUT OF CONTACT</Badge>}
         </Cluster>
 
         {/* Beside the badge rather than instead of it: the badge is what catches
             the eye and the sentence is what says which of the three things to go
             and check. */}
         {outOfContact !== null && (
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {outOfContact}
           </Text>
         )}
@@ -443,7 +441,7 @@ export function BurnEditor() {
               onConfirmed={(result) => setLastArm(planWriteReceipt(result))}
             />
             {surface?.reason && (
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 {surface.reason}
               </Text>
             )}
@@ -460,16 +458,16 @@ export function BurnEditor() {
           {nothingWasWritten(lastArm) && (
             <Stack gap="caption" role="status" aria-live="polite">
               <Cluster justify="start">
-                <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
+                <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
               </Cluster>
               {lastArm.replayed === true ? (
-                <Text tone="faint" size="sm">
+                <Text level="faint" size="sm">
                   This arm matched one already sent, so the mod answered with
                   the earlier receipt instead of arming again. The badge above
                   is what the surface actually holds.
                 </Text>
               ) : (
-                <Text tone="faint" size="sm">
+                <Text level="faint" size="sm">
                   {planWriteRefusalLine(lastArm)}
                 </Text>
               )}
@@ -478,7 +476,7 @@ export function BurnEditor() {
         </Stack>
 
         <Stack gap="caption">
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {`PLAN ENDS ${plan.desiredFinalTimeUt == null ? NULL_DISPLAY : ""}`}
             {plan.desiredFinalTimeUt != null && (
               <MissionDate value={plan.desiredFinalTimeUt} />
@@ -520,34 +518,32 @@ export function BurnEditor() {
                       offers one nothing sent can still reach is what sends them
                       into a form to compose an edit that cannot land. */}
                   {editWindow(ignition, viewUt, oneWaySeconds)?.shut ===
-                    true && <Badge severity="warning">TOO LATE TO EDIT</Badge>}
+                    true && <Badge tone="warn">TOO LATE TO EDIT</Badge>}
                   {burn.executing === true && (
-                    <Badge severity="critical">BURNING</Badge>
+                    <Badge tone="nogo">BURNING</Badge>
                   )}
                   {/* The third state, and it is not BURNING: the mod could not
                       read this burn's instants, so nothing here can say whether
                       the craft is under thrust. Claiming either way is what the
                       coerced false did. Every write against it is refused. */}
                   {burn.executing == null && (
-                    <Badge severity="caution">BURN STATE UNREAD</Badge>
+                    <Badge tone="caution">BURN STATE UNREAD</Badge>
                   )}
                   {burn.frameEditable === false && (
-                    <Badge severity="warning">FRAME LOCKED</Badge>
+                    <Badge tone="warn">FRAME LOCKED</Badge>
                   )}
                   {/* Locked is a property OF THE FRAME. This is the frame not
                       having been read at all, which is a different sentence and
                       sends the operator somewhere else. */}
                   {burn.frameEditable == null && (
-                    <Badge severity="caution">FRAME UNREAD</Badge>
+                    <Badge tone="caution">FRAME UNREAD</Badge>
                   )}
-                  {burn.anomalous === true && (
-                    <Badge severity="warning">ANOM</Badge>
-                  )}
+                  {burn.anomalous === true && <Badge tone="warn">ANOM</Badge>}
                   {/* Flagged is a property the integrator reported. This is the
                       plan's flagged count not having been read at all, and
                       drawing nothing for it says the integrator was happy. */}
                   {burn.anomalous == null && (
-                    <Badge severity="caution">ANOM UNREAD</Badge>
+                    <Badge tone="caution">ANOM UNREAD</Badge>
                   )}
                 </Cluster>
               </SelectableRow>
@@ -558,14 +554,14 @@ export function BurnEditor() {
         {draft !== null && selected && (
           <Stack gap="related-comfortable" data-burn-editor-form="">
             <Cluster wrap justify="start" gap="related-dense">
-              <Badge severity="info">{`BURN ${draft.burnIndex + 1}`}</Badge>
+              <Badge tone="info">{`BURN ${draft.burnIndex + 1}`}</Badge>
               {/* The burn's own manoeuvring frame, which is routinely NOT the
                   plotting frame, and the only reliable warning that it differs
                   is on this line. Declined with the burn's OWN bodies: the kind
                   alone renders its template with the body slot still standing,
                   and two burns centred on different bodies are the same kind and
                   not the same frame. */}
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 {plottingFrameLabel(magnitudeOf(selected.frameType), {
                   centre: selected.centreBody,
                   primary: selected.primaryBody,
@@ -573,27 +569,25 @@ export function BurnEditor() {
                 })}
               </Text>
               {selected.frameEditable === false && (
-                <Badge severity="warning">
-                  THIS FRAME CANNOT BE WRITTEN BACK
-                </Badge>
+                <Badge tone="warn">THIS FRAME CANNOT BE WRITTEN BACK</Badge>
               )}
               {/* Not "cannot be written back", which states a property of the
                   frame. The frame extension did not read, so the whitelist
                   could not be checked against anything. The write stays refused
                   either way; what differs is what the operator is told. */}
               {selected.frameEditable == null && (
-                <Badge severity="caution">THIS FRAME COULD NOT BE READ</Badge>
+                <Badge tone="caution">THIS FRAME COULD NOT BE READ</Badge>
               )}
               {/* Said beside the burn rather than only in the frozen controls,
                   because it is the reason they are dark and it is not a reason
                   anything else on screen carries. */}
               {selected.executing == null && (
-                <Badge severity="caution">
+                <Badge tone="caution">
                   WHETHER THIS BURN IS RUNNING COULD NOT BE READ
                 </Badge>
               )}
               {componentsUnreadable && (
-                <Badge severity="warning">DELTA-V NOT IN COMPONENTS</Badge>
+                <Badge tone="warn">DELTA-V NOT IN COMPONENTS</Badge>
               )}
             </Cluster>
 
@@ -635,15 +629,15 @@ export function BurnEditor() {
               <Stack gap="caption" data-edit-window="">
                 <Cluster gap="related-dense" wrap justify="start">
                   {draftWindow.shut ? (
-                    <Badge severity="warning">EDIT WINDOW SHUT</Badge>
+                    <Badge tone="warn">EDIT WINDOW SHUT</Badge>
                   ) : (
-                    <Badge severity="caution">
+                    <Badge tone="caution">
                       EDIT WINDOW{" "}
                       <Countdown value={draftWindow.remainingSeconds} clock />
                     </Badge>
                   )}
                 </Cluster>
-                <Text tone="faint" size="sm">
+                <Text level="faint" size="sm">
                   {draftWindow.shut
                     ? "An edit sent now reaches Principia after this burn has ignited, so the burn flies as it stands. Move the ignition later, or edit a later burn."
                     : "Past this the edit arrives after ignition and the burn flies as it stands."}{" "}
@@ -675,7 +669,7 @@ export function BurnEditor() {
                   the claim that they are three velocities, and the ability to
                   send an edit the producer would refuse a light time later. */}
               {componentsUnreadable && (
-                <Text tone="faint" size="sm">
+                <Text level="faint" size="sm">
                   This burn states its delta-v in one of Principia's spherical
                   coordinate systems, which carries a magnitude and two angles
                   rather than three components. The three numbers below are that
@@ -968,17 +962,17 @@ export function BurnEditor() {
             {nothingWasWritten(lastWrite) && (
               <Stack gap="caption" role="status" aria-live="polite">
                 <Cluster justify="start">
-                  <Badge severity="warning">NOTHING WAS WRITTEN</Badge>
+                  <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
                 </Cluster>
                 {lastWrite.replayed === true ? (
-                  <Text tone="faint" size="sm">
+                  <Text level="faint" size="sm">
                     This edit matched one already sent, so the mod answered with
                     the earlier receipt instead of writing again. The plan still
                     holds whatever the last write that DID land put there.
                     Change a value and send again.
                   </Text>
                 ) : (
-                  <Text tone="faint" size="sm">
+                  <Text level="faint" size="sm">
                     {planWriteRefusalLine(lastWrite)}
                   </Text>
                 )}
@@ -988,7 +982,7 @@ export function BurnEditor() {
             {/* The values on screen came from a reading; APPLY sends them all,
                 including the ones nobody touched, so the operator is told which
                 reading they are editing rather than assuming it is now. */}
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               Editing the plan as read at{" "}
               {plan.sampledAtUt == null ? (
                 NULL_DISPLAY

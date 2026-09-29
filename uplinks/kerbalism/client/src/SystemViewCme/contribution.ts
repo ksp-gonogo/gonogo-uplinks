@@ -216,13 +216,13 @@ function computeStormEntity(
     // Faint while inbound, normal once arrived: an ambient effect that stacks
     // under the CommNet graph and point markers (the travelling pulse's own
     // default layer sits below connection-line and point), never brighter
-    // than that tier. The severity never changes with state, only the
+    // than that tier. The tone never changes with state, only the
     // emphasis, so "arrived" reads as more present without the marker
     // cutting off what is drawn on top or being mistaken for a selection.
     // `warn` is the meaning; which hue it becomes is SystemView's to decide.
     style: {
       emphasis: state === STORM_STATE_IN_PROGRESS ? "normal" : "faint",
-      severity: "warning" as const,
+      tone: "warn" as const,
     },
     meta,
   };

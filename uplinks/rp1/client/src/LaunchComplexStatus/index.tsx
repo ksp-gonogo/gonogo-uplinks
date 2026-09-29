@@ -84,7 +84,7 @@ export function LaunchComplexStatus({
   if (!expanded) {
     return (
       <Line>
-        <Badge severity={padSeverity(pad, operation)}>
+        <Badge tone={padSeverity(pad, operation)}>
           {padHeadline(pad, operation)}
         </Badge>{" "}
         {standing ??
@@ -110,7 +110,7 @@ export function LaunchComplexStatus({
         <Row>
           <RowName>State</RowName>
           <Text>
-            <Badge severity={padSeverity(pad, operation)}>
+            <Badge tone={padSeverity(pad, operation)}>
               {padHeadline(pad, operation)}
             </Badge>{" "}
             {PAD_STATE_MEANING[pad.status ?? "None"] ?? "state not recognised"}
@@ -132,7 +132,7 @@ export function LaunchComplexStatus({
               operation.timeLeftSeconds !== null ? (
                 <Countdown value={operation.timeLeftSeconds} />
               ) : operation.stalled ? (
-                <Badge severity="caution">STALLED</Badge>
+                <Badge tone="caution">STALLED</Badge>
               ) : operation.progress == null ||
                 operation.totalPoints == null ? (
                 /* Not "not costed yet", which would be untrue: an operation
@@ -231,10 +231,10 @@ function padHeadline(
 function padSeverity(
   pad: Rp1PadEntry,
   operation: Rp1OperationEntry | undefined,
-): "nominal" | "caution" {
-  if (pad.hasVesselWaiting === true) return "nominal";
+): "go" | "caution" {
+  if (pad.hasVesselWaiting === true) return "go";
   if (operation !== undefined) return "caution";
-  return pad.status === "Free" ? "nominal" : "caution";
+  return pad.status === "Free" ? "go" : "caution";
 }
 
 /**
@@ -244,7 +244,7 @@ function padSeverity(
  */
 function Line({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       {children}
     </Text>
   );

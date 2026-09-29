@@ -81,11 +81,11 @@ export function BuildableSection() {
         // RP-1 has answered and this channel has not. Said rather than left
         // blank: an operator who sees nothing here has no way to tell a career
         // with no craft saved from an Uplink that is still connecting.
-        <Text size="sm" tone="muted">
+        <Text size="sm" level="muted">
           Waiting for the craft listing
         </Text>
       ) : buildable.length === 0 ? (
-        <Text size="sm" tone="muted">
+        <Text size="sm" level="muted">
           No craft saved. Design one in the VAB or SPH and it appears here.
         </Text>
       ) : (
@@ -135,9 +135,9 @@ function CraftCard({
         </>
       }
       name={name}
-      tone={eligible.length > 0 && partBlock === null ? "go" : "warning"}
+      tone={eligible.length > 0 && partBlock === null ? "go" : "warn"}
     >
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Unit value={craft.mass} /> ·{" "}
         {craft.partCount === undefined ? (
           NULL_DISPLAY
@@ -148,14 +148,14 @@ function CraftCard({
       </Text>
 
       {partBlock !== null ? (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           Cannot be built: {partBlock}
         </Text>
       ) : file === null ? (
         // Readable and not commandable, and it says which. A craft with no
         // file name has no address, and guessing one from the ship name would
         // build whichever file the folder listed first.
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           No craft file name for this design
         </Text>
       ) : (

@@ -350,7 +350,7 @@ function linesFor(
           label:
             c.operational === false ? (
               <>
-                {c.name} <Badge severity="info">UNDER CONSTRUCTION</Badge>
+                {c.name} <Badge tone="info">UNDER CONSTRUCTION</Badge>
               </>
             ) : (
               c.name
@@ -371,7 +371,7 @@ function linesFor(
           label:
             k.inFlight === true ? (
               <>
-                {k.name} <Badge severity="info">IN FLIGHT</Badge>
+                {k.name} <Badge tone="info">IN FLIGHT</Badge>
               </>
             ) : (
               k.name

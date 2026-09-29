@@ -10,6 +10,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   ConfigForm,
   Field,
   FieldHint,
@@ -17,7 +18,6 @@ import {
   FormActions,
   Input,
   Panel,
-  PrimaryButton,
   Section,
   Select,
   Spinner,
@@ -104,8 +104,7 @@ function KosScriptTriggerComponent({
   // The CPUs aboard change only with the craft's parts, so a held list holds.
   const processorsReading = useStream<KosProcessorInfo[]>("kos.processors");
   const reportedProcessors =
-    processorsReading.state === "observed" ||
-    processorsReading.state === "held"
+    processorsReading.state === "observed" || processorsReading.state === "held"
       ? processorsReading.value
       : undefined;
   const reported = reportedProcessors != null;
@@ -254,9 +253,14 @@ function KosScriptTriggerComponent({
         </Section>,
         <Section key="actions" full>
           <FormActions>
-            <PrimaryButton type="button" onClick={dispatch} disabled={!canRun}>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={dispatch}
+              disabled={!canRun}
+            >
               {run.status === "running" ? "Running..." : "Run"}
-            </PrimaryButton>
+            </Button>
             {/*
               Three rungs, because a missing reading and a measured zero are
               different facts. No reading at all (no comms model publishing,
@@ -291,13 +295,13 @@ function KosScriptTriggerComponent({
             )}
             {run.status === "ok" && (
               <Result>
-                <Badge severity="nominal">OK</Badge>
+                <Badge tone="go">OK</Badge>
                 <ResultFields data={run.data} />
               </Result>
             )}
             {run.status === "error" && (
               <Result>
-                <Badge severity="critical">
+                <Badge tone="nogo">
                   {run.scriptFault ? "Script error" : "Dispatch error"}
                 </Badge>
                 <ErrorText>{run.message}</ErrorText>
@@ -468,6 +472,6 @@ const FieldsEmpty = styled.div`
 const ErrorText = styled.div`
   font-family: monospace;
   font-size: var(--font-size-compact);
-  color: var(--color-status-nogo-fg);
+  color: var(--color-nogo-text);
   word-break: break-word;
 `;

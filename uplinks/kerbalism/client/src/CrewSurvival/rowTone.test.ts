@@ -46,7 +46,7 @@ describe("rowTones", () => {
           kerbal({ name: "Bill Kerman", tone: "go" }),
         ]),
       ),
-    ).toEqual([{ crewName: "Jebediah Kerman", severity: "critical" }]);
+    ).toEqual([{ crewName: "Jebediah Kerman", tone: "nogo" }]);
   });
 
   it("flags every critical kerbal, never the ones still nominal", () => {
@@ -59,8 +59,8 @@ describe("rowTones", () => {
         ]),
       ),
     ).toEqual([
-      { crewName: "Jebediah Kerman", severity: "critical" },
-      { crewName: "Bill Kerman", severity: "critical" },
+      { crewName: "Jebediah Kerman", tone: "nogo" },
+      { crewName: "Bill Kerman", tone: "nogo" },
     ]);
   });
 });

@@ -58,7 +58,7 @@ describe("radiationSummaryFor", () => {
       radiationSummaryFor({
         habitatRadiationRadPerSecond: radPerSec(5 / 3600),
       }),
-    ).toEqual({ label: "High radiation environment", severity: "warning" });
+    ).toEqual({ label: "High radiation environment", severity: "warn" });
   });
 
   it("flags a storm in progress as the most severe condition, regardless of dose", () => {
@@ -67,13 +67,13 @@ describe("radiationSummaryFor", () => {
         habitatRadiationRadPerSecond: radPerSec(0.01 / 3600),
         stormInProgress: true,
       }),
-    ).toEqual({ label: "Radiation storm in progress", severity: "critical" });
+    ).toEqual({ label: "Radiation storm in progress", severity: "nogo" });
   });
 
   it("falls back to the ambient reading when no habitat-specific figure is reported", () => {
     expect(
       radiationSummaryFor({ radiationRadPerSecond: radPerSec(5 / 3600) }),
-    ).toEqual({ label: "High radiation environment", severity: "warning" });
+    ).toEqual({ label: "High radiation environment", severity: "warn" });
   });
 });
 

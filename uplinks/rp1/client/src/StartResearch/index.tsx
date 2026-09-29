@@ -126,7 +126,7 @@ export function StartResearch() {
           <ReadoutCaption>Science</ReadoutCaption>
           <Unit value={careerReading.economy.science} />
         </Readout>
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           Charged in full when the node is queued, not when it finishes.
         </Text>
       </Cluster>
@@ -135,7 +135,7 @@ export function StartResearch() {
         /* A real answer worth stating: a tree whose reachable nodes are all
            owned or all already queued reads the same as a section that failed
            to draw if this is left out. */
-        <Text size="sm" tone="muted">
+        <Text size="sm" level="muted">
           Nothing the tree can reach is left to queue.
         </Text>
       ) : (
@@ -180,7 +180,7 @@ export function StartResearch() {
             {short && (
               <>
                 {" "}
-                <Badge severity="caution">SHORT</Badge>
+                <Badge tone="caution">SHORT</Badge>
               </>
             )}
           </ReadoutCaption>

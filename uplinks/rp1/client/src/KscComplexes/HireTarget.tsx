@@ -213,14 +213,14 @@ function HireSpend({
 
   if (paid === 0) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <Unit value={value("count", free)} /> free from applicants
       </Text>
     );
   }
 
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       <Unit value={value("count", paid)} /> at{" "}
       <Unit decimals={0} value={value("funds", charge)} /> each ={" "}
       <Unit decimals={0} value={value("funds", paid * charge)} />
@@ -314,7 +314,7 @@ function HireTargetForm({
         {/*
           `Switch` rather than a row of toggle buttons, matching the centre picker
           in `NewComplexControl`. A toggle button carries the better semantics for
-          an exclusive choice, and a render settled it anyway: `ActionButton` has
+          an exclusive choice, and a render settled it anyway: a plain button has
           one appearance, so `aria-pressed` moved and nothing on screen did, and
           an operator could not see which half the form was on.
         */}
@@ -395,7 +395,7 @@ function HireTargetForm({
             press and a short balance slows the instruction rather than refusing
             it, so the honest figure is what hiring can draw before it stops.
           */}
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             draws at most{" "}
             <Unit value={value("funds", spendable)} decimals={0} /> of{" "}
             <Unit value={value("funds", funds)} decimals={0} />

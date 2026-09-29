@@ -144,7 +144,7 @@ describe("computeCmeEntities", () => {
         arriveUt: 5_000_000,
         clearUt: 5_003_600,
       },
-      style: { emphasis: "faint", severity: "warning" },
+      style: { emphasis: "faint", tone: "warn" },
       meta: {
         star: "Kerbol",
         state: "inbound",
@@ -298,12 +298,12 @@ describe("computeCmeEntities", () => {
         },
       ],
     });
-    // Severity, not a token: which hue "warn" becomes is SystemView's to
+    // A tone, not a token: which hue "warn" becomes is SystemView's to
     // decide, and an Uplink naming the colour itself is the thing this
     // asserts has not come back. Only the emphasis tracks the state.
     expect(entity?.style).toEqual({
       emphasis: "normal",
-      severity: "warning",
+      tone: "warn",
     });
     expect(entity?.meta?.state).toBe("in progress");
   });

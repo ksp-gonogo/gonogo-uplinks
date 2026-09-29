@@ -12,7 +12,10 @@ import {
   UnitInput,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
-import type { Rp1ComplexEntry, Rp1LcPricing } from "../__generated__/contract.js";
+import type {
+  Rp1ComplexEntry,
+  Rp1LcPricing,
+} from "../__generated__/contract.js";
 import { type LcCurrent, type LcSpec, quoteModifyComplex } from "./lcCost.js";
 
 /** Renovate a complex into a new envelope. Must match `Rp1ComplexConstructionCommands.ModifyComplexCommand`. */
@@ -310,7 +313,7 @@ function ModifyForm({
         {/* Said BEFORE the press. RP-1 takes the crew off first and tells you
             afterwards, in a dialog; the toggle is what makes its second sentence
             true. */}
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {engineers === null ? (
             <>
               {NULL_DISPLAY} RP-1 has not said how many engineers this complex
@@ -334,7 +337,7 @@ function ModifyForm({
         )}
 
         <Row as="div">
-          <Text size="xs" tone={short ? "warn" : "muted"}>
+          <Text size="xs" tone={short ? "warn" : undefined} level="muted">
             {quote === null ? (
               "no price: RP-1 has not said what this would cost"
             ) : (

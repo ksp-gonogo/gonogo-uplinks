@@ -162,11 +162,7 @@ function SurchargeRow({ cost }: { cost: Rp1BuildCost }) {
  * <para>A node blocking four parts would otherwise repeat itself down four rows,
  * turning a four-node answer into a twelve-row list on the same facts.</para>
  */
-function RequiredTechs({
-  techs,
-}: {
-  techs?: Rp1RequiredTechEntry[] | null;
-}) {
+function RequiredTechs({ techs }: { techs?: Rp1RequiredTechEntry[] | null }) {
   if (techs == null || techs.length === 0) {
     return null;
   }
@@ -188,7 +184,7 @@ function RequiredTechs({
           Its own label went with the change. The badge IS the label now, and
           "Needs tech" over a badge reading NEEDS TECH said it twice. */}
       <Cluster justify="start" gap="related-dense">
-        <Badge severity="critical">Needs tech</Badge>
+        <Badge tone="nogo">Needs tech</Badge>
       </Cluster>
       {/* Plain text, which WRAPS, and that is a better answer to the truncation
           this block was already carrying a fix for than the scroller it replaced.
@@ -239,16 +235,14 @@ function BlockingNode({ tech }: { tech: Rp1RequiredTechEntry }) {
           under a critical badge the pair contradict each other. The severity is
           said once, by the badge; a node's name is content and is drawn as
           content. */}
-      <Text size="xs" tone="default">
-        {name}
-      </Text>
+      <Text size="xs">{name}</Text>
       {tech.parts != null && (
         /* Nested, because the parts belong to the node above them and a flat run
            of part names under a flat run of node names could not be told apart.
            Same relationship, and the same rendering of it, as the tooling section
            below draws for the parts a purchase covers. */
         <Row as="div" nested wrap>
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             {tech.parts.length === 0
               ? "nothing on this vehicle names it"
               : tech.parts.join(", ")}

@@ -30,7 +30,7 @@ export interface FramingPreviewProps {
   committing?: boolean;
 }
 
-const AMBER = "var(--color-status-warning-bg)";
+const AMBER = "var(--color-warn-mark)";
 const WHITE = "var(--color-text-primary)";
 const MORPH = "var(--duration-slow)";
 

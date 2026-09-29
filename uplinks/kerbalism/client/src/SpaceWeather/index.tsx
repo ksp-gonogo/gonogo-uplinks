@@ -1,4 +1,8 @@
-import type { ComponentProps, VesselIdentity } from "@ksp-gonogo/sitrep-sdk";
+import type {
+  ComponentProps,
+  Tone as CardTone,
+  VesselIdentity,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   CELESTIAL_FACTS,
   registerComponent,
@@ -22,7 +26,6 @@ import {
   Panel,
   ProgressBar,
   ReadoutCaption,
-  type ReadoutTone,
   Section,
   SectionTitle,
   type Severity,
@@ -301,10 +304,10 @@ function doseTone(radPerHour: number | null): Tone {
 }
 
 const TONE_HEX: Record<Tone, string> = {
-  go: "var(--color-status-go-bg)",
-  info: "var(--color-status-info-bg)",
-  warn: "var(--color-status-warning-bg)",
-  nogo: "var(--color-status-nogo-bg)",
+  go: "var(--color-go-mark)",
+  info: "var(--color-info-mark)",
+  warn: "var(--color-warn-mark)",
+  nogo: "var(--color-nogo-mark)",
 };
 
 /**
@@ -443,7 +446,7 @@ export function deriveStorm(
  *  there, only that the slot could not be asked. */
 function stormSeverity(state: number | null): Severity {
   if (state === null) return "info";
-  return state >= 2 ? "critical" : "warning";
+  return state >= 2 ? "nogo" : "warn";
 }
 
 function stormLabel(state: number | null): string {
@@ -451,26 +454,22 @@ function stormLabel(state: number | null): string {
   return state >= 2 ? "Impact" : "Inbound";
 }
 
-/**
- * `Severity` to `Card`'s `tone`. Only the three severities this widget ever
- * produces (nominal / warning / critical) carry meaning; the rest fold to
- * `default` defensively, since `Severity` is the wider shared vocabulary.
- */
-const SEVERITY_CARD_TONE: Record<Severity, ReadoutTone> = {
-  nominal: "go",
-  info: "default",
-  caution: "warning",
-  warning: "warning",
-  critical: "alert",
-  offline: "default",
+/** `Severity` to `Card`'s `tone`: an `info` card stays untinted. */
+const SEVERITY_CARD_TONE: Record<Severity, CardTone> = {
+  go: "go",
+  info: "neutral",
+  caution: "caution",
+  warn: "warn",
+  nogo: "nogo",
+  offline: "offline",
 };
 
 const SEVERITY_HEX: Record<Severity, string> = {
-  nominal: "var(--color-status-go-bg)",
-  info: "var(--color-status-info-bg)",
-  caution: "var(--color-status-warning-bg)",
-  warning: "var(--color-status-warning-bg)",
-  critical: "var(--color-status-nogo-bg)",
+  go: "var(--color-go-mark)",
+  info: "var(--color-info-mark)",
+  caution: "var(--color-caution-mark)",
+  warn: "var(--color-warn-mark)",
+  nogo: "var(--color-nogo-mark)",
   offline: "var(--color-text-muted)",
 };
 
@@ -524,15 +523,15 @@ function starActivity(
   starName: string,
 ): StarActivity {
   const mine = allStorms.filter((s) => s.star === starName && s.state !== 0);
-  if (mine.length === 0) return { level: 0, severity: "nominal", storms: [] };
+  if (mine.length === 0) return { level: 0, severity: "go", storms: [] };
   /* An unread slot is carried into `storms` so its card is drawn, but it never
      drives the ring: not knowing is not evidence the star is active, and a lit
      ring would be this widget inventing a CME from a failed read. */
   const read = mine.filter((s) => s.state !== null);
   if (read.length === 0) return { level: 0, severity: "info", storms: mine };
   const severity: Severity = read.some((s) => (s.state ?? 0) >= 2)
-    ? "critical"
-    : "warning";
+    ? "nogo"
+    : "warn";
   const level = Math.max(
     ...read.map((s) => {
       if ((s.state ?? 0) >= 2) return 1;
@@ -619,7 +618,7 @@ function StarDiagram({
     activity.level <= 0
       ? `Solar activity for ${starName}: baseline`
       : `Solar activity for ${starName}: ${
-          activity.severity === "critical" ? "CME impacting" : "CME inbound"
+          activity.severity === "nogo" ? "CME impacting" : "CME inbound"
         }`;
 
   return (
@@ -676,12 +675,11 @@ function StarDiagram({
  * pinned to red the instant it has arrived whatever the percentage says.
  */
 function transitThreatColor(storm: StormDerived): string {
-  if (storm.state !== null && storm.state >= 2)
-    return "var(--color-status-nogo-bg)";
-  if (storm.progressPct === null) return "var(--color-status-info-fg)";
-  if (storm.progressPct >= 66) return "var(--color-status-nogo-bg)";
-  if (storm.progressPct >= 33) return "var(--color-status-warning-bg)";
-  return "var(--color-status-info-fg)";
+  if (storm.state !== null && storm.state >= 2) return "var(--color-nogo-mark)";
+  if (storm.progressPct === null) return "var(--color-info-mark)";
+  if (storm.progressPct >= 66) return "var(--color-nogo-mark)";
+  if (storm.progressPct >= 33) return "var(--color-warn-mark)";
+  return "var(--color-info-mark)";
 }
 
 /**
@@ -727,13 +725,13 @@ function StormCard({
       tone={SEVERITY_CARD_TONE[severity]}
       title={storm.star}
       titleRight={
-        <Badge severity={severity} size="sm">
+        <Badge tone={severity} size="sm">
           {stormLabel(storm.state)}
         </Badge>
       }
     >
       <Stack>
-        <Text tone="muted" size="xs">
+        <Text level="muted" size="xs">
           {`${verb} ${target}${qualifier}`}
         </Text>
 
@@ -741,10 +739,10 @@ function StormCard({
           <>
             {!compact && (
               <Cluster justify="between">
-                <Text tone="muted" size="xs">
+                <Text level="muted" size="xs">
                   Departed
                 </Text>
-                <Text tone="default" size="xs">
+                <Text size="xs">
                   <MissionDate value={storm.departureUt} />
                 </Text>
               </Cluster>
@@ -756,35 +754,25 @@ function StormCard({
                 fillColor={transitThreatColor(storm)}
               />
             ) : (
-              <Text tone="muted" size="xs">
+              <Text level="muted" size="xs">
                 Transit progress needs a mission clock.
               </Text>
             )}
           </>
         ) : (
-          <Text tone="muted" size="xs">
+          <Text level="muted" size="xs">
             Transit data not yet captured.
           </Text>
         )}
 
         <Cluster justify="between">
-          <Text tone="muted" size="xs">
+          <Text level="muted" size="xs">
             Impact
           </Text>
           <Text
             tone={storm.state !== null && storm.state >= 2 ? "nogo" : "warn"}
             size="xs"
             weight="semibold"
-            // `warn` alone renders --color-status-warning-fg, a near-black
-            // meant for text ON the warning "-bg" orange, e.g. inside a Badge;
-            // standalone on this card's raised dark surface that is
-            // functionally invisible. The `-fg-muted` override is the fix.
-            // `nogo`'s own `-fg` is a light pink and needs none.
-            style={
-              storm.state === null || storm.state < 2
-                ? { color: "var(--color-status-warning-fg-muted)" }
-                : undefined
-            }
           >
             {storm.impactEtaSec !== null ? (
               <Countdown value={storm.impactEtaSec} clock />
@@ -1150,12 +1138,12 @@ function SpaceWeatherComponent({
         <Badge
           role="status"
           aria-live="polite"
-          severity={
+          tone={
             status.tone === "go"
-              ? "nominal"
+              ? "go"
               : status.tone === "nogo"
-                ? "critical"
-                : "warning"
+                ? "nogo"
+                : "warn"
           }
         >
           {status.label}
@@ -1211,7 +1199,7 @@ function SpaceWeatherComponent({
                     }
                     title={name}
                   >
-                    <Text tone="muted" size="xs">
+                    <Text level="muted" size="xs">
                       <Unit value={star.distance} />
                     </Text>
                   </Card>
@@ -1417,8 +1405,8 @@ const BLACKOUT_TAG: CSSProperties = {
   textTransform: "uppercase",
   // Text sitting ON the nogo-bg fill, not beside it: -fg (2.61:1 here) fails
   // the 4.5:1 AA floor. -on-bg is the token for exactly this case.
-  color: "var(--color-status-nogo-on-bg)",
-  background: "var(--color-status-nogo-bg)",
+  color: "var(--color-nogo-on-status)",
+  background: "var(--color-nogo-status)",
   borderRadius: "var(--radius-regular)",
   padding: "var(--inset-chip)",
   whiteSpace: "nowrap",

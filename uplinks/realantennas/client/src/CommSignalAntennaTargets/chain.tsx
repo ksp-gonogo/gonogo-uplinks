@@ -13,15 +13,15 @@
 import { useCommand, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
   CommandButton,
-  GhostButton,
   magnitudeOf,
   magnitudeOr,
-  type Quantityish,
-  type Severity,
   Stack,
   Text,
+  type Quantityish,
+  type Severity,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type {
@@ -58,9 +58,9 @@ const MODE_LABELS: Record<string, string> = {
  * trouble, the chain just cannot act.
  */
 const STATE_SEVERITY: Record<string, Severity> = {
-  holding: "nominal",
+  holding: "go",
   settling: "info",
-  walking: "warning",
+  walking: "warn",
   blocked: "caution",
 };
 
@@ -199,15 +199,15 @@ export function AntennaChain({
   return (
     <Stack gap="related-dense">
       <Cluster gap="related-comfortable" wrap align="center">
-        <Text size="xs" tone="muted" style={LABEL_STYLE}>
+        <Text size="xs" level="muted" style={LABEL_STYLE}>
           Fallback chain
         </Text>
         {chain ? (
-          <Badge severity={STATE_SEVERITY[chain.walkPhase] ?? "info"} size="sm">
+          <Badge tone={STATE_SEVERITY[chain.walkPhase] ?? "info"} size="sm">
             {STATE_LABELS[chain.walkPhase] ?? chain.walkPhase}
           </Badge>
         ) : (
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             None set
           </Text>
         )}
@@ -217,14 +217,14 @@ export function AntennaChain({
           every entry has been tried and the cause is not in the list.
         */}
         {laps > 0 ? (
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             {`${laps} full ${laps === 1 ? "pass" : "passes"} with no link`}
           </Text>
         ) : null}
       </Cluster>
 
       {chain?.detail ? (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {chain.detail}
         </Text>
       ) : null}
@@ -235,7 +235,7 @@ export function AntennaChain({
             const aimedHere = position === activeStep;
             return (
               <li key={position}>
-                <Text size="sm" tone={aimedHere ? "default" : "muted"}>
+                <Text size="sm" level={aimedHere ? undefined : "muted"}>
                   <StepLabel step={step} />
                   {aimedHere ? " · aimed here now" : ""}
                 </Text>
@@ -246,7 +246,7 @@ export function AntennaChain({
       ) : null}
 
       {chain ? (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           {"Each target is given "}
           <Unit value={chain.settleSeconds} />
           {" to produce a link before the craft tries the next."}
@@ -264,7 +264,7 @@ export function AntennaChain({
         <ol aria-label={`Chain being composed for ${antennaName}`}>
           {positioned(draft).map(({ position, step }) => (
             <li key={position}>
-              <Text size="sm" tone="default">
+              <Text size="sm">
                 <StepLabel step={step} />
               </Text>
             </li>
@@ -273,13 +273,13 @@ export function AntennaChain({
       ) : null}
 
       <Cluster gap="related-comfortable" wrap justify="start">
-        <GhostButton type="button" onClick={onStage}>
+        <Button variant="ghost" type="button" onClick={onStage}>
           ADD TARGET ABOVE
-        </GhostButton>
+        </Button>
         {draft.length > 0 ? (
-          <GhostButton type="button" onClick={onUnstage}>
+          <Button variant="ghost" type="button" onClick={onUnstage}>
             REMOVE LAST
-          </GhostButton>
+          </Button>
         ) : null}
         {draft.length > 0 ? (
           <CommandButton

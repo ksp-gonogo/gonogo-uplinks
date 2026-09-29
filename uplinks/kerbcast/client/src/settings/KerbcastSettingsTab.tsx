@@ -29,7 +29,7 @@ export function KerbcastSettingsTab({
     <Cluster align="start" gap="section-comfortable">
       <Stack gap="related">
         <Text size="sm">{LABEL}</Text>
-        <Text tone="muted" size="xs">
+        <Text level="muted" size="xs">
           Disables the main KSP flight cameras to free GPU headroom for kerbcast
           streams. Persists across saves.
         </Text>

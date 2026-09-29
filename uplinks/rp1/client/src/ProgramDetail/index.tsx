@@ -148,7 +148,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
           {isFull(slots?.freeSlots) && (
             <>
               {" "}
-              <Badge severity="caution">FULL</Badge>
+              <Badge tone="caution">FULL</Badge>
             </>
           )}
         </Balance>
@@ -324,7 +324,7 @@ function ProgramCatalogue({
               >
                 <SubjectHeading
                   status={
-                    <Badge severity={severityOf(program.status)}>
+                    <Badge tone={severityOf(program.status)}>
                       {(program.status ?? NULL_DISPLAY).toUpperCase()}
                     </Badge>
                   }
@@ -370,7 +370,7 @@ function ChosenProgram({
           item. */}
       <SubjectHeading
         status={
-          <Badge severity={severityOf(program.status)}>
+          <Badge tone={severityOf(program.status)}>
             {(program.status ?? NULL_DISPLAY).toUpperCase()}
           </Badge>
         }
@@ -575,7 +575,7 @@ function AcceptControl({
     <Section>
       <SectionTitle>ACCEPT</SectionTitle>
       <Cluster gap="related-dense" justify="start" wrap>
-        <Text size="sm" tone="muted">
+        <Text size="sm" level="muted">
           {program.confidenceCost == null ? (
             <>{NULL_DISPLAY} RP-1 did not price this Program</>
           ) : (
@@ -587,7 +587,7 @@ function AcceptControl({
           {short && (
             <>
               {" "}
-              <Badge severity="caution">SHORT</Badge>
+              <Badge tone="caution">SHORT</Badge>
             </>
           )}
         </Text>
@@ -638,8 +638,8 @@ function RunningProgram({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
       <SectionTitle>RUNNING</SectionTitle>
       {(ready || overrun) && (
         <Cluster gap="related-dense" justify="start" wrap>
-          {ready && <Badge severity="info">READY TO COMPLETE</Badge>}
-          {overrun && <Badge severity="caution">OVERRUN</Badge>}
+          {ready && <Badge tone="info">READY TO COMPLETE</Badge>}
+          {overrun && <Badge tone="caution">OVERRUN</Badge>}
         </Cluster>
       )}
       <Stack as="ul" gap="rows" style={LIST_STYLE}>
@@ -761,7 +761,7 @@ function FundingCurveChart({
               {
                 id: "funding",
                 label: perYear ? "Funding per year" : "Cumulative funding",
-                color: "var(--color-status-go-fg)",
+                color: "var(--color-go-text)",
                 points: sample.points.map((p) => ({
                   x: p.x,
                   y: perYear ? (p.fundsPerYear ?? 0) : p.funds,
@@ -791,7 +791,7 @@ function FundingCurveChart({
             {/* The anchors describe the SERIES, so they change with it: a rate
                 chart does not start at zero funds and does not end at the
                 total, which is what the cumulative one is bounded by. */}
-            <Text size="xs" tone="muted">
+            <Text size="xs" level="muted">
               {perYear ? (
                 <>funds per year across the term</>
               ) : (
@@ -800,7 +800,7 @@ function FundingCurveChart({
                 </>
               )}
             </Text>
-            <Text size="xs" tone="muted">
+            <Text size="xs" level="muted">
               {sample.axis === "years" ? (
                 <>
                   full term <Unit value={program.durationSeconds} />
@@ -809,13 +809,13 @@ function FundingCurveChart({
                 <>axis in fractions of the term, which RP-1 has not published</>
               )}
             </Text>
-            <Text size="xs" tone="muted">
+            <Text size="xs" level="muted">
               <Unit value={program.totalFunding} />{" "}
               {perYear ? <>in total</> : <>at term</>}
             </Text>
           </Cluster>
           {!perYear && paidOut !== null && (
-            <Text size="xs" tone="muted">
+            <Text size="xs" level="muted">
               Dashed rule: <Unit value={program.fundsPaidOut} /> paid so far
             </Text>
           )}
@@ -842,7 +842,7 @@ function PaymentSchedule({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
       return (
         <Section>
           <SectionTitle>FUNDING SUMMARY</SectionTitle>
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             {NULL_DISPLAY} RP-1 has not said what this Program has been paid so
             far, and every remaining year is measured from that
           </Text>
@@ -928,7 +928,7 @@ function SpeedLadder({
                 {row.speed === chosen && (
                   <>
                     {" "}
-                    <Badge severity="info">SELECTED</Badge>
+                    <Badge tone="info">SELECTED</Badge>
                   </>
                 )}
               </Text>
@@ -948,7 +948,7 @@ function SpeedLadder({
                 {outOfReach(row.confidenceCost, confidenceHeld) && (
                   <>
                     {" "}
-                    <Badge severity="caution">SHORT</Badge>
+                    <Badge tone="caution">SHORT</Badge>
                   </>
                 )}
               </Text>
@@ -1075,7 +1075,7 @@ function present<T>(field: T | null | undefined): T | undefined {
 function severityOf(status: Rp1ProgramEntry["status"]): Severity {
   if (status === "active") return "info";
   if (status === "disabled") return "caution";
-  return "nominal";
+  return "go";
 }
 
 /**

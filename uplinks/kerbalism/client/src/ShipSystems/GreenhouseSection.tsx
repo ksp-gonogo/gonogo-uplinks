@@ -148,7 +148,7 @@ function greenhouseTone(
   tooHigh: boolean,
 ): Severity | undefined {
   if (!g.active) return undefined;
-  return g.issue.length > 0 || tooHigh ? "warning" : undefined;
+  return g.issue.length > 0 || tooHigh ? "warn" : undefined;
 }
 
 function greenhouseStateLabel(g: GreenhouseRow, tooHigh: boolean): string {
@@ -215,7 +215,7 @@ function GreenhouseEntryRow({
         {/* Same head treatment as the host widget's own SectionHead (a
             muted uppercase Text), so the greenhouse rows read as part of
             one system rather than a second heading style. */}
-        <Text tone="muted" size="xs">
+        <Text level="muted" size="xs">
           {titlePrefix.toUpperCase()}
         </Text>
         <Cluster justify="end" wrap>
@@ -223,26 +223,21 @@ function GreenhouseEntryRow({
             // `warning`, not `critical`: recoverable once the storm passes,
             // the same rung the host widget's Degraded status uses for it
             // (see this file's doc comments).
-            <Badge
-              role="status"
-              aria-live="polite"
-              severity="warning"
-              size="sm"
-            >
+            <Badge role="status" aria-live="polite" tone="warn" size="sm">
               Radiation too high
             </Badge>
           )}
           {/* A held run state is not a current one, so the badge says held
               in its place, the way the host's process rows do. */}
           {held ? (
-            <Badge role="status" aria-live="polite" severity="info" size="sm">
+            <Badge role="status" aria-live="polite" tone="info" size="sm">
               held
             </Badge>
           ) : (
             <Badge
               role="status"
               aria-live="polite"
-              severity={greenhouseTone(g, tooHigh)}
+              tone={greenhouseTone(g, tooHigh)}
               size="sm"
             >
               {greenhouseStateLabel(g, tooHigh)}
@@ -252,21 +247,13 @@ function GreenhouseEntryRow({
       </Cluster>
       {/* Wraps rather than truncating at narrow widths, a hidden number is
           worse than an extra line. */}
-      <Text tone={held ? "muted" : "default"} size="xs">
+      <Text level={held ? "muted" : undefined} size="xs">
         {held ? "At last contact: " : ""}Natural {fmtWm2(g.natural)} ·
         Artificial {fmtWm2(g.artificial)} · Rate{" "}
         {fmtRatePerDay(g.foodRatePerSec)}
       </Text>
       {blocked && (
-        // The bare "-fg" warning token is meant to sit ON the warning "-bg"
-        // (e.g. inside a Badge); standalone on the panel's dark surface it
-        // is near-black. "-fg-muted" is the standalone-warning-text token
-        // (LaunchDirector, CommSignal, DeployedScience all use it).
-        <Text
-          tone="warn"
-          size="xs"
-          style={{ color: "var(--color-status-warning-fg-muted)" }}
-        >
+        <Text tone="warn" size="xs">
           {g.issue}
         </Text>
       )}
@@ -301,7 +288,7 @@ function GreenhouseSection({
   }
   return (
     <Stack>
-      <Text tone="muted" size="xs">
+      <Text level="muted" size="xs">
         GREENHOUSES
       </Text>
       {greenhouses.map((g, i) => (

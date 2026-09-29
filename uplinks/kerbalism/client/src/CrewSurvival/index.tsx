@@ -60,7 +60,7 @@ function warningFor(kerbal: KerbalSurvival): {
   if (margin !== null) {
     // A command sent now would land after the deadline, so there is no margin left to count.
     if (margin <= 0) {
-      return { label: "too late", severity: "critical" };
+      return { label: "too late", severity: "nogo" };
     }
     /**
      * The margin is a DURATION, so it renders on the composite time ladder
@@ -77,7 +77,7 @@ function warningFor(kerbal: KerbalSurvival): {
      */
     return {
       label: `~${writeQuantity(value("s", margin))} to act`,
-      severity: "critical",
+      severity: "nogo",
       observed: value("s", margin),
       modelled: modelledBeyondReceived(kerbal.marginToAct),
     };
@@ -85,7 +85,7 @@ function warningFor(kerbal: KerbalSurvival): {
   if (kerbal.worstRule) {
     return {
       label: `${ruleLabel(kerbal.worstRule.name)} critical`,
-      severity: "critical",
+      severity: "nogo",
     };
   }
   return null;
@@ -136,11 +136,7 @@ function CrewSurvivalBadgeAugment({
       ? `${warning.label} · modelled`
       : `${warning.label} · held`;
   return (
-    <Badge
-      severity={warning.severity}
-      size="sm"
-      data-reckoning-basis={modelled}
-    >
+    <Badge tone={warning.severity} size="sm" data-reckoning-basis={modelled}>
       {label}
       <ModelledAlongside
         observed={warning.observed}

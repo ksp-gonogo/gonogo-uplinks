@@ -25,7 +25,10 @@ import type {
   PrincipiaAnalysis,
   PrincipiaOrbitAnalysis,
 } from "../__generated__/contract.js";
-import { orbitDescription, UNREACHABLE_ADJECTIVES } from "../orbitDescription.js";
+import {
+  orbitDescription,
+  UNREACHABLE_ADJECTIVES,
+} from "../orbitDescription.js";
 import { PRINCIPIA } from "../uplink.js";
 // Side-effect import: hydrates this Topic's units at decode time. Without it
 // every band arrives as a bare number while the type still says it carries one.
@@ -51,14 +54,13 @@ export type Dated = <U extends string>(
 ) => Reading<Value<U>> | null;
 
 export function datedBy(reading: TopicReading<PrincipiaAnalysis>): Dated {
-  return (figure) =>
-    figure == null ? null : readingOf(reading, () => figure);
+  return (figure) => (figure == null ? null : readingOf(reading, () => figure));
 }
 
 /** A held state with no figure to carry the kit's mark. */
 export function HeldTag() {
   return (
-    <Badge severity="caution" size="sm">
+    <Badge tone="caution" size="sm">
       HELD
     </Badge>
   );
@@ -192,7 +194,7 @@ function GroundTrackRows({
             <RowName>REPEATS IN</RowName>
             <Cluster>
               <Unit value={dated(orbit.recurrenceCycleRotations)} />
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 turns
               </Text>
             </Cluster>
@@ -207,7 +209,7 @@ function GroundTrackRows({
             <RowName>SUBCYCLE</RowName>
             <Cluster>
               <Unit value={dated(orbit.recurrenceSubcycleRotations)} />
-              <Text tone="faint" size="sm">
+              <Text level="faint" size="sm">
                 turns
               </Text>
             </Cluster>
@@ -286,7 +288,7 @@ export function OrbitAnalysisRows({
             analysis integrates forward from the craft's present state, and it
             refuses a span shorter than one revolution. Waiting fixes it; looking
             for a fault does not. */}
-        <Text tone="faint" size="sm">
+        <Text level="faint" size="sm">
           {orbit.gravitationallyBound === false
             ? "This trajectory is bound to nothing over the analysed span."
             : "The analysed span does not yet cover one full revolution."}
@@ -429,21 +431,21 @@ export function OrbitAnalysisRows({
         ut={orbit.firstCollisionUt}
         viewUt={viewUt}
         dated={dated}
-        severity="critical"
+        tone="nogo"
       />
       <HazardRow
         label="COLLISION RISK"
         ut={orbit.firstCollisionRiskUt}
         viewUt={viewUt}
         dated={dated}
-        severity="warning"
+        tone="warn"
       />
       <HazardRow
         label="REENTRY"
         ut={orbit.firstReentryUt}
         viewUt={viewUt}
         dated={dated}
-        severity="warning"
+        tone="warn"
       />
     </Stack>
   );
@@ -480,7 +482,7 @@ function PeriodRow({
         <Cluster justify="end" gap="related-dense">
           <Countdown value={dated(seconds)} />
           {offset !== null && offset !== 0 && (
-            <Text tone="faint" size="sm">
+            <Text level="faint" size="sm">
               {offset > 0 ? "+" : "−"}
               <Countdown value={dated(value("s", Math.abs(offset)))} />
             </Text>
@@ -504,13 +506,13 @@ function HazardRow({
   ut,
   viewUt,
   dated,
-  severity,
+  tone,
 }: {
   label: string;
   ut: PrincipiaOrbitAnalysis["firstCollisionUt"];
   viewUt: number | null;
   dated: Dated;
-  severity: "critical" | "warning";
+  tone: "nogo" | "warn";
 }) {
   const instant = magnitudeOf(ut);
   if (instant === null || viewUt === null) {
@@ -521,7 +523,7 @@ function HazardRow({
       <RowName>{label}</RowName>
       <Cluster justify="end" gap="related-dense">
         <Countdown value={dated(value("s", instant - viewUt))} clock />
-        <Badge severity={severity}>{label}</Badge>
+        <Badge tone={tone}>{label}</Badge>
       </Cluster>
     </Row>
   );
@@ -557,7 +559,7 @@ export function OrbitAnalysisSection() {
           <Text tone="warn" size="sm">
             Analysis not observed
           </Text>
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             No n-body analysis has reached this console for the active craft.
           </Text>
         </Stack>
@@ -581,7 +583,7 @@ export function OrbitAnalysisSection() {
               window is open and destroys it outright when asked to analyse a
               different craft, so this is the ordinary state rather than a
               fault, and saying which is what stops an operator hunting one. */}
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             Principia analyses one craft at a time, while its own window is
             open. Open it on this craft and the elements will appear here.
           </Text>
@@ -607,11 +609,7 @@ export function OrbitAnalysisSection() {
           </Text>
         )}
 
-        <OrbitAnalysisRows
-          orbit={orbit}
-          viewUt={viewUt}
-          source={reading}
-        />
+        <OrbitAnalysisRows orbit={orbit} viewUt={viewUt} source={reading} />
 
         {/* The list is EMPTY now, so this renders nothing, and the guard is why
             it renders nothing rather than an empty accusation.
@@ -626,7 +624,7 @@ export function OrbitAnalysisSection() {
             Only beside a phrase, though: with no elements there is no phrase for
             it to qualify, and a caveat about words nobody wrote is noise. */}
         {description !== null && UNREACHABLE_ADJECTIVES.length > 0 && (
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             {`Cannot say ${UNREACHABLE_ADJECTIVES.join(", ")}.`}
           </Text>
         )}

@@ -130,9 +130,7 @@ function ConstructionRow({
     // by definition, so painting them all as caution would leave the colour
     // saying nothing at the moment it is needed.
     <ProjectCard
-      badge={
-        <Badge severity="info">{KIND_BADGE[row.kind ?? ""] ?? "WORK"}</Badge>
-      }
+      badge={<Badge tone="info">{KIND_BADGE[row.kind ?? ""] ?? "WORK"}</Badge>}
       detail={
         <>
           <Detail row={row} />
@@ -141,13 +139,13 @@ function ConstructionRow({
       }
       name={label}
       progress={{ label: `Construction progress, ${label}`, ratio }}
-      tone={row.stalled === true ? "warning" : "go"}
+      tone={row.stalled === true ? "warn" : "go"}
     >
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         <TimeLeft row={row} />
       </Text>
 
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {/* Both figures, never a difference: RP-1's own outstanding balance
             runs through a currency query this Uplink will not evaluate, so a
             subtraction here would look like that number and not be it. */}
@@ -155,7 +153,7 @@ function ConstructionRow({
       </Text>
 
       {row.isModify === true && (
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           <Unit value={row.engineersToReadd} /> engineers off it until it
           finishes
         </Text>
@@ -229,7 +227,7 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
         {throttle !== null && throttle > 1 && (
           <>
             {" "}
-            <Badge severity="caution">RUSHING</Badge>
+            <Badge tone="caution">RUSHING</Badge>
           </>
         )}
         {throttle !== null && throttle > 0 && throttle < 1 && (
@@ -244,8 +242,7 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
   if (row.stalled === true) {
     return (
       <>
-        <Badge severity="caution">STALLED</Badge> no end date while work is
-        stopped
+        <Badge tone="caution">STALLED</Badge> no end date while work is stopped
       </>
     );
   }

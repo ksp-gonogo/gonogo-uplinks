@@ -1,4 +1,4 @@
-import type { ComponentProps, Value } from "@ksp-gonogo/sitrep-sdk";
+import type { ComponentProps, Tone, Value } from "@ksp-gonogo/sitrep-sdk";
 import { registerComponent, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   BigReadout,
@@ -6,7 +6,6 @@ import {
   NULL_DISPLAY,
   Panel,
   ReadoutCaption,
-  type ReadoutTone,
   Row,
   RowName,
   Section,
@@ -71,13 +70,13 @@ const NOTICEABLE = value("ratio", 0.02);
 
 function stallBand(fraction: Value<"ratio">): {
   label: string;
-  tone: ReadoutTone;
+  tone: Tone;
 } {
   if (fraction.greaterThanOrEqual(DEPARTING)) {
-    return { label: "STALLED", tone: "alert" };
+    return { label: "STALLED", tone: "nogo" };
   }
   if (fraction.greaterThan(NOTICEABLE)) {
-    return { label: "PARTIAL STALL", tone: "warning" };
+    return { label: "PARTIAL STALL", tone: "warn" };
   }
   return { label: "ATTACHED", tone: "go" };
 }
@@ -114,14 +113,18 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
       panelTitle="Aerodynamics"
       compactTitle={["AERO"]}
       sections={[
-        <Section key="state" full gap="related-dense" role="status" aria-live="polite">
+        <Section
+          key="state"
+          full
+          gap="related-dense"
+          role="status"
+          aria-live="polite"
+        >
           <Cluster wrap>
-            <StatusPill $tone={band?.tone ?? "default"}>
+            <StatusPill $tone={band?.tone ?? "neutral"}>
               {band?.label ?? "NO AERO DATA"}
             </StatusPill>
-            {modelStale && (
-              <StatusPill $tone="warning">MODEL STALE</StatusPill>
-            )}
+            {modelStale && <StatusPill $tone="warn">MODEL STALE</StatusPill>}
           </Cluster>
           <Cluster wrap>
             <div>

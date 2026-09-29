@@ -1,6 +1,6 @@
 import { useAlarmRequest, type Value, value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  ActionButton,
+  Button,
   CommandButton,
   Disclosure,
   magnitudeOf,
@@ -121,7 +121,9 @@ export function FundTargetControl({
           />
 
           <Row as="div">
-            <ActionButton
+            <Button
+              variant="ghost"
+              size="sm"
               aria-label={`Stop the warp when the balance reaches ${spoken} funds`}
               disabled={wantedFunds <= 0}
               onClick={() =>
@@ -148,7 +150,7 @@ export function FundTargetControl({
               type="button"
             >
               Set
-            </ActionButton>
+            </Button>
           </Row>
         </Stack>
       </Disclosure>
@@ -178,7 +180,7 @@ function StandingTarget({
 }>) {
   return (
     <Row as="div">
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {target.targetFunds == null ? (
           NULL_DISPLAY
         ) : (

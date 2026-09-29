@@ -30,7 +30,7 @@ function rowTones(
   if (!survival) return null;
   const entries = survival.kerbals
     .filter((k) => k.tone === "nogo")
-    .map((k) => ({ crewName: k.name, severity: "critical" as const }));
+    .map((k) => ({ crewName: k.name, tone: "nogo" as const }));
   return entries.length > 0 ? entries : null;
 }
 

@@ -111,7 +111,7 @@ export function VehicleAssembly() {
             five columns every spend control below was on screen with the
             balance shut in a disclosure. A body line wraps instead of
             hiding. */}
-          <Text size="sm" title="Available funds" tone="muted">
+          <Text size="sm" title="Available funds" level="muted">
             Funds <Unit value={careerReading.economy.funds} />
           </Text>
 
@@ -137,7 +137,7 @@ export function VehicleAssembly() {
             <Text
               size="sm"
               title="Prepaid credit, spent before funds on the purchases it covers"
-              tone="muted"
+              level="muted"
             >
               Unlock credit <Unit value={budgetReading.unlockCreditBalance} />
             </Text>
@@ -157,7 +157,7 @@ export function VehicleAssembly() {
              states reached the same sentence. The distinction is real and worth
              keeping, so it is made on the ABSENCE itself rather than on a count
              that cannot see it. */
-            <Text size="sm" tone="muted">
+            <Text size="sm" level="muted">
               No reading from the build queue.
             </Text>
           )}
@@ -196,7 +196,7 @@ function ComplexKey({
   }
 
   return (
-    <Text size="xs" tone="muted">
+    <Text size="xs" level="muted">
       Launch complexes:{" "}
       {centres.map((centre, index) => (
         <span key={centre.name}>

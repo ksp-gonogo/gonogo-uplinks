@@ -29,7 +29,6 @@ import {
   Section,
   type Severity,
   Stack,
-  severityFromBadgeEntryTone,
   speakQuantity,
   standsApart,
   Text,
@@ -69,9 +68,8 @@ import { useResourceColorMap } from "./resourceColorMap.js";
 type ShipSystemsConfig = Record<string, never>;
 
 // ---------------------------------------------------------------------------
-// Tone + format helpers. `Tone` mirrors the vocabulary `Meter`/`Value`/
-// `Badge` (via `severityFromBadgeEntryTone`) already speak; nothing here invents a
-// second colour system.
+// Tone + format helpers. `Tone` is the vocabulary `Meter`/`Value`/`Badge`
+// already speak; nothing here invents a second colour system.
 //
 // `neutral` is the RESTING tone, and it is load-bearing (operator feedback:
 // "the mix of colours everywhere ... is what makes it nauseating"). A status
@@ -320,8 +318,8 @@ function toProcessRow(p: KerbalismProcessEntry, index: number): ProcessRow {
  *  idle are both ordinary operating states and render as decorative grey chips
  *  (severity omitted), so a healthy process list adds no colour at all. */
 function processSeverity(state: ProcessRunState): Severity | undefined {
-  if (state === "broken") return "critical";
-  return state === "unknown" ? "warning" : undefined;
+  if (state === "broken") return "nogo";
+  return state === "unknown" ? "warn" : undefined;
 }
 
 /** Mirrors GreenhouseSection's own `GreenhouseRow`, ported field-for-field so
@@ -547,11 +545,7 @@ function ShipSystemsBody({
     <Panel
       panelTitle="Ship Systems"
       panelAside={
-        <Badge
-          role="status"
-          aria-live="polite"
-          severity={severityFromBadgeEntryTone(status.tone)}
-        >
+        <Badge role="status" aria-live="polite" tone={status.tone}>
           {held ? `${status.label} · held` : status.label}
         </Badge>
       }
@@ -601,7 +595,7 @@ function ShipSystemsBody({
              when it appears. The announcement contract is the component's, so
              this site no longer carries a hand-written role and aria-live. */
           <Section key="causes" full>
-            <Notice tone="alert" title="Limiting factors">
+            <Notice tone="nogo" title="Limiting factors">
               <Stack gap="caption">
                 {summary.causes.flatMap((cause) =>
                   cause.explains.length > 0
@@ -758,17 +752,15 @@ function ShipSystemsBody({
           <Stack>
             {processes.map((p) => (
               <Cluster key={p.id} justify="between">
-                <Text tone="default" size="xs">
-                  {p.name}
-                </Text>
+                <Text size="xs">{p.name}</Text>
                 {/* The heading above says whose state is held; the badge only
                     has the width of the one it replaces. */}
                 {held ? (
-                  <Badge severity="info" size="sm">
+                  <Badge tone="info" size="sm">
                     held
                   </Badge>
                 ) : (
-                  <Badge severity={processSeverity(p.state)} size="sm">
+                  <Badge tone={processSeverity(p.state)} size="sm">
                     {p.state}
                   </Badge>
                 )}
@@ -801,14 +793,15 @@ function SectionHead({
 }) {
   return (
     <Cluster justify="between" align="baseline">
-      <Text tone="muted" size="xs">
+      <Text level="muted" size="xs">
         {label.toUpperCase()}
       </Text>
       {value !== undefined && (
         // `neutral` is a Meter/Badge tone, not a Text one: a resting
         // section reading renders in the same muted text as the label.
         <Text
-          tone={tone === undefined || tone === "neutral" ? "muted" : tone}
+          tone={tone === undefined || tone === "neutral" ? undefined : tone}
+          level="muted"
           size="xs"
         >
           {value}
@@ -876,17 +869,7 @@ function ResourceLedgerRow({
           valueLabelNode={<RowValueDisplay row={row} modelled={modelled} />}
         />
         {row.role === "downstream" && row.blockedBy.length > 0 && (
-          // `tone="warn"` alone renders --color-status-warning-fg, a
-          // near-black meant for text ON the warning "-bg" orange, e.g.
-          // inside a Badge. Standalone on this row's dark surface that is
-          // functionally invisible. The `-fg-muted` override is the same
-          // fix GreenhouseSection.tsx documents for the identical landmine
-          // (LaunchDirector, CommSignal, DeployedScience hit it too).
-          <Text
-            tone="warn"
-            size="xs"
-            style={{ color: "var(--color-status-warning-fg-muted)" }}
-          >
+          <Text tone="warn" size="xs">
             <LimitedByMessage
               subjectDisplayName={row.displayName}
               blockedBy={row.blockedBy}
@@ -970,7 +953,7 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
     // panel actually has, at every panel width down to minSize.
     <Stack style={{ width: "100%", minWidth: 0 }}>
       {ledger.terms.length === 0 ? (
-        <Text tone="muted" size="xs">
+        <Text level="muted" size="xs">
           No modelled sources
         </Text>
       ) : (
@@ -988,9 +971,7 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
             justify="between"
             wrap
           >
-            <Text tone="default" size="xs">
-              {term.name}
-            </Text>
+            <Text size="xs">{term.name}</Text>
             {/* Nested Cluster, not a bespoke row: groups the bar and the
                 rate so the pair moves together as one item on the outer
                 Cluster's trailing edge. `justify="start"` packs them at
@@ -1012,33 +993,27 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
                   NUMBER beside a red/green bar doubled the same reading and
                   fed the widget's colour pile-up. The signed prefix keeps
                   the direction legible in text. */}
-              <Text tone="default" size="xs">
-                {formatRate(term.ratePerSecond)}
-              </Text>
+              <Text size="xs">{formatRate(term.ratePerSecond)}</Text>
             </Cluster>
           </Cluster>
         ))
       )}
       <Divider />
       <Cluster justify="between" wrap>
-        <Text tone="muted" size="xs">
+        <Text level="muted" size="xs">
           Net (derived)
         </Text>
         {/* tone="default", never the accent default: `Value`'s accent green
             on a NEGATIVE net read as "this drain is good". The sign prefix
             carries the direction. */}
-        <Text tone="default" size="xs">
-          {formatRate(ledger.derivedNet)}
-        </Text>
+        <Text size="xs">{formatRate(ledger.derivedNet)}</Text>
       </Cluster>
       {ledger.reportedNet !== undefined && (
         <Cluster justify="between" wrap>
-          <Text tone="muted" size="xs">
+          <Text level="muted" size="xs">
             Reported
           </Text>
-          <Text tone="default" size="xs">
-            {formatRate(ledger.reportedNet)}
-          </Text>
+          <Text size="xs">{formatRate(ledger.reportedNet)}</Text>
         </Cluster>
       )}
       {hasResidual && ledger.residual !== undefined && (
@@ -1050,11 +1025,7 @@ function LedgerBody({ ledger }: { ledger: Ledger }) {
         // (timewarp catch-up between samples, a consumer this ledger does not
         // enumerate) and is worth keeping visible as exactly that, never
         // hidden.
-        <Text
-          tone="warn"
-          size="xs"
-          style={{ color: "var(--color-status-warning-fg-muted)" }}
-        >
+        <Text tone="warn" size="xs">
           Residual {formatRate(ledger.residual)} (unaccounted)
         </Text>
       )}

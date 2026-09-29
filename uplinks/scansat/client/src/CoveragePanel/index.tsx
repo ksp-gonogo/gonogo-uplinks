@@ -137,13 +137,9 @@ function CoverageRow({
         />
       </span>
       {range?.bestRange ? (
-        <span style={{ ...CHIP, color: "var(--color-status-go-fg)" }}>
-          best
-        </span>
+        <span style={{ ...CHIP, color: "var(--color-go-text)" }}>best</span>
       ) : range?.inRange ? (
-        <span style={{ ...CHIP, color: "var(--color-status-info-fg)" }}>
-          scan
-        </span>
+        <span style={{ ...CHIP, color: "var(--color-info-text)" }}>scan</span>
       ) : (
         <span style={{ ...CHIP, color: "var(--color-text-faint)" }}>
           {NULL_DISPLAY}

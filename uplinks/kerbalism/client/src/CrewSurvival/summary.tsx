@@ -46,7 +46,7 @@ function radiationSummaryFor(
 ): RadiationSummary | null {
   if (!weather) return null;
   if (weather.stormInProgress === true) {
-    return { label: "Radiation storm in progress", severity: "critical" };
+    return { label: "Radiation storm in progress", severity: "nogo" };
   }
   // Habitat dose (post-shielding, what the crew actually absorbs) is the
   // right reading for a CREW status summary; falls back to the ambient
@@ -59,7 +59,7 @@ function radiationSummaryFor(
   if (doseRadPerSecond === null) return null;
   const doseRadPerHour = doseRadPerSecond * 3600;
   if (doseRadPerHour >= HIGH_RADIATION_RAD_PER_HOUR) {
-    return { label: "High radiation environment", severity: "warning" };
+    return { label: "High radiation environment", severity: "warn" };
   }
   return null;
 }
@@ -91,7 +91,7 @@ function CrewRadiationSummaryAugment(_props: SlotProps<"crew-status.summary">) {
       aria-live="polite"
       aria-label="crew radiation status"
     >
-      <Badge severity={summary.severity} size="sm">
+      <Badge tone={summary.severity} size="sm">
         {summary.label}
       </Badge>
       {doseValue && (

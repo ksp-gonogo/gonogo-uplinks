@@ -87,25 +87,25 @@ function commandChip(
 ): { severity: Severity; text: string } | undefined {
   switch (phase) {
     case "in-flight":
-      return { severity: "warning", text: "awaiting reply" };
+      return { severity: "warn", text: "awaiting reply" };
     case "confirmed":
-      return { severity: "nominal", text: "confirmed" };
+      return { severity: "go", text: "confirmed" };
     case "failed":
-      return { severity: "critical", text: "rejected" };
+      return { severity: "nogo", text: "rejected" };
     case "refused":
       // The game evaluated the command and said no, which is a different
       // thing from the machinery breaking above: MechJeb not installed at the
       // version the guard wants, no vessel, wrong mode. Nothing was broken and
       // a retry changes nothing until the situation does.
-      return { severity: "critical", text: "refused" };
+      return { severity: "nogo", text: "refused" };
     case "lost":
-      return { severity: "critical", text: "no reply" };
+      return { severity: "nogo", text: "no reply" };
     case "undelivered":
       // The link never came back and the command was still queued here, so it
       // reached no autopilot at all. Still `critical`, because the vessel is
       // not doing what was asked, but a different sentence from the one above:
       // "no reply" leaves an operator wondering whether MechJeb took it.
-      return { severity: "critical", text: "not sent" };
+      return { severity: "nogo", text: "not sent" };
     case "found":
       // The command reported above as "no reply" turned out to have arrived.
       // `info`, not `nominal`: it is the most interesting thing on an otherwise
@@ -176,7 +176,7 @@ function CommandRow({
       </Button>
       <span role="status" aria-live="polite">
         {chip ? (
-          <Badge severity={chip.severity} size="sm">
+          <Badge tone={chip.severity} size="sm">
             {chip.text}
           </Badge>
         ) : null}
@@ -280,14 +280,14 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
         /* The link caption qualifies every command below it rather than sitting
            beside one, so it spans the section grid. */
         <Section key="link" full>
-          <Text tone="faint" size="xs">
+          <Text level="faint" size="xs">
             {oneWay != null
               ? `Remote autopilot (${writeQuantity(oneWay, { decimals: 1 })} one-way delay)`
               : "Remote autopilot"}
           </Text>
           {unavailable != null ? (
             <span role="status" aria-live="polite">
-              <Badge severity="critical" size="sm">
+              <Badge tone="nogo" size="sm">
                 MECHJEB NOT REACHABLE
               </Badge>
               <Text tone="warn" size="xs">

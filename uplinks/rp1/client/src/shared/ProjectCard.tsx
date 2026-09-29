@@ -39,7 +39,7 @@ export interface ProjectCardProps {
    * survives a glance that never reaches the badge and the two cannot
    * disagree.</para>
    */
-  tone: "go" | "warning";
+  tone: "go" | "warn";
   /** The clock, the money, the status lines and the controls, in that order. */
   children?: ReactNode;
 }
@@ -70,12 +70,12 @@ export function ProjectCard({
             cluster wraps for the same reason: a badge that will not fit beside
             a long name drops under it instead of squeezing it. */}
         <Cluster align="start" gap="related-dense" wrap>
-          <Text tone="default">{name}</Text>
+          <Text>{name}</Text>
           {badge}
         </Cluster>
 
         {detail !== undefined && (
-          <Text size="xs" tone="muted">
+          <Text size="xs" level="muted">
             {detail}
           </Text>
         )}

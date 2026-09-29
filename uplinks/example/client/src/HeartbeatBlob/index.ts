@@ -126,7 +126,7 @@ export function computeHeartbeatBlob(
           MIN_BLOB_M +
           (ticks % SWEEP_TICKS) * ((MAX_BLOB_M - MIN_BLOB_M) / SWEEP_TICKS),
       },
-      style: { emphasis: "bright", severity: "info" },
+      style: { emphasis: "bright", tone: "info" },
       meta: { source: "example Uplink", ticks },
     },
   ];

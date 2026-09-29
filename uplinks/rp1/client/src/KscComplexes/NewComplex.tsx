@@ -14,7 +14,10 @@ import {
   UnitInput,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
-import type { Rp1CentreEntry, Rp1LcPricing } from "../__generated__/contract.js";
+import type {
+  Rp1CentreEntry,
+  Rp1LcPricing,
+} from "../__generated__/contract.js";
 import { quoteNewComplex } from "./lcCost.js";
 
 /** Build a new launch complex. Must match `Rp1ComplexConstructionCommands.NewComplexCommand`. */
@@ -112,7 +115,7 @@ export function NewComplexControl({
       <Stack gap="related-dense">
         {named.length > 1 && (
           <Inline gap="related-packed">
-            <Text size="xs" tone="muted">
+            <Text size="xs" level="muted">
               centre
             </Text>
             {named.map((n) => (
@@ -156,7 +159,7 @@ export function NewComplexControl({
           max(3, floor(x2)) above and max(1, ceil(x0.5)) below, permanently. It is
           the one field here whose consequence outlives the purchase.
         */}
-        <Text size="xs" tone="muted">
+        <Text size="xs" level="muted">
           renovations later are held between{" "}
           <Unit
             value={value("t", Math.max(1, Math.ceil(spec.massMax * 0.5)))}
@@ -186,7 +189,7 @@ export function NewComplexControl({
         />
 
         <Row as="div">
-          <Text size="xs" tone={short ? "warn" : "muted"}>
+          <Text size="xs" tone={short ? "warn" : undefined} level="muted">
             {quote === null ? (
               "no price: RP-1 has not said what this would cost"
             ) : (

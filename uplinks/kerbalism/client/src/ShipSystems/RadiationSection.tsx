@@ -304,18 +304,14 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
     {
       id: "ambient",
       label: "Ambient",
-      color: ambientHigh
-        ? "var(--color-status-warning-bg)"
-        : "var(--color-text-muted)",
+      color: ambientHigh ? "var(--color-warn-mark)" : "var(--color-text-muted)",
       points: ambientPoints,
       breaks: ambient.breaks,
     },
     {
       id: "shielded",
       label: "Shielded",
-      color: shieldedHigh
-        ? "var(--color-status-nogo-bg)"
-        : "var(--color-status-info-fg)",
+      color: shieldedHigh ? "var(--color-nogo-mark)" : "var(--color-info-mark)",
       points: shieldedPoints,
       breaks: shielded.breaks,
     },
@@ -365,19 +361,8 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
       </Fill>
       <Cluster justify="between" style={{ marginTop: "var(--gap-caption)" }}>
         {/* Identity tones at rest (grey/info-blue, matching the traces),
-            escalation only over the threshold. `warn`'s bare -fg token is
-            near-black on this dark surface, so the escalated ambient reads
-            through the same -fg-muted override every warning-toned text on
-            a panel surface uses (see LedgerBody's residual note). */}
-        <Text
-          tone={ambientHigh ? "warn" : "default"}
-          size="xs"
-          style={
-            ambientHigh
-              ? { color: "var(--color-status-warning-fg-muted)" }
-              : undefined
-          }
-        >
+            escalation only over the threshold. */}
+        <Text tone={ambientHigh ? "warn" : undefined} size="xs">
           Ambient{" "}
           <Unit
             value={ambientValue}
@@ -392,7 +377,7 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
           />
         </Text>
       </Cluster>
-      <Text tone="muted" size="xs" role="status" aria-live="polite">
+      <Text level="muted" size="xs" role="status" aria-live="polite">
         {location}
       </Text>
     </Stack>

@@ -47,17 +47,17 @@ const STABILITY_BANDS: readonly {
   label: string;
   severity: Severity;
 }[] = [
-  { floor: 0.996, label: "SETTLED", severity: "nominal" },
-  { floor: 0.95, label: "STABLE", severity: "nominal" },
+  { floor: 0.996, label: "SETTLED", severity: "go" },
+  { floor: 0.95, label: "STABLE", severity: "go" },
   { floor: 0.75, label: "RISKY", severity: "caution" },
-  { floor: 0.3, label: "VERY RISKY", severity: "warning" },
-  { floor: 0.15, label: "UNSTABLE", severity: "critical" },
+  { floor: 0.3, label: "VERY RISKY", severity: "warn" },
+  { floor: 0.15, label: "UNSTABLE", severity: "nogo" },
 ];
 
 /** The bottom of RealFuels' cascade, which has no floor to clear. */
 const VERY_UNSTABLE = {
   label: "VERY UNSTABLE",
-  severity: "critical" as Severity,
+  severity: "nogo" as Severity,
 };
 
 function bandFor(stability: number) {
@@ -77,14 +77,14 @@ function bandFor(stability: number) {
 function IgnitionState({ engine }: { engine: RealFuelsEngineEntry }) {
   if (engine.ignitionsUnlimited === true) {
     return (
-      <Badge severity="nominal" size="sm">
+      <Badge tone="go" size="sm">
         UNLIMITED
       </Badge>
     );
   }
   if (engine.groundIgnitionOnly === true) {
     return (
-      <Badge severity="warning" size="sm">
+      <Badge tone="warn" size="sm">
         GROUND ONLY
       </Badge>
     );
@@ -98,14 +98,14 @@ function IgnitionState({ engine }: { engine: RealFuelsEngineEntry }) {
     engine.ignitionsRemaining == null
   ) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {NULL_DISPLAY}
       </Text>
     );
   }
   return (
     <Badge
-      severity={engine.ignitionsRemaining.magnitude > 1 ? "nominal" : "caution"}
+      tone={engine.ignitionsRemaining.magnitude > 1 ? "go" : "caution"}
       size="sm"
     >
       <Unit value={engine.ignitionsRemaining} decimals={0} /> LEFT
@@ -127,7 +127,7 @@ function UllageState({
 }) {
   if (simulated === false) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         not simulated
       </Text>
     );
@@ -139,28 +139,28 @@ function UllageState({
   // is either a real risk or a simulator sitting at its untouched initial value.
   if (simulated == null) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {NULL_DISPLAY}
       </Text>
     );
   }
   if (engine.ullageModelled === false) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         not subject
       </Text>
     );
   }
   if (engine.ullageStability == null) {
     return (
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {NULL_DISPLAY}
       </Text>
     );
   }
   const band = bandFor(engine.ullageStability.magnitude);
   return (
-    <Badge severity={band.severity} size="sm">
+    <Badge tone={band.severity} size="sm">
       {band.label}
       {engine.ignitionProbability != null && (
         <>
@@ -181,7 +181,7 @@ function EngineRow({
 }) {
   return (
     <>
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {engine.partName ?? NULL_DISPLAY}
       </Text>
       <IgnitionState engine={engine} />
@@ -201,7 +201,7 @@ function BoiloffRow({ boiloff }: { boiloff: RealFuelsBoiloff }) {
   if (tanks === 0) return null;
   return (
     <>
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         Boiloff
       </Text>
       <Text size="sm">
@@ -211,7 +211,7 @@ function BoiloffRow({ boiloff }: { boiloff: RealFuelsBoiloff }) {
           <Unit value={boiloff.boiloffRate} decimals={2} />
         )}
       </Text>
-      <Text size="xs" tone="muted">
+      <Text size="xs" level="muted">
         {tanks == null
           ? NULL_DISPLAY
           : `${tanks} cryo tank${tanks === 1 ? "" : "s"}`}
@@ -244,7 +244,11 @@ export function EngineRealismSection() {
   return (
     <Stack gap="caption">
       <ReadoutCaption>Ignition & ullage</ReadoutCaption>
-      <Grid cols="minmax(0, 1fr) auto auto" gap="related-dense" align="baseline">
+      <Grid
+        cols="minmax(0, 1fr) auto auto"
+        gap="related-dense"
+        align="baseline"
+      >
         {rows.map((engine, index) => (
           <EngineRow
             // The part id is the identity; the index is only reached for a row

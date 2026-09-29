@@ -130,12 +130,12 @@ function integrationBadge(plan: PrincipiaPlan) {
      * offers no per-burn attribution, so neither does this; the burns it flagged
      * carry their own ANOM badge below.
      */
-    return <Badge severity="critical">INTEGRATION FAILED</Badge>;
+    return <Badge tone="nogo">INTEGRATION FAILED</Badge>;
   }
   if (plan.planIntegrated == null) {
-    return <Badge severity="caution">INTEGRATION STATUS UNKNOWN</Badge>;
+    return <Badge tone="caution">INTEGRATION STATUS UNKNOWN</Badge>;
   }
-  return <Badge severity="nominal">INTEGRATED</Badge>;
+  return <Badge tone="go">INTEGRATED</Badge>;
 }
 
 /**
@@ -180,15 +180,13 @@ function BurnRow({
         ) : (
           <Countdown value={burn.durationSeconds} />
         )}
-        {isNext && <Badge severity="info">NEXT</Badge>}
-        {burn.anomalous === true && <Badge severity="warning">ANOM</Badge>}
+        {isNext && <Badge tone="info">NEXT</Badge>}
+        {burn.anomalous === true && <Badge tone="warn">ANOM</Badge>}
         {/* The third state, and it is not clean: the plan's flagged count would
             not read, so nothing here can say whether the integrator flagged this
             burn. Drawing nothing is exactly what a burn it was happy with draws,
             which is the claim `=== true` was making on its behalf. */}
-        {burn.anomalous == null && (
-          <Badge severity="caution">ANOM UNREAD</Badge>
-        )}
+        {burn.anomalous == null && <Badge tone="caution">ANOM UNREAD</Badge>}
       </Cluster>
     </Row>
   );
@@ -243,7 +241,7 @@ function buildBadge(roster: SystemUplinkHealth | undefined): ReactNode {
      */
     return null;
   }
-  return <Badge severity="caution">UNVETTED PRINCIPIA BUILD</Badge>;
+  return <Badge tone="caution">UNVETTED PRINCIPIA BUILD</Badge>;
 }
 
 /**
@@ -283,7 +281,7 @@ export function TrajectoryResult({
     // Not an error state. A vantage that has heard nothing is an ordinary
     // condition of a distant mission, and the reason is the useful part.
     return (
-      <Text tone="faint" size="sm">
+      <Text level="faint" size="sm">
         {reply.refusal ?? "No trajectory from this vantage."}
       </Text>
     );
@@ -364,14 +362,14 @@ export function FlightPlanSection() {
               direct `Stack` child stretches full width and stops reading as
               one. */}
           <Cluster justify="start">
-            <Badge severity="caution">NO PLAN READING</Badge>
+            <Badge tone="caution">NO PLAN READING</Badge>
           </Cluster>
           {/* Deliberately not "no flight plan". Silence here is the absence of a
               READING, which is a different fact and the more dangerous one to get
               wrong: an operator told "no plan" for a vessel that has one stops
               looking. A vessel that genuinely holds none says so below, on a
               sample that arrived. */}
-          <Text tone="faint" size="sm">
+          <Text level="faint" size="sm">
             No vessel, or no session with the integrator.
           </Text>
         </Stack>
@@ -400,16 +398,16 @@ export function FlightPlanSection() {
           {/* The age is the headline, not a footnote. A zero-age plan is being
               drawn right now; anything else is a snapshot and says so. */}
           {age === null ? (
-            <Badge severity="caution">READ AT AN UNKNOWN TIME</Badge>
+            <Badge tone="caution">READ AT AN UNKNOWN TIME</Badge>
           ) : age <= 0 ? (
-            <Badge severity="nominal">READ NOW</Badge>
+            <Badge tone="go">READ NOW</Badge>
           ) : (
-            <Badge severity="caution">
+            <Badge tone="caution">
               READ <Countdown value={age} /> AGO
             </Badge>
           )}
           {plan.reachedDeadline === true && (
-            <Badge severity="warning">PLAN INCOMPLETE</Badge>
+            <Badge tone="warn">PLAN INCOMPLETE</Badge>
           )}
           {integrationBadge(plan)}
           {/* Last in the row because it qualifies the whole section rather than
