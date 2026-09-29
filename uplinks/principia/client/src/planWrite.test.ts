@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   PrincipiaWriteOutcome,
-  PrincipiaWriteRefusal,
 } from "./__generated__/contract.js";
+import { PrincipiaErrorCodes } from "./__generated__/error-codes.js";
 import type { PrincipiaPlanWriteReply } from "./planWrite.js";
 import {
   nothingWasWritten,
@@ -25,7 +25,7 @@ function receiptOf(payload: Record<string, unknown>) {
 const WRITTEN = {
   requestId: "replace-0",
   outcome: PrincipiaWriteOutcome.Written,
-  refusal: PrincipiaWriteRefusal.NotRefused,
+  refusal: null,
 };
 
 describe("planWriteReceipt", () => {
@@ -49,9 +49,9 @@ describe("planWriteReceipt", () => {
   });
 
   /**
-   * `outcome` and `refusal` are the receipt's two required fields and both
-   * enums make zero the CLOSED answer, so a payload missing them cannot be
-   * defaulted: zero would invent a refusal nobody issued.
+   * `outcome` is the receipt's required field and its zero is the CLOSED
+   * answer, so a payload missing it cannot be defaulted: zero would invent a
+   * refusal nobody issued.
    */
   it("reports no receipt for a payload that is not one", () => {
     expect(planWriteReceipt(reply({ requestId: "replace-0" }))).toBeNull();
@@ -71,7 +71,7 @@ describe("nothingWasWritten", () => {
     const receipt = planWriteReceipt(
       reply({
         outcome: PrincipiaWriteOutcome.Rejected,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
 
@@ -92,21 +92,31 @@ describe("planWriteRefusalLine", () => {
   it("names the outcome and the guard in the mod's own vocabulary", () => {
     const receipt = receiptOf({
       outcome: PrincipiaWriteOutcome.Refused,
-      refusal: PrincipiaWriteRefusal.IgnitionInPast,
+      refusal: PrincipiaErrorCodes.IgnitionInPast,
     });
 
-    expect(planWriteRefusalLine(receipt)).toBe("Refused / IgnitionInPast");
+    expect(planWriteRefusalLine(receipt)).toBe(
+      "Refused / principia.ignitionInPast",
+    );
   });
 
   it("passes the producer's own sentence through beside the codes", () => {
     const receipt = receiptOf({
       outcome: PrincipiaWriteOutcome.Rejected,
-      refusal: PrincipiaWriteRefusal.NotRefused,
+      refusal: null,
       refusalDetail: "the plan ends before the last coast",
     });
 
     expect(planWriteRefusalLine(receipt)).toBe(
-      "Rejected / NotRefused: the plan ends before the last coast",
+      "Rejected: the plan ends before the last coast",
+    );
+  });
+
+  it("reads a refusal that names no guard as an unavailable surface", () => {
+    const receipt = receiptOf({ outcome: PrincipiaWriteOutcome.Refused });
+
+    expect(planWriteRefusalLine(receipt)).toBe(
+      "Refused / principia.surfaceUnavailable",
     );
   });
 

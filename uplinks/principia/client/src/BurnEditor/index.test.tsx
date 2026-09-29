@@ -11,8 +11,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   PrincipiaBurnProfile,
   PrincipiaWriteOutcome,
-  PrincipiaWriteRefusal,
 } from "../__generated__/contract.js";
+import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
 import { axe } from "../test/axe.js";
 import { BurnEditor } from "./index.js";
 
@@ -846,7 +846,7 @@ describe("BurnEditor", () => {
         requestId: DEFAULT_ADD_REQUEST_ID,
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -887,7 +887,7 @@ describe("BurnEditor", () => {
         requestId: "any",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -946,7 +946,7 @@ describe("BurnEditor", () => {
         requestId: DEFAULT_ADD_REQUEST_ID,
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -975,7 +975,7 @@ describe("BurnEditor", () => {
         requestId: "remove-0",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -1001,7 +1001,7 @@ describe("BurnEditor", () => {
         requestId: "remove-0",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -1029,7 +1029,7 @@ describe("BurnEditor", () => {
         requestId: "replace-0",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -1065,7 +1065,7 @@ describe("BurnEditor", () => {
       planWriteReply({
         requestId: "replace-0",
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.IgnitionInPast,
+        refusal: PrincipiaErrorCodes.IgnitionInPast,
       }),
     );
     await emitPlan(stream);
@@ -1073,7 +1073,7 @@ describe("BurnEditor", () => {
     await applyTheEditedBurn();
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/IgnitionInPast/)).toBeInTheDocument();
+    expect(screen.getByText(/principia\.ignitionInPast/)).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -1094,7 +1094,7 @@ describe("BurnEditor", () => {
         requestId: "arm-vessel-1",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -1119,7 +1119,7 @@ describe("BurnEditor", () => {
       planWriteReply({
         requestId: "arm-vessel-1",
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.LayoutUnverified,
+        refusal: PrincipiaErrorCodes.LayoutUnverified,
       }),
     );
     await emitPlan(stream);
@@ -1134,7 +1134,7 @@ describe("BurnEditor", () => {
     );
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/LayoutUnverified/)).toBeInTheDocument();
+    expect(screen.getByText(/principia\.layoutUnverified/)).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -1168,7 +1168,7 @@ describe("BurnEditor", () => {
         requestId: "arm-vessel-1",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.LayoutUnverified,
+        refusal: PrincipiaErrorCodes.LayoutUnverified,
         refusalDetail: said,
       },
     }));

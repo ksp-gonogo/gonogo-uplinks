@@ -1,4 +1,5 @@
 using System;
+using Sitrep.Contract;
 
 namespace GonogoPrincipiaUplink
 {
@@ -262,7 +263,7 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         public bool TryPlanCreation(
             out PrincipiaPlanCreateGate gate,
-            out PrincipiaWriteRefusal refusal,
+            out RefusalCode? refusal,
             out string detail)
         {
             gate = default;
@@ -272,7 +273,7 @@ namespace GonogoPrincipiaUplink
                 return false;
             }
             gate = new PrincipiaPlanCreateGate(_session, _generation, _guid);
-            refusal = PrincipiaWriteRefusal.NotRefused;
+            refusal = null;
             detail = string.Empty;
             return true;
         }

@@ -54,7 +54,7 @@ namespace GonogoPrincipiaUplink
         /// and null once it has been probed, whatever the verdicts were. A failed
         /// probe is not an error of the caller's: it is the answer, and the write
         /// that needs the failed struct refuses later with
-        /// <see cref="PrincipiaWriteRefusal.LayoutUnverified"/>.</para>
+        /// <see cref="PrincipiaErrorCodes.LayoutUnverified"/>.</para>
         /// </summary>
         /// <param name="composeAt">Builds a burn for a stated ignition instant,
         /// used only when the plan holds none to round-trip. Null when nothing can

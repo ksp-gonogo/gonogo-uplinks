@@ -21,8 +21,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   PrincipiaBurnProfile,
   PrincipiaWriteOutcome,
-  PrincipiaWriteRefusal,
 } from "../__generated__/contract.js";
+import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
 import { PlanSlots } from "./index.js";
 
 /**
@@ -400,7 +400,7 @@ describe("PlanSlots", () => {
         requestId: "delete-vessel-1",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -430,7 +430,7 @@ describe("PlanSlots", () => {
       planWriteReply({
         requestId: "delete-vessel-1",
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.SurfaceUnavailable,
+        refusal: PrincipiaErrorCodes.SurfaceUnavailable,
       }),
     );
     await emitPlan(stream);
@@ -443,7 +443,7 @@ describe("PlanSlots", () => {
     );
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/SurfaceUnavailable/)).toBeInTheDocument();
+    expect(screen.getByText(/principia\.surfaceUnavailable/)).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -469,7 +469,7 @@ describe("PlanSlots", () => {
         requestId: "delete-vessel-1",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.NoFlightPlan,
+        refusal: PrincipiaErrorCodes.NoFlightPlan,
         refusalDetail: "The vessel has no flight plan. Create one first.",
       },
     }));
@@ -650,7 +650,7 @@ describe("PlanSlots", () => {
         requestId: "create-vessel-1-13600",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream, { planExists: false, planCount: 0, burns: [] });
@@ -691,7 +691,7 @@ describe("PlanSlots", () => {
         requestId: "create-vessel-1-13600",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream, { planExists: false, planCount: 0, burns: [] });
@@ -723,7 +723,7 @@ describe("PlanSlots", () => {
         requestId: "duplicate-vessel-1-2",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -762,7 +762,7 @@ describe("PlanSlots", () => {
         requestId: "duplicate-vessel-1-2",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -836,7 +836,7 @@ describe("PlanSlots", () => {
         requestId: `send-${draft.id}@${draft.revision}-110000`,
         replayed: false,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);
@@ -898,7 +898,7 @@ describe("PlanSlots", () => {
         requestId: `send-${draft.id}@${draft.revision}-110000`,
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
     await emitPlan(stream);

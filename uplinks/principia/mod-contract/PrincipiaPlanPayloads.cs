@@ -471,162 +471,6 @@ public enum PrincipiaWriteOutcome
 }
 
 /// <summary>
-/// Which guard refused a plan write.
-///
-/// <para><b>Zero is the closed answer</b>, for the reason
-/// <see cref="PrincipiaWriteOutcome.Refused"/> is: an unset field means "the
-/// surface is not available", never "nothing was wrong".</para>
-/// </summary>
-#if SITREP_CODEGEN
-[TsEnum]
-#endif
-[SitrepContract]
-public enum PrincipiaWriteRefusal
-{
-    /// <summary>No plugin, no session, or a producer build whose write entry
-    /// points were never analysed. Writes fail closed to read-only.</summary>
-    SurfaceUnavailable = 0,
-
-    /// <summary>Nothing refused it: this write was attempted. Only ever paired
-    /// with <see cref="PrincipiaWriteOutcome.Rejected"/> or
-    /// <see cref="PrincipiaWriteOutcome.Written"/>.</summary>
-    NotRefused = 1,
-
-    /// <summary>The surface was not armed. Every plan write changes the
-    /// player's saved game and re-integrates on the game's own thread, so it
-    /// takes a deliberate arm first.</summary>
-    NotArmed = 2,
-
-    /// <summary>The struct this write passes to the plugin failed its
-    /// round-trip probe, or the probe has not run. The producer's own structs
-    /// are generated from a schema that changed in the shipped release, and a
-    /// stale shape does not fail to resolve: it writes a plausible wrong burn
-    /// into the save.</summary>
-    LayoutUnverified = 3,
-
-    /// <summary>The plugin no longer knows this vessel.</summary>
-    VesselUnknown = 4,
-
-    /// <summary>The vessel holds no flight plan to edit.</summary>
-    NoFlightPlan = 5,
-
-    /// <summary>A plan already exists and this write would have created a
-    /// second without being asked to.</summary>
-    PlanAlreadyExists = 6,
-
-    /// <summary>The vessel already holds the producer's maximum of ten plans.
-    /// An eleventh makes the producer's own planner window throw on every
-    /// layout pass, permanently, with the button that would delete it inside the
-    /// part that stopped rendering.</summary>
-    PlanSlotsFull = 7,
-
-    /// <summary>The burn index was outside the count read in the same
-    /// frame.</summary>
-    BurnIndexOutOfRange = 8,
-
-    /// <summary>The burn is running right now. The plugin permits this and only
-    /// the rebase entry point checks, so the guard is ours.</summary>
-    BurnExecuting = 9,
-
-    /// <summary>The burn's manœuvring frame is one the producer's frame factory
-    /// does not handle, so sending the burn back would abort the game.</summary>
-    BurnFrameUnsupported = 10,
-
-    /// <summary>An optimisation is running on this plan and would revert the
-    /// edit without reporting it.</summary>
-    OptimisationRunning = 11,
-
-    /// <summary>A requested value was not finite, or a Δv triple would have
-    /// been.</summary>
-    ValueNotFinite = 12,
-
-    /// <summary>Thrust is not positive. A zero-thrust burn has infinite
-    /// duration, which the producer's own singularity test does not catch: it
-    /// pushes the plan's end instant to infinity, spawns a thread that never
-    /// terminates, and serialises the infinity into the save.</summary>
-    ThrustNotPositive = 13,
-
-    /// <summary>The integrator kinds read back from the plugin were not the
-    /// pair this build expects, so writing them back could abort with no
-    /// message.</summary>
-    IntegratorKindUnexpected = 14,
-
-    /// <summary>A requested integrator bound was outside the range the
-    /// producer's own controls offer.</summary>
-    IntegratorBoundsExceeded = 15,
-
-    /// <summary>A plan cannot be created ending before it starts.</summary>
-    FinalTimeInPast = 16,
-
-    /// <summary>A field this write must set was not found on the producer's own
-    /// struct, so its shape is not the shape that was analysed.</summary>
-    PluginShapeChanged = 18,
-
-    /// <summary>The ignition instant this write asked for had already passed by
-    /// the time the write arrived. Distinct from
-    /// <see cref="FinalTimeInPast"/>, which is about a plan's END and only
-    /// reachable while creating one.
-    ///
-    /// <para>Reached under signal delay with nothing done wrong at either end: an
-    /// instant comfortably ahead when the operator pressed can be behind by the
-    /// time the command lands. Writing it anyway asks the plugin to integrate a
-    /// burn that never happened, and the receipt would read
-    /// <see cref="PrincipiaWriteOutcome.Written"/>.</para></summary>
-    IgnitionInPast = 19,
-
-    /// <summary>
-    /// A composed plan that cannot be read as one: no burn list where a list was
-    /// required, a burn missing from the middle, more burns than a single command may
-    /// install, ignitions out of time order, or an end that falls before the last
-    /// burn.
-    ///
-    /// <para>Separate from <see cref="ValueNotFinite"/>, which is one number being
-    /// unusable. This is the SHAPE being wrong, and it refuses the whole plan rather
-    /// than one burn of it, because a plan half-installed is a trajectory nobody
-    /// composed.</para>
-    /// </summary>
-    PlanMalformed = 20,
-
-    /// <summary>
-    /// A burn with no manœuvre ahead of it was asked for without the instant it
-    /// lights.
-    ///
-    /// <para>Everywhere else an absent instant means "leave it where it is", which
-    /// refers to the burn being changed. A burn with nothing ahead of it has no
-    /// instant to be left at, so the one value it cannot derive has to be
-    /// stated.</para>
-    /// </summary>
-    ComposedBurnIncomplete = 21,
-
-    /// <summary>
-    /// A read this guard depends on could not be decoded from the loaded build, so
-    /// the guard cannot answer. Refused rather than permitted.
-    ///
-    /// <para>Reached three ways today: a burn whose ignition or cutoff would not
-    /// read, which leaves <see cref="BurnExecuting"/> unable to say whether the
-    /// craft is under thrust; an optimisation state that would not read, which
-    /// leaves <see cref="OptimisationRunning"/> unable to say whether the edit
-    /// would be reverted; and the producer's own clock failing to read, which
-    /// leaves every check that compares a burn against "now" with nothing to
-    /// compare it to, <see cref="IgnitionInPast"/> and
-    /// <see cref="FinalTimeInPast"/> included.</para>
-    ///
-    /// <para><b>Distinct from those two, deliberately.</b> Both of them state a
-    /// fact about the plan, and reusing either for an unreadable answer would put
-    /// the reason for the refusal into a sentence nobody read. Distinct from
-    /// <see cref="PluginShapeChanged"/> as well, which is a field missing off a
-    /// struct this write must SET; this is a value this build could not READ.</para>
-    ///
-    /// <para>Refusing is the whole point. The absence used to permit: a REMOVE
-    /// dispatched against a burn whose instants would not read came back with a
-    /// <see cref="PrincipiaWriteOutcome.Written"/> receipt, so an operator's own
-    /// console confirmed it had deleted a burn that may have been under
-    /// thrust.</para>
-    /// </summary>
-    GuardReadUnreadable = 22,
-}
-
-/// <summary>
 /// What a plan write did, as a separate artefact from the request.
 ///
 /// <para><b>Why the plan is re-read rather than assumed.</b> Replacing the last
@@ -661,8 +505,11 @@ public sealed class PrincipiaPlanWriteReceipt
     /// <summary>Refused, rejected or written. Never a success by default.</summary>
     public PrincipiaWriteOutcome Outcome { get; set; } = PrincipiaWriteOutcome.Refused;
 
-    /// <summary>Which guard refused it.</summary>
-    public PrincipiaWriteRefusal Refusal { get; set; } = PrincipiaWriteRefusal.SurfaceUnavailable;
+    /// <summary>The refusal code of the guard that refused it, one of this
+    /// Uplink's <c>principia.*</c> refinements; null when nothing refused it and
+    /// the write was attempted.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Refusal { get; set; }
 
     /// <summary>The refusal in a sentence, with the numbers that caused it.</summary>
     [SitrepUnit(Units.Text)]

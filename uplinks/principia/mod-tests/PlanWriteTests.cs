@@ -78,9 +78,11 @@ namespace GonogoPrincipiaUplink.Tests
             CommandResult<Dictionary<string, object?>> result) =>
             (PrincipiaWriteOutcome)(int)Receipt(result)["outcome"]!;
 
-        private static PrincipiaWriteRefusal Refusal(
+        private static RefusalCode? Refusal(
             CommandResult<Dictionary<string, object?>> result) =>
-            (PrincipiaWriteRefusal)(int)Receipt(result)["refusal"]!;
+            Receipt(result)["refusal"] is string id
+                ? ErrorCodeCatalog.Of(typeof(PrincipiaErrorCodes)).Single(code => code.Id == id)
+                : null;
 
         private static string Detail(CommandResult<Dictionary<string, object?>> result) =>
             (string)(Receipt(result)["refusalDetail"] ?? "");
@@ -99,28 +101,17 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// The zero value of both enums reads as "we did not touch the plan", so a
-        /// producer that forgot to fill the field, or a consumer reading a payload
-        /// from one that never had it, lands on the safe answer.
-        ///
-        /// <para>This is the shape that shipped wrong once already, as an
-        /// "unspecified" refusal in the zero slot that read as "nothing was
-        /// refused". A silent no-op looked identical to a working feature from
-        /// outside.</para>
+        /// A write result nobody filled in reads as "we did not touch the plan",
+        /// refused by an unavailable surface, and never as "nothing was refused".
         /// </summary>
         [Fact]
-        public void TheDefaultOutcomeIsRefusedAndTheDefaultRefusalIsNotNothing()
+        public void AnUnfilledResultReadsAsRefusedByAnUnavailableSurface()
         {
-            var receipt = new PrincipiaPlanWriteReceipt();
+            var result = default(PrincipiaWriteResult);
 
-            Assert.Equal(PrincipiaWriteOutcome.Refused, receipt.Outcome);
-            Assert.Equal(PrincipiaWriteRefusal.SurfaceUnavailable, receipt.Refusal);
-            Assert.Equal(0, (int)PrincipiaWriteOutcome.Refused);
-            Assert.Equal(0, (int)PrincipiaWriteRefusal.SurfaceUnavailable);
-
-            // And the "nothing refused it" member is deliberately NOT zero, so it
-            // can only appear where something actually set it.
-            Assert.NotEqual(0, (int)PrincipiaWriteRefusal.NotRefused);
+            Assert.Equal(PrincipiaWriteOutcome.Refused, result.Outcome);
+            Assert.Equal(PrincipiaErrorCodes.SurfaceUnavailable, result.Refusal);
+            Assert.Equal(PrincipiaWriteOutcome.Refused, new PrincipiaPlanWriteReceipt().Outcome);
         }
 
         /// <summary>
@@ -140,7 +131,7 @@ namespace GonogoPrincipiaUplink.Tests
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "r1", BurnIndex = 9 });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.BurnIndexOutOfRange, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, Refusal(refused));
             Assert.Null(Receipt(refused)["statusError"]);
             Assert.Empty(plugin.Writes);
 
@@ -149,7 +140,7 @@ namespace GonogoPrincipiaUplink.Tests
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "r2", BurnIndex = 0 });
 
             Assert.Equal(PrincipiaWriteOutcome.Rejected, Outcome(declined));
-            Assert.Equal(PrincipiaWriteRefusal.NotRefused, Refusal(declined));
+            Assert.Equal(null, Refusal(declined));
             Assert.Equal(11, Receipt(declined)["statusError"]);
             Assert.Contains("does not fit", (string)Receipt(declined)["statusMessage"]!);
             Assert.Equal(new[] { "Replace@0" }, plugin.Writes);
@@ -170,7 +161,7 @@ namespace GonogoPrincipiaUplink.Tests
             var armed = commands.Arm(new PrincipiaPlanArmArgs { VesselId = Guid, RequestId = "a" });
 
             Assert.False(armed.Success);
-            Assert.Equal(PrincipiaWriteRefusal.SurfaceUnavailable, Refusal(armed));
+            Assert.Equal(PrincipiaErrorCodes.SurfaceUnavailable, Refusal(armed));
             Assert.Contains("not the shape", Detail(armed));
             Assert.Empty(plugin.Writes);
 
@@ -185,7 +176,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             var edit = commands.ReplaceBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "e", BurnIndex = 0 });
-            Assert.Equal(PrincipiaWriteRefusal.SurfaceUnavailable, Refusal(edit));
+            Assert.Equal(PrincipiaErrorCodes.SurfaceUnavailable, Refusal(edit));
             Assert.Empty(plugin.Writes);
         }
 
@@ -227,7 +218,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "before", BurnIndex = 0, DeltaVTangent = 12.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.NotArmed, Refusal(before));
+            Assert.Equal(PrincipiaErrorCodes.NotArmed, Refusal(before));
             Assert.Empty(plugin.Writes);
 
             Armed(commands);
@@ -292,7 +283,7 @@ namespace GonogoPrincipiaUplink.Tests
             var edit = commands.ReplaceBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "e", BurnIndex = 0 });
 
-            Assert.Equal(PrincipiaWriteRefusal.LayoutUnverified, Refusal(edit));
+            Assert.Equal(PrincipiaErrorCodes.LayoutUnverified, Refusal(edit));
             Assert.Empty(plugin.Writes);
         }
 
@@ -407,7 +398,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             var burnEdit = commands.InsertBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "b", BurnIndex = 0 });
-            Assert.Equal(PrincipiaWriteRefusal.ComposedBurnIncomplete, Refusal(burnEdit));
+            Assert.Equal(PrincipiaErrorCodes.ComposedBurnIncomplete, Refusal(burnEdit));
 
             var raise = commands.SetIntegrator(
                 new PrincipiaPlanIntegratorArgs
@@ -445,7 +436,7 @@ namespace GonogoPrincipiaUplink.Tests
             var deleted = commands.DeletePlan(
                 new PrincipiaPlanSlotArgs { VesselId = Guid, RequestId = "d" });
 
-            Assert.Equal(PrincipiaWriteRefusal.NoFlightPlan, Refusal(deleted));
+            Assert.Equal(PrincipiaErrorCodes.NoFlightPlan, Refusal(deleted));
             Assert.Empty(plugin.Writes);
         }
 
@@ -477,7 +468,7 @@ namespace GonogoPrincipiaUplink.Tests
                 var result = gate.Delete();
 
                 Assert.Equal(PrincipiaWriteOutcome.Refused, result.Outcome);
-                Assert.Equal(PrincipiaWriteRefusal.NoFlightPlan, result.Refusal);
+                Assert.Equal(PrincipiaErrorCodes.NoFlightPlan, result.Refusal);
                 Assert.Contains("erases past the beginning", result.Detail);
                 Assert.Empty(plugin.Writes);
             }
@@ -531,7 +522,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = PrincipiaIntegratorRules.Reject(swapped);
 
             Assert.NotNull(refused);
-            Assert.Equal(PrincipiaWriteRefusal.IntegratorKindUnexpected, refused!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.IntegratorKindUnexpected, refused!.Value.Refusal);
             Assert.Contains("disjoint sets", refused.Value.Detail);
         }
 
@@ -550,7 +541,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "i", MaxSteps = steps,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.IntegratorBoundsExceeded, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.IntegratorBoundsExceeded, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -580,7 +571,7 @@ namespace GonogoPrincipiaUplink.Tests
                 return;
             }
             Assert.NotNull(refused);
-            Assert.Equal(PrincipiaWriteRefusal.BurnFrameUnsupported, refused!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.BurnFrameUnsupported, refused!.Value.Refusal);
             Assert.Contains("fatal log", refused.Value.Detail);
         }
 
@@ -602,7 +593,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "e", BurnIndex = 1, IgnitionUt = 5000.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.BurnFrameUnsupported, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnFrameUnsupported, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -623,7 +614,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = commands.ReplaceBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "e", BurnIndex = 0 });
 
-            Assert.Equal(PrincipiaWriteRefusal.OptimisationRunning, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.OptimisationRunning, Refusal(refused));
             Assert.Contains("burn 2", Detail(refused));
             Assert.Empty(plugin.Writes);
         }
@@ -646,7 +637,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = commands.DuplicatePlan(
                 new PrincipiaPlanSlotArgs { VesselId = Guid, RequestId = "d" });
 
-            Assert.Equal(PrincipiaWriteRefusal.PlanSlotsFull, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.PlanSlotsFull, Refusal(refused));
             Assert.Contains("10", Detail(refused));
             Assert.Empty(plugin.Writes);
 
@@ -666,7 +657,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = commands.CreatePlan(
                 new PrincipiaPlanSlotArgs { VesselId = Guid, RequestId = "c" });
 
-            Assert.Equal(PrincipiaWriteRefusal.PlanAlreadyExists, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.PlanAlreadyExists, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -694,7 +685,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "c", FinalTimeUt = 10.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.FinalTimeInPast, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.FinalTimeInPast, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -719,7 +710,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "e", BurnIndex = 0, DeltaVTangent = 1.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.BurnExecuting, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnExecuting, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -793,7 +784,7 @@ namespace GonogoPrincipiaUplink.Tests
                 });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.IgnitionInPast, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.IgnitionInPast, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -834,7 +825,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "i", BurnIndex = 0, IgnitionUt = 5000.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.IgnitionInPast, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.IgnitionInPast, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -937,7 +928,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "i", BurnIndex = 0, IgnitionUt = 5000.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.SurfaceUnavailable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.SurfaceUnavailable, Refusal(refused));
             Assert.Empty(plugin.Known(Guid).Burns);
         }
 
@@ -956,7 +947,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "i", BurnIndex = 0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.ComposedBurnIncomplete, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.ComposedBurnIncomplete, Refusal(refused));
             Assert.Empty(plugin.Known(Guid).Burns);
         }
 
@@ -978,7 +969,7 @@ namespace GonogoPrincipiaUplink.Tests
                     IgnitionUt = 5000.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.BurnIndexOutOfRange, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, Refusal(refused));
             Assert.Empty(plugin.Known(Guid).Burns);
         }
 
@@ -1075,7 +1066,7 @@ namespace GonogoPrincipiaUplink.Tests
                     },
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.IgnitionInPast, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.IgnitionInPast, Refusal(refused));
             Assert.False(plugin.Known(Guid).HasFlightPlan);
             Assert.Empty(plugin.Writes);
         }
@@ -1116,7 +1107,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             var refused = commands.ReplaceBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "r", BurnIndex = 3 });
-            Assert.Equal(PrincipiaWriteRefusal.BurnIndexOutOfRange, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, Refusal(refused));
             Assert.Equal(new[] { "Insert@2" }, plugin.Writes);
         }
 
@@ -1173,7 +1164,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "e", BurnIndex = 0, DeltaVTangent = 5.0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.BurnFrameUnsupported, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnFrameUnsupported, Refusal(refused));
             Assert.Contains("look like a write that landed", Detail(refused));
             Assert.Empty(plugin.Writes);
         }
@@ -1215,7 +1206,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = PrincipiaBurnRules.Reject(burn);
 
             Assert.NotNull(refused);
-            Assert.Equal(PrincipiaWriteRefusal.ThrustNotPositive, refused!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.ThrustNotPositive, refused!.Value.Refusal);
             Assert.Contains("never terminates", refused.Value.Detail);
         }
 
@@ -1254,7 +1245,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = PrincipiaBurnRules.Reject(new { thrust_in_kilonewtons = 1.0 });
 
             Assert.NotNull(refused);
-            Assert.Equal(PrincipiaWriteRefusal.PluginShapeChanged, refused!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.PluginShapeChanged, refused!.Value.Refusal);
         }
 
 
@@ -1322,12 +1313,13 @@ namespace GonogoPrincipiaUplink.Tests
 
             Assert.False(first.Success);
             Assert.False(again.Success);
-            Assert.Equal(PrincipiaWriteRefusal.BurnIndexOutOfRange, Refusal(again));
+            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, Refusal(again));
             Assert.Equal(true, Receipt(again)["replayed"]);
-            // The coarse code too, and it must be the SAME one: a client that
-            // branches on the shared vocabulary would otherwise see a retry turn
-            // "the burn is not in this plan" into something else.
-            Assert.Equal(CommandErrorCode.NotFound, first.ErrorCode);
+            // The code too, and it must be the SAME one: a client that branches on
+            // the shared vocabulary would otherwise see a retry turn "the burn is
+            // not in this plan" into something else.
+            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, first.ErrorCode);
+            Assert.Equal(CommandErrorCode.NotFound, first.ErrorCode!.Root);
             Assert.Equal(first.ErrorCode, again.ErrorCode);
         }
 
@@ -1359,7 +1351,7 @@ namespace GonogoPrincipiaUplink.Tests
             worker.Join();
 
             Assert.NotNull(offThread);
-            Assert.Equal(PrincipiaWriteRefusal.SurfaceUnavailable, Refusal(offThread!));
+            Assert.Equal(PrincipiaErrorCodes.SurfaceUnavailable, Refusal(offThread!));
             Assert.Contains("off the game's main thread", Detail(offThread!));
             Assert.Empty(plugin.Writes);
         }
@@ -1376,7 +1368,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = commands.ReplaceBurn(
                 new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "e", BurnIndex = 0 });
 
-            Assert.Equal(PrincipiaWriteRefusal.VesselUnknown, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.VesselUnknown, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 

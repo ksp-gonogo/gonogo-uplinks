@@ -164,6 +164,7 @@
       "vesselId": "id"
     },
     "PrincipiaPlanWriteReceipt": {
+      "refusal": "id",
       "refusalDetail": "text",
       "replayed": "flag",
       "requestId": "id",

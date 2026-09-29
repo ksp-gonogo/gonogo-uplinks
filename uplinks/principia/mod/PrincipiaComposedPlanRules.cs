@@ -47,7 +47,7 @@ namespace GonogoPrincipiaUplink
             if (args == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PlanMalformed,
+                    PrincipiaErrorCodes.PlanMalformed,
                     "This command carried no arguments.");
             }
 
@@ -58,7 +58,7 @@ namespace GonogoPrincipiaUplink
             if (args.Burns == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PlanMalformed,
+                    PrincipiaErrorCodes.PlanMalformed,
                     "This plan carried no burn list at all. An empty plan is written as an empty "
                         + "list; a missing list is a command that lost its payload, and the two "
                         + "cannot be told apart after the fact.");
@@ -67,7 +67,7 @@ namespace GonogoPrincipiaUplink
             if (args.Burns.Length > MaxBurns)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PlanMalformed,
+                    PrincipiaErrorCodes.PlanMalformed,
                     "This plan holds " + args.Burns.Length + " burns, and a single command may "
                         + "install at most " + MaxBurns + ".");
             }
@@ -79,7 +79,7 @@ namespace GonogoPrincipiaUplink
                 if (burn == null)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.PlanMalformed,
+                        PrincipiaErrorCodes.PlanMalformed,
                         "Burn " + (i + 1) + " of " + args.Burns.Length + " is missing.");
                 }
 
@@ -89,7 +89,7 @@ namespace GonogoPrincipiaUplink
                     || !IsFinite(burn.DeltaVBinormal))
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.ValueNotFinite,
+                        PrincipiaErrorCodes.ValueNotFinite,
                         "Burn " + (i + 1) + " of " + args.Burns.Length + " carries a value that is "
                             + "not a number, so the whole plan is refused rather than installed "
                             + "with one burn guessed at.");
@@ -98,7 +98,7 @@ namespace GonogoPrincipiaUplink
                 if (burn.IgnitionUt <= nowUt)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.IgnitionInPast,
+                        PrincipiaErrorCodes.IgnitionInPast,
                         "Burn " + (i + 1) + " of " + args.Burns.Length + " ignites at "
                             + burn.IgnitionUt + ", and this plan arrived at " + nowUt
                             + ". The whole plan is refused: installing the burns that are still "
@@ -111,7 +111,7 @@ namespace GonogoPrincipiaUplink
                 if (burn.IgnitionUt <= previousIgnition)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.PlanMalformed,
+                        PrincipiaErrorCodes.PlanMalformed,
                         "Burn " + (i + 1) + " ignites at " + burn.IgnitionUt
                             + ", at or before burn " + i + " at " + previousIgnition
                             + ". A plan's burns must be in time order.");
@@ -124,14 +124,14 @@ namespace GonogoPrincipiaUplink
                 if (!IsFinite(args.DesiredFinalTimeUt.Value))
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.PlanMalformed,
+                        PrincipiaErrorCodes.PlanMalformed,
                         "This plan's final time is not a number.");
                 }
                 if (args.Burns.Length > 0
                     && args.DesiredFinalTimeUt.Value <= args.Burns[args.Burns.Length - 1].IgnitionUt)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.PlanMalformed,
+                        PrincipiaErrorCodes.PlanMalformed,
                         "This plan ends at " + args.DesiredFinalTimeUt.Value
                             + ", at or before its last burn ignites. The plan would not reach its "
                             + "own last manoeuvre.");

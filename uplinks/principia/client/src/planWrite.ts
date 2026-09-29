@@ -1,9 +1,7 @@
 import type { CommandReply, UseCommandResultFor } from "@ksp-gonogo/sitrep-sdk";
 import type { PrincipiaPlanWriteReceipt } from "./__generated__/contract.js";
-import {
-  PrincipiaWriteOutcome,
-  PrincipiaWriteRefusal,
-} from "./__generated__/contract.js";
+import { PrincipiaWriteOutcome } from "./__generated__/contract.js";
+import { PrincipiaErrorCodes } from "./__generated__/error-codes.js";
 
 /**
  * Every command that changes a flight plan, as one union.
@@ -59,11 +57,11 @@ export type PrincipiaPlanWriteHandle =
  * <p>Narrowed rather than cast. The payload crosses the wire as a dictionary,
  * because a core serializer may not reference an Uplink's assembly and this
  * Uplink's producer therefore flattens its own receipt (see `JsonWriter`'s
- * "producer owns the flatten" boundary). `outcome` and `refusal` are the
- * receipt's two REQUIRED fields, so a payload without both is not a receipt and
- * is reported as none rather than defaulted: both enums make zero the closed
- * answer, and a missing field read as zero would invent a refusal nobody
- * issued.</p>
+ * "producer owns the flatten" boundary). `outcome` is the receipt's REQUIRED
+ * field, so a payload without it is not a receipt and is reported as none
+ * rather than defaulted: its zero is the closed answer, and a missing field read
+ * as zero would invent a refusal nobody issued. `refusal` is a code id, or
+ * absent when nothing refused the write.</p>
  */
 export function planWriteReceipt(
   reply: PrincipiaPlanWriteReply,
@@ -71,10 +69,8 @@ export function planWriteReceipt(
   const payload: unknown = reply.payload;
   if (typeof payload !== "object" || payload === null) return null;
   const candidate = payload as Partial<PrincipiaPlanWriteReceipt>;
-  if (
-    typeof candidate.outcome !== "number" ||
-    typeof candidate.refusal !== "number"
-  ) {
+  if (typeof candidate.outcome !== "number") return null;
+  if (candidate.refusal != null && typeof candidate.refusal !== "string") {
     return null;
   }
   return candidate as PrincipiaPlanWriteReceipt;
@@ -110,19 +106,23 @@ export function nothingWasWritten(
  * The mod's own vocabulary for a write that did not land, or null when the
  * receipt reports one that did.
  *
- * <p>The enum members BY NAME, plus the producer's sentence where it wrote one.
- * This Uplink keeps no English table of Principia's guards: the name is what a
- * reader takes back to the mod's source, and inventing a sentence for each of
- * twenty-two refusals would be twenty-two chances to describe the wrong
- * one.</p>
+ * <p>The outcome by name and the refusing guard by its code id, plus the
+ * producer's sentence where it wrote one. The id is what a reader takes back to
+ * the mod's source. A refused receipt that names no guard reads as an
+ * unavailable surface, never as nothing refused.</p>
  */
 export function planWriteRefusalLine(
   receipt: PrincipiaPlanWriteReceipt,
 ): string | null {
   if (receipt.outcome === PrincipiaWriteOutcome.Written) return null;
   const outcome = PrincipiaWriteOutcome[receipt.outcome] ?? receipt.outcome;
-  const refusal = PrincipiaWriteRefusal[receipt.refusal] ?? receipt.refusal;
   const detail = receipt.refusalDetail;
-  const codes = `${outcome} / ${refusal}`;
+  const codes = `${outcome}${refusalOf(receipt)}`;
   return detail ? `${codes}: ${detail}` : codes;
+}
+
+function refusalOf(receipt: PrincipiaPlanWriteReceipt): string {
+  if (receipt.refusal) return ` / ${receipt.refusal}`;
+  if (receipt.outcome !== PrincipiaWriteOutcome.Refused) return "";
+  return ` / ${PrincipiaErrorCodes.SurfaceUnavailable}`;
 }

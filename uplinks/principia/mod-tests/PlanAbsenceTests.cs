@@ -27,6 +27,7 @@
 // burn that may have been burning.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using GonogoPrincipiaUplink;
 using Sitrep.Contract;
@@ -356,9 +357,11 @@ namespace GonogoPrincipiaUplink.Tests
             CommandResult<Dictionary<string, object?>> result) =>
             (PrincipiaWriteOutcome)(int)Receipt(result)["outcome"]!;
 
-        private static PrincipiaWriteRefusal Refusal(
+        private static RefusalCode? Refusal(
             CommandResult<Dictionary<string, object?>> result) =>
-            (PrincipiaWriteRefusal)(int)Receipt(result)["refusal"]!;
+            Receipt(result)["refusal"] is string id
+                ? ErrorCodeCatalog.Of(typeof(PrincipiaErrorCodes)).Single(code => code.Id == id)
+                : null;
 
         private static string Detail(CommandResult<Dictionary<string, object?>> result) =>
             (string)(Receipt(result)["refusalDetail"] ?? "");
@@ -378,7 +381,7 @@ namespace GonogoPrincipiaUplink.Tests
             var result = PrincipiaBurnRules.RejectExecuting(ignition, cutoff, 2500.0);
 
             Assert.True(result.HasValue);
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, result!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, result!.Value.Refusal);
         }
 
         /// <summary>
@@ -391,7 +394,7 @@ namespace GonogoPrincipiaUplink.Tests
         {
             var result = PrincipiaBurnRules.RejectExecuting(null, 3000.0, 2500.0);
 
-            Assert.NotEqual(PrincipiaWriteRefusal.BurnExecuting, result!.Value.Refusal);
+            Assert.NotEqual(PrincipiaErrorCodes.BurnExecuting, result!.Value.Refusal);
             Assert.Contains("ignition instant", result.Value.Detail);
             Assert.Contains("cannot be established", result.Value.Detail);
         }
@@ -428,7 +431,7 @@ namespace GonogoPrincipiaUplink.Tests
                 });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
             Assert.Equal(2, plugin.Known(Guid).Burns.Count);
         }
@@ -455,7 +458,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "r-1", BurnIndex = 0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -487,7 +490,7 @@ namespace GonogoPrincipiaUplink.Tests
                 });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
             Assert.Equal(2, plugin.Known(Guid).Burns.Count);
         }
@@ -512,7 +515,7 @@ namespace GonogoPrincipiaUplink.Tests
                     VesselId = Guid, RequestId = "r-1", BurnIndex = 0,
                 });
 
-            Assert.Equal(PrincipiaWriteRefusal.BurnExecuting, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.BurnExecuting, Refusal(refused));
             Assert.Empty(plugin.Writes);
         }
 
@@ -566,7 +569,7 @@ namespace GonogoPrincipiaUplink.Tests
                 new PrincipiaPlanSlotArgs { VesselId = Guid, RequestId = "c-1" });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
             Assert.False(plugin.Known(Guid).HasFlightPlan);
         }
@@ -619,7 +622,7 @@ namespace GonogoPrincipiaUplink.Tests
                 var refused = gate.Create(3600.0, massTons: 8.0);
 
                 Assert.Equal(PrincipiaWriteOutcome.Refused, refused.Outcome);
-                Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, refused.Refusal);
+                Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, refused.Refusal);
             }
 
             Assert.Empty(plugin.Writes);
@@ -659,7 +662,7 @@ namespace GonogoPrincipiaUplink.Tests
                 });
 
             Assert.Equal(PrincipiaWriteOutcome.Refused, Outcome(refused));
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
             Assert.False(plugin.Known(Guid).HasFlightPlan);
         }
@@ -710,7 +713,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refused = commands.DuplicatePlan(
                 new PrincipiaPlanSlotArgs { VesselId = Guid, RequestId = "d-1" });
 
-            Assert.Equal(PrincipiaWriteRefusal.GuardReadUnreadable, Refusal(refused));
+            Assert.Equal(PrincipiaErrorCodes.GuardReadUnreadable, Refusal(refused));
             Assert.Empty(plugin.Writes);
             Assert.Equal(1, plugin.Known(Guid).Plans);
         }

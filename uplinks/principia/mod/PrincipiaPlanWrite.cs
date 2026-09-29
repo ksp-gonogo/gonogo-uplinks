@@ -1,4 +1,5 @@
 using System;
+using Sitrep.Contract;
 
 namespace GonogoPrincipiaUplink
 {
@@ -7,24 +8,22 @@ namespace GonogoPrincipiaUplink
     /// payload.
     ///
     /// <para><see cref="Outcome"/>'s default is
-    /// <see cref="PrincipiaWriteOutcome.Refused"/> and
-    /// <see cref="Refusal"/>'s is <see cref="PrincipiaWriteRefusal.SurfaceUnavailable"/>,
-    /// so a value nobody filled in reads as "we did not touch the plan". That is the
-    /// safe direction, and it is the opposite of the mistake this mod has already
-    /// shipped once, where an unset refusal read as "nothing was refused" and a
-    /// feature that never ran looked exactly like one that had nothing to say.</para>
+    /// <see cref="PrincipiaWriteOutcome.Refused"/> and a refusal nobody named reads
+    /// as <see cref="PrincipiaErrorCodes.SurfaceUnavailable"/>, so a value nobody
+    /// filled in reads as "we did not touch the plan", never as "nothing was
+    /// refused".</para>
     /// </summary>
     public readonly struct PrincipiaWriteResult
     {
         private PrincipiaWriteResult(
             PrincipiaWriteOutcome outcome,
-            PrincipiaWriteRefusal refusal,
+            RefusalCode? refusal,
             string? detail,
             int? statusError,
             string? statusMessage)
         {
             Outcome = outcome;
-            Refusal = refusal;
+            _refusal = refusal;
             Detail = detail;
             StatusError = statusError;
             StatusMessage = statusMessage;
@@ -32,7 +31,13 @@ namespace GonogoPrincipiaUplink
 
         public PrincipiaWriteOutcome Outcome { get; }
 
-        public PrincipiaWriteRefusal Refusal { get; }
+        private readonly RefusalCode? _refusal;
+
+        /// <summary>The guard that refused the write, or null when it was attempted.</summary>
+        public RefusalCode? Refusal =>
+            Outcome == PrincipiaWriteOutcome.Refused
+                ? _refusal ?? PrincipiaErrorCodes.SurfaceUnavailable
+                : null;
 
         /// <summary>The refusal in a sentence, with the numbers behind it.</summary>
         public string? Detail { get; }
@@ -43,7 +48,7 @@ namespace GonogoPrincipiaUplink
 
         public string? StatusMessage { get; }
 
-        public static PrincipiaWriteResult Refused(PrincipiaWriteRefusal refusal, string detail) =>
+        public static PrincipiaWriteResult Refused(RefusalCode refusal, string detail) =>
             new PrincipiaWriteResult(
                 PrincipiaWriteOutcome.Refused, refusal, detail, null, null);
 
@@ -53,7 +58,7 @@ namespace GonogoPrincipiaUplink
         public static PrincipiaWriteResult Written(int? statusError = null) =>
             new PrincipiaWriteResult(
                 PrincipiaWriteOutcome.Written,
-                PrincipiaWriteRefusal.NotRefused,
+                null,
                 null,
                 statusError,
                 null);
@@ -62,7 +67,7 @@ namespace GonogoPrincipiaUplink
         public static PrincipiaWriteResult Rejected(int statusError, string? message) =>
             new PrincipiaWriteResult(
                 PrincipiaWriteOutcome.Rejected,
-                PrincipiaWriteRefusal.NotRefused,
+                null,
                 null,
                 statusError,
                 message);
@@ -127,7 +132,7 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         public bool TryWrite(
             out PrincipiaPlanWriteGate gate,
-            out PrincipiaWriteRefusal refusal,
+            out RefusalCode? refusal,
             out string detail)
         {
             gate = default;
@@ -144,7 +149,7 @@ namespace GonogoPrincipiaUplink
             // borrowing OptimisationRunning, which would state a fact nobody read.
             if (optimising == null)
             {
-                refusal = PrincipiaWriteRefusal.GuardReadUnreadable;
+                refusal = PrincipiaErrorCodes.GuardReadUnreadable;
                 detail =
                     "Whether Principia is optimising this plan would not read off this build, so "
                     + "there is no way to tell whether this edit would be reverted without being "
@@ -153,7 +158,7 @@ namespace GonogoPrincipiaUplink
             }
             if (optimising.Value >= 0)
             {
-                refusal = PrincipiaWriteRefusal.OptimisationRunning;
+                refusal = PrincipiaErrorCodes.OptimisationRunning;
                 detail =
                     "Principia is optimising burn " + (optimising.Value + 1)
                     + " of this plan. An edit "
@@ -164,7 +169,7 @@ namespace GonogoPrincipiaUplink
             }
 
             gate = new PrincipiaPlanWriteGate(_session, _generation, _guid);
-            refusal = PrincipiaWriteRefusal.NotRefused;
+            refusal = null;
             detail = string.Empty;
             return true;
         }
@@ -182,7 +187,7 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         internal bool TryProbe(
             out PrincipiaPlanWriteGate gate,
-            out PrincipiaWriteRefusal refusal,
+            out RefusalCode? refusal,
             out string detail)
         {
             gate = default;
@@ -190,7 +195,7 @@ namespace GonogoPrincipiaUplink
             var unavailable = _session!.Writes.UnavailableReason;
             if (unavailable != null)
             {
-                refusal = PrincipiaWriteRefusal.SurfaceUnavailable;
+                refusal = PrincipiaErrorCodes.SurfaceUnavailable;
                 detail = unavailable;
                 return false;
             }
@@ -199,7 +204,7 @@ namespace GonogoPrincipiaUplink
             // Refuses on an unreadable answer, for the reason given in TryWrite.
             if (optimising == null)
             {
-                refusal = PrincipiaWriteRefusal.GuardReadUnreadable;
+                refusal = PrincipiaErrorCodes.GuardReadUnreadable;
                 detail =
                     "Whether Principia is optimising this plan would not read off this build, so "
                     + "the round-trip probe could not be shown to have proved anything. Nothing "
@@ -208,7 +213,7 @@ namespace GonogoPrincipiaUplink
             }
             if (optimising.Value >= 0)
             {
-                refusal = PrincipiaWriteRefusal.OptimisationRunning;
+                refusal = PrincipiaErrorCodes.OptimisationRunning;
                 detail =
                     "Principia is optimising this plan, so the round-trip probe would be reverted "
                     + "and could not prove anything. Stop the optimisation in-game first.";
@@ -216,7 +221,7 @@ namespace GonogoPrincipiaUplink
             }
 
             gate = new PrincipiaPlanWriteGate(_session, _generation, _guid);
-            refusal = PrincipiaWriteRefusal.NotRefused;
+            refusal = null;
             detail = string.Empty;
             return true;
         }
@@ -357,7 +362,7 @@ namespace GonogoPrincipiaUplink
             if (double.IsNaN(finalTimeUt) || double.IsInfinity(finalTimeUt))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ValueNotFinite,
+                    PrincipiaErrorCodes.ValueNotFinite,
                     "A plan cannot be asked to end at an instant that is not a finite number. An "
                     + "infinite end instant is accepted by Principia, spawns a thread that never "
                     + "terminates, and is written into the save.");
@@ -411,7 +416,7 @@ namespace GonogoPrincipiaUplink
             if (!_session!.Plugin.FlightPlanExists(handle, _guid))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.NoFlightPlan,
+                    PrincipiaErrorCodes.NoFlightPlan,
                     "The vessel has no flight plan to delete. Principia's delete entry point is "
                     + "documented as doing nothing in that case and in fact erases past the "
                     + "beginning of its own vector, which is silent corruption rather than a "
@@ -450,7 +455,7 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         internal static PrincipiaWriteResult CapUnreadable() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.GuardReadUnreadable,
+                PrincipiaErrorCodes.GuardReadUnreadable,
                 "How many flight plans this vessel already holds would not read off this build, "
                 + "so there is no way to tell whether another one would pass Principia's maximum "
                 + "of " + MaxFlightPlans + ". Nothing has been written. An eleventh plan makes "
@@ -459,7 +464,7 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult AtPlanCap(int count) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.PlanSlotsFull,
+                PrincipiaErrorCodes.PlanSlotsFull,
                 "The vessel already holds " + count + " flight plans, which is Principia's "
                 + "maximum of " + MaxFlightPlans + ". An eleventh makes Principia's own flight "
                 + "planner throw on every layout pass, for as long as the window is open, and the "
@@ -467,7 +472,7 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult OutOfRange(int index, int count, string range) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.BurnIndexOutOfRange,
+                PrincipiaErrorCodes.BurnIndexOutOfRange,
                 "Burn " + (index + 1) + " is not in this plan, which holds " + count
                 + ". Valid indices right now are " + range
                 + ". The plan may have changed since the console last read it.");
@@ -536,7 +541,7 @@ namespace GonogoPrincipiaUplink
             if (_session!.Plugin.FlightPlanExists(handle, _guid))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PlanAlreadyExists,
+                    PrincipiaErrorCodes.PlanAlreadyExists,
                     "The vessel already has a flight plan. Creating another appends a second plan "
                     + "and selects it rather than replacing the first, so this is refused as an "
                     + "edit made by accident.");
@@ -550,7 +555,7 @@ namespace GonogoPrincipiaUplink
             if (count.Value >= PrincipiaPlanWriteGate.MaxFlightPlans)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PlanSlotsFull,
+                    PrincipiaErrorCodes.PlanSlotsFull,
                     "The vessel already holds " + count.Value
                     + " flight plans, Principia's maximum.");
             }
@@ -559,7 +564,7 @@ namespace GonogoPrincipiaUplink
                 || double.IsNaN(massTons) || double.IsInfinity(massTons))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ValueNotFinite,
+                    PrincipiaErrorCodes.ValueNotFinite,
                     "A plan cannot be created from an end instant or a mass that is not a finite "
                     + "number.");
             }
@@ -567,7 +572,7 @@ namespace GonogoPrincipiaUplink
             if (massTons <= 0)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ValueNotFinite,
+                    PrincipiaErrorCodes.ValueNotFinite,
                     "A plan cannot be created from a mass of " + massTons + " tonnes. Principia "
                     + "accepts it and every burn duration in the plan is then poisoned by it.");
             }
@@ -581,7 +586,7 @@ namespace GonogoPrincipiaUplink
             if (now == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.GuardReadUnreadable,
+                    PrincipiaErrorCodes.GuardReadUnreadable,
                     "Principia's own clock would not read off this build, so whether this plan "
                     + "would end before it starts cannot be established. Nothing has been "
                     + "created. A plan ending in the past is an assertion failure inside the "
@@ -590,7 +595,7 @@ namespace GonogoPrincipiaUplink
             if (finalTimeUt < now.Value)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.FinalTimeInPast,
+                    PrincipiaErrorCodes.FinalTimeInPast,
                     "A plan cannot be created ending before it starts. Principia asserts on that "
                     + "rather than returning an error, which ends the game.");
             }

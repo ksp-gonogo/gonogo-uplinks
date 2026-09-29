@@ -69,14 +69,13 @@ public static class PrincipiaRtConfig
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());
 
-        // The write surface's three closed sets. They generate as numeric enums,
+        // The write surface's two closed sets. They generate as numeric enums,
         // the same convention the core contract's own enums use, so a client
         // branches on a member rather than on a magic integer.
         builder.ExportAsEnums(
             new[]
             {
                 typeof(PrincipiaWriteOutcome),
-                typeof(PrincipiaWriteRefusal),
                 typeof(PrincipiaBurnProfile),
             });
 
@@ -109,6 +108,19 @@ public static class PrincipiaRtConfig
                 commandMapOut!,
                 typeof(PrincipiaRtConfig).Assembly,
                 resultImportFrom: "@ksp-gonogo/sitrep-sdk");
+        }
+
+        // The refinements in PrincipiaErrorCodes, with each one's sentence and
+        // meaning, for the client to register so a refusal reads as the guard said it.
+        var errorCodesOut = Environment.GetEnvironmentVariable("SITREP_PRINCIPIA_ERRORCODES_OUT");
+        if (!string.IsNullOrEmpty(errorCodesOut))
+        {
+            Sitrep.Contract.RtConfig.EmitErrorCodeMap(
+                errorCodesOut!,
+                builder.Context.DocumentationFilePath,
+                typeof(PrincipiaRtConfig).Assembly,
+                declarationImportFrom: "@ksp-gonogo/sitrep-sdk",
+                tableName: "PRINCIPIA_ERROR_CODES");
         }
     }
 }

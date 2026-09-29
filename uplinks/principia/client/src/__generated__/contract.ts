@@ -1060,154 +1060,6 @@ export enum PrincipiaWriteOutcome {
 	Written = 2
 }
 /**
-* Which guard refused a plan write.
-*
-* **Zero is the closed answer**, for the reason
-* `PrincipiaWriteOutcome.Refused` is: an unset field means "the surface is not
-* available", never "nothing was wrong".
-*/
-export enum PrincipiaWriteRefusal {
-	/**
-	* No plugin, no session, or a producer build whose write entry points were
-	* never analysed. Writes fail closed to read-only.
-	*/
-	SurfaceUnavailable = 0,
-	/**
-	* Nothing refused it: this write was attempted. Only ever paired with
-	* `PrincipiaWriteOutcome.Rejected` or `PrincipiaWriteOutcome.Written`.
-	*/
-	NotRefused = 1,
-	/**
-	* The surface was not armed. Every plan write changes the player's saved game
-	* and re-integrates on the game's own thread, so it takes a deliberate arm
-	* first.
-	*/
-	NotArmed = 2,
-	/**
-	* The struct this write passes to the plugin failed its round-trip probe, or
-	* the probe has not run. The producer's own structs are generated from a
-	* schema that changed in the shipped release, and a stale shape does not fail
-	* to resolve: it writes a plausible wrong burn into the save.
-	*/
-	LayoutUnverified = 3,
-	/** The plugin no longer knows this vessel. */
-	VesselUnknown = 4,
-	/** The vessel holds no flight plan to edit. */
-	NoFlightPlan = 5,
-	/**
-	* A plan already exists and this write would have created a second without
-	* being asked to.
-	*/
-	PlanAlreadyExists = 6,
-	/**
-	* The vessel already holds the producer's maximum of ten plans. An eleventh
-	* makes the producer's own planner window throw on every layout pass,
-	* permanently, with the button that would delete it inside the part that
-	* stopped rendering.
-	*/
-	PlanSlotsFull = 7,
-	/** The burn index was outside the count read in the same frame. */
-	BurnIndexOutOfRange = 8,
-	/**
-	* The burn is running right now. The plugin permits this and only the rebase
-	* entry point checks, so the guard is ours.
-	*/
-	BurnExecuting = 9,
-	/**
-	* The burn's manœuvring frame is one the producer's frame factory does not
-	* handle, so sending the burn back would abort the game.
-	*/
-	BurnFrameUnsupported = 10,
-	/**
-	* An optimisation is running on this plan and would revert the edit without
-	* reporting it.
-	*/
-	OptimisationRunning = 11,
-	/** A requested value was not finite, or a Δv triple would have been. */
-	ValueNotFinite = 12,
-	/**
-	* Thrust is not positive. A zero-thrust burn has infinite duration, which the
-	* producer's own singularity test does not catch: it pushes the plan's end
-	* instant to infinity, spawns a thread that never terminates, and serialises
-	* the infinity into the save.
-	*/
-	ThrustNotPositive = 13,
-	/**
-	* The integrator kinds read back from the plugin were not the pair this build
-	* expects, so writing them back could abort with no message.
-	*/
-	IntegratorKindUnexpected = 14,
-	/**
-	* A requested integrator bound was outside the range the producer's own
-	* controls offer.
-	*/
-	IntegratorBoundsExceeded = 15,
-	/** A plan cannot be created ending before it starts. */
-	FinalTimeInPast = 16,
-	/**
-	* A field this write must set was not found on the producer's own struct, so
-	* its shape is not the shape that was analysed.
-	*/
-	PluginShapeChanged = 18,
-	/**
-	* The ignition instant this write asked for had already passed by the time the
-	* write arrived. Distinct from `PrincipiaWriteRefusal.FinalTimeInPast`, which
-	* is about a plan's END and only reachable while creating one.
-	*
-	* Reached under signal delay with nothing done wrong at either end: an instant
-	* comfortably ahead when the operator pressed can be behind by the time the
-	* command lands. Writing it anyway asks the plugin to integrate a burn that
-	* never happened, and the receipt would read `PrincipiaWriteOutcome.Written`.
-	*/
-	IgnitionInPast = 19,
-	/**
-	* A composed plan that cannot be read as one: no burn list where a list was
-	* required, a burn missing from the middle, more burns than a single command
-	* may install, ignitions out of time order, or an end that falls before the
-	* last burn.
-	*
-	* Separate from `PrincipiaWriteRefusal.ValueNotFinite`, which is one number
-	* being unusable. This is the SHAPE being wrong, and it refuses the whole plan
-	* rather than one burn of it, because a plan half-installed is a trajectory
-	* nobody composed.
-	*/
-	PlanMalformed = 20,
-	/**
-	* A burn with no manœuvre ahead of it was asked for without the instant it
-	* lights.
-	*
-	* Everywhere else an absent instant means "leave it where it is", which refers
-	* to the burn being changed. A burn with nothing ahead of it has no instant to
-	* be left at, so the one value it cannot derive has to be stated.
-	*/
-	ComposedBurnIncomplete = 21,
-	/**
-	* A read this guard depends on could not be decoded from the loaded build, so
-	* the guard cannot answer. Refused rather than permitted.
-	*
-	* Reached three ways today: a burn whose ignition or cutoff would not read,
-	* which leaves `PrincipiaWriteRefusal.BurnExecuting` unable to say whether the
-	* craft is under thrust; an optimisation state that would not read, which
-	* leaves `PrincipiaWriteRefusal.OptimisationRunning` unable to say whether the
-	* edit would be reverted; and the producer's own clock failing to read, which
-	* leaves every check that compares a burn against "now" with nothing to
-	* compare it to, `PrincipiaWriteRefusal.IgnitionInPast` and
-	* `PrincipiaWriteRefusal.FinalTimeInPast` included.
-	*
-	* **Distinct from those two, deliberately.** Both of them state a fact about
-	* the plan, and reusing either for an unreadable answer would put the reason
-	* for the refusal into a sentence nobody read. Distinct from
-	* `PrincipiaWriteRefusal.PluginShapeChanged` as well, which is a field missing
-	* off a struct this write must SET; this is a value this build could not READ.
-	*
-	* Refusing is the whole point. The absence used to permit: a REMOVE dispatched
-	* against a burn whose instants would not read came back with a
-	* `PrincipiaWriteOutcome.Written` receipt, so an operator's own console
-	* confirmed it had deleted a burn that may have been under thrust.
-	*/
-	GuardReadUnreadable = 22
-}
-/**
 * What a plan write did, as a separate artefact from the request.
 *
 * **Why the plan is re-read rather than assumed.** Replacing the last burn can
@@ -1237,8 +1089,12 @@ export interface PrincipiaPlanWriteReceipt
 	replayed?: boolean | null;
 	/** Refused, rejected or written. Never a success by default. */
 	outcome: PrincipiaWriteOutcome;
-	/** Which guard refused it. */
-	refusal: PrincipiaWriteRefusal;
+	/**
+	* The refusal code of the guard that refused it, one of this Uplink's
+	* `principia.*` refinements; null when nothing refused it and the write was
+	* attempted.
+	*/
+	refusal?: string | null;
 	/** The refusal in a sentence, with the numbers that caused it. */
 	refusalDetail?: string | null;
 	/**

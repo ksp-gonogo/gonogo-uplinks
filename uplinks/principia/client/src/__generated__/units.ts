@@ -198,6 +198,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     vesselId: "id",
   },
   "PrincipiaPlanWriteReceipt": {
+    refusal: "id",
     refusalDetail: "text",
     replayed: "flag",
     requestId: "id",

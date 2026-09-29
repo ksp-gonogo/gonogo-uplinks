@@ -185,6 +185,7 @@ namespace GonogoPrincipiaUplink
                 // case the whole delay model exists for.
                 new CommandDeclaration { Command = PlanCommands.SendCommand },
             },
+            ErrorCodes = ErrorCodeCatalog.Of(typeof(PrincipiaErrorCodes)),
         };
 
         /// <summary>

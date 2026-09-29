@@ -1,4 +1,5 @@
 using System;
+using Sitrep.Contract;
 
 namespace GonogoPrincipiaUplink
 {
@@ -130,25 +131,25 @@ namespace GonogoPrincipiaUplink
         /// probe would deny the remedy to the plan most likely to need it.</para>
         /// </summary>
         public bool TryPermit(
-            string? vesselGuid, out PrincipiaWriteRefusal refusal, out string detail)
+            string? vesselGuid, out RefusalCode? refusal, out string detail)
         {
             var unavailable = UnavailableReason;
             if (unavailable != null)
             {
-                refusal = PrincipiaWriteRefusal.SurfaceUnavailable;
+                refusal = PrincipiaErrorCodes.SurfaceUnavailable;
                 detail = unavailable;
                 return false;
             }
             if (!IsArmed(vesselGuid))
             {
-                refusal = PrincipiaWriteRefusal.NotArmed;
+                refusal = PrincipiaErrorCodes.NotArmed;
                 detail =
                     "The flight-plan write surface is not armed for this vessel. Every plan write "
                     + "is persisted into the save, can move and delete stock maneuver nodes on the "
                     + "flying craft, and re-integrates on the game's own thread.";
                 return false;
             }
-            refusal = PrincipiaWriteRefusal.NotRefused;
+            refusal = null;
             detail = string.Empty;
             return true;
         }

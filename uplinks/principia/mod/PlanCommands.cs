@@ -101,7 +101,7 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
             return PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.SurfaceUnavailable,
+                PrincipiaErrorCodes.SurfaceUnavailable,
                 "A flight-plan write arrived off the game's main thread, so it was refused. "
                 + "Principia's plan members are main-thread only and a write destroys trajectory "
                 + "segments a renderer may be reading. The host must be built with commands "
@@ -226,7 +226,7 @@ namespace GonogoPrincipiaUplink
                     ArmCommand,
                     requestId,
                     PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.LayoutUnverified,
+                        PrincipiaErrorCodes.LayoutUnverified,
                         session.Writes.LayoutFailure
                         ?? "Neither of Principia's structs survived a round trip, so nothing here "
                         + "can be written safely."),
@@ -304,7 +304,7 @@ namespace GonogoPrincipiaUplink
                         if (!insert)
                         {
                             return PrincipiaWriteResult.Refused(
-                                PrincipiaWriteRefusal.BurnIndexOutOfRange,
+                                PrincipiaErrorCodes.BurnIndexOutOfRange,
                                 "This plan has no burns, so there is none to change. Add one "
                                 + "first.");
                         }
@@ -331,7 +331,7 @@ namespace GonogoPrincipiaUplink
                     if (manoeuvre == null)
                     {
                         return PrincipiaWriteResult.Refused(
-                            PrincipiaWriteRefusal.BurnIndexOutOfRange,
+                            PrincipiaErrorCodes.BurnIndexOutOfRange,
                             "Burn " + (templateIndex + 1) + " is not in this plan, which holds "
                             + count + ".");
                     }
@@ -340,7 +340,7 @@ namespace GonogoPrincipiaUplink
                     if (burn == null)
                     {
                         return PrincipiaWriteResult.Refused(
-                            PrincipiaWriteRefusal.PluginShapeChanged,
+                            PrincipiaErrorCodes.PluginShapeChanged,
                             "Principia's manoeuvre carried no burn where this Uplink expects one.");
                     }
 
@@ -420,7 +420,7 @@ namespace GonogoPrincipiaUplink
             if (ignitionUt == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ComposedBurnIncomplete,
+                    PrincipiaErrorCodes.ComposedBurnIncomplete,
                     "The first burn of a plan has no earlier burn to take an instant from, so "
                     + "its ignition has to be stated.");
             }
@@ -433,7 +433,7 @@ namespace GonogoPrincipiaUplink
             if (source == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.SurfaceUnavailable,
+                    PrincipiaErrorCodes.SurfaceUnavailable,
                     "The game is not reachable, so neither the craft's mass nor the frame this "
                     + "burn would be built in can be read.");
             }
@@ -442,7 +442,7 @@ namespace GonogoPrincipiaUplink
             if (massTons == null || !(massTons.Value > 0))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.SurfaceUnavailable,
+                    PrincipiaErrorCodes.SurfaceUnavailable,
                     "The craft's mass could not be read, and the propulsion for a burn with no "
                     + "manœuvre ahead of it is derived from it. Nothing is written on a mass "
                     + "nobody has.");
@@ -457,7 +457,7 @@ namespace GonogoPrincipiaUplink
                     out var frameRefusal))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.BurnFrameUnsupported, frameRefusal!);
+                    PrincipiaErrorCodes.BurnFrameUnsupported, frameRefusal!);
             }
 
             var request = new ComposedBurnRequest(
@@ -479,7 +479,7 @@ namespace GonogoPrincipiaUplink
             if (burn == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PluginShapeChanged, refusal!);
+                    PrincipiaErrorCodes.PluginShapeChanged, refusal!);
             }
 
             var written = gate.Insert(0, burn);
@@ -516,7 +516,7 @@ namespace GonogoPrincipiaUplink
                 // read as corruption. That sentence was repeated onward as a
                 // measurement. Hand over the evidence instead.
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.LayoutUnverified,
+                    PrincipiaErrorCodes.LayoutUnverified,
                     "The burn did not survive the crossing into Principia, so it was taken "
                     + "back out: "
                     + (afterBurn == null
@@ -681,7 +681,7 @@ namespace GonogoPrincipiaUplink
             if (massTons == null || !(massTons.Value > 0))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.SurfaceUnavailable,
+                    PrincipiaErrorCodes.SurfaceUnavailable,
                     "The craft's mass could not be read, and a plan created without one starts "
                     + "from a craft that weighs nothing.");
             }
@@ -792,7 +792,7 @@ namespace GonogoPrincipiaUplink
                     if (parameters == null)
                     {
                         return PrincipiaWriteResult.Refused(
-                            PrincipiaWriteRefusal.PluginShapeChanged,
+                            PrincipiaErrorCodes.PluginShapeChanged,
                             "Principia's step parameters could not be read, so there is nothing to "
                             + "change and hand back.");
                     }
@@ -872,7 +872,7 @@ namespace GonogoPrincipiaUplink
                     CreateCommand,
                     args.RequestId,
                     PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.SurfaceUnavailable,
+                        PrincipiaErrorCodes.SurfaceUnavailable,
                         "The craft's mass could not be read, and a plan created without one "
                         + "starts from a craft that weighs nothing."),
                     ReadPlan(session, frame, vessel.Guid, now));
@@ -1054,7 +1054,7 @@ namespace GonogoPrincipiaUplink
                         if (manoeuvre == null)
                         {
                             return PrincipiaWriteResult.Refused(
-                                PrincipiaWriteRefusal.BurnIndexOutOfRange,
+                                PrincipiaErrorCodes.BurnIndexOutOfRange,
                                 "Burn " + (templateIndex + 1) + " went missing while this plan was "
                                 + "being installed, which means the plan changed underneath the "
                                 + "write.");
@@ -1064,7 +1064,7 @@ namespace GonogoPrincipiaUplink
                         if (burn == null)
                         {
                             return PrincipiaWriteResult.Refused(
-                                PrincipiaWriteRefusal.PluginShapeChanged,
+                                PrincipiaErrorCodes.PluginShapeChanged,
                                 "Principia's manoeuvre carried no burn where this Uplink expects one.");
                         }
 
@@ -1177,44 +1177,44 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult LayoutUnverified(PrincipiaSession session, string what) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.LayoutUnverified,
+                PrincipiaErrorCodes.LayoutUnverified,
                 "Principia's " + what + " struct has not survived a round trip in this session, so "
                 + "nothing will be written through it. " + (session.Writes.LayoutFailure ?? "")
                 + " Arm the write surface on a plan that has at least one burn.");
 
         private static PrincipiaWriteResult NoArgs() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.SurfaceUnavailable,
+                PrincipiaErrorCodes.SurfaceUnavailable,
                 "The command carried no arguments, so there is nothing to write and no vessel to "
                 + "write it to.");
 
         private static PrincipiaWriteResult NoSession() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.SurfaceUnavailable,
+                PrincipiaErrorCodes.SurfaceUnavailable,
                 "No Principia session is bound, so the plan cannot be read, let alone changed.");
 
         private static PrincipiaWriteResult NoPlugin() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.SurfaceUnavailable,
+                PrincipiaErrorCodes.SurfaceUnavailable,
                 "Principia's plugin is not running right now (main menu, or mid-reset).");
 
         private static PrincipiaWriteResult NoPlan() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.NoFlightPlan,
+                PrincipiaErrorCodes.NoFlightPlan,
                 "The vessel has no flight plan. Create one first.");
 
         /// <summary>
         /// Principia's clock would not read, so no write on this surface can be
         /// checked against "now".
         ///
-        /// <para>Not <see cref="PrincipiaWriteRefusal.SurfaceUnavailable"/>, which
+        /// <para>Not <see cref="PrincipiaErrorCodes.SurfaceUnavailable"/>, which
         /// says the surface is not there. It is there and answering, and one answer
         /// this build cannot decode; the guards are what stopped, so the refusal is
         /// the one that says a guard could not answer.</para>
         /// </summary>
         private static PrincipiaWriteResult ClockUnreadable() =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.GuardReadUnreadable,
+                PrincipiaErrorCodes.GuardReadUnreadable,
                 "Principia's own clock would not read off this build, so none of the checks that "
                 + "stand between this write and the game can answer: whether a burn is running "
                 + "right now, and whether the instant asked for has already passed. Nothing has "
@@ -1223,7 +1223,7 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult UnknownVessel(string? vesselId) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.VesselUnknown,
+                PrincipiaErrorCodes.VesselUnknown,
                 string.IsNullOrEmpty(vesselId)
                     ? "No vessel was named, and a plan write is per-vessel."
                     : "Principia no longer knows vessel " + vesselId
@@ -1292,10 +1292,9 @@ namespace GonogoPrincipiaUplink
             {
                 return CommandResult<Dictionary<string, object?>>.Ok(receipt);
             }
-            var refusal =
-                receipt.TryGetValue("refusal", out var refusalValue) && refusalValue is int refusalCode
-                    ? (PrincipiaWriteRefusal)refusalCode
-                    : PrincipiaWriteRefusal.SurfaceUnavailable;
+            var refusal = receipt.TryGetValue("refusal", out var refusalValue) && refusalValue is string refusalId
+                ? Refusals.Find(known => known.Id == refusalId)
+                : null;
             return new CommandResult<Dictionary<string, object?>>
             {
                 Success = false,
@@ -1306,52 +1305,24 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Maps a write outcome onto the typed command code a client branches on.
-        ///
-        /// <para>The refusal enum on the receipt is the precise answer and this is
-        /// the coarse one, and both travel: a client that only knows the shared
-        /// vocabulary still gets a code it can act on, and one that knows this
-        /// Uplink's gets the guard by name. There is deliberately no
-        /// <c>LimitBreach</c> on the plan-slot refusal: that type is shaped around a
-        /// named FACILITY and a plan slot is not one, so the numbers ride in the
-        /// sentence instead.</para>
+        /// The code a client branches on: the guard's own refinement for a refused
+        /// write, whose root is what a client that knows only the shared vocabulary
+        /// reads, or <see cref="CommandErrorCode.WrongState"/> when the plugin itself
+        /// declined. There is deliberately no <c>LimitBreach</c> on the plan-slot
+        /// refusal: that type is shaped around a named FACILITY and a plan slot is
+        /// not one, so the numbers ride in the sentence instead.
         /// </summary>
         private static RefusalCode Code(PrincipiaWriteResult result) =>
             Code(result.Outcome, result.Refusal);
 
         private static RefusalCode Code(
-            PrincipiaWriteOutcome outcome, PrincipiaWriteRefusal refusal) =>
+            PrincipiaWriteOutcome outcome, RefusalCode? refusal) =>
             outcome == PrincipiaWriteOutcome.Rejected
                 ? CommandErrorCode.WrongState
-                : refusal switch
-                {
-                    PrincipiaWriteRefusal.SurfaceUnavailable => CommandErrorCode.ModeUnavailable,
-                    PrincipiaWriteRefusal.NotArmed => CommandErrorCode.NotClearToProceed,
-                    PrincipiaWriteRefusal.LayoutUnverified => CommandErrorCode.ModeUnavailable,
-                    PrincipiaWriteRefusal.VesselUnknown => CommandErrorCode.NoVessel,
-                    PrincipiaWriteRefusal.NoFlightPlan => CommandErrorCode.WrongState,
-                    PrincipiaWriteRefusal.PlanAlreadyExists => CommandErrorCode.WrongState,
-                    PrincipiaWriteRefusal.PlanSlotsFull => CommandErrorCode.LimitReached,
-                    PrincipiaWriteRefusal.BurnIndexOutOfRange => CommandErrorCode.NotFound,
-                    PrincipiaWriteRefusal.BurnExecuting => CommandErrorCode.NotClearToProceed,
-                    PrincipiaWriteRefusal.BurnFrameUnsupported => CommandErrorCode.CapabilityMismatch,
-                    PrincipiaWriteRefusal.OptimisationRunning => CommandErrorCode.NotClearToProceed,
-                    PrincipiaWriteRefusal.ValueNotFinite => CommandErrorCode.Range,
-                    PrincipiaWriteRefusal.ThrustNotPositive => CommandErrorCode.Range,
-                    // The read succeeded with a pair outside this build's vocabulary: neither Unreadable nor CapabilityMismatch.
-                    PrincipiaWriteRefusal.IntegratorKindUnexpected =>
-                        CommandErrorCode.ModeUnavailable,
-                    PrincipiaWriteRefusal.IntegratorBoundsExceeded => CommandErrorCode.Range,
-                    PrincipiaWriteRefusal.FinalTimeInPast => CommandErrorCode.Range,
-                    PrincipiaWriteRefusal.ComposedBurnIncomplete => CommandErrorCode.Range,
-                    // A field this write must set is not on the producer's struct,
-                    // so the read of its shape failed. NOT CapabilityMismatch,
-                    // which renders as "this craft cannot do it": nothing about
-                    // the vessel was established here, and the operator's own
-                    // craft is the last place they should be sent looking.
-                    PrincipiaWriteRefusal.PluginShapeChanged => CommandErrorCode.Unreadable,
-                    _ => CommandErrorCode.ModeUnavailable,
-                };
+                : refusal ?? PrincipiaErrorCodes.SurfaceUnavailable;
+
+        private static readonly List<RefusalCode> Refusals =
+            new List<RefusalCode>(ErrorCodeCatalog.Of(typeof(PrincipiaErrorCodes)));
 
         private bool Replay(
             string command, string? requestId, out Dictionary<string, object?>? receipt)

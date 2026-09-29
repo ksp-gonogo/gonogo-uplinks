@@ -43,7 +43,7 @@ namespace GonogoPrincipiaUplink
             if (missing != null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PluginShapeChanged,
+                    PrincipiaErrorCodes.PluginShapeChanged,
                     "Principia's burn struct has no '" + missing + "' field, so it is not the "
                     + "shape this Uplink was audited against. Nothing will be written: a burn with "
                     + "a field missing does not fail to marshal, it writes a plausible wrong burn "
@@ -54,7 +54,7 @@ namespace GonogoPrincipiaUplink
             if (extension == null || !PrincipiaBurnStruct.IsEditableFrame(extension.Value))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.BurnFrameUnsupported,
+                    PrincipiaErrorCodes.BurnFrameUnsupported,
                     "This burn's maneuvering frame (kind " + (extension?.ToString() ?? "unknown")
                     + ") is not one Principia's own frame factory handles when a burn is written "
                     + "back. One such kind is a fatal log inside the plugin, which ends the KSP "
@@ -67,7 +67,7 @@ namespace GonogoPrincipiaUplink
             if (thrust == null || thrust.Value <= 0)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ThrustNotPositive,
+                    PrincipiaErrorCodes.ThrustNotPositive,
                     "A planned burn needs positive thrust. At zero the burn's duration is "
                     + "infinite, which Principia's own singularity test does not catch because it "
                     + "tests the Dv: the plan's end instant becomes infinite, a thread is spawned "
@@ -78,7 +78,7 @@ namespace GonogoPrincipiaUplink
             if (isp == null || isp.Value <= 0)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ThrustNotPositive,
+                    PrincipiaErrorCodes.ThrustNotPositive,
                     "A planned burn needs a positive specific impulse; at zero its duration is "
                     + "not a number.");
             }
@@ -87,7 +87,7 @@ namespace GonogoPrincipiaUplink
             if (ignition == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ValueNotFinite,
+                    PrincipiaErrorCodes.ValueNotFinite,
                     "This burn's ignition instant is not a finite number.");
             }
 
@@ -96,7 +96,7 @@ namespace GonogoPrincipiaUplink
                 || !IsFinite(deltaV.Value.X) || !IsFinite(deltaV.Value.Y) || !IsFinite(deltaV.Value.Z))
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.ValueNotFinite,
+                    PrincipiaErrorCodes.ValueNotFinite,
                     "This burn's Dv is not a finite triple. Principia reports that as a singular "
                     + "maneuver rather than aborting, but there is no reason to ask.");
             }
@@ -133,7 +133,7 @@ namespace GonogoPrincipiaUplink
             if (ignitionUt == null || cutoffUt == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.GuardReadUnreadable,
+                    PrincipiaErrorCodes.GuardReadUnreadable,
                     "This burn's "
                     + (ignitionUt == null
                         ? cutoffUt == null ? "ignition and cutoff instants" : "ignition instant"
@@ -149,7 +149,7 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
             return PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.BurnExecuting,
+                PrincipiaErrorCodes.BurnExecuting,
                 "This burn is running: it ignited and has not cut off. Principia permits the edit "
                 + "and will not warn, so the refusal is the console's. Wait for cutoff, or edit "
                 + "another burn.");
@@ -201,7 +201,7 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
             return PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.IgnitionInPast,
+                PrincipiaErrorCodes.IgnitionInPast,
                 "This edit asked for an ignition at " + requestedIgnitionUt.Value
                 + ", and it is now " + nowUt + ", so the instant had passed before the edit "
                 + "arrived. Under signal delay that happens to an edit that was correct when "
@@ -226,7 +226,7 @@ namespace GonogoPrincipiaUplink
             if (missing != null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PluginShapeChanged,
+                    PrincipiaErrorCodes.PluginShapeChanged,
                     "Principia's burn struct has no '" + missing + "' field, so this edit cannot "
                     + "be applied to it without guessing.");
             }
@@ -259,7 +259,7 @@ namespace GonogoPrincipiaUplink
                 if (coordinates != PrincipiaBurnStruct.CartesianTnb)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.BurnFrameUnsupported,
+                        PrincipiaErrorCodes.BurnFrameUnsupported,
                         "This burn's Dv is expressed in one of Principia's spherical coordinate "
                         + "systems (kind " + (coordinates?.ToString() ?? "unknown") + "), which "
                         + "carries a magnitude and two angles rather than three components. "
@@ -287,7 +287,7 @@ namespace GonogoPrincipiaUplink
                 if (current == null && !statesEveryComponent)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.ValueNotFinite,
+                        PrincipiaErrorCodes.ValueNotFinite,
                         "This burn's Dv is not a finite triple, and an edit keeps whichever "
                         + "components it does not state, so there is nothing to keep. Principia "
                         + "reports that as a singular manoeuvre rather than aborting on it. "
@@ -312,7 +312,7 @@ namespace GonogoPrincipiaUplink
                     || initialMassTons.Value <= 0)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.ValueNotFinite,
+                        PrincipiaErrorCodes.ValueNotFinite,
                         "The instant-impulse profile scales thrust by the burn's mass at ignition, "
                         + "and that mass could not be read, so there is nothing to scale.");
                 }
@@ -332,12 +332,12 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult NotFinite(string what) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.ValueNotFinite,
+                PrincipiaErrorCodes.ValueNotFinite,
                 "The requested " + what + " is not a finite number.");
 
         private static PrincipiaWriteResult ShapeChanged(string field) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.PluginShapeChanged,
+                PrincipiaErrorCodes.PluginShapeChanged,
                 "Principia's burn struct would not accept a value for '" + field
                 + "', so it is not the shape this Uplink was audited against.");
 
@@ -375,14 +375,14 @@ namespace GonogoPrincipiaUplink
             if (kind == null || generalized == null)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.PluginShapeChanged,
+                    PrincipiaErrorCodes.PluginShapeChanged,
                     "Principia's step-parameter struct does not carry both integrator kinds where "
                     + "this Uplink expects them, so it is not the shape that was audited.");
             }
             if (kind.Value != PrincipiaPlanWriteGate.RequiredIntegratorKind)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.IntegratorKindUnexpected,
+                    PrincipiaErrorCodes.IntegratorKindUnexpected,
                     "The plan's integrator kind read back as " + kind.Value + ", not "
                     + PrincipiaPlanWriteGate.RequiredIntegratorKind
                     + ". Writing it back could abort the game with no message, because the two "
@@ -393,7 +393,7 @@ namespace GonogoPrincipiaUplink
                     PrincipiaPlanWriteGate.AllowedGeneralizedIntegratorKinds, generalized.Value) < 0)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.IntegratorKindUnexpected,
+                    PrincipiaErrorCodes.IntegratorKindUnexpected,
                     "The plan's generalized integrator kind read back as " + generalized.Value
                     + ", which is not one this build's equation accepts.");
             }
@@ -404,7 +404,7 @@ namespace GonogoPrincipiaUplink
                 || steps.Value > PrincipiaPlanWriteGate.MaxMaxSteps)
             {
                 return PrincipiaWriteResult.Refused(
-                    PrincipiaWriteRefusal.IntegratorBoundsExceeded,
+                    PrincipiaErrorCodes.IntegratorBoundsExceeded,
                     "A step limit of " + (steps?.ToString() ?? "nothing") + " is outside the "
                     + PrincipiaPlanWriteGate.MinMaxSteps + " to "
                     + PrincipiaPlanWriteGate.MaxMaxSteps + " Principia's own control offers.");
@@ -419,7 +419,7 @@ namespace GonogoPrincipiaUplink
                     || tolerance.Value > PrincipiaPlanWriteGate.MaxTolerance)
                 {
                     return PrincipiaWriteResult.Refused(
-                        PrincipiaWriteRefusal.IntegratorBoundsExceeded,
+                        PrincipiaErrorCodes.IntegratorBoundsExceeded,
                         "A tolerance of " + (tolerance?.ToString() ?? "nothing") + " is outside "
                         + "the " + PrincipiaPlanWriteGate.MinTolerance + " to "
                         + PrincipiaPlanWriteGate.MaxTolerance + " Principia's own controls offer. "
@@ -458,7 +458,7 @@ namespace GonogoPrincipiaUplink
 
         private static PrincipiaWriteResult Unsettable(string field) =>
             PrincipiaWriteResult.Refused(
-                PrincipiaWriteRefusal.PluginShapeChanged,
+                PrincipiaErrorCodes.PluginShapeChanged,
                 "Principia's step-parameter struct would not accept a value for '" + field + "'.");
     }
 }

@@ -101,7 +101,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refusal = PrincipiaBurnRules.Reject(SingularBurn());
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.ValueNotFinite, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.ValueNotFinite, refusal!.Value.Refusal);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refusal = PrincipiaBurnRules.Reject(new object());
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.PluginShapeChanged, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.PluginShapeChanged, refusal!.Value.Refusal);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace GonogoPrincipiaUplink.Tests
                 initialMassTons: 10.0);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.ValueNotFinite, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.ValueNotFinite, refusal!.Value.Refusal);
             Assert.DoesNotContain("shape", refusal.Value.Detail!, StringComparison.OrdinalIgnoreCase);
         }
 

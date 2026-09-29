@@ -14,9 +14,9 @@ import type {
   PrincipiaPlanIntegrator,
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
+import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
 import {
   PrincipiaWriteOutcome,
-  PrincipiaWriteRefusal,
 } from "../__generated__/contract.js";
 import { axe } from "../test/axe.js";
 import { MAX_STEPS_OPTIONS, PlanIntegrationBlock } from "./index.js";
@@ -468,7 +468,7 @@ describe("PlanIntegrationBlock", () => {
         requestId: "integrator-vessel-1-4096",
         replayed: true,
         outcome: PrincipiaWriteOutcome.Written,
-        refusal: PrincipiaWriteRefusal.NotRefused,
+        refusal: null,
       }),
     );
 
@@ -506,7 +506,7 @@ describe("PlanIntegrationBlock", () => {
       planWriteReply({
         requestId: "horizon-vessel-1-1144000",
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.SurfaceUnavailable,
+        refusal: PrincipiaErrorCodes.SurfaceUnavailable,
       }),
     );
 
@@ -525,7 +525,7 @@ describe("PlanIntegrationBlock", () => {
     );
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/SurfaceUnavailable/)).toBeInTheDocument();
+    expect(screen.getByText(/principia\.surfaceUnavailable/)).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -553,7 +553,7 @@ describe("PlanIntegrationBlock", () => {
         requestId: "horizon-vessel-1-1144000",
         replayed: false,
         outcome: PrincipiaWriteOutcome.Refused,
-        refusal: PrincipiaWriteRefusal.FinalTimeInPast,
+        refusal: PrincipiaErrorCodes.FinalTimeInPast,
         refusalDetail: said,
       },
     }));

@@ -44,7 +44,7 @@ namespace GonogoPrincipiaUplink.Tests
                 Plan(Burn(900), Burn(2000), Burn(3000)), nowUt: 1000);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.IgnitionInPast, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.IgnitionInPast, refusal!.Value.Refusal);
             Assert.Contains("whole plan is refused", refusal.Value.Detail!, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -70,7 +70,7 @@ namespace GonogoPrincipiaUplink.Tests
                 new PrincipiaPlanSendArgs { VesselId = "v", Burns = null }, nowUt: 1000);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.PlanMalformed, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.PlanMalformed, refusal!.Value.Refusal);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace GonogoPrincipiaUplink.Tests
                 Plan(Burn(3000), Burn(2000)), nowUt: 1000);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.PlanMalformed, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.PlanMalformed, refusal!.Value.Refusal);
         }
 
         [Fact]
@@ -110,7 +110,7 @@ namespace GonogoPrincipiaUplink.Tests
                 Plan(Burn(2000), Burn(3000, tangent: double.NaN)), nowUt: 1000);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.ValueNotFinite, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.ValueNotFinite, refusal!.Value.Refusal);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace GonogoPrincipiaUplink.Tests
             var refusal = PrincipiaComposedPlanRules.Reject(Plan(many), nowUt: 1000);
 
             Assert.NotNull(refusal);
-            Assert.Equal(PrincipiaWriteRefusal.PlanMalformed, refusal!.Value.Refusal);
+            Assert.Equal(PrincipiaErrorCodes.PlanMalformed, refusal!.Value.Refusal);
         }
 
         [Fact]

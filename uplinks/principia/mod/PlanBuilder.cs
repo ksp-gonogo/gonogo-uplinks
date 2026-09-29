@@ -108,7 +108,7 @@ namespace GonogoPrincipiaUplink
                 ["requestId"] = requestId,
                 ["replayed"] = replayed,
                 ["outcome"] = (int)result.Outcome,
-                ["refusal"] = (int)result.Refusal,
+                ["refusal"] = result.Refusal?.Id,
                 ["refusalDetail"] = result.Detail,
                 ["statusError"] = result.StatusError,
                 ["statusMessage"] = result.StatusMessage,
