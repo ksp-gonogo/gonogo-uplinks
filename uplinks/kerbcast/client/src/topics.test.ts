@@ -26,21 +26,21 @@ const MOD_ROOT = join(
   "mod",
 );
 
-/** The value of `KerbcastUplink.AvailableTopic` as declared in the C# source. */
+/** The value of `KerbcastManifest.AvailableTopic` as declared in the C# source. */
 function csAvailableTopic(): string {
-  const src = readFileSync(join(MOD_ROOT, "KerbcastUplink.cs"), "utf8");
+  const src = readFileSync(join(MOD_ROOT, "KerbcastManifest.cs"), "utf8");
   const m = src.match(/const\s+string\s+AvailableTopic\s*=\s*"([^"]+)"/);
   if (!m)
-    throw new Error("AvailableTopic constant not found in KerbcastUplink.cs");
+    throw new Error("AvailableTopic constant not found in KerbcastManifest.cs");
   return m[1];
 }
 
-/** The value of `KerbcastUplink.CamerasTopic` as declared in the C# source. */
+/** The value of `KerbcastManifest.CamerasTopic` as declared in the C# source. */
 function csCamerasTopic(): string {
-  const src = readFileSync(join(MOD_ROOT, "KerbcastUplink.cs"), "utf8");
+  const src = readFileSync(join(MOD_ROOT, "KerbcastManifest.cs"), "utf8");
   const m = src.match(/const\s+string\s+CamerasTopic\s*=\s*"([^"]+)"/);
   if (!m)
-    throw new Error("CamerasTopic constant not found in KerbcastUplink.cs");
+    throw new Error("CamerasTopic constant not found in KerbcastManifest.cs");
   return m[1];
 }
 

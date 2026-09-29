@@ -157,9 +157,9 @@ namespace Gonogo.MechJebUplink
                 // delay exactly like every other vessel-actuation command
                 // (mirrors VesselUplink's classification, NOT FlightOpsUplink's
                 // game-level delayed:false commands).
-                new CommandDeclaration { Command = MechJebChannels.EngageAscentAutopilotCommand },
-                new CommandDeclaration { Command = MechJebChannels.ExecuteNextNodeCommand },
-                new CommandDeclaration { Command = MechJebChannels.LandAtTargetCommand },
+                new CommandDeclaration { Command = MechJebChannels.EngageAscentAutopilotCommand, Subject = MechJebChannels.ControlSubject },
+                new CommandDeclaration { Command = MechJebChannels.ExecuteNextNodeCommand, Subject = MechJebChannels.ControlSubject },
+                new CommandDeclaration { Command = MechJebChannels.LandAtTargetCommand, Subject = MechJebChannels.ControlSubject },
             },
         };
 

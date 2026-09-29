@@ -98,6 +98,16 @@ namespace GonogoRp1Uplink
         public const string AvionicsTopic = "rp1.avionics";
 
         /// <summary>
+        /// Core's career channel, held at home, which carries the strategy roster
+        /// and the contract offers. The Subject of the two commands whose effect
+        /// lands there rather than on a channel of this Uplink's: appointing a
+        /// strategy, and the payload change that withdraws pending contract
+        /// offers. A literal because this Uplink cannot reference the core
+        /// provider that declares it.
+        /// </summary>
+        private const string CareerStatusSubject = "career.status";
+
+        /// <summary>
         /// Rows published per second across every rp1.* channel. One capture per
         /// tick emits one row per centre, complex, queued vehicle, pad, operation,
         /// construction, research node and Program, so this counts the thing that actually
@@ -678,7 +688,7 @@ namespace GonogoRp1Uplink
             var commands = new List<CommandDeclaration>();
             if (buildModelResolved)
             {
-                commands.Add(Declare(Rp1BuildCommands.RepeatCommand));
+                commands.Add(Declare(Rp1BuildCommands.RepeatCommand, BuildQueueTopic));
             }
             if (startModelResolved)
             {
@@ -691,6 +701,7 @@ namespace GonogoRp1Uplink
                 commands.Add(new CommandDeclaration
                 {
                     Command = Rp1BuildStartCommands.StartCommand,
+                    Subject = BuildQueueTopic,
                     Requires = new[]
                     {
                         Rp1BuildCommands.Requirements()[0],
@@ -700,20 +711,20 @@ namespace GonogoRp1Uplink
             }
             if (moveModelResolved)
             {
-                commands.Add(Declare(Rp1VehicleCommands.RolloutCommand));
-                commands.Add(Declare(Rp1VehicleCommands.RollbackCommand));
+                commands.Add(Declare(Rp1VehicleCommands.RolloutCommand, OperationsTopic));
+                commands.Add(Declare(Rp1VehicleCommands.RollbackCommand, OperationsTopic));
             }
             if (queueModelResolved)
             {
-                commands.Add(Declare(Rp1VehicleCommands.ScrapCommand));
-                commands.Add(Declare(Rp1VehicleCommands.RushCommand));
+                commands.Add(Declare(Rp1VehicleCommands.ScrapCommand, BuildQueueTopic));
+                commands.Add(Declare(Rp1VehicleCommands.RushCommand, ComplexesTopic));
             }
             // Its own flag rather than sharing the queue's, even though today the
             // two resolve the same two types: a rename that cost one of them
             // should cost one of them.
             if (staffingModelResolved)
             {
-                commands.Add(Declare(Rp1PersonnelCommands.AssignCommand));
+                commands.Add(Declare(Rp1PersonnelCommands.AssignCommand, ComplexesTopic));
             }
             if (facilityModelResolved)
             {
@@ -727,6 +738,7 @@ namespace GonogoRp1Uplink
                 commands.Add(new CommandDeclaration
                 {
                     Command = Rp1FacilityUpgradeCommands.UpgradeCommand,
+                    Subject = FacilitiesTopic,
                     Requires = new[]
                     {
                         Rp1BuildCommands.Requirements()[0],
@@ -740,26 +752,26 @@ namespace GonogoRp1Uplink
             // rename on either side should cost this command and nothing else.
             if (researchModelResolved)
             {
-                commands.Add(Declare(Rp1ResearchCommands.ResearchCommand));
+                commands.Add(Declare(Rp1ResearchCommands.ResearchCommand, ResearchTopic));
             }
             if (strategyModelResolved)
             {
-                commands.Add(Declare(Rp1StrategyCommands.ActivateCommand));
+                commands.Add(Declare(Rp1StrategyCommands.ActivateCommand, CareerStatusSubject));
             }
             if (targetModelResolved)
             {
-                commands.Add(Declare(Rp1TargetCommands.CancelHireCommand));
-                commands.Add(Declare(Rp1TargetCommands.CancelFundCommand));
-                commands.Add(Declare(Rp1TargetCommands.SetHireCommand));
+                commands.Add(Declare(Rp1TargetCommands.CancelHireCommand, PersonnelTopic));
+                commands.Add(Declare(Rp1TargetCommands.CancelFundCommand, FundTargetTopic));
+                commands.Add(Declare(Rp1TargetCommands.SetHireCommand, PersonnelTopic));
             }
             // Its own flag, on RP-1's crew handler and its course type, which no
             // other command here reaches: every one of the three is about a course
             // and none of them is about a vehicle, a building or a balance.
             if (trainingModelResolved)
             {
-                commands.Add(Declare(Rp1TrainingCommands.EnrolCommand));
-                commands.Add(Declare(Rp1TrainingCommands.CancelCommand));
-                commands.Add(Declare(Rp1TrainingCommands.RemoveCommand));
+                commands.Add(Declare(Rp1TrainingCommands.EnrolCommand, TrainingTopic));
+                commands.Add(Declare(Rp1TrainingCommands.CancelCommand, TrainingTopic));
+                commands.Add(Declare(Rp1TrainingCommands.RemoveCommand, TrainingTopic));
             }
             // Its own flag, on RP-1's complex and pad types. It shares those two
             // with the queue's flag today and still gets its own, for the reason
@@ -769,10 +781,10 @@ namespace GonogoRp1Uplink
             // genuinely disagree.
             if (complexLifecycleModelResolved)
             {
-                commands.Add(Declare(Rp1ComplexLifecycleCommands.RenameComplexCommand));
-                commands.Add(Declare(Rp1ComplexLifecycleCommands.DismantleComplexCommand));
-                commands.Add(Declare(Rp1ComplexLifecycleCommands.RenamePadCommand));
-                commands.Add(Declare(Rp1ComplexLifecycleCommands.DismantlePadCommand));
+                commands.Add(Declare(Rp1ComplexLifecycleCommands.RenameComplexCommand, ComplexesTopic));
+                commands.Add(Declare(Rp1ComplexLifecycleCommands.DismantleComplexCommand, ComplexesTopic));
+                commands.Add(Declare(Rp1ComplexLifecycleCommands.RenamePadCommand, PadsTopic));
+                commands.Add(Declare(Rp1ComplexLifecycleCommands.DismantlePadCommand, PadsTopic));
             }
             // TWO flags for three commands, because adding a pad genuinely needs a
             // different set of RP-1 types from building or renovating a complex: a
@@ -781,12 +793,12 @@ namespace GonogoRp1Uplink
             // should cost only the commands that touch it.
             if (complexConstructionModelResolved)
             {
-                commands.Add(Declare(Rp1ComplexConstructionCommands.NewComplexCommand));
-                commands.Add(Declare(Rp1ComplexConstructionCommands.ModifyComplexCommand));
+                commands.Add(Declare(Rp1ComplexConstructionCommands.NewComplexCommand, ComplexesTopic));
+                commands.Add(Declare(Rp1ComplexConstructionCommands.ModifyComplexCommand, ComplexesTopic));
             }
             if (padConstructionModelResolved)
             {
-                commands.Add(Declare(Rp1ComplexConstructionCommands.NewPadCommand));
+                commands.Add(Declare(Rp1ComplexConstructionCommands.NewPadCommand, PadsTopic));
             }
             // TWO requirements, and the second is the only SCENE condition here
             // besides the facility upgrade's: RP-1's warp controller ticks in
@@ -815,15 +827,15 @@ namespace GonogoRp1Uplink
             // centre, and neither shares a dependency with the writes above.
             if (toolingModelResolved)
             {
-                commands.Add(Declare(Rp1ToolingCommands.ToolAllCommand));
-                commands.Add(Declare(Rp1ToolingCommands.RefitCommand));
+                commands.Add(Declare(Rp1ToolingCommands.ToolAllCommand, ToolingTopic));
+                commands.Add(Declare(Rp1ToolingCommands.RefitCommand, ToolingTopic));
             }
             // Its own flag, on RP-1's contract tab and its settings node, which no
             // other command here reaches. It is also the only command in this Uplink
             // that changes a persisted SETTING rather than career state.
             if (contractModelResolved)
             {
-                commands.Add(Declare(Rp1ContractCommands.SetPayloadCommand));
+                commands.Add(Declare(Rp1ContractCommands.SetPayloadCommand, CareerStatusSubject));
             }
             return commands;
         }
@@ -844,10 +856,18 @@ namespace GonogoRp1Uplink
         /// <c>rp1.warp.toComplete</c>, which is declared separately above for its
         /// scene requirement and is a clock change rather than an order: see
         /// <c>Rp1WarpArgs</c>.</para>
+        ///
+        /// <para><paramref name="subject"/> is the channel carrying the state the
+        /// command changes. Core routes the order's delay through that channel's
+        /// node, and marks this whole Uplink unavailable at startup if a delayed
+        /// command names none that resolves, so it is required here rather than
+        /// defaulted. Every Subject this Uplink names is held at home, which is
+        /// where these orders travel to.</para>
         /// </summary>
-        private static CommandDeclaration Declare(string command) => new CommandDeclaration
+        private static CommandDeclaration Declare(string command, string subject) => new CommandDeclaration
         {
             Command = command,
+            Subject = subject,
             Requires = Rp1BuildCommands.Requirements(),
         };
 

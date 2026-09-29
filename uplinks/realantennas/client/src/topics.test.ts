@@ -27,14 +27,14 @@ import {
 // src -> client -> GonogoRealAntennasUplink
 const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-/** The value of a `const string <name>` in RealAntennasUplink.cs, as the C# declares it. */
+/** The value of a `const string <name>` in RealAntennasManifest.cs, as the C# declares it. */
 function csTopic(constName: string): string {
-  const src = readFileSync(join(UPLINK_ROOT, "mod", "RealAntennasUplink.cs"), "utf8");
+  const src = readFileSync(join(UPLINK_ROOT, "mod", "RealAntennasManifest.cs"), "utf8");
   const m = src.match(
     new RegExp(`const\\s+string\\s+${constName}\\s*=\\s*"([^"]+)"`),
   );
   if (!m) {
-    throw new Error(`${constName} constant not found in RealAntennasUplink.cs`);
+    throw new Error(`${constName} constant not found in RealAntennasManifest.cs`);
   }
   return m[1];
 }

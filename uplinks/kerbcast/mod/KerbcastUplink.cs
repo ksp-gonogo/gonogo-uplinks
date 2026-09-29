@@ -47,10 +47,10 @@ namespace Gonogo.KerbcastUplink
     [SitrepUplink("kerbcast")]
     public sealed class KerbcastUplink : ISitrepUplink, IModSettingsSource, IModSettingsWriter
     {
-        public const string AvailableTopic = "kerbcast.available";
-        public const string CamerasTopic = "kerbcast.cameras";
-        public const string SetFieldOfViewCommand = "kerbcast.setFieldOfView";
-        public const string SetPanCommand = "kerbcast.setPan";
+        public const string AvailableTopic = KerbcastManifest.AvailableTopic;
+        public const string CamerasTopic = KerbcastManifest.CamerasTopic;
+        public const string SetFieldOfViewCommand = KerbcastManifest.SetFieldOfViewCommand;
+        public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
         private KerbcastReflection? _kerbcast;
         private IChannelPublisher? _cameras;
@@ -74,52 +74,7 @@ namespace Gonogo.KerbcastUplink
         private volatile bool _sampledOnce;
         private int _cameraCount = -1;
 
-        public UplinkManifest Manifest { get; } = new UplinkManifest
-        {
-            Id = "kerbcast",
-            Version = "1.0.0",
-            Channels = new List<ChannelDeclaration>
-            {
-                // Whether the kerbcast mod is installed at all, a GROUND-side
-                // fact about the INSTALL, not vessel telemetry, so TrueNow:
-                // the same disposition every other mod-presence and uplink-health
-                // channel carries. This is the presence gate a client augment
-                // declares `requires: "kerbcast"` against.
-                new ChannelDeclaration
-                {
-                    Topic = AvailableTopic,
-                    Delivery = Delivery.LossyLatest,
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.TrueNow,
-                },
-                // The camera inventory IS vessel telemetry, an observation of
-                // hardware on the craft, learned over the comms link, so it is
-                // Delayed like any other vessel channel. This is also what keeps
-                // the control plane honest against the WebRTC video: the feed is
-                // played out through the same delay authority, so the camera list
-                // and the picture it describes reveal together rather than the
-                // list racing ahead of the image.
-                new ChannelDeclaration
-                {
-                    Topic = CamerasTopic,
-                    Delivery = Delivery.LossyLatest,
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.Delayed,
-                },
-            },
-            Commands = new List<CommandDeclaration>
-            {
-                // Delay disposition lives on each args class's own
-                // [SitrepCommand] tag in KerbcastPayloads.cs (default
-                // DelayRole.Delayed: aiming or zooming a camera is an
-                // instruction to hardware on the craft, so it rides the
-                // signal-delay Courier exactly like a staging or SAS
-                // command). Restating it here is banned by
-                // styleguide-command-delay-single-source.test.ts.
-                new CommandDeclaration { Command = SetFieldOfViewCommand },
-                new CommandDeclaration { Command = SetPanCommand },
-            },
-        };
+        public UplinkManifest Manifest { get; } = KerbcastManifest.Build();
 
         public KerbcastUplink()
         {

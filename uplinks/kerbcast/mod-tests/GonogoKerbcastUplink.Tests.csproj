@@ -43,6 +43,8 @@
     <Compile Include="..\mod\SidecarDeathDebouncer.cs" />
     <Compile Include="..\mod\KerbcastAimOutcome.cs" />
     <Compile Include="..\mod\KerbcastModSettings.cs" />
+    <!-- The manifest, so CommandSubjectTests can check what it declares. -->
+    <Compile Include="..\mod\KerbcastManifest.cs" />
   </ItemGroup>
 
   <!-- GonogoKerbcastUplink.Contract: KerbcastCameraEntry/KerbcastSetFieldOfViewArgs/

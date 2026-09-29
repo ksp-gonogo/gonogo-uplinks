@@ -23,12 +23,12 @@ import { REALANTENNAS_CHAINS_TOPIC } from "./topics.js";
 const UPLINK_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 function csConst(constName: string): string {
-  const src = readFileSync(join(UPLINK_ROOT, "mod", "RealAntennasUplink.cs"), "utf8");
+  const src = readFileSync(join(UPLINK_ROOT, "mod", "RealAntennasManifest.cs"), "utf8");
   const m = src.match(
     new RegExp(`const\\s+string\\s+${constName}\\s*=\\s*"([^"]+)"`),
   );
   if (!m) {
-    throw new Error(`${constName} constant not found in RealAntennasUplink.cs`);
+    throw new Error(`${constName} constant not found in RealAntennasManifest.cs`);
   }
   return m[1];
 }

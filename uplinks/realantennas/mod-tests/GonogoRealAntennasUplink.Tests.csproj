@@ -67,6 +67,8 @@
          scaled-radius model, so RaOcclusionTests runs with or without the KSP
          assemblies; RaCommsBackend, gated below, hands this same model back. -->
     <Compile Include="..\mod\RaOcclusion.cs" />
+    <!-- The manifest, so CommandSubjectTests can check what it declares. -->
+    <Compile Include="..\mod\RealAntennasManifest.cs" />
   </ItemGroup>
 
   <!-- RaRouting.cs is the RA route between two nodes, carved out of

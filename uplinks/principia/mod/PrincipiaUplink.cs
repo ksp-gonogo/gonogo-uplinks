@@ -171,19 +171,21 @@ namespace GonogoPrincipiaUplink
                 // than console preferences. The arm is Delayed too, and that is not
                 // an oversight: arming RUNS the round-trip probe, which is a real
                 // write of Principia's own burn back into the plan.
-                new CommandDeclaration { Command = PlanCommands.ArmCommand },
-                new CommandDeclaration { Command = PlanCommands.ReplaceBurnCommand },
-                new CommandDeclaration { Command = PlanCommands.InsertBurnCommand },
-                new CommandDeclaration { Command = PlanCommands.RemoveBurnCommand },
-                new CommandDeclaration { Command = PlanCommands.HorizonCommand },
-                new CommandDeclaration { Command = PlanCommands.IntegratorCommand },
-                new CommandDeclaration { Command = PlanCommands.CreateCommand },
-                new CommandDeclaration { Command = PlanCommands.DeleteCommand },
-                new CommandDeclaration { Command = PlanCommands.DuplicateCommand },
+                // Each names principia.plan as its Subject, the craft's plan it
+                // writes, so the order rides that craft's light-time.
+                new CommandDeclaration { Command = PlanCommands.ArmCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.ReplaceBurnCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.InsertBurnCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.RemoveBurnCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.HorizonCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.IntegratorCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.CreateCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.DeleteCommand, Subject = PlanTopic },
+                new CommandDeclaration { Command = PlanCommands.DuplicateCommand, Subject = PlanTopic },
                 // The composed send is Delayed like the rest, and more obviously so:
                 // it is a command centre telling a craft what to fly, which is the
                 // case the whole delay model exists for.
-                new CommandDeclaration { Command = PlanCommands.SendCommand },
+                new CommandDeclaration { Command = PlanCommands.SendCommand, Subject = PlanTopic },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(PrincipiaErrorCodes)),
         };
