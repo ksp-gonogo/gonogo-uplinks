@@ -387,9 +387,6 @@ namespace GonogoPrincipiaUplink.Tests
         public void SetVesselDelay(string vesselId, double oneWaySeconds) =>
             throw NotExpected("SetVesselDelay");
 
-        public void SetAuthorityDelay(string centreId, string vesselId, double oneWaySeconds) =>
-            throw NotExpected("SetAuthorityDelay");
-
         public void SetCentreDelay(string fromCentreId, string toCentreId, double oneWaySeconds) =>
             throw NotExpected("SetCentreDelay");
 

@@ -34,7 +34,6 @@ namespace GonogoMechJebUplink.Tests
         public void AddCommandRequirement(string command, CommandRequirement requirement) => throw NotExpected();
         public void SetSignalDelaySource(Func<KspSnapshot?, CommsDelay?> computeOnMainThread) => throw NotExpected();
         public void SetVesselDelay(string vesselId, double oneWaySeconds) => throw NotExpected();
-        public void SetAuthorityDelay(string centreId, string vesselId, double oneWaySeconds) => throw NotExpected();
         public void SetCentreDelay(string fromCentreId, string toCentreId, double oneWaySeconds) => throw NotExpected();
         public void SetHomeCommandDelay(string centreId, double oneWaySeconds) => throw NotExpected();
         public void SetActiveVesselDelays(IReadOnlyDictionary<string, double> oneWaySecondsByCentre) => throw NotExpected();
