@@ -1,4 +1,5 @@
 import { RP1 } from "../uplink.js";
+import { FINANCES_SCREEN } from "./financesScreen.js";
 
 /**
  * RP-1's Programs screen in the Administration Building.
@@ -36,6 +37,12 @@ export const PROGRAMS_SCREEN = Object.freeze([
   }),
 ]);
 
+/** Every screen RP-1 adds to the building, in one entry list. */
+export const RP1_ADMIN_SCREENS = Object.freeze([
+  ...PROGRAMS_SCREEN,
+  ...FINANCES_SCREEN,
+]);
+
 RP1.registerContribution({
   id: "programs-screen",
   contributes: "strategies.screens",
@@ -47,5 +54,5 @@ RP1.registerContribution({
    * budget: the aggregation compares entries by reference.
    */
   requires: "rp1",
-  compute: () => PROGRAMS_SCREEN,
+  compute: () => RP1_ADMIN_SCREENS,
 });
