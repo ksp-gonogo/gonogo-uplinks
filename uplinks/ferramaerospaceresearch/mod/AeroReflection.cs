@@ -234,7 +234,7 @@ namespace GonogoFerramAerospaceResearchUplink
         /// <para>It used to answer false for all four, argued as the cautious
         /// direction. It is not the cautious direction: false here is FAR's OWN
         /// statement that the model has not caught up with the vehicle's shape,
-        /// which the widgets draw as MODEL STALE and which makes every mark on
+        /// which the widgets draw as MODEL OUTDATED and which makes every mark on
         /// the descent envelope faint and dashed. Substituted, it makes that
         /// claim about FAR's internals out of a read that failed, and both
         /// widgets already ask it as <c>aeroModelValid === false</c> precisely so

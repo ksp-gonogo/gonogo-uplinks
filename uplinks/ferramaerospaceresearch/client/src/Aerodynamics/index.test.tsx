@@ -107,7 +107,7 @@ describe("Aerodynamics", () => {
     fixture.emit(TOPIC, flying({ aeroModelValid: false }));
 
     await waitFor(() => {
-      expect(visibleText(view.container)).toContain("MODEL STALE");
+      expect(visibleText(view.container)).toContain("MODEL OUTDATED");
     });
   });
 
@@ -118,11 +118,11 @@ describe("Aerodynamics", () => {
     await waitFor(() => {
       expect(visibleText(view.container)).toContain("ATTACHED");
     });
-    expect(visibleText(view.container)).not.toContain("MODEL STALE");
+    expect(visibleText(view.container)).not.toContain("MODEL OUTDATED");
   });
 
   /**
-   * MODEL STALE says FAR's model has not caught up with the vehicle's shape.
+   * MODEL OUTDATED says FAR's model has not caught up with the vehicle's shape.
    * Coalesced from an absent flag, it was raised whenever the channel had said
    * nothing at all, so the widget claimed something about FAR's internals while
    * simultaneously reporting NO AERO DATA.
@@ -133,7 +133,7 @@ describe("Aerodynamics", () => {
     await waitFor(() => {
       expect(visibleText(view.container)).toContain("NO AERO DATA");
     });
-    expect(visibleText(view.container)).not.toContain("MODEL STALE");
+    expect(visibleText(view.container)).not.toContain("MODEL OUTDATED");
   });
 
   it("announces the aerodynamic state politely", async () => {

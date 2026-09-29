@@ -90,7 +90,7 @@ function stallBand(fraction: Value<"ratio">): {
  * than substituting a zero: a rocket has no stall fraction, a vessel in vacuum
  * has no lift coefficient, and neither of those is the same as a reading of
  * nought. The stall state carries a word as well as a colour, and the "MODEL
- * STALE" pill is a qualifier on everything below it: after a separation the
+ * OUTDATED" pill is a qualifier on everything below it: after a separation the
  * numbers still describe the vehicle's previous shape until the aerodynamics
  * model catches up.</p>
  */
@@ -101,11 +101,12 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
   const s = reading.state === "observed" ? reading.value : undefined;
   const stall = s?.stallFraction;
   const band = stall == null ? null : stallBand(stall);
-  // MODEL STALE is FAR's own statement that its model has not caught up with
-  // the vehicle's shape. Coalesced to false it was also raised when there was
-  // no reading at all, so the widget said NO AERO DATA and MODEL STALE at once:
-  // a claim about FAR's internals from a channel that had answered nothing.
-  // The sibling DescentEnvelope already asks it this way (`=== false`).
+  // MODEL OUTDATED is FAR's own statement that its model has not caught up
+  // with the vehicle's shape. Coalesced to false it was also raised when
+  // there was no reading at all, so the widget said NO AERO DATA and MODEL
+  // OUTDATED at once: a claim about FAR's internals from a channel that had
+  // answered nothing. The sibling DescentEnvelope already asks it this way
+  // (`=== false`).
   const modelStale = s?.aeroModelValid === false;
 
   return (
@@ -124,7 +125,7 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
             <StatusPill $tone={band?.tone ?? "neutral"}>
               {band?.label ?? "NO AERO DATA"}
             </StatusPill>
-            {modelStale && <StatusPill $tone="warn">MODEL STALE</StatusPill>}
+            {modelStale && <StatusPill $tone="warn">MODEL OUTDATED</StatusPill>}
           </Cluster>
           <Cluster wrap>
             <div>

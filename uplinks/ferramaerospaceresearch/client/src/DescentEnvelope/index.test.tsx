@@ -95,10 +95,10 @@ describe("aero descent layers", () => {
     );
   });
 
-  it("says MODEL STALE and draws every mark it still adds faintly", () => {
+  it("says MODEL OUTDATED and draws every mark it still adds faintly", () => {
     const layers = aeroDescentLayers(entryReading({ stale: true }));
     expect(
-      layers.some((l) => l.kind === "caption" && l.text === "MODEL STALE"),
+      layers.some((l) => l.kind === "caption" && l.text === "MODEL OUTDATED"),
     ).toBe(true);
     expect(byId(layers, "model-terminal")?.emphasis).toBe("faint");
     expect(byId(layers, "model-settle")?.emphasis).toBe("faint");

@@ -169,10 +169,10 @@ export function aeroDescentLayers(
       kind: "caption",
       id: "stale",
       anchor: "left-edge",
-      text: "MODEL STALE",
+      text: "MODEL OUTDATED",
       tone: "warn",
       description:
-        "aerodynamic model stale, these marks describe the previous shape",
+        "aerodynamic model outdated, these marks describe the previous shape",
     });
   }
 

@@ -212,7 +212,7 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
 
         /// <summary>
         /// An unknown qualifier travels as absent, not as a verdict. False is
-        /// drawn as MODEL STALE and dashes every mark on the descent envelope,
+        /// drawn as MODEL OUTDATED and dashes every mark on the descent envelope,
         /// so a reading nobody could take must not borrow it.
         /// </summary>
         [Fact]
