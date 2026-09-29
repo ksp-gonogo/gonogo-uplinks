@@ -33,7 +33,8 @@ import "./index.js";
 const HUD_CONTEXT = {
   maxDeg: 8,
   reticleOffset: { x: 0, y: 0 },
-  reticleTravelPct: 40,
+  reticleTravelPx: 40,
+  reportPictureAspect: () => {},
   aligned: false,
   ax: undefined,
   ay: undefined,
@@ -185,5 +186,79 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
     });
 
     await waitFor(() => expect(ensureConnectedCalls).toBeGreaterThan(0));
+  });
+
+  it("tells the HUD the picture's aspect once the video knows its size, and withdraws it on unmount", async () => {
+    const reported: (number | null)[] = [];
+    const picture = { id: "stream" } as unknown as MediaStream;
+    registerUplinkHandle("kerbcast", {
+      id: "kerbcast",
+      name: "Kerbcast",
+      ensureConnected: () => {},
+      subscribeCamera: () => {},
+      unsubscribeCamera: () => {},
+      getClient: () => ({
+        clock: { captureUt: null, epoch: 0, warpRate: 1 },
+        on: () => () => {},
+        camera: () => ({ mediaStream: picture, on: () => () => {} }),
+      }),
+    });
+    const width = Object.getOwnPropertyDescriptor(
+      HTMLVideoElement.prototype,
+      "videoWidth",
+    );
+    const height = Object.getOwnPropertyDescriptor(
+      HTMLVideoElement.prototype,
+      "videoHeight",
+    );
+    Object.defineProperty(HTMLVideoElement.prototype, "videoWidth", {
+      configurable: true,
+      get: () => 1024,
+    });
+    Object.defineProperty(HTMLVideoElement.prototype, "videoHeight", {
+      configurable: true,
+      get: () => 576,
+    });
+    try {
+      const stream = setupStreamFixture();
+      const { container, unmount } = render(
+        <stream.Provider>
+          <DomainAvailabilityProvider>
+            <KerbcastAvailabilityFeeder />
+            <AugmentSlot
+              name="targeting.camera"
+              props={{
+                ...HUD_CONTEXT,
+                reportPictureAspect: (aspect) => reported.push(aspect),
+              }}
+            />
+          </DomainAvailabilityProvider>
+        </stream.Provider>,
+      );
+      act(() => {
+        stream.emit("kerbcast.available", true, {
+          quality: Quality.Loaded,
+          source: "kerbcast",
+        });
+      });
+      await waitFor(() =>
+        expect(stream.transport.isSubscribed("kerbcast.cameras")).toBe(true),
+      );
+      act(() => {
+        stream.emit(
+          "kerbcast.cameras",
+          [{ cameraId: 7, isDockingCamera: true }],
+          { quality: Quality.Loaded, source: "kerbcast" },
+        );
+      });
+      await waitFor(() => expect(container.querySelector("video")).not.toBeNull());
+      expect(reported.at(-1)).toBeCloseTo(16 / 9);
+
+      unmount();
+      expect(reported.at(-1)).toBeNull();
+    } finally {
+      if (width) Object.defineProperty(HTMLVideoElement.prototype, "videoWidth", width);
+      if (height) Object.defineProperty(HTMLVideoElement.prototype, "videoHeight", height);
+    }
   });
 });

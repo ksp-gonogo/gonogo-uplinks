@@ -65,6 +65,7 @@ function stillTrue<T, A>(
 
 export function DockingCameraAugment({
   cameraFlightId,
+  reportPictureAspect,
 }: SlotProps<"targeting.camera">) {
   // A camera roster is a fact: cameras are fitted by an event, not by a frame.
   const cameras = stillTrue(useTelemetry("kerbcast.cameras"), undefined);
@@ -111,12 +112,21 @@ export function DockingCameraAugment({
   if (flightId === null || !client || !subscriptions) return null;
   return (
     <KerbcastProvider client={client} subscriptions={subscriptions}>
-      <DockingCameraVideo flightId={flightId} />
+      <DockingCameraVideo
+        flightId={flightId}
+        reportPictureAspect={reportPictureAspect}
+      />
     </KerbcastProvider>
   );
 }
 
-function DockingCameraVideo({ flightId }: { flightId: number }) {
+function DockingCameraVideo({
+  flightId,
+  reportPictureAspect,
+}: {
+  flightId: number;
+  reportPictureAspect: (aspect: number | null) => void;
+}) {
   // The DELAYED stream, not the raw live one. The HUD's reticle is UT-gated by
   // the ViewClock; the backdrop must be gated on the SAME clock or it marks
   // where the target WAS over an image of where it IS, worst precisely when
@@ -135,6 +145,25 @@ function DockingCameraVideo({ flightId }: { flightId: number }) {
       void v.play().catch(() => {});
     }
   }, [stream]);
+
+  // The HUD scales its reticle to the picture's own field, so it is told the picture's shape and when it goes.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !stream) return;
+    const report = () => {
+      if (v.videoWidth > 0 && v.videoHeight > 0) {
+        reportPictureAspect(v.videoWidth / v.videoHeight);
+      }
+    };
+    report();
+    v.addEventListener("loadedmetadata", report);
+    v.addEventListener("resize", report);
+    return () => {
+      v.removeEventListener("loadedmetadata", report);
+      v.removeEventListener("resize", report);
+      reportPictureAspect(null);
+    };
+  }, [stream, reportPictureAspect]);
 
   if (!stream) return null;
   // Absolutely positioned over the HudPanel (AugmentSlot renders a bare
