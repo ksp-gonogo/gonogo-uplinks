@@ -85,7 +85,8 @@ export function VehicleAssembly() {
    * branch deciding whether the credit exists at all reads a plain value.
    */
   const careerReading = useTelemetry("career.status");
-  const career = current(careerReading);
+  const budgetReading = useTelemetry("rp1.budget");
+  const budget = current(budgetReading);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {
@@ -125,16 +126,20 @@ export function VehicleAssembly() {
               pools is the producer's to make at transaction time, so both
               balances are shown and neither is derived from the other here.
 
-              ABSENT on stock, which has no such pool, and absent is silence:
-              a zero would claim the career has an empty allowance rather than
-              no allowance. */}
-          {career?.economy?.unlockCredit != null && (
+              It is read from rp1.budget rather than the career record, because
+              the credit is RP-1's own pool and that topic is where RP-1's
+              finances are carried.
+
+              ABSENT where RP-1 will not give it, and absent is silence: a zero
+              would claim the career has an empty allowance rather than an
+              unknown one. */}
+          {budget?.unlockCreditBalance != null && (
             <Text
               size="sm"
               title="Prepaid credit, spent before funds on the purchases it covers"
               tone="muted"
             >
-              Unlock credit <Unit value={careerReading.economy.unlockCredit} />
+              Unlock credit <Unit value={budgetReading.unlockCreditBalance} />
             </Text>
           )}
 
@@ -266,6 +271,8 @@ registerComponent<VehicleAssemblyConfig>({
     // it, and starting a build buys the vehicle outright, so the balance those
     // are judged against has to be in here.
     "career.status",
+    // The unlock credit drawn beside that balance, which tooling spends first.
+    "rp1.budget",
   ],
   defaultConfig: {},
   actions: [],

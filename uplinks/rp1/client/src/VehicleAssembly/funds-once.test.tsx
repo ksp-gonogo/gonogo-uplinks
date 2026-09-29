@@ -114,8 +114,44 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
    * answer: part of that price may already be paid. Its own contract says a
    * surface offering such a purchase shows both balances rather than deriving
    * the split, which is exactly what this widget does.</para>
+   *
+   * <para>The credit is RP-1's own balance, so it is read from `rp1.budget`.
+   * The career record is given a DIFFERENT figure here, so a widget that went
+   * back to reading the career record would draw the wrong number and fail.</para>
    */
-  it("draws the prepaid credit beside the funds where the career has one", async () => {
+  it("draws RP-1's prepaid credit beside the funds where RP-1 reports one", async () => {
+    const fixture = mount();
+    act(() => {
+      fixture.emit("rp1.available", true);
+    });
+    act(() => {
+      fixture.emit("career.status", {
+        economy: {
+          funds: 500_000,
+          reputation: 0,
+          science: 0,
+          unlockCredit: 7_000,
+        },
+      });
+      fixture.emit("rp1.budget", { unlockCreditBalance: 42_000 });
+    });
+
+    const credit = await screen.findByTitle(
+      "Prepaid credit, spent before funds on the purchases it covers",
+    );
+    expect(screen.getAllByTitle("Available funds")).toHaveLength(1);
+    expect(credit).toHaveTextContent(/42,000/);
+    expect(credit).not.toHaveTextContent(/7,000/);
+  });
+
+  /**
+   * And the complement, which is what stops the row above being a decoration:
+   * where RP-1 does not report the balance the field is absent, and an absent
+   * allowance is not an empty one. A zero here would tell an operator they have
+   * spent a credit they never had. The career record still carrying a credit
+   * does not bring the line back, because that is not where it is read.
+   */
+  it("draws no credit line at all where RP-1 reports no balance", async () => {
     const fixture = mount();
     act(() => {
       fixture.emit("rp1.available", true);
@@ -129,35 +165,14 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
           unlockCredit: 42_000,
         },
       });
+      fixture.emit("rp1.budget", { unlockCreditBalance: null });
     });
 
     await waitFor(() => {
       expect(screen.getAllByTitle("Available funds")).toHaveLength(1);
     });
-    expect(
-      screen.getByText(/Unlock credit/, { selector: "*" }),
-    ).toBeInTheDocument();
-  });
-
-  /**
-   * And the complement, which is what stops the row above being a decoration: a
-   * career whose model has no such pool leaves the field absent, and an absent
-   * allowance is not an empty one. A zero here would tell an operator they have
-   * spent a credit they never had.
-   */
-  it("draws no credit line at all where the money model has no such pool", async () => {
-    const fixture = mount();
-    act(() => {
-      fixture.emit("rp1.available", true);
-    });
-    act(() => {
-      fixture.emit("career.status", {
-        economy: { funds: 500_000, reputation: 0, science: 0 },
-      });
-    });
-
     await waitFor(() => {
-      expect(screen.getAllByTitle("Available funds")).toHaveLength(1);
+      expect(fixture.transport.isSubscribed("rp1.budget")).toBe(true);
     });
     expect(screen.queryByText(/Unlock credit/)).toBeNull();
   });

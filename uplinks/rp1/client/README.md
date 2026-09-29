@@ -130,7 +130,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | | |
 | --- | --- |
 | Widget id | `rp1-vehicle-assembly` |
-| Reads | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status` |
+| Reads | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget` |
 | Slots | `rp1-vehicle-assembly.sections` |
 | Default size | 7 × 16 |
 | Scenes | 10 |

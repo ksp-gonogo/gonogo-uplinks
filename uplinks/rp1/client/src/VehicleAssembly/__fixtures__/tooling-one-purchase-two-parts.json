@@ -29,14 +29,19 @@
           "economy": {
             "funds": 289848,
             "reputation": 62,
-            "science": 340,
-            "unlockCredit": 42000
+            "science": 340
           }
         }
       },
       {
         "topic": "rp1.available",
         "payload": true
+      },
+      {
+        "topic": "rp1.budget",
+        "payload": {
+          "unlockCreditBalance": 42000
+        }
       },
       {
         "topic": "rp1.complexes",
