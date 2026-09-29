@@ -1,4 +1,4 @@
-import type { StaleGrade, TopicReading } from "@ksp-gonogo/sitrep-sdk";
+import type { HeldGrade, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import type { PrincipiaPlan } from "./__generated__/contract.js";
 
 /**
@@ -9,7 +9,7 @@ import type { PrincipiaPlan } from "./__generated__/contract.js";
  * mean there is a plan at all and which of them may be written back against, and
  * two implementations of that would be free to disagree about the one thing the
  * operator is relying on them for. The read-only sections take a different view
- * of the same channel deliberately: `FlightPlanSection` shows a stale plan
+ * of the same channel deliberately: `FlightPlanSection` shows a held plan
  * loudly dated because reading one is safe, and that is not this type.</p>
  */
 export type PlanWriteView =
@@ -29,7 +29,7 @@ export type PlanWriteView =
  * A plan the console has never been told about and a vessel with no plan are
  * different facts, and so is a plan we last heard about hours ago.
  *
- * A stale plan is still handed back, because an operator who can see how old it
+ * A held plan is still handed back, because an operator who can see how old it
  * is can act on it. What is refused is WRITING against one: a burn index, a burn
  * count and a plan slot all come off a reading, and a write bounded against a
  * reading from an hour ago is the exact mistake the producer's own protocol is
@@ -59,7 +59,7 @@ export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
       };
     case "observed":
       return { kind: "plan", plan: reading.value, outOfContact: null };
-    case "stale":
+    case "held":
       return {
         kind: "plan",
         plan: reading.value,
@@ -69,7 +69,7 @@ export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
 }
 
 /**
- * What a stale reading has lost contact WITH, as something to go and check.
+ * What a held reading has lost contact WITH, as something to go and check.
  *
  * The grades ask for different next moves: one channel's keyframes drying up is
  * a producer that stopped publishing, a down transport is the whole link, and a
@@ -80,9 +80,9 @@ export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
  * rest: nothing is broken, the craft simply wrote this down while it was dark
  * and sent it when the link came back.
  */
-export function outOfContactReason(grade: StaleGrade): string {
+export function outOfContactReason(grade: HeldGrade): string {
   switch (grade) {
-    case "held-stale":
+    case "held":
       return "This plan's updates stopped arriving. The burns below are the last set that did, and the burn count they are numbered against may have moved since.";
     case "disconnected":
       return "The stream is down. The burns below are the last set that reached us, and the burn count they are numbered against may have moved since.";

@@ -105,7 +105,7 @@ function KosScriptTriggerComponent({
   const processorsReading = useStream<KosProcessorInfo[]>("kos.processors");
   const reportedProcessors =
     processorsReading.state === "observed" ||
-    processorsReading.state === "stale"
+    processorsReading.state === "held"
       ? processorsReading.value
       : undefined;
   const reported = reportedProcessors != null;

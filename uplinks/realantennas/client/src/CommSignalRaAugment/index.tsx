@@ -48,7 +48,7 @@ const LABEL_STYLE = {
 function CommSignalRaBadges() {
   // Only a current observation is drawn, matching CommSignal's own rule: a rate
   // held from before a gap asserts a link that may be gone. No published model
-  // carries these values forward, so a stale read has nothing to offer here.
+  // carries these values forward, so a held read has nothing to offer here.
   const dataRate = useTelemetry("comms.dataRate");
   const path = useTelemetry("comms.path");
   const ext = readRealAntennasHopExt(

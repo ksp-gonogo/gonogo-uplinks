@@ -6,7 +6,7 @@
     "widget": "kos-script-trigger",
     "hero": true,
     "caption": "Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing",
-    "unchangedWhenStale": "A dispatch control: the CPU tags it lists change only with the craft's parts, so a held list is still the list, and the path, arguments and Run button are the operator's own.",
+    "unchangedWhenHeld": "A dispatch control: the CPU tags it lists change only with the craft's parts, so a held list is still the list, and the path, arguments and Run button are the operator's own.",
     "config": { "scriptPath": "0:/descent.ks" },
     "modes": ["default", "min"]
   },

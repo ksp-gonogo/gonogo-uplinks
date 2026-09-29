@@ -135,9 +135,9 @@ function amountReading(
       reckoning: { status: "none" },
     };
   }
-  if (parts.state === "stale") {
+  if (parts.state === "held") {
     return {
-      state: "stale",
+      state: "held",
       value: amount,
       asOfUt: parts.asOfUt,
       grade: parts.grade,
@@ -156,7 +156,7 @@ export function kerbalismPartMeterReadings(
   parts: Reading<VesselParts | undefined> | undefined,
   profile: KerbalismProfile | null | undefined,
 ): PartMeterEntry[] {
-  if (parts?.state !== "observed" && parts?.state !== "stale") return [];
+  if (parts?.state !== "observed" && parts?.state !== "held") return [];
   return computeKerbalismPartMeters(parts.value, profile).map((entry) => ({
     ...entry,
     amount:
@@ -176,7 +176,7 @@ const VESSEL_PARTS_READING = KERBALISM.registerProcessor({
   compute: ([parts]: readonly [TopicReading<VesselParts>]):
     | VesselParts
     | undefined =>
-    parts.state === "observed" || parts.state === "stale"
+    parts.state === "observed" || parts.state === "held"
       ? parts.value
       : undefined,
 });

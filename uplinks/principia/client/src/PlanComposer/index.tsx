@@ -461,13 +461,13 @@ function emptyBurn(ignitionUt: Value<"ut">): ComposedBurn {
 /**
  * The vessel's id when one has been read.
  *
- * <p>A stale identity still names the vessel: which vessel this is does not stop
+ * <p>A held identity still names the vessel: which vessel this is does not stop
  * being true because the link went quiet, and refusing to plan for a vessel whose
  * name is a minute old would make this useless at exactly the distances it is
  * for.</p>
  */
 function knownId(reading: TopicReading<VesselIdentity>): string | undefined {
-  if (reading.state === "observed" || reading.state === "stale") {
+  if (reading.state === "observed" || reading.state === "held") {
     return reading.value.vesselId;
   }
   return undefined;

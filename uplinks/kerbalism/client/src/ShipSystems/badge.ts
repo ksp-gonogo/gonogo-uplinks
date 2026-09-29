@@ -56,7 +56,7 @@ KERBALISM.registerContribution({
   compute: (topics) => {
     const reading = topics[SHIP_SYSTEMS.id];
     return statusBadges(
-      reading?.state === "observed" || reading?.state === "stale"
+      reading?.state === "observed" || reading?.state === "held"
         ? reading.value
         : undefined,
     );

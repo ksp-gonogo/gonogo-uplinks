@@ -291,7 +291,7 @@ describe("surface gravity", () => {
     const held = {
       ...topics,
       [AERO_STATE.id]: {
-        state: "stale",
+        state: "held",
         asOfUt: value("ut", 0),
         grade: "transport",
         reckoning: live.reckoning,

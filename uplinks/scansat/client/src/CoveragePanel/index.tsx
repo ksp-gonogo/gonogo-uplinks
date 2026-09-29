@@ -101,7 +101,7 @@ function CoverageRow({
 }>) {
   const reading = useStream<number>(`scansat.coverage.${bodyName}.${scanType}`);
   const pct =
-    reading.state === "observed" || reading.state === "stale"
+    reading.state === "observed" || reading.state === "held"
       ? reading.value
       : undefined;
   // Null, not 0. "0% scanned" says this body is untouched, and it is the

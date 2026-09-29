@@ -7,7 +7,7 @@
     "contribution": "rp1:rp1-avionics-badge",
     "hostWidget": "navball",
     "caption": "BEFORE: no RP-1 on the game, so the Navball header carries only its own SAS and RCS badges",
-    "unchangedWhenStale": "No RP-1 on the game, so the contribution's requires gate stays shut and it draws nothing to hold, live or with the link dropped.",
+    "unchangedWhenHeld": "No RP-1 on the game, so the contribution's requires gate stays shut and it draws nothing to hold, live or with the link dropped.",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
     "paints": ["ATTITUDE", "SAS"]

@@ -175,7 +175,7 @@ export function CoastAnalysisSection() {
           <Text tone="faint" size="sm">
             No flight plan, so no planned orbits.
           </Text>
-          {reading.state === "stale" && <HeldTag />}
+          {reading.state === "held" && <HeldTag />}
         </Cluster>
       </Section>
     );

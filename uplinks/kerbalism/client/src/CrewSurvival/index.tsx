@@ -125,12 +125,12 @@ function CrewSurvivalBadgeAugment({
    * beside it were carried forward.
    */
   const modelled =
-    answer.stale &&
+    answer.held &&
     marginSecondsOf(kerbal) === null &&
     criticalCause(kerbal) === "carried-rule"
       ? answer.basis
       : undefined;
-  const label = !answer.stale
+  const label = !answer.held
     ? warning.label
     : modelled
       ? `${warning.label} · modelled`

@@ -279,7 +279,7 @@ export function OrbitAnalysisRows({
           <Text tone="warn" size="sm">
             Elements not determined
           </Text>
-          {source.state === "stale" && <HeldTag />}
+          {source.state === "held" && <HeldTag />}
         </Cluster>
         <AgeLine orbit={orbit} viewUt={viewUt} dated={dated} />
         {/* The interesting cause, and the one an operator can act on: the
@@ -574,7 +574,7 @@ export function OrbitAnalysisSection() {
             <Text tone="warn" size="sm">
               Not being analysed
             </Text>
-            {reading.state === "stale" && <HeldTag />}
+            {reading.state === "held" && <HeldTag />}
           </Cluster>
           {/* A positive observation, not silence: Principia knows this craft and
               is running no analysis of it. It starts one while its own main

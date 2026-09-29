@@ -410,7 +410,7 @@ describe("KosUplinkExecutor", () => {
     const { transport: t2, client: c2 } = makeClient();
     const commands2 = captureDispatches(t2);
     // First call against the new client switches adoption, it tears down
-    // every c1 subscription/queue (rejecting `stale`) AND subscribes to
+    // every c1 subscription/queue (rejecting `held`) AND subscribes to
     // c2's kos.processors, but rejects itself: c2's processors haven't
     // reported "cpu-a" yet.
     await expect(

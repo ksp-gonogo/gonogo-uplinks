@@ -128,7 +128,7 @@ describe("crewCoreStats", () => {
       "astronaut-complex.readouts",
     ).find((c: AnyContribution) => c.id === "rp1:crew-core-stats");
     if (!contribution) throw new Error("crew-core-stats is not registered");
-    const reading = (state: "observed" | "stale", payload: unknown) =>
+    const reading = (state: "observed" | "held", payload: unknown) =>
       state === "observed"
         ? {
             state,
@@ -143,7 +143,7 @@ describe("crewCoreStats", () => {
             grade: "disconnected",
             reckoning: { status: "none" },
           };
-    const detailOf = (state: "observed" | "stale") =>
+    const detailOf = (state: "observed" | "held") =>
       (
         contribution.compute({
           "rp1:crew-reading": reading(state, [crewRow()]),
@@ -151,7 +151,7 @@ describe("crewCoreStats", () => {
         } as never) as { id: string; detail?: string }[]
       ).find((s) => s.id === "training-lapsing")?.detail;
     expect(detailOf("observed")).toBeUndefined();
-    expect(detailOf("stale")).toBe("HELD");
+    expect(detailOf("held")).toBe("HELD");
   });
 
   it("registers itself into the Astronaut Complex's core-stat strip", () => {

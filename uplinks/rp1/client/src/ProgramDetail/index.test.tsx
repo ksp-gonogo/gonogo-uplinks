@@ -139,7 +139,7 @@ describe("ProgramDetail", () => {
     fixture.emit(
       "career.status",
       { economy: { funds: 289_848 } },
-      { staleness: Staleness.HeldStale },
+      { staleness: Staleness.Held },
     );
 
     await waitFor(() => {

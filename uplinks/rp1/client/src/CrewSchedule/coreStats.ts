@@ -111,7 +111,7 @@ export function crewCoreStats(
 function lastValue<T>(
   reading: TopicReading<T> | Reading<T> | undefined,
 ): T | undefined {
-  return reading?.state === "observed" || reading?.state === "stale"
+  return reading?.state === "observed" || reading?.state === "held"
     ? reading.value
     : undefined;
 }
@@ -149,8 +149,8 @@ RP1.registerContribution({
     const program = topics[CREW_PROGRAM_READING.id];
     const crew = topics[CREW_READING.id];
     return crewCoreStats(lastValue(program), lastValue(crew), {
-      program: program?.state === "stale",
-      crew: crew?.state === "stale",
+      program: program?.state === "held",
+      crew: crew?.state === "held",
     });
   },
 });

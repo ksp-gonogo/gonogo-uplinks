@@ -97,7 +97,7 @@ function readReading(): Reading<ShipSystems> | undefined {
    is a reading of the summary, and both value-bearing arms carry one. */
 function read(): ShipSystems | undefined {
   const reading = readReading();
-  return reading?.state === "observed" || reading?.state === "stale"
+  return reading?.state === "observed" || reading?.state === "held"
     ? reading.value
     : undefined;
 }
@@ -136,11 +136,11 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     store.beginFrame();
 
     const reading = readReading();
-    expect(reading?.state).toBe("stale");
+    expect(reading?.state).toBe("held");
     // Dated by the OBSERVATION behind it, never by the frame that read it.
     expect(reading?.asOfUt).toEqual(value("ut", 100));
     // The summary survives the staleness: holding it is the whole point.
-    expect(reading?.value?.levels.state).toBe("stale");
+    expect(reading?.value?.levels.state).toBe("held");
   });
 
   it("still answers when a dep never arrived, rather than gating on it", () => {
@@ -158,7 +158,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     expect(readReading()?.value).toBeDefined();
   });
 
-  it("says STALE, dated by the observation, once the levels stop arriving", () => {
+  it("says held, dated by the observation, once the levels stop arriving", () => {
     // The bug. Before this the summary was identical either way, so a
     // time-to-empty computed off twenty-minute-old levels rendered exactly like
     // one computed off a live reading.
@@ -175,7 +175,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
     store.beginFrame();
 
     const levels = read()?.levels;
-    expect(levels?.state).toBe("stale");
+    expect(levels?.state).toBe("held");
     // The OBSERVATION's UT, not the frame's: the whole point is that these two
     // have come apart.
     expect(levels?.asOfUt).toEqual(value("ut", 100));
@@ -197,7 +197,7 @@ describe("a Ship Systems summary reports the currency of its levels", () => {
 
     const summary = read()?.summary;
     expect(summary).toBeDefined();
-    expect(read()?.levels.state).toBe("stale");
+    expect(read()?.levels.state).toBe("held");
   });
 
   it("has no observation instant before anything has arrived", () => {

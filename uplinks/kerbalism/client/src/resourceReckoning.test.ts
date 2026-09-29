@@ -179,7 +179,7 @@ describe("when the model's own arithmetic leaves the range", () => {
     // Food reaches empty at 1000 s, Oxygen not for 5000. Asked at 1100 the
     // model answers for Oxygen and hands Food back untouched. A level it has
     // stopped modelling travels verbatim, like any other unnamed path.
-    // That is the difference between "stale" and a claim of zero.
+    // That is the difference between "held" and a claim of zero.
     const ls = lifeSupport({
       rates: { Food: value("units/s", -0.1), Oxygen: value("units/s", -0.01) },
     });

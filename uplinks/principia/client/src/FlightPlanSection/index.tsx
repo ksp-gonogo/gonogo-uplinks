@@ -55,7 +55,7 @@ const TRAJECTORY_POINTS = 128;
  * The plan as last read, plus how long ago that reading was taken.
  *
  * <para>Every arm of the reading is handled and none is collapsed, which is the
- * whole point of the widget. A `stale` plan is shown, loudly dated: an operator
+ * whole point of the widget. A `held` plan is shown, loudly dated: an operator
  * who can see that the plan is six hours old can act on it, where one shown
  * nothing assumes there is nothing.</para>
  *
@@ -102,7 +102,7 @@ function planView(reading: TopicReading<PrincipiaPlan>): PlanView {
         sampledAtUt:
           magnitudeOf(reading.value.sampledAtUt) ?? magnitudeOf(reading.atUt),
       };
-    case "stale":
+    case "held":
       return {
         kind: "seen",
         plan: reading.value,
@@ -356,7 +356,7 @@ export function FlightPlanSection() {
   // A held roster is still the roster: uplinks do not come and go with the link.
   const healthReading = useStream<SystemUplinkHealth>("system.uplinkHealth");
   const buildHealth =
-    healthReading.state === "observed" || healthReading.state === "stale"
+    healthReading.state === "observed" || healthReading.state === "held"
       ? healthReading.value
       : undefined;
   const receivedUt = useViewUt();
@@ -488,7 +488,7 @@ function isNextBurn(burn: PrincipiaPlannedBurn, plan: PrincipiaPlan): boolean {
   return index !== null && next !== null && index === next;
 }
 
-/** The active vessel's guid, or null when identity has not arrived. A stale
+/** The active vessel's guid, or null when identity has not arrived. A held
  *  identity is fine here: which craft is active does not decay the way a
  *  trajectory does, and the alternative is losing the attribution guard
  *  whenever the identity read lags. */
@@ -498,7 +498,7 @@ function vesselIdOf(
   switch (reading.state) {
     case "observed":
       return reading.value.vesselId ?? null;
-    case "stale":
+    case "held":
       return reading.value.vesselId ?? null;
     default:
       return null;

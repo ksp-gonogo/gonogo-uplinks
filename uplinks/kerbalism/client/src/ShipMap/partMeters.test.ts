@@ -176,7 +176,7 @@ describe("kerbalismPartMeterReadings", () => {
   it("dates each amount by the parts reading, so a held level is marked", () => {
     const [entry] = kerbalismPartMeterReadings(
       {
-        state: "stale",
+        state: "held",
         value: tank,
         asOfUt: value("ut", 500),
         grade: "disconnected",
@@ -185,7 +185,7 @@ describe("kerbalismPartMeterReadings", () => {
       SUPPLY_PROFILE,
     );
     expect(entry?.amount).toEqual({
-      state: "stale",
+      state: "held",
       value: value("units", 42.3),
       asOfUt: value("ut", 500),
       grade: "disconnected",

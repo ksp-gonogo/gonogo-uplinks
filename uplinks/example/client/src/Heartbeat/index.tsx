@@ -23,8 +23,8 @@ import { EXAMPLE } from "../uplink.js";
  *   unowned      no Uplink claims this Topic, so nothing ever will
  *   absent       the Uplink answered and there is nothing to report
  *   observed     a real measurement, at a real UT
- *   stale        the last real observation, and how old it is
- *   reckonable   as stale, plus a forward-modelled value for this frame
+ *   held         the last real observation, and how old it is
+ *   reckonable   as held, plus a forward-modelled value for this frame
  *
  * Collapsing those into "a value or undefined" is how a widget ends up rendering
  * a zero for "not connected", and a substituted zero reads exactly like a

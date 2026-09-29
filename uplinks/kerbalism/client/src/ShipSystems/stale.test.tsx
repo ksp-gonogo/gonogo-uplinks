@@ -46,7 +46,7 @@ async function scene(fixture: Record<string, unknown>): Promise<HTMLElement> {
    */
   for (const e of block.emits) stream.subscribe(e.topic);
   const { container, unmount } = renderWidget("ship-systems", {
-    instanceId: "stale",
+    instanceId: "held",
     w: 8,
     h: 20,
     wrapper: stream.Provider,

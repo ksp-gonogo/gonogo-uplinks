@@ -610,13 +610,13 @@ function KosTerminalLive({
   const processorsReading = useStream<KosProcessorInfo[]>("kos.processors");
   const reportedProcessors =
     processorsReading.state === "observed" ||
-    processorsReading.state === "stale"
+    processorsReading.state === "held"
       ? processorsReading.value
       : undefined;
   const reported = reportedProcessors != null;
   const processors = reportedProcessors ?? [];
   // The screen rides the same stream, so once this reading is held the screen is too.
-  const screenHeld = processorsReading.state === "stale";
+  const screenHeld = processorsReading.state === "held";
   const [pickedCoreId, setPickedCoreId] = useState<number | null>(null);
   const coreId = useMemo(
     () => resolveCoreId(processors, cpuName, pickedCoreId),

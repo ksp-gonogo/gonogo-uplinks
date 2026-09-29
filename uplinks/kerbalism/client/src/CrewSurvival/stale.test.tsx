@@ -252,7 +252,7 @@ describe("the survival badges say a held death clock is held", () => {
           soonestMarginToActSec: 120,
           basis: "rate-integration",
         },
-        stale: true,
+        held: true,
         basis: "rate-integration",
       })?.[0]?.label;
       expect(label).toBe("2 crit · modelled");
@@ -265,7 +265,7 @@ describe("the survival badges say a held death clock is held", () => {
           soonestMarginToActSec: 240,
           basis: "rate-integration",
         },
-        stale: true,
+        held: true,
         basis: "rate-integration",
       })?.[0]?.label;
       expect(label).toBe("Critical · held");

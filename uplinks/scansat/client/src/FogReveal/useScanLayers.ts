@@ -24,13 +24,13 @@ import { SCANSAT_AVAILABLE_TOPIC } from "../topics.js";
  * One per-body layer's last payload, or `undefined` with no body or before the
  * first push. A per-body key is a dynamic Topic with no `TopicId` member, so it
  * is read with `useStream`; with no body the hook still subscribes, to the
- * availability flag, and ignores it, so the hook order holds. A `stale` payload
+ * availability flag, and ignores it, so the hook order holds. A `held` payload
  * still answers: coverage, terrain and the anomaly list only change on a push.
  */
 function useBodyLayer<T>(topic: string | undefined): T | undefined {
   const reading = useStream<T>(topic ?? SCANSAT_AVAILABLE_TOPIC);
   if (topic === undefined) return undefined;
-  return reading.state === "observed" || reading.state === "stale"
+  return reading.state === "observed" || reading.state === "held"
     ? reading.value
     : undefined;
 }
@@ -118,14 +118,14 @@ export function useScanAnomalies(
 export function useScanningVessels(): SCANScanningVessel[] | undefined {
   const reading = useTelemetry("scansat.scanningVessels");
   // A scanning fleet is a FACT: it stays true until an event changes it, and a
-  // link that has gone quiet cannot deliver that event. So `stale` still answers
+  // link that has gone quiet cannot deliver that event. So `held` still answers
   // with what was last really seen; only `pending`/`unowned`/`absent` have
   // nothing to give. The cast restores the required-field mirror in ../schema.ts
   // over the all-optional shape codegen emits for a reference type. The wire
   // carries every KEY, but not every key with a value: `altitude` and the two
   // ground-track widths are genuinely null when their inputs were not read
   // (see the mod's ScanningVessels.Build), and the mirror says so.
-  if (reading.state === "observed" || reading.state === "stale") {
+  if (reading.state === "observed" || reading.state === "held") {
     return reading.value as SCANScanningVessel[];
   }
   return undefined;

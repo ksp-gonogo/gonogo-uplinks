@@ -209,7 +209,7 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
   // A held roster is still the roster: uplinks do not come and go with the link.
   const healthReading = useStream<SystemUplinkHealth>("system.uplinkHealth");
   const unavailable = unavailableReason(
-    healthReading.state === "observed" || healthReading.state === "stale"
+    healthReading.state === "observed" || healthReading.state === "held"
       ? healthReading.value
       : undefined,
   );

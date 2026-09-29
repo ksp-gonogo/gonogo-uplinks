@@ -147,7 +147,7 @@ type SpaceWeatherRead =
  * The objection was to a half-held panel, which is not what this is.</p>
  *
  * <p>The file already demonstrated the split on one field: `vessel.flight` is
- * carried through `stale` and merged with its reckoning just below, for the
+ * carried through `held` and merged with its reckoning just below, for the
  * altitude alone.</p>
  */
 function useSpaceWeather(): SpaceWeatherRead {
@@ -165,7 +165,7 @@ function useSpaceWeather(): SpaceWeatherRead {
      not the arm it sits on: a nested discriminant tells the compiler nothing
      about which state carries a value. */
   const flightValue =
-    flightReading.state === "observed" || flightReading.state === "stale"
+    flightReading.state === "observed" || flightReading.state === "held"
       ? flightReading.value
       : undefined;
   const flight =
@@ -174,14 +174,14 @@ function useSpaceWeather(): SpaceWeatherRead {
       : flightReading.state === "observed"
         ? flightReading.value
         : undefined;
-  /* The record is held through `stale`; what a stale reading costs is the
+  /* The record is held through `held`; what a held reading costs is the
      positional half, applied where the record is mapped below. `held`
      carries that decision and the caption that says so. */
   const t =
-    weatherReading.state === "observed" || weatherReading.state === "stale"
+    weatherReading.state === "observed" || weatherReading.state === "held"
       ? weatherReading.value
       : undefined;
-  const held = weatherReading.state === "stale";
+  const held = weatherReading.state === "held";
 
   if (t === undefined) {
     return {
@@ -230,7 +230,7 @@ function useSpaceWeather(): SpaceWeatherRead {
     held,
     data: {
       radiationRadPerHour,
-      /* `none` is a promise and a dated one is worth nothing, so a stale record
+      /* `none` is a promise and a dated one is worth nothing, so a held record
          reports the state it actually has: unknown. The header verdict reads
          this and already answers unknown for it. */
       stormState: held ? "unknown" : stormState,
@@ -242,7 +242,7 @@ function useSpaceWeather(): SpaceWeatherRead {
       // (stormTimeSec removed: see the FUTURE note above.)
       shieldingCapacity: magnitudeOf(t.shieldingCapacity),
       // The "you are here" dot: a dated altitude would place the craft in a band
-      // it may have left, so the rings draw no dot rather than a stale one.
+      // it may have left, so the rings draw no dot rather than a held one.
       altitudeKm: held || altitudeM === null ? null : altitudeM / 1000,
       stars: t.stars ?? [],
       storms: t.storms ?? [],
@@ -1071,13 +1071,13 @@ function SpaceWeatherComponent({
    */
   const factsReading = useProcessor(CELESTIAL_FACTS);
   const facts =
-    factsReading?.state === "observed" || factsReading?.state === "stale"
+    factsReading?.state === "observed" || factsReading?.state === "held"
       ? factsReading.value
       : undefined;
   // Which body the craft is around does not change down a quiet link.
   const identityReading = useStream<VesselIdentity>("vessel.identity");
   const parentIndex =
-    identityReading.state === "observed" || identityReading.state === "stale"
+    identityReading.state === "observed" || identityReading.state === "held"
       ? identityReading.value.parentBodyIndex
       : undefined;
   const fallbackBodyName =

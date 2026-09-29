@@ -69,7 +69,7 @@ export function ruleKey(kerbalName: string, ruleName: string): string {
 export function ruleReadings(reading: TopicReading<Crew>): RuleReadings {
   const readings: Record<string, Reading<Value<"ratio">>> = {};
   const observed =
-    reading.state === "observed" || reading.state === "stale"
+    reading.state === "observed" || reading.state === "held"
       ? reading.value
       : undefined;
   if (!observed) return readings;
@@ -127,9 +127,9 @@ function fractionReading(
       reckoning,
     };
   }
-  if (reading.state === "stale") {
+  if (reading.state === "held") {
     return {
-      state: "stale",
+      state: "held",
       value: observedFraction,
       asOfUt: reading.asOfUt,
       grade: reading.grade,

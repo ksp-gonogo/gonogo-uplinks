@@ -153,7 +153,7 @@ const ROSTER = {
 async function metersOver(run: Run = SCATTERED, viewUt = VIEW_UT) {
   const reading = await readingOver(run, undefined, viewUt).feed();
   const observed =
-    reading.state === "observed" || reading.state === "stale"
+    reading.state === "observed" || reading.state === "held"
       ? reading.value
       : undefined;
   const entries =

@@ -2,7 +2,7 @@
   "_scene": {
     "augment": "principia-plan-composer",
     "caption": "Saved, so the upload control is on screen at rest: the plan is written down and NOT aboard, which is the distinction the two sections exist for",
-    "unchangedWhenStale": "Every figure on a saved plan at an undelayed vantage is the operator's own, its total and its first ignition, held in the command centre rather than read off the stream; with no light-time there is no send window to hold.",
+    "unchangedWhenHeld": "Every figure on a saved plan at an undelayed vantage is the operator's own, its total and its first ignition, held in the command centre rather than read off the stream; with no light-time there is no send window to hold.",
     "before": [
       {
         "press": "Draft plan"

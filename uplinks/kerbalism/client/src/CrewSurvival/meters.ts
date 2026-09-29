@@ -130,7 +130,7 @@ KERBALISM.registerContribution({
     const rules = topics[CREW_RULE_READINGS.id];
     return survivalMeters(
       survivalFrom(topics[CREW_SURVIVAL.id])?.survival,
-      rules?.state === "observed" || rules?.state === "stale"
+      rules?.state === "observed" || rules?.state === "held"
         ? rules.value
         : undefined,
     );

@@ -80,7 +80,7 @@ function survivalBadgesFor(
   );
   return survivalBadges(
     answer.survival,
-    !answer.stale ? "current" : rests ? "modelled" : "held",
+    !answer.held ? "current" : rests ? "modelled" : "held",
   );
 }
 
@@ -126,7 +126,7 @@ function bandBadges(
     if (band === undefined) continue;
     if (!band.hi.greaterThanOrEqual(CRITICAL_FRACTION)) continue;
     const figure =
-      reading.state === "observed" || reading.state === "stale"
+      reading.state === "observed" || reading.state === "held"
         ? reading.value
         : undefined;
     if (figure?.greaterThanOrEqual(CRITICAL_FRACTION)) continue;
@@ -148,7 +148,7 @@ KERBALISM.registerContribution({
   compute: (topics) => {
     const rules = topics[CREW_RULE_READINGS.id];
     return bandBadges(
-      rules?.state === "observed" || rules?.state === "stale"
+      rules?.state === "observed" || rules?.state === "held"
         ? rules.value
         : undefined,
       survivalFrom(topics[CREW_SURVIVAL.id])?.survival,

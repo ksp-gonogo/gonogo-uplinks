@@ -40,10 +40,10 @@ function stillTrue<T, A>(
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
-  // `stale` covers the modelled reading too, and takes its OBSERVATION rather
+  // `held` covers the modelled reading too, and takes its OBSERVATION rather
   // than its `reckoned`: a fact is what was last really seen, and a forward
   // model has nothing to add to one.
-  if (reading.state === "stale") return reading.value;
+  if (reading.state === "held") return reading.value;
   if (reading.state === "absent") return whenConfirmedNothing;
   return undefined;
 }

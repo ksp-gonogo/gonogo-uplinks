@@ -46,7 +46,7 @@ function stillTrue<T, A>(
   whenConfirmedNothing: A,
 ): T | A | undefined {
   if (reading.state === "observed") return reading.value;
-  if (reading.state === "stale") return reading.value;
+  if (reading.state === "held") return reading.value;
   if (reading.state === "absent") return whenConfirmedNothing;
   return undefined;
 }
@@ -168,7 +168,7 @@ function ScienceDataAboardRowAugment({
   /* The list is a fact, but a size, a rate and whether a file is transmitting
      are the drive as it was last read, so each is drawn dated and a held one
      is marked. */
-  const held = experimentsReading.state === "stale";
+  const held = experimentsReading.state === "held";
   const dated: Dated = (figure) =>
     figure == null ? null : readingOf(experimentsReading, () => figure);
   const labs = stillTrue(useTelemetry("science.lab"), undefined);

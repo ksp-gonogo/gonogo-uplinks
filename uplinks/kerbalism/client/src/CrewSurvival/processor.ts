@@ -263,7 +263,7 @@ export function marginToAct(
     return deadline.minus(fromUt).minus(oneWay).max(0);
   };
   const observed =
-    kerbals.state === "observed" || kerbals.state === "stale"
+    kerbals.state === "observed" || kerbals.state === "held"
       ? kerbals.value
       : [];
   return deriveReading(
@@ -353,7 +353,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
      * stays reachable through the reading's own marks. A current reading is
      * drawn as it is, since the model has nothing to add to an observation.
      */
-    if (kerbals.state === "stale" && kerbals.reckoning.status === "available") {
+    if (kerbals.state === "held" && kerbals.reckoning.status === "available") {
       const projected = kerbals.reckoning.value;
       return {
         ...deriveCrewSurvival(
@@ -367,7 +367,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
     }
     return deriveCrewSurvival(
       crew,
-      kerbals.state === "observed" || kerbals.state === "stale"
+      kerbals.state === "observed" || kerbals.state === "held"
         ? kerbals.value
         : undefined,
       marginOf,
@@ -379,26 +379,26 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
  * The survival figures a {@link CREW_SURVIVAL} answer carries, and how current
  * they are. `undefined` where there are none to draw.
  *
- * `stale` is true whenever the crew reading has stopped arriving; `basis` then
+ * `held` is true whenever the crew reading has stopped arriving; `basis` then
  * says whether a model carried the accumulators forward, and its absence that
  * they are the last reading, held. Neither is ever drawn without saying which.
  */
 export function survivalFrom(reading: Reading<CrewSurvival> | undefined):
   | {
       survival: CrewSurvival;
-      stale: boolean;
+      held: boolean;
       basis: ReckoningBasis | undefined;
     }
   | undefined {
-  if (reading?.state !== "observed" && reading?.state !== "stale") {
+  if (reading?.state !== "observed" && reading?.state !== "held") {
     return undefined;
   }
   const survival = reading.value;
   if (survival === undefined) return undefined;
   return {
     survival,
-    stale: reading.state === "stale",
-    basis: reading.state === "stale" ? survival.basis : undefined,
+    held: reading.state === "held",
+    basis: reading.state === "held" ? survival.basis : undefined,
   };
 }
 

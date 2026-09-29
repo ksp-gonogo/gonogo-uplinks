@@ -592,7 +592,7 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     const [proc] = FakeProcessor.instances;
     const [gen] = FakeGenerator.instances;
 
-    const staleFrame = fakeFrame("stale");
+    const staleFrame = fakeFrame("held");
     track.push(staleFrame);
 
     await waitFor(() => {

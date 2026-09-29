@@ -182,7 +182,7 @@ export function PlanSlots() {
 
   /*
    * Frozen for the same three reasons every write on this Uplink is: the surface
-   * is not armed, the reading the slot count came off is stale, or Principia is
+   * is not armed, the reading the slot count came off is held, or Principia is
    * mid-optimisation and would revert the write without reporting it.
    */
   const frozen =

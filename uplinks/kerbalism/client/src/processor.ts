@@ -104,7 +104,7 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     // observed, and the reading's own model reaches a consumer through `figures`.
     const resources =
       resourcesReading.state === "observed" ||
-      resourcesReading.state === "stale"
+      resourcesReading.state === "held"
         ? resourcesReading.value
         : undefined;
     // `observedAt` rather than a hand-written five-arm switch over the reading
@@ -150,7 +150,7 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
 /** The resources whose level the reading's model moved, off the paths it names. */
 function movedLevels(reading: TopicReading<Resources>): ReadonlySet<string> {
   const moved = new Set<string>();
-  if (reading.state !== "observed" && reading.state !== "stale") return moved;
+  if (reading.state !== "observed" && reading.state !== "held") return moved;
   if (reading.reckoning.status !== "available") return moved;
   for (const { path } of reading.reckoning.modelled) {
     const match = /^resources\.(.+)\.current$/.exec(path);

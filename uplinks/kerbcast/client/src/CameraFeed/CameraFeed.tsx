@@ -271,7 +271,7 @@ export function CameraFeed({
   // Native topic reads: the canonical field paths, not a two-arg shim.
   // `observedValue` on both: the strength drives a quality pill and the H.264
   // degrade level, and a held figure would claim a link the craft may no longer
-  // have. A stale strength is worse than none here, because the badge it feeds
+  // have. A held strength is worse than none here, because the badge it feeds
   // is read as the situation now.
   const vesselComms = observedValue(useTelemetry("vessel.comms"));
   const signalStrength = vesselComms?.signalStrength;
@@ -292,7 +292,7 @@ export function CameraFeed({
   const signalDelay =
     useLatestValue<TopicPayload<"comms.delay">>("comms.delay")?.oneWaySeconds;
   /* The latest value carries no currency and runs ahead of the gated reading,
-     so the reading dates the figure only once it has gone stale. */
+     so the reading dates the figure only once it is held. */
   const delayReading = useTelemetry("comms.delay");
   const degradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -467,7 +467,7 @@ export function CameraFeed({
   // cross-mod augment): every camera feed shows both, unobtrusively.
   const delayBadge = describeSignalDelay(
     signalDelay,
-    signalDelay != null && delayReading.state === "stale"
+    signalDelay != null && delayReading.state === "held"
       ? readingOf(delayReading, () => signalDelay)
       : signalDelay,
   );

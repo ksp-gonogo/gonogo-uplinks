@@ -370,7 +370,7 @@ function ShipSystemsComponent(
    */
   const shipReading = useProcessor(SHIP_SYSTEMS);
   const ship =
-    shipReading?.state === "observed" || shipReading?.state === "stale"
+    shipReading?.state === "observed" || shipReading?.state === "held"
       ? shipReading.value
       : undefined;
   // Read outside the Processor (unlike the four `kerbalism.profile`/
@@ -429,7 +429,7 @@ function ShipSystemsComponent(
         ship={ship}
         weather={weather}
         utNow={utNow}
-        held={shipReading?.state === "stale"}
+        held={shipReading?.state === "held"}
         modelled={modelledBeyondReceived(ship.figures)}
       />
     </LedgerReadingContext.Provider>

@@ -407,7 +407,7 @@ export const AERO_STATE = AERO.registerProcessor({
   compute: ([reading]: readonly [
     TopicReading<TopicPayload<"aero.state">>,
   ]): TopicPayload<"aero.state"> | undefined =>
-    reading.state === "observed" || reading.state === "stale"
+    reading.state === "observed" || reading.state === "held"
       ? reading.value
       : undefined,
 });
@@ -415,7 +415,7 @@ export const AERO_STATE = AERO.registerProcessor({
 function aeroStateOf(
   reading: Reading<TopicPayload<"aero.state">> | undefined,
 ) {
-  return reading?.state === "observed" || reading?.state === "stale"
+  return reading?.state === "observed" || reading?.state === "held"
     ? reading.value
     : undefined;
 }
@@ -446,7 +446,7 @@ AERO.registerContribution({
       modelTerminal,
       ballistic: state?.ballisticCoefficient?.magnitude ?? null,
       stale: state != null && state.aeroModelValid === false,
-      held: reading?.state === "stale",
+      held: reading?.state === "held",
       noReading:
         state == null ||
         (alpha == null && stall == null && modelTerminal == null),
@@ -477,6 +477,6 @@ AERO.registerContribution({
   deps: [AERO_STATE],
   compute: (topics) => {
     const reading = topics[AERO_STATE.id];
-    return aeroBadges(aeroStateOf(reading), reading?.state === "stale");
+    return aeroBadges(aeroStateOf(reading), reading?.state === "held");
   },
 });

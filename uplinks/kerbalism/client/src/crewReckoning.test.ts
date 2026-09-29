@@ -241,7 +241,7 @@ describe("carrying an accumulator forward", () => {
     // if the clone goes that deep.
     const reading = readRun(1060, CLIMBING);
     if (reading.reckoning.status !== "available") throw new Error("no model");
-    if (reading.state !== "observed" && reading.state !== "stale")
+    if (reading.state !== "observed" && reading.state !== "held")
       throw new Error("no observation");
 
     expect(

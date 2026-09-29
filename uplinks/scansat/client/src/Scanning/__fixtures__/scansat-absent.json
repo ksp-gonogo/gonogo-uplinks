@@ -5,7 +5,7 @@
   "_scene": {
     "widget": "scanning",
     "caption": "SCANsat is not installed, so the widget says what it would show if it were",
-    "unchangedWhenStale": "SCANsat is not installed, so the widget draws its account of what installing it would show and no figure.",
+    "unchangedWhenHeld": "SCANsat is not installed, so the widget draws its account of what installing it would show and no figure.",
     "modes": ["default"]
   },
   "_stream": {
