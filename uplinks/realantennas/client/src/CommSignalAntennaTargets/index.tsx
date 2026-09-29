@@ -33,7 +33,6 @@ import {
   SubjectHeading,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useCallback, useId, useState } from "react";
 import type {
@@ -99,8 +98,6 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
 
   const target = useCommand("realantennas.antenna.target");
   const targetHome = useCommand("realantennas.antenna.targetHome");
-  usePanelDelay(target);
-  usePanelDelay(targetHome);
 
   /**
    * The chain the operator is composing, held here rather than in the chain

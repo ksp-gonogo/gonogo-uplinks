@@ -76,8 +76,8 @@ describe("delayed camera control, end to end", () => {
   // own picture.
   it("staged: a travelling commit shows in the host panel's delay rail", async () => {
     const { transport } = renderWithCommandClient(
-      // `DelayRailProvider` above the panel, not inside it: the widget body
-      // calls `usePanelDelay` and the rail reads the same store from below, so
+      // `DelayRailProvider` above the panel, not inside it: the widget body's
+      // `useCommand` registers with it and the rail reads the same store from below, so
       // the store has to sit where both can see it. The dashboard mounts one per
       // grid item; `renderWidget` mounts one too.
       <DelayRailProvider>

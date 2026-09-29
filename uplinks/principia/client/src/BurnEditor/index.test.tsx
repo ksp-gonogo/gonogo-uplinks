@@ -4,7 +4,7 @@ import {
   render,
   screen,
   setupStreamFixture,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";

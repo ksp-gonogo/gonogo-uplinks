@@ -12,7 +12,6 @@ import {
   Text,
   Unit,
   UnitInput,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import { current } from "../shared/current.js";
@@ -60,7 +59,6 @@ export function ContractPayload() {
   // Unconditional and above the early return on purpose: a hook after it would
   // change count on the first frame RP-1 answers.
   const setPayload = useCommand(RP1_CONTRACT_PAYLOAD_COMMAND);
-  usePanelDelay(setPayload);
   const [comms, setComms] = useState(MIN_PAYLOAD);
   const [weather, setWeather] = useState(MIN_PAYLOAD);
 

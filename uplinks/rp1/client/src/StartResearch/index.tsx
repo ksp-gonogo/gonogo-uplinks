@@ -18,7 +18,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import { current } from "../shared/current.js";
@@ -89,7 +88,6 @@ export function StartResearch() {
   // Unconditional and above the early returns: a hook after one would change
   // count on the first frame RP-1 answers.
   const start = useCommand(RP1_TECH_RESEARCH_COMMAND);
-  usePanelDelay(start);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {

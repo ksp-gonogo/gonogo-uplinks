@@ -20,7 +20,6 @@ import {
   Text,
   ToggleButton,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import type {
@@ -84,7 +83,6 @@ export function TrainingEnrolment() {
   // Unconditional and above the early returns, for the reason Buildable's is: a
   // hook after one would change count the first frame RP-1 answers.
   const enrol = useCommand(RP1_TRAINING_ENROL_COMMAND);
-  usePanelDelay(enrol);
 
   // Invisible without RP-1, rather than a section of dashes on a stock game.
   if (available !== true) {

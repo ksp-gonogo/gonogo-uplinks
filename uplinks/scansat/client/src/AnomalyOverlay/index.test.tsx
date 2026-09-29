@@ -10,7 +10,7 @@ import {
   StubTransport,
   TelemetryProvider,
   waitFor,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module (not a throwaway test double) runs its

@@ -23,7 +23,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type {
   RealAntennasAntennaChain,
@@ -192,7 +191,6 @@ export function AntennaChain({
   onSent,
 }: AntennaChainProps) {
   const setChain = useCommand("realantennas.antenna.targetChain");
-  usePanelDelay(setChain);
 
   /** Null while the walk has never started, which is not the same as entry zero. */
   const activeStep = magnitudeOf(chain?.activeStep);

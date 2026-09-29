@@ -17,7 +17,6 @@ import {
   SectionTitle,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { current } from "../shared/current.js";
 import { facilityLabel } from "../shared/facilityLabels.js";
@@ -97,7 +96,6 @@ export function FacilityUpgrades() {
   // Unconditional and above the early returns: a hook after one would change
   // count on the first frame RP-1 answers.
   const upgrade = useCommand(RP1_FACILITY_UPGRADE_COMMAND);
-  usePanelDelay(upgrade);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {

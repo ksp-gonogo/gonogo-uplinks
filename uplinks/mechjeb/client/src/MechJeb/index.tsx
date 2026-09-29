@@ -23,7 +23,6 @@ import {
   Section,
   type Severity,
   Text,
-  usePanelDelay,
   writeQuantity,
 } from "@ksp-gonogo/ui-kit";
 import { useId, useState } from "react";
@@ -190,9 +189,6 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
   const engage = useCommand("mechjeb.engageAscentAutopilot");
   const executeNode = useCommand("mechjeb.executeNextNode");
   const land = useCommand("mechjeb.landAtTarget");
-  usePanelDelay(engage);
-  usePanelDelay(executeNode);
-  usePanelDelay(land);
 
   // The delay sets how long a command takes to arrive, so it is a judgement: a
   // held value would time an uplink against a link that has since changed.

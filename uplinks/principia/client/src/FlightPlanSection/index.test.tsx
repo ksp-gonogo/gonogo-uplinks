@@ -3,7 +3,7 @@ import {
   render,
   screen,
   setupStreamFixture,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";

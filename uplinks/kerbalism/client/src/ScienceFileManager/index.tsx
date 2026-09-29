@@ -19,7 +19,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import {
   type KerbalismScienceExperimentExt,
@@ -181,11 +180,6 @@ function ScienceDataAboardRowAugment({
   const analyzeCmd = useCommand("kerbalism.sample.analyze");
   const dumpCmd = useCommand("kerbalism.sample.dump");
   const moveCmd = useCommand("kerbalism.sample.moveToLab");
-  usePanelDelay(sendCmd);
-  usePanelDelay(deleteCmd);
-  usePanelDelay(analyzeCmd);
-  usePanelDelay(dumpCmd);
-  usePanelDelay(moveCmd);
 
   const { file, sample } = findDriveEntries(experiments, subjectId);
   if (!file && !sample) return null;

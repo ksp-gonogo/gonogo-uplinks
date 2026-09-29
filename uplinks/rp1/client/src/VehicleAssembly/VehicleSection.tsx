@@ -1,5 +1,5 @@
 import { useCommand, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
-import { Section, SectionTitle, usePanelDelay } from "@ksp-gonogo/ui-kit";
+import { Section, SectionTitle } from "@ksp-gonogo/ui-kit";
 import { current } from "../shared/current.js";
 import { ProjectCardList } from "../shared/ProjectCard.js";
 // Side-effect import: hydrates these Topics' units at decode time. Here rather
@@ -73,9 +73,6 @@ export function VehicleSection({
   const rollout = useCommand(RP1_ROLLOUT_COMMAND);
   const rollback = useCommand(RP1_ROLLBACK_COMMAND);
   const scrap = useCommand(RP1_SCRAP_COMMAND);
-  usePanelDelay(rollout);
-  usePanelDelay(rollback);
-  usePanelDelay(scrap);
 
   if (items.length === 0) {
     return null;

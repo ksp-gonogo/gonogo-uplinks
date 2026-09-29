@@ -30,7 +30,6 @@ import {
   SubjectHeading,
   Text,
   Unit,
-  usePanelDelay,
   useRowFilter,
 } from "@ksp-gonogo/ui-kit";
 import type { ReactNode } from "react";
@@ -110,7 +109,6 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
   /* Unconditional and above the two early returns below: a hook after one would
      change count on the first frame RP-1 answers. */
   const accept = useCommand(RP1_STRATEGY_ACTIVATE_COMMAND);
-  usePanelDelay(accept);
 
   const rows = programs ?? [];
   const chosen = choose(rows, picked ?? "");

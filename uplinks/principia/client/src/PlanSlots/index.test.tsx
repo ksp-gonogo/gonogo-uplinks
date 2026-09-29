@@ -11,7 +11,7 @@ import {
   render,
   screen,
   setupStreamFixture,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import {
   expectNoA11yViolations,
   visibleText,

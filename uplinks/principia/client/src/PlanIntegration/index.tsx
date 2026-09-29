@@ -15,7 +15,6 @@ import {
   Stepper,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import type {
@@ -94,8 +93,6 @@ function frozenBecause(plan: PrincipiaPlan): string | null {
 export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
   const integratorCmd = useCommand("principia.plan.integrator");
   const horizonCmd = useCommand("principia.plan.horizon");
-  usePanelDelay(integratorCmd);
-  usePanelDelay(horizonCmd);
   const [draftSteps, setDraftSteps] = useState<number | null>(null);
   const [draftEndUt, setDraftEndUt] = useState<number | null>(null);
   /*

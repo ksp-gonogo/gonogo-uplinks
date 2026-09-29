@@ -15,7 +15,6 @@ import {
   SubjectHeading,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type {
   Rp1CrewEntry,
@@ -62,8 +61,6 @@ export function TrainingCourses() {
   // a hook after one would change count the first frame RP-1 answers.
   const cancel = useCommand(RP1_TRAINING_CANCEL_COMMAND);
   const remove = useCommand(RP1_TRAINING_REMOVE_COMMAND);
-  usePanelDelay(cancel);
-  usePanelDelay(remove);
 
   // Invisible without RP-1, rather than a section of dashes on a stock game.
   if (available !== true) {

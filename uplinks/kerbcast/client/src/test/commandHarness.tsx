@@ -17,7 +17,7 @@ import {
   render,
   StubTransport,
   TelemetryProvider,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "./render.js";
 import type { ReactElement } from "react";
 
 export interface CommandClientHarness {

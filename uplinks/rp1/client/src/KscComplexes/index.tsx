@@ -13,7 +13,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type { Rp1Personnel } from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
@@ -111,17 +110,6 @@ export function KscComplexes() {
   const setHireTarget = useCommand(RP1_HIRE_TARGET_SET_COMMAND);
   const cancelHireTarget = useCommand(RP1_HIRE_TARGET_CANCEL_COMMAND);
   const modifyComplex = useCommand(RP1_COMPLEX_MODIFY_COMMAND);
-  usePanelDelay(rush);
-  usePanelDelay(assign);
-  usePanelDelay(dismantle);
-  usePanelDelay(dismantlePad);
-  usePanelDelay(newPad);
-  usePanelDelay(renameComplex);
-  usePanelDelay(renamePad);
-  usePanelDelay(newComplex);
-  usePanelDelay(setHireTarget);
-  usePanelDelay(cancelHireTarget);
-  usePanelDelay(modifyComplex);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {

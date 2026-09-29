@@ -11,6 +11,8 @@ import {
   observedAt,
   readingOf,
   registerAugment,
+  SEND_PLAN_COMMAND,
+  useCommand,
   usePlanDrafts,
   useSendPlan,
   useTelemetry,
@@ -35,7 +37,6 @@ import {
   Text,
   Unit,
   UnitInput,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import { commandWindow, seededIgnitionUt } from "../commandWindow.js";
@@ -79,11 +80,12 @@ export function PlanComposer() {
   // every draft, so without this an answer renders under all of them.
   const [sent, setSent] = useState<string | null>(null);
   /*
-   * The send is a command like any other, so its schedule belongs on the
-   * panel's delay rail: at a light-delayed vantage an operator has to be able to
-   * see when the plan will actually reach the vessel.
+   * The send's own handle reaches the panel's delay rail, so an operator at a
+   * light-delayed vantage sees when the plan will reach the vessel. This one
+   * carries the command's delay and gate to the armed control, and stays off
+   * the rail so the plan is not drawn there twice.
    */
-  usePanelDelay(send.command);
+  const planCommand = useCommand(SEND_PLAN_COMMAND, { rail: false });
 
   if (vesselId === undefined || seenAt === undefined) {
     return (
@@ -136,8 +138,8 @@ export function PlanComposer() {
               ordinal={index + 1}
               viewUt={viewUt?.magnitude ?? null}
               source={orbit}
-              command={send.command}
-              oneWaySeconds={send.command.effectiveDelaySeconds}
+              command={planCommand}
+              oneWaySeconds={planCommand.effectiveDelaySeconds}
               pending={send.pending}
               outcome={sent === draft.id ? send.outcome : null}
               onReopen={() => store.update(draft.id, { saved: false })}
@@ -242,7 +244,7 @@ export function PlanComposer() {
                           ? null
                           : draft.burns[draft.burns.length - 1].ignitionUt,
                         viewUt ?? seenAt,
-                        send.command.effectiveDelaySeconds,
+                        planCommand.effectiveDelaySeconds,
                       ),
                     ),
                   ])

@@ -8,7 +8,6 @@ import {
   Inline,
   magnitudeOf,
   Stack,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
@@ -70,8 +69,6 @@ export function WarpTargets() {
   // change count on the first frame RP-1 answers.
   const toComplete = useCommand(RP1_WARP_TO_COMPLETE_COMMAND);
   const cancelFundTarget = useCommand(RP1_FUND_TARGET_CANCEL_COMMAND);
-  usePanelDelay(toComplete);
-  usePanelDelay(cancelFundTarget);
 
   // Invisible on every install without RP-1, which is most of them. An augment
   // that renders an empty row on a stock game is clutter that says nothing.

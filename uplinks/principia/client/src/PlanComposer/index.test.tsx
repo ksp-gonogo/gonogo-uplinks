@@ -5,7 +5,7 @@ import {
   render,
   screen,
   setupStreamFixture,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import { utOfParts } from "@ksp-gonogo/ui-kit";
 import { afterEach, describe, expect, it } from "vitest";
 import { PlanComposer } from "./index.js";

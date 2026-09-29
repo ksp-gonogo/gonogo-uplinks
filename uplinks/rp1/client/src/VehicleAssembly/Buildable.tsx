@@ -12,7 +12,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type {
   Rp1BuildableComplex,
@@ -69,7 +68,6 @@ export function BuildableSection() {
   // Unconditional and above the early returns on purpose: a hook after one
   // would change count on the first frame RP-1 answers.
   const start = useCommand(RP1_BUILD_START_COMMAND);
-  usePanelDelay(start);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {

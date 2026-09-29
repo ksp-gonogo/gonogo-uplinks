@@ -28,7 +28,6 @@ import {
   Text,
   ToggleButton,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type { ComponentProps } from "react";
 import { useState } from "react";
@@ -269,10 +268,6 @@ export function BurnEditor() {
   const replaceCmd = useCommand("principia.plan.burn.replace");
   const insertCmd = useCommand("principia.plan.burn.insert");
   const removeCmd = useCommand("principia.plan.burn.remove");
-  usePanelDelay(armCmd);
-  usePanelDelay(replaceCmd);
-  usePanelDelay(insertCmd);
-  usePanelDelay(removeCmd);
 
   const [draft, setDraft] = useState<Draft | null>(null);
   const [lastWrite, setLastWrite] = useState<PrincipiaPlanWriteReceipt | null>(

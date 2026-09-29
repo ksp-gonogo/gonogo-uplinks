@@ -609,8 +609,7 @@ function KosTerminalLive({
   // The CPUs aboard change only with the craft's parts, so a held list holds.
   const processorsReading = useStream<KosProcessorInfo[]>("kos.processors");
   const reportedProcessors =
-    processorsReading.state === "observed" ||
-    processorsReading.state === "held"
+    processorsReading.state === "observed" || processorsReading.state === "held"
       ? processorsReading.value
       : undefined;
   const reported = reportedProcessors != null;
@@ -879,28 +878,19 @@ function KosTerminalScreen({
   // destructured so effects can depend on it without the surrounding
   // per-render `{send,status}` object re-triggering them. The imperative xterm
   // handlers call the latest sender via refs.
-  const keystrokeCmd = useCommand("kos.keystroke");
-  const openCmd = useCommand("kos.terminal.open");
-  const closeCmd = useCommand("kos.terminal.close");
-  const resizeCmd = useCommand("kos.terminal.resize");
+  //
+  // The terminal IS its own signal-delay UX: xterm echoes each keystroke only
+  // after the full round trip, so the delay shows as the terminal's own
+  // latency. The four terminal-control commands stay off the panel's delay
+  // rail, where a per-keystroke list would fight that surface.
+  const keystrokeCmd = useCommand("kos.keystroke", { rail: false });
+  const openCmd = useCommand("kos.terminal.open", { rail: false });
+  const closeCmd = useCommand("kos.terminal.close", { rail: false });
+  const resizeCmd = useCommand("kos.terminal.resize", { rail: false });
   const { send: sendKeystroke } = keystrokeCmd;
   const { send: sendOpen } = openCmd;
   const { send: sendClose } = closeCmd;
   const { send: sendResize } = resizeCmd;
-
-  // The kOS terminal IS its own signal-delay UX: the xterm echoes each
-  // keystroke only after the full round trip, so the delay shows as the
-  // terminal's own latency (the terminal-fidelity model), NOT a per-keystroke
-  // `<CommandDelay>` in-flight list, which would fight that surface. So this
-  // component self-consumes its four terminal-control commands' must-consume
-  // tokens, the same truthful self-consume `useControlStream` does for the
-  // continuous stream it renders itself. Dev only; `_output` is absent in prod.
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") return;
-    for (const cmd of [keystrokeCmd, openCmd, closeCmd, resizeCmd]) {
-      if (cmd._output) cmd._output.consumed = true;
-    }
-  });
 
   // `label` is only ever non-empty for a line-mode Enter (the composed line
   // IS the label, see `reduceLineModeInput`'s callsite below); char-mode

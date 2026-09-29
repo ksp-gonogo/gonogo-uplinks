@@ -5,7 +5,7 @@ import {
   screen,
   setupStreamFixture,
   waitFor,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+} from "../test/render.js";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";

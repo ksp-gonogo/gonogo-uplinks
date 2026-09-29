@@ -24,7 +24,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import type {
@@ -105,10 +104,6 @@ export function PlanSlots() {
   const duplicateCmd = useCommand("principia.plan.duplicate");
   const deleteCmd = useCommand("principia.plan.delete");
   const sendCmd = useCommand("principia.plan.send");
-  usePanelDelay(createCmd);
-  usePanelDelay(duplicateCmd);
-  usePanelDelay(deleteCmd);
-  usePanelDelay(sendCmd);
 
   const { drafts } = usePlanDrafts();
   /**

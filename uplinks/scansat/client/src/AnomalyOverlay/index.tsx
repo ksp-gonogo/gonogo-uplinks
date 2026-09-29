@@ -22,7 +22,7 @@ import {
   useCommand,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import { magnitudeOf, usePanelDelay } from "@ksp-gonogo/ui-kit";
+import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import { useMemo } from "react";
 import { useScanAnomalies } from "../FogReveal/useScanLayers.js";
 
@@ -75,7 +75,6 @@ registerMapPoiProvider({
   usePois: (ctx) => {
     const anomalies = useScanAnomalies(ctx.bodyId);
     const setTargetCmd = useCommand("vessel.target.set");
-    usePanelDelay(setTargetCmd);
     const bodyIndexByName = useBodyIndexByName();
 
     return useMemo(() => {
@@ -113,8 +112,8 @@ registerMapPoiProvider({
             // guard moved up to the marker itself: an anomaly we cannot place
             // is no longer drawn, so it cannot be reached here. Rides
             // `useCommand("vessel.target.set")` (a Position-kind SetTarget);
-            // instant today, so `usePanelDelay` consumes the handle and the
-            // widget stays behaviour-free.
+            // instant today, and the handle registers with the panel's delay
+            // rail, so the widget stays behaviour-free.
             actions:
               bodyIndex === undefined
                 ? []

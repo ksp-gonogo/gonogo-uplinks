@@ -17,7 +17,6 @@ import {
   Stack,
   Text,
   Unit,
-  usePanelDelay,
 } from "@ksp-gonogo/ui-kit";
 import type {
   Rp1ToolingEntry,
@@ -97,8 +96,6 @@ export function ToolingSection() {
   // would change count on the first frame RP-1 answers.
   const toolAll = useCommand(RP1_TOOL_ALL_COMMAND);
   const refit = useCommand(RP1_TOOLING_REFIT_COMMAND);
-  usePanelDelay(toolAll);
-  usePanelDelay(refit);
 
   // Invisible on every install without RP-1, which is most of them.
   if (available !== true) {

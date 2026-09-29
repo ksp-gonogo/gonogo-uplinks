@@ -340,7 +340,7 @@ describe("MechJeb in-flight indicator (surfaces in the Panel delay rail)", () =>
 
       // The delay UX now surfaces in the Panel's delay rail (the first in-flow
       // child of the body scroller, above the header), not as an inline body
-      // child: this is what the usePanelDelay migration moves. Collapsed, the
+      // child. Collapsed, the
       // rail is a glow-strip SUMMARY (accessible name "In-flight commands: N in
       // flight", no per-command text) and the delay-ux-v3 redesign conveys the
       // countdown by the glow's position, not a "Ns" string; the command's own

@@ -21,8 +21,8 @@
  * outside the feed frame was sliced at the cluster's right edge on every
  * picture wide enough to draw it at all.
  *
- * The in-flight readout is NOT in the cluster. Both handles go to
- * `usePanelDelay`, so the host panel's own delay rail draws them in the band it
+ * The in-flight readout is NOT in the cluster. Both handles register with the
+ * host panel's own delay rail, which draws them in the band it
  * already reserves above the picture. An inline `CommandDelay` here would draw
  * the same dispatch a second time, in the one place on the widget where every
  * pixel is a pixel of the shot.
@@ -53,7 +53,7 @@
  */
 
 import { useCommand } from "@ksp-gonogo/sitrep-sdk";
-import { Box, usePanelDelay } from "@ksp-gonogo/ui-kit";
+import { Box } from "@ksp-gonogo/ui-kit";
 import {
   type CSSProperties,
   forwardRef,
@@ -230,8 +230,6 @@ export const CameraSetpointSurface = forwardRef<
   // The host panel's rail draws both, in the band it reserves whether or not
   // anything is in flight. This is also what marks each handle's must-consume
   // token, so dropping the inline `CommandDelay` costs the invariant nothing.
-  usePanelDelay(setPan);
-  usePanelDelay(setFov);
 
   // ---- Held-input integration ----
   // What is held, in state, because the ticker below is an effect and rest has
