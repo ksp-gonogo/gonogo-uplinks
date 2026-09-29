@@ -3,28 +3,28 @@
   "engine": "chromium",
   "assets": {
     "beating--default.png": {
-      "hash": "4bf88ca03a4b660e",
-      "elements": 17,
+      "hash": "9e023710df534cb2",
+      "elements": 19,
       "text": "4e6e8b05"
     },
     "beating--min.png": {
-      "hash": "3b98436afa9d4caa",
-      "elements": 17,
+      "hash": "c18d3eaa4deb6bf7",
+      "elements": 19,
       "text": "cf31762a"
     },
     "mid-sweep--default.png": {
-      "hash": "bec9ec3068e0eb33",
-      "elements": 31,
+      "hash": "ee4befcbe103eb98",
+      "elements": 33,
       "text": "b9892b07"
     },
     "mid-sweep--min.png": {
-      "hash": "bec9ec3068e0eb33",
-      "elements": 31,
+      "hash": "ee4befcbe103eb98",
+      "elements": 33,
       "text": "b9892b07"
     },
     "publishing--default.png": {
-      "hash": "f08109f40640d9f8",
-      "elements": 19,
+      "hash": "9b1588fa509bee2e",
+      "elements": 21,
       "text": "31e3587c"
     }
   }
