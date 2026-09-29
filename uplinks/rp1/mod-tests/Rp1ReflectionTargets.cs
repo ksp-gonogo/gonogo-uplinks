@@ -286,6 +286,19 @@ namespace GonogoRp1Uplink.Tests
             new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1BudgetReflection"),
             new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1BudgetReflection"),
             new Rp1TypeTarget(Rp0, "RP0.ResearchProject", "Rp1BudgetReflection"),
+            // The lines under the budget: the Facilities, Astronauts and Programs
+            // tabs, and UpdateUpkeep's training loop.
+            new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.SpaceCenterManagement", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Programs.ProgramHandler", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Programs.Program", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Crew.CrewHandler", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Crew.TrainingDatabase", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.CurrencyUtils", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.SpaceCenterSettings", "Rp1BudgetBreakdownReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1BudgetBreakdownReflection"),
         };
 
         public static IReadOnlyList<Rp1EnumMemberTarget> EnumMembers { get; } = new[]
@@ -339,6 +352,11 @@ namespace GonogoRp1Uplink.Tests
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryResearchers", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryCrew", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "CrewTraining", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepair", "Rp1BudgetBreakdownReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepairLC", "Rp1BudgetBreakdownReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryCrew", "Rp1BudgetBreakdownReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "CrewTraining", "Rp1BudgetBreakdownReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "ProgramFunding", "Rp1BudgetBreakdownReflection"),
         };
 
         public static IReadOnlyList<Rp1ConstructorTarget> Constructors { get; } = new[]
@@ -429,6 +447,18 @@ namespace GonogoRp1Uplink.Tests
             new Rp1MethodTarget(Rp0, "RP0.Programs.ProgramHandler", "GetDisplayProgramFunding", 1, false, "Rp1BudgetReflection"),
             new Rp1MethodTarget(Rp0, "RP0.UnlockCreditHandler", "CreditForTime", 1, false, "Rp1BudgetReflection"),
             new Rp1MethodTarget(Rp0, "RP0.ResearchProject", "GetTimeLeftEst", 1, false, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1BudgetBreakdownReflection"),
+            // Arity one is the public LCUpkeep(LaunchComplex); the two taking a
+            // pad count beside it are private.
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "LCUpkeep", 1, false, "Rp1BudgetBreakdownReflection"),
+            // The kerbal, then two out parameters: base pay and flight pay per day.
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "GetNautCost", 3, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.Programs.Program", "GetFundsForFutureTimestamp", 1, false, "Rp1BudgetBreakdownReflection"),
+            // The fill and reset that bracket RP-1's own per-course training cost,
+            // both writing its scratch list on SettingsSC.
+            new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingDatabase", "FillBools", 3, true, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterSettings", "ResetBools", 0, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetFacilityLevel", 1, true, "Rp1BudgetBreakdownReflection"),
             // THREE parameters with the last defaulted, because a reflected
             // invoke applies no defaults. UpdateUpkeep calls the two-argument
             // form, which is this one with includeHidden left false.
@@ -756,7 +786,7 @@ namespace GonogoRp1Uplink.Tests
             ["LoadedScene"] = "KSP's HighLogic.LoadedScene, compared against the SPACECENTER and TRACKSTATION ordinals for the same reason",
             ["CustomParams"] = "KSP's GameParameters.CustomParams(Type), the NON-GENERIC overload: the generic sibling would need MakeGenericMethod and THROWS where this one returns",
             ["Invoke"] = "System.Func's own Invoke, called on the withdrawal delegate CC_RP0 supplies rather than on anything RP-1 declares",
-            ["CurrentGame"] = "KSP's HighLogic.CurrentGame, walked only to reach the career's funds multiplier",
+            ["CurrentGame"] = "KSP's HighLogic.CurrentGame, walked to reach the career's funds multiplier and the crew roster",
             ["Parameters"] = "KSP's Game.Parameters, the same walk",
             ["Career"] = "KSP's GameParameters.Career, the same walk",
             ["FundsLossMultiplier"] = "KSP's CareerParams.FundsLossMultiplier, which scales what a facility has cost so far",
@@ -768,7 +798,10 @@ namespace GonogoRp1Uplink.Tests
             // RP-1's own AddStudent(string) overload goes through the same
             // indexer and ADDS the null it gets back for a name the roster does
             // not hold, which is why the command resolves the kerbal itself.
-            ["CrewRoster"] = "KSP's Game.CrewRoster, the save's kerbals, walked to resolve an enrolment's named crew",
+            ["CrewRoster"] = "KSP's Game.CrewRoster, the save's kerbals, walked to resolve an enrolment's named crew and to price every crew member the budget pays",
+            ["Crew"] = "KSP's KerbalRoster.Crew, every crew-type kerbal at any status, which the budget breakdown filters as UpdateUpkeep does (and also the KerbalType value it compares against)",
+            ["rosterStatus"] = "KSP's ProtoCrewMember.rosterStatus, read to leave out the dead and missing and to tell crew in flight",
+            ["type"] = "KSP's ProtoCrewMember.type, read to bill crew-type kerbals only",
             ["get_Item"] = "KSP's KerbalRoster string indexer, named rather than matched by arity because it declares an int one beside it",
             ["ProtoCrewMember"] = "KSP's crew type, named to tell AddStudent(ProtoCrewMember) from AddStudent(string) and RemoveStudent's identical pair",
             ["Remove"] = "the list's own Remove, on ROUtils.DataTypes.PersistentList<T> from a separate assembly, resolved by arity on whatever collection CrewHandler.TrainingCourses hands back",
@@ -819,7 +852,10 @@ namespace GonogoRp1Uplink.Tests
             ["withinComplexLimits"] = "a gate-fact id on this Uplink's own contract",
             ["rolledOut"] = "a gate-fact id on this Uplink's own contract",
             ["funds"] = "a quantity label in a refusal payload",
-            ["AstronautComplex"] = "the SpaceCenterFacility member the training gate is asked at, parsed by name rather than cast from its ordinal",
+            ["AstronautComplex"] = "the SpaceCenterFacility member the training gate and the per-course training fee are asked at, parsed by name rather than cast from its ordinal",
+            ["Dead"] = "ProtoCrewMember.RosterStatus value UpdateUpkeep leaves out of the crew it pays",
+            ["Missing"] = "ProtoCrewMember.RosterStatus value UpdateUpkeep leaves out of the crew it pays",
+            ["Assigned"] = "ProtoCrewMember.RosterStatus value GetNautCost pays the in-flight rate on",
         };
 
         private static Rp1MemberTarget[] BuildMembers()
@@ -1498,6 +1534,43 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.ResearchProject", "TimeLeft", Rp1Reader.Numeric, Budget);
             Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Budget, @static: true);
             Add("RP0.SpaceCenterSettings", "repPortionLostPerDay", Rp1Reader.Numeric, Budget);
+
+            // ── The lines under the budget ──────────────────────────────────
+            const string Breakdown = "Rp1BudgetBreakdownReflection";
+            Add("RP0.MaintenanceHandler", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
+            Add("RP0.MaintenanceHandler", "lastUpdate", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.MaintenanceHandler", "FacilityMaintenanceCosts", Rp1Reader.Presence, Breakdown);
+            Add("RP0.MaintenanceHandler", "FacilitiesForMaintenance", Rp1Reader.Presence, Breakdown);
+            Add("RP0.MaintenanceHandler", "NautBaseUpkeepPerDay", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.MaintenanceHandler", "NautInFlightUpkeepPerDay", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.MaintenanceHandler", "TrainingUpkeepPerDay", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
+            Add("RP0.SpaceCenterManagement", "KSCs", Rp1Reader.Presence, Breakdown);
+            Add("RP0.LCSpaceCenter", "KSCName", Rp1Reader.Text, Breakdown);
+            Add("RP0.LCSpaceCenter", "LaunchComplexes", Rp1Reader.Presence, Breakdown);
+            Add("RP0.LaunchComplex", "ID", Rp1Reader.GuidText, Breakdown);
+            Add("RP0.LaunchComplex", "Name", Rp1Reader.Text, Breakdown);
+            Add("RP0.LaunchComplex", "IsOperational", Rp1Reader.Bool, Breakdown);
+            Add("RP0.Crew.CrewHandler", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
+            Add("RP0.Crew.CrewHandler", "TrainingCourses", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Crew.TrainingCourse", "id", Rp1Reader.Text, Breakdown);
+            Add("RP0.Crew.TrainingCourse", "Started", Rp1Reader.Bool, Breakdown);
+            Add("RP0.Crew.TrainingCourse", "Students", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Crew.TrainingCourse", "Target", Rp1Reader.Text, Breakdown);
+            Add("RP0.Crew.CrewHandler", "TrainingTemplates", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Crew.TrainingTemplate", "id", Rp1Reader.Text, Breakdown);
+            Add("RP0.Crew.TrainingTemplate", "training", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Crew.TrainingFlightEntry", "target", Rp1Reader.Text, Breakdown);
+            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Breakdown, @static: true);
+            Add("RP0.SpaceCenterSettings", "nautYearlyUpkeepPerFacLevel", Rp1Reader.Presence, Breakdown);
+            Add("RP0.SpaceCenterSettings", "nautTrainingCostPerFacLevel", Rp1Reader.Presence, Breakdown);
+            Add("RP0.SpaceCenterSettings", "nautTrainingTypeCostMult", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.SpaceCenterSettings", "nautUpkeepTrainings", Rp1Reader.Presence, Breakdown);
+            Add("RP0.SpaceCenterSettings", "nautUpkeepTrainingBools", Rp1Reader.Presence, Breakdown);
+            Add("RP0.SpaceCenterSettings", "nautYearlyUpkeepPerTraining", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Programs.ProgramHandler", "Instance", Rp1Reader.Presence, Breakdown, @static: true);
+            Add("RP0.Programs.ProgramHandler", "ActivePrograms", Rp1Reader.Presence, Breakdown);
+            Add("RP0.Programs.Program", "name", Rp1Reader.Text, Breakdown);
 
             // ── ROUtils, which ships beside RP-1 and owns these two shapes ──
             AddRo("ROUtils.HermiteCurve+Key", "time", Rp1Reader.Numeric, Programs);

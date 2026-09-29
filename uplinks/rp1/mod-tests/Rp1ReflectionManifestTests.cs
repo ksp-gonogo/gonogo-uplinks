@@ -68,6 +68,7 @@ namespace GonogoRp1Uplink.Tests
             "Rp1CareerCostReflection.cs",
             "Rp1AvionicsReflection.cs",
             "Rp1BudgetReflection.cs",
+            "Rp1BudgetBreakdownReflection.cs",
         };
 
         /// <summary>

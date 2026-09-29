@@ -84,6 +84,13 @@ namespace GonogoRp1Uplink
         public const string BudgetTopic = "rp1.budget";
 
         /// <summary>
+        /// The lines under the budget's rows: each building and complex's upkeep,
+        /// each crew member's and training course's cost, and each Program's
+        /// funding, at the same three horizons.
+        /// </summary>
+        public const string BudgetBreakdownTopic = "rp1.budgetBreakdown";
+
+        /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
         /// here whose subject is a craft in flight rather than the space centre,
         /// and the one that is <see cref="DelayRole.Delayed"/>.
@@ -172,6 +179,9 @@ namespace GonogoRp1Uplink
         /// upkeep cadence rather than the tick.
         /// </summary>
         private readonly Rp1BudgetReflection _budget = new Rp1BudgetReflection();
+
+        /// <summary>The lines under the budget, on its own reader for the same reason, and on the same cadence.</summary>
+        private readonly Rp1BudgetBreakdownReflection _budgetBreakdown = new Rp1BudgetBreakdownReflection();
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
@@ -426,6 +436,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _careerEvents;
         private IChannelPublisher? _avionicsStatus;
         private IChannelPublisher? _budgetPublisher;
+        private IChannelPublisher? _budgetBreakdownPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -587,6 +598,7 @@ namespace GonogoRp1Uplink
                 // scene. A budget of zeros would read as a programme that costs
                 // nothing and earns nothing.
                 AtHome(BudgetTopic, absenceIsData: true),
+                AtHome(BudgetBreakdownTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -1290,6 +1302,7 @@ namespace GonogoRp1Uplink
             _careerEvents = host.Publisher(CareerEventsTopic);
             _avionicsStatus = host.Publisher(AvionicsTopic);
             _budgetPublisher = host.Publisher(BudgetTopic);
+            _budgetBreakdownPublisher = host.Publisher(BudgetBreakdownTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1392,6 +1405,10 @@ namespace GonogoRp1Uplink
                 CaptureBudgetOnMain,
                 HandleBudgetOnCourier,
                 BudgetTopic);
+            host.AddSampledSource(
+                CaptureBudgetBreakdownOnMain,
+                HandleBudgetBreakdownOnCourier,
+                BudgetBreakdownTopic);
 
             // UNGATED, and the two captures above say why by contrast: their whole
             // effect is their return value, and this one's is not. It feeds the
@@ -1755,6 +1772,38 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// MAIN-THREAD capture: the lines under RP-1's budget, recomputed only
+        /// when RP-1 has refreshed its upkeep. Never null itself, for the reason
+        /// <see cref="CaptureBudgetOnMain"/> is not.
+        /// </summary>
+        internal object? CaptureBudgetBreakdownOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            return new Rp1BudgetBreakdownCaptureData { Ut = ut, Raw = _budgetBreakdown.CaptureOnMain(ut) };
+        }
+
+        /// <summary>COURIER-THREAD handle: map to a wire dict and publish. No game API.</summary>
+        internal void HandleBudgetBreakdownOnCourier(object? captured)
+        {
+            if (captured is not Rp1BudgetBreakdownCaptureData cap)
+            {
+                return;
+            }
+            var raw = cap.Raw;
+            Rp1RowBudget.Record(
+                (raw?.Buildings?.Count ?? 0) + (raw?.Complexes?.Count ?? 0) + (raw?.Crew?.Count ?? 0)
+                    + (raw?.Courses?.Count ?? 0) + (raw?.Programs?.Count ?? 0),
+                cap.Ut);
+            _budgetBreakdownPublisher?.Publish(Rp1BudgetBreakdownCapture.Build(raw), cap.Ut);
+        }
+
+        private sealed class Rp1BudgetBreakdownCaptureData
+        {
+            public double Ut;
+            public Rp1BudgetBreakdownRaw? Raw;
+        }
+
+        /// <summary>
         /// Health, and WHICH RP-1. The version caveat at the top of
         /// <see cref="Rp1ScReflection"/> is why these facts are load-bearing
         /// rather than decorative: RP-1 ships roughly monthly, this Uplink is
@@ -1771,6 +1820,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("ProgramHandler", _programs.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("CrewHandler", _crew.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("budget", _budget.IsAvailable ? "resolved" : "maintenance or currency types not found"),
+                new UplinkHealthFact("budget breakdown", _budgetBreakdown.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact(
                     "control locker",
                     _avionics.IsAvailable

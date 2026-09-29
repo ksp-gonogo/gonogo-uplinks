@@ -20,7 +20,7 @@ using System.Collections.Generic;
 // them is not theirs to prove.
 namespace RP0.Programs
 {
-    public class Program
+    public partial class Program
     {
         public enum Speed
         {

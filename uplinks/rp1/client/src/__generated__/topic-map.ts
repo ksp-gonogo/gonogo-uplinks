@@ -30,6 +30,7 @@
 import type {
   Rp1Avionics,
   Rp1Budget,
+  Rp1BudgetBreakdown,
   Rp1BuildCost,
   Rp1BuildItemEntry,
   Rp1BuildableCraftEntry,
@@ -60,6 +61,7 @@ import type {
 export interface GeneratedTopicPayloadMap {
   "rp1.avionics": Rp1Avionics;
   "rp1.budget": Rp1Budget;
+  "rp1.budgetBreakdown": Rp1BudgetBreakdown;
   "rp1.buildCost": Rp1BuildCost;
   "rp1.buildQueue": Rp1BuildItemEntry[];
   "rp1.buildable": Rp1BuildableCraftEntry[];
@@ -90,6 +92,7 @@ export interface GeneratedTopicPayloadMap {
 export const GENERATED_TOPIC_IDS = [
   "rp1.avionics",
   "rp1.budget",
+  "rp1.budgetBreakdown",
   "rp1.buildCost",
   "rp1.buildQueue",
   "rp1.buildable",

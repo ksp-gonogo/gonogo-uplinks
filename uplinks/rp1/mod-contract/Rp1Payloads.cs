@@ -3504,3 +3504,236 @@ public sealed class Rp1BudgetForecastSample
     [SitrepUnit(Sitrep.Contract.Units.Funds)]
     public double? FundsDelta { get; set; }
 }
+
+/// <summary>
+/// What sits under the Budget tab's rows: each building and launch complex's
+/// upkeep, each crew member's cost, each training course's cost and each
+/// Program's funding, at the same day, thirty days and 365.25 days as
+/// <c>rp1.budget</c>. These are the lines RP-1's Facilities, Astronauts and
+/// Programs tabs list.
+///
+/// <para><b>The lines add up to the <c>rp1.budget</c> row they sit under</b>
+/// while the career's currency modifiers are multipliers, which every shipped
+/// leader is. Each line is put through the currency query on its own, as RP-1's
+/// tabs price them, so a modifier that adds a flat amount lands once per line
+/// here and once per row there.</para>
+///
+/// <para>Where RP-1's own tab lists fewer lines than it bills, this carries every
+/// line it bills: a launch complex still under construction is charged a share
+/// of its upkeep that the Facilities tab does not show, and it is here with
+/// <see cref="Rp1ComplexUpkeepEntry.Operational"/> false.</para>
+///
+/// <para>Refreshed on RP-1's upkeep cadence, as <c>rp1.budget</c> is, and absent
+/// when RP-1 is not managing a career in the loaded scene. A list is absent when
+/// the RP-1 system it comes from is, and empty when that system has nothing to
+/// bill.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.budgetBreakdown")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BudgetBreakdown
+{
+    /// <summary>The universal time RP-1 last refreshed its upkeep, which is when every figure here was computed.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? RefreshedAt { get; set; }
+
+    /// <summary>The buildings RP-1 charges upkeep on, in the Facilities tab's order. Launch complexes are in <see cref="Complexes"/>.</summary>
+    public List<Rp1BuildingUpkeepEntry>? Buildings { get; set; }
+
+    /// <summary>Every launch complex at every space centre, with what it costs to keep.</summary>
+    public List<Rp1ComplexUpkeepEntry>? Complexes { get; set; }
+
+    /// <summary>Every crew member RP-1 pays: the living, crew-type kerbals on the roster.</summary>
+    public List<Rp1CrewCostEntry>? Crew { get; set; }
+
+    /// <summary>The Astronauts tab's base cost row: every crew member's pay on the ground.</summary>
+    public Rp1BudgetHorizons? AstronautBase { get; set; }
+
+    /// <summary>
+    /// One crew member's base pay at the Astronaut Complex's current tier,
+    /// before any proficiency: the standing cost a hire adds.
+    /// </summary>
+    public Rp1BudgetHorizons? NautBaseSalary { get; set; }
+
+    /// <summary>The Astronauts tab's operational cost row: the daily rate for crew in flight.</summary>
+    public Rp1BudgetHorizons? AstronautOperational { get; set; }
+
+    /// <summary>The Astronauts tab's training cost row: the sum of <see cref="Courses"/>.</summary>
+    public Rp1BudgetHorizons? AstronautTraining { get; set; }
+
+    /// <summary>Every training course under way. A course waiting for its students costs nothing until it starts, and is not here.</summary>
+    public List<Rp1CourseCostEntry>? Courses { get; set; }
+
+    /// <summary>
+    /// What each training in the catalogue would cost per student, so a course
+    /// can be priced before it is started: RP-1 builds the course only at the
+    /// press.
+    /// </summary>
+    public List<Rp1TrainingFeeEntry>? TrainingFees { get; set; }
+
+    /// <summary>Every running Program, with what it pays over each horizon.</summary>
+    public List<Rp1ProgramFundingEntry>? Programs { get; set; }
+}
+
+/// <summary>
+/// One line of the breakdown at the Budget tab's three horizons, as a funds
+/// change: negative is money going out.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BudgetHorizons
+{
+    /// <summary>Over one day.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Day { get; set; }
+
+    /// <summary>Over RP-1's thirty-day month.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Month { get; set; }
+
+    /// <summary>Over a Julian year of 365.25 days.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Year { get; set; }
+}
+
+/// <summary>A space centre building's upkeep, with any upgrade in progress already priced in.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BuildingUpkeepEntry
+{
+    /// <summary>The <c>SpaceCenterFacility</c> enum name, the key <c>rp1.facilities</c> uses.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public string? Facility { get; set; }
+
+    /// <summary>
+    /// What it costs to keep. RP-1 raises this as an upgrade progresses, blending
+    /// toward the next tier's upkeep by the share of the upgrade done.
+    /// </summary>
+    public Rp1BudgetHorizons? Upkeep { get; set; }
+}
+
+/// <summary>A launch complex's upkeep.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ComplexUpkeepEntry
+{
+    /// <summary>The complex's id, the key <c>rp1.complexes</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? LcId { get; set; }
+
+    /// <summary>The complex's name as RP-1 shows it.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Name { get; set; }
+
+    /// <summary>The space centre it belongs to.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? KscName { get; set; }
+
+    /// <summary>
+    /// Whether it is operational. A complex under construction is billed the
+    /// share of its upkeep its construction has reached, and a complex being
+    /// modified is billed its new upkeep in full.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? Operational { get; set; }
+
+    /// <summary>What it costs to keep: its pads, its integration building and its resources, or its hangar.</summary>
+    public Rp1BudgetHorizons? Upkeep { get; set; }
+}
+
+/// <summary>One crew member's pay, the Astronauts tab's Upkeep column.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1CrewCostEntry
+{
+    /// <summary>The kerbal's name, the key <c>rp1.crew</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Assigned to a vessel. Crew in flight are paid RP-1's daily in-flight rate
+    /// on top of the Astronaut Complex's base pay, and their proficiency pay and
+    /// leave cut do not apply while they fly.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? InFlight { get; set; }
+
+    /// <summary>
+    /// What this crew member costs. On the ground it rises with the Astronaut
+    /// Complex's tier and with each kind of proficiency they hold, and is cut
+    /// while they are on leave or in training (the training itself is billed to
+    /// the course).
+    /// </summary>
+    public Rp1BudgetHorizons? Cost { get; set; }
+}
+
+/// <summary>One training course's cost.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1CourseCostEntry
+{
+    /// <summary>The course's id, the key <c>rp1.training</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+
+    /// <summary>How many students it is billed for: RP-1 charges per head.</summary>
+    [SitrepUnit(Units.Count)]
+    public int? Students { get; set; }
+
+    /// <summary>
+    /// What the course costs while it runs: a per-student fee set by the
+    /// Astronaut Complex's tier, plus a share of the upkeep of the proficiency
+    /// it teaches.
+    /// </summary>
+    public Rp1BudgetHorizons? Cost { get; set; }
+}
+
+/// <summary>What one training would cost for each student enrolled on it.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1TrainingFeeEntry
+{
+    /// <summary>The training template's id, the key <c>rp1.trainingCatalogue</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? TemplateId { get; set; }
+
+    /// <summary>
+    /// The cost per student while the course runs, the same arithmetic
+    /// <see cref="Rp1CourseCostEntry.Cost"/> applies to a started course. A
+    /// course of several students costs this times their number.
+    /// </summary>
+    public Rp1BudgetHorizons? PerStudent { get; set; }
+}
+
+/// <summary>What one running Program pays, the Programs tab's Funding line.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ProgramFundingEntry
+{
+    /// <summary>The Program's name, the key <c>rp1.programs</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// What it pays over each horizon, positive. Read off its funding curve, so a
+    /// Program pays unevenly across its life and a year is not twelve months of
+    /// today's rate. Zero once it has paid out in full.
+    /// </summary>
+    public Rp1BudgetHorizons? Funding { get; set; }
+}

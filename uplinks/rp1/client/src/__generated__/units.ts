@@ -102,9 +102,17 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     subsidyPerDay: "f/day",
     unlockCreditBalance: "funds",
   },
+  "Rp1BudgetBreakdown": {
+    refreshedAt: "ut",
+  },
   "Rp1BudgetForecastSample": {
     fundsDelta: "funds",
     horizon: "s",
+  },
+  "Rp1BudgetHorizons": {
+    day: "funds",
+    month: "funds",
+    year: "funds",
   },
   "Rp1BudgetPeriod": {
     astronauts: "funds",
@@ -172,6 +180,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     partCount: "count",
     shipName: "text",
     unpurchasedParts: "text",
+  },
+  "Rp1BuildingUpkeepEntry": {
+    facility: "enum",
   },
   "Rp1CareerEventEntry": {
     builtAt: "enum",
@@ -258,6 +269,12 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     sizeMaxHeight: "m",
     sizeMaxWidth: "m",
   },
+  "Rp1ComplexUpkeepEntry": {
+    kscName: "id",
+    lcId: "id",
+    name: "text",
+    operational: "flag",
+  },
   "Rp1Confidence": {
     confidence: "confidence",
     earned: "confidence",
@@ -287,6 +304,14 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1ContractPayloadArgs": {
     commsPayload: "kg",
     weatherPayload: "kg",
+  },
+  "Rp1CourseCostEntry": {
+    id: "id",
+    students: "count",
+  },
+  "Rp1CrewCostEntry": {
+    inFlight: "flag",
+    name: "id",
   },
   "Rp1CrewEntry": {
     latestRetiresAtUt: "ut",
@@ -464,6 +489,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     title: "text",
     totalFunding: "funds",
   },
+  "Rp1ProgramFundingEntry": {
+    name: "id",
+  },
   "Rp1ProgramPaymentEntry": {
     cumulativeFunds: "funds",
     funds: "funds",
@@ -560,6 +588,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     crew: "id",
     templateId: "id",
   },
+  "Rp1TrainingFeeEntry": {
+    templateId: "id",
+  },
   "Rp1TrainingLeaveArgs": {
     crewName: "id",
   },
@@ -615,6 +646,9 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     subsidyMinPerDay: "f/day",
     subsidyPerDay: "f/day",
     unlockCreditBalance: "funds",
+  },
+  "rp1.budgetBreakdown": {
+    refreshedAt: "ut",
   },
   "rp1.buildCost": {
     rolloutCost: "funds",
@@ -945,11 +979,26 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     month: "Rp1BudgetPeriod",
     year: "Rp1BudgetPeriod",
   },
+  "Rp1BudgetBreakdown": {
+    astronautBase: "Rp1BudgetHorizons",
+    astronautOperational: "Rp1BudgetHorizons",
+    astronautTraining: "Rp1BudgetHorizons",
+    buildings: "Rp1BuildingUpkeepEntry[]",
+    complexes: "Rp1ComplexUpkeepEntry[]",
+    courses: "Rp1CourseCostEntry[]",
+    crew: "Rp1CrewCostEntry[]",
+    nautBaseSalary: "Rp1BudgetHorizons",
+    programs: "Rp1ProgramFundingEntry[]",
+    trainingFees: "Rp1TrainingFeeEntry[]",
+  },
   "Rp1BuildCost": {
     requiredTechs: "Rp1RequiredTechEntry[]",
   },
   "Rp1BuildableCraftEntry": {
     complexes: "Rp1BuildableComplex[]",
+  },
+  "Rp1BuildingUpkeepEntry": {
+    upkeep: "Rp1BudgetHorizons",
   },
   "Rp1CareerEvents": {
     events: "Rp1CareerEventEntry[]",
@@ -959,6 +1008,15 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   },
   "Rp1ComplexNewArgs": {
     size: "Rp1ComplexSizeArgs",
+  },
+  "Rp1ComplexUpkeepEntry": {
+    upkeep: "Rp1BudgetHorizons",
+  },
+  "Rp1CourseCostEntry": {
+    cost: "Rp1BudgetHorizons",
+  },
+  "Rp1CrewCostEntry": {
+    cost: "Rp1BudgetHorizons",
   },
   "Rp1FundingCurveEntry": {
     keys: "Rp1FundingCurveKey[]",
@@ -973,11 +1031,17 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     fundingPayments: "Rp1ProgramPaymentEntry[]",
     speedOptions: "Rp1ProgramSpeedOption[]",
   },
+  "Rp1ProgramFundingEntry": {
+    funding: "Rp1BudgetHorizons",
+  },
   "Rp1Tooling": {
     parts: "Rp1ToolingEntry[]",
   },
   "Rp1ToolingEntry": {
     refitTargets: "Rp1ToolingRefitTarget[]",
+  },
+  "Rp1TrainingFeeEntry": {
+    perStudent: "Rp1BudgetHorizons",
   },
 };
 
@@ -988,6 +1052,18 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
     forecast: "Rp1BudgetForecastSample[]",
     month: "Rp1BudgetPeriod",
     year: "Rp1BudgetPeriod",
+  },
+  "rp1.budgetBreakdown": {
+    astronautBase: "Rp1BudgetHorizons",
+    astronautOperational: "Rp1BudgetHorizons",
+    astronautTraining: "Rp1BudgetHorizons",
+    buildings: "Rp1BuildingUpkeepEntry[]",
+    complexes: "Rp1ComplexUpkeepEntry[]",
+    courses: "Rp1CourseCostEntry[]",
+    crew: "Rp1CrewCostEntry[]",
+    nautBaseSalary: "Rp1BudgetHorizons",
+    programs: "Rp1ProgramFundingEntry[]",
+    trainingFees: "Rp1TrainingFeeEntry[]",
   },
   "rp1.buildCost": {
     requiredTechs: "Rp1RequiredTechEntry[]",

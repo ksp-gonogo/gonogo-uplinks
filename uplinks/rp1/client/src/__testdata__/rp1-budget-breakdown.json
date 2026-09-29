@@ -1,0 +1,191 @@
+{
+  "_meta": {
+    "notes": "The same early RP-1 career (1960) as rp1-budget.json, as rp1.budgetBreakdown carries it. The lines add up to that fixture's rows: buildings and complexes to Facilities, crew to the Astronauts tab's base and operational rows, courses to its training row, those three to Astronauts, and the Programs to Program Budget. A course costs its students times its template's fee, and a hire's salary is the base pay of the crew member with no proficiency. Payload data for the Finances screen's drill-downs; it names no widget, so it is not a render fixture."
+  },
+  "topic": "rp1.budgetBreakdown",
+  "payload": {
+    "refreshedAt": 315619200.0,
+    "buildings": [
+      {
+        "facility": "Administration",
+        "upkeep": {
+          "day": -400.0,
+          "month": -12000.0,
+          "year": -146100.0
+        }
+      },
+      {
+        "facility": "AstronautComplex",
+        "upkeep": {
+          "day": -300.0,
+          "month": -9000.0,
+          "year": -109575.0
+        }
+      },
+      {
+        "facility": "MissionControl",
+        "upkeep": {
+          "day": -350.0,
+          "month": -10500.0,
+          "year": -127837.5
+        }
+      },
+      {
+        "facility": "TrackingStation",
+        "upkeep": {
+          "day": -450.0,
+          "month": -13500.0,
+          "year": -164362.5
+        }
+      }
+    ],
+    "complexes": [
+      {
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a01",
+        "name": "LC-5",
+        "kscName": "us_cape_canaveral",
+        "operational": true,
+        "upkeep": {
+          "day": -900.0,
+          "month": -27000.0,
+          "year": -328725.0
+        }
+      },
+      {
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a02",
+        "name": "LC-14",
+        "kscName": "us_cape_canaveral",
+        "operational": false,
+        "upkeep": {
+          "day": -500.0,
+          "month": -15000.0,
+          "year": -182625.0
+        }
+      },
+      {
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a03",
+        "name": "Hangar",
+        "kscName": "us_cape_canaveral",
+        "operational": true,
+        "upkeep": {
+          "day": -200.0,
+          "month": -6000.0,
+          "year": -73050.0
+        }
+      }
+    ],
+    "crew": [
+      {
+        "name": "Alan Shepard",
+        "inFlight": true,
+        "cost": {
+          "day": -160.0,
+          "month": -4800.0,
+          "year": -58440.0
+        }
+      },
+      {
+        "name": "Gus Grissom",
+        "inFlight": false,
+        "cost": {
+          "day": -90.0,
+          "month": -2700.0,
+          "year": -32872.5
+        }
+      },
+      {
+        "name": "John Glenn",
+        "inFlight": false,
+        "cost": {
+          "day": -80.0,
+          "month": -2400.0,
+          "year": -29220.0
+        }
+      },
+      {
+        "name": "Scott Carpenter",
+        "inFlight": false,
+        "cost": {
+          "day": -50.0,
+          "month": -1500.0,
+          "year": -18262.5
+        }
+      }
+    ],
+    "astronautBase": {
+      "day": -280.0,
+      "month": -8400.0,
+      "year": -102270.0
+    },
+    "nautBaseSalary": {
+      "day": -60.0,
+      "month": -1800.0,
+      "year": -21915.0
+    },
+    "astronautOperational": {
+      "day": -100.0,
+      "month": -3000.0,
+      "year": -36525.0
+    },
+    "astronautTraining": {
+      "day": -220.0,
+      "month": -6600.0,
+      "year": -80355.0
+    },
+    "courses": [
+      {
+        "id": "prof-mercury",
+        "students": 2,
+        "cost": {
+          "day": -220.0,
+          "month": -6600.0,
+          "year": -80355.0
+        }
+      }
+    ],
+    "trainingFees": [
+      {
+        "templateId": "prof-basic",
+        "perStudent": {
+          "day": -70.0,
+          "month": -2100.0,
+          "year": -25567.5
+        }
+      },
+      {
+        "templateId": "prof-mercury",
+        "perStudent": {
+          "day": -110.0,
+          "month": -3300.0,
+          "year": -40177.5
+        }
+      },
+      {
+        "templateId": "prof-gemini",
+        "perStudent": {
+          "day": -130.0,
+          "month": -3900.0,
+          "year": -47482.5
+        }
+      }
+    ],
+    "programs": [
+      {
+        "name": "EarlySatellites",
+        "funding": {
+          "day": 6000.0,
+          "month": 180000.0,
+          "year": 2000000.0
+        }
+      },
+      {
+        "name": "SuborbitalHSF",
+        "funding": {
+          "day": 3500.0,
+          "month": 101000.0,
+          "year": 1150000.0
+        }
+      }
+    ]
+  }
+}

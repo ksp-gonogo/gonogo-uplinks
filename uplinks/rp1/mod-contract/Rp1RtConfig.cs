@@ -8,7 +8,7 @@ namespace GonogoRp1Uplink;
 /// This Uplink's OWN codegen configuration, scoped to its own contract slice and
 /// writing into its own client, never into sitrep-sdk.
 ///
-/// <para>Sixty-five wire types, fifteen of which are array Topics and
+/// <para>Seventy-three wire types, fifteen of which are array Topics and
 /// twenty-six of which are a command's args, and two unit tokens core has never heard of
 /// (<c>bp</c> and <c>confidence</c>, declared in <see cref="Contract.Units"/>).
 /// The catalog check judges this assembly against core's tokens PLUS that class,
@@ -99,6 +99,14 @@ public static class Rp1RtConfig
             typeof(Rp1Budget),
             typeof(Rp1BudgetPeriod),
             typeof(Rp1BudgetForecastSample),
+            typeof(Rp1BudgetBreakdown),
+            typeof(Rp1BudgetHorizons),
+            typeof(Rp1BuildingUpkeepEntry),
+            typeof(Rp1ComplexUpkeepEntry),
+            typeof(Rp1CrewCostEntry),
+            typeof(Rp1CourseCostEntry),
+            typeof(Rp1TrainingFeeEntry),
+            typeof(Rp1ProgramFundingEntry),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

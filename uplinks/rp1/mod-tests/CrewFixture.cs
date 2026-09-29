@@ -26,7 +26,7 @@ using System.Collections.Generic;
 /// the real type (<c>public string name => _name;</c>), so it is one here too: a
 /// settable field would let the walk pass against a shape KSP does not have.
 /// </summary>
-public class ProtoCrewMember
+public partial class ProtoCrewMember
 {
     private readonly string _name;
 

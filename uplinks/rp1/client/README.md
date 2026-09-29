@@ -18,6 +18,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | --- | --- | --- | --- |
 | `rp1.avionics` | `Rp1Avionics` | lossy-latest | delayed |
 | `rp1.budget` | `Rp1Budget` | lossy-latest | delayed |
+| `rp1.budgetBreakdown` | `Rp1BudgetBreakdown` | lossy-latest | delayed |
 | `rp1.buildCost` | `Rp1BuildCost` | lossy-latest | delayed |
 | `rp1.buildQueue` | `Rp1BuildItemEntry[]` | lossy-latest | delayed |
 | `rp1.buildable` | `Rp1BuildableCraftEntry[]` | lossy-latest | delayed |
@@ -48,19 +49,26 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Payload | Fields |
 | --- | --- |
 | `Rp1BudgetForecastSample` | `fundsDelta` funds, `horizon` s |
+| `Rp1BudgetHorizons` | `day` funds, `month` funds, `year` funds |
 | `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds |
 | `Rp1BuildableComplex` | `eligible` flag, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `refusals` text |
+| `Rp1BuildingUpkeepEntry` | `facility` enum, `upkeep` Rp1BudgetHorizons |
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |
+| `Rp1ComplexUpkeepEntry` | `kscName` id, `lcId` id, `name` text, `operational` flag, `upkeep` Rp1BudgetHorizons |
+| `Rp1CourseCostEntry` | `cost` Rp1BudgetHorizons, `id` id, `students` count |
+| `Rp1CrewCostEntry` | `cost` Rp1BudgetHorizons, `inFlight` flag, `name` id |
 | `Rp1FundingCurveKey` | `frac` ratio, `inTangent` 1, `outTangent` 1, `paidFraction` ratio |
 | `Rp1HireTarget` | `active` flag, `currentCount` count, `isResearch` flag, `lcId` id, `leftToHire` count, `targetCount` count, `timeLeft` s |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
 | `Rp1LeaderEntry` | `canRemoveFromUt` ut, `deactivateReputation` rep, `freeToRemoveFromUt` ut, `reactivateCooldown` s, `removeOnDeactivate` flag, `setupConfidence` confidence, `setupFunds` funds, `setupReputation` rep, `setupScience` science, `strategyId` id |
+| `Rp1ProgramFundingEntry` | `funding` Rp1BudgetHorizons, `name` id |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `speed` enum |
 | `Rp1RequiredTechEntry` | `id` id, `parts` text, `title` text |
 | `Rp1ToolingEntry` | `parameterSummary` text, `partId` id, `partTitle` text, `refitTargets` Rp1ToolingRefitTarget[], `refittable` flag, `symmetryCounterparts` count, `tooled` flag, `toolingCost` funds, `toolingType` id, `toolingTypeTitle` text, `untooledSurcharge` funds |
 | `Rp1ToolingRefitTarget` | `diameter` m, `length` m, `rfType` id |
+| `Rp1TrainingFeeEntry` | `perStudent` Rp1BudgetHorizons, `templateId` id |
 
 ## Commands
 

@@ -21,6 +21,7 @@ import {
 import type {
   Rp1Avionics,
   Rp1Budget,
+  Rp1BudgetBreakdown,
   Rp1BuildableCraftEntry,
   Rp1BuildCost,
   Rp1BuildItemEntry,
@@ -294,6 +295,18 @@ export const RP1_AVIONICS_TOPIC = "rp1.avionics";
  */
 export const RP1_BUDGET_TOPIC = "rp1.budget";
 
+/**
+ * The lines under `rp1.budget`'s rows at the same three horizons: each building
+ * and launch complex's upkeep, each crew member's pay, each running course's
+ * cost, each running Program's funding, the base pay a hire adds and every
+ * catalogue training's cost per student.
+ *
+ * Each line is priced as RP-1's own drill-down tabs price it, so the lines add
+ * up to the row above them while the career's modifiers are multipliers.
+ * Refreshed with `rp1.budget`.
+ */
+export const RP1_BUDGET_BREAKDOWN_TOPIC = "rp1.budgetBreakdown";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "rp1.available": boolean;
@@ -324,6 +337,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.careerEvents": Rp1CareerEvents;
     "rp1.avionics": Rp1Avionics;
     "rp1.budget": Rp1Budget;
+    "rp1.budgetBreakdown": Rp1BudgetBreakdown;
   }
 }
 
@@ -355,6 +369,7 @@ registerBarePrimitiveTopic(RP1_BUILD_COST_TOPIC);
 registerBarePrimitiveTopic(RP1_CAREER_EVENTS_TOPIC);
 registerBarePrimitiveTopic(RP1_AVIONICS_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
+registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both
@@ -462,4 +477,7 @@ export type _ResolvesRp1Avionics = Expect<
 >;
 export type _ResolvesRp1Budget = Expect<
   Equal<TopicPayload<"rp1.budget">, Rp1Budget>
+>;
+export type _ResolvesRp1BudgetBreakdown = Expect<
+  Equal<TopicPayload<"rp1.budgetBreakdown">, Rp1BudgetBreakdown>
 >;

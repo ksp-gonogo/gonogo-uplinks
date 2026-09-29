@@ -49,7 +49,7 @@ namespace RP0
         CrewRnR,
     }
 
-    public sealed class SpaceCenterSettings
+    public sealed partial class SpaceCenterSettings
     {
         /// <summary>
         /// Makes <see cref="RushRateMult"/> unreadable, which is the state a value

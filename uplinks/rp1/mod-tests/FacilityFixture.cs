@@ -278,7 +278,7 @@ public class Game
 /// and a lookup that matched by arity alone could take the int one and index the
 /// roster by a hash.
 /// </summary>
-public class KerbalRoster
+public partial class KerbalRoster
 {
     private readonly System.Collections.Generic.List<ProtoCrewMember> _kerbals =
         new System.Collections.Generic.List<ProtoCrewMember>();
