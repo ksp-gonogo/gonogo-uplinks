@@ -53,13 +53,15 @@ import {
 } from "./fundingCurve.js";
 
 /**
- * Commit to a Program. Must match `Rp1StrategyCommands.ActivateCommand`.
+ * Accept a Program at a chosen speed. Must match
+ * `Rp1StrategyCommands.AcceptCommand`.
  *
- * <para>It is the STRATEGY command and not a program-shaped one, because RP-1
- * makes leaders and Programs one class family: a "leader" is any strategy whose
- * department is not Programs, and the same procedure activates both.</para>
+ * <para>A Program's own command rather than one shared with leaders: RP-1 makes
+ * the two one class family, but a Program costs Confidence at a speed the
+ * operator picks and a leader costs nothing to appoint, so they are two
+ * verbs.</para>
  */
-export const RP1_STRATEGY_ACTIVATE_COMMAND = "rp1.strategy.activate";
+export const RP1_PROGRAM_ACCEPT_COMMAND = "rp1.program.accept";
 
 /**
  * Complete a running Program. Must match `Rp1StrategyCommands.CompleteCommand`.
@@ -120,7 +122,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
 
   /* Unconditional and above the two early returns below: a hook after one would
      change count on the first frame RP-1 answers. */
-  const accept = useCommand(RP1_STRATEGY_ACTIVATE_COMMAND);
+  const accept = useCommand(RP1_PROGRAM_ACCEPT_COMMAND);
   const complete = useCommand(RP1_PROGRAM_COMPLETE_COMMAND);
 
   const rows = programs ?? [];
@@ -397,9 +399,12 @@ function ChosenProgram({
           SPENDS, so it keeps the full width of the pane and a fixed place
           directly under the Program it would accept, whatever the readings
           below it do at this width. */}
+      {/* Keyed by Program so a speed picked on one offer is never carried to
+          the next one opened. */}
       <AcceptControl
         confidenceHeld={confidenceHeld}
         handle={accept}
+        key={program.name ?? ""}
         program={program}
       />
       <RunningProgram complete={complete} program={program} />
@@ -514,11 +519,15 @@ function ChosenProgram({
 
         <PaymentSchedule program={program} />
 
-        <SpeedLadder
-          options={program.speedOptions}
-          chosen={program.speed}
-          confidenceHeld={confidenceHeld}
-        />
+        {/* On an offer the ladder IS the Accept control's choice, above; drawn
+            again here it would be the same prices twice on one pane. */}
+        {program.canAccept !== true && (
+          <SpeedLadder
+            options={program.speedOptions}
+            chosen={program.speed}
+            confidenceHeld={confidenceHeld}
+          />
+        )}
 
         {closes.length > 0 && (
           <Section>
@@ -542,30 +551,31 @@ function ChosenProgram({
 }
 
 /**
- * Accept this Program, at the speed RP-1 currently has selected.
+ * Accept this Program, at the speed the operator picks here.
  *
  * <para><b>The price is CONFIDENCE and it is charged in full at the press.</b>
  * `ProgramHandler.ActivateProgram` calls `Program.Accept()`, where the charge
  * and the deadline both live, so this is an up-front purchase and not a drain
  * like a construction. Funds run the other way entirely: a Program PAYS the
- * career, on the curve above. Both balances are drawn at the head of this
- * section for exactly that reason, and the Confidence one is the one this
- * control spends.</para>
+ * career. Both balances are drawn at the head of this section for exactly that
+ * reason, and the Confidence one is the one this control spends.</para>
  *
- * <para><b>The speed is RP-1's, not the operator's.</b> Speed fixes both the
- * term and the Confidence price and RP-1 fixes it at accept from whatever the
- * Administration building has selected. No command on this Uplink can set it, so
- * the control names the speed it would accept at rather than implying a choice
- * that is not on offer, and the ladder below prices the alternatives.</para>
+ * <para><b>The speed is the operator's choice, and it is the whole
+ * trade.</b> RP-1 pays the same total at every speed, so a faster speed costs
+ * more Confidence and a shorter term, and buys the same money sooner. Each
+ * speed is therefore a row carrying its price, its term and the average it
+ * pays per day, and the one picked is what the press sends. It opens on the
+ * speed RP-1 has selected for the Program, which is what its own
+ * Administration Building would accept at.</para>
  *
  * <para><b>Dark on state rather than on the press.</b> `canAccept` is RP-1's own
  * reading of everything but the money: not already active, not completed, not
  * ruled out by a rival, requirements met. The Confidence comparison is the half
  * RP-1 leaves to the client, because it makes that check with a broadcast query,
- * and it is the same comparison the speed ladder marks SHORT with. Both refuse
- * here with the reason on the control, and RP-1's own
- * `ProgramStrategy.CanActivate` asks all of it again at the press, so a stale
- * view cannot spend anything.</para>
+ * and a speed the career cannot afford is marked SHORT on its row and refuses
+ * here with the reason on the control. RP-1's own `ProgramStrategy.CanActivate`
+ * asks all of it again at the press, at the speed sent, so a stale view cannot
+ * spend anything.</para>
  */
 function AcceptControl({
   confidenceHeld,
@@ -576,6 +586,8 @@ function AcceptControl({
   handle: Parameters<typeof CommandButton>[0]["handle"];
   program: Rp1ProgramEntry;
 }>) {
+  const [picked, setPicked] = useState<string | null>(null);
+
   /* Nothing at all for a Program that is not an offer. A dark Accept on the
      Program already paying the career says nothing an operator can act on, and
      the state badge beside the section title already says which it is. */
@@ -583,20 +595,45 @@ function AcceptControl({
     return null;
   }
 
-  const short = outOfReach(program.confidenceCost, confidenceHeld);
+  const options = offeredSpeeds(program);
+  const speed = picked ?? program.speed ?? options[0]?.speed ?? null;
+  const cost =
+    options.find((option) => option.speed === speed)?.confidenceCost ??
+    (speed === program.speed ? program.confidenceCost : null);
+  const short = outOfReach(cost, confidenceHeld);
   const name = label(program);
 
   return (
     <Section>
       <SectionTitle>ACCEPT</SectionTitle>
+      {options.length > 0 && (
+        <Stack
+          aria-label={`Speed to accept ${name} at`}
+          gap="caption"
+          role="group"
+        >
+          {options.map((option) => (
+            <SpeedChoice
+              confidenceHeld={confidenceHeld}
+              key={option.speed}
+              onPick={setPicked}
+              option={option}
+              selected={option.speed === speed}
+            />
+          ))}
+        </Stack>
+      )}
       <Cluster gap="related-dense" justify="start" wrap>
         <Text size="sm" level="muted">
-          {program.confidenceCost == null ? (
-            <>{NULL_DISPLAY} RP-1 did not price this Program</>
+          {speed === null ? (
+            <>{NULL_DISPLAY} RP-1 did not say which speeds this Program offers</>
+          ) : cost == null ? (
+            <>
+              {NULL_DISPLAY} RP-1 did not price {speed} speed
+            </>
           ) : (
             <>
-              <Unit value={program.confidenceCost} /> at{" "}
-              {program.speed ?? NULL_DISPLAY} speed
+              <Unit value={cost} /> Confidence at {speed} speed
             </>
           )}
           {short && (
@@ -607,26 +644,80 @@ function AcceptControl({
           )}
         </Text>
         <CommandButton
-          args={{ strategyId: program.name }}
+          args={{ strategyId: program.name, speed: speed ?? undefined }}
           /* Named while it can act, and the bare label once it cannot: a
              refused control announcing the acceptance it would have made
              describes something that will not happen. */
-          aria-label={short ? undefined : `Accept ${name}`}
-          commandLabel={`Accept ${name}`}
+          aria-label={short || speed === null ? undefined : `Accept ${name}`}
+          commandLabel={`Accept ${name} at ${speed ?? NULL_DISPLAY} speed`}
           confirmAriaLabel={`Confirm accepting ${name}`}
-          confirmLabel={<AcceptWording cost={program.confidenceCost} />}
-          disabled={short}
+          confirmLabel={<AcceptWording cost={cost} speed={speed} />}
+          disabled={short || speed === null}
           handle={handle}
           label="Accept"
           size="sm"
           title={
-            short
-              ? "RP-1 charges the whole Confidence price when the Program is accepted, and the career is short of it"
-              : undefined
+            speed === null
+              ? "RP-1 accepts a Program only at a named speed, and it has not said which it offers"
+              : short
+                ? "RP-1 charges the whole Confidence price for this speed when the Program is accepted, and the career is short of it"
+                : undefined
           }
         />
       </Cluster>
     </Section>
+  );
+}
+
+/**
+ * The speeds RP-1 offers this Program at, in its own order, without a row it
+ * could not name: a nameless speed is one the command could not send.
+ */
+function offeredSpeeds(program: Rp1ProgramEntry): Rp1ProgramSpeedOption[] {
+  const ladder = present(program.speedOptions) ?? [];
+  return (ladder as Rp1ProgramSpeedOption[]).filter(
+    (option): option is Rp1ProgramSpeedOption & { speed: string } =>
+      typeof option.speed === "string" && option.speed !== "",
+  );
+}
+
+/**
+ * One speed on offer: what it costs in Confidence, how long the Program then
+ * runs, and what it pays per day on average across that term. A row the
+ * career cannot afford is still pickable, so its price can be read on the
+ * Accept line, where the press then refuses.
+ */
+function SpeedChoice({
+  confidenceHeld,
+  onPick,
+  option,
+  selected,
+}: Readonly<{
+  confidenceHeld: number | null;
+  onPick: (speed: string) => void;
+  option: Rp1ProgramSpeedOption;
+  selected: boolean;
+}>) {
+  const speed = option.speed ?? "";
+  return (
+    <SelectableRow onClick={() => onPick(speed)} selected={selected}>
+      <SubjectHeading
+        status={
+          outOfReach(option.confidenceCost, confidenceHeld) && (
+            <Badge tone="caution">SHORT</Badge>
+          )
+        }
+      >
+        <Text size="xs">{speed}</Text>
+      </SubjectHeading>
+      <Text size="xs" level="muted">
+        {/* Named, because RP-1's Confidence renders as a bare count and a
+            bare count beside a funds rate reads as funds. */}
+        <Unit value={option.confidenceCost} /> Confidence, runs{" "}
+        <Unit value={option.durationSeconds} />, pays{" "}
+        <Unit value={option.fundingPerDay} /> on average
+      </Text>
+    </SelectableRow>
   );
 }
 
@@ -772,7 +863,7 @@ function CompleteWording({
 }
 
 /**
- * What the confirm press spends.
+ * What the confirm press spends, and the speed it buys.
  *
  * <para>A price RP-1 did not send is the null dash rather than a zero, and the
  * press is still offered: `ProgramStrategy.CanActivate` reads the threshold
@@ -780,13 +871,15 @@ function CompleteWording({
  */
 function AcceptWording({
   cost,
-}: Readonly<{ cost: Rp1ProgramEntry["confidenceCost"] }>) {
-  if (cost == null) {
-    return <>Spend {NULL_DISPLAY}</>;
-  }
+  speed,
+}: Readonly<{
+  cost: Rp1ProgramSpeedOption["confidenceCost"];
+  speed: string | null;
+}>) {
   return (
     <>
-      Spend <Unit value={cost} />
+      Spend {cost == null ? NULL_DISPLAY : <Unit value={cost} />} Confidence
+      for {speed ?? NULL_DISPLAY}
     </>
   );
 }
@@ -988,8 +1081,9 @@ function PaymentSchedule({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
 }
 
 /**
- * The three speeds, priced. Present on an accepted Program too, where it is the
- * table the choice was made from: RP-1 fixes speed at accept.
+ * The three speeds, priced, on a Program that is not on offer: the table the
+ * choice was made from on a running or completed one, since RP-1 fixes speed at
+ * accept. An offer carries the same rows as the Accept control's choice.
  */
 function SpeedLadder({
   options,

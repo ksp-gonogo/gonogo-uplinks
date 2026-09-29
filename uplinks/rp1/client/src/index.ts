@@ -60,7 +60,7 @@ export { KscConstruction } from "./KscConstruction/index.js";
 export { LaunchComplexStatus } from "./LaunchComplexStatus/index.js";
 export {
   ProgramDetail,
-  RP1_STRATEGY_ACTIVATE_COMMAND,
+  RP1_PROGRAM_ACCEPT_COMMAND,
 } from "./ProgramDetail/index.js";
 export { ResearchQueue } from "./ResearchQueue/index.js";
 export {

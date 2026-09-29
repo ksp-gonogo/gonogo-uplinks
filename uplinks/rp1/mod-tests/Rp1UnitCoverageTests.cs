@@ -98,7 +98,8 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1BuildStartArgs),
                 nameof(Rp1FacilityUpgradeArgs),
                 nameof(Rp1TechResearchArgs),
-                nameof(Rp1StrategyActivateArgs),
+                nameof(Rp1ProgramAcceptArgs),
+                nameof(Rp1LeaderAppointArgs),
                 nameof(Rp1ProgramCompleteArgs),
                 // The launch-complex lifecycle's own eight. The size envelope is a
                 // nested shape rather than three fields on each of the two commands

@@ -44,14 +44,18 @@ using Sitrep.Contract;
 namespace GonogoRp1Uplink
 {
     /// <summary>
-    /// <c>rp1.strategy.activate</c>: commit to a leader or a program without the
-    /// Administration Building. <c>rp1.program.complete</c>: close a running
-    /// program the way the building's own dialog does.
+    /// <c>rp1.program.accept</c> and <c>rp1.leader.appoint</c>: commit to a
+    /// Program at a chosen speed, or to a leader, without the Administration
+    /// Building. <c>rp1.program.complete</c>: close a running program the way the
+    /// building's own dialog does.
     /// </summary>
     public sealed class Rp1StrategyCommands
     {
-        /// <summary>Commit to a strategy, leader or program alike.</summary>
-        public const string ActivateCommand = "rp1.strategy.activate";
+        /// <summary>Accept a Program at the speed the operator chose.</summary>
+        public const string AcceptCommand = "rp1.program.accept";
+
+        /// <summary>Appoint a leader.</summary>
+        public const string AppointCommand = "rp1.leader.appoint";
 
         /// <summary>Complete a running Program, which is how RP-1 closes one.</summary>
         public const string CompleteCommand = "rp1.program.complete";
@@ -98,15 +102,159 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Commit to the named strategy.
+        /// Accept the named Program at the named speed.
         ///
-        /// <para>NOT a set. Activation is a one-way act that spends a currency and
-        /// starts a tenure, so a repeat is refused rather than treated as already
+        /// <para>NOT a set. Accepting is a one-way act that spends Confidence and
+        /// starts a term, so a repeat is refused rather than treated as already
         /// satisfied, unlike <c>rp1.personnel.assign</c>.</para>
+        ///
+        /// <para>The speed is written with RP-1's own <c>Program.SetSpeed</c>, the
+        /// call its Administration Building's speed buttons make, BEFORE the gate
+        /// is asked: <c>ProgramStrategy.CanActivate</c> prices Confidence at the
+        /// Program's current speed, so asking first would judge the wrong price.
+        /// It is put back on any refusal, because the speed is persisted.</para>
         /// </summary>
-        public CommandResult Activate(Rp1StrategyActivateArgs? args)
+        public CommandResult Accept(Rp1ProgramAcceptArgs? args)
         {
-            var id = args?.StrategyId;
+            var speed = args?.Speed?.Trim();
+            if (string.IsNullOrEmpty(speed))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "no speed was named, and the speed sets the Confidence price and the term");
+            }
+            if (Array.IndexOf(Rp1ProgramSpeeds.All, speed) < 0)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    $"\"{speed}\" is not a Program speed; RP-1 offers {string.Join(", ", Rp1ProgramSpeeds.All)}");
+            }
+
+            var found = Resolve(args?.StrategyId, out var system, out var strategy, out var handler);
+            if (found != null) return found;
+
+            if (!Rp1StrategyWrites.IsProgramStrategy(strategy, _programStrategy))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.WrongState,
+                    $"\"{args!.StrategyId!.Trim()}\" is a leader rather than a Program; appoint it with {AppointCommand}");
+            }
+
+            /*
+             * Read, never assumed. With the screen open PerformActivate's own
+             * Register() performs the program half itself, so performing it here
+             * as well accepts twice: two Accept()s, two Confidence charges, a
+             * duplicate ActivePrograms entry and a restarted funding schedule. The
+             * remote console is exactly the case where the screen may be open.
+             *
+             * Absent is not false. A flag we could not read leaves us unable to
+             * tell which half the game will perform, and guessing either way risks
+             * a double charge or a program that is active but never accepted.
+             */
+            var inAdmin = Rp1StrategyWrites.IsInAdmin(handler);
+            if (inAdmin == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "cannot tell whether the Administration Building is open, and a program would be accepted twice if it is");
+            }
+
+            var program = Rp1StrategyWrites.Program(strategy);
+            if (program == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.WrongState, "the program this strategy carries could not be read");
+            }
+            var previous = Rp1Types.Member(program, Rp1StrategyWrites.SpeedField);
+            var setSpeed = Rp1StrategyWrites.SetSpeed(program);
+            if (previous == null || !previous.GetType().IsEnum || setSpeed == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    "RP-1's Program.SetSpeed(Program.Speed) or the speed it sets was not recognised");
+            }
+            if (!Enum.IsDefined(previous.GetType(), speed!))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    $"this RP-1 has no Program speed called \"{speed}\"");
+            }
+
+            try
+            {
+                setSpeed.Invoke(program, new[] { Enum.Parse(previous.GetType(), speed!) });
+            }
+            catch (Exception ex)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotClearToProceed,
+                    "RP-1 threw while setting the Program's speed: " + Rp1Types.ExceptionReason(ex));
+            }
+            void PutSpeedBack()
+            {
+                try
+                {
+                    setSpeed.Invoke(program, new[] { previous });
+                }
+                catch (Exception)
+                {
+                    // fail-soft: the refusal is the answer either way
+                }
+            }
+            // Read back, because SetSpeed is silent: RP-1 ignores it on a Program
+            // already accepted or completed, and a speed that did not take would
+            // be accepted at a price nobody chose.
+            if (Rp1Types.ReadEnumName(program, Rp1StrategyWrites.SpeedField) != speed)
+            {
+                PutSpeedBack();
+                return CommandResult.Fail(CommandErrorCode.WrongState, "RP-1 would not take the speed for this Program");
+            }
+
+            var gate = Refusal(system, strategy, null);
+            if (gate != null)
+            {
+                PutSpeedBack();
+                return gate;
+            }
+
+            var result = Commit(strategy, handler, true, inAdmin == true, null);
+            if (!result.Success) PutSpeedBack();
+            return result;
+        }
+
+        /// <summary>
+        /// Appoint the named leader.
+        ///
+        /// <para>NOT a set, for the reason <see cref="Accept"/> gives: a repeat is
+        /// refused rather than treated as already satisfied.</para>
+        /// </summary>
+        public CommandResult Appoint(Rp1LeaderAppointArgs? args)
+        {
+            var found = Resolve(args?.StrategyId, out var system, out var strategy, out var handler);
+            if (found != null) return found;
+
+            if (Rp1StrategyWrites.IsProgramStrategy(strategy, _programStrategy))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.WrongState,
+                    $"\"{args!.StrategyId!.Trim()}\" is a Program rather than a leader; accept it with {AcceptCommand} and a speed");
+            }
+
+            var gate = Refusal(system, strategy, args?.Factor);
+            if (gate != null) return gate;
+
+            return Commit(strategy, handler, false, false, args?.Factor);
+        }
+
+        /// <summary>
+        /// The lookup and the preconditions both commitments share, returning the
+        /// refusal or null with the strategy, its system and the program handler
+        /// resolved.
+        /// </summary>
+        private CommandResult? Resolve(string? id, out object system, out object strategy, out object handler)
+        {
+            system = null!;
+            strategy = null!;
+            handler = null!;
             if (string.IsNullOrWhiteSpace(id))
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound, "no strategy was named");
@@ -116,13 +264,14 @@ namespace GonogoRp1Uplink
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable, "RP-1 strategy types are not present");
             }
 
-            var system = StrategySystemInstance();
-            if (system == null)
+            var found = StrategySystemInstance();
+            if (found == null)
             {
                 return CommandResult.Fail(CommandErrorCode.CareerModeRequired, "there is no strategy system");
             }
+            system = found;
 
-            if (!TryFindStrategy(system, id!, out var strategy))
+            if (!TryFindStrategy(system, id!.Trim(), out strategy))
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound, $"no strategy is named \"{id}\"");
             }
@@ -148,39 +297,15 @@ namespace GonogoRp1Uplink
                     CommandErrorCode.NotClearToProceed,
                     "RP-1's space centre is not loaded, and committing needs it to recalculate build rates");
             }
-            var handler = _programHandler == null ? null : Rp1Types.StaticValue(_programHandler, "Instance");
-            if (handler == null)
+            var programHandler = _programHandler == null ? null : Rp1Types.StaticValue(_programHandler, "Instance");
+            if (programHandler == null)
             {
                 return CommandResult.Fail(
                     CommandErrorCode.NotClearToProceed,
                     "RP-1's program handler is not loaded, and committing needs it to record the change");
             }
-
-            var isProgram = Rp1StrategyWrites.IsProgramStrategy(strategy, _programStrategy);
-
-            /*
-             * Read, never assumed. With the screen open PerformActivate's own
-             * Register() performs the program half itself, so performing it here
-             * as well accepts twice: two Accept()s, two Confidence charges, a
-             * duplicate ActivePrograms entry and a restarted funding schedule. The
-             * remote console is exactly the case where the screen may be open.
-             *
-             * Absent is not false. A flag we could not read leaves us unable to
-             * tell which half the game will perform, and guessing either way risks
-             * a double charge or a program that is active but never accepted.
-             */
-            var inAdmin = Rp1StrategyWrites.IsInAdmin(handler);
-            if (isProgram && inAdmin == null)
-            {
-                return CommandResult.Fail(
-                    CommandErrorCode.NotClearToProceed,
-                    "cannot tell whether the Administration Building is open, and a program would be accepted twice if it is");
-            }
-
-            var gate = Refusal(system, strategy, args?.Factor);
-            if (gate != null) return gate;
-
-            return Commit(strategy, handler, isProgram, inAdmin == true, args?.Factor);
+            handler = programHandler;
+            return null;
         }
 
         /// <summary>

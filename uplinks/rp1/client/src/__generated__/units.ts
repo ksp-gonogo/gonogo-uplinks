@@ -419,6 +419,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     name: "id",
     padCostPerUnit: "funds",
   },
+  "Rp1LeaderAppointArgs": {
+    factor: "ratio",
+    strategyId: "id",
+  },
   "Rp1LeaderEntry": {
     canRemoveFromUt: "ut",
     deactivateReputation: "rep",
@@ -490,6 +494,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     engineers: "count",
     lcId: "id",
   },
+  "Rp1ProgramAcceptArgs": {
+    speed: "enum",
+    strategyId: "id",
+  },
   "Rp1ProgramCompleteArgs": {
     strategyId: "id",
   },
@@ -545,6 +553,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1ProgramSpeedOption": {
     confidenceCost: "confidence",
     durationSeconds: "s",
+    fundingPerDay: "f/day",
     speed: "enum",
   },
   "Rp1RequiredTechEntry": {
@@ -572,10 +581,6 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1RushTerms": {
     rateMult: "ratio",
     salaryMult: "ratio",
-  },
-  "Rp1StrategyActivateArgs": {
-    factor: "ratio",
-    strategyId: "id",
   },
   "Rp1TechResearchArgs": {
     techId: "id",
@@ -1197,6 +1202,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "Rp1PadEntry": {
     status: null,
+  },
+  "Rp1ProgramAcceptArgs": {
+    speed: null,
   },
   "Rp1ProgramEntry": {
     speed: null,

@@ -1,4 +1,5 @@
-// What rp1.strategy.activate must do, and the two things it must not.
+// What rp1.program.accept and rp1.leader.appoint must do, and the two things
+// they must not.
 //
 // The valuable tests here are the two ORDERING ones. Both defects the command
 // was written around are invisible in a return value: performing the program
@@ -73,8 +74,23 @@ namespace GonogoRp1Uplink.Tests
             ProgramHandler.Instance = new ProgramHandler();
         }
 
-        private CommandResult Activate(string id, double? factor = null) =>
-            _commands.Activate(new Rp1StrategyActivateArgs { StrategyId = id, Factor = factor });
+        private CommandResult Accept(string id, string? speed = "Normal") =>
+            _commands.Accept(new Rp1ProgramAcceptArgs { StrategyId = id, Speed = speed });
+
+        private CommandResult Appoint(string id, double? factor = null) =>
+            _commands.Appoint(new Rp1LeaderAppointArgs { StrategyId = id, Factor = factor });
+
+        /// <summary>A Program priced 0, 350 and 700 Confidence at Slow, Normal and Fast.</summary>
+        private static ProgramStrategy PricedProgram(Program.Speed selected, double held)
+        {
+            var strategy = ProgramFor();
+            strategy.Program!.confidenceCosts[Program.Speed.Slow] = 0f;
+            strategy.Program.confidenceCosts[Program.Speed.Normal] = 350f;
+            strategy.Program.confidenceCosts[Program.Speed.Fast] = 700f;
+            strategy.Program.SetSpeed(selected);
+            strategy.ConfidenceHeld = held;
+            return strategy;
+        }
 
         // ── The two orderings, which are the point of this file ──────────────
 
@@ -89,7 +105,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var program = ProgramFor();
 
-            var result = Activate(program.Config.Name);
+            var result = Accept(program.Config.Name);
 
             Assert.True(result.Success);
             Assert.Equal(new[] { "ActivateProgram", "PerformActivate" }, StrategyCallLog.Calls);
@@ -105,7 +121,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var program = ProgramFor();
 
-            Activate(program.Config.Name);
+            Accept(program.Config.Name);
 
             Assert.Equal(12345.0, StrategyCallLog.AlarmDeadline);
             Assert.NotEqual(0.0, StrategyCallLog.AlarmDeadline);
@@ -125,7 +141,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var program = ProgramFor(inAdmin: true);
 
-            var result = Activate(program.Config.Name);
+            var result = Accept(program.Config.Name);
 
             Assert.True(result.Success);
             Assert.Equal(new[] { "PerformActivate" }, StrategyCallLog.Calls);
@@ -138,10 +154,111 @@ namespace GonogoRp1Uplink.Tests
         {
             var leader = Leader();
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.True(result.Success);
             Assert.Equal(new[] { "PerformActivate" }, StrategyCallLog.Calls);
+        }
+
+        // ── The speed, which is the operator's and the price's ──────────────
+
+        /// <summary>
+        /// The speed is written before RP-1 is asked, because RP-1 prices the
+        /// Confidence threshold at the Program's CURRENT speed. Asked first, a
+        /// Program RP-1 had at Fast would be refused at Normal for a price the
+        /// operator did not choose.
+        /// </summary>
+        [Fact]
+        public void Prices_the_threshold_at_the_chosen_speed_rather_than_the_selected_one()
+        {
+            var strategy = PricedProgram(Program.Speed.Fast, held: 400);
+
+            var result = Accept(strategy.Config.Name, "Normal");
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Equal(Program.Speed.Normal, strategy.Program!.ProgramSpeed);
+            Assert.Equal(new[] { "ActivateProgram", "PerformActivate" }, StrategyCallLog.Calls);
+        }
+
+        /// <summary>
+        /// And refused at the chosen speed's price, in RP-1's words, with the
+        /// speed put back: it is persisted on the save, and a refusal must not
+        /// change it.
+        /// </summary>
+        [Fact]
+        public void Puts_the_speed_back_when_RP1_refuses_the_chosen_one()
+        {
+            var strategy = PricedProgram(Program.Speed.Normal, held: 400);
+
+            var result = Accept(strategy.Config.Name, "Fast");
+
+            Assert.False(result.Success);
+            Assert.Equal("This Program requires 700 to accept at this speed.", result.Detail);
+            Assert.Equal(Program.Speed.Normal, strategy.Program!.ProgramSpeed);
+            Assert.Empty(StrategyCallLog.Calls);
+        }
+
+        /// <summary>
+        /// With the screen open RP-1's own OnRegister accepts, and it accepts
+        /// whatever speed the Program holds, so the chosen one has to be on it
+        /// by then.
+        /// </summary>
+        [Fact]
+        public void An_accept_with_the_screen_open_carries_the_chosen_speed()
+        {
+            var strategy = PricedProgram(Program.Speed.Normal, held: 1000);
+            ProgramHandler.Instance!.IsInAdmin = true;
+
+            var result = Accept(strategy.Config.Name, "Slow");
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Equal(Program.Speed.Slow, strategy.Program!.ProgramSpeed);
+            Assert.Equal(new[] { "PerformActivate" }, StrategyCallLog.Calls);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("MAX")]
+        [InlineData("Breakneck")]
+        public void Refuses_a_speed_that_is_not_one_of_RP1s_three(string? speed)
+        {
+            var strategy = PricedProgram(Program.Speed.Normal, held: 1000);
+
+            var result = Accept(strategy.Config.Name, speed);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommandErrorCode.NotClearToProceed, result.ErrorCode);
+            Assert.Equal(Program.Speed.Normal, strategy.Program!.ProgramSpeed);
+            Assert.Empty(StrategyCallLog.Calls);
+        }
+
+        // ── Each command takes its own kind ──────────────────────────────────
+
+        [Fact]
+        public void Accept_refuses_a_leader_and_names_the_command_that_appoints_one()
+        {
+            var leader = Leader();
+
+            var result = Accept(leader.Config.Name);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommandErrorCode.WrongState, result.ErrorCode);
+            Assert.Contains(Rp1StrategyCommands.AppointCommand, result.Detail);
+            Assert.Empty(StrategyCallLog.Calls);
+        }
+
+        [Fact]
+        public void Appoint_refuses_a_Program_and_names_the_command_that_accepts_one()
+        {
+            var program = ProgramFor();
+
+            var result = Appoint(program.Config.Name);
+
+            Assert.False(result.Success);
+            Assert.Equal(CommandErrorCode.WrongState, result.ErrorCode);
+            Assert.Contains(Rp1StrategyCommands.AcceptCommand, result.Detail);
+            Assert.Empty(StrategyCallLog.Calls);
         }
 
         // ── Refusals, none of which may reach the procedure ──────────────────
@@ -156,7 +273,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             leader.RefuseWith = "Program slots are full.";
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Equal("Program slots are full.", result.Detail);
@@ -176,7 +293,7 @@ namespace GonogoRp1Uplink.Tests
             leader.Effects.Add(new Strategies.StrategyEffect());
             leader.Effects.Add(new Strategies.StrategyEffect { RefuseWith = "Requires an orbital rendezvous first." });
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Equal("Requires an orbital rendezvous first.", result.Detail);
@@ -191,7 +308,7 @@ namespace GonogoRp1Uplink.Tests
             leader.Effects.Add(new Strategies.StrategyEffect());
             leader.Effects.Add(new Strategies.StrategyEffect());
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.True(result.Success);
             Assert.Equal(new[] { "PerformActivate" }, StrategyCallLog.Calls);
@@ -204,7 +321,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             Strategies.StrategySystem.Instance!.Conflicts = true;
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Empty(StrategyCallLog.Calls);
@@ -216,7 +333,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             leader.IsActive = true;
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Empty(StrategyCallLog.Calls);
@@ -227,7 +344,7 @@ namespace GonogoRp1Uplink.Tests
         {
             Leader();
 
-            var result = Activate("leaderNobody");
+            var result = Appoint("leaderNobody");
 
             Assert.False(result.Success);
             Assert.Empty(StrategyCallLog.Calls);
@@ -244,7 +361,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             RP0.SpaceCenterManagement.Instance = null;
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Empty(StrategyCallLog.Calls);
@@ -256,7 +373,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             ProgramHandler.Instance = null;
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Empty(StrategyCallLog.Calls);
@@ -277,7 +394,7 @@ namespace GonogoRp1Uplink.Tests
             leader.Factor = 0.05;
             leader.RefuseWith = "Not eligible.";
 
-            var result = Activate(leader.Config.Name, factor: 0.75);
+            var result = Appoint(leader.Config.Name, factor: 0.75);
 
             Assert.False(result.Success);
             Assert.Equal(0.05, leader.Factor);
@@ -289,7 +406,7 @@ namespace GonogoRp1Uplink.Tests
             var leader = Leader();
             leader.Factor = 0.05;
 
-            var result = Activate(leader.Config.Name, factor: 0.5);
+            var result = Appoint(leader.Config.Name, factor: 0.5);
 
             Assert.True(result.Success);
             Assert.Equal(0.5, leader.Factor);
@@ -312,7 +429,7 @@ namespace GonogoRp1Uplink.Tests
             Seed(leader);
             GameVariables.Instance = new GameVariables { StrategyCommitRange = 0.5f };
 
-            var result = Activate(leader.Config.Name);
+            var result = Appoint(leader.Config.Name);
 
             Assert.False(result.Success);
             Assert.Equal(CommandErrorCode.NotClearToProceed, result.ErrorCode);
@@ -330,7 +447,7 @@ namespace GonogoRp1Uplink.Tests
         /// Administration level cannot be read.
         /// </summary>
         [Fact]
-        public void Activates_when_the_ceiling_itself_cannot_be_read()
+        public void Appoints_when_the_ceiling_itself_cannot_be_read()
         {
             var leader = new RP0.StrategyRP0WithUnreadableFactor
             {
@@ -339,7 +456,7 @@ namespace GonogoRp1Uplink.Tests
             Seed(leader);
             GameVariables.Instance = null;
 
-            Assert.True(Activate(leader.Config.Name).Success);
+            Assert.True(Appoint(leader.Config.Name).Success);
         }
     }
 }

@@ -68,7 +68,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1LeaderEntry` | `canRemoveFromUt` ut, `deactivateReputation` rep, `freeToRemoveFromUt` ut, `reactivateCooldown` s, `removeOnDeactivate` flag, `setupConfidence` confidence, `setupFunds` funds, `setupReputation` rep, `setupScience` science, `strategyId` id |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
-| `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `speed` enum |
+| `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
 | `Rp1RequiredTechEntry` | `id` id, `parts` text, `title` text |
 | `Rp1ToolingEntry` | `parameterSummary` text, `partId` id, `partTitle` text, `refitTargets` Rp1ToolingRefitTarget[], `refittable` flag, `symmetryCounterparts` count, `tooled` flag, `toolingCost` funds, `toolingType` id, `toolingTypeTitle` text, `untooledSurcharge` funds |
 | `Rp1ToolingRefitTarget` | `diameter` m, `length` m, `rfType` id |
@@ -92,12 +92,13 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.fundTarget.cancel` | `Rp1TargetCancelArgs` | `CommandResult` |
 | `rp1.hireTarget.cancel` | `Rp1TargetCancelArgs` | `CommandResult` |
 | `rp1.hireTarget.set` | `Rp1HireTargetSetArgs` | `CommandResult` |
+| `rp1.leader.appoint` | `Rp1LeaderAppointArgs` | `CommandResult` |
 | `rp1.pad.dismantle` | `Rp1PadDismantleArgs` | `CommandResult` |
 | `rp1.pad.new` | `Rp1PadNewArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.pad.rename` | `Rp1PadRenameArgs` | `CommandResult` |
 | `rp1.personnel.assign` | `Rp1PersonnelAssignArgs` | `CommandResult` |
+| `rp1.program.accept` | `Rp1ProgramAcceptArgs` | `CommandResult` |
 | `rp1.program.complete` | `Rp1ProgramCompleteArgs` | `CommandResult` |
-| `rp1.strategy.activate` | `Rp1StrategyActivateArgs` | `CommandResult` |
 | `rp1.tech.research` | `Rp1TechResearchArgs` | `CommandResult` |
 | `rp1.tooling.refit` | `Rp1ToolingRefitArgs` | `CommandResult` |
 | `rp1.tooling.toolAll` | `Rp1ToolAllArgs` | `CommandResult` |
@@ -123,13 +124,14 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1ContractPayloadArgs` | `commsPayload` kg, `weatherPayload` kg |
 | `Rp1FacilityUpgradeArgs` | `facility` id |
 | `Rp1HireTargetSetArgs` | `lcId` id, `reserveFunds` funds, `targetCount` count |
+| `Rp1LeaderAppointArgs` | `factor` ratio, `strategyId` id |
 | `Rp1PadDismantleArgs` | `lcId` id, `padId` id |
 | `Rp1PadNewArgs` | `lcId` id, `name` id |
 | `Rp1PadRenameArgs` | `lcId` id, `name` id, `padId` id |
 | `Rp1PersonnelAssignArgs` | `engineers` count, `lcId` id |
+| `Rp1ProgramAcceptArgs` | `speed` enum, `strategyId` id |
 | `Rp1ProgramCompleteArgs` | `strategyId` id |
 | `Rp1RolloutArgs` | `id` id, `pad` id |
-| `Rp1StrategyActivateArgs` | `factor` ratio, `strategyId` id |
 | `Rp1TargetCancelArgs` | – |
 | `Rp1TechResearchArgs` | `techId` id |
 | `Rp1ToolAllArgs` | – |

@@ -448,6 +448,11 @@ namespace GonogoRp1Uplink.Tests
             // because ActivateProgram(string, Program.Speed) sits beside it, and
             // a lookup by arity alone could take either.
             new Rp1MethodTarget(Rp0, "RP0.Programs.ProgramHandler", "ActivateProgram", 1, false, "Rp1StrategyWrites"),
+            // How rp1.program.accept chooses the speed: the call RP-1's own speed
+            // buttons make on the Program before it is accepted. A rename leaves
+            // the command refusing at the press rather than accepting at a speed
+            // nobody chose.
+            new Rp1MethodTarget(Rp0, "RP0.Programs.Program", "SetSpeed", 1, false, "Rp1StrategyWrites"),
             // The completion half ProgramStrategy.OnUnregister performs only with
             // the Administration screen open; without it a deactivated Program is
             // stranded. Resolved by first-parameter TYPE in production because

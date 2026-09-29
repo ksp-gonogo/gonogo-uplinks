@@ -5,14 +5,14 @@
   "_scene": {
     "augment": "rp1-program-detail",
     "hostWidget": "strategies",
-    "caption": "An offer the career cannot yet afford at any paid speed, with the front-loaded curve that would fund its first two years and the accept control dark on the Confidence it is short of",
+    "caption": "An offer the career cannot yet afford at any paid speed, each speed priced in Confidence beside its term and funding rate in the Accept choice, with the front-loaded curve that would fund its first two years and the accept control dark on the Confidence it is short of",
     "paints": [
       "PROGRAM DETAIL",
       "Early X-Planes",
       "OFFERABLE",
       "ACCEPT",
       "Normal speed",
-      "SPEED",
+      "on average",
       "SHORT",
       "CLOSES OFF ON ACCEPT"
     ],
@@ -64,17 +64,20 @@
               {
                 "speed": "Slow",
                 "confidenceCost": 0.0,
-                "durationSeconds": 189345600.0
+                "durationSeconds": 189345600.0,
+                "fundingPerDay": 182.52
               },
               {
                 "speed": "Normal",
                 "confidenceCost": 300.0,
-                "durationSeconds": 126230400.0
+                "durationSeconds": 126230400.0,
+                "fundingPerDay": 273.79
               },
               {
                 "speed": "Fast",
                 "confidenceCost": 600.0,
-                "durationSeconds": 94672800.0
+                "durationSeconds": 94672800.0,
+                "fundingPerDay": 365.05
               }
             ],
             "programsToDisableOnAccept": ["EarlyXPlanesHeavy"],

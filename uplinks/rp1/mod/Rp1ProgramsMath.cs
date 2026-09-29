@@ -160,6 +160,23 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// The average a Program pays per day across a term: its total funding
+        /// over the duration. RP-1's total is the same at every speed, so this is
+        /// what a speed changes about the money. Absent when either half is, and
+        /// for a term that is not positive, which would be a rate about nothing.
+        /// </summary>
+        public static double? FundingPerDay(double? totalFunding, double? durationSeconds)
+        {
+            if (totalFunding == null || durationSeconds == null || !(durationSeconds.Value > 0.0))
+            {
+                return null;
+            }
+            return totalFunding.Value / (durationSeconds.Value / SecondsPerDay);
+        }
+
+        private const double SecondsPerDay = 86400d;
+
+        /// <summary>
         /// RP-1's duration multiplier per speed. Slow stretches a Program, Fast
         /// compresses it, and an unrecognised name leaves it alone rather than
         /// guessing: a speed RP-1 added after this build should read as the

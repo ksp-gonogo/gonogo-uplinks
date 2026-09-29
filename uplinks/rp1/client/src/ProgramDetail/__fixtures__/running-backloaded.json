@@ -62,17 +62,20 @@
               {
                 "speed": "Slow",
                 "confidenceCost": 0.0,
-                "durationSeconds": 331354800.0
+                "durationSeconds": 331354800.0,
+                "fundingPerDay": 65.71
               },
               {
                 "speed": "Normal",
                 "confidenceCost": 150.0,
-                "durationSeconds": 220903200.0
+                "durationSeconds": 220903200.0,
+                "fundingPerDay": 98.56
               },
               {
                 "speed": "Fast",
                 "confidenceCost": 300.0,
-                "durationSeconds": 165677400.0
+                "durationSeconds": 165677400.0,
+                "fundingPerDay": 131.42
               }
             ],
             "programsToDisableOnAccept": null,

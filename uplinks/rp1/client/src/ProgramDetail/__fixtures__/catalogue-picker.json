@@ -129,17 +129,20 @@
               {
                 "speed": "Slow",
                 "confidenceCost": 0.0,
-                "durationSeconds": 284018400.0
+                "durationSeconds": 284018400.0,
+                "fundingPerDay": 186.17
               },
               {
                 "speed": "Normal",
                 "confidenceCost": 480.0,
-                "durationSeconds": 189345600.0
+                "durationSeconds": 189345600.0,
+                "fundingPerDay": 279.26
               },
               {
                 "speed": "Fast",
                 "confidenceCost": 960.0,
-                "durationSeconds": 142009200.0
+                "durationSeconds": 142009200.0,
+                "fundingPerDay": 372.35
               }
             ],
             "programsToDisableOnAccept": null,
@@ -232,17 +235,20 @@
               {
                 "speed": "Slow",
                 "confidenceCost": 0.0,
-                "durationSeconds": 189345600.0
+                "durationSeconds": 189345600.0,
+                "fundingPerDay": 182.52
               },
               {
                 "speed": "Normal",
                 "confidenceCost": 300.0,
-                "durationSeconds": 126230400.0
+                "durationSeconds": 126230400.0,
+                "fundingPerDay": 273.79
               },
               {
                 "speed": "Fast",
                 "confidenceCost": 600.0,
-                "durationSeconds": 94672800.0
+                "durationSeconds": 94672800.0,
+                "fundingPerDay": 365.05
               }
             ],
             "programsToDisableOnAccept": ["EarlyXPlanesHeavy"],

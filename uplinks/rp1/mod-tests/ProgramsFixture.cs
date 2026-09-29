@@ -81,7 +81,16 @@ namespace RP0.Programs
 
         public double TotalFunding => totalFunding > 0.0 ? totalFunding : baseFunding * FundsGainMultiplier;
 
-        public void SetSpeed(Speed spd) => speed = spd;
+        /// <summary>RP-1's own guard: a Program already accepted or completed keeps its speed, silently.</summary>
+        public void SetSpeed(Speed spd)
+        {
+            if (!IsActive && !IsComplete)
+            {
+                speed = spd;
+            }
+        }
+
+        public Speed ProgramSpeed => speed;
     }
 
     /// <summary>

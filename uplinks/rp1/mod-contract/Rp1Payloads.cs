@@ -1869,6 +1869,20 @@ public sealed class Rp1ProgramSpeedOption
     /// </summary>
     [SitrepUnit(Units.Seconds)]
     public double? DurationSeconds { get; set; }
+
+    /// <summary>
+    /// What the Program pays per day on average at this speed: its total funding
+    /// over <see cref="DurationSeconds"/>. RP-1's total does not depend on the
+    /// speed, so a faster speed buys the same money sooner, and this is the rate
+    /// that difference comes to.
+    ///
+    /// <para>An average across the term, not the rate on any given day: the
+    /// funding curve front- or back-loads it, which the funding summary shows
+    /// year by year. Absent when the total or the duration could not be
+    /// read.</para>
+    /// </summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? FundingPerDay { get; set; }
 }
 
 /// <summary>

@@ -793,7 +793,8 @@ namespace GonogoRp1Uplink
             }
             if (strategyModelResolved)
             {
-                commands.Add(Declare(Rp1StrategyCommands.ActivateCommand, CareerStatusSubject));
+                commands.Add(Declare(Rp1StrategyCommands.AcceptCommand, ProgramsTopic));
+                commands.Add(Declare(Rp1StrategyCommands.AppointCommand, CareerStatusSubject));
                 commands.Add(Declare(Rp1StrategyCommands.CompleteCommand, ProgramsTopic));
             }
             if (targetModelResolved)
@@ -1126,8 +1127,10 @@ namespace GonogoRp1Uplink
             {
                 if (_strategies.IsAvailable)
                 {
-                    host.AddCommandHandler<Rp1StrategyActivateArgs, CommandResult>(
-                        Rp1StrategyCommands.ActivateCommand, _strategies.Activate);
+                    host.AddCommandHandler<Rp1ProgramAcceptArgs, CommandResult>(
+                        Rp1StrategyCommands.AcceptCommand, _strategies.Accept);
+                    host.AddCommandHandler<Rp1LeaderAppointArgs, CommandResult>(
+                        Rp1StrategyCommands.AppointCommand, _strategies.Appoint);
                     host.AddCommandHandler<Rp1ProgramCompleteArgs, CommandResult>(
                         Rp1StrategyCommands.CompleteCommand, _strategies.Complete);
                 }

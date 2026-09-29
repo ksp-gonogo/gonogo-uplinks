@@ -179,6 +179,29 @@ namespace RP0.Programs
     {
         public Program? Program { get; set; }
 
+        /// <summary>
+        /// The Confidence the career holds, set by a test to make RP-1's
+        /// threshold arm bite. Null leaves the arm out.
+        /// </summary>
+        public double? ConfidenceHeld { get; set; }
+
+        /// <summary>
+        /// RP-1's arm 8 for a Program, the half that matters to the speed: the
+        /// Confidence threshold is priced at the Program's CURRENT speed, so a
+        /// speed written after this is asked is judged at the wrong price.
+        /// </summary>
+        public override bool CanActivate(ref string reason)
+        {
+            if (Program != null && ConfidenceHeld != null
+                && Program.confidenceCosts.TryGetValue(Program.ProgramSpeed, out var cost)
+                && cost > ConfidenceHeld.Value)
+            {
+                reason = $"This Program requires {cost:N0} to accept at this speed.";
+                return false;
+            }
+            return base.CanActivate(ref reason);
+        }
+
         /// <summary>RP-1's rule, in RP-1's words.</summary>
         public override bool CanDeactivate(ref string reason)
         {

@@ -245,21 +245,59 @@ public class Rp1BuildStartArgs
 }
 
 /// <summary>
-/// Which strategy to commit to, for <c>rp1.strategy.activate</c>.
+/// Which Program to accept and at what speed, for <c>rp1.program.accept</c>.
 /// </summary>
 /// <remarks>
-/// <para>A leader AND a program, because RP-1 makes them one system: a "leader"
-/// is any strategy whose department is not Programs, and both are the same class
-/// family. The command does not ask the operator which kind they meant, because
-/// the game does not: it asserts the kind itself and takes the matching
-/// procedure.</para>
+/// <para>A Program and never a leader: RP-1 makes the two one class family, but
+/// their money runs in different currencies and directions, so they are two
+/// commands. Accepting charges the Confidence price for the chosen speed in full
+/// and then PAYS the career funds on the Program's curve. A leader named here is
+/// refused and pointed at <c>rp1.leader.appoint</c>.</para>
 /// </remarks>
 [SitrepContract]
-[SitrepCommand("rp1.strategy.activate")]
-public class Rp1StrategyActivateArgs
+[SitrepCommand("rp1.program.accept")]
+public class Rp1ProgramAcceptArgs
 {
     /// <summary>
-    /// The strategy, by the id <c>career.status.strategies.all[].id</c>
+    /// The Program's strategy, by the id <c>rp1.programs[].name</c> and
+    /// <c>career.status.strategies.all[].id</c> both publish.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? StrategyId { get; set; }
+
+    /// <summary>
+    /// The speed to accept at: "Slow", "Normal" or "Fast", as
+    /// <c>rp1.programs[].speedOptions[].speed</c> names them.
+    ///
+    /// <para><b>REQUIRED</b>, never defaulted to whatever RP-1 has selected. The
+    /// speed fixes the Confidence price, the term and so the rate the Program
+    /// pays at, for the life of the Program, so it is the decision the operator
+    /// is making; a substituted default would spend a price nobody chose.</para>
+    ///
+    /// <para>Written to the Program before RP-1's own eligibility check is asked,
+    /// because that check prices Confidence at the Program's current speed, and
+    /// put back if the game refuses: the speed is persisted on the save.</para>
+    /// </summary>
+    [SitrepUnit(Units.Enumeration)]
+    public string? Speed { get; set; }
+}
+
+/// <summary>
+/// Which leader to appoint, for <c>rp1.leader.appoint</c>.
+/// </summary>
+/// <remarks>
+/// <para>A leader is any RP-1 strategy whose department is not Programs.
+/// Appointing one charges nothing in any currency on the shipped configs; its
+/// costs are the modifiers it applies while in office and the reputation it
+/// takes to dismiss it. A Program named here is refused and pointed at
+/// <c>rp1.program.accept</c>.</para>
+/// </remarks>
+[SitrepContract]
+[SitrepCommand("rp1.leader.appoint")]
+public class Rp1LeaderAppointArgs
+{
+    /// <summary>
+    /// The leader's strategy, by the id <c>career.status.strategies.all[].id</c>
     /// publishes.
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -269,13 +307,13 @@ public class Rp1StrategyActivateArgs
     /// The commitment level, where the strategy has a slider.
     ///
     /// <para>Absent means the strategy's own default. It is a FRACTION rather
-    /// than a percentage, matching <c>factor</c> on the wire, and it scales the
+    /// than a percentage, matching <c>factor</c> on the wire, and it scales any
     /// up-front cost, which is why the control that sends it must show the
     /// balance beside it.</para>
     ///
     /// <para>Written before the gate is asked and put back if the game refuses,
     /// because <c>Strategy.Factor</c> is a plain persisted setter: a refused
-    /// activation that left it written would change the commitment level on the
+    /// appointment that left it written would change the commitment level on the
     /// save with nothing to show for it.</para>
     /// </summary>
     [SitrepUnit(Units.Ratio)]

@@ -63,13 +63,14 @@ import type {
   Rp1ContractPayloadArgs,
   Rp1FacilityUpgradeArgs,
   Rp1HireTargetSetArgs,
+  Rp1LeaderAppointArgs,
   Rp1PadDismantleArgs,
   Rp1PadNewArgs,
   Rp1PadRenameArgs,
   Rp1PersonnelAssignArgs,
+  Rp1ProgramAcceptArgs,
   Rp1ProgramCompleteArgs,
   Rp1RolloutArgs,
-  Rp1StrategyActivateArgs,
   Rp1TargetCancelArgs,
   Rp1TechResearchArgs,
   Rp1ToolAllArgs,
@@ -99,12 +100,13 @@ export interface GeneratedCommandArgsMap {
   "rp1.fundTarget.cancel": Rp1TargetCancelArgs;
   "rp1.hireTarget.cancel": Rp1TargetCancelArgs;
   "rp1.hireTarget.set": Rp1HireTargetSetArgs;
+  "rp1.leader.appoint": Rp1LeaderAppointArgs;
   "rp1.pad.dismantle": Rp1PadDismantleArgs;
   "rp1.pad.new": Rp1PadNewArgs;
   "rp1.pad.rename": Rp1PadRenameArgs;
   "rp1.personnel.assign": Rp1PersonnelAssignArgs;
+  "rp1.program.accept": Rp1ProgramAcceptArgs;
   "rp1.program.complete": Rp1ProgramCompleteArgs;
-  "rp1.strategy.activate": Rp1StrategyActivateArgs;
   "rp1.tech.research": Rp1TechResearchArgs;
   "rp1.tooling.refit": Rp1ToolingRefitArgs;
   "rp1.tooling.toolAll": Rp1ToolAllArgs;
@@ -132,12 +134,13 @@ export interface GeneratedCommandReplyMap {
   "rp1.fundTarget.cancel": CommandResult;
   "rp1.hireTarget.cancel": CommandResult;
   "rp1.hireTarget.set": CommandResult;
+  "rp1.leader.appoint": CommandResult;
   "rp1.pad.dismantle": CommandResult;
   "rp1.pad.new": CommandResultOf<Record<string, unknown>>;
   "rp1.pad.rename": CommandResult;
   "rp1.personnel.assign": CommandResult;
+  "rp1.program.accept": CommandResult;
   "rp1.program.complete": CommandResult;
-  "rp1.strategy.activate": CommandResult;
   "rp1.tech.research": CommandResult;
   "rp1.tooling.refit": CommandResult;
   "rp1.tooling.toolAll": CommandResult;
@@ -175,12 +178,13 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.fundTarget.cancel": "CommandResult",
   "rp1.hireTarget.cancel": "CommandResult",
   "rp1.hireTarget.set": "CommandResult",
+  "rp1.leader.appoint": "CommandResult",
   "rp1.pad.dismantle": "CommandResult",
   "rp1.pad.new": "CommandResultOf<Record<string, unknown>>",
   "rp1.pad.rename": "CommandResult",
   "rp1.personnel.assign": "CommandResult",
+  "rp1.program.accept": "CommandResult",
   "rp1.program.complete": "CommandResult",
-  "rp1.strategy.activate": "CommandResult",
   "rp1.tech.research": "CommandResult",
   "rp1.tooling.refit": "CommandResult",
   "rp1.tooling.toolAll": "CommandResult",
@@ -246,12 +250,13 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.fundTarget.cancel": { replies: true, delayed: true },
   "rp1.hireTarget.cancel": { replies: true, delayed: true },
   "rp1.hireTarget.set": { replies: true, delayed: true },
+  "rp1.leader.appoint": { replies: true, delayed: true },
   "rp1.pad.dismantle": { replies: true, delayed: true },
   "rp1.pad.new": { replies: true, delayed: true },
   "rp1.pad.rename": { replies: true, delayed: true },
   "rp1.personnel.assign": { replies: true, delayed: true },
+  "rp1.program.accept": { replies: true, delayed: true },
   "rp1.program.complete": { replies: true, delayed: true },
-  "rp1.strategy.activate": { replies: true, delayed: true },
   "rp1.tech.research": { replies: true, delayed: true },
   "rp1.tooling.refit": { replies: true, delayed: true },
   "rp1.tooling.toolAll": { replies: true, delayed: true },
@@ -279,12 +284,13 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.fundTarget.cancel",
   "rp1.hireTarget.cancel",
   "rp1.hireTarget.set",
+  "rp1.leader.appoint",
   "rp1.pad.dismantle",
   "rp1.pad.new",
   "rp1.pad.rename",
   "rp1.personnel.assign",
+  "rp1.program.accept",
   "rp1.program.complete",
-  "rp1.strategy.activate",
   "rp1.tech.research",
   "rp1.tooling.refit",
   "rp1.tooling.toolAll",

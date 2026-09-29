@@ -443,6 +443,35 @@ public class Rp1ProgramFundingCaptureTests
     }
 
     [Fact]
+    public void Each_speed_carries_the_rate_its_term_pays_the_same_total_at()
+    {
+        // RP-1's total does not move with the speed, so Fast pays the same
+        // 400,000 in 3 years that Slow pays in 6: twice the rate. The rate is the
+        // half of the choice an operator weighs against the Confidence price.
+        var options = ((List<object?>)Row(WithCurves(Offer("Flat")))["speedOptions"]!)
+            .Cast<Dictionary<string, object?>>()
+            .ToList();
+
+        var days = Year / 86400.0;
+        Assert.Equal(400_000.0 / (6.0 * days), (double)options[0]["fundingPerDay"]!, 6);
+        Assert.Equal(400_000.0 / (4.0 * days), (double)options[1]["fundingPerDay"]!, 6);
+        Assert.Equal(400_000.0 / (3.0 * days), (double)options[2]["fundingPerDay"]!, 6);
+    }
+
+    [Fact]
+    public void A_rate_is_absent_when_the_total_could_not_be_read()
+    {
+        var program = Offer("Flat");
+        program.TotalFunding = null;
+
+        var options = ((List<object?>)Row(WithCurves(program))["speedOptions"]!)
+            .Cast<Dictionary<string, object?>>()
+            .ToList();
+
+        Assert.All(options, o => Assert.Null(o["fundingPerDay"]));
+    }
+
+    [Fact]
     public void A_speed_the_table_does_not_price_reads_as_absent_not_free()
     {
         // RP-1 loads a missing CONFIDENCECOSTS key as zero itself, so a real

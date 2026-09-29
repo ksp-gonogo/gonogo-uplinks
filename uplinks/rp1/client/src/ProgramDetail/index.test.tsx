@@ -67,9 +67,24 @@ function program(overrides: Record<string, unknown> = {}) {
     requirementsText: null,
     objectivesText: "Fly the X-Planes.",
     speedOptions: [
-      { speed: "Slow", confidenceCost: 0, durationSeconds: 6 * YEAR },
-      { speed: "Normal", confidenceCost: 350, durationSeconds: 4 * YEAR },
-      { speed: "Fast", confidenceCost: 700, durationSeconds: 3 * YEAR },
+      {
+        speed: "Slow",
+        confidenceCost: 0,
+        durationSeconds: 6 * YEAR,
+        fundingPerDay: 182.5,
+      },
+      {
+        speed: "Normal",
+        confidenceCost: 350,
+        durationSeconds: 4 * YEAR,
+        fundingPerDay: 273.8,
+      },
+      {
+        speed: "Fast",
+        confidenceCost: 700,
+        durationSeconds: 3 * YEAR,
+        fundingPerDay: 365.1,
+      },
     ],
     programsToDisableOnAccept: null,
     fundingPayments: [
@@ -90,6 +105,18 @@ function slots(overrides: Record<string, unknown> = {}) {
     completedCount: 0,
     ...overrides,
   };
+}
+
+/** The same Program on offer, at RP-1's selected Normal speed. */
+function offer(overrides: Record<string, unknown> = {}) {
+  return program({
+    status: "offerable",
+    canAccept: true,
+    acceptedUt: null,
+    fundsPaidOut: null,
+    fundsRemaining: null,
+    ...overrides,
+  });
 }
 
 function mount(screenId: string = PROGRAMS_SCREEN_ID) {
@@ -534,7 +561,7 @@ describe("ProgramDetail", () => {
   });
 
   /*
-   * The accept control, and the whole reason it is here: `rp1.strategy.activate`
+   * The accept control, and the whole reason it is here: accepting a Program
    * was declared, handled and reachable from nothing at all.
    *
    * <para>The price is CONFIDENCE and it is charged in full by
@@ -581,7 +608,14 @@ describe("ProgramDetail", () => {
     const { fixture } = mount();
     fixture.emit("rp1.available", true);
     fixture.emit("rp1.programs", [
-      program({ status: "offerable", canAccept: true, confidenceCost: 900 }),
+      program({
+        status: "offerable",
+        canAccept: true,
+        confidenceCost: 900,
+        speedOptions: [
+          { speed: "Normal", confidenceCost: 900, durationSeconds: 4 * YEAR },
+        ],
+      }),
     ]);
     fixture.emit("rp1.programSlots", slots());
     fixture.emit("rp1.programFundingCurves", [flatCurve()]);
@@ -592,6 +626,114 @@ describe("ProgramDetail", () => {
       expect(screen.getByText("ACCEPT")).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /^accept$/i })).toBeDisabled();
+  });
+
+  /*
+   * The speed is the operator's, and it is the whole trade: RP-1 pays the same
+   * total at every speed, so each row prices it in Confidence and says what it
+   * buys in term and funding rate, and the press sends the one picked. The
+   * command refuses a missing speed, so it is never left for RP-1 to default.
+   */
+  it("sends the speed RP-1 has selected when the operator picks none", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await feed(fixture, [offer()]);
+
+    await user.click(
+      await screen.findByRole("button", { name: /accept x-plane research/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Confirm accepting X-Plane Research" }),
+    );
+
+    const sent = fixture.transport.sentCommands.find(
+      (c) => c.command === "rp1.program.accept",
+    );
+    expect(sent?.args).toEqual({
+      strategyId: "EarlyXPlanes",
+      speed: "Normal",
+    });
+  });
+
+  it("accepts at the speed the operator picks, priced at that speed", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await feed(fixture, [offer()]);
+
+    const speeds = await screen.findByRole("group", {
+      name: "Speed to accept X-Plane Research at",
+    });
+    await user.click(within(speeds).getByRole("button", { name: /^slow/i }));
+    expect(visibleText()).toContain("Slow speed");
+    await user.click(
+      screen.getByRole("button", { name: /accept x-plane research/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Confirm accepting X-Plane Research" }),
+    );
+
+    const sent = fixture.transport.sentCommands.find(
+      (c) => c.command === "rp1.program.accept",
+    );
+    expect(sent?.args).toEqual({ strategyId: "EarlyXPlanes", speed: "Slow" });
+  });
+
+  it("prices every speed with its term and the funding rate it buys", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [offer()]);
+
+    const speeds = await screen.findByRole("group", {
+      name: "Speed to accept X-Plane Research at",
+    });
+    const rows = within(speeds).getAllByRole("button");
+    const names = rows.map(
+      (row) => row.textContent?.match(/^[A-Za-z]+?(?=\d|SHORT)/)?.[0],
+    );
+    expect(names).toEqual(["Slow", "Normal", "Fast"]);
+    const fast = within(speeds).getByRole("button", { name: /^fast/i });
+    expect(fast).toHaveTextContent(/700/);
+    expect(fast).toHaveTextContent(/365/);
+    expect(fast).toHaveTextContent(/on average/);
+    // The picked speed is the one marked, and it opens on RP-1's own.
+    expect(
+      within(speeds).getByRole("button", { name: /^normal/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("marks a speed the career cannot afford and refuses the press at it", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    // 500 Confidence held: Normal at 350 is in reach and Fast at 700 is not.
+    await feed(fixture, [offer()]);
+
+    const speeds = await screen.findByRole("group", {
+      name: "Speed to accept X-Plane Research at",
+    });
+    const fast = within(speeds).getByRole("button", { name: /^fast/i });
+    expect(fast).toHaveTextContent("SHORT");
+    expect(
+      within(speeds).getByRole("button", { name: /^normal/i }),
+    ).not.toHaveTextContent("SHORT");
+
+    await user.click(fast);
+    expect(screen.getByRole("button", { name: /^accept$/i })).toBeDisabled();
+  });
+
+  /*
+   * On an offer the prices live in the Accept choice; a second ladder below it
+   * would be the same readout twice on one pane. A running Program keeps the
+   * ladder as the table its speed was chosen from.
+   */
+  it("draws the speed ladder only on a Program that is not on offer", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [offer()]);
+    await screen.findByText("ACCEPT");
+    expect(screen.queryByText("SPEED")).toBeNull();
+
+    await feed(fixture);
+    await waitFor(() => {
+      expect(screen.getByText("SPEED")).toBeInTheDocument();
+    });
   });
 
   /*

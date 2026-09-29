@@ -141,7 +141,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The three speeds with their prices and durations, in RP-1's own enum
+        /// The three speeds with their prices, durations and funding rates, in RP-1's own enum
         /// order rather than the order a dictionary happens to enumerate in: the
         /// operator is reading a ladder from cheapest-and-slowest upward, and a
         /// ladder in an arbitrary order is not one.
@@ -151,6 +151,7 @@ namespace GonogoRp1Uplink
             var options = new List<object?>();
             foreach (var speed in Rp1ProgramSpeeds.All)
             {
+                var duration = Rp1ProgramsMath.SpeedDurationSeconds(speed, p.NominalDurationSeconds);
                 options.Add(new Dictionary<string, object?>
                 {
                     ["speed"] = speed,
@@ -160,8 +161,8 @@ namespace GonogoRp1Uplink
                     ["confidenceCost"] = p.ConfidenceCostBySpeed.TryGetValue(speed, out var cost)
                         ? cost
                         : (double?)null,
-                    ["durationSeconds"] = Rp1ProgramsMath.SpeedDurationSeconds(
-                        speed, p.NominalDurationSeconds),
+                    ["durationSeconds"] = duration,
+                    ["fundingPerDay"] = Rp1ProgramsMath.FundingPerDay(p.TotalFunding, duration),
                 });
             }
             return options;

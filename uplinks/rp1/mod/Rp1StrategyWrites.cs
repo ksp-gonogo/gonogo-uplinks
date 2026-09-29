@@ -56,8 +56,9 @@
 // INSTALLED RP-1 v4.6.0.0 RP0.dll and of the installed Assembly-CSharp, and
 // PerformActivate and ActivateOverride were additionally confirmed at IL. The
 // completion members (CompleteProgram, DeactivateOverride, CanBeDeactivated and
-// AlarmHelper.DeleteAllAlarmsWithTitle) were read out of the installed v4.7.0.0
-// and are pinned against both releases by the installed-compatibility suite. The
+// AlarmHelper.DeleteAllAlarmsWithTitle) and Program.SetSpeed were read out of the
+// installed v4.7.0.0 and are pinned against both releases by the
+// installed-compatibility suite. The
 // disassembly verifies SHAPE and never VALUE: nothing here has been exercised
 // against a running game, so every hop is null-safe.
 using System;
@@ -119,6 +120,23 @@ namespace GonogoRp1Uplink
             programHandler == null
                 ? null
                 : Rp1Types.InstanceMethodOn(programHandler, "ActivateProgram", ProgramTypeName, 1);
+
+        /// <summary>
+        /// <c>Program.SetSpeed(Program.Speed)</c>, the call RP-1's Administration
+        /// Building's speed buttons make on the Program they are pricing.
+        ///
+        /// <para>It writes the persisted private <see cref="SpeedField"/> and does
+        /// nothing at all on a Program already accepted or completed, which is
+        /// why a caller reads the field back rather than trusting the call.
+        /// <c>Accept()</c> copies the speed onto the accepted instance, so setting
+        /// it on the template before accepting is how RP-1's own screen chooses
+        /// one.</para>
+        /// </summary>
+        public static MethodInfo? SetSpeed(object? program) =>
+            program == null ? null : Rp1Types.InstanceMethod(program, "SetSpeed", 1);
+
+        /// <summary>The private, persisted field <see cref="SetSpeed"/> writes.</summary>
+        public const string SpeedField = "speed";
 
         /// <summary>
         /// <c>ProgramHandler.CompleteProgram(Program p)</c>, resolved by

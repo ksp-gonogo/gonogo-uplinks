@@ -2158,6 +2158,17 @@ export interface Rp1ProgramSpeedOption
 	* given on `Rp1ProgramEntry.durationSeconds`.
 	*/
 	durationSeconds?: Value<"s"> | null;
+	/**
+	* What the Program pays per day on average at this speed: its total funding
+	* over `Rp1ProgramSpeedOption.durationSeconds`. RP-1's total does not depend
+	* on the speed, so a faster speed buys the same money sooner, and this is the
+	* rate that difference comes to.
+	*
+	* An average across the term, not the rate on any given day: the funding curve
+	* front- or back-loads it, which the funding summary shows year by year.
+	* Absent when the total or the duration could not be read.
+	*/
+	fundingPerDay?: Value<"f/day"> | null;
 }
 /**
 * One nominal year's funding on a Program, as RP-1's own Administration
@@ -3626,27 +3637,61 @@ export interface Rp1ProgramFundingEntry
 	funding?: Rp1BudgetHorizons | null;
 }
 /**
-* Which strategy to commit to, for `rp1.strategy.activate`.
+* Which Program to accept and at what speed, for `rp1.program.accept`.
 *
-* A leader AND a program, because RP-1 makes them one system: a "leader" is
-* any strategy whose department is not Programs, and both are the same class
-* family. The command does not ask the operator which kind they meant, because
-* the game does not: it asserts the kind itself and takes the matching
-* procedure.
+* A Program and never a leader: RP-1 makes the two one class family, but their
+* money runs in different currencies and directions, so they are two commands.
+* Accepting charges the Confidence price for the chosen speed in full and then
+* PAYS the career funds on the Program's curve. A leader named here is refused
+* and pointed at `rp1.leader.appoint`.
 */
-export interface Rp1StrategyActivateArgs
+export interface Rp1ProgramAcceptArgs
 {
-	/** The strategy, by the id `career.status.strategies.all[].id` publishes. */
+	/**
+	* The Program's strategy, by the id `rp1.programs[].name` and
+	* `career.status.strategies.all[].id` both publish.
+	*/
+	strategyId?: string;
+	/**
+	* The speed to accept at: "Slow", "Normal" or "Fast", as
+	* `rp1.programs[].speedOptions[].speed` names them.
+	*
+	* **REQUIRED**, never defaulted to whatever RP-1 has selected. The speed fixes
+	* the Confidence price, the term and so the rate the Program pays at, for the
+	* life of the Program, so it is the decision the operator is making; a
+	* substituted default would spend a price nobody chose.
+	*
+	* Written to the Program before RP-1's own eligibility check is asked, because
+	* that check prices Confidence at the Program's current speed, and put back if
+	* the game refuses: the speed is persisted on the save.
+	*/
+	speed?: string;
+}
+/**
+* Which leader to appoint, for `rp1.leader.appoint`.
+*
+* A leader is any RP-1 strategy whose department is not Programs. Appointing
+* one charges nothing in any currency on the shipped configs; its costs are
+* the modifiers it applies while in office and the reputation it takes to
+* dismiss it. A Program named here is refused and pointed at
+* `rp1.program.accept`.
+*/
+export interface Rp1LeaderAppointArgs
+{
+	/**
+	* The leader's strategy, by the id `career.status.strategies.all[].id`
+	* publishes.
+	*/
 	strategyId?: string;
 	/**
 	* The commitment level, where the strategy has a slider.
 	*
 	* Absent means the strategy's own default. It is a FRACTION rather than a
-	* percentage, matching `factor` on the wire, and it scales the up-front cost,
+	* percentage, matching `factor` on the wire, and it scales any up-front cost,
 	* which is why the control that sends it must show the balance beside it.
 	*
 	* Written before the gate is asked and put back if the game refuses, because
-	* `Strategy.Factor` is a plain persisted setter: a refused activation that
+	* `Strategy.Factor` is a plain persisted setter: a refused appointment that
 	* left it written would change the commitment level on the save with nothing
 	* to show for it.
 	*/
