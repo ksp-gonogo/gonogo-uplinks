@@ -91,6 +91,36 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportedMassTons: "t",
     vesselMassTons: "t",
   },
+  "Rp1Budget": {
+    refreshedAt: "ut",
+    reputation: "rep",
+    reputationDecayPerDay: "rep/day",
+    reputationDecayPerYear: "rep",
+    subsidyMaxPerDay: "f/day",
+    subsidyMaxRep: "rep",
+    subsidyMinPerDay: "f/day",
+    subsidyPerDay: "f/day",
+    unlockCreditBalance: "funds",
+  },
+  "Rp1BudgetForecastSample": {
+    fundsDelta: "funds",
+    horizon: "s",
+  },
+  "Rp1BudgetPeriod": {
+    astronauts: "funds",
+    balance: "funds",
+    constructions: "funds",
+    facilities: "funds",
+    fundsDelta: "funds",
+    integrationTeams: "funds",
+    net: "funds",
+    programBudget: "funds",
+    researchTeams: "funds",
+    rollout: "funds",
+    span: "s",
+    subsidy: "funds",
+    unlockCredit: "funds",
+  },
   "Rp1BuildCost": {
     rolloutCost: "funds",
     toolingCost: "funds",
@@ -575,6 +605,17 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportedMassTons: "t",
     vesselMassTons: "t",
   },
+  "rp1.budget": {
+    refreshedAt: "ut",
+    reputation: "rep",
+    reputationDecayPerDay: "rep/day",
+    reputationDecayPerYear: "rep",
+    subsidyMaxPerDay: "f/day",
+    subsidyMaxRep: "rep",
+    subsidyMinPerDay: "f/day",
+    subsidyPerDay: "f/day",
+    unlockCreditBalance: "funds",
+  },
   "rp1.buildCost": {
     rolloutCost: "funds",
     toolingCost: "funds",
@@ -898,6 +939,12 @@ export type ShapesByField = Readonly<Record<string, string>>;
  * sample reaches an `agent` under it.
  */
 export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
+  "Rp1Budget": {
+    day: "Rp1BudgetPeriod",
+    forecast: "Rp1BudgetForecastSample[]",
+    month: "Rp1BudgetPeriod",
+    year: "Rp1BudgetPeriod",
+  },
   "Rp1BuildCost": {
     requiredTechs: "Rp1RequiredTechEntry[]",
   },
@@ -936,6 +983,12 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
 
 /** The same, keyed by Topic id. */
 export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
+  "rp1.budget": {
+    day: "Rp1BudgetPeriod",
+    forecast: "Rp1BudgetForecastSample[]",
+    month: "Rp1BudgetPeriod",
+    year: "Rp1BudgetPeriod",
+  },
   "rp1.buildCost": {
     requiredTechs: "Rp1RequiredTechEntry[]",
   },

@@ -8,9 +8,9 @@ namespace GonogoRp1Uplink
     /// GonogoRp1Uplink: RP-1's space centre on the wire. The build queue, the
     /// launch complexes and their pads, the rollout and reconditioning
     /// operations, the construction queue, the research queue, the payroll,
-    /// Confidence, the Programs the career's funding is committed against, and
-    /// the crew schedule: retirement dates, training courses and the training an
-    /// operator is about to lose.
+    /// Confidence, the Programs the career's funding is committed against, the
+    /// crew schedule (retirement dates, training courses and the training an
+    /// operator is about to lose), and RP-1's own budget.
     ///
     /// <para><b>It absorbed the standalone GonogoAvionicsUplink</b> (deleted
     /// 2026-09-10), which read the same assembly by the same reflection and was
@@ -75,6 +75,13 @@ namespace GonogoRp1Uplink
         public const string ToolingTopic = "rp1.tooling";
         public const string BuildCostTopic = "rp1.buildCost";
         public const string CareerEventsTopic = "rp1.careerEvents";
+
+        /// <summary>
+        /// RP-1's own budget: its net at a day, a month and a year, every row of
+        /// its Budget tab at each, the subsidy and decay reputation implies, the
+        /// Unlock Credit balance and a five-year net forecast.
+        /// </summary>
+        public const string BudgetTopic = "rp1.budget";
 
         /// <summary>
         /// Whether RP-1 will let the reported vessel be steered. The one channel
@@ -158,6 +165,13 @@ namespace GonogoRp1Uplink
         /// be steered, and it shares no object with any of them.
         /// </summary>
         private readonly Rp1AvionicsReflection _avionics = new Rp1AvionicsReflection();
+
+        /// <summary>
+        /// RP-1's budget, on its own reader because it is the one read here that
+        /// runs hundreds of currency queries, and it throttles itself to RP-1's
+        /// upkeep cadence rather than the tick.
+        /// </summary>
+        private readonly Rp1BudgetReflection _budget = new Rp1BudgetReflection();
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
@@ -411,6 +425,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _buildCost;
         private IChannelPublisher? _careerEvents;
         private IChannelPublisher? _avionicsStatus;
+        private IChannelPublisher? _budgetPublisher;
 
         /// <summary>
         /// Whether RP-1 is managing this save, asked fresh rather than remembered
@@ -568,6 +583,10 @@ namespace GonogoRp1Uplink
                 // and nothing has happened yet. A client shown only the rows could
                 // not tell a quiet career from an unrecorded one.
                 AtHome(CareerEventsTopic, absenceIsData: true),
+                // Absent wherever RP-1 is not running a career in the loaded
+                // scene. A budget of zeros would read as a programme that costs
+                // nothing and earns nothing.
+                AtHome(BudgetTopic, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -1270,6 +1289,7 @@ namespace GonogoRp1Uplink
             _buildCost = host.Publisher(BuildCostTopic);
             _careerEvents = host.Publisher(CareerEventsTopic);
             _avionicsStatus = host.Publisher(AvionicsTopic);
+            _budgetPublisher = host.Publisher(BudgetTopic);
 
             host.AddSampledSource(
                 CaptureOnMain,
@@ -1364,6 +1384,14 @@ namespace GonogoRp1Uplink
                 CaptureAvionicsOnMain,
                 HandleAvionicsOnCourier,
                 AvionicsTopic);
+
+            // Gated on its own topic: its whole effect is its return value, and
+            // the reader's cache is its own, so a tick nobody is watching skips
+            // the queries and starves nothing.
+            host.AddSampledSource(
+                CaptureBudgetOnMain,
+                HandleBudgetOnCourier,
+                BudgetTopic);
 
             // UNGATED, and the two captures above say why by contrast: their whole
             // effect is their return value, and this one's is not. It feeds the
@@ -1697,6 +1725,36 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// MAIN-THREAD capture: RP-1's budget, which the reader recomputes only
+        /// when RP-1 has refreshed its upkeep. The reading may be null and the
+        /// capture is not, so leaving a career reaches the handle and clears the
+        /// channel.
+        /// </summary>
+        internal object? CaptureBudgetOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            return new Rp1BudgetCaptureData { Ut = ut, Raw = _budget.CaptureOnMain(ut) };
+        }
+
+        /// <summary>COURIER-THREAD handle: map to a wire dict and publish. No game API.</summary>
+        internal void HandleBudgetOnCourier(object? captured)
+        {
+            if (captured is not Rp1BudgetCaptureData cap)
+            {
+                return;
+            }
+            Rp1RowBudget.Record(1, cap.Ut);
+            _budgetPublisher?.Publish(Rp1BudgetCapture.Build(cap.Raw), cap.Ut);
+        }
+
+        /// <summary>The budget reading and the UT it was taken at, carried together to the Courier.</summary>
+        private sealed class Rp1BudgetCaptureData
+        {
+            public double Ut;
+            public Rp1BudgetRaw? Raw;
+        }
+
+        /// <summary>
         /// Health, and WHICH RP-1. The version caveat at the top of
         /// <see cref="Rp1ScReflection"/> is why these facts are load-bearing
         /// rather than decorative: RP-1 ships roughly monthly, this Uplink is
@@ -1712,6 +1770,7 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("Confidence", _rp1.ConfidenceTypeResolved ? "present" : "absent"),
                 new UplinkHealthFact("ProgramHandler", _programs.IsAvailable ? "resolved" : "type not found"),
                 new UplinkHealthFact("CrewHandler", _crew.IsAvailable ? "resolved" : "type not found"),
+                new UplinkHealthFact("budget", _budget.IsAvailable ? "resolved" : "maintenance or currency types not found"),
                 new UplinkHealthFact(
                     "control locker",
                     _avionics.IsAvailable

@@ -791,6 +791,12 @@ namespace RP0
         /// entirely.
         /// </summary>
         Hiring = HiringEngineers | HiringResearchers,
+
+        /// <summary>The four the budget prices against, on bits of their own so a modifier aimed at one moves only its row.</summary>
+        Subsidy = 0x8000L,
+        DailyRepDecline = 0x10000L,
+        ProgramFunding = 0x20000L,
+        RateUnlockCreditIncrease = 0x40000L,
     }
 
     /// <summary>
@@ -859,6 +865,27 @@ namespace RP0
                 }
             }
             return funds * multiplier + post;
+        }
+
+        /// <summary>The reputation twin of <see cref="Funds"/>, on the same modifiers.</summary>
+        public static double Rep(TransactionReasonsRP0 reason, double rep, bool includeHidden = false) =>
+            Funds(reason, rep, includeHidden);
+
+        /// <summary>A rate query: RP-1's starts from one and only multiplies.</summary>
+        public static double Rate(TransactionReasonsRP0 reason, bool includeHidden = false) =>
+            Funds(reason, 1.0, includeHidden) - Post(reason);
+
+        private static double Post(TransactionReasonsRP0 reason)
+        {
+            var post = 0.0;
+            foreach (var entry in PostDeltas)
+            {
+                if ((entry.Key & reason) != TransactionReasonsRP0.None)
+                {
+                    post += entry.Value;
+                }
+            }
+            return post;
         }
     }
 
@@ -1309,7 +1336,7 @@ namespace RP0
     /// production forgets to author leaves its field at the constructor's default
     /// exactly as the shipped game would.
     /// </summary>
-    public class ResearchProject
+    public partial class ResearchProject
     {
         [Persistent]
         public int scienceCost;
@@ -1927,7 +1954,7 @@ namespace RP0
         public new int Applicants => throw new InvalidOperationException("Applicants unreadable");
     }
 
-    public class SpaceCenterManagement
+    public partial class SpaceCenterManagement
     {
         /// <summary>
         /// RP-1's cached Tool-All total for the ship in the editor, kept current by
@@ -2176,7 +2203,7 @@ namespace RP0
     /// persisted field, so a reader that only looked at public fields would find
     /// nothing here and would find nothing in the game either.
     /// </summary>
-    public class UnlockCreditHandler
+    public partial class UnlockCreditHandler
     {
         public static UnlockCreditHandler? Instance { get; set; }
 
@@ -2195,7 +2222,7 @@ namespace RP0
     /// arithmetic, including the Julian-year divisor the per-day conversion
     /// depends on, so a test can pin the conversion rather than assume it.
     /// </summary>
-    public class MaintenanceHandler
+    public partial class MaintenanceHandler
     {
         public struct SubsidyDetails
         {

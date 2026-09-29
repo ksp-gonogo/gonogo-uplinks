@@ -130,7 +130,7 @@ namespace RP0.Programs
             new Dictionary<string, ROUtils.HermiteCurve>();
     }
 
-    public class ProgramHandler
+    public partial class ProgramHandler
     {
         public static ProgramHandler? Instance { get; set; }
 

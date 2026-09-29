@@ -3141,6 +3141,160 @@ export interface Rp1Avionics
 	limitedByNonInterplanetary?: boolean | null;
 }
 /**
+* RP-1's own budget: the net its funds widget quotes, every row of its Budget
+* tab at each of that tab's three horizons, what reputation buys and loses,
+* the Unlock Credit balance, and the net forecast out to five years.
+*
+* **Every figure is RP-1's, at RP-1's horizon.** The tab's Day, Month and Year
+* columns are separate computations rather than one daily figure scaled: the
+* subsidy is AVERAGED over the horizon as reputation decays and the subsidy
+* curve climbs, the constructions and rollouts are costed against what
+* finishes inside it, and a Program pays on its own curve. A month here is
+* RP-1's thirty days and a year its Julian 365.25.
+*
+* **Refreshed on RP-1's upkeep cadence**, not per tick: an in-game hour below
+* 100x warp, up to a day above it, and frozen through a simulated flight,
+* which is when RP-1 refreshes the upkeep its own screen shows.
+* `Rp1Budget.refreshedAt` says when.
+*
+* Absent when RP-1 is not managing a career in the loaded scene. A single
+* figure RP-1 would not give is absent on its own, and every total built from
+* it is absent with it rather than summed without it.
+*/
+export interface Rp1Budget
+{
+	/**
+	* The universal time RP-1 last refreshed its upkeep, which is when every
+	* figure here was computed.
+	*/
+	refreshedAt?: Value<"ut"> | null;
+	/** The Budget tab's Day column. */
+	day?: Rp1BudgetPeriod | null;
+	/** The Budget tab's Month column: thirty days, not a calendar month. */
+	month?: Rp1BudgetPeriod | null;
+	/** The Budget tab's Year column: a Julian year of 365.25 days. */
+	year?: Rp1BudgetPeriod | null;
+	/**
+	* The reputation every subsidy and decay figure here was computed from, read
+	* at the same instant.
+	*/
+	reputation?: Value<"rep"> | null;
+	/**
+	* The subsidy this reputation buys today, after the career's modifiers, as
+	* RP-1's reputation tooltip states it. RP-1 states it per Julian year; this is
+	* that over 365.25, the conversion its own net applies.
+	*/
+	subsidyPerDay?: Value<"f/day"> | null;
+	/** The subsidy at zero reputation: the floor the calendar alone guarantees. */
+	subsidyMinPerDay?: Value<"f/day"> | null;
+	/** The subsidy at `Rp1Budget.subsidyMaxRep` or above: the ceiling. */
+	subsidyMaxPerDay?: Value<"f/day"> | null;
+	/**
+	* The reputation at which the subsidy reaches its ceiling. It moves with the
+	* calendar, because the ceiling is a multiple of a floor that grows.
+	*/
+	subsidyMaxRep?: Value<"rep"> | null;
+	/**
+	* Reputation lost tomorrow, after the career's modifiers, as RP-1's reputation
+	* tooltip states it.
+	*/
+	reputationDecayPerDay?: Value<"rep/day"> | null;
+	/**
+	* Reputation lost over the coming year with the decay compounding month by
+	* month, RP-1's own tooltip figure. Less than 365 days of today's loss,
+	* because a smaller reputation loses less.
+	*/
+	reputationDecayPerYear?: Value<"rep"> | null;
+	/**
+	* The Unlock Credit balance: a prepaid allowance RP-1 spends before funds on
+	* part and upgrade entry costs and on tooling. What each horizon adds to it is
+	* that horizon's `Rp1BudgetPeriod.unlockCredit`.
+	*/
+	unlockCreditBalance?: Value<"funds"> | null;
+	/**
+	* RP-1's net funds change from now to each of twenty horizons a quarter of a
+	* Julian year apart, ending at five years. Five because that is as far as RP-1
+	* itself quotes a gain or loss. Absent, not shortened, when RP-1 would not
+	* answer at any one of them.
+	*/
+	forecast?: Rp1BudgetForecastSample[] | null;
+}
+/**
+* One column of RP-1's Budget tab: every row it draws, at one horizon, as the
+* funds change over that horizon. NEGATIVE is money going out, which is how
+* RP-1 signs them and how it prints them (in parentheses).
+*
+* The rows are RP-1's own arithmetic, row for row, with the career's currency
+* modifiers applied. `Rp1BudgetPeriod.net` is clamped at zero exactly as RP-1
+* clamps it, because the subsidy only ever pays down upkeep and is never paid
+* out as a surplus; a client that sums the rows itself will show a surplus the
+* game does not grant.
+*/
+export interface Rp1BudgetPeriod
+{
+	/** The horizon this column covers: a day, thirty days or 365.25 days. */
+	span?: Value<"s"> | null;
+	/**
+	* RP-1's own net for this horizon, the figure its funds widget quotes and the
+	* one its warp buttons print as the gain or loss. Computed apart from
+	* `Rp1BudgetPeriod.balance`, and the two can differ by a hair: this prices the
+	* crew salary in one query where the tab prices it in two.
+	*/
+	fundsDelta?: Value<"funds"> | null;
+	/** Facilities: building upkeep plus launch-complex upkeep. */
+	facilities?: Value<"funds"> | null;
+	/** Integration Teams: the engineers' salaries. */
+	integrationTeams?: Value<"funds"> | null;
+	/** Research Teams: the researchers' salaries. */
+	researchTeams?: Value<"funds"> | null;
+	/** Astronauts: crew salaries at base and in flight, plus training. */
+	astronauts?: Value<"funds"> | null;
+	/**
+	* Avg. Subsidy: the subsidy averaged across the horizon, one sample a month,
+	* as reputation decays and the curve climbs. Positive.
+	*/
+	subsidy?: Value<"funds"> | null;
+	/**
+	* Net (after subsidy): the four upkeep rows plus the subsidy, never above
+	* zero.
+	*/
+	net?: Value<"funds"> | null;
+	/**
+	* Rollout/Airlaunch Prep: the part of each operation's cost that falls inside
+	* the horizon.
+	*/
+	rollout?: Value<"funds"> | null;
+	/**
+	* Constructions: the part of each construction's cost that falls inside the
+	* horizon.
+	*/
+	constructions?: Value<"funds"> | null;
+	/** Program Budget: what the running Programs pay over the horizon. Positive. */
+	programBudget?: Value<"funds"> | null;
+	/**
+	* Balance: `Rp1BudgetPeriod.net` plus rollouts, constructions and Program
+	* funding.
+	*/
+	balance?: Value<"funds"> | null;
+	/**
+	* Unlock Credit: what the research queue earns in credit over the horizon,
+	* counted only for the time a node is actually being researched. Zero on an
+	* idle queue, which is a real answer rather than a missing one.
+	*/
+	unlockCredit?: Value<"funds"> | null;
+}
+/** One point of RP-1's net funds forecast. */
+export interface Rp1BudgetForecastSample
+{
+	/** How far ahead of `Rp1Budget.refreshedAt` this point is. */
+	horizon?: Value<"s"> | null;
+	/**
+	* RP-1's net funds change from now to that point, the same computation as
+	* `Rp1BudgetPeriod.fundsDelta`.
+	*/
+	fundsDelta?: Value<"funds"> | null;
+}
+/**
 * Which strategy to commit to, for `rp1.strategy.activate`.
 *
 * A leader AND a program, because RP-1 makes them one system: a "leader" is

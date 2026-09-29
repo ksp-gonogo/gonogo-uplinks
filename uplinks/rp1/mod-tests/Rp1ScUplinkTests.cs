@@ -70,7 +70,7 @@ public class Rp1ScUplinkTests : IDisposable
         var atHome = manifest.Channels
             .Where(c => c.Topic != Rp1ScUplink.AvionicsTopic && c.Topic != Rp1ScUplink.AvailableTopic)
             .ToList();
-        Assert.Equal(25, atHome.Count);
+        Assert.Equal(26, atHome.Count);
         Assert.All(atHome, c =>
         {
             Assert.Equal(DelayRole.Delayed, c.Delay);
@@ -138,7 +138,7 @@ public class Rp1ScUplinkTests : IDisposable
     }
 
     /// <summary>
-    /// The four courier-thread handles on a tick that read nothing: every channel
+    /// The five courier-thread handles on a tick that read nothing: every channel
     /// is told its absence, and told it at the tick's own instant.
     /// </summary>
     /// <remarks>
@@ -164,6 +164,7 @@ public class Rp1ScUplinkTests : IDisposable
     [InlineData(Rp1ScUplink.ToolingTopic)]
     [InlineData(Rp1ScUplink.BuildCostTopic)]
     [InlineData(Rp1ScUplink.CareerEventsTopic)]
+    [InlineData(Rp1ScUplink.BudgetTopic)]
     public void An_unread_courier_capture_publishes_its_absence_stamped_at_the_tick(string topic)
     {
         var host = AnUnreadCourierTick();
@@ -174,8 +175,8 @@ public class Rp1ScUplinkTests : IDisposable
     }
 
     /// <summary>
-    /// One tick of the four courier handles with nothing live to read: no Program
-    /// handler, no crew handler, no tooling manager, no career log. That is the
+    /// One tick of the five courier handles with nothing live to read: no Program
+    /// handler, no crew handler, no tooling manager, no career log, no maintenance handler. That is the
     /// main menu, and any save RP-1 does not manage.
     /// </summary>
     private static ClockedUplinkHost AnUnreadCourierTick()
@@ -184,6 +185,7 @@ public class Rp1ScUplinkTests : IDisposable
         RP0.Crew.CrewHandler.Instance = null;
         ToolingManager.Instance = null;
         CareerLog.Instance = null;
+        MaintenanceHandler.Instance = null;
 
         var uplink = new Rp1ScUplink();
         var host = new ClockedUplinkHost(HostClockUt);
@@ -193,6 +195,7 @@ public class Rp1ScUplinkTests : IDisposable
         uplink.HandleCrewOnCourier(uplink.CaptureCrewOnMain(null));
         uplink.HandleToolingOnCourier(uplink.CaptureToolingOnMain(null));
         uplink.HandleCareerEventsOnCourier(uplink.CaptureCareerEventsOnMain(null));
+        uplink.HandleBudgetOnCourier(uplink.CaptureBudgetOnMain(null));
         return host;
     }
 

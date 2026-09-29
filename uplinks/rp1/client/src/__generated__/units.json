@@ -57,6 +57,36 @@
       "supportedMassTons": "t",
       "vesselMassTons": "t"
     },
+    "Rp1Budget": {
+      "refreshedAt": "ut",
+      "reputation": "rep",
+      "reputationDecayPerDay": "rep/day",
+      "reputationDecayPerYear": "rep",
+      "subsidyMaxPerDay": "f/day",
+      "subsidyMaxRep": "rep",
+      "subsidyMinPerDay": "f/day",
+      "subsidyPerDay": "f/day",
+      "unlockCreditBalance": "funds"
+    },
+    "Rp1BudgetForecastSample": {
+      "fundsDelta": "funds",
+      "horizon": "s"
+    },
+    "Rp1BudgetPeriod": {
+      "astronauts": "funds",
+      "balance": "funds",
+      "constructions": "funds",
+      "facilities": "funds",
+      "fundsDelta": "funds",
+      "integrationTeams": "funds",
+      "net": "funds",
+      "programBudget": "funds",
+      "researchTeams": "funds",
+      "rollout": "funds",
+      "span": "s",
+      "subsidy": "funds",
+      "unlockCredit": "funds"
+    },
     "Rp1BuildCost": {
       "rolloutCost": "funds",
       "toolingCost": "funds",
@@ -536,6 +566,17 @@
       "supportedMassTons": "t",
       "vesselMassTons": "t"
     },
+    "rp1.budget": {
+      "refreshedAt": "ut",
+      "reputation": "rep",
+      "reputationDecayPerDay": "rep/day",
+      "reputationDecayPerYear": "rep",
+      "subsidyMaxPerDay": "f/day",
+      "subsidyMaxRep": "rep",
+      "subsidyMinPerDay": "f/day",
+      "subsidyPerDay": "f/day",
+      "unlockCreditBalance": "funds"
+    },
     "rp1.buildCost": {
       "rolloutCost": "funds",
       "toolingCost": "funds",
@@ -834,6 +875,12 @@
     }
   },
   "typeShapes": {
+    "Rp1Budget": {
+      "day": "Rp1BudgetPeriod",
+      "forecast": "Rp1BudgetForecastSample[]",
+      "month": "Rp1BudgetPeriod",
+      "year": "Rp1BudgetPeriod"
+    },
     "Rp1BuildCost": {
       "requiredTechs": "Rp1RequiredTechEntry[]"
     },
@@ -870,6 +917,12 @@
     }
   },
   "topicShapes": {
+    "rp1.budget": {
+      "day": "Rp1BudgetPeriod",
+      "forecast": "Rp1BudgetForecastSample[]",
+      "month": "Rp1BudgetPeriod",
+      "year": "Rp1BudgetPeriod"
+    },
     "rp1.buildCost": {
       "requiredTechs": "Rp1RequiredTechEntry[]"
     },

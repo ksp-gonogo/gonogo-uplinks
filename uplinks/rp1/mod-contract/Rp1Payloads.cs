@@ -3297,3 +3297,210 @@ public sealed class Rp1Avionics
     [SitrepUnit(Units.Flag)]
     public bool? LimitedByNonInterplanetary { get; set; }
 }
+
+/// <summary>
+/// RP-1's own budget: the net its funds widget quotes, every row of its Budget
+/// tab at each of that tab's three horizons, what reputation buys and loses, the
+/// Unlock Credit balance, and the net forecast out to five years.
+///
+/// <para><b>Every figure is RP-1's, at RP-1's horizon.</b> The tab's Day, Month
+/// and Year columns are separate computations rather than one daily figure
+/// scaled: the subsidy is AVERAGED over the horizon as reputation decays and the
+/// subsidy curve climbs, the constructions and rollouts are costed against what
+/// finishes inside it, and a Program pays on its own curve. A month here is
+/// RP-1's thirty days and a year its Julian 365.25.</para>
+///
+/// <para><b>Refreshed on RP-1's upkeep cadence</b>, not per tick: an in-game hour
+/// below 100x warp, up to a day above it, and frozen through a simulated flight,
+/// which is when RP-1 refreshes the upkeep its own screen shows. <see
+/// cref="RefreshedAt"/> says when.</para>
+///
+/// <para>Absent when RP-1 is not managing a career in the loaded scene. A single
+/// figure RP-1 would not give is absent on its own, and every total built from
+/// it is absent with it rather than summed without it.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.budget")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1Budget
+{
+    /// <summary>
+    /// The universal time RP-1 last refreshed its upkeep, which is when every
+    /// figure here was computed.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? RefreshedAt { get; set; }
+
+    /// <summary>The Budget tab's Day column.</summary>
+    public Rp1BudgetPeriod? Day { get; set; }
+
+    /// <summary>The Budget tab's Month column: thirty days, not a calendar month.</summary>
+    public Rp1BudgetPeriod? Month { get; set; }
+
+    /// <summary>The Budget tab's Year column: a Julian year of 365.25 days.</summary>
+    public Rp1BudgetPeriod? Year { get; set; }
+
+    /// <summary>
+    /// The reputation every subsidy and decay figure here was computed from,
+    /// read at the same instant.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Reputation)]
+    public double? Reputation { get; set; }
+
+    /// <summary>
+    /// The subsidy this reputation buys today, after the career's modifiers, as
+    /// RP-1's reputation tooltip states it. RP-1 states it per Julian year; this
+    /// is that over 365.25, the conversion its own net applies.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.FundsPerDay)]
+    public double? SubsidyPerDay { get; set; }
+
+    /// <summary>The subsidy at zero reputation: the floor the calendar alone guarantees.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.FundsPerDay)]
+    public double? SubsidyMinPerDay { get; set; }
+
+    /// <summary>The subsidy at <see cref="SubsidyMaxRep"/> or above: the ceiling.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.FundsPerDay)]
+    public double? SubsidyMaxPerDay { get; set; }
+
+    /// <summary>
+    /// The reputation at which the subsidy reaches its ceiling. It moves with
+    /// the calendar, because the ceiling is a multiple of a floor that grows.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Reputation)]
+    public double? SubsidyMaxRep { get; set; }
+
+    /// <summary>
+    /// Reputation lost tomorrow, after the career's modifiers, as RP-1's
+    /// reputation tooltip states it.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.ReputationPerDay)]
+    public double? ReputationDecayPerDay { get; set; }
+
+    /// <summary>
+    /// Reputation lost over the coming year with the decay compounding month by
+    /// month, RP-1's own tooltip figure. Less than 365 days of today's loss,
+    /// because a smaller reputation loses less.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Reputation)]
+    public double? ReputationDecayPerYear { get; set; }
+
+    /// <summary>
+    /// The Unlock Credit balance: a prepaid allowance RP-1 spends before funds on
+    /// part and upgrade entry costs and on tooling. What each horizon adds to it
+    /// is that horizon's <see cref="Rp1BudgetPeriod.UnlockCredit"/>.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? UnlockCreditBalance { get; set; }
+
+    /// <summary>
+    /// RP-1's net funds change from now to each of twenty horizons a quarter of a
+    /// Julian year apart, ending at five years. Five because that is as far as
+    /// RP-1 itself quotes a gain or loss. Absent, not shortened, when RP-1 would
+    /// not answer at any one of them.
+    /// </summary>
+    public List<Rp1BudgetForecastSample>? Forecast { get; set; }
+}
+
+/// <summary>
+/// One column of RP-1's Budget tab: every row it draws, at one horizon, as the
+/// funds change over that horizon. NEGATIVE is money going out, which is how
+/// RP-1 signs them and how it prints them (in parentheses).
+///
+/// <para>The rows are RP-1's own arithmetic, row for row, with the career's
+/// currency modifiers applied. <see cref="Net"/> is clamped at zero exactly as
+/// RP-1 clamps it, because the subsidy only ever pays down upkeep and is never
+/// paid out as a surplus; a client that sums the rows itself will show a surplus
+/// the game does not grant.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BudgetPeriod
+{
+    /// <summary>The horizon this column covers: a day, thirty days or 365.25 days.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Seconds)]
+    public double? Span { get; set; }
+
+    /// <summary>
+    /// RP-1's own net for this horizon, the figure its funds widget quotes and
+    /// the one its warp buttons print as the gain or loss. Computed apart from
+    /// <see cref="Balance"/>, and the two can differ by a hair: this prices the
+    /// crew salary in one query where the tab prices it in two.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? FundsDelta { get; set; }
+
+    /// <summary>Facilities: building upkeep plus launch-complex upkeep.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Facilities { get; set; }
+
+    /// <summary>Integration Teams: the engineers' salaries.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? IntegrationTeams { get; set; }
+
+    /// <summary>Research Teams: the researchers' salaries.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? ResearchTeams { get; set; }
+
+    /// <summary>Astronauts: crew salaries at base and in flight, plus training.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Astronauts { get; set; }
+
+    /// <summary>
+    /// Avg. Subsidy: the subsidy averaged across the horizon, one sample a month,
+    /// as reputation decays and the curve climbs. Positive.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Subsidy { get; set; }
+
+    /// <summary>
+    /// Net (after subsidy): the four upkeep rows plus the subsidy, never above
+    /// zero.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Net { get; set; }
+
+    /// <summary>Rollout/Airlaunch Prep: the part of each operation's cost that falls inside the horizon.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Rollout { get; set; }
+
+    /// <summary>Constructions: the part of each construction's cost that falls inside the horizon.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Constructions { get; set; }
+
+    /// <summary>Program Budget: what the running Programs pay over the horizon. Positive.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? ProgramBudget { get; set; }
+
+    /// <summary>Balance: <see cref="Net"/> plus rollouts, constructions and Program funding.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? Balance { get; set; }
+
+    /// <summary>
+    /// Unlock Credit: what the research queue earns in credit over the horizon,
+    /// counted only for the time a node is actually being researched. Zero on an
+    /// idle queue, which is a real answer rather than a missing one.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? UnlockCredit { get; set; }
+}
+
+/// <summary>One point of RP-1's net funds forecast.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BudgetForecastSample
+{
+    /// <summary>How far ahead of <see cref="Rp1Budget.RefreshedAt"/> this point is.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Seconds)]
+    public double? Horizon { get; set; }
+
+    /// <summary>RP-1's net funds change from now to that point, the same computation as <see cref="Rp1BudgetPeriod.FundsDelta"/>.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Funds)]
+    public double? FundsDelta { get; set; }
+}

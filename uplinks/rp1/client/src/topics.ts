@@ -20,6 +20,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import type {
   Rp1Avionics,
+  Rp1Budget,
   Rp1BuildableCraftEntry,
   Rp1BuildCost,
   Rp1BuildItemEntry,
@@ -278,6 +279,21 @@ export const RP1_CAREER_EVENTS_TOPIC = "rp1.careerEvents";
  */
 export const RP1_AVIONICS_TOPIC = "rp1.avionics";
 
+/**
+ * RP-1's own budget: its net at a day, 30 days and 365.25 days, every row of its
+ * Budget tab at each of those horizons, the subsidy and decay reputation implies,
+ * the Unlock Credit balance, and its net forecast out to five years.
+ *
+ * Each column is RP-1's computation at that horizon, not a day scaled up: the
+ * subsidy is averaged across the horizon and constructions, rollouts and Programs
+ * are costed against what falls inside it. Rows are signed funds changes, negative
+ * going out, and `net` is clamped at zero as RP-1 clamps it.
+ *
+ * Refreshed when RP-1 refreshes its upkeep (hourly below 100x warp), so
+ * `refreshedAt` can trail the clock.
+ */
+export const RP1_BUDGET_TOPIC = "rp1.budget";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "rp1.available": boolean;
@@ -307,6 +323,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.buildCost": Rp1BuildCost;
     "rp1.careerEvents": Rp1CareerEvents;
     "rp1.avionics": Rp1Avionics;
+    "rp1.budget": Rp1Budget;
   }
 }
 
@@ -337,6 +354,7 @@ registerBarePrimitiveTopic(RP1_TOOLING_TOPIC);
 registerBarePrimitiveTopic(RP1_BUILD_COST_TOPIC);
 registerBarePrimitiveTopic(RP1_CAREER_EVENTS_TOPIC);
 registerBarePrimitiveTopic(RP1_AVIONICS_TOPIC);
+registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both
@@ -441,4 +459,7 @@ export type _ResolvesRp1CareerEvents = Expect<
 >;
 export type _ResolvesRp1Avionics = Expect<
   Equal<TopicPayload<"rp1.avionics">, Rp1Avionics>
+>;
+export type _ResolvesRp1Budget = Expect<
+  Equal<TopicPayload<"rp1.budget">, Rp1Budget>
 >;

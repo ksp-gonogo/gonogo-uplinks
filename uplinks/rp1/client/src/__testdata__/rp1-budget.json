@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "notes": "An early RP-1 career (1960), two Programs running and a construction under way, as rp1.budget carries it. Every relation between the figures is RP-1's own: net is the four upkeep rows plus the subsidy clamped at zero, balance adds rollouts, constructions and Program funding, the Day subsidy is the current subsidy, and the fourth forecast point is the Year column's net. Payload data for the Finances screen's scenes; it names no widget, so it is not a render fixture."
+  },
+  "topic": "rp1.budget",
+  "payload": {
+    "refreshedAt": 315619200.0,
+    "day": {
+      "span": 86400.0,
+      "fundsDelta": 7450.0,
+      "facilities": -3100.0,
+      "integrationTeams": -2400.0,
+      "researchTeams": -1700.0,
+      "astronauts": -600.0,
+      "subsidy": 6800.0,
+      "net": -1000.0,
+      "rollout": -150.0,
+      "constructions": -900.0,
+      "programBudget": 9500.0,
+      "balance": 7450.0,
+      "unlockCredit": 120.0
+    },
+    "month": {
+      "span": 2592000.0,
+      "fundsDelta": 222900.0,
+      "facilities": -93000.0,
+      "integrationTeams": -72000.0,
+      "researchTeams": -51000.0,
+      "astronauts": -18000.0,
+      "subsidy": 205000.0,
+      "net": -29000.0,
+      "rollout": -2100.0,
+      "constructions": -27000.0,
+      "programBudget": 281000.0,
+      "balance": 222900.0,
+      "unlockCredit": 3600.0
+    },
+    "year": {
+      "span": 31557600.0,
+      "fundsDelta": 2719050.0,
+      "facilities": -1132275.0,
+      "integrationTeams": -876600.0,
+      "researchTeams": -620925.0,
+      "astronauts": -219150.0,
+      "subsidy": 2610000.0,
+      "net": -238950.0,
+      "rollout": -12000.0,
+      "constructions": -180000.0,
+      "programBudget": 3150000.0,
+      "balance": 2719050.0,
+      "unlockCredit": 31000.0
+    },
+    "reputation": 220.0,
+    "subsidyPerDay": 6800.0,
+    "subsidyMinPerDay": 4600.0,
+    "subsidyMaxPerDay": 9200.0,
+    "subsidyMaxRep": 460.0,
+    "reputationDecayPerDay": 0.11,
+    "reputationDecayPerYear": 36.972678,
+    "unlockCreditBalance": 48250.0,
+    "forecast": [
+      {
+        "horizon": 7889400.0,
+        "fundsDelta": 693975.0
+      },
+      {
+        "horizon": 15778800.0,
+        "fundsDelta": 1378818.75
+      },
+      {
+        "horizon": 23668200.0,
+        "fundsDelta": 2054531.25
+      },
+      {
+        "horizon": 31557600.0,
+        "fundsDelta": 2719050.0
+      },
+      {
+        "horizon": 39447000.0,
+        "fundsDelta": 3193875.0
+      },
+      {
+        "horizon": 47336400.0,
+        "fundsDelta": 3612086.25
+      },
+      {
+        "horizon": 55225800.0,
+        "fundsDelta": 3973683.75
+      },
+      {
+        "horizon": 63115200.0,
+        "fundsDelta": 4278667.5
+      },
+      {
+        "horizon": 71004600.0,
+        "fundsDelta": 4527037.5
+      },
+      {
+        "horizon": 78894000.0,
+        "fundsDelta": 4718793.75
+      },
+      {
+        "horizon": 86783400.0,
+        "fundsDelta": 4853936.25
+      },
+      {
+        "horizon": 94672800.0,
+        "fundsDelta": 4932465.0
+      },
+      {
+        "horizon": 102562200.0,
+        "fundsDelta": 4954380.0
+      },
+      {
+        "horizon": 110451600.0,
+        "fundsDelta": 4919681.25
+      },
+      {
+        "horizon": 118341000.0,
+        "fundsDelta": 4837500.0
+      },
+      {
+        "horizon": 126230400.0,
+        "fundsDelta": 4755318.75
+      },
+      {
+        "horizon": 134119800.0,
+        "fundsDelta": 4673137.5
+      },
+      {
+        "horizon": 142009200.0,
+        "fundsDelta": 4590956.25
+      },
+      {
+        "horizon": 149898600.0,
+        "fundsDelta": 4508775.0
+      },
+      {
+        "horizon": 157788000.0,
+        "fundsDelta": 4426593.75
+      }
+    ]
+  }
+}

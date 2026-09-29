@@ -17,6 +17,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
 | `rp1.avionics` | `Rp1Avionics` | lossy-latest | delayed |
+| `rp1.budget` | `Rp1Budget` | lossy-latest | delayed |
 | `rp1.buildCost` | `Rp1BuildCost` | lossy-latest | delayed |
 | `rp1.buildQueue` | `Rp1BuildItemEntry[]` | lossy-latest | delayed |
 | `rp1.buildable` | `Rp1BuildableCraftEntry[]` | lossy-latest | delayed |
@@ -46,6 +47,8 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 
 | Payload | Fields |
 | --- | --- |
+| `Rp1BudgetForecastSample` | `fundsDelta` funds, `horizon` s |
+| `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds |
 | `Rp1BuildableComplex` | `eligible` flag, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `refusals` text |
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |

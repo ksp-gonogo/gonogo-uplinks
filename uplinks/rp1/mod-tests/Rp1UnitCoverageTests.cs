@@ -68,6 +68,9 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1CareerEvents),
                 nameof(Rp1CareerEventEntry),
                 nameof(Rp1Avionics),
+                nameof(Rp1Budget),
+                nameof(Rp1BudgetPeriod),
+                nameof(Rp1BudgetForecastSample),
                 nameof(Rp1HireTargetSetArgs),
                 // The shapes here that are not Topic payloads: the command
                 // args. They are held to the same rule because they cross the

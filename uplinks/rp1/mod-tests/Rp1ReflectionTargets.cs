@@ -276,6 +276,16 @@ namespace GonogoRp1Uplink.Tests
             // unlocked lives on it and nowhere else, and because an unresolvable
             // gate refuses every upgrade at the press with nothing else noticing.
             new Rp1TypeTarget(Rp0, "RP0.Harmony.PatchKSCFacilityContextMenu", "Rp1FacilityUpgradeCommands"),
+            // RP-1's budget: the Budget tab, the funds and reputation tooltips.
+            new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler+SubsidyDetails", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.SpaceCenterManagement", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Programs.ProgramHandler", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.UnlockCreditHandler", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.CurrencyUtils", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1BudgetReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.ResearchProject", "Rp1BudgetReflection"),
         };
 
         public static IReadOnlyList<Rp1EnumMemberTarget> EnumMembers { get; } = new[]
@@ -318,6 +328,17 @@ namespace GonogoRp1Uplink.Tests
             new Rp1EnumMemberTarget(Rp0, "RP0.ControlLockerUtils+LockLevel", "Locked", "Rp1AvionicsReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.ControlLockerUtils+LockLevel", "Axial", "Rp1AvionicsReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.ControlLockerUtils+LockLevel", "Unlocked", "Rp1AvionicsReflection"),
+            // The Budget tab's own reasons, beside the six upkeep ones it shares
+            // with the upkeep query.
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "Subsidy", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "DailyRepDecline", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "RateUnlockCreditIncrease", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepair", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepairLC", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryEngineers", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryResearchers", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryCrew", "Rp1BudgetReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "CrewTraining", "Rp1BudgetReflection"),
         };
 
         public static IReadOnlyList<Rp1ConstructorTarget> Constructors { get; } = new[]
@@ -393,6 +414,21 @@ namespace GonogoRp1Uplink.Tests
             // KSCSwitcher's site config for the name beside it.
             new Rp1MethodTarget(Rp0, "RP0.KSCSwitcherInterop", "GetAvailableSites", 0, true, "Rp1ScReflection"),
             new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "FillSubsidyDetails", 3, true, "Rp1EconomyBackend"),
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "FillSubsidyDetails", 3, true, "Rp1BudgetReflection"),
+            // Two parameters, the step count defaulted to RP-1's one-a-month.
+            new Rp1MethodTarget(Rp0, "RP0.MaintenanceHandler", "GetAverageSubsidyForPeriod", 2, true, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Funds", 3, true, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Rep", 3, true, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.CurrencyUtils", "Rate", 2, true, "Rp1BudgetReflection"),
+            // RP-1's own net, called rather than reproduced.
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetBudgetDelta", 1, false, "Rp1BudgetReflection"),
+            // Arity one is the career-wide overload of each: the per-centre,
+            // per-complex and by-name overloads beside them all take two.
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetConstructionCostOverTime", 1, false, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetReconRolloutCostOverTime", 1, false, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.Programs.ProgramHandler", "GetDisplayProgramFunding", 1, false, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.UnlockCreditHandler", "CreditForTime", 1, false, "Rp1BudgetReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.ResearchProject", "GetTimeLeftEst", 1, false, "Rp1BudgetReflection"),
             // THREE parameters with the last defaulted, because a reflected
             // invoke applies no defaults. UpdateUpkeep calls the two-argument
             // form, which is this one with includeHidden left false.
@@ -631,6 +667,10 @@ namespace GonogoRp1Uplink.Tests
             // course start, for 120% of base time) but the field is KSP's, and it
             // is read here because it outlasts the course: it is the date a crew
             // member can fly again, which is not the date their training ends.
+            // Stock's Reputation, read for the one number every subsidy and decay
+            // figure in the budget is a function of.
+            ["Reputation"] = "stock Reputation, whose Instance the budget reads the career's reputation from",
+            ["reputation"] = "stock Reputation.reputation, the figure RP-1's reputation tooltip computes from",
             ["inactiveTimeEnd"] = "stock ProtoCrewMember.inactiveTimeEnd, the ground-until date that outlasts a training course",
             ["IsActive"] = "stock Strategies.Strategy.IsActive, read to refuse a strategy that is already committed",
             ["Factor"] = "stock Strategies.Strategy.Factor, the commitment level, written before the gate and restored on a refusal",
@@ -1429,6 +1469,35 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Research, @static: true);
             Add("RP0.SpaceCenterManagement", "enabledForSave", Rp1Reader.Bool, Research);
             Add("RP0.SpaceCenterManagement", "TechList", Rp1Reader.Presence, Research);
+
+            // ── The budget ──────────────────────────────────────────────────
+            const string Budget = "Rp1BudgetReflection";
+            Add("RP0.MaintenanceHandler", "Instance", Rp1Reader.Presence, Budget, @static: true);
+            // The refresh stamp the reading is keyed on: written by Update each
+            // time UpdateUpkeep runs, and not persisted.
+            Add("RP0.MaintenanceHandler", "lastUpdate", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "FacilityUpkeepPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "LCsCostPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "IntegrationSalaryPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "ResearchSalaryPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "NautBaseUpkeepPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "NautInFlightUpkeepPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler", "TrainingUpkeepPerDay", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler+SubsidyDetails", "subsidy", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler+SubsidyDetails", "minSubsidy", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler+SubsidyDetails", "maxSubsidy", Rp1Reader.Numeric, Budget);
+            Add("RP0.MaintenanceHandler+SubsidyDetails", "maxRep", Rp1Reader.Numeric, Budget);
+            Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Budget, @static: true);
+            Add("RP0.SpaceCenterManagement", "TechList", Rp1Reader.Presence, Budget);
+            Add("RP0.Programs.ProgramHandler", "Instance", Rp1Reader.Presence, Budget, @static: true);
+            Add("RP0.UnlockCreditHandler", "Instance", Rp1Reader.Presence, Budget, @static: true);
+            Add("RP0.UnlockCreditHandler", "TotalCredit", Rp1Reader.Numeric, Budget);
+            // Both getters on the real type: BuildRate refreshes RP-1's cached rate
+            // when it is unset, which is what RP-1's own tab triggers too.
+            Add("RP0.ResearchProject", "BuildRate", Rp1Reader.Numeric, Budget);
+            Add("RP0.ResearchProject", "TimeLeft", Rp1Reader.Numeric, Budget);
+            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Budget, @static: true);
+            Add("RP0.SpaceCenterSettings", "repPortionLostPerDay", Rp1Reader.Numeric, Budget);
 
             // ── ROUtils, which ships beside RP-1 and owns these two shapes ──
             AddRo("ROUtils.HermiteCurve+Key", "time", Rp1Reader.Numeric, Programs);

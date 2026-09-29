@@ -49,6 +49,9 @@
     <Compile Include="..\mod\Rp1AvionicsRaw.cs" />
     <Compile Include="..\mod\Rp1AvionicsCapture.cs" />
     <Compile Include="..\mod\Rp1AvionicsReflection.cs" />
+    <Compile Include="..\mod\Rp1BudgetRaw.cs" />
+    <Compile Include="..\mod\Rp1BudgetCapture.cs" />
+    <Compile Include="..\mod\Rp1BudgetReflection.cs" />
     <Compile Include="..\mod\Rp1ScUplink.cs" />
     <Compile Include="..\mod\Rp1EconomyBackend.cs" />
     <Compile Include="..\mod\Rp1EconomyUpkeepQuery.cs" />
