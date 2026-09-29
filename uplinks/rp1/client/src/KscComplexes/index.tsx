@@ -23,6 +23,11 @@ import { RP1 } from "../uplink.js";
 import "../topics.js";
 import { Centre } from "./Centre.js";
 import {
+  HireFireControl,
+  RP1_PERSONNEL_FIRE_COMMAND,
+  RP1_PERSONNEL_HIRE_COMMAND,
+} from "./HireFire.js";
+import {
   HireTargetControl,
   RP1_HIRE_TARGET_CANCEL_COMMAND,
   RP1_HIRE_TARGET_SET_COMMAND,
@@ -109,6 +114,8 @@ export function KscComplexes() {
   const newComplex = useCommand(RP1_COMPLEX_NEW_COMMAND);
   const setHireTarget = useCommand(RP1_HIRE_TARGET_SET_COMMAND);
   const cancelHireTarget = useCommand(RP1_HIRE_TARGET_CANCEL_COMMAND);
+  const hire = useCommand(RP1_PERSONNEL_HIRE_COMMAND);
+  const fire = useCommand(RP1_PERSONNEL_FIRE_COMMAND);
   const modifyComplex = useCommand(RP1_COMPLEX_MODIFY_COMMAND);
 
   // Invisible on every install without RP-1, which is most of them.
@@ -153,6 +160,14 @@ export function KscComplexes() {
           funds={magnitudeOf(career?.economy?.funds)}
           personnel={personnel}
           set={setHireTarget}
+        />
+        {/* The same purchase now rather than over time, beside the standing instruction. */}
+        <HireFireControl
+          centres={centreRows}
+          fire={fire}
+          funds={magnitudeOf(career?.economy?.funds)}
+          hire={hire}
+          personnel={personnel}
         />
       </Stack>
 
@@ -215,9 +230,9 @@ export function KscComplexes() {
  * <para>The top rung, and the only one of the three that is not per-centre.
  * These are the counts an operator plans HIRING against, which is a different
  * act from assignment: assignment moves staff already on the books, and hiring
- * commits the career to buying more. The instruction that does the buying is
- * `HireTargetControl`, drawn directly under these counts, and it carries its own
- * balance because it is the one control here that spends.</para>
+ * commits the career to buying more. The two controls that do the buying,
+ * `HireTargetControl` over time and `HireFireControl` now, are drawn directly
+ * under these counts, and each carries the balance it spends against.</para>
  *
  * <para>What the idle engineers cost is NOT here: the pool belongs to a centre
  * rather than to the career, so it is drawn on the centre holding it. A total

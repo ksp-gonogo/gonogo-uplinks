@@ -292,6 +292,8 @@ namespace GonogoRp1Uplink
 
             ReadResearch(raw, scm);
 
+            var researchers = ReadInt(scm, "Researchers");
+            var researcherSalaryPerDay = ReadDouble(payroll.Maintenance, "ResearchSalaryPerDay");
             raw.Personnel = new Rp1PersonnelRaw
             {
                 TotalEngineers = totalEngineers,
@@ -299,13 +301,17 @@ namespace GonogoRp1Uplink
                 // holds: a career with nobody in research genuinely sits at 0,
                 // so a substituted zero is a staffing level an operator has no
                 // way to tell from a read one.
-                Researchers = ReadInt(scm, "Researchers"),
+                Researchers = researchers,
                 Applicants = ReadInt(scm, "Applicants"),
                 EngineerSalaryPerDay = ReadDouble(payroll.Maintenance, "IntegrationSalaryPerDay"),
-                ResearcherSalaryPerDay = ReadDouble(payroll.Maintenance, "ResearchSalaryPerDay"),
+                ResearcherSalaryPerDay = researcherSalaryPerDay,
                 EngineerSalaryPerYear = payroll.EngineerSalaryPerYear,
                 ResearcherSalaryPerYear = ReadDouble(payroll.Settings, "salaryResearchers"),
                 IdleSalaryMult = payroll.EngineerIdleSalaryMult,
+                PooledEngineerSalaryPerDay = IdleSalaryPerDay(payroll, 1),
+                ResearcherSalaryPerHeadPerDay = researchers > 0 && researcherSalaryPerDay != null
+                    ? researcherSalaryPerDay.Value / researchers.Value
+                    : (double?)null,
             };
 
             raw.RushTerms = ReadRushTerms(payroll.Settings);

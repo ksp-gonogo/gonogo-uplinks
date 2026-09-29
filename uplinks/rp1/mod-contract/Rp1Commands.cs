@@ -181,6 +181,55 @@ public class Rp1PersonnelAssignArgs
 }
 
 /// <summary>
+/// Args for <c>rp1.personnel.hire</c> and <c>rp1.personnel.fire</c>: change the
+/// headcount on the books by a number, the two buttons of RP-1's Staffing window.
+///
+/// <para><b>Hiring is a purchase and firing is free.</b> A hire is charged up
+/// front at <c>Rp1Personnel.HireCost</c> for every head beyond the waiting
+/// applicants, and is refused when the balance does not cover it. A fire costs
+/// nothing and takes the salary off the payroll from the next upkeep.</para>
+///
+/// <para><b>A count, not a target.</b> RP-1's window hires and fires by a count,
+/// and a target would make re-sending safe only by turning a purchase into
+/// whatever the difference happened to be when it landed. The staleness hazard
+/// is bounded instead: a fire is refused beyond the heads there are to fire, and
+/// a hire is refused beyond what the balance covers.</para>
+///
+/// <para><b>Engineers are hired into the ACTIVE centre's unassigned pool</b>, as
+/// RP-1's own window hires them, and fired only from that pool. Naming the
+/// centre is required so a view that is out of date about which centre is
+/// active is refused rather than acted on at the wrong place. Assigning them to
+/// a complex is <c>rp1.personnel.assign</c>, which spends nothing.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.personnel.hire")]
+[SitrepCommand("rp1.personnel.fire")]
+public class Rp1PersonnelHeadcountArgs
+{
+    /// <summary>
+    /// True for researchers, false for engineers. REQUIRED: the two are paid at
+    /// different rates and one is per centre, so there is no default worth
+    /// guessing.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? Research { get; set; }
+
+    /// <summary>How many to hire or fire. Must be at least one.</summary>
+    [SitrepUnit(Units.Count)]
+    public int? Count { get; set; }
+
+    /// <summary>
+    /// The centre, by <c>rp1.centres[].kscName</c>. Required for engineers and
+    /// ignored for researchers, who belong to the career rather than a centre.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? KscName { get; set; }
+}
+
+/// <summary>
 /// Args for <c>rp1.build.start</c>: begin integrating a design RP-1 has never
 /// held, from one of the save's own craft files.
 ///

@@ -371,6 +371,8 @@ namespace GonogoRp1Uplink.Tests
                     Rp1VehicleCommands.ScrapCommand,
                     Rp1VehicleCommands.RushCommand,
                     Rp1PersonnelCommands.AssignCommand,
+                    Rp1PersonnelCommands.HireCommand,
+                    Rp1PersonnelCommands.FireCommand,
                     Rp1FacilityUpgradeCommands.UpgradeCommand,
                     Rp1ResearchCommands.ResearchCommand,
                     Rp1StrategyCommands.AcceptCommand,

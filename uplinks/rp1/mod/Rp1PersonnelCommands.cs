@@ -1,5 +1,5 @@
 // RP-1's staffing write surface: move engineers between a centre's unassigned
-// pool and one of its launch complexes.
+// pool and one of its launch complexes, and hire or fire staff by a count.
 //
 // WHAT WAS WRONG WITHOUT IT. Assignment is the fact the whole space-centre view
 // exists to make visible: RP-1 advances a complex's work at
@@ -8,14 +8,30 @@
 // nothing draws salary for no work. An operator could read both of those from
 // this Uplink and then had to go into the game to act on either.
 //
-// WHAT THIS DELIBERATELY IS NOT. It does not hire and it does not fire. Hiring
-// spends funds, raises the standing payroll and goes through
-// KCTUtilities.HireStaff, which bills HireCost per applicant short and moves
-// both the centre pool and the complex at once. That is a purchase and belongs
-// with the other spend controls, behind an arm-then-confirm and beside a
-// balance. Assignment spends nothing at the moment it lands: the engineers are
-// already on the books, and all that changes is which complex they work at.
-// Keeping the two apart is what lets this command be a single press.
+// ASSIGNING AND HIRING ARE KEPT APART. Hiring spends funds, raises the standing
+// payroll and goes through KCTUtilities.HireStaff, which bills HireCost per
+// applicant short. That is a purchase, so the client puts it behind an
+// arm-then-confirm and beside a balance. Assignment spends nothing at the moment
+// it lands: the engineers are already on the books, and all that changes is
+// which complex they work at. Keeping the two apart is what lets assignment be a
+// single press.
+//
+// HIRE AND FIRE DO WHAT RP-1'S STAFFING WINDOW DOES (KCT_GUI.RenderHireFire,
+// read on RP0.dll 4.6.0.0 and 4.7.0.0, identical in both):
+//
+//   hire    KCTUtilities.HireStaff(isResearch, n, null). It charges
+//           max(0, n - Applicants) * SettingsSC.HireCost, adds the heads to the
+//           ACTIVE centre's pool or to the researchers, and consumes applicants
+//   fire    researchers: KCTUtilities.ChangeResearchers(-n), then
+//           SpaceCenterManagement.UpdateTechTimes(). Engineers:
+//           KCTUtilities.ChangeEngineers(ActiveSC, -n), then
+//           ActiveSC.RecalculateBuildRates(false). No fee
+//
+// The window greys Fire beyond the researchers or the active centre's
+// UNASSIGNED engineers and greys Hire when funds fall short of the charge. It
+// does not stop a press on either, only styles it, so both limits are asked
+// here and refused with a sentence. Firing past the unassigned pool would drive
+// it negative, the same corruption the assignment clamp below guards against.
 //
 // THE MEMBERS IT TOUCHES, each read off the shipped RP-1 v4.6.0.0 RP0.dll:
 //
@@ -56,22 +72,35 @@ using Sitrep.Contract;
 
 namespace GonogoRp1Uplink
 {
-    /// <summary>The handler for <c>rp1.personnel.assign</c>.</summary>
+    /// <summary>
+    /// The handlers for <c>rp1.personnel.assign</c>, <c>rp1.personnel.hire</c>
+    /// and <c>rp1.personnel.fire</c>.
+    /// </summary>
     public sealed class Rp1PersonnelCommands
     {
         /// <summary>Set how many engineers a launch complex has assigned to it.</summary>
         public const string AssignCommand = "rp1.personnel.assign";
 
+        /// <summary>Hire engineers or researchers by a count, paid up front.</summary>
+        public const string HireCommand = "rp1.personnel.hire";
+
+        /// <summary>Fire engineers or researchers by a count, free.</summary>
+        public const string FireCommand = "rp1.personnel.fire";
+
         private const string ScmTypeName = "RP0.SpaceCenterManagement";
         private const string UtilitiesTypeName = "RP0.KCTUtilities";
+        private const string DatabaseTypeName = "RP0.Database";
+        private const string CentreTypeName = "RP0.LCSpaceCenter";
 
         private readonly Type? _scm;
         private readonly Type? _utilities;
+        private readonly Type? _database;
 
         public Rp1PersonnelCommands()
         {
             _scm = Rp1Types.Find(ScmTypeName);
             _utilities = Rp1Types.Find(UtilitiesTypeName);
+            _database = Rp1Types.Find(DatabaseTypeName);
         }
 
         /// <summary>
@@ -103,9 +132,20 @@ namespace GonogoRp1Uplink
             }
             try
             {
-                return Rp1ComplexWrites.ChangeEngineers(_utilities) == null
-                    ? "assignment will refuse at the press: KCTUtilities.ChangeEngineers(LaunchComplex, int) not found"
-                    : "every invoked member resolved";
+                if (Rp1ComplexWrites.ChangeEngineers(_utilities) == null)
+                {
+                    return "assignment will refuse at the press: KCTUtilities.ChangeEngineers(LaunchComplex, int) not found";
+                }
+                if (Rp1Types.StaticMethod(_utilities, "HireStaff", 3) == null)
+                {
+                    return "hiring will refuse at the press: KCTUtilities.HireStaff(bool, int, LaunchComplex) not found";
+                }
+                if (Rp1Types.StaticMethod(_utilities, "ChangeResearchers", 1) == null
+                    || CentreChangeEngineers() == null)
+                {
+                    return "firing will refuse at the press: KCTUtilities.ChangeResearchers or ChangeEngineers(LCSpaceCenter, int) not found";
+                }
+                return "every invoked member resolved";
             }
             catch (Exception ex)
             {
@@ -268,6 +308,241 @@ namespace GonogoRp1Uplink
 
             return CommandResult.Ok();
         }
+
+        /// <summary>
+        /// Hires a count of engineers into the active centre's pool, or of
+        /// researchers, paying up front for every head beyond the waiting
+        /// applicants.
+        ///
+        /// <para>Refused, not clamped, when the balance does not cover the
+        /// charge: a hire is a purchase RP-1 prices before it happens, and hiring
+        /// fewer than asked would report success for a payroll nobody chose.</para>
+        /// </summary>
+        public CommandResult Hire(Rp1PersonnelHeadcountArgs? args)
+        {
+            var refusal = Resolve(args, out var research, out var count, out var scm, out var centre);
+            if (refusal != null)
+            {
+                return refusal;
+            }
+
+            var applicants = ReadCount(scm, "Applicants");
+            var settings = _database == null ? null : Rp1Types.StaticValue(_database, "SettingsSC");
+            var hireCost = Rp1Types.ReadDouble(settings, "HireCost");
+            if (applicants == null || hireCost == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "RP-1 would not say what a hire costs or how many applicants are waiting, so nobody was hired");
+            }
+
+            var charge = Math.Max(0, count - applicants.Value) * hireCost.Value;
+            if (charge > 0)
+            {
+                var funds = Rp1Pricing.FundsBalance();
+                if (funds == null)
+                {
+                    return CommandResult.Fail(
+                        CommandErrorCode.Unreadable,
+                        "the career's balance could not be read, so nobody was hired");
+                }
+                if (funds.Value < charge)
+                {
+                    return CommandResult.Fail(
+                        CommandErrorCode.InsufficientFunds,
+                        "hiring " + Number(count) + " " + Kind(research) + " costs " + Funds(charge)
+                        + " and the balance is " + Funds(funds.Value));
+                }
+            }
+
+            var hireStaff = Rp1Types.StaticMethod(_utilities!, "HireStaff", 3);
+            if (hireStaff == null)
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
+                    "this RP-1 build has no hiring step this Uplink recognises, so nobody was hired");
+            }
+
+            try
+            {
+                // No complex, as RP-1's window passes none: the heads land in the
+                // active centre's pool, and assigning them is a separate press.
+                hireStaff.Invoke(null, new object?[] { research, count, null });
+            }
+            catch (Exception ex)
+            {
+                // HireStaff charges first and adds the heads after, so a throw can
+                // leave the balance down with nobody on the books.
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    "RP-1 failed part-way through hiring, so check the balance and the payroll: "
+                    + Rp1Types.ExceptionReason(ex));
+            }
+
+            return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// Fires a count of researchers, or of the active centre's unassigned
+        /// engineers. Free, and refused beyond the heads there are to fire.
+        /// </summary>
+        public CommandResult Fire(Rp1PersonnelHeadcountArgs? args)
+        {
+            var refusal = Resolve(args, out var research, out var count, out var scm, out var centre);
+            if (refusal != null)
+            {
+                return refusal;
+            }
+
+            var available = research ? ReadCount(scm, "Researchers") : ReadCount(centre, "UnassignedEngineers");
+            if (available == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "RP-1 would not say how many " + Kind(research) + " there are to fire");
+            }
+            if (count > available.Value)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Range,
+                    research
+                        ? "the career has " + Number(available.Value) + " researchers, and the command asked to fire "
+                          + Number(count)
+                        : CentreName(centre) + " has " + Number(available.Value)
+                          + " unassigned engineers, and only unassigned engineers can be fired");
+            }
+
+            var change = research
+                ? Rp1Types.StaticMethod(_utilities!, "ChangeResearchers", 1)
+                : CentreChangeEngineers();
+            if (change == null)
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
+                    "this RP-1 build has no staff change this Uplink recognises, so nobody was fired");
+            }
+
+            try
+            {
+                if (research)
+                {
+                    change.Invoke(null, new object[] { -count });
+                    // RP-1's window re-times the queue after a fire, as HireStaff
+                    // does after a hire: fewer researchers make every node slower.
+                    Rp1Types.InstanceMethod(scm, "UpdateTechTimes", 0)?.Invoke(scm, null);
+                }
+                else
+                {
+                    change.Invoke(null, new object[] { centre!, -count });
+                    Rp1Types.InstanceMethod(centre!, "RecalculateBuildRates", 1)?.Invoke(centre, new object[] { false });
+                }
+            }
+            catch (Exception ex)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    "RP-1 failed part-way through firing, so check the payroll: " + Rp1Types.ExceptionReason(ex));
+            }
+
+            return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// The checks hiring and firing share: the arguments, RP-1's state, and
+        /// for engineers that the named centre is the active one.
+        /// </summary>
+        private CommandResult? Resolve(
+            Rp1PersonnelHeadcountArgs? args,
+            out bool research,
+            out int count,
+            out object scm,
+            out object? centre)
+        {
+            research = false;
+            count = 0;
+            scm = null!;
+            centre = null;
+
+            if (args?.Research == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Range,
+                    "the command did not say whether it means engineers or researchers");
+            }
+            research = args.Research.Value;
+
+            if (args.Count == null || args.Count.Value < 1)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Range,
+                    "the command must name at least one " + (research ? "researcher" : "engineer"));
+            }
+            count = args.Count.Value;
+
+            if (!research && string.IsNullOrWhiteSpace(args.KscName))
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.NotFound,
+                    "the command named no space centre for the engineers");
+            }
+
+            if (!IsAvailable)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "RP-1's space-centre model could not be resolved, so nothing was changed");
+            }
+
+            var instance = Rp1Types.StaticValue(_scm!, "Instance");
+            if (instance == null)
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.SpaceCentreNotLoaded);
+            }
+            if (Rp1Types.ReadBool(instance, "enabledForSave") != true)
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
+            }
+            scm = instance;
+
+            if (research)
+            {
+                return null;
+            }
+
+            var active = Rp1Types.Member(instance, "ActiveSC");
+            if (active == null)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.Unreadable,
+                    "RP-1 would not say which space centre is active");
+            }
+            if (!string.Equals(Rp1Types.ReadString(active, "KSCName"), args.KscName, StringComparison.Ordinal))
+            {
+                // RP-1 hires into and fires from the active centre only, so a
+                // view that thinks another one is active is refused rather than
+                // acted on at a place the operator did not name.
+                return CommandResult.Fail(
+                    CommandErrorCode.WrongState,
+                    "RP-1 hires and fires engineers at the active space centre, which is "
+                    + CentreName(active) + ", not the one the command named");
+            }
+            centre = active;
+            return null;
+        }
+
+        /// <summary>
+        /// <c>KCTUtilities.ChangeEngineers(LCSpaceCenter, int)</c>, by its first
+        /// parameter's type: the same-arity complex overload beside it would move
+        /// a complex's crew instead of the centre's pool.
+        /// </summary>
+        private MethodInfo? CentreChangeEngineers() =>
+            _utilities == null
+                ? null
+                : Rp1Types.StaticMethodOn(_utilities, "ChangeEngineers", CentreTypeName, 2);
+
+        private static string Kind(bool research) => research ? "researchers" : "engineers";
+
+        /// <summary>A funds figure for a refusal sentence, grouped and whole.</summary>
+        private static string Funds(double value) =>
+            value.ToString("N0", CultureInfo.InvariantCulture) + " funds";
 
         /// <summary>
         /// A count RP-1 keeps as an int, whether as a field or as a derived

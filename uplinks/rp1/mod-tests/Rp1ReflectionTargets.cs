@@ -190,6 +190,7 @@ namespace GonogoRp1Uplink.Tests
             new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1BuildCommands, Rp1VehicleCommands, Rp1PersonnelCommands"),
             new Rp1TypeTarget(Rp0, "RP0.ReconRolloutProject", "Rp1VehicleCommands"),
             new Rp1TypeTarget(Rp0, "RP0.LaunchComplex", "Rp1VehicleCommands, Rp1PersonnelCommands"),
+            new Rp1TypeTarget(Rp0, "RP0.LCSpaceCenter", "Rp1PersonnelCommands"),
             new Rp1TypeTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "Rp1BuildCommands"),
             new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1BuildCommands"),
             new Rp1TypeTarget(Rp0, "RP0.CurrencyRP0", "Rp1BuildCommands"),
@@ -251,6 +252,7 @@ namespace GonogoRp1Uplink.Tests
             // says no in has no research queue to add to.
             new Rp1TypeTarget(Rp0, "RP0.PresetManager", "Rp1ResearchCommands"),
             new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1ResearchCommands"),
+            new Rp1TypeTarget(Rp0, "RP0.Database", "Rp1PersonnelCommands"),
             new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1ResearchCommands"),
             new Rp1TypeTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "Rp1ResearchCommands"),
             new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1ResearchCommands"),
@@ -538,6 +540,12 @@ namespace GonogoRp1Uplink.Tests
             new Rp1MethodTarget(Rp0, "RP0.ReconRolloutProject", "SwitchDirection", 0, false, "Rp1VehicleCommands"),
             new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "ScrapVessel", 1, true, "Rp1VehicleCommands"),
             new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "ChangeEngineers", 2, true, "Rp1VehicleCommands, Rp1PersonnelCommands"),
+            // What RP-1's Staffing window calls for its Hire and Fire buttons,
+            // and the two re-timings it runs after a fire.
+            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "HireStaff", 3, true, "Rp1PersonnelCommands"),
+            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "ChangeResearchers", 1, true, "Rp1PersonnelCommands"),
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "UpdateTechTimes", 0, false, "Rp1PersonnelCommands"),
+            new Rp1MethodTarget(Rp0, "RP0.LCSpaceCenter", "RecalculateBuildRates", 1, false, "Rp1PersonnelCommands"),
             // ── The launch-complex lifecycle ────────────────────────────────
             // Rename validates NOTHING on either type, which is why both commands
             // carry a duplicate check of their own, and on the PAD it is worse than
@@ -951,8 +959,8 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Sc + ", " + Gate + ", " + Projects + ", " + Build + ", " + Withhold + ", " + Facilities, @static: true);
             Add("RP0.SpaceCenterManagement", "enabledForSave", Rp1Reader.Bool, Sc + ", " + Gate + ", " + Projects + ", " + Build + ", " + Facilities);
             Add("RP0.SpaceCenterManagement", "IsSimulatedFlight", Rp1Reader.Bool, Sc);
-            Add("RP0.SpaceCenterManagement", "Researchers", Rp1Reader.Numeric, Sc);
-            Add("RP0.SpaceCenterManagement", "Applicants", Rp1Reader.Numeric, Sc);
+            Add("RP0.SpaceCenterManagement", "Researchers", Rp1Reader.Numeric, Sc + ", " + Staffing);
+            Add("RP0.SpaceCenterManagement", "Applicants", Rp1Reader.Numeric, Sc + ", " + Staffing);
             Add("RP0.SpaceCenterManagement", "KSCs", Rp1Reader.Presence, Sc + ", " + Gate + ", " + Build + ", " + Start);
             // WRITTEN, and the only write outside the currency withholder: the
             // same assignment RP-1's own overrideLC argument makes, and the whole
@@ -966,7 +974,7 @@ namespace GonogoRp1Uplink.Tests
             // its name together, and a rollout with only the name set leaves the
             // warehouse row resolving the WRONG pad.
             Add("RP0.VesselProject", "launchSiteIndex", Rp1Reader.NumericWrite, Vehicles);
-            Add("RP0.SpaceCenterManagement", "ActiveSC", Rp1Reader.Presence, Sc + ", " + Facilities);
+            Add("RP0.SpaceCenterManagement", "ActiveSC", Rp1Reader.Presence, Sc + ", " + Facilities + ", " + Staffing);
 
             // ── A launch complex's persisted specification ──────────────────
             // The four [Persistent] fields a price and a renovation envelope are
@@ -1175,7 +1183,7 @@ namespace GonogoRp1Uplink.Tests
             // can name a complex that is on no other channel.
             Add("RP0.LCEfficiency", "_lcs", Rp1Reader.Presence, Sc);
 
-            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Sc + ", " + Economy + ", " + HirePrice, @static: true);
+            Add("RP0.Database", "SettingsSC", Rp1Reader.Presence, Sc + ", " + Economy + ", " + HirePrice + ", " + Staffing, @static: true);
             Add("RP0.Database", "SettingsCrew", Rp1Reader.Presence, Crew, @static: true);
             // The two config-loaded tables that let a building answer OUTSIDE the
             // space centre, where KSP has instantiated no facility to ask. Both are
@@ -1201,7 +1209,7 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.SpaceCenterSettings", "EngineerIdleSalaryMult", Rp1Reader.Numeric, Sc);
             // What a PAID head costs, and the figure KCTUtilities.HireStaff actually
             // multiplies. An int on RP-1's side, so Numeric rather than a width claim.
-            Add("RP0.SpaceCenterSettings", "HireCost", Rp1Reader.Numeric, HirePrice);
+            Add("RP0.SpaceCenterSettings", "HireCost", Rp1Reader.Numeric, HirePrice + ", " + Staffing);
             Add("RP0.SpaceCenterSettings", "repPortionLostPerDay", Rp1Reader.Numeric, Economy);
 
             // ── Vehicles ────────────────────────────────────────────────────

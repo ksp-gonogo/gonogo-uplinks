@@ -487,8 +487,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     engineerSalaryPerYear: "funds",
     hireCost: "funds",
     idleSalaryMult: "ratio",
+    pooledEngineerSalaryPerDay: "f/day",
     researcherHireQuote: "funds",
     researcherSalaryPerDay: "f/day",
+    researcherSalaryPerHeadPerDay: "f/day",
     researcherSalaryPerYear: "funds",
     researchers: "count",
     totalEngineers: "count",
@@ -496,6 +498,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1PersonnelAssignArgs": {
     engineers: "count",
     lcId: "id",
+  },
+  "Rp1PersonnelHeadcountArgs": {
+    count: "count",
+    kscName: "id",
+    research: "flag",
   },
   "Rp1ProgramAcceptArgs": {
     speed: "enum",
@@ -886,8 +893,10 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     engineerSalaryPerYear: "funds",
     hireCost: "funds",
     idleSalaryMult: "ratio",
+    pooledEngineerSalaryPerDay: "f/day",
     researcherHireQuote: "funds",
     researcherSalaryPerDay: "f/day",
+    researcherSalaryPerHeadPerDay: "f/day",
     researcherSalaryPerYear: "funds",
     researchers: "count",
     totalEngineers: "count",

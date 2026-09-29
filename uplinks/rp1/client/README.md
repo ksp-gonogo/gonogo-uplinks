@@ -97,6 +97,8 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.pad.new` | `Rp1PadNewArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.pad.rename` | `Rp1PadRenameArgs` | `CommandResult` |
 | `rp1.personnel.assign` | `Rp1PersonnelAssignArgs` | `CommandResult` |
+| `rp1.personnel.fire` | `Rp1PersonnelHeadcountArgs` | `CommandResult` |
+| `rp1.personnel.hire` | `Rp1PersonnelHeadcountArgs` | `CommandResult` |
 | `rp1.program.accept` | `Rp1ProgramAcceptArgs` | `CommandResult` |
 | `rp1.program.complete` | `Rp1ProgramCompleteArgs` | `CommandResult` |
 | `rp1.tech.research` | `Rp1TechResearchArgs` | `CommandResult` |
@@ -129,6 +131,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1PadNewArgs` | `lcId` id, `name` id |
 | `Rp1PadRenameArgs` | `lcId` id, `name` id, `padId` id |
 | `Rp1PersonnelAssignArgs` | `engineers` count, `lcId` id |
+| `Rp1PersonnelHeadcountArgs` | `count` count, `kscName` id, `research` flag |
 | `Rp1ProgramAcceptArgs` | `speed` enum, `strategyId` id |
 | `Rp1ProgramCompleteArgs` | `strategyId` id |
 | `Rp1RolloutArgs` | `id` id, `pad` id |
@@ -168,7 +171,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.training`, `rp1.research` | only while `rp1` | 5 |  |
-| `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 12 |  |
+| `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
 | `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |

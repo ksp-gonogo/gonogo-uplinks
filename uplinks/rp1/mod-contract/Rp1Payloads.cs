@@ -1287,6 +1287,29 @@ public sealed class Rp1Personnel
     public double? IdleSalaryMult { get; set; }
 
     /// <summary>
+    /// What one engineer in a centre's unassigned pool draws per day: the salary
+    /// a direct hire adds and a fire saves, since RP-1 hires into that pool and
+    /// fires only from it. Assigning the engineer to a working complex later
+    /// raises it to the full rate.
+    /// </summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? PooledEngineerSalaryPerDay { get; set; }
+
+    /// <summary>
+    /// What one researcher draws per day at the research queue's current work
+    /// rate: the salary a hire adds and a fire saves. Null while the career has
+    /// no researchers, because the rate is read off the ones it has.
+    /// <internal>
+    /// MaintenanceHandler.ResearchSalaryPerDay over SpaceCenterManagement.Researchers.
+    /// RP-1's bill is headcount times one rate (salaryResearchers / 365.25,
+    /// scaled between ResearcherIdleSalaryMult and 1 by TechList[0].workRate),
+    /// so the quotient is that rate exactly.
+    /// </internal>
+    /// </summary>
+    [SitrepUnit(Units.FundsPerDay)]
+    public double? ResearcherSalaryPerHeadPerDay { get; set; }
+
+    /// <summary>
     /// What ONE PAID head costs, the same for either role, and the figure that
     /// actually leaves the balance. Null when RP-1's settings could not be read.
     ///

@@ -714,6 +714,11 @@ public class Rp1ScReflectionTests : IDisposable
         Assert.Equal(1000.0, raw.Personnel!.EngineerSalaryPerYear);
         Assert.Equal(0.25, raw.Personnel!.IdleSalaryMult);
 
+        Assert.Equal(0.25 * 1000 / 365.25, raw.Personnel!.PooledEngineerSalaryPerDay!.Value, 6);
+        // Absent with nobody in research: the per-head rate is read off the
+        // researchers the career has.
+        Assert.Null(raw.Personnel!.ResearcherSalaryPerHeadPerDay);
+
         // What rushing ADDS, on both complexes and signed the same way in both
         // modes: the one already rushing reports what stopping would save, and
         // the quiet one what starting would cost. It is the crew's own salary
@@ -721,6 +726,18 @@ public class Rp1ScReflectionTests : IDisposable
         // the rush rate.
         Assert.Equal(10 * 1000 / 365.25, first.RushSalaryDeltaPerDay!.Value, 6);
         Assert.Equal(4 * 1000 / 365.25, second.RushSalaryDeltaPerDay!.Value, 6);
+    }
+
+    [Fact]
+    public void A_researchers_salary_per_head_is_RP1s_research_bill_over_its_researchers()
+    {
+        Install(new LaunchComplex { Name = "LC-1" }, efficiency: 0.5);
+        SpaceCenterManagement.Instance!.Researchers = 8;
+        MaintenanceHandler.Instance = new MaintenanceHandler { ResearchSalaryPerDay = 20.0 };
+
+        var raw = new Rp1ScReflection().Read(1.0);
+
+        Assert.Equal(2.5, raw.Personnel!.ResearcherSalaryPerHeadPerDay);
     }
 
     [Fact]

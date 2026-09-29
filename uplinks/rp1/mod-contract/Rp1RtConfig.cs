@@ -79,6 +79,7 @@ public static class Rp1RtConfig
             typeof(Rp1VehicleArgs),
             typeof(Rp1ComplexRushArgs),
             typeof(Rp1PersonnelAssignArgs),
+            typeof(Rp1PersonnelHeadcountArgs),
             typeof(Rp1BuildStartArgs),
             typeof(Rp1ProgramAcceptArgs),
             typeof(Rp1LeaderAppointArgs),

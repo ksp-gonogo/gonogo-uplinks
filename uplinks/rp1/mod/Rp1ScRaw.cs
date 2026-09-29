@@ -518,6 +518,8 @@ namespace GonogoRp1Uplink
         public double? EngineerSalaryPerYear;
         public double? ResearcherSalaryPerYear;
         public double? IdleSalaryMult;
+        public double? PooledEngineerSalaryPerDay;
+        public double? ResearcherSalaryPerHeadPerDay;
     }
 
     /// <summary>

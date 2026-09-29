@@ -188,7 +188,7 @@ function StandingTarget({
  * worse than a hire drawn with no price on it, and the bound on the spend beside
  * this needs no price at all, so it goes on standing.</para>
  */
-function HireSpend({
+export function HireSpend({
   isResearch,
   leftToHire,
   personnel,

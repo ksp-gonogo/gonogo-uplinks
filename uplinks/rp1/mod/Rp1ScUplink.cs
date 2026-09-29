@@ -762,6 +762,8 @@ namespace GonogoRp1Uplink
             if (staffingModelResolved)
             {
                 commands.Add(Declare(Rp1PersonnelCommands.AssignCommand, ComplexesTopic));
+                commands.Add(Declare(Rp1PersonnelCommands.HireCommand, PersonnelTopic));
+                commands.Add(Declare(Rp1PersonnelCommands.FireCommand, PersonnelTopic));
             }
             if (facilityModelResolved)
             {
@@ -1121,6 +1123,10 @@ namespace GonogoRp1Uplink
                 {
                     host.AddCommandHandler<Rp1PersonnelAssignArgs, CommandResult>(
                         Rp1PersonnelCommands.AssignCommand, _staffing.Assign);
+                    host.AddCommandHandler<Rp1PersonnelHeadcountArgs, CommandResult>(
+                        Rp1PersonnelCommands.HireCommand, _staffing.Hire);
+                    host.AddCommandHandler<Rp1PersonnelHeadcountArgs, CommandResult>(
+                        Rp1PersonnelCommands.FireCommand, _staffing.Fire);
                 }
             });
             Register(() =>
@@ -2032,7 +2038,7 @@ namespace GonogoRp1Uplink
                     "staffing command",
                     !_staffing.IsAvailable
                         ? "not registered: RP-1 space-centre types not found"
-                        : "rp1.personnel.assign registered (" + _staffing.MethodDiagnosis() + ")"),
+                        : "rp1.personnel.assign, hire and fire registered (" + _staffing.MethodDiagnosis() + ")"),
                 // Its own fact rather than a line on the build commands, and the
                 // diagnosis matters more here than anywhere else on this list:
                 // the one non-public member this Uplink reaches is the tech gate

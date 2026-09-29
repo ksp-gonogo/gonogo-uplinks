@@ -68,6 +68,7 @@ import type {
   Rp1PadNewArgs,
   Rp1PadRenameArgs,
   Rp1PersonnelAssignArgs,
+  Rp1PersonnelHeadcountArgs,
   Rp1ProgramAcceptArgs,
   Rp1ProgramCompleteArgs,
   Rp1RolloutArgs,
@@ -105,6 +106,8 @@ export interface GeneratedCommandArgsMap {
   "rp1.pad.new": Rp1PadNewArgs;
   "rp1.pad.rename": Rp1PadRenameArgs;
   "rp1.personnel.assign": Rp1PersonnelAssignArgs;
+  "rp1.personnel.fire": Rp1PersonnelHeadcountArgs;
+  "rp1.personnel.hire": Rp1PersonnelHeadcountArgs;
   "rp1.program.accept": Rp1ProgramAcceptArgs;
   "rp1.program.complete": Rp1ProgramCompleteArgs;
   "rp1.tech.research": Rp1TechResearchArgs;
@@ -139,6 +142,8 @@ export interface GeneratedCommandReplyMap {
   "rp1.pad.new": CommandResultOf<Record<string, unknown>>;
   "rp1.pad.rename": CommandResult;
   "rp1.personnel.assign": CommandResult;
+  "rp1.personnel.fire": CommandResult;
+  "rp1.personnel.hire": CommandResult;
   "rp1.program.accept": CommandResult;
   "rp1.program.complete": CommandResult;
   "rp1.tech.research": CommandResult;
@@ -183,6 +188,8 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.pad.new": "CommandResultOf<Record<string, unknown>>",
   "rp1.pad.rename": "CommandResult",
   "rp1.personnel.assign": "CommandResult",
+  "rp1.personnel.fire": "CommandResult",
+  "rp1.personnel.hire": "CommandResult",
   "rp1.program.accept": "CommandResult",
   "rp1.program.complete": "CommandResult",
   "rp1.tech.research": "CommandResult",
@@ -255,6 +262,8 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.pad.new": { replies: true, delayed: true },
   "rp1.pad.rename": { replies: true, delayed: true },
   "rp1.personnel.assign": { replies: true, delayed: true },
+  "rp1.personnel.fire": { replies: true, delayed: true },
+  "rp1.personnel.hire": { replies: true, delayed: true },
   "rp1.program.accept": { replies: true, delayed: true },
   "rp1.program.complete": { replies: true, delayed: true },
   "rp1.tech.research": { replies: true, delayed: true },
@@ -289,6 +298,8 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.pad.new",
   "rp1.pad.rename",
   "rp1.personnel.assign",
+  "rp1.personnel.fire",
+  "rp1.personnel.hire",
   "rp1.program.accept",
   "rp1.program.complete",
   "rp1.tech.research",

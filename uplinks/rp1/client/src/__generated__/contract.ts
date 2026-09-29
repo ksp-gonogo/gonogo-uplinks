@@ -135,6 +135,43 @@ export interface Rp1PersonnelAssignArgs
 	engineers?: number;
 }
 /**
+* Args for `rp1.personnel.hire` and `rp1.personnel.fire`: change the headcount
+* on the books by a number, the two buttons of RP-1's Staffing window.
+*
+* **Hiring is a purchase and firing is free.** A hire is charged up front at
+* `Rp1Personnel.HireCost` for every head beyond the waiting applicants, and is
+* refused when the balance does not cover it. A fire costs nothing and takes
+* the salary off the payroll from the next upkeep.
+*
+* **A count, not a target.** RP-1's window hires and fires by a count, and a
+* target would make re-sending safe only by turning a purchase into whatever
+* the difference happened to be when it landed. The staleness hazard is
+* bounded instead: a fire is refused beyond the heads there are to fire, and a
+* hire is refused beyond what the balance covers.
+*
+* **Engineers are hired into the ACTIVE centre's unassigned pool**, as RP-1's
+* own window hires them, and fired only from that pool. Naming the centre is
+* required so a view that is out of date about which centre is active is
+* refused rather than acted on at the wrong place. Assigning them to a complex
+* is `rp1.personnel.assign`, which spends nothing.
+*/
+export interface Rp1PersonnelHeadcountArgs
+{
+	/**
+	* True for researchers, false for engineers. REQUIRED: the two are paid at
+	* different rates and one is per centre, so there is no default worth
+	* guessing.
+	*/
+	research?: boolean;
+	/** How many to hire or fire. Must be at least one. */
+	count?: number;
+	/**
+	* The centre, by `rp1.centres[].kscName`. Required for engineers and ignored
+	* for researchers, who belong to the career rather than a centre.
+	*/
+	kscName?: string;
+}
+/**
 * Args for `rp1.build.start`: begin integrating a design RP-1 has never held,
 * from one of the save's own craft files.
 *
@@ -1747,6 +1784,19 @@ export interface Rp1Personnel
 	* reserve, so it is published even though a client could not derive it.
 	*/
 	idleSalaryMult?: Value<"ratio"> | null;
+	/**
+	* What one engineer in a centre's unassigned pool draws per day: the salary a
+	* direct hire adds and a fire saves, since RP-1 hires into that pool and fires
+	* only from it. Assigning the engineer to a working complex later raises it to
+	* the full rate.
+	*/
+	pooledEngineerSalaryPerDay?: Value<"f/day"> | null;
+	/**
+	* What one researcher draws per day at the research queue's current work rate:
+	* the salary a hire adds and a fire saves. Null while the career has no
+	* researchers, because the rate is read off the ones it has.
+	*/
+	researcherSalaryPerHeadPerDay?: Value<"f/day"> | null;
 	/**
 	* What ONE PAID head costs, the same for either role, and the figure that
 	* actually leaves the balance. Null when RP-1's settings could not be read.

@@ -680,6 +680,7 @@ namespace RP0
 
         public static void Reset()
         {
+            ThrowOnHire = false;
             ThrowOnAdd = false;
             ThrowOnScrap = false;
             ThrowOnExperimental = false;
@@ -725,6 +726,40 @@ namespace RP0
             }
             Funding.Instance?.AddFunds(b.GetTotalCost());
         }
+
+        /// <summary>Made to throw after the charge, where the shipped body can leave a balance down with nobody hired.</summary>
+        public static bool ThrowOnHire;
+
+        /// <summary>
+        /// The shipped body, in its order: charge the heads beyond the applicants,
+        /// add the heads, then consume the applicants.
+        /// </summary>
+        public static void HireStaff(bool isResearch, int workerAmount, LaunchComplex? lc = null)
+        {
+            var scm = SpaceCenterManagement.Instance!;
+            Funding.Instance?.AddFunds(-(Math.Max(0, workerAmount - scm.Applicants) * Database.SettingsSC.HireCost));
+            if (ThrowOnHire)
+            {
+                throw new InvalidOperationException("the payroll could not be updated");
+            }
+            if (isResearch)
+            {
+                ChangeResearchers(workerAmount);
+                scm.UpdateTechTimes();
+            }
+            else
+            {
+                ChangeEngineers(lc?.KSC ?? scm.ActiveSC!, workerAmount);
+                if (lc != null)
+                {
+                    ChangeEngineers(lc, workerAmount);
+                }
+            }
+            scm.Applicants = Math.Max(0, scm.Applicants - workerAmount);
+        }
+
+        public static void ChangeResearchers(int delta) =>
+            SpaceCenterManagement.Instance!.Researchers += delta;
 
         public static void ChangeEngineers(LaunchComplex currentLC, int delta)
         {
@@ -1885,6 +1920,18 @@ namespace RP0
                 return Engineers - assigned;
             }
         }
+
+        /// <summary>How many times build rates were recalculated, and with which argument last.</summary>
+        public int BuildRateRecalculations;
+
+        public bool? LastRecalculateAll;
+
+        /// <summary>RP-1's optional parameter, declared so a production invoke has to pass it.</summary>
+        public void RecalculateBuildRates(bool all = true)
+        {
+            BuildRateRecalculations++;
+            LastRecalculateAll = all;
+        }
     }
 
     /// <summary>
@@ -2046,6 +2093,11 @@ namespace RP0
         public int ClearedEfficiencyRecords;
 
         public void RegisterLC(LaunchComplex lc) => RegisteredComplexes.Add(lc);
+
+        /// <summary>How many times the research queue was re-timed.</summary>
+        public int TechTimeUpdates;
+
+        public void UpdateTechTimes() => TechTimeUpdates++;
 
         /// <summary>Always present, exactly as RP-1 constructs it; validity is the question, not existence.</summary>
         public HireStaffProject staffTarget = new HireStaffProject();
