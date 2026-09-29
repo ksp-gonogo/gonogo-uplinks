@@ -217,6 +217,23 @@ BINDS something, so a side-effect import of an unresolvable specifier
 (`import "./topics";`) passes a clean nodenext typecheck and fails at runtime
 instead. Give those the same extension as the rest; nothing will tell you.
 
+## Scans that hold every Uplink, and bringing one with an arrival
+
+Some properties are checked across the whole tree rather than per Uplink, by the
+`tooling/*.test.mjs` files CI's `discover` job runs. One of them is
+`tooling/snapshot-ut-fallback.test.mjs`: a capture that runs without a snapshot
+takes the live clock, `snapshot?.Ut ?? _host!.NowUt()`, never a literal. Year 1
+day 1 is a real instant, so `?.Ut ?? 0.0` stamps a reading with a time nobody
+measured, and the branch is usually unreachable, which is why the wrong answer
+stays invisible until something upstream makes it live. The scan catches the shape
+whatever the receiver is called, because rp1 once shipped `raw?.Ut ?? 0.0` on its
+courier handles, which a scan keyed on the name `snapshot` passes.
+
+A departure moves code and leaves behind the tests that constrained it, and each
+repo stays green on its own. So when an Uplink arrives, ask of every scan in
+`gonogo` that reads its sources: does it constrain this code, and does it come
+too? This scan exists because eleven Uplinks left `gonogo` before anyone asked.
+
 ## What the devkit still owes, measured from the outside
 
 Everything below was reconstructed by hand to get this repo green. Each is a
@@ -298,3 +315,10 @@ thing an author has to work out for themselves today, and each belongs upstream.
    worth having, so an author does not write that double from scratch, but it is
    a convenience now rather than the thing standing between this Uplink and the
    rule
+
+10. **No shipped epoch-fallback assertion.** The scan above holds this repo, and
+   `gonogo`'s `SnapshotUtFallbackScanTests` holds core, but an Uplink outside both
+   repos has nothing. It is a regex over sources, needing no private assembly, so
+   it belongs in `Sitrep.Contract.TestSupport` beside `UnitCoverageAssertion` as a
+   `SnapshotUtAssertion` an author calls from their own suite over their own
+   source directory
