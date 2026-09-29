@@ -17,6 +17,7 @@ import {
   MissionDate,
   magnitudeOf,
   NULL_DISPLAY,
+  ProgressBar,
   Readout,
   ReadoutCaption,
   Row,
@@ -38,6 +39,7 @@ import type {
   Rp1FundingCurveEntry,
   Rp1ProgramEntry,
   Rp1ProgramPaymentEntry,
+  Rp1ProgramSlots,
   Rp1ProgramSpeedOption,
 } from "../__generated__/contract.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
@@ -93,6 +95,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
    * numbers, so nothing here asks `current()` to strip them.
    */
   const slotsReading = useTelemetry("rp1.programSlots");
+  const slots = current(slotsReading);
   const curves = current(useTelemetry("rp1.programFundingCurves"));
   // Both balances, because both are spent here. Confidence buys the Program and
   // funds are what it pays back, so an operator weighing an offer is comparing
@@ -143,6 +146,12 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
         <Balance caption="Slots">
           <Unit value={slotsReading.usedSlots} /> of{" "}
           <Unit value={slotsReading.maxSlots} />
+          {isFull(slots?.freeSlots) && (
+            <>
+              {" "}
+              <Badge severity="caution">FULL</Badge>
+            </>
+          )}
         </Balance>
       </Cluster>
 
@@ -376,6 +385,7 @@ function ChosenProgram({
         handle={accept}
         program={program}
       />
+      <RunningProgram program={program} />
 
       {/* The readings, left to right when the pane is wide enough for two
           columns of them and stacked when it is not. */}
@@ -458,18 +468,22 @@ function ChosenProgram({
               <RowName>Curve</RowName>
               <Text>{curveName(program, curves)}</Text>
             </Row>
-            <Row wrap>
-              <RowName>
-                {present(program.completedUt) === undefined
-                  ? "Deadline"
-                  : "Completed"}
-              </RowName>
-              <Text>
-                <MissionDateOrAbsent
-                  ut={program.completedUt ?? program.deadlineUt}
-                />
-              </Text>
-            </Row>
+            {/* A running Program's deadline is in the RUNNING block above,
+                beside what the overrun would cost. */}
+            {program.status !== "active" && (
+              <Row wrap>
+                <RowName>
+                  {present(program.completedUt) === undefined
+                    ? "Deadline"
+                    : "Completed"}
+                </RowName>
+                <Text>
+                  <MissionDateOrAbsent
+                    ut={program.completedUt ?? program.deadlineUt}
+                  />
+                </Text>
+              </Row>
+            )}
             <Row wrap>
               <RowName>Accepted</RowName>
               <Text>
@@ -595,6 +609,69 @@ function AcceptControl({
           }
         />
       </Cluster>
+    </Section>
+  );
+}
+
+/**
+ * Where a running Program stands against its term: what it has paid, the
+ * deadline, and once the deadline has passed, what the overrun is costing.
+ *
+ * <para>Beside the Accept control's place and in the same fixed spot under the
+ * Program's name, because both are the Program's commitment rather than its
+ * terms: Accept is what taking it on costs, this is what holding it is costing
+ * now and whether it can be closed.</para>
+ */
+function RunningProgram({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
+  if (program.status !== "active") {
+    return null;
+  }
+
+  const ratio = magnitudeOf(program.fracElapsed);
+  const overrun = ratio !== null && ratio >= 1;
+  const ready = program.canComplete === true;
+
+  return (
+    <Section>
+      <SectionTitle>RUNNING</SectionTitle>
+      {(ready || overrun) && (
+        <Cluster gap="related-dense" justify="start" wrap>
+          {ready && <Badge severity="info">READY TO COMPLETE</Badge>}
+          {overrun && <Badge severity="caution">OVERRUN</Badge>}
+        </Cluster>
+      )}
+      <Stack as="ul" gap="rows" style={LIST_STYLE}>
+        <Row wrap>
+          <RowName>Paid</RowName>
+          <Text>
+            <Unit value={program.fundsPaidOut} /> of{" "}
+            <Unit value={program.totalFunding} />
+          </Text>
+        </Row>
+        <Row wrap>
+          <RowName>Deadline</RowName>
+          <Text>
+            <MissionDateOrAbsent ut={program.deadlineUt} />
+          </Text>
+        </Row>
+        {overrun && (
+          <Row wrap>
+            {/* Only once it bites. Before the deadline this is a rate nothing
+                is charging, and showing it reads as a loss already taken. */}
+            <RowName>Overrun cost</RowName>
+            <Text>
+              <Unit value={program.repPenaltyAssessed} /> lost, at{" "}
+              <Unit value={program.repPenaltyPerYearLate} /> per year
+            </Text>
+          </Row>
+        )}
+      </Stack>
+      {ratio !== null && (
+        <ProgressBar
+          ariaLabel={`Program funding drawn down, ${label(program)}`}
+          value={Math.min(ratio, 1) * 100}
+        />
+      )}
     </Section>
   );
 }
@@ -908,7 +985,7 @@ function MissionDateOrAbsent({
   return <MissionDate value={ut} />;
 }
 
-/** A Row renders an `<li>`; see ProgramStatus for the same reset and why it is inline. */
+/** A Row renders an `<li>`; see LaunchComplexStatus for the same reset and why it is inline. */
 const LIST_STYLE = { listStyle: "none", margin: 0, padding: 0 } as const;
 
 /**
@@ -1000,11 +1077,23 @@ function severityOf(status: Rp1ProgramEntry["status"]): Severity {
 }
 
 /**
+ * No capacity left. Absent stays quiet: an unknown ceiling is not a full one,
+ * and RP-1 cannot answer the ceiling outside a loaded career.
+ */
+function isFull(freeSlots: Rp1ProgramSlots["freeSlots"]): boolean {
+  const free = magnitudeOf(freeSlots);
+  return free !== null && free <= 0;
+}
+
+/**
  * The career cannot afford this speed. Silent unless BOTH halves are present:
  * an unknown balance is not a short one and a price we could not read is not
- * free. Deliberately not RP-1's own verdict, for the reason ProgramStatus gives:
- * RP-1 decides affordability with a query that broadcasts to every modifier in
- * the save, which the Uplink does not run.
+ * free.
+ *
+ * <para>Deliberately not RP-1's own verdict. RP-1 decides affordability with a
+ * currency-modifier query that broadcasts to every modifier in the save, which
+ * the Uplink does not run, so a leader who discounts Confidence moves the
+ * Administration building's answer and not this one.</para>
  */
 function outOfReach(
   cost: Rp1ProgramSpeedOption["confidenceCost"],

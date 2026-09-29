@@ -777,4 +777,92 @@ describe("ProgramDetail", () => {
      */
     await act(async () => {});
   });
+
+  describe("running Program", () => {
+    it("shows what it has paid against its total and how far through its term it is", async () => {
+      const { fixture, view } = mount();
+      await feed(fixture);
+
+      expect(await screen.findByText("RUNNING")).toBeInTheDocument();
+      expect(
+        screen.getByRole("progressbar", {
+          name: /Program funding drawn down, X-Plane Research/,
+        }),
+      ).toHaveAttribute("aria-valuenow", "25");
+      await expectNoA11yViolations(view.container);
+    });
+
+    it("warns once a Program has overrun and says what the overrun has cost", async () => {
+      const { fixture } = mount();
+      await feed(fixture, [
+        program({ fracElapsed: 1.4, repPenaltyAssessed: 52 }),
+      ]);
+
+      expect(await screen.findByText("OVERRUN")).toBeInTheDocument();
+      expect(visibleText()).toContain("Overrun cost");
+      // The bar is the share of the term, so it stops at full rather than
+      // running off the end of its track.
+      expect(screen.getByRole("progressbar")).toHaveAttribute(
+        "aria-valuenow",
+        "100",
+      );
+    });
+
+    it("keeps quiet about the overrun rate while the Program is still inside its deadline", async () => {
+      // Before the deadline nothing is charging it, and printing the rate reads
+      // as a loss already taken.
+      const { fixture } = mount();
+      await feed(fixture);
+
+      expect(await screen.findByText("RUNNING")).toBeInTheDocument();
+      expect(screen.queryByText("Overrun cost")).not.toBeInTheDocument();
+      expect(screen.queryByText("OVERRUN")).not.toBeInTheDocument();
+    });
+
+    it("marks a Program whose objectives are done as ready to complete, overrun or not", async () => {
+      const { fixture } = mount();
+      await feed(fixture, [
+        program({ objectivesMet: true, canComplete: true, fracElapsed: 1.2 }),
+      ]);
+
+      expect(await screen.findByText("READY TO COMPLETE")).toBeInTheDocument();
+      expect(screen.getByText("OVERRUN")).toBeInTheDocument();
+    });
+
+    it("draws no running block for a Program that is not running", async () => {
+      const { fixture } = mount();
+      await feed(fixture, [
+        program({ status: "offerable", canAccept: true }),
+        program({ name: "Done", title: "Done", status: "completed" }),
+      ]);
+
+      expect(screen.queryByText("RUNNING")).toBeNull();
+      expect(screen.queryByRole("progressbar")).toBeNull();
+      await userEvent.click(screen.getByRole("button", { name: /Done/ }));
+      expect(screen.queryByText("RUNNING")).toBeNull();
+    });
+  });
+
+  it("flags a full slate, and stays quiet when the ceiling is unknown", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+    fixture.emit("rp1.programSlots", slots({ usedSlots: 3, freeSlots: 0 }));
+
+    await waitFor(() => {
+      expect(screen.getByText("FULL")).toBeInTheDocument();
+    });
+
+    /*
+     * An unknown ceiling is not a full one: outside a loaded career RP-1 cannot
+     * answer it, and a FULL badge there would tell the operator they cannot
+     * start something when nobody knows.
+     */
+    fixture.emit(
+      "rp1.programSlots",
+      slots({ maxSlots: null, freeSlots: null, usedSlots: 3 }),
+    );
+    await waitFor(() => {
+      expect(screen.queryByText("FULL")).not.toBeInTheDocument();
+    });
+  });
 });

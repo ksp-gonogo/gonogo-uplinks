@@ -1,0 +1,353 @@
+{
+  "_meta": {
+    "notes": "A career in trouble on both halves of the running-Program block: both slots taken, and the running Program past its term with its objectives done and not yet claimed, so RP-1 is assessing the late penalty on a Program the operator could close today. Every conditional the block draws (FULL, READY TO COMPLETE, OVERRUN, the overrun-cost row, the capped progress bar) is on screen at once. Past the deadline RP-1 stops recomputing the duration, so the curve draws on its fraction-of-term axis"
+  },
+  "_scene": {
+    "augment": "rp1-program-detail",
+    "hostWidget": "strategies",
+    "caption": "The running Program past its deadline with its objectives met and unclaimed: ready to complete, losing reputation by the year until it is, with both Program slots committed",
+    "paints": [
+      "PROGRAM DETAIL",
+      "Early Orbital Program",
+      "RUNNING",
+      "READY TO COMPLETE",
+      "OVERRUN",
+      "Paid",
+      "Deadline",
+      "Overrun cost",
+      "FULL"
+    ],
+    "size": {
+      "w": 8,
+      "h": 16
+    }
+  },
+  "_stream": {
+    "pinnedUt": 70000000,
+    "emits": [
+      {
+        "topic": "career.status",
+        "payload": {
+          "economy": {
+            "funds": 289848,
+            "reputation": 62,
+            "science": 340
+          },
+          "strategies": {
+            "active": [
+              {
+                "id": "EarlyOrbital",
+                "title": "Early Orbital Program",
+                "description": "",
+                "department": "Programs",
+                "isActive": true,
+                "factor": 1,
+                "dateActivated": 0,
+                "requiredReputation": 0,
+                "initialCostFunds": 0,
+                "initialCostScience": 0,
+                "initialCostReputation": 0,
+                "hasFactorSlider": false,
+                "factorSliderDefault": 1,
+                "factorSliderSteps": 1,
+                "canActivate": false,
+                "activateBlockedReason": "Strategy already active.",
+                "canDeactivate": true,
+                "deactivateBlockedReason": "",
+                "effect": ""
+              }
+            ],
+            "all": [
+              {
+                "id": "EarlyOrbital",
+                "title": "Early Orbital Program",
+                "description": "",
+                "department": "Programs",
+                "isActive": true,
+                "factor": 1,
+                "dateActivated": 0,
+                "requiredReputation": 0,
+                "initialCostFunds": 0,
+                "initialCostScience": 0,
+                "initialCostReputation": 0,
+                "hasFactorSlider": false,
+                "factorSliderDefault": 1,
+                "factorSliderSteps": 1,
+                "canActivate": false,
+                "activateBlockedReason": "Strategy already active.",
+                "canDeactivate": true,
+                "deactivateBlockedReason": "",
+                "effect": ""
+              },
+              {
+                "id": "CrewedOrbital",
+                "title": "Crewed Orbital Program",
+                "description": "",
+                "department": "Programs",
+                "isActive": false,
+                "factor": 1,
+                "dateActivated": 0,
+                "requiredReputation": 0,
+                "initialCostFunds": 0,
+                "initialCostScience": 0,
+                "initialCostReputation": 0,
+                "hasFactorSlider": false,
+                "factorSliderDefault": 1,
+                "factorSliderSteps": 1,
+                "canActivate": true,
+                "activateBlockedReason": "",
+                "canDeactivate": false,
+                "deactivateBlockedReason": "",
+                "effect": ""
+              }
+            ],
+            "activeCount": 1
+          }
+        }
+      },
+      {
+        "topic": "rp1.available",
+        "payload": true
+      },
+      {
+        "topic": "rp1.confidence",
+        "payload": {
+          "confidence": 118,
+          "earned": 640
+        }
+      },
+      {
+        "topic": "rp1.programSlots",
+        "payload": {
+          "maxSlots": 2,
+          "usedSlots": 2,
+          "freeSlots": 0,
+          "activeCount": 1,
+          "completedCount": 1
+        }
+      },
+      {
+        "topic": "rp1.programs",
+        "payload": [
+          {
+            "name": "EarlyOrbital",
+            "title": "Early Orbital Program",
+            "status": "active",
+            "speed": "Normal",
+            "slots": 1,
+            "isHumanSpaceflight": false,
+            "nominalDurationSeconds": 63115200,
+            "acceptedUt": 400000,
+            "deadlineUt": 63515200,
+            "fracElapsed": 1.18,
+            "totalFunding": 480000,
+            "fundsPaidOut": 452000,
+            "fundsRemaining": 28000,
+            "fundingCurve": "StrongFrontloaded",
+            "confidenceCost": 60,
+            "repDeltaOnCompletePerYearEarly": 20,
+            "repPenaltyPerYearLate": 15,
+            "repPenaltyAssessed": 2.7,
+            "requirementsMet": true,
+            "objectivesMet": true,
+            "canAccept": false,
+            "canComplete": true,
+            "durationSeconds": null,
+            "objectivesText": "Complete First Artificial Satellite and Orbital Return contracts.",
+            "requirementsText": null,
+            "speedOptions": null,
+            "programsToDisableOnAccept": null,
+            "fundingPayments": null
+          },
+          {
+            "name": "CrewedOrbital",
+            "title": "Crewed Orbital Program",
+            "status": "offerable",
+            "speed": "Normal",
+            "slots": 1,
+            "isHumanSpaceflight": true,
+            "nominalDurationSeconds": 94672800,
+            "totalFunding": 1250000,
+            "confidenceCost": 240,
+            "requirementsMet": true,
+            "objectivesMet": false,
+            "canAccept": true,
+            "canComplete": false
+          },
+          {
+            "name": "EarlySounding",
+            "title": "Early Sounding Rocket Program",
+            "status": "completed",
+            "speed": "Normal",
+            "slots": 1,
+            "totalFunding": 120000,
+            "fundsPaidOut": 120000,
+            "fundsRemaining": 0,
+            "completedUt": 380000
+          }
+        ]
+      },
+      {
+        "topic": "rp1.programFundingCurves",
+        "payload": [
+          {
+            "name": "Flat",
+            "isDefault": true,
+            "keys": [
+              {
+                "frac": 0,
+                "paidFraction": 0,
+                "inTangent": 1,
+                "outTangent": 1
+              },
+              {
+                "frac": 1,
+                "paidFraction": 1,
+                "inTangent": 1,
+                "outTangent": 0.8
+              },
+              {
+                "frac": 2,
+                "paidFraction": 1.4,
+                "inTangent": 0.25,
+                "outTangent": 0.25
+              }
+            ]
+          },
+          {
+            "name": "StrongBackloaded",
+            "isDefault": false,
+            "keys": [
+              {
+                "frac": 0,
+                "paidFraction": 0,
+                "inTangent": 0.66,
+                "outTangent": 0.66
+              },
+              {
+                "frac": 0.5,
+                "paidFraction": 0.33,
+                "inTangent": 0.8299999,
+                "outTangent": 0.8299999
+              },
+              {
+                "frac": 0.6,
+                "paidFraction": 0.43,
+                "inTangent": 1.35,
+                "outTangent": 1.35
+              },
+              {
+                "frac": 0.7,
+                "paidFraction": 0.6,
+                "inTangent": 1.85,
+                "outTangent": 1.85
+              },
+              {
+                "frac": 0.8,
+                "paidFraction": 0.8,
+                "inTangent": 1.65,
+                "outTangent": 1.65
+              },
+              {
+                "frac": 0.9,
+                "paidFraction": 0.93,
+                "inTangent": 1,
+                "outTangent": 1
+              },
+              {
+                "frac": 1,
+                "paidFraction": 1,
+                "inTangent": 0.5499998,
+                "outTangent": 0.5499998
+              },
+              {
+                "frac": 2,
+                "paidFraction": 1.4,
+                "inTangent": 0.4,
+                "outTangent": 0.4
+              }
+            ]
+          },
+          {
+            "name": "StrongFrontloaded",
+            "isDefault": false,
+            "keys": [
+              {
+                "frac": 0,
+                "paidFraction": 0,
+                "inTangent": 0.2575197,
+                "outTangent": 0.2575197
+              },
+              {
+                "frac": 0.1,
+                "paidFraction": 0.04241252,
+                "inTangent": 0.644084,
+                "outTangent": 0.644084
+              },
+              {
+                "frac": 0.2,
+                "paidFraction": 0.1551579,
+                "inTangent": 1.508536,
+                "outTangent": 1.508536
+              },
+              {
+                "frac": 0.3,
+                "paidFraction": 0.3142093,
+                "inTangent": 1.654377,
+                "outTangent": 1.654377
+              },
+              {
+                "frac": 0.4,
+                "paidFraction": 0.4824604,
+                "inTangent": 1.695143,
+                "outTangent": 1.695143
+              },
+              {
+                "frac": 0.5,
+                "paidFraction": 0.6445014,
+                "inTangent": 1.505206,
+                "outTangent": 1.505206
+              },
+              {
+                "frac": 0.6,
+                "paidFraction": 0.7790177,
+                "inTangent": 1.163504,
+                "outTangent": 1.163504
+              },
+              {
+                "frac": 0.7,
+                "paidFraction": 0.8753952,
+                "inTangent": 0.7533766,
+                "outTangent": 0.7533766
+              },
+              {
+                "frac": 0.8,
+                "paidFraction": 0.9343295,
+                "inTangent": 0.4680698,
+                "outTangent": 0.4680698
+              },
+              {
+                "frac": 0.9,
+                "paidFraction": 0.9713384,
+                "inTangent": 0.3030235,
+                "outTangent": 0.3030235
+              },
+              {
+                "frac": 1,
+                "paidFraction": 1,
+                "inTangent": 0.2820196,
+                "outTangent": 0.2820196
+              },
+              {
+                "frac": 2,
+                "paidFraction": 1.2,
+                "inTangent": 0.2,
+                "outTangent": 0.2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

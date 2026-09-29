@@ -21,7 +21,6 @@ import "./KscComplexes/index.js";
 import "./KscConstruction/index.js";
 import "./LaunchComplexStatus/index.js";
 import "./ProgramDetail/index.js";
-import "./ProgramStatus/index.js";
 import "./ResearchQueue/index.js";
 import "./StartResearch/index.js";
 import "./VehicleAssembly/index.js";
@@ -63,7 +62,6 @@ export {
   ProgramDetail,
   RP1_STRATEGY_ACTIVATE_COMMAND,
 } from "./ProgramDetail/index.js";
-export { ProgramStatus } from "./ProgramStatus/index.js";
 export { ResearchQueue } from "./ResearchQueue/index.js";
 export {
   RP1_TECH_RESEARCH_COMMAND,

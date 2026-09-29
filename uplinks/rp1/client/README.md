@@ -159,8 +159,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 12 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 5 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
-| `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 5 |  |
-| `rp1-program-status` | `career-economy.sections` | – |  | 1 |  |
+| `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
 | `rp1-research-queue` | `tech-tree.sections` | – |  | 1 |  |
 | `rp1-start-research` | `tech-tree.sections` | `rp1.available`, `career.status`, `rp1.research` | only while `rp1` | 2 |  |
 | `rp1-vehicle-assembly-build-cost` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
@@ -191,8 +190,6 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 ![Three pads across two RP-1 complexes: one holding a vehicle that has finished rolling out, one being reconditioned, and a stock runway RP-1 does not model](docs/assets/pad-holding-a-finished-vehicle--default.png)
 
 ![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](docs/assets/catalogue-picker--landscape-18x5.png)
-
-![Both Program slots committed, the running Program past its deadline and losing reputation by the year, and the next one out of Confidence reach](docs/assets/programs-overrun-and-unaffordable--default.png)
 
 ![Three queued nodes: one being worked with a countdown and its era window, one throttled down to a fifth of full rate, and one stalled with nothing to date it from](docs/assets/research-queue-throttled-and-stalled--default.png)
 
