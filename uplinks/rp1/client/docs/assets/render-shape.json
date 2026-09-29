@@ -228,24 +228,24 @@
       "text": "b6c63acd"
     },
     "catalogue-picker--default.png": {
-      "hash": "06441c3adbdb9a65",
-      "elements": 263,
-      "text": "36cd04e0"
+      "hash": "b0a460bf2e1ff9f6",
+      "elements": 277,
+      "text": "374aca22"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "f27ebaac725503d2",
-      "elements": 278,
-      "text": "c4f8eefa"
+      "hash": "f1c87b41a2679550",
+      "elements": 292,
+      "text": "9496033a"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "f27ebaac725503d2",
-      "elements": 278,
-      "text": "c4f8eefa"
+      "hash": "f1c87b41a2679550",
+      "elements": 292,
+      "text": "9496033a"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "06441c3adbdb9a65",
-      "elements": 263,
-      "text": "36cd04e0"
+      "hash": "b0a460bf2e1ff9f6",
+      "elements": 277,
+      "text": "374aca22"
     },
     "completed-program--default.png": {
       "hash": "749e914cdf759c29",
@@ -403,9 +403,9 @@
       "text": "b0e3d8ab"
     },
     "no-curve-table--default.png": {
-      "hash": "6bd2c07ebaa867c1",
-      "elements": 271,
-      "text": "0d559876"
+      "hash": "bdad37e8c07c3eb6",
+      "elements": 285,
+      "text": "a4fc713a"
     },
     "offer-frontloaded--default.png": {
       "hash": "4d868c94f53b4e45",
@@ -432,11 +432,6 @@
       "elements": 76,
       "text": "7061a871"
     },
-    "programs-overrun-and-unaffordable--default.png": {
-      "hash": "5e47cf13ff0fe154",
-      "elements": 115,
-      "text": "6f53e3af"
-    },
     "programs-screen--default.png": {
       "hash": "0c4b0d1ee0bd4d86",
       "elements": 143,
@@ -448,9 +443,14 @@
       "text": "a8b3e662"
     },
     "running-backloaded--default.png": {
-      "hash": "e82d64f542c742dd",
-      "elements": 285,
-      "text": "fc01e745"
+      "hash": "a7377a4c11a16750",
+      "elements": 299,
+      "text": "744fc261"
+    },
+    "running-overrun-ready--default.png": {
+      "hash": "4df019bd9941fd50",
+      "elements": 225,
+      "text": "1f010844"
     },
     "start-research-affordable--default.png": {
       "hash": "ff4c6c87dd454955",
