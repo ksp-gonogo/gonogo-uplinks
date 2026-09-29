@@ -53,7 +53,7 @@ public static class MechJebRtConfig
             .GenerateDocumentation()
             .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 
-        Sitrep.Contract.RtDocText.MergeRemarksIntoSummaries(builder);
+        Sitrep.Contract.RtDocText.MergeIntoSummaries(builder);
 
         // Held in a local for the same reason RtConfig.wirePayloadTypes is:
         // ApplyUnitValueTypes re-enters this exact set, only a type

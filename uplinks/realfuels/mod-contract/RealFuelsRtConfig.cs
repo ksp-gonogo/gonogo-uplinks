@@ -36,7 +36,7 @@ public static class RealFuelsRtConfig
             .GenerateDocumentation()
             .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 
-        Sitrep.Contract.RtDocText.MergeRemarksIntoSummaries(builder);
+        Sitrep.Contract.RtDocText.MergeIntoSummaries(builder);
 
         // Held in a local because ApplyUnitValueTypes re-enters this exact set:
         // only a type registered with rtcli may have its properties retyped.

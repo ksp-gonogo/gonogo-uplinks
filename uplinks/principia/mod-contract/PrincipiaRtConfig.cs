@@ -37,7 +37,7 @@ public static class PrincipiaRtConfig
             .GenerateDocumentation()
             .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 
-        Sitrep.Contract.RtDocText.MergeRemarksIntoSummaries(builder);
+        Sitrep.Contract.RtDocText.MergeIntoSummaries(builder);
 
         // Held in a local for the same reason RtConfig.wirePayloadTypes is:
         // ApplyUnitValueTypes re-enters this exact set, and only a type

@@ -9,7 +9,11 @@
 // which is not the same as being dimensionless: dimensionless is the
 // explicit "1" token.
 
-/** Every token first-party payloads use (Sitrep.Contract.Units). */
+/**
+ * Every unit token the built-in payloads use.
+ *
+ * @category Units and values
+ */
 export type KnownSitrepUnit =
   | "%"
   | "1"
@@ -62,20 +66,22 @@ export type KnownSitrepUnit =
 /**
  * A declared unit. OPEN on purpose.
  *
- * The known tokens above still autocomplete, and a typo in first-party
- * code is still caught at codegen time by the catalog check. The open arm
- * exists because a third-party Uplink CANNOT add to Sitrep.Contract.Units:
- * it is a const-string class compiled into the contract assembly. Closing
- * this union would therefore have meant an Uplink could never declare a
- * unit at all, which contradicts third parties being first-class.
+ * The known tokens above still autocomplete. Any other string is accepted
+ * too, so an Uplink can declare a unit of its own.
  *
  * A consumer teaches the client what an unknown symbol MEANS by declaring it
  * in UnitDeclarations and calling registerUnit from @ksp-gonogo/sitrep-sdk.
  * Until it does, the value still renders, bare and unscaled.
+ *
+ * @category Units and values
  */
 export type SitrepUnit = KnownSitrepUnit | (string & {});
 
-/** Declared units for one payload shape, keyed by camelCased field name. */
+/**
+ * Declared units for one payload shape, keyed by camelCased field name.
+ *
+ * @category Units and values
+ */
 export type UnitsByField = Readonly<Record<string, SitrepUnit>>;
 
 /**
@@ -380,7 +386,11 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
   },
 };
 
-/** The nested payload shape each complex field holds, by its interface name. */
+/**
+ * The nested payload shape each complex field holds, by its interface name.
+ *
+ * @category Units and values
+ */
 export type ShapesByField = Readonly<Record<string, string>>;
 
 /**
@@ -457,4 +467,23 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
     burnFrames: "PrincipiaReferenceFrame[]",
     plottingFrame: "PrincipiaReferenceFrame",
   },
+};
+
+/**
+ * How each `enum` field reads as a word, keyed by camelCased field name:
+ * the enum whose ordinal the wire carries (see GENERATED_ENUM_MEMBERS), or
+ * null for a field whose value is already the member's name.
+ */
+export type EnumsByField = Readonly<Record<string, string | null>>;
+
+/** Keyed by the generated interface name in ./contract.ts. */
+export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
+};
+
+/** The same, keyed by Topic id. */
+export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
+};
+
+/** Each enum an `enum` field names, as its wire value to member name. */
+export const GENERATED_ENUM_MEMBERS: Readonly<Record<string, Readonly<Record<number, string>>>> = {
 };
