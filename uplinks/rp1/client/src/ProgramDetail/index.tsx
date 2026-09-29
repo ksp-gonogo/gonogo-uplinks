@@ -11,6 +11,7 @@ import {
   DataTable,
   EmptyState,
   ExpandableText,
+  FilterRegion,
   GraphNotice,
   Grid,
   LineGraph,
@@ -177,7 +178,11 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
          * and its one accept control (`KSP.UI.Screens.Administration`:
          * `scrollListStrategies` + `SetSelectedStrategy` + `btnAcceptCancel`).
          */
-        <Grid cols={MASTER_DETAIL_COLUMNS} gap="related-comfortable" align="start">
+        <Grid
+          cols={MASTER_DETAIL_COLUMNS}
+          gap="related-comfortable"
+          align="start"
+        >
           <ProgramCatalogue
             chosen={chosen}
             onPick={setPicked}
@@ -299,39 +304,38 @@ function ProgramCatalogue({
   return (
     <Section gap="caption">
       <SectionTitle>CATALOGUE</SectionTitle>
-      {shown.length === 0 ? (
-        // A marker, not a paragraph: the operator can see what they typed, so
-        // the only fact left to state is that nothing answers to it.
-        <EmptyState>No Program matches the filter</EmptyState>
-      ) : (
-        <Stack
-          aria-label="Program catalogue"
-          gap="caption"
-          role="group"
-          style={CATALOGUE_SCROLL}
-        >
-          {shown.map((program) => (
-            <SelectableRow
-              key={program.name ?? ""}
-              onClick={() => onPick(program.name ?? "")}
-              selected={program.name === chosen?.name}
-            >
-              <SubjectHeading
-                status={
-                  <Badge severity={severityOf(program.status)}>
-                    {(program.status ?? NULL_DISPLAY).toUpperCase()}
-                  </Badge>
-                }
+      <FilterRegion filter={filter}>
+        {shown.length === 0 ? (
+          // A marker, not a paragraph: the operator can see what they typed, so
+          // the only fact left to state is that nothing answers to it.
+          <EmptyState>No Program matches the filter</EmptyState>
+        ) : (
+          <Stack
+            aria-label="Program catalogue"
+            gap="caption"
+            role="group"
+            style={CATALOGUE_SCROLL}
+          >
+            {shown.map((program) => (
+              <SelectableRow
+                key={program.name ?? ""}
+                onClick={() => onPick(program.name ?? "")}
+                selected={program.name === chosen?.name}
               >
-                <Text size="xs">{label(program)}</Text>
-              </SubjectHeading>
-            </SelectableRow>
-          ))}
-        </Stack>
-      )}
-      {/* Under the list, where every other filter in the app sits: the list is
-          what the operator came to read and the box is what narrows it. */}
-      {filter.control}
+                <SubjectHeading
+                  status={
+                    <Badge severity={severityOf(program.status)}>
+                      {(program.status ?? NULL_DISPLAY).toUpperCase()}
+                    </Badge>
+                  }
+                >
+                  <Text size="xs">{label(program)}</Text>
+                </SubjectHeading>
+              </SelectableRow>
+            ))}
+          </Stack>
+        )}
+      </FilterRegion>
     </Section>
   );
 }
