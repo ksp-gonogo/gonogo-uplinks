@@ -23,7 +23,7 @@
 // it: zero impact on MapView for non-SCANsat users.
 
 import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
-import { registerAugment } from "@ksp-gonogo/sitrep-sdk";
+import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, magnitudeOr } from "@ksp-gonogo/ui-kit";
 import { useEffect, useRef } from "react";
 import { useScanningVessels } from "../FogReveal/useScanLayers.js";
@@ -37,6 +37,8 @@ import { SCANSAT } from "../uplink.js";
  *  factor here (same approach AnomalyOverlay's marker takes). */
 const STROKE_WIDTH_PX = 1.5;
 
+const HELD_DASH = [4, 3];
+
 function wrapLon180(lon: number): number {
   const wrapped = ((((lon + 180) % 360) + 360) % 360) - 180;
   return wrapped === 180 ? -180 : wrapped;
@@ -48,18 +50,29 @@ function wrapLon180(lon: number): number {
  * vessels on `bodyName` are drawn. `width` is the overlay layer's pixel
  * width (used for the whole-globe-span and antimeridian-wrap-right-side
  * cases, replacing the old `WORLD_W`).
+ *
+ * `held` draws each footprint as a dashed outline with no fill, the way
+ * MapView draws its own held vessel marker: the list is what was last really
+ * seen, and a solid swath would read as a satellite scanning there now.
  */
 export function drawFootprints(
   ctx: Pick<
     CanvasRenderingContext2D,
-    "fillRect" | "strokeRect" | "fillStyle" | "strokeStyle" | "lineWidth"
+    | "fillRect"
+    | "strokeRect"
+    | "fillStyle"
+    | "strokeStyle"
+    | "lineWidth"
+    | "setLineDash"
   >,
   width: number,
   bodyName: string | undefined,
   vessels: readonly SCANScanningVessel[],
   project: (lat: number, lon: number) => { x: number; y: number },
+  held = false,
 ): void {
   if (!bodyName) return;
+  ctx.setLineDash(held ? HELD_DASH : []);
 
   for (const v of vessels) {
     if (v.body !== bodyName) continue;
@@ -88,7 +101,9 @@ export function drawFootprints(
           a: magnitudeOr(tc.a, 255),
         }
       : undefined;
-    const fill = channels
+    const fill = held
+      ? "transparent"
+      : channels
       ? `rgba(${channels.r}, ${channels.g}, ${channels.b}, ${((channels.a / 255) * 0.45).toFixed(3)})`
       : "rgba(255, 255, 255, 0.3)";
     const stroke = channels
@@ -138,6 +153,7 @@ export function drawFootprints(
 function FootprintOverlay(ctx: SlotProps<"map-view.overlay">) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vessels = useScanningVessels();
+  const held = useTelemetry("scansat.scanningVessels").state === "held";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -146,12 +162,13 @@ function FootprintOverlay(ctx: SlotProps<"map-view.overlay">) {
     if (!c2d) return;
     c2d.clearRect(0, 0, ctx.width, ctx.height);
     if (!Array.isArray(vessels)) return;
-    drawFootprints(c2d, ctx.width, ctx.bodyName, vessels, ctx.project);
-  }, [vessels, ctx.width, ctx.height, ctx.bodyName, ctx.project]);
+    drawFootprints(c2d, ctx.width, ctx.bodyName, vessels, ctx.project, held);
+  }, [vessels, held, ctx.width, ctx.height, ctx.bodyName, ctx.project]);
 
   return (
     <canvas
       ref={canvasRef}
+      data-footprints={held ? "held" : "current"}
       width={ctx.width}
       height={ctx.height}
       style={{

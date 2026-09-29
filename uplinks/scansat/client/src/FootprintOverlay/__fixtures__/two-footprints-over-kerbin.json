@@ -1,0 +1,211 @@
+{
+  "_meta": {
+    "notes": "SYNTHETIC. ScanSat-1 is the Scanning scene's satellite; ScanSat-2 sits at 88°E, which Kerbin's 90° texture offset carries to the map's edge, so its footprint wraps and draws as two rectangles, one at each side of the map."
+  },
+  "_scene": {
+    "augment": "scansat-footprint-overlay",
+    "hostWidget": "map-view",
+    "modes": [
+      "default"
+    ],
+    "hero": true,
+    "caption": "Map View over Kerbin with two scanning satellites' ground-track footprints, one of them split across the edge of the map"
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "scansat.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "index": 1,
+              "name": "Kerbin",
+              "hasOcean": true
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "scn-1",
+          "name": "ScanSat-1",
+          "vesselType": 0,
+          "situation": 0,
+          "parentBodyIndex": 1
+        }
+      },
+      {
+        "topic": "vessel.flight",
+        "payload": {
+          "latitude": 12,
+          "longitude": 35,
+          "altitude": 250000
+        }
+      },
+      {
+        "topic": "scansat.scanningVessels",
+        "payload": [
+          {
+            "vesselId": "scn-1",
+            "vesselName": "ScanSat-1",
+            "body": "Kerbin",
+            "subLatitude": {
+              "magnitude": 12,
+              "unit": "°"
+            },
+            "subLongitude": {
+              "magnitude": 35,
+              "unit": "°"
+            },
+            "altitude": {
+              "magnitude": 250000,
+              "unit": "m"
+            },
+            "sensors": [
+              {
+                "type": 2,
+                "fov": {
+                  "magnitude": 5,
+                  "unit": "°"
+                },
+                "minAlt": {
+                  "magnitude": 5000,
+                  "unit": "m"
+                },
+                "maxAlt": {
+                  "magnitude": 500000,
+                  "unit": "m"
+                },
+                "bestAlt": {
+                  "magnitude": 250000,
+                  "unit": "m"
+                },
+                "inRange": true,
+                "bestRange": true
+              },
+              {
+                "type": 8,
+                "fov": {
+                  "magnitude": 5,
+                  "unit": "°"
+                },
+                "minAlt": {
+                  "magnitude": 5000,
+                  "unit": "m"
+                },
+                "maxAlt": {
+                  "magnitude": 500000,
+                  "unit": "m"
+                },
+                "bestAlt": {
+                  "magnitude": 250000,
+                  "unit": "m"
+                },
+                "inRange": true,
+                "bestRange": false
+              }
+            ],
+            "groundTrackWidthDeg": {
+              "magnitude": 5,
+              "unit": "°"
+            },
+            "groundTrackLonHalfDeg": {
+              "magnitude": 5.18,
+              "unit": "°"
+            },
+            "trackColor": {
+              "r": {
+                "magnitude": 0,
+                "unit": "count"
+              },
+              "g": {
+                "magnitude": 255,
+                "unit": "count"
+              },
+              "b": {
+                "magnitude": 200,
+                "unit": "count"
+              },
+              "a": {
+                "magnitude": 255,
+                "unit": "count"
+              }
+            }
+          },
+          {
+            "vesselId": "scn-2",
+            "vesselName": "ScanSat-2",
+            "body": "Kerbin",
+            "subLatitude": {
+              "magnitude": -38,
+              "unit": "°"
+            },
+            "subLongitude": {
+              "magnitude": 88,
+              "unit": "°"
+            },
+            "altitude": {
+              "magnitude": 610000,
+              "unit": "m"
+            },
+            "sensors": [
+              {
+                "type": 16,
+                "fov": {
+                  "magnitude": 5,
+                  "unit": "°"
+                },
+                "minAlt": {
+                  "magnitude": 5000,
+                  "unit": "m"
+                },
+                "maxAlt": {
+                  "magnitude": 500000,
+                  "unit": "m"
+                },
+                "bestAlt": {
+                  "magnitude": 250000,
+                  "unit": "m"
+                },
+                "inRange": false,
+                "bestRange": false
+              }
+            ],
+            "groundTrackWidthDeg": {
+              "magnitude": 9,
+              "unit": "°"
+            },
+            "groundTrackLonHalfDeg": {
+              "magnitude": 11.4,
+              "unit": "°"
+            },
+            "trackColor": {
+              "r": {
+                "magnitude": 255,
+                "unit": "count"
+              },
+              "g": {
+                "magnitude": 170,
+                "unit": "count"
+              },
+              "b": {
+                "magnitude": 0,
+                "unit": "count"
+              },
+              "a": {
+                "magnitude": 255,
+                "unit": "count"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

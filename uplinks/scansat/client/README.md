@@ -46,10 +46,18 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `scansat:biome` | `map-view.base` | – | only while `scansat` | 0 | replaces the host surface; adds `show` (boolean) |
-| `scansat-footprint-overlay` | `map-view.overlay` | – | only while `scansat` | 0 |  |
-| `scansat-coverage-panel` | `map-view.sections` | – | only while `scansat` | 0 |  |
-| `scansat:altimetry` | `map-view.base` | – | only while `scansat` | 0 | replaces the host surface; adds `show` (boolean) |
+| `scansat:biome` | `map-view.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (boolean) |
+| `scansat-footprint-overlay` | `map-view.overlay` | – | only while `scansat` | 1 |  |
+| `scansat-coverage-panel` | `map-view.sections` | – | only while `scansat` | 1 |  |
+| `scansat:altimetry` | `map-view.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (boolean) |
+
+![Map View over Kerbin painted with SCANsat's biome colormap, each biome in KSP's own colour, under one satellite's footprint](docs/assets/biome-base-kerbin--default.png)
+
+![Map View over Kerbin with two scanning satellites' ground-track footprints, one of them split across the edge of the map](docs/assets/two-footprints-over-kerbin--default.png)
+
+![Map View over Kerbin with SCANsat's per-scan-type coverage rows beneath the map, and which types a satellite is scanning right now](docs/assets/coverage-under-kerbin-map--default.png)
+
+![Map View over Kerbin painted with SCANsat's altimetry colormap in place of the stock body texture, under one satellite's footprint](docs/assets/altimetry-base-kerbin--default.png)
 
 ## Contributions
 

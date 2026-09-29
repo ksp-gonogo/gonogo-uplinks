@@ -1,4 +1,7 @@
-import { expectUplinkPageCurrent } from "@ksp-gonogo/uplink-tools/page-check";
+import {
+  expectUplinkPageCurrent,
+  loadHostWidgets,
+} from "@ksp-gonogo/uplink-tools/page-check";
 import { describe, it } from "vitest";
 // The client itself, so its registrations happen. The check reads the same
 // registries the renderer reads; with nothing imported it would find an Uplink
@@ -20,7 +23,8 @@ import "./index.js";
  * cannot run is a gate that rots.
  */
 describe("the generated Uplink page", () => {
-  it("still describes what this Uplink registers", () => {
+  it("still describes what this Uplink registers", async () => {
+    await loadHostWidgets();
     expectUplinkPageCurrent();
   });
 });

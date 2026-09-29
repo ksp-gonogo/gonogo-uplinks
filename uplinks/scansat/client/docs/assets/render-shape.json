@@ -2,20 +2,40 @@
   "version": 1,
   "engine": "chromium",
   "assets": {
+    "altimetry-base-kerbin--default.png": {
+      "hash": "191bd700c43f7bca",
+      "elements": 68,
+      "text": "604fd6a3"
+    },
+    "biome-base-kerbin--default.png": {
+      "hash": "191bd700c43f7bca",
+      "elements": 68,
+      "text": "604fd6a3"
+    },
+    "coverage-under-kerbin-map--default.png": {
+      "hash": "aa032cb12791af20",
+      "elements": 83,
+      "text": "52688090"
+    },
     "kerbin-partial-scan--default.png": {
-      "hash": "09a9879539189545",
-      "elements": 134,
+      "hash": "ea0b6fbba3f3dca9",
+      "elements": 136,
       "text": "6ee75d6d"
     },
     "kerbin-partial-scan--min.png": {
-      "hash": "09a9879539189545",
-      "elements": 134,
+      "hash": "ea0b6fbba3f3dca9",
+      "elements": 136,
       "text": "6ee75d6d"
     },
     "scansat-absent--default.png": {
-      "hash": "c73e99dc6d96cde8",
-      "elements": 4,
+      "hash": "2b6baa20b8677599",
+      "elements": 16,
       "text": "f12237e9"
+    },
+    "two-footprints-over-kerbin--default.png": {
+      "hash": "191bd700c43f7bca",
+      "elements": 68,
+      "text": "604fd6a3"
     }
   }
 }

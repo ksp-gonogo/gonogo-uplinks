@@ -1,0 +1,169 @@
+{
+  "_meta": {
+    "notes": "SYNTHETIC. The coverage figures are the Scanning scene's; Resource Lo is added at 18.2 % so every row the panel draws has a figure. ScanSat-1 carries an Alt Hi scanner at its best altitude and a Biome scanner in range."
+  },
+  "_scene": {
+    "augment": "scansat-coverage-panel",
+    "hostWidget": "map-view",
+    "modes": [
+      "default"
+    ],
+    "hero": true,
+    "caption": "Map View over Kerbin with SCANsat's per-scan-type coverage rows beneath the map, and which types a satellite is scanning right now",
+    "paints": [
+      "Alt Hi",
+      "Biome"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "scansat.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "index": 1,
+              "name": "Kerbin",
+              "hasOcean": true
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "scn-1",
+          "name": "ScanSat-1",
+          "vesselType": 0,
+          "situation": 0,
+          "parentBodyIndex": 1
+        }
+      },
+      {
+        "topic": "vessel.flight",
+        "payload": {
+          "latitude": 12,
+          "longitude": 35,
+          "altitude": 250000
+        }
+      },
+      {
+        "topic": "scansat.coverage.Kerbin.2",
+        "payload": 45.6
+      },
+      {
+        "topic": "scansat.coverage.Kerbin.1",
+        "payload": 67.6
+      },
+      {
+        "topic": "scansat.coverage.Kerbin.8",
+        "payload": 42.6
+      },
+      {
+        "topic": "scansat.coverage.Kerbin.256",
+        "payload": 7.4
+      },
+      {
+        "topic": "scansat.coverage.Kerbin.128",
+        "payload": 18.2
+      },
+      {
+        "topic": "scansat.scanningVessels",
+        "payload": [
+          {
+            "vesselId": "scn-1",
+            "vesselName": "ScanSat-1",
+            "body": "Kerbin",
+            "subLatitude": {
+              "magnitude": 12,
+              "unit": "°"
+            },
+            "subLongitude": {
+              "magnitude": 35,
+              "unit": "°"
+            },
+            "altitude": {
+              "magnitude": 250000,
+              "unit": "m"
+            },
+            "sensors": [
+              {
+                "type": 2,
+                "fov": {
+                  "magnitude": 5,
+                  "unit": "°"
+                },
+                "minAlt": {
+                  "magnitude": 5000,
+                  "unit": "m"
+                },
+                "maxAlt": {
+                  "magnitude": 500000,
+                  "unit": "m"
+                },
+                "bestAlt": {
+                  "magnitude": 250000,
+                  "unit": "m"
+                },
+                "inRange": true,
+                "bestRange": true
+              },
+              {
+                "type": 8,
+                "fov": {
+                  "magnitude": 5,
+                  "unit": "°"
+                },
+                "minAlt": {
+                  "magnitude": 5000,
+                  "unit": "m"
+                },
+                "maxAlt": {
+                  "magnitude": 500000,
+                  "unit": "m"
+                },
+                "bestAlt": {
+                  "magnitude": 250000,
+                  "unit": "m"
+                },
+                "inRange": true,
+                "bestRange": false
+              }
+            ],
+            "groundTrackWidthDeg": {
+              "magnitude": 5,
+              "unit": "°"
+            },
+            "groundTrackLonHalfDeg": {
+              "magnitude": 5.18,
+              "unit": "°"
+            },
+            "trackColor": {
+              "r": {
+                "magnitude": 0,
+                "unit": "count"
+              },
+              "g": {
+                "magnitude": 255,
+                "unit": "count"
+              },
+              "b": {
+                "magnitude": 200,
+                "unit": "count"
+              },
+              "a": {
+                "magnitude": 255,
+                "unit": "count"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

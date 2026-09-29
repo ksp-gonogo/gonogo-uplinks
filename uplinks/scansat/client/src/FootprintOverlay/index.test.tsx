@@ -51,6 +51,10 @@ function fakeCtx() {
     fillRect: (...args: number[]) => calls.push(`fillRect ${args.join(",")}`),
     strokeRect: (...args: number[]) =>
       calls.push(`strokeRect ${args.join(",")}`),
+    lineDash: [] as number[],
+    setLineDash(this: { lineDash: number[] }, dash: number[]) {
+      this.lineDash = dash;
+    },
     fillStyle: "",
     strokeStyle: "",
     lineWidth: 0,
@@ -109,6 +113,28 @@ describe("drawFootprints: pure geometry", () => {
     const calls = (ctx as unknown as { calls: string[] }).calls;
     expect(calls.some((c) => c.startsWith("fillRect"))).toBe(true);
     expect(calls.some((c) => c.startsWith("strokeRect"))).toBe(true);
+  });
+
+  it("draws a held footprint as a dashed outline with no fill", () => {
+    const live = fakeCtx();
+    drawFootprints(live, 600, "Kerbin", [vessel({})], (lat, lon) => ({
+      x: lon,
+      y: lat,
+    }));
+    expect(live.fillStyle).not.toBe("transparent");
+    expect((live as unknown as { lineDash: number[] }).lineDash).toEqual([]);
+
+    const held = fakeCtx();
+    drawFootprints(
+      held,
+      600,
+      "Kerbin",
+      [vessel({})],
+      (lat, lon) => ({ x: lon, y: lat }),
+      true,
+    );
+    expect(held.fillStyle).toBe("transparent");
+    expect((held as unknown as { lineDash: number[] }).lineDash).toEqual([4, 3]);
   });
 
   it("splits into two rects when the footprint wraps the antimeridian", () => {
@@ -247,6 +273,7 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
           calls.push(`fillRect ${args.join(",")}`),
         strokeRect: (...args: number[]) =>
           calls.push(`strokeRect ${args.join(",")}`),
+        setLineDash: () => {},
         clearRect: () => calls.push("clearRect"),
         fillStyle: "",
         strokeStyle: "",
