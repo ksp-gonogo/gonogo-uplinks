@@ -26,7 +26,13 @@ export default defineConfig({
     // vitest's default list, and the sdk tarball ships its own `src` with test
     // files in it, so the unanchored glob collects them all and the run dies
     // before reaching this Uplink's own tests.
-    exclude: ["dist/**", "**/node_modules/**"],
+    //
+    // `tests/**` holds `*.rig.spec.ts` files: Playwright specs driven against a
+    // real running game, matching gonogo's own `tests/rig/` harness, not a
+    // vitest suite. Vitest's default include still matches `*.spec.ts`, so
+    // without this exclusion it tries to run them with `test()`/`page` coming
+    // from `@playwright/test` rather than vitest's globals.
+    exclude: ["dist/**", "**/node_modules/**", "tests/**"],
     // ui-kit and the sdk are processed by Vite rather than pre-bundled by
     // esbuild. In the gonogo monorepo both are pnpm symlinks, and Vite never
     // pre-bundles a linked dependency, so this is what a first-party client gets
