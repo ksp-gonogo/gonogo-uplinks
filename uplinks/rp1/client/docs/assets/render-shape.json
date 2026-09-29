@@ -228,29 +228,29 @@
       "text": "b6c63acd"
     },
     "catalogue-picker--default.png": {
-      "hash": "1c1cbf3583e0b464",
-      "elements": 262,
-      "text": "78d44ad2"
+      "hash": "06441c3adbdb9a65",
+      "elements": 263,
+      "text": "36cd04e0"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "5cbe5d386aefe9aa",
-      "elements": 277,
-      "text": "dd1b6dec"
+      "hash": "f27ebaac725503d2",
+      "elements": 278,
+      "text": "c4f8eefa"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "5cbe5d386aefe9aa",
-      "elements": 277,
-      "text": "dd1b6dec"
+      "hash": "f27ebaac725503d2",
+      "elements": 278,
+      "text": "c4f8eefa"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "1c1cbf3583e0b464",
-      "elements": 262,
-      "text": "78d44ad2"
+      "hash": "06441c3adbdb9a65",
+      "elements": 263,
+      "text": "36cd04e0"
     },
     "completed-program--default.png": {
-      "hash": "e78aa0493f95a976",
-      "elements": 282,
-      "text": "e53ebc78"
+      "hash": "749e914cdf759c29",
+      "elements": 283,
+      "text": "8b91bf08"
     },
     "complexes-add-pad--default.png": {
       "hash": "ac7c689103404490",
@@ -362,6 +362,11 @@
       "elements": 113,
       "text": "9f625d5b"
     },
+    "early-career--default.png": {
+      "hash": "0ed08ac1fb30643e",
+      "elements": 291,
+      "text": "cb4661e9"
+    },
     "facility-tiers-in-flight--default.png": {
       "hash": "65467a1924afcfb5",
       "elements": 121,
@@ -392,15 +397,20 @@
       "elements": 183,
       "text": "3fad0c42"
     },
+    "no-budget--default.png": {
+      "hash": "d36595003abfbb58",
+      "elements": 73,
+      "text": "b0e3d8ab"
+    },
     "no-curve-table--default.png": {
-      "hash": "13f66a093b2f674c",
-      "elements": 270,
-      "text": "35f51d36"
+      "hash": "6bd2c07ebaa867c1",
+      "elements": 271,
+      "text": "0d559876"
     },
     "offer-frontloaded--default.png": {
-      "hash": "ca179939927e620f",
-      "elements": 274,
-      "text": "0deca1e4"
+      "hash": "4d868c94f53b4e45",
+      "elements": 275,
+      "text": "cd7dc18e"
     },
     "pad-holding-a-finished-vehicle--default.png": {
       "hash": "40c9c012830fecae",
@@ -428,9 +438,9 @@
       "text": "6f53e3af"
     },
     "programs-screen--default.png": {
-      "hash": "a4b5acc2276e7dd0",
-      "elements": 142,
-      "text": "3245c11e"
+      "hash": "0c4b0d1ee0bd4d86",
+      "elements": 143,
+      "text": "d15c3a28"
     },
     "research-queue-throttled-and-stalled--default.png": {
       "hash": "cd117f7f030a3cfe",
@@ -438,9 +448,9 @@
       "text": "a8b3e662"
     },
     "running-backloaded--default.png": {
-      "hash": "ec23b9ea9aeb0293",
-      "elements": 284,
-      "text": "a25642b1"
+      "hash": "e82d64f542c742dd",
+      "elements": 285,
+      "text": "fc01e745"
     },
     "start-research-affordable--default.png": {
       "hash": "ff4c6c87dd454955",
@@ -451,6 +461,11 @@
       "hash": "512ed884f9a3d42e",
       "elements": 141,
       "text": "bad0110d"
+    },
+    "subsidy-clamped--default.png": {
+      "hash": "f4216b2ab685d671",
+      "elements": 503,
+      "text": "cfe263fd"
     },
     "tooling-nothing-outstanding--default.png": {
       "hash": "700969659b089d58",
