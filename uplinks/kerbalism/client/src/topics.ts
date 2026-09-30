@@ -33,6 +33,8 @@ import type {
   KerbalismFeatures,
   KerbalismLifeSupport,
   KerbalismProfile,
+  KerbalismReliabilityPart,
+  KerbalismReliabilitySummary,
   KerbalismSpaceWeather,
 } from "./__generated__/contract.js";
 import { GENERATED_COLLECTION_TOPIC_IDS } from "./__generated__/topic-map.js";
@@ -65,6 +67,12 @@ export const KERBALISM_CREW_TOPIC = "kerbalism.crew";
 /** The Kerbalism feature-toggle Topic. */
 export const KERBALISM_FEATURES_TOPIC = "kerbalism.features";
 
+/** Whether Kerbalism is breaking parts, and the craft's reliability rollup. Unpublished while failures are switched off. */
+export const KERBALISM_RELIABILITY_TOPIC = "kerbalism.reliability";
+
+/** One entry per Kerbalism reliability module aboard (an array channel). */
+export const KERBALISM_RELIABILITY_PARTS_TOPIC = "kerbalism.reliabilityParts";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "kerbalism.available": boolean;
@@ -73,6 +81,8 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "kerbalism.lifesupport": KerbalismLifeSupport;
     "kerbalism.crew": KerbalismCrewEntry[];
     "kerbalism.features": KerbalismFeatures;
+    "kerbalism.reliability": KerbalismReliabilitySummary;
+    "kerbalism.reliabilityParts": KerbalismReliabilityPart[];
   }
 }
 
@@ -82,9 +92,12 @@ registerBarePrimitiveTopic(KERBALISM_PROFILE_TOPIC);
 registerBarePrimitiveTopic(KERBALISM_LIFESUPPORT_TOPIC);
 registerBarePrimitiveTopic(KERBALISM_CREW_TOPIC);
 registerBarePrimitiveTopic(KERBALISM_FEATURES_TOPIC);
+registerBarePrimitiveTopic(KERBALISM_RELIABILITY_TOPIC);
+registerBarePrimitiveTopic(KERBALISM_RELIABILITY_PARTS_TOPIC);
 
-// `kerbalism.crew`'s unit map describes one kerbal, not the list, so a field
-// path under it names no value of the Topic's own.
+// `kerbalism.crew`'s and `kerbalism.reliabilityParts`' unit maps describe one
+// element, not the list, so a field path under either names no value of the
+// Topic's own.
 for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
   registerCollectionTopic(topic);
 }
@@ -161,4 +174,10 @@ export type _ResolvesKerbalismCrew = Expect<
 >;
 export type _ResolvesKerbalismFeatures = Expect<
   Equal<TopicPayload<"kerbalism.features">, KerbalismFeatures>
+>;
+export type _ResolvesKerbalismReliability = Expect<
+  Equal<TopicPayload<"kerbalism.reliability">, KerbalismReliabilitySummary>
+>;
+export type _ResolvesKerbalismReliabilityParts = Expect<
+  Equal<TopicPayload<"kerbalism.reliabilityParts">, KerbalismReliabilityPart[]>
 >;

@@ -21,6 +21,8 @@ import {
   KERBALISM_FEATURES_TOPIC,
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
+  KERBALISM_RELIABILITY_PARTS_TOPIC,
+  KERBALISM_RELIABILITY_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
 } from "./topics.js";
 
@@ -57,6 +59,10 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
     expect(KERBALISM_LIFESUPPORT_TOPIC).toBe(csTopic("LifeSupportTopic"));
     expect(KERBALISM_CREW_TOPIC).toBe(csTopic("CrewTopic"));
     expect(KERBALISM_FEATURES_TOPIC).toBe(csTopic("FeaturesTopic"));
+    expect(KERBALISM_RELIABILITY_TOPIC).toBe(csTopic("ReliabilityTopic"));
+    expect(KERBALISM_RELIABILITY_PARTS_TOPIC).toBe(
+      csTopic("ReliabilityPartsTopic"),
+    );
   });
 
   it("are known TopicIds once this client's topics module has loaded", () => {
@@ -66,6 +72,8 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
       KERBALISM_LIFESUPPORT_TOPIC,
       KERBALISM_CREW_TOPIC,
       KERBALISM_FEATURES_TOPIC,
+      KERBALISM_RELIABILITY_TOPIC,
+      KERBALISM_RELIABILITY_PARTS_TOPIC,
     ]) {
       expect(isTopicId(topic)).toBe(true);
       expect(getAllKnownTopicIds()).toContain(topic);
@@ -483,5 +491,55 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
     expect(result.current?.reliability).toBe(false);
     expect(result.current?.radiation).toBe(true);
     expect(result.current?.supplies).toBe(true);
+  });
+
+  it("hydrates a reliability part's service budget and repair cost nested inside it", async () => {
+    const fixture = setupStreamFixture();
+    const { result } = renderHook(
+      () => {
+        const reading = useTelemetry(KERBALISM_RELIABILITY_PARTS_TOPIC);
+        return reading.state === "observed" ? reading.value : undefined;
+      },
+      { wrapper: fixture.Provider },
+    );
+
+    fixture.emit(KERBALISM_RELIABILITY_PARTS_TOPIC, [
+      {
+        partId: "4102:0",
+        title: "Reaction Wheel",
+        condition: "failed",
+        mtbfSeconds: 21_600_000,
+        repairCost: [{ name: "evaRepairKit", quantity: 1 }],
+        budgets: [
+          {
+            id: "service",
+            label: "service",
+            kind: "schedule",
+            consumed: 0.4,
+            usedSeconds: 4_320_000,
+            limitSeconds: 10_800_000,
+          },
+        ],
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(result.current?.[0]).toBeDefined();
+    });
+
+    const part = result.current?.[0];
+    expect(part?.mtbfSeconds).toMatchObject({
+      magnitude: 21_600_000,
+      unit: "s",
+    });
+    expect(part?.budgets?.[0]?.usedSeconds).toMatchObject({
+      magnitude: 4_320_000,
+      unit: "s",
+    });
+    expect(part?.repairCost?.[0]?.quantity).toMatchObject({
+      magnitude: 1,
+      unit: "count",
+    });
+    expect(part?.condition).toBe("failed");
   });
 });

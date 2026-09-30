@@ -31,6 +31,12 @@ export type {
   KerbalismProcessDef,
   KerbalismProcessEntry,
   KerbalismProfile,
+  KerbalismReliabilityBudget,
+  KerbalismReliabilityPart,
+  KerbalismReliabilitySummary,
+  KerbalismRepairCostItem,
+  KerbalismRepairOutcome,
+  KerbalismRepairPartArgs,
   KerbalismResource,
   KerbalismResourceDef,
   KerbalismRuleDef,
@@ -91,6 +97,8 @@ export {
   KERBALISM_FEATURES_TOPIC,
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
+  KERBALISM_RELIABILITY_PARTS_TOPIC,
+  KERBALISM_RELIABILITY_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
 } from "./topics.js";
 // The megabyte units this Uplink declares. RE-EXPORTED for the same reason as
@@ -153,6 +161,9 @@ import "./ResourceOps/processFilters.js";
 // picture only Kerbalism has. ScienceData itself stays in
 // @ksp-gonogo/components; only this augment lives here.
 import "./ScienceFileManager/index.js";
+// FleetRoster's per-vessel `fleet-roster.updates` slot: Kerbalism's failed and
+// service-due parts on the active craft's row, with the repair and its kit cost.
+import "./Reliability/index.js";
 
 // The CrewSurvival Processor handle + its result types, the single per-frame
 // derivation the survival meters, the per-row badge and the panel badge all consume.

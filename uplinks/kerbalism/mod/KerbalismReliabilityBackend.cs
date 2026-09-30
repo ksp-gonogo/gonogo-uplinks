@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using GonogoKerbalismUplink;
 using Sitrep.Contract;
 
 namespace Gonogo.KerbalismUplink
@@ -47,8 +47,6 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         private Vessel? ScopedVessel() => _kernel.ReportedVessel() as Vessel;
 
-        public string ProviderId => "kerbalism";
-
         /// <summary>
         /// Three gates, in order, and none of them collapses into another.
         ///
@@ -71,23 +69,29 @@ namespace Gonogo.KerbalismUplink
                 _k.Features(), _k.ReliabilityPreferences());
 
         /// <summary>
-        /// Whether Kerbalism is modelling reliability at all: false only when
-        /// the feature or <c>mtbfFailures</c> is definitely off, so an
-        /// indeterminate switch still serves and says so through
-        /// <see cref="Coverage"/>.
+        /// MAIN-THREAD read of both payloads from ONE reflection walk, so the
+        /// summary's tallies and the parts listing describe the same instant.
+        /// Null when Kerbalism is definitely not modelling failures, which is the
+        /// publish gate: the topics then say nothing rather than "all nominal".
         /// </summary>
-        public static bool CanServe(KerbalismReflection k) =>
-            KerbalismReliabilityMap.CanServe(
-                k.Features(), k.ReliabilityPreferences());
-
-        public ReliabilitySummary Summary()
+        public KerbalismReliabilityCapture? Capture()
         {
-            // ONE Coverage computation per call rather than one per gate: the
-            // property reflects.
-            var coverage = Coverage;
+            // One read of each switch per capture: both reflect.
+            var features = _k.Features();
+            var prefs = _k.ReliabilityPreferences();
+            if (!KerbalismReliabilityMap.CanServe(features, prefs)) return null;
+
+            var coverage = KerbalismReliabilityMap.ComputeCoverage(features, prefs);
             var v = ScopedVessel();
             var raw = v != null ? _k.Reliability(v) : new ReliabilityRaw();
-            return KerbalismReliabilityMap.Summary(raw, _k.ReliabilityPreferences(), coverage);
+            return new KerbalismReliabilityCapture
+            {
+                Summary = KerbalismReliabilityMap.Summary(raw, prefs, coverage),
+                // The kit requirement is an install PREFERENCE, not a per-part
+                // fact, so it is read beside Coverage rather than carried on every
+                // part of the capture.
+                Parts = KerbalismReliabilityMap.Parts(raw, coverage, prefs.RequireRepairKits),
+            };
         }
 
         /// <summary>
@@ -98,44 +102,37 @@ namespace Gonogo.KerbalismUplink
         /// <para>Refuses when this save is not modelling failures at all,
         /// rather than reaching for a module that will not be there.</para>
         /// </summary>
-        public CommandResult<RepairOutcome> Repair(string partId, string crewName)
+        public CommandResult<KerbalismRepairOutcome> Repair(string partId, string crewName)
         {
             if (Coverage != ReliabilityCoverage.Modeled)
             {
-                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NotModelled);
+                return CommandResult<KerbalismRepairOutcome>.Fail(KerbalismErrorCodes.ReliabilityNotModelled);
             }
 
             var v = ScopedVessel();
             if (v == null)
             {
-                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NoSuchPart);
+                return CommandResult<KerbalismRepairOutcome>.Fail(KerbalismErrorCodes.NothingToRepair);
             }
 
             var raw = _k.AttemptRepair(v, partId, crewName);
             if (!raw.Repaired)
             {
-                return CommandResult<RepairOutcome>.Fail(raw.Refusal ?? CommandErrorCode.ModeUnavailable);
+                return CommandResult<KerbalismRepairOutcome>.Fail(raw.Refusal ?? CommandErrorCode.ModeUnavailable);
             }
-            return CommandResult<RepairOutcome>.Ok(new RepairOutcome
+            return CommandResult<KerbalismRepairOutcome>.Ok(new KerbalismRepairOutcome
             {
                 Repaired = true,
                 KitsUsed = raw.KitsUsed,
                 KitsFrom = raw.KitsFrom,
             });
         }
+    }
 
-        public IReadOnlyList<ReliabilityPartEntry> Parts()
-        {
-            var coverage = Coverage;
-            var v = ScopedVessel();
-            var raw = v != null ? _k.Reliability(v) : new ReliabilityRaw();
-            // The kit requirement is an install PREFERENCE, not a per-part fact,
-            // so it is read here beside Coverage rather than carried on every
-            // part of the capture.
-            return KerbalismReliabilityMap.Parts(
-                raw,
-                coverage,
-                _k.ReliabilityPreferences().RequireRepairKits);
-        }
+    /// <summary>Both reliability payloads from one capture, handed from the main thread to the Courier.</summary>
+    public sealed class KerbalismReliabilityCapture
+    {
+        public KerbalismReliabilitySummary Summary = new();
+        public List<KerbalismReliabilityPart> Parts = new();
     }
 }

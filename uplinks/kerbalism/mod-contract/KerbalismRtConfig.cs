@@ -12,12 +12,14 @@ namespace GonogoKerbalismUplink;
 /// <c>Configure</c> does. Deliberately names no sibling Uplink: doing so would
 /// trip THAT Uplink's own frontend uplink-boundary token.
 ///
-/// <para><b>Five Topic-tagged roots, so the topic-map leg is not optional.</b>
+/// <para><b>Seven Topic-tagged roots, so the topic-map leg is not optional.</b>
 /// <see cref="KerbalismSpaceWeather"/>, <see cref="KerbalismProfile"/>,
 /// <see cref="KerbalismLifeSupport"/>, <see cref="KerbalismCrewEntry"/>
-/// (<c>isArray</c>) and <see cref="KerbalismFeatures"/> each carry
+/// (<c>isArray</c>), <see cref="KerbalismFeatures"/>,
+/// <see cref="KerbalismReliabilitySummary"/> and
+/// <see cref="KerbalismReliabilityPart"/> (<c>isArray</c>) each carry
 /// <c>[SitrepTopic]</c>, so <c>EmitTopicMap</c> is wired below. The remaining
-/// ten types are nested-only or dictionary-valued shapes and deliberately
+/// types are nested-only, extension or command shapes and deliberately
 /// carry no <c>[SitrepTopic]</c>: they exist to give a field's element shape a
 /// name. <c>kerbalism.available</c> is a BARE JSON boolean declared
 /// client-side (<c>registerBarePrimitiveTopic</c> in this Uplink's
@@ -50,8 +52,9 @@ namespace GonogoKerbalismUplink;
 /// then propagate to the vector's three scalar leaves
 /// (<c>Vec3Of&lt;"1"&gt;</c>).</para>
 ///
-/// <para>Of these, only <see cref="KerbalismSubjectFlagArgs"/> and
-/// <see cref="KerbalismSubjectActionArgs"/> end in <c>"Args"</c>, so
+/// <para>Of these, only <see cref="KerbalismSubjectFlagArgs"/>,
+/// <see cref="KerbalismSubjectActionArgs"/> and
+/// <see cref="KerbalismRepairPartArgs"/> end in <c>"Args"</c>, so
 /// <c>ApplyUnitValueTypes</c> skips retyping their properties (inbound only,
 /// client -&gt; mod, see those types' own header comment) and retypes the
 /// quantity properties on every other type here. See
@@ -126,14 +129,16 @@ public static class KerbalismRtConfig
             typeof(KerbalismProcessDef),
             // kerbalism.features
             typeof(KerbalismFeatures),
-            // The Kerbalism namespace of this Uplink's reliability summary's
-            // extension bag. No [SitrepTopic]: it is a sub-tree reached through
-            // extensions["kerbalism"], typed here because the type belongs to
-            // whoever fills it.
-            typeof(KerbalismReliabilityExt),
+            // kerbalism.reliability + kerbalism.reliabilityParts, with the
+            // budget and repair-cost shapes a part holds
+            typeof(KerbalismReliabilitySummary),
+            typeof(KerbalismReliabilityPart),
+            typeof(KerbalismReliabilityBudget),
+            typeof(KerbalismRepairCostItem),
             // The Kerbalism namespaces of the four elected science.* payloads'
-            // extension bags. Same reasoning as KerbalismReliabilityExt above, at a
-            // larger scale: Kerbalism WINS the science election, and most of what it
+            // extension bags. No [SitrepTopic]: each is a sub-tree reached through
+            // extensions["kerbalism"], typed here because the type belongs to
+            // whoever fills it. Kerbalism WINS the science election, and most of what it
             // knows (drive capacity, file-vs-sample, the requirement gate's reason,
             // the per-subject ledger) has no stock field to borrow.
             typeof(KerbalismScienceExperimentExt),
@@ -157,6 +162,10 @@ public static class KerbalismRtConfig
             // this array is listed.
             typeof(KerbalismSubjectFlagArgs),
             typeof(KerbalismSubjectActionArgs),
+            // kerbalism.repair: its args (inbound, so not retyped) and the
+            // outcome its reply carries.
+            typeof(KerbalismRepairPartArgs),
+            typeof(KerbalismRepairOutcome),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());
@@ -174,7 +183,7 @@ public static class KerbalismRtConfig
         // mod/GonogoKerbalismUplink/client/src/__generated__/).
         Sitrep.Contract.RtConfig.ApplyUnitValueTypes(builder, wireTypes, valueImportFrom: "@ksp-gonogo/sitrep-sdk");
 
-        // Five of these carry [SitrepTopic]: there ARE topics to name here,
+        // Seven of these carry [SitrepTopic]: there ARE topics to name here,
         // unlike a command-arg-only slice.
         var topicMapOut = Environment.GetEnvironmentVariable("SITREP_KERBALISM_TOPICMAP_OUT");
         if (!string.IsNullOrEmpty(topicMapOut))

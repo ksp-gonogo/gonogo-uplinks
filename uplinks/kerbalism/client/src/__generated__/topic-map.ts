@@ -32,6 +32,8 @@ import type {
   KerbalismFeatures,
   KerbalismLifeSupport,
   KerbalismProfile,
+  KerbalismReliabilityPart,
+  KerbalismReliabilitySummary,
   KerbalismSpaceWeather,
 } from "./contract.js";
 
@@ -40,6 +42,8 @@ export interface GeneratedTopicPayloadMap {
   "kerbalism.features": KerbalismFeatures;
   "kerbalism.lifesupport": KerbalismLifeSupport;
   "kerbalism.profile": KerbalismProfile;
+  "kerbalism.reliability": KerbalismReliabilitySummary;
+  "kerbalism.reliabilityParts": KerbalismReliabilityPart[];
   "kerbalism.spaceweather": KerbalismSpaceWeather;
 }
 
@@ -48,6 +52,8 @@ export const GENERATED_TOPIC_IDS = [
   "kerbalism.features",
   "kerbalism.lifesupport",
   "kerbalism.profile",
+  "kerbalism.reliability",
+  "kerbalism.reliabilityParts",
   "kerbalism.spaceweather",
 ] as const;
 
@@ -56,4 +62,5 @@ export const GENERATED_TOPIC_IDS = [
 // The `[]` above says the same to the type system, and a type is erased.
 export const GENERATED_COLLECTION_TOPIC_IDS = [
   "kerbalism.crew",
+  "kerbalism.reliabilityParts",
 ] as const;

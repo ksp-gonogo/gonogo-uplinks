@@ -141,14 +141,47 @@
     "KerbalismProfile": {
       "name": "text"
     },
-    "KerbalismReliabilityExt": {
+    "KerbalismReliabilityBudget": {
+      "consumed": "ratio",
+      "id": "id",
+      "kind": "enum",
+      "label": "text",
+      "limitSeconds": "s",
+      "usedSeconds": "s"
+    },
+    "KerbalismReliabilityPart": {
+      "condition": "enum",
+      "conditionDetail": "text",
+      "mtbfSeconds": "s",
+      "partId": "id",
+      "quality": "flag",
+      "redundancyGroup": "text",
+      "repairLevel": "count",
+      "repairTrait": "text",
+      "title": "text"
+    },
+    "KerbalismReliabilitySummary": {
       "brokenPartCount": "count",
+      "coverage": "enum",
       "criticalChance": "ratio",
       "incentiveRedundancy": "flag",
       "requireRepairKits": "flag",
       "safeModeChance": "ratio",
       "serviceDuePartCount": "count",
       "worstMtbfSeconds": "s"
+    },
+    "KerbalismRepairCostItem": {
+      "name": "id",
+      "quantity": "count"
+    },
+    "KerbalismRepairOutcome": {
+      "kitsFrom": "id",
+      "kitsUsed": "count",
+      "repaired": "flag"
+    },
+    "KerbalismRepairPartArgs": {
+      "crewName": "text",
+      "partId": "id"
     },
     "KerbalismResource": {
       "amount": "units",
@@ -281,6 +314,27 @@
     "kerbalism.profile": {
       "name": "text"
     },
+    "kerbalism.reliability": {
+      "brokenPartCount": "count",
+      "coverage": "enum",
+      "criticalChance": "ratio",
+      "incentiveRedundancy": "flag",
+      "requireRepairKits": "flag",
+      "safeModeChance": "ratio",
+      "serviceDuePartCount": "count",
+      "worstMtbfSeconds": "s"
+    },
+    "kerbalism.reliabilityParts": {
+      "condition": "enum",
+      "conditionDetail": "text",
+      "mtbfSeconds": "s",
+      "partId": "id",
+      "quality": "flag",
+      "redundancyGroup": "text",
+      "repairLevel": "count",
+      "repairTrait": "text",
+      "title": "text"
+    },
     "kerbalism.spaceweather": {
       "blackout": "flag",
       "habitatRadiationRadPerSecond": "rad/s",
@@ -310,6 +364,10 @@
       "resources": "*KerbalismResourceDef",
       "rules": "KerbalismRuleDef[]"
     },
+    "KerbalismReliabilityPart": {
+      "budgets": "KerbalismReliabilityBudget[]",
+      "repairCost": "KerbalismRepairCostItem[]"
+    },
     "KerbalismSpaceWeather": {
       "stars": "KerbalismStarInfo[]",
       "storms": "KerbalismStormEntry[]"
@@ -328,6 +386,10 @@
       "processes": "KerbalismProcessDef[]",
       "resources": "*KerbalismResourceDef",
       "rules": "KerbalismRuleDef[]"
+    },
+    "kerbalism.reliabilityParts": {
+      "budgets": "KerbalismReliabilityBudget[]",
+      "repairCost": "KerbalismRepairCostItem[]"
     },
     "kerbalism.spaceweather": {
       "stars": "KerbalismStarInfo[]",

@@ -708,7 +708,7 @@ namespace Gonogo.KerbalismUplink
             var outcome = new RepairAttemptRaw();
             if (v == null || !v.loaded || v.parts == null)
             {
-                outcome.Refusal = RepairRefusal.NoSuchPart;
+                outcome.Refusal = KerbalismErrorCodes.NothingToRepair;
                 return outcome;
             }
 
@@ -719,7 +719,7 @@ namespace Gonogo.KerbalismUplink
             }
             if (target == null)
             {
-                outcome.Refusal = RepairRefusal.NoSuchPart;
+                outcome.Refusal = KerbalismErrorCodes.NothingToRepair;
                 return outcome;
             }
 
@@ -734,7 +734,7 @@ namespace Gonogo.KerbalismUplink
             }
             if (kerbal == null)
             {
-                outcome.Refusal = RepairRefusal.NoSuchCrew;
+                outcome.Refusal = KerbalismErrorCodes.NoSuchCrew;
                 return outcome;
             }
 
@@ -750,7 +750,7 @@ namespace Gonogo.KerbalismUplink
             {
                 if (FlightEVA.hatchInsideFairing(from))
                 {
-                    outcome.Refusal = RepairRefusal.EvaImpossible;
+                    outcome.Refusal = KerbalismErrorCodes.EvaImpossible;
                     return outcome;
                 }
             }
@@ -788,7 +788,7 @@ namespace Gonogo.KerbalismUplink
             }
             if (actionable.Count == 0)
             {
-                outcome.Refusal = RepairRefusal.NoSuchPart;
+                outcome.Refusal = KerbalismErrorCodes.NothingToRepair;
                 return outcome;
             }
 
@@ -802,7 +802,7 @@ namespace Gonogo.KerbalismUplink
 
             if (kitsRequired && !TakeRepairKits(v, kerbal, needed, outcome))
             {
-                outcome.Refusal = RepairRefusal.NoKits;
+                outcome.Refusal = KerbalismErrorCodes.NoKits;
                 return outcome;
             }
 
@@ -825,7 +825,7 @@ namespace Gonogo.KerbalismUplink
                 MemberBool(actionable[0], "needMaintenance") == true);
             if (!outcome.Repaired)
             {
-                outcome.Refusal = RepairRefusal.CrewNotQualified;
+                outcome.Refusal = KerbalismErrorCodes.CrewNotQualified;
                 outcome.KitsUsed = 0;
                 outcome.KitsFrom = null;
             }

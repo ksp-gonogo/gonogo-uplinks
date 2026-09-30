@@ -26,4 +26,31 @@ public static class KerbalismErrorCodes
     /// <summary>A Kerbalism drive was asked to change a file or sample and reported that it had not.</summary>
     public static readonly RefusalCode DriveRefused =
         CommandErrorCode.ModeUnavailable.Refine("kerbalism.driveRefused", "the Kerbalism drive did not make the change");
+
+    /// <summary>Nobody aboard the craft answers to the name the repair was given.</summary>
+    public static readonly RefusalCode NoSuchCrew =
+        CommandErrorCode.NotFound.Refine("kerbalism.noSuchCrew", "no crew member aboard has that name");
+
+    /// <summary>
+    /// The kerbal lacks the trait or experience level Kerbalism's repair specs ask
+    /// for, which it raises by one level for a critical failure.
+    /// </summary>
+    public static readonly RefusalCode CrewNotQualified =
+        CommandErrorCode.CapabilityMismatch.Refine("kerbalism.crewNotQualified", "that kerbal does not meet Kerbalism's repair specs");
+
+    /// <summary>The kerbal cannot get out to the part: the hatch is inside a fairing, which clears once it is jettisoned.</summary>
+    public static readonly RefusalCode EvaImpossible =
+        CommandErrorCode.NotClearToProceed.Refine("kerbalism.evaImpossible", "the crew cannot get out to it yet");
+
+    /// <summary>The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes.</summary>
+    public static readonly RefusalCode NoKits =
+        CommandErrorCode.InsufficientResource.Refine("kerbalism.noKits", "there are not enough repair kits aboard");
+
+    /// <summary>Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking.</summary>
+    public static readonly RefusalCode ReliabilityNotModelled =
+        CommandErrorCode.ModeUnavailable.Refine("kerbalism.reliabilityNotModelled", "Kerbalism is not modelling part failures in this save");
+
+    /// <summary>No reliability module aboard has that id and is broken or due a service.</summary>
+    public static readonly RefusalCode NothingToRepair =
+        CommandErrorCode.NotFound.Refine("kerbalism.nothingToRepair", "no part aboard with that id is broken or due a service");
 }

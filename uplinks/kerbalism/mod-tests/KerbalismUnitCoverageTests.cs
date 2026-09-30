@@ -77,15 +77,15 @@ namespace GonogoKerbalismUplink.Tests
                 nameof(KerbalismCrewEntry), nameof(KerbalismCrewRule),
                 nameof(KerbalismProfile), nameof(KerbalismResourceDef), nameof(KerbalismRuleDef),
                 nameof(KerbalismProcessDef), nameof(KerbalismFeatures),
-                // Not a Topic payload: the Kerbalism namespace of this Uplink's
-                // reliability summary's extension bag (KerbalismReliabilityExt.cs).
-                // It needs the same annotation guard as the ones above: a quantity
-                // inside an extension is a Value like any other, and its unit
-                // reaches the decode through this Uplink's own generated TYPE map.
-                nameof(KerbalismReliabilityExt),
+                // kerbalism.reliability and kerbalism.reliabilityParts, with the
+                // budget and repair-cost shapes reached only through a part, and
+                // kerbalism.repair's args and outcome.
+                nameof(KerbalismReliabilitySummary), nameof(KerbalismReliabilityPart),
+                nameof(KerbalismReliabilityBudget), nameof(KerbalismRepairCostItem),
+                nameof(KerbalismRepairPartArgs), nameof(KerbalismRepairOutcome),
                 // The four Kerbalism namespaces of the CORE science.* payloads'
                 // extension bags (KerbalismScienceExt.cs), same rationale as
-                // KerbalismReliabilityExt above at a larger scale: Kerbalism wins the
+                // the reliability shapes above at a larger scale: Kerbalism wins the
                 // science election, and most of what it knows has no core field to
                 // land in. These carry this repo's FIRST Uplink-declared units
                 // ("MB"/"MB/s"/"science/MB"), which makes the annotation guard load

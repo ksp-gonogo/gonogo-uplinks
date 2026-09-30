@@ -1,71 +1,41 @@
 using System.Collections.Generic;
-using Sitrep.Contract;
+using GonogoKerbalismUplink;
 
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Pure mappers from the reflected ReliabilityRaw to this Uplink's reliability
-    /// shapes (KerbalismReliabilityTypes.cs). KSP-free (Sitrep.Contract only) so it
-    /// is headless-testable.
+    /// Pure mappers from the reflected ReliabilityRaw to the
+    /// <c>kerbalism.reliability</c> and <c>kerbalism.reliabilityParts</c>
+    /// payloads. KSP-free so it is headless-testable.
     ///
     /// <para>What Kerbalism can honestly fill, and nothing else. It has NO per-part
     /// probability: the only probabilities in the assembly are the save-wide
     /// difficulty settings criticalChance / safeModeChance, consulted once at the
-    /// instant a break resolves. So Survival and its horizon are always null here,
-    /// and the whole per-part contribution is a Condition plus at most one
-    /// "service" budget. That is less than TestFlight publishes, and it is a
-    /// truthful report of what Kerbalism exposes rather than a demotion.</para>
-    ///
-    /// <para>The summary additionally carries Kerbalism's OWN vessel-level rollup in
-    /// its extension bag, under <see cref="ProviderId"/>. That sub-tree is this Uplink's shape, not core's: it is declared in
-    /// GonogoKerbalismUplink.Contract/KerbalismReliabilityExt.cs, written here as a
-    /// plain value tree (JsonWriter walks it, exactly as it does every other
-    /// producer-flattened payload), and typed client-side by this Uplink's own
-    /// readKerbalismReliabilityExt.</para>
+    /// instant a break resolves. So the per-part contribution is a Condition plus
+    /// at most one "service" budget.</para>
     /// </summary>
     public static class KerbalismReliabilityMap
     {
-        /// <summary>
-        /// The id the summary names as its source, and therefore the key its
-        /// extension namespace lives under. Matches
-        /// <c>KerbalismReliabilityBackend.ProviderId</c>; the client's
-        /// <c>registerProviderExtensionShape</c> call names the same string.
-        /// </summary>
-        public const string ProviderId = "kerbalism";
 
         /// <summary>Kerbalism's own status vocabulary (FailuresManager.StatusString), kept verbatim.</summary>
         private const string Busted = "busted";
         private const string NeedsRepair = "needs repair";
         private const string NeedsService = "needs service";
 
-        public static ReliabilitySummary Summary(
-            ReliabilityRaw raw,
-            ReliabilityPreferencesRaw prefs,
-            string coverage) => new()
-        {
-            Source = ProviderId,
-            Coverage = coverage,
-            Extensions = SummaryExtensions(raw, prefs, coverage),
-        };
-
         /// <summary>
-        /// Kerbalism's namespace of the summary's extension bag, or null when there is
-        /// nothing to say (not modelling, or no parts). Null rather than an empty bag on
-        /// purpose: the wire omits the key entirely, so an unextended payload is
-        /// byte-for-byte what it was before this mechanism existed.
-        ///
-        /// <para>Wire keys are camelCase, hand-written to match the generated
-        /// TypeScript, the same producer-owns-the-flatten rule every hand-built value
-        /// tree in the mod already follows.</para>
+        /// The vessel-level summary. The rollup is filled only while Kerbalism is
+        /// modelling and the craft has modelled parts: nothing is rolled up about a
+        /// craft nobody is watching.
         /// </summary>
-        private static Dictionary<string, object?>? SummaryExtensions(
+        public static KerbalismReliabilitySummary Summary(
             ReliabilityRaw raw,
             ReliabilityPreferencesRaw prefs,
             string coverage)
         {
+            var summary = new KerbalismReliabilitySummary { Coverage = coverage };
             if (coverage != ReliabilityCoverage.Modeled || raw.Parts.Count == 0)
             {
-                return null;
+                return summary;
             }
 
             var worstMtbf = double.MaxValue;
@@ -85,22 +55,16 @@ namespace Gonogo.KerbalismUplink
                 else if (p.NeedsService == true) serviceDue++;
             }
 
-            return new Dictionary<string, object?>
-            {
-                [ProviderId] = new Dictionary<string, object?>
-                {
-                    // No positive MTBF anywhere means nothing on the vessel is
-                    // modelled as failing over time; a sentinel MaxValue would read
-                    // as a real number in a widget.
-                    ["worstMtbfSeconds"] = worstMtbf == double.MaxValue ? null : (object?)worstMtbf,
-                    ["brokenPartCount"] = broken,
-                    ["serviceDuePartCount"] = serviceDue,
-                    ["criticalChance"] = prefs.CriticalChance,
-                    ["safeModeChance"] = prefs.SafeModeChance,
-                    ["requireRepairKits"] = prefs.RequireRepairKits,
-                    ["incentiveRedundancy"] = prefs.IncentiveRedundancy,
-                },
-            };
+            // No positive MTBF anywhere means nothing on the vessel is modelled as
+            // failing over time; a sentinel MaxValue would read as a real number.
+            summary.WorstMtbfSeconds = worstMtbf == double.MaxValue ? null : worstMtbf;
+            summary.BrokenPartCount = broken;
+            summary.ServiceDuePartCount = serviceDue;
+            summary.CriticalChance = prefs.CriticalChance;
+            summary.SafeModeChance = prefs.SafeModeChance;
+            summary.RequireRepairKits = prefs.RequireRepairKits;
+            summary.IncentiveRedundancy = prefs.IncentiveRedundancy;
+            return summary;
         }
 
         /// <summary>
@@ -123,7 +87,7 @@ namespace Gonogo.KerbalismUplink
         public static int KitsForRepair(bool? critical) => critical == true ? 2 : 1;
 
         /// <summary>
-        /// What repairing this part consumes, for <c>ReliabilityPartEntry.RepairCost</c>.
+        /// What repairing this part consumes, for <c>KerbalismReliabilityPart.RepairCost</c>.
         ///
         /// <para>Null means nothing is consumed, which the contract distinguishes
         /// from a cost of zero. Three cases reach it: the part is not BROKEN (a
@@ -143,15 +107,15 @@ namespace Gonogo.KerbalismUplink
         /// answers "no-kits" after one round trip, where overstating one blocks
         /// the command outright.</para>
         /// </summary>
-        public static List<RepairCostItem>? RepairCostOf(
+        public static List<KerbalismRepairCostItem>? RepairCostOf(
             ReliabilityPartRaw p,
             bool? requireRepairKits)
         {
             if (p.Broken != true) return null;
             if (requireRepairKits != true) return null;
-            return new List<RepairCostItem>
+            return new List<KerbalismRepairCostItem>
             {
-                new RepairCostItem
+                new KerbalismRepairCostItem
                 {
                     Name = RepairKitPartName,
                     Quantity = KitsForRepair(p.Critical),
@@ -159,12 +123,12 @@ namespace Gonogo.KerbalismUplink
             };
         }
 
-        public static List<ReliabilityPartEntry> Parts(
+        public static List<KerbalismReliabilityPart> Parts(
             ReliabilityRaw raw,
             string coverage,
             bool? requireRepairKits)
         {
-            var list = new List<ReliabilityPartEntry>();
+            var list = new List<KerbalismReliabilityPart>();
             if (coverage != ReliabilityCoverage.Modeled) return list;
 
             var seen = new Dictionary<string, int>();
@@ -179,21 +143,21 @@ namespace Gonogo.KerbalismUplink
                 seen.TryGetValue(p.PartId, out var n);
                 seen[p.PartId] = n + 1;
 
-                list.Add(new ReliabilityPartEntry
+                list.Add(new KerbalismReliabilityPart
                 {
                     PartId = p.PartId + ":" + n,
                     Title = p.Title,
                     Condition = ConditionOf(p),
                     ConditionDetail = ConditionDetailOf(p),
-                    // Kerbalism has no per-part probability at all. Filling these
-                    // would be inventing data.
-                    Survival = null,
-                    SurvivalHorizonSeconds = null,
                     RepairTrait = string.IsNullOrEmpty(p.RepairTrait) ? null : p.RepairTrait,
                     RepairLevel = p.RepairLevel,
                     RepairCost = RepairCostOf(p, requireRepairKits),
                     Budgets = ServiceBudget(p, raw.Ut),
-                    Extensions = PartExtensions(p),
+                    // ReliabilityInfo.group is a redundancy SET name ("these parts
+                    // are each other's spares"), not a category.
+                    RedundancyGroup = string.IsNullOrEmpty(p.Group) ? null : p.Group,
+                    MtbfSeconds = p.MtbfSeconds,
+                    Quality = p.Quality,
                 });
             }
             return list;
@@ -271,7 +235,7 @@ namespace Gonogo.KerbalismUplink
         /// unrelated. A part inspected today and found 40% worn is service-due NOW
         /// with its maintenance clock far in the future.</para>
         /// </summary>
-        private static List<ReliabilityBudget>? ServiceBudget(ReliabilityPartRaw p, double ut)
+        private static List<KerbalismReliabilityBudget>? ServiceBudget(ReliabilityPartRaw p, double ut)
         {
             if (p.MtbfSeconds is not > 0 || p.LastInspection is not > 0) return null;
 
@@ -279,7 +243,7 @@ namespace Gonogo.KerbalismUplink
             var used = ut - p.LastInspection.Value;
             if (used < 0) used = 0;
 
-            return new List<ReliabilityBudget>
+            return new List<KerbalismReliabilityBudget>
             {
                 new()
                 {
@@ -289,30 +253,6 @@ namespace Gonogo.KerbalismUplink
                     Consumed = used / limit,
                     UsedSeconds = used,
                     LimitSeconds = limit,
-                },
-            };
-        }
-
-        /// <summary>
-        /// Kerbalism's per-part namespace: the two nameplate facts the shared shape
-        /// deliberately no longer carries. <c>redundancyGroup</c> is
-        /// <c>ReliabilityInfo.group</c>, which is a redundancy-SET name
-        /// (<c>module.redundancy</c>, "these parts are each other's spares"), not a
-        /// category, and a roll-up over it inverts its meaning. <c>mtbfSeconds</c> is
-        /// the nameplate constant that used to ride a field named MtbfHours.
-        /// </summary>
-        private static Dictionary<string, object?>? PartExtensions(ReliabilityPartRaw p)
-        {
-            var hasGroup = !string.IsNullOrEmpty(p.Group);
-            if (!hasGroup && p.MtbfSeconds == null && p.Quality == null) return null;
-
-            return new Dictionary<string, object?>
-            {
-                [ProviderId] = new Dictionary<string, object?>
-                {
-                    ["redundancyGroup"] = hasGroup ? p.Group : null,
-                    ["mtbfSeconds"] = p.MtbfSeconds,
-                    ["quality"] = p.Quality,
                 },
             };
         }

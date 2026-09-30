@@ -13,8 +13,9 @@ namespace Gonogo.KerbalismUplink
     /// compile-time link, presence-safe). Presence-gated (kerbalism.available),
     /// mandatory Health(), delay-gated per Topic (presence/features TrueNow, the
     /// vessel telemetry Delayed). Also declares the five File Manager commands
-    /// (<see cref="KerbalismFileCommandProvider"/>), presence-gated at the
-    /// manifest itself so they never appear at all on a vanilla install.
+    /// (<see cref="KerbalismFileCommandProvider"/>) and <c>kerbalism.repair</c>,
+    /// presence-gated at the manifest itself so they never appear at all on a
+    /// vanilla install.
     /// </summary>
     [SitrepUplink("kerbalism")]
     public sealed class KerbalismUplink : ISitrepUplink, IModSettingsSource
@@ -25,6 +26,15 @@ namespace Gonogo.KerbalismUplink
         private const string LifeSupportTopic = "kerbalism.lifesupport";
         private const string CrewTopic = "kerbalism.crew";
         private const string ProfileTopic = "kerbalism.profile";
+        private const string ReliabilityTopic = "kerbalism.reliability";
+        private const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
+
+        /// <summary>
+        /// Repair or service one part with one named kerbal, in a single command:
+        /// the crew check, the kit fetch and the repair are resolved aboard, since
+        /// each as its own command would cost a round trip.
+        /// </summary>
+        private const string RepairCommand = "kerbalism.repair";
 
         /// <summary>
         /// The <c>science.experiments</c> channel topic every File Manager
@@ -74,6 +84,8 @@ namespace Gonogo.KerbalismUplink
         private IChannelPublisher? _spaceWeather;
         private IChannelPublisher? _lifeSupport;
         private IChannelPublisher? _crew;
+        private IChannelPublisher? _reliability;
+        private IChannelPublisher? _reliabilityParts;
 
         /// <summary>Built once on first use; see <see cref="Profile"/>.</summary>
         private ProfileRaw? _profile;
@@ -103,41 +115,45 @@ namespace Gonogo.KerbalismUplink
                     Delayed(SpaceWeatherTopic),
                     Delayed(LifeSupportTopic),
                     Delayed(CrewTopic),
+                    Delayed(ReliabilityTopic),
+                    Delayed(ReliabilityPartsTopic),
                 },
                 // Presence-gated at construction, unlike the channels above:
                 // _k.IsAvailable is a cheap, session-stable reflection probe
-                // (the same one the reliability/isru/science provider
-                // registrations below gate on), so when Kerbalism is absent
-                // these five commands are not merely unhandled, they never
-                // appear in the manifest at all. A client has no reason to
-                // ever learn "kerbalism.file.send exists" on a vanilla
-                // install, the same registering-is-the-gate rule Register()
-                // already applies to the provider registrations.
-                Commands = _k.IsAvailable ? FileManagerCommands() : Array.Empty<CommandDeclaration>(),
+                // (the same one the isru/science provider registrations below
+                // gate on), so when Kerbalism is absent these commands are not
+                // merely unhandled, they never appear in the manifest at all. A
+                // client has no reason to ever learn "kerbalism.file.send exists"
+                // on a vanilla install, the same registering-is-the-gate rule
+                // Register() already applies to the provider registrations.
+                Commands = _k.IsAvailable ? KerbalismCommands() : Array.Empty<CommandDeclaration>(),
                 ErrorCodes = ErrorCodeCatalog.Of(typeof(KerbalismErrorCodes)),
             };
         }
 
         /// <summary>
-        /// The five File Manager commands: every one actuates Kerbalism state
-        /// ON the vessel (flag a file, delete it, flag/dump a sample, move a
-        /// sample to another drive), so all ride the same light-time delay
-        /// every other vessel actuation does. Declared on their args types in
-        /// this Uplink's contract slice, see SitrepCommandAttribute.Delay.
+        /// The five File Manager commands and the repair: every one actuates
+        /// Kerbalism state ON the vessel (flag a file, delete it, flag/dump a
+        /// sample, move a sample to another drive, repair a part), so all ride
+        /// the same light-time delay every other vessel actuation does. Declared
+        /// on their args types in this Uplink's contract slice, see
+        /// SitrepCommandAttribute.Delay.
         /// </summary>
-        private static List<CommandDeclaration> FileManagerCommands() => new()
+        private static List<CommandDeclaration> KerbalismCommands() => new()
         {
-            Command(KerbalismFileCommandProvider.SendCommand),
-            Command(KerbalismFileCommandProvider.DeleteCommand),
-            Command(KerbalismFileCommandProvider.AnalyzeCommand),
-            Command(KerbalismFileCommandProvider.DumpCommand),
-            Command(KerbalismFileCommandProvider.MoveToLabCommand),
+            Command(KerbalismFileCommandProvider.SendCommand, ScienceExperimentsSubject),
+            Command(KerbalismFileCommandProvider.DeleteCommand, ScienceExperimentsSubject),
+            Command(KerbalismFileCommandProvider.AnalyzeCommand, ScienceExperimentsSubject),
+            Command(KerbalismFileCommandProvider.DumpCommand, ScienceExperimentsSubject),
+            Command(KerbalismFileCommandProvider.MoveToLabCommand, ScienceExperimentsSubject),
+            // Acts on a part the parts listing named, on the same craft it reads.
+            Command(RepairCommand, ReliabilityPartsTopic),
         };
 
-        private static CommandDeclaration Command(string command) => new()
+        private static CommandDeclaration Command(string command, string subject) => new()
         {
             Command = command,
-            Subject = ScienceExperimentsSubject,
+            Subject = subject,
         };
 
         private static ChannelDeclaration TrueNow(string topic) => new()
@@ -189,6 +205,8 @@ namespace Gonogo.KerbalismUplink
             _spaceWeather = host.Publisher(SpaceWeatherTopic);
             _lifeSupport = host.Publisher(LifeSupportTopic);
             _crew = host.Publisher(CrewTopic);
+            _reliability = host.Publisher(ReliabilityTopic);
+            _reliabilityParts = host.Publisher(ReliabilityPartsTopic);
 
             // The rest of the fleet on the same reads, one namespace per craft
             // and gated per craft (see KerbalismFleetChannels). Registered
@@ -209,6 +227,7 @@ namespace Gonogo.KerbalismUplink
                 RegisterScience(host);
                 RegisterIsru(host);
                 RegisterFileManagerCommands(host, _fileActuator);
+                RegisterReliability(host);
 
                 // Attach the currency-delay science hook. Kerbalism credits science through a
                 // pooled, vessel-less buffer the stock currency interceptor can't see, so this
@@ -228,9 +247,55 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
+        /// The two reliability topics and the repair command, on Kerbalism's own
+        /// reliability reader.
+        ///
+        /// <para>The capture is gated on subscriptions to either topic, so the
+        /// per-module walk costs nothing while no client is looking, and it
+        /// returns nothing while Kerbalism is definitely not
+        /// breaking parts (<see cref="KerbalismReliabilityBackend.Capture"/>): a
+        /// save with failures switched off publishes no reliability at all rather
+        /// than a craft full of clean parts.</para>
+        /// </summary>
+        private void RegisterReliability(IUplinkHost host)
+        {
+            var reliability = new KerbalismReliabilityBackend(_k, host.Kernel);
+            host.AddSampledSource(
+                snapshot => snapshot == null || reliability.Capture() is not { } capture
+                    ? null
+                    : new ReliabilitySample(snapshot.Ut, capture),
+                HandleReliabilityOnCourier,
+                ReliabilityTopic,
+                ReliabilityPartsTopic);
+            host.AddCommandHandler<KerbalismRepairPartArgs, CommandResult<KerbalismRepairOutcome>>(
+                RepairCommand,
+                args => reliability.Repair(args?.PartId ?? "", args?.CrewName ?? ""));
+        }
+
+        /// <summary>COURIER-THREAD handle: publish both reliability payloads at the capture's UT. No KSP access.</summary>
+        private void HandleReliabilityOnCourier(object? captured)
+        {
+            if (captured is not ReliabilitySample sample) return;
+            _reliability?.Publish(sample.Capture.Summary, sample.Ut);
+            _reliabilityParts?.Publish(sample.Capture.Parts, sample.Ut);
+        }
+
+        private sealed class ReliabilitySample
+        {
+            public readonly double Ut;
+            public readonly KerbalismReliabilityCapture Capture;
+
+            public ReliabilitySample(double ut, KerbalismReliabilityCapture capture)
+            {
+                Ut = ut;
+                Capture = capture;
+            }
+        }
+
+        /// <summary>
         /// Register Kerbalism as the "isru" provider, above the stock vanilla backend
         /// so it WINS when Kerbalism is installed. Same registering-is-the-gate rule
-        /// as reliability above, and the same two-pass guarantee: the capability is
+        /// as science below, and the same two-pass guarantee: the capability is
         /// owned and declared by IsruCoreUplink (bundled core) in the pre-Register
         /// pass, so it exists here regardless of assembly-scan order.
         ///
@@ -298,12 +363,12 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// Register Kerbalism as the "science" provider, above the stock vanilla
         /// backend so it WINS when Kerbalism is installed. Same
-        /// registering-is-the-gate rule as reliability above, and the same two-pass
+        /// registering-is-the-gate rule as isru above, and the same two-pass
         /// guarantee: the capability is owned and declared by ScienceCoreUplink
         /// (bundled core) in the pre-Register pass, so it exists here regardless of
         /// assembly-scan order.
         ///
-        /// <para>Unlike reliability, this provider is STATEFUL: its reads run on the
+        /// <para>Unlike isru, this provider is STATEFUL: its reads run on the
         /// Courier thread and Kerbalism's science lives in PartModules that must be
         /// read on the main thread, so it is fed by its own capture-on-main source
         /// below and the SAME instance has to be both fed and elected. Hence one

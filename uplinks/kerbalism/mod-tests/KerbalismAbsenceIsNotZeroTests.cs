@@ -339,10 +339,8 @@ public class KerbalismConditionAbsenceTests
             Prefs,
             ReliabilityCoverage.Modeled);
 
-        var bag = Assert.IsType<Dictionary<string, object?>>(
-            summary.Extensions!["kerbalism"]);
-        Assert.Null(bag["brokenPartCount"]);
-        Assert.Null(bag["serviceDuePartCount"]);
+        Assert.Null(summary.BrokenPartCount);
+        Assert.Null(summary.ServiceDuePartCount);
     }
 
     /// <summary>

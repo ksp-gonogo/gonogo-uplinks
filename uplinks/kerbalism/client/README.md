@@ -20,6 +20,8 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | `kerbalism.features` | `KerbalismFeatures` | – | – |
 | `kerbalism.lifesupport` | `KerbalismLifeSupport` | – | – |
 | `kerbalism.profile` | `KerbalismProfile` | – | – |
+| `kerbalism.reliability` | `KerbalismReliabilitySummary` | – | – |
+| `kerbalism.reliabilityParts` | `KerbalismReliabilityPart[]` | – | – |
 | `kerbalism.spaceweather` | `KerbalismSpaceWeather` | – | – |
 
 | Payload | Fields |
@@ -31,7 +33,9 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | `KerbalismIsruDrillExtension` | `ecRate` units/s, `harvestType` text, `issue` text, `sourceMassRemaining` t, `sourceMassThreshold` t |
 | `KerbalismProcessDef` | `dumpValves` text, `inputs` units/s, `modifiers` text, `name` text, `outputs` units/s |
 | `KerbalismProcessEntry` | `broken` flag, `capacity` units, `envModifier` 1, `flightId` id, `resource` text, `running` flag, `title` text, `valveIndex` count |
-| `KerbalismReliabilityExt` | `brokenPartCount` count, `criticalChance` ratio, `incentiveRedundancy` flag, `requireRepairKits` flag, `safeModeChance` ratio, `serviceDuePartCount` count, `worstMtbfSeconds` s |
+| `KerbalismReliabilityBudget` | `consumed` ratio, `id` id, `kind` enum, `label` text, `limitSeconds` s, `usedSeconds` s |
+| `KerbalismRepairCostItem` | `name` id, `quantity` count |
+| `KerbalismRepairOutcome` | `kitsFrom` id, `kitsUsed` count, `repaired` flag |
 | `KerbalismResource` | `amount` units, `capacity` units, `rate` units/s |
 | `KerbalismResourceDef` | `density` kg/m³, `displayName` text, `flowMode` text, `flowModeOrdinal` enum, `isSupply` flag, `lowThreshold` ratio |
 | `KerbalismRuleDef` | `breakdown` flag, `degeneration` units/s, `fatalThreshold` units, `input` text, `interval` s, `modifiers` text, `name` text, `output` text, `rate` units, `ratePerSecond` units/s |
@@ -48,12 +52,14 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | --- | --- | --- |
 | `kerbalism.file.delete` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.file.send` | `KerbalismSubjectFlagArgs` | `CommandResult` |
+| `kerbalism.repair` | `KerbalismRepairPartArgs` | `CommandResultOf<KerbalismRepairOutcome>` |
 | `kerbalism.sample.analyze` | `KerbalismSubjectFlagArgs` | `CommandResult` |
 | `kerbalism.sample.dump` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.sample.moveToLab` | `KerbalismSubjectActionArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
+| `KerbalismRepairPartArgs` | `crewName` text, `partId` id |
 | `KerbalismSubjectActionArgs` | `subjectId` id |
 | `KerbalismSubjectFlagArgs` | `flag` flag, `subjectId` id |
 
@@ -97,10 +103,13 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
+| `kerbalism-reliability-updates` | `fleet-roster.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](docs/assets/file-and-sample-on-one-subject--default.png)
+
+![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](docs/assets/kit-cost-beside-the-repair--default.png)
 
 ## Contributions
 
@@ -144,4 +153,10 @@ Sun vantage plus vessel exposure: a per-star activity diagram for every star thi
 | `kerbalism.scienceNotModelled` | `modeUnavailable` | Kerbalism is not modelling science here | Kerbalism is not modelling science on this vessel, so there is no file or sample to act on. |
 | `kerbalism.noDriveSpace` | `limitReached` | no drive beside a lab has room for the whole sample | No drive beside a lab, other than the one holding it, has room for the whole sample. |
 | `kerbalism.driveRefused` | `modeUnavailable` | the Kerbalism drive did not make the change | A Kerbalism drive was asked to change a file or sample and reported that it had not. |
+| `kerbalism.noSuchCrew` | `notFound` | no crew member aboard has that name | Nobody aboard the craft answers to the name the repair was given. |
+| `kerbalism.crewNotQualified` | `capabilityMismatch` | that kerbal does not meet Kerbalism's repair specs | The kerbal lacks the trait or experience level Kerbalism's repair specs ask for, which it raises by one level for a critical failure. |
+| `kerbalism.evaImpossible` | `notClearToProceed` | the crew cannot get out to it yet | The kerbal cannot get out to the part: the hatch is inside a fairing, which clears once it is jettisoned. |
+| `kerbalism.noKits` | `insufficientResource` | there are not enough repair kits aboard | The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes. |
+| `kerbalism.reliabilityNotModelled` | `modeUnavailable` | Kerbalism is not modelling part failures in this save | Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking. |
+| `kerbalism.nothingToRepair` | `notFound` | no part aboard with that id is broken or due a service | No reliability module aboard has that id and is broken or due a service. |
 

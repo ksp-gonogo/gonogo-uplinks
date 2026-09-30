@@ -782,57 +782,170 @@ export interface KerbalismFeatures
 	deploy?: boolean | null;
 }
 /**
-* Kerbalism's vessel-level reliability rollup: the `extensions["kerbalism"]`
-* sub-tree of this Uplink's reliability summary. No Topic publishes the
-* summary yet.
+* Kerbalism's reliability picture of the craft: whether it is modelling part
+* failures at all, and the vessel-level figures that only mean anything while
+* it is. Published on `kerbalism.reliability`, and only while Kerbalism's
+* reliability feature and its MTBF failures are not definitely switched off.
 *
-* Absent entirely when `Features.Reliability` is off (the summary reports
-* `disabled` and there is no per-part list to roll up).
+* The four difficulty settings ride here because they are save-wide, not per
+* part: how likely a failure is to be the critical class, how likely one is
+* absorbed as a safe-mode reset, whether a repair needs kits, and whether a
+* breaking part extends its redundant siblings' lives.
 */
-export interface KerbalismReliabilityExt
+export interface KerbalismReliabilitySummary
 {
 	/**
-	* The shortest mean-time-between-failures on the vessel: Kerbalism's
-	* at-a-glance "what fails first" number. SECONDS, which is what
-	* `ReliabilityInfo.mtbf` has always been; it previously rode a field named
-	* `WorstMtbfHours` and was labelled hours by every reader of it, so a default
-	* part read 21,600,000 h. Null when no part on the vessel is modelled as
-	* failing over time.
+	* `modeled` when Kerbalism is breaking parts in this save, or `indeterminate`
+	* when it could not read its own switch. The topic is not published at all
+	* when either switch is definitely off.
+	*/
+	coverage?: string | null;
+	/**
+	* The shortest mean time between failures on the vessel, Kerbalism's "what
+	* fails first" figure. Null when no part is modelled as failing over time.
 	*/
 	worstMtbfSeconds?: Value<"s"> | null;
-	/** How many modelled parts are currently broken. */
+	/**
+	* How many modelled parts are broken. Null when any part's broken flag could
+	* not be read.
+	*/
 	brokenPartCount?: Value<"count"> | null;
 	/**
-	* How many not-yet-broken parts report `NeedsMaintenance`: the engineer's
-	* preventive work list. Kerbalism calls this state "needs service" and keeps
-	* it distinct from "needs repair" (broken, not critical), which is why this
-	* counts only parts that have NOT failed.
+	* How many intact parts Kerbalism says need service: the engineer's preventive
+	* work list. Null when any part's state could not be read.
 	*/
 	serviceDuePartCount?: Value<"count"> | null;
 	/**
-	* Save-wide: given a failure happens, the chance it is the more severe class.
-	* A difficulty setting (`PreferencesReliability.criticalChance`), never a
-	* per-part probability, and there is no per-part probability in Kerbalism to
-	* confuse it with.
+	* Given a failure happens, the chance it is the critical class. A save-wide
+	* difficulty setting, never a per-part probability.
 	*/
 	criticalChance?: Value<"ratio"> | null;
 	/**
-	* Save-wide: given a failure falls due on an uncrewed vessel, the chance it is
-	* absorbed as a safe-mode reset instead of a break. This is why crossing a
-	* Kerbalism maintenance clock is a coin flip rather than a deadline.
+	* Given a failure falls due on an uncrewed vessel, the chance it is absorbed
+	* as a safe-mode reset instead of a break.
 	*/
 	safeModeChance?: Value<"ratio"> | null;
-	/**
-	* Whether a repair consumes EVA repair kits, which decides whether a failure
-	* is fixable with what is aboard.
-	*/
+	/** Whether a repair consumes EVA repair kits. */
 	requireRepairKits?: boolean | null;
 	/**
-	* Whether a part's redundancy siblings get their life extended when it breaks.
-	* Relevant because it moves the maintenance clock with no event the operator
-	* saw.
+	* Whether a breaking part extends the lives of its redundant siblings, which
+	* moves their maintenance clocks with no event the operator saw.
 	*/
 	incentiveRedundancy?: boolean | null;
+}
+/**
+* One Kerbalism reliability module aboard the craft: a part carrying two
+* modules yields two entries. Published on `kerbalism.reliabilityParts`.
+*
+* Kerbalism has no per-part failure probability, so nothing here forecasts
+* survival: the per-part picture is a condition plus at most one service
+* budget.
+*/
+export interface KerbalismReliabilityPart
+{
+	/**
+	* `"<flightID>:<occurrence>"`, unique within one payload and the id
+	* `kerbalism.repair` addresses. Never a bare flightID: an unloaded vessel
+	* reports every part as 0, and one part can carry several modules.
+	*/
+	partId?: string | null;
+	/** The module's title, which names the subsystem rather than the part. */
+	title?: string | null;
+	/**
+	* One of `nominal`, `service-due`, `failed`, `failed-critical` or `unknown`.
+	* An unread flag is `unknown`, never `nominal`.
+	*/
+	condition?: string | null;
+	/**
+	* Kerbalism's own word for the condition ("busted", "needs repair", "needs
+	* service"), or null when there is none to quote.
+	*/
+	conditionDetail?: string | null;
+	/**
+	* The crew trait Kerbalism requires for a repair, already raised for a
+	* critical failure. Several traits are comma-separated; null means anyone may.
+	*/
+	repairTrait?: string | null;
+	/**
+	* The experience level that trait must hold, raised with it. Null when
+	* Kerbalism states none.
+	*/
+	repairLevel?: Value<"count"> | null;
+	/**
+	* What repairing this part in its current condition consumes. Null means
+	* nothing is consumed: a service is free, and so is every repair when the save
+	* does not require kits.
+	*/
+	repairCost?: KerbalismRepairCostItem[] | null;
+	/** The service clock, when both its inputs could be read. Null otherwise. */
+	budgets?: KerbalismReliabilityBudget[] | null;
+	/**
+	* The redundancy set this module belongs to: parts that are each other's
+	* spares. Null when it has none.
+	*/
+	redundancyGroup?: string | null;
+	/** The module's effective mean time between failures, quality included. */
+	mtbfSeconds?: Value<"s"> | null;
+	/**
+	* Whether the part was built to Kerbalism's high-quality standard, which
+	* lengthens its MTBF.
+	*/
+	quality?: boolean | null;
+}
+/**
+* One consumed dimension of a part's life. Kerbalism counts exactly one: the
+* time since the last clean inspection against half the effective MTBF.
+*/
+export interface KerbalismReliabilityBudget
+{
+	/** The budget's id: `service`. */
+	id?: string | null;
+	/** The lower-case noun an operator reads for it. */
+	label?: string | null;
+	/** `schedule`: a maintenance date falls due and nothing fails at the line. */
+	kind?: string | null;
+	/** Used over limit, which passes one once the service is overdue. */
+	consumed?: Value<"ratio"> | null;
+	/** Seconds since the last clean inspection. */
+	usedSeconds?: Value<"s"> | null;
+	/** Seconds a clean inspection lasts before service falls due. */
+	limitSeconds?: Value<"s"> | null;
+}
+/**
+* One item a Kerbalism repair consumes, named as the inventory names it so a
+* console can join the two.
+*/
+export interface KerbalismRepairCostItem
+{
+	/** The item's `AvailablePart.name`: `evaRepairKit`. */
+	name: string;
+	/** How many one repair takes: two for a critical failure, one otherwise. */
+	quantity: Value<"count">;
+}
+/**
+* `kerbalism.repair`'s args: which part, and which kerbal does it. One command
+* carries the whole intent, kit fetch included, because every step would
+* otherwise cost its own round trip.
+*/
+export interface KerbalismRepairPartArgs
+{
+	/** The part, by the id `kerbalism.reliabilityParts` gives it. */
+	partId: string;
+	/** The kerbal who does it, by name, as `vessel.crew` keys them. */
+	crewName: string;
+}
+/** What one Kerbalism repair did. */
+export interface KerbalismRepairOutcome
+{
+	/** Whether the part is repaired or serviced. */
+	repaired: boolean;
+	/** Repair kits consumed. */
+	kitsUsed: Value<"count">;
+	/**
+	* `carried` when the kerbal held the kits, otherwise the part id of the store
+	* they came from. Null when none were used.
+	*/
+	kitsFrom?: string | null;
 }
 /**
 * Kerbalism's `extensions["kerbalism"]` sub-tree of one `science.experiments`

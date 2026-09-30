@@ -32,6 +32,34 @@ export const KerbalismErrorCodes = {
    * had not.
    */
   DriveRefused: "kerbalism.driveRefused",
+  /**
+   * Nobody aboard the craft answers to the name the repair was given.
+   */
+  NoSuchCrew: "kerbalism.noSuchCrew",
+  /**
+   * The kerbal lacks the trait or experience level Kerbalism's repair specs ask
+   * for, which it raises by one level for a critical failure.
+   */
+  CrewNotQualified: "kerbalism.crewNotQualified",
+  /**
+   * The kerbal cannot get out to the part: the hatch is inside a fairing, which
+   * clears once it is jettisoned.
+   */
+  EvaImpossible: "kerbalism.evaImpossible",
+  /**
+   * The save requires repair kits and the kerbal and the craft's stores hold
+   * fewer than the repair takes.
+   */
+  NoKits: "kerbalism.noKits",
+  /**
+   * Kerbalism's reliability feature or its MTBF failures are switched off in
+   * this save, so no part is breaking.
+   */
+  ReliabilityNotModelled: "kerbalism.reliabilityNotModelled",
+  /**
+   * No reliability module aboard has that id and is broken or due a service.
+   */
+  NothingToRepair: "kerbalism.nothingToRepair",
 } as const;
 export type KerbalismErrorCodes = (typeof KerbalismErrorCodes)[keyof typeof KerbalismErrorCodes];
 
@@ -72,5 +100,53 @@ export const KERBALISM_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
     origin: null,
     sentence: "the Kerbalism drive did not make the change",
     meaning: "A Kerbalism drive was asked to change a file or sample and reported that it had not.",
+  },
+  {
+    id: "kerbalism.noSuchCrew",
+    kind: "refusal",
+    refines: "notFound",
+    origin: null,
+    sentence: "no crew member aboard has that name",
+    meaning: "Nobody aboard the craft answers to the name the repair was given.",
+  },
+  {
+    id: "kerbalism.crewNotQualified",
+    kind: "refusal",
+    refines: "capabilityMismatch",
+    origin: null,
+    sentence: "that kerbal does not meet Kerbalism's repair specs",
+    meaning: "The kerbal lacks the trait or experience level Kerbalism's repair specs ask for, which it raises by one level for a critical failure.",
+  },
+  {
+    id: "kerbalism.evaImpossible",
+    kind: "refusal",
+    refines: "notClearToProceed",
+    origin: null,
+    sentence: "the crew cannot get out to it yet",
+    meaning: "The kerbal cannot get out to the part: the hatch is inside a fairing, which clears once it is jettisoned.",
+  },
+  {
+    id: "kerbalism.noKits",
+    kind: "refusal",
+    refines: "insufficientResource",
+    origin: null,
+    sentence: "there are not enough repair kits aboard",
+    meaning: "The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes.",
+  },
+  {
+    id: "kerbalism.reliabilityNotModelled",
+    kind: "refusal",
+    refines: "modeUnavailable",
+    origin: null,
+    sentence: "Kerbalism is not modelling part failures in this save",
+    meaning: "Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking.",
+  },
+  {
+    id: "kerbalism.nothingToRepair",
+    kind: "refusal",
+    refines: "notFound",
+    origin: null,
+    sentence: "no part aboard with that id is broken or due a service",
+    meaning: "No reliability module aboard has that id and is broken or due a service.",
   },
 ];

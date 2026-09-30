@@ -41,7 +41,7 @@ namespace Gonogo.KerbalismUplink
         /// <para>Delegates the two-for-critical arithmetic to
         /// <see cref="KerbalismReliabilityMap.KitsForRepair"/> rather than
         /// repeating it, so the number CHARGED here cannot drift from the number
-        /// STATED on <c>ReliabilityPartEntry.RepairCost</c>.</para>
+        /// STATED on <c>KerbalismReliabilityPart.RepairCost</c>.</para>
         /// </summary>
         public static int KitsFor(bool broken, bool critical) =>
             broken ? KerbalismReliabilityMap.KitsForRepair(critical) : 0;

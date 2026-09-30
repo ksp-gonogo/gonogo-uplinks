@@ -181,14 +181,47 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "KerbalismProfile": {
     name: "text",
   },
-  "KerbalismReliabilityExt": {
+  "KerbalismReliabilityBudget": {
+    consumed: "ratio",
+    id: "id",
+    kind: "enum",
+    label: "text",
+    limitSeconds: "s",
+    usedSeconds: "s",
+  },
+  "KerbalismReliabilityPart": {
+    condition: "enum",
+    conditionDetail: "text",
+    mtbfSeconds: "s",
+    partId: "id",
+    quality: "flag",
+    redundancyGroup: "text",
+    repairLevel: "count",
+    repairTrait: "text",
+    title: "text",
+  },
+  "KerbalismReliabilitySummary": {
     brokenPartCount: "count",
+    coverage: "enum",
     criticalChance: "ratio",
     incentiveRedundancy: "flag",
     requireRepairKits: "flag",
     safeModeChance: "ratio",
     serviceDuePartCount: "count",
     worstMtbfSeconds: "s",
+  },
+  "KerbalismRepairCostItem": {
+    name: "id",
+    quantity: "count",
+  },
+  "KerbalismRepairOutcome": {
+    kitsFrom: "id",
+    kitsUsed: "count",
+    repaired: "flag",
+  },
+  "KerbalismRepairPartArgs": {
+    crewName: "text",
+    partId: "id",
   },
   "KerbalismResource": {
     amount: "units",
@@ -326,6 +359,27 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
   "kerbalism.profile": {
     name: "text",
   },
+  "kerbalism.reliability": {
+    brokenPartCount: "count",
+    coverage: "enum",
+    criticalChance: "ratio",
+    incentiveRedundancy: "flag",
+    requireRepairKits: "flag",
+    safeModeChance: "ratio",
+    serviceDuePartCount: "count",
+    worstMtbfSeconds: "s",
+  },
+  "kerbalism.reliabilityParts": {
+    condition: "enum",
+    conditionDetail: "text",
+    mtbfSeconds: "s",
+    partId: "id",
+    quality: "flag",
+    redundancyGroup: "text",
+    repairLevel: "count",
+    repairTrait: "text",
+    title: "text",
+  },
   "kerbalism.spaceweather": {
     blackout: "flag",
     habitatRadiationRadPerSecond: "rad/s",
@@ -384,6 +438,10 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     resources: "*KerbalismResourceDef",
     rules: "KerbalismRuleDef[]",
   },
+  "KerbalismReliabilityPart": {
+    budgets: "KerbalismReliabilityBudget[]",
+    repairCost: "KerbalismRepairCostItem[]",
+  },
   "KerbalismSpaceWeather": {
     stars: "KerbalismStarInfo[]",
     storms: "KerbalismStormEntry[]",
@@ -405,6 +463,10 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
     resources: "*KerbalismResourceDef",
     rules: "KerbalismRuleDef[]",
   },
+  "kerbalism.reliabilityParts": {
+    budgets: "KerbalismReliabilityBudget[]",
+    repairCost: "KerbalismRepairCostItem[]",
+  },
   "kerbalism.spaceweather": {
     stars: "KerbalismStarInfo[]",
     storms: "KerbalismStormEntry[]",
@@ -420,6 +482,15 @@ export type EnumsByField = Readonly<Record<string, string | null>>;
 
 /** Keyed by the generated interface name in ./contract.ts. */
 export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
+  "KerbalismReliabilityBudget": {
+    kind: null,
+  },
+  "KerbalismReliabilityPart": {
+    condition: null,
+  },
+  "KerbalismReliabilitySummary": {
+    coverage: null,
+  },
   "KerbalismResourceDef": {
     flowModeOrdinal: "KspResourceFlowMode",
   },
@@ -430,6 +501,12 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
 
 /** The same, keyed by Topic id. */
 export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
+  "kerbalism.reliability": {
+    coverage: null,
+  },
+  "kerbalism.reliabilityParts": {
+    condition: null,
+  },
 };
 
 /** Each enum an `enum` field names, as its wire value to member name. */

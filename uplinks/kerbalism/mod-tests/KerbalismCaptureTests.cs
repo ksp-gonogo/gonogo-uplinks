@@ -453,11 +453,34 @@ public class KerbalismReliabilityMapTests
     }
 
     [Fact]
-    public void Summary_names_the_source_and_carries_the_coverage_verbatim()
+    public void Summary_carries_the_coverage_verbatim()
     {
         var s = KerbalismReliabilityMap.Summary(Captured(), Prefs, ReliabilityCoverage.Modeled);
-        Assert.Equal("kerbalism", s.Source);
         Assert.Equal(ReliabilityCoverage.Modeled, s.Coverage);
+    }
+
+    /// <summary>
+    /// The rollup and the four save-wide settings are plain fields of the summary,
+    /// not a sub-tree keyed by a provider id: the topic is Kerbalism's own.
+    /// </summary>
+    [Fact]
+    public void Summary_rolls_up_the_vessel_and_carries_the_save_wide_settings()
+    {
+        var s = KerbalismReliabilityMap.Summary(
+            Captured(
+                new ReliabilityPartRaw { PartId = "7", Broken = true, MtbfSeconds = 40_000 },
+                new ReliabilityPartRaw { PartId = "8", Broken = false, NeedsService = true, MtbfSeconds = 90_000 },
+                new ReliabilityPartRaw { PartId = "9", Broken = false, NeedsService = false }),
+            Prefs,
+            ReliabilityCoverage.Modeled);
+
+        Assert.Equal(1, s.BrokenPartCount);
+        Assert.Equal(1, s.ServiceDuePartCount);
+        Assert.Equal(40_000, s.WorstMtbfSeconds);
+        Assert.Equal(0.25, s.CriticalChance);
+        Assert.Equal(0.5, s.SafeModeChance);
+        Assert.True(s.RequireRepairKits);
+        Assert.True(s.IncentiveRedundancy);
     }
 
     /// <summary>
@@ -473,7 +496,10 @@ public class KerbalismReliabilityMapTests
             Captured(new ReliabilityPartRaw { PartId = "7", Broken = true }), Prefs, coverage);
         Assert.Equal(coverage, s.Coverage);
         // Nothing is rolled up about a craft nobody is watching.
-        Assert.Null(s.Extensions);
+        Assert.Null(s.BrokenPartCount);
+        Assert.Null(s.ServiceDuePartCount);
+        Assert.Null(s.WorstMtbfSeconds);
+        Assert.Null(s.RequireRepairKits);
     }
 
     [Fact]
@@ -513,22 +539,24 @@ public class KerbalismReliabilityMapTests
     }
 
     /// <summary>
-    /// Kerbalism has no per-part probability of any kind, so filling one would be
-    /// inventing data. The whole numeric contribution is the service clock.
+    /// Kerbalism has no per-part probability of any kind, so the part shape has no
+    /// field to fill one into. The nameplate facts are plain fields.
     /// </summary>
     [Fact]
-    public void Parts_never_claim_a_survival_probability()
+    public void Parts_carry_the_nameplate_facts_and_no_survival_probability()
     {
         var parts = KerbalismReliabilityMap.Parts(
             Captured(new ReliabilityPartRaw
             {
-                PartId = "7", MtbfSeconds = 21_600_000, LastInspection = 400_000,
+                PartId = "7", Group = "Communication", MtbfSeconds = 21_600_000, Quality = true,
             }),
             ReliabilityCoverage.Modeled,
             Prefs.RequireRepairKits);
 
-        Assert.Null(parts[0].Survival);
-        Assert.Null(parts[0].SurvivalHorizonSeconds);
+        Assert.Equal("Communication", parts[0].RedundancyGroup);
+        Assert.Equal(21_600_000, parts[0].MtbfSeconds);
+        Assert.True(parts[0].Quality);
+        Assert.Null(typeof(KerbalismReliabilityPart).GetProperty("Survival"));
     }
 
     [Fact]

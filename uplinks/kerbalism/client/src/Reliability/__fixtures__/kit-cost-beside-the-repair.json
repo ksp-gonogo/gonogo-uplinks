@@ -1,0 +1,226 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. A crewed station under Kerbalism with failures on and repair kits required. The reaction wheel has failed critically, which Kerbalism charges two EVA repair kits for and raises to an Engineer of level 2; Bill carries one and the service bay holds three. The antenna is 1.4 of its service clock through and due a service, which Kerbalism's same Repair() clears for nothing, so it states no cost. The battery is a fifth of the way through its clock and draws no row. The lander on the second row is not the active craft, so its row stays empty."
+  },
+  "_scene": {
+    "augment": "kerbalism-reliability-updates",
+    "hostWidget": "fleet-roster",
+    "caption": "A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair",
+    "modes": [
+      "default"
+    ],
+    "size": {
+      "w": 10,
+      "h": 12
+    },
+    "paints": [
+      "Reaction Wheel",
+      "critical failure",
+      "Costs 2 × EVA Repair Kit",
+      "service due"
+    ],
+    "hero": true
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "index": 0,
+              "name": "Kerbin"
+            },
+            {
+              "index": 1,
+              "name": "Mun"
+            }
+          ]
+        }
+      },
+      {
+        "topic": "system.vessels",
+        "payload": {
+          "vessels": [
+            {
+              "vesselId": "v-station",
+              "name": "Kerbin Station Alpha",
+              "vesselType": 1,
+              "situation": 3,
+              "bodyIndex": 0,
+              "crewCount": 3,
+              "crewCapacity": 6,
+              "commsConnected": true,
+              "commsControlSource": 2
+            },
+            {
+              "vesselId": "v-lander",
+              "name": "Mun Lander Bravo",
+              "vesselType": 2,
+              "situation": 0,
+              "bodyIndex": 1,
+              "crewCount": 2,
+              "crewCapacity": 3,
+              "commsConnected": true,
+              "commsControlSource": 1
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "v-station",
+          "name": "Kerbin Station Alpha",
+          "vesselType": 1,
+          "situation": 3
+        }
+      },
+      {
+        "topic": "kerbalism.reliability",
+        "payload": {
+          "coverage": "modeled",
+          "worstMtbfSeconds": 10800000,
+          "brokenPartCount": 1,
+          "serviceDuePartCount": 1,
+          "criticalChance": 0.25,
+          "safeModeChance": 0.5,
+          "requireRepairKits": true,
+          "incentiveRedundancy": true
+        }
+      },
+      {
+        "topic": "kerbalism.reliabilityParts",
+        "payload": [
+          {
+            "partId": "4102:0",
+            "title": "Reaction Wheel",
+            "condition": "failed-critical",
+            "conditionDetail": "busted",
+            "repairTrait": "Engineer",
+            "repairLevel": 2,
+            "repairCost": [
+              {
+                "name": "evaRepairKit",
+                "quantity": 2
+              }
+            ],
+            "budgets": null,
+            "redundancyGroup": "Attitude Control",
+            "mtbfSeconds": 10800000,
+            "quality": false
+          },
+          {
+            "partId": "4117:0",
+            "title": "Antenna",
+            "condition": "service-due",
+            "conditionDetail": "needs service",
+            "repairTrait": "Engineer",
+            "repairLevel": 1,
+            "repairCost": null,
+            "budgets": [
+              {
+                "id": "service",
+                "label": "service",
+                "kind": "schedule",
+                "consumed": 1.4,
+                "usedSeconds": 302400,
+                "limitSeconds": 216000
+              }
+            ],
+            "redundancyGroup": "Communication",
+            "mtbfSeconds": 432000,
+            "quality": true
+          },
+          {
+            "partId": "4120:0",
+            "title": "Battery",
+            "condition": "nominal",
+            "conditionDetail": null,
+            "repairTrait": "Engineer",
+            "repairLevel": 0,
+            "repairCost": null,
+            "budgets": [
+              {
+                "id": "service",
+                "label": "service",
+                "kind": "schedule",
+                "consumed": 0.2,
+                "usedSeconds": 43200,
+                "limitSeconds": 216000
+              }
+            ],
+            "redundancyGroup": "Power",
+            "mtbfSeconds": 432000,
+            "quality": false
+          }
+        ]
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": {
+          "count": 3,
+          "capacity": 6,
+          "crew": [
+            {
+              "name": "Jebediah Kerman",
+              "trait": "Pilot",
+              "experienceLevel": 3,
+              "carrying": []
+            },
+            {
+              "name": "Bill Kerman",
+              "trait": "Engineer",
+              "experienceLevel": 2,
+              "carrying": [
+                {
+                  "name": "evaRepairKit",
+                  "title": "EVA Repair Kit",
+                  "quantity": 1
+                }
+              ]
+            },
+            {
+              "name": "Bob Kerman",
+              "trait": "Scientist",
+              "experienceLevel": 1,
+              "carrying": []
+            }
+          ],
+          "meta": {
+            "source": "vessel:4",
+            "quality": 1
+          }
+        }
+      },
+      {
+        "topic": "vessel.inventory",
+        "payload": {
+          "stores": [
+            {
+              "partId": "77",
+              "partName": "Service Bay",
+              "items": [
+                {
+                  "name": "evaRepairKit",
+                  "title": "EVA Repair Kit",
+                  "quantity": 3
+                }
+              ]
+            }
+          ],
+          "meta": {
+            "source": "vessel:4",
+            "quality": 1
+          }
+        }
+      }
+    ]
+  }
+}

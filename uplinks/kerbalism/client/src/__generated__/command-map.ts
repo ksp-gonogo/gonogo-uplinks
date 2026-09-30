@@ -51,16 +51,20 @@
 // was inherited from the topic map's caveat, where it is real.
 
 import type {
+  KerbalismRepairOutcome,
+  KerbalismRepairPartArgs,
   KerbalismSubjectActionArgs,
   KerbalismSubjectFlagArgs,
 } from "./contract.js";
 import type {
   CommandResult,
+  CommandResultOf,
 } from "@ksp-gonogo/sitrep-sdk";
 
 export interface GeneratedCommandArgsMap {
   "kerbalism.file.delete": KerbalismSubjectActionArgs;
   "kerbalism.file.send": KerbalismSubjectFlagArgs;
+  "kerbalism.repair": KerbalismRepairPartArgs;
   "kerbalism.sample.analyze": KerbalismSubjectFlagArgs;
   "kerbalism.sample.dump": KerbalismSubjectActionArgs;
   "kerbalism.sample.moveToLab": KerbalismSubjectActionArgs;
@@ -69,6 +73,7 @@ export interface GeneratedCommandArgsMap {
 export interface GeneratedCommandReplyMap {
   "kerbalism.file.delete": CommandResult;
   "kerbalism.file.send": CommandResult;
+  "kerbalism.repair": CommandResultOf<KerbalismRepairOutcome>;
   "kerbalism.sample.analyze": CommandResult;
   "kerbalism.sample.dump": CommandResult;
   "kerbalism.sample.moveToLab": CommandResult;
@@ -87,6 +92,7 @@ export interface GeneratedCommandReplyMap {
 export const GENERATED_COMMAND_REPLY_TYPES = {
   "kerbalism.file.delete": "CommandResult",
   "kerbalism.file.send": "CommandResult",
+  "kerbalism.repair": "CommandResultOf<KerbalismRepairOutcome>",
   "kerbalism.sample.analyze": "CommandResult",
   "kerbalism.sample.dump": "CommandResult",
   "kerbalism.sample.moveToLab": "CommandResult",
@@ -133,6 +139,7 @@ export interface GeneratedCommandRail {
 export const GENERATED_COMMAND_RAIL = {
   "kerbalism.file.delete": { replies: true, delayed: true },
   "kerbalism.file.send": { replies: true, delayed: true },
+  "kerbalism.repair": { replies: true, delayed: true },
   "kerbalism.sample.analyze": { replies: true, delayed: true },
   "kerbalism.sample.dump": { replies: true, delayed: true },
   "kerbalism.sample.moveToLab": { replies: true, delayed: true },
@@ -141,6 +148,7 @@ export const GENERATED_COMMAND_RAIL = {
 export const GENERATED_COMMAND_IDS = [
   "kerbalism.file.delete",
   "kerbalism.file.send",
+  "kerbalism.repair",
   "kerbalism.sample.analyze",
   "kerbalism.sample.dump",
   "kerbalism.sample.moveToLab",
