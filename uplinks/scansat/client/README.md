@@ -63,6 +63,13 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
-| `scansat:science-instruments` | `experiments.instruments` | `scansat.science` | only while `scansat` |
+| `scansat:science-instruments` | `experiments.instruments` | `scansat.science`, `processor:scansat:science-reading` | only while `scansat` |
 
+![Experiments listing SCANsat's scanners under their own heading beside the stock instruments, with the scanner holding data marked DATA](docs/assets/scanners-beside-stock--default.png)
+
+## Models
+
+| Kind | Id |
+| --- | --- |
+| processor | `scansat:science-reading` |
 

@@ -18,7 +18,12 @@
 // Presence-gated on `requires: "scansat"`, so an install without the SCANsat
 // mod contributes nothing.
 
-import type { ContributionEntry, DepTopics } from "@ksp-gonogo/sitrep-sdk";
+import type {
+  ContributionEntry,
+  DepTopics,
+  TopicPayload,
+  TopicReading,
+} from "@ksp-gonogo/sitrep-sdk";
 import { SCANSAT } from "../uplink.js";
 
 /**
@@ -29,15 +34,40 @@ import { SCANSAT } from "../uplink.js";
  */
 type InstrumentEntry = ContributionEntry<"experiments.instruments">;
 
+/** One scanner's flags as the wire states them, before the reading they came from is attached. */
+export type ScanScienceRow = Omit<InstrumentEntry, "reading">;
+
+type ScanScience = TopicPayload<"scansat.science">;
+
+/**
+ * `scansat:science-reading`. `scansat.science` as a reading, since a
+ * contribution is handed a topic's payload and never its currency, and a row
+ * whose flags stopped arriving has to be drawn held.
+ */
+const SCAN_SCIENCE_READING = SCANSAT.registerProcessor({
+  id: "science-reading",
+  deps: [{ reading: "scansat.science" }] as const,
+  compute: ([science]: readonly [TopicReading<ScanScience>]):
+    | ScanScience
+    | undefined =>
+    science.state === "observed" || science.state === "held"
+      ? science.value
+      : undefined,
+});
+
 /**
  * What this contribution reads, declared once because it is read twice: `deps`
  * feeds it to the aggregation, and `computeScanScienceInstruments` names it to
- * get the topics bag typed.
+ * get the topics bag typed. The bare id is what subscribes the topic; the
+ * processor only reads what is stored.
  */
-const DEPS = ["scansat.science"] as const;
+const DEPS = ["scansat.science", SCAN_SCIENCE_READING] as const;
 
 /** The bag `compute` is handed. Exported so a test can build one without respelling the deps. */
 export type ScienceInstrumentTopics = DepTopics<typeof DEPS>;
+
+/** The key the reading of `scansat.science` arrives under in {@link ScienceInstrumentTopics}. */
+export const SCAN_SCIENCE_READING_ID = SCAN_SCIENCE_READING.id;
 
 /**
  * Parses `scansat.science` (`GonogoScansatUplink.ScanScienceEntry[]`, built by
@@ -64,10 +94,10 @@ export type ScienceInstrumentTopics = DepTopics<typeof DEPS>;
  * place this Uplink decides what a malformed frame means, and a shape assertion
  * would put that decision somewhere nothing runs.
  */
-export function parseScanScience(raw: unknown): InstrumentEntry[] | null {
+export function parseScanScience(raw: unknown): ScanScienceRow[] | null {
   if (raw === null || raw === undefined) return null;
   if (!Array.isArray(raw)) return null;
-  const out: InstrumentEntry[] = [];
+  const out: ScanScienceRow[] = [];
   for (const entry of raw) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
     const e = entry as Record<string, unknown>;
@@ -99,14 +129,18 @@ export function parseScanScience(raw: unknown): InstrumentEntry[] | null {
  * Exported because it is PURE, which makes it the cheapest thing here to test:
  * hand it a topics bag, assert the rows.
  *
- * There is no staleness to judge. A contribution is handed payloads rather than
- * `Reading`s, and how old a row is belongs to the host widget: it draws the
- * rows, so it is the one that can say.
+ * Every row carries the one reading its flags were parsed from, so the host
+ * widget marks them held together when `scansat.science` stops arriving.
  */
 export function computeScanScienceInstruments(
   topics: ScienceInstrumentTopics,
 ): readonly InstrumentEntry[] | null {
-  return parseScanScience(topics["scansat.science"]);
+  const reading = topics[SCAN_SCIENCE_READING.id];
+  if (reading === undefined) return null;
+  return (
+    parseScanScience(reading.value)?.map((row) => ({ ...row, reading })) ??
+    null
+  );
 }
 
 SCANSAT.registerContribution({

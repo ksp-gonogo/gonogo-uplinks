@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeScanScienceInstruments,
   parseScanScience,
+  SCAN_SCIENCE_READING_ID,
   type ScienceInstrumentTopics,
 } from "./index.js";
 
@@ -20,8 +21,23 @@ const SCAN_ENTRY = {
   inoperable: false,
 };
 
-function topicsWith(science: unknown): ScienceInstrumentTopics {
-  return { "scansat.science": science } as ScienceInstrumentTopics;
+/** The bag with `scansat.science` observed, or held when `held` is set. */
+function topicsWith(
+  science: unknown,
+  held = false,
+): ScienceInstrumentTopics {
+  const reading = held
+    ? {
+        state: "held",
+        value: science,
+        grade: "disconnected",
+        reckoning: { status: "none" },
+      }
+    : { state: "observed", value: science, reckoning: { status: "none" } };
+  return {
+    "scansat.science": science,
+    [SCAN_SCIENCE_READING_ID]: reading,
+  } as unknown as ScienceInstrumentTopics;
 }
 
 describe("parseScanScience", () => {
@@ -62,14 +78,27 @@ describe("parseScanScience", () => {
 });
 
 describe("computeScanScienceInstruments", () => {
-  it("contributes the vessel's scanners", () => {
-    expect(computeScanScienceInstruments(topicsWith([SCAN_ENTRY]))).toEqual([
-      SCAN_ENTRY,
+  it("contributes the vessel's scanners, each carrying the reading its flags came from", () => {
+    const topics = topicsWith([SCAN_ENTRY]);
+    expect(computeScanScienceInstruments(topics)).toEqual([
+      { ...SCAN_ENTRY, reading: topics[SCAN_SCIENCE_READING_ID] },
     ]);
+  });
+
+  it("keeps a held frame's scanners and hands them the held reading, so the host marks them", () => {
+    const rows = computeScanScienceInstruments(topicsWith([SCAN_ENTRY], true));
+    expect(rows?.map((row) => row.partId)).toEqual(["42"]);
+    expect(rows?.[0]?.reading.state).toBe("held");
+    expect(rows?.[0]?.reading.grade).toBe("disconnected");
   });
 
   it("contributes nothing before scansat.science has arrived", () => {
     expect(computeScanScienceInstruments(topicsWith(undefined))).toBeNull();
+    expect(
+      computeScanScienceInstruments({
+        "scansat.science": undefined,
+      } as unknown as ScienceInstrumentTopics),
+    ).toBeNull();
   });
 
   it("contributes nothing on a vessel with no scanners", () => {

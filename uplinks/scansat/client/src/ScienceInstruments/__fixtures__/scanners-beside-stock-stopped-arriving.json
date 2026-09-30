@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "notes": "SYNTHETIC. One stock instrument beside two SCANsat scanners, so the contributed rows are seen under their own SCANsat heading next to a stock row; the altimeter holds data and the multispectral sensor has none yet. Then the link drops after the scene is staged, so the scanners' flags are held rather than current and each contributed row is marked held."
+  },
+  "_scene": {
+    "contribution": "scansat:science-instruments",
+    "hostWidget": "experiments",
+    "modes": [
+      "default"
+    ],
+    "caption": "The same scanners once the link drops: each SCANsat row keeps its last flags and is marked held, like the stock row beside it",
+    "paints": [
+      "SCAN RADAR Altimetry Sensor",
+      "SCAN Multispectral Sensor",
+      "OFFLINE"
+    ],
+    "size": {
+      "w": 10,
+      "h": 8
+    }
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "stopsArriving": true,
+    "emits": [
+      {
+        "topic": "scansat.available",
+        "payload": true
+      },
+      {
+        "topic": "science.instruments",
+        "payload": [
+          {
+            "partId": "3960381880",
+            "partName": "Mk1 Command Pod",
+            "experimentId": "crewReport",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": true,
+            "dataIsCollectable": false
+          }
+        ]
+      },
+      {
+        "topic": "scansat.science",
+        "payload": [
+          {
+            "partId": "2210457731",
+            "partTitle": "SCAN RADAR Altimetry Sensor",
+            "expId": "SCANsatAltimetryLoRes",
+            "deployed": false,
+            "hasData": true,
+            "rerunnable": true,
+            "inoperable": false
+          },
+          {
+            "partId": "2210457732",
+            "partTitle": "SCAN Multispectral Sensor",
+            "expId": "SCANsatBiomeAnomaly",
+            "deployed": false,
+            "hasData": false,
+            "rerunnable": true,
+            "inoperable": false
+          }
+        ]
+      }
+    ]
+  }
+}

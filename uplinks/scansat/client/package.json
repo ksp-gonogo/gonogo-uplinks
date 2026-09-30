@@ -23,13 +23,13 @@
     "docs:check": "gonogo-uplink docs --check"
   },
   "dependencies": {
-    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-a37f69a7f1f6.tgz",
+    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-0580932001b5.tgz",
     "styled-components": "^6.4.0"
   },
   "devDependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-233ae584e91d.tgz",
-    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-147408b2b544.tgz",
+    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-c0ca0b07c290.tgz",
+    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-d65a47478457.tgz",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jest-axe": "^3.5.9",
