@@ -2,26 +2,17 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { DYNAMIC_WHOLE_TOPIC_PREFIXES } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
+import { SCANSAT_DYNAMIC_PREFIXES } from "./topics.js";
 
 /**
  * Cross-boundary contract test for SCANsat's dynamic per-(body, type)
- * namespaces. Both sides of the wire must describe them with the SAME canonical
- * prefix strings, or a future namespace desyncs silently: the mod publishing
- * under one string while the client resolves another.
+ * namespaces. Both sides of the wire must describe them with the SAME prefix
+ * strings, or a namespace desyncs silently: the mod publishing under one string
+ * while the client resolves another.
  *
- * This locks the MOD side to the canonical list, and the client side to the
- * same list through the SDK's `DYNAMIC_WHOLE_TOPIC_PREFIXES`.
+ * This locks the mod's `ScanChannels.*Prefix` constants to the prefixes the
+ * client registers, and checks the registration reached the SDK.
  */
-
-// The single source of truth. These are the dynamic-namespace whole-topic
-// prefixes (trailing `.`) the whole pipeline must agree on.
-const CANONICAL_DYNAMIC_PREFIXES = [
-  "scansat.coverage.",
-  "scansat.mask.",
-  "scansat.height.",
-  "scansat.biome.",
-  "scansat.anomalies.",
-] as const;
 
 function readModPrefixes(): string[] {
   // vitest runs this package's tests with cwd = the client package dir
@@ -38,18 +29,16 @@ function readModPrefixes(): string[] {
 }
 
 describe("SCANsat dynamic-topic prefix contract", () => {
-  it("the mod's ScanChannels.*Prefix constants are exactly the canonical list", () => {
+  it("the mod's ScanChannels.*Prefix constants are exactly the registered prefixes", () => {
     const modPrefixes = readModPrefixes();
-    // Set-equality (order-independent): every canonical prefix is declared by
-    // the mod, and the mod declares no extra dynamic prefix the plan doesn't
-    // know about.
+    // Set-equality: every registered prefix is declared by the mod, and the mod declares none the client does not register.
     expect([...modPrefixes].sort()).toEqual(
-      [...CANONICAL_DYNAMIC_PREFIXES].sort(),
+      [...SCANSAT_DYNAMIC_PREFIXES].sort(),
     );
   });
 
-  it("every canonical prefix is a 3-segment `scansat.<channel>.` shape (trailing dot, no body/type baked in)", () => {
-    for (const prefix of CANONICAL_DYNAMIC_PREFIXES) {
+  it("every prefix is a 3-segment `scansat.<channel>.` shape (trailing dot, no body/type baked in)", () => {
+    for (const prefix of SCANSAT_DYNAMIC_PREFIXES) {
       expect(prefix.startsWith("scansat.")).toBe(true);
       expect(prefix.endsWith(".")).toBe(true);
       // domain + channel + trailing empty segment => 3 parts on split.
@@ -57,8 +46,8 @@ describe("SCANsat dynamic-topic prefix contract", () => {
     }
   });
 
-  it("the client's dynamic prefixes include every canonical one", () => {
-    for (const prefix of CANONICAL_DYNAMIC_PREFIXES) {
+  it("the SDK's dynamic prefixes include every one this client registers", () => {
+    for (const prefix of SCANSAT_DYNAMIC_PREFIXES) {
       expect(DYNAMIC_WHOLE_TOPIC_PREFIXES).toContain(prefix);
     }
   });

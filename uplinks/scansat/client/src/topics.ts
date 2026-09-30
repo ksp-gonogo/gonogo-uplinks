@@ -29,6 +29,7 @@
 
 import {
   registerBarePrimitiveTopic,
+  registerDynamicTopicPrefix,
   registerTopicUnits,
   registerTypeUnits,
   type TopicPayload,
@@ -74,6 +75,26 @@ declare module "@ksp-gonogo/sitrep-sdk" {
 registerBarePrimitiveTopic(SCANSAT_AVAILABLE_TOPIC);
 registerBarePrimitiveTopic(SCANSAT_SCANNING_VESSELS_TOPIC);
 registerBarePrimitiveTopic(SCANSAT_SCIENCE_TOPIC);
+
+/**
+ * The per-body namespaces the mod publishes under, each the matching
+ * `ScanChannels.*Prefix` in ../mod/ScanChannels.cs:
+ * `scansat.coverage.<body>.<typeBit>`, `scansat.mask.<body>.<typeBit>`,
+ * `scansat.height.<body>`, `scansat.biome.<body>` and
+ * `scansat.anomalies.<body>`. Registered so each member is subscribed as its
+ * own Topic rather than as a field of a parent nobody publishes.
+ */
+export const SCANSAT_DYNAMIC_PREFIXES = [
+  "scansat.coverage.",
+  "scansat.mask.",
+  "scansat.height.",
+  "scansat.biome.",
+  "scansat.anomalies.",
+] as const;
+
+for (const prefix of SCANSAT_DYNAMIC_PREFIXES) {
+  registerDynamicTopicPrefix(prefix);
+}
 
 // The runtime half. ScanningVesselEntry/ScanScienceEntry live in THIS Uplink's
 // contract slice, so the SDK's own generated unit map knows nothing about them

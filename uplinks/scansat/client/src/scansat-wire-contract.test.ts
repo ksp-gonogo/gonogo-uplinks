@@ -9,6 +9,8 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
 import { SCAN_TYPE } from "./schema.js";
+// The client's own registrations, its dynamic prefixes among them, as loading the package makes them.
+import "./topics.js";
 
 // Client-half round-trip for the SCANsat dynamic wire contract, against the REAL
 // TimelineStore configured exactly as the live TelemetryProvider configures it
