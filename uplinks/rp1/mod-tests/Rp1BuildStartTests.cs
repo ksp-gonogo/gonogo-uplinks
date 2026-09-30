@@ -145,7 +145,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("LC-1", result.Detail!);
             Assert.Empty(lc.BuildList);
         }
@@ -159,7 +159,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             // Both halves of the mismatch, because "wrong complex" alone leaves
             // an operator guessing which of the two is the wrong one.
             Assert.Contains("VAB", result.Detail!);
@@ -176,7 +176,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Dynasoar", lc, KspEditorFacility.SPH);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Empty(lc.BuildList);
         }
 
@@ -193,7 +193,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Saturn V", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             // RP-1's own sentence, carried through rather than summarised: it
             // names both figures, and a paraphrase would drop one.
             Assert.Contains("Mass limit exceeded", result.Detail!);
@@ -212,7 +212,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("RO-Atlas-LR89", result.Detail!);
             Assert.Empty(lc.BuildList);
         }
@@ -227,7 +227,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("RO-Agena-8096", result.Detail!);
             Assert.Empty(lc.BuildList);
         }
@@ -242,7 +242,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("RO-Vanguard-X405", result.Detail!);
             // RP-1's own window offers to spend the funds here, through a popup.
             // Nobody can answer a popup on a command dispatched from another
@@ -262,7 +262,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Start("Atlas", lc);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("LR105-NA-7", result.Detail!);
             Assert.Empty(lc.BuildList);
         }

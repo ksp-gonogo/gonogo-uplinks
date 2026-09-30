@@ -205,7 +205,7 @@ export function FacilityUpgrades() {
           operator is already looking at rather than in a sentence about it. */}
       <Readout>
         <ReadoutCaption>Funds</ReadoutCaption>
-        <Unit value={careerReading.economy.funds} />
+        <Unit value={careerReading.balances.funds} />
       </Readout>
 
       {rows.length === 0 ? (

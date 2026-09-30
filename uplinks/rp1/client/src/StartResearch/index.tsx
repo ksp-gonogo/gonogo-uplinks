@@ -108,7 +108,7 @@ export function StartResearch() {
   );
   const offered = startable(career.tech.nodes ?? [], queued);
 
-  const science = magnitudeOf(career?.economy?.science);
+  const science = magnitudeOf(career?.balances?.science);
   const chosen = offered.find((node) => node.id === picked) ?? offered[0];
   const cost = magnitudeOf(chosen?.scienceCost);
   const short = cost !== null && science !== null && science < cost;
@@ -124,7 +124,7 @@ export function StartResearch() {
       <Cluster gap="related-comfortable" justify="start" wrap>
         <Readout>
           <ReadoutCaption>Science</ReadoutCaption>
-          <Unit value={careerReading.economy.science} />
+          <Unit value={careerReading.balances.science} />
         </Readout>
         <Text size="xs" level="muted">
           Charged in full when the node is queued, not when it finishes.

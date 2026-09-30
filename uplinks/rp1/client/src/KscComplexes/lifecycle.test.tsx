@@ -1,11 +1,13 @@
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
-import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  expectNoA11yViolations,
+  renderWithRail as render,
+} from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
@@ -61,7 +63,7 @@ const PADS = [
 function withCentre(
   complexes: readonly Record<string, unknown>[] = [LC1],
   pads: readonly Record<string, unknown>[] = PADS,
-  career: Record<string, unknown> = { economy: { funds: 289_848 } },
+  career: Record<string, unknown> = { balances: { funds: 289_848 } },
 ) {
   const fixture = setupStreamFixture();
   const view = render(
@@ -327,7 +329,7 @@ describe("adding a launch pad", () => {
 
   it("calls a shortfall a slower build, not a refusal", async () => {
     const user = userEvent.setup();
-    withCentre([LC1], PADS, { economy: { funds: 400 } });
+    withCentre([LC1], PADS, { balances: { funds: 400 } });
     await openDetail(user);
 
     // The whole point of the IL read: AddProgress spends the affordable FRACTION,

@@ -2,23 +2,18 @@ import type {
   SystemUplinkHealth,
   TopicReading,
   Value,
-  VantagePlanReply,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   registerAugment,
   useStream,
   useTelemetry,
-  useVantageTrajectory,
   useViewUt,
-  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Cluster,
   Countdown,
   magnitudeOf,
-  magnitudeOr,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -41,14 +36,6 @@ import { PRINCIPIA } from "../uplink.js";
 // point's import order, because this file is the consumer that would silently
 // receive bare numbers without it.
 import "../topics";
-
-/** How far ahead the plot reaches: an hour is a manoeuvre's worth of context
- * without asking the integrator for a day. */
-const ONE_HOUR_SECONDS = 3600;
-
-/** Points on the returned arc, matching what the streamed arcs carry so a
- * prediction and an observation are drawn at the same fidelity. */
-const TRAJECTORY_POINTS = 128;
 
 /**
  * The plan as last read, plus how long ago that reading was taken.
@@ -244,97 +231,6 @@ function buildBadge(roster: SystemUplinkHealth | undefined): ReactNode {
   return <Badge tone="caution">UNVETTED PRINCIPIA BUILD</Badge>;
 }
 
-/**
- * Where the craft goes, worked out at THIS command centre from what it has been
- * told, rather than read off the game.
- *
- * <p>Asked for on a press rather than on render. The solve reads an archive and
- * integrates, and a component that ran one every time it re-rendered would do so
- * at animation rate with nothing in the markup admitting it.</p>
- *
- * <p>The seed instant is shown beside the answer, not hidden behind it. A
- * trajectory is only as good as the observation it started from, and at a distant
- * vantage that observation can be an hour old while the curve looks equally
- * confident either way.</p>
- */
-/**
- * What a completed solve says, or why there is nothing.
- *
- * <p>Separate from the control that asks for it so it can be rendered from a
- * reply directly. Exercising it through a live dispatch would need a fixture
- * with a delay authority, and the thing worth asserting is not the plumbing but
- * that the SEED INSTANT is shown: a trajectory is only as good as the
- * observation it started from, and at a distant vantage that observation can be
- * an hour old while the curve looks equally confident either way.</p>
- */
-export function TrajectoryResult({
-  reply,
-  viewUt,
-}: {
-  reply: VantagePlanReply | null;
-  viewUt: number | null;
-}) {
-  if (reply === null) {
-    return null;
-  }
-  if (!reply.solved) {
-    // Not an error state. A vantage that has heard nothing is an ordinary
-    // condition of a distant mission, and the reason is the useful part.
-    return (
-      <Text level="faint" size="sm">
-        {reply.refusal ?? "No trajectory from this vantage."}
-      </Text>
-    );
-  }
-  return (
-    <Row>
-      <RowName>COMPUTED FROM STATE OF</RowName>
-      {reply.seededAtUt == null || viewUt === null ? (
-        <Text>{NULL_DISPLAY}</Text>
-      ) : (
-        <Text>
-          <Countdown value={viewUt - magnitudeOr(reply.seededAtUt, viewUt)} />{" "}
-          ago
-        </Text>
-      )}
-    </Row>
-  );
-}
-
-function VantageTrajectoryRow({ viewUt }: { viewUt: number | null }) {
-  const { solve, reply, pending } = useVantageTrajectory();
-  const horizon = viewUt === null ? null : viewUt + ONE_HOUR_SECONDS;
-
-  return (
-    <Stack>
-      <Cluster justify="start" gap="related-dense">
-        <Button
-          onClick={() => {
-            if (horizon !== null) {
-              /*
-               * Built through `value` rather than cast: the request's numbers
-               * carry units on the contract, and a cast would let a seconds
-               * figure reach a field declared as an instant without a word
-               * from the compiler.
-               */
-              void solve({
-                topic: "vessel.orbit",
-                toUt: value("ut", horizon),
-                maxPoints: value("count", TRAJECTORY_POINTS),
-              });
-            }
-          }}
-          disabled={pending || horizon === null}
-        >
-          {pending ? "WORKING" : "PLOT NEXT HOUR FROM HERE"}
-        </Button>
-      </Cluster>
-
-      <TrajectoryResult reply={reply} viewUt={viewUt} />
-    </Stack>
-  );
-}
-
 export function FlightPlanSection() {
   // ONE reading, where there used to be two. The burns and the badges came off a
   // mirror of the game's planner window and the integration bounds off the plugin,
@@ -448,7 +344,6 @@ export function FlightPlanSection() {
             {(plan.burns ?? []).length === 0 && (
               <Text>A plan with no burns committed yet.</Text>
             )}
-            <VantageTrajectoryRow viewUt={viewUt} />
           </Stack>
         )}
       </Stack>

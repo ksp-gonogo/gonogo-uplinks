@@ -151,7 +151,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
           Confidence is what the Accept control below actually spends. */}
       <Cluster align="start" gap="related-comfortable" justify="start" wrap>
         <Balance caption="Funds">
-          <Unit value={careerReading.economy.funds} />
+          <Unit value={careerReading.balances.funds} />
         </Balance>
         <Balance caption="Confidence">
           <Unit value={confidenceReading.confidence} />

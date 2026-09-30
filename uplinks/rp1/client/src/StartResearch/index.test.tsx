@@ -51,7 +51,7 @@ function emit(
  */
 function tree(science: number) {
   return {
-    economy: { funds: 289848, science, reputation: 62 },
+    balances: { funds: 289848, science, reputation: 62 },
     tech: {
       unlockedCount: 1,
       unlockedIds: ["start"],
@@ -108,7 +108,7 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
   it("draws nothing rather than an empty tree when no tech has arrived", async () => {
     const stream = mount();
 
-    emit(stream, { economy: { science: 340 } });
+    emit(stream, { balances: { science: 340 } });
 
     expect(visibleText(stream.container)).not.toContain("START RESEARCH");
   });
@@ -257,7 +257,7 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
     const stream = mount();
 
     emit(stream, {
-      economy: { science: 340 },
+      balances: { science: 340 },
       tech: {
         unlockedCount: 1,
         unlockedIds: ["start"],

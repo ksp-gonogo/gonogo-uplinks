@@ -1,10 +1,12 @@
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
-} from "../test/render.js";
-import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  expectNoA11yViolations,
+  renderWithRail as render,
+} from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import {
@@ -58,7 +60,7 @@ function mount(funds: number | null = 120_000) {
     fixture.emit("rp1.pads", []);
     fixture.emit("rp1.personnel", PERSONNEL);
     if (funds !== null) {
-      fixture.emit("career.status", { economy: { funds } });
+      fixture.emit("career.status", { balances: { funds } });
     }
   });
   return { fixture, view };

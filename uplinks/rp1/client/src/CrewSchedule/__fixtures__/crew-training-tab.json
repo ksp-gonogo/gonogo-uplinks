@@ -30,13 +30,18 @@
       {
         "topic": "career.status",
         "payload": {
-          "economy": {
-            "funds": 289848,
-            "upkeepPerDay": 4820,
-            "upkeep": {
-              "crewBase": 1710,
-              "training": 640
-            }
+          "balances": {
+            "funds": 289848
+          }
+        }
+      },
+      {
+        "topic": "rp1.budgetBreakdown",
+        "payload": {
+          "astronautTraining": {
+            "day": -640,
+            "month": -19200,
+            "year": -233600
           }
         }
       },

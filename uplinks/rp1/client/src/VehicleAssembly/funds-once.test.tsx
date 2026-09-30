@@ -62,7 +62,7 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
     });
     act(() => {
       fixture.emit("career.status", {
-        economy: { funds: 500_000, reputation: 0, science: 0 },
+        balances: { funds: 500_000, reputation: 0, science: 0 },
       });
       fixture.emit("rp1.complexes", []);
       fixture.emit("rp1.pads", []);
@@ -115,9 +115,7 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
    * surface offering such a purchase shows both balances rather than deriving
    * the split, which is exactly what this widget does.</para>
    *
-   * <para>The credit is RP-1's own balance, so it is read from `rp1.budget`.
-   * The career record is given a DIFFERENT figure here, so a widget that went
-   * back to reading the career record would draw the wrong number and fail.</para>
+   * <para>The credit is RP-1's own balance, so it is read from `rp1.budget`.</para>
    */
   it("draws RP-1's prepaid credit beside the funds where RP-1 reports one", async () => {
     const fixture = mount();
@@ -126,11 +124,10 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
     });
     act(() => {
       fixture.emit("career.status", {
-        economy: {
+        balances: {
           funds: 500_000,
           reputation: 0,
           science: 0,
-          unlockCredit: 7_000,
         },
       });
       fixture.emit("rp1.budget", { unlockCreditBalance: 42_000 });
@@ -141,15 +138,13 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
     );
     expect(screen.getAllByTitle("Available funds")).toHaveLength(1);
     expect(credit).toHaveTextContent(/42,000/);
-    expect(credit).not.toHaveTextContent(/7,000/);
   });
 
   /**
    * And the complement, which is what stops the row above being a decoration:
    * where RP-1 does not report the balance the field is absent, and an absent
    * allowance is not an empty one. A zero here would tell an operator they have
-   * spent a credit they never had. The career record still carrying a credit
-   * does not bring the line back, because that is not where it is read.
+   * spent a credit they never had.
    */
   it("draws no credit line at all where RP-1 reports no balance", async () => {
     const fixture = mount();
@@ -158,11 +153,10 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
     });
     act(() => {
       fixture.emit("career.status", {
-        economy: {
+        balances: {
           funds: 500_000,
           reputation: 0,
           science: 0,
-          unlockCredit: 42_000,
         },
       });
       fixture.emit("rp1.budget", { unlockCreditBalance: null });

@@ -110,7 +110,7 @@ export function WarpTargets() {
       */}
       <FundTargetControl
         cancel={cancelFundTarget}
-        funds={magnitudeOf(career?.economy?.funds)}
+        funds={magnitudeOf(career?.balances?.funds)}
         target={fundTarget}
       />
     </Stack>

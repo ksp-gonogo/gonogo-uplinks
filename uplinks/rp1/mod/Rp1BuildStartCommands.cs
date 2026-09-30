@@ -41,7 +41,7 @@
 //                           behalf would spend money nobody asked it to
 //   ProcessPartConfigs      REFUSES, quoting what the part modules said. The walk
 //                           needs the live parts and so belongs to the craft
-//                           catalogue; see below
+//                           loader; see below
 //   ProcessFundsChecks      the currency query, mandatory, and an unreadable one
 //                           REFUSES. KCTUtilities.SpendFunds performs NO
 //                           affordability test of its own: its whole body is a
@@ -60,12 +60,11 @@
 // GameObjects for somebody to destroy. This assembly holds no KSP or Unity
 // reference at all, deliberately, and managing Unity object lifetime through
 // MethodInfo.Invoke from an assembly that cannot name UnityEngine.Object is how a
-// scene ends up with a craft standing at the world origin. So core does that
-// half, behind the ICraftCatalogue capability, and hands back a handle this file
-// never opens: it goes straight into RP-1's constructor and straight back to
-// Release. That seam is the sanctioned one and is available to any Uplink,
-// which matters because a first-party shortcut here would be a capability no
-// third-party author could reach.
+// scene ends up with a craft standing at the world origin. So that half is an
+// IRp1CraftLoader handed in by whoever can manage the lifetime, and the handle it
+// returns is never opened here: it goes straight into RP-1's constructor and
+// straight back to Release. With no loader the command's gate is dark and names
+// the reason.
 //
 // WHAT IS READ, and why each is safe:
 //
@@ -110,7 +109,7 @@ namespace GonogoRp1Uplink
 {
     /// <summary>
     /// The handler for <c>rp1.build.start</c>, and the gate that darkens it when
-    /// this install cannot open a craft file at all.
+    /// no craft loader is available.
     /// </summary>
     public sealed class Rp1BuildStartCommands : ICommandGateEvaluator
     {
@@ -121,7 +120,7 @@ namespace GonogoRp1Uplink
         /// The gate kind this command adds to the one every other build command
         /// declares. Its own kind rather than a quantity on <c>rp1.build</c>,
         /// because it is answered by a different evaluator holding a different
-        /// thing: the catalogue, which is core's rather than RP-1's.
+        /// thing: the craft loader rather than RP-1's model.
         /// </summary>
         public const string GateKind = "rp1.buildStart";
 
@@ -130,9 +129,9 @@ namespace GonogoRp1Uplink
         ///
         /// <para>Static, with no <see cref="CommandRequirement.Needs"/>, which is
         /// the whole reason it is worth declaring: the engine evaluates it with
-        /// an empty argument bag, so on an install whose core is too old to
-        /// publish the catalogue the control is drawn DARK WITH ITS REASON rather
-        /// than answering a press with a refusal nobody expected.</para>
+        /// an empty argument bag, so on an install with no craft loader the
+        /// control is drawn DARK WITH ITS REASON rather than answering a press
+        /// with a refusal nobody expected.</para>
         /// </summary>
         public const string CraftCatalogue = "craftCatalogue";
 
@@ -161,7 +160,7 @@ namespace GonogoRp1Uplink
         /// <summary>RP-1's own name for a spaceplane project, read off the vehicle it just built.</summary>
         private const string SphProject = "SPH";
 
-        private readonly Func<ICraftCatalogue?> _catalogue;
+        private readonly Func<IRp1CraftLoader?> _loader;
 
         private readonly Type? _scm;
         private readonly Type? _vesselProject;
@@ -169,14 +168,13 @@ namespace GonogoRp1Uplink
         private readonly Rp1Pricing _pricing = new Rp1Pricing();
 
         /// <summary>
-        /// Takes the catalogue as a factory rather than an instance because the
-        /// Kernel has not elected anything when an Uplink registers: providers go
-        /// up during registration and resolve afterwards, so a handler that
-        /// queried in its constructor would hold null for the life of the game.
+        /// Takes the loader as a factory rather than an instance, so the gate and
+        /// the handler ask at the moment of the press and a loader that appears
+        /// or goes away is seen at once.
         /// </summary>
-        public Rp1BuildStartCommands(Func<ICraftCatalogue?> catalogue)
+        public Rp1BuildStartCommands(Func<IRp1CraftLoader?> loader)
         {
-            _catalogue = catalogue ?? throw new ArgumentNullException(nameof(catalogue));
+            _loader = loader ?? throw new ArgumentNullException(nameof(loader));
             _scm = Rp1Types.Find(ScmTypeName);
             _vesselProject = Rp1Types.Find(VesselProjectTypeName);
             _utilities = Rp1Types.Find(UtilitiesTypeName);
@@ -267,8 +265,8 @@ namespace GonogoRp1Uplink
                 return CommandResult.Fail(Rp1ErrorCodes.NotManaging);
             }
 
-            var catalogue = Resolve();
-            if (catalogue == null)
+            var loader = Resolve();
+            if (loader == null)
             {
                 return CommandResult.Fail(
                     CommandErrorCode.ModeUnavailable,
@@ -286,14 +284,14 @@ namespace GonogoRp1Uplink
             if (Rp1Types.ReadBool(complex, "IsOperational") != true)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     complexName + " is being built or renovated, so it cannot start a vehicle yet");
             }
 
-            CraftLoad load;
+            Rp1CraftLoad load;
             try
             {
-                load = catalogue.Load(file, args.Facility);
+                load = loader.Load(file, args.Facility);
             }
             catch (Exception ex)
             {
@@ -320,7 +318,7 @@ namespace GonogoRp1Uplink
                 // without releasing would leave a craft standing at the world
                 // origin, once per press, and a press an operator repeats after a
                 // refusal is exactly the one that repeats the leak.
-                Release(catalogue, load.Ship);
+                Release(loader, load.Ship);
             }
         }
 
@@ -329,7 +327,7 @@ namespace GonogoRp1Uplink
         /// list, with the parts still alive throughout.
         /// </summary>
         private CommandResult Integrate(
-            CraftLoad load, object complex, string complexName, KspEditorFacility? facility)
+            Rp1CraftLoad load, object complex, string complexName, KspEditorFacility? facility)
         {
             // The FILE's own editor, not the argument's. The argument decided
             // which folder was opened; RP-1's constructor reads shipFacility off
@@ -343,14 +341,14 @@ namespace GonogoRp1Uplink
             if (kindRefusal != null)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     complexName + " will not integrate this craft: " + kindRefusal);
             }
 
             var partsRefusal = PartRefusal(load);
             if (partsRefusal != null)
             {
-                return CommandResult.Fail(CommandErrorCode.NotReady, partsRefusal);
+                return CommandResult.Fail(Rp1ErrorCodes.NotReady, partsRefusal);
             }
 
             object vessel;
@@ -396,7 +394,7 @@ namespace GonogoRp1Uplink
             if (failedChecks != null)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     "RP-1 will not integrate this craft at " + complexName + ": " + failedChecks);
             }
 
@@ -459,7 +457,7 @@ namespace GonogoRp1Uplink
         /// <para>Measured at the press rather than taken off the listing, so a
         /// part unlocked since the last folder rescan counts.</para>
         /// </summary>
-        private static string? PartRefusal(CraftLoad load)
+        private static string? PartRefusal(Rp1CraftLoad load)
         {
             var measured = load.Measured;
             var missing = Named(measured?.MissingParts);
@@ -568,22 +566,22 @@ namespace GonogoRp1Uplink
         /// nothing useful to tell an operator about a failed cleanup and a throw
         /// here would replace a result they can act on with one they cannot.
         /// </summary>
-        private static void Release(ICraftCatalogue catalogue, object ship)
+        private static void Release(IRp1CraftLoader loader, object ship)
         {
             try
             {
-                catalogue.Release(ship);
+                loader.Release(ship);
             }
             catch (Exception)
             {
             }
         }
 
-        private ICraftCatalogue? Resolve()
+        private IRp1CraftLoader? Resolve()
         {
             try
             {
-                return _catalogue();
+                return _loader();
             }
             catch (Exception)
             {

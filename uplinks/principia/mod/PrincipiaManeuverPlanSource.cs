@@ -8,13 +8,11 @@ namespace GonogoPrincipiaUplink
     /// The producer's flight-plan burns, answered as the generalised
     /// <c>vessel.maneuver</c> plan rather than as a producer-shaped payload.
     ///
-    /// <para><b>What this makes true.</b> Stock's maneuver model is a subset of
-    /// this one: a stock node is an instantaneous burn in the radial/normal/
-    /// prograde basis with no engine model, and every field beyond that is absent
-    /// on it and present here. So a widget written against
-    /// <c>vessel.maneuver</c> renders a Principia plan without knowing Principia
-    /// exists, which is the whole of what makes this a Provider rather than a
-    /// Domain.</para>
+    /// <para><b>What this makes true.</b> A widget written against
+    /// <c>vessel.maneuver</c> renders a Principia plan's instants and delta-v
+    /// without knowing Principia exists. The node keeps stock's shape, so the
+    /// Frenet components go out under an unnamed frame and the engine model stays
+    /// on <c>principia.plan</c>.</para>
     ///
     /// <para><b>The burn instant is the half-delta-v point, not ignition.</b> A
     /// stock node's <c>Ut</c> is the instant an impulsive burn happens, and the
@@ -39,112 +37,15 @@ namespace GonogoPrincipiaUplink
         internal const string IdPrefix = "principia:";
 
         private readonly Func<PlanObservation?> _observation;
-        private readonly PlanCommands? _commands;
 
-        internal PrincipiaManeuverPlanSource(
-            Func<PlanObservation?> observation, PlanCommands? commands = null)
+        internal PrincipiaManeuverPlanSource(Func<PlanObservation?> observation)
         {
             _observation = observation ?? throw new ArgumentNullException(nameof(observation));
-            _commands = commands;
         }
 
         public string ProviderId => "principia";
 
         public IList<Sitrep.Contract.ManeuverNode>? Plan() => Map(_observation());
-
-        /// <summary>
-        /// Installs a composed plan through the producer's own whole-plan write.
-        ///
-        /// <para>Translated rather than reinterpreted. Two things are refused
-        /// instead of being quietly dropped, because dropping either changes what
-        /// the craft flies while the command still reports success.</para>
-        /// </summary>
-        public CommandResult SendPlan(SendManeuverPlanArgs plan)
-        {
-            if (_commands == null)
-            {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "The producer's plan write is not attached, so there is nothing to "
-                        + "install this plan into.");
-            }
-
-            var translated = Translate(plan, out var refusal);
-            if (translated == null)
-            {
-                return CommandResult.Fail(CommandErrorCode.Range, refusal);
-            }
-
-            var result = _commands.SendPlan(translated);
-            return result.Success
-                ? CommandResult.Ok()
-                : CommandResult.Fail(result.ErrorCode, result.Detail);
-        }
-
-        /// <summary>
-        /// The composed plan in the producer's own shape, or null with a reason.
-        ///
-        /// <para><b>A basis mismatch is refused, never converted.</b> Turning a
-        /// radial/normal/prograde burn into a Frenet one needs the trajectory the
-        /// burn sits on, which this side does not have. Passing the three numbers
-        /// through unchanged would fly a different burn, and it would look
-        /// completely ordinary doing it.</para>
-        ///
-        /// <para><b>A stated engine is refused too.</b> The producer's whole-plan
-        /// write carries an engine PRESET rather than a thrust and a specific
-        /// impulse, so numbers stated here have nowhere to go. Silently leaving
-        /// the plan's existing engine would fly the composed burn with the wrong
-        /// one.</para>
-        /// </summary>
-        internal static PrincipiaPlanSendArgs? Translate(
-            SendManeuverPlanArgs plan, out string? refusal)
-        {
-            refusal = null;
-            var burns = new List<PrincipiaComposedBurn>();
-            foreach (var burn in plan.Burns!)
-            {
-                if (burn.Frame != ManeuverFrame.TangentNormalBinormal)
-                {
-                    refusal =
-                        "This planner works in the Frenet trihedron, and the plan states its "
-                        + "burns in another basis. Converting one to the other needs the "
-                        + "trajectory the burn sits on, so the same three numbers would fly a "
-                        + "different burn.";
-                    return null;
-                }
-                if (burn.Thrust != null || burn.SpecificImpulse != null)
-                {
-                    refusal =
-                        "This planner's whole-plan write carries an engine preset rather than a "
-                        + "thrust and a specific impulse, so the stated engine has nowhere to "
-                        + "go. Set the engine on the burn in the planner, then send the plan.";
-                    return null;
-                }
-
-                burns.Add(new PrincipiaComposedBurn
-                {
-                    IgnitionUt = burn.IgnitionUt,
-                    // Slot order, not a rename: the three positional slots carry
-                    // the basis's own components in its own order, and this basis
-                    // is tangent, normal, binormal.
-                    DeltaVTangent = burn.DvRadial,
-                    DeltaVNormal = burn.DvNormal,
-                    DeltaVBinormal = burn.DvPrograde,
-                    InertiallyFixed = burn.InertiallyFixed,
-                    Profile = PrincipiaBurnProfile.Unchanged,
-                });
-            }
-
-            return new PrincipiaPlanSendArgs
-            {
-                VesselId = plan.VesselId,
-                RequestId = plan.RequestId,
-                ComposedAtViewUt = plan.ComposedAtViewUt,
-                ObservedAtUt = plan.ObservedAtUt,
-                DesiredFinalTimeUt = plan.DesiredFinalTimeUt,
-                Burns = burns.ToArray(),
-            };
-        }
 
         /// <summary>
         /// The observed plan as generalised nodes.
@@ -206,21 +107,17 @@ namespace GonogoPrincipiaUplink
                 Ut = instant.Value,
                 IgnitionUt = burn.IgnitionUt,
                 CutoffUt = burn.CutoffUt,
-                // The producer works in the Frenet trihedron, so the three
+                // The producer works in the Frenet trihedron, which the shared
+                // node does not name, so the frame is Unknown: the three
                 // positional slots carry tangent, normal and binormal in that
-                // order. See ManeuverNode.Frame: the slots are the basis's own
-                // components in its own order, and the field names are the stock
-                // basis's, which is exactly why Frame has to travel with them.
-                Frame = ManeuverFrame.TangentNormalBinormal,
+                // order, and a reader labels them neutrally rather than as
+                // radial, normal and prograde. The engine, mass and attitude hold
+                // travel on principia.plan, where the basis is stated.
+                Frame = ManeuverFrame.Unknown,
                 DvRadial = burn.DeltaVTangent,
                 DvNormal = burn.DeltaVNormal,
                 DvPrograde = burn.DeltaVBinormal,
                 DvTotal = TotalOf(burn),
-                InertiallyFixed = burn.InertiallyFixed,
-                Thrust = burn.ThrustKilonewtons,
-                SpecificImpulse = burn.SpecificImpulseSeconds,
-                InitialMass = burn.InitialMassTons,
-                FinalMass = burn.FinalMassTons,
                 // Deliberately empty rather than absent. The producer renders a
                 // plan's segments through calls this Uplink refuses by name for
                 // aborting the process on the player's own UI state, so there is

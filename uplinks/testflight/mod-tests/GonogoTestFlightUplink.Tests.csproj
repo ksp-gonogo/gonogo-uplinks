@@ -23,6 +23,7 @@
   <ItemGroup>
     <Compile Include="..\mod\EngineReliabilityRaw.cs" />
     <Compile Include="..\mod\TestFlightReliabilityMap.cs" />
+    <Compile Include="..\mod\TestFlightReliabilityTypes.cs" />
     <!-- The id split and the refusal decision behind a repair, carved out of
          TestFlightReflection (whose walk reaches a live Vessel and Part). -->
     <Compile Include="..\mod\TestFlightRepairScope.cs" />

@@ -12,7 +12,7 @@ namespace GonogoTestFlightUplink
 {
     public static class TestFlightReliabilityMap
     {
-        /// <summary>The provider id this backend registers with the Kernel, and the key its extension namespace lives under.</summary>
+        /// <summary>The id the summary names as its source, and the key its extension namespace lives under.</summary>
         public const string ProviderId = "testflight";
 
         public static ReliabilitySummary Summary(string coverage) => new()

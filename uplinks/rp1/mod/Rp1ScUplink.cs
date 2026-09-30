@@ -234,35 +234,25 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// RP-1's answer to whether a kerbal off the flight roster is dead, offered
-        /// to the exclusive <c>"crewStanding"</c> capability. Its own provider, like
-        /// the economy backend, because its consumer is core's own crew roster
-        /// rather than any channel of ours.
+        /// to the exclusive <c>"crewStanding"</c> capability. Its own provider
+        /// because its consumer is core's own crew roster rather than any channel
+        /// of ours.
         /// </summary>
         private readonly Rp1CrewStandingBackend _crewStanding;
 
         /// <summary>
-        /// RP-1's answer to what a career's money is doing, offered to the
-        /// exclusive <c>"economy"</c> capability. Its own reader, not part of the
-        /// space-centre capture: the two share nothing but the assembly, and the
-        /// capability's consumer is core's own career channel.
-        /// </summary>
-        private readonly Rp1EconomyUpkeepQuery _upkeepQuery = new Rp1EconomyUpkeepQuery();
-
-        /// <summary>
         /// What a head costs. Rides the space-centre capture below rather than
-        /// taking a sampled source of its own, which is the one thing it does
-        /// differently from <see cref="_upkeepQuery"/> beside it: that query feeds
-        /// a DIFFERENT topic's mapper and so needs its own registration and a
-        /// volatile handoff to the Courier thread. This one's only consumer is the
-        /// personnel payload the same capture builds, so it can be stashed on the
-        /// walk's own return value and cross the seam with everything else.
+        /// taking a sampled source of its own: its only consumer is the personnel
+        /// payload the same capture builds, so it can be stashed on the walk's own
+        /// return value and cross the seam with everything else.
         /// </summary>
         private readonly Rp1HirePriceQuery _hirePrices = new Rp1HirePriceQuery();
 
-        private readonly Rp1EconomyBackend _economy;
-
-        /// <summary>Set when the provider registration threw, so Health can say so rather than nothing.</summary>
-        private string? _economyRegistrationError;
+        /// <summary>
+        /// Holds signal delay off while RP-1 reports a simulated flight. Null until
+        /// <see cref="Register"/> hands it the host.
+        /// </summary>
+        private Rp1SimulationDelay? _simulationDelay;
 
         /// <summary>
         /// RP-1's launch rules, contributed to core's own <c>ksp.launch</c>. Its
@@ -459,10 +449,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>The strategy deactivate that strands an RP-1 Program. Spelled out for the reason above.</summary>
         private const string CareerStrategyDeactivateCommand = "career.strategy.deactivate";
-        /// <summary>The same, for the simulation provider. Separate field because the two register independently.</summary>
-        private string? _simulationRegistrationError;
-
-        /// <summary>Set when the crew-standing provider registration threw; see <see cref="_economyRegistrationError"/>.</summary>
+        /// <summary>Set when the crew-standing provider registration threw, so Health can say so rather than nothing.</summary>
         private string? _crewStandingRegistrationError;
 
         /// <summary>
@@ -550,7 +537,7 @@ namespace GonogoRp1Uplink
 
         public Rp1ScUplink()
         {
-            _start = new Rp1BuildStartCommands(Catalogue);
+            _start = new Rp1BuildStartCommands(CraftLoader);
             Manifest = BuildManifest(
                 _build.IsAvailable, _vehicles.IsAvailable, _vehicles.IsMoveAvailable,
                 _staffing.IsAvailable, _start.IsAvailable, _facilities.IsAvailable,
@@ -560,7 +547,6 @@ namespace GonogoRp1Uplink
                 _warp.IsAvailable, _toolingWrites.IsAvailable, _contracts.IsAvailable,
                 _constructionWrites.IsAvailable, _researchRateWrites.IsAvailable);
             _crewStanding = new Rp1CrewStandingBackend(_crew);
-            _economy = new Rp1EconomyBackend(_upkeepQuery);
         }
 
         private static UplinkManifest BuildManifest(
@@ -997,33 +983,8 @@ namespace GonogoRp1Uplink
                 return;
             }
 
-            // The economy provider: what RP-1 makes of the reputation core already
-            // publishes. Registered from here, gated on the probe, because
-            // registering IS the election gate; a stock install never sees this
-            // line run and keeps the vanilla backend's truthful zeros.
-            //
-            // Registered SEPARATELY from the channels below and deliberately
-            // before them: an economy provider that fails to register must not
-            // cost this Uplink its own read surface, and vice versa. A failure is
-            // surfaced on Health rather than swallowed.
-            try
-            {
-                host.Kernel.RegisterProvider(new ProviderRegistration
-                {
-                    Capability = EconomyCapability.Id,
-                    Id = "rp1",
-                    Priority = 10.0,
-                    Factory = _ => _economy,
-                });
-            }
-            catch (Exception ex)
-            {
-                _economyRegistrationError = ex.Message;
-            }
-
-            // RP-1's launch rules, contributed to the command core owns. Same
-            // registering-IS-the-gate discipline as the economy provider above,
-            // and separately fail-softed for the same reason: a launch gate that
+            // RP-1's launch rules, contributed to the command core owns. Registered
+            // only when the gate resolves, and separately fail-softed: a launch gate that
             // fails to register must not cost this Uplink its read surface, and a
             // read surface that fails must not silently unguard the launch.
             //
@@ -1333,34 +1294,11 @@ namespace GonogoRp1Uplink
                 }
             }
 
-            // The simulation provider: whether the flight on screen is one of
-            // RP-1's rehearsals. Registered on the same gate and for the same
-            // reason as the economy provider above, and separately from it so
-            // neither failure costs the other. Core cuts the signal delay for a
-            // simulation off this answer (SimulationDelayPolicy), which is why
-            // it is a capability rather than an rp1.* channel.
-            try
-            {
-                host.Kernel.RegisterProvider(new ProviderRegistration
-                {
-                    Capability = "simulation",
-                    Id = "rp1",
-                    Priority = 10.0,
-                    Factory = _ => new Rp1SimulationBackend(_rp1),
-                });
-            }
-            catch (Exception ex)
-            {
-                _simulationRegistrationError = ex.Message;
-            }
-
             // The crew standing: whether a kerbal off the flight roster is dead or
-            // retired. Registered separately from the economy provider and from the
-            // channels for the same reason they are separate from each other, and
-            // with a sharper edge here: this correction is the difference between
-            // telling an operator their astronaut retired and telling them their
-            // astronaut was killed, and it must not be lost because a build-queue
-            // reader or an economy provider failed.
+            // retired. Registered separately from the channels, with a sharp edge:
+            // this correction is the difference between telling an operator their
+            // astronaut retired and telling them their astronaut was killed, and it
+            // must not be lost because a build-queue reader failed.
             try
             {
                 host.Kernel.RegisterProvider(new ProviderRegistration
@@ -1384,7 +1322,7 @@ namespace GonogoRp1Uplink
             // currency that gates real career decisions knows the science arrived
             // before the model says they can (rig run conf-leak-1, 2026-08-27).
             //
-            // Registering IS the gate, same discipline as the three providers above,
+            // Registering IS the gate, same discipline as the crew-standing provider above,
             // and fail-softed separately for the same reason: an arm that fails to
             // register must not cost this Uplink its read surface, and a read surface
             // that fails must not silently reopen the leak.
@@ -1599,15 +1537,11 @@ namespace GonogoRp1Uplink
                 HandleLeadersOnCourier,
                 LeadersTopic);
 
-            // UNGATED, and the two captures above say why by contrast: their whole
-            // effect is their return value, and this one's is not. It feeds the
-            // economy backend, whose consumer is core's career.status, so gating
-            // it on any rp1.* prefix would starve an operator watching the funding
-            // panel and nothing else, silently and with no degraded mode. Gating
-            // it on career.status would work and is not worth the coupling: the
-            // capture throttles itself on RP-1's own inputs, so a tick where
-            // nothing moved costs eight cached-MemberInfo reads.
-            host.AddSampledSource(_upkeepQuery.CaptureOnMain, _upkeepQuery.HandleOnCourier);
+            // UNGATED, because its effect is the delay modifier rather than a
+            // return value: gating it on an rp1.* prefix would leave delay on
+            // through a simulation nobody had a screen of ours open for.
+            _simulationDelay = new Rp1SimulationDelay(host.RegisterDelayModifier);
+            host.AddSampledSource(CaptureSimulationOnMain, _ => { });
         }
 
 
@@ -1623,6 +1557,17 @@ namespace GonogoRp1Uplink
         /// this throws rather than substituting an instant of its own.</para>
         /// </summary>
         private double UtOf(KspSnapshot? snapshot) => snapshot?.Ut ?? _host!.NowUt();
+
+        /// <summary>
+        /// MAIN-THREAD: reads whether the flight on screen is an RP-1 simulation
+        /// and holds or releases the zero delay modifier to match. Returns nothing,
+        /// since its whole effect is the modifier.
+        /// </summary>
+        internal object? CaptureSimulationOnMain(KspSnapshot? snapshot)
+        {
+            _simulationDelay?.Observe(_rp1.IsSimulatedFlight());
+            return null;
+        }
 
         /// <summary>
         /// MAIN-THREAD capture: the whole reflection walk, returning plain data
@@ -1671,6 +1616,14 @@ namespace GonogoRp1Uplink
                 return null;
             }
         }
+
+        /// <summary>
+        /// The craft loader <c>rp1.build.start</c> opens a craft file through.
+        /// None is available: core lists craft files but no longer loads them, and
+        /// this assembly holds no Unity reference to manage the parts' lifetime
+        /// itself, so the command's gate stays dark and names the reason.
+        /// </summary>
+        private static IRp1CraftLoader? CraftLoader() => null;
 
         /// <summary>
         /// Core's craft catalogue, elected through the Kernel, or null before
@@ -2120,11 +2073,6 @@ namespace GonogoRp1Uplink
                 new UplinkHealthFact("save mode", EnabledForSave ? "enabled" : "not enabled for this save"),
                 new UplinkHealthFact("read against", "RP-1 v4.6.0.0"),
                 new UplinkHealthFact(
-                    "economy provider",
-                    _economyRegistrationError != null
-                        ? "registration failed: " + _economyRegistrationError
-                        : _economy.IsAvailable ? "registered" : "maintenance types not found"),
-                new UplinkHealthFact(
                     "confidence withholding",
                     _derivedCurrencyRegistrationError != null
                         ? "not registered: " + _derivedCurrencyRegistrationError
@@ -2264,10 +2212,8 @@ namespace GonogoRp1Uplink
                                 ? "registered"
                                 : "withdrawn: KSCSwitcher not loaded"),
                 new UplinkHealthFact(
-                    "simulation provider",
-                    _simulationRegistrationError != null
-                        ? "registration failed: " + _simulationRegistrationError
-                        : "registered"),
+                    "signal delay",
+                    _simulationDelay?.Holding == true ? "off for an RP-1 simulation" : "not modified"),
                 // The live answer, because "is this a rehearsal" is the one
                 // fact on this list an operator may need to check mid-flight
                 // against a board that looks like a mission.

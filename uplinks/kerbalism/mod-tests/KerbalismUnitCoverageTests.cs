@@ -77,13 +77,11 @@ namespace GonogoKerbalismUplink.Tests
                 nameof(KerbalismCrewEntry), nameof(KerbalismCrewRule),
                 nameof(KerbalismProfile), nameof(KerbalismResourceDef), nameof(KerbalismRuleDef),
                 nameof(KerbalismProcessDef), nameof(KerbalismFeatures),
-                // Not a Topic payload of this Domain's own: the Kerbalism namespace
-                // of the CORE reliability.summary payload's provider extension bag
-                // (KerbalismReliabilityExt.cs). It is in this assembly for the same
-                // reason the ones above are, and it needs the same annotation
-                // guard: a quantity inside an extension is a Value like any other,
-                // and its unit reaches the decode through this Uplink's own
-                // generated TYPE map.
+                // Not a Topic payload: the Kerbalism namespace of this Uplink's
+                // reliability summary's extension bag (KerbalismReliabilityExt.cs).
+                // It needs the same annotation guard as the ones above: a quantity
+                // inside an extension is a Value like any other, and its unit
+                // reaches the decode through this Uplink's own generated TYPE map.
                 nameof(KerbalismReliabilityExt),
                 // The four Kerbalism namespaces of the CORE science.* payloads'
                 // extension bags (KerbalismScienceExt.cs), same rationale as

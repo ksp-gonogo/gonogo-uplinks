@@ -220,7 +220,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Repeat(original.KCTPersistentID);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("LC-1", result.Detail);
             Assert.Empty(lc.BuildList);
         }
@@ -239,7 +239,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Repeat(original.KCTPersistentID);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("Mass limit exceeded", result.Detail);
             Assert.Empty(lc.BuildList);
             Assert.Equal(1_000_000.0, Funding.Instance!.Funds);
@@ -255,7 +255,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Repeat(original.KCTPersistentID);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Empty(lc.BuildList);
         }
 

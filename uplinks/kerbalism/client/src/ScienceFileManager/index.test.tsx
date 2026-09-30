@@ -1,13 +1,13 @@
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
   stopArriving,
   within,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
+  renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";

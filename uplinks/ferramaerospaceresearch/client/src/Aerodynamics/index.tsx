@@ -1,6 +1,7 @@
 import type { ComponentProps, Tone, Value } from "@ksp-gonogo/sitrep-sdk";
 import { registerComponent, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Badge,
   BigReadout,
   Cluster,
   NULL_DISPLAY,
@@ -9,7 +10,6 @@ import {
   Row,
   RowName,
   Section,
-  StatusPill,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 // Side-effect import: registers aero.state's unit map into the SDK's runtime
@@ -122,10 +122,10 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
           aria-live="polite"
         >
           <Cluster wrap>
-            <StatusPill $tone={band?.tone ?? "neutral"}>
+            <Badge tone={band?.tone ?? "neutral"}>
               {band?.label ?? "NO AERO DATA"}
-            </StatusPill>
-            {modelStale && <StatusPill $tone="warn">MODEL OUTDATED</StatusPill>}
+            </Badge>
+            {modelStale && <Badge tone="warn">MODEL OUTDATED</Badge>}
           </Cluster>
           <Cluster wrap>
             <div>

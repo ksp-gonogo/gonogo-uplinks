@@ -306,7 +306,7 @@ namespace GonogoRp1Uplink
             if (Rp1Types.ReadBool(complex, "IsOperational") != true)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     complexName + " is being built or renovated, so nothing can leave it yet");
             }
 
@@ -373,7 +373,7 @@ namespace GonogoRp1Uplink
             if (failedChecks != null)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     "RP-1 will not put this vehicle on " + padName + ": " + failedChecks);
             }
 
@@ -984,11 +984,11 @@ namespace GonogoRp1Uplink
                         what + " is destroyed and has to be repaired before anything can roll out to it");
                 case "Nonoperational":
                     return CommandResult.Fail(
-                        CommandErrorCode.NotReady,
+                        Rp1ErrorCodes.NotReady,
                         what + " has not been built yet");
                 case "Reconditioning":
                     return CommandResult.Fail(
-                        CommandErrorCode.NotReady,
+                        Rp1ErrorCodes.NotReady,
                         what + " is being reconditioned after a launch");
                 case RolloutState:
                 case RollbackState:
@@ -997,7 +997,7 @@ namespace GonogoRp1Uplink
                         what + " is in use by another vehicle");
                 default:
                     return CommandResult.Fail(
-                        CommandErrorCode.NotReady,
+                        Rp1ErrorCodes.NotReady,
                         what + " cannot take a vehicle right now");
             }
         }

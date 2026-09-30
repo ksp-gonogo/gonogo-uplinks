@@ -40,8 +40,9 @@
  *
  * MAIN THREAD, AND WHY. Every one of those runs CurrencyModifierQueryRP0, which
  * fires GameEvents.Modifiers.OnCurrencyModifierQuery at every modifier in the
- * save, and several read Planetarium. See Rp1EconomyUpkeepQuery's header for
- * why that does not happen on the Courier thread.
+ * save, and several read Planetarium. Firing a Unity game event into arbitrary
+ * third-party listeners from the Courier thread is not a thing to do at any
+ * cadence.
  *
  * AT RP-1'S UPKEEP CADENCE. The capture recomputes only when
  * MaintenanceHandler.lastUpdate moves, which MaintenanceHandler.Update writes

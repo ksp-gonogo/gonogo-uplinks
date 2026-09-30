@@ -112,7 +112,7 @@ export function VehicleAssembly() {
             balance shut in a disclosure. A body line wraps instead of
             hiding. */}
           <Text size="sm" title="Available funds" level="muted">
-            Funds <Unit value={careerReading.economy.funds} />
+            Funds <Unit value={careerReading.balances.funds} />
           </Text>
 
           {/* The unlock credit, where the career has one, drawn BESIDE the funds

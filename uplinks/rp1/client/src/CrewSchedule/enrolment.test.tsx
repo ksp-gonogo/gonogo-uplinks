@@ -1,13 +1,13 @@
 import { CrewStanding } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
+  renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
@@ -105,20 +105,16 @@ async function present(
   fixture: ReturnType<typeof setupStreamFixture>,
   {
     breakdown = undefined as Record<string, unknown> | undefined,
-    career = undefined as Record<string, unknown> | undefined,
     catalogue = [PAIR, SOLO],
     courses = [] as Record<string, unknown>[],
     crew = [] as Record<string, unknown>[],
     program = {} as Record<string, unknown>,
     roster = [rosterRow(LUDREY), rosterRow(NEDCAS)],
   }: {
-    /* RP-1's budget breakdown, for the training fees. Undefined by default,
-       for the reason `career` is. */
+    /* RP-1's budget breakdown, for the training upkeep and fees. Undefined by
+       default, because a save with no breakdown reading is a real state and
+       most tests here are not about it. */
     breakdown?: Record<string, unknown>;
-    /* The career's own economy. Undefined by default, because a save with no
-       RP-1 economy reading is a real state and most tests here are not about
-       it. */
-    career?: Record<string, unknown>;
     catalogue?: Record<string, unknown>[];
     courses?: Record<string, unknown>[];
     crew?: Record<string, unknown>[];
@@ -140,9 +136,6 @@ async function present(
     fixture.emit("rp1.training", courses);
     fixture.emit("rp1.crewProgram", { ...DEFAULT_RULES, ...program });
     fixture.emit("rp1.trainingCatalogue", catalogue);
-    if (career !== undefined) {
-      fixture.emit("career.status", career);
-    }
     if (breakdown !== undefined) {
       fixture.emit("rp1.budgetBreakdown", breakdown);
     }
@@ -449,12 +442,6 @@ describe("the seat bounds", () => {
 describe("who RP-1 would refuse", () => {
   it.each([
     [
-      "already training",
-      CrewStanding.Training,
-      `${VALENTINA} is already on a training course`,
-      "in training",
-    ],
-    [
       "standing down after a flight",
       CrewStanding.Resting,
       `${VALENTINA} is standing down after a flight`,
@@ -486,8 +473,8 @@ describe("who RP-1 would refuse", () => {
   });
 
   /**
-   * The course listing is RP-1's own answer and is read alongside the derived
-   * standing, so a kerbal on a course is out whichever channel says so first.
+   * The course listing is RP-1's own answer, so a kerbal on a course is out
+   * whichever of RP-1's channels says so first.
    */
   it("names a kerbal the course listing has on a course", async () => {
     const { fixture } = mount();
@@ -554,12 +541,17 @@ describe("who RP-1 would refuse", () => {
    * into their own tabs.
    */
   it.each([
-    ["a retiree", { standing: CrewStanding.Retired }],
-    ["a fatality", { standing: CrewStanding.Dead }],
-    ["an applicant", { isApplicant: true, standing: CrewStanding.Applicant }],
-  ])("leaves %s off the list entirely", async (_what, overrides) => {
+    [
+      "a retiree",
+      { available: false, standing: CrewStanding.Unknown, unavailableReason: "Retired" },
+      [{ name: VALENTINA, retired: true }],
+    ],
+    ["a fatality", { standing: CrewStanding.Dead }, []],
+    ["an applicant", { isApplicant: true, standing: CrewStanding.Applicant }, []],
+  ])("leaves %s off the list entirely", async (_what, overrides, crew) => {
     const { fixture } = mount();
     await present(fixture, {
+      crew,
       roster: [rosterRow(LUDREY), rosterRow(VALENTINA, overrides)],
     });
 
@@ -685,7 +677,8 @@ describe("what it declines to draw", () => {
   it("renders nothing when nobody on the books could be a student", async () => {
     const { fixture, view } = mount();
     await present(fixture, {
-      roster: [rosterRow(VALENTINA, { standing: CrewStanding.Retired })],
+      crew: [{ name: VALENTINA, retired: true }],
+      roster: [rosterRow(VALENTINA, { standing: CrewStanding.Unknown })],
     });
 
     await waitFor(() => {
@@ -778,13 +771,13 @@ describe("the way onto a course, in the order an operator meets it", () => {
    * <para>Enrolling charges nothing at the press and RP-1 never refuses one on
    * affordability, so there is no balance to draw and "cannot afford" would be a
    * falsehood. What it does do is start a per-day drain that runs for the length
-   * of the course, so the RATE is the reading, and it is RP-1's own line rather
-   * than one derived here.</para>
+   * of the course, so the RATE is the reading, and it is RP-1's own
+   * Astronauts-tab row rather than one derived here.</para>
    */
-  it("shows what training draws per day when the career reports it", async () => {
+  it("shows what training draws per day when RP-1 reports it", async () => {
     const { fixture } = mount();
     await present(fixture, {
-      career: { economy: { upkeep: { training: 1234 } } },
+      breakdown: { astronautTraining: { day: -1234 } },
     });
 
     await screen.findByRole("button", { name: LUDREY });
@@ -793,8 +786,8 @@ describe("the way onto a course, in the order an operator meets it", () => {
     expect(visibleText()).toContain("f/day");
   });
 
-  /** Absent, not zero: a career with no economy reading levies no known rate. */
-  it("draws no upkeep line when the career reports none", async () => {
+  /** Absent, not zero: an unread row levies no known rate. */
+  it("draws no upkeep line when RP-1 reports none", async () => {
     const { fixture } = mount();
     await present(fixture);
 

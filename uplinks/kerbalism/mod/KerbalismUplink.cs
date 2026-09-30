@@ -10,10 +10,7 @@ namespace Gonogo.KerbalismUplink
     /// The KerbalismUplink (Domain "kerbalism"): emits space weather, life
     /// support, per-kerbal survival state and the Kerbalism feature flags for the
     /// active vessel, all by reflection over Kerbalism (KerbalismReflection, zero
-    /// compile-time link, presence-safe). It ALSO registers Kerbalism as the
-    /// low-specificity (Priority 1) provider of the Domain-neutral "reliability"
-    /// Kernel capability (owned by ReliabilityCoreUplink); TestFlight registers
-    /// Priority 10 and supersedes it under RO. Presence-gated (kerbalism.available),
+    /// compile-time link, presence-safe). Presence-gated (kerbalism.available),
     /// mandatory Health(), delay-gated per Topic (presence/features TrueNow, the
     /// vessel telemetry Delayed). Also declares the five File Manager commands
     /// (<see cref="KerbalismFileCommandProvider"/>), presence-gated at the
@@ -207,56 +204,8 @@ namespace Gonogo.KerbalismUplink
                 LifeSupportTopic,
                 CrewTopic);
 
-            // Register Kerbalism as the Priority-1 "reliability" provider. The capability
-            // is owned + declared by ReliabilityCoreUplink (bundled core) in the pre-Register
-            // pass, so it is present here regardless of assembly-scan order (the same two-pass
-            // guarantee the comms capability provider relies on). The provider self-reports
-            // unmodeled when Features.Reliability is off; TestFlight (Priority 10) supersedes
-            // it under RO.
             if (_k.IsAvailable)
             {
-                try
-                {
-                    host.Kernel.RegisterProvider(new ProviderRegistration
-                    {
-                        Capability = "reliability",
-                        Id = "kerbalism",
-                        Priority = 1.0,
-                        /*
-                         * WITHDRAW rather than decline late. This runs at resolve
-                         * time, before the Kernel picks a winner, so with failures
-                         * switched off Kerbalism is not a candidate at all and
-                         * whichever other backend is installed wins the election
-                         * outright. Declining from the factory instead would be too
-                         * late: the winner is already chosen by then, so an
-                         * exclusive capability falls through to VANILLA and the
-                         * runner-up never gets a look in, leaving reliability
-                         * unmodelled on an install that could have modelled it.
-                         *
-                         * Not asked at registration: Register runs during LOADING,
-                         * when Kerbalism's own settings may not be parsed yet, so a
-                         * check here would pin whatever happened to be true then.
-                         */
-                        CanServe = () => KerbalismReliabilityBackend.CanServe(_k),
-                        // The kernel travels with the backend so it can resolve
-                        // the activeVessel capability on every call: an EVA moves
-                        // what "the vessel" means, and a repair addressed against
-                        // the other one misses every part on the listing.
-                        Factory = _ => new KerbalismReliabilityBackend(_k, host.Kernel),
-                    });
-                }
-                catch (Exception ex)
-                {
-                    // UnityEngine.Debug, not Console.Error: the latter is invisible
-                    // in KSP, which is how a silently-dropped provider looked
-                    // identical to an uninstalled mod. The Kernel emits no notice
-                    // for a provider that never registered, so this uplink's own
-                    // Health() below is the only route by which the two differ.
-                    _reliabilityRegistrationError = ex.Message;
-                    UnityEngine.Debug.LogError(
-                        "[Gonogo] KerbalismUplink could not register reliability provider: " + ex.Message);
-                }
-
                 RegisterScience(host);
                 RegisterIsru(host);
                 RegisterFileManagerCommands(host, _fileActuator);
@@ -589,9 +538,6 @@ namespace Gonogo.KerbalismUplink
                 KerbalismCapture.BuildCrew(c.Crew, c.RuleConstants, c.AsOfUt, c.DeathClocks()), c.Ut);
         }
 
-        /// <summary>Why the reliability provider is not registered, when registration itself threw. See the catch that sets it.</summary>
-        private string? _reliabilityRegistrationError;
-
         public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
 
         public ModSettingValue ReadModSetting(string id) => _modSettings.ReadModSetting(id);
@@ -601,12 +547,6 @@ namespace Gonogo.KerbalismUplink
             if (!_k.IsAvailable)
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, "Kerbalism assembly not loaded");
-            }
-            if (_reliabilityRegistrationError != null)
-            {
-                return new UplinkHealth(
-                    UplinkHealthState.Degraded,
-                    "reliability provider registration threw: " + _reliabilityRegistrationError);
             }
             return UplinkHealth.Healthy;
         }

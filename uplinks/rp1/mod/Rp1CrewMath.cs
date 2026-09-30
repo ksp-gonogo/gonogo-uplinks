@@ -11,8 +11,7 @@ namespace GonogoRp1Uplink
     /// cache-miss path runs <c>CalculateBuildRate</c>, which reaches
     /// <c>CurrencyUtils.Rate</c>, which FIRES a GameEvents modifier query at every
     /// modifier in the save. That is a thing to run, not a thing to read, and it
-    /// is the same fence <c>Rp1EconomyBackend</c> and
-    /// <c>Rp1ProgramsReflection</c> already stand behind.
+    /// is the same fence <c>Rp1ProgramsReflection</c> stands behind.
     ///
     /// <para>So the rate is read off the cached backing field instead, and an
     /// unrated course reports an absent finish date rather than the infinity

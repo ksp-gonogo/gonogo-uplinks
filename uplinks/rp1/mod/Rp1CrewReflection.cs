@@ -35,7 +35,7 @@
 //   .GetBuildRate / .CalculateBuildRate
 //       the chain ends in CurrencyUtils.Rate, whose body FIRES
 //       GameEvents.Modifiers.OnCurrencyModifierQuery at every modifier in the
-//       save. The same fence Rp1EconomyBackend and Rp1ProgramsReflection stand
+//       save. The same fence Rp1ProgramsReflection stands
 //       behind. The rate is read off TrainingCourse._buildRate, the cache those
 //       getters populate, and an unrated course reports an absent date.
 //   TrainingCourse.GetFractionComplete

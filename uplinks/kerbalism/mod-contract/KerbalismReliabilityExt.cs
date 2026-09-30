@@ -5,42 +5,23 @@ using Reinforced.Typings.Attributes;
 
 namespace GonogoKerbalismUplink;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// The Kerbalism namespace of reliability.summary's provider extension bag.
+// The Kerbalism namespace of this Uplink's reliability summary's extension bag,
+// declared and typed here. TYPING-ONLY, exactly like KerbalismPayloads.cs: the
+// value tree KerbalismReliabilityMap builds is what would reach the wire.
 //
-// reliability.* is a Kernel-ELECTED capability: one shared payload shape
-// (Sitrep.Contract/Reliability.cs) that whichever backend won the election fills.
-// Its fields are a hand-curated core superset, which works only because the core
-// maintainer already knew about both providers. This type is the other route, the
-// one that needs no core PR: Kerbalism's own sub-tree, declared and typed HERE,
-// carried under the provider id "kerbalism" in ReliabilitySummary.Extensions. See
-// Sitrep.Contract/ProviderExtensions.cs for the mechanism in full.
-//
-// TYPING-ONLY, exactly like KerbalismPayloads.cs: this adds no wire bytes. The
-// wire is written by JsonWriter walking the untyped value tree
-// KerbalismReliabilityMap builds, and the two are kept honest by
-// ReliabilityExtensionWireTests (which serialises the real map through the real
-// EnvelopeCodec) plus the golden fixture the client's own test reads back.
-//
-// WHY THESE, and why at vessel level. The shared summary carries no roll-ups at
-// all now (two authorities for a derivable count is how two adjacent numbers come
-// to disagree), so the vessel-level at-a-glance figures a Kerbalism operator has
-// belong here, in the namespace only a Kerbalism-aware reader opens. The four
-// difficulty settings ride along because they are what make the per-part
-// condition mean anything: how likely a failure is to be the unrepairable class,
-// how likely one is absorbed as a safe-mode reset, and whether repair needs kits
-// at all. All four are save-wide, none is per part.
-// ─────────────────────────────────────────────────────────────────────────────
+// The vessel-level at-a-glance figures a Kerbalism operator has live here, with
+// the four difficulty settings that make the per-part condition mean anything:
+// how likely a failure is to be the unrepairable class, how likely one is
+// absorbed as a safe-mode reset, and whether repair needs kits at all. All four
+// are save-wide, none is per part.
 
 /// <summary>
 /// Kerbalism's vessel-level reliability rollup: the <c>extensions["kerbalism"]</c>
-/// sub-tree of <c>reliability.summary</c>. Read client-side through this Uplink's
-/// own <c>readKerbalismReliabilityExt</c>, never by reaching into the bag and
-/// casting at a call site.
+/// sub-tree of this Uplink's reliability summary. No Topic publishes the summary
+/// yet.
 ///
-/// <para>Absent entirely when Kerbalism is not the elected backend, and when
-/// <c>Features.Reliability</c> is off (the summary reports <c>Unmodeled</c> and
-/// there is no per-part list to roll up).</para>
+/// <para>Absent entirely when <c>Features.Reliability</c> is off (the summary
+/// reports <c>disabled</c> and there is no per-part list to roll up).</para>
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN

@@ -68,8 +68,6 @@
     <Compile Include="..\mod\Rp1ResearchRatesCapture.cs" />
     <Compile Include="..\mod\Rp1ResearchRateCommands.cs" />
     <Compile Include="..\mod\Rp1ScUplink.cs" />
-    <Compile Include="..\mod\Rp1EconomyBackend.cs" />
-    <Compile Include="..\mod\Rp1EconomyUpkeepQuery.cs" />
     <Compile Include="..\mod\Rp1HirePriceQuery.cs" />
     <Compile Include="..\mod\Rp1LaunchGate.cs" />
     <Compile Include="..\mod\Rp1CareerProjectGate.cs" />
@@ -79,6 +77,7 @@
     <Compile Include="..\mod\Rp1Pricing.cs" />
     <Compile Include="..\mod\Rp1BuildCommands.cs" />
     <Compile Include="..\mod\Rp1BuildStartCommands.cs" />
+    <Compile Include="..\mod\Rp1CraftLoader.cs" />
     <Compile Include="..\mod\Rp1VehicleCommands.cs" />
     <Compile Include="..\mod\Rp1ComplexWrites.cs" />
     <Compile Include="..\mod\Rp1LcCostModel.cs" />
@@ -92,7 +91,7 @@
     <Compile Include="..\mod\Rp1TargetCommands.cs" />
     <Compile Include="..\mod\Rp1FacilityUpgradeCommands.cs" />
     <Compile Include="..\mod\Rp1ResearchCommands.cs" />
-    <Compile Include="..\mod\Rp1SimulationBackend.cs" />
+    <Compile Include="..\mod\Rp1SimulationDelay.cs" />
     <Compile Include="..\mod\Rp1DerivedCurrencyWithholder.cs" />
     <Compile Include="..\mod\Rp1ConfidenceThresholdSource.cs" />
     <Compile Include="..\mod\Rp1HomeCommand.cs" />

@@ -4,9 +4,9 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Pure mappers from the reflected ReliabilityRaw to the source-agnostic
-    /// reliability.* contract POCOs. KSP-free (Sitrep.Contract only) so it is
-    /// headless-testable.
+    /// Pure mappers from the reflected ReliabilityRaw to this Uplink's reliability
+    /// shapes (KerbalismReliabilityTypes.cs). KSP-free (Sitrep.Contract only) so it
+    /// is headless-testable.
     ///
     /// <para>What Kerbalism can honestly fill, and nothing else. It has NO per-part
     /// probability: the only probabilities in the assembly are the save-wide
@@ -17,8 +17,7 @@ namespace Gonogo.KerbalismUplink
     /// truthful report of what Kerbalism exposes rather than a demotion.</para>
     ///
     /// <para>The summary additionally carries Kerbalism's OWN vessel-level rollup in
-    /// its provider extension bag, under the provider id this backend registers with
-    /// the Kernel. That sub-tree is this Uplink's shape, not core's: it is declared in
+    /// its extension bag, under <see cref="ProviderId"/>. That sub-tree is this Uplink's shape, not core's: it is declared in
     /// GonogoKerbalismUplink.Contract/KerbalismReliabilityExt.cs, written here as a
     /// plain value tree (JsonWriter walks it, exactly as it does every other
     /// producer-flattened payload), and typed client-side by this Uplink's own
@@ -27,10 +26,9 @@ namespace Gonogo.KerbalismUplink
     public static class KerbalismReliabilityMap
     {
         /// <summary>
-        /// The provider id this backend registers with the Kernel, and therefore the
-        /// key its extension namespace lives under. Matches
-        /// <c>KerbalismReliabilityBackend.ProviderId</c> and the
-        /// <c>ReliabilitySummary.Source</c> tag; the client's
+        /// The id the summary names as its source, and therefore the key its
+        /// extension namespace lives under. Matches
+        /// <c>KerbalismReliabilityBackend.ProviderId</c>; the client's
         /// <c>registerProviderExtensionShape</c> call names the same string.
         /// </summary>
         public const string ProviderId = "kerbalism";
@@ -218,8 +216,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// Whether Kerbalism should TAKE the exclusive "reliability" capability at
-        /// all. Lives here rather than beside the backend because the backend reads
+        /// Whether Kerbalism is modelling reliability at all. Lives here rather than beside the backend because the backend reads
         /// <c>FlightGlobals</c> and so cannot be compiled into a test assembly,
         /// and a decision nothing can test is the kind that quietly stops being
         /// true.

@@ -118,7 +118,7 @@ namespace GonogoRp1Uplink.Tests
             var verdict = AskAll();
 
             Assert.Equal(GateOutcome.Fail, verdict.Outcome);
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("V-2", verdict.Detail);
             Assert.Contains("has been built", verdict.Detail);
         }
@@ -135,7 +135,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.Integrated);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("still being integrated at LC-1", verdict.Detail);
         }
 
@@ -152,7 +152,7 @@ namespace GonogoRp1Uplink.Tests
             Assert.Equal(GateOutcome.Pass, Ask(Rp1LaunchGate.Integrated).Outcome);
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("has not been rolled out", verdict.Detail);
         }
 
@@ -180,7 +180,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("still rolling out to pad \"Pad A\"", verdict.Detail);
         }
 
@@ -200,7 +200,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("rolling back", verdict.Detail);
         }
 
@@ -252,7 +252,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("has not been rolled out", verdict.Detail);
         }
 
@@ -288,7 +288,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("reconditioned", verdict.Detail);
         }
 
@@ -303,7 +303,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.RolledOut);
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
             Assert.Contains("still being reconstructed", verdict.Detail);
         }
 
@@ -465,7 +465,7 @@ namespace GonogoRp1Uplink.Tests
 
             var verdict = Ask(Rp1LaunchGate.Integrated, Args.Of("V-2", facility: "VAB"));
 
-            Assert.Equal(CommandErrorCode.NotReady, verdict.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, verdict.ErrorCode);
         }
 
         /// <summary>

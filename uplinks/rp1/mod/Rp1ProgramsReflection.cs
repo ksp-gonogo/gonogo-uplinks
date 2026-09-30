@@ -55,8 +55,7 @@
 // MEMBERS DELIBERATELY NOT CALLED, and why. RP-1 routes a family of display
 // figures through CurrencyModifierQueryRP0.RunQuery, whose body FIRES
 // GameEvents.Modifiers.OnCurrencyModifierQuery at every modifier in the save.
-// That is a thing to run, not a thing to read, and the same fence already
-// stands in Rp1EconomyBackend:
+// That is a thing to run, not a thing to read, so these stay uncalled:
 //
 //   Program.DurationYears, EffectiveDurationYears, RemainingDurationYears
 //       all reach CurrencyUtils.Time. The duration in force is instead taken

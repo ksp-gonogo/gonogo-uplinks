@@ -25,7 +25,7 @@ const CENTRES = [
 ];
 
 const CAREER = {
-  economy: { funds: 289_848, reputation: 40, science: 12 },
+  balances: { funds: 289_848, reputation: 40, science: 12 },
 };
 
 /** One construction row, with every key present as the wire carries it. */

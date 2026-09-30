@@ -1,10 +1,12 @@
 import {
   act,
-  render,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
-import { visibleText } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  renderWithRail as render,
+  visibleText,
+} from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { axe } from "../test/axe.js";
 import { OrbitAnalysisSection } from "./index.js";

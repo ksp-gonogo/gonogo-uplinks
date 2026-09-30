@@ -213,8 +213,8 @@ namespace GonogoRp1Uplink.Tests
 
         [Theory]
         [InlineData(LaunchPadState.Destroyed, "facilityDamaged")]
-        [InlineData(LaunchPadState.Nonoperational, "notReady")]
-        [InlineData(LaunchPadState.Reconditioning, "notReady")]
+        [InlineData(LaunchPadState.Nonoperational, "rp1.notReady")]
+        [InlineData(LaunchPadState.Reconditioning, "rp1.notReady")]
         [InlineData(LaunchPadState.Rollout, "siteOccupied")]
         public void Tells_a_pad_that_needs_repair_from_one_that_needs_waiting(
             LaunchPadState state,
@@ -305,7 +305,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Rollout(vessel.KCTPersistentID);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("too heavy for this complex", result.Detail);
             Assert.Empty(lc.Recon_Rollout);
         }
@@ -374,7 +374,7 @@ namespace GonogoRp1Uplink.Tests
             var result = Rollout(vessel.KCTPersistentID);
 
             Assert.False(result.Success);
-            Assert.Equal(CommandErrorCode.NotReady, result.ErrorCode);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Empty(lc.Recon_Rollout);
         }
 

@@ -52,7 +52,7 @@
       {
         "topic": "career.status",
         "payload": {
-          "economy": {
+          "balances": {
             "funds": 148200,
             "reputation": null,
             "science": null

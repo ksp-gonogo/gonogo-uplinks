@@ -17,7 +17,7 @@ namespace GonogoRp1Uplink.Tests
         {
             var codes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes));
 
-            Assert.Equal(3, codes.Count);
+            Assert.Equal(4, codes.Count);
             Assert.All(codes, code =>
             {
                 Assert.False(code.IsRoot, code.Id);

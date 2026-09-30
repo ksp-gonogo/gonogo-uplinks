@@ -24,7 +24,7 @@
       {
         "topic": "career.status",
         "payload": {
-          "economy": {
+          "balances": {
             "funds": 61400,
             "reputation": 62,
             "science": 340

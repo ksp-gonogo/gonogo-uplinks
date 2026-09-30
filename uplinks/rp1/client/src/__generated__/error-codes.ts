@@ -23,6 +23,13 @@ export const Rp1ErrorCodes = {
    */
   SpaceCentreNotLoaded: "rp1.spaceCentreNotLoaded",
   /**
+   * The vehicle or the complex it needs has RP-1 work outstanding: never
+   * integrated, still integrating, not rolled out, or on a pad still being
+   * reconditioned. Nothing is over a limit and nothing is broken, the work
+   * simply has not been done. The detail says which.
+   */
+  NotReady: "rp1.notReady",
+  /**
    * The installed RP-1 build lacks a member this Uplink reads or calls, so the
    * command could not be carried out. The detail names which one.
    */
@@ -51,6 +58,14 @@ export const RP1_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
     origin: null,
     sentence: "RP-1's space centre is not loaded",
     meaning: "RP-1's space centre, which holds every queue and complex these commands act on, is not loaded in the current scene.",
+  },
+  {
+    id: "rp1.notReady",
+    kind: "refusal",
+    refines: "wrongState",
+    origin: null,
+    sentence: "the vehicle is not ready to fly yet",
+    meaning: "The vehicle or the complex it needs has RP-1 work outstanding: never integrated, still integrating, not rolled out, or on a pad still being reconditioned. Nothing is over a limit and nothing is broken, the work simply has not been done. The detail says which.",
   },
   {
     id: "rp1.buildUnrecognised",

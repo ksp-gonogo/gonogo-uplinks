@@ -108,8 +108,8 @@ namespace GonogoPrincipiaUplink.Tests
         /// an install running it against the stock system publishes no model. Standing
         /// the propagation registration down in that case would publish conic
         /// elements with nothing attached saying why, which reads exactly like a
-        /// working analytic install. Elected, the horizon says integrated and the
-        /// missing model is a stated refusal.</para>
+        /// working analytic install. Elected, the horizon says integrated and states
+        /// no bound.</para>
         /// </summary>
         [Fact]
         public void TheIntegratingProviderIsElectedEvenWithNoForceModelPublished()
@@ -119,10 +119,8 @@ namespace GonogoPrincipiaUplink.Tests
             Available().Register(host);
             host.Kernel.Resolve(new ResolveOptions { KernelVersion = "1.0.0" });
 
-            // A headless build attaches no reader, so nothing wins the force-model
-            // capability. That is the same state a game install with no gravity-model
-            // config is in, and both reach a client as the same stated refusal.
-            Assert.Empty(host.Kernel.Active(GravityModelCapability.Id));
+            // A headless build attaches no gravity-model reader, the same state a game
+            // install with no gravity-model config is in.
             Assert.IsAssignableFrom<IIntegratedTrajectorySource>(
                 host.Kernel.Query<IPropagationProvider>(PropagationCapability.Id));
         }

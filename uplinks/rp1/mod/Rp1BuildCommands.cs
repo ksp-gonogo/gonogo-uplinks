@@ -266,7 +266,7 @@ namespace GonogoRp1Uplink
             if (Rp1Types.ReadBool(complex, "IsOperational") != true)
             {
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     complexName + " is being built or renovated, so it cannot start another vehicle yet");
             }
 
@@ -277,7 +277,7 @@ namespace GonogoRp1Uplink
                 // the operator is told what is missing rather than handed the
                 // exception that would follow.
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     "RP-1 holds no stored craft for this vehicle, so there is nothing to copy");
             }
 
@@ -287,7 +287,7 @@ namespace GonogoRp1Uplink
                 // Asked BEFORE the price, the order RP-1's own validator uses:
                 // there is no sense pricing a vehicle the complex will not take.
                 return CommandResult.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     "RP-1 will not integrate this vehicle at " + complexName + ": " + failedChecks);
             }
 

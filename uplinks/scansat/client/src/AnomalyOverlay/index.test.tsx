@@ -6,11 +6,11 @@ import {
 import {
   act,
   createTestTelemetryClient,
-  renderHook,
   StubTransport,
   TelemetryProvider,
   waitFor,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import { renderHookWithRail as renderHook } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module (not a throwaway test double) runs its

@@ -30,7 +30,6 @@ export type KnownSitrepUnit =
   | "flag"
   | "funds"
   | "g"
-  | "h"
   | "id"
   | "isp"
   | "kN"

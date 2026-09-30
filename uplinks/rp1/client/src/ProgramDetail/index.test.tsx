@@ -143,7 +143,7 @@ async function feed(
   fixture.emit("rp1.programSlots", slots());
   fixture.emit("rp1.programFundingCurves", [flatCurve()]);
   fixture.emit("rp1.confidence", { confidence: 500, earned: 0 });
-  fixture.emit("career.status", { economy: { funds: 289_848 } });
+  fixture.emit("career.status", { balances: { funds: 289_848 } });
   await waitFor(() => {
     expect(screen.getByText(/PROGRAM DETAIL/)).toBeInTheDocument();
   });
@@ -170,7 +170,7 @@ describe("ProgramDetail", () => {
     fixture.emit("rp1.programSlots", slots());
     fixture.emit(
       "career.status",
-      { economy: { funds: 289_848 } },
+      { balances: { funds: 289_848 } },
       { staleness: Staleness.Held },
     );
 
@@ -441,7 +441,7 @@ describe("ProgramDetail", () => {
     fixture.emit("rp1.programs", [program()]);
     fixture.emit("rp1.programSlots", slots());
     fixture.emit("rp1.confidence", { confidence: 500, earned: 0 });
-    fixture.emit("career.status", { economy: { funds: 289_848 } });
+    fixture.emit("career.status", { balances: { funds: 289_848 } });
 
     await waitFor(() => {
       expect(
@@ -620,7 +620,7 @@ describe("ProgramDetail", () => {
     fixture.emit("rp1.programSlots", slots());
     fixture.emit("rp1.programFundingCurves", [flatCurve()]);
     fixture.emit("rp1.confidence", { confidence: 500, earned: 0 });
-    fixture.emit("career.status", { economy: { funds: 289_848 } });
+    fixture.emit("career.status", { balances: { funds: 289_848 } });
 
     await waitFor(() => {
       expect(screen.getByText("ACCEPT")).toBeInTheDocument();
@@ -753,7 +753,7 @@ describe("ProgramDetail", () => {
     fixture.emit("rp1.programSlots", slots());
     fixture.emit("rp1.programFundingCurves", [flatCurve()]);
     fixture.emit("rp1.confidence", { confidence: null, earned: null });
-    fixture.emit("career.status", { economy: { funds: 289_848 } });
+    fixture.emit("career.status", { balances: { funds: 289_848 } });
 
     await waitFor(() => {
       expect(screen.getByText("ACCEPT")).toBeInTheDocument();

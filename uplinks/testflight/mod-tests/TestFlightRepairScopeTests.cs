@@ -57,11 +57,11 @@ namespace GonogoTestFlightUplink.Tests
 
         [Theory]
         // No core answered to the id at all.
-        [InlineData(false, 0, 0, "repair.noSuchPart")]
+        [InlineData(false, 0, 0, "testflight.noSuchPart")]
         // The core is there and nothing is wrong with it.
-        [InlineData(true, 0, 0, "repair.noSuchPart")]
+        [InlineData(true, 0, 0, "testflight.noSuchPart")]
         // Failures, none of which TestFlight will repair: an exploded part.
-        [InlineData(true, 2, 0, "repair.unrepairable")]
+        [InlineData(true, 2, 0, "testflight.unrepairable")]
         [InlineData(true, 2, 1, null)]
         public void ARefusalSaysWhichOfTheThreeThingsWentWrong(
             bool coreFound, int active, int repairable, string? expected)

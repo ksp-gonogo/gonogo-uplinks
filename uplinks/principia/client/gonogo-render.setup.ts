@@ -8,7 +8,7 @@
 // by the scenes before it, and every one of those pictures is of a composer
 // nobody composed.
 
-import { clearPlanDrafts } from "@ksp-gonogo/sitrep-sdk/testing";
+import { clearPlanDrafts } from "./src/planDrafts.js";
 import { defineRenderSetup } from "@ksp-gonogo/uplink-tools/render-probe";
 
 export default defineRenderSetup({

@@ -1,20 +1,13 @@
 import type {
-  ComposedBurn,
-  PlanDraft,
   TopicReading,
   UseCommandResult,
   VesselOrbit,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  draftAsPlan,
-  ManeuverFrame,
   observedAt,
   readingOf,
   registerAugment,
-  SEND_PLAN_COMMAND,
   useCommand,
-  usePlanDrafts,
-  useSendPlan,
   useTelemetry,
   useViewUt,
   type Value,
@@ -40,6 +33,13 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import { commandWindow, seededIgnitionUt } from "../commandWindow.js";
+import {
+  type DraftBurn,
+  PLAN_SEND_COMMAND,
+  type PlanDraft,
+  usePlanDrafts,
+  useSendDraft,
+} from "../planDrafts.js";
 import { PRINCIPIA } from "../uplink.js";
 
 /**
@@ -74,7 +74,7 @@ export function PlanComposer() {
   const seenAt = observedAt(orbit);
 
   const { store, drafts } = usePlanDrafts();
-  const send = useSendPlan();
+  const send = useSendDraft();
   const viewUt = useViewUt();
   // Which draft the one outcome belongs to. The send handle is shared across
   // every draft, so without this an answer renders under all of them.
@@ -85,7 +85,7 @@ export function PlanComposer() {
    * carries the command's delay and gate to the armed control, and stays off
    * the rail so the plan is not drawn there twice.
    */
-  const planCommand = useCommand(SEND_PLAN_COMMAND, { rail: false });
+  const planCommand = useCommand(PLAN_SEND_COMMAND, { rail: false });
 
   if (vesselId === undefined || seenAt === undefined) {
     return (
@@ -105,13 +105,13 @@ export function PlanComposer() {
    * again: carrying the old one forward would date the new decision by the old
    * one's information.
    */
-  const edit = (draft: PlanDraft, burns: ComposedBurn[]) =>
+  const edit = (draft: PlanDraft, burns: DraftBurn[]) =>
     store.update(draft.id, { burns, observedAt: seenAt });
 
   const setComponent = (
     draft: PlanDraft,
     index: number,
-    changes: Partial<ComposedBurn>,
+    changes: Partial<DraftBurn>,
   ) => {
     const burns = draft.burns.slice();
     burns[index] = { ...burns[index], ...changes };
@@ -145,7 +145,7 @@ export function PlanComposer() {
               onReopen={() => store.update(draft.id, { saved: false })}
               onSend={() => {
                 setSent(draft.id);
-                return send.send(draftAsPlan(draft));
+                return send.send(draft);
               }}
             />
           ))}
@@ -201,35 +201,28 @@ export function PlanComposer() {
                       setComponent(draft, index, { ignitionUt: next })
                     }
                   />
-                  {/* Slot order, not names. The three Δv slots carry the BASIS's
-                    own components in its own order, and the basis this burn
-                    declares is tangent, normal, binormal: so dvRadial is the
-                    tangent and dvPrograde is the binormal. Labelling these by
-                    their field names would put an operator's along-track burn
-                    out of plane, which is a wrong burn that reads as a right
-                    one. */}
                   <UnitInput
                     label="Tangent"
                     unit="m/s"
-                    value={burn.dvRadial}
+                    value={burn.deltaVTangent}
                     onChange={(next) =>
-                      setComponent(draft, index, { dvRadial: next })
+                      setComponent(draft, index, { deltaVTangent: next })
                     }
                   />
                   <UnitInput
                     label="Normal"
                     unit="m/s"
-                    value={burn.dvNormal}
+                    value={burn.deltaVNormal}
                     onChange={(next) =>
-                      setComponent(draft, index, { dvNormal: next })
+                      setComponent(draft, index, { deltaVNormal: next })
                     }
                   />
                   <UnitInput
                     label="Binormal"
                     unit="m/s"
-                    value={burn.dvPrograde}
+                    value={burn.deltaVBinormal}
                     onChange={(next) =>
-                      setComponent(draft, index, { dvPrograde: next })
+                      setComponent(draft, index, { deltaVBinormal: next })
                     }
                   />
                 </Stack>
@@ -438,9 +431,9 @@ function totalDeltaV(draft: PlanDraft): Value<"m/s"> {
     (sum, burn) =>
       sum.plus(
         vectorMagnitude({
-          x: burn.dvRadial,
-          y: burn.dvNormal,
-          z: burn.dvPrograde,
+          x: burn.deltaVTangent,
+          y: burn.deltaVNormal,
+          z: burn.deltaVBinormal,
         }),
       ),
     value("m/s", 0),
@@ -450,17 +443,13 @@ function totalDeltaV(draft: PlanDraft): Value<"m/s"> {
 /**
  * A burn with no Δv in it yet, which is what "add a burn" means: an instant the
  * plan can still reach, and three components the operator has not typed.
- *
- * <p>Frenet, because the three numbers an operator types are along-track, normal
- * and radial. The same three in another frame would mean something else.</p>
  */
-function emptyBurn(ignitionUt: Value<"ut">): ComposedBurn {
+function emptyBurn(ignitionUt: Value<"ut">): DraftBurn {
   return {
     ignitionUt,
-    frame: ManeuverFrame.TangentNormalBinormal,
-    dvPrograde: value("m/s", 0),
-    dvNormal: value("m/s", 0),
-    dvRadial: value("m/s", 0),
+    deltaVTangent: value("m/s", 0),
+    deltaVNormal: value("m/s", 0),
+    deltaVBinormal: value("m/s", 0),
     inertiallyFixed: false,
   };
 }

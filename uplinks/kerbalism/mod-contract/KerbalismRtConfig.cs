@@ -126,12 +126,10 @@ public static class KerbalismRtConfig
             typeof(KerbalismProcessDef),
             // kerbalism.features
             typeof(KerbalismFeatures),
-            // The Kerbalism namespace of reliability.summary's provider extension
-            // bag. No [SitrepTopic]: it is not a Topic of this Domain's own, it is
-            // a sub-tree of a CORE, Kernel-elected payload, reached through
-            // extensions["kerbalism"]. It rides this codegen leg for the same
-            // reason everything else here does: the type belongs to whoever fills
-            // it, and core must never learn its shape.
+            // The Kerbalism namespace of this Uplink's reliability summary's
+            // extension bag. No [SitrepTopic]: it is a sub-tree reached through
+            // extensions["kerbalism"], typed here because the type belongs to
+            // whoever fills it.
             typeof(KerbalismReliabilityExt),
             // The Kerbalism namespaces of the four elected science.* payloads'
             // extension bags. Same reasoning as KerbalismReliabilityExt above, at a

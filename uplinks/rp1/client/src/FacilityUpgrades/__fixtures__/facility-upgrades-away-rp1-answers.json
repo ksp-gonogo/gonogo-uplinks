@@ -23,7 +23,7 @@
         "comment": "The stock channel from a flight scene: KSP has instantiated no facility, so every tier and every price is absent. The host's grid draws no cell from this.",
         "topic": "career.status",
         "payload": {
-          "economy": {
+          "balances": {
             "funds": 289848,
             "reputation": 62,
             "science": 340

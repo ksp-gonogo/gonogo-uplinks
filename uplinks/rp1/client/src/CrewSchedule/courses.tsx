@@ -200,7 +200,8 @@ function progressOf(
 
 registerAugment({
   id: "rp1-training-courses",
-  augments: "astronaut-complex.training",
+  augments: "astronaut-complex.tab",
+  label: "Training",
   channels: ["rp1.available", "rp1.training", "rp1.crew"],
   component: TrainingCourses,
   // Before the way onto a course: an operator reads what is already running

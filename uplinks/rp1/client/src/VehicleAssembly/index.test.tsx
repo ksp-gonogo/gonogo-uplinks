@@ -22,7 +22,7 @@ import {
 } from "./VehicleSection.js";
 
 const CAREER = {
-  economy: { funds: 289_848, reputation: 40, science: 12 },
+  balances: { funds: 289_848, reputation: 40, science: 12 },
 };
 
 const COMPLEXES = [

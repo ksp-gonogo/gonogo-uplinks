@@ -1,13 +1,13 @@
 import {
   act,
-  clearPlanDrafts,
   fireEvent,
-  render,
   screen,
   setupStreamFixture,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { utOfParts } from "@ksp-gonogo/ui-kit";
 import { afterEach, describe, expect, it } from "vitest";
+import { clearPlanDrafts } from "../planDrafts.js";
 import { PlanComposer } from "./index.js";
 
 /**
@@ -223,7 +223,7 @@ describe("PlanComposer", () => {
 
     expect(fixture.transport.sentCommands).toHaveLength(1);
     const sent = fixture.transport.sentCommands[0];
-    expect(sent.command).toBe("vessel.maneuver.plan.send");
+    expect(sent.command).toBe("principia.plan.send");
     const args = sent.args as {
       vesselId?: string;
       burns?: unknown[];
@@ -375,13 +375,13 @@ describe("PlanComposer", () => {
   });
 
   it("says why when the vessel declines the plan", async () => {
-    // Stock refuses this command outright, with a real reason. A control that
-    // merely stopped spinning would leave the operator guessing at a decision
-    // that has already been made.
+    // The mod can decline a plan with a real reason. A control that merely
+    // stopped spinning would leave the operator guessing at a decision that has
+    // already been made.
     const { fixture } = await setup();
     fixture.transport.setCommandHandler(() => ({
       success: false,
-      detail: "Stock has no way to install a composed plan in one step.",
+      detail: "The flight-plan write surface is not armed.",
     }));
 
     press("Draft plan");
@@ -395,7 +395,7 @@ describe("PlanComposer", () => {
     await act(async () => {});
 
     expect(screen.getByRole("status").textContent).toContain(
-      "no way to install a composed plan",
+      "write surface is not armed",
     );
   });
 });

@@ -295,7 +295,7 @@
       {
         "topic": "career.status",
         "payload": {
-          "economy": {
+          "balances": {
             "funds": 289848
           },
           "strategies": {

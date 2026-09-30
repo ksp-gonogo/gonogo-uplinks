@@ -65,7 +65,7 @@ test("a plan composed here reaches the vessel", async ({ page }) => {
   await page
     .getByRole("spinbutton", { name: "Ignition" })
     .fill(String(ignitionUt));
-  // The TANGENT slot: in a TangentNormalBinormal burn the three positional slots carry the basis's own components in its own order.
+  // The composer states a burn in the Frenet trihedron, so its first component is the tangent.
   await page.getByRole("spinbutton", { name: "Tangent" }).fill("65");
 
   // Two acts, deliberately. Saving ends composing and nothing leaves; the plan

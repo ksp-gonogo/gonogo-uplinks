@@ -1,11 +1,13 @@
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
-import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  expectNoA11yViolations,
+  renderWithRail as render,
+} from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { RP1_TOOLING_REFIT_COMMAND, ToolingSection } from "./Tooling.js";

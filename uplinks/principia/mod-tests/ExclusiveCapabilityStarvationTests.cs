@@ -139,28 +139,5 @@ namespace GonogoPrincipiaUplink.Tests
                 "principia-propagation",
                 host.Kernel.Query<IPropagationProvider>(PropagationCapability.Id).ProviderId);
         }
-
-        [Fact]
-        public void TheGravityModelAnswersWithoutATickHavingBeenDrivenAtAll()
-        {
-            // Read from the config database once, at attach, rather than per tick.
-            // Same reason for pinning it as propagation above.
-            var host = new RecordingUplinkHost();
-            new PrincipiaUplink(Present, new StubGravityModel()).Register(host);
-            host.Resolve();
-
-            Assert.NotNull(
-                host.Kernel.Query<IGravityModelSource>(GravityModelCapability.Id).Model);
-        }
-
-        /// <summary>A force model that is simply present, which is all these cases
-        /// ask of it.</summary>
-        private sealed class StubGravityModel : IGravityModelSource
-        {
-            public string ProviderId => "stub";
-
-            public GravityModel? Model { get; } =
-                new GravityModel("stub", new System.Collections.Generic.List<GravityModelBody>());
-        }
     }
 }

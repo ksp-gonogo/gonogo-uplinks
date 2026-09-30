@@ -9,7 +9,7 @@ The smallest Uplink that is still a real one: one KSP plugin, one channel, one w
 | --- | --- |
 | Uplink id | `example` |
 | Version | `0.0.1` |
-| Built against | contract 20.1, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 25.0, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 

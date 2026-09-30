@@ -406,8 +406,9 @@ public class Rp1CrewReflectionTests : System.IDisposable
 
     /// <summary>
     /// The whole defect, end to end on this side: RP-1 wrote stock's Dead into the
-    /// roster status, and the backend hands back Retired for that name and NOTHING
-    /// for anybody else, leaving core's map to answer for the rest of the roster.
+    /// roster status, and the backend hands back a living, unavailable "Retired"
+    /// for that name and NOTHING for anybody else, leaving core's map to answer
+    /// for the rest of the roster.
     /// </summary>
     [Fact]
     public void TheBackendCorrectsARetireeAndDeclinesForEveryoneElse()
@@ -417,7 +418,9 @@ public class Rp1CrewReflectionTests : System.IDisposable
 
         var retiree = backend.Read(CrewStandingQueries.Crew("Wernher Kerman", KspRosterStatus.Dead));
         Assert.NotNull(retiree);
-        Assert.Equal(CrewStanding.Retired, retiree!.Standing);
+        Assert.Equal(CrewStanding.Unknown, retiree!.Standing);
+        Assert.False(retiree.Available);
+        Assert.Equal(Rp1CrewStandingBackend.RetiredReason, retiree.UnavailableReason);
 
         Assert.Null(backend.Read(CrewStandingQueries.Crew("Jebediah Kerman", KspRosterStatus.Available)));
         Assert.Null(backend.Read(CrewStandingQueries.Applicant("")));
@@ -439,17 +442,14 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// A kerbal on a STARTED course is <see cref="CrewStanding.Training"/>, dated
-    /// by the course's own ETA, and carries their retirement date beside it.
+    /// A kerbal on a STARTED course cannot fly until the course's own ETA, and
+    /// says so in RP-1's words.
     /// </summary>
     /// <remarks>
     /// The defect this fixes is the retiree's, one axis over. KSP's roster status
     /// for a kerbal mid-course is <c>Available</c>, so without this the trainee
     /// reached the wire free to fly and a widget would have offered them for a
     /// mission RP-1 will refuse to crew.
-    ///
-    /// <para>Both dates, because both are live: the course ends long before the
-    /// career does.</para>
     /// </remarks>
     [Fact]
     public void TheBackendMakesAStartedCourseAStandingWithItsOwnEta()
@@ -462,16 +462,17 @@ public class Rp1CrewReflectionTests : System.IDisposable
             "Valentina Kerman", KspRosterStatus.Available, ut: 1000.0));
 
         Assert.NotNull(reading);
-        Assert.Equal(CrewStanding.Training, reading!.Standing);
+        Assert.Null(reading!.Standing);
+        Assert.False(reading.Available);
+        Assert.Equal(Rp1CrewStandingBackend.TrainingReason, reading.UnavailableReason);
         // 75 points left at 0.5/s is 150s from now.
         Assert.Equal(1150.0, reading.StandingEndsAtUt);
-        Assert.Equal(500_000.0, reading.RetiresAtUt);
     }
 
     /// <summary>
     /// Enrolment is not training. A course RP-1 has not STARTED makes no progress
     /// and has no finish date, so the kerbal keeps whatever standing stock gives
-    /// them and this backend adds only the retirement date.
+    /// them and this backend says nothing.
     /// </summary>
     /// <remarks>
     /// Reporting an unstarted enrolment as a standing would tell an operator a
@@ -487,12 +488,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
             .Retires("Valentina Kerman", 500_000.0);
         var backend = new Rp1CrewStandingBackend(new Rp1CrewReflection());
 
-        var reading = backend.Read(CrewStandingQueries.Crew("Valentina Kerman", KspRosterStatus.Available));
-
-        Assert.NotNull(reading);
-        Assert.Null(reading!.Standing);
-        Assert.Null(reading.StandingEndsAtUt);
-        Assert.Equal(500_000.0, reading.RetiresAtUt);
+        Assert.Null(backend.Read(CrewStandingQueries.Crew("Valentina Kerman", KspRosterStatus.Available)));
     }
 
     /// <summary>
@@ -510,10 +506,8 @@ public class Rp1CrewReflectionTests : System.IDisposable
         var reading = backend.Read(CrewStandingQueries.Crew("Wernher Kerman", KspRosterStatus.Dead));
 
         Assert.NotNull(reading);
-        Assert.Equal(CrewStanding.Retired, reading!.Standing);
+        Assert.Equal(Rp1CrewStandingBackend.RetiredReason, reading!.UnavailableReason);
         Assert.Null(reading.StandingEndsAtUt);
-        // The date has passed. Quoting it reads as one still to come.
-        Assert.Null(reading.RetiresAtUt);
     }
 
     /// <summary>
@@ -534,8 +528,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     /// <summary>
     /// R&amp;R is NOT this backend's answer. RP-1's post-flight rest sets KSP's own
     /// <c>ProtoCrewMember.inactive</c>, which core reads into
-    /// <see cref="CrewStanding.Resting"/>, so this backend declines the standing
-    /// and contributes only the date it owns.
+    /// <see cref="CrewStanding.Resting"/>, so this backend declines it.
     /// </summary>
     /// <remarks>
     /// Correcting it here would be a second derivation of a value core already
@@ -547,12 +540,8 @@ public class Rp1CrewReflectionTests : System.IDisposable
         CrewHandler.Instance = new CrewHandler().Retires("Bill Kerman", 500_000.0);
         var backend = new Rp1CrewStandingBackend(new Rp1CrewReflection());
 
-        var reading = backend.Read(CrewStandingQueries.Crew(
-            "Bill Kerman", KspRosterStatus.Available, inactive: true, inactiveUntilUt: 8_000.0));
-
-        Assert.NotNull(reading);
-        Assert.Null(reading!.Standing);
-        Assert.Equal(500_000.0, reading.RetiresAtUt);
+        Assert.Null(backend.Read(CrewStandingQueries.Crew(
+            "Bill Kerman", KspRosterStatus.Available, inactive: true, inactiveUntilUt: 8_000.0)));
     }
 
     /// <summary>One started, costed course with a single student, so the cases above name only the axis they are about.</summary>

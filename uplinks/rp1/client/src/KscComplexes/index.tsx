@@ -157,7 +157,7 @@ export function KscComplexes() {
         <HireTargetControl
           cancel={cancelHireTarget}
           complexes={complexRows}
-          funds={magnitudeOf(career?.economy?.funds)}
+          funds={magnitudeOf(career?.balances?.funds)}
           personnel={personnel}
           set={setHireTarget}
         />
@@ -165,7 +165,7 @@ export function KscComplexes() {
         <HireFireControl
           centres={centreRows}
           fire={fire}
-          funds={magnitudeOf(career?.economy?.funds)}
+          funds={magnitudeOf(career?.balances?.funds)}
           hire={hire}
           personnel={personnel}
         />
@@ -188,7 +188,7 @@ export function KscComplexes() {
               complexNames={complexNames}
               dismantle={dismantle}
               dismantlePad={dismantlePad}
-              funds={magnitudeOf(career?.economy?.funds)}
+              funds={magnitudeOf(career?.balances?.funds)}
               modify={modifyComplex}
               newPad={newPad}
               pricing={pricing}
@@ -216,7 +216,7 @@ export function KscComplexes() {
             .map((complex) => complex.name)
             .filter((name): name is string => name != null)
         }
-        funds={magnitudeOf(career?.economy?.funds)}
+        funds={magnitudeOf(career?.balances?.funds)}
         handle={newComplex}
         pricing={pricing}
       />

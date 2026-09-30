@@ -17,14 +17,16 @@ namespace GonogoRp1Uplink
     /// silently. It goes on the wire instead, before any consumer sees the
     /// roster.</para>
     ///
-    /// <para><b>What it answers, and what it declines.</b> Three facts, all of
-    /// them ones RP-1 owns and core cannot reach: a retiree is
-    /// <see cref="CrewStanding.Retired"/> rather than dead, a kerbal on a started
-    /// course is <see cref="CrewStanding.Training"/> until its ETA, and a career
-    /// has a retirement DATE. Everything else it declines by returning null, so
-    /// core's own derivation stands. Answering for the whole roster would mean
-    /// copying core's map into this assembly, and a mod's copy of core's map is a
-    /// copy that drifts.</para>
+    /// <para><b>What it answers, and what it declines.</b> Two facts, both ones
+    /// RP-1 owns and core cannot reach. A retiree is not dead: core's standings
+    /// have no word for retirement, so the standing is
+    /// <see cref="CrewStanding.Unknown"/> and the reason says "Retired". A kerbal
+    /// on a started course cannot fly until its ETA: the standing is left to
+    /// core and the reason says "In training". The retirement date rides this
+    /// Uplink's own <c>rp1.crew</c>. Everything else it declines by returning
+    /// null, so core's own derivation stands. Answering for the whole roster
+    /// would mean copying core's map into this assembly, and a mod's copy of
+    /// core's map is a copy that drifts.</para>
     ///
     /// <para><b>Retirement outranks training</b>, which matters because RP-1 can
     /// hold both for one name. A retiree is off the books; a course they are
@@ -58,6 +60,12 @@ namespace GonogoRp1Uplink
             _crew = crew;
         }
 
+        /// <summary>Why a retiree cannot fly.</summary>
+        public const string RetiredReason = "Retired";
+
+        /// <summary>Why a kerbal on a started course cannot fly.</summary>
+        public const string TrainingReason = "In training";
+
         public string ProviderId => "rp1";
 
         /// <summary>Whether RP-1's crew handler type resolved, for the health facts.</summary>
@@ -81,10 +89,12 @@ namespace GonogoRp1Uplink
 
                 if (_crew.IsRetired(query.KerbalName))
                 {
-                    // No RetiresAtUt beside it: the date has passed, and quoting a
-                    // schedule for a career that has already ended reads as one
-                    // still to come.
-                    return new CrewStandingReading { Standing = CrewStanding.Retired };
+                    return new CrewStandingReading
+                    {
+                        Standing = CrewStanding.Unknown,
+                        Available = false,
+                        UnavailableReason = RetiredReason,
+                    };
                 }
 
                 if (offTheBooks)
@@ -98,23 +108,17 @@ namespace GonogoRp1Uplink
                 {
                     return new CrewStandingReading
                     {
-                        Standing = CrewStanding.Training,
+                        Available = false,
+                        UnavailableReason = TrainingReason,
                         // Null when RP-1 has not rated the course's build rate,
                         // which is the state a freshly queued course sits in for a
                         // tick. Its own helper answers an infinity there, and an
                         // infinity is not a date.
                         StandingEndsAtUt = facts.TrainingFinishesAtUt,
-                        RetiresAtUt = facts.RetiresAtUt,
                     };
                 }
 
-                // No standing to correct, but a date to add. The standing stays
-                // null so core's derivation decides it, which is how a kerbal
-                // standing down still reads Resting from the stock backend while
-                // carrying RP-1's retirement date.
-                return facts.RetiresAtUt == null
-                    ? null
-                    : new CrewStandingReading { RetiresAtUt = facts.RetiresAtUt };
+                return null;
             }
             catch (Exception)
             {

@@ -212,7 +212,6 @@ namespace GonogoPrincipiaUplink
 
             _host = host;
             RegisterPropagation(host);
-            RegisterGravityModel(host);
             RegisterControlFrame(host);
             RegisterManeuverPlan(host);
             AttachObserver();
@@ -640,26 +639,6 @@ namespace GonogoPrincipiaUplink
         /// </summary>
 
         /// <summary>
-        /// Publishes the producer's gravity model as the force model an n-body
-        /// integration runs against.
-        ///
-        /// <para>The reading is a <c>GameDatabase</c> node and nothing else: it
-        /// never touches the plugin, so the native ABI's abort-on-bad-call has
-        /// nothing to fire on. That is why the force model is reachable at all,
-        /// given every trajectory export is either a write or aborts on state we do
-        /// not control.</para>
-        ///
-        /// <para>Registered rather than published on a channel because it is not
-        /// telemetry. Nobody reads it on a screen; it is what a propagation runs
-        /// against, so it goes where a propagation can resolve it and core never
-        /// learns whose model it is.</para>
-        ///
-        /// <para>The try/catch is defence in depth on the same terms as every other
-        /// Uplink's registration: a genuinely absent capability cannot happen in a
-        /// correctly bundled install, and if one does this Uplink goes inert on that
-        /// point rather than taking anything else down.</para>
-        /// </summary>
-        /// <summary>
         /// Wins the propagation capability, and by winning it states that
         /// trajectories in this install are integrated rather than closed-form.
         ///
@@ -667,15 +646,15 @@ namespace GonogoPrincipiaUplink
         /// can make it.</b> An elected provider marked
         /// <see cref="IIntegratedTrajectorySource"/> is what turns a craft's
         /// published horizon from "these elements hold forever" into "they hold
-        /// until this instant, and here is the arc it actually flies". Core is not
+        /// until this instant". Core is not
         /// allowed to know which physics mod is installed, so without a registration
         /// from here the marker had no implementer and the horizon reported
         /// closed-form on every frame of every install, including this one.</para>
         ///
         /// <para><b>Registered on the producer being present, not on the force model
         /// being readable.</b> Those are different facts with different remedies:
-        /// the physics is n-body either way, and an unreadable model reaches a client
-        /// as <see cref="TrajectoryRefusal.NoForceModel"/> on an integrated horizon.
+        /// the physics is n-body either way, and an unreadable model leaves the
+        /// integrated horizon with no bound rather than no provider.
         /// Standing down here instead would publish conic elements with no complaint
         /// attached, which reads as a working analytic install.</para>
         ///
@@ -770,39 +749,19 @@ namespace GonogoPrincipiaUplink
             {
                 Capability = ManeuverPlanCapability.Id,
                 Id = "principia",
-                Factory = _ => new PrincipiaManeuverPlanSource(() => _lastPlan, _planCommands),
-            });
-        }
-
-        internal void RegisterGravityModel(IUplinkHost host)
-        {
-            AttachGravityModel();
-            var source = _gravityModel;
-            if (source == null)
-            {
-                // A headless build has no way to read a config database, so it
-                // registers nothing and the capability stays unsatisfied. That is
-                // the same state an install without the producer is in, and a client
-                // is told the same thing by both.
-                return;
-            }
-            host.Kernel.RegisterProvider(new ProviderRegistration
-            {
-                Capability = GravityModelCapability.Id,
-                Id = source.ProviderId,
-                Factory = _ => source,
+                Factory = _ => new PrincipiaManeuverPlanSource(() => _lastPlan),
             });
         }
 
         /// <summary>
         /// Sets <c>_gravityModel</c> to the real reader. Implemented only in the
         /// game-facing partial, on the same terms as <see cref="AttachObserver"/>:
-        /// a build that omits that file registers no source and says so by leaving
-        /// the capability unsatisfied.
+        /// a build that omits that file reads no model, and the propagation
+        /// provider states no bound.
         /// </summary>
         partial void AttachGravityModel();
 
-        /// <summary>Test seam: the source injected, so registration is provable with no game.</summary>
+        /// <summary>Test seam: the source injected, so the bounds are provable with no game.</summary>
         private IGravityModelSource? _gravityModel;
 
         /// <summary>Attaches the game-facing settings source. Implemented only in

@@ -273,13 +273,13 @@ namespace GonogoRp1Uplink
             if (vehicle == null)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     $"no vehicle called \"{shipName}\" has been built or is being built at any launch complex");
             }
             if (!vehicle.Finished)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     $"\"{shipName}\" is still being integrated at {vehicle.ComplexName}");
             }
             return GateVerdict.Pass();
@@ -364,13 +364,13 @@ namespace GonogoRp1Uplink
             if (!vehicle.ComplexOperational)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady, $"{vehicle.ComplexName} is still being reconstructed");
+                    Rp1ErrorCodes.NotReady, $"{vehicle.ComplexName} is still being reconstructed");
             }
 
             if (vehicle.RollingBack != null)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     $"\"{shipName}\" is rolling back from {PadWords(vehicle.RollingBack.PadId)}");
             }
 
@@ -378,7 +378,7 @@ namespace GonogoRp1Uplink
             if (rollout == null)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     $"\"{shipName}\" is in the warehouse at {vehicle.ComplexName} and has not been rolled out to a pad");
             }
             // Only a rollout that SAYS it is unfinished refuses. One that would not
@@ -386,14 +386,14 @@ namespace GonogoRp1Uplink
             if (rollout.Complete == false)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady, $"\"{shipName}\" is still rolling out to {PadWords(rollout.PadId)}");
+                    Rp1ErrorCodes.NotReady, $"\"{shipName}\" is still rolling out to {PadWords(rollout.PadId)}");
             }
 
             var pad = vehicle.PadNamed(rollout.PadId);
             if (pad == null)
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady,
+                    Rp1ErrorCodes.NotReady,
                     $"\"{shipName}\" was rolled out to {PadWords(rollout.PadId)}, which {vehicle.ComplexName} no longer has");
             }
             if (pad.Destroyed || !pad.Operational)
@@ -405,7 +405,7 @@ namespace GonogoRp1Uplink
             if (vehicle.ReconditioningOn(pad.Name))
             {
                 return GateVerdict.Fail(
-                    CommandErrorCode.NotReady, $"{PadWords(pad.Name)} is still being reconditioned");
+                    Rp1ErrorCodes.NotReady, $"{PadWords(pad.Name)} is still being reconditioned");
             }
 
             return GateVerdict.Pass();

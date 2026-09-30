@@ -1,15 +1,15 @@
 {
   "id": "principia",
   "name": "Principia",
-  "description": "Publishes Principia's n-body state: trajectory arcs, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.",
+  "description": "Publishes Principia's n-body state: how far each trajectory holds, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "uiKitVersion": "0.1.0",
-  "contractMajor": 20,
-  "contractMinor": 1,
+  "contractMajor": 25,
+  "contractMinor": 0,
   "bundleUrl": "principia/principia.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"

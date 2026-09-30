@@ -57,7 +57,7 @@ function serving(overrides: Record<string, unknown> = {}) {
 
 function career(strategy: Record<string, unknown> = {}) {
   return {
-    economy: { funds: 289_848, reputation: 212.5 },
+    balances: { funds: 289_848, reputation: 212.5 },
     strategies: {
       all: [
         {

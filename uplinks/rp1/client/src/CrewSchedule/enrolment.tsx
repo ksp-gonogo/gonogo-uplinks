@@ -1,7 +1,7 @@
-import type { CareerStatus, CrewRosterEntry } from "@ksp-gonogo/sitrep-sdk";
+import type { CrewRosterEntry } from "@ksp-gonogo/sitrep-sdk";
 import {
   CrewStanding,
-  isOffTheBooks,
+  isFatality,
   registerAugment,
   useCommand,
   useTelemetry,
@@ -75,9 +75,6 @@ export function TrainingEnrolment() {
   const courses = current(useTelemetry("rp1.training"));
   const program = current(useTelemetry("rp1.crewProgram"));
   const breakdown = current(useTelemetry("rp1.budgetBreakdown"));
-  /* Named here rather than taken from the host widget, the way ProgramDetail
-     names `career.status`: an augment carries its own reads. */
-  const career = current(useTelemetry("career.status"));
 
   const [pickedTemplate, setPickedTemplate] = useState<string | null>(null);
   const [picked, setPicked] = useState<ReadonlySet<string>>(NOBODY);
@@ -226,7 +223,7 @@ export function TrainingEnrolment() {
             </Cluster>
           </Stack>
           <Stack gap="caption">
-            <TrainingUpkeep career={career} />
+            <TrainingUpkeep breakdown={breakdown} />
             <CourseCost
               breakdown={breakdown}
               students={chosen.length}
@@ -290,23 +287,23 @@ export function TrainingEnrolment() {
  * negative. So the honest reading is the rate the career already pays, which is
  * the figure this press moves.</para>
  *
- * <para>RP-1's own line rather than one summed here from the running
- * courses.</para>
+ * <para>RP-1's own Astronauts-tab training row from `rp1.budgetBreakdown`
+ * rather than one summed here from the running courses.</para>
  *
- * <para>Absent, never zero, when the career reports no economy: a money model
- * with no upkeep concept does not levy nothing, it levies nothing KNOWN, and a
- * zero would be a claim about the first.</para>
+ * <para>Absent, never zero, when the row is unreadable: a zero would claim
+ * training costs nothing.</para>
  */
 function TrainingUpkeep({
-  career,
-}: Readonly<{ career: CareerStatus | undefined }>) {
-  const training = career?.economy?.upkeep?.training;
-  if (magnitudeOf(training) === null) {
+  breakdown,
+}: Readonly<{ breakdown: Rp1BudgetBreakdown | undefined }>) {
+  // Signed as a funds change, so money going out is negative.
+  const perDay = magnitudeOf(breakdown?.astronautTraining?.day);
+  if (perDay === null) {
     return null;
   }
   return (
     <DataLine aligned label="Upkeep">
-      <Unit value={training} />
+      <Unit value={value("f/day", -perDay)} />
     </DataLine>
   );
 }
@@ -440,10 +437,20 @@ function candidatesOf(
   courses: Rp1TrainingCourseEntry[] | undefined,
 ): Candidate[] {
   const training = trainingNames(crew, courses);
+  const retired = new Set(
+    (crew ?? [])
+      .filter((entry) => entry.retired === true)
+      .map((entry) => entry.name),
+  );
   const candidates: Candidate[] = [];
   for (const row of roster ?? []) {
     const name = row.name;
-    if (!name || row.isApplicant === true || isOffTheBooks(row.standing)) {
+    if (
+      !name ||
+      row.isApplicant === true ||
+      isFatality(row.standing) ||
+      retired.has(name)
+    ) {
       continue;
     }
     candidates.push({ name, refusal: studentRefusal(row, training) });
@@ -474,7 +481,7 @@ function studentRefusal(
   training: ReadonlySet<string>,
 ): Refusal | null {
   const name = row.name ?? "";
-  if (training.has(name) || row.standing === CrewStanding.Training) {
+  if (training.has(name)) {
     return {
       sentence: `${name} is already on a training course`,
       tag: "in training",
@@ -591,7 +598,8 @@ const NOBODY: ReadonlySet<string> = new Set<string>();
 
 registerAugment({
   id: "rp1-training-enrolment",
-  augments: "astronaut-complex.training",
+  augments: "astronaut-complex.tab",
+  label: "Training",
   channels: [
     "rp1.available",
     "rp1.trainingCatalogue",
@@ -602,11 +610,8 @@ registerAugment({
        the host, so this section carries its own reads the way ProgramDetail
        names `career.status`. */
     "spaceCenter.crewRoster",
-    /* What training draws from the career per day. RP-1's own upkeep line, read
-       for the rate beside the press; see `TrainingUpkeep`. */
-    "career.status",
-    /* Each training's fee per student, for what the course being assembled
-       adds; see `CourseCost`. */
+    /* What training draws from the career per day and each training's fee per
+       student; see `TrainingUpkeep` and `CourseCost`. */
     "rp1.budgetBreakdown",
   ],
   component: TrainingEnrolment,

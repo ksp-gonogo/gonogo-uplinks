@@ -3,14 +3,14 @@
 
 # Principia
 
-Publishes Principia's n-body state: trajectory arcs, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.
+Publishes Principia's n-body state: how far each trajectory holds, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.
 
 | | |
 | --- | --- |
 | Uplink id | `principia` |
 | Version | `0.0.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 20.1, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 25.0, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 

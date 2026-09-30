@@ -1,19 +1,12 @@
-import type { PlanDraft, PlanDraftStore } from "@ksp-gonogo/sitrep-sdk";
-import {
-  CommandErrorCode,
-  ManeuverFrame,
-  usePlanDrafts,
-  value,
-} from "@ksp-gonogo/sitrep-sdk";
+import { CommandErrorCode, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
-  clearPlanDrafts,
-  render,
   screen,
   setupStreamFixture,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
+  renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
@@ -23,6 +16,12 @@ import {
   PrincipiaWriteOutcome,
 } from "../__generated__/contract.js";
 import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
+import {
+  clearPlanDrafts,
+  type PlanDraft,
+  type PlanDraftStore,
+  usePlanDrafts,
+} from "../planDrafts.js";
 import { PlanSlots } from "./index.js";
 
 /**
@@ -54,7 +53,7 @@ const VIEW_UT = 10_000;
  * The screen's draft store, reached the only way a client can: through the hook
  * that hands it over.
  *
- * <p>The store is module scope in the sdk and deliberately not exported, so a
+ * <p>The store is module scope and deliberately not exported, so a
  * test seeds it by mounting something that asks for it. Rendered inside the same
  * tree as the section under test, which is also the arrangement production has:
  * one store per screen, shared by every panel on it.</p>
@@ -172,7 +171,6 @@ function plan(overrides: Record<string, unknown> = {}) {
 function saveDraft(
   store: PlanDraftStore,
   overrides: {
-    frame?: ManeuverFrame;
     ignitionUt?: number;
     vesselId?: string;
   } = {},
@@ -186,10 +184,9 @@ function saveDraft(
       burns: [
         {
           ignitionUt: value("ut", overrides.ignitionUt ?? VIEW_UT + 7200),
-          frame: overrides.frame ?? ManeuverFrame.TangentNormalBinormal,
-          dvRadial: value("m/s", 120),
-          dvNormal: value("m/s", 0),
-          dvPrograde: value("m/s", 0),
+          deltaVTangent: value("m/s", 120),
+          deltaVNormal: value("m/s", 0),
+          deltaVBinormal: value("m/s", 0),
           inertiallyFixed: false,
         },
       ],
@@ -825,8 +822,7 @@ describe("PlanSlots", () => {
    * rendered. But `ChannelEngine.BindCommandArgs` binds each to a plain
    * <c>double</c> and rejects an object bag outright: "Cannot bind wire value of
    * type Dictionary to numeric Double", thrown from INSIDE the handler, which
-   * loses the whole plan rather than one field. The sdk's own `planSendArgs`
-   * unwraps for exactly this reason and says so at length.</p>
+   * loses the whole plan rather than one field.</p>
    */
   it("sends the composed plan as the numbers the mod binds, not as unit values", async () => {
     const stream = mount();
@@ -865,10 +861,9 @@ describe("PlanSlots", () => {
       burns: [
         {
           ignitionUt: VIEW_UT + 7200,
-          // Slot for slot, in the basis's own order: the draft's first slot is
-          // the TANGENT under `TangentNormalBinormal`, whatever its field is
-          // called. Labelling by field name puts an along-track burn out of
-          // plane.
+          // Component for component: a tangent stays a tangent, since an
+          // along-track burn sent as another axis is a wrong burn that reads as
+          // a right one.
           deltaVTangent: 120,
           deltaVNormal: 0,
           deltaVBinormal: 0,
@@ -989,29 +984,6 @@ describe("PlanSlots", () => {
         name: "Install this plan as Principia's flight plan",
       }),
     ).not.toBeInTheDocument();
-    await act(async () => {});
-  });
-
-  /**
-   * The same three numbers are a different manoeuvre in each basis. Principia's
-   * burns are the Frenet trihedron, so a plan composed in KSP's
-   * radial/normal/prograde basis is refused rather than reinterpreted: sending it
-   * would put an operator's along-track burn out of plane, which is a wrong burn
-   * that reads as a right one.
-   */
-  it("refuses to install a plan composed in the stock basis", async () => {
-    const stream = mount();
-    saveDraft(stream.store, { frame: ManeuverFrame.RadialNormalPrograde });
-    await emitPlan(stream);
-
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toBeDisabled();
-    expect(
-      await visibleText(screen.getByText("SAVED PLAN 1").ownerDocument.body),
-    ).toContain("cannot be installed as it stands");
     await act(async () => {});
   });
 

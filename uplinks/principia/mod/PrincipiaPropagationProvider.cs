@@ -48,9 +48,8 @@ namespace GonogoPrincipiaUplink
     /// registration when the model is absent would publish closed-form elements
     /// with no complaint attached, which is precisely the reading that made a dead
     /// feature look like a working one. Registered, the horizon says integrated,
-    /// the arc is attempted, and the missing model reaches a client as
-    /// <see cref="TrajectoryRefusal.NoForceModel"/>: an install problem, said
-    /// plainly.</para>
+    /// and the missing model leaves every bound unstated rather than
+    /// withdrawing the provider.</para>
     /// </summary>
     // The base list stays on this one line: the seam gate in Sitrep.Core.Tests reads
     // source text and matches a type's bases on the same line as its name, so a
@@ -225,9 +224,7 @@ namespace GonogoPrincipiaUplink
             var model = _forceModel();
             if (model == null)
             {
-                // No masses, no bound. The same absence reaches the client beside
-                // this as TrajectoryRefusal.NoForceModel, so the two halves of the
-                // payload say the same thing about the same install problem.
+                // No masses, no bound.
                 return null;
             }
 
@@ -358,9 +355,7 @@ namespace GonogoPrincipiaUplink
             var model = _forceModel();
             if (model == null)
             {
-                // No masses, no bound. The same absence reaches the client beside this
-                // as TrajectoryRefusal.NoForceModel on the craft side, so the two
-                // halves of the install say the same thing about the same problem.
+                // No masses, no bound.
                 return null;
             }
 

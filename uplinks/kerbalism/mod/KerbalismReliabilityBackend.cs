@@ -5,11 +5,10 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Kerbalism's <see cref="IReliabilityBackend"/>: the LOW-specificity
-    /// (Priority 1) provider of the "reliability" capability. Resolves the
-    /// vessel internally, like <see cref="ICommsBackend"/> implementations, so
-    /// the interface stays KSP-free; the reflection + POCO mapping are done by
-    /// <see cref="KerbalismReflection"/> + <see cref="KerbalismReliabilityMap"/>.
+    /// Kerbalism's reliability reader: the summary, the parts listing and the
+    /// repair, for the craft core's <c>activeVessel</c> capability reports. The
+    /// reflection and the mapping are done by <see cref="KerbalismReflection"/>
+    /// and <see cref="KerbalismReliabilityMap"/>.
     ///
     /// <para><b>The vessel comes from core's <c>activeVessel</c> capability
     /// rather than from KSP directly.</b> Those stopped being the same answer
@@ -20,7 +19,7 @@ namespace Gonogo.KerbalismUplink
     /// a failed part is exactly when a repair is wanted, so the path was dead in
     /// the one situation it exists for.</para>
     /// </summary>
-    public sealed class KerbalismReliabilityBackend : IReliabilityBackend
+    public sealed class KerbalismReliabilityBackend
     {
         private readonly KerbalismReflection _k;
         private readonly Kernel? _kernel;
@@ -72,23 +71,10 @@ namespace Gonogo.KerbalismUplink
                 _k.Features(), _k.ReliabilityPreferences());
 
         /// <summary>
-        /// Whether this backend should TAKE the exclusive "reliability" capability
-        /// at all, asked by the factory rather than answered after the fact.
-        ///
-        /// <para>Holding the capability and then reporting <c>Disabled</c> starves
-        /// every lower-priority provider that could actually have modelled
-        /// reliability on this install: an exclusive capability is held by exactly
-        /// one provider, and one that models nothing is still holding it. A
-        /// higher-priority provider currently outranks this backend on the only
-        /// installs anyone runs, so nothing visibly breaks, which is precisely
-        /// why it would have gone unnoticed.</para>
-        ///
-        /// <para>The cut is DEFINITE-off only. <c>Indeterminate</c> still takes the
-        /// capability, because declining hands it to the vanilla fallback, which
-        /// answers "nothing is installed that could model reliability", and that is
-        /// a false statement when Kerbalism is sitting right there unable to say
-        /// which way its own switch is set. Serving and admitting the uncertainty
-        /// is the honest answer; declining would launder it into a clean one.</para>
+        /// Whether Kerbalism is modelling reliability at all: false only when
+        /// the feature or <c>mtbfFailures</c> is definitely off, so an
+        /// indeterminate switch still serves and says so through
+        /// <see cref="Coverage"/>.
         /// </summary>
         public static bool CanServe(KerbalismReflection k) =>
             KerbalismReliabilityMap.CanServe(
@@ -97,8 +83,7 @@ namespace Gonogo.KerbalismUplink
         public ReliabilitySummary Summary()
         {
             // ONE Coverage computation per call rather than one per gate: the
-            // property reflects, and the core uplink reads Summary and Parts back
-            // to back on the same tick.
+            // property reflects.
             var coverage = Coverage;
             var v = ScopedVessel();
             var raw = v != null ? _k.Reliability(v) : new ReliabilityRaw();
@@ -111,9 +96,7 @@ namespace Gonogo.KerbalismUplink
         /// for why the kit guard has to be held off around it.
         ///
         /// <para>Refuses when this save is not modelling failures at all,
-        /// rather than reaching for a module that will not be there. The
-        /// backend withdraws from the capability entirely in that case, so this
-        /// is belt and braces for the indeterminate window.</para>
+        /// rather than reaching for a module that will not be there.</para>
         /// </summary>
         public CommandResult<RepairOutcome> Repair(string partId, string crewName)
         {

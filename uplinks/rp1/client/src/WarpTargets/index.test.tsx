@@ -3,12 +3,14 @@ import {
   clearRequestedAlarms,
   getAugmentsForSlot,
   getRequestedAlarms,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
-import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  expectNoA11yViolations,
+  renderWithRail as render,
+} from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { RP1_FUND_TARGET_CANCEL_COMMAND } from "./FundTarget.js";
@@ -27,7 +29,7 @@ function mount(
   act(() => {
     fixture.emit("rp1.available", true);
     if (funds !== null) {
-      fixture.emit("career.status", { economy: { funds } });
+      fixture.emit("career.status", { balances: { funds } });
     }
     if (fundTarget !== undefined) {
       fixture.emit("rp1.fundTarget", fundTarget);
@@ -141,7 +143,7 @@ describe("WarpTargets", () => {
         trigger: {
           kind: "threshold",
           topic: "career.status",
-          fieldPath: "economy.funds",
+          fieldPath: "balances.funds",
           op: ">=",
           value: 250_000,
           /*

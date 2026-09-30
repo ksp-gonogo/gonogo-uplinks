@@ -229,8 +229,8 @@ namespace GonogoRp1Uplink.Tests
         {
             // The direction that matters. The charge needs no query at all, so a
             // currency model that cannot be asked costs the two quotes and nothing
-            // else. Publishing the charge under a quote's name would be the exact
-            // substitution Rp1EconomyUpkeepQuery exists to forbid.
+            // else. Publishing the charge under a quote's name would present an
+            // unmodified figure as RP-1's own modified price.
             CurrencyUtils.ThrowOnQuery = true;
             var query = new Rp1HirePriceQuery();
 

@@ -17,7 +17,7 @@
         "comment": "The stock channel writes all nine keys and answers a tier for none of them, which is what it does in every scene but the space centre.",
         "topic": "career.status",
         "payload": {
-          "economy": {
+          "balances": {
             "funds": 289848,
             "reputation": 62,
             "science": 340

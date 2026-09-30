@@ -100,7 +100,7 @@ export function LeaderDetail({ screenId }: { screenId: string }) {
       <Stack gap="caption">
         <ReadoutCaption>Reputation</ReadoutCaption>
         <Readout>
-          <Unit value={careerReading.economy.reputation} />
+          <Unit value={careerReading.balances.reputation} />
         </Readout>
       </Stack>
 

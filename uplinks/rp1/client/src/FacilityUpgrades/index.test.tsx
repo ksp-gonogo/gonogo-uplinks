@@ -69,7 +69,7 @@ function emit(
  * its ceiling. Tiers are the wire's zero-based indices.
  */
 const AT_CENTRE = {
-  economy: { funds: 289848, science: 340, reputation: 62 },
+  balances: { funds: 289848, science: 340, reputation: 62 },
   facilities: {
     LaunchPad: { currentTier: 1, maxTier: 2, upgradeCost: 112500 },
     VehicleAssemblyBuilding: { currentTier: 0, maxTier: 2, upgradeCost: 40000 },
@@ -83,7 +83,7 @@ const AT_CENTRE = {
  * carrying no `facilities` key here is what that silence looks like to `emit`.
  */
 const AWAY = {
-  economy: { funds: 289848 },
+  balances: { funds: 289848 },
 };
 
 /**
@@ -253,7 +253,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
     emit(stream, {
       ...AT_CENTRE,
       // Far short of every price on screen, and still not a refusal.
-      economy: { funds: 12 },
+      balances: { funds: 12 },
     });
     await screen.findByText("FACILITY UPGRADES");
 
@@ -377,7 +377,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
     const stream = mount();
 
     emit(stream, {
-      economy: { funds: 289848 },
+      balances: { funds: 289848 },
       facilities: {
         LaunchPad: { currentTier: 2, maxTier: 2, upgradeCost: null },
         VehicleAssemblyBuilding: {
@@ -403,7 +403,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
     const stream = mount();
 
     emit(stream, {
-      economy: { funds: 289848 },
+      balances: { funds: 289848 },
       facilities: {
         LaunchPad: { currentTier: 1, maxTier: 2, upgradeCost: null },
       },

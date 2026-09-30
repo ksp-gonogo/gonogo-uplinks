@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 20.1, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 25.0, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -172,8 +172,8 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- | --- | --- |
 | `rp1-crew-schedule` | `astronaut-complex.crew` | – |  | 2 |  |
 | `rp1-crew-training-badge` | `astronaut-complex.crew-badge` | `rp1.available`, `rp1.crew` |  | 1 |  |
-| `rp1-training-courses` | `astronaut-complex.training` | `rp1.available`, `rp1.training`, `rp1.crew` |  | 2 |  |
-| `rp1-training-enrolment` | `astronaut-complex.training` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `career.status`, `rp1.budgetBreakdown` |  | 3 |  |
+| `rp1-training-courses` | `astronaut-complex.tab` | `rp1.available`, `rp1.training`, `rp1.crew` |  | 2 |  |
+| `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 6 |  |
@@ -262,5 +262,6 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- |
 | `rp1.notManaging` | `careerModeRequired` | RP-1 is not managing this save | RP-1 is installed but is not managing this save, so none of its career commands apply to it. A property of the save rather than of the moment. |
 | `rp1.spaceCentreNotLoaded` | `modeUnavailable` | RP-1's space centre is not loaded | RP-1's space centre, which holds every queue and complex these commands act on, is not loaded in the current scene. |
+| `rp1.notReady` | `wrongState` | the vehicle is not ready to fly yet | The vehicle or the complex it needs has RP-1 work outstanding: never integrated, still integrating, not rolled out, or on a pad still being reconditioned. Nothing is over a limit and nothing is broken, the work simply has not been done. The detail says which. |
 | `rp1.buildUnrecognised` | `unreadable` | this RP-1 build is not one this Uplink recognises | The installed RP-1 build lacks a member this Uplink reads or calls, so the command could not be carried out. The detail names which one. |
 

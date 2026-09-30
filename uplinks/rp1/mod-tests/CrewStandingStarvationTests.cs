@@ -57,8 +57,8 @@ public class CrewStandingStarvationTests : IDisposable
         Assert.NotNull(backend);
         Assert.Equal("rp1", backend!.ProviderId);
         Assert.Equal(
-            CrewStanding.Retired,
-            backend.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.Standing);
+            Rp1CrewStandingBackend.RetiredReason,
+            backend.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.UnavailableReason);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class CrewStandingStarvationTests : IDisposable
 
         var watched = Elected(host)
             ?.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead));
-        Assert.Equal(CrewStanding.Retired, watched?.Standing);
+        Assert.Equal(Rp1CrewStandingBackend.RetiredReason, watched?.UnavailableReason);
     }
 
     /// <summary>
@@ -93,8 +93,8 @@ public class CrewStandingStarvationTests : IDisposable
         var host = Registered();
 
         Assert.Equal(
-            CrewStanding.Retired,
-            Elected(host)?.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.Standing);
+            Rp1CrewStandingBackend.RetiredReason,
+            Elected(host)?.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.UnavailableReason);
     }
 
     /// <summary>
@@ -118,8 +118,8 @@ public class CrewStandingStarvationTests : IDisposable
         handler.Retired(Retiree);
 
         Assert.Equal(
-            CrewStanding.Retired,
-            backend.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.Standing);
+            Rp1CrewStandingBackend.RetiredReason,
+            backend.Read(CrewStandingQueries.Crew(Retiree, KspRosterStatus.Dead))?.UnavailableReason);
     }
 
     /// <summary>
@@ -127,9 +127,9 @@ public class CrewStandingStarvationTests : IDisposable
     /// election run.
     /// </summary>
     /// <remarks>
-    /// The descriptor is built here rather than through core's own registrar, for
-    /// the reason <c>EconomyStarvationTests.Registered</c> gives: core's registrar
-    /// lives in <c>Sitrep.Host</c>, and an Uplink's suite travels with the Uplink.
+    /// The descriptor is built here rather than through core's own registrar:
+    /// core's registrar lives in <c>Sitrep.Host</c>, and an Uplink's suite travels
+    /// with the Uplink.
     /// What core declares is guarded where core can be named, by
     /// <c>Sitrep.Host.Tests/CrewStandingElectionTests</c>.
     /// </remarks>
@@ -160,7 +160,7 @@ public class CrewStandingStarvationTests : IDisposable
     /// </summary>
     private sealed class StockStandIn : ICrewStandingBackend
     {
-        public string ProviderId => CrewStandings.StockSource;
+        public string ProviderId => "stock";
 
         public CrewStandingReading? Read(CrewStandingQuery query) =>
             new CrewStandingReading { Standing = CrewStandings.FromQuery(query) };

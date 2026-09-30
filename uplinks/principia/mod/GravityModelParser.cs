@@ -84,9 +84,8 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// The model, or null when there is nothing usable to build one from.
         ///
-        /// <para>Null is the state a client is told about as
-        /// <see cref="TrajectoryRefusal.NoForceModel"/>: an install problem with no
-        /// operator remedy. It is deliberately not a partial model with stock
+        /// <para>Null is an install problem with no operator remedy, and every
+        /// bound drawn from the model goes unstated. It is deliberately not a partial model with stock
         /// values filled in, which would produce a curve that agrees with nothing
         /// while looking exactly like one that does.</para>
         /// </summary>

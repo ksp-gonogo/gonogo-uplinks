@@ -1,11 +1,13 @@
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
-import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  expectNoA11yViolations,
+  renderWithRail as render,
+} from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
@@ -57,7 +59,7 @@ function mount(
     fixture.emit("rp1.pads", []);
     fixture.emit("rp1.personnel", { applicants: 0, researchers: 3 });
     if (funds !== null) {
-      fixture.emit("career.status", { economy: { funds } });
+      fixture.emit("career.status", { balances: { funds } });
     }
   });
   return { fixture, view };

@@ -26,7 +26,7 @@ export const RP1_FUND_TARGET_CANCEL_COMMAND = "rp1.fundTarget.cancel";
  * has to poll.
  */
 const CAREER_TOPIC = "career.status";
-const FUNDS_PATH = "economy.funds";
+const FUNDS_PATH = "balances.funds";
 
 /**
  * One alarm per career, matching RP-1's own one-target-per-career model. Asking

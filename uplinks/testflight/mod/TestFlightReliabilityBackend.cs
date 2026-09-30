@@ -1,15 +1,11 @@
-// mod/GonogoTestFlightUplink/TestFlightReliabilityBackend.cs
-// TestFlight's implementation of the shared reliability Kernel capability
-// (IReliabilityBackend, declared in Sitrep.Contract/Reliability.cs). Resolves the
-// vessel internally, like the other capability backends.
-// Registered at Priority 10 so it WINS the election over the Priority-1 Kerbalism
-// provider under RO/RP-1.
+// TestFlight's reliability reader: the summary, the engine listing and the repair,
+// for the craft core's activeVessel capability reports.
 using System.Collections.Generic;
 using Sitrep.Contract;
 
 namespace GonogoTestFlightUplink
 {
-    public sealed class TestFlightReliabilityBackend : IReliabilityBackend
+    public sealed class TestFlightReliabilityBackend
     {
         private readonly TestFlightReflection _tf;
         private readonly Kernel? _kernel;
@@ -32,11 +28,10 @@ namespace GonogoTestFlightUplink
         /// The craft this backend answers for, from core's <c>activeVessel</c>
         /// capability rather than from KSP.
         ///
-        /// <para>The same regression <c>KerbalismReliabilityBackend</c> carried,
-        /// line for line, and it lands on the RO/RP-1 installs where this
-        /// provider outranks Kerbalism's. <c>vessel.parts</c> lists the CRAFT's
-        /// parts, so a part id the operator can see resolves against a kerbal who
-        /// has one and comes back unrepairable. Going outside to fix a failed
+        /// <para>During an EVA KSP's own active vessel is the kerbal, while
+        /// <c>vessel.parts</c> lists the CRAFT's parts, so a part id the operator
+        /// can see would resolve against a kerbal who has one part and come back
+        /// unrepairable. Going outside to fix a failed
         /// engine is the whole reason the verb exists.</para>
         ///
         /// <para>Queried per call, as <see cref="IActiveVessel"/> requires: the
@@ -57,8 +52,6 @@ namespace GonogoTestFlightUplink
         {
             get
             {
-                // Should not be reachable: the uplink does not register a provider
-                // when the probe says TestFlight is absent.
                 if (!_tf.IsAvailable) return ReliabilityCoverage.None;
                 return _tf.BoundPartStatus
                     ? ReliabilityCoverage.Modeled

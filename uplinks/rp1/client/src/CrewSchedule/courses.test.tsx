@@ -1,12 +1,12 @@
 import {
   getAugmentsForSlot,
-  render,
   screen,
   setupStreamFixture,
   waitFor,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
+  renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
@@ -309,8 +309,9 @@ describe("TrainingCourses", () => {
     expect(control).toHaveAccessibleName(`${NAUT} off`);
   });
 
-  it("registers itself into the Astronaut Complex training tab", () => {
-    const augments = getAugmentsForSlot("astronaut-complex.training");
-    expect(augments.map((a) => a.id)).toContain("rp1-training-courses");
+  it("registers itself into the Astronaut Complex tab, labelled Training", () => {
+    const augments = getAugmentsForSlot("astronaut-complex.tab");
+    const courses = augments.find((a) => a.id === "rp1-training-courses");
+    expect(courses?.label).toBe("Training");
   });
 });

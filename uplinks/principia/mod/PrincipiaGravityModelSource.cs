@@ -7,8 +7,8 @@ using UnityEngine;
 namespace GonogoPrincipiaUplink
 {
     /// <summary>
-    /// Reads the producer's gravity model and publishes it as the force model an
-    /// n-body integration runs against.
+    /// Reads the producer's gravity model, the masses the propagation provider
+    /// bounds its trajectories and ephemerides with.
     ///
     /// <para><b>This is the only file in the gravity-model path that names a game
     /// type</b>, and it holds nothing but the two reads: finding the config node and

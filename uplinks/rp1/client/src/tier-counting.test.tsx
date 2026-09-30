@@ -42,7 +42,7 @@ const CENTRES = [
  * VAB have a tier to commit to, the Tracking Station is at its ceiling.
  */
 const CAREER = {
-  economy: { funds: 41_250, reputation: 62, science: 340 },
+  balances: { funds: 41_250, reputation: 62, science: 340 },
 };
 
 /** The stock tier ladder, on the channel that goes quiet away from the KSC. */

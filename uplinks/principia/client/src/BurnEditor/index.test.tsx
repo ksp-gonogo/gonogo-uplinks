@@ -1,10 +1,10 @@
 import { CommandErrorCode, Staleness } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
@@ -579,12 +579,8 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * The copy here used to send the operator into the game: "add the first one
-   * in Principia's own planner, the console copies an existing burn rather
-   * than composing one". That stopped being true when PlanComposer gained an
-   * "Add burn" button and `useSendPlan`, and nothing caught it, because the
-   * belief was written down three times over: the copy, this test's name, and
-   * its assertion, all agreeing with each other and none with the code.
+   * PlanComposer composes burns and sends a plan whole, so an empty plan points
+   * the operator there rather than at Principia's own planner in the game.
    *
    * A console that tells an operator to go and use the game is the one thing
    * this product exists not to do, so it is asserted here rather than left to

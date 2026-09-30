@@ -188,15 +188,6 @@ namespace GonogoPrincipiaUplink.Tests
             });
             kernel.RegisterCapability(new CapabilityDescriptor
             {
-                Id = GravityModelCapability.Id,
-                Exclusive = true,
-                SpineCritical = false,
-                // No vanilla, exactly as core declares it: stock has no n-body
-                // force model, and unsatisfied is the honest state.
-                Vanilla = null,
-            });
-            kernel.RegisterCapability(new CapabilityDescriptor
-            {
                 Id = ManeuverPlanCapability.Id,
                 Exclusive = true,
                 SpineCritical = false,
@@ -404,6 +395,9 @@ namespace GonogoPrincipiaUplink.Tests
 
         public void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread) =>
             throw NotExpected("SetPathBreakSource");
+
+        public IDisposable RegisterDelayModifier(double factor, string reason) =>
+            throw NotExpected("RegisterDelayModifier");
 
         public void ForceKeyframe(string topic) => throw NotExpected("ForceKeyframe");
 

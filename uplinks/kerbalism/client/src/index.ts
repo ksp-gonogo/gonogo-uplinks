@@ -64,20 +64,8 @@ export {
   readKerbalismIsruConverterExt,
   readKerbalismIsruDrillExt,
 } from "./isru.js";
-// This Uplink's namespace of the CORE `reliability.summary` payload's provider
-// extension bag: the typed shape plus its reader. Not a Topic of this Domain, a
-// sub-tree of an elected capability's shared payload that core keeps opaque on
-// purpose (see ./reliability.ts). RE-EXPORTED, like ./topics above, so the module
-// loads (which is what registers the bag's runtime shape routing) and so the type
-// reaches `dist/index.d.ts` rather than being elided.
-export {
-  KERBALISM_RELIABILITY_PROVIDER_ID,
-  type KerbalismReliabilityExt,
-  RELIABILITY_SUMMARY_TOPIC,
-  readKerbalismReliabilityExt,
-} from "./reliability.js";
 // This Uplink's namespaces of the four elected `science.*` payloads' extension bags,
-// same boundary and same load-bearing re-export as ./reliability above. Kerbalism
+// same boundary and same load-bearing re-export as ./isru above. Kerbalism
 // WINS the science election, so on a Kerbalism install these readers are how a widget
 // gets at what the shared fields cannot carry (see ./science.ts, and note which core
 // fields Kerbalism deliberately leaves null).

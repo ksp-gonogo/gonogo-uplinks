@@ -6,17 +6,15 @@ using Sitrep.Contract;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// A stand-in craft catalogue: the capability core registers, with no KSP
-    /// behind it.
+    /// A stand-in craft catalogue and craft loader, with no KSP behind either.
     ///
-    /// <para>Unlike <c>Rp0Fixture</c> this is not a reflection stand-in. The
-    /// catalogue is reached through an INTERFACE declared in
-    /// <c>Sitrep.Contract</c>, which is the whole point of the seam: an Uplink
+    /// <para>Unlike <c>Rp0Fixture</c> this is not a reflection stand-in. Both are
+    /// reached through interfaces, which is the whole point of the seam: an Uplink
     /// may not name a KSP type, so the one thing it holds is a handle it never
     /// opens. Here the handle is a plain object and the test can watch it come
     /// back.</para>
     /// </summary>
-    public sealed class FakeCraftCatalogue : ICraftCatalogue
+    public sealed class FakeCraftCatalogue : ICraftCatalogue, IRp1CraftLoader
     {
         public string ProviderId => "fake";
 
@@ -43,7 +41,7 @@ namespace GonogoRp1Uplink.Tests
 
         public IReadOnlyList<CraftFileRecord> Craft() => Records;
 
-        public CraftLoad Load(string? file, KspEditorFacility? facility)
+        public Rp1CraftLoad Load(string? file, KspEditorFacility? facility)
         {
             LastFile = file;
             LastFacility = facility;
@@ -53,12 +51,12 @@ namespace GonogoRp1Uplink.Tests
             }
             if (LoadFailure != null)
             {
-                return CraftLoad.Failed(LoadFailure);
+                return Rp1CraftLoad.Failed(LoadFailure);
             }
             var record = Records.FirstOrDefault(r => r.File == file && r.Facility == facility);
             if (record == null)
             {
-                return CraftLoad.Failed("no craft file named \"" + file + "\" is saved in that editor");
+                return Rp1CraftLoad.Failed("no craft file named \"" + file + "\" is saved in that editor");
             }
             var handle = new ShipConstruct
             {
@@ -70,7 +68,7 @@ namespace GonogoRp1Uplink.Tests
                 totalMass = (float)(record.MassExcludingClamps ?? record.Mass ?? 0.0),
             };
             Loaded.Add(handle);
-            return new CraftLoad
+            return new Rp1CraftLoad
             {
                 Ship = handle,
                 Measured = record,

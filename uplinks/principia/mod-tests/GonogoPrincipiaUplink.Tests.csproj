@@ -87,6 +87,7 @@
     <Compile Include="..\mod\PrincipiaSession.cs" />
     <Compile Include="..\mod\PrincipiaFrame.cs" />
     <Compile Include="..\mod\ReflectedPrincipiaPlugin.cs" />
+    <Compile Include="..\mod\GravityModel.cs" />
     <Compile Include="..\mod\GravityModelParser.cs" />
     <Compile Include="..\mod\PrincipiaPropagationProvider.cs" />
     <Compile Include="..\mod\PrincipiaHorizonBound.cs" />

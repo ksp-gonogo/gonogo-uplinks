@@ -253,6 +253,9 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         public void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread) =>
             throw NotExpected("SetPathBreakSource");
 
+        public IDisposable RegisterDelayModifier(double factor, string reason) =>
+            throw NotExpected("RegisterDelayModifier");
+
         public void ForceKeyframe(string topic) => throw NotExpected("ForceKeyframe");
 
         public void ResetChannelBirth(IEnumerable<string> topics) =>

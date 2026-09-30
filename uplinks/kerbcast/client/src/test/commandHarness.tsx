@@ -14,10 +14,10 @@ import type { TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
 
 import {
   createTestTelemetryClient,
-  render,
   StubTransport,
   TelemetryProvider,
-} from "./render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import type { ReactElement } from "react";
 
 export interface CommandClientHarness {

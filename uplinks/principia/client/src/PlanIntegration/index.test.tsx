@@ -1,12 +1,14 @@
 import { CommandErrorCode, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
-  render,
   screen,
   setupStreamFixture,
-} from "../test/render.js";
+} from "@ksp-gonogo/sitrep-sdk/testing";
+import {
+  renderWithRail as render,
+  visibleText,
+} from "@ksp-gonogo/ui-kit/testing";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
-import { visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import type {

@@ -783,13 +783,11 @@ export interface KerbalismFeatures
 }
 /**
 * Kerbalism's vessel-level reliability rollup: the `extensions["kerbalism"]`
-* sub-tree of `reliability.summary`. Read client-side through this Uplink's
-* own `readKerbalismReliabilityExt`, never by reaching into the bag and
-* casting at a call site.
+* sub-tree of this Uplink's reliability summary. No Topic publishes the
+* summary yet.
 *
-* Absent entirely when Kerbalism is not the elected backend, and when
-* `Features.Reliability` is off (the summary reports `Unmodeled` and there is
-* no per-part list to roll up).
+* Absent entirely when `Features.Reliability` is off (the summary reports
+* `disabled` and there is no per-part list to roll up).
 */
 export interface KerbalismReliabilityExt
 {

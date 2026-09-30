@@ -1,9 +1,6 @@
-import type { ComposedBurn, PlanDraft } from "@ksp-gonogo/sitrep-sdk";
 import {
-  ManeuverFrame,
   registerAugment,
   useCommand,
-  usePlanDrafts,
   useTelemetry,
   useViewUt,
   value,
@@ -27,12 +24,11 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
 import type {
-  PrincipiaComposedBurn,
   PrincipiaPlan,
   PrincipiaPlanWriteReceipt,
 } from "../__generated__/contract.js";
-import { PrincipiaBurnProfile } from "../__generated__/contract.js";
 import { commandWindow } from "../commandWindow.js";
+import { composedBurn, type PlanDraft, usePlanDrafts } from "../planDrafts.js";
 import { planView } from "../planReading.js";
 import type { PrincipiaPlanWriteHandle } from "../planWrite.js";
 import {
@@ -543,11 +539,8 @@ function ExistingPlan({
  * to fly a half-typed trajectory.</p>
  *
  * <p><b>Every fact that would refuse the install is rendered from the draft
- * itself.</b> Principia takes a burn as three components of the Frenet
- * trihedron, so a draft composed in the stock radial/normal/prograde basis is
- * not the same burn under those three names and is refused here rather than
- * reinterpreted; a plan whose first burn cannot be reached before it lights is
- * refused whole by the mod on arrival; and an end instant at or before the last
+ * itself.</b> A plan whose first burn cannot be reached before it lights is
+ * refused whole by the mod on arrival, and an end instant at or before the last
  * ignition is a plan that would not reach its own last manoeuvre.</p>
  */
 function InstallDrafts({
@@ -582,8 +575,8 @@ function InstallDrafts({
       {drafts.length === 0 ? (
         <Text level="faint" size="sm">
           No saved plan for this craft. A composed plan reaches Principia's
-          flight plan from here; the composer's own upload writes stock
-          manoeuvre nodes instead.
+          flight plan from here, with the end instant above, or whole from the
+          composer's own upload.
         </Text>
       ) : null}
       {drafts.map((draft, index) => (
@@ -635,9 +628,6 @@ function InstallRow({
   sendCmd: PrincipiaPlanWriteHandle;
   onWrite: (receipt: PrincipiaPlanWriteReceipt | null) => void;
 }>) {
-  const wrongBasis = draft.burns.some(
-    (burn) => burn.frame !== ManeuverFrame.TangentNormalBinormal,
-  );
   const first = draft.burns[0];
   const window = commandWindow(
     magnitudeOf(first?.ignitionUt),
@@ -669,7 +659,6 @@ function InstallRow({
     burnCount > 0 && plan.writeSurface?.burnLayoutVerified !== true;
   const blocked =
     frozen ||
-    wrongBasis ||
     burnStructUnusable ||
     planEndUt === null ||
     endsBeforeLastBurn ||
@@ -726,15 +715,6 @@ function InstallRow({
         </Text>
       )}
 
-      {wrongBasis && (
-        <Text tone="warn" size="sm">
-          This plan states a burn in KSP's radial/normal/prograde basis.
-          Principia's burns are the Frenet trihedron, so the same three numbers
-          are a different manoeuvre and this plan cannot be installed as it
-          stands.
-        </Text>
-      )}
-
       {burnStructUnusable && (
         <Text tone="warn" size="sm">
           Principia's burn struct has not survived a round trip in this session,
@@ -764,44 +744,6 @@ function InstallRow({
       )}
     </Stack>
   );
-}
-
-/**
- * A composed burn in the shape Principia's own command takes.
- *
- * <p>The three slots carry the BASIS's components in the basis's own order, and
- * the basis is asserted by the caller rather than assumed here: under
- * `ManeuverFrame.TangentNormalBinormal` the first slot is the tangent and the
- * third is the binormal. Labelling them by their field names would put an
- * operator's along-track burn out of plane, which is a wrong burn that reads as
- * a right one.</p>
- *
- * <p>`Unchanged` is not available to a composed plan: a plan transmitted from a
- * command centre states its burns outright rather than as a delta against a
- * value the sender could not see, and the profile is the one field of the burn
- * the composer does not offer, so the plan keeps whichever engine Principia
- * already has.</p>
- *
- * <p><b>MAGNITUDES, not `Value`s, and the cast is what that costs.</b>
- * `PrincipiaComposedBurn` is carried INSIDE an args record rather than being
- * one, so codegen's "an Args type is a wire-WRITE" exemption does not reach it
- * and types its instant and its components as unit-bound values. That is right
- * for everything that reads a burn, and it is what a draft holds. It is not what
- * the receiving side binds: `ChannelEngine.BindCommandArgs` takes each to a
- * plain double and rejects an object bag with "Cannot bind wire value of type
- * Dictionary to numeric Double", thrown from inside the handler, so the whole
- * plan is lost rather than one field. The sdk's `planSendArgs` unwraps at the
- * same boundary for the same reason.</p>
- */
-function composedBurn(burn: ComposedBurn): PrincipiaComposedBurn {
-  return {
-    ignitionUt: burn.ignitionUt.magnitude,
-    deltaVTangent: burn.dvRadial.magnitude,
-    deltaVNormal: burn.dvNormal.magnitude,
-    deltaVBinormal: burn.dvPrograde.magnitude,
-    inertiallyFixed: burn.inertiallyFixed,
-    profile: PrincipiaBurnProfile.Unchanged,
-  } as unknown as PrincipiaComposedBurn;
 }
 
 /**
