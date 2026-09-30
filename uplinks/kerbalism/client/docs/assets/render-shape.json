@@ -82,6 +82,16 @@
       "elements": 97,
       "text": "5db7f31e"
     },
+    "kit-cost-beside-the-repair--default.png": {
+      "hash": "6787badf6efd6491",
+      "elements": 77,
+      "text": "9d687079"
+    },
+    "kit-cost-beside-the-repair-stopped-arriving--default.png": {
+      "hash": "7f3254c28de199d9",
+      "elements": 74,
+      "text": "040be5de"
+    },
     "no-profile-for-this-vessel--default.png": {
       "hash": "d03a064a63f535f3",
       "elements": 16,
@@ -148,7 +158,7 @@
       "text": "50714c7e"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "8ffce31041b128a2",
+      "hash": "c893c31149911b6d",
       "elements": 41,
       "text": "50714c7e"
     },

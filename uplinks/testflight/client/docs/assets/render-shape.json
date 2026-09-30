@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "engine": "chromium",
+  "assets": {
+    "engine-failure-mid-ascent--default.png": {
+      "hash": "c47d09547b705bf9",
+      "elements": 86,
+      "text": "e9437f69"
+    },
+    "engine-failure-mid-ascent-stopped-arriving--default.png": {
+      "hash": "c99339bac84b68aa",
+      "elements": 84,
+      "text": "9a779f98"
+    }
+  }
+}
