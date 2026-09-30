@@ -2017,6 +2017,28 @@ namespace RP0
 
         public double GetTimeLeft() => TimeLeft;
 
+        /// <summary>RP-1's auto-warp precision, the epsilon its forecast readers ask with.</summary>
+        public const double EpsilonTimeAutoWarp = 60.0;
+
+        /// <summary>What the next estimate answers, in seconds; RP-1's +Infinity is its "not inside MaxTime".</summary>
+        public static Func<double, double, double> EstimateAnswer = (_, _) => 0.0;
+
+        /// <summary>Every estimate asked for, as (base funds, target funds, epsilon).</summary>
+        public static readonly List<(double BaseFunds, double TargetFunds, double Epsilon)> EstimateAsks =
+            new List<(double, double, double)>();
+
+        public static double EstimateTimeToFunds(double baseFunds, double targetFunds, double epsilonTime)
+        {
+            EstimateAsks.Add((baseFunds, targetFunds, epsilonTime));
+            return EstimateAnswer(baseFunds, targetFunds);
+        }
+
+        public static void ResetEstimate()
+        {
+            EstimateAnswer = (_, _) => 0.0;
+            EstimateAsks.Clear();
+        }
+
         /// <summary>
         /// What RP-1 calls a fund target, and the reason this type implements the
         /// project interface at all: RP-1 puts the fund target in its own project

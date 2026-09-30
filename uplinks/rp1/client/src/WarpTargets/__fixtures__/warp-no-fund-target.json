@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "No target standing, which is every save until someone opens RP-1's own Maintenance screen: gonogo cannot set one any more and does not need to. The balance alarm is the affordance, and it is live either way, because it is the APP's alarm rather than a write into RP-1's career."
+    "notes": "No target standing, which is every save until someone opens RP-1's own Maintenance screen. The balance alarm is on the Finances tab, beside RP-1's forecast of when it fires."
   },
   "_scene": {
     "augment": "rp1-warp-targets",
@@ -9,8 +9,10 @@
       "w": 6,
       "h": 10
     },
-    "caption": "No fund target standing, so there is nothing to cancel and the balance alarm is the only thing under the warp press.",
-    "paints": ["next completion", "Balance alarm"]
+    "caption": "No fund target standing, so warp-to-completion is the only thing under the warp press.",
+    "paints": [
+      "next completion"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,

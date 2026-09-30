@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 26.0, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 26.0, api 6.1.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -50,6 +50,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.trainingCatalogue` | `Rp1TrainingTemplateEntry[]` | lossy-latest | delayed |
 | `rp1.warehouse` | `Rp1WarehouseItemEntry[]` | lossy-latest | delayed |
 | `rp1.available` | – | lossy-latest | true-now |
+| `rp1.fundsReachedAt.` | – | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |
@@ -177,7 +178,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 6 |  |
+| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 7 |  |
 | `rp1-leader-detail` | `strategies.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
@@ -190,7 +191,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-vehicle-assembly-buildable` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-vehicle-assembly-tooling` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-vehicle-assembly-warehouse` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
-| `rp1-warp-targets` | `warp-control.stepper` | – |  | 3 |  |
+| `rp1-warp-targets` | `warp-control.stepper` | – |  | 2 |  |
 
 ![Three kerbals' RP-1 schedules inside the roster rows the Astronaut Complex already draws, each on one card of its own with the sack control at the end of the identity line: a retirement and the two things that will push it out, a course being worked and a course nobody has started, and mission training lapsing before either finishes. Each line names itself, and only the lapse is toned](docs/assets/crew-schedule-three-states--default.png)
 
@@ -230,7 +231,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![Three finished vehicles in three different places: one standing on the pad, one still moving to it, and one RP-1 will not release at all with its reason on the card](docs/assets/warehouse-three-places--default.png)
 
-![A fund target standing: its figure and RP-1's own ETA, the press that withdraws it, and the balance alarm that replaces warping toward it.](docs/assets/warp-fund-target-standing--default.png)
+![A fund target RP-1's own Maintenance screen stood up: its figure and RP-1's ETA, and the press that withdraws it. The balance alarm lives on the Finances tab.](docs/assets/warp-fund-target-standing--default.png)
 
 ## Contributions
 

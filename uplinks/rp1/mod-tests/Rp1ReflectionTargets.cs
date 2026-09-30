@@ -177,6 +177,8 @@ namespace GonogoRp1Uplink.Tests
             // instruction is those arguments, so a rename costs the command.
             new Rp1TypeTarget(Rp0, "RP0.HireStaffProject", "Rp1TargetCommands"),
             new Rp1TypeTarget(Rp0, "RP0.FundTargetProject", "Rp1TargetCommands"),
+            new Rp1TypeTarget(Rp0, "RP0.FundTargetProject", "Rp1FundsReachedAtReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.MaintenanceHandler", "Rp1FundsReachedAtReflection"),
             // The avionics rule itself. Reached rather than reproduced: its walk
             // carries five conditions a tonnage compare cannot (see
             // Rp1AvionicsReflection's header), and the standalone Uplink that
@@ -694,6 +696,7 @@ namespace GonogoRp1Uplink.Tests
             new Rp1MethodTarget(Rp0, "RP0.HireStaffProject", "Clear", 0, false, "Rp1TargetCommands"),
             new Rp1MethodTarget(Rp0, "RP0.FundTargetProject", "Clear", 0, false, "Rp1TargetCommands"),
             new Rp1MethodTarget(Rp0, "RP0.FundTargetProject", "GetTimeLeft", 0, false, "Rp1ScReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.FundTargetProject", "EstimateTimeToFunds", 3, true, "Rp1FundsReachedAtReflection"),
             new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetEffectiveEngineersForSalary", 1, false, "Rp1ScReflection"),
             new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetEffectiveIntegrationEngineersForSalary", 1, false, "Rp1ScReflection"),
             // ── The facility upgrade ────────────────────────────────────────
@@ -1727,6 +1730,13 @@ namespace GonogoRp1Uplink.Tests
                 // as LaunchPad: the reason RP-1 prices them under.
                 Add(construction, "FacilityType", Rp1Reader.EnumText, Rates);
             }
+
+            // ── RP-1's forecast for a figure ────────────────────────────────
+            const string ReachedAt = "Rp1FundsReachedAtReflection";
+            Add("RP0.MaintenanceHandler", "Instance", Rp1Reader.Presence, ReachedAt, @static: true);
+            Add("RP0.MaintenanceHandler", "lastUpdate", Rp1Reader.Numeric, ReachedAt);
+            // A const, read as its raw literal value, so a retuned precision arrives with the release that retunes it.
+            Add("RP0.FundTargetProject", "EpsilonTimeAutoWarp", Rp1Reader.Numeric, ReachedAt, @static: true);
 
             // ── The research rate table and its command ─────────────────────
             const string ResearchRates = "Rp1ResearchRatesReflection";

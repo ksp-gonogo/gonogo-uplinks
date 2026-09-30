@@ -3,12 +3,7 @@ import {
   useCommand,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import {
-  CommandButton,
-  Inline,
-  magnitudeOf,
-  Stack,
-} from "@ksp-gonogo/ui-kit";
+import { CommandButton, Inline, Stack } from "@ksp-gonogo/ui-kit";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 // Side-effect import: hydrates these Topics' units at decode time. Here rather
@@ -16,8 +11,8 @@ import { RP1 } from "../uplink.js";
 // consumer that would silently receive bare numbers without it.
 import "../topics.js";
 import {
-  FundTargetControl,
   RP1_FUND_TARGET_CANCEL_COMMAND,
+  StandingFundTarget,
 } from "./FundTarget.js";
 
 /** Warp until the career's next project finishes. Must match `Rp1WarpCommands.ToCompleteCommand`. */
@@ -34,12 +29,11 @@ export const RP1_WARP_TO_COMPLETE_COMMAND = "rp1.warp.toComplete";
  * operator reads one warp control rather than hunting for whichever panel owns
  * the mod's version.</para>
  *
- * <para><b>RP-1 drives warp for ONE thing now, and asks for an alarm for the
- * other.</b> <c>rp1.warp.toFundTarget</c> and <c>rp1.fundTarget.set</c> are
- * gone: they were one controller wearing two names, and what they achieved is
- * what a threshold alarm on the career balance achieves, in the operator's own
- * alarm list rather than under a mod's control. See
- * <c>FundTarget.tsx</c>.</para>
+ * <para><b>RP-1 drives warp for ONE thing.</b> Stopping a warp at a balance is
+ * a threshold alarm on the career balance, set from the Finances tab beside
+ * RP-1's forecast of when it fires. What stays here is a fund target RP-1's own
+ * Maintenance screen stood up, because it halts warps and an operator should
+ * see it beside the warp controls.</para>
  *
  * <para><b>Warp-to-complete stays, and its replacement does not exist.</b>
  * Nothing publishes "the next project to finish" as an instant a threshold could
@@ -61,9 +55,6 @@ export const RP1_WARP_TO_COMPLETE_COMMAND = "rp1.warp.toComplete";
 export function WarpTargets() {
   const available = current(useTelemetry("rp1.available"));
   const fundTarget = current(useTelemetry("rp1.fundTarget"));
-  // Read for the one figure the alarm is measured against. Absent on a save
-  // with no funding, which is what keeps the balance row off a sandbox career.
-  const career = current(useTelemetry("career.status"));
 
   // Unconditional and above the early return on purpose: a hook after it would
   // change count on the first frame RP-1 answers.
@@ -102,17 +93,9 @@ export function WarpTargets() {
         />
       </Inline>
 
-      {/*
-        Under the press rather than beside it. RP-1 keeps one fund target per
-        career and only its own Maintenance screen stands one up now, so this
-        draws whichever of the standing row and the alarm control the save has
-        earned.
-      */}
-      <FundTargetControl
-        cancel={cancelFundTarget}
-        funds={magnitudeOf(career?.balances?.funds)}
-        target={fundTarget}
-      />
+      {fundTarget?.active === true && (
+        <StandingFundTarget handle={cancelFundTarget} target={fundTarget} />
+      )}
     </Stack>
   );
 }

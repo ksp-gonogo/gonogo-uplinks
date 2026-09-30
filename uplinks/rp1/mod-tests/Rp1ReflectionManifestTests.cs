@@ -73,6 +73,7 @@ namespace GonogoRp1Uplink.Tests
             "Rp1ConstructionRatesReflection.cs",
             "Rp1ConstructionCommands.cs",
             "Rp1ResearchRatesReflection.cs",
+            "Rp1FundsReachedAtReflection.cs",
             "Rp1ResearchRateCommands.cs",
         };
 

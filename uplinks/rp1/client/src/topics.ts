@@ -14,6 +14,7 @@
 // Domain presence gate.
 import {
   registerBarePrimitiveTopic,
+  registerDynamicTopicPrefix,
   registerTopicUnits,
   registerTypeUnits,
   type TopicPayload,
@@ -320,6 +321,21 @@ export const RP1_BUDGET_TOPIC = "rp1.budget";
 export const RP1_BUDGET_BREAKDOWN_TOPIC = "rp1.budgetBreakdown";
 
 /**
+ * The namespace of RP-1's forecast for a figure: `rp1.fundsReachedAt.<whole
+ * funds>` carries the UT RP-1's own `EstimateTimeToFunds` forecasts the balance
+ * reaching that figure, or `null` when its forecast does not reach it. A bare
+ * number, not a `Value`. Must match `Rp1ScUplink.FundsReachedAtPrefix`.
+ * Answered for a figure only while something subscribes to it, and refreshed
+ * with `rp1.budget`.
+ */
+export const RP1_FUNDS_REACHED_AT_PREFIX = "rp1.fundsReachedAt.";
+
+/** The Topic carrying RP-1's forecast for `funds`, in whole funds. */
+export function fundsReachedAtTopic(funds: number): string {
+  return `${RP1_FUNDS_REACHED_AT_PREFIX}${Math.round(funds)}`;
+}
+
+/**
  * Each construction's draw per day and finish date at every work rate RP-1's
  * slider offers, keyed by `rp1.constructions[].id`, and each facility's next
  * tier at the full rate. A construction draws as it progresses, so these are
@@ -432,6 +448,7 @@ registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
 registerBarePrimitiveTopic(RP1_RESEARCH_RATES_TOPIC);
 registerBarePrimitiveTopic(RP1_LEADERS_TOPIC);
 registerBarePrimitiveTopic(RP1_CAREER_LEDGER_TOPIC);
+registerDynamicTopicPrefix(RP1_FUNDS_REACHED_AT_PREFIX);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both

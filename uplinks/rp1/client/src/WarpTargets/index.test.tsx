@@ -1,8 +1,6 @@
 import {
   act,
-  clearRequestedAlarms,
   getAugmentsForSlot,
-  getRequestedAlarms,
   screen,
   setupStreamFixture,
   waitFor,
@@ -12,14 +10,11 @@ import {
   renderWithRail as render,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { RP1_FUND_TARGET_CANCEL_COMMAND } from "./FundTarget.js";
 import { RP1_WARP_TO_COMPLETE_COMMAND, WarpTargets } from "./index.js";
 
-function mount(
-  fundTarget?: Record<string, unknown>,
-  funds: number | null = 120_000,
-) {
+function mount(fundTarget?: Record<string, unknown>) {
   const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
@@ -28,9 +23,6 @@ function mount(
   );
   act(() => {
     fixture.emit("rp1.available", true);
-    if (funds !== null) {
-      fixture.emit("career.status", { balances: { funds } });
-    }
     if (fundTarget !== undefined) {
       fixture.emit("rp1.fundTarget", fundTarget);
     }
@@ -38,23 +30,7 @@ function mount(
   return { fixture, view };
 }
 
-/** Open the balance-alarm panel and type a figure into it. */
-async function typeTarget(user: ReturnType<typeof userEvent.setup>, n: string) {
-  await user.click(
-    await screen.findByRole("button", {
-      name: "Set an alarm on the career balance",
-    }),
-  );
-  const field = await screen.findByLabelText("Target balance");
-  await user.clear(field);
-  await user.type(field, n);
-}
-
 describe("WarpTargets", () => {
-  beforeEach(() => {
-    clearRequestedAlarms();
-  });
-
   it("binds the slot the host widget already has for a mod's warp target", () => {
     /*
      * An augment rather than a widget, and the assertion is that it LANDS in the
@@ -118,155 +94,6 @@ describe("WarpTargets", () => {
     ).not.toBeInTheDocument();
   });
 
-  /*
-   * The whole of the operator's ruling, in one assertion: RP-1 asks the APP for
-   * an alarm and drives no warp of its own. The two commands that used to do this
-   * (rp1.fundTarget.set to aim it, rp1.warp.toFundTarget to go) were one
-   * controller wearing two names, and both are deleted.
-   */
-  it("asks the app for an alarm on the balance instead of driving a warp", async () => {
-    const user = userEvent.setup();
-    const { fixture, view } = mount({ active: false });
-
-    await typeTarget(user, "250000");
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Stop the warp when the balance reaches 250,000 funds",
-      }),
-    );
-
-    expect(getRequestedAlarms()).toEqual([
-      {
-        uplinkId: "rp1",
-        key: "fund-target",
-        name: "Balance reaches 250,000 funds",
-        trigger: {
-          kind: "threshold",
-          topic: "career.status",
-          fieldPath: "balances.funds",
-          op: ">=",
-          value: 250_000,
-          /*
-           * The active command centre: the simulation halts the warp on the
-           * tick that centre learns the balance.
-           */
-          vantage: "command",
-        },
-      },
-    ]);
-    // Nothing went to RP-1. Not merely "no warp command": the press reaches no
-    // mod at all.
-    expect(fixture.transport.sentCommands).toEqual([]);
-    await expectNoA11yViolations(view.container);
-  });
-
-  it("retargets one alarm rather than piling them up when pressed twice", async () => {
-    const user = userEvent.setup();
-    mount({ active: false });
-
-    await typeTarget(user, "250000");
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Stop the warp when the balance reaches 250,000 funds",
-      }),
-    );
-    await user.clear(await screen.findByLabelText("Target balance"));
-    await user.type(await screen.findByLabelText("Target balance"), "400000");
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Stop the warp when the balance reaches 400,000 funds",
-      }),
-    );
-
-    /*
-     * Two requests under ONE key. The app retargets the alarm it already holds
-     * under that key rather than adding a second, so an operator revising a
-     * figure is left with one row.
-     */
-    expect(getRequestedAlarms().map((a) => a.key)).toEqual([
-      "fund-target",
-      "fund-target",
-    ]);
-  });
-
-  it("seeds the figure from a target RP-1 is already holding", async () => {
-    const user = userEvent.setup();
-    mount({ active: true, targetFunds: 250_000, timeLeft: 864_000 });
-
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Set an alarm on the career balance",
-      }),
-    );
-
-    /*
-     * That figure is literally the threshold RP-1 is working toward, so arming on
-     * it is a press rather than a retype. It can only get there through RP-1's
-     * own Maintenance screen now, which is exactly why the input is still there
-     * to be typed into.
-     */
-    await screen.findByRole("button", {
-      name: "Stop the warp when the balance reaches 250,000 funds",
-    });
-  });
-
-  it("darkens the press until there is a figure to arm on", async () => {
-    const user = userEvent.setup();
-    mount({ active: false });
-
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Set an alarm on the career balance",
-      }),
-    );
-
-    expect(
-      await screen.findByRole("button", {
-        name: "Stop the warp when the balance reaches 0 funds",
-      }),
-    ).toBeDisabled();
-  });
-
-  /*
-   * The whole of the spend statement for this control, and it is that there
-   * ISN'T one. A balance alarm is a stop condition: RP-1's FundTargetProject
-   * returns project type None, its IncrementProgress returns zero and its Clear
-   * touches no currency, so an affordability line here would invent a cost. What
-   * the operator needs instead is the balance the alarm is measured against.
-   */
-  it("names the balance rather than a price, because a stop condition spends nothing", async () => {
-    const user = userEvent.setup();
-    const { view } = mount({ active: false }, 120_000);
-
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Set an alarm on the career balance",
-      }),
-    );
-
-    await waitFor(() => {
-      expect(view.container.textContent).toContain("120,000");
-    });
-    expect(view.container.textContent).not.toMatch(/afford|cost|spend/i);
-  });
-
-  it("says nothing about a balance on a save that has no funding", async () => {
-    const user = userEvent.setup();
-    const { view } = mount({ active: false }, null);
-
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Set an alarm on the career balance",
-      }),
-    );
-    await screen.findByLabelText("Target balance");
-    /*
-     * Absent, not empty, and not a zero. A sandbox save has no funding at all,
-     * so a "balance" row would report a figure the career does not have.
-     */
-    expect(view.container.textContent).not.toMatch(/balance now/i);
-  });
-
   it("withdraws a standing target without opening the screen that set it", async () => {
     const user = userEvent.setup();
     const { fixture } = mount({
@@ -291,11 +118,18 @@ describe("WarpTargets", () => {
     ).toEqual({});
   });
 
+  it("sets no balance alarm here: that lives in Finances beside RP-1's forecast", async () => {
+    mount({ active: true, targetFunds: 250_000, timeLeft: 864_000 });
+
+    await screen.findByRole("button", { name: "Cancel the fund target" });
+    expect(screen.queryByLabelText("Target balance")).not.toBeInTheDocument();
+  });
+
   it("offers no cancel while nothing is standing, because RP-1 refuses one", async () => {
     mount({ active: false });
 
     await screen.findByRole("button", {
-      name: "Set an alarm on the career balance",
+      name: "Warp until RP-1's next project finishes",
     });
     /*
      * RP-1's own cancel asks IsValid first and refuses when nothing stands, so a

@@ -65,6 +65,7 @@
     <Compile Include="..\mod\Rp1ConstructionRatesCapture.cs" />
     <Compile Include="..\mod\Rp1ConstructionCommands.cs" />
     <Compile Include="..\mod\Rp1ResearchRatesReflection.cs" />
+    <Compile Include="..\mod\Rp1FundsReachedAtReflection.cs" />
     <Compile Include="..\mod\Rp1ResearchRatesCapture.cs" />
     <Compile Include="..\mod\Rp1ResearchRateCommands.cs" />
     <Compile Include="..\mod\Rp1ScUplink.cs" />

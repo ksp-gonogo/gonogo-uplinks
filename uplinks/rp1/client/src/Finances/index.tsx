@@ -41,6 +41,7 @@ import { latest } from "../shared/current.js";
 import { facilityLabel } from "../shared/facilityLabels.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
+import { FundsAlarm } from "./FundsAlarm.js";
 
 type Period = "day" | "month" | "year";
 
@@ -107,6 +108,9 @@ const RP1_ROWS: readonly { key: PeriodKey; label: string; drill?: Drill }[] = [
  *
  * <para>Below the budget, RP-1's career log: the monthly ledger RP-1 keeps and
  * only ever exports, month by month in its own categories.</para>
+ *
+ * <para>Last, the one action the screen owns: an alarm on the balance, with
+ * RP-1's forecast of when it fires.</para>
  */
 export function Finances({ screenId }: { screenId: string }) {
   const availableReading = useTelemetry("rp1.available");
@@ -137,11 +141,14 @@ export function Finances({ screenId }: { screenId: string }) {
   return (
     <div ref={ref}>
       {budget === undefined ? (
-        <EmptyState>
-          {availableReading.state === "held"
-            ? "RP-1 had sent no budget when the link dropped"
-            : "RP-1 has not sent a budget"}
-        </EmptyState>
+        <Section gap="section-compact">
+          <EmptyState>
+            {availableReading.state === "held"
+              ? "RP-1 had sent no budget when the link dropped"
+              : "RP-1 has not sent a budget"}
+          </EmptyState>
+          <FundsAlarm />
+        </Section>
       ) : (
         <Section gap="section-compact">
           <FundsChange budget={budgetReading} />
@@ -167,6 +174,7 @@ export function Finances({ screenId }: { screenId: string }) {
             ledger={ledgerReading}
             wide={size.w >= ALL_PERIODS_MIN_WIDTH}
           />
+          <FundsAlarm />
         </Section>
       )}
     </div>

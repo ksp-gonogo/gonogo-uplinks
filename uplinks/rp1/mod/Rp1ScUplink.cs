@@ -84,6 +84,14 @@ namespace GonogoRp1Uplink
         public const string BudgetTopic = "rp1.budget";
 
         /// <summary>
+        /// The dynamic namespace of RP-1's forecast for a figure: under it,
+        /// <c>rp1.fundsReachedAt.&lt;whole funds&gt;</c> carries the UT RP-1
+        /// forecasts the balance reaching that figure, <c>null</c> when its
+        /// forecast does not reach it. A client subscribes to the figure it wants.
+        /// </summary>
+        public const string FundsReachedAtPrefix = "rp1.fundsReachedAt.";
+
+        /// <summary>
         /// The lines under the budget's rows: each building and complex's upkeep,
         /// each crew member's and training course's cost, and each Program's
         /// funding, at the same three horizons.
@@ -238,6 +246,19 @@ namespace GonogoRp1Uplink
 
         /// <summary>The research rate table, on its own reader and the budget's cadence for the same reason.</summary>
         private readonly Rp1ResearchRatesReflection _researchRates = new Rp1ResearchRatesReflection();
+
+        /// <summary>RP-1's forecast for each figure a client asks about, on the budget's cadence for the budget's reason.</summary>
+        private readonly Rp1FundsReachedAtReflection _fundsReachedAt = new Rp1FundsReachedAtReflection();
+
+        private IDynamicChannelSource? _fundsReachedAtSource;
+
+        /// <summary>
+        /// Every concrete topic a client has subscribed to under
+        /// <see cref="FundsReachedAtPrefix"/>, written on the Courier thread and
+        /// pruned on the main thread once nobody holds it.
+        /// </summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _fundsReachedAtAsked =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, byte>();
 
         /// <summary>
         /// The career log's monthly ledger, on its own reader because it keeps the
@@ -1581,6 +1602,15 @@ namespace GonogoRp1Uplink
                 HandleLeadersOnCourier,
                 LeadersTopic);
 
+            // Gated on its namespace: its whole effect is its return value, and
+            // each figure it answers is one a client subscribed to.
+            _fundsReachedAtSource = host.RegisterDynamicNamespace(FundsReachedAtPrefix, AtHome(FundsReachedAtPrefix));
+            _fundsReachedAtSource.OnSubscribed(topic => _fundsReachedAtAsked.TryAdd(topic, 0));
+            host.AddSampledSource(
+                CaptureFundsReachedAtOnMain,
+                HandleFundsReachedAtOnCourier,
+                FundsReachedAtPrefix);
+
             // UNGATED, because its main effect is the delay modifier rather than
             // its return value: gating it on rp1.simulation would leave delay on
             // through a simulation nobody had a screen of ours open for.
@@ -1993,6 +2023,70 @@ namespace GonogoRp1Uplink
         {
             public double Ut;
             public Rp1BudgetRaw? Raw;
+        }
+
+        /// <summary>
+        /// MAIN-THREAD capture: RP-1's forecast for each figure still subscribed,
+        /// taken again only when RP-1 has refreshed its upkeep.
+        ///
+        /// <para>A figure is dropped once no subscribed topic starts with its own.
+        /// That test is a prefix test, so <c>100</c> stays while <c>1000</c> is
+        /// held: it costs one extra estimate a refresh and publishes to a topic
+        /// nobody reads.</para>
+        /// </summary>
+        internal object? CaptureFundsReachedAtOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            var figures = new List<long>();
+            foreach (var topic in _fundsReachedAtAsked.Keys)
+            {
+                if (!_host!.IsAnyTopicSubscribed(topic))
+                {
+                    _fundsReachedAtAsked.TryRemove(topic, out _);
+                    continue;
+                }
+                var figure = Rp1FundsReachedAtReflection.FigureOf(topic.Substring(FundsReachedAtPrefix.Length));
+                if (figure != null)
+                {
+                    figures.Add(figure.Value);
+                }
+            }
+            return new Rp1FundsReachedAtCaptureData
+            {
+                Ut = ut,
+                Readings = _fundsReachedAt.CaptureOnMain(ut, Rp1Pricing.FundsBalance(), figures),
+            };
+        }
+
+        /// <summary>
+        /// COURIER-THREAD handle: publish each figure RP-1 answered. One it could
+        /// not answer publishes nothing, so a client holds no forecast rather than
+        /// one saying the figure is out of reach.
+        /// </summary>
+        internal void HandleFundsReachedAtOnCourier(object? captured)
+        {
+            if (captured is not Rp1FundsReachedAtCaptureData cap || _fundsReachedAtSource == null)
+            {
+                return;
+            }
+            foreach (var reading in cap.Readings)
+            {
+                if (!reading.Readable)
+                {
+                    continue;
+                }
+                Rp1RowBudget.Record(1, cap.Ut);
+                _fundsReachedAtSource
+                    .Publisher(Rp1FundsReachedAtReflection.SubTopicFor(reading.Figure))
+                    .Publish(reading.ReachedAt, cap.Ut);
+            }
+        }
+
+        /// <summary>The forecast readings and the UT they were taken at, carried together to the Courier.</summary>
+        private sealed class Rp1FundsReachedAtCaptureData
+        {
+            public double Ut;
+            public List<Rp1FundsReachedAtReading> Readings = new List<Rp1FundsReachedAtReading>();
         }
 
         /// <summary>

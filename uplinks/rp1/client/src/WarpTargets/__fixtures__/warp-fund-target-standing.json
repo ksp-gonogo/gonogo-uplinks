@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "A target RP-1 is holding, which only its own Maintenance screen can stand up now: rp1.fundTarget.set and rp1.warp.toFundTarget are both deleted, on the ruling that RP-1 must not manage warp. What survives is the readout, the cancel, and a request for an ALARM on the balance. Nothing here stops warp either: RP-1's controller destroys itself the moment it sees a rate of zero, so the host widget's existing 1x button already ends an RP-1 warp and a second control would be two buttons doing one thing."
+    "notes": "A target RP-1 is holding, which only its own Maintenance screen stands up. It halts warps and persists past the warp it stopped, so its readout and cancel sit beside the warp controls. Nothing here stops warp: RP-1's controller destroys itself the moment it sees a rate of zero, so the host widget's existing 1x button already ends an RP-1 warp."
   },
   "_scene": {
     "hero": true,
@@ -10,8 +10,11 @@
       "w": 6,
       "h": 10
     },
-    "caption": "A fund target standing: its figure and RP-1's own ETA, the press that withdraws it, and the balance alarm that replaces warping toward it.",
-    "paints": ["next completion", "Cancel", "Balance alarm"]
+    "caption": "A fund target RP-1's own Maintenance screen stood up: its figure and RP-1's ETA, and the press that withdraws it. The balance alarm lives on the Finances tab.",
+    "paints": [
+      "next completion",
+      "Cancel"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
