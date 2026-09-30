@@ -39,13 +39,12 @@
 //                           spend funds unlocking them through a popup, and a
 //                           command that answered that popup on an operator's
 //                           behalf would spend money nobody asked it to
-//   ProcessPartConfigs      NOT reproduced. It needs a walk of the craft's live
-//                           part modules, and core's craftCatalogue capability
-//                           deliberately does not carry one (a stock capability
-//                           hands back the ShipConstruct and nothing else); this
-//                           Uplink has no walk of its own yet, so a part that
-//                           reports its own configuration invalid is not caught
-//                           here
+//   ProcessPartConfigs      REFUSES, quoting each module. Rp1PartConfigs walks
+//                           the loaded craft's live part modules the way RP-1's
+//                           GetConfigErrorsDict does, resolving what RP-1
+//                           resolves without asking and refusing on the rest,
+//                           because RP-1's own arm offers to pay for those
+//                           through a popup
 //   ProcessFundsChecks      the currency query, mandatory, and an unreadable one
 //                           REFUSES. KCTUtilities.SpendFunds performs NO
 //                           affordability test of its own: its whole body is a
@@ -80,6 +79,8 @@
 //   LaunchComplex.ID/.Name/.IsOperational/.LCType
 //                                    plain fields and one-line reads of _lcData
 //   Funding.Instance.Funds           read ONLY to put a number beside a refusal
+//   the craft's part modules         through Rp1PartConfigs, whose header lists
+//                                    what it reads, invokes and writes
 //
 // WHAT IS INVOKED, each a write RP-1 itself performs on the same click:
 //
@@ -453,12 +454,13 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Why the craft's PARTS stop it being built, or null when they do not.
         ///
-        /// <para>Three separate arms because the remedies are three different
+        /// <para>Four separate arms because the remedies are four different
         /// things and a refusal an operator cannot act on is worse than the gap
         /// it replaced: a part this install does not have needs the mod
         /// installing, a part whose tech is not researched needs the R&amp;D
-        /// queue, and a part researched but not bought needs money spending in a
-        /// building. RP-1's own window collapses the last two into a popup that
+        /// queue, a part researched but not bought needs money spending in a
+        /// building, and a config a module reports locked needs unlocking in the
+        /// editor. RP-1's own window collapses the last two into a popup that
         /// offers to spend, and a command that answered that popup would spend an
         /// operator's funds on a question nobody asked it.</para>
         ///
@@ -489,12 +491,15 @@ namespace GonogoRp1Uplink
                     + "asking: " + unpurchased;
             }
 
-            // A fourth arm used to sit here, quoting what a craft's own part
-            // modules said about their configuration. Core's craftCatalogue
-            // capability does not carry that any more (see ICraftCatalogue's own
-            // doc comment: the load stays thin, and walking live part modules is
-            // whichever mod's own concern), and this Uplink holds no walk of its
-            // own yet, so that class of refusal is not caught here.
+            // Last, as RP-1 orders it, because the walk may unlock a free config
+            // and there is no sense doing that for a craft already refused.
+            var configs = Named(Rp1PartConfigs.Errors(load.Ship));
+            if (configs != null)
+            {
+                return "the craft's own parts report a configuration this career has not unlocked: "
+                    + configs;
+            }
+
             return null;
         }
 

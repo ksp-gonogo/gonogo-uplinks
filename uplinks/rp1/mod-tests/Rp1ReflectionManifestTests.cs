@@ -45,6 +45,7 @@ namespace GonogoRp1Uplink.Tests
             "Rp1ProgramDeactivateGate.cs",
             "Rp1BuildCommands.cs",
             "Rp1BuildStartCommands.cs",
+            "Rp1PartConfigs.cs",
             "Rp1Pricing.cs",
             "Rp1VehicleCommands.cs",
             "Rp1ComplexWrites.cs",

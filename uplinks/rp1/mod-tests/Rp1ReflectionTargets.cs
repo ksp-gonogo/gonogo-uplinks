@@ -197,6 +197,10 @@ namespace GonogoRp1Uplink.Tests
             new Rp1TypeTarget(Rp0, "RP0.CurrencyRP0", "Rp1BuildCommands"),
             new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1BuildCommands, Rp1BuildStartCommands, Rp1VehicleCommands"),
             new Rp1TypeTarget(Rp0, "RP0.VesselProject", "Rp1BuildStartCommands"),
+            // Internal, and pointed at an error's tech for the length of a free
+            // config resolve, which is what routes the purchase through RP-1's
+            // unlock credit rather than RealFuels' raw price.
+            new Rp1TypeTarget(Rp0, "RP0.Harmony.RFECMPatcher", "Rp1PartConfigs"),
             new Rp1TypeTarget(Rp0, "RP0.ReconRolloutProject", "Rp1VehicleCommands"),
             new Rp1TypeTarget(Rp0, "RP0.LaunchComplex", "Rp1VehicleCommands"),
             new Rp1TypeTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "Rp1Pricing"),
@@ -887,9 +891,11 @@ namespace GonogoRp1Uplink.Tests
             ["EditorLogic"] = "KSP's editor, resolved by the same Find as RP-1's types but belonging to Assembly-CSharp",
             ["fetch"] = "KSP's EditorLogic.fetch, null outside the editor, which is how the tooling reading knows there is no ship and how the cost reading knows the blocked parts are unreadable rather than absent",
             ["ship"] = "KSP's EditorLogic.ship, the vehicle being designed",
-            ["Parts"] = "KSP's ShipConstruct.Parts, the parts the tooling and cost walks visit",
+            ["Parts"] = "KSP's ShipConstruct.Parts, the parts the tooling, cost and part-config walks visit",
             ["TechRequired"] = "KSP's AvailablePart.TechRequired, the node a part is waiting for, and the whole of the part-to-tech link: it is stock, so gathering the editor's parts under their blocking node needs nothing from RP-1",
-            ["Modules"] = "KSP's Part.Modules, walked and filtered by assignability to RP0.ModuleTooling rather than by module name",
+            ["Modules"] = "KSP's Part.Modules, walked and filtered by assignability to RP0.ModuleTooling rather than by module name, and walked whole by the part-config check",
+            ["Validate"] = "the part-module convention RP-1's GetConfigErrorsDict looks for by exact signature; declared by RealFuels and other part mods, never by RP-1",
+            ["ResolveValidationError"] = "the same convention's resolve half, which RP-1's PurchaseConfig calls for an error costing at most 1.1 funds",
             ["craftID"] = "KSP's Part.craftID, how a refit addresses a part instead of reading which part-action window is open",
             ["symmetryCounterparts"] = "KSP's Part.symmetryCounterparts, counted so a refit's reach can be stated BEFORE the press rather than reported after",
             ["partInfo"] = "KSP's Part.partInfo, walked only for the part's title",
@@ -979,6 +985,7 @@ namespace GonogoRp1Uplink.Tests
             // same assignment RP-1's own overrideLC argument makes, and the whole
             // of how a vehicle is built somewhere other than the active complex.
             Add("RP0.VesselProject", "LCID", Rp1Reader.GuidWrite, Start);
+            Add("RP0.Harmony.RFECMPatcher", "techNode", Rp1Reader.Text, "Rp1PartConfigs", @static: true);
             // WRITTEN by the rollout, and unpinned until 2026-08-31 because this
             // manifest's own sweep could not SEE the call: its regex covered
             // WriteDouble and not WriteMember, so the one member the rollout writes

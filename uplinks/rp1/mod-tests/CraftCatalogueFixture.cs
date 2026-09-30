@@ -32,6 +32,12 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>Made to throw, to pin that an unreadable catalogue refuses rather than proceeds.</summary>
         public bool ThrowOnLoad;
 
+        /// <summary>
+        /// The parts every craft this catalogue loads is made of, empty unless a
+        /// test puts modules on them for the part-config walk to find.
+        /// </summary>
+        public readonly List<Part> Parts = new List<Part>();
+
         /// <summary>The last address the command asked for, so a test can prove it asked for the right one.</summary>
         public string? LastFile;
 
@@ -65,6 +71,7 @@ namespace GonogoRp1Uplink.Tests
                 totalCost = (float)(record.Cost ?? 0.0),
                 totalMass = (float)(record.MassExcludingClamps ?? record.Mass ?? 0.0),
             };
+            handle.Parts.AddRange(Parts);
             Loaded.Add(handle);
             return new CraftLoad
             {

@@ -49,6 +49,16 @@ namespace GonogoRp1Uplink.Tests
             Funding.Instance = new Funding { Funds = 1_000_000.0 };
             KCTUtilities.Reset();
             CurrencyModifierQueryRP0.Reset();
+            RP0.Harmony.RFECMPatcher.techNode = null;
+        }
+
+        /// <summary>A part titled as RP-1's popup would title it, carrying the given modules.</summary>
+        private Part PartWith(string title, params object[] modules)
+        {
+            var part = new Part { partInfo = new PartInfo { title = title } };
+            part.Modules.AddRange(modules);
+            _catalogue.Parts.Add(part);
+            return part;
         }
 
         /// <summary>One centre with one operational pad complex, registered as the live SCM.</summary>
@@ -250,6 +260,143 @@ namespace GonogoRp1Uplink.Tests
             // not the safe direction, so the refusal names the remedy instead.
             Assert.Equal(1_000_000.0, Funding.Instance!.Funds);
             Assert.Empty(lc.BuildList);
+        }
+
+        /// <summary>
+        /// The control for the planted error below: the same craft, its modules
+        /// all vouching for themselves and one declaring no check at all, starts.
+        /// Without it the refusal test would pass against a walk that refused
+        /// every craft with a module on it.
+        /// </summary>
+        [Fact]
+        public void Starts_a_craft_whose_part_modules_all_vouch_for_their_configuration()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            PartWith("LR105", new ConfiguredModule(), new PlainModule());
+
+            var result = Start("Atlas", lc);
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Single(lc.BuildList);
+        }
+
+        [Fact]
+        public void Refuses_when_the_crafts_own_part_modules_report_a_configuration_error()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            PartWith("LR105", new ConfiguredModule(), new PlainModule());
+            PartWith("LR89", new ConfiguredModule
+            {
+                Valid = false,
+                Error = "engine config \"LR89-NA-3\" is not unlocked",
+            });
+
+            var result = Start("Atlas", lc);
+
+            Assert.False(result.Success);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
+            Assert.Contains("LR89: engine config \"LR89-NA-3\" is not unlocked", result.Detail!);
+            Assert.DoesNotContain("LR105", result.Detail!);
+            Assert.Equal(1_000_000.0, Funding.Instance!.Funds);
+            Assert.Empty(lc.BuildList);
+            Assert.True(_catalogue.AllReleased);
+        }
+
+        /// <summary>
+        /// RP-1's integrate button resolves an error costing at most 1.1 funds
+        /// without asking, with its purchase patch pointed at the error's tech,
+        /// and so does this. Refusing it would refuse a craft RP-1 builds.
+        /// </summary>
+        [Fact]
+        public void Resolves_a_config_rp1_unlocks_without_asking_and_starts()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            var module = new ConfiguredModule
+            {
+                Valid = false,
+                Error = "engine config \"LR89-NA-3\" is not unlocked",
+                CanBeResolved = true,
+                CostToResolve = 0f,
+                TechToResolve = "basicRocketry",
+            };
+            PartWith("LR89", module);
+
+            var result = Start("Atlas", lc);
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Equal(new[] { "basicRocketry" }, module.ResolvedWithTech);
+            Assert.Null(RP0.Harmony.RFECMPatcher.techNode);
+            Assert.Single(lc.BuildList);
+        }
+
+        [Fact]
+        public void Refuses_a_config_that_costs_to_unlock_and_names_the_cost_rather_than_buying_it()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            var module = new ConfiguredModule
+            {
+                Valid = false,
+                Error = "engine config \"LR89-NA-3\" is not unlocked",
+                CanBeResolved = true,
+                CostToResolve = 15_000f,
+                TechToResolve = "basicRocketry",
+            };
+            PartWith("LR89", module);
+
+            var result = Start("Atlas", lc);
+
+            Assert.False(result.Success);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
+            Assert.Contains("base cost 15,000 funds", result.Detail!);
+            Assert.Empty(module.ResolvedWithTech);
+            Assert.Equal(1_000_000.0, Funding.Instance!.Funds);
+            Assert.Empty(lc.BuildList);
+        }
+
+        [Fact]
+        public void Refuses_when_a_free_resolve_does_not_clear_the_error()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            PartWith("LR89", new ConfiguredModule
+            {
+                Valid = false,
+                Error = "engine config \"LR89-NA-3\" is not unlocked",
+                CanBeResolved = true,
+                CostToResolve = 1f,
+                ResolveSucceeds = false,
+            });
+
+            var result = Start("Atlas", lc);
+
+            Assert.False(result.Success);
+            Assert.Contains("LR89-NA-3", result.Detail!);
+            Assert.Null(RP0.Harmony.RFECMPatcher.techNode);
+            Assert.Empty(lc.BuildList);
+        }
+
+        /// <summary>
+        /// RP-1 counts a check that throws as an error, so a module with a bug in
+        /// its own validation is not integrated there and is not here.
+        /// </summary>
+        [Fact]
+        public void Refuses_when_a_part_modules_own_check_throws()
+        {
+            var lc = Centre();
+            _catalogue.Add("Atlas");
+            PartWith("LR89", new ConfiguredModule { ThrowOnValidate = true });
+
+            var result = Start("Atlas", lc);
+
+            Assert.False(result.Success);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
+            Assert.Contains("LR89: its configuration check failed", result.Detail!);
+            Assert.Empty(lc.BuildList);
+            Assert.True(_catalogue.AllReleased);
         }
 
         [Fact]
