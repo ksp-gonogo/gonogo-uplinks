@@ -183,9 +183,9 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "9caa6761ddc0c201",
-      "elements": 388,
-      "text": "4083fad0"
+      "hash": "ad78f7be31235f98",
+      "elements": 400,
+      "text": "f6b83e92"
     },
     "avionics-controls-locked--default.png": {
       "hash": "3dbd5bf3ab9597e9",
@@ -238,9 +238,9 @@
       "text": "b6c63acd"
     },
     "career-log--default.png": {
-      "hash": "88ca52974b9e1dc7",
-      "elements": 570,
-      "text": "52412047"
+      "hash": "65f5d023bf7b4dbf",
+      "elements": 582,
+      "text": "180f3670"
     },
     "catalogue-picker--default.png": {
       "hash": "9703f956311353d2",
@@ -383,9 +383,9 @@
       "text": "8e8301c3"
     },
     "early-career--default.png": {
-      "hash": "a238d79f895c970a",
-      "elements": 360,
-      "text": "037eb6ef"
+      "hash": "fcd308fbee52933d",
+      "elements": 372,
+      "text": "6ffdb5ab"
     },
     "facility-tiers-in-flight--default.png": {
       "hash": "d2c21c3500c96460",
@@ -407,6 +407,11 @@
       "elements": 122,
       "text": "11ee8ccf"
     },
+    "funds-alarm--default.png": {
+      "hash": "34edd7fc1c8e2e65",
+      "elements": 371,
+      "text": "0e0678dc"
+    },
     "hire-target-standing--default.png": {
       "hash": "1b6705d09b0dfb53",
       "elements": 172,
@@ -418,14 +423,14 @@
       "text": "359423e1"
     },
     "link-down--default.png": {
-      "hash": "ce3d0704a6cc6c98",
-      "elements": 405,
-      "text": "037eb6ef"
+      "hash": "02400c2ca9f671ea",
+      "elements": 417,
+      "text": "6ffdb5ab"
     },
     "no-budget--default.png": {
-      "hash": "32e3579d228bb458",
-      "elements": 62,
-      "text": "1bdd8229"
+      "hash": "91c33d0f545b79ea",
+      "elements": 75,
+      "text": "c03fa214"
     },
     "no-curve-table--default.png": {
       "hash": "6689d7770a734369",
@@ -508,9 +513,9 @@
       "text": "5152f63c"
     },
     "subsidy-clamped--default.png": {
-      "hash": "190ebc545e4075d0",
-      "elements": 550,
-      "text": "268bc26c"
+      "hash": "d0fd9dace33c0338",
+      "elements": 562,
+      "text": "c25183d4"
     },
     "tooling-nothing-outstanding--default.png": {
       "hash": "563cd0610231c70d",
@@ -573,19 +578,14 @@
       "text": "000c1a89"
     },
     "warp-fund-target-standing--default.png": {
-      "hash": "af0b7b2635660998",
-      "elements": 46,
-      "text": "9103bb06"
+      "hash": "0ce63c8374967cf8",
+      "elements": 43,
+      "text": "4a608261"
     },
     "warp-no-fund-target--default.png": {
-      "hash": "02aec061fb82944e",
-      "elements": 38,
-      "text": "23733d97"
-    },
-    "warp-set-a-fund-target--default.png": {
-      "hash": "f03dab8cd43c96eb",
-      "elements": 52,
-      "text": "991c2c04"
+      "hash": "21082fba1e71f927",
+      "elements": 35,
+      "text": "7267740d"
     }
   }
 }
