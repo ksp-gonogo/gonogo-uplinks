@@ -3,11 +3,14 @@ import {
   GAME_HOST_KEY,
   getUplinkHandle,
   resetSettingsForTests,
+  type StationBroker,
   setSetting,
 } from "@ksp-gonogo/sitrep-sdk";
+import { watchStationBrokers } from "@ksp-gonogo/sitrep-sdk/registry";
 import { act } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  attachStationBroker,
   KerbcastDataSource,
   kerbcastSource,
   SLOT_COUNT,
@@ -608,5 +611,44 @@ describe("KerbcastDataSource: brokered (station) mode", () => {
     });
 
     ds.disconnect();
+  });
+});
+
+describe("KerbcastDataSource: the station broker it registers", () => {
+  it("registers one for kerbcast, so a station hands it a broker", () => {
+    const seen: string[] = [];
+    const stop = watchStationBrokers((uplinkId) => seen.push(uplinkId));
+    stop();
+    expect(seen).toContain("kerbcast");
+  });
+
+  it("relays the handshake through the station's relay and reads its ICE servers", async () => {
+    const TURN: RTCIceServer = { urls: ["turn:relay.example:3478"] };
+    const sidecar = new MockSidecar();
+    sidecar.addCamera({ flightId: 42 });
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("no localhost relay on a station"));
+    fetchSpy.mockClear();
+
+    const relay = vi.fn((method: string, args?: unknown) => {
+      expect(method).toBe("negotiate");
+      return sidecar.negotiate(args as { sdp: string; cameras: number[] });
+    });
+    const broker: StationBroker = {
+      relay,
+      iceServers: { current: () => [TURN], onChange: () => () => {} },
+    };
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    attachStationBroker(ds, broker);
+
+    await ds.connect();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(relay).toHaveBeenCalledTimes(1);
+    expect(
+      (ds.getClient() as unknown as { cfg: { iceServers?: RTCIceServer[] } })
+        .cfg.iceServers,
+    ).toEqual([TURN]);
   });
 });

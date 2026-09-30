@@ -7,12 +7,17 @@ import {
   type KerbcastPeer,
   type KerbcastTransport,
 } from "@ksp-gonogo/kerbcast";
-import type { DataSourceStatus, EventOccurrence } from "@ksp-gonogo/sitrep-sdk";
+import type {
+  DataSourceStatus,
+  EventOccurrence,
+  StationBroker,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   createPerfBudget,
   GAME_HOST_KEY,
   getGameHost,
   logger,
+  registerStationBroker,
   registerUplinkHandle,
   subscribeSetting,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -42,7 +47,8 @@ export interface KerbcastConfig extends Record<string, unknown> {
  * offer→answer through the main screen and sources its TURN creds from the
  * host's relay broadcast (NOT a localhost `/ice-config` fetch). Media still
  * flows station↔sidecar directly off the answer's ICE candidates, nothing
- * about the video crosses PeerJS. The app builds this from `PeerClientService`.
+ * about the video crosses PeerJS. Built from the station's broker, see
+ * {@link attachStationBroker}.
  */
 export interface KerbcastBroker {
   /** Relay one offer to the sidecar via the host; resolve with the answer. */
@@ -651,8 +657,8 @@ export class KerbcastDataSource {
   /**
    * Switch this source into station/brokered mode: route the WebRTC handshake
    * through the host (no sidecar address needed) and take TURN creds from the
-   * host's relay broadcast instead of a localhost `/ice-config` fetch. The app
-   * calls this on a station once its `PeerClientService` is up. Rebuilds the
+   * host's relay broadcast instead of a localhost `/ice-config` fetch. Called on
+   * a station through {@link attachStationBroker}. Rebuilds the
    * client so the camera hooks rebind to the brokered instance; if a connection
    * was already live it reconnects through the broker.
    *
@@ -974,9 +980,33 @@ export const kerbcastSource = new KerbcastDataSource();
 // Registers the FULL instance (not a narrower object) so both the host-side
 // relay dispatch (PeerHostService.handleUplinkRelay, via .relay()) and every
 // client-access call site (CameraFeed, useKerbcastStream, useKerbcastCameras,
-// DockingCameraAugment, SettingsModal, StationScreen) can resolve the same
-// handle through this ONE registry instead of two.
+// DockingCameraAugment, SettingsModal) can resolve the same handle through this
+// ONE registry instead of two.
 registerUplinkHandle("kerbcast", kerbcastSource);
+
+/**
+ * Switch `source` into station mode off the broker a station hands this Uplink:
+ * the offer relays to the main screen's own kerbcast handle, whose `relay`
+ * answers `negotiate`, and TURN credentials come from the host's broadcast.
+ */
+export function attachStationBroker(
+  source: KerbcastDataSource,
+  broker: StationBroker,
+): void {
+  source.attachBroker({
+    negotiate: (offer) =>
+      broker.relay("negotiate", offer) as Promise<{
+        sdp: string;
+        cameras: number[];
+      }>,
+    iceServers: () => broker.iceServers.current(),
+    onIceServersChange: (cb) => broker.iceServers.onChange(cb),
+  });
+}
+
+registerStationBroker("kerbcast", (broker) =>
+  attachStationBroker(kerbcastSource, broker),
+);
 
 // Dev-only debug handle: inspect the live stream-routing state from the console
 // (or via automation) to diagnose black-feed / no-track issues.

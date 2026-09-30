@@ -6,7 +6,7 @@ import { kerbcastSource } from "../KerbcastDataSource.js";
  * part of MainScreen's generic getDataSources().forEach(connect) sweep:
  * kerbcast stopped being a registered DataSource (see KerbcastDataSource.ts's
  * module doc), so it needs its own explicit trigger here. A station never
- * calls this: it drives kerbcast through StationScreen's attachBroker +
+ * calls this: it drives kerbcast through its station broker +
  * lazy ensureConnected() instead (see hooks/useKerbcastStream.ts,
  * hooks/useKerbcastCameras.ts).
  */
