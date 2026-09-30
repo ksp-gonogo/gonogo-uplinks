@@ -295,9 +295,7 @@ describe("the reason a refusal gives", () => {
     expect(declineOf(lifeSupport(), 900)).toMatchObject({
       reason: "model-inapplicable",
     });
-    expect(declineOf(lifeSupport(), 900).note).toContain(
-      "no interval to carry them across",
-    );
+    expect(declineOf(lifeSupport(), 900).note).toContain("no interval");
   });
 });
 

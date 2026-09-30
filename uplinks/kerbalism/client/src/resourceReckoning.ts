@@ -249,20 +249,20 @@ function intervalOrDecline(
   if (!Number.isFinite(elapsed)) {
     return {
       reason: "model-inapplicable",
-      note: "the instant to reckon to is not a number",
+      note: "reckon time is not a number",
     };
   }
   if (elapsed <= 0) {
     return {
       reason: "model-inapplicable",
-      note: "Kerbalism advanced these accumulators at the instant this frame reckons to, so there is no interval to carry them across",
+      note: "no interval since Kerbalism last evaluated",
     };
   }
   if (elapsed > RESOURCE_RATE_HORIZON_SECONDS) {
     return {
       reason: "beyond-horizon",
       input: "@kerbalism.lifesupport#rates",
-      note: `a net consumable rate is honest for about ${RESOURCE_RATE_HORIZON_SECONDS} seconds and these were measured ${Math.round(elapsed)} seconds ago`,
+      note: `rates measured ${Math.round(elapsed)} seconds ago`,
     };
   }
   return elapsed;
@@ -289,7 +289,7 @@ export function reckonResourceLevels(
     return {
       declined: {
         reason: "model-inapplicable",
-        note: "no resource map was observed, so there is nothing to advance",
+        note: "no resource levels observed",
       },
     };
   }
@@ -304,7 +304,7 @@ export function reckonResourceLevels(
       declined: {
         reason: "input-absent",
         input: "@kerbalism.lifesupport",
-        note: "Kerbalism reports no life-support ledger for this craft, so no rate is measured",
+        note: "no Kerbalism rates for this craft",
       },
     };
   }
@@ -323,7 +323,7 @@ export function reckonResourceLevels(
       declined: {
         reason: "input-absent",
         input: "@kerbalism.lifesupport#asOfUt",
-        note: "Kerbalism's own last-evaluation marker could not be read, and a capture time substituted for it would claim a freshness nobody measured",
+        note: "Kerbalism evaluation time unreadable",
       },
     };
   }
@@ -336,7 +336,7 @@ export function reckonResourceLevels(
     return {
       declined: {
         reason: "model-inapplicable",
-        note: "no resource this craft carries has a non-zero measured rate, so every level here is the observation itself",
+        note: "no resource aboard is changing",
       },
     };
   }
@@ -359,7 +359,7 @@ export function reckonResourceLevels(
       declined: {
         reason: "beyond-horizon",
         input: "@kerbalism.lifesupport#rates",
-        note: `the last level to leave the range it can occupy, ${last.name}, reaches ${last.boundary === "floor" ? "empty" : "capacity"} at UT ${Math.round(last.crossesAtUt)}, and no measured rate carries a level past that`,
+        note: `${last.name} ${last.boundary === "floor" ? "empty" : "full"} at UT ${Math.round(last.crossesAtUt)}`,
       },
     };
   }
