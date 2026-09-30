@@ -3,12 +3,12 @@
   "engine": "chromium",
   "assets": {
     "finite-ignition-budget--default.png": {
-      "hash": "5acad8801c750e2d",
+      "hash": "af5290396c84aed6",
       "elements": 29,
       "text": "64231d9b"
     },
     "ground-ignition-only--default.png": {
-      "hash": "c845bed3fe786252",
+      "hash": "740a4108492d2157",
       "elements": 31,
       "text": "9fb00742"
     },
