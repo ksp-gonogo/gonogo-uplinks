@@ -6,15 +6,16 @@ using Sitrep.Contract;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// A stand-in craft catalogue and craft loader, with no KSP behind either.
+    /// A stand-in craft catalogue, with no KSP behind it.
     ///
-    /// <para>Unlike <c>Rp0Fixture</c> this is not a reflection stand-in. Both are
-    /// reached through interfaces, which is the whole point of the seam: an Uplink
+    /// <para>Unlike <c>Rp0Fixture</c> this is not a reflection stand-in. It is
+    /// reached through the same <see cref="ICraftCatalogue"/> interface core's
+    /// own backend implements, which is the whole point of the seam: an Uplink
     /// may not name a KSP type, so the one thing it holds is a handle it never
     /// opens. Here the handle is a plain object and the test can watch it come
     /// back.</para>
     /// </summary>
-    public sealed class FakeCraftCatalogue : ICraftCatalogue, IRp1CraftLoader
+    public sealed class FakeCraftCatalogue : ICraftCatalogue
     {
         public string ProviderId => "fake";
 
@@ -28,9 +29,6 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>Set to refuse the load, the way a corrupt or absent file does.</summary>
         public string? LoadFailure;
 
-        /// <summary>What the freshly loaded parts say about their own configuration.</summary>
-        public string[]? ConfigErrors;
-
         /// <summary>Made to throw, to pin that an unreadable catalogue refuses rather than proceeds.</summary>
         public bool ThrowOnLoad;
 
@@ -41,7 +39,7 @@ namespace GonogoRp1Uplink.Tests
 
         public IReadOnlyList<CraftFileRecord> Craft() => Records;
 
-        public Rp1CraftLoad Load(string? file, KspEditorFacility? facility)
+        public CraftLoad Load(string? file, KspEditorFacility? facility)
         {
             LastFile = file;
             LastFacility = facility;
@@ -51,12 +49,12 @@ namespace GonogoRp1Uplink.Tests
             }
             if (LoadFailure != null)
             {
-                return Rp1CraftLoad.Failed(LoadFailure);
+                return CraftLoad.Failed(LoadFailure);
             }
             var record = Records.FirstOrDefault(r => r.File == file && r.Facility == facility);
             if (record == null)
             {
-                return Rp1CraftLoad.Failed("no craft file named \"" + file + "\" is saved in that editor");
+                return CraftLoad.Failed("no craft file named \"" + file + "\" is saved in that editor");
             }
             var handle = new ShipConstruct
             {
@@ -68,11 +66,10 @@ namespace GonogoRp1Uplink.Tests
                 totalMass = (float)(record.MassExcludingClamps ?? record.Mass ?? 0.0),
             };
             Loaded.Add(handle);
-            return new Rp1CraftLoad
+            return new CraftLoad
             {
                 Ship = handle,
                 Measured = record,
-                ConfigErrors = ConfigErrors,
             };
         }
 

@@ -253,21 +253,6 @@ namespace GonogoRp1Uplink.Tests
         }
 
         [Fact]
-        public void Refuses_when_the_crafts_own_part_modules_report_a_configuration_error()
-        {
-            var lc = Centre();
-            _catalogue.Add("Atlas");
-            _catalogue.ConfigErrors = new[] { "LR105: engine config \"LR105-NA-7\" is not unlocked" };
-
-            var result = Start("Atlas", lc);
-
-            Assert.False(result.Success);
-            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
-            Assert.Contains("LR105-NA-7", result.Detail!);
-            Assert.Empty(lc.BuildList);
-        }
-
-        [Fact]
         public void Refuses_and_charges_nothing_when_the_career_cannot_afford_it()
         {
             var lc = Centre();
@@ -330,6 +315,37 @@ namespace GonogoRp1Uplink.Tests
             Assert.False(result.Success);
             Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
             Assert.Empty(lc.BuildList);
+        }
+
+        /// <summary>
+        /// The exact shape <see cref="Rp1ScUplink"/> wires: a factory over
+        /// core's elected <c>ICraftCatalogue</c>, not a fixed stand-in. Before
+        /// core restored <c>Load</c>/<c>Release</c> this factory could only ever
+        /// resolve to null, so <c>rp1.build.start</c> was permanently dark on
+        /// every install; this pins the two states a factory over a live Kernel
+        /// election can actually be in, one command dispatched against each.
+        /// </summary>
+        [Fact]
+        public void Refuses_cleanly_with_no_catalogue_elected_and_proceeds_once_one_is()
+        {
+            var lc = Centre();
+            var catalogue = new FakeCraftCatalogue();
+            catalogue.Add("Atlas", cost: 40_000.0);
+            var args = new Rp1BuildStartArgs
+            {
+                CraftFile = "Atlas",
+                Facility = KspEditorFacility.VAB,
+                LcId = lc.ID.ToString(),
+            };
+
+            var darkResult = new Rp1BuildStartCommands(() => null).Start(args);
+            Assert.False(darkResult.Success);
+            Assert.Equal(CommandErrorCode.ModeUnavailable, darkResult.ErrorCode);
+            Assert.Empty(lc.BuildList);
+
+            var litResult = new Rp1BuildStartCommands(() => catalogue).Start(args);
+            Assert.True(litResult.Success);
+            Assert.Single(lc.BuildList);
         }
 
         [Fact]

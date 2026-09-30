@@ -77,7 +77,6 @@
     <Compile Include="..\mod\Rp1Pricing.cs" />
     <Compile Include="..\mod\Rp1BuildCommands.cs" />
     <Compile Include="..\mod\Rp1BuildStartCommands.cs" />
-    <Compile Include="..\mod\Rp1CraftLoader.cs" />
     <Compile Include="..\mod\Rp1VehicleCommands.cs" />
     <Compile Include="..\mod\Rp1ComplexWrites.cs" />
     <Compile Include="..\mod\Rp1LcCostModel.cs" />

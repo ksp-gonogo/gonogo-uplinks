@@ -537,7 +537,7 @@ namespace GonogoRp1Uplink
 
         public Rp1ScUplink()
         {
-            _start = new Rp1BuildStartCommands(CraftLoader);
+            _start = new Rp1BuildStartCommands(Catalogue);
             Manifest = BuildManifest(
                 _build.IsAvailable, _vehicles.IsAvailable, _vehicles.IsMoveAvailable,
                 _staffing.IsAvailable, _start.IsAvailable, _facilities.IsAvailable,
@@ -1618,16 +1618,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The craft loader <c>rp1.build.start</c> opens a craft file through.
-        /// None is available: core lists craft files but no longer loads them, and
-        /// this assembly holds no Unity reference to manage the parts' lifetime
-        /// itself, so the command's gate stays dark and names the reason.
-        /// </summary>
-        private static IRp1CraftLoader? CraftLoader() => null;
-
-        /// <summary>
         /// Core's craft catalogue, elected through the Kernel, or null before
-        /// registration and on an install whose core does not declare it.
+        /// registration and on an install whose core does not declare it. Also
+        /// the craft loader <c>rp1.build.start</c> opens a craft file through:
+        /// this assembly holds no Unity reference to manage the parts' lifetime
+        /// itself, so loading and releasing them is core's own half of the
+        /// capability, and the command's gate stays dark and names the reason on
+        /// an install with nothing elected.
         /// </summary>
         private ICraftCatalogue? Catalogue()
         {
