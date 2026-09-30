@@ -72,7 +72,7 @@ namespace Gonogo.RealAntennasUplink
             var vessel = ScopedVessel();
             return vessel == null
                 ? CommsSubject.None
-                : new CommsSubject(vessel.id.ToString(), vessel.loaded);
+                : new CommsSubject(vessel.id.ToString());
         }
 
         /// <summary>

@@ -47,7 +47,7 @@ namespace GonogoRealAntennasUplink.Tests
             Laps = 2,
             Connected = false,
             Carrying = false,
-            Meta = new PayloadMeta { Source = "vessel:1", Quality = Quality.Loaded },
+            Meta = new PayloadMeta { Source = "vessel:1" },
         };
 
         /// <summary>The channel value is a bare ARRAY, like the two channels beside it.</summary>

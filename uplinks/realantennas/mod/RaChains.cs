@@ -159,7 +159,6 @@ namespace Gonogo.RealAntennasUplink
             var meta = new PayloadMeta
             {
                 Source = "vessel:" + vessel.id,
-                Quality = vessel.loaded ? Quality.Loaded : Quality.OnRails,
             };
 
             for (var i = 0; i < ids.Length; i++)

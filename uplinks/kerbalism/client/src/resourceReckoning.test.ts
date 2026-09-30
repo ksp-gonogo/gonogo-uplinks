@@ -1,5 +1,5 @@
 import type { TopicPayload, TopicReading } from "@ksp-gonogo/sitrep-sdk";
-import { Quality, value } from "@ksp-gonogo/sitrep-sdk";
+import { value } from "@ksp-gonogo/sitrep-sdk";
 import type { StreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { makeMeta, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
@@ -38,7 +38,7 @@ const AMOUNTS: Resources = {
       active: true,
     },
   },
-  meta: { source: "test", quality: Quality.Loaded },
+  meta: { source: "test" },
 };
 
 function ingest(fixture: StreamFixture, topic: string, payload: unknown) {

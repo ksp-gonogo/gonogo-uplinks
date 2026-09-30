@@ -1,4 +1,4 @@
-import { type PayloadMeta, Quality, value } from "@ksp-gonogo/sitrep-sdk";
+import { type PayloadMeta, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import type { KerbalismCrewEntry } from "../__generated__/contract.js";
 import { deriveCrewSurvival, marginToAct, toneFor } from "./processor.js";
@@ -10,7 +10,6 @@ import { deriveCrewSurvival, marginToAct, toneFor } from "./processor.js";
  */
 const CREW_META: PayloadMeta = {
   source: "vessel.crew",
-  quality: Quality.Loaded,
 };
 
 const units = (n: number) => value("units", n);

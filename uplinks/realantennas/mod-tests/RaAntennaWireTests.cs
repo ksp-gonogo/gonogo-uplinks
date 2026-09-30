@@ -40,7 +40,7 @@ namespace GonogoRealAntennasUplink.Tests
             TargetLongitude = 0.0,
             TargetAltitude = -600000.0,
             AvailableTargetModes = new[] { "Vessel", "BodyCenter", "BodyLatLonAlt", "AzEl", "OrbitRelative" },
-            Meta = new PayloadMeta { Source = "vessel:1", Quality = Quality.Loaded },
+            Meta = new PayloadMeta { Source = "vessel:1" },
         };
 
         /// <summary>The channel value is a bare ARRAY, like realantennas.hopRates beside it.</summary>
@@ -170,7 +170,7 @@ namespace GonogoRealAntennasUplink.Tests
 
             Assert.Equal(JsonValueKind.Object, meta.ValueKind);
             Assert.Equal("vessel:1", meta.GetProperty("source").GetString());
-            Assert.Equal((int)Quality.Loaded, meta.GetProperty("quality").GetInt32());
+            Assert.False(meta.TryGetProperty("quality", out _));
         }
 
         /// <summary>

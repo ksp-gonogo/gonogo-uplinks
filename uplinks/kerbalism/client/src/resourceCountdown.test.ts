@@ -1,5 +1,5 @@
 import type { TopicPayload } from "@ksp-gonogo/sitrep-sdk";
-import { Quality, value } from "@ksp-gonogo/sitrep-sdk";
+import { value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import type { KerbalismLifeSupport } from "./__generated__/contract.js";
 import { timeToEmptySeconds } from "./ecosystem.js";
@@ -56,7 +56,7 @@ const AMOUNTS: TopicPayload<"vessel.resources"> = {
       active: true,
     },
   },
-  meta: { source: "test", quality: Quality.Loaded },
+  meta: { source: "test" },
 };
 
 /** Food draining at 0.1/s, Kerbalism's accumulators last advanced at UT 1000. */

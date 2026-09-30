@@ -24,20 +24,20 @@ namespace Gonogo.RealAntennasUplink
         {
             DecibelMargin = 0.0,
             ClosesLink = false,
-            Meta = new PayloadMeta { Source = source, Quality = Quality.Loaded },
+            Meta = new PayloadMeta { Source = source },
         };
 
         public static CommsLinkQuality LinkQuality(string source) => new CommsLinkQuality
         {
             Value = 0.0,
-            Meta = new PayloadMeta { Source = source, Quality = Quality.Loaded },
+            Meta = new PayloadMeta { Source = source },
         };
 
         public static CommsDataRate DataRate(string source) => new CommsDataRate
         {
             UpBitsPerSec = 0.0,
             DownBitsPerSec = 0.0,
-            Meta = new PayloadMeta { Source = source, Quality = Quality.Loaded },
+            Meta = new PayloadMeta { Source = source },
         };
     }
 }

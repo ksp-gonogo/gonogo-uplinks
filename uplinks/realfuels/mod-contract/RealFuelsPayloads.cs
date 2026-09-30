@@ -152,6 +152,7 @@ public sealed class RealFuelsEngineEntry
     /// life. Null when the config states none (RealFuels carries <c>-1</c> for
     /// "unrated", which is an absence and not a negative duration).
     /// </summary>
+    [SitrepStatic]
     [SitrepUnit(Units.Seconds)]
     public double? RatedBurnTimeSeconds { get; set; }
 
@@ -160,6 +161,7 @@ public sealed class RealFuelsEngineEntry
     /// than <see cref="RatedBurnTimeSeconds"/>. Null when the config states
     /// none.
     /// </summary>
+    [SitrepStatic]
     [SitrepUnit(Units.Seconds)]
     public double? RatedContinuousBurnTimeSeconds { get; set; }
 

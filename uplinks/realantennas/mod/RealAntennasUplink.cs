@@ -360,7 +360,7 @@ namespace Gonogo.RealAntennasUplink
                 {
                     UpBitsPerSec = up,
                     DownBitsPerSec = down,
-                    Meta = new PayloadMeta { Source = capture.Source, Quality = Quality.Loaded },
+                    Meta = new PayloadMeta { Source = capture.Source },
                 };
             }
 
@@ -402,7 +402,7 @@ namespace Gonogo.RealAntennasUplink
                     // has no double.IsFinite, hence the explicit NaN/Infinity test.
                     if (!double.IsNaN(margin) && !double.IsInfinity(margin))
                     {
-                        var meta = new PayloadMeta { Source = capture.Source, Quality = Quality.Loaded };
+                        var meta = new PayloadMeta { Source = capture.Source };
                         capture.LinkMargin = new CommsLinkMargin
                         {
                             DecibelMargin = margin,

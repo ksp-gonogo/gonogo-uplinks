@@ -91,7 +91,6 @@ namespace GonogoRp1Uplink
                 ["meta"] = new Dictionary<string, object?>
                 {
                     ["source"] = "game",
-                    ["quality"] = Quality.Loaded,
                 },
             };
         }

@@ -83,7 +83,6 @@ namespace GonogoRealAntennasUplink.Tests
                     },
                 },
             },
-            Meta = new PayloadMeta { Source = "vessel:1", Quality = Quality.Loaded },
         };
 
         // The committed fixture holds a WHOLE serialised frame, so the envelope's
@@ -134,7 +133,6 @@ namespace GonogoRealAntennasUplink.Tests
                         DistanceMeters = 1234.5,
                     },
                 },
-                Meta = new PayloadMeta { Source = "vessel:1", Quality = Quality.Loaded },
             });
 
             Assert.DoesNotContain("extensions", json);

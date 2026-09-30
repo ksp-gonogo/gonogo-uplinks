@@ -194,16 +194,14 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// <c>{ source, quality }</c>, quality as its integer ordinal. A null
-        /// meta collapses to the same defaults core's own writer used (empty
-        /// source, <c>Quality.OnRails</c>), so a payload built without one keeps
-        /// serializing rather than emitting a null the client has to guard.
+        /// <c>{ source }</c>. A null meta collapses to the same default core's
+        /// own writer uses (an empty source), so a payload built without one
+        /// keeps serializing rather than emitting a null the client has to guard.
         /// </summary>
         private static Dictionary<string, object?> Meta(PayloadMeta? meta) =>
             new Dictionary<string, object?>
             {
                 ["source"] = meta?.Source ?? "",
-                ["quality"] = (int)(meta?.Quality ?? Quality.OnRails),
             };
     }
 }

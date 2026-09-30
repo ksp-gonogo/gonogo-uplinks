@@ -48,7 +48,7 @@ function part(
 }
 
 function wire(parts: VesselParts["parts"]): VesselParts {
-  return { parts, meta: { source: "test", quality: 1 } };
+  return { parts, meta: { source: "test" } };
 }
 
 const SUPPLY_PROFILE: KerbalismProfile = {

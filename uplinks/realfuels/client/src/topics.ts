@@ -10,8 +10,10 @@ import type {
 } from "./__generated__/contract.js";
 import {
   GENERATED_TOPIC_SHAPES,
+  GENERATED_TOPIC_STATICS,
   GENERATED_TOPIC_UNITS,
   GENERATED_TYPE_SHAPES,
+  GENERATED_TYPE_STATICS,
   GENERATED_TYPE_UNITS,
 } from "./__generated__/units.js";
 
@@ -44,15 +46,26 @@ registerBarePrimitiveTopic(REALFUELS_BOILOFF_TOPIC);
 // holds another type, then resolves that type BY NAME through the type registry,
 // so without the `registerTypeUnits` loop every stability, probability, residual
 // fraction and rated burn time would arrive as a bare number while
-// ../__generated__/contract.ts still types it Value<...>.
+// ../__generated__/contract.ts still types it Value<...>. The statics maps make a
+// rated burn time arrive stamped static, so it is never marked held.
 //
 // Driven by looping over the generated maps rather than naming each entry, so a
 // type or Topic added to this Uplink's contract later needs no new call site.
 for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
-  registerTopicUnits(topic, units, GENERATED_TOPIC_SHAPES[topic] ?? {});
+  registerTopicUnits(
+    topic,
+    units,
+    GENERATED_TOPIC_SHAPES[topic] ?? {},
+    GENERATED_TOPIC_STATICS[topic] ?? [],
+  );
 }
 for (const [typeName, units] of Object.entries(GENERATED_TYPE_UNITS)) {
-  registerTypeUnits(typeName, units, GENERATED_TYPE_SHAPES[typeName] ?? {});
+  registerTypeUnits(
+    typeName,
+    units,
+    GENERATED_TYPE_SHAPES[typeName] ?? {},
+    GENERATED_TYPE_STATICS[typeName] ?? [],
+  );
 }
 
 /**
