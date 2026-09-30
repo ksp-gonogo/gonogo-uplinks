@@ -8,7 +8,7 @@
       "text": "87791fd7"
     },
     "binary--default.png": {
-      "hash": "0f4408e1d2476ed0",
+      "hash": "e616ebc2e3838e28",
       "elements": 109,
       "text": "52c0d842"
     },
@@ -78,7 +78,7 @@
       "text": "fa1a4dcf"
     },
     "interplanetary--default.png": {
-      "hash": "88ecba6b1bcbbf34",
+      "hash": "852b5ffdea279651",
       "elements": 97,
       "text": "5db7f31e"
     },
@@ -128,17 +128,17 @@
       "text": "4f68692f"
     },
     "storm-inbound--default.png": {
-      "hash": "acd295158fd655e3",
+      "hash": "004303d52c0b1e10",
       "elements": 97,
       "text": "e04b2f39"
     },
     "storm-inbound-stopped-arriving--default.png": {
-      "hash": "0fe51b8a1838531e",
+      "hash": "0cdae686747237bf",
       "elements": 97,
       "text": "910556c2"
     },
     "storm-peak--default.png": {
-      "hash": "d878a3b953908b95",
+      "hash": "d6f00692b3d38508",
       "elements": 98,
       "text": "78bd6f8c"
     },
@@ -148,8 +148,8 @@
       "text": "50714c7e"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "9b8041b899b501b9",
-      "elements": 36,
+      "hash": "8ffce31041b128a2",
+      "elements": 41,
       "text": "50714c7e"
     },
     "unread-send-and-analyze-flags--default.png": {

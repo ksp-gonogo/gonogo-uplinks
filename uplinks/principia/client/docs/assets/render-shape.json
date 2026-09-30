@@ -3,19 +3,19 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "f071d4dfde85cd1a",
-      "elements": 299,
-      "text": "b8031d59"
+      "hash": "00caf0d38b7f39f9",
+      "elements": 296,
+      "text": "b348684a"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "4c84b6ad5bb0c3f1",
-      "elements": 258,
-      "text": "47a83dca"
+      "hash": "f36a6a6d892ff6dd",
+      "elements": 255,
+      "text": "8b291456"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "addee57c0fe86192",
-      "elements": 178,
-      "text": "4af84c4c"
+      "hash": "45988356726fa9e0",
+      "elements": 175,
+      "text": "72c7afc3"
     },
     "coast-analysis-expanded--default.png": {
       "hash": "b46de693c4560218",
@@ -53,29 +53,29 @@
       "text": "b49f5c2a"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "016b4c397b60c9fd",
-      "elements": 182,
-      "text": "73fd51aa"
+      "hash": "af87e46423e64a17",
+      "elements": 179,
+      "text": "451f2709"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "ffd72ebebdfc2511",
-      "elements": 186,
-      "text": "6ec06475"
+      "hash": "5d64a623ecd29368",
+      "elements": 183,
+      "text": "c3bca5d2"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "4e591ed79dd2f33d",
-      "elements": 183,
-      "text": "cc061579"
+      "hash": "a0c8cfba6b1af878",
+      "elements": 180,
+      "text": "22c6302d"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "7eb45ad4af197fa0",
-      "elements": 182,
-      "text": "8faafd0d"
+      "hash": "672509577f08cb19",
+      "elements": 179,
+      "text": "88224a7b"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "e0846002fcce296a",
-      "elements": 138,
-      "text": "2ba28770"
+      "hash": "a88b1590ec1e86d5",
+      "elements": 135,
+      "text": "4a9ca568"
     },
     "flight-plan-unobserved--default.png": {
       "hash": "14867b1412c0d884",
@@ -113,19 +113,19 @@
       "text": "67e79a4e"
     },
     "plan-slots-armed--default.png": {
-      "hash": "9954688ccccbccf7",
-      "elements": 161,
-      "text": "abb7d719"
+      "hash": "d075da940be12ef8",
+      "elements": 158,
+      "text": "81bca645"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "23a3ac0dba0f5e51",
+      "hash": "23bbe9bcd51ab73b",
       "elements": 128,
-      "text": "54f8f4d7"
+      "text": "610b89ad"
     },
     "plan-slots-shut--default.png": {
-      "hash": "4583c62af0fd883d",
-      "elements": 152,
-      "text": "9a7c08aa"
+      "hash": "34611d91682e6ed8",
+      "elements": 149,
+      "text": "8c091611"
     }
   }
 }

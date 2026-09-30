@@ -3,27 +3,27 @@
   "engine": "chromium",
   "assets": {
     "altimetry-base-kerbin--default.png": {
-      "hash": "191bd700c43f7bca",
+      "hash": "c84335d40a8cc6eb",
       "elements": 68,
       "text": "604fd6a3"
     },
     "biome-base-kerbin--default.png": {
-      "hash": "191bd700c43f7bca",
+      "hash": "c84335d40a8cc6eb",
       "elements": 68,
       "text": "604fd6a3"
     },
     "coverage-under-kerbin-map--default.png": {
-      "hash": "aa032cb12791af20",
+      "hash": "04b4e0de1cd682ed",
       "elements": 83,
       "text": "52688090"
     },
     "kerbin-partial-scan--default.png": {
-      "hash": "ea0b6fbba3f3dca9",
+      "hash": "8bef525292f48212",
       "elements": 136,
       "text": "6ee75d6d"
     },
     "kerbin-partial-scan--min.png": {
-      "hash": "ea0b6fbba3f3dca9",
+      "hash": "8bef525292f48212",
       "elements": 136,
       "text": "6ee75d6d"
     },
@@ -33,7 +33,7 @@
       "text": "f12237e9"
     },
     "two-footprints-over-kerbin--default.png": {
-      "hash": "191bd700c43f7bca",
+      "hash": "c84335d40a8cc6eb",
       "elements": 68,
       "text": "604fd6a3"
     }
