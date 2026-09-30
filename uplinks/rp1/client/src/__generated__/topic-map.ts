@@ -56,6 +56,7 @@ import type {
   Rp1ResearchEntry,
   Rp1ResearchRates,
   Rp1RushTerms,
+  Rp1Simulation,
   Rp1Tooling,
   Rp1TrainingCourseEntry,
   Rp1TrainingTemplateEntry,
@@ -91,6 +92,7 @@ export interface GeneratedTopicPayloadMap {
   "rp1.research": Rp1ResearchEntry[];
   "rp1.researchRates": Rp1ResearchRates;
   "rp1.rushTerms": Rp1RushTerms;
+  "rp1.simulation": Rp1Simulation;
   "rp1.tooling": Rp1Tooling;
   "rp1.training": Rp1TrainingCourseEntry[];
   "rp1.trainingCatalogue": Rp1TrainingTemplateEntry[];
@@ -126,6 +128,7 @@ export const GENERATED_TOPIC_IDS = [
   "rp1.research",
   "rp1.researchRates",
   "rp1.rushTerms",
+  "rp1.simulation",
   "rp1.tooling",
   "rp1.training",
   "rp1.trainingCatalogue",

@@ -44,6 +44,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.research` | `Rp1ResearchEntry[]` | lossy-latest | delayed |
 | `rp1.researchRates` | `Rp1ResearchRates` | lossy-latest | delayed |
 | `rp1.rushTerms` | `Rp1RushTerms` | lossy-latest | delayed |
+| `rp1.simulation` | `Rp1Simulation` | lossy-latest | true-now |
 | `rp1.tooling` | `Rp1Tooling` | lossy-latest | delayed |
 | `rp1.training` | `Rp1TrainingCourseEntry[]` | lossy-latest | delayed |
 | `rp1.trainingCatalogue` | `Rp1TrainingTemplateEntry[]` | lossy-latest | delayed |
@@ -239,6 +240,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
 | `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
+| `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](docs/assets/avionics-controls-locked--default.png)
 

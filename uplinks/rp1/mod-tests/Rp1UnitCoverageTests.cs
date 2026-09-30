@@ -28,6 +28,7 @@ namespace GonogoRp1Uplink.Tests
             UnitCoverageAssertion.AssertContractTypesAreExactly(
                 typeof(Rp1CentreEntry).Assembly,
                 nameof(Rp1CentreEntry),
+                nameof(Rp1Simulation),
                 nameof(Rp1ComplexEntry),
                 nameof(Rp1BuildItemEntry),
                 nameof(Rp1WarehouseItemEntry),

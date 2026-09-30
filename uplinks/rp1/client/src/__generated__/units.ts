@@ -649,6 +649,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     rateMult: "ratio",
     salaryMult: "ratio",
   },
+  "Rp1Simulation": {
+    active: "flag",
+    kind: "enum",
+  },
   "Rp1TechResearchArgs": {
     techId: "id",
   },
@@ -1044,6 +1048,10 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     rateMult: "ratio",
     salaryMult: "ratio",
   },
+  "rp1.simulation": {
+    active: "flag",
+    kind: "enum",
+  },
   "rp1.tooling": {
     toolAllCost: "funds",
     untooledCount: "count",
@@ -1320,6 +1328,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   "Rp1ProgramSpeedOption": {
     speed: null,
   },
+  "Rp1Simulation": {
+    kind: null,
+  },
   "Rp1TrainingCourseEntry": {
     type: null,
   },
@@ -1361,6 +1372,9 @@ export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
   "rp1.programs": {
     speed: null,
     status: null,
+  },
+  "rp1.simulation": {
+    kind: null,
   },
   "rp1.training": {
     type: null,

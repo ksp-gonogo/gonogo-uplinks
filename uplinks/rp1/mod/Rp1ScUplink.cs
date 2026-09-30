@@ -39,7 +39,7 @@ namespace GonogoRp1Uplink
     /// touching no game API at all.</para>
     /// </summary>
     [SitrepUplink("rp1")]
-    public sealed class Rp1ScUplink : ISitrepUplink
+    public sealed class Rp1ScUplink : ISitrepUplink, IUplinkSettingsDeclarer
     {
         public const string AvailableTopic = "rp1.available";
         public const string CentresTopic = "rp1.centres";
@@ -120,6 +120,19 @@ namespace GonogoRp1Uplink
         /// and the one that is <see cref="DelayRole.Delayed"/>.
         /// </summary>
         public const string AvionicsTopic = "rp1.avionics";
+
+        /// <summary>
+        /// Whether the flight on screen is an RP-1 simulation, and where it
+        /// started. <see cref="DelayRole.TrueNow"/>: a rehearsal is a fact about
+        /// the game session rather than a reading a signal carries.
+        /// </summary>
+        public const string SimulationTopic = "rp1.simulation";
+
+        /// <summary>
+        /// The setting that keeps signal delay on through a simulation, for an
+        /// operator rehearsing the delayed procedure itself.
+        /// </summary>
+        public const string DelayInSimulationSetting = "delayInSimulation";
 
         /// <summary>
         /// Core's career channel, held at home, which carries the strategy roster
@@ -253,6 +266,11 @@ namespace GonogoRp1Uplink
         /// <see cref="Register"/> hands it the host.
         /// </summary>
         private Rp1SimulationDelay? _simulationDelay;
+
+        /// <summary>This Uplink's settings block, or null on a host that never declared it.</summary>
+        private IUplinkSettings? _settings;
+
+        private IChannelPublisher? _simulationStatus;
 
         /// <summary>
         /// RP-1's launch rules, contributed to core's own <c>ksp.launch</c>. Its
@@ -687,6 +705,18 @@ namespace GonogoRp1Uplink
                 // the space centre. Silence there is the answer, and a client
                 // holding the last verdict from the last flight would be showing
                 // a go/no-go about a craft that is no longer there.
+                // TrueNow, like rp1.available: whether this is a rehearsal is a
+                // fact about the session, and a simulation switches delay off by
+                // default anyway. absenceIsData, because a save RP-1 does not
+                // manage has no answer, and silence there is not a real flight.
+                new ChannelDeclaration
+                {
+                    Topic = SimulationTopic,
+                    Delivery = Delivery.LossyLatest,
+                    Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+                    Delay = DelayRole.TrueNow,
+                    AbsenceIsData = true,
+                },
                 new ChannelDeclaration
                 {
                     Topic = AvionicsTopic,
@@ -966,6 +996,19 @@ namespace GonogoRp1Uplink
             HeldAtHome = true,
             AbsenceIsData = absenceIsData,
         };
+
+        /// <inheritdoc />
+        public void DeclareSettings(IUplinkSettings settings)
+        {
+            settings.Declare(UplinkSettingRow.Bool(
+                DelayInSimulationSetting,
+                false,
+                "Apply the delay during a simulation as well as a real flight"));
+            _settings = settings;
+        }
+
+        /// <summary>The operator's <see cref="DelayInSimulationSetting"/>, false on a host that never declared it.</summary>
+        private bool DelayInSimulation() => _settings?.Bool(DelayInSimulationSetting) ?? false;
 
         public void Register(IUplinkHost host)
         {
@@ -1404,6 +1447,7 @@ namespace GonogoRp1Uplink
             _buildCost = host.Publisher(BuildCostTopic);
             _careerEvents = host.Publisher(CareerEventsTopic);
             _avionicsStatus = host.Publisher(AvionicsTopic);
+            _simulationStatus = host.Publisher(SimulationTopic);
             _budgetPublisher = host.Publisher(BudgetTopic);
             _budgetBreakdownPublisher = host.Publisher(BudgetBreakdownTopic);
             _constructionRatesPublisher = host.Publisher(ConstructionRatesTopic);
@@ -1537,11 +1581,11 @@ namespace GonogoRp1Uplink
                 HandleLeadersOnCourier,
                 LeadersTopic);
 
-            // UNGATED, because its effect is the delay modifier rather than a
-            // return value: gating it on an rp1.* prefix would leave delay on
+            // UNGATED, because its main effect is the delay modifier rather than
+            // its return value: gating it on rp1.simulation would leave delay on
             // through a simulation nobody had a screen of ours open for.
             _simulationDelay = new Rp1SimulationDelay(host.RegisterDelayModifier);
-            host.AddSampledSource(CaptureSimulationOnMain, _ => { });
+            host.AddSampledSource(CaptureSimulationOnMain, HandleSimulationOnCourier);
         }
 
 
@@ -1559,14 +1603,37 @@ namespace GonogoRp1Uplink
         private double UtOf(KspSnapshot? snapshot) => snapshot?.Ut ?? _host!.NowUt();
 
         /// <summary>
-        /// MAIN-THREAD: reads whether the flight on screen is an RP-1 simulation
-        /// and holds or releases the zero delay modifier to match. Returns nothing,
-        /// since its whole effect is the modifier.
+        /// MAIN-THREAD: reads whether the flight on screen is an RP-1 simulation,
+        /// holds or releases the zero delay modifier to match it and the
+        /// operator's setting, and returns the reading for
+        /// <c>rp1.simulation</c>.
         /// </summary>
         internal object? CaptureSimulationOnMain(KspSnapshot? snapshot)
         {
-            _simulationDelay?.Observe(_rp1.IsSimulatedFlight());
-            return null;
+            var simulated = _rp1.IsSimulatedFlight();
+            _simulationDelay?.Observe(simulated, DelayInSimulation());
+            return new Rp1SimulationCaptureData
+            {
+                Ut = UtOf(snapshot),
+                Payload = Rp1SimulationCapture.Build(simulated, simulated == true ? _rp1.SimulatesInOrbit() : null),
+            };
+        }
+
+        /// <summary>COURIER-THREAD handle: publish the reading. No game API.</summary>
+        internal void HandleSimulationOnCourier(object? captured)
+        {
+            if (captured is not Rp1SimulationCaptureData cap)
+            {
+                return;
+            }
+            _simulationStatus?.Publish(cap.Payload, cap.Ut);
+        }
+
+        /// <summary>The simulation reading and the UT it was taken at, carried together to the Courier.</summary>
+        private sealed class Rp1SimulationCaptureData
+        {
+            public double Ut;
+            public Dictionary<string, object?>? Payload;
         }
 
         /// <summary>
@@ -2210,7 +2277,11 @@ namespace GonogoRp1Uplink
                                 : "withdrawn: KSCSwitcher not loaded"),
                 new UplinkHealthFact(
                     "signal delay",
-                    _simulationDelay?.Holding == true ? "off for an RP-1 simulation" : "not modified"),
+                    _simulationDelay?.Holding == true
+                        ? "off for an RP-1 simulation"
+                        : DelayInSimulation()
+                            ? "not modified (delayInSimulation is on)"
+                            : "not modified"),
                 // The live answer, because "is this a rehearsal" is the one
                 // fact on this list an operator may need to check mid-flight
                 // against a board that looks like a mission.

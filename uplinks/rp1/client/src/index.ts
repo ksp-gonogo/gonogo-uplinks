@@ -23,6 +23,7 @@ import "./KscConstruction/index.js";
 import "./LaunchComplexStatus/index.js";
 import "./ProgramDetail/index.js";
 import "./ResearchQueue/index.js";
+import "./Simulation/badge.js";
 import "./StartResearch/index.js";
 import "./VehicleAssembly/index.js";
 import "./WarpTargets/index.js";
@@ -65,6 +66,7 @@ export {
   RP1_PROGRAM_ACCEPT_COMMAND,
 } from "./ProgramDetail/index.js";
 export { ResearchQueue } from "./ResearchQueue/index.js";
+export { simulationBadges } from "./Simulation/badge.js";
 export {
   RP1_TECH_RESEARCH_COMMAND,
   StartResearch,
@@ -87,6 +89,7 @@ export {
   RP1_PROGRAMS_TOPIC,
   RP1_RESEARCH_TOPIC,
   RP1_RUSH_TERMS_TOPIC,
+  RP1_SIMULATION_TOPIC,
   RP1_TOOLING_TOPIC,
   RP1_WAREHOUSE_TOPIC,
 } from "./topics.js";

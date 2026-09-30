@@ -156,6 +156,7 @@ namespace GonogoRp1Uplink.Tests
         {
             new Rp1TypeTarget(Rp0, "RP0.SpaceCenterManagement", "Rp1ScReflection, Rp1LaunchGate, Rp1CareerProjectGate, Rp1BuildCommands, Rp1DerivedCurrencyWithholder"),
             new Rp1TypeTarget(Rp0, "RP0.Confidence", "Rp1ScReflection, Rp1DerivedCurrencyWithholder"),
+            new Rp1TypeTarget(Rp0, "RP0.SimulationParams", "Rp1ScReflection"),
             // RP-1's strategy base, which carries PerformActivate: the entire
             // fresh-activation procedure, and the door that does not ask
             // CanBeActivated's UI-dependent first arm.
@@ -966,6 +967,8 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.SpaceCenterManagement", "Instance", Rp1Reader.Presence, Sc + ", " + Gate + ", " + Projects + ", " + Build + ", " + Withhold + ", " + Facilities, @static: true);
             Add("RP0.SpaceCenterManagement", "enabledForSave", Rp1Reader.Bool, Sc + ", " + Gate + ", " + Projects + ", " + Build + ", " + Facilities);
             Add("RP0.SpaceCenterManagement", "IsSimulatedFlight", Rp1Reader.Bool, Sc);
+            Add("RP0.SpaceCenterManagement", "SimulationParams", Rp1Reader.Presence, Sc);
+            Add("RP0.SimulationParams", "SimulateInOrbit", Rp1Reader.Bool, Sc);
             Add("RP0.SpaceCenterManagement", "Researchers", Rp1Reader.Numeric, Sc + ", " + Staffing);
             Add("RP0.SpaceCenterManagement", "Applicants", Rp1Reader.Numeric, Sc + ", " + Staffing);
             Add("RP0.SpaceCenterManagement", "KSCs", Rp1Reader.Presence, Sc + ", " + Gate + ", " + Build + ", " + Start);

@@ -65,6 +65,7 @@ public static class Rp1RtConfig
             typeof(Rp1CareerLedger),
             typeof(Rp1LedgerPeriodEntry),
             typeof(Rp1Avionics),
+            typeof(Rp1Simulation),
             typeof(Rp1HireTargetSetArgs),
             typeof(Rp1RushTerms),
             typeof(Rp1LcPricing),

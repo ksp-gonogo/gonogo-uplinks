@@ -57,7 +57,8 @@ public class Rp1ScUplinkTests : IDisposable
         // named here rather than exempted by a predicate, so neither can spread by
         // copy-paste.
         //
-        // rp1.available is a fact about the install, which no place holds.
+        // rp1.available is a fact about the install, which no place holds, and
+        // rp1.simulation is a fact about the session, pinned in Rp1SimulationTests.
         //
         // rp1.avionics is about a craft rather than a building, so it MUST ride the
         // reveal gate on that craft's node: an operator on a delayed link reading a
@@ -68,7 +69,9 @@ public class Rp1ScUplinkTests : IDisposable
         Assert.All(manifest.Channels, c => Assert.StartsWith("rp1.", c.Topic));
 
         var atHome = manifest.Channels
-            .Where(c => c.Topic != Rp1ScUplink.AvionicsTopic && c.Topic != Rp1ScUplink.AvailableTopic)
+            .Where(c => c.Topic != Rp1ScUplink.AvionicsTopic
+                && c.Topic != Rp1ScUplink.AvailableTopic
+                && c.Topic != Rp1ScUplink.SimulationTopic)
             .ToList();
         Assert.Equal(31, atHome.Count);
         Assert.All(atHome, c =>

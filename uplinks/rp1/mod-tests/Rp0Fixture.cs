@@ -2041,6 +2041,12 @@ namespace RP0
         public new int Applicants => throw new InvalidOperationException("Applicants unreadable");
     }
 
+    /// <summary>RP-1's simulation settings; only the orbit choice is read.</summary>
+    public class SimulationParams
+    {
+        public bool SimulateInOrbit;
+    }
+
     public partial class SpaceCenterManagement
     {
         /// <summary>
@@ -2072,6 +2078,13 @@ namespace RP0
         public static SpaceCenterManagement? Instance { get; set; }
 
         public bool enabledForSave = true;
+
+        /// <summary>RP-1's own flag for a simulated flight, set when a simulation starts and cleared when it ends.</summary>
+        public bool IsSimulatedFlight;
+
+        /// <summary>The choices made in RP-1's simulation dialog, kept between simulations.</summary>
+        public SimulationParams SimulationParams = new SimulationParams();
+
         public int Researchers;
         public int Applicants;
 

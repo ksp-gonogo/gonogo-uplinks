@@ -90,6 +90,7 @@
     <Compile Include="..\mod\Rp1TargetCommands.cs" />
     <Compile Include="..\mod\Rp1FacilityUpgradeCommands.cs" />
     <Compile Include="..\mod\Rp1ResearchCommands.cs" />
+    <Compile Include="..\mod\Rp1SimulationCapture.cs" />
     <Compile Include="..\mod\Rp1SimulationDelay.cs" />
     <Compile Include="..\mod\Rp1DerivedCurrencyWithholder.cs" />
     <Compile Include="..\mod\Rp1ConfidenceThresholdSource.cs" />

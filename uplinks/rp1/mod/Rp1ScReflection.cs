@@ -209,6 +209,26 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// Whether the simulation RP-1 is running started in orbit rather than on
+        /// the pad, or null when RP-1 cannot say.
+        ///
+        /// <para><c>SimulationParams.SimulateInOrbit</c> is the choice the
+        /// operator made in RP-1's simulation dialog, persisted on the space
+        /// centre and read live for the reason <see cref="IsSimulatedFlight"/>
+        /// is. It holds its last value between simulations, so it is only
+        /// meaningful while one is running and the caller asks only then.</para>
+        /// </summary>
+        public bool? SimulatesInOrbit()
+        {
+            var instance = ScmInstance();
+            if (instance == null || ReadBool(instance, "enabledForSave") != true)
+            {
+                return null;
+            }
+            return ReadBool(Member(instance, "SimulationParams"), "SimulateInOrbit");
+        }
+
+        /// <summary>
         /// Reads one tick. Always returns a payload: an unavailable RP-1 yields
         /// <see cref="Rp1ScRaw.Available"/> false and empty lists, which is the
         /// state the client needs in order to say so.

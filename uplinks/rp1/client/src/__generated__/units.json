@@ -609,6 +609,10 @@
       "rateMult": "ratio",
       "salaryMult": "ratio"
     },
+    "Rp1Simulation": {
+      "active": "flag",
+      "kind": "enum"
+    },
     "Rp1TechResearchArgs": {
       "techId": "id"
     },
@@ -998,6 +1002,10 @@
     "rp1.rushTerms": {
       "rateMult": "ratio",
       "salaryMult": "ratio"
+    },
+    "rp1.simulation": {
+      "active": "flag",
+      "kind": "enum"
     },
     "rp1.tooling": {
       "toolAllCost": "funds",

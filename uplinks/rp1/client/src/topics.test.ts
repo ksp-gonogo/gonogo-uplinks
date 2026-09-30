@@ -29,6 +29,7 @@ import {
   RP1_PROGRAM_SLOTS_TOPIC,
   RP1_PROGRAMS_TOPIC,
   RP1_RESEARCH_TOPIC,
+  RP1_SIMULATION_TOPIC,
   RP1_WAREHOUSE_TOPIC,
 } from "./topics.js";
 
@@ -69,6 +70,7 @@ describe("the rp1.* Topic registrations", () => {
     expect(RP1_PROGRAM_FUNDING_CURVES_TOPIC).toBe(
       csTopic("ProgramFundingCurvesTopic"),
     );
+    expect(RP1_SIMULATION_TOPIC).toBe(csTopic("SimulationTopic"));
   });
 
   it("are known TopicIds once this client's topics module has loaded", () => {
@@ -78,6 +80,7 @@ describe("the rp1.* Topic registrations", () => {
       RP1_COMPLEXES_TOPIC,
       RP1_BUILD_QUEUE_TOPIC,
       RP1_WAREHOUSE_TOPIC,
+      RP1_SIMULATION_TOPIC,
       RP1_PADS_TOPIC,
       RP1_OPERATIONS_TOPIC,
       RP1_CONSTRUCTIONS_TOPIC,

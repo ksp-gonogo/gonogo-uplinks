@@ -3537,6 +3537,28 @@ export interface Rp1Avionics
 	limitedByNonInterplanetary?: boolean | null;
 }
 /**
+* Whether the flight on screen is one of RP-1's simulations rather than a real
+* mission, and where that simulation started.
+*
+* A simulation flies a vessel that was never built, from a save RP-1 restores
+* when it ends, so nothing that happens in it is kept. An operator reading a
+* board that looks exactly like a mission needs to be told which one it is.
+*
+* Absent when RP-1 cannot say: RP-1 not loaded, the main menu, or a save RP-1
+* does not manage. Absent is never a real flight.
+*/
+export interface Rp1Simulation
+{
+	/** Whether RP-1 says the flight on screen is a simulation. */
+	active: boolean;
+	/**
+	* Where the running simulation started: `"Launch"` from the pad, or `"Orbit"`
+	* placed straight into an orbit chosen in RP-1's simulation dialog. Absent
+	* while no simulation is running, and when RP-1 did not say.
+	*/
+	kind?: string | null;
+}
+/**
 * RP-1's own budget: the net its funds widget quotes, every row of its Budget
 * tab at each of that tab's three horizons, what reputation buys and loses,
 * the Unlock Credit balance, and the net forecast out to five years.

@@ -47,6 +47,7 @@ import type {
   Rp1ResearchEntry,
   Rp1ResearchRates,
   Rp1RushTerms,
+  Rp1Simulation,
   Rp1Tooling,
   Rp1TrainingCourseEntry,
   Rp1TrainingTemplateEntry,
@@ -285,6 +286,13 @@ export const RP1_CAREER_EVENTS_TOPIC = "rp1.careerEvents";
 export const RP1_AVIONICS_TOPIC = "rp1.avionics";
 
 /**
+ * Whether the flight on screen is an RP-1 simulation, and whether it started on
+ * the pad or in orbit. Absent when RP-1 is not managing the save, which is not a
+ * real flight either.
+ */
+export const RP1_SIMULATION_TOPIC = "rp1.simulation";
+
+/**
  * RP-1's own budget: its net at a day, 30 days and 365.25 days, every row of its
  * Budget tab at each of those horizons, the subsidy and decay reputation implies,
  * the Unlock Credit balance, and its net forecast out to five years.
@@ -380,6 +388,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.buildCost": Rp1BuildCost;
     "rp1.careerEvents": Rp1CareerEvents;
     "rp1.avionics": Rp1Avionics;
+    "rp1.simulation": Rp1Simulation;
     "rp1.budget": Rp1Budget;
     "rp1.budgetBreakdown": Rp1BudgetBreakdown;
     "rp1.constructionRates": Rp1ConstructionRates;
@@ -416,6 +425,7 @@ registerBarePrimitiveTopic(RP1_TOOLING_TOPIC);
 registerBarePrimitiveTopic(RP1_BUILD_COST_TOPIC);
 registerBarePrimitiveTopic(RP1_CAREER_EVENTS_TOPIC);
 registerBarePrimitiveTopic(RP1_AVIONICS_TOPIC);
+registerBarePrimitiveTopic(RP1_SIMULATION_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
 registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
 registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
@@ -526,6 +536,9 @@ export type _ResolvesRp1CareerEvents = Expect<
 >;
 export type _ResolvesRp1Avionics = Expect<
   Equal<TopicPayload<"rp1.avionics">, Rp1Avionics>
+>;
+export type _ResolvesRp1Simulation = Expect<
+  Equal<TopicPayload<"rp1.simulation">, Rp1Simulation>
 >;
 export type _ResolvesRp1Budget = Expect<
   Equal<TopicPayload<"rp1.budget">, Rp1Budget>

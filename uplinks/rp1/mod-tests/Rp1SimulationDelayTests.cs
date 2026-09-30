@@ -27,8 +27,8 @@ namespace GonogoRp1Uplink.Tests
         {
             var delay = New();
 
-            delay.Observe(true);
-            delay.Observe(true);
+            delay.Observe(true, false);
+            delay.Observe(true, false);
 
             var only = Assert.Single(_registered);
             Assert.Equal(0.0, only.Factor);
@@ -41,10 +41,10 @@ namespace GonogoRp1Uplink.Tests
         public void The_end_of_a_simulation_gives_the_delay_back()
         {
             var delay = New();
-            delay.Observe(true);
+            delay.Observe(true, false);
 
-            delay.Observe(false);
-            delay.Observe(false);
+            delay.Observe(false, false);
+            delay.Observe(false, false);
 
             Assert.Equal(1, _registered[0].Handle.Disposals);
             Assert.False(delay.Holding);
@@ -59,12 +59,46 @@ namespace GonogoRp1Uplink.Tests
         {
             var delay = New();
 
-            delay.Observe(null);
+            delay.Observe(null, false);
             Assert.Empty(_registered);
 
-            delay.Observe(true);
-            delay.Observe(null);
+            delay.Observe(true, false);
+            delay.Observe(null, false);
             Assert.Equal(1, _registered[0].Handle.Disposals);
+        }
+
+        /// <summary>
+        /// An operator rehearsing the delayed procedure asked for delay in
+        /// simulations, so a simulation never takes the modifier.
+        /// </summary>
+        [Fact]
+        public void The_setting_keeps_delay_on_through_a_simulation()
+        {
+            var delay = New();
+
+            delay.Observe(true, true);
+
+            Assert.Empty(_registered);
+            Assert.False(delay.Holding);
+        }
+
+        /// <summary>
+        /// Turning the setting on mid-simulation gives the delay back on that tick,
+        /// and turning it off again takes a fresh modifier.
+        /// </summary>
+        [Fact]
+        public void The_setting_changing_mid_simulation_releases_and_retakes_the_modifier()
+        {
+            var delay = New();
+            delay.Observe(true, false);
+
+            delay.Observe(true, true);
+            Assert.Equal(1, _registered[0].Handle.Disposals);
+            Assert.False(delay.Holding);
+
+            delay.Observe(true, false);
+            Assert.Equal(2, _registered.Count);
+            Assert.True(delay.Holding);
         }
 
         [Fact]
@@ -72,9 +106,9 @@ namespace GonogoRp1Uplink.Tests
         {
             var delay = New();
 
-            delay.Observe(true);
-            delay.Observe(false);
-            delay.Observe(true);
+            delay.Observe(true, false);
+            delay.Observe(false, false);
+            delay.Observe(true, false);
 
             Assert.Equal(2, _registered.Count);
             Assert.Equal(0, _registered[1].Handle.Disposals);
