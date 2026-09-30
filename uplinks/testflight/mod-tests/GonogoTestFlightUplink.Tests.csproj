@@ -31,12 +31,17 @@
     <Compile Include="..\mod\TestFlightModuleFold.cs" />
   </ItemGroup>
 
-  <!-- The mapper builds Sitrep.Contract POCOs directly now, rather than plain
-       dictionaries the backend then rebuilt by hand. Those two copies were a
-       corroborating pair: both green, and only one of them on the wire. -->
+  <!-- The mapper builds this Uplink's contract POCOs directly, rather than
+       plain dictionaries the backend then rebuilt by hand. Those two copies were
+       a corroborating pair: both green, and only one of them on the wire. -->
   <ItemGroup>
+    <ProjectReference Include="..\mod-contract\GonogoTestFlightUplink.Contract.csproj" />
     <Reference Include="Sitrep.Contract">
       <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+    <!-- Sitrep.Contract.TestSupport: the shared Unit-coverage sweep every slice runs. -->
+    <Reference Include="Sitrep.Contract.TestSupport">
+      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
     </Reference>
   </ItemGroup>
 

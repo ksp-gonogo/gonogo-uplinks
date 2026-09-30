@@ -22,8 +22,6 @@ namespace GonogoTestFlightUplink
             _kernel = kernel;
         }
 
-        public string ProviderId => TestFlightReliabilityMap.ProviderId;
-
         /// <summary>
         /// The craft this backend answers for, from core's <c>activeVessel</c>
         /// capability rather than from KSP.
@@ -59,30 +57,42 @@ namespace GonogoTestFlightUplink
             }
         }
 
-        public ReliabilitySummary Summary() => TestFlightReliabilityMap.Summary(Coverage);
-
-        public IReadOnlyList<ReliabilityPartEntry> Parts()
+        /// <summary>
+        /// MAIN-THREAD read of both payloads: TestFlight's cores are part modules.
+        /// Null when TestFlight is not installed, which is the publish gate: the
+        /// topics then say nothing rather than claim a craft of clean engines.
+        /// </summary>
+        public TestFlightReliabilityCapture? Capture()
         {
+            var coverage = Coverage;
+            if (coverage == ReliabilityCoverage.None) return null;
+
+            var binding = _tf.Binding;
             var v = ScopedVessel();
-            if (v == null) return new List<ReliabilityPartEntry>();
-            return TestFlightReliabilityMap.Parts(_tf.Engines(v), _tf.Binding);
+            return new TestFlightReliabilityCapture
+            {
+                Summary = TestFlightReliabilityMap.Summary(coverage, binding),
+                Parts = v == null
+                    ? new List<TestFlightReliabilityPart>()
+                    : TestFlightReliabilityMap.Parts(_tf.Engines(v)),
+            };
         }
 
         /// <summary>
         /// TestFlight's own repair, driven through
-        /// <c>ITestFlightCore.ForceRepair</c>. This used to be a hardcoded
-        /// <c>refused</c>, documented as deliberate on the grounds that TestFlight
-        /// repairs through surfaces of its own. It does not: there is no repair
-        /// button anywhere in the three TestFlight assemblies, only a public
-        /// static <c>TestFlightInterface.ForceRepair</c> facade meant for exactly
-        /// this, and nothing else in the install calls it.
-        ///
-        /// <para><paramref name="crewName"/> is unused because TestFlight's model
-        /// has nothing to check it against, not because the check was skipped. See
-        /// <see cref="TestFlightReflection.Repair"/>.</para>
+        /// <c>ITestFlightCore.ForceRepair</c>: there is no repair button anywhere
+        /// in the three TestFlight assemblies, only a public static
+        /// <c>TestFlightInterface.ForceRepair</c> facade meant for exactly this.
+        /// See <see cref="TestFlightReflection.Repair"/>.
         /// </summary>
-        public CommandResult<RepairOutcome> Repair(string partId, string crewName) =>
+        public CommandResult<TestFlightRepairOutcome> Repair(string partId) =>
             _tf.Repair(ScopedVessel(), partId);
+    }
 
+    /// <summary>Both reliability payloads from one capture, handed from the main thread to the Courier.</summary>
+    public sealed class TestFlightReliabilityCapture
+    {
+        public TestFlightReliabilitySummary Summary = new();
+        public List<TestFlightReliabilityPart> Parts = new();
     }
 }

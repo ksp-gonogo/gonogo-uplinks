@@ -1,0 +1,193 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. An RO launcher under TestFlight mid-ascent. The first-stage LR87 has taken a Loss of Thrust failure, which TestFlight's own ForceRepair clears for no crew, item or time, so the row offers a Repair with no cost beside it. The LR91 is 205 s into a 225 s continuous rating and draws a wear row; one vernier has flown so little that it has an 81% chance to survive its 300 s rating; the other vernier is mature and draws nothing. The relay on the second row is not the active craft, so its row stays empty."
+  },
+  "_scene": {
+    "augment": "testflight-reliability-updates",
+    "hostWidget": "fleet-roster",
+    "caption": "A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier",
+    "modes": [
+      "default"
+    ],
+    "size": {
+      "w": 10,
+      "h": 12
+    },
+    "paints": [
+      "LR87 Engine (LR87-AJ-7)",
+      "Loss of Thrust",
+      "continuous rated burn left",
+      "to survive"
+    ],
+    "hero": true
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "testflight.available",
+        "payload": true
+      },
+      {
+        "topic": "system.bodies",
+        "payload": {
+          "bodies": [
+            {
+              "index": 0,
+              "name": "Earth"
+            },
+            {
+              "index": 1,
+              "name": "Moon"
+            }
+          ]
+        }
+      },
+      {
+        "topic": "system.vessels",
+        "payload": {
+          "vessels": [
+            {
+              "vesselId": "v-titan",
+              "name": "Titan II GLV",
+              "vesselType": 5,
+              "situation": 2,
+              "bodyIndex": 0,
+              "crewCount": 2,
+              "crewCapacity": 2,
+              "commsConnected": true,
+              "commsControlSource": 2
+            },
+            {
+              "vesselId": "v-relay",
+              "name": "Lunar Relay 1",
+              "vesselType": 3,
+              "situation": 3,
+              "bodyIndex": 1,
+              "crewCount": 0,
+              "crewCapacity": 0,
+              "commsConnected": true,
+              "commsControlSource": 1
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.identity",
+        "payload": {
+          "vesselId": "v-titan",
+          "name": "Titan II GLV",
+          "vesselType": 5,
+          "situation": 2
+        }
+      },
+      {
+        "topic": "testflight.reliability",
+        "payload": {
+          "coverage": "modeled",
+          "boundMembers": [
+            "ITestFlightCore.GetPartStatus",
+            "ITestFlightCore.GetActiveFailures",
+            "ITestFlightCore.ForceRepair(ITestFlightFailure)",
+            "ITestFlightReliability.GetRatedTime(RatingScope)"
+          ],
+          "unboundMembers": []
+        }
+      },
+      {
+        "topic": "testflight.reliabilityParts",
+        "payload": [
+          {
+            "partId": "2210:0",
+            "title": "LR87 Engine",
+            "configuration": "LR87-AJ-7",
+            "condition": "failed",
+            "conditionDetail": "Loss of Thrust",
+            "survival": 0.97,
+            "survivalHorizonSeconds": 165,
+            "budgets": [
+              {
+                "id": "burn.cumulative",
+                "label": "rated burn",
+                "kind": "risk-ramp",
+                "consumed": 0.62,
+                "usedSeconds": 102,
+                "limitSeconds": 165
+              }
+            ],
+            "flightData": 4100
+          },
+          {
+            "partId": "2214:0",
+            "title": "LR91 Engine",
+            "configuration": "LR91-AJ-7",
+            "condition": "nominal",
+            "conditionDetail": null,
+            "survival": 0.96,
+            "survivalHorizonSeconds": 225,
+            "budgets": [
+              {
+                "id": "burn.continuous",
+                "label": "continuous rated burn",
+                "kind": "risk-ramp",
+                "consumed": 0.91,
+                "usedSeconds": 205,
+                "limitSeconds": 225
+              },
+              {
+                "id": "burn.cumulative",
+                "label": "cumulative rated burn",
+                "kind": "risk-ramp",
+                "consumed": 0.46,
+                "usedSeconds": 205,
+                "limitSeconds": 450
+              }
+            ],
+            "flightData": 6800
+          },
+          {
+            "partId": "2230:0",
+            "title": "Vernier Thruster",
+            "configuration": "LR101-NA-11",
+            "condition": "nominal",
+            "conditionDetail": null,
+            "survival": 0.81,
+            "survivalHorizonSeconds": 300,
+            "budgets": [
+              {
+                "id": "burn.cumulative",
+                "label": "rated burn",
+                "kind": "risk-ramp",
+                "consumed": 0.2,
+                "usedSeconds": 60,
+                "limitSeconds": 300
+              }
+            ],
+            "flightData": 900
+          },
+          {
+            "partId": "2231:0",
+            "title": "Vernier Thruster",
+            "configuration": "LR101-NA-11",
+            "condition": "nominal",
+            "conditionDetail": null,
+            "survival": 0.99,
+            "survivalHorizonSeconds": 300,
+            "budgets": [
+              {
+                "id": "burn.cumulative",
+                "label": "rated burn",
+                "kind": "risk-ramp",
+                "consumed": 0.2,
+                "usedSeconds": 60,
+                "limitSeconds": 300
+              }
+            ],
+            "flightData": 9800
+          }
+        ]
+      }
+    ]
+  }
+}

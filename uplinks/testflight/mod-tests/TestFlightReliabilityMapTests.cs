@@ -5,10 +5,9 @@ using Xunit;
 public class TestFlightReliabilityMapTests
 {
     [Fact]
-    public void Summary_names_the_source_and_carries_the_coverage_verbatim()
+    public void Summary_carries_the_coverage_verbatim()
     {
         var s = TestFlightReliabilityMap.Summary(ReliabilityCoverage.Modeled);
-        Assert.Equal("testflight", s.Source);
         Assert.Equal(ReliabilityCoverage.Modeled, s.Coverage);
     }
 
@@ -170,23 +169,43 @@ public class TestFlightReliabilityMapTests
     /// <summary>
     /// The provenance record. An install that regresses the binder is visible in a
     /// debug surface without another decompile, which is what was missing when
-    /// three non-existent method names shipped and nothing said so.
+    /// three non-existent method names shipped and nothing said so. It is a fact
+    /// about the install, so it rides the summary once rather than every part.
     /// </summary>
     [Fact]
-    public void Parts_carry_what_the_binder_resolved_in_the_providers_namespace()
+    public void The_summary_carries_what_the_binder_resolved()
     {
-        var p = TestFlightReliabilityMap.Parts(
-            new[] { new EngineReliabilityRaw { PartId = "1", PartStatus = 0 } },
+        var s = TestFlightReliabilityMap.Summary(
+            ReliabilityCoverage.Modeled,
             new TestFlightBindingReport
             {
                 Bound = new[] { "ITestFlightCore.GetPartStatus" },
                 Unbound = new[] { "ITestFlightReliability.GetRatedTime(RatingScope)" },
-            })[0];
+            });
 
-        var ns = Assert.IsType<System.Collections.Generic.Dictionary<string, object?>>(
-            p.Extensions!["testflight"]);
-        Assert.Equal(new[] { "ITestFlightCore.GetPartStatus" }, ns["boundMembers"]);
+        Assert.Equal(new[] { "ITestFlightCore.GetPartStatus" }, s.BoundMembers);
         Assert.Equal(
-            new[] { "ITestFlightReliability.GetRatedTime(RatingScope)" }, ns["unboundMembers"]);
+            new[] { "ITestFlightReliability.GetRatedTime(RatingScope)" }, s.UnboundMembers);
+    }
+
+    /// <summary>The flying config and its flight data are plain fields of the part, not a sub-tree keyed by a provider id.</summary>
+    [Fact]
+    public void Parts_carry_the_flying_config_and_its_flight_data()
+    {
+        var p = TestFlightReliabilityMap.Parts(
+            new[] { new EngineReliabilityRaw { PartId = "1", PartStatus = 0, Configuration = "RD-180", FlightData = 6200 } })[0];
+
+        Assert.Equal("RD-180", p.Configuration);
+        Assert.Equal(6200, p.FlightData);
+    }
+
+    /// <summary>
+    /// TestFlight's repair consumes nothing, so the part shape has no cost field
+    /// for a client to mistake for "needs 0" or to fill with another mod's rule.
+    /// </summary>
+    [Fact]
+    public void A_part_states_no_repair_cost_because_testflight_charges_none()
+    {
+        Assert.Null(typeof(TestFlightReliabilityPart).GetProperty("RepairCost"));
     }
 }

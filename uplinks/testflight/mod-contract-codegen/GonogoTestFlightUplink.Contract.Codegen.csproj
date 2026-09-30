@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Codegen-only twin of GonogoTestFlightUplink.Contract. See CodegenTwin.props. -->
+  <PropertyGroup>
+    <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
+    <AssemblyName>GonogoTestFlightUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoTestFlightUplink</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(GonogoContract)\CodegenTwin.props" />
+  <!-- The Sitrep.Contract twin, copied local so rtcli finds it beside the assembly it loads. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract">
+      <HintPath>$(GonogoContract)\codegen\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

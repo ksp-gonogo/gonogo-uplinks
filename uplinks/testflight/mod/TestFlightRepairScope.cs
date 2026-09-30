@@ -19,7 +19,7 @@
 //       by nothing at all.
 //
 // So TestFlight's repair costs nothing, requires no crew, takes no time and has
-// no EVA condition. The three refusals below are the only ones it can produce.
+// no EVA condition. The four refusals below are the only ones it can produce.
 using System.Globalization;
 using Sitrep.Contract;
 
@@ -28,7 +28,7 @@ namespace GonogoTestFlightUplink
     public static class TestFlightRepairScope
     {
         /// <summary>
-        /// Split a published <c>reliability.parts</c> id back into the KSP
+        /// Split a published <c>testflight.reliabilityParts</c> id back into the KSP
         /// flightID and the occurrence index within that part.
         ///
         /// <para>The id is minted as <c>"&lt;flightID&gt;:&lt;occurrence&gt;"</c>
@@ -85,24 +85,25 @@ namespace GonogoTestFlightUplink
         /// Null means there is something to repair and the walk should go ahead.
         ///
         /// <para><paramref name="repairable"/> is the count of active failures
-        /// whose <c>CanAttemptRepair()</c> is true. Nothing failed and a part
-        /// whose every failure is terminal are different answers, and collapsing
-        /// them would tell an operator whose engine has exploded to go looking
-        /// for a part id that is sitting right there.</para>
+        /// whose <c>CanAttemptRepair()</c> is true. No such engine, nothing
+        /// failed and a part whose every failure is terminal are three different
+        /// answers, and collapsing them would tell an operator whose engine has
+        /// exploded to go looking for a part id that is sitting right there.</para>
         ///
         /// <para><paramref name="activeFailures"/> is null when the core's failure
         /// list could not be READ at all, which is not the same fact as an empty
         /// one and must not borrow its answer: counted as zero it told an operator
         /// whose row says <c>failed</c> that no such part exists, while the row and
-        /// the button sat beside each other. It refuses as <c>not-modelled</c>,
-        /// the same token an unbound failure-list member already produces.</para>
+        /// the button sat beside each other. It refuses as
+        /// <c>testflight.notModelled</c>, the same code an unbound failure-list
+        /// member already produces.</para>
         /// </summary>
         public static RefusalCode? RefusalFor(bool coreFound, int? activeFailures, int repairable)
         {
-            if (!coreFound) return RepairRefusal.NoSuchPart;
-            if (activeFailures == null) return RepairRefusal.NotModelled;
-            if (activeFailures == 0) return RepairRefusal.NoSuchPart;
-            if (repairable == 0) return RepairRefusal.Unrepairable;
+            if (!coreFound) return TestFlightErrorCodes.NoSuchPart;
+            if (activeFailures == null) return TestFlightErrorCodes.NotModelled;
+            if (activeFailures == 0) return TestFlightErrorCodes.NothingFailed;
+            if (repairable == 0) return TestFlightErrorCodes.Unrepairable;
             return null;
         }
 

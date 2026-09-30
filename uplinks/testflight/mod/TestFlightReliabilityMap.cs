@@ -1,31 +1,32 @@
 // mod/GonogoTestFlightUplink/TestFlightReliabilityMap.cs
-// Pure (KSP-free) mapper: per-engine reflection reads -> the shared reliability
-// wire shape (ReliabilitySummary / ReliabilityPartEntry, defined in
-// Sitrep.Contract). It builds the contract POCOs directly and the backend calls
-// it, rather than each writing its own copy of the mapping: the two copies that
-// used to exist were a corroborating pair, both green while the reflection layer
+// Pure (KSP-free) mapper: per-engine reflection reads -> the testflight.reliability
+// and testflight.reliabilityParts payloads, defined in this Uplink's contract
+// slice. It builds the contract POCOs directly and the backend calls it, rather
+// than each writing its own copy of the mapping: the two copies that used to
+// exist were a corroborating pair, both green while the reflection layer
 // underneath them returned nothing.
 using System.Collections.Generic;
-using Sitrep.Contract;
 
 namespace GonogoTestFlightUplink
 {
     public static class TestFlightReliabilityMap
     {
-        /// <summary>The id the summary names as its source, and the key its extension namespace lives under.</summary>
-        public const string ProviderId = "testflight";
-
-        public static ReliabilitySummary Summary(string coverage) => new()
+        /// <summary>
+        /// The summary, carrying the binder's provenance: an install that regresses
+        /// the binder is visible without another decompile.
+        /// </summary>
+        public static TestFlightReliabilitySummary Summary(
+            string coverage,
+            TestFlightBindingReport? binding = null) => new()
         {
-            Source = ProviderId,
             Coverage = coverage,
+            BoundMembers = binding?.Bound,
+            UnboundMembers = binding?.Unbound,
         };
 
-        public static List<ReliabilityPartEntry> Parts(
-            IEnumerable<EngineReliabilityRaw> engines,
-            TestFlightBindingReport? binding = null)
+        public static List<TestFlightReliabilityPart> Parts(IEnumerable<EngineReliabilityRaw> engines)
         {
-            var list = new List<ReliabilityPartEntry>();
+            var list = new List<TestFlightReliabilityPart>();
             var seen = new Dictionary<string, int>();
             foreach (var e in engines)
             {
@@ -34,7 +35,7 @@ namespace GonogoTestFlightUplink
                 seen.TryGetValue(e.PartId, out var n);
                 seen[e.PartId] = n + 1;
 
-                list.Add(new ReliabilityPartEntry
+                list.Add(new TestFlightReliabilityPart
                 {
                     PartId = e.PartId + ":" + n,
                     Title = e.Title,
@@ -42,25 +43,9 @@ namespace GonogoTestFlightUplink
                     ConditionDetail = Clamp(e.FailureTitles, 120),
                     Survival = e.Survival,
                     SurvivalHorizonSeconds = e.Survival == null ? null : e.SurvivalHorizonSeconds,
-                    /*
-                     * TestFlight consumes NOTHING to repair: its repair path is
-                     * CanAttemptRepair(), a predicate about the crew and the
-                     * situation, with no consumable anywhere in the model. Stated
-                     * rather than omitted, because absent-by-oversight and
-                     * absent-by-design read identically in a payload and only one
-                     * of them is a claim.
-                     *
-                     * It is null and not an empty list on purpose: the contract
-                     * treats both as "models none", and a client must render
-                     * either as "nothing is consumed" and never as "needs 0". A
-                     * client that derived the number from Condition instead
-                     * charged another backend's two-for-critical rule on every
-                     * install, asked a TestFlight player for an item this mod
-                     * never needs, and refused the repair when none was aboard.
-                     */
-                    RepairCost = null,
                     Budgets = BurnBudgets(e),
-                    Extensions = PartExtensions(e, binding),
+                    Configuration = e.Configuration,
+                    FlightData = e.FlightData,
                 });
             }
             return list;
@@ -68,9 +53,9 @@ namespace GonogoTestFlightUplink
 
         /// <summary>
         /// TestFlight's own part status is the condition, and there is no
-        /// two-tier failure grade to read: <c>CanAttemptRepair()</c> is a
-        /// contingent runtime predicate about the crew and the situation, not a
-        /// severity, so nothing here ever emits "failed-critical".
+        /// two-tier failure grade to read: <c>CanAttemptRepair()</c> says whether
+        /// a failure class can be repaired at all, not how severe it is, so
+        /// nothing here ever emits "failed-critical".
         ///
         /// <para>An unread status is "unknown", never "nominal". That substitution
         /// is what the old layer made, on every part, on every install.</para>
@@ -96,9 +81,9 @@ namespace GonogoTestFlightUplink
         /// brand-new part. The budget is still carried (the rating is real
         /// information) but with no Consumed, so it can never select a row.</para>
         /// </summary>
-        private static List<ReliabilityBudget>? BurnBudgets(EngineReliabilityRaw e)
+        private static List<TestFlightReliabilityBudget>? BurnBudgets(EngineReliabilityRaw e)
         {
-            var budgets = new List<ReliabilityBudget>();
+            var budgets = new List<TestFlightReliabilityBudget>();
             var collapsed = e.RatedCumulativeSeconds is > 0
                 && e.RatedContinuousSeconds is > 0
                 && e.RatedCumulativeSeconds.Value == e.RatedContinuousSeconds.Value;
@@ -116,7 +101,7 @@ namespace GonogoTestFlightUplink
             return budgets.Count == 0 ? null : budgets;
         }
 
-        private static ReliabilityBudget Burn(string id, string label, double? limit, double? used) => new()
+        private static TestFlightReliabilityBudget Burn(string id, string label, double? limit, double? used) => new()
         {
             Id = id,
             Label = label,
@@ -127,28 +112,6 @@ namespace GonogoTestFlightUplink
             UsedSeconds = used,
             LimitSeconds = limit,
         };
-
-        /// <summary>
-        /// TestFlight's per-part namespace. The bound/unbound lists are the
-        /// provenance record: an install that regresses the binder is visible in a
-        /// debug surface without another decompile.
-        /// </summary>
-        private static Dictionary<string, object?>? PartExtensions(
-            EngineReliabilityRaw e,
-            TestFlightBindingReport? binding)
-        {
-            if (e.Configuration == null && e.FlightData == null && binding == null) return null;
-            return new Dictionary<string, object?>
-            {
-                [ProviderId] = new Dictionary<string, object?>
-                {
-                    ["configuration"] = e.Configuration,
-                    ["flightData"] = e.FlightData,
-                    ["boundMembers"] = binding?.Bound,
-                    ["unboundMembers"] = binding?.Unbound,
-                },
-            };
-        }
 
         private static string? Clamp(string? text, int max)
         {

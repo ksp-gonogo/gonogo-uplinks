@@ -59,11 +59,11 @@ namespace GonogoTestFlightUplink.Tests
         // No core answered to the id at all.
         [InlineData(false, 0, 0, "testflight.noSuchPart")]
         // The core is there and nothing is wrong with it.
-        [InlineData(true, 0, 0, "testflight.noSuchPart")]
+        [InlineData(true, 0, 0, "testflight.nothingFailed")]
         // Failures, none of which TestFlight will repair: an exploded part.
         [InlineData(true, 2, 0, "testflight.unrepairable")]
         [InlineData(true, 2, 1, null)]
-        public void ARefusalSaysWhichOfTheThreeThingsWentWrong(
+        public void ARefusalSaysWhichThingWentWrong(
             bool coreFound, int active, int repairable, string? expected)
         {
             Assert.Equal(expected, TestFlightRepairScope.RefusalFor(coreFound, active, repairable)?.Id);
@@ -71,7 +71,7 @@ namespace GonogoTestFlightUplink.Tests
 
         /// <summary>
         /// A failure list that could not be READ is not an empty one. Counted as
-        /// zero it answered <c>no-such-part</c> for a core the walk had just
+        /// zero it answered "no such part" for a core the walk had just
         /// found, so pressing Repair on a row that says <c>failed</c> denied the
         /// part existed while the row sat beside the button.
         /// </summary>
@@ -79,10 +79,10 @@ namespace GonogoTestFlightUplink.Tests
         public void AnUnreadableFailureListDoesNotBorrowTheAnswerForAnEmptyOne()
         {
             Assert.Equal(
-                RepairRefusal.NotModelled,
+                TestFlightErrorCodes.NotModelled,
                 TestFlightRepairScope.RefusalFor(coreFound: true, activeFailures: null, repairable: 0));
             Assert.Equal(
-                RepairRefusal.NoSuchPart,
+                TestFlightErrorCodes.NothingFailed,
                 TestFlightRepairScope.RefusalFor(coreFound: true, activeFailures: 0, repairable: 0));
         }
 
@@ -163,9 +163,9 @@ namespace GonogoTestFlightUplink.Tests
         {
             var source = File.ReadAllText(BackendSourcePath());
 
-            Assert.Contains("public CommandResult<RepairOutcome> Repair(", source);
+            Assert.Contains("public CommandResult<TestFlightRepairOutcome> Repair(", source);
             Assert.Contains("_tf.Repair(", source);
-            Assert.DoesNotContain("CommandResult<RepairOutcome>.Fail(", source);
+            Assert.DoesNotContain("CommandResult<TestFlightRepairOutcome>.Fail(", source);
         }
 
         private static string ReflectionSourcePath() =>

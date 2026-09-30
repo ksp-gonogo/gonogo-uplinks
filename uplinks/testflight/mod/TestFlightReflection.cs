@@ -239,28 +239,26 @@ namespace GonogoTestFlightUplink
         /// Repair one published part id, through TestFlight's own
         /// <c>ITestFlightCore.ForceRepair</c>.
         ///
-        /// <para>The crew name is deliberately unused, and that is TestFlight's
-        /// answer rather than an omission: its repair path has no crew check, no
-        /// consumable, no EVA condition and no duration anywhere in the shipped
-        /// model. Inventing one here would put a second authority beside the one
-        /// that acts, and would refuse repairs the game allows. The reason it is
-        /// still on the interface is that another backend's path genuinely
-        /// needs it.</para>
+        /// <para>No crew is named, and that is TestFlight's answer rather than an
+        /// omission: its repair path has no crew check, no consumable, no EVA
+        /// condition and no duration anywhere in the shipped model. Inventing one
+        /// here would put a second authority beside the one that acts, and would
+        /// refuse repairs the game allows.</para>
         ///
         /// <para>A repair also AWARDS flight data (<c>duRepair</c>, read from the
         /// part's config), which is why this must never be simulated: the state
         /// change belongs to TestFlight.</para>
         /// </summary>
-        public CommandResult<RepairOutcome> Repair(Vessel? v, string partId)
+        public CommandResult<TestFlightRepairOutcome> Repair(Vessel? v, string partId)
         {
             if (!IsAvailable || _forceRepair == null || _getActiveFailures == null)
             {
-                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NotModelled);
+                return CommandResult<TestFlightRepairOutcome>.Fail(TestFlightErrorCodes.NotModelled);
             }
             if (!TestFlightRepairScope.TryParsePartId(partId, out var flightId, out var occurrence)
                 || v?.parts == null)
             {
-                return CommandResult<RepairOutcome>.Fail(RepairRefusal.NoSuchPart);
+                return CommandResult<TestFlightRepairOutcome>.Fail(TestFlightErrorCodes.NoSuchPart);
             }
 
             var core = CoreAt(v, flightId, occurrence);
@@ -269,7 +267,7 @@ namespace GonogoTestFlightUplink
                 core != null, ActiveFailureCount(core), repairable.Count);
             if (refusal != null)
             {
-                return CommandResult<RepairOutcome>.Fail(refusal);
+                return CommandResult<TestFlightRepairOutcome>.Fail(refusal);
             }
 
             foreach (var failure in repairable)
@@ -277,14 +275,19 @@ namespace GonogoTestFlightUplink
                 Invoke(_forceRepair, core, failure);
             }
 
-            if (!TestFlightRepairScope.Cleared(repairable.Count, RepairableFailures(core).Count))
+            var remaining = RepairableFailures(core).Count;
+            if (!TestFlightRepairScope.Cleared(repairable.Count, remaining))
             {
                 // TestFlight gates a repair on nothing an operator can change, so
                 // a ForceRepair that left the failure standing is the mod
                 // declining without saying more, not a fact about the crew.
-                return CommandResult<RepairOutcome>.Fail(CommandErrorCode.ModeUnavailable);
+                return CommandResult<TestFlightRepairOutcome>.Fail(TestFlightErrorCodes.RepairDeclined);
             }
-            return CommandResult<RepairOutcome>.Ok(new RepairOutcome { Repaired = true });
+            return CommandResult<TestFlightRepairOutcome>.Ok(new TestFlightRepairOutcome
+            {
+                Repaired = true,
+                FailuresCleared = repairable.Count - remaining,
+            });
         }
 
         /// <summary>

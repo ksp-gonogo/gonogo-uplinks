@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    GonogoTestFlightUplink's OWN contract slice: the testflight.reliability and
+    testflight.reliabilityParts payloads and testflight.repair's args and
+    outcome. Its own small project, like every other slice, so the
+    netstandard2.0 codegen leg stays clear of the KSP HintPath references the
+    uplink assembly carries.
+
+    MIT: plain DTOs against Sitrep.Contract, with no TestFlight code or types.
+  -->
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <AssemblyName>GonogoTestFlightUplink.Contract</AssemblyName>
+    <RootNamespace>GonogoTestFlightUplink</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Sitrep.Contract only, Private="false": provided by the core mod at runtime. -->
+  <ItemGroup>
+    <Reference Include="Sitrep.Contract" Private="false">
+      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

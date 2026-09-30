@@ -55,4 +55,11 @@
     </Reference>
   </ItemGroup>
 
+  <!-- GonogoTestFlightUplink.Contract: this Uplink's OWN wire types. Private
+       defaults to true: core does not provide this DLL at runtime, so it
+       bundles into this Uplink's own GameData output. -->
+  <ItemGroup>
+    <ProjectReference Include="..\mod-contract\GonogoTestFlightUplink.Contract.csproj" />
+  </ItemGroup>
+
 </Project>
