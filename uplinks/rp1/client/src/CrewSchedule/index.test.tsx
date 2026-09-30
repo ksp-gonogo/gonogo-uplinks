@@ -147,6 +147,33 @@ describe("CrewSchedule", () => {
     expect(visibleText(view.container)).toBe("");
   });
 
+  /**
+   * A retiree gets the date they retired and nothing else: a course, a lapse
+   * date or a ceiling on a career that has ended is a schedule nobody will keep.
+   */
+  it("gives a retiree their retirement date and nothing else", async () => {
+    const { fixture, view } = mountSchedule();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.crewProgram", PROGRAM);
+    fixture.emit("rp1.crew", [
+      crewRow({
+        retired: true,
+        trainingCourse: "TRAINING_mission-Mun",
+        trainingTarget: "Mun",
+        nextTrainingExpiryUt: LAPSES_AT,
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("Retired");
+    });
+    expect(visibleText()).not.toContain("Retires");
+    expect(visibleText()).not.toContain("push this to");
+    expect(visibleText()).not.toContain("Course");
+    expect(visibleText()).not.toContain("Lapses");
+    await expectNoA11yViolations(view.container);
+  });
+
   it("names what pushes the retirement date, not a control that pushes it", async () => {
     const { fixture, view } = mountSchedule();
     fixture.emit("rp1.available", true);

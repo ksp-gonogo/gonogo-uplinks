@@ -4,27 +4,23 @@ using Sitrep.Contract;
 namespace GonogoRp1Uplink
 {
     /// <summary>
-    /// RP-1's answer to whether a kerbal off the flight roster is dead: offered to
-    /// the exclusive <c>"crewStanding"</c> capability.
+    /// RP-1's reasons a kerbal cannot fly that stock cannot see: offered to the
+    /// exclusive <c>"crewStanding"</c> capability.
     ///
-    /// <para><b>The defect this exists for.</b> RP-1 retires a kerbal by writing
+    /// <para><b>Retirement.</b> RP-1 retires a kerbal by writing
     /// <c>rosterStatus = (RosterStatus)2</c>, which is stock's <c>Dead</c>, and
-    /// remembers the name in a private set on its own CrewHandler. So a living
-    /// retiree reached the wire indistinguishable from a fatality, and gonogo told
-    /// operators their astronauts had been killed. The correction cannot be a
-    /// widget's job: a widget that has never heard of RP-1 would keep reporting the
-    /// fatality, and the default of a client-side join is the wrong answer,
-    /// silently. It goes on the wire instead, before any consumer sees the
-    /// roster.</para>
+    /// remembers the name in a private set on its own CrewHandler. Core's
+    /// standings keep only stock's vocabulary, so the standing stays stock's
+    /// <see cref="CrewStanding.Dead"/> and the reason says "Retired": a widget
+    /// that has never heard of RP-1 still reads a kerbal who cannot fly, and
+    /// every surface that shows the reason says why. The RETIRED mark and the
+    /// retirement date are this Uplink's own, drawn from <c>rp1.crew</c> into the
+    /// Astronaut Complex's crew slots.</para>
     ///
-    /// <para><b>What it answers, and what it declines.</b> Two facts, both ones
-    /// RP-1 owns and core cannot reach. A retiree is not dead: core's standings
-    /// have no word for retirement, so the standing is
-    /// <see cref="CrewStanding.Unknown"/> and the reason says "Retired". A kerbal
-    /// on a started course cannot fly until its ETA: the standing is left to
-    /// core and the reason says "In training". The retirement date rides this
-    /// Uplink's own <c>rp1.crew</c>. Everything else it declines by returning
-    /// null, so core's own derivation stands. Answering for the whole roster
+    /// <para><b>Training.</b> A kerbal on a started course cannot fly until its
+    /// ETA: the standing is left to core, the reason says "In training", and the
+    /// course's finish is the standing's end. Everything else it declines by
+    /// returning null, so core's own derivation stands. Answering for the whole roster
     /// would mean copying core's map into this assembly, and a mod's copy of
     /// core's map is a copy that drifts.</para>
     ///
@@ -91,7 +87,6 @@ namespace GonogoRp1Uplink
                 {
                     return new CrewStandingReading
                     {
-                        Standing = CrewStanding.Unknown,
                         Available = false,
                         UnavailableReason = RetiredReason,
                     };

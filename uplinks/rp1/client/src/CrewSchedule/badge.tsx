@@ -7,8 +7,15 @@ import "../topics.js";
 import { kindOf } from "./template.js";
 
 /**
- * Whether this kerbal is on a course, in the corner of the card the Astronaut
- * Complex draws for them.
+ * Whether this kerbal has retired or is on a course, in the corner of the card
+ * the Astronaut Complex draws for them.
+ *
+ * <para><b>Retired outranks everything.</b> RP-1 retires a kerbal by writing
+ * stock's Dead into the roster, and core's standings keep only stock's
+ * vocabulary, so the host files a retiree beside the fallen with "Retired" as
+ * the reason. The corner is where the card says so at a glance. A course a
+ * retiree is still enrolled on is one nobody will finish, so it is not
+ * marked.</para>
  *
  * <para><b>Why the corner and not the schedule underneath.</b> A kerbal RP-1 has
  * on a training course still reads `Available` to KSP's own roster, so the
@@ -48,6 +55,13 @@ export function CrewTrainingBadge({
     return null;
   }
   const row = (crew ?? []).find((c) => c.name === name);
+  if (row?.retired === true) {
+    return (
+      <Badge tone="neutral" size="sm" title="Retired">
+        RETIRED
+      </Badge>
+    );
+  }
   const target = row?.trainingTarget ?? row?.trainingCourse;
   if (!row || !target) {
     return null;

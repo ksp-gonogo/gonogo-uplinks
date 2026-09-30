@@ -44,12 +44,13 @@ import { kindOf } from "./template.js";
  * reading, and aligns the three labels into a column so the readings start at
  * the same place.</para>
  *
- * <para>It carries no standing and draws no fatality distinction. Whether a
- * kerbal is RETIRED rather than dead rides the stock roster's own `standing`
- * field through the crewStanding capability, so the host widget has already
- * put a retiree in their own tab before this renders. That is deliberate: a
- * widget that has never heard of RP-1 must not report a retiree as a fatality,
- * and it could not have been fixed from here.</para>
+ * <para><b>A retiree gets the date they retired and nothing else.</b> RP-1
+ * retires a kerbal by writing stock's Dead into the roster, and core keeps
+ * stock's standing with "Retired" as the reason, so the host files them beside
+ * the fallen. The RETIRED mark in the card's corner (`badge.tsx`) and this
+ * block's date are what tell the two apart. A course or a lapse date on a
+ * career that has ended is a schedule nobody will keep, so neither is
+ * drawn.</para>
  */
 export function CrewSchedule({
   kerbalName,
@@ -77,6 +78,10 @@ export function CrewSchedule({
   // is a kerbal RP-1 is not scheduling, and there is nothing to say about them.
   if (!row) {
     return null;
+  }
+
+  if (row.retired === true) {
+    return retiredLine(row);
   }
 
   const retirement = retirementLine(row, program?.retirementEnabled);
@@ -154,6 +159,23 @@ function retirementLine(
           <MissionDate value={row.latestRetiresAtUt} />
         </>
       )}
+    </DataLine>
+  );
+}
+
+/**
+ * When a retiree retired, or nothing when RP-1 holds no date for them.
+ *
+ * <para>Not held to the retirement switch: a kerbal RP-1 has already retired
+ * stays retired whatever the save says now.</para>
+ */
+function retiredLine(row: Rp1CrewEntry) {
+  if (magnitudeOf(row.retiresAtUt) === null) {
+    return null;
+  }
+  return (
+    <DataLine aligned key="retired" label="Retired">
+      <MissionDate value={row.retiresAtUt} />
     </DataLine>
   );
 }

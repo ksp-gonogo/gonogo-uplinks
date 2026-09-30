@@ -405,22 +405,28 @@ public class Rp1CrewReflectionTests : System.IDisposable
     // ── The backend the capability elects ──────────────────────────────────
 
     /// <summary>
-    /// The whole defect, end to end on this side: RP-1 wrote stock's Dead into the
-    /// roster status, and the backend hands back a living, unavailable "Retired"
-    /// for that name and NOTHING for anybody else, leaving core's map to answer
-    /// for the rest of the roster.
+    /// RP-1 wrote stock's Dead into the roster status, and the backend leaves that
+    /// standing to stock while saying why: unavailable, "Retired", for that name
+    /// and NOTHING for anybody else, leaving core's map to answer for the rest of
+    /// the roster.
     /// </summary>
     [Fact]
-    public void TheBackendCorrectsARetireeAndDeclinesForEveryoneElse()
+    public void TheBackendNamesARetireeAndDeclinesForEveryoneElse()
     {
         CrewHandler.Instance = new CrewHandler().Retired("Wernher Kerman");
         var backend = new Rp1CrewStandingBackend(new Rp1CrewReflection());
 
-        var retiree = backend.Read(CrewStandingQueries.Crew("Wernher Kerman", KspRosterStatus.Dead));
+        var query = CrewStandingQueries.Crew("Wernher Kerman", KspRosterStatus.Dead);
+        var retiree = backend.Read(query);
         Assert.NotNull(retiree);
-        Assert.Equal(CrewStanding.Unknown, retiree!.Standing);
+        Assert.Null(retiree!.Standing);
         Assert.False(retiree.Available);
         Assert.Equal(Rp1CrewStandingBackend.RetiredReason, retiree.UnavailableReason);
+
+        var resolved = CrewStandings.Resolve(query, retiree);
+        Assert.Equal(CrewStanding.Dead, resolved.Standing);
+        Assert.False(resolved.Available);
+        Assert.Equal(Rp1CrewStandingBackend.RetiredReason, resolved.UnavailableReason);
 
         Assert.Null(backend.Read(CrewStandingQueries.Crew("Jebediah Kerman", KspRosterStatus.Available)));
         Assert.Null(backend.Read(CrewStandingQueries.Applicant("")));

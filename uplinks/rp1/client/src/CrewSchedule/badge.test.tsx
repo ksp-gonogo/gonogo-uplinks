@@ -87,6 +87,30 @@ describe("the corner mark on a kerbal's card", () => {
     expect(screen.queryByText("TRAINING")).not.toBeInTheDocument();
   });
 
+  /**
+   * A retiree reads stock's Dead with "Retired" as the reason, so the host files
+   * them beside the fallen. The corner is what tells the two apart, and it
+   * outranks a course the retiree is still enrolled on.
+   */
+  it("marks a retiree, over any course they were on", async () => {
+    const { fixture, view } = mountBadge();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.crew", [
+      crewRow({
+        retired: true,
+        trainingCourse: "TRAINING_mission-Mun",
+        trainingStarted: true,
+        trainingTarget: "Mun",
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("RETIRED")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("TRAINING")).not.toBeInTheDocument();
+    await expectNoA11yViolations(view.container);
+  });
+
   it("marks nobody who is not on a course", async () => {
     const { fixture, view } = mountBadge();
     fixture.emit("rp1.available", true);
