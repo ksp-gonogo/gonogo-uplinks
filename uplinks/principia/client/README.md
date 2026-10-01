@@ -10,7 +10,7 @@ Publishes Principia's n-body state: how far each trajectory holds, the flight pl
 | Uplink id | `principia` |
 | Version | `0.0.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 27.2, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 27.3, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
