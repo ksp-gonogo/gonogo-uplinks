@@ -201,13 +201,21 @@ function crossingWord(row: ResourceRow): "empty" | "full" {
   return row.crossing?.boundary === "ceiling" ? "full" : "empty";
 }
 
-/** The spoken form of a crossing for `aria-valuetext`, or null while there is none. */
+/**
+ * A level Kerbalism reports as not moving: a rate of exactly zero. A rate it
+ * did not report is unknown, never stable, so that row shows no time at all.
+ */
+function isStable(row: ResourceRow): boolean {
+  return row.crossing === null && row.ratePerSecond === 0;
+}
+
+/** The spoken form of a crossing for `aria-valuetext`, "stable" for a level that is not moving, or null while there is neither. */
 function crossingSpoken(
   row: ResourceRow,
   utNow: number | undefined,
 ): string | null {
   const seconds = secondsToCrossing(row, utNow);
-  if (seconds === null) return null;
+  if (seconds === null) return isStable(row) ? "stable" : null;
   const word = crossingWord(row);
   return seconds > 0
     ? `${word} in ${speakQuantity(value("s", seconds))}, modelled`
@@ -277,7 +285,7 @@ function CrossingTime({
   const ledger = useContext(LedgerReadingContext);
   const utNow = useContext(ViewUtContext);
   const seconds = secondsToCrossing(row, utNow);
-  if (seconds === null) return null;
+  if (seconds === null) return isStable(row) ? <>{lead}stable</> : null;
   const word = crossingWord(row);
   if (seconds <= 0) {
     return (

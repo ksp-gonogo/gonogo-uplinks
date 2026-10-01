@@ -261,6 +261,23 @@ describe("ShipSystemsComponent", () => {
     expect(oxygenCaption.textContent).toBe("380 / 400");
   });
 
+  it("says stable for a level Kerbalism reports as not moving", async () => {
+    const fixture = newFixture();
+    renderWidget(fixture);
+    act(() => {
+      fixture.emit("kerbalism.profile", PROFILE);
+      fixture.emit("kerbalism.lifesupport", {
+        ...LIFE_SUPPORT,
+        rates: { ...LIFE_SUPPORT.rates, Oxygen: 0 },
+      });
+      fixture.emit("vessel.resources", RESOURCES);
+      fixture.emit("vessel.crew", CREW);
+    });
+
+    const oxygenCaption = await screen.findByText(/380 \/ 400/);
+    expect(oxygenCaption.textContent).toBe("380 / 400 · stable");
+  });
+
   it("says full for a ceiling crossing", async () => {
     const fixture = newFixture();
     renderWidget(fixture);
