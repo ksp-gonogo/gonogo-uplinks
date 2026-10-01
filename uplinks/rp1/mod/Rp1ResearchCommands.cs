@@ -320,7 +320,55 @@ namespace GonogoRp1Uplink
         /// </summary>
         public CommandResult Research(Rp1TechResearchArgs? args)
         {
-            var techId = args?.TechId;
+            var refusal = Judge(args?.TechId, out var judged);
+            if (refusal != null)
+            {
+                return refusal;
+            }
+
+            // Built before the money moves. See this file's header: nothing in
+            // constructing it touches the game, so the only steps left after the
+            // charge are ones that either land or say plainly that they did not.
+            var project = BuildProject(
+                judged.Rnd!, judged.TechId!, judged.Title!, judged.ScienceCost, judged.State, out var buildFailure);
+            if (buildFailure != null)
+            {
+                return buildFailure;
+            }
+
+            var charged = Spend(judged.Rnd!, judged.ScienceCost);
+            if (charged != null)
+            {
+                return charged;
+            }
+
+            return Enlist(judged.Scm!, project!, judged.TechId!, judged.Title!);
+        }
+
+        /// <summary>
+        /// What <see cref="Judge"/> read on the way to a pass, so the press does
+        /// not read it twice.
+        /// </summary>
+        internal struct Judged
+        {
+            public object? Scm;
+            public object? Rnd;
+            public string? TechId;
+            public string? Title;
+            public int ScienceCost;
+            public string? State;
+        }
+
+        /// <summary>
+        /// Every check <see cref="Research"/> makes before it builds anything, in
+        /// the order it makes them, and nothing that writes: the refusal the press
+        /// would get, or null. <see cref="Rp1ResearchGate"/> publishes the same
+        /// answer before anyone presses.
+        /// </summary>
+        internal CommandResult? Judge(string? requestedTech, out Judged judged)
+        {
+            judged = default;
+            var techId = requestedTech;
             if (string.IsNullOrWhiteSpace(techId))
             {
                 return CommandResult.Fail(
@@ -458,22 +506,72 @@ namespace GonogoRp1Uplink
                 });
             }
 
-            // Built before the money moves. See this file's header: nothing in
-            // constructing it touches the game, so the only steps left after the
-            // charge are ones that either land or say plainly that they did not.
-            var project = BuildProject(rnd, techId!, title, scienceCost.Value, state, out var buildFailure);
-            if (buildFailure != null)
+            judged = new Judged
             {
-                return buildFailure;
-            }
+                Scm = scm,
+                Rnd = rnd,
+                TechId = techId,
+                Title = title,
+                ScienceCost = scienceCost.Value,
+                State = state,
+            };
+            return null;
+        }
 
-            var charged = Spend(rnd, scienceCost.Value);
-            if (charged != null)
+        /// <summary>
+        /// The nodes a research control could plausibly offer: every node of the
+        /// tree that is neither researched nor already on the queue. Empty when
+        /// the tree cannot be read, so the gate publishes nothing rather than a
+        /// guess.
+        /// </summary>
+        internal IEnumerable<string> ResearchableNodes()
+        {
+            if (!IsAvailable)
             {
-                return charged;
+                yield break;
             }
-
-            return Enlist(scm, project!, techId!, title);
+            var scm = Rp1Types.StaticValue(_scm!, "Instance");
+            if (scm == null)
+            {
+                yield break;
+            }
+            var nodes = new List<string>();
+            try
+            {
+                var tree = Rp1Types.StaticValue(_assets!, "RnDTechTree");
+                var treeTechs = tree == null ? null : Rp1Types.InstanceMethod(tree, "GetTreeTechs", 0);
+                if (treeTechs == null)
+                {
+                    yield break;
+                }
+                foreach (var node in Rp1Types.Enumerate(treeTechs.Invoke(tree, null)))
+                {
+                    var id = Rp1Types.ReadString(node, "techID");
+                    if (string.IsNullOrEmpty(id))
+                    {
+                        continue;
+                    }
+                    var state = TechnologyState(id!, out var stateFailure);
+                    if (stateFailure != null || state == ResearchedState)
+                    {
+                        continue;
+                    }
+                    var queued = AlreadyQueued(scm, id!, out var queuedFailure);
+                    if (queuedFailure != null || queued == true)
+                    {
+                        continue;
+                    }
+                    nodes.Add(id!);
+                }
+            }
+            catch (Exception)
+            {
+                yield break;
+            }
+            foreach (var id in nodes)
+            {
+                yield return id;
+            }
         }
 
         // ── RP-1's model, asked ────────────────────────────────────────────

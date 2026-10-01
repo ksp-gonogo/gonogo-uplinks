@@ -251,5 +251,76 @@ namespace GonogoRp1Uplink.Tests
 
             Assert.Equal(Rp1ScUplink.LeadersTopic, appoint.Subject);
         }
+
+        private static GateVerdict Offered(string id)
+        {
+            var args = new Dictionary<string, object> { ["strategyId"] = id };
+            return new Rp1LeaderActivateGate().Evaluate(Rp1LeaderActivateGate.Requirement(), new GateBag(args));
+        }
+
+        private sealed class GateBag : IGateArguments
+        {
+            private readonly Dictionary<string, object> _values;
+
+            public GateBag(Dictionary<string, object> values) => _values = values;
+
+            public bool TryGet(string path, out object value) => _values.TryGetValue(path, out value!);
+        }
+
+        [Fact]
+        public void The_activation_gate_refuses_a_leader_in_its_cooldown_with_RP1s_sentence()
+        {
+            Roster(Leader("leaderKorolev"));
+            ProgramHandler.Instance!.ActivatedStrategies["leaderKorolev"] = 1000d;
+            StrategyConfigRP0.Now = 2000d;
+
+            var verdict = Offered("leaderKorolev");
+
+            Assert.Equal(GateOutcome.Fail, verdict.Outcome);
+            Assert.Equal(CommandErrorCode.NotClearToProceed, verdict.ErrorCode);
+            Assert.Contains("re-hired", verdict.Detail);
+            Assert.Empty(StrategyCallLog.Calls);
+        }
+
+        [Fact]
+        public void The_activation_gate_refuses_a_leader_whose_requirements_are_unmet()
+        {
+            Roster(Leader("leaderGlushko", c => c.Unlocked = false));
+
+            var verdict = Offered("leaderGlushko");
+
+            Assert.Equal(GateOutcome.Fail, verdict.Outcome);
+            Assert.Contains("requirements", verdict.Detail);
+        }
+
+        [Fact]
+        public void The_activation_gate_passes_a_leader_RP1_offers()
+        {
+            Roster(Leader("leaderKorolev"));
+
+            Assert.Equal(GateOutcome.Pass, Offered("leaderKorolev").Outcome);
+        }
+
+        [Fact]
+        public void The_activation_gate_leaves_a_Program_and_an_unknown_strategy_to_core()
+        {
+            Roster(new ProgramStrategy
+            {
+                Config = new Strategies.StrategyConfig { Name = "earlyOrbital" },
+                Program = new Program { name = "earlyOrbital" },
+            });
+
+            Assert.Equal(GateOutcome.Pass, Offered("earlyOrbital").Outcome);
+            Assert.Equal(GateOutcome.Pass, Offered("nothingByThatName").Outcome);
+        }
+
+        [Fact]
+        public void The_activation_gate_is_unknown_without_a_strategy_system()
+        {
+            Strategies.StrategySystem.Instance = null;
+
+            Assert.Equal(GateOutcome.Unknown, Offered("leaderKorolev").Outcome);
+        }
+
     }
 }

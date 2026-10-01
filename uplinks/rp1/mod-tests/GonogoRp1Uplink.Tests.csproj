@@ -74,6 +74,9 @@
     <Compile Include="..\mod\Rp1LaunchGate.cs" />
     <Compile Include="..\mod\Rp1CareerProjectGate.cs" />
     <Compile Include="..\mod\Rp1ProgramDeactivateGate.cs" />
+    <Compile Include="..\mod\Rp1LeaderActivateGate.cs" />
+    <Compile Include="..\mod\Rp1ResearchGate.cs" />
+    <Compile Include="..\mod\Rp1GateVerdicts.cs" />
     <Compile Include="..\mod\Rp1Envelope.cs" />
     <Compile Include="..\mod\Rp1Buildable.cs" />
     <Compile Include="..\mod\Rp1Pricing.cs" />

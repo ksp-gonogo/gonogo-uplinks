@@ -132,7 +132,7 @@ namespace GonogoRp1Uplink
     /// against a stand-in object graph, which is the only way a launch refusal
     /// can be watched happening without a career save to hand.</para>
     /// </summary>
-    public sealed class Rp1LaunchGate : ICommandGateEvaluator
+    public sealed class Rp1LaunchGate : ICommandGateEvaluator, ICommandGateItems
     {
         /// <summary>
         /// The requirement kind this answers. Namespaced to this Uplink because a
@@ -199,6 +199,46 @@ namespace GonogoRp1Uplink
         };
 
         public string Kind => GateKind;
+
+        /// <summary>
+        /// The vehicles a launch control could offer: every finished vehicle in
+        /// a launch complex's warehouse. A design still being integrated is not
+        /// named, because nothing yet offers it for launch.
+        /// </summary>
+        public IEnumerable<string> Items(CommandRequirement requirement)
+        {
+            var scm = ScmInstance();
+            if (scm == null || Rp1Types.ReadBool(scm, "enabledForSave") != true)
+            {
+                yield break;
+            }
+            var names = new List<string>();
+            try
+            {
+                foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(scm, "KSCs")))
+                {
+                    foreach (var lc in Rp1Types.Enumerate(Rp1Types.Member(ksc, "LaunchComplexes")))
+                    {
+                        foreach (var vp in Rp1Types.Enumerate(Rp1Types.Member(lc, "Warehouse")))
+                        {
+                            var name = Rp1Types.ReadString(vp, "shipName");
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                names.Add(name!);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                yield break;
+            }
+            foreach (var name in names)
+            {
+                yield return name;
+            }
+        }
 
         public GateVerdict Evaluate(CommandRequirement requirement, IGateArguments arguments)
         {

@@ -719,13 +719,13 @@ namespace GonogoRp1Uplink
             }
         }
 
-        private static object? StrategySystemInstance()
+        internal static object? StrategySystemInstance()
         {
             var t = Rp1Types.Find("Strategies.StrategySystem");
             return t == null ? null : Rp1Types.StaticValue(t, "Instance");
         }
 
-        private static bool TryFindStrategy(object system, string id, out object strategy)
+        internal static bool TryFindStrategy(object system, string id, out object strategy)
         {
             foreach (var candidate in Rp1Types.Enumerate(Rp1Types.Member(system, "Strategies")))
             {

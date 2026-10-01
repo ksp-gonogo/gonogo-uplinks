@@ -570,5 +570,28 @@ namespace GonogoRp1Uplink.Tests
                 new[] { Rp1LaunchGate.Integrated, Rp1LaunchGate.WithinComplexLimits, Rp1LaunchGate.RolledOut },
                 Rp1LaunchGate.Requirements().Select(r => r.Quantity).ToArray());
         }
+
+        [Fact]
+        public void ItemsNameEveryFinishedVehicleAndNoneStillIntegrating()
+        {
+            var lc = Centre();
+            lc.Warehouse.Add(Vehicle("V-2"));
+            lc.Warehouse.Add(Vehicle("Redstone"));
+            lc.BuildList.Add(Vehicle("Atlas"));
+
+            var items = _gate.Items(Rp1LaunchGate.Requirements().First()).ToArray();
+
+            Assert.Equal(new[] { "V-2", "Redstone" }, items);
+        }
+
+        [Fact]
+        public void ItemsAreEmptyWhenRp1IsNotManagingTheSave()
+        {
+            Centre();
+            SpaceCenterManagement.Instance!.enabledForSave = false;
+
+            Assert.Empty(_gate.Items(Rp1LaunchGate.Requirements().First()));
+        }
+
     }
 }

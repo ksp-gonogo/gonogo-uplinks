@@ -320,6 +320,7 @@ namespace GonogoRp1Uplink
         /// <c>rp1.program.complete</c>. Its own reader, like the two gates above.
         /// </summary>
         private readonly Rp1ProgramDeactivateGate _programDeactivate = new Rp1ProgramDeactivateGate();
+        private readonly Rp1LeaderActivateGate _leaderActivate = new Rp1LeaderActivateGate();
 
         /// <summary>Set when that contribution threw, so Health can say so rather than nothing.</summary>
         private string? _programDeactivateGateRegistrationError;
@@ -446,6 +447,7 @@ namespace GonogoRp1Uplink
         /// a redefinition of ksp.launch.
         /// </summary>
         private readonly Rp1ResearchCommands _researchCommands = new Rp1ResearchCommands();
+        private readonly Rp1ResearchGate _researchGate;
         /// The command that starts a design the space centre has never held, from
         /// one of the save's own craft files. Its own reader for the reason the two
         /// above are, and it holds a LAZY route to core's craft catalogue rather
@@ -488,6 +490,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>The strategy deactivate that strands an RP-1 Program. Spelled out for the reason above.</summary>
         private const string CareerStrategyDeactivateCommand = "career.strategy.deactivate";
+        private const string CareerStrategyActivateCommand = "career.strategy.activate";
         /// <summary>Set when the crew-standing provider registration threw, so Health can say so rather than nothing.</summary>
         private string? _crewStandingRegistrationError;
 
@@ -577,6 +580,7 @@ namespace GonogoRp1Uplink
         public Rp1ScUplink()
         {
             _start = new Rp1BuildStartCommands(Catalogue);
+            _researchGate = new Rp1ResearchGate(_researchCommands);
             Manifest = BuildManifest(
                 _build.IsAvailable, _vehicles.IsAvailable, _vehicles.IsMoveAvailable,
                 _staffing.IsAvailable, _start.IsAvailable, _facilities.IsAvailable,
@@ -874,7 +878,16 @@ namespace GonogoRp1Uplink
             // rename on either side should cost this command and nothing else.
             if (researchModelResolved)
             {
-                commands.Add(Declare(Rp1ResearchCommands.ResearchCommand, ResearchTopic));
+                commands.Add(new CommandDeclaration
+                {
+                    Command = Rp1ResearchCommands.ResearchCommand,
+                    Subject = ResearchTopic,
+                    Requires = new[]
+                    {
+                        Rp1BuildCommands.Requirements()[0],
+                        Rp1ResearchGate.Requirement(),
+                    },
+                });
             }
             if (strategyModelResolved)
             {
@@ -1122,6 +1135,12 @@ namespace GonogoRp1Uplink
                     host.AddCommandRequirement(
                         CareerStrategyDeactivateCommand, Rp1ProgramDeactivateGate.Requirement());
                 }
+                if (_leaderActivate.IsAvailable)
+                {
+                    host.AddGateEvaluator(_leaderActivate);
+                    host.AddCommandRequirement(
+                        CareerStrategyActivateCommand, Rp1LeaderActivateGate.Requirement());
+                }
             }
             catch (Exception ex)
             {
@@ -1258,6 +1277,7 @@ namespace GonogoRp1Uplink
             {
                 if (_researchCommands.IsAvailable)
                 {
+                    host.AddGateEvaluator(_researchGate);
                     host.AddCommandHandler<Rp1TechResearchArgs, CommandResult>(
                         Rp1ResearchCommands.ResearchCommand, _researchCommands.Research);
                 }

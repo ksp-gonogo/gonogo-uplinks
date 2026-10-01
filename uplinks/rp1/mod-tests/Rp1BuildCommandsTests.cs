@@ -424,8 +424,18 @@ namespace GonogoRp1Uplink.Tests
                 Assert.Contains(
                     Rp1BuildCommands.GateKind,
                     declaration.Requires.Select(r => r.Kind).ToArray());
-                Assert.All(declaration.Requires, requirement => Assert.Empty(requirement.Needs));
+                // Per-item requirements name their one need and are asked per
+                // item; every other requirement is decided on the empty bag.
+                Assert.All(
+                    declaration.Requires.Where(r => r.Kind != Rp1ResearchGate.GateKind),
+                    requirement => Assert.Empty(requirement.Needs));
             });
+
+            var research = declarations.Single(d => d.Command == Rp1ResearchCommands.ResearchCommand);
+            Assert.Equal(
+                new[] { Rp1BuildCommands.GateKind, Rp1ResearchGate.GateKind },
+                research.Requires.Select(r => r.Kind).ToArray());
+            Assert.Equal(new[] { "techId" }, research.Requires.Single(r => r.Kind == Rp1ResearchGate.GateKind).Needs);
 
             var start = declarations.Single(d => d.Command == Rp1BuildStartCommands.StartCommand);
             Assert.Equal(
@@ -504,6 +514,7 @@ namespace GonogoRp1Uplink.Tests
                     Rp1BuildCommands.GateKind,
                     Rp1BuildStartCommands.GateKind,
                     Rp1FacilityUpgradeCommands.GateKind,
+                    Rp1ResearchGate.GateKind,
                     Rp1WarpCommands.GateKind,
                 },
                 kinds.ToArray());
