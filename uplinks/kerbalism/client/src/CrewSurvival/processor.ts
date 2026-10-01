@@ -39,7 +39,7 @@ import { KERBALISM } from "../uplink.js";
 // Deliberately does NOT derive the shared "time to life-support depletion"
 // cross-resource clock from
 // `kerbalism.lifesupport`/`kerbalism.profile`/`vessel.resources`: that is Ship
-// Systems' own domain (`summarise`/`timeToEmptySeconds` in `../ecosystem`), and
+// Systems' own domain (`summarise` in `../ecosystem`), and
 // deriving it here too would be a second derivation of the same fact.
 // `marginToAct` below is measured to the wire's own
 // `KerbalismCrewEntry.deathClockUt`, which the mod fills in: it is the

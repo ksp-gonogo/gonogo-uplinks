@@ -211,7 +211,6 @@ export {
   resourceFacts,
   stronglyConnected,
   summarise,
-  timeToEmptySeconds,
   wearRows,
 } from "./ecosystem.js";
 // The Ship Systems Processor handle + its result type, the single per-frame

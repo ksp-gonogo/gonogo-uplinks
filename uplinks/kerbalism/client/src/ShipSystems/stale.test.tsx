@@ -120,18 +120,19 @@ describe("Ship Systems says a held ledger is held", () => {
 /**
  * The live scene seen across a 60 s light time. Electric Charge drains at
  * 0.05/s, so the resource model carries it from 20 to 17 at the craft's
- * present and its time to empty from 400 s to 340 s. Water's drain moves
+ * present, and the crossing, 400 s past the observation, is 340 s from the view. Water's drain moves
  * nothing that reads differently at the precision drawn.
  */
 describe("Ship Systems across a light time", () => {
-  it("draws the model's level and time to empty beside each observed figure", async () => {
+  it("draws the model's level beside the observed one and the crossing from the view time", async () => {
     const container = await scene(lightTime);
     const ec = screen.getByTestId("resource-card-ElectricCharge");
-    expect(visibleText(ec)).toMatch(/20\s*17\s*\/ 400 · 6min 40s\s*5min 40s/);
+    expect(visibleText(ec)).toMatch(
+      /20\s*17\s*\/ 400 · empty in 5min 40s, modelled/,
+    );
     const alongside = [...ec.querySelectorAll("[data-modelled-alongside]")];
     expect(alongside.map((el) => visibleText(el as HTMLElement))).toEqual([
       "17",
-      "5min 40s",
     ]);
     for (const figure of alongside) {
       expect(figure.querySelector("[data-held-mark]")).not.toBeNull();
@@ -140,13 +141,13 @@ describe("Ship Systems across a light time", () => {
       screen.getByRole("meter", { name: "Electric Charge" }),
     ).toHaveAttribute(
       "aria-valuetext",
-      expect.stringMatching(/, modelled to SCET 17 · /),
+      expect.stringMatching(/, modelled to SCET 17 · empty in 5min 40s, modelled/),
     );
     const water = screen.getByTestId("resource-card-Water");
     expect(water.querySelector("[data-modelled-alongside]")).toBeNull();
     expect(screen.getByRole("meter", { name: "Water" })).toHaveAttribute(
       "aria-valuetext",
-      expect.not.stringContaining("modelled"),
+      expect.not.stringContaining("modelled to SCET"),
     );
     expect(container.querySelectorAll("[data-held]").length).toBe(
       container.querySelectorAll("[data-modelled-alongside]").length,

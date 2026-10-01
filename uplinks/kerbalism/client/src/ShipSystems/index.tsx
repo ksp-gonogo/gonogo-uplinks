@@ -141,27 +141,21 @@ function formatRate(perSecond: number): string {
  * (an empty waste container rendering alarm-red was this function's own
  * defect: empty waste is good).
  */
-function toneForRow(row: ResourceRow): Tone {
+function toneForRow(row: ResourceRow, utNow: number | undefined): Tone {
   if (row.role === "root") return "nogo";
-  if (row.secondsToEmpty !== null && row.secondsToEmpty < SOON_EMPTY_SEC) {
-    return "nogo";
-  }
+  const emptyIn = secondsToFloor(row, utNow);
+  if (emptyIn !== null && emptyIn < SOON_EMPTY_SEC) return "nogo";
   if (row.belowLowThreshold === true) return "warn";
   if (row.role === "downstream") return "warn";
-  if (
-    row.secondsToEmpty !== null &&
-    row.fraction !== null &&
-    row.fraction < 0.2
-  ) {
+  if (emptyIn !== null && row.fraction !== null && row.fraction < 0.2) {
     return "warn";
   }
   return "neutral";
 }
 
-/** The resource model's figures for one row at the craft's present. */
+/** The resource model's level for one row at the craft's present. */
 interface ModelledRow {
   amount?: number;
-  secondsToEmpty?: number;
 }
 
 function modelledRow(
@@ -170,47 +164,79 @@ function modelledRow(
 ): ModelledRow {
   const figure = modelled?.[row.name];
   if (figure === undefined || row.capacity <= 0) return {};
-  const sec = figure.secondsToEmpty;
-  if (sec === null || !Number.isFinite(sec)) return { amount: figure.amount };
-  return { amount: figure.amount, secondsToEmpty: Math.max(0, sec) };
+  return { amount: figure.amount };
 }
 
-/** An observed time to empty as a quantity, or null while the level is not draining. */
-function observedSeconds(sec: number | null): Value<"s"> | null {
-  if (sec === null || !Number.isFinite(sec)) return null;
-  return value("s", Math.max(0, sec));
+/**
+ * Seconds from the view time to the model's crossing of a row's boundary, or
+ * null where there is none to give: no crossing, or no view time to measure
+ * from. Negative once the view has passed the crossing, where the model has
+ * withdrawn and the level is the last observation.
+ */
+function secondsToCrossing(
+  row: ResourceRow,
+  utNow: number | undefined,
+): number | null {
+  if (row.crossing === null || utNow === undefined) return null;
+  const seconds = row.crossing.atUt - utNow;
+  return Number.isFinite(seconds) ? seconds : null;
+}
+
+/** As {@link secondsToCrossing}, for a level heading for its floor only. */
+function secondsToFloor(
+  row: ResourceRow,
+  utNow: number | undefined,
+): number | null {
+  return row.crossing?.boundary === "floor"
+    ? secondsToCrossing(row, utNow)
+    : null;
+}
+
+/**
+ * The words an operator reads for a crossing. Both ends are one rule in the
+ * model (`floor` and `ceiling`); only here do they become empty and full. The
+ * time is the model's claim, not an observation, and is worded as one.
+ */
+function crossingWord(row: ResourceRow): "empty" | "full" {
+  return row.crossing?.boundary === "ceiling" ? "full" : "empty";
+}
+
+/** The spoken form of a crossing for `aria-valuetext`, or null while there is none. */
+function crossingSpoken(
+  row: ResourceRow,
+  utNow: number | undefined,
+): string | null {
+  const seconds = secondsToCrossing(row, utNow);
+  if (seconds === null) return null;
+  const word = crossingWord(row);
+  return seconds > 0
+    ? `${word} in ${speakQuantity(value("s", seconds))}, modelled`
+    : `modelled ${word} by now`;
 }
 
 /** "12 / 40 · 3m 20s" style meter caption; "not fitted" for a tankless resource.
  *  Kept as a plain string for `Meter`'s `aria-valuetext` (an attribute, so it
  *  can only hold text); the visible header reads `RowValueDisplay` instead,
  *  which renders the same content through `<Unit>`. */
-function rowValueLabel(row: ResourceRow, modelled: ModelledRow = {}): string {
+function rowValueLabel(
+  row: ResourceRow,
+  utNow: number | undefined,
+  modelled: ModelledRow = {},
+): string {
   if (row.capacity <= 0) return "not fitted";
-  const observed = `${fmtAmt(row.amount)} / ${fmtAmt(row.capacity)} · ${formatTimeToEmpty(row.secondsToEmpty)}`;
-  const reckoned = [
+  const crossing = crossingSpoken(row, utNow);
+  const reckoned =
     modelled.amount !== undefined &&
     standsApart(row.amount, modelled.amount, writtenAs(fmtAmt))
-      ? fmtAmt(modelled.amount)
-      : undefined,
-    modelled.secondsToEmpty !== undefined &&
-    standsApart(
-      observedSeconds(row.secondsToEmpty),
-      value("s", modelled.secondsToEmpty),
-      writtenQuantity(),
-    )
-      ? formatTimeToEmpty(modelled.secondsToEmpty)
-      : undefined,
-  ].filter((part) => part !== undefined);
-  return reckoned.length === 0
-    ? observed
-    : `${observed}, modelled to SCET ${reckoned.join(" · ")}`;
+      ? `, modelled to SCET ${fmtAmt(modelled.amount)}`
+      : "";
+  return `${fmtAmt(row.amount)} / ${fmtAmt(row.capacity)}${reckoned}${crossing === null ? "" : ` · ${crossing}`}`;
 }
 
 /** Visible counterpart to `rowValueLabel`: same "amount / capacity · time"
- *  shape, but the time-to-empty renders through `<Unit>` (the canonical
- *  duration path, `formatQuantity` → `formatDuration`) instead of the
- *  hand-rolled `speakQuantity` string that function returns. */
+ *  shape, but the time renders through `<Unit>` (the canonical duration path,
+ *  `formatQuantity` → `formatDuration`) instead of the hand-rolled
+ *  `speakQuantity` string that function returns. */
 function RowValueDisplay({
   row,
   modelled = {},
@@ -218,10 +244,7 @@ function RowValueDisplay({
   row: ResourceRow;
   modelled?: ModelledRow;
 }) {
-  const ledger = useContext(LedgerReadingContext);
   if (row.capacity <= 0) return <>not fitted</>;
-  const sec = row.secondsToEmpty;
-  const left = value("s", Math.max(0, sec ?? 0));
   return (
     <>
       {fmtAmt(row.amount)}
@@ -231,30 +254,46 @@ function RowValueDisplay({
         write={fmtAmt}
       />
       {" / "}
-      {fmtAmt(row.capacity)} ·{" "}
-      {sec == null || !Number.isFinite(sec) ? (
-        "steady"
-      ) : (
-        <Unit value={ledger ? combineReadings([ledger], () => left) : left} />
-      )}
-      <ModelledSeconds observed={sec} seconds={modelled.secondsToEmpty} />
+      {fmtAmt(row.capacity)}
+      <CrossingTime row={row} lead=" · " />
     </>
   );
 }
 
-/** A modelled time to empty beside the observed one it was carried from. */
-function ModelledSeconds({
-  observed,
-  seconds,
+/**
+ * The model's crossing as a time from the view, worded as the modelled claim it
+ * is: "empty in 3m 20s, modelled". Draws nothing while the row has no crossing,
+ * so an absent time is absent rather than a zero.
+ */
+function CrossingTime({
+  row,
+  lead = "",
+  approx = false,
 }: {
-  observed: number | null;
-  seconds: number | undefined;
+  row: ResourceRow;
+  lead?: string;
+  approx?: boolean;
 }) {
+  const ledger = useContext(LedgerReadingContext);
+  const utNow = useContext(ViewUtContext);
+  const seconds = secondsToCrossing(row, utNow);
+  if (seconds === null) return null;
+  const word = crossingWord(row);
+  if (seconds <= 0) {
+    return (
+      <>
+        {lead}modelled {word} by now
+      </>
+    );
+  }
+  const left = value("s", seconds);
   return (
-    <ModelledAlongside
-      observed={observedSeconds(observed)}
-      modelled={seconds === undefined ? undefined : value("s", seconds)}
-    />
+    <>
+      {lead}
+      {word} in {approx ? "~" : ""}
+      <Unit value={ledger ? combineReadings([ledger], () => left) : left} />,
+      modelled
+    </>
   );
 }
 
@@ -265,6 +304,9 @@ function ModelledSeconds({
 const LedgerReadingContext = createContext<Reading<unknown> | undefined>(
   undefined,
 );
+
+/** The view time the row countdowns are measured from. */
+const ViewUtContext = createContext<number | undefined>(undefined);
 
 /** Same resting-tone rule as `toneForRow`: wear is always slowly draining by
  *  nature, so the countdown does the alarming and the fraction only warns at
@@ -423,6 +465,7 @@ function ShipSystemsComponent(
 
   return (
     <LedgerReadingContext.Provider value={shipReading}>
+      <ViewUtContext.Provider value={utNow}>
       <ShipSystemsBody
         ship={ship}
         weather={weather}
@@ -430,6 +473,7 @@ function ShipSystemsComponent(
         held={shipReading?.state === "held"}
         modelled={modelledBeyondReceived(ship.figures)}
       />
+      </ViewUtContext.Provider>
     </LedgerReadingContext.Provider>
   );
 }
@@ -443,11 +487,12 @@ function ShipSystemsComponent(
  */
 function overallStatus(
   ship: ShipSystems,
+  utNow: number | undefined,
   anyGreenhouseHalted: boolean,
 ): { label: string; tone: Tone } {
   if (ship.summary.causes.length > 0)
     return { label: "Critical", tone: "nogo" };
-  const tones = ship.summary.supplies.map(toneForRow);
+  const tones = ship.summary.supplies.map((row) => toneForRow(row, utNow));
   if (tones.includes("nogo")) return { label: "Critical", tone: "nogo" };
   if (tones.includes("warn") || anyGreenhouseHalted)
     return { label: "Degraded", tone: "warn" };
@@ -530,7 +575,7 @@ function ShipSystemsBody({
   const anyGreenhouseHalted = greenhouses.some((g) =>
     radiationTooHigh(g, ambientRadiationRadPerSecond),
   );
-  const status = overallStatus(ship, anyGreenhouseHalted);
+  const status = overallStatus(ship, utNow, anyGreenhouseHalted);
 
   // Every resource this render pass shows a Card for, supplies and other
   // alike: one colour map covers both sections so the same resource always
@@ -564,8 +609,12 @@ function ShipSystemsBody({
             // readout on this widget an operator would act on immediately. The
             // kit draws the absence and drops `role="meter"` with it.
             value={fill(ecRow.fraction)}
-            tone={toneForRow(ecRow)}
-            valueLabel={rowValueLabel(ecRow, modelledRow(ecRow, modelled))}
+            tone={toneForRow(ecRow, utNow)}
+            valueLabel={rowValueLabel(
+              ecRow,
+              utNow,
+              modelledRow(ecRow, modelled),
+            )}
             valueLabelNode={
               <RowValueDisplay
                 row={ecRow}
@@ -610,15 +659,7 @@ function ShipSystemsBody({
                             <LimitedByMessage
                               subjectDisplayName={explained}
                               blockedBy={[cause.displayName]}
-                              secondsToEmpty={
-                                explainedRow?.secondsToEmpty ?? null
-                              }
-                              modelledSecondsToEmpty={
-                                explainedRow
-                                  ? modelledRow(explainedRow, modelled)
-                                      .secondsToEmpty
-                                  : undefined
-                              }
+                              row={explainedRow}
                             />
                           </Text>
                         );
@@ -626,23 +667,10 @@ function ShipSystemsBody({
                     : [
                         <Text key={cause.name} tone="nogo" size="xs">
                           {cause.displayName} is running critically low
-                          {cause.secondsToEmpty !== null && (
+                          {secondsToFloor(cause, utNow) !== null && (
                             <>
-                              {" "}
-                              (~
-                              <Unit
-                                value={value(
-                                  "s",
-                                  Math.max(0, cause.secondsToEmpty),
-                                )}
-                              />
-                              <ModelledSeconds
-                                observed={cause.secondsToEmpty}
-                                seconds={
-                                  modelledRow(cause, modelled).secondsToEmpty
-                                }
-                              />{" "}
-                              left)
+                              {" ("}
+                              <CrossingTime row={cause} approx />)
                             </>
                           )}
                         </Text>,
@@ -838,6 +866,7 @@ function ResourceLedgerRow({
    *  prop's own honest optionality). */
   identityColor?: string;
 }) {
+  const utNow = useContext(ViewUtContext);
   const ledger = useMemo<Ledger>(
     () =>
       buildLedger({
@@ -864,8 +893,8 @@ function ResourceLedgerRow({
           // See the Power footer: a resource the craft has no tank for has no
           // fill fraction, and drawing one at zero says the tank is empty.
           value={fill(row.fraction)}
-          tone={toneForRow(row)}
-          valueLabel={rowValueLabel(row, modelled)}
+          tone={toneForRow(row, utNow)}
+          valueLabel={rowValueLabel(row, utNow, modelled)}
           valueLabelNode={<RowValueDisplay row={row} modelled={modelled} />}
         />
         {row.role === "downstream" && row.blockedBy.length > 0 && (
@@ -873,8 +902,7 @@ function ResourceLedgerRow({
             <LimitedByMessage
               subjectDisplayName={row.displayName}
               blockedBy={row.blockedBy}
-              secondsToEmpty={row.secondsToEmpty}
-              modelledSecondsToEmpty={modelled.secondsToEmpty}
+              row={row}
             />
           </Text>
         )}
@@ -906,26 +934,20 @@ function ResourceLedgerRow({
 function LimitedByMessage({
   subjectDisplayName,
   blockedBy,
-  secondsToEmpty,
-  modelledSecondsToEmpty,
+  row,
 }: {
   subjectDisplayName: string;
   blockedBy: string[];
-  secondsToEmpty: number | null;
-  modelledSecondsToEmpty: number | undefined;
+  row: ResourceRow | undefined;
 }) {
+  const utNow = useContext(ViewUtContext);
   return (
     <>
       {subjectDisplayName} is being limited by {blockedBy.join(", ")}.
-      {secondsToEmpty !== null && (
+      {row !== undefined && secondsToFloor(row, utNow) !== null && (
         <>
           {" "}
-          ~<Unit value={value("s", Math.max(0, secondsToEmpty))} />
-          <ModelledSeconds
-            observed={secondsToEmpty}
-            seconds={modelledSecondsToEmpty}
-          />{" "}
-          of {subjectDisplayName} left
+          {subjectDisplayName} <CrossingTime row={row} approx />
         </>
       )}
     </>

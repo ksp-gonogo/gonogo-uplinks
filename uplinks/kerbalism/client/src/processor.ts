@@ -12,7 +12,8 @@ import type {
   KerbalismLifeSupport,
   KerbalismProfile,
 } from "./__generated__/contract.js";
-import { type Summary, summarise, timeToEmptySeconds } from "./ecosystem.js";
+import { type RowCrossing, type Summary, summarise } from "./ecosystem.js";
+import { resourceBoundaryCrossings } from "./resourceReckoning.js";
 import { KERBALISM } from "./uplink.js";
 
 // The single per-frame derivation the Ship Systems widget AND its panel badge
@@ -51,18 +52,16 @@ export interface ShipSystems {
    */
   levels: LevelsProvenance;
   /**
-   * Each resource's level and time to empty, derived from the `vessel.resources`
+   * Each resource's level, derived from the `vessel.resources`
    * reading. The reckoned figures come from that reading's own model and name
    * only the levels it moved, at the instant it reckoned to.
    */
   figures: Reading<LevelFigures>;
 }
 
-/** One resource's level and time to empty. */
+/** One resource's level. */
 export interface LevelFigure {
   amount: number;
-  /** Null while the level is not draining. */
-  secondsToEmpty: number | null;
 }
 
 /** Level figures keyed by KSP resource name. */
@@ -119,13 +118,22 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     }
     const crewCount = magnitudeOr(crew?.count, 0);
     const moved = movedLevels(resourcesReading);
+    // The one prediction there is: the model's crossing, off the last observed
+    // levels. A resource it has none for is simply absent here.
+    const crossings: Record<string, RowCrossing> = {};
+    for (const c of resourceBoundaryCrossings(resources ?? null, lifeSupport)) {
+      crossings[c.resource] = {
+        boundary: c.boundary,
+        atUt: c.atUt.magnitude,
+      };
+    }
     const figures = deriveReading(
       resourcesReading,
-      (observed) => levelFigures(observed, lifeSupport, () => true),
+      (observed) => levelFigures(observed, () => true),
       (modelled) =>
         moved.size === 0
           ? undefined
-          : levelFigures(modelled, lifeSupport, (name) => moved.has(name)),
+          : levelFigures(modelled, (name) => moved.has(name)),
     );
     return {
       summary: summarise({
@@ -134,6 +142,7 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
         stored,
         capacity,
         crew: crewCount,
+        crossings,
       }),
       profile,
       lifeSupport,
@@ -159,23 +168,15 @@ function movedLevels(reading: TopicReading<Resources>): ReadonlySet<string> {
   return moved;
 }
 
-/** Level and time to empty off one resource map, for each name `include` admits. */
+/** Level off one resource map, for each name `include` admits. */
 function levelFigures(
   payload: Resources,
-  lifeSupport: KerbalismLifeSupport | undefined,
   include: (name: string) => boolean,
 ): LevelFigures {
-  const stored: Record<string, number> = {};
-  for (const [name, amount] of Object.entries(payload.resources ?? {})) {
-    stored[name] = magnitudeOr(amount.current, 0);
-  }
   const figures: Record<string, LevelFigure> = {};
-  for (const [name, amount] of Object.entries(stored)) {
+  for (const [name, amount] of Object.entries(payload.resources ?? {})) {
     if (!include(name)) continue;
-    figures[name] = {
-      amount,
-      secondsToEmpty: timeToEmptySeconds(name, lifeSupport, stored),
-    };
+    figures[name] = { amount: magnitudeOr(amount.current, 0) };
   }
   return figures;
 }

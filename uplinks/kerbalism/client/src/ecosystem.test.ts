@@ -10,7 +10,6 @@ import {
   diagnose,
   resourceFacts,
   summarise,
-  timeToEmptySeconds,
   wearRows,
 } from "./ecosystem.js";
 
@@ -389,26 +388,6 @@ describe("diagnose", () => {
   });
 });
 
-describe("timeToEmptySeconds", () => {
-  const ls = {
-    rates: { Water: rate(-0.0001), Oxygen: rate(0.2) },
-  };
-
-  it("divides what is left by what is leaving", () => {
-    expect(timeToEmptySeconds("Water", ls, { Water: 10 })).toBeCloseTo(
-      100_000,
-      6,
-    );
-  });
-
-  it("is null while a resource is flat or filling", () => {
-    expect(timeToEmptySeconds("Oxygen", ls, { Oxygen: 10 })).toBeNull();
-    // Absent is not zero: Kerbalism reported no rate, so there is no countdown
-    // to give, which is different from "it will never run out".
-    expect(timeToEmptySeconds("Ammonia", ls, { Ammonia: 10 })).toBeNull();
-  });
-});
-
 describe("summarise", () => {
   const RUNNING = {
     rates: {
@@ -508,11 +487,38 @@ describe("summarise", () => {
     expect(oxygen?.belowLowThreshold).toBeUndefined();
   });
 
+  it("carries the model's crossing per row and orders by the soonest floor", () => {
+    const crossed = summarise({
+      profile: PROFILE,
+      lifeSupport: RUNNING,
+      stored: STORED,
+      capacity: CAPACITY,
+      crew: CREW,
+      crossings: {
+        Water: { boundary: "floor", atUt: 5000 },
+        ElectricCharge: { boundary: "floor", atUt: 3000 },
+        Oxygen: { boundary: "ceiling", atUt: 100 },
+      },
+    });
+    const byName = (n: string) =>
+      crossed.supplies.find((r) => r.name === n)?.crossing;
+    expect(byName("Water")).toEqual({ boundary: "floor", atUt: 5000 });
+    expect(byName("Oxygen")).toEqual({ boundary: "ceiling", atUt: 100 });
+    // A ceiling crossing is not a countdown to empty, so it never jumps the queue.
+    const unroled = crossed.supplies.filter((r) => r.role === null);
+    const order = unroled.map((r) => r.name);
+    if (order.includes("ElectricCharge") && order.includes("Oxygen")) {
+      expect(order.indexOf("ElectricCharge")).toBeLessThan(
+        order.indexOf("Oxygen"),
+      );
+    }
+  });
+
   it("reports a rate of null rather than 0 when Kerbalism reported none", () => {
     // Absent is not "in balance". A row that reads 0.00/s implies a measurement.
     const ammonia = summary.other.find((r) => r.name === "Ammonia");
     expect(ammonia?.ratePerSecond).toBeNull();
-    expect(ammonia?.secondsToEmpty).toBeNull();
+    expect(ammonia?.crossing).toBeNull();
   });
 });
 

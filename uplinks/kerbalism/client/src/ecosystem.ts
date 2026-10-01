@@ -8,6 +8,7 @@ import type {
   KerbalismProcessDef,
   KerbalismProfile,
 } from "./__generated__/contract.js";
+import type { ResourceBoundary } from "./resourceReckoning.js";
 
 /**
  * Derivation over the Kerbalism wire payloads: the resource graph, the
@@ -536,45 +537,6 @@ export function diagnose({
     });
 }
 
-/**
- * Seconds until a resource runs out at its current rate; null while not draining.
- *
- * Divides the LAST OBSERVED level by the last observed rate, so the countdown
- * runs from the observation and not from the frame's view time. The reckoner
- * over `vessel.resources` (`resourceReckoning.ts`) carries that same pair
- * corrected to the view time, which makes it read like the obvious source for
- * this number. `resourceCountdown.test.ts` is the standing answer to that, and
- * its reasons are arithmetic: the model advances a level and never a time, and
- * it offers no band, so it says nothing about how wrong the rate might be,
- * which is the uncertainty a countdown actually has.
- *
- * The sharpest of those reasons used to be that the model's level CLAMPED at
- * zero while still inside the horizon, so a countdown off it read "empty NOW"
- * on a craft whose last observation saw a full tank. It no longer does: it
- * withdraws at the crossing and hands the level back as observed, and publishes
- * the crossing as a UT (`resourceBoundaryCrossings`). That UT is this same
- * division off the same observed level, so taking it would not change the
- * number here; what it would buy is the anchor and the other end of the range,
- * which a "time to empty" does not have a spelling for.
- *
- * What is left is the age of the levels, and that is reported rather than
- * modelled: `ShipSystems.levels` carries the state, the observation's own UT
- * and the age in seconds, for the levels every figure here derives from. The
- * same division over the model's levels is `ShipSystems.figures`' reckoned
- * figure, drawn beside this one and never in its place.
- */
-export function timeToEmptySeconds(
-  resource: string,
-  lifeSupport: KerbalismLifeSupport | undefined,
-  stored: Record<string, number>,
-): number | null {
-  const rate = lifeSupport?.rates?.[resource];
-  if (rate === undefined) return null;
-  const perSecond = magnitudeOf(rate);
-  if (perSecond === null || perSecond >= 0) return null;
-  return (stored[resource] ?? 0) / -perSecond;
-}
-
 // ── The row model ───────────────────────────────────────────────────────────
 
 /**
@@ -596,7 +558,12 @@ export interface ResourceRow {
   fraction: number | null;
   /** Signed units/s from Kerbalism, or null when it reported none. */
   ratePerSecond: number | null;
-  secondsToEmpty: number | null;
+  /**
+   * When the resource model has this level leaving the range it can occupy, or
+   * null when it has no crossing to give (no rate, or no anchor to date it
+   * from). Null is absence, never "now".
+   */
+  crossing: RowCrossing | null;
   isSupply: boolean;
   /** See ResourceFacts.pooled: `undefined` is unknown, NOT "not pooled". */
   pooled: boolean | undefined;
@@ -654,6 +621,13 @@ export interface WearRow {
   secondsRemaining: number | null;
 }
 
+/** One row's boundary crossing, off `resourceBoundaryCrossings`, as plain numbers. */
+export interface RowCrossing {
+  boundary: ResourceBoundary;
+  /** The UT the model has the level at that boundary. */
+  atUt: number;
+}
+
 export interface SummaryInput {
   profile: KerbalismProfile | undefined;
   lifeSupport: KerbalismLifeSupport | undefined;
@@ -662,6 +636,8 @@ export interface SummaryInput {
   /** Current capacity per resource name, from `vessel.resources`. */
   capacity: Record<string, number>;
   crew: number;
+  /** The model's crossings keyed by resource name; a resource without one has no time. */
+  crossings?: Readonly<Record<string, RowCrossing>>;
 }
 
 export interface Summary {
@@ -700,6 +676,7 @@ export function summarise({
   stored,
   capacity,
   crew,
+  crossings,
 }: SummaryInput): Summary {
   const facts = resourceFacts(profile);
   const groups = diagnose({ profile, lifeSupport, stored });
@@ -735,7 +712,7 @@ export function summarise({
       capacity: cap,
       fraction: cap > 0 ? amount / cap : null,
       ratePerSecond: magnitudeOf(reported),
-      secondsToEmpty: timeToEmptySeconds(f.name, lifeSupport, stored),
+      crossing: crossings?.[f.name] ?? null,
       isSupply: f.isSupply,
       pooled: f.pooled,
       closed: loopOf.has(f.name),
@@ -751,14 +728,18 @@ export function summarise({
     };
   };
 
+  const floorUt = (r: ResourceRow): number =>
+    r.crossing?.boundary === "floor" ? r.crossing.atUt : Number.POSITIVE_INFINITY;
+
   const ROLE_ORDER = { root: 0, downstream: 1 } as const;
   const order = (a: ResourceRow, b: ResourceRow): number => {
     const ra = a.role ? ROLE_ORDER[a.role] : 2;
     const rb = b.role ? ROLE_ORDER[b.role] : 2;
     if (ra !== rb) return ra - rb;
-    // Within a role, soonest-empty first; anything not draining sorts last.
-    const ta = a.secondsToEmpty ?? Number.POSITIVE_INFINITY;
-    const tb = b.secondsToEmpty ?? Number.POSITIVE_INFINITY;
+    // Within a role, the soonest modelled floor crossing first; a level with
+    // no crossing, or heading for its ceiling, sorts last.
+    const ta = floorUt(a);
+    const tb = floorUt(b);
     if (ta !== tb) return ta - tb;
     return a.name.localeCompare(b.name);
   };

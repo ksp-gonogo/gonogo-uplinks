@@ -91,6 +91,8 @@ const PROFILE = {
 // also drinks the short ElectricCharge). Both drain fast enough to carry a
 // real time-to-empty; Oxygen is healthy and steady, the sorting contrast.
 const LIFE_SUPPORT = {
+  // The stamp the model dates its crossings from; the stream's pinned UT is 10.
+  asOfKerbalismUt: 10,
   rates: {
     Water: -0.0005,
     ElectricCharge: -0.05,
@@ -224,15 +226,15 @@ describe("ShipSystemsComponent", () => {
     // (Water, the row it sits on) is being limited by object (Electric
     // Charge, the blocker), by DISPLAY name (never the raw profile key
     // "ElectricCharge"), and the reverse never appears on Electric
-    // Charge's own row. Also carries a time-to-empty prediction for the
-    // SUBJECT resource (Water), not the blocker.
+    // Charge's own row. Also carries the model's crossing for the SUBJECT
+    // resource (Water), not the blocker.
     await screen.findByText("Limiting factors");
     const messages = screen.getAllByText(
       /Water is being limited by Electric Charge\./,
     );
     expect(messages.length).toBeGreaterThan(0);
     for (const message of messages) {
-      expect(message.textContent).toMatch(/of Water left/);
+      expect(message.textContent).toMatch(/Water empty in ~.*, modelled/);
     }
     expect(screen.queryByText(/ElectricCharge/)).toBeNull();
     expect(
@@ -240,7 +242,7 @@ describe("ShipSystemsComponent", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows a time-to-empty for a draining supply and 'steady' for a healthy one", async () => {
+  it("words a floor crossing as modelled, and a level with none as no time at all", async () => {
     const fixture = newFixture();
     renderWidget(fixture);
     emitAll(fixture);
@@ -251,11 +253,29 @@ describe("ShipSystemsComponent", () => {
     const ecCaptions = await screen.findAllByText(/20 \/ 400/);
     expect(ecCaptions).toHaveLength(2);
     for (const caption of ecCaptions) {
-      expect(caption.textContent).not.toContain("steady");
+      expect(caption.textContent).toMatch(/empty in .*, modelled/);
     }
 
+    // Oxygen has no rate, so the model has no crossing: no time, not zero.
     const oxygenCaption = await screen.findByText(/380 \/ 400/);
-    expect(oxygenCaption.textContent).toContain("steady");
+    expect(oxygenCaption.textContent).toBe("380 / 400");
+  });
+
+  it("says full for a ceiling crossing", async () => {
+    const fixture = newFixture();
+    renderWidget(fixture);
+    act(() => {
+      fixture.emit("kerbalism.profile", PROFILE);
+      fixture.emit("kerbalism.lifesupport", {
+        ...LIFE_SUPPORT,
+        rates: { ...LIFE_SUPPORT.rates, Oxygen: 0.5 },
+      });
+      fixture.emit("vessel.resources", RESOURCES);
+      fixture.emit("vessel.crew", CREW);
+    });
+
+    const oxygenCaption = await screen.findByText(/380 \/ 400/);
+    expect(oxygenCaption.textContent).toMatch(/full in .*, modelled/);
   });
 
   it("expands a resource row to reveal its rate ledger", async () => {
