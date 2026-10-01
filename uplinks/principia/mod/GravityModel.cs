@@ -68,7 +68,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>The radius the geopotential coefficients are referred to, or null for a point mass.</summary>
         public double? ReferenceRadius { get; }
 
-        /// <summary>The second zonal harmonic, when the model states one. Carried and not summed into any bound.</summary>
+        /// <summary>The second zonal harmonic, when the model states one. Summed into a craft's horizon bound as a secular drift (see <see cref="PrincipiaHorizonBound.J2DriftRate"/>), together with <see cref="ReferenceRadius"/>.</summary>
         public double? J2 { get; }
     }
 

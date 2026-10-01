@@ -63,6 +63,7 @@ namespace GonogoPrincipiaUplink
         private readonly Func<GravityModel?> _forceModel;
         private readonly Func<int, IReadOnlyList<PrincipiaPerturber>> _perturbers;
         private readonly Func<int, int?> _parentOf;
+        private readonly Func<int, string?>? _bodyName;
 
         private readonly object _boundGate = new object();
         private string? _boundVesselId;
@@ -104,12 +105,20 @@ namespace GonogoPrincipiaUplink
         /// terms as <paramref name="perturbers"/>, so the whole of the bound is
         /// exercised with no game running.
         /// </param>
+        /// <param name="bodyName">
+        /// The gravity model's name for a body index, needed only to find the primary's
+        /// J2: the neighbourhood lists everything BUT the primary. Null, or a null
+        /// answer, leaves oblateness out of the bound, which is what a model with no J2
+        /// gets anyway.
+        /// </param>
         public PrincipiaPropagationProvider(
             IPropagationProvider conics,
             Func<GravityModel?> forceModel,
             Func<int, IReadOnlyList<PrincipiaPerturber>> perturbers,
-            Func<int, int?> parentOf)
+            Func<int, int?> parentOf,
+            Func<int, string?>? bodyName = null)
         {
+            _bodyName = bodyName;
             _conics = conics ?? throw new ArgumentNullException(nameof(conics));
             _forceModel = forceModel ?? throw new ArgumentNullException(nameof(forceModel));
             _perturbers = perturbers ?? throw new ArgumentNullException(nameof(perturbers));
@@ -245,6 +254,14 @@ namespace GonogoPrincipiaUplink
                 elements.Mu,
                 fromUt,
                 ut => _conics.Solve(target, parentFrame, ut).Position);
+
+            var primary = model.Find(_bodyName?.Invoke(target.ParentBodyIndex));
+            if (primary?.J2 != null && primary.ReferenceRadius != null)
+            {
+                departure.AddJ2Drift(PrincipiaHorizonBound.J2DriftRate(
+                    primary.J2.Value, primary.ReferenceRadius.Value, elements.Mu,
+                    elements.Sma, elements.Ecc, elements.Inc));
+            }
 
             var neighbourhood = _perturbers(target.ParentBodyIndex);
             if (neighbourhood != null)

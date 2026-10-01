@@ -25,6 +25,7 @@ namespace GonogoPrincipiaUplink
         {
             _perturbers ??= PrincipiaPerturbers.Around;
             _bodyParents ??= PrincipiaPerturbers.ParentOf;
+            _bodyNames ??= PrincipiaPerturbers.NameOf;
         }
     }
 }

@@ -689,7 +689,8 @@ namespace GonogoPrincipiaUplink
                     ctx.Vanilla<IPropagationProvider>(PropagationCapability.Id),
                     () => _gravityModel?.Model,
                     perturbers,
-                    parentOf),
+                    parentOf,
+                    _bodyNames),
             });
         }
 
@@ -712,6 +713,9 @@ namespace GonogoPrincipiaUplink
         /// ephemeris bound rather than an invented one.
         /// </summary>
         private Func<int, int?>? _bodyParents;
+
+        /// <summary>Test seam: the gravity model's name for a body index, on the same terms as <see cref="_bodyParents"/>.</summary>
+        private Func<int, string?>? _bodyNames;
 
         private static readonly PrincipiaPerturber[] NoPerturbers = new PrincipiaPerturber[0];
 

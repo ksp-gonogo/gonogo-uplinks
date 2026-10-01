@@ -108,6 +108,22 @@ namespace GonogoPrincipiaUplink
             return list;
         }
 
+        /// <summary>The gravity model's key for a body: its game name, or null when the game will not say. Plain managed fields only, like the walk beside it.</summary>
+        public static string? NameOf(int bodyIndex)
+        {
+            try
+            {
+                var bodies = FlightGlobals.Bodies;
+                if (bodies == null || bodyIndex < 0 || bodyIndex >= bodies.Count) return null;
+                var name = bodies[bodyIndex]?.bodyName;
+                return string.IsNullOrEmpty(name) ? null : name;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Which body <paramref name="bodyIndex"/> orbits, or null for the root and
         /// for anything the game will not say.

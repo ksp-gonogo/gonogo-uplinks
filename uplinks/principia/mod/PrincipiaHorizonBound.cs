@@ -67,6 +67,7 @@ namespace GonogoPrincipiaUplink
         private readonly double _primaryMu;
         private readonly double _fromUt;
         private readonly double _initialRadius;
+        private double _j2DriftRate;
         private readonly List<double> _mu = new List<double>();
         private readonly List<Func<double, Sitrep.Contract.Vector3d>> _where =
             new List<Func<double, Sitrep.Contract.Vector3d>>();
@@ -106,7 +107,27 @@ namespace GonogoPrincipiaUplink
         public bool HasCraft { get; }
 
         /// <summary>Whether any body has been summed into this.</summary>
-        public bool Any => _where.Count > 0;
+        public bool Any => _where.Count > 0 || _j2DriftRate > 0.0;
+
+        /// <summary>
+        /// The speed, in metres per second, at which the primary's oblateness walks the
+        /// craft off its osculating conic. Zero when no oblateness has been stated.
+        /// </summary>
+        public double J2DriftRate => _j2DriftRate;
+
+        /// <summary>
+        /// Sum the primary's oblateness in as a secular drift, in metres per second,
+        /// from <see cref="PrincipiaHorizonBound.J2DriftRate"/>. It grows linearly with
+        /// time and is added to the integrated departure rather than into the
+        /// integration, because it is a rate of the mean elements and the integration
+        /// carries no pole direction to apply the J2 acceleration against. A value that
+        /// is not a positive finite number is dropped.
+        /// </summary>
+        public void AddJ2Drift(double metresPerSecond)
+        {
+            if (!HasCraft || !(metresPerSecond > 0.0) || double.IsInfinity(metresPerSecond)) return;
+            _j2DriftRate = metresPerSecond;
+        }
 
         /// <summary>
         /// The sum of each body's worst-case tidal magnitude at the sample instant,
@@ -279,7 +300,8 @@ namespace GonogoPrincipiaUplink
 
             public double Time { get; private set; }
 
-            public double Departure => _offset.Magnitude();
+            public double Departure =>
+                _offset.Magnitude() + _owner._j2DriftRate * Time;
 
             public State Snapshot() => new State(Time, _offset, _rate);
 
@@ -461,6 +483,51 @@ namespace GonogoPrincipiaUplink
         /// past the Mun by 1.16, so the old constant was not safe out here.</para>
         /// </summary>
         public const double FarFieldAmplification = 5.0;
+
+        /// <summary>
+        /// The speed at which the second zonal harmonic carries a craft off its
+        /// osculating conic, in metres per second, from the secular rates of the mean
+        /// elements.
+        ///
+        /// <para>With <c>n = sqrt(mu/a^3)</c>, <c>p = a(1-e^2)</c> and
+        /// <c>k = J2 (R/p)^2 n</c>, the first-order secular rates are
+        /// <c>dOmega/dt = -3/2 k cos i</c>, <c>dw/dt = 3/4 k (5cos^2 i - 1)</c> and
+        /// <c>d(M - n t)/dt = 3/4 k sqrt(1-e^2) (3cos^2 i - 1)</c>. The along-track
+        /// angle of the craft therefore gains <c>du/dt = dw/dt + d(M - n t)/dt</c> over
+        /// the conic, and the plane turns by <c>dOmega/dt</c>, which moves the craft
+        /// across the track by <c>sin i</c> of that. The two are at right angles, so the
+        /// drift speed is <c>a sqrt(du/dt^2 + (sin i dOmega/dt)^2)</c>. Source: Brouwer
+        /// (1959) and Vallado, Fundamentals of Astrodynamics, section 9.6 (secular J2
+        /// rates); the short-period terms are left out, being bounded and not
+        /// accumulating.</para>
+        ///
+        /// <para>Zero for any input that is not a usable number, for an unbound orbit
+        /// and for a model with no J2 or no reference radius, which is stock Principia:
+        /// there the bound is exactly what it was.</para>
+        /// </summary>
+        public static double J2DriftRate(
+            double j2, double referenceRadius, double mu, double sma, double ecc, double inclination)
+        {
+            if (!(j2 > 0.0) || !(referenceRadius > 0.0) || !(mu > 0.0) || !(sma > 0.0)
+                || !(ecc >= 0.0) || !(ecc < 1.0)
+                || double.IsInfinity(j2) || double.IsInfinity(referenceRadius)
+                || double.IsInfinity(mu) || double.IsInfinity(sma)
+                || double.IsNaN(inclination) || double.IsInfinity(inclination))
+            {
+                return 0.0;
+            }
+            var n = Math.Sqrt(mu / (sma * sma * sma));
+            var p = sma * (1.0 - ecc * ecc);
+            var ratio = referenceRadius / p;
+            var k = j2 * ratio * ratio * n;
+            var cos = Math.Cos(inclination);
+            var sin = Math.Sin(inclination);
+            var node = -1.5 * k * cos;
+            var along = 0.75 * k * ((5.0 * cos * cos - 1.0)
+                                    + Math.Sqrt(1.0 - ecc * ecc) * (3.0 * cos * cos - 1.0));
+            var rate = sma * Math.Sqrt(along * along + sin * node * (sin * node));
+            return double.IsNaN(rate) || double.IsInfinity(rate) ? 0.0 : rate;
+        }
 
         /// <summary>Bisection steps once a crossing has been bracketed inside one step.</summary>
         public const int RefineSteps = 24;
