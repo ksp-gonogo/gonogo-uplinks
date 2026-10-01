@@ -164,6 +164,23 @@ describe("TrainingCourses", () => {
     expect(screen.queryByText("TRAINING")).not.toBeInTheDocument();
   });
 
+  /**
+   * A course parked on RP-1 4.7's queue is waiting on its students' leave, not
+   * sitting idle, and RP-1 offers no way to take one student off it: only the
+   * whole course comes off, which leaves the leave it waits on alone.
+   */
+  it("says QUEUED for a course on the training queue and offers no per-student Remove", async () => {
+    const { fixture } = mount();
+    present(fixture, [course({ started: false, queued: true })]);
+
+    await waitFor(() => {
+      expect(screen.getByText("QUEUED")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("NOT STARTED")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Cancel this course/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /off the course/ })).not.toBeInTheDocument();
+  });
+
   /*
    * The house rule on status badges: a state chip never reads before the thing
    * it is a state OF. Asserted as DOM order, which is what "reads before"

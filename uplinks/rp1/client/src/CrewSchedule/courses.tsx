@@ -117,6 +117,7 @@ function Course({
   remove: Parameters<typeof CourseControls>[0]["remove"];
 }>) {
   const started = course.started === true;
+  const queued = course.queued === true;
   const fraction = progressOf(course, crew);
   const finishes = magnitudeOf(course.completesAtUt);
   const free = magnitudeOf(course.studentsAvailableAtUt);
@@ -141,7 +142,7 @@ function Course({
           align="start"
           status={
             <Badge tone={started ? "go" : "caution"} size="sm">
-              {started ? "TRAINING" : "NOT STARTED"}
+              {started ? "TRAINING" : queued ? "QUEUED" : "NOT STARTED"}
             </Badge>
           }
         >

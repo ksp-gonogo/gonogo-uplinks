@@ -2904,6 +2904,14 @@ export interface Rp1TrainingCourseEntry
 	* enrolled-but-unstarted course draws nothing.
 	*/
 	started?: boolean | null;
+	/**
+	* Whether the course is parked on RP-1 4.7's training queue, waiting for every
+	* student to come back from leave. A queued course has not started and has
+	* grounded nobody. It can only be cancelled whole, which takes it off the
+	* queue without ending the leave it waits on; one student cannot be taken off
+	* it.
+	*/
+	queued?: boolean | null;
 	completed?: boolean | null;
 	/**
 	* When the course itself finishes. An INSTANT, so a UT.

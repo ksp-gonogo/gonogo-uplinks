@@ -74,6 +74,10 @@ namespace GonogoRp1Uplink
         public int? SeatMin;
         public int? SeatMax;
         public bool? Started;
+
+        /// <summary>The course sits on RP-1 4.7's queue of courses waiting on a student's leave.</summary>
+        public bool? Queued;
+
         public bool? Completed;
         public double? CompletesAtUt;
 

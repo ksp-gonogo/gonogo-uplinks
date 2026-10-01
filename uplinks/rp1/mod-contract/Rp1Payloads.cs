@@ -2793,6 +2793,15 @@ public sealed class Rp1TrainingCourseEntry
     [SitrepUnit(Sitrep.Contract.Units.Flag)]
     public bool? Started { get; set; }
 
+    /// <summary>
+    /// Whether the course is parked on RP-1 4.7's training queue, waiting for every
+    /// student to come back from leave. A queued course has not started and has
+    /// grounded nobody. It can only be cancelled whole, which takes it off the queue
+    /// without ending the leave it waits on; one student cannot be taken off it.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Flag)]
+    public bool? Queued { get; set; }
+
     [SitrepUnit(Sitrep.Contract.Units.Flag)]
     public bool? Completed { get; set; }
 

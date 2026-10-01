@@ -85,6 +85,7 @@ namespace GonogoRp1Uplink
                     ["seatMin"] = c.SeatMin,
                     ["seatMax"] = c.SeatMax,
                     ["started"] = c.Started,
+                    ["queued"] = c.Queued,
                     ["completed"] = c.Completed,
                     ["completesAtUt"] = c.CompletesAtUt,
                     ["studentsAvailableAtUt"] = c.StudentsAvailableAtUt,

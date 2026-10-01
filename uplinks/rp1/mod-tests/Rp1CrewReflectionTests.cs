@@ -280,6 +280,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
         var course = Assert.Single(raw.Courses);
         Assert.Equal(new[] { "Val Kerman" }, course.Students);
         Assert.Equal(false, course.Started);
+        Assert.Equal(true, course.Queued);
         Assert.Null(course.StudentsAvailableAtUt);
         Assert.Equal(1, raw.Program!.Courses);
         Assert.Equal(0, raw.Program.CoursesStarted);

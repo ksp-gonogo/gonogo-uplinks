@@ -51,6 +51,7 @@ export function CourseControls({
   remove,
 }: Readonly<CourseControlsProps>) {
   const students = course.students ?? [];
+  const queued = course.queued === true;
   const seatMin = magnitudeOf(course.seatMin);
   const stranded =
     seatMin !== null && seatMin > 1
@@ -70,9 +71,11 @@ export function CourseControls({
         commandLabel="Cancel this course"
         confirmAriaLabel="Confirm cancelling this course"
         confirmLabel={
-          students.length > 1
-            ? `All ${students.length} off, no credit`
-            : "Course ends, no credit"
+          queued
+            ? "Leaves the queue, leave unaffected"
+            : students.length > 1
+              ? `All ${students.length} off, no credit`
+              : "Course ends, no credit"
         }
         disabled={students.length === 0}
         handle={cancel}
@@ -85,25 +88,28 @@ export function CourseControls({
         }
         tone="warn"
       />
-      {students.map((student) => (
-        <CommandButton
-          args={{ crewName: student }}
-          /* The visible label once the course strands them: the fuller name is
-             the act, and this control cannot perform it. */
-          aria-label={
-            stranded === null ? `Take ${student} off the course` : undefined
-          }
-          commandLabel={`Take ${student} off the course`}
-          confirmAriaLabel={`Confirm taking ${student} off the course`}
-          confirmLabel={`${student} off, no credit`}
-          disabled={stranded !== null}
-          handle={remove}
-          key={student}
-          label={`${student} off`}
-          size="sm"
-          title={stranded ?? undefined}
-        />
-      ))}
+      {/* No per-student control on a queued course: RP-1 takes one off whole,
+          and the mod refuses a single student leaving it. */}
+      {!queued &&
+        students.map((student) => (
+          <CommandButton
+            args={{ crewName: student }}
+            /* The visible label once the course strands them: the fuller name is
+               the act, and this control cannot perform it. */
+            aria-label={
+              stranded === null ? `Take ${student} off the course` : undefined
+            }
+            commandLabel={`Take ${student} off the course`}
+            confirmAriaLabel={`Confirm taking ${student} off the course`}
+            confirmLabel={`${student} off, no credit`}
+            disabled={stranded !== null}
+            handle={remove}
+            key={student}
+            label={`${student} off`}
+            size="sm"
+            title={stranded ?? undefined}
+          />
+        ))}
     </Cluster>
   );
 }

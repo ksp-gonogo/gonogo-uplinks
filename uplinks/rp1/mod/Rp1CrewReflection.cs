@@ -225,7 +225,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         private static CourseRaw? CourseFor(object instance, string name, double ut)
         {
-            foreach (var course in HeldCourses(instance))
+            foreach (var (course, _) in HeldCourses(instance))
             {
                 if (ReadBool(course, "Completed") == true || !HasStudent(course, name))
                 {
@@ -251,10 +251,17 @@ namespace GonogoRp1Uplink
         /// queues until their crew return from leave. The queue reads as nothing
         /// on 4.6, which has no such list.
         /// </summary>
-        private static List<object> HeldCourses(object instance)
+        private static List<(object Course, bool Queued)> HeldCourses(object instance)
         {
-            var courses = Materialise(Rp1Types.Member(instance, "TrainingCourses"));
-            courses.AddRange(Materialise(Rp1Types.Member(instance, "PendingTrainingCourses")));
+            var courses = new List<(object Course, bool Queued)>();
+            foreach (var running in Materialise(Rp1Types.Member(instance, "TrainingCourses")))
+            {
+                courses.Add((running, false));
+            }
+            foreach (var waiting in Materialise(Rp1Types.Member(instance, "PendingTrainingCourses")))
+            {
+                courses.Add((waiting, true));
+            }
             return courses;
         }
 
@@ -443,7 +450,7 @@ namespace GonogoRp1Uplink
             var rows = new List<Rp1TrainingCourseRaw>();
             var courses = 0;
             var coursesStarted = 0;
-            foreach (var course in HeldCourses(instance))
+            foreach (var (course, queued) in HeldCourses(instance))
             {
                 if (ReadBool(course, "Completed") == true)
                 {
@@ -504,6 +511,7 @@ namespace GonogoRp1Uplink
                     SeatMin = SeatCount(course, "SeatMin"),
                     SeatMax = SeatCount(course, "SeatMax"),
                     Started = started,
+                    Queued = queued,
                     Completed = false,
                     CompletesAtUt = row.FinishesAtUt,
                     StudentsAvailableAtUt = availableAt,
