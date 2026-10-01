@@ -5,6 +5,7 @@ import type { Rp1CrewEntry } from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
+import { useRetirementEnabled } from "./retirementSetting.js";
 import { kindOf } from "./template.js";
 
 /**
@@ -58,6 +59,7 @@ export function CrewSchedule({
   const available = current(useTelemetry("rp1.available"));
   const crew = current(useTelemetry("rp1.crew"));
   const program = current(useTelemetry("rp1.crewProgram"));
+  const retirementEnabled = useRetirementEnabled();
 
   // Invisible without RP-1, rather than a row of dashes on a stock game.
   if (available !== true) {
@@ -84,7 +86,7 @@ export function CrewSchedule({
     return retiredLine(row);
   }
 
-  const retirement = retirementLine(row, program?.retirementEnabled);
+  const retirement = retirementLine(row, retirementEnabled);
   const training = trainingLine(row);
   const expiry = expiryLine(row, program?.missionTrainingEnabled);
   // A row with no date to state renders no wrapper at all rather than an empty
@@ -131,11 +133,10 @@ export function CrewSchedule({
  */
 function retirementLine(
   row: Rp1CrewEntry,
-  // `null` as well as absent: `retirementEnabled` is a `bool?` and the wire
-  // keeps the key, so a career RP-1 could not answer for arrives as an explicit
-  // null. Only an explicit `false` suppresses the line; a null falls through
-  // and shows it, the same as never having heard.
-  retirementEnabled: boolean | null | undefined,
+  // Only an explicit `false` suppresses the line; a setting RP-1 could not
+  // read is absent and falls through to showing it, the same as never having
+  // heard.
+  retirementEnabled: boolean | undefined,
 ) {
   if (retirementEnabled === false) {
     return null;
@@ -239,7 +240,8 @@ function trainingLine(row: Rp1CrewEntry) {
  */
 function expiryLine(
   row: Rp1CrewEntry,
-  // Same `bool?` rule as retirementEnabled above.
+  // `null` as well as absent: the wire keeps a `bool?` key, so a career RP-1
+  // could not answer for arrives as an explicit null. Only `false` suppresses.
   missionTrainingEnabled: boolean | null | undefined,
 ) {
   if (missionTrainingEnabled === false) {

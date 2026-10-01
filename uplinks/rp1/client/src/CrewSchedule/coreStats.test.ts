@@ -7,7 +7,6 @@ import { crewCoreStats, nautSalaryStat } from "./coreStats.js";
    `Value<"count">`, and a fixture that hands over a number typechecks only
    because nothing on the read path minds. */
 const PROGRAM = {
-  retirementEnabled: true,
   crewRnREnabled: true,
   missionTrainingEnabled: true,
   courses: value("count", 3),

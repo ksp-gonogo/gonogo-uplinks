@@ -369,7 +369,6 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     missionTrainingEnabled: "flag",
     missionTrainingRate: "1",
     proficiencyTrainingRate: "1",
-    retirementEnabled: "flag",
     retirementExtensionCapSeconds: "s",
   },
   "Rp1FacilityEntry": {
@@ -902,7 +901,6 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     missionTrainingEnabled: "flag",
     missionTrainingRate: "1",
     proficiencyTrainingRate: "1",
-    retirementEnabled: "flag",
     retirementExtensionCapSeconds: "s",
   },
   "rp1.facilities": {
@@ -1385,20 +1383,6 @@ export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
   "rp1.warehouse": {
     projectType: null,
   },
-};
-
-/**
- * The fields each shape declares [SitrepStatic]: a fact about its subject
- * that does not change with time, so it cannot become stale. Keyed by the
- * generated interface name in ./contract.ts. A field absent here is live.
- *
- * @category Units and values
- */
-export const GENERATED_TYPE_STATICS: Readonly<Record<string, readonly string[]>> = {
-};
-
-/** The same, keyed by Topic id. */
-export const GENERATED_TOPIC_STATICS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** Each enum an `enum` field names, as its wire value to member name. */

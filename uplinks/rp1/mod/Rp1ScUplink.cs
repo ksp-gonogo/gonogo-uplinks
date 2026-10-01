@@ -39,7 +39,7 @@ namespace GonogoRp1Uplink
     /// touching no game API at all.</para>
     /// </summary>
     [SitrepUplink("rp1")]
-    public sealed class Rp1ScUplink : ISitrepUplink, IUplinkSettingsDeclarer
+    public sealed class Rp1ScUplink : ISitrepUplink, IUplinkSettingsDeclarer, IModSettingsSource
     {
         public const string AvailableTopic = "rp1.available";
         public const string CentresTopic = "rp1.centres";
@@ -671,7 +671,7 @@ namespace GonogoRp1Uplink
                 // Both crew channels publish NOTHING rather than an empty list or
                 // a bag of falses when RP-1's CrewHandler is not live. An empty
                 // crew list would say "RP-1 is scheduling nobody" and a false
-                // retirementEnabled would say retirement is switched OFF, and both
+                // crewRnREnabled would say crew rest is switched OFF, and both
                 // are claims about a career on a save RP-1 is not managing at all.
                 AtHome(CrewTopic, absenceIsData: true),
                 AtHome(CrewProgramTopic, absenceIsData: true),
@@ -1017,6 +1017,17 @@ namespace GonogoRp1Uplink
             HeldAtHome = true,
             AbsenceIsData = absenceIsData,
         };
+
+        public IReadOnlyList<ModSetting> ListModSettings() => ModSettings.ListModSettings();
+
+        public ModSettingValue ReadModSetting(string id) => ModSettings.ReadModSetting(id);
+
+        private Rp1ModSettings? _modSettings;
+
+        private Rp1ModSettings ModSettings =>
+            _modSettings ??= new Rp1ModSettings(
+                () => _crew.IsAvailable,
+                () => _crew.RetirementEnabled);
 
         /// <inheritdoc />
         public void DeclareSettings(IUplinkSettings settings)

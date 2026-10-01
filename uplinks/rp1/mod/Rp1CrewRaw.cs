@@ -85,7 +85,6 @@ namespace GonogoRp1Uplink
 
     public sealed class Rp1CrewProgramRaw
     {
-        public bool? RetirementEnabled;
         public bool? CrewRnREnabled;
         public bool? MissionTrainingEnabled;
         public double? ProficiencyTrainingRate;

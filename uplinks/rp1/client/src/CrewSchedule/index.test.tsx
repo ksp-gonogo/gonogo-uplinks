@@ -41,7 +41,6 @@ function crewRow(overrides: Record<string, unknown> = {}) {
 }
 
 const PROGRAM = {
-  retirementEnabled: true,
   crewRnREnabled: true,
   missionTrainingEnabled: true,
   proficiencyTrainingRate: 1,
@@ -51,6 +50,28 @@ const PROGRAM = {
   coursesStarted: 1,
   crewInTraining: 1,
 };
+
+/** `settings.rp1` as the mod publishes it, holding RP-1's retirement switch. */
+function retirementSetting(value: string | null) {
+  return {
+    uplink: "rp1",
+    failure: null,
+    settings: [
+      {
+        id: "retirementEnabled",
+        label: "Crew retirement",
+        description: "",
+        kind: "Bool",
+        unit: null,
+        group: "Crew",
+        setIn: "",
+        writable: false,
+        value,
+        unavailable: value === null ? "RP-1 is not managing this save" : null,
+      },
+    ],
+  };
+}
 
 function mountSchedule(kerbalName = "Wernher Kerman") {
   const fixture = setupStreamFixture();
@@ -251,11 +272,13 @@ describe("CrewSchedule", () => {
   it("says nothing whatever about retirement on a save that has it off", async () => {
     const { fixture, view } = mountSchedule();
     fixture.emit("rp1.available", true);
-    fixture.emit("rp1.crewProgram", { ...PROGRAM, retirementEnabled: false });
+    fixture.emit("rp1.crewProgram", PROGRAM);
+    fixture.emit("settings.rp1", retirementSetting("False"));
     fixture.emit("rp1.crew", [crewRow()]);
 
     await waitFor(() => {
       expect(fixture.transport.isSubscribed("rp1.crewProgram")).toBe(true);
+      expect(fixture.transport.isSubscribed("settings.rp1")).toBe(true);
     });
     /* Mint a frame before asserting ABSENCE. An emit alone does not make a
        reading readable: `current()` returns undefined until the reading is
@@ -274,6 +297,23 @@ describe("CrewSchedule", () => {
     expect(visibleText(view.container)).toBe("");
     // The stem, so "Retires", "retirement" and "retiree" all fail it.
     expect(view.container.textContent ?? "").not.toMatch(/retir/i);
+  });
+
+  /**
+   * A setting RP-1 could not read is not a setting that is off, so the date
+   * keeps drawing: hiding it would claim retirement is switched off on a save
+   * the mod could not answer for.
+   */
+  it("keeps the retirement date when the setting cannot be read", async () => {
+    const { fixture } = mountSchedule();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.crewProgram", PROGRAM);
+    fixture.emit("settings.rp1", retirementSetting(null));
+    fixture.emit("rp1.crew", [crewRow()]);
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("Retires");
+    });
   });
 
   /**

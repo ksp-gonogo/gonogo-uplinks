@@ -307,16 +307,14 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// The rules the dates run under. Without them a retirement date on a save
-    /// with retirement switched off is a date nothing will act on, and a training
-    /// ETA is a function of a rate visible nowhere else.
+    /// The rules the dates run under: a training ETA is a function of a rate
+    /// visible nowhere else.
     /// </summary>
     [Fact]
     public void ReadsTheCareerWideRules()
     {
         CrewHandler.Instance = new CrewHandler
         {
-            RetirementEnabled = false,
             CrewRnREnabled = true,
             IsMissionTrainingEnabled = true,
             ProfTrainRate = 1.5,
@@ -331,8 +329,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
         var program = new Rp1CrewReflection().Read(1000.0)!.Program;
 
         Assert.NotNull(program);
-        Assert.Equal(false, program!.RetirementEnabled);
-        Assert.Equal(true, program.CrewRnREnabled);
+        Assert.Equal(true, program!.CrewRnREnabled);
         Assert.Equal(true, program.MissionTrainingEnabled);
         Assert.Equal(1.5, program.ProficiencyTrainingRate);
         Assert.Equal(0.75, program.MissionTrainingRate);
@@ -700,7 +697,6 @@ public class Rp1CrewCaptureTests
         {
             Program = new Rp1CrewProgramRaw
             {
-                RetirementEnabled = true,
                 CrewRnREnabled = false,
                 MissionTrainingEnabled = true,
                 ProficiencyTrainingRate = 1.5,
@@ -713,8 +709,7 @@ public class Rp1CrewCaptureTests
         });
 
         Assert.NotNull(program);
-        Assert.Equal(true, program!["retirementEnabled"]);
-        Assert.Equal(false, program["crewRnREnabled"]);
+        Assert.Equal(false, program!["crewRnREnabled"]);
         Assert.Equal(true, program["missionTrainingEnabled"]);
         Assert.Equal(1.5, program["proficiencyTrainingRate"]);
         Assert.Equal(0.5, program["missionTrainingRate"]);

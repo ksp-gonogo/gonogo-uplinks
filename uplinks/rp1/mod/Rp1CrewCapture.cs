@@ -135,7 +135,6 @@ namespace GonogoRp1Uplink
             }
             return new Dictionary<string, object?>
             {
-                ["retirementEnabled"] = program.RetirementEnabled,
                 ["crewRnREnabled"] = program.CrewRnREnabled,
                 ["missionTrainingEnabled"] = program.MissionTrainingEnabled,
                 ["proficiencyTrainingRate"] = program.ProficiencyTrainingRate,

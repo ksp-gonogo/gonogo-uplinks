@@ -343,7 +343,6 @@ namespace GonogoRp1Uplink
 
             raw.Program = new Rp1CrewProgramRaw
             {
-                RetirementEnabled = ReadBool(instance, "RetirementEnabled"),
                 CrewRnREnabled = ReadBool(instance, "CrewRnREnabled"),
                 MissionTrainingEnabled = ReadBool(instance, "IsMissionTrainingEnabled"),
                 ProficiencyTrainingRate = Rp1Types.ReadDouble(instance, "ProfTrainRate"),
@@ -357,6 +356,9 @@ namespace GonogoRp1Uplink
             };
             return raw;
         }
+
+        /// <summary>Whether crew retire on this save, or null when RP-1's handler is not live or answers no bool.</summary>
+        public bool? RetirementEnabled => ReadBool(Instance(), "RetirementEnabled");
 
         /// <summary>The live handler instance, or null when RP-1 is absent or the scenario module is not loaded.</summary>
         private object? Instance() =>

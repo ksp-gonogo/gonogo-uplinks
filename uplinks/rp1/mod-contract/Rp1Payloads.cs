@@ -2264,9 +2264,9 @@ public sealed class Rp1CrewEntry
 ///
 /// <para>A wrapper object, not an array: these are career-wide switches and
 /// rates. They matter because every date on <see cref="Rp1CrewEntry"/> is
-/// meaningless without them. A retirement date on a save with retirement
-/// switched off is a date nothing will act on, and a training ETA is a function
-/// of a rate an operator can see here and nowhere else.</para>
+/// meaningless without them: a training ETA is a function of a rate an operator
+/// can see here and nowhere else. Whether retirement is switched on at all is
+/// read from <c>settings.rp1</c>, not from here.</para>
 ///
 /// <para>The whole payload is <c>null</c> when RP-1's CrewHandler is not live.</para>
 /// </summary>
@@ -2277,10 +2277,6 @@ public sealed class Rp1CrewEntry
 #endif
 public sealed class Rp1CrewProgram
 {
-    /// <summary>Whether crew retire at all on this save. False makes every retirement date inert rather than absent, which is why it is a field and not an omission.</summary>
-    [SitrepUnit(Units.Flag)]
-    public bool? RetirementEnabled { get; set; }
-
     /// <summary>Whether crew stand down for rest after a flight. The switch behind the stock roster's <c>inactive</c> pair being populated at all.</summary>
     [SitrepUnit(Units.Flag)]
     public bool? CrewRnREnabled { get; set; }

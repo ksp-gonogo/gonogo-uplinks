@@ -2508,19 +2508,14 @@ export interface Rp1CrewEntry
 *
 * A wrapper object, not an array: these are career-wide switches and rates.
 * They matter because every date on `Rp1CrewEntry` is meaningless without
-* them. A retirement date on a save with retirement switched off is a date
-* nothing will act on, and a training ETA is a function of a rate an operator
-* can see here and nowhere else.
+* them: a training ETA is a function of a rate an operator can see here and
+* nowhere else. Whether retirement is switched on at all is read from
+* `settings.rp1`, not from here.
 *
 * The whole payload is `null` when RP-1's CrewHandler is not live.
 */
 export interface Rp1CrewProgram
 {
-	/**
-	* Whether crew retire at all on this save. False makes every retirement date
-	* inert rather than absent, which is why it is a field and not an omission.
-	*/
-	retirementEnabled?: boolean | null;
 	/**
 	* Whether crew stand down for rest after a flight. The switch behind the stock
 	* roster's `inactive` pair being populated at all.

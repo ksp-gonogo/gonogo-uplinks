@@ -21,7 +21,6 @@ const DEFAULT_RULES = {
   missionTrainingEnabled: true,
   missionTrainingRate: 1,
   proficiencyTrainingRate: 1,
-  retirementEnabled: true,
 };
 
 const LUDREY = "Ludrey Kerman";
