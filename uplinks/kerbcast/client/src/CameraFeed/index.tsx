@@ -64,7 +64,7 @@ registerComponent<CameraFeedConfig>({
   // custom hooks: not listed here to avoid a duplicate subscription.
   // CommNet topics are listed so the orchestrator knows to subscribe them
   // for signal strength / connection status / one-way signal delay (the
-  // always-on delay + quality badges in the feed header).
+  // quality badge in the feed header, and which control the delay mode picks).
   dataRequirements: ["vessel.comms", "comms.link", "comms.delay"],
   // Exposes an overlay slot, drawn over the video and passed the feed's pixel
   // dimensions and displayed camera id. No first-party augment fills it yet.

@@ -1,17 +1,31 @@
 {
   "_scene": {
     "widget": "camera-feed",
-    "modes": ["default"],
+    "modes": [
+      "default"
+    ],
     "config": {
       "flightId": 42
     },
     "caption": "A bound analog stick held right, then released. Above the staged delay threshold the input aims the DRAFT rather than the camera: the yaw wheel turns at 30 degrees per second for as long as the stick is held, stops where it is when the stick centres, and nothing has been sent to the camera at any point in this film. The operator commits once, when the number is the one they want",
-    "before": [{ "hover": "video" }],
-    "steps": [
-      { "waitMs": 1200, "frames": 8 },
-      { "waitMs": 1200, "frames": 8 }
+    "before": [
+      {
+        "hover": "video"
+      }
     ],
-    "motion": { "fps": 8 }
+    "steps": [
+      {
+        "waitMs": 1200,
+        "frames": 8
+      },
+      {
+        "waitMs": 1200,
+        "frames": 8
+      }
+    ],
+    "motion": {
+      "fps": 8
+    }
   },
   "_stream": {
     "pinnedUt": 1000000,
@@ -20,6 +34,18 @@
         "topic": "comms.delay",
         "payload": {
           "oneWaySeconds": 1.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
         }
       }
     ]

@@ -1394,40 +1394,14 @@ describe("CameraFeed: CommNet degrade", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Signal delay + signal quality badges: always-on header chrome, distinct
-// from the CommNet-degrade effect above (that drives the SDK's video
-// degradation; these are purely readouts). `comm.signalDelay` maps to
-// `comms.delay.oneWaySeconds`: the badge is ONE-WAY, never doubled for
-// round-trip (that's only for interactive command paths like the kOS
-// terminal, which a camera downlink is not).
+// Signal quality badge: always-on header chrome, distinct from the
+// CommNet-degrade effect above (that drives the SDK's video degradation; this
+// is purely a readout). The signal delay has no badge here, the dashboard
+// header carries it.
 // ---------------------------------------------------------------------------
 
-describe("CameraFeed: signal delay + signal quality badges", () => {
-  it("shows the one-way signal delay badge as a one-decimal readout (sub-minute)", async () => {
-    await buildConnectedSource();
-
-    const stream = setupStreamFixture();
-    renderFeedWithComms({ flightId: 42 }, stream);
-
-    act(() => {
-      // A delay is a readout, not a countdown: sub-minute keeps one decimal
-      // (3.8 -> "3.8 s"), NOT the time ladder's whole-unit truncation, so the
-      // operator sees the real light-time. The space is SI's and comes from
-      // the shared formatter, where the hand-rolled string had none.
-      emitComms(stream, {
-        signalStrength: 1.0,
-        connected: true,
-        signalDelay: 3.8,
-      });
-    });
-
-    expect(
-      (await screen.findByLabelText("Signal delay: 3.8 s one-way")).textContent,
-    ).toContain("3.8");
-    expect(screen.getByLabelText("Signal delay: 3.8 s one-way")).toBeTruthy();
-  });
-
-  it("marks the delay held once the link drops", async () => {
+describe("CameraFeed: signal quality badge", () => {
+  it("draws no signal delay badge: the dashboard header carries the delay", async () => {
     await buildConnectedSource();
 
     const stream = setupStreamFixture();
@@ -1440,76 +1414,11 @@ describe("CameraFeed: signal delay + signal quality badges", () => {
         signalDelay: 3.8,
       });
     });
-    expect(
-      (await screen.findByLabelText("Signal delay: 3.8 s one-way")).textContent,
-    ).toContain("3.8");
-
-    act(() => {
-      stream.store.setTransportConnected(false);
-      stream.store.beginFrame();
-    });
-    await waitFor(() =>
-      expect(
-        screen
-          .getByLabelText("Signal delay: 3.8 s one-way")
-          .querySelector("[data-held]"),
-      ).not.toBeNull(),
-    );
-  });
-
-  it("shows a multi-unit one-way signal delay (e.g. deep-space distances)", async () => {
-    await buildConnectedSource();
-
-    const stream = setupStreamFixture();
-    renderFeedWithComms({ flightId: 42 }, stream);
-
-    act(() => {
-      emitComms(stream, {
-        signalStrength: 1.0,
-        connected: true,
-        signalDelay: 80,
-      });
-    });
-
-    expect(
-      (await screen.findByLabelText("Signal delay: 1min 20s one-way"))
-        .textContent,
-    ).toContain("20");
-    expect(
-      screen.getByLabelText("Signal delay: 1min 20s one-way"),
-    ).toBeTruthy();
-  });
-
-  it("hides the delay badge when the delay is zero (LAN / no delay authority)", async () => {
-    await buildConnectedSource();
-
-    const stream = setupStreamFixture();
-    renderFeedWithComms({ flightId: 42 }, stream);
-
-    act(() => {
-      emitComms(stream, {
-        signalStrength: 1.0,
-        connected: true,
-        signalDelay: 0,
-      });
-    });
 
     await screen.findByRole("button", { name: /starboard cam/i });
+    await waitFor(() => expect(visibleText()).toContain("100 %"));
     expect(screen.queryByLabelText(/signal delay/i)).toBeNull();
-  });
-
-  it("hides the delay badge when no delay data has ever arrived", async () => {
-    await buildConnectedSource();
-
-    const stream = setupStreamFixture();
-    renderFeedWithComms({ flightId: 42 }, stream);
-
-    act(() => {
-      emitComms(stream, { signalStrength: 1.0, connected: true });
-    });
-
-    await screen.findByRole("button", { name: /starboard cam/i });
-    expect(screen.queryByLabelText(/signal delay/i)).toBeNull();
+    expect(visibleText()).not.toContain("3.8");
   });
 
   it("shows the signal quality badge as a percentage", async () => {

@@ -1,15 +1,46 @@
 {
   "_scene": {
     "widget": "camera-feed",
-    "modes": ["default", "min", "mobile-9x8"],
-    "config": { "flightId": 42 },
-    "caption": "A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay",
+    "modes": [
+      "default",
+      "min",
+      "mobile-9x8"
+    ],
+    "config": {
+      "flightId": 42
+    },
+    "caption": "A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's",
     "hero": true,
-    "before": [{ "hover": "video" }],
-    "paints": ["Nose Cam"]
+    "before": [
+      {
+        "hover": "video"
+      }
+    ],
+    "paints": [
+      "Nose Cam"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
-    "emits": [{ "topic": "comms.delay", "payload": { "oneWaySeconds": 1.4 } }]
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 1.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      }
+    ]
   }
 }

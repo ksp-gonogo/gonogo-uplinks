@@ -46,7 +46,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | Default size | 9 × 8 |
 | Scenes | 3 |
 
-![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal delay](docs/assets/camera-feed-fixed--default.png)
+![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](docs/assets/camera-feed-fixed--default.png)
 
 ## Augments
 
