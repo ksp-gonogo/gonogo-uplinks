@@ -3,47 +3,47 @@
   "engine": "chromium",
   "assets": {
     "altimetry-base-kerbin--default.png": {
-      "hash": "c84335d40a8cc6eb",
+      "hash": "db41db1bc4b12b44",
       "elements": 68,
       "text": "604fd6a3"
     },
     "biome-base-kerbin--default.png": {
-      "hash": "c84335d40a8cc6eb",
+      "hash": "db41db1bc4b12b44",
       "elements": 68,
       "text": "604fd6a3"
     },
     "coverage-under-kerbin-map--default.png": {
-      "hash": "7e1ed0ade22cf59a",
+      "hash": "84fef640c63e23be",
       "elements": 83,
       "text": "52688090"
     },
     "kerbin-partial-scan--default.png": {
-      "hash": "d89b4dee126f7b11",
+      "hash": "49836cfd6cbe4c32",
       "elements": 136,
       "text": "6ee75d6d"
     },
     "kerbin-partial-scan--min.png": {
-      "hash": "d89b4dee126f7b11",
+      "hash": "49836cfd6cbe4c32",
       "elements": 136,
       "text": "6ee75d6d"
     },
     "scanners-beside-stock--default.png": {
-      "hash": "fe727171fab5cc85",
+      "hash": "73e7b36f068fc601",
       "elements": 51,
       "text": "b5400b0c"
     },
     "scanners-beside-stock-stopped-arriving--default.png": {
-      "hash": "6110954d81892ae6",
+      "hash": "5894389d0034c04d",
       "elements": 54,
       "text": "e18daca9"
     },
     "scansat-absent--default.png": {
-      "hash": "2b6baa20b8677599",
+      "hash": "2816102d466b0425",
       "elements": 16,
       "text": "f12237e9"
     },
     "two-footprints-over-kerbin--default.png": {
-      "hash": "c84335d40a8cc6eb",
+      "hash": "db41db1bc4b12b44",
       "elements": 68,
       "text": "604fd6a3"
     }

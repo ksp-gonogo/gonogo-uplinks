@@ -3,127 +3,127 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "fb178c808dc7ca0e",
+      "hash": "f8fae373afbef49a",
       "elements": 315,
       "text": "bb12c779"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "138d9a24ebd75811",
+      "hash": "385af1e05a7b54bf",
       "elements": 265,
       "text": "9b07dc4b"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "bb46027b23b177c8",
+      "hash": "2d7ab6364f1a51fd",
       "elements": 190,
       "text": "99be9999"
     },
     "coast-analysis-expanded--default.png": {
-      "hash": "a90693927fb71091",
+      "hash": "2fad7df57fd92313",
       "elements": 167,
       "text": "79fa12ae"
     },
     "coast-analysis-no-plan--default.png": {
-      "hash": "4729c04bb9bfe749",
+      "hash": "19f7a2e29eca2d3d",
       "elements": 40,
       "text": "95f6da0c"
     },
     "coast-analysis-plan--default.png": {
-      "hash": "0044ed23e3557d60",
+      "hash": "7b3bc30b23ec0c03",
       "elements": 65,
       "text": "a7f133ae"
     },
     "composer-composing--default.png": {
-      "hash": "1c555aaac461ea2f",
-      "elements": 143,
-      "text": "a8a938ce"
+      "hash": "ca19d2afc814a57f",
+      "elements": 147,
+      "text": "fb0c46a3"
     },
     "composer-delayed-vantage--default.png": {
-      "hash": "2fca1912414faaf4",
+      "hash": "1d8991348c86c86e",
       "elements": 63,
       "text": "664d0a4b"
     },
     "composer-ready-to-upload--default.png": {
-      "hash": "bf7a4bb613206eb5",
+      "hash": "4a957a0ea355d953",
       "elements": 60,
       "text": "2ce0994e"
     },
     "composer-upload-armed--default.png": {
-      "hash": "c65bb82cdf0821a6",
+      "hash": "2eba993e5206f3cf",
       "elements": 60,
       "text": "f50765cc"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "e8564a1b5e3d711e",
+      "hash": "2a45a53dbddbecf6",
       "elements": 194,
       "text": "6b16f5d3"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "854e2da7ca641fba",
+      "hash": "79404ac3493cd7b7",
       "elements": 199,
       "text": "4ebd02d1"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "ed20aa5ba3dc4f91",
+      "hash": "adc8957476526e0b",
       "elements": 195,
       "text": "48502c53"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "0c9d7bf692523488",
+      "hash": "5650c09150945ec1",
       "elements": 195,
       "text": "825af4a4"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "6d5fba956dc90823",
+      "hash": "a196539871ebea3b",
       "elements": 142,
       "text": "8d0bc864"
     },
     "flight-plan-unobserved--default.png": {
-      "hash": "14867b1412c0d884",
+      "hash": "a72aef7e7d6a3c09",
       "elements": 42,
       "text": "8f33ffde"
     },
     "jogwheel-rate-mode--default.gif": {
-      "hash": "43f32e4005e8658c",
-      "elements": 100,
-      "text": "5096b55a"
+      "hash": "ea6a63475723102c",
+      "elements": 102,
+      "text": "5b2073a1"
     },
     "orbit-analysis-decaying--default.png": {
-      "hash": "fbd60919cbb5abfd",
+      "hash": "7124770512628383",
       "elements": 183,
       "text": "d3916197"
     },
     "orbit-analysis-live--default.png": {
-      "hash": "0be9409726318d8d",
+      "hash": "494df44cce681ddd",
       "elements": 168,
       "text": "f85077c6"
     },
     "orbit-analysis-no-elements--default.png": {
-      "hash": "beed810b7624bc37",
+      "hash": "44e84c164a757a7a",
       "elements": 22,
       "text": "503ddb46"
     },
     "orbit-analysis-not-analysing--default.png": {
-      "hash": "52b89f745ccce0a7",
+      "hash": "c14d0a363a31f8ec",
       "elements": 20,
       "text": "87a8217b"
     },
     "orbit-analysis-unobserved--default.png": {
-      "hash": "2bcd051375baf1f8",
+      "hash": "f3d0bc414305650f",
       "elements": 19,
       "text": "67e79a4e"
     },
     "plan-slots-armed--default.png": {
-      "hash": "8237c1f7dd9107d0",
+      "hash": "101b2df6d00c4888",
       "elements": 170,
       "text": "ae962754"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "861deb785893f398",
+      "hash": "9951c9d98caf8795",
       "elements": 130,
       "text": "9b035d85"
     },
     "plan-slots-shut--default.png": {
-      "hash": "7d45fd2a37ba1845",
+      "hash": "b5d07948cb232937",
       "elements": 159,
       "text": "476efbbc"
     }

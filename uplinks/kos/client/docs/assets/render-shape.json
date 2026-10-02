@@ -3,42 +3,42 @@
   "engine": "chromium",
   "assets": {
     "boot-then-run--default.gif": {
-      "hash": "4eb5468199df4683",
-      "elements": 58,
+      "hash": "2063ccfd5d38f500",
+      "elements": 59,
       "text": "a0774835"
     },
     "cpu-picker-untagged--default.png": {
-      "hash": "514bc6060bb03aff",
+      "hash": "54fcef1482bd9b16",
       "elements": 34,
       "text": "54cb2e54"
     },
     "lander-cpu-attached--default.png": {
-      "hash": "e2be4acd511ef922",
-      "elements": 67,
+      "hash": "fd4b7855ce8f1b96",
+      "elements": 68,
       "text": "12f1d671"
     },
     "lander-cpu-attached-stopped-arriving--default.png": {
-      "hash": "b6e87c33ab014300",
-      "elements": 69,
+      "hash": "06cce400b0eb479a",
+      "elements": 70,
       "text": "141acd90"
     },
     "two-cpus-idle--default.png": {
-      "hash": "c8a7c8ede682e80a",
+      "hash": "f6e5170144f83ad1",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle--min.png": {
-      "hash": "c8a7c8ede682e80a",
+      "hash": "f6e5170144f83ad1",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle-stopped-arriving--default.png": {
-      "hash": "c8a7c8ede682e80a",
+      "hash": "f6e5170144f83ad1",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle-stopped-arriving--min.png": {
-      "hash": "c8a7c8ede682e80a",
+      "hash": "f6e5170144f83ad1",
       "elements": 36,
       "text": "db7edf95"
     }
