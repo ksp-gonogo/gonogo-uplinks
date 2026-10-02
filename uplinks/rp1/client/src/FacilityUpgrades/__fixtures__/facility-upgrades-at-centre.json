@@ -7,14 +7,13 @@
       "w": 12,
       "h": 16
     },
-    "caption": "A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by \"over the build\" beside each price and by \"Commit\" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says \"Queue upgrade\". The grid's own Upgrade controls read Blocked, because the tier they would buy is not for sale under RP-1 at all",
+    "caption": "A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by \"over the build\" beside each price and by \"Commit\" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says \"Queue upgrade\". The grid's own Upgrade controls are disabled, because the tier they would buy is not for sale under RP-1 at all",
     "paints": [
       "FACILITY UPGRADES",
       "Launch Pad",
       "TIER 2",
       "over the build",
       "Queue upgrade",
-      "Blocked",
       "at full rate"
     ]
   },

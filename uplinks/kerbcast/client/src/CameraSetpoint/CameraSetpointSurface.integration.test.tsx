@@ -126,6 +126,7 @@ describe("delayed camera control, end to end", () => {
       transport.emit("system.uplink.pending", {
         pending: transport.sentCommands.map((c) => ({
           id: c.requestId,
+          clientRequestId: c.requestId,
           command: c.command,
           label: c.label,
           topic: c.topic,

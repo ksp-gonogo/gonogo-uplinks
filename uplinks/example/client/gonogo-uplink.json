@@ -9,7 +9,7 @@
   "apiVersion": "6.0.0",
   "uiKitVersion": "0.1.0",
   "contractMajor": 27,
-  "contractMinor": 6,
+  "contractMinor": 8,
   "bundleUrl": "example/example.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"

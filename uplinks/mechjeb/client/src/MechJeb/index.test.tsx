@@ -322,6 +322,7 @@ describe("MechJeb in-flight indicator (surfaces in the Panel delay rail)", () =>
             pending: [
               {
                 id: requestId,
+                clientRequestId: requestId,
                 command: "mechjeb.executeNextNode",
                 label: "Execute next node",
                 topic: "",
@@ -370,6 +371,7 @@ describe("MechJeb in-flight indicator (surfaces in the Panel delay rail)", () =>
             pending: [
               {
                 id: requestId,
+                clientRequestId: requestId,
                 command: "mechjeb.executeNextNode",
                 label: "Execute next node",
                 topic: "",

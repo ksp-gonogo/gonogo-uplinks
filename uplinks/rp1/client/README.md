@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 27.6, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 27.8, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -203,7 +203,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions](docs/assets/contract-payload--default.png)
 
-![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid's own Upgrade controls read Blocked, because the tier they would buy is not for sale under RP-1 at all](docs/assets/facility-upgrades-at-centre--default.png)
+![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid's own Upgrade controls are disabled, because the tier they would buy is not for sale under RP-1 at all](docs/assets/facility-upgrades-at-centre--default.png)
 
 ![An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon](docs/assets/early-career--default.png)
 

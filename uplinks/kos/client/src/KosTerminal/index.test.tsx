@@ -979,6 +979,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
           pending: [
             {
               id: "c1",
+              clientRequestId: "req-c1",
               command: "kos.keystroke",
               label: "run.",
               topic: "kos/7",
@@ -1039,6 +1040,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
           pending: [
             {
               id: "c1",
+              clientRequestId: "req-c1",
               command: "kos.keystroke",
               label: "run.",
               topic: "kos/7",
@@ -1113,6 +1115,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
         pending: [
           {
             id: "c1",
+            clientRequestId: "req-c1",
             command: "kos.keystroke",
             label: "run.",
             topic: "kos/7",
@@ -1147,6 +1150,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
           pending: [
             {
               id: "c1",
+              clientRequestId: "req-c1",
               command: "kos.keystroke",
               label: "run.",
               topic: "kos/7",
@@ -1190,6 +1194,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
         pending: [
           {
             id: "c1",
+            clientRequestId: "req-c1",
             command: "kos.keystroke",
             label: "run.",
             topic: "kos/7",
@@ -1199,6 +1204,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
           },
           {
             id: "c2",
+            clientRequestId: "req-c2",
             command: "kos.keystroke",
             label: "print other.",
             topic: "kos/9",
@@ -1272,6 +1278,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
           pending: [
             {
               id: "c1",
+              clientRequestId: "req-c1",
               command: "kos.keystroke",
               label: "run.",
               topic: "kos/7",
