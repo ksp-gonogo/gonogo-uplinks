@@ -5,7 +5,10 @@ import type { Rp1CrewEntry } from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
-import { useRetirementEnabled } from "./retirementSetting.js";
+import {
+  useMissionTrainingEnabled,
+  useRetirementEnabled,
+} from "./retirementSetting.js";
 import { kindOf } from "./template.js";
 
 /**
@@ -58,7 +61,7 @@ export function CrewSchedule({
 }: Readonly<SlotProps<"astronaut-complex.crew">>) {
   const available = current(useTelemetry("rp1.available"));
   const crew = current(useTelemetry("rp1.crew"));
-  const program = current(useTelemetry("rp1.crewProgram"));
+  const missionTrainingEnabled = useMissionTrainingEnabled();
   const retirementEnabled = useRetirementEnabled();
 
   // Invisible without RP-1, rather than a row of dashes on a stock game.
@@ -88,7 +91,7 @@ export function CrewSchedule({
 
   const retirement = retirementLine(row, retirementEnabled);
   const training = trainingLine(row);
-  const expiry = expiryLine(row, program?.missionTrainingEnabled);
+  const expiry = expiryLine(row, missionTrainingEnabled);
   // A row with no date to state renders no wrapper at all rather than an empty
   // one, which is most rows on most careers.
   if (!retirement && !training && !expiry) {
@@ -240,9 +243,8 @@ function trainingLine(row: Rp1CrewEntry) {
  */
 function expiryLine(
   row: Rp1CrewEntry,
-  // `null` as well as absent: the wire keeps a `bool?` key, so a career RP-1
-  // could not answer for arrives as an explicit null. Only `false` suppresses.
-  missionTrainingEnabled: boolean | null | undefined,
+  // Absent while RP-1 has not said. Only `false` suppresses.
+  missionTrainingEnabled: boolean | undefined,
 ) {
   if (missionTrainingEnabled === false) {
     return null;

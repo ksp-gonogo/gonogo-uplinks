@@ -34,6 +34,7 @@ import { RP1 } from "../uplink.js";
 // Side-effect import: hydrates these Topics' units at decode time, so a base
 // time decodes as a duration rather than a bare number of seconds.
 import "../topics.js";
+import { useMissionTrainingEnabled } from "./retirementSetting.js";
 import { lapseRule, Seats, titleOf } from "./template.js";
 import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
 
@@ -73,7 +74,7 @@ export function TrainingEnrolment() {
   const roster = current(useTelemetry("spaceCenter.crewRoster"));
   const crew = current(useTelemetry("rp1.crew"));
   const courses = current(useTelemetry("rp1.training"));
-  const program = current(useTelemetry("rp1.crewProgram"));
+  const missionTrainingEnabled = useMissionTrainingEnabled();
   const breakdown = current(useTelemetry("rp1.budgetBreakdown"));
 
   const [pickedTemplate, setPickedTemplate] = useState<string | null>(null);
@@ -112,9 +113,7 @@ export function TrainingEnrolment() {
     (template) =>
       template.unlocked === true &&
       template.id &&
-      !(
-        template.type === "Mission" && program?.missionTrainingEnabled === false
-      ),
+      !(template.type === "Mission" && missionTrainingEnabled === false),
   );
   const candidates = candidatesOf(roster, crew, courses);
   if (offered.length === 0 || candidates.length === 0) {
@@ -604,7 +603,6 @@ registerAugment({
     "rp1.available",
     "rp1.trainingCatalogue",
     "rp1.crew",
-    "rp1.crewProgram",
     "rp1.training",
     /* The roster the command itself keys on. Named here rather than taken from
        the host, so this section carries its own reads the way ProgramDetail

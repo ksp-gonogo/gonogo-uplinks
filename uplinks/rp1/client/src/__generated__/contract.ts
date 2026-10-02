@@ -2522,11 +2522,6 @@ export interface Rp1CrewProgram
 	*/
 	crewRnREnabled?: boolean | null;
 	/**
-	* Whether mission-specific training is required on this save. False leaves
-	* proficiency training as the only kind, and no training can lapse.
-	*/
-	missionTrainingEnabled?: boolean | null;
-	/**
 	* Career-wide multiplier on proficiency-training speed. A multiplier, not a
 	* rate: 1 is nominal.
 	*/

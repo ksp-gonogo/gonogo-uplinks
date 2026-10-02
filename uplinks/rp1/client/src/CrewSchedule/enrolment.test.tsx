@@ -18,7 +18,6 @@ import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
 /** RP-1's own crew rules: every mechanic on, both training rates at 1. */
 const DEFAULT_RULES = {
   crewRnREnabled: true,
-  missionTrainingEnabled: true,
   missionTrainingRate: 1,
   proficiencyTrainingRate: 1,
 };
@@ -107,6 +106,7 @@ async function present(
     catalogue = [PAIR, SOLO],
     courses = [] as Record<string, unknown>[],
     crew = [] as Record<string, unknown>[],
+    missionTraining = "True" as string | null,
     program = {} as Record<string, unknown>,
     roster = [rosterRow(LUDREY), rosterRow(NEDCAS)],
   }: {
@@ -117,9 +117,12 @@ async function present(
     catalogue?: Record<string, unknown>[];
     courses?: Record<string, unknown>[];
     crew?: Record<string, unknown>[];
-    /* The crew rules, which this section reads for one thing only: whether
-       mission training is running at all. Defaulted to RP-1's own, so a test
-       that says nothing about the settings gets a save on the defaults. */
+    /* RP-1's mission-training switch as `settings.rp1` publishes it, which is
+       the one rule this section reads: whether mission training is running at
+       all. Defaulted on, so a test that says nothing gets a save on the
+       defaults. */
+    missionTraining?: string | null;
+    /* The crew rules the rest of the career reads. */
     program?: Record<string, unknown>;
     roster?: Record<string, unknown>[];
   } = {},
@@ -127,6 +130,7 @@ async function present(
   await waitFor(() => {
     expect(fixture.transport.isSubscribed("rp1.trainingCatalogue")).toBe(true);
     expect(fixture.transport.isSubscribed("spaceCenter.crewRoster")).toBe(true);
+    expect(fixture.transport.isSubscribed("settings.rp1")).toBe(true);
   });
   act(() => {
     fixture.emit("rp1.available", true);
@@ -134,6 +138,24 @@ async function present(
     fixture.emit("rp1.crew", crew);
     fixture.emit("rp1.training", courses);
     fixture.emit("rp1.crewProgram", { ...DEFAULT_RULES, ...program });
+    fixture.emit("settings.rp1", {
+      uplink: "rp1",
+      failure: null,
+      settings: [
+        {
+          id: "missionTrainingEnabled",
+          label: "Mission training",
+          description: "",
+          kind: "Bool",
+          unit: null,
+          group: "Crew",
+          setIn: "",
+          writable: false,
+          value: missionTraining,
+          unavailable: null,
+        },
+      ],
+    });
     fixture.emit("rp1.trainingCatalogue", catalogue);
     if (breakdown !== undefined) {
       fixture.emit("rp1.budgetBreakdown", breakdown);
@@ -260,7 +282,7 @@ describe("filling a multi-seat training", () => {
     const { fixture } = mount();
     await present(fixture, {
       catalogue: [PAIR, SOLO],
-      program: { missionTrainingEnabled: false },
+      missionTraining: "False",
     });
 
     await waitFor(() => {

@@ -17,7 +17,12 @@
         "press": "Active"
       }
     ],
-    "paints": ["TRAINING", "ENROLLED", "Ludrey Kerman", "Valentina Kerman"]
+    "paints": [
+      "TRAINING",
+      "ENROLLED",
+      "Ludrey Kerman",
+      "Valentina Kerman"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
@@ -103,15 +108,46 @@
       {
         "topic": "rp1.crewProgram",
         "payload": {
-          "retirementEnabled": false,
           "crewRnREnabled": false,
-          "missionTrainingEnabled": true,
           "proficiencyTrainingRate": 1,
           "missionTrainingRate": 1,
           "retirementExtensionCapSeconds": 0,
           "courses": 2,
           "coursesStarted": 1,
           "crewInTraining": 2
+        }
+      },
+      {
+        "topic": "settings.rp1",
+        "payload": {
+          "uplink": "rp1",
+          "failure": null,
+          "settings": [
+            {
+              "id": "retirementEnabled",
+              "label": "Crew retirement",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "False",
+              "unavailable": null
+            },
+            {
+              "id": "missionTrainingEnabled",
+              "label": "Mission training",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            }
+          ]
         }
       },
       {

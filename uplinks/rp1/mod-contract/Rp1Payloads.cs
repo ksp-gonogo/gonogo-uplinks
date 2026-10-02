@@ -2281,10 +2281,6 @@ public sealed class Rp1CrewProgram
     [SitrepUnit(Units.Flag)]
     public bool? CrewRnREnabled { get; set; }
 
-    /// <summary>Whether mission-specific training is required on this save. False leaves proficiency training as the only kind, and no training can lapse.</summary>
-    [SitrepUnit(Units.Flag)]
-    public bool? MissionTrainingEnabled { get; set; }
-
     /// <summary>Career-wide multiplier on proficiency-training speed. A multiplier, not a rate: 1 is nominal.</summary>
     [SitrepUnit(Units.Dimensionless)]
     public double? ProficiencyTrainingRate { get; set; }

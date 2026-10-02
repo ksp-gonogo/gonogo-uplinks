@@ -4,7 +4,7 @@ import type {
   TopicPayload,
   TopicReading,
 } from "@ksp-gonogo/sitrep-sdk";
-import { value } from "@ksp-gonogo/sitrep-sdk";
+import { modSettingDep, value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import type {
   Rp1BudgetBreakdown,
@@ -108,6 +108,7 @@ export function crewCoreStats(
   program: Rp1CrewProgram | undefined,
   crew: readonly Rp1CrewEntry[] | undefined,
   held: { program: boolean; crew: boolean } = { program: false, crew: false },
+  missionTrainingEnabled?: boolean,
 ): readonly StatEntry[] {
   const stats: StatEntry[] = [];
 
@@ -123,7 +124,7 @@ export function crewCoreStats(
 
   // An absent roster is a reading that has not arrived, which is not a career
   // with nothing lapsing: an empty crew array IS that career, and says zero.
-  if (crew !== undefined && program?.missionTrainingEnabled !== false) {
+  if (crew !== undefined && missionTrainingEnabled !== false) {
     const lapsing = lapsingCrew(crew);
     stats.push({
       id: "training-lapsing",
@@ -178,7 +179,12 @@ const CREW_PROGRAM_READING = RP1.registerProcessor({
 RP1.registerContribution({
   id: "crew-core-stats",
   contributes: "astronaut-complex.readouts",
-  deps: [CREW_READING, CREW_PROGRAM_READING, BUDGET_BREAKDOWN_READING],
+  deps: [
+    CREW_READING,
+    CREW_PROGRAM_READING,
+    BUDGET_BREAKDOWN_READING,
+    modSettingDep("rp1", "missionTrainingEnabled"),
+  ],
   /*
    * The domain gate rather than a dep on `rp1.available`: the aggregation
    * subscribes it itself for anything naming `requires`, so the cells appear and
@@ -195,10 +201,15 @@ RP1.registerContribution({
       lastValue(breakdown),
       breakdown?.state === "held",
     );
-    const stats = crewCoreStats(lastValue(program), lastValue(crew), {
-      program: program?.state === "held",
-      crew: crew?.state === "held",
-    });
+    const stats = crewCoreStats(
+      lastValue(program),
+      lastValue(crew),
+      {
+        program: program?.state === "held",
+        crew: crew?.state === "held",
+      },
+      topics["settings.rp1.missionTrainingEnabled"],
+    );
     return salary === null ? stats : [salary, ...stats];
   },
 });

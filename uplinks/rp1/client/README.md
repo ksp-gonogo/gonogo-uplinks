@@ -175,7 +175,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-crew-schedule` | `astronaut-complex.crew` | – |  | 2 |  |
 | `rp1-crew-training-badge` | `astronaut-complex.crew-badge` | `rp1.available`, `rp1.crew` |  | 1 |  |
 | `rp1-training-courses` | `astronaut-complex.tab` | `rp1.available`, `rp1.training`, `rp1.crew` |  | 2 |  |
-| `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
+| `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
 | `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
@@ -239,7 +239,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
 | `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
-| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading` | only while `rp1` |
+| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading`, `[object Object]` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |
 

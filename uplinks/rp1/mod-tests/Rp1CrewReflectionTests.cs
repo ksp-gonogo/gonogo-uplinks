@@ -331,7 +331,6 @@ public class Rp1CrewReflectionTests : System.IDisposable
 
         Assert.NotNull(program);
         Assert.Equal(true, program!.CrewRnREnabled);
-        Assert.Equal(true, program.MissionTrainingEnabled);
         Assert.Equal(1.5, program.ProficiencyTrainingRate);
         Assert.Equal(0.75, program.MissionTrainingRate);
         Assert.Equal(473_040_000.0, program.RetirementExtensionCapSeconds);
@@ -699,7 +698,6 @@ public class Rp1CrewCaptureTests
             Program = new Rp1CrewProgramRaw
             {
                 CrewRnREnabled = false,
-                MissionTrainingEnabled = true,
                 ProficiencyTrainingRate = 1.5,
                 MissionTrainingRate = 0.5,
                 RetirementExtensionCapSeconds = 473_040_000.0,
@@ -711,7 +709,7 @@ public class Rp1CrewCaptureTests
 
         Assert.NotNull(program);
         Assert.Equal(false, program!["crewRnREnabled"]);
-        Assert.Equal(true, program["missionTrainingEnabled"]);
+        Assert.False(program.ContainsKey("missionTrainingEnabled"));
         Assert.Equal(1.5, program["proficiencyTrainingRate"]);
         Assert.Equal(0.5, program["missionTrainingRate"]);
         Assert.Equal(473_040_000.0, program["retirementExtensionCapSeconds"]);

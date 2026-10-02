@@ -7,7 +7,9 @@
     "hero": true,
     "contribution": "rp1:crew-core-stats",
     "hostWidget": "astronaut-complex",
-    "modes": ["default"],
+    "modes": [
+      "default"
+    ],
     "size": {
       "w": 10,
       "h": 10
@@ -104,15 +106,46 @@
       {
         "topic": "rp1.crewProgram",
         "payload": {
-          "retirementEnabled": true,
           "crewRnREnabled": false,
-          "missionTrainingEnabled": true,
           "proficiencyTrainingRate": 0.8,
           "missionTrainingRate": 1.25,
           "retirementExtensionCapSeconds": 63115200,
           "courses": 3,
           "coursesStarted": 1,
           "crewInTraining": 4
+        }
+      },
+      {
+        "topic": "settings.rp1",
+        "payload": {
+          "uplink": "rp1",
+          "failure": null,
+          "settings": [
+            {
+              "id": "retirementEnabled",
+              "label": "Crew retirement",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            },
+            {
+              "id": "missionTrainingEnabled",
+              "label": "Mission training",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            }
+          ]
         }
       },
       {

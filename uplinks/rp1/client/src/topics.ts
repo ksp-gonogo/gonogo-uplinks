@@ -382,6 +382,12 @@ export const RP1_LEADERS_TOPIC = "rp1.leaders";
 export const RP1_CAREER_LEDGER_TOPIC = "rp1.careerLedger";
 
 declare module "@ksp-gonogo/sitrep-sdk" {
+  interface ModSettingsRegistry {
+    rp1: {
+      readonly retirementEnabled: boolean;
+      readonly missionTrainingEnabled: boolean;
+    };
+  }
   interface TopicPayloadMap {
     "rp1.available": boolean;
     "rp1.centres": Rp1CentreEntry[];

@@ -10,8 +10,8 @@ public class Rp1ModSettingsTests : System.IDisposable
 
     public void Dispose() => CrewHandler.Instance = null;
 
-    private static Rp1ModSettings Source(bool installed = true, bool? retirement = true) =>
-        new(() => installed, () => retirement);
+    private static Rp1ModSettings Source(bool installed = true, bool? retirement = true, bool? missionTraining = true) =>
+        new(() => installed, () => retirement, () => missionTraining);
 
     [Fact]
     public void KeepsTheModSettingsPromiseInstalledAbsentAndNotManaged()
@@ -29,9 +29,17 @@ public class Rp1ModSettingsTests : System.IDisposable
     }
 
     [Fact]
+    public void ReadsTheMissionTrainingSwitch()
+    {
+        Assert.False(Source(missionTraining: false).ReadModSetting("missionTrainingEnabled").AsBool);
+        Assert.True(Source(missionTraining: true).ReadModSetting("missionTrainingEnabled").AsBool);
+        Assert.False(Source(missionTraining: null).ReadModSetting("missionTrainingEnabled").IsAvailable);
+    }
+
+    [Fact]
     public void ASaveRp1IsNotManagingReadsUnavailableRatherThanOff()
     {
-        var source = Source(retirement: null);
+        var source = Source(retirement: null, missionTraining: null);
 
         Assert.False(source.ReadModSetting("retirementEnabled").IsAvailable);
         Assert.False(source.ReadModSetting("missionTrainingEnabled").IsAvailable);
@@ -48,10 +56,11 @@ public class Rp1ModSettingsTests : System.IDisposable
     [Fact]
     public void TheReflectionReadsTheHandlersSwitches()
     {
-        CrewHandler.Instance = new CrewHandler { RetirementEnabled = false };
+        CrewHandler.Instance = new CrewHandler { RetirementEnabled = false, IsMissionTrainingEnabled = true };
         var crew = new Rp1CrewReflection();
 
         Assert.Equal(false, crew.RetirementEnabled);
+        Assert.Equal(true, crew.MissionTrainingEnabled);
     }
 
     [Fact]
@@ -60,5 +69,6 @@ public class Rp1ModSettingsTests : System.IDisposable
         var crew = new Rp1CrewReflection();
 
         Assert.Null(crew.RetirementEnabled);
+        Assert.Null(crew.MissionTrainingEnabled);
     }
 }

@@ -8,7 +8,6 @@ import { crewCoreStats, nautSalaryStat } from "./coreStats.js";
    because nothing on the read path minds. */
 const PROGRAM = {
   crewRnREnabled: true,
-  missionTrainingEnabled: true,
   courses: value("count", 3),
   coursesStarted: value("count", 3),
   crewInTraining: value("count", 4),
@@ -88,9 +87,12 @@ describe("crewCoreStats", () => {
    * Absent, not zero.
    */
   it("says nothing about lapses on a save with mission training off", () => {
-    const stats = crewCoreStats({ ...PROGRAM, missionTrainingEnabled: false }, [
-      crewRow({ nextTrainingExpiryUt: value("ut", 9_000_000) }),
-    ]);
+    const stats = crewCoreStats(
+      PROGRAM,
+      [crewRow({ nextTrainingExpiryUt: value("ut", 9_000_000) })],
+      undefined,
+      false,
+    );
 
     expect(stats.map((s) => s.id)).not.toContain("training-lapsing");
     // The in-training cell survives: a proficiency runs regardless.

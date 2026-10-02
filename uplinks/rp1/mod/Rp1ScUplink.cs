@@ -1040,7 +1040,8 @@ namespace GonogoRp1Uplink
         private Rp1ModSettings ModSettings =>
             _modSettings ??= new Rp1ModSettings(
                 () => _crew.IsAvailable,
-                () => _crew.RetirementEnabled);
+                () => _crew.RetirementEnabled,
+                () => _crew.MissionTrainingEnabled);
 
         /// <inheritdoc />
         public void DeclareSettings(IUplinkSettings settings)

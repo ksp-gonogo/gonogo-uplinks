@@ -42,17 +42,36 @@
         "payload": true
       },
       {
-        "topic": "rp1.crewProgram",
+        "topic": "settings.rp1",
         "payload": {
-          "retirementEnabled": true,
-          "crewRnREnabled": true,
-          "missionTrainingEnabled": true,
-          "proficiencyTrainingRate": 0.8,
-          "missionTrainingRate": 1.25,
-          "retirementExtensionCapSeconds": 63115200,
-          "courses": 0,
-          "coursesStarted": 0,
-          "crewInTraining": 0
+          "uplink": "rp1",
+          "failure": null,
+          "settings": [
+            {
+              "id": "retirementEnabled",
+              "label": "Crew retirement",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            },
+            {
+              "id": "missionTrainingEnabled",
+              "label": "Mission training",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            }
+          ]
         }
       },
       {

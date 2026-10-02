@@ -42,7 +42,6 @@ function crewRow(overrides: Record<string, unknown> = {}) {
 
 const PROGRAM = {
   crewRnREnabled: true,
-  missionTrainingEnabled: true,
   proficiencyTrainingRate: 1,
   missionTrainingRate: 1,
   retirementExtensionCapSeconds: 473_040_000,
@@ -51,15 +50,15 @@ const PROGRAM = {
   crewInTraining: 1,
 };
 
-/** `settings.rp1` as the mod publishes it, holding RP-1's retirement switch. */
-function retirementSetting(value: string | null) {
+/** `settings.rp1` as the mod publishes it, holding one of RP-1's switches. */
+function rp1Setting(id: string, label: string, value: string | null) {
   return {
     uplink: "rp1",
     failure: null,
     settings: [
       {
-        id: "retirementEnabled",
-        label: "Crew retirement",
+        id,
+        label,
         description: "",
         kind: "Bool",
         unit: null,
@@ -72,6 +71,12 @@ function retirementSetting(value: string | null) {
     ],
   };
 }
+
+const retirementSetting = (value: string | null) =>
+  rp1Setting("retirementEnabled", "Crew retirement", value);
+
+const missionTrainingSetting = (value: string | null) =>
+  rp1Setting("missionTrainingEnabled", "Mission training", value);
 
 function mountSchedule(kerbalName = "Wernher Kerman") {
   const fixture = setupStreamFixture();
@@ -277,7 +282,6 @@ describe("CrewSchedule", () => {
     fixture.emit("rp1.crew", [crewRow()]);
 
     await waitFor(() => {
-      expect(fixture.transport.isSubscribed("rp1.crewProgram")).toBe(true);
       expect(fixture.transport.isSubscribed("settings.rp1")).toBe(true);
     });
     /* Mint a frame before asserting ABSENCE. An emit alone does not make a
@@ -326,10 +330,8 @@ describe("CrewSchedule", () => {
   it("drops a mission-training lapse the save will never check", async () => {
     const { fixture } = mountSchedule();
     fixture.emit("rp1.available", true);
-    fixture.emit("rp1.crewProgram", {
-      ...PROGRAM,
-      missionTrainingEnabled: false,
-    });
+    fixture.emit("rp1.crewProgram", PROGRAM);
+    fixture.emit("settings.rp1", missionTrainingSetting("False"));
     fixture.emit("rp1.crew", [
       crewRow({
         nextTrainingExpiryTarget: "Atlas-D",

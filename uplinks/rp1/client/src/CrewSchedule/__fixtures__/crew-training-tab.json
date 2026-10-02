@@ -113,15 +113,46 @@
       {
         "topic": "rp1.crewProgram",
         "payload": {
-          "retirementEnabled": true,
           "crewRnREnabled": false,
-          "missionTrainingEnabled": true,
           "proficiencyTrainingRate": 0.8,
           "missionTrainingRate": 1.25,
           "retirementExtensionCapSeconds": 63115200,
           "courses": 1,
           "coursesStarted": 1,
           "crewInTraining": 1
+        }
+      },
+      {
+        "topic": "settings.rp1",
+        "payload": {
+          "uplink": "rp1",
+          "failure": null,
+          "settings": [
+            {
+              "id": "retirementEnabled",
+              "label": "Crew retirement",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            },
+            {
+              "id": "missionTrainingEnabled",
+              "label": "Mission training",
+              "description": "",
+              "kind": "Bool",
+              "unit": null,
+              "group": "Crew",
+              "setIn": "",
+              "writable": false,
+              "value": "True",
+              "unavailable": null
+            }
+          ]
         }
       },
       {
@@ -163,7 +194,9 @@
             "name": "Proficiency: Mercury-Redstone",
             "type": "Proficiency",
             "target": "Mercury-Redstone",
-            "students": ["Ludrey Kerman"],
+            "students": [
+              "Ludrey Kerman"
+            ],
             "seatMin": 1,
             "seatMax": 4,
             "started": true,
