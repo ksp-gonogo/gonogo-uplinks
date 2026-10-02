@@ -29,13 +29,17 @@
 // augmentation), so importing the package wires both halves.
 
 import {
-  registerBarePrimitiveTopic,
-  registerTopicUnits,
   type TopicPayload,
+  registerBarePrimitiveTopic,
+  registerEnumMembers,
+  registerTopicUnits,
 } from "@ksp-gonogo/sitrep-sdk";
 import type { KerbcastCameraEntry } from "./__generated__/contract.js";
 import {
+  GENERATED_ENUM_MEMBERS,
+  GENERATED_TOPIC_ENUMS,
   GENERATED_TOPIC_SHAPES,
+  GENERATED_TOPIC_STATICS,
   GENERATED_TOPIC_UNITS,
 } from "./__generated__/units.js";
 
@@ -72,7 +76,13 @@ registerTopicUnits(
   KERBCAST_CAMERAS_TOPIC,
   GENERATED_TOPIC_UNITS[KERBCAST_CAMERAS_TOPIC] ?? {},
   GENERATED_TOPIC_SHAPES[KERBCAST_CAMERAS_TOPIC] ?? {},
+  GENERATED_TOPIC_STATICS[KERBCAST_CAMERAS_TOPIC] ?? [],
+  GENERATED_TOPIC_ENUMS[KERBCAST_CAMERAS_TOPIC] ?? {},
 );
+
+for (const [enumName, members] of Object.entries(GENERATED_ENUM_MEMBERS)) {
+  registerEnumMembers(enumName, members);
+}
 
 /**
  * A compile-time invariant, checked by `pnpm build` and `pnpm typecheck`: it

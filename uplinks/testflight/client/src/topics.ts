@@ -4,11 +4,12 @@
 // shape maps so the quantities decode as `Value`s. `index.ts` re-exports this
 // module so the augmentation reaches the emitted `dist/index.d.ts`.
 import {
+  type TopicPayload,
   registerBarePrimitiveTopic,
   registerCollectionTopic,
+  registerEnumMembers,
   registerTopicUnits,
   registerTypeUnits,
-  type TopicPayload,
 } from "@ksp-gonogo/sitrep-sdk";
 import type {
   TestFlightReliabilityPart,
@@ -16,9 +17,14 @@ import type {
 } from "./__generated__/contract.js";
 import { GENERATED_COLLECTION_TOPIC_IDS } from "./__generated__/topic-map.js";
 import {
+  GENERATED_ENUM_MEMBERS,
+  GENERATED_TOPIC_ENUMS,
   GENERATED_TOPIC_SHAPES,
+  GENERATED_TOPIC_STATICS,
   GENERATED_TOPIC_UNITS,
+  GENERATED_TYPE_ENUMS,
   GENERATED_TYPE_SHAPES,
+  GENERATED_TYPE_STATICS,
   GENERATED_TYPE_UNITS,
 } from "./__generated__/units.js";
 
@@ -54,10 +60,26 @@ for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
 // Both registries: the Topic's own fields, and the budget shape nested inside a
 // part, which the decode resolves by type name.
 for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
-  registerTopicUnits(topic, units, GENERATED_TOPIC_SHAPES[topic] ?? {});
+  registerTopicUnits(
+    topic,
+    units,
+    GENERATED_TOPIC_SHAPES[topic] ?? {},
+    GENERATED_TOPIC_STATICS[topic] ?? [],
+    GENERATED_TOPIC_ENUMS[topic] ?? {},
+  );
 }
 for (const [typeName, units] of Object.entries(GENERATED_TYPE_UNITS)) {
-  registerTypeUnits(typeName, units, GENERATED_TYPE_SHAPES[typeName] ?? {});
+  registerTypeUnits(
+    typeName,
+    units,
+    GENERATED_TYPE_SHAPES[typeName] ?? {},
+    GENERATED_TYPE_STATICS[typeName] ?? [],
+    GENERATED_TYPE_ENUMS[typeName] ?? {},
+  );
+}
+
+for (const [enumName, members] of Object.entries(GENERATED_ENUM_MEMBERS)) {
+  registerEnumMembers(enumName, members);
 }
 
 /**
