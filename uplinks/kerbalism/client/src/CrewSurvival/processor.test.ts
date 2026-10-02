@@ -256,6 +256,42 @@ describe("deriveCrewSurvival", () => {
   });
 });
 
+describe("marginToAct on a reckoned reading", () => {
+  it("counts from the modelled instant on the modelled roster's death clock", () => {
+    const observed: KerbalismCrewEntry[] = [
+      { name: "Val", deathClockUt: deadlineIn(400) },
+    ];
+    const modelled: KerbalismCrewEntry[] = [
+      { name: "Val", deathClockUt: deadlineIn(900) },
+    ];
+    const margin = marginToAct(
+      {
+        state: "held",
+        value: observed,
+        asOfUt: value("ut", VIEW_UT),
+        grade: "held",
+        reckoning: {
+          status: "available",
+          value: modelled,
+          atUt: value("ut", VIEW_UT + 100),
+          beyondReceived: true,
+          basis: "linear-dead-reckoning",
+          modelled: [],
+          owner: "kerbalism",
+        },
+      },
+      "Val",
+      value("ut", VIEW_UT),
+      value("s", 50),
+    );
+    // 900 (modelled deadline) - 100 (carried instant) - 50 (light time); the
+    // observed roster would have given 400 - 100 - 50 = 250
+    expect(margin.reckoning.status).toBe("available");
+    if (margin.reckoning.status !== "available") return;
+    expect(margin.reckoning.modelled.magnitude).toBe(750);
+  });
+});
+
 describe("toneFor", () => {
   it("bands a fraction go/warn/nogo at the 0.5/0.8 thresholds", () => {
     expect(toneFor(0.2)).toBe("go");

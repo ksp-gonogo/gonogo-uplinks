@@ -235,8 +235,8 @@ export function marginSecondsOf(kerbal: KerbalSurvival): number | null {
  * One kerbal's margin to act, derived from the crew reading.
  *
  * The observation counts from the received edge. The reckoning counts from the
- * instant the crew model carried the reading to, and uses the observed death
- * clock, because the model never moves a deadline Kerbalism derived. Clamped at
+ * instant the crew model carried the reading to, on the modelled roster's death
+ * clock, which the model carries through unchanged. Clamped at
  * zero: a command that would land after the deadline is too late, never a
  * negative countdown.
  */
@@ -262,14 +262,10 @@ export function marginToAct(
     if (deadline === undefined || oneWay === null) return undefined;
     return deadline.minus(fromUt).minus(oneWay).max(0);
   };
-  const observed =
-    kerbals.state === "observed" || kerbals.state === "held"
-      ? kerbals.value
-      : [];
   return deriveReading(
     kerbals,
     (entries) => marginFrom(deadlineIn(entries), receivedUt),
-    (_modelled, atUt) => marginFrom(deadlineIn(observed), atUt),
+    (modelled, atUt) => marginFrom(deadlineIn(modelled), atUt),
   );
 }
 
