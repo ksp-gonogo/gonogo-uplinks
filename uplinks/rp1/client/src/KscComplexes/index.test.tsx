@@ -632,8 +632,7 @@ describe("KscComplexes", () => {
       name: /LP-1 is the last working pad at this complex/,
     });
     expect(refused).toBeDisabled();
-    expect(refused).toHaveAttribute(
-      "title",
+    expect(refused).toHaveAccessibleName(
       "LP-1 is the last working pad at this complex, and a complex must keep one",
     );
   });

@@ -311,8 +311,7 @@ describe("TrainingCourses", () => {
       name: `${NAUT} off`,
     });
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       "This course seats 2 at least, so one student cannot leave it",
     );
     // Cancelling the whole course is the way out RP-1 leaves open here.

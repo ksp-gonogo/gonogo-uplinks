@@ -344,8 +344,7 @@ describe("the seat bounds", () => {
     await pick(user, LUDREY);
     const control = screen.getByRole("button", { name: "Enrol" });
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       "Mission training: Gemini needs 2 students and 1 student is picked",
     );
     // And the bounds are on screen, so the dark control reads as a fact about
@@ -363,8 +362,7 @@ describe("the seat bounds", () => {
     await pick(user, LUDREY, NEDCAS, VALENTINA);
     const control = screen.getByRole("button", { name: "Enrol" });
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       "Mission training: Gemini seats 2 and 3 students are picked",
     );
   });
@@ -375,8 +373,7 @@ describe("the seat bounds", () => {
 
     const control = await screen.findByRole("button", { name: "Enrol" });
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       "Nobody is picked, and RP-1 has no such thing as an empty course",
     );
   });
@@ -464,7 +461,7 @@ describe("who RP-1 would refuse", () => {
 
     const control = await student(VALENTINA);
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute("title", reason);
+    expect(control).toHaveAccessibleDescription(reason);
     // And the reason is on the label, not only in the title. Every peer here is
     // a kerbal's name in the same chip, so dimming alone would leave "cannot be
     // picked" looking like "not picked yet".
@@ -492,8 +489,7 @@ describe("who RP-1 would refuse", () => {
 
     const control = await student(VALENTINA);
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       `${VALENTINA} is already on a training course`,
     );
   });
@@ -588,8 +584,7 @@ describe("who RP-1 would refuse", () => {
 
     const control = await screen.findByRole("button", { name: "Enrol" });
     expect(control).toBeDisabled();
-    expect(control).toHaveAttribute(
-      "title",
+    expect(control).toHaveAccessibleDescription(
       `${NEDCAS} cannot take this training, and RP-1 refuses the whole crew rather than starting a seat short`,
     );
   });
@@ -621,8 +616,7 @@ describe("who RP-1 would refuse", () => {
     expect(stale).toBeEnabled();
     await user.click(stale);
 
-    expect(screen.getByRole("button", { name: "Enrol" })).toHaveAttribute(
-      "title",
+    expect(screen.getByRole("button", { name: "Enrol" })).toHaveAccessibleDescription(
       "Mission training: Gemini needs 2 students and 1 student is picked",
     );
   });

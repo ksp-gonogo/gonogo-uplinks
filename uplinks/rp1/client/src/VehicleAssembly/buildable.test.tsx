@@ -194,8 +194,7 @@ describe("starting a build from a saved craft", () => {
       name: /Build at LC-1/i,
     });
     expect(refused).toBeDisabled();
-    expect(refused).toHaveAttribute(
-      "title",
+    expect(refused).toHaveAccessibleDescription(
       expect.stringContaining("too heavy"),
     );
     expect(
@@ -235,8 +234,7 @@ describe("starting a build from a saved craft", () => {
        because the reason no longer occupies the page until it is wanted. */
     const refused = screen.getByRole("button", { name: /Build at LC-2/i });
     expect(refused).toBeDisabled();
-    expect(refused).toHaveAttribute(
-      "title",
+    expect(refused).toHaveAccessibleDescription(
       expect.stringContaining("too large"),
     );
     /* The two are ONE control in two states, so the complex an operator cannot
