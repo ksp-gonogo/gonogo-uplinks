@@ -205,6 +205,7 @@ function AxisWheel({
       <JogWheel
         {...wheel}
         ariaLabel={name}
+        label={false}
         format={(v) => (labelled ? `${glyph}${formatDegrees(v)}` : "")}
       />
     </span>
