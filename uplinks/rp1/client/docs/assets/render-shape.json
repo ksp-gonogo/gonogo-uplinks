@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "appoint-roster--default.png": {
-      "hash": "881bf74f1c571008",
+      "hash": "66ae13dd58b5b0aa",
       "elements": 175,
       "text": "0f635c8c"
     },
@@ -243,27 +243,27 @@
       "text": "180f3670"
     },
     "catalogue-picker--default.png": {
-      "hash": "4459ebd1ae0396a7",
+      "hash": "be8ed744a9996027",
       "elements": 291,
       "text": "0dc93d6f"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "dc7c9c95d8c44118",
+      "hash": "09b58dc5a8586ed7",
       "elements": 306,
       "text": "eb8a5e2d"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "dc7c9c95d8c44118",
+      "hash": "09b58dc5a8586ed7",
       "elements": 306,
       "text": "eb8a5e2d"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "4459ebd1ae0396a7",
+      "hash": "be8ed744a9996027",
       "elements": 291,
       "text": "0dc93d6f"
     },
     "completed-program--default.png": {
-      "hash": "427ff1515563f2de",
+      "hash": "f8b57fc6b9b39d59",
       "elements": 292,
       "text": "2aa175b7"
     },
@@ -393,14 +393,14 @@
       "text": "d3a66d04"
     },
     "facility-tiers-in-flight--default.png": {
-      "hash": "de4eba24b73e2ab2",
-      "elements": 127,
+      "hash": "3373dd65db979da0",
+      "elements": 129,
       "text": "7090a95f"
     },
     "facility-upgrades-at-centre--default.png": {
-      "hash": "d18473f544cf82bb",
-      "elements": 186,
-      "text": "2030f3e5"
+      "hash": "338b26a835b7a514",
+      "elements": 189,
+      "text": "22497fa4"
     },
     "facility-upgrades-away--default.png": {
       "hash": "81493da23fc6c5ef",
@@ -408,8 +408,8 @@
       "text": "45f30206"
     },
     "facility-upgrades-away-rp1-answers--default.png": {
-      "hash": "80cd8d35330351e8",
-      "elements": 124,
+      "hash": "767b5c6b3ff8f538",
+      "elements": 126,
       "text": "5641a8f1"
     },
     "funds-alarm--default.png": {
@@ -443,17 +443,17 @@
       "text": "7de10fa6"
     },
     "offer-frontloaded--default.png": {
-      "hash": "e92b3c492fc3eb03",
+      "hash": "9e8cae37207dc0d0",
       "elements": 271,
       "text": "31837fa1"
     },
     "pad-holding-a-finished-vehicle--default.png": {
-      "hash": "4fd801fba5d1b9d5",
+      "hash": "68cc1abcb787b621",
       "elements": 74,
       "text": "df5ec576"
     },
     "pad-rolling-out--default.png": {
-      "hash": "be2adc1d7bc8706a",
+      "hash": "3ccfff50b38650db",
       "elements": 72,
       "text": "141b257d"
     },
@@ -473,7 +473,7 @@
       "text": "ff71b6be"
     },
     "programs-screen--default.png": {
-      "hash": "4eb21bcdf340720c",
+      "hash": "ba939f824f3e2f8d",
       "elements": 124,
       "text": "e1deb732"
     },
@@ -488,7 +488,7 @@
       "text": "1782c9be"
     },
     "rp1-full-admin-building--default.png": {
-      "hash": "70ed770e2d1649c6",
+      "hash": "d86119c37940801c",
       "elements": 313,
       "text": "0778f0f5"
     },
@@ -498,22 +498,22 @@
       "text": "9071f2ea"
     },
     "running-overrun-ready--default.png": {
-      "hash": "9a0d60845e278d25",
+      "hash": "bb07786c0dd7ccd4",
       "elements": 235,
       "text": "a674455d"
     },
     "serving-leader--default.png": {
-      "hash": "5019e9096299789f",
+      "hash": "21f666b35ee14308",
       "elements": 192,
       "text": "474a04a8"
     },
     "start-research-affordable--default.png": {
-      "hash": "c273bafeec0aded2",
+      "hash": "eaa2172efa73c228",
       "elements": 155,
       "text": "710f5419"
     },
     "start-research-short--default.png": {
-      "hash": "d57af34e06a5cfeb",
+      "hash": "21c3e10520d870aa",
       "elements": 156,
       "text": "5152f63c"
     },
