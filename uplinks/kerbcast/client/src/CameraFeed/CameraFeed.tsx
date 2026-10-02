@@ -55,6 +55,7 @@ import {
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { feedAspect, frameBox } from "./frameShape.js";
+import { useStreamAspect } from "./useStreamAspect.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
@@ -238,7 +239,9 @@ export function CameraFeed({
   // stream is ready). ResizeObserver is stubbed in tests (installDomStubs).
   const [feedSize, setFeedSize] = useState({ width: 0, height: 0 });
   const overlayObserverRef = useRef<ResizeObserver | null>(null);
+  const [overlayWrap, setOverlayWrap] = useState<HTMLDivElement | null>(null);
   const attachOverlayWrap = useCallback((el: HTMLDivElement | null) => {
+    setOverlayWrap(el);
     overlayObserverRef.current?.disconnect();
     overlayObserverRef.current = null;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -425,6 +428,8 @@ export function CameraFeed({
     h: 180,
   });
 
+  const streamAspect = useStreamAspect(overlayWrap);
+
   // ---- Control reveal ----
   // The delayed-aim controls are drawn over the picture and are hidden until
   // the operator reaches for them, exactly as the kerbcast SDK's own controls
@@ -503,8 +508,10 @@ export function CameraFeed({
   };
   const steerable =
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
-  // The frame takes the CAMERA's shape, fitted into whatever the tile left it.
-  const frame = frameBox(stageBox, feedAspect(activeCamera));
+  // The frame takes the shape of the stream being played, fitted into whatever
+  // the tile left it. The camera's configured size stands in until the first
+  // frame has dimensions.
+  const frame = frameBox(stageBox, streamAspect ?? feedAspect(activeCamera));
   const showSetpointSurface =
     controlMode !== "live" &&
     effectiveFlightId !== null &&
