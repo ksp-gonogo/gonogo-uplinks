@@ -48,6 +48,7 @@ import {
 } from "react";
 import type {
   CameraSetpoint,
+  CameraSetpointAxes,
   CameraSetpointBounds,
 } from "../CameraSetpoint/CameraSetpointInput.js";
 import {
@@ -500,14 +501,19 @@ export function CameraFeed({
         fov: activeCamera.fov,
       }
     : undefined;
-  // `supportsPan || supportsZoom`: a fixed camera has no aim to give it, and
+  // Per axis group: yaw and pitch need `supportsPan`, the FOV tape needs
+  // `supportsZoom`, and the surface draws only what the camera can move. The
+  // surface as a whole needs at least one. A fixed camera has no aim to give it, and
   // the kerbcast contract says as much ("clients should not present pan
   // controls until supportsPan == true"). Without this the bounds collapse to a
   // set of zeroes, which is a perfectly well-formed `CameraSetpointBounds`, so
   // every fixed camera drew three dead 0-degree tapes over its own picture.
+  const setpointAxes: CameraSetpointAxes = {
+    pan: activeCamera?.supportsPan === true,
+    zoom: activeCamera?.supportsZoom === true,
+  };
   const steerable =
-    activeCamera !== undefined &&
-    (activeCamera.supportsPan || activeCamera.supportsZoom);
+    activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
   // The frame takes the CAMERA's shape, fitted into whatever the tile left it.
   const frame = frameBox(stageBox, feedAspect(activeCamera));
   const showSetpointSurface =
@@ -620,6 +626,7 @@ export function CameraFeed({
                         ref={setpointRef}
                         cameraId={effectiveFlightId as number}
                         bounds={setpointBounds as CameraSetpointBounds}
+                        axes={setpointAxes}
                         initial={setpointInitial as CameraSetpoint}
                         mode={controlMode}
                         frame={feedSize}

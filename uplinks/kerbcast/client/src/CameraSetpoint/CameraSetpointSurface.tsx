@@ -64,6 +64,7 @@ import {
 } from "react";
 import {
   type CameraSetpoint,
+  type CameraSetpointAxes,
   type CameraSetpointBounds,
   CameraSetpointInput,
   SETPOINT_INPUT_WIDTH_PX,
@@ -191,10 +192,17 @@ export interface CameraSetpointSurfaceHandle {
   setAxisRate(axis: SetpointAxis, rate: number): void;
 }
 
+const BOTH_AXES: CameraSetpointAxes = { pan: true, zoom: true };
+
 export interface CameraSetpointSurfaceProps {
   /** KSP `Part.flightID` of the camera under control (the effective displayed id). */
   cameraId: number;
   bounds: CameraSetpointBounds;
+  /**
+   * The axis groups this camera can move. An unsupported group draws no wheel,
+   * is never dispatched on commit and ignores a held input. Defaults to both.
+   */
+  axes?: CameraSetpointAxes;
   /** Seed setpoint from the current `CameraState` (`panYaw`/`panPitch`/`fov`). */
   initial: CameraSetpoint;
   mode: "live" | "staged" | "no-path";
@@ -211,7 +219,7 @@ export const CameraSetpointSurface = forwardRef<
   CameraSetpointSurfaceHandle,
   CameraSetpointSurfaceProps
 >(function CameraSetpointSurface(
-  { cameraId, bounds, initial, mode, frame },
+  { cameraId, bounds, axes = BOTH_AXES, initial, mode, frame },
   ref,
 ): JSX.Element | null {
   // Seeded from the current aim ONCE, and never re-seeded from it. The draft is
@@ -241,11 +249,16 @@ export const CameraSetpointSurface = forwardRef<
   // stream rate, and the draft would move in fits or not at all.
   const boundsRef = useRef(bounds);
   boundsRef.current = bounds;
+  const axesRef = useRef(axes);
+  axesRef.current = axes;
 
   useImperativeHandle(
     ref,
     () => ({
       setAxisRate(axis, rate) {
+        if (axis === "fov" ? !axesRef.current.zoom : !axesRef.current.pan) {
+          return;
+        }
         const settled = settleRate(rate);
         setRates((current) =>
           current[axis] === settled ? current : { ...current, [axis]: settled },
@@ -297,8 +310,14 @@ export const CameraSetpointSurface = forwardRef<
   // CommandGroup already blocks the commit while gated (`no-path`), so no extra
   // guard is needed here. Degrees are plain numbers, absolute (not rates).
   const handleCommit = (next: CameraSetpoint): void => {
-    setPan.send({ cameraId, yaw: next.yaw, pitch: next.pitch }).catch(() => {});
-    setFov.send({ cameraId, fieldOfView: next.fov }).catch(() => {});
+    if (axes.pan) {
+      setPan
+        .send({ cameraId, yaw: next.yaw, pitch: next.pitch })
+        .catch(() => {});
+    }
+    if (axes.zoom) {
+      setFov.send({ cameraId, fieldOfView: next.fov }).catch(() => {});
+    }
     setCommitting(true);
     if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);
     morphTimerRef.current = setTimeout(() => setCommitting(false), MORPH_MS);
@@ -319,6 +338,7 @@ export const CameraSetpointSurface = forwardRef<
         <CameraSetpointInput
           value={setpoint}
           bounds={bounds}
+          axes={axes}
           gated={mode === "no-path"}
           gatedReason="No signal path"
           onChange={setSetpoint}

@@ -30,9 +30,14 @@ export type CameraSetpointBounds = {
   fovMax: number;
 };
 
+/** Which axis groups the camera can actually move; an unsupported one draws no wheel. */
+export type CameraSetpointAxes = { pan: boolean; zoom: boolean };
+
 export interface CameraSetpointInputProps {
   value: CameraSetpoint;
   bounds: CameraSetpointBounds;
+  /** Defaults to both axis groups. Yaw and pitch need `pan`, the FOV wheel needs `zoom`. */
+  axes?: CameraSetpointAxes;
   onChange: (next: CameraSetpoint) => void;
   onCommit: (v: CameraSetpoint) => void;
   /** `no-path` → disable + error-tone the commit (forwarded to CommandGroup). */
@@ -209,6 +214,7 @@ function AxisWheel({
 export function CameraSetpointInput({
   value,
   bounds,
+  axes = { pan: true, zoom: true },
   onChange,
   onCommit,
   gated,
@@ -236,7 +242,8 @@ export function CameraSetpointInput({
       >
         <div style={AXES_STYLE}>
           <div style={AXIS_STACK_STYLE}>
-            <AxisWheel
+            {axes.pan && (
+              <AxisWheel
               glyph="Y"
               name="Yaw"
               orientation="horizontal"
@@ -247,8 +254,10 @@ export function CameraSetpointInput({
               max={bounds.yawMax}
               step={step}
               onChange={(yaw) => onChange({ ...value, yaw })}
-            />
-            <AxisWheel
+              />
+            )}
+            {axes.zoom && (
+              <AxisWheel
               glyph="Z"
               name="Zoom (field of view)"
               orientation="horizontal"
@@ -259,7 +268,8 @@ export function CameraSetpointInput({
               max={bounds.fovMax}
               step={step}
               onChange={(fov) => onChange({ ...value, fov })}
-            />
+              />
+            )}
           </div>
           {/* The flat wheel's own box, turned: its width is their height and
               its height is their width, so the three are one control drawn
@@ -273,6 +283,7 @@ export function CameraSetpointInput({
               screen and moves it when the operator drags ACROSS the screen.
               The transform turns the picture and leaves the control where it
               was. */}
+          {axes.pan && (
           <AxisWheel
             glyph="P"
             name="Pitch"
@@ -286,6 +297,7 @@ export function CameraSetpointInput({
             step={step}
             onChange={(pitch) => onChange({ ...value, pitch })}
           />
+          )}
         </div>
       </CommandGroup>
     </CommitScope>

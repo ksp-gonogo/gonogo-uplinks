@@ -1161,6 +1161,50 @@ describe("CameraFeed -- live pan/zoom against the staged cluster", () => {
   });
 });
 
+describe("CameraFeed -- staged cluster draws only the axes the camera can move", () => {
+  async function stagedWith(
+    pan: boolean,
+    zoom: boolean,
+  ): Promise<ReturnType<typeof renderFeedWithComms>> {
+    await buildConnectedSource([
+      { ...STEERABLE, supportsPan: pan, supportsZoom: zoom },
+    ]);
+    const stream = setupStreamFixture();
+    const view = renderFeedWithComms({ flightId: 42 }, stream);
+    await act(async () => {
+      emitComms(stream, { connected: true, signalDelay: STAGED_DELAY_S });
+    });
+    return view;
+  }
+
+  it("a pan-only camera draws yaw and pitch and no zoom tape", async () => {
+    await stagedWith(true, false);
+    await screen.findByRole("slider", { name: /yaw/i });
+    expect(screen.getByRole("slider", { name: /pitch/i })).toBeTruthy();
+    expect(screen.queryByRole("slider", { name: /zoom/i })).toBe(null);
+  });
+
+  it("a zoom-only camera draws the zoom tape and no yaw or pitch", async () => {
+    await stagedWith(false, true);
+    await screen.findByRole("slider", { name: /zoom/i });
+    expect(screen.queryByRole("slider", { name: /yaw/i })).toBe(null);
+    expect(screen.queryByRole("slider", { name: /pitch/i })).toBe(null);
+  });
+
+  it("a camera that can do both draws all three", async () => {
+    await stagedWith(true, true);
+    await screen.findByRole("slider", { name: /yaw/i });
+    expect(screen.getByRole("slider", { name: /pitch/i })).toBeTruthy();
+    expect(screen.getByRole("slider", { name: /zoom/i })).toBeTruthy();
+  });
+
+  it("a camera that can do neither draws no setpoint surface", async () => {
+    await stagedWith(false, false);
+    expect(document.querySelector("[data-camera-aim]")).toBe(null);
+    expect(screen.queryByRole("slider")).toBe(null);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // CommNet degrade
 // ---------------------------------------------------------------------------
