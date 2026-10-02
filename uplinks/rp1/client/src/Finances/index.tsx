@@ -306,7 +306,8 @@ type Horizons = FieldReading<Rp1BudgetHorizons>;
 interface Line {
   id: string;
   label: ReactNode;
-  amounts: Horizons;
+  /** Absent on a heading, which names a group and carries no figure. */
+  amounts?: Horizons;
 }
 
 /** The lines under one Budget row, from `rp1.budgetBreakdown`. */
@@ -337,9 +338,10 @@ function DrillDown({
         key: period,
         header: periodLabel(period),
         align: "end",
-        render: (line) => (
-          <Signed amount={line.amounts[period] as FundsReading} />
-        ),
+        render: (line) =>
+          line.amounts === undefined ? null : (
+            <Signed amount={line.amounts[period] as FundsReading} />
+          ),
       }),
     ),
   ];
@@ -370,12 +372,36 @@ function linesFor(
     const buildings = breakdown.buildings ?? [];
     const complexes = breakdown.complexes ?? [];
     // RP-1's Facilities tab heads each centre's complexes with the centre's
-    // name. One centre needs no heading, and two can each have an LC-1.
-    const centres = new Set(complexes.map((c) => c.kscName));
-    const named = (c: (typeof complexes)[number]) =>
-      centres.size > 1
-        ? `${c.name} · ${c.kscDisplayName ?? c.kscName}`
-        : c.name;
+    // name once. One centre needs no heading, and two can each have an LC-1.
+    const byCentre = new Map<string | null | undefined, number[]>();
+    complexes.forEach((c, i) => {
+      byCentre.set(c.kscName, [...(byCentre.get(c.kscName) ?? []), i]);
+    });
+    const complexLine = (i: number): Line => {
+      const c = complexes[i];
+      return {
+        id: `complex:${c.lcId ?? i}`,
+        label:
+          c.operational === false ? (
+            <>
+              {c.name} <Badge tone="info">UNDER CONSTRUCTION</Badge>
+            </>
+          ) : (
+            c.name
+          ),
+        amounts: reading.complexes[i].upkeep,
+      };
+    };
+    const grouped: Line[] =
+      byCentre.size > 1
+        ? [...byCentre].flatMap(([centre, at]) => [
+            {
+              id: `centre:${centre ?? at[0]}`,
+              label: <strong>{complexes[at[0]].kscDisplayName ?? centre}</strong>,
+            },
+            ...at.map(complexLine),
+          ])
+        : complexes.map((_, i) => complexLine(i));
     return {
       summary: `${count(buildings.length, "building")}, ${count(complexes.length, "complex", "complexes")}`,
       lines: [
@@ -384,18 +410,7 @@ function linesFor(
           label: facilityLabel(b.facility ?? ""),
           amounts: reading.buildings[i].upkeep,
         })),
-        ...complexes.map((c, i) => ({
-          id: `complex:${c.lcId ?? i}`,
-          label:
-            c.operational === false ? (
-              <>
-                {named(c)} <Badge tone="info">UNDER CONSTRUCTION</Badge>
-              </>
-            ) : (
-              named(c)
-            ),
-          amounts: reading.complexes[i].upkeep,
-        })),
+        ...grouped,
       ],
     };
   }

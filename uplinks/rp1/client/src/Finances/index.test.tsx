@@ -338,7 +338,7 @@ describe("Finances", () => {
     expect(row.textContent).not.toMatch(/deadline/);
   });
 
-  it("names each complex's centre once there is more than one", async () => {
+  it("heads each centre once above its complexes when there is more than one", async () => {
     const { fixture } = mount();
     const complexes = BREAKDOWN.complexes as Record<string, unknown>[];
     await feed(fixture, BUDGET, {
@@ -358,13 +358,18 @@ describe("Finances", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /4 buildings, 4 complexes/ }),
     );
-    expect(
-      screen.getByRole("rowheader", { name: "LC-5 · US - Cape Canaveral" }),
-    ).toBeInTheDocument();
-    // No display name from KSCSwitcher: the id, as RP-1's own tab falls back.
-    expect(
-      screen.getByRole("rowheader", { name: "LC-1 · ru_baikonur" }),
-    ).toBeInTheDocument();
+    // Each centre heads its complexes once, and the complex rows carry no suffix.
+    const names = screen
+      .getAllByRole("rowheader")
+      .map((r) => r.textContent)
+      .filter((t) => /^(US - Cape Canaveral|ru_baikonur|LC-)/.test(t ?? ""));
+    expect(names).toEqual([
+      "US - Cape Canaveral",
+      "LC-5",
+      "LC-14 UNDER CONSTRUCTION",
+      "ru_baikonur",
+      "LC-1",
+    ]);
   });
 
   it("marks a zero accrual with an idle research queue", async () => {

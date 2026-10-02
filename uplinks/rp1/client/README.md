@@ -178,7 +178,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.crewProgram`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 7 |  |
+| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
 | `rp1-leader-detail` | `strategies.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
