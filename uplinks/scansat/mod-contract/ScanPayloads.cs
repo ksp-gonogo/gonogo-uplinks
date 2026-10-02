@@ -73,15 +73,19 @@ public class ScanSensorEntry
     [SitrepUnit(Units.Id)]
     public int? Type { get; set; }
 
+    [SitrepStatic]
     [SitrepUnit(Units.Degrees)]
     public double? Fov { get; set; }
 
+    [SitrepStatic]
     [SitrepUnit(Units.Metres)]
     public double? MinAlt { get; set; }
 
+    [SitrepStatic]
     [SitrepUnit(Units.Metres)]
     public double? MaxAlt { get; set; }
 
+    [SitrepStatic]
     [SitrepUnit(Units.Metres)]
     public double? BestAlt { get; set; }
 

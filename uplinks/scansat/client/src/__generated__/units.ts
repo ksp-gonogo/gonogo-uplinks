@@ -224,6 +224,7 @@ export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
  * @category Units and values
  */
 export const GENERATED_TYPE_STATICS: Readonly<Record<string, readonly string[]>> = {
+  "ScanSensorEntry": ["bestAlt", "fov", "maxAlt", "minAlt"],
 };
 
 /** The same, keyed by Topic id. */
