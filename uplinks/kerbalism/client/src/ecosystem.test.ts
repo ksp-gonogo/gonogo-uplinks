@@ -580,4 +580,61 @@ describe("wearRows", () => {
     // `_NonRegenScrubber` gates the process; it is not the thing running out.
     expect(rows.map((r) => r.name)).not.toContain("_NonRegenScrubber");
   });
+  describe("drain", () => {
+    const wearWith = (
+      perCapacity: ReturnType<typeof rate> | undefined,
+      processCapacity: ReturnType<typeof value> | undefined,
+    ) =>
+      wearRows({
+        profile: {
+          ...PROFILE,
+          processes: [
+            ...(PROFILE.processes ?? []),
+            {
+              name: "non-regenerative scrubber",
+              modifiers: ["_NonRegenScrubber"],
+              inputs: { _NonRegenScrubberLife: perCapacity as never },
+              outputs: {},
+            },
+          ],
+        },
+        lifeSupport: {
+          processes: [
+            {
+              resource: "_NonRegenScrubber",
+              title: "Vac scrubber",
+              capacity: processCapacity as never,
+              running: true,
+              broken: false,
+            },
+          ],
+        },
+        stored: { _NonRegenScrubberLife: 0.25 },
+        capacity: { _NonRegenScrubberLife: 1 },
+        crew: CREW,
+      });
+
+    it("is null, not zero, when the process capacity is unreadable", () => {
+      const [row] = wearWith(rate(0.000023148), undefined);
+      expect(row.drainPerSecond).toBeNull();
+      expect(row.secondsRemaining).toBeNull();
+    });
+
+    it("is null, not zero, when the per-capacity input is unreadable", () => {
+      const [row] = wearWith(undefined, value("units", 1));
+      expect(row.drainPerSecond).toBeNull();
+      expect(row.secondsRemaining).toBeNull();
+    });
+
+    it("is zero only when both factors were read and the product is zero", () => {
+      const [row] = wearWith(rate(0), value("units", 1));
+      expect(row.drainPerSecond).toBe(0);
+      expect(row.secondsRemaining).toBeNull();
+    });
+
+    it("carries the observed drain when it is positive", () => {
+      const [row] = wearWith(rate(0.000023148), value("units", 1));
+      expect(row.drainPerSecond).toBeCloseTo(0.000023148, 9);
+    });
+  });
 });

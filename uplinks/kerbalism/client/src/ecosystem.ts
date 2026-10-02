@@ -618,6 +618,13 @@ export interface WearRow {
   amount: number;
   capacity: number;
   fraction: number | null;
+  /**
+   * What the process draws from this gauge per second, or null when the
+   * process capacity or the per-capacity input is unreadable. Null is unknown,
+   * never zero: only an observed `0` is a gauge that is not draining.
+   */
+  drainPerSecond: number | null;
+  /** Null when the drain is unknown or zero, so no time is claimed either way. */
   secondsRemaining: number | null;
 }
 
@@ -776,8 +783,14 @@ export function wearRows({
       // The process's own gate token is an input too and is not wear; only a
       // DIFFERENT pseudo-resource is a life gauge.
       if (!name.startsWith("_") || name === entry.resource) continue;
+      const perCapacityIn = magnitudeOf(perCapacity);
+      const processCapacity = magnitudeOf(entry.capacity);
       const drain =
-        magnitudeOr(perCapacity, 0) * magnitudeOr(entry.capacity, 0);
+        perCapacityIn === null || processCapacity === null
+          ? null
+          : perCapacityIn * processCapacity;
+      const drainPerSecond =
+        drain !== null && Number.isFinite(drain) ? drain : null;
       const amount = stored[name] ?? 0;
       const cap = capacity[name] ?? 0;
       out.push({
@@ -786,7 +799,11 @@ export function wearRows({
         amount,
         capacity: cap,
         fraction: cap > 0 ? amount / cap : null,
-        secondsRemaining: drain > 0 ? amount / drain : null,
+        drainPerSecond,
+        secondsRemaining:
+          drainPerSecond !== null && drainPerSecond > 0
+            ? amount / drainPerSecond
+            : null,
       });
     }
   }

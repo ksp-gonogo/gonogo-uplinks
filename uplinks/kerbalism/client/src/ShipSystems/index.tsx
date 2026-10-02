@@ -329,7 +329,10 @@ function wearTone(w: WearRow): Tone {
 
 function wearValueLabel(w: WearRow): string {
   if (w.capacity <= 0) return "not fitted";
-  return `${fmtAmt(w.amount)} / ${fmtAmt(w.capacity)} · ${formatTimeToEmpty(w.secondsRemaining)}`;
+  const level = `${fmtAmt(w.amount)} / ${fmtAmt(w.capacity)}`;
+  if (w.drainPerSecond === null) return level;
+  if (w.drainPerSecond === 0) return `${level} · stable`;
+  return `${level} · ${formatTimeToEmpty(w.secondsRemaining)}`;
 }
 
 type ProcessRunState = "idle" | "running" | "broken" | "unknown";
