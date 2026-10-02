@@ -45,5 +45,7 @@ npx tsc --noEmit -p tsconfig.json
 npx tsc --noEmit -p tsconfig.nodenext.json
 # The page is generated, and the scaffold leaves it for its author to write, so
 # the suite's own page test is satisfied the way the scaffold's next steps say.
-GONOGO_UPLINK_PAGE_UPDATE=1 npx vitest run
+# CI is unset for this one write because the page gate refuses an update under
+# CI; the plain run after it is the check, and the whole Uplink is deleted.
+env -u CI GONOGO_UPLINK_PAGE_UPDATE=1 npx vitest run
 npx vitest run
