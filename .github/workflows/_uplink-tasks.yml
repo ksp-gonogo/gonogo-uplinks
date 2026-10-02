@@ -23,6 +23,7 @@ on:
       test: { required: true, type: boolean }
       bundle: { required: true, type: boolean }
       publish: { required: false, type: boolean, default: false }
+      scaffold: { required: false, type: boolean, default: false }
 
 jobs:
   uplink:
@@ -241,6 +242,15 @@ jobs:
         run: |
           dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo \
             -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+
+      # `gonogo-uplink new` is held to producing an Uplink that builds: scaffold
+      # one beside the real ones with this leg's own CLI, then codegen, build, test
+      # and typecheck it in both resolution modes. Run on one leg only, since it
+      # proves the scaffold and the pinned toolchain rather than any one Uplink,
+      # and it deletes what it made.
+      - name: Scaffold proof
+        if: inputs.scaffold
+        run: scripts/scaffold-proof.sh "${{ inputs.name }}"
 
       # The parent mod's version, read from THIS Uplink's own uplink.json rather
       # than from anything central. `mod.tier` decides whether a newer published
