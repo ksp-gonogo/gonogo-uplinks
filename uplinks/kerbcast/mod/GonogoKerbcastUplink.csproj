@@ -16,9 +16,8 @@
 
   <!-- KSP / Unity reference assemblies: same portable copy + Private="false"
        pattern as GonogoRealAntennasUplink. Stock KSP's Part / ModuleDockingNode
-       / FlightGlobals are stock KSP, so they are normal references; only the
-       Kerbcast assembly is forbidden as a compile-time reference (reached by
-       reflection instead). Reading ModuleDockingNode off a stock Part is what
+       / FlightGlobals are stock KSP, so they are normal references, and so is
+       Kerbcast (below). Reading ModuleDockingNode off a stock Part is what
        lets this uplink answer "which cameras are docking cameras" without
        kerbcast knowing anything about docking at all. -->
   <ItemGroup>
@@ -36,9 +35,19 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Sitrep.Contract ONLY (Private="false"): the arm's-length compile surface
-       a third-party uplink needs. NOTE: no reference to Kerbcast.dll, by
-       design (see the licence header above). -->
+  <!-- kerbcast's own assembly, compiled against so a rename in kerbcast fails
+       this build rather than a running game. Private="false": kerbcast is
+       installed beside this Uplink, never bundled with it. Only
+       KerbcastControlApi names its types, and it is constructed only after the
+       assembly is known to be loaded (see KerbcastBinding). -->
+  <ItemGroup>
+    <Reference Include="Kerbcast" Private="false">
+      <HintPath>$(KspGameData)\Kerbcast\Plugins\Kerbcast.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Sitrep.Contract ONLY of core's assemblies (Private="false"): the
+       arm's-length compile surface a third-party uplink needs. -->
   <ItemGroup>
     <Reference Include="Sitrep.Contract" Private="false">
       <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>

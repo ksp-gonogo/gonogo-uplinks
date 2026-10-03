@@ -17,14 +17,10 @@ namespace Gonogo.KerbcastUplink
         /// False is kerbcast's OWN refusal, and it refuses when the camera id
         /// does not resolve, so <c>NotFound</c> is honest for it.
         ///
-        /// <para>Null is the call never having been made, which is a fact about
-        /// a different thing. <c>SetFov</c> and <c>SetPan</c> do not gate
-        /// <see cref="KerbcastReflection.IsAvailable"/>: only the three members
-        /// behind <c>Reason</c> do. So on a kerbcast build where one of them is
-        /// absent, renamed or has changed arity the Uplink stays available and
-        /// every aim used to come back <c>NotFound</c>, telling the operator
-        /// their vessel has no camera with that id while they watched it
-        /// stream. <c>ModeUnavailable</c> is the code that says the command
+        /// <para>Null is the call never having been made (it threw), which is a
+        /// fact about a different thing: answering <c>NotFound</c> would tell the
+        /// operator their vessel has no camera with that id while they watched
+        /// it stream. <c>ModeUnavailable</c> is the code that says the command
         /// cannot be carried out here, which is what happened.</para>
         /// </summary>
         public static CommandResult For(bool? kerbcastAccepted)

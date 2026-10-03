@@ -23,9 +23,8 @@
 
        KerbcastHealth is the mandatory-healthcheck state machine;
        KerbcastCameraEntryBuilder is the clean-name wire mapping;
-       KerbcastReflection is the arm's-length kerbcast surface (System.Reflection
-       only: it names no KSP or kerbcast type at compile time, which is exactly
-       the licence boundary that makes it testable here at all);
+       IKerbcastApi is what this Uplink asks of kerbcast, and KerbcastBinding is how
+       it binds (names no KSP or kerbcast type, so a fake stands in for kerbcast);
        SidecarDeathDebouncer is the sidecar-liveness debounce state machine
        Health() reads through KerbcastUplink;
        KerbcastAimOutcome is what kerbcast's answer to an aim command means on
@@ -38,7 +37,7 @@
   <ItemGroup>
     <Compile Include="..\mod\KerbcastHealth.cs" />
     <Compile Include="..\mod\KerbcastCameraEntryBuilder.cs" />
-    <Compile Include="..\mod\KerbcastReflection.cs" />
+    <Compile Include="..\mod\IKerbcastApi.cs" />
     <Compile Include="..\mod\DockingCameraFacts.cs" />
     <Compile Include="..\mod\SidecarDeathDebouncer.cs" />
     <Compile Include="..\mod\KerbcastAimOutcome.cs" />

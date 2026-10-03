@@ -39,10 +39,10 @@ namespace Gonogo.KerbcastUplink
     /// connection, exactly like every other Uplink. This is the FIRST real
     /// <see cref="ISitrepUplink.Health"/> implementation in the repo.</para>
     ///
-    /// <para>NO compile-time reference to kerbcast's CC-BY-NC-SA-4.0 assembly,
-    /// every kerbcast member is reached by reflection
-    /// (<see cref="KerbcastReflection"/>). Compile surface is
-    /// <c>Sitrep.Contract</c> + stock KSP only.</para>
+    /// <para>kerbcast is reached through <see cref="IKerbcastApi"/>, whose one
+    /// implementation (<see cref="KerbcastControlApi"/>) is compiled against
+    /// Kerbcast.dll and only constructed once kerbcast is known to be loaded.
+    /// Compile surface is <c>Sitrep.Contract</c>, stock KSP and Kerbcast.</para>
     /// </summary>
     [SitrepUplink("kerbcast")]
     public sealed class KerbcastUplink : ISitrepUplink, IModSettingsSource, IModSettingsWriter
@@ -52,7 +52,7 @@ namespace Gonogo.KerbcastUplink
         public const string SetFieldOfViewCommand = KerbcastManifest.SetFieldOfViewCommand;
         public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
-        private KerbcastReflection? _kerbcast;
+        private IKerbcastApi? _kerbcast;
         private IChannelPublisher? _cameras;
         private readonly KerbcastModSettings _modSettings;
 
@@ -80,8 +80,8 @@ namespace Gonogo.KerbcastUplink
         {
             _modSettings = new KerbcastModSettings(
                 ThrottleUnavailable,
-                () => _kerbcast?.ReadThrottle(ThrottleNode()),
-                on => _kerbcast != null && _kerbcast.WriteThrottle(ThrottleNode(), on));
+                () => _kerbcast?.ReadThrottle(),
+                on => _kerbcast != null && _kerbcast.WriteThrottle(on));
         }
 
         public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
@@ -94,50 +94,21 @@ namespace Gonogo.KerbcastUplink
         private string? ThrottleUnavailable()
         {
             var kerbcast = _kerbcast;
-            if (kerbcast == null || !kerbcast.IsAvailable)
-            {
-                return _unavailableReason ?? "Kerbcast is not loaded";
-            }
-            if (!kerbcast.HasThrottle)
-            {
-                return "this Kerbcast has no main-render throttle";
-            }
-            return ThrottleNode() == null ? "no save loaded" : null;
-        }
-
-        /// <summary>The loaded save's Kerbcast difficulty-settings node, or null with no save. Main thread only.</summary>
-        private object? ThrottleNode()
-        {
-            var type = _kerbcast?.ThrottleParametersType;
-            var parameters = HighLogic.CurrentGame?.Parameters;
-            if (type == null || parameters == null)
-            {
-                return null;
-            }
-            try
-            {
-                return parameters.CustomParams(type);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            return kerbcast == null
+                ? _unavailableReason ?? "Kerbcast is not loaded"
+                : kerbcast.ThrottleUnavailable();
         }
 
         public void Register(IUplinkHost host)
         {
-            _kerbcast = KerbcastReflection.Probe();
-
-            if (_kerbcast == null)
+            var binding = KerbcastBinding.Bind(
+                KerbcastBinding.IsKerbcastLoaded(), () => new KerbcastControlApi());
+            if (binding.Api == null)
             {
-                GoInert(host, "kerbcast mod not installed (Kerbcast assembly not loaded)");
+                GoInert(host, binding.Reason ?? "kerbcast unavailable");
                 return;
             }
-            if (!_kerbcast.IsAvailable)
-            {
-                GoInert(host, _kerbcast.Reason ?? "kerbcast unavailable");
-                return;
-            }
+            _kerbcast = binding.Api;
 
             host.AddChannelSource(AvailableTopic, _ => true);
             _cameras = host.Publisher(CamerasTopic);
@@ -228,9 +199,8 @@ namespace Gonogo.KerbcastUplink
             var views = kerbcast.CamerasFor(vessel);
             var entries = new List<object?>(views.Count);
 
-            foreach (var raw in views)
+            foreach (var view in views)
             {
-                var view = kerbcast.ReadView(raw);
                 var docking = DockingCameraDetector.Detect(view.Part);
                 entries.Add(KerbcastCameraEntryBuilder.Build(view, docking, vesselId));
             }
@@ -278,7 +248,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            if (kerbcast == null || !kerbcast.IsAvailable)
+            if (kerbcast == null)
             {
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
             }
@@ -297,7 +267,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            if (kerbcast == null || !kerbcast.IsAvailable)
+            if (kerbcast == null)
             {
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
             }

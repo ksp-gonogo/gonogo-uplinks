@@ -6,10 +6,9 @@ namespace GonogoKerbcastUplink.Tests;
 
 /// <summary>
 /// The three answers an aim command can carry back, and the reason the middle
-/// one exists. kerbcast's SetFov/SetPan do not gate the probe's IsAvailable, so
-/// a build where one of them has moved leaves the Uplink available and the
-/// command unmakeable, and reporting that as NotFound told an operator their
-/// vessel had no camera with the id they had just read off a live feed.
+/// one exists. A call that threw is not kerbcast refusing the id, and reporting
+/// it as NotFound told an operator their vessel had no camera with the id they
+/// had just read off a live feed.
 /// </summary>
 public class KerbcastAimOutcomeTests
 {
