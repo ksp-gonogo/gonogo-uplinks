@@ -157,10 +157,38 @@ namespace Gonogo.MechJebUplink
                 // delay exactly like every other vessel-actuation command
                 // (mirrors VesselUplink's classification, NOT FlightOpsUplink's
                 // game-level delayed:false commands).
-                new CommandDeclaration { Command = MechJebChannels.EngageAscentAutopilotCommand, Subject = MechJebChannels.ControlSubject },
-                new CommandDeclaration { Command = MechJebChannels.ExecuteNextNodeCommand, Subject = MechJebChannels.ControlSubject },
-                new CommandDeclaration { Command = MechJebChannels.LandAtTargetCommand, Subject = MechJebChannels.ControlSubject },
+                //
+                // Each is locked exactly as MechJeb locks the window it stands
+                // in for (MechJebUnlockGate), and the two that MechJeb also
+                // holds back until the Tracking Station draws patched conics
+                // say so through core's orbit-display requirement.
+                new CommandDeclaration
+                {
+                    Command = MechJebChannels.EngageAscentAutopilotCommand,
+                    Subject = MechJebChannels.ControlSubject,
+                    Requires = new[] { MechJebUnlockGate.For("MechJebModuleAscentMenu") },
+                },
+                new CommandDeclaration
+                {
+                    Command = MechJebChannels.ExecuteNextNodeCommand,
+                    Subject = MechJebChannels.ControlSubject,
+                    Requires = new[] { MechJebUnlockGate.For("MechJebModuleManeuverPlanner"), PatchedConics },
+                },
+                new CommandDeclaration
+                {
+                    Command = MechJebChannels.LandAtTargetCommand,
+                    Subject = MechJebChannels.ControlSubject,
+                    Requires = new[] { MechJebUnlockGate.For("MechJebModuleLandingGuidance"), PatchedConics },
+                },
             },
+        };
+
+        /// <summary>Core's evaluator for the Tracking Station's orbit display, the same switch MechJeb's own check reads off the vessel.</summary>
+        private static CommandRequirement PatchedConics => new CommandRequirement
+        {
+            Kind = "orbit-display",
+            Facility = "TrackingStation",
+            Quantity = "patchedConics",
         };
 
         /// <summary>

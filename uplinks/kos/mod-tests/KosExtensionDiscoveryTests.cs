@@ -105,5 +105,22 @@ namespace GonogoKosUplink.Tests
             Assert.Equal(DelayRole.Delayed, tagged[KosChannels.TerminalResizeCommand]);
             Assert.Equal(DelayRole.Delayed, tagged[KosChannels.KeystrokeCommand]);
         }
+
+        /// <summary>
+        /// Nothing kOS offers works without a CPU, so a career that has not
+        /// researched one sees every kOS widget locked with the node to research,
+        /// rather than an empty CPU list and commands that fail on dispatch.
+        /// </summary>
+        [Fact]
+        public void EveryChannelAndCommand_NeedsAResearchedProcessor()
+        {
+            var manifest = new KosExtension().Manifest;
+            bool needsProcessor(CommandRequirement[]? requires) =>
+                requires != null && requires.Any(r => r.Kind == "part-module-researched" && r.Quantity == "kOSProcessor");
+
+            Assert.NotEmpty(manifest.Channels);
+            Assert.All(manifest.Channels, c => Assert.True(needsProcessor(c.Requires), c.Topic));
+            Assert.All(manifest.Commands, c => Assert.True(needsProcessor(c.Requires), c.Command));
+        }
     }
 }

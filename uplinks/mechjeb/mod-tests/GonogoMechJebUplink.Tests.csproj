@@ -48,6 +48,7 @@
     <Compile Include="..\mod\MechJebAscentGuard.cs" />
     <Compile Include="..\mod\MainThreadDispatcher.cs" />
     <Compile Include="..\mod\MechJebUplink.cs" />
+    <Compile Include="..\mod\MechJebUnlockGate.cs" />
     <Compile Include="..\mod\ExpectedClientHash.g.cs" />
   </ItemGroup>
 </Project>

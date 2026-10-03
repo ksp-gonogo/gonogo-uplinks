@@ -106,6 +106,7 @@ namespace Gonogo.KosUplink
                     // nothing writes a delay for.
                     PerVesselNode = true,
                     VesselIdForKey = VesselIdForCore,
+                    Requires = NeedsProcessor,
                 });
 
             // Subscription short-circuit source for OnPrint: every kerboscript
@@ -173,6 +174,7 @@ namespace Gonogo.KosUplink
                     // same call site.
                     IsKeyframe = value => value is IDictionary<string, object?> d
                         && d.TryGetValue("fullRepaint", out var fr) && fr is bool isFullRepaint && isFullRepaint,
+                    Requires = NeedsProcessor,
                 });
 
             _terminalManager = new KosTerminalManager(
@@ -235,6 +237,7 @@ namespace Gonogo.KosUplink
                     // nothing writes a delay for.
                     PerVesselNode = true,
                     VesselIdForKey = VesselIdForCore,
+                    Requires = NeedsProcessor,
                 });
             // Flattened here, at the actual publish boundary, via
             // KosRunResultBuilder: KosRunManager itself stays typed in terms

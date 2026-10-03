@@ -199,6 +199,17 @@ namespace Gonogo.KosUplink
         /// <summary>The kOS/Unity-touching body of <see cref="Register"/>: see <c>KosExtension.Ksp.cs</c>.</summary>
         partial void RegisterKspBindings(IUplinkHost host);
 
+        /// <summary>
+        /// Every kOS channel and command needs a CPU, and a CPU needs a part
+        /// this career has researched: core's part-module evaluator names the
+        /// cheapest node carrying one, read off the installed parts, so a tree
+        /// that moves the kOS parts is answered by its own placement.
+        /// </summary>
+        internal static CommandRequirement[] NeedsProcessor => new[]
+        {
+            new CommandRequirement { Kind = "part-module-researched", Quantity = "kOSProcessor" },
+        };
+
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
             Id = "kos",
@@ -219,6 +230,7 @@ namespace Gonogo.KosUplink
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
+                    Requires = NeedsProcessor,
                 },
                 // P2: kos.file. The kos.terminal.<coreId> screen downlink is a
                 // ReliableOrdered dynamic namespace registered in Register (like
@@ -232,8 +244,8 @@ namespace Gonogo.KosUplink
                 // (SitrepCommandAttribute.Delay). Keystrokes, open and close
                 // are genuine remote input, with the lease-token and idle guards
                 // re-checked at delivery on the main thread.
-                new CommandDeclaration { Command = KosChannels.TerminalOpenCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}" },
-                new CommandDeclaration { Command = KosChannels.KeystrokeCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}" },
+                new CommandDeclaration { Command = KosChannels.TerminalOpenCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                new CommandDeclaration { Command = KosChannels.KeystrokeCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}", Requires = NeedsProcessor },
                 // Resize delays with the rest, which costs a converging
                 // terminal: the mod keeps diffing its cursor-addressed screen at
                 // the old width for a light-time round trip, so xterm draws
@@ -241,14 +253,14 @@ namespace Gonogo.KosUplink
                 // alternative, applying it instantly, would let one console
                 // reflow a terminal another console is reading in real time, and
                 // a resize is an order like any other.
-                new CommandDeclaration { Command = KosChannels.TerminalResizeCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}" },
-                new CommandDeclaration { Command = KosChannels.TerminalCloseCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}" },
+                new CommandDeclaration { Command = KosChannels.TerminalResizeCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                new CommandDeclaration { Command = KosChannels.TerminalCloseCommand, Subject = KosChannels.TerminalPrefix + "{args.CoreId}", Requires = NeedsProcessor },
                 // kos.run, general-purpose ad-hoc RPC. Single-in-flight-per-CPU:
                 // a second kos.run for a CPU that already has one in flight is
                 // rejected (KosRunManager.TryArm), mirroring the idle-prompt
                 // guard every other CPU-targeted command re-checks at delivery
                 // on the main thread.
-                new CommandDeclaration { Command = KosChannels.RunCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}" },
+                new CommandDeclaration { Command = KosChannels.RunCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
         };
