@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "a-filter-term-per-process--default.png": {
-      "hash": "d0d9afe863c7d551",
+      "hash": "7c806e197927ba5a",
       "elements": 178,
       "text": "87791fd7"
     },
@@ -13,19 +13,19 @@
       "text": "52c0d842"
     },
     "dose-band-from-a-fitted-rate--default.png": {
-      "hash": "81a877ff0bf6c945",
+      "hash": "8a97f83854e523c1",
       "elements": 81,
-      "text": "28bafc1c"
+      "text": "34e0e297"
     },
     "dose-band-reaching-critical--default.png": {
-      "hash": "32361783b24d6546",
+      "hash": "74a7813a5ffbb4ea",
       "elements": 74,
-      "text": "aa158eb5"
+      "text": "88fa8724"
     },
     "dose-band-the-model-declines--default.png": {
-      "hash": "55af6d890aef7fc4",
+      "hash": "60a0c9a8330a2273",
       "elements": 66,
-      "text": "8dfeb729"
+      "text": "250fb3d6"
     },
     "ec-shortage-limits-water--default.png": {
       "hash": "25c33674961468ed",
@@ -53,12 +53,12 @@
       "text": "a49f55e1"
     },
     "file-and-sample-on-one-subject--default.png": {
-      "hash": "ba69bb3942d6d13b",
+      "hash": "fe87b8b85f8e2a27",
       "elements": 111,
       "text": "42d4f944"
     },
     "file-and-sample-on-one-subject-stopped-arriving--default.png": {
-      "hash": "2b2ca7031d6e8b5e",
+      "hash": "867df74960a9c1f2",
       "elements": 128,
       "text": "af6aa7c5"
     },
@@ -108,34 +108,34 @@
       "text": "ab909171"
     },
     "radiation-dose-critical--default.png": {
-      "hash": "ec175ff83a97be02",
+      "hash": "4cf2ff35d2e3b38d",
       "elements": 146,
-      "text": "53e69a95"
+      "text": "632bed9c"
     },
     "radiation-dose-critical-stopped-arriving--default.png": {
-      "hash": "3255d70ee3d7e7de",
+      "hash": "e818ad71ec8adb6d",
       "elements": 156,
-      "text": "3eca5d92"
+      "text": "464768d6"
     },
     "radiation-rising--default.png": {
-      "hash": "eef1e267ca4619f6",
+      "hash": "ec43bce35340436d",
       "elements": 95,
-      "text": "56cafb6d"
+      "text": "f0e1918e"
     },
     "radiation-rising-light-time--default.png": {
-      "hash": "df1740d9d7822b8b",
+      "hash": "ca1a7a7cfc2e85ff",
       "elements": 103,
-      "text": "277595d6"
+      "text": "1b4e5925"
     },
     "radiation-rising-stopped-arriving--default.png": {
-      "hash": "70ae21b06e5fe5db",
+      "hash": "f033c80c2ffe3d76",
       "elements": 100,
-      "text": "588028e9"
+      "text": "c15a61ee"
     },
     "radiation-rising-stopped-arriving-later--default.png": {
-      "hash": "0300f4659d45d8b4",
+      "hash": "5ebe820ccfa743a9",
       "elements": 108,
-      "text": "4f68692f"
+      "text": "06c4806b"
     },
     "storm-inbound--default.png": {
       "hash": "4425f22daf514792",
@@ -163,7 +163,7 @@
       "text": "50714c7e"
     },
     "unread-send-and-analyze-flags--default.png": {
-      "hash": "7e0195d6646e0816",
+      "hash": "0ca699d9109817c1",
       "elements": 108,
       "text": "90b69084"
     }

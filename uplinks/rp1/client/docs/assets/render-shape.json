@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "appoint-roster--default.png": {
-      "hash": "33732839f25a6b14",
+      "hash": "7c9c2ccaf9a74873",
       "elements": 175,
       "text": "0f635c8c"
     },
@@ -183,7 +183,7 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "a02266a26917f2ed",
+      "hash": "6fd2b2b8e4464043",
       "elements": 400,
       "text": "f6b83e92"
     },
@@ -238,32 +238,32 @@
       "text": "cfbb5a78"
     },
     "career-log--default.png": {
-      "hash": "50eeb98c8651db77",
+      "hash": "0f3f41003ba923d3",
       "elements": 586,
       "text": "180f3670"
     },
     "catalogue-picker--default.png": {
-      "hash": "82fa22ee6c388dad",
+      "hash": "8b942a60110a4ddd",
       "elements": 291,
       "text": "0dc93d6f"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "beca1881f1ebe5f5",
+      "hash": "bc7ba7d5dc6df6a7",
       "elements": 306,
       "text": "eb8a5e2d"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "beca1881f1ebe5f5",
+      "hash": "bc7ba7d5dc6df6a7",
       "elements": 306,
       "text": "eb8a5e2d"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "82fa22ee6c388dad",
+      "hash": "8b942a60110a4ddd",
       "elements": 291,
       "text": "0dc93d6f"
     },
     "completed-program--default.png": {
-      "hash": "4bbb5f50436c442f",
+      "hash": "87bf0f045d3b281d",
       "elements": 292,
       "text": "2aa175b7"
     },
@@ -383,12 +383,12 @@
       "text": "8e8301c3"
     },
     "early-career--default.png": {
-      "hash": "21a0d44d7160ac4a",
+      "hash": "c4a2f9b468a086f5",
       "elements": 376,
       "text": "6ffdb5ab"
     },
     "facilities-two-centres--default.png": {
-      "hash": "a278900e098b132f",
+      "hash": "195f9dbf4938153a",
       "elements": 389,
       "text": "d3a66d04"
     },
@@ -413,7 +413,7 @@
       "text": "5641a8f1"
     },
     "funds-alarm--default.png": {
-      "hash": "1cca1ff088179e32",
+      "hash": "fa5caff86b2b750f",
       "elements": 376,
       "text": "e5879546"
     },
@@ -428,22 +428,22 @@
       "text": "359423e1"
     },
     "link-down--default.png": {
-      "hash": "bbe33d4c87ee1ebc",
+      "hash": "059047df4c48069a",
       "elements": 416,
       "text": "6ffdb5ab"
     },
     "no-budget--default.png": {
-      "hash": "91052d9f70c07bd5",
+      "hash": "6c4c96941b5aca07",
       "elements": 75,
       "text": "c03fa214"
     },
     "no-curve-table--default.png": {
-      "hash": "fa6578d328f85ce7",
+      "hash": "85c581cfb2fe7b65",
       "elements": 302,
       "text": "7de10fa6"
     },
     "offer-frontloaded--default.png": {
-      "hash": "0a87aa397b0a3433",
+      "hash": "5e36ecf3a684d5da",
       "elements": 271,
       "text": "31837fa1"
     },
@@ -473,7 +473,7 @@
       "text": "ff71b6be"
     },
     "programs-screen--default.png": {
-      "hash": "451321bb325a9d01",
+      "hash": "321ca63eaba599ef",
       "elements": 124,
       "text": "e1deb732"
     },
@@ -488,37 +488,37 @@
       "text": "1782c9be"
     },
     "rp1-full-admin-building--default.png": {
-      "hash": "bb2625886ebcc694",
+      "hash": "db75e669bccd5c6a",
       "elements": 313,
       "text": "0778f0f5"
     },
     "running-backloaded--default.png": {
-      "hash": "4f13b72602945679",
+      "hash": "a6c0ec28f64beeda",
       "elements": 316,
       "text": "9071f2ea"
     },
     "running-overrun-ready--default.png": {
-      "hash": "f2651b0854b469b7",
+      "hash": "744e5cc42825d76f",
       "elements": 235,
       "text": "a674455d"
     },
     "serving-leader--default.png": {
-      "hash": "5a4943ace3a93c15",
+      "hash": "631881e48ec73285",
       "elements": 192,
       "text": "474a04a8"
     },
     "start-research-affordable--default.png": {
-      "hash": "9047c1d97e4bda8e",
+      "hash": "0cbaeddafab90156",
       "elements": 155,
       "text": "710f5419"
     },
     "start-research-short--default.png": {
-      "hash": "01b9f40508b9c6ec",
+      "hash": "af188bfe6123a2d5",
       "elements": 156,
       "text": "5152f63c"
     },
     "subsidy-clamped--default.png": {
-      "hash": "669acb8c45488ffb",
+      "hash": "2e636bac1bceabf4",
       "elements": 562,
       "text": "c25183d4"
     },
