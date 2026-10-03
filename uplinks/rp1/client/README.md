@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 27.9, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 28.0, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -239,7 +239,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
 | `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
-| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading`, `[object Object]` | only while `rp1` |
+| `rp1:crew-core-stats` | `astronaut-complex.readouts` | `processor:rp1:crew-reading`, `processor:rp1:crew-program-reading`, `processor:rp1:budget-breakdown-reading`, `settings.rp1` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |
 
