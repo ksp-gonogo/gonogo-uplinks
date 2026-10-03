@@ -37,6 +37,7 @@
          contact prediction on the strength of a failed read. RaReflection comes
          with it and is itself KSP-free (it reaches RA only by reflection). -->
     <Compile Include="..\mod\RaReach.cs" />
+    <Compile Include="..\mod\RaContactModel.cs" />
     <Compile Include="..\mod\RaReflection.cs" />
     <!-- RaDegrade is RA's answer to the comms seam's quality question. It is
          handed the reading the backend already took rather than taking one, so

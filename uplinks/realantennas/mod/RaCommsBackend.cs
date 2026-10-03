@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CommNet;
 using Sitrep.Contract;
@@ -22,7 +23,7 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel
     {
         public const string Id = "realantennas";
 
@@ -190,6 +191,89 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public override ICommsReachModel ReachModel(object? from, object? to)
             => RaReach.Between(_ra, from, to);
+
+        /// <summary>
+        /// The pair's link as RA would close it, from every antenna's figures and
+        /// aim as they stand now. Null when either end has no antennas RA can read,
+        /// or a dish is aimed somewhere the plan cannot place (a point on a surface,
+        /// an azimuth and elevation, an orbit-relative direction): the pair then
+        /// stays on line of sight and <see cref="ReachModel"/>, as before.
+        /// </summary>
+        public IContactLinkModel? LinkModel(object? from, object? to, double ut)
+        {
+            var fromAntennas = Planned(from);
+            var toAntennas = Planned(to);
+            return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
+                ? null
+                : new RaContactLinkModel(fromAntennas, toAntennas);
+        }
+
+        private List<RaPlannedAntenna>? Planned(object? node)
+        {
+            if (!(node is CommNode))
+            {
+                return null;
+            }
+            var planned = new List<RaPlannedAntenna>();
+            var index = 0;
+            foreach (var antenna in _ra.NodeAntennas(node))
+            {
+                var one = new RaPlannedAntenna
+                {
+                    Id = index++.ToString(),
+                    Steerable = _ra.Steerable(antenna) == true,
+                    BeamwidthRadians = _ra.Beamwidth(antenna) * (Math.PI / 180.0),
+                    Band = _ra.BandName(antenna),
+                    TxPowerDbm = _ra.TxPower(antenna),
+                    GainDbi = _ra.Gain(antenna),
+                    FrequencyHz = _ra.Frequency(antenna),
+                    SymbolRateHz = _ra.SymbolRate(antenna),
+                    NoiseTemperatureKelvin = _ra.NoiseTemperatureKelvin(antenna),
+                    RequiredEbN0Db = _ra.RequiredEbN0Db(antenna),
+                };
+                if (!Aim(_ra.Target(antenna), one))
+                {
+                    return null;
+                }
+                planned.Add(one);
+            }
+            return planned;
+        }
+
+        /// <summary>Fills in where <paramref name="antenna"/> points. False for an aim the plan cannot place.</summary>
+        private bool Aim(object? target, RaPlannedAntenna antenna)
+        {
+            if (target == null || !antenna.Steerable)
+            {
+                antenna.Aim = RaAimKind.Untargeted;
+                return true;
+            }
+            switch (_ra.TargetKind(target))
+            {
+                case "Vessel":
+                    if (!Guid.TryParse(_ra.TargetVesselId(target), out var guid))
+                    {
+                        return false;
+                    }
+                    antenna.Aim = RaAimKind.Vessel;
+                    antenna.AimNodeId = "vessel:" + guid;
+                    return true;
+                case "BodyLatLonAlt":
+                    var name = _ra.TargetBodyName(target);
+                    var body = FlightGlobals.Bodies?.Find(b => b != null && b.bodyName == name);
+                    var altitude = _ra.TargetLatLonAlt(target).Altitude;
+                    // RA stores a body-centre aim as the point one radius below the surface.
+                    if (body == null || altitude == null || Math.Abs(altitude.Value + body.Radius) > 1.0)
+                    {
+                        return false;
+                    }
+                    antenna.Aim = RaAimKind.BodyCentre;
+                    antenna.AimBodyIndex = FlightGlobals.Bodies!.IndexOf(body);
+                    return true;
+                default:
+                    return false;
+            }
+        }
 
         /// <summary>
         /// RA's occlusion geometry: the bare body radius, no multiplier (see
