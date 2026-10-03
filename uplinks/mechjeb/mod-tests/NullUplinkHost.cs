@@ -5,13 +5,17 @@ using Sitrep.Contract;
 namespace GonogoMechJebUplink.Tests
 {
     /// <summary>
-    /// A minimal <see cref="IUplinkHost"/> that throws on every real call:
-    /// used only to prove <see cref="MechJebUplink.Register"/> is a safe
-    /// no-op in the headless test build (the MechJeb2-touching half that
-    /// would actually call these is excluded, see
+    /// A minimal <see cref="IUplinkHost"/> that throws on every real call but
+    /// one: used to prove <see cref="MechJebUplink.Register"/> is safe in the
+    /// headless test build (the MechJeb2-touching half that would actually
+    /// call these is excluded, see
     /// <see cref="MechJebUplinkTests.Register_WithNoKspHalfCompiled_IsASafeNoOp"/>).
     /// If any of these throw, the test would fail loudly rather than
     /// silently passing for the wrong reason.
+    ///
+    /// <para>The exception is <see cref="AddGateEvaluator"/>, which records:
+    /// Register adds the unlock gate before anything MechJeb-specific, so a
+    /// test can see it is there whatever MechJeb's state.</para>
     /// </summary>
     internal sealed class NullUplinkHost : IUplinkHost
     {
@@ -31,7 +35,8 @@ namespace GonogoMechJebUplink.Tests
         public IDynamicChannelSource RegisterDynamicNamespace(string prefix, ChannelDeclaration template) => throw NotExpected();
         public void AddCommandHandler<TArgs, TResult>(string command, Func<TArgs, TResult> handler) => throw NotExpected();
         public void AddVantageCommandHandler<TArgs, TResult>(string command, Func<TArgs, string, TResult> handler) => throw NotExpected();
-        public void AddGateEvaluator(ICommandGateEvaluator evaluator) => throw NotExpected();
+        public List<ICommandGateEvaluator> GateEvaluators { get; } = new List<ICommandGateEvaluator>();
+        public void AddGateEvaluator(ICommandGateEvaluator evaluator) => GateEvaluators.Add(evaluator);
         public void AddCommandRequirement(string command, CommandRequirement requirement) => throw NotExpected();
         public void SetSignalDelaySource(Func<KspSnapshot?, CommsDelay?> computeOnMainThread) => throw NotExpected();
         public void SetVesselDelay(string vesselId, double oneWaySeconds) => throw NotExpected();

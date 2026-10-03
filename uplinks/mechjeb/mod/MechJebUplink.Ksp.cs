@@ -33,6 +33,7 @@ namespace Gonogo.MechJebUplink
         {
             _bindDispatcherAddon = BindRealAddon;
             _logError = LogErrorToUnity;
+            _unlockReads = new MechJebUnlockReads();
         }
 
         // Named static helper (not an inline lambda) so ONLY this method's
@@ -70,13 +71,6 @@ namespace Gonogo.MechJebUplink
                 // inert-when-absent early return.
                 return;
             }
-
-            host.AddGateEvaluator(new MechJebUnlockGate(
-                MechJebUnlockReads.CareerResearch,
-                MechJebUnlockReads.UnlockOf,
-                MechJebUnlockReads.PartPurchased,
-                MechJebUnlockReads.TechResearched,
-                MechJebUnlockReads.Describe));
 
             _controller = new MechJebController();
             host.AddCommandHandler<MechJebAscentArgs, CommandResult>(

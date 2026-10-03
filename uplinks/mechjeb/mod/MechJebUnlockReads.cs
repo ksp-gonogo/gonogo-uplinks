@@ -13,11 +13,11 @@ namespace Gonogo.MechJebUplink
     /// either assembly. Every read here runs on the main thread, where the
     /// engine samples its gates.
     /// </summary>
-    internal static class MechJebUnlockReads
+    internal sealed class MechJebUnlockReads : IMechJebUnlockReads
     {
         private static readonly char[] Separators = { ' ', ',', ';', '\t', '\r', '\n' };
 
-        public static bool? CareerResearch()
+        public bool? CareerResearch()
         {
             var game = HighLogic.CurrentGame;
             if (game == null) return null;
@@ -25,7 +25,7 @@ namespace Gonogo.MechJebUplink
             return ResearchAndDevelopment.Instance == null ? (bool?)null : true;
         }
 
-        public static MechJebModuleUnlock? UnlockOf(string module)
+        public MechJebModuleUnlock? UnlockOf(string module)
         {
             var vessel = FlightGlobals.ActiveVessel;
             var core = vessel == null ? null : vessel.GetMasterMechJeb();
@@ -34,16 +34,16 @@ namespace Gonogo.MechJebUplink
             return new MechJebModuleUnlock(Split(computer.unlockParts), Split(computer.unlockTechs));
         }
 
-        public static bool PartPurchased(string partName)
+        public bool PartPurchased(string partName)
         {
             var part = PartLoader.LoadedPartsList.FirstOrDefault(a => a.name == partName);
             return part != null && ResearchAndDevelopment.PartModelPurchased(part);
         }
 
-        public static bool TechResearched(string techId) =>
+        public bool TechResearched(string techId) =>
             ResearchAndDevelopment.GetTechnologyState(techId) == RDTech.State.Available;
 
-        public static MechJebTechDescription Describe(string techId)
+        public MechJebTechDescription Describe(string techId)
         {
             var title = ResearchAndDevelopment.GetTechnologyTitle(techId);
             double? cost = null;

@@ -14,17 +14,32 @@ namespace GonogoMechJebUplink.Tests
             ["advFlightControl"] = new MechJebTechDescription("Advanced Flight Control", 90),
         };
 
+        private sealed class FakeReads : IMechJebUnlockReads
+        {
+            public bool? Research = true;
+            public MechJebModuleUnlock? Unlock;
+            public string[] Purchased = new string[0];
+            public string[] Researched = new string[0];
+
+            public bool? CareerResearch() => Research;
+            public MechJebModuleUnlock? UnlockOf(string module) => Unlock;
+            public bool PartPurchased(string partName) => Purchased.Contains(partName);
+            public bool TechResearched(string techId) => Researched.Contains(techId);
+            public MechJebTechDescription Describe(string techId) => Tree[techId];
+        }
+
         private static MechJebUnlockGate Gate(
             bool? research = true,
             MechJebModuleUnlock? unlock = null,
             string[]? purchased = null,
             string[]? researched = null) =>
-            new MechJebUnlockGate(
-                () => research,
-                _ => unlock,
-                part => (purchased ?? new string[0]).Contains(part),
-                tech => (researched ?? new string[0]).Contains(tech),
-                tech => Tree[tech]);
+            new MechJebUnlockGate(() => null, new FakeReads
+            {
+                Research = research,
+                Unlock = unlock,
+                Purchased = purchased ?? new string[0],
+                Researched = researched ?? new string[0],
+            });
 
         private static GateVerdict Ask(MechJebUnlockGate gate) =>
             gate.Evaluate(MechJebUnlockGate.For("MechJebModuleAscentMenu"), null!);
@@ -85,6 +100,28 @@ namespace GonogoMechJebUplink.Tests
         {
             Assert.Equal(GateOutcome.Unknown, Ask(Gate(research: null, unlock: Techs("unmannedTech"))).Outcome);
             Assert.Equal(GateOutcome.Unknown, Ask(Gate(unlock: null)).Outcome);
+        }
+
+        /// <summary>
+        /// Every command declares this kind, and the engine refuses to start
+        /// over a declared kind nothing evaluates, so a MechJeb whose version
+        /// guard failed must still register the gate or it takes the whole mod
+        /// down with it.
+        /// </summary>
+        [Fact]
+        public void Register_AddsTheGate_EvenWhenMechJebIsUnusable()
+        {
+            var uplink = new MechJebUplink(new MainThreadDispatcher(_ => { }), _ => { });
+            uplink._unavailableReason = "MechJeb2 API drifted";
+            var host = new NullUplinkHost();
+
+            uplink.Register(host);
+
+            var gate = Assert.Single(host.GateEvaluators);
+            Assert.Equal(MechJebUnlockGate.KindName, gate.Kind);
+            var verdict = gate.Evaluate(MechJebUnlockGate.For("MechJebModuleAscentMenu"), null!);
+            Assert.Equal(GateOutcome.Unknown, verdict.Outcome);
+            Assert.Equal("MechJeb2 API drifted", verdict.Detail);
         }
 
         [Fact]

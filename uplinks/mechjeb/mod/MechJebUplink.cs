@@ -84,6 +84,10 @@ namespace Gonogo.MechJebUplink
         // production instance.
         private Action<string> _logError = _ => { };
 
+        // Set in InstallProductionDefaults; null in the headless build, where
+        // the unlock gate answers Unknown rather than reading a game.
+        private IMechJebUnlockReads? _unlockReads;
+
         public MainThreadDispatcher Dispatcher { get; }
 
         public MechJebUplink() : this(null, null)
@@ -129,6 +133,9 @@ namespace Gonogo.MechJebUplink
         /// </summary>
         public void Register(IUplinkHost host)
         {
+            // Ahead of the bindings, which return early when the version guard
+            // fails: see MechJebUnlockGate on why it is registered regardless.
+            host.AddGateEvaluator(new MechJebUnlockGate(() => _unavailableReason, _unlockReads));
             RegisterMechJebBindings(host);
         }
 
