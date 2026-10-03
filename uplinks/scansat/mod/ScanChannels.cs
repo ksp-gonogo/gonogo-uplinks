@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sitrep.Contract;
 
 namespace Gonogo.ScansatUplink
 {
@@ -43,6 +44,30 @@ namespace Gonogo.ScansatUplink
         public const string HeightPrefix = "scansat.height.";
         public const string BiomePrefix = "scansat.biome.";
         public const string AnomaliesPrefix = "scansat.anomalies.";
+
+        /// <summary>
+        /// What the save must have researched before a namespace carries
+        /// anything: a scanner reading the scan type the topic names for
+        /// coverage and masks, an altimetry scanner of either resolution for
+        /// height, a biome scanner for biomes, an anomaly scanner for anomalies.
+        /// </summary>
+        public static CommandRequirement[] RequiresFor(string prefix)
+        {
+            switch (prefix)
+            {
+                case CoveragePrefix:
+                case MaskPrefix:
+                    return new[] { ScanTypeGate.PerTopic() };
+                case HeightPrefix:
+                    return new[] { ScanTypeGate.For(1 | 2) };
+                case BiomePrefix:
+                    return new[] { ScanTypeGate.For(8) };
+                case AnomaliesPrefix:
+                    return new[] { ScanTypeGate.For(16) };
+                default:
+                    return Requirement.None;
+            }
+        }
 
         /// <summary>Sub-topic (relative to <see cref="CoveragePrefix"/>/<see cref="MaskPrefix"/>) for one (body, numeric type): <c>"&lt;body&gt;.&lt;typeBit&gt;"</c>.</summary>
         public static string BodyTypeSubTopic(string bodyName, short scanTypeBit) => bodyName + "." + scanTypeBit;

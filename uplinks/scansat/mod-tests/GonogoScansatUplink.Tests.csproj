@@ -24,6 +24,7 @@
     <Compile Include="..\mod\GroundTrackFov.cs" />
     <Compile Include="..\mod\VersionGuard.cs" />
     <Compile Include="..\mod\ScanChannels.cs" />
+    <Compile Include="..\mod\ScanTypeGate.cs" />
     <Compile Include="..\mod\ScanGrids.cs" />
     <Compile Include="..\mod\TerrainTiering.cs" />
     <Compile Include="..\mod\ScanningVessels.cs" />
