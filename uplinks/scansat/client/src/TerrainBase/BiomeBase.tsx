@@ -21,7 +21,7 @@ import {
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import { useScanBiomeGrid } from "../FogReveal/useScanLayers.js";
+import { useScanBiomeGrid } from "../ScanCoverage/useScanLayers.js";
 import { SCANSAT } from "../uplink.js";
 import {
   BASE_LAYER_CANVAS_H,

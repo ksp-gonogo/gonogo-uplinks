@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sitrep.Contract;
 using SCANsat;
 using SCANsat.SCAN_PartModules;
@@ -362,10 +363,10 @@ namespace Gonogo.ScansatUplink
         /// MAIN-THREAD capture (see
         /// <see cref="IUplinkHost.AddSampledSource"/>): the engine runs this on
         /// the Unity main thread during the sample tick, where every KSP/
-        /// SCANsat/stock read below is safe. Scoped to the CURRENT active
-        /// vessel's main body (mirrors <see cref="Sitrep.Host.VesselEpochSampler"/>'s
-        /// "active subject" scoping: not a per-tick sweep of every body
-        /// SCANsat ever touched). Reads the coverage grid + per-type coverage
+        /// SCANsat/stock read below is safe. Scoped to the bodies a client is
+        /// watching (<see cref="ScanChannels.BodyWatched"/>), whichever vessel
+        /// is active: scanners on unloaded craft keep scanning, and a map can
+        /// show any body. Per body, reads the coverage grid + per-type coverage
         /// percentages, and (ONCE per body visit) builds the (expensive)
         /// stock PQS height and BiomeMap grids. The height grid's per-cell
         /// elevation sample branches on <c>SCANUtil.isCovered(..., AltimetryHiRes)</c>
@@ -374,10 +375,10 @@ namespace Gonogo.ScansatUplink
         /// plain <see cref="ScanCapture"/> (no live KSP handles) so the
         /// Courier-side <see cref="HandleOnCourier"/> can do the
         /// hashing/keyframe/packing/publishing entirely off that data. Returns
-        /// null when there is no active vessel/body (nothing to sample).
+        /// null when no body is watched (nothing to sample).
         ///
         /// <para><b>THREADING:</b> this is the F1 fix, the SCANsat/stock reads
-        /// (<c>FlightGlobals.ActiveVessel</c>, <c>SCANUtil.getData</c>/
+        /// (<c>FlightGlobals.Bodies</c>, <c>SCANUtil.getData</c>/
         /// <c>GetCoverage</c>, <c>pqs.GetSurfaceHeight</c>, <c>BiomeMap.GetAtt</c>)
         /// now run on the Unity main thread, where the rest of the mod reads
         /// KSP (<c>KspHost.Sample</c>), instead of the Courier thread they ran
@@ -402,73 +403,18 @@ namespace Gonogo.ScansatUplink
                 // link, with nothing saying so. A tick we cannot date is skipped,
                 // the same fail-soft this method already uses when the game is
                 // not ready.
-                if (snapshot == null)
+                if (snapshot == null || _host == null)
                 {
                     return null;
                 }
 
-                if (!TryGetActiveBody(out var bodyName, out var body))
-                {
-                    return null;
-                }
-
-                var capture = new ScanCapture
-                {
-                    Ut = snapshot.Ut,
-                    BodyName = bodyName,
-                };
-
-                // Height/biome first: they don't depend on SCANsat coverage at
-                // all (stock PQS/BiomeMap), so they're captured once per body even
-                // if that body has no SCANdata yet. The once-per-body gate lives
-                // HERE (main thread) so the expensive grid build itself is skipped
-                // on revisits, not merely the publish. Mark the body captured only
-                // AFTER the (Planetarium-dependent) build succeeds: otherwise an
-                // early not-ready failure would mark it done and height/biome would
-                // never be retried for that body.
-                if (!_heightBiomeCapturedBodies.Contains(bodyName))
-                {
-                    var heightGrid = ScanGrids.BuildHeights(ScanGrids.Width, ScanGrids.Height, (lon, lat) =>
-                    {
-                        bool hiRes = SCANUtil.isCovered(lon, lat, body, AltimetryHiResBit);
-                        bool loRes = !hiRes && SCANUtil.isCovered(lon, lat, body, AltimetryLoResBit);
-                        var (sLon, sLat) = TerrainTiering.ResolveSampleCoordinate(lon, lat, hiRes, loRes);
-                        return SampleElevation(body, sLon, sLat);
-                    });
-                    // No height grid means the body's PQS controller was not
-                    // reachable, which is one of the not-ready failures the
-                    // once-per-body gate above is meant to survive: leave the
-                    // body unmarked so the whole keyframe is retried, rather
-                    // than publishing a biome legend beside no terrain and
-                    // never coming back for it.
-                    if (heightGrid.HasValue)
-                    {
-                        var biomeEntries = BuildBiomeEntries(body);
-                        var biomeIndices = ScanGrids.BuildBiomeIndices(
-                            ScanGrids.Width, ScanGrids.Height, (lon, lat) => SampleBiomeIndex(body, lon, lat));
-
-                        capture.IncludeHeightBiome = true;
-                        capture.HeightGrid = heightGrid;
-                        capture.BiomeEntries = biomeEntries;
-                        capture.BiomeIndices = biomeIndices;
-                        _heightBiomeCapturedBodies.Add(bodyName);
-                    }
-                }
-
-                if (TryGetBodyCoverage(body, out var coverage))
-                {
-                    capture.Coverage = coverage;
-                    var percents = new Dictionary<short, double?>();
-                    foreach (var typeBit in ScanChannels.ClientScanTypes)
-                    {
-                        percents[typeBit] = GetCoveragePercent(typeBit, body);
-                    }
-                    capture.CoveragePercents = percents;
-                    capture.Anomalies = BuildAnomalies(body);
-                }
+                var bodies = FlightGlobals.Bodies.Where(b => b != null).ToDictionary(b => b.name);
+                var captures = ScanChannels.WatchedBodies(bodies.Keys, _host.IsAnyTopicSubscribed)
+                    .Select(name => CaptureBody(snapshot.Ut, name, bodies[name]))
+                    .ToList();
 
                 _captureFailLogged = false; // a good capture clears the failure streak
-                return capture;
+                return captures.Count == 0 ? null : captures;
             }
             catch (Exception ex)
             {
@@ -482,6 +428,67 @@ namespace Gonogo.ScansatUplink
             }
         }
 
+        /// <summary>One watched body's grids, for <see cref="CaptureOnMain"/>. Main thread only.</summary>
+        private ScanCapture CaptureBody(double ut, string bodyName, CelestialBody body)
+        {
+            var capture = new ScanCapture
+            {
+                Ut = ut,
+                BodyName = bodyName,
+            };
+
+            // Height/biome first: they don't depend on SCANsat coverage at
+            // all (stock PQS/BiomeMap), so they're captured once per body even
+            // if that body has no SCANdata yet. The once-per-body gate lives
+            // HERE (main thread) so the expensive grid build itself is skipped
+            // on revisits, not merely the publish. Mark the body captured only
+            // AFTER the (Planetarium-dependent) build succeeds: otherwise an
+            // early not-ready failure would mark it done and height/biome would
+            // never be retried for that body.
+            if (!_heightBiomeCapturedBodies.Contains(bodyName))
+            {
+                var heightGrid = ScanGrids.BuildHeights(ScanGrids.Width, ScanGrids.Height, (lon, lat) =>
+                {
+                    bool hiRes = SCANUtil.isCovered(lon, lat, body, AltimetryHiResBit);
+                    bool loRes = !hiRes && SCANUtil.isCovered(lon, lat, body, AltimetryLoResBit);
+                    var (sLon, sLat) = TerrainTiering.ResolveSampleCoordinate(lon, lat, hiRes, loRes);
+                    return SampleElevation(body, sLon, sLat);
+                });
+                // No height grid means the body's PQS controller was not
+                // reachable, which is one of the not-ready failures the
+                // once-per-body gate above is meant to survive: leave the
+                // body unmarked so the whole keyframe is retried, rather
+                // than publishing a biome legend beside no terrain and
+                // never coming back for it.
+                if (heightGrid.HasValue)
+                {
+                    var biomeEntries = BuildBiomeEntries(body);
+                    var biomeIndices = ScanGrids.BuildBiomeIndices(
+                        ScanGrids.Width, ScanGrids.Height, (lon, lat) => SampleBiomeIndex(body, lon, lat));
+
+                    capture.IncludeHeightBiome = true;
+                    capture.HeightGrid = heightGrid;
+                    capture.BiomeEntries = biomeEntries;
+                    capture.BiomeIndices = biomeIndices;
+                    _heightBiomeCapturedBodies.Add(bodyName);
+                }
+            }
+
+            if (TryGetBodyCoverage(body, out var coverage))
+            {
+                capture.Coverage = coverage;
+                var percents = new Dictionary<short, double?>();
+                foreach (var typeBit in ScanChannels.ClientScanTypes)
+                {
+                    percents[typeBit] = GetCoveragePercent(typeBit, body);
+                }
+                capture.CoveragePercents = percents;
+                capture.Anomalies = BuildAnomalies(body);
+            }
+
+            return capture;
+        }
+
         /// <summary>
         /// COURIER-THREAD handle (see
         /// <see cref="IUplinkHost.AddSampledSource"/>): runs off the main
@@ -493,7 +500,7 @@ namespace Gonogo.ScansatUplink
         /// </summary>
         internal void HandleOnCourier(object? captured)
         {
-            if (captured is not ScanCapture capture)
+            if (captured is not List<ScanCapture> captures)
             {
                 return;
             }
@@ -502,7 +509,7 @@ namespace Gonogo.ScansatUplink
                 return; // Register hasn't wired the dynamic sources (unavailable uplink), nothing to publish.
             }
 
-            foreach (var publication in ScanPublications.Compute(capture, _lastHashByBody, _lastPackedByBodyType))
+            foreach (var publication in captures.SelectMany(capture => ScanPublications.Compute(capture, _lastHashByBody, _lastPackedByBodyType)))
             {
                 SourceForKind(publication.Kind)?.Publisher(publication.SubTopic).Publish(publication.Payload, publication.Ut);
                 // Cache for late-subscriber reseed (see _lastPublishedByTopic). The
@@ -621,20 +628,6 @@ namespace Gonogo.ScansatUplink
         // Kept as thin wrappers so ScanGrids/CoveragePlane stay pure +
         // headlessly tested.
         // ----------------------------------------------------------------
-
-        private static bool TryGetActiveBody(out string bodyName, out CelestialBody body)
-        {
-            bodyName = "";
-            body = null!;
-            var b = FlightGlobals.ActiveVessel?.mainBody;
-            if (b == null)
-            {
-                return false;
-            }
-            bodyName = b.name;
-            body = b;
-            return true;
-        }
 
         /// <summary>
         /// Snapshots the body's <c>SCANdata.Coverage</c> grid (spec §0C:

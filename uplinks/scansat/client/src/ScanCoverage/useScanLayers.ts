@@ -109,7 +109,7 @@ export function useScanAnomalies(
 /**
  * Live list of vessels SCANsat is tracking (loaded or unloaded). Used
  * by the Scanning widget: MapView consumes a flat anomaly list and a
- * single-body fog mask, but the Scanning widget surfaces the per-
+ * single-body coverage mask, but the Scanning widget surfaces the per-
  * vessel scanner + footprint detail.
  *
  * `scansat.scanningVessels` is a declared Topic of this Uplink's contract

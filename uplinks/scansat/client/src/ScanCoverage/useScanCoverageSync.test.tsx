@@ -1,12 +1,10 @@
-import "fake-indexeddb/auto";
 import type { BodyDefinition } from "@ksp-gonogo/sitrep-sdk";
 import {
-  clearFogRevealSources,
+  type CoverageMaskCache,
+  CoverageMaskCacheProvider,
+  clearCoverageSources,
   clearRegistry,
-  type FogMaskCache,
-  FogMaskCacheProvider,
-  FogMaskStore,
-  useFogMaskCache,
+  useCoverageMaskCache,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
@@ -20,7 +18,7 @@ import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SCAN_TYPE, type SCANCoverageBitmap } from "../schema.js";
 import "../topics.js";
-import { useScanSatFogSync } from "./useScanSatFogSync.js";
+import { useScanCoverageSync } from "./useScanCoverageSync.js";
 
 const BODY: BodyDefinition = {
   id: "Kerbin",
@@ -53,55 +51,53 @@ function Harness({
   onCache,
 }: {
   body: BodyDefinition | undefined;
-  onCache: (cache: FogMaskCache | null) => void;
+  onCache: (cache: CoverageMaskCache | null) => void;
 }) {
-  useScanSatFogSync(body);
-  const cache = useFogMaskCache();
+  useScanCoverageSync(body);
+  const cache = useCoverageMaskCache();
   useEffect(() => {
     onCache(cache);
   }, [cache, onCache]);
   return null;
 }
 
-describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSource)", () => {
+describe("useScanCoverageSync: real TelemetryClient subscribe path (no getDataSource)", () => {
   let client: ReturnType<typeof createTestTelemetryClient>;
   let transport: StubTransport;
-  let store: FogMaskStore;
-  let cache: FogMaskCache | null;
+  let cache: CoverageMaskCache | null;
   const renderedTrees: Array<() => void> = [];
 
   beforeEach(() => {
     clearRegistry();
     transport = new StubTransport();
     client = createTestTelemetryClient(transport);
-    store = new FogMaskStore({ dbName: `gonogo-fog-test-${Math.random()}` });
     cache = null;
   });
 
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    clearFogRevealSources();
+    clearCoverageSources();
   });
 
   function renderHarness(body: BodyDefinition | undefined) {
     const result = render(
       <TelemetryProvider client={client}>
-        <FogMaskCacheProvider store={store}>
+        <CoverageMaskCacheProvider>
           <Harness
             body={body}
             onCache={(c) => {
               cache = c;
             }}
           />
-        </FogMaskCacheProvider>
+        </CoverageMaskCacheProvider>
       </TelemetryProvider>,
     );
     renderedTrees.push(result.unmount);
     return result;
   }
 
-  it("subscribes to scansat.mask.<body>.<type> on the real TelemetryClient once scansat.available flips true, and merges an arriving bitmap into the fog mask", async () => {
+  it("subscribes to scansat.mask.<body>.<type> on the real TelemetryClient once scansat.available flips true, and merges an arriving bitmap into the coverage mask", async () => {
     renderHarness(BODY);
     act(() => {
       transport.emit("scansat.available", true);
@@ -131,6 +127,28 @@ describe("useScanSatFogSync: real TelemetryClient subscribe path (no getDataSour
       await Promise.resolve();
     });
     expect(transport.isSubscribed(key)).toBe(false);
+  });
+
+  it("moves its subscriptions with the body, releasing the old body's", async () => {
+    const mun: BodyDefinition = { ...BODY, id: "Mun", name: "Mun", radius: 200000 };
+    const { rerender } = renderHarness(BODY);
+    act(() => {
+      transport.emit("scansat.available", true);
+    });
+    const kerbin = `scansat.mask.${BODY.name}.${SCAN_TYPE.AltimetryHiRes}`;
+    await waitFor(() => expect(transport.isSubscribed(kerbin)).toBe(true));
+
+    rerender(
+      <TelemetryProvider client={client}>
+        <CoverageMaskCacheProvider>
+          <Harness body={mun} onCache={() => {}} />
+        </CoverageMaskCacheProvider>
+      </TelemetryProvider>,
+    );
+
+    const munKey = `scansat.mask.Mun.${SCAN_TYPE.AltimetryHiRes}`;
+    await waitFor(() => expect(transport.isSubscribed(munKey)).toBe(true));
+    expect(transport.isSubscribed(kerbin)).toBe(false);
   });
 
   it("tears down the mask subscription when the widget unmounts", async () => {

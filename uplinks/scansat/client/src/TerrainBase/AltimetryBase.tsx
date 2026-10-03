@@ -36,7 +36,7 @@ import {
   useProcessor,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
-import { useScanHeightGrid } from "../FogReveal/useScanLayers.js";
+import { useScanHeightGrid } from "../ScanCoverage/useScanLayers.js";
 import { SCANSAT } from "../uplink.js";
 import {
   BASE_LAYER_CANVAS_H,

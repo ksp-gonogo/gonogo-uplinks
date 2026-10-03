@@ -10,7 +10,7 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | Uplink id | `scansat` |
 | Version | `0.0.1` |
 | Wraps | SCANsat 20.4 (ckan) |
-| Built against | contract 28.4, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 28.5, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -18,7 +18,12 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | --- | --- | --- | --- |
 | `scansat.scanningVessels` | `ScanningVesselEntry[]` | lossy-latest | delayed |
 | `scansat.science` | `ScanScienceEntry[]` | lossy-latest | delayed |
+| `scansat.anomalies.` | – | lossy-latest | delayed |
 | `scansat.available` | – | lossy-latest | true-now |
+| `scansat.biome.` | – | lossy-latest | delayed |
+| `scansat.coverage.` | – | lossy-latest | delayed |
+| `scansat.height.` | – | lossy-latest | delayed |
+| `scansat.mask.` | – | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |
@@ -50,6 +55,7 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 | `scansat-footprint-overlay` | `map-view.overlay` | – | only while `scansat` | 1 |  |
 | `scansat-coverage-panel` | `map-view.sections` | – | only while `scansat` | 1 |  |
 | `scansat:altimetry` | `map-view.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (boolean) |
+| `scansat-coverage-sync` | `map-view.overlay` | – | only while `scansat` | 0 |  |
 
 ![Map View over Kerbin painted with SCANsat's biome colormap, each biome in KSP's own colour, under one satellite's footprint](docs/assets/biome-base-kerbin--default.png)
 

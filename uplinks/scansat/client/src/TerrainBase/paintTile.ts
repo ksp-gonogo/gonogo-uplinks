@@ -29,7 +29,7 @@
 //   1. `BIOME_CANVAS_W`/`H` (2048×1024) in the
 //      `useBiomeCanvas`/`useHeightCanvas` this module replaces.
 //   2. `DEFAULT_MASK_WIDTH`/`HEIGHT` (2048×1024) in
-//      packages/data/src/fog/FogMaskCache.ts: the resolution the coverage
+//      the sdk's CoverageMaskCache: the resolution the coverage
 //      gate's own composite `Uint8Array` is built at.
 // MapView's own composite step already scales whatever canvas an augment
 // hands back to `WORLD_W`×`WORLD_H` via `ctx.drawImage(canvas, 0, 0,
@@ -64,9 +64,9 @@ export interface BodyOffsets {
 /**
  * Translate a (ilon, ilat) 1°×1° tile coordinate to a rectangular pixel
  * range on a `(maskW, maskH)` texture-space canvas, honouring the body's
- * texture offsets. Deliberately duplicates `../FogReveal/scanDecode.ts`'s
+ * texture offsets. Deliberately duplicates `../ScanCoverage/scanDecode.ts`'s
  * `tileToPixelRect` rather than importing it, so this module depends only
- * on the coverage-gate shape and not on the FogReveal decode module. The
+ * on the coverage-gate shape and not on the decode module. The
  * two must stay in step: a change to one belongs in both.
  */
 export interface TilePixelRect {
@@ -127,8 +127,8 @@ export function tileToPixelRect(
  * typically also 2048×1024, but computed independently from the canvas
  * paint resolution rather than assumed equal to it).
  *
- * `hasAnySource: false` (no fog reveal source registered, or no
- * `FogMaskCacheProvider` mounted) degrades to fully-open (alpha 1)
+ * `hasAnySource: false` (no coverage source registered, or no
+ * `CoverageMaskCacheProvider` mounted) degrades to fully-open (alpha 1)
  * unconditionally: the paint-gate's own documented degenerate case, not
  * an error state. Same for a not-yet-resolved gate (`data: null`).
  */

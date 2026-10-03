@@ -1,0 +1,6 @@
+{
+  "_comment": "Render-scene exemptions for this Uplink, read by `gonogo-uplink docs --check`.",
+  "unrenderable": {
+    "scansat-coverage-sync": "Draws nothing: it fills the coverage masks for the body the map shows. What it changes is seen through the altimetry and biome base layers' coverage gate, whose own scenes draw it."
+  }
+}

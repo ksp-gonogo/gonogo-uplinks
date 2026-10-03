@@ -1,7 +1,7 @@
 /**
  * SCANsat integration shapes (`scan.*` keys). Canonical home for this
  * Uplink's wire-shape types: consumed by this package's own
- * `FogReveal/scanDecode.ts` / `FogReveal/useScanLayers.ts` / decode+sync
+ * `ScanCoverage/scanDecode.ts` / `ScanCoverage/useScanLayers.ts` / decode+sync
  * hooks, and by `Scanning`/`AnomalyOverlay`/`Minimap` here.
  *
  * `packages/core/src/schemas/scansat.ts` still holds a duplicate copy, for
@@ -49,7 +49,7 @@ export type SCANType = (typeof SCAN_TYPE)[keyof typeof SCAN_TYPE];
  * byte, row-major over coverage) is set when the corresponding 1°×1° tile
  * has been scanned for the requested scan type. The natural granularity is
  * 360×180 (matching SCANsat's own `Coverage` array); clients upsample to
- * their own fog-mask resolution.
+ * their own coverage-mask resolution.
  *
  * Coverage indexing follows SCANsat's `icLON`/`icLAT`: bit index
  * `ilon * height + ilat` where `ilon = (int)(lon + 540) % 360` and
@@ -73,7 +73,7 @@ export interface SCANCoverageBitmap {
  *
  * PQS-backed on the fork side, so this resolves even without SCANsat
  * installed: operators should still gate display behind
- * `scan.maskBitmap` coverage if fog-of-war semantics are desired.
+ * `scan.maskBitmap` coverage if only scanned terrain should show.
  */
 export interface SCANHeightGrid {
   width: number;

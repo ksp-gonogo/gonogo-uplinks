@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Sitrep.Contract;
 
@@ -68,6 +69,36 @@ namespace Gonogo.ScansatUplink
                     return Requirement.None;
             }
         }
+
+        /// <summary>
+        /// The bodies any client is watching anything of. Grids are captured on
+        /// demand, for the bodies someone is looking at, rather than for every
+        /// body each tick; SCANsat keeps every body's coverage in the save, so a
+        /// body first watched later is captured whole then.
+        ///
+        /// <para>The trigger is any subscription to one of a body's topics,
+        /// read off the engine's own subscription set: a widget, an Uplink
+        /// author's code, a script and a station's relay all count the same,
+        /// and the active vessel plays no part.</para>
+        /// </summary>
+        public static IReadOnlyList<string> WatchedBodies(
+            IEnumerable<string> bodyNames, Func<string, bool> isAnyTopicSubscribed)
+        {
+            var watched = new List<string>();
+            foreach (var name in bodyNames)
+            {
+                if (BodyWatched(name, isAnyTopicSubscribed)) watched.Add(name);
+            }
+            return watched;
+        }
+
+        /// <summary>Whether a client is watching anything of one body: see <see cref="WatchedBodies"/>.</summary>
+        public static bool BodyWatched(string bodyName, Func<string, bool> isAnyTopicSubscribed) =>
+            isAnyTopicSubscribed(CoveragePrefix + bodyName + ".")
+                || isAnyTopicSubscribed(MaskPrefix + bodyName + ".")
+                || isAnyTopicSubscribed(HeightPrefix + bodyName)
+                || isAnyTopicSubscribed(BiomePrefix + bodyName)
+                || isAnyTopicSubscribed(AnomaliesPrefix + bodyName);
 
         /// <summary>Sub-topic (relative to <see cref="CoveragePrefix"/>/<see cref="MaskPrefix"/>) for one (body, numeric type): <c>"&lt;body&gt;.&lt;typeBit&gt;"</c>.</summary>
         public static string BodyTypeSubTopic(string bodyName, short scanTypeBit) => bodyName + "." + scanTypeBit;

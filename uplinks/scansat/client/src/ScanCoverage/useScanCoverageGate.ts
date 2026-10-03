@@ -8,13 +8,13 @@
 // Kept behaviourally identical to the original. A single shared implementation
 // could be hoisted into @ksp-gonogo/data without changing behaviour, the same
 // way TerrainBase/paintTile.ts's tileToPixelRect is a deliberate byte-for-byte
-// copy of FogReveal/scanDecode.ts's.
+// copy of ScanCoverage/scanDecode.ts's.
 import {
   type BodyMask,
-  type FogRevealSourceDefinition,
-  getFogRevealSources,
-  onFogRevealSourcesChange,
-  useFogMaskCache,
+  type CoverageSourceDefinition,
+  getCoverageSources,
+  onCoverageSourcesChange,
+  useCoverageMaskCache,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
@@ -26,12 +26,12 @@ export interface ScanCoverageGate {
   version: number;
   width: number;
   height: number;
-  /** True when at least one reveal source is registered AND a
-   *  `FogMaskCacheProvider` is mounted to actually resolve its masks. False
-   *  in either the "no fog system mounted" case (zero reveal sources
+  /** True when at least one coverage source is registered AND a
+   *  `CoverageMaskCacheProvider` is mounted to actually resolve its masks. False
+   *  in either the "no coverage source" case (zero coverage sources
    *  registered) or the "no cache provider" case (sources are registered
    *  but nothing can fetch their masks). Consumers should treat false as
-   *  "paint fully open," never "fully fogged." */
+   *  "paint fully open," never "paint nothing." */
   hasAnySource: boolean;
 }
 
@@ -39,7 +39,7 @@ const DEFAULT_WEIGHT = 255;
 
 /** Exported for direct unit testing without a canvas, pure per-pixel math. */
 export function compositeScanCoverage(
-  sources: readonly FogRevealSourceDefinition[],
+  sources: readonly CoverageSourceDefinition[],
   masksByLayer: ReadonlyMap<string, BodyMask>,
   augmentSettings: Record<string, Record<string, unknown>> | undefined,
   pixelIndex: number,
@@ -56,16 +56,16 @@ export function compositeScanCoverage(
   return reveal;
 }
 
-// Stable-reference snapshot cache: getFogRevealSources() allocates fresh
+// Stable-reference snapshot cache: getCoverageSources() allocates fresh
 // every call, which would infinite-loop useSyncExternalStore directly.
 // Refreshed via an unconditional module-load subscription (mirrors the
 // MapView original) so a reveal source registering before any hook instance
 // is mounted is never missed.
-let cachedSources: FogRevealSourceDefinition[] = getFogRevealSources();
-onFogRevealSourcesChange(() => {
-  cachedSources = getFogRevealSources();
+let cachedSources: CoverageSourceDefinition[] = getCoverageSources();
+onCoverageSourcesChange(() => {
+  cachedSources = getCoverageSources();
 });
-function getSourcesSnapshot(): FogRevealSourceDefinition[] {
+function getSourcesSnapshot(): CoverageSourceDefinition[] {
   return cachedSources;
 }
 
@@ -74,11 +74,11 @@ export function useScanCoverageGate(
   augmentSettings: Record<string, Record<string, unknown>> | undefined,
 ): ScanCoverageGate {
   const sources = useSyncExternalStore(
-    onFogRevealSourcesChange,
+    onCoverageSourcesChange,
     getSourcesSnapshot,
     getSourcesSnapshot,
   );
-  const cache = useFogMaskCache();
+  const cache = useCoverageMaskCache();
   const [gate, setGate] = useState<ScanCoverageGate>({
     data: null,
     version: 0,
@@ -124,15 +124,13 @@ export function useScanCoverageGate(
     }
 
     for (const source of sources) {
-      cache.acquire(bodyId, source.id).then((m: BodyMask) => {
-        if (cancelled) return;
-        width = m.width;
-        height = m.height;
-        masksByLayer.set(source.id, m);
-        unsubs.push(cache.onChange(bodyId, source.id, recompute));
-        recompute();
-      });
+      const m = cache.acquire(bodyId, source.id);
+      width = m.width;
+      height = m.height;
+      masksByLayer.set(source.id, m);
+      unsubs.push(cache.onChange(bodyId, source.id, recompute));
     }
+    recompute();
     return () => {
       cancelled = true;
       for (const u of unsubs) u();

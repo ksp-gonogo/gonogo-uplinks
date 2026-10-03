@@ -1,14 +1,10 @@
-import "fake-indexeddb/auto";
 import type { BodyDefinition } from "@ksp-gonogo/sitrep-sdk";
 import {
-  clearFogRevealSources,
+  CoverageMaskCacheProvider,
+  clearCoverageSources,
   clearRegistry,
-  DEFAULT_MASK_HEIGHT,
-  DEFAULT_MASK_WIDTH,
-  DEFAULT_PROFILE_ID,
-  FogMaskCacheProvider,
-  FogMaskStore,
-  registerFogRevealSource,
+  registerCoverageSource,
+  useCoverageMaskCache,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
@@ -18,7 +14,7 @@ import {
   TelemetryProvider,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import type { ReactElement } from "react";
+import { type ReactElement, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SCANBiomeGrid } from "../schema.js";
 import {
@@ -35,6 +31,15 @@ const BODY: BodyDefinition = {
   maxAtmosphere: 70000,
 };
 const LAYER_ID = "scansat-test:biome";
+
+/** Marks the whole of BODY's mask covered before anything paints, as a source would once its bitmap arrived. */
+function FullyCovered() {
+  const cache = useCoverageMaskCache();
+  useState(() => {
+    cache?.acquire(BODY.id, LAYER_ID).data.fill(255);
+  });
+  return null;
+}
 
 function encodeBytes(values: number[]): string {
   return Buffer.from(values).toString("base64");
@@ -64,7 +69,6 @@ interface RecordedCall {
 describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no components-package canvas hooks)", () => {
   let transport: StubTransport;
   let client: ReturnType<typeof createTestTelemetryClient>;
-  let store: FogMaskStore;
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
   let calls: RecordedCall[];
   const renderedTrees: Array<() => void> = [];
@@ -82,7 +86,6 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
     transport = new StubTransport();
     client = createTestTelemetryClient(transport);
 
-    store = new FogMaskStore({ dbName: `gonogo-fog-test-${Math.random()}` });
 
     calls = [];
     let currentFillStyle = "";
@@ -143,7 +146,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
   afterEach(() => {
     for (const unmount of renderedTrees) unmount();
     renderedTrees.length = 0;
-    clearFogRevealSources();
+    clearCoverageSources();
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
@@ -177,9 +180,9 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
 
   it("paints the biome colormap unconditionally when no coverage source is registered (degenerate open case)", async () => {
     renderMinimap(
-      <FogMaskCacheProvider store={store}>
+      <CoverageMaskCacheProvider>
         <Minimap body={BODY} vesselLat={0} vesselLon={0} />
-      </FogMaskCacheProvider>,
+      </CoverageMaskCacheProvider>,
     );
     act(() => {
       transport.emit("scansat.biome.Kerbin", biomeGridFixture());
@@ -194,11 +197,11 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
   });
 
   it("falls through to the dark base (paints nothing on the colormap surface) when a registered coverage source reports full un-coverage", async () => {
-    registerFogRevealSource({ id: LAYER_ID, weight: 255 });
+    registerCoverageSource({ id: LAYER_ID, weight: 255 });
     renderMinimap(
-      <FogMaskCacheProvider store={store}>
+      <CoverageMaskCacheProvider>
         <Minimap body={BODY} vesselLat={0} vesselLon={0} />
-      </FogMaskCacheProvider>,
+      </CoverageMaskCacheProvider>,
     );
     act(() => {
       transport.emit("scansat.biome.Kerbin", biomeGridFixture());
@@ -211,20 +214,12 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
   });
 
   it("shows the biome colormap at full opacity for tiles a registered coverage source reports as fully covered", async () => {
-    registerFogRevealSource({ id: LAYER_ID, weight: 255 });
-    // The cache discards a stored mask whose dimensions differ from its own, so the fixture is full size.
-    await store.save(
-      DEFAULT_PROFILE_ID,
-      BODY.id,
-      LAYER_ID,
-      new Uint8Array(DEFAULT_MASK_WIDTH * DEFAULT_MASK_HEIGHT).fill(255),
-      DEFAULT_MASK_WIDTH,
-      DEFAULT_MASK_HEIGHT,
-    );
+    registerCoverageSource({ id: LAYER_ID, weight: 255 });
     renderMinimap(
-      <FogMaskCacheProvider store={store}>
+      <CoverageMaskCacheProvider>
+        <FullyCovered />
         <Minimap body={BODY} vesselLat={0} vesselLon={0} />
-      </FogMaskCacheProvider>,
+      </CoverageMaskCacheProvider>,
     );
     act(() => {
       transport.emit("scansat.biome.Kerbin", biomeGridFixture());
@@ -240,9 +235,9 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
 
   it("draws exactly one drawImage onto the visible canvas per repaint, no separate dark-fog-overlay composite", async () => {
     renderMinimap(
-      <FogMaskCacheProvider store={store}>
+      <CoverageMaskCacheProvider>
         <Minimap body={BODY} vesselLat={0} vesselLon={0} />
-      </FogMaskCacheProvider>,
+      </CoverageMaskCacheProvider>,
     );
     act(() => {
       transport.emit("scansat.biome.Kerbin", biomeGridFixture());
@@ -260,9 +255,9 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
   // the map for a site whose position nobody read.
   it("plants no anomaly marker for a known anomaly with no readable coordinates", async () => {
     renderMinimap(
-      <FogMaskCacheProvider store={store}>
+      <CoverageMaskCacheProvider>
         <Minimap body={BODY} vesselLat={0} vesselLon={0} />
-      </FogMaskCacheProvider>,
+      </CoverageMaskCacheProvider>,
     );
     act(() => {
       transport.emit("scansat.biome.Kerbin", biomeGridFixture());

@@ -9,7 +9,7 @@ function wrapLon(lon: number): number {
 }
 
 /**
- * Defaults the SCANsat→fog-mask sync uses. Exported for tests + harness
+ * Defaults the SCANsat→coverage-mask sync uses. Exported for tests + harness
  * inspection. `BITMAP_WIDTH` × `BITMAP_HEIGHT` matches SCANsat's own
  * `Coverage` array dimensions; the fork emits at these dimensions
  * verbatim.
@@ -21,7 +21,7 @@ export const DEFAULT_SCAN_TYPE: SCANType = SCAN_TYPE.AltimetryHiRes;
 /**
  * Decode a SCANsat coverage bitmap (1°×1° tile bits, base64-packed) and
  * upsample it into a `BodyMask`'s alpha bytes (typically 2048×1024).
- * Writes use max-lighten so existing painter writes survive, the fog
+ * Writes use max-lighten so existing painter writes survive, the coverage
  * cache treats the bytes as "highest imaging quality reached so far".
  *
  * Returns true when any byte was newly raised (caller should call

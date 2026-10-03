@@ -28,7 +28,7 @@ import { useMemo } from "react";
 import {
   useScanAnomalies,
   useScanningVessels,
-} from "../FogReveal/useScanLayers.js";
+} from "../ScanCoverage/useScanLayers.js";
 import type { SCANType } from "../schema.js";
 import { SCAN_TYPE } from "../schema.js";
 import { SCANSAT } from "../uplink.js";
@@ -193,7 +193,7 @@ function ScanningComponent({
         sections={
           <Section>
             <EmptyState>
-              SCANsat is not installed. Install it for fog-of-war, biome
+              SCANsat is not installed. Install it for scanned terrain, biome
               imaging, anomaly tracking, and the per-vessel scanner readouts
               this widget surfaces.
             </EmptyState>

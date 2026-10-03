@@ -24,7 +24,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import { useMemo } from "react";
-import { useScanAnomalies } from "../FogReveal/useScanLayers.js";
+import { useScanAnomalies } from "../ScanCoverage/useScanLayers.js";
 
 /**
  * The value of a FACT: something that stays true until an event changes it, and no

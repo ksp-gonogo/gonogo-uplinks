@@ -13,12 +13,13 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { useEffect, useRef } from "react";
 import { styled } from "styled-components";
-import { useScanCoverageGate } from "../FogReveal/useScanCoverageGate.js";
+import { useScanCoverageGate } from "../ScanCoverage/useScanCoverageGate.js";
+import { useScanCoverageSync } from "../ScanCoverage/useScanCoverageSync.js";
 import {
   useScanAnomalies,
   useScanBiomeGrid,
   useScanningVessels,
-} from "../FogReveal/useScanLayers.js";
+} from "../ScanCoverage/useScanLayers.js";
 import type { SCANScanningVessel } from "../schema.js";
 import { packedColourToComponents } from "../TerrainBase/BiomeBase.js";
 import {
@@ -38,8 +39,8 @@ import {
  * biome colourmap and an uncovered tile paints nothing, letting the
  * canvas's own dark background fill show through. The base pixels come
  * straight from `scan.biomeGrid[body]`; coverage comes from whichever
- * reveal sources this Uplink has registered (`useScanSatFogSync.ts`) via
- * the same fog-mask cache MapView's own base layer reads.
+ * reveal sources this Uplink has registered (`useScanCoverageSync.ts`) via
+ * the same coverage-mask cache MapView's own base layer reads.
  */
 export interface MinimapProps {
   body: BodyDefinition;
@@ -62,6 +63,8 @@ export function Minimap({
   vesselLat,
   vesselLon,
 }: Readonly<MinimapProps>) {
+  // The minimap paints from the same masks MapView does, and can be on a dashboard with no MapView to fill them.
+  useScanCoverageSync(body);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // Offscreen surface the coverage-gated biome colourmap is painted onto,
   // same fixed-resolution technique as TerrainBase/BiomeBase.tsx's

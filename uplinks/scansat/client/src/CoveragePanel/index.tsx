@@ -20,7 +20,7 @@ import { registerAugment, useStream, value } from "@ksp-gonogo/sitrep-sdk";
 import { NULL_DISPLAY, Unit, useWidgetScope } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
-import { useScanningVessels } from "../FogReveal/useScanLayers.js";
+import { useScanningVessels } from "../ScanCoverage/useScanLayers.js";
 import type { SCANType } from "../schema.js";
 import { SCAN_TYPE } from "../schema.js";
 import { SCANSAT } from "../uplink.js";

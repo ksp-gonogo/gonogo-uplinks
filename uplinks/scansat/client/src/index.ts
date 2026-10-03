@@ -37,24 +37,27 @@
 //     for the `map-view.base` REPLACE slot, each painting its own standalone
 //     colormap surface (altimetry or biome) modulated per-tile by the coverage
 //     paint-gate. MapView paints no colormap surface itself.
-//   - `FogReveal/useScanSatFogSync` → registerFogRevealSource(...) once per
+//   - `ScanCoverage/coverageSources` → registerCoverageSource(...) once per
 //     scan type ("scansat:AltimetryLoRes" etc.) so MapView's coverage
-//     paint-gate knows this
-//     Uplink contributes fog reveal, even before anything calls
-//     useScanSatFogSync itself.
+//     paint-gate knows this Uplink contributes coverage
+//   - `ScanCoverage/CoverageSyncOverlay` → registerAugment({ augments:
+//     "map-view.overlay", ... }): draws nothing, and fills the masks for the
+//     body the map shows. The Minimap fills its own body's the same way
 //
 // To wire it into the app: `import "@ksp-gonogo/gonogo-scansat-uplink";` during app bootstrap
 // (alongside the other component-registration imports in app/src/main.tsx).
 //
-// The scan schema/decode/sync logic (`schema.ts`, `FogReveal/*`) is this
+// The scan schema/decode/sync logic (`schema.ts`, `ScanCoverage/*`) is this
 // Uplink's own canonical copy. `packages/core` and `packages/data` still carry
 // a duplicate for `packages/components`'s MapView, which has not migrated off
 // it yet; that duplicate goes when MapView's augment migration lands.
 //
 // The Minimap here (`Scanning/Minimap.tsx`) has its own mod-local coverage gate
-// (`FogReveal/useScanCoverageGate.ts`) and paints through
+// (`ScanCoverage/useScanCoverageGate.ts`) and paints through
 // `TerrainBase/paintTile.ts`, the same as BiomeBase, so it borrows no MapView
 // canvas hook from @ksp-gonogo/components at all.
+
+import { registerScanCoverageSources } from "./ScanCoverage/coverageSources.js";
 
 export type { ScanningConfig, ScanningScope } from "./Scanning/index.js";
 export { ScanningComponent } from "./Scanning/index.js";
@@ -74,4 +77,6 @@ import "./FootprintOverlay/index.js";
 import "./CoveragePanel/index.js";
 import "./TerrainBase/AltimetryBase.js";
 import "./TerrainBase/BiomeBase.js";
-import "./FogReveal/useScanSatFogSync.js";
+import "./ScanCoverage/CoverageSyncOverlay.js";
+
+registerScanCoverageSources();

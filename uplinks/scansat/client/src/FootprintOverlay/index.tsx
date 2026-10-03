@@ -26,7 +26,7 @@ import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, magnitudeOr } from "@ksp-gonogo/ui-kit";
 import { useEffect, useRef } from "react";
-import { useScanningVessels } from "../FogReveal/useScanLayers.js";
+import { useScanningVessels } from "../ScanCoverage/useScanLayers.js";
 import type { SCANScanningVessel } from "../schema.js";
 import { SCANSAT } from "../uplink.js";
 

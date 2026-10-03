@@ -46,5 +46,42 @@ namespace GonogoScansatUplink.Tests
             // ResourceLoRes 128, ResourceHiRes 256.
             Assert.Equal(new short[] { 1, 2, 8, 16, 128, 256 }, ScanChannels.ClientScanTypes);
         }
+
+        /// <summary>
+        /// A body is captured when any of its grids is watched, whichever
+        /// vessel is active, and only then: coverage is captured on demand.
+        /// </summary>
+        [Theory]
+        [InlineData("scansat.coverage.Mun.8")]
+        [InlineData("scansat.mask.Mun.1")]
+        [InlineData("scansat.height.Mun")]
+        [InlineData("scansat.biome.Mun")]
+        [InlineData("scansat.anomalies.Mun")]
+        public void ABodyIsWatchedWhenAnyOfItsGridsIsSubscribed(string subscribed)
+        {
+            bool isAnyTopicSubscribed(string prefix) => subscribed.StartsWith(prefix, System.StringComparison.Ordinal);
+
+            Assert.True(ScanChannels.BodyWatched("Mun", isAnyTopicSubscribed));
+            Assert.False(ScanChannels.BodyWatched("Kerbin", isAnyTopicSubscribed));
+        }
+
+        /// <summary>
+        /// The predicate the engine answers IsAnyTopicSubscribed with: a prefix
+        /// test over every topic any session holds, whoever subscribed it.
+        /// </summary>
+        private static System.Func<string, bool> Engine(params string[] subscribed) =>
+            prefix => System.Array.Exists(subscribed, topic => topic.StartsWith(prefix, System.StringComparison.Ordinal));
+
+        [Fact]
+        public void APlainSubscriptionToOneBodysCoverage_IsWhatMakesThatBodyCaptured()
+        {
+            var bodies = new[] { "Sun", "Kerbin", "Mun", "Minmus" };
+
+            Assert.Empty(ScanChannels.WatchedBodies(bodies, Engine()));
+            Assert.Equal(new[] { "Minmus" }, ScanChannels.WatchedBodies(bodies, Engine("scansat.coverage.Minmus.1")));
+            Assert.Equal(
+                new[] { "Kerbin", "Mun" },
+                ScanChannels.WatchedBodies(bodies, Engine("scansat.mask.Mun.256", "scansat.height.Kerbin", "vessel.orbit")));
+        }
     }
 }
