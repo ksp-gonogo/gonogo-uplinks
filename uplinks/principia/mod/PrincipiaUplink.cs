@@ -83,6 +83,7 @@ namespace GonogoPrincipiaUplink
         private IChannelPublisher? _planPublisher;
         private IChannelPublisher? _analysisPublisher;
         private readonly AnalysisReader _analysisReader = new AnalysisReader();
+        private readonly PrincipiaSecularSeeds _secularSeeds = new PrincipiaSecularSeeds();
 
         /// <summary>
         /// Whether the gate has already answered, read and written on the MAIN
@@ -516,7 +517,12 @@ namespace GonogoPrincipiaUplink
 
         internal void HandleAnalysisOnCourier(object? captured)
         {
-            if (captured is not AnalysisObservation observation || !IsSubscribed(AnalysisTopic))
+            if (captured is not AnalysisObservation observation)
+            {
+                return;
+            }
+            _secularSeeds.Observe(observation);
+            if (!IsSubscribed(AnalysisTopic))
             {
                 return;
             }
@@ -690,7 +696,8 @@ namespace GonogoPrincipiaUplink
                     () => _gravityModel?.Model,
                     perturbers,
                     parentOf,
-                    _bodyNames),
+                    _bodyNames,
+                    _secularSeeds),
             });
         }
 

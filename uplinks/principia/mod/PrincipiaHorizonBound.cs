@@ -370,6 +370,26 @@ namespace GonogoPrincipiaUplink
         }
     }
 
+    /// <summary>The first-order secular rates J2 drives, in radians per second.</summary>
+    public readonly struct J2Rates
+    {
+        public J2Rates(double node, double periapsis, double meanAnomaly)
+        {
+            Node = node;
+            Periapsis = periapsis;
+            MeanAnomaly = meanAnomaly;
+        }
+
+        /// <summary>How fast the ascending node turns.</summary>
+        public double Node { get; }
+
+        /// <summary>How fast the argument of periapsis turns.</summary>
+        public double Periapsis { get; }
+
+        /// <summary>How fast the mean anomaly runs beyond two-body mean motion.</summary>
+        public double MeanAnomaly { get; }
+    }
+
     /// <summary>
     /// How long this Uplink will vouch for a craft's published osculating elements.
     ///
@@ -508,25 +528,50 @@ namespace GonogoPrincipiaUplink
         public static double J2DriftRate(
             double j2, double referenceRadius, double mu, double sma, double ecc, double inclination)
         {
+            var rates = J2SecularRates(j2, referenceRadius, mu, sma, ecc, inclination);
+            if (rates == null)
+            {
+                return 0.0;
+            }
+            var along = rates.Value.Periapsis + rates.Value.MeanAnomaly;
+            var across = Math.Sin(inclination) * rates.Value.Node;
+            var rate = sma * Math.Sqrt(along * along + across * across);
+            return double.IsNaN(rate) || double.IsInfinity(rate) ? 0.0 : rate;
+        }
+
+        /// <summary>
+        /// The three first-order secular rates J2 drives, in radians per second: the
+        /// node's, the periapsis's, and the mean anomaly's beyond two-body mean
+        /// motion. The same theory as <see cref="J2DriftRate"/>, which composes its
+        /// speed from these.
+        ///
+        /// <para>Null for any input that is not a usable number, for an unbound
+        /// orbit and for a model with no J2 or no reference radius, so a caller can
+        /// tell "nothing to apply" from a measured zero.</para>
+        /// </summary>
+        public static J2Rates? J2SecularRates(
+            double j2, double referenceRadius, double mu, double sma, double ecc, double inclination)
+        {
             if (!(j2 > 0.0) || !(referenceRadius > 0.0) || !(mu > 0.0) || !(sma > 0.0)
                 || !(ecc >= 0.0) || !(ecc < 1.0)
                 || double.IsInfinity(j2) || double.IsInfinity(referenceRadius)
                 || double.IsInfinity(mu) || double.IsInfinity(sma)
                 || double.IsNaN(inclination) || double.IsInfinity(inclination))
             {
-                return 0.0;
+                return null;
             }
             var n = Math.Sqrt(mu / (sma * sma * sma));
             var p = sma * (1.0 - ecc * ecc);
             var ratio = referenceRadius / p;
             var k = j2 * ratio * ratio * n;
             var cos = Math.Cos(inclination);
-            var sin = Math.Sin(inclination);
-            var node = -1.5 * k * cos;
-            var along = 0.75 * k * ((5.0 * cos * cos - 1.0)
-                                    + Math.Sqrt(1.0 - ecc * ecc) * (3.0 * cos * cos - 1.0));
-            var rate = sma * Math.Sqrt(along * along + sin * node * (sin * node));
-            return double.IsNaN(rate) || double.IsInfinity(rate) ? 0.0 : rate;
+            var rates = new J2Rates(
+                -1.5 * k * cos,
+                0.75 * k * (5.0 * cos * cos - 1.0),
+                0.75 * k * Math.Sqrt(1.0 - ecc * ecc) * (3.0 * cos * cos - 1.0));
+            return double.IsNaN(rates.Node) || double.IsNaN(rates.Periapsis) || double.IsNaN(rates.MeanAnomaly)
+                ? (J2Rates?)null
+                : rates;
         }
 
         /// <summary>Bisection steps once a crossing has been bracketed inside one step.</summary>

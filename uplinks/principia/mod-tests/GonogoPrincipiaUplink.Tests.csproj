@@ -112,6 +112,7 @@
     <Compile Include="..\mod\PlanReader.cs" />
     <Compile Include="..\mod\PlanBuilder.cs" />
     <Compile Include="..\mod\AnalysisObservation.cs" />
+    <Compile Include="..\mod\PrincipiaSecularSeeds.cs" />
     <Compile Include="..\mod\AnalysisReader.cs" />
     <Compile Include="..\mod\AnalysisBuilder.cs" />
     <Compile Include="..\mod\PlanCommands.cs" />

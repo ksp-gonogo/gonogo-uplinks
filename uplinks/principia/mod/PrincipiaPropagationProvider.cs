@@ -55,7 +55,7 @@ namespace GonogoPrincipiaUplink
     // source text and matches a type's bases on the same line as its name, so a
     // legal wrap here reports every seam this type satisfies as implemented by
     // nothing.
-    public sealed class PrincipiaPropagationProvider : IPropagationProvider, IIntegratedTrajectorySource, IBodyEphemerisHorizon
+    public sealed class PrincipiaPropagationProvider : IPropagationProvider, IIntegratedTrajectorySource, IBodyEphemerisHorizon, ISecularPropagation
     {
         public const string ProviderIdValue = "principia-propagation";
 
@@ -64,6 +64,7 @@ namespace GonogoPrincipiaUplink
         private readonly Func<int, IReadOnlyList<PrincipiaPerturber>> _perturbers;
         private readonly Func<int, int?> _parentOf;
         private readonly Func<int, string?>? _bodyName;
+        private readonly PrincipiaSecularSeeds? _analyses;
 
         private readonly object _boundGate = new object();
         private string? _boundVesselId;
@@ -111,14 +112,21 @@ namespace GonogoPrincipiaUplink
         /// answer, leaves oblateness out of the bound, which is what a model with no J2
         /// gets anyway.
         /// </param>
+        /// <param name="analyses">
+        /// The producer's orbit analyses as the Uplink has captured them, which give a
+        /// craft's secular seed from the producer's own fit. Null leaves every craft on
+        /// the J2 estimate.
+        /// </param>
         public PrincipiaPropagationProvider(
             IPropagationProvider conics,
             Func<GravityModel?> forceModel,
             Func<int, IReadOnlyList<PrincipiaPerturber>> perturbers,
             Func<int, int?> parentOf,
-            Func<int, string?>? bodyName = null)
+            Func<int, string?>? bodyName = null,
+            PrincipiaSecularSeeds? analyses = null)
         {
             _bodyName = bodyName;
+            _analyses = analyses;
             _conics = conics ?? throw new ArgumentNullException(nameof(conics));
             _forceModel = forceModel ?? throw new ArgumentNullException(nameof(forceModel));
             _perturbers = perturbers ?? throw new ArgumentNullException(nameof(perturbers));
@@ -227,8 +235,81 @@ namespace GonogoPrincipiaUplink
             return span;
         }
 
+        /// <summary>
+        /// A craft's secular seed: the producer's own analysis where one is held and
+        /// still describes the craft's orbit, and otherwise the J2 estimate applied to
+        /// its osculating elements.
+        ///
+        /// <para>The J2 estimate's span is the departure bound with the J2 term left
+        /// out, because the seed carries the very drift that term bounds; what is left
+        /// is every other body's pull. Null when there is no force model to bound it
+        /// with, which is the same refusal the horizon makes.</para>
+        ///
+        /// <para>The rates are Brouwer's, which are defined on mean elements, and are
+        /// applied to the osculating ones the plan is handed. The short-period swing
+        /// between the two shifts the mean motion slightly, and how far a contact
+        /// edge drifts from it over a plan is the residual the rig measures before
+        /// the span is tightened to it.</para>
+        /// </summary>
+        public SecularOrbit? SecularOrbitFor(PropagationTarget target, double ut)
+        {
+            var elements = target.Osculating;
+            if (target.Kind != PropagationTargetKind.Vessel || elements == null
+                || !(elements.Value.Sma > 0.0) || !(elements.Value.Ecc >= 0.0) || !(elements.Value.Ecc < 1.0)
+                || !(elements.Value.Mu > 0.0))
+            {
+                return null;
+            }
+
+            var analysed = _analyses?.SeedFor(target, elements.Value, ut);
+            if (analysed != null)
+            {
+                return analysed;
+            }
+
+            var model = _forceModel();
+            if (model == null)
+            {
+                return null;
+            }
+            var span = ComputeBoundSeconds(target, ut, elements.Value, includeJ2: false);
+            if (span == null || !(span.Value > 0.0))
+            {
+                return null;
+            }
+
+            // A primary the model does not name cannot be rated, so the seed is
+            // refused. One the model names without J2 has no oblateness to apply,
+            // which is a stated zero rather than a default.
+            var e = elements.Value;
+            var primary = model.Find(_bodyName?.Invoke(target.ParentBodyIndex));
+            if (primary == null)
+            {
+                return null;
+            }
+            J2Rates? rates = null;
+            if (primary.J2 != null && primary.ReferenceRadius != null)
+            {
+                rates = PrincipiaHorizonBound.J2SecularRates(primary.J2.Value, primary.ReferenceRadius.Value, e.Mu, e.Sma, e.Ecc, e.Inc);
+                if (rates == null)
+                {
+                    return null;
+                }
+            }
+            var meanMotion = Math.Sqrt(e.Mu / (e.Sma * e.Sma * e.Sma));
+            var anchor = new OrbitElements(
+                e.Sma, e.Ecc, e.Inc, e.Lan, e.ArgPe, PrincipiaSecularSeeds.MeanAnomalyAt(e, ut), ut, e.Mu);
+            return new SecularOrbit(
+                anchor,
+                rates?.Node ?? 0.0,
+                rates?.Periapsis ?? 0.0,
+                meanMotion + (rates?.MeanAnomaly ?? 0.0),
+                ut + span.Value,
+                SecularBasis.J2Estimate);
+        }
+
         private double? ComputeBoundSeconds(
-            PropagationTarget target, double fromUt, OrbitElements elements)
+            PropagationTarget target, double fromUt, OrbitElements elements, bool includeJ2 = true)
         {
             var model = _forceModel();
             if (model == null)
@@ -256,7 +337,7 @@ namespace GonogoPrincipiaUplink
                 ut => _conics.Solve(target, parentFrame, ut).Position);
 
             var primary = model.Find(_bodyName?.Invoke(target.ParentBodyIndex));
-            if (primary?.J2 != null && primary.ReferenceRadius != null)
+            if (includeJ2 && primary?.J2 != null && primary.ReferenceRadius != null)
             {
                 departure.AddJ2Drift(PrincipiaHorizonBound.J2DriftRate(
                     primary.J2.Value, primary.ReferenceRadius.Value, elements.Mu,
