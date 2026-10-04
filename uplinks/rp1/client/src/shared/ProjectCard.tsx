@@ -1,4 +1,5 @@
-import { Card, Cluster, ProgressBar, Stack, Text } from "@ksp-gonogo/ui-kit";
+import { value } from "@ksp-gonogo/sitrep-sdk";
+import { Card, Cluster, Meter, Stack, Text } from "@ksp-gonogo/ui-kit";
 import type { ReactNode } from "react";
 
 /**
@@ -81,9 +82,11 @@ export function ProjectCard({
         )}
 
         {progress !== undefined && progress.ratio !== null && (
-          <ProgressBar
-            ariaLabel={progress.label}
-            value={progress.ratio * 100}
+          <Meter
+            kind="progress"
+            hideLabel
+            label={progress.label}
+            value={value("ratio", progress.ratio)}
           />
         )}
 

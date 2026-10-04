@@ -16,11 +16,11 @@ import {
   type DataTableColumn,
   Disclosure,
   EmptyState,
+  Grid,
   MissionDate,
   magnitudeOf,
   Section,
   Stat,
-  StatStrip,
   ToggleButton,
   Unit,
   useElementSize,
@@ -185,7 +185,7 @@ export function Finances({ screenId }: { screenId: string }) {
 function FundsChange({ budget }: Readonly<{ budget: BudgetReading }>) {
   return (
     <Section gap="related-dense" title="FUNDS CHANGE">
-      <StatStrip>
+      <Grid minColWidth="7rem" fit align="stretch" gap="related-compact">
         {PERIODS.map(({ id, label }) => {
           const delta = budget[id].fundsDelta;
           const size = unsignedOf(delta);
@@ -200,7 +200,7 @@ function FundsChange({ budget }: Readonly<{ budget: BudgetReading }>) {
             </Stat>
           );
         })}
-      </StatStrip>
+      </Grid>
     </Section>
   );
 }
@@ -485,7 +485,7 @@ function Modifiers({ budget }: Readonly<{ budget: BudgetReading }>) {
   const sign = magnitudeOf(change.value);
   return (
     <Section gap="related-dense" title="MODIFIERS">
-      <StatStrip>
+      <Grid minColWidth="7rem" fit align="stretch" gap="related-compact">
         <Stat label="Upkeep before modifiers, day">
           <Unit
             value={unsignedOf(budget.day.upkeepBeforeModifiers as FundsReading)}
@@ -499,7 +499,7 @@ function Modifiers({ budget }: Readonly<{ budget: BudgetReading }>) {
         >
           <Unit value={unsignedOf(change)} />
         </Stat>
-      </StatStrip>
+      </Grid>
     </Section>
   );
 }
@@ -508,7 +508,7 @@ function Modifiers({ budget }: Readonly<{ budget: BudgetReading }>) {
 function Reputation({ budget }: Readonly<{ budget: BudgetReading }>) {
   return (
     <Section gap="related-dense" title="REPUTATION AND SUBSIDY">
-      <StatStrip>
+      <Grid minColWidth="7rem" fit align="stretch" gap="related-compact">
         <Stat label="Subsidy">
           <Unit value={budget.subsidyPerDay} />
         </Stat>
@@ -527,7 +527,7 @@ function Reputation({ budget }: Readonly<{ budget: BudgetReading }>) {
         <Stat label="Decay, year">
           <Unit value={budget.reputationDecayPerYear} />
         </Stat>
-      </StatStrip>
+      </Grid>
     </Section>
   );
 }
@@ -540,7 +540,7 @@ function UnlockCredit({
   const idle = researchIdle && magnitudeOf(accrual.value) === 0;
   return (
     <Section gap="related-dense" title="UNLOCK CREDIT">
-      <StatStrip>
+      <Grid minColWidth="7rem" fit align="stretch" gap="related-compact">
         <Stat label="Balance">
           <Unit value={budget.unlockCreditBalance} />
         </Stat>
@@ -550,7 +550,7 @@ function UnlockCredit({
         >
           <Unit value={accrual} />
         </Stat>
-      </StatStrip>
+      </Grid>
     </Section>
   );
 }

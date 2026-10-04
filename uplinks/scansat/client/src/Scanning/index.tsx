@@ -13,10 +13,10 @@ import {
   Cluster,
   EmptyState,
   Grid,
+  Meter,
   magnitudeOf,
   NULL_DISPLAY,
   Panel,
-  ProgressBar,
   Section,
   Stack,
   Text,
@@ -403,7 +403,7 @@ function CoverageRow({
   return (
     <Grid cols="120px 1fr 60px" gap="related-comfortable">
       <Text size="xs">{SCAN_TYPE_LABELS[scanType]}</Text>
-      {/* No bar for an unread coverage: `ProgressBar` takes a number, and the
+      {/* No bar for an unread coverage: a progress `Meter` takes a number, and the
           only number available would be the 0 that reads as "nothing scanned
           here". An empty cell says nothing, which is the truth. */}
       {coverage == null ? (
@@ -411,9 +411,11 @@ function CoverageRow({
           {NULL_DISPLAY}
         </Text>
       ) : (
-        <ProgressBar
-          value={coverage}
-          ariaLabel={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
+        <Meter
+          kind="progress"
+          hideLabel
+          label={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
+          value={value("ratio", coverage / 100)}
         />
       )}
       <Text size="xs" level="muted">

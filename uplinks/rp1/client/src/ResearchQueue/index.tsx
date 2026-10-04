@@ -2,13 +2,14 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Countdown,
+  Meter,
   magnitudeOf,
   NULL_DISPLAY,
-  ProgressBar,
   Row,
   RowName,
   Section,
@@ -22,8 +23,8 @@ import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 import {
-  RP1_RESEARCH_SET_RATE_COMMAND,
   ResearchRateControl,
+  RP1_RESEARCH_SET_RATE_COMMAND,
 } from "./RateControl.js";
 
 /**
@@ -146,9 +147,11 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
         )}
       </Stack>
       {ratio !== null && (
-        <ProgressBar
-          ariaLabel={`Research progress, ${node.techName ?? node.techId ?? "node"}`}
-          value={ratio * 100}
+        <Meter
+          kind="progress"
+          hideLabel
+          label={`Research progress, ${node.techName ?? node.techId ?? "node"}`}
+          value={value("ratio", ratio)}
         />
       )}
     </Stack>

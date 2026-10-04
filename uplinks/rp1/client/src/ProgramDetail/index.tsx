@@ -15,10 +15,10 @@ import {
   GraphNotice,
   Grid,
   LineGraph,
+  Meter,
   MissionDate,
   magnitudeOf,
   NULL_DISPLAY,
-  ProgressBar,
   Readout,
   ReadoutCaption,
   Row,
@@ -786,9 +786,11 @@ function RunningProgram({
         )}
       </Stack>
       {ratio !== null && (
-        <ProgressBar
-          ariaLabel={`Program funding drawn down, ${label(program)}`}
-          value={Math.min(ratio, 1) * 100}
+        <Meter
+          kind="progress"
+          hideLabel
+          label={`Program funding drawn down, ${label(program)}`}
+          value={value("ratio", Math.min(ratio, 1))}
         />
       )}
       <CompleteControl

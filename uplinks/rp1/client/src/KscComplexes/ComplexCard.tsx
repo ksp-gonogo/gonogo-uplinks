@@ -6,9 +6,9 @@ import {
   CommandButton,
   Disclosure,
   Inline,
+  Meter,
   magnitudeOf,
   NULL_DISPLAY,
-  ProgressBar,
   Row,
   RowName,
   Stack,
@@ -258,9 +258,12 @@ function Crew({
         </Text>
       </Cluster>
       <SharedRating complex={complex} complexNames={complexNames} />
-      <ProgressBar
-        ariaLabel={`Crew assigned to ${name}, as a share of what it can hold`}
-        quantity={staffing}
+      <Meter
+        kind="progress"
+        hideLabel
+        label={`Crew assigned to ${name}, as a share of what it can hold`}
+        value={staffing?.amount ?? null}
+        capacity={staffing?.capacity ?? null}
       />
     </Stack>
   );

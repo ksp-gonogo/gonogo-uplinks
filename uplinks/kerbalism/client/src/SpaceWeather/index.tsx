@@ -1,6 +1,6 @@
 import type {
-  ComponentProps,
   Tone as CardTone,
+  ComponentProps,
   VesselIdentity,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -24,7 +24,6 @@ import {
   magnitudeOf,
   NULL_DISPLAY,
   Panel,
-  ProgressBar,
   ReadoutCaption,
   Section,
   SectionTitle,
@@ -667,10 +666,9 @@ function StarDiagram({
 }
 
 /**
- * Transit-progress colour. `ProgressBar` defaults to the brand green used
- * everywhere else to mean "on track", and a CME closing in is the opposite of
- * that: further along the bar means CLOSER to impact, so a green fill reads as
- * reassuring for what is a threat. Colour keys on imminence instead, cool while
+ * Transit-progress colour. A progress bar's usual fill reads as "on track", and
+ * a CME closing in is the opposite of that: further along the bar means CLOSER
+ * to impact, so a green fill reads as reassuring for what is a threat. Colour keys on imminence instead, cool while
  * the CME is far out, ramping through amber into red as it nears 100, and
  * pinned to red the instant it has arrived whatever the percentage says.
  */
@@ -748,9 +746,11 @@ function StormCard({
               </Cluster>
             )}
             {storm.progressPct !== null ? (
-              <ProgressBar
-                value={storm.progressPct}
-                ariaLabel={`Transit progress from ${storm.star}`}
+              <Meter
+                kind="progress"
+                hideLabel
+                label={`Transit progress from ${storm.star}`}
+                value={value("ratio", storm.progressPct / 100)}
                 fillColor={transitThreatColor(storm)}
               />
             ) : (

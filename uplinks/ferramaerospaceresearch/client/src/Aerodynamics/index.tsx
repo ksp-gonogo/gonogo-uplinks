@@ -2,10 +2,10 @@ import type { ComponentProps, Tone, Value } from "@ksp-gonogo/sitrep-sdk";
 import { registerComponent, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  BigReadout,
   Cluster,
   NULL_DISPLAY,
   Panel,
+  Readout,
   ReadoutCaption,
   Row,
   RowName,
@@ -129,21 +129,21 @@ export function AerodynamicsComponent(_props: ComponentProps<AeroConfig>) {
           </Cluster>
           <Cluster wrap>
             <div>
-              <BigReadout>
+              <Readout size="hero">
                 <Q value={s?.angleOfAttack} decimals={1} />
-              </BigReadout>
+              </Readout>
               <ReadoutCaption>Angle of attack</ReadoutCaption>
             </div>
             <div>
-              <BigReadout $tone={band?.tone}>
+              <Readout size="hero" tone={band?.tone}>
                 <Q value={stall} decimals={0} />
-              </BigReadout>
+              </Readout>
               <ReadoutCaption>Stalled</ReadoutCaption>
             </div>
             <div>
-              <BigReadout>
+              <Readout size="hero">
                 <Q value={s?.liftToDragRatio} decimals={2} />
-              </BigReadout>
+              </Readout>
               <ReadoutCaption>Lift / drag</ReadoutCaption>
             </div>
           </Cluster>

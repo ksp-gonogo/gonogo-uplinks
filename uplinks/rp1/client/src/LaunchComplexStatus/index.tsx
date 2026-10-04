@@ -1,11 +1,11 @@
 import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
-import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import { registerAugment, useTelemetry, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Countdown,
+  Meter,
   magnitudeOf,
   NULL_DISPLAY,
-  ProgressBar,
   Row,
   RowName,
   Section,
@@ -150,9 +150,11 @@ export function LaunchComplexStatus({
       {/* Outside the list: a progressbar is not a list item, and axe is right
           to say so. */}
       {ratio !== null && (
-        <ProgressBar
-          ariaLabel={`Pad operation progress, ${pad.name ?? "pad"}`}
-          value={ratio * 100}
+        <Meter
+          kind="progress"
+          hideLabel
+          label={`Pad operation progress, ${pad.name ?? "pad"}`}
+          value={value("ratio", ratio)}
         />
       )}
     </Section>
