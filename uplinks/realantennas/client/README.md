@@ -16,12 +16,12 @@ Elects RealAntennas as the comms backend when it is installed, so the comms read
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
-| `comms.dataRate` | `CommsDataRate` | lossy-latest | true-now |
-| `comms.linkMargin` | `CommsLinkMargin` | lossy-latest | true-now |
-| `comms.linkQuality` | `CommsLinkQuality` | lossy-latest | true-now |
+| `comms.dataRate` | `CommsDataRate` | lossy-latest | delayed |
+| `comms.linkMargin` | `CommsLinkMargin` | lossy-latest | delayed |
+| `comms.linkQuality` | `CommsLinkQuality` | lossy-latest | delayed |
 | `realantennas.antennaChains` | `RealAntennasAntennaChain[]` | lossy-latest | delayed |
 | `realantennas.antennas` | `RealAntennasAntennaState[]` | lossy-latest | delayed |
-| `realantennas.hopRates` | `RealAntennasHopRate[]` | lossy-latest | true-now |
+| `realantennas.hopRates` | `RealAntennasHopRate[]` | lossy-latest | delayed |
 | `realantennas.available` | – | lossy-latest | true-now |
 
 | Payload | Fields |

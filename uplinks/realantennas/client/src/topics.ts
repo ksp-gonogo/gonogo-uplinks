@@ -93,9 +93,8 @@ export const REALANTENNAS_HOP_RATES_TOPIC = "realantennas.hopRates";
  * value MUST match `RealAntennasUplink.AntennasTopic` in
  * ../../RealAntennasUplink.cs.
  *
- * Unlike every other Topic in this file it is DELAYED, not true-now: the others
- * describe the link as KSC computes it ground-side, this describes the craft, and
- * the two commands that write to it are delayed too.
+ * DELAYED, like every reading of the craft or its link here: it describes the
+ * craft, and the two commands that write to it are delayed too.
  */
 export const REALANTENNAS_ANTENNAS_TOPIC = "realantennas.antennas";
 

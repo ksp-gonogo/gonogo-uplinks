@@ -43,9 +43,8 @@ namespace Gonogo.RealAntennasUplink
         /// solver considers every compatible antenna pair, so two dishes aimed
         /// two ways are two candidate links rather than a conflict to resolve.</para>
         ///
-        /// <para>DELAYED, unlike this Uplink's other four channels. They describe
-        /// the link as KSC computes it ground-side; this describes the craft, and
-        /// the two commands that write to it are delayed too.</para>
+        /// <para>DELAYED: this describes the craft, and the two commands that
+        /// write to it are delayed too.</para>
         /// </summary>
         public const string AntennasTopic = "realantennas.antennas";
 
@@ -101,8 +100,13 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public const string TargetChainCommand = "realantennas.antenna.targetChain";
 
+        /// <summary>
+        /// A fact about the install rather than about any craft, known on the
+        /// ground the moment it is true. Only the presence gate is one.
+        /// </summary>
         private static ChannelDeclaration TrueNow(string topic) => new ChannelDeclaration
         {
+            Requires = Requirement.None,
             Topic = topic,
             Delivery = Delivery.LossyLatest,
             Delay = DelayRole.TrueNow,
@@ -110,12 +114,14 @@ namespace Gonogo.RealAntennasUplink
         };
 
         /// <summary>
-        /// Same delivery as <see cref="TrueNow"/>, opposite delay disposition: a
-        /// flight-side fact ground learns at light-time. See
-        /// <see cref="AntennasTopic"/> for why this Uplink has one of each.
+        /// A reading of the active craft or of its link: a command centre learns
+        /// it one light-time after it was so. The link's margin, quality, rate
+        /// and per-hop rates are readings of the far end of the link as much as
+        /// the antennas are, so every one of them waits for the light.
         /// </summary>
         private static ChannelDeclaration Delayed(string topic) => new ChannelDeclaration
         {
+            Requires = Requirement.None,
             Topic = topic,
             Delivery = Delivery.LossyLatest,
             Delay = DelayRole.Delayed,
@@ -129,10 +135,10 @@ namespace Gonogo.RealAntennasUplink
             Channels = new List<ChannelDeclaration>
             {
                 TrueNow(AvailableTopic),
-                TrueNow(LinkQualityTopic),
-                TrueNow(DataRateTopic),
-                TrueNow(LinkMarginTopic),
-                TrueNow(HopRatesTopic),
+                Delayed(LinkQualityTopic),
+                Delayed(DataRateTopic),
+                Delayed(LinkMarginTopic),
+                Delayed(HopRatesTopic),
                 Delayed(AntennasTopic),
                 Delayed(ChainsTopic),
             },
