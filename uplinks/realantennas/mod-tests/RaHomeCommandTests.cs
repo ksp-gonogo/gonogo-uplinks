@@ -113,6 +113,30 @@ namespace Gonogo.RealAntennasUplink.Tests
             Assert.Equal("ground:Woomerang Station", answer.CentreId);
         }
 
+        /// <summary>
+        /// Stock places the space centre by a direction from Kerbin's centre, the
+        /// only fact about it that exists before its scenery has ever been loaded:
+        /// a game resumed straight into a flight far from Kerbin.
+        /// </summary>
+        [Fact]
+        public void TheSpaceCentresDirectionFromItsBodysCentre_GivesItsLatitudeAndLongitude()
+        {
+            var fix = SpaceCentreFix.FromRadial(Kerbin, 157000.0, -1000.0, -570000.0);
+
+            Assert.NotNull(fix);
+            Assert.Equal(Kerbin, fix!.Value.BodyIndex);
+            Assert.Equal(-0.0972, fix.Value.Latitude, 2);
+            Assert.Equal(-74.6, fix.Value.Longitude, 1);
+        }
+
+        [Fact]
+        public void ADirectionOfNoLength_OrNotANumber_PlacesNoSpaceCentre()
+        {
+            Assert.Null(SpaceCentreFix.FromRadial(Kerbin, 0.0, 0.0, 0.0));
+            Assert.Null(SpaceCentreFix.FromRadial(Kerbin, double.NaN, 1.0, 1.0));
+            Assert.Null(SpaceCentreFix.FromRadial(-1, 1.0, 1.0, 1.0));
+        }
+
         [Fact]
         public void NoSpaceCentreReadable_IsNotIdentified()
         {

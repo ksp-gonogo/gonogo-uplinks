@@ -22,6 +22,26 @@ namespace Gonogo.RealAntennasUplink
         public double Latitude { get; }
 
         public double Longitude { get; }
+
+        /// <summary>
+        /// The place on a body that lies in the direction (<paramref name="x"/>,
+        /// <paramref name="y"/>, <paramref name="z"/>) from its centre, in the body's own
+        /// frame as KSP keeps it: y through the north pole, x through latitude and
+        /// longitude zero. This is how stock places the space centre's scenery, so it
+        /// gives the same answer <c>SpaceCenter.Start</c> would. Null for a direction of
+        /// no length or one that is not a number, and for a body the game does not list.
+        /// </summary>
+        public static SpaceCentreFix? FromRadial(int bodyIndex, double x, double y, double z)
+        {
+            var length = Math.Sqrt((x * x) + (y * y) + (z * z));
+            if (bodyIndex < 0 || double.IsNaN(length) || double.IsInfinity(length) || length <= 0.0)
+            {
+                return null;
+            }
+
+            const double degrees = 180.0 / Math.PI;
+            return new SpaceCentreFix(bodyIndex, Math.Asin(y / length) * degrees, Math.Atan2(z, x) * degrees);
+        }
     }
 
     /// <summary>
