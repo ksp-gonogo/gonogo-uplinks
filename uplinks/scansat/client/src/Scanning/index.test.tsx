@@ -195,9 +195,9 @@ describe("ScanningComponent", () => {
 
     await waitFor(() => expect(visibleText()).toContain("56.7 %"));
     // A bar per readable type, and none for the one nobody read.
-    expect(screen.getAllByRole("progressbar")).toHaveLength(4);
+    expect(screen.getAllByRole("meter")).toHaveLength(4);
     expect(
-      screen.queryByRole("progressbar", {
+      screen.queryByRole("meter", {
         name: /Altimetry \(Hi\) coverage: Kerbin/,
       }),
     ).toBeNull();

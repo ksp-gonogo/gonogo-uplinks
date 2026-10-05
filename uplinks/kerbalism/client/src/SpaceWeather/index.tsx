@@ -747,7 +747,6 @@ function StormCard({
             )}
             {storm.progressPct !== null ? (
               <Meter
-                kind="progress"
                 hideLabel
                 label={`Transit progress from ${storm.star}`}
                 value={value("ratio", storm.progressPct / 100)}

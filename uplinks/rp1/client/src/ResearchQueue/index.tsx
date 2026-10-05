@@ -148,7 +148,6 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
       </Stack>
       {ratio !== null && (
         <Meter
-          kind="progress"
           hideLabel
           label={`Research progress, ${node.techName ?? node.techId ?? "node"}`}
           value={value("ratio", ratio)}

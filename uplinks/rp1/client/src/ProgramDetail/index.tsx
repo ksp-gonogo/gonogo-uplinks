@@ -787,7 +787,6 @@ function RunningProgram({
       </Stack>
       {ratio !== null && (
         <Meter
-          kind="progress"
           hideLabel
           label={`Program funding drawn down, ${label(program)}`}
           value={value("ratio", Math.min(ratio, 1))}

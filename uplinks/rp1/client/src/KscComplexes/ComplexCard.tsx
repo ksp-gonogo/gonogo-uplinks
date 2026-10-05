@@ -259,7 +259,6 @@ function Crew({
       </Cluster>
       <SharedRating complex={complex} complexNames={complexNames} />
       <Meter
-        kind="progress"
         hideLabel
         label={`Crew assigned to ${name}, as a share of what it can hold`}
         value={staffing?.amount ?? null}

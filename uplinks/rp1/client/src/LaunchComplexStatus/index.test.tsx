@@ -208,7 +208,7 @@ describe("LaunchComplexStatus", () => {
       expect(screen.getByText("ROLLING OUT")).toBeInTheDocument();
     });
     expect(screen.getByText("Vanguard is on its way out")).toBeInTheDocument();
-    const bar = screen.getByRole("progressbar", {
+    const bar = screen.getByRole("meter", {
       name: /Pad operation progress, LP-1/,
     });
     expect(bar).toHaveAttribute("aria-valuenow", "25");
@@ -309,9 +309,9 @@ describe("LaunchComplexStatus", () => {
       expect(screen.getByText("AT PAD")).toBeInTheDocument();
     });
     expect(screen.getByText(/Vanguard is standing on it/)).toBeInTheDocument();
-    // No section chrome, and no progressbar: the row is one line.
+    // No section chrome, and no meter: the row is one line.
     expect(screen.queryByText("LAUNCH COMPLEX")).not.toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.queryByRole("meter")).not.toBeInTheDocument();
   });
 
   it("registers itself into the launch director's per-pad slot", () => {

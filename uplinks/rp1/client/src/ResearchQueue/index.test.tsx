@@ -74,7 +74,7 @@ describe("ResearchQueue", () => {
     expect(text).toContain("1951");
     expect(text).toContain("1960");
     expect(
-      screen.getByRole("progressbar", {
+      screen.getByRole("meter", {
         name: /Research progress, Basic Rocketry/,
       }),
     ).toHaveAttribute("aria-valuenow", "20");

@@ -412,7 +412,6 @@ function CoverageRow({
         </Text>
       ) : (
         <Meter
-          kind="progress"
           hideLabel
           label={`${SCAN_TYPE_LABELS[scanType]} coverage: ${bodyName}`}
           value={value("ratio", coverage / 100)}

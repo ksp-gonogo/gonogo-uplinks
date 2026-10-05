@@ -1006,7 +1006,7 @@ describe("ProgramDetail", () => {
 
       expect(await screen.findByText("RUNNING")).toBeInTheDocument();
       expect(
-        screen.getByRole("progressbar", {
+        screen.getByRole("meter", {
           name: /Program funding drawn down, X-Plane Research/,
         }),
       ).toHaveAttribute("aria-valuenow", "25");
@@ -1023,7 +1023,7 @@ describe("ProgramDetail", () => {
       expect(visibleText()).toContain("Overrun cost");
       // The bar is the share of the term, so it stops at full rather than
       // running off the end of its track.
-      expect(screen.getByRole("progressbar")).toHaveAttribute(
+      expect(screen.getByRole("meter")).toHaveAttribute(
         "aria-valuenow",
         "100",
       );
@@ -1058,7 +1058,7 @@ describe("ProgramDetail", () => {
       ]);
 
       expect(screen.queryByText("RUNNING")).toBeNull();
-      expect(screen.queryByRole("progressbar")).toBeNull();
+      expect(screen.queryByRole("meter")).toBeNull();
       await userEvent.click(screen.getByRole("button", { name: /Done/ }));
       expect(screen.queryByText("RUNNING")).toBeNull();
     });

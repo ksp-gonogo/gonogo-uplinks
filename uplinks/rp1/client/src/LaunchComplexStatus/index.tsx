@@ -147,11 +147,10 @@ export function LaunchComplexStatus({
           </Row>
         )}
       </Stack>
-      {/* Outside the list: a progressbar is not a list item, and axe is right
+      {/* Outside the list: a meter is not a list item, and axe is right
           to say so. */}
       {ratio !== null && (
         <Meter
-          kind="progress"
           hideLabel
           label={`Pad operation progress, ${pad.name ?? "pad"}`}
           value={value("ratio", ratio)}

@@ -30,7 +30,7 @@ describe("ProjectCard", () => {
       </ProjectCardList>,
     );
 
-    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(screen.queryByRole("meter")).toBeNull();
   });
 
   it("draws the bar, named, when there is a fraction to draw", async () => {
@@ -44,7 +44,7 @@ describe("ProjectCard", () => {
       </ProjectCardList>,
     );
 
-    const bar = screen.getByRole("progressbar", {
+    const bar = screen.getByRole("meter", {
       name: "Integration progress, Atlas",
     });
     expect(bar).toHaveAttribute("aria-valuenow", "25");

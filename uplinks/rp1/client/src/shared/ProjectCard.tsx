@@ -83,7 +83,6 @@ export function ProjectCard({
 
         {progress !== undefined && progress.ratio !== null && (
           <Meter
-            kind="progress"
             hideLabel
             label={progress.label}
             value={value("ratio", progress.ratio)}

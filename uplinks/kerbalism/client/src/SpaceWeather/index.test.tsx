@@ -238,7 +238,7 @@ describe("SpaceWeatherComponent", () => {
     ).toBeInTheDocument();
     // Transit progress is a real percentage off dist / ejection speed, and it
     // is the bar's own accessible value rather than decoration.
-    const bar = screen.getByRole("progressbar", {
+    const bar = screen.getByRole("meter", {
       name: "Transit progress from Kerbol",
     });
     expect(Number(bar.getAttribute("aria-valuenow"))).toBeGreaterThan(0);
