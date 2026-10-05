@@ -397,3 +397,62 @@ describe("under a one-way light time", () => {
     expect(readDelayed(RECEIVED_UT, 0).reckoning.status).toBe("none");
   });
 });
+
+/**
+ * Wear gauges: Kerbalism's rates map leaves `_`-prefixed pseudo-resources out,
+ * so the declared drain of the running process is fed to the model as the rate.
+ */
+describe("a wear gauge on the same crossing path as a consumable", () => {
+  const GAUGES: Resources = {
+    resources: {
+      _ScrubberLife: {
+        current: value("units", 0.25),
+        max: value("units", 1),
+        active: true,
+      },
+    },
+    meta: { source: "test" },
+  };
+  const PROFILE = {
+    processes: [
+      {
+        name: "non-regenerative scrubber",
+        modifiers: ["_Scrubber"],
+        inputs: { _ScrubberLife: value("units/s", 0.001) },
+        outputs: {},
+      },
+    ],
+  } as unknown as TopicPayload<"kerbalism.profile">;
+  const running = (capacity: number) =>
+    lifeSupport({
+      rates: {},
+      processes: [
+        {
+          resource: "_Scrubber",
+          title: "Scrubber",
+          capacity: value("units", capacity),
+          running: true,
+          broken: false,
+        },
+      ],
+    } as Partial<LifeSupport>);
+
+  it("dates the gauge's floor from the declared drain, times the process capacity", () => {
+    // 0.25 units at 0.001 x 2 per second off the UT 900 stamp: empty at UT 1025.
+    expect(
+      resourceBoundaryCrossings(GAUGES, running(2), PROFILE),
+    ).toEqual([
+      { resource: "_ScrubberLife", boundary: "floor", atUt: value("ut", 1025) },
+    ]);
+  });
+
+  it("gives no time without the profile, rather than a guess", () => {
+    expect(resourceBoundaryCrossings(GAUGES, running(2), undefined)).toEqual([]);
+  });
+
+  it("gives no time when the process capacity is unreadable", () => {
+    const unreadable = running(2);
+    (unreadable.processes?.[0] as { capacity?: unknown }).capacity = undefined;
+    expect(resourceBoundaryCrossings(GAUGES, unreadable, PROFILE)).toEqual([]);
+  });
+});

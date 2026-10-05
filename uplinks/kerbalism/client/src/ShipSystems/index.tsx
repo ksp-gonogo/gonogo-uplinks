@@ -174,7 +174,7 @@ function modelledRow(
  * withdrawn and the level is the last observation.
  */
 function secondsToCrossing(
-  row: ResourceRow,
+  row: Pick<ResourceRow, "crossing">,
   utNow: number | undefined,
 ): number | null {
   if (row.crossing === null || utNow === undefined) return null;
@@ -319,20 +319,21 @@ const ViewUtContext = createContext<number | undefined>(undefined);
 /** Same resting-tone rule as `toneForRow`: wear is always slowly draining by
  *  nature, so the countdown does the alarming and the fraction only warns at
  *  the genuinely-low tail. "69 days left" in amber was tone inflation. */
-function wearTone(w: WearRow): Tone {
-  if (w.secondsRemaining !== null && w.secondsRemaining < SOON_EMPTY_SEC) {
+function wearTone(w: WearRow, utNow: number | undefined): Tone {
+  const seconds = secondsToCrossing(w, utNow);
+  if (seconds !== null && seconds < SOON_EMPTY_SEC) {
     return "nogo";
   }
   if (w.fraction !== null && w.fraction < 0.2) return "warn";
   return "neutral";
 }
 
-function wearValueLabel(w: WearRow): string {
+function wearValueLabel(w: WearRow, utNow: number | undefined): string {
   if (w.capacity <= 0) return "not fitted";
   const level = `${fmtAmt(w.amount)} / ${fmtAmt(w.capacity)}`;
   if (w.drainPerSecond === null) return level;
   if (w.drainPerSecond === 0) return `${level} · stable`;
-  return `${level} · ${formatTimeToEmpty(w.secondsRemaining)}`;
+  return `${level} · ${formatTimeToEmpty(secondsToCrossing(w, utNow))}`;
 }
 
 type ProcessRunState = "idle" | "running" | "broken" | "unknown";
@@ -730,8 +731,8 @@ function ShipSystemsBody({
                   key={w.name}
                   label={w.process}
                   value={fill(w.fraction)}
-                  tone={wearTone(w)}
-                  valueLabel={wearValueLabel(w)}
+                  tone={wearTone(w, utNow)}
+                  valueLabel={wearValueLabel(w, utNow)}
                 />
               ))}
             </MeterStack>

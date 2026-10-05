@@ -557,6 +557,9 @@ describe("wearRows", () => {
     stored: { _NonRegenScrubberLife: 0.25 },
     capacity: { _NonRegenScrubberLife: 1 },
     crew: CREW,
+    crossings: {
+      _NonRegenScrubberLife: { boundary: "floor", atUt: 1000 + 10800 },
+    },
   });
 
   it("surfaces a service life every other view filters out as plumbing", () => {
@@ -566,7 +569,8 @@ describe("wearRows", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].process).toBe("non-regenerative scrubber");
     expect(rows[0].fraction).toBeCloseTo(0.25, 6);
-    expect(rows[0].secondsRemaining).toBeCloseTo(0.25 / 0.000023148, 3);
+    // The time is the model's crossing, not arithmetic done in the widget.
+    expect(rows[0].crossing).toEqual({ boundary: "floor", atUt: 11800 });
   });
 
   it("identifies a pseudo-resource structurally, never by name", () => {
@@ -617,19 +621,19 @@ describe("wearRows", () => {
     it("is null, not zero, when the process capacity is unreadable", () => {
       const [row] = wearWith(rate(0.000023148), undefined);
       expect(row.drainPerSecond).toBeNull();
-      expect(row.secondsRemaining).toBeNull();
+      expect(row.crossing).toBeNull();
     });
 
     it("is null, not zero, when the per-capacity input is unreadable", () => {
       const [row] = wearWith(undefined, value("units", 1));
       expect(row.drainPerSecond).toBeNull();
-      expect(row.secondsRemaining).toBeNull();
+      expect(row.crossing).toBeNull();
     });
 
     it("is zero only when both factors were read and the product is zero", () => {
       const [row] = wearWith(rate(0), value("units", 1));
       expect(row.drainPerSecond).toBe(0);
-      expect(row.secondsRemaining).toBeNull();
+      expect(row.crossing).toBeNull();
     });
 
     it("carries the observed drain when it is positive", () => {

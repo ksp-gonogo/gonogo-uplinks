@@ -7,7 +7,11 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
-import { KERBALISM_LIFESUPPORT_TOPIC } from "./topics.js";
+import { wearRates } from "./ecosystem.js";
+import {
+  KERBALISM_LIFESUPPORT_TOPIC,
+  KERBALISM_PROFILE_TOPIC,
+} from "./topics.js";
 import { KERBALISM } from "./uplink.js";
 
 /**
@@ -114,6 +118,7 @@ export const RESOURCE_RATE_HORIZON_SECONDS = 1200;
 
 type Resources = TopicPayload<"vessel.resources">;
 type LifeSupport = TopicPayload<"kerbalism.lifesupport">;
+type Profile = TopicPayload<"kerbalism.profile">;
 
 /** Which end of `[0, capacity]` a moving level is heading for. */
 export type ResourceBoundary = "floor" | "ceiling";
@@ -209,6 +214,25 @@ function movingLevels(
 }
 
 /**
+ * Kerbalism's measured rates plus the declared drain of each running wear
+ * gauge, which its own map omits.
+ *
+ * A measured rate for the same name wins, so the day the mod captures the
+ * pseudo-resources this stops being consulted for them without an edit here.
+ */
+function ratesWithWear(
+  lifeSupport: LifeSupport,
+  profile: Profile | undefined,
+): NonNullable<LifeSupport["rates"]> | null {
+  const wear = wearRates({ profile, lifeSupport });
+  const names = Object.keys(wear);
+  if (lifeSupport.rates == null && names.length === 0) return null;
+  const merged: NonNullable<LifeSupport["rates"]> = {};
+  for (const name of names) merged[name] = value("units/s", wear[name]);
+  return { ...merged, ...lifeSupport.rates };
+}
+
+/**
  * When each moving level leaves the range it can occupy, for a consumer that
  * wants to say WHEN. See {@link ResourceBoundaryCrossing}.
  *
@@ -218,10 +242,11 @@ function movingLevels(
 export function resourceBoundaryCrossings(
   observed: Resources | null,
   lifeSupport: LifeSupport | null | undefined,
+  profile?: Profile,
 ): readonly ResourceBoundaryCrossing[] {
   if (observed == null || lifeSupport == null) return [];
-  const rates = lifeSupport.rates;
-  if (rates == null) return [];
+  const rates = ratesWithWear(lifeSupport, profile);
+  if (rates === null) return [];
   const asOfUt = magnitudeOf(lifeSupport.asOfKerbalismUt);
   if (asOfUt === null) return [];
   return movingLevels(observed, rates, asOfUt).map(
@@ -284,6 +309,7 @@ export function reckonResourceLevels(
   observed: Resources | null,
   lifeSupport: LifeSupport | null | undefined,
   reckonUt: number,
+  profile?: Profile,
 ): ReckonerAnswer<Resources> {
   if (observed == null) {
     return {
@@ -308,8 +334,8 @@ export function reckonResourceLevels(
       },
     };
   }
-  const rates = lifeSupport.rates;
-  if (rates == null) {
+  const rates = ratesWithWear(lifeSupport, profile);
+  if (rates === null) {
     return {
       declined: {
         reason: "input-absent",
@@ -400,7 +426,14 @@ export function reckonResourceLevels(
 }
 
 KERBALISM.registerReckoner("vessel.resources", {
-  deps: [KERBALISM_LIFESUPPORT_TOPIC],
-  reckon: (point, [lifeSupportPoint], { reckonUt }) =>
-    reckonResourceLevels(point.payload, lifeSupportPoint?.payload, reckonUt),
+  deps: [KERBALISM_LIFESUPPORT_TOPIC, { reading: KERBALISM_PROFILE_TOPIC }],
+  reckon: (point, [lifeSupportPoint, profile], { reckonUt }) =>
+    reckonResourceLevels(
+      point.payload,
+      lifeSupportPoint?.payload,
+      reckonUt,
+      profile.state === "observed" || profile.state === "held"
+        ? profile.value
+        : undefined,
+    ),
 });
