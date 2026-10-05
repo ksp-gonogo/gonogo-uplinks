@@ -67,6 +67,70 @@ const LABEL_OFFSET: Readonly<
   L5: { dx: 0, dy: 20 },
 };
 
+/** Body and craft names, in SVG user units. */
+const BODY_LABEL_SIZE = 13;
+const VESSEL_LABEL_SIZE = 12;
+/** One line of labels below the axis, and the gap kept between two names on one line. */
+const LABEL_ROW = 15;
+const LABEL_GAP = 6;
+/** The diagram sets its names in the monospaced face, whose advance is about 0.6 of the size. */
+const GLYPH_ADVANCE = 0.6;
+
+interface PlacedLabel {
+  x: number;
+  y: number;
+  text: string;
+  size: number;
+}
+
+function overlaps(a: PlacedLabel, b: PlacedLabel): boolean {
+  const halfWidths =
+    (a.text.length * a.size + b.text.length * b.size) * (GLYPH_ADVANCE / 2);
+  return (
+    Math.abs(a.x - b.x) < halfWidths + LABEL_GAP &&
+    Math.abs(a.y - b.y) < Math.max(a.size, b.size)
+  );
+}
+
+/**
+ * The craft's name drops a line at a time until it clears both bodies' names.
+ * A craft worth drawing here is usually beside one of the bodies, at a libration
+ * point, which is exactly where its name and the body's would otherwise overlap.
+ */
+function vesselLabelY(
+  wanted: PlacedLabel,
+  bodies: readonly PlacedLabel[],
+): number {
+  let y = wanted.y;
+  while (bodies.some((body) => overlaps({ ...wanted, y }, body))) {
+    y += LABEL_ROW;
+  }
+  return y;
+}
+
+/**
+ * Where L1's and L2's names go along the axis. For a star and a planet the two
+ * points sit closer together than one name is wide, so their names part either
+ * side of the gap between them rather than printing over each other.
+ */
+function collinearLabelX(
+  points: LibrationAnswer["points"],
+): Partial<Record<LagrangePointName, { x: number; anchor: "start" | "end" }>> {
+  const l1 = points.find((p) => p.name === "L1");
+  const l2 = points.find((p) => p.name === "L2");
+  if (l1 === undefined || l2 === undefined) return {};
+  const x1 = plot(...pointXy(l1.frame)).x;
+  const x2 = plot(...pointXy(l2.frame)).x;
+  const nameWidth = "L1".length * BODY_LABEL_SIZE * GLYPH_ADVANCE;
+  if (Math.abs(x2 - x1) >= nameWidth + LABEL_GAP) return {};
+  const mid = (x1 + x2) / 2;
+  const [left, right] = x1 <= x2 ? (["L1", "L2"] as const) : (["L2", "L1"] as const);
+  return {
+    [left]: { x: mid - LABEL_GAP / 2, anchor: "end" },
+    [right]: { x: mid + LABEL_GAP / 2, anchor: "start" },
+  };
+}
+
 export interface LibrationDiagramProps {
   answer: LibrationAnswer;
   offset: LibrationOffset | null;
@@ -108,6 +172,37 @@ export function LibrationDiagram({
     trajectory.points.length > 1
       ? trajectory
       : null;
+  const primaryLabel: PlacedLabel = {
+    x: primary.x,
+    y: primary.y + primaryR + LABEL_ROW,
+    text: answer.pair?.primaryName ?? "primary",
+    size: BODY_LABEL_SIZE,
+  };
+  // Below the axis: L1 and L2 sit either side of the secondary and their names are above it.
+  const secondaryLabel: PlacedLabel = {
+    x: secondary.x,
+    y: secondary.y + secondaryR + LABEL_ROW,
+    text: answer.pair?.secondaryName ?? "secondary",
+    size: BODY_LABEL_SIZE,
+  };
+  const vesselLabel: PlacedLabel | null =
+    vessel === null || vesselName === null
+      ? null
+      : {
+          x: vessel.x,
+          y: vesselLabelY(
+            {
+              x: vessel.x,
+              y: vessel.y + 18,
+              text: vesselName,
+              size: VESSEL_LABEL_SIZE,
+            },
+            [primaryLabel, secondaryLabel],
+          ),
+          text: vesselName,
+          size: VESSEL_LABEL_SIZE,
+        };
+  const partedLabels = collinearLabelX(answer.points);
   const pathPoints =
     path === null
       ? null
@@ -185,6 +280,7 @@ export function LibrationDiagram({
       {answer.points.map((point) => {
         const at = plot(...pointXy(point.frame));
         const label = LABEL_OFFSET[point.name];
+        const parted = partedLabels[point.name];
         const highlighted = offset?.nearest === point.name;
         return (
           <g key={point.name}>
@@ -202,10 +298,10 @@ export function LibrationDiagram({
               data-libration-point={point.name}
             />
             <text
-              x={at.x + label.dx}
+              x={parted?.x ?? at.x + label.dx}
               y={at.y + label.dy}
-              textAnchor="middle"
-              fontSize={13}
+              textAnchor={parted?.anchor ?? "middle"}
+              fontSize={BODY_LABEL_SIZE}
               fill={
                 highlighted
                   ? "var(--color-accent-fg)"
@@ -226,13 +322,13 @@ export function LibrationDiagram({
         data-libration-body="primary"
       />
       <text
-        x={primary.x}
-        y={primary.y + primaryR + 15}
+        x={primaryLabel.x}
+        y={primaryLabel.y}
         textAnchor="middle"
-        fontSize={13}
+        fontSize={primaryLabel.size}
         fill="var(--color-text-primary)"
       >
-        {answer.pair?.primaryName ?? "primary"}
+        {primaryLabel.text}
       </text>
       <circle
         cx={secondary.x}
@@ -242,13 +338,13 @@ export function LibrationDiagram({
         data-libration-body="secondary"
       />
       <text
-        x={secondary.x}
-        y={secondary.y - secondaryR - 8}
+        x={secondaryLabel.x}
+        y={secondaryLabel.y}
         textAnchor="middle"
-        fontSize={13}
+        fontSize={secondaryLabel.size}
         fill="var(--color-text-muted)"
       >
-        {answer.pair?.secondaryName ?? "secondary"}
+        {secondaryLabel.text}
       </text>
 
       {vessel !== null && (
@@ -257,15 +353,15 @@ export function LibrationDiagram({
             d={`M ${vessel.x} ${vessel.y - 6} L ${vessel.x + 5} ${vessel.y + 4} L ${vessel.x - 5} ${vessel.y + 4} Z`}
             fill={KEEPING_COLOUR[offset?.keeping ?? "elsewhere"]}
           />
-          {vesselName !== null && (
+          {vesselLabel !== null && (
             <text
-              x={vessel.x}
-              y={vessel.y + 18}
+              x={vesselLabel.x}
+              y={vesselLabel.y}
               textAnchor="middle"
-              fontSize={12}
+              fontSize={vesselLabel.size}
               fill={KEEPING_COLOUR[offset?.keeping ?? "elsewhere"]}
             >
-              {vesselName}
+              {vesselLabel.text}
             </text>
           )}
         </g>
