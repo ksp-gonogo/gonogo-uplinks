@@ -624,8 +624,12 @@ export interface WearRow {
    * never zero: only an observed `0` is a gauge that is not draining.
    */
   drainPerSecond: number | null;
-  /** Null when the drain is unknown or zero, so no time is claimed either way. */
-  secondsRemaining: number | null;
+  /**
+   * When the resource model has this gauge reach empty, off the declared drain
+   * fed to it as a rate. Null when the drain is unknown or zero, so no time is
+   * claimed either way.
+   */
+  crossing: RowCrossing | null;
 }
 
 /** One row's boundary crossing, off `resourceBoundaryCrossings`, as plain numbers. */
@@ -756,25 +760,23 @@ export function summarise({
     causes: rows.filter((r) => r.role === "root").sort(order),
     supplies: rows.filter((r) => r.isSupply).sort(order),
     other: rows.filter((r) => !r.isSupply).sort(order),
-    wear: wearRows({ profile, lifeSupport, stored, capacity, crew }),
+    wear: wearRows({ profile, lifeSupport, stored, capacity, crew, crossings }),
   };
 }
 
-/**
- * The wear gauges this vessel is actually burning through. See {@link WearRow}.
- *
- * A pseudo-resource is identified structurally, by the leading underscore
- * Kerbalism uses, never by name: `_RTG` and `_NonRegenScrubber` are stock, but
- * a third-party profile invents its own and they must work identically.
- */
-export function wearRows({
+/** One pseudo-resource gauge a running process draws from, before the model has dated it. */
+interface WearDrain {
+  name: string;
+  process: string;
+  drainPerSecond: number | null;
+}
+
+function wearDrains({
   profile,
   lifeSupport,
-  stored,
-  capacity,
-}: SummaryInput): WearRow[] {
+}: Pick<SummaryInput, "profile" | "lifeSupport">): WearDrain[] {
   const byModifier = processesByModifier(profile);
-  const out: WearRow[] = [];
+  const out: WearDrain[] = [];
   for (const entry of lifeSupport?.processes ?? []) {
     if (entry.broken === true || entry.running !== true) continue;
     const def = entry.resource ? byModifier.get(entry.resource) : undefined;
@@ -789,27 +791,67 @@ export function wearRows({
         perCapacityIn === null || processCapacity === null
           ? null
           : perCapacityIn * processCapacity;
-      const drainPerSecond =
-        drain !== null && Number.isFinite(drain) ? drain : null;
-      const amount = stored[name] ?? 0;
-      const cap = capacity[name] ?? 0;
       out.push({
         name,
         process: def.name || entry.title || name,
+        drainPerSecond: drain !== null && Number.isFinite(drain) ? drain : null,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * The signed rate, in units per second, each wear gauge is draining at, for the
+ * resource model to integrate.
+ *
+ * Kerbalism's own rates map leaves `_`-prefixed pseudo-resources out, so the
+ * profile's declared per-capacity input times the running process capacity is
+ * the only rate there is. A gauge with an unknown or zero drain has no entry:
+ * the model must not be handed a rate nobody observed.
+ */
+export function wearRates({
+  profile,
+  lifeSupport,
+}: Pick<SummaryInput, "profile" | "lifeSupport">): Record<string, number> {
+  const rates: Record<string, number> = {};
+  for (const { name, drainPerSecond } of wearDrains({ profile, lifeSupport })) {
+    if (drainPerSecond === null || !(drainPerSecond > 0)) continue;
+    rates[name] = (rates[name] ?? 0) - drainPerSecond;
+  }
+  return rates;
+}
+
+/**
+ * The wear gauges this vessel is actually burning through. See {@link WearRow}.
+ *
+ * A pseudo-resource is identified structurally, by the leading underscore
+ * Kerbalism uses, never by name: `_RTG` and `_NonRegenScrubber` are stock, but
+ * a third-party profile invents its own and they must work identically.
+ */
+export function wearRows({
+  profile,
+  lifeSupport,
+  stored,
+  capacity,
+  crossings,
+}: SummaryInput): WearRow[] {
+  const out: WearRow[] = wearDrains({ profile, lifeSupport }).map(
+    ({ name, process, drainPerSecond }) => {
+      const amount = stored[name] ?? 0;
+      const cap = capacity[name] ?? 0;
+      return {
+        name,
+        process,
         amount,
         capacity: cap,
         fraction: cap > 0 ? amount / cap : null,
         drainPerSecond,
-        secondsRemaining:
-          drainPerSecond !== null && drainPerSecond > 0
-            ? amount / drainPerSecond
-            : null,
-      });
-    }
-  }
-  return out.sort(
-    (a, b) =>
-      (a.secondsRemaining ?? Number.POSITIVE_INFINITY) -
-      (b.secondsRemaining ?? Number.POSITIVE_INFINITY),
+        crossing: crossings?.[name] ?? null,
+      };
+    },
   );
+  const floorUt = (w: WearRow): number =>
+    w.crossing?.boundary === "floor" ? w.crossing.atUt : Number.POSITIVE_INFINITY;
+  return out.sort((a, b) => floorUt(a) - floorUt(b));
 }

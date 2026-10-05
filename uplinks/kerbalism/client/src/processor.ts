@@ -121,7 +121,11 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     // The one prediction there is: the model's crossing, off the last observed
     // levels. A resource it has none for is simply absent here.
     const crossings: Record<string, RowCrossing> = {};
-    for (const c of resourceBoundaryCrossings(resources ?? null, lifeSupport)) {
+    for (const c of resourceBoundaryCrossings(
+      resources ?? null,
+      lifeSupport,
+      profile,
+    )) {
       crossings[c.resource] = {
         boundary: c.boundary,
         atUt: c.atUt.magnitude,
