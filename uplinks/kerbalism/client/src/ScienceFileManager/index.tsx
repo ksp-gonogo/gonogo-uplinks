@@ -25,6 +25,7 @@ import {
   readKerbalismScienceExperimentExt,
 } from "../science.js";
 import { KERBALISM } from "../uplink.js";
+import { useTransferRailEntry } from "./useTransferRailEntry.js";
 
 /** The file and/or sample entry a subject holds, joined out of the raw
  *  `science.experiments` array. Either may be absent; a subject that has
@@ -182,6 +183,13 @@ function ScienceDataAboardRowAugment({
   const moveCmd = useCommand("kerbalism.sample.moveToLab");
 
   const { file, sample } = findDriveEntries(experiments, subjectId);
+  useTransferRailEntry(
+    experimentsReading,
+    file,
+    subjectId,
+    experiments?.find((e) => e.subjectId === subjectId)?.title ||
+      subjectId,
+  );
   if (!file && !sample) return null;
 
   // At least one lab part is aboard: the best client-side proxy for "a
