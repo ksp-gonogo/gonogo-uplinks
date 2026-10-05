@@ -190,13 +190,21 @@ namespace Gonogo.RealAntennasUplink
             {
                 return null;
             }
+            // The link is lost where the slowest rate both ends can run stops closing, not where the fastest does.
+            // A receiver whose rates were not read is taken to run at the transmitter's.
+            var slowest = RaRateLadder.SlowestCommonSymbolRate(
+                tx.SymbolRateHz, tx.MinSymbolRateHz, rx.SymbolRateHz ?? tx.SymbolRateHz, rx.SymbolRateHz == null ? tx.MinSymbolRateHz : rx.MinSymbolRateHz);
+            if (slowest == null)
+            {
+                return null;
+            }
             return RaLinkBudget.MaxRangeMeters(
                 tx.TxPowerDbm.Value,
                 tx.GainDbi.Value - pointingLossDb,
                 rx.GainDbi.Value,
                 tx.FrequencyHz.Value,
                 rx.NoiseTemperatureKelvin ?? DefaultReceiverNoiseTempKelvin,
-                tx.SymbolRateHz.Value,
+                slowest.Value,
                 rx.RequiredEbN0Db ?? DefaultRequiredEbN0Db);
         }
 

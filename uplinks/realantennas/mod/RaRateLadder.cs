@@ -44,6 +44,23 @@ namespace Gonogo.RealAntennasUplink
             public double Metric { get; }
         }
 
+        /// <summary>
+        /// The slowest symbol rate two antennas can both run at, which is the
+        /// rate a link between them is still alive at just before it is lost:
+        /// the faster of their two slowest. An antenna that states no slowest
+        /// rate runs only at its fastest. Null when either states no rate at
+        /// all, or they have no rate in common.
+        /// </summary>
+        public static double? SlowestCommonSymbolRate(double? txMaxHz, double? txMinHz, double? rxMaxHz, double? rxMinHz)
+        {
+            if (txMaxHz == null || rxMaxHz == null)
+            {
+                return null;
+            }
+            var slowest = Math.Max(txMinHz ?? txMaxHz.Value, rxMinHz ?? rxMaxHz.Value);
+            return slowest > Math.Min(txMaxHz.Value, rxMaxHz.Value) ? (double?)null : slowest;
+        }
+
         /// <param name="receivedPowerDbm">The power arriving at the receiver, in dBm.</param>
         /// <param name="minEbDbm">The receiver's noise density plus the energy per bit the encoder needs, in dBm per hertz.</param>
         /// <param name="maxSymbolRateHz">The slower of the two antennas' fastest symbol rates.</param>

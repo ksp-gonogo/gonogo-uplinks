@@ -127,13 +127,22 @@ namespace Gonogo.RealAntennasUplink
                     // Same fail-soft constants the live margin already uses, so
                     // a moved RA surface degrades this number's fidelity rather
                     // than removing the rule.
+                    // RealAntennas keeps a link by stepping its symbol rate down, so the
+                    // pair reaches as far as the slowest rate both ends can run closes.
+                    var rxRate = ra.SymbolRate(rx);
+                    var slowest = RaRateLadder.SlowestCommonSymbolRate(
+                        symbolRate, ra.MinSymbolRate(tx), rxRate ?? symbolRate, rxRate == null ? ra.MinSymbolRate(tx) : ra.MinSymbolRate(rx));
+                    if (slowest == null)
+                    {
+                        continue;
+                    }
                     var range = RaLinkBudget.MaxRangeMeters(
                         txPower.Value,
                         txGain.Value,
                         rxGain.Value,
                         frequency.Value,
                         ra.NoiseTemperatureKelvin(rx) ?? DefaultReceiverNoiseTempKelvin,
-                        symbolRate.Value,
+                        slowest.Value,
                         ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db);
 
                     if (range != null && (best == null || range.Value > best.Value))

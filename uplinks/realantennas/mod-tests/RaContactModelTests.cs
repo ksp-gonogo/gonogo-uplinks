@@ -112,5 +112,36 @@ namespace GonogoRealAntennasUplink.Tests
                 0.0,
                 3600.0);
         }
+
+        /// <summary>
+        /// RealAntennas keeps a link by stepping its symbol rate down, to the
+        /// slowest both antennas can run, so the pair reaches as far as that
+        /// slowest rate closes. Reckoned at the fastest rate, a link the game
+        /// still carries read as long out of range, and the plan went dark
+        /// while telemetry was arriving.
+        /// </summary>
+        [Fact]
+        public void APairReachesAsFarAsItsSlowestSymbolRateCloses()
+        {
+            var fastOnly = new RaPlannedAntenna { TxPowerDbm = 30.0, GainDbi = 20.0, FrequencyHz = 2.2e9, SymbolRateHz = 1024.0 };
+            var stepsDown = new RaPlannedAntenna { TxPowerDbm = 30.0, GainDbi = 20.0, FrequencyHz = 2.2e9, SymbolRateHz = 1024.0, MinSymbolRateHz = 1.0 };
+            var atFullRate = RaLinkBudget.MaxRangeMeters(30.0, 20.0, 20.0, 2.2e9, 200.0, 1024.0, 2.5)!.Value;
+
+            // 1024 times slower is 30 dB, which is 32 times as far.
+            Assert.True(RaContactLinkModel.RangeMargin(fastOnly, fastOnly, atFullRate * 10.0) < 0.0);
+            Assert.True(RaContactLinkModel.RangeMargin(stepsDown, stepsDown, atFullRate * 10.0) > 0.0);
+            Assert.True(RaContactLinkModel.RangeMargin(stepsDown, stepsDown, atFullRate * 33.0) < 0.0);
+        }
+
+        [Fact]
+        public void ThePairsSlowestRateIsTheFasterOfTheTwoAntennasSlowest()
+        {
+            Assert.Equal(8.0, RaRateLadder.SlowestCommonSymbolRate(1024.0, 8.0, 512.0, 2.0));
+            // An antenna that states no slowest rate runs only at its fastest.
+            Assert.Equal(512.0, RaRateLadder.SlowestCommonSymbolRate(1024.0, 8.0, 512.0, null));
+            // No rate in common: nothing closes.
+            Assert.Null(RaRateLadder.SlowestCommonSymbolRate(4.0, 2.0, 1024.0, 512.0));
+            Assert.Null(RaRateLadder.SlowestCommonSymbolRate(null, null, 512.0, 2.0));
+        }
     }
 }
