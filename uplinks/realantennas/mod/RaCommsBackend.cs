@@ -23,7 +23,7 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength
     {
         public const string Id = "realantennas";
 
@@ -208,7 +208,27 @@ namespace Gonogo.RealAntennasUplink
                 : new RaContactLinkModel(fromAntennas, toAntennas);
         }
 
-        private List<RaPlannedAntenna>? Planned(object? node)
+        /// <summary>
+        /// What a link between two nodes is worth at a separation, from both
+        /// ends' antennas as they stand now: RealAntennas' own rate-ladder
+        /// strength (<see cref="RaLinkWorth"/>). Null when either end has no
+        /// antenna to read. Where an antenna points does not matter here, so
+        /// an aim the plan cannot place does not withhold the strength as it
+        /// withholds the <see cref="LinkModel"/>.
+        /// </summary>
+        public IContactLinkStrength? LinkStrength(object? from, object? to, double ut)
+        {
+            var fromAntennas = Planned(from, placeAims: false);
+            var toAntennas = Planned(to, placeAims: false);
+            return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
+                ? null
+                : new RaLinkStrength(fromAntennas, toAntennas);
+        }
+
+        /// <summary>The least of the hops: a path carries the rate of its slowest link.</summary>
+        public double Combine(IReadOnlyList<double> hopStrengths) => RaLinkStrength.Weakest(hopStrengths);
+
+        private List<RaPlannedAntenna>? Planned(object? node, bool placeAims = true)
         {
             if (!(node is CommNode))
             {
@@ -230,8 +250,16 @@ namespace Gonogo.RealAntennasUplink
                     SymbolRateHz = _ra.SymbolRate(antenna),
                     NoiseTemperatureKelvin = _ra.NoiseTemperatureKelvin(antenna),
                     RequiredEbN0Db = _ra.RequiredEbN0Db(antenna),
+                    MinSymbolRateHz = _ra.MinSymbolRate(antenna),
+                    ModulationBits = _ra.ModulationBits(antenna),
+                    TechLevel = _ra.TechLevel(antenna),
+                    EncoderName = _ra.EncoderName(antenna),
+                    EncoderTechLevel = _ra.EncoderTechLevel(antenna),
+                    CodingRate = _ra.CodingRate(antenna),
+                    EncoderRequiredEbN0Db = _ra.EncoderRequiredEbN0Db(antenna),
+                    PowerDrawEc = _ra.PowerDrawLinear(antenna),
                 };
-                if (!Aim(_ra.Target(antenna), one))
+                if (!Aim(_ra.Target(antenna), one) && placeAims)
                 {
                     return null;
                 }

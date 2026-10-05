@@ -25,6 +25,9 @@
        Sitrep.Contract (all three KSP-free). -->
   <ItemGroup>
     <Compile Include="..\mod\RaLinkBudget.cs" />
+    <Compile Include="..\mod\RaRateLadder.cs" />
+    <Compile Include="..\mod\RaLinkWorth.cs" />
+    <Compile Include="..\mod\RaLinkStrength.cs" />
     <Compile Include="..\mod\RaLinkDown.cs" />
     <Compile Include="..\mod\RaWire.cs" />
     <!-- RaLinkDirection is the pure, KSP-free up/down resolver for the RA link's

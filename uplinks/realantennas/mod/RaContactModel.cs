@@ -42,6 +42,24 @@ namespace Gonogo.RealAntennasUplink
         public double? NoiseTemperatureKelvin;
         public double? RequiredEbN0Db;
 
+        /// <summary>The slowest symbol rate the antenna's modulator steps down to, for the rate ladder a link's strength is read off.</summary>
+        public double? MinSymbolRateHz;
+
+        /// <summary>The most modulation bits the antenna's modulator supports.</summary>
+        public int? ModulationBits;
+
+        /// <summary>The antenna's own tech level, a fact about the hop and no part of the budget.</summary>
+        public int? TechLevel;
+
+        /// <summary>The encoder's name, tech level, coding rate and the energy per bit it needs. Two antennas talk through the lower-level encoder of the two.</summary>
+        public string? EncoderName;
+        public int? EncoderTechLevel;
+        public double? CodingRate;
+        public double? EncoderRequiredEbN0Db;
+
+        /// <summary>The antenna's electric charge draw while transmitting, a fact about the hop.</summary>
+        public double? PowerDrawEc;
+
         public RaAimKind Aim;
 
         /// <summary>The craft aimed at, as <c>"vessel:&lt;guid&gt;"</c>, when <see cref="Aim"/> is <see cref="RaAimKind.Vessel"/>.</summary>
@@ -194,9 +212,9 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>Fallback receiver noise temperature, matching <see cref="RaReach"/>'s.</summary>
-        private const double DefaultReceiverNoiseTempKelvin = 200.0;
+        internal const double DefaultReceiverNoiseTempKelvin = 200.0;
 
         /// <summary>Fallback required Eb/N0, matching <see cref="RaReach"/>'s.</summary>
-        private const double DefaultRequiredEbN0Db = 2.5;
+        internal const double DefaultRequiredEbN0Db = 2.5;
     }
 }

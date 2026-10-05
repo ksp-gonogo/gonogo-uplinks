@@ -136,6 +136,15 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>Encoder coding rate (0..1): <c>RealAntenna.Encoder.CodingRate</c>, or null.</summary>
         public double? CodingRate(object antenna) => ReadDoubleMember(ReadMember(antenna, "Encoder"), "CodingRate");
 
+        /// <summary>The tech level of the antenna's encoder. Two antennas talk through the lower-level encoder of the two.</summary>
+        public int? EncoderTechLevel(object antenna) => ReadIntMember(ReadMember(antenna, "Encoder"), "TechLevel");
+
+        /// <summary>The energy per bit the antenna's encoder needs over the noise density, in decibels.</summary>
+        public double? EncoderRequiredEbN0Db(object antenna) => ReadDoubleMember(ReadMember(antenna, "Encoder"), "RequiredEbN0");
+
+        /// <summary>The slowest symbol rate the antenna steps down to before a link stops closing.</summary>
+        public double? MinSymbolRate(object antenna) => ReadDoubleMember(antenna, "MinSymbolRate");
+
         /// <summary>Antenna beamwidth (degrees): <c>RealAntenna.Beamwidth</c>, or null.</summary>
         public double? Beamwidth(object antenna) => ReadDoubleMember(antenna, "Beamwidth");
 
