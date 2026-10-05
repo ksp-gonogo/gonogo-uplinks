@@ -59,6 +59,23 @@ Publishes Principia's n-body state: how far each trajectory holds, the flight pl
 | `PrincipiaPlanSendArgs` | `burns` PrincipiaComposedBurn[], `composedAtViewUt` ut, `desiredFinalTimeUt` ut, `observedAtUt` ut, `requestId` id, `vesselId` id |
 | `PrincipiaPlanSlotArgs` | `finalTimeUt` ut, `requestId` id, `vesselId` id |
 
+## Widgets
+
+### Libration Points
+
+The five libration points of a body pair, drawn in the frame that turns with it so they hold still, with the craft's offset from the one it is nearest.
+
+| | |
+| --- | --- |
+| Widget id | `libration-points` |
+| Reads | `system.bodies` |
+| Uses if present | `vessel.orbit`, `vessel.identity` |
+| Actions | `cyclePair` |
+| Default size | 6 × 10 |
+| Scenes | 11 |
+
+![A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies](docs/assets/mun-l1-holding-station--default.png)
+
 ## Augments
 
 | Augment | Into | Reads | Presence | Scenes | Notes |

@@ -26,6 +26,12 @@
 //     of their own, because neither introduces an interaction: an operator asks
 //     "what orbit is this" by looking at the orbit widget.
 //
+//   - `LibrationPoints` -> registerComponent, the one widget of its own. A
+//     body pair's five libration points in the frame that turns with the pair,
+//     and the craft's offset from the nearest. A widget rather than an augment
+//     because the pair is a choice an operator makes, and it lives here because
+//     only n-body gravity gives a libration point any effect on a craft.
+//
 //   - `./settings/registerPrincipiaSettings` → a declarative row for every
 //     field `principia.settings` carries, in one "Principia" category, every
 //     one of them stream-backed and therefore read-only. That is what the
@@ -79,10 +85,12 @@ import "./OrbitAnalysis";
 import "./CoastAnalysis";
 import "./BurnEditor";
 import "./PlanComposer";
+import "./LibrationPoints";
 
 export { BurnEditor } from "./BurnEditor/index.js";
 export { CoastAnalysisSection } from "./CoastAnalysis/index.js";
 export { FlightPlanSection } from "./FlightPlanSection/index.js";
+export { LibrationDiagram, LibrationPointsComponent } from "./LibrationPoints/index.js";
 export { OrbitAnalysisRows, OrbitAnalysisSection } from "./OrbitAnalysis/index.js";
 export { orbitDescription } from "./orbitDescription.js";
 export { PlanComposer } from "./PlanComposer/index.js";
