@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-// The members RP-1's Facilities, Astronauts and Programs tabs call, on the
-// stand-ins the other fixtures declare. Names, arities and parameter shapes are
+// The members RP-1's Facilities, Integration, Astronauts, Construction and
+// Programs tabs call, and its rollout pricing, on the stand-ins the other
+// fixtures declare. Names, arities and parameter shapes are
 // the shipped v4.6.0.0 ones. GetNautCost keeps RP-1's own branch structure (a
 // kerbal in flight adds the flight rate to base pay and skips proficiency pay,
 // an inactive one on the ground takes a cut) over settable rates, because which
@@ -56,6 +57,107 @@ namespace RP0
                 }
             }
             baseCostPerDay /= 365.25d;
+        }
+    }
+
+    public partial class MaintenanceHandler
+    {
+        /// <summary>Effective salaried engineers by centre name, as UpdateKCTSalaries leaves them.</summary>
+        public readonly Dictionary<string, double> IntegrationSalaries = new Dictionary<string, double>();
+
+        /// <summary>
+        /// RP-1's UpdateKCTSalaries, and its IntegrationSalaryPerDay derivation
+        /// written into the settable figure the Budget row reads.
+        /// </summary>
+        public void UpdateKCTSalaries()
+        {
+            IntegrationSalaries.Clear();
+            var total = 0.0;
+            foreach (var ksc in SpaceCenterManagement.Instance!.KSCs)
+            {
+                var heads = SpaceCenterManagement.Instance.GetEffectiveIntegrationEngineersForSalary(ksc);
+                IntegrationSalaries[ksc.KSCName] = heads;
+                total += heads;
+            }
+            IntegrationSalaryValue = total * Database.SettingsSC.salaryEngineers / 365.25;
+        }
+    }
+
+    public partial class LCSpaceCenter
+    {
+        /// <summary>RP-1's merged list of the centre's facility, complex and pad constructions.</summary>
+        public List<ConstructionProject> Constructions = new List<ConstructionProject>();
+    }
+
+    public abstract partial class ConstructionProject
+    {
+        /// <summary>RP-1's rush multiplier on the remaining cost, which is one at a work rate of one.</summary>
+        public double RushMultiplierValue = 1.0;
+
+        /// <summary>RP-1's own body: the unspent cost, rushed, through the construction query.</summary>
+        public double RemainingCost =>
+            -CurrencyUtils.Funds(
+                FacilityType == SpaceCenterFacility.LaunchPad
+                    ? TransactionReasonsRP0.StructureConstructionLC
+                    : TransactionReasonsRP0.StructureConstruction,
+                -(cost - spentCost) * RushMultiplierValue);
+
+        public double GetBuildRate() => _buildRate < 0.0 ? 0.0 : _buildRate * workRate;
+
+        public double GetTimeLeft()
+        {
+            var rate = GetBuildRate();
+            return rate > 0.0 ? (BP - progress) / rate : double.PositiveInfinity;
+        }
+
+        /// <summary>RP-1's own body.</summary>
+        public double GetConstructionCostOverTime(double time)
+        {
+            var timeLeft = GetTimeLeft();
+            if (GetBuildRate() == 0.0)
+            {
+                return 0.0;
+            }
+            var spend = -RemainingCost;
+            if (timeLeft > time)
+            {
+                spend *= time / timeLeft;
+            }
+            return spend;
+        }
+    }
+
+    public partial class LCOpsProject
+    {
+        /// <summary>What RP-1's sequenced estimate would answer for an unfinished operation.</summary>
+        public double TimeLeftValue = double.PositiveInfinity;
+
+        public double GetTimeLeft() => IsComplete() ? 0.0 : TimeLeftValue;
+    }
+
+    public partial class ReconRolloutProject
+    {
+        /// <summary>RP-1's own mapping from the operation's kind to the reason it bills under.</summary>
+        public TransactionReasonsRP0 TransactionReason
+        {
+            get
+            {
+                switch (RRType)
+                {
+                    case RolloutReconType.Rollout:
+                    case RolloutReconType.Rollback:
+                        return TransactionReasonsRP0.RocketRollout;
+                    case RolloutReconType.Recovery:
+                        return TransactionReasonsRP0.VesselRecovery;
+                    case RolloutReconType.Reconditioning:
+                        return TransactionReasonsRP0.StructureRepair;
+                    case RolloutReconType.AirlaunchMount:
+                    case RolloutReconType.AirlaunchUnmount:
+                        return TransactionReasonsRP0.AirLaunchRollout;
+                    default:
+                        return TransactionReasonsRP0.None;
+                }
+            }
         }
     }
 

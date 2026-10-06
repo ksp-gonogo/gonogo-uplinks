@@ -369,6 +369,7 @@ namespace GonogoRp1Uplink.Tests
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryCrew", "Rp1BudgetBreakdownReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "CrewTraining", "Rp1BudgetBreakdownReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "ProgramFunding", "Rp1BudgetBreakdownReflection"),
+            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryEngineers", "Rp1BudgetBreakdownReflection"),
             // The two a construction's draw is priced under, as RP-1's own
             // construction list prices it: a complex or pad, and a building.
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureConstruction", "Rp1ConstructionRatesReflection"),
@@ -521,6 +522,13 @@ namespace GonogoRp1Uplink.Tests
             new Rp1MethodTarget(Rp0, "RP0.Crew.TrainingDatabase", "FillBools", 3, true, "Rp1BudgetBreakdownReflection"),
             new Rp1MethodTarget(Rp0, "RP0.SpaceCenterSettings", "ResetBools", 0, false, "Rp1BudgetBreakdownReflection"),
             new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetFacilityLevel", 1, true, "Rp1BudgetBreakdownReflection"),
+            // The Integration tab's terms, the Construction tab's per-project
+            // spend, and the time left an operation's rollout cost is shared by.
+            new Rp1MethodTarget(Rp0, "RP0.SpaceCenterManagement", "GetEffectiveEngineersForSalary", 1, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.FacilityUpgradeProject", "GetConstructionCostOverTime", 1, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.LCConstructionProject", "GetConstructionCostOverTime", 1, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.PadConstructionProject", "GetConstructionCostOverTime", 1, false, "Rp1BudgetBreakdownReflection"),
+            new Rp1MethodTarget(Rp0, "RP0.ReconRolloutProject", "GetTimeLeft", 0, false, "Rp1BudgetBreakdownReflection"),
             // THREE parameters with the last defaulted, because a reflected
             // invoke applies no defaults. UpdateUpkeep calls the two-argument
             // form, which is this one with includeHidden left false.
@@ -1712,6 +1720,35 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.Programs.Program", "name", Rp1Reader.Text, Breakdown);
             Add("RP0.Programs.Program", "title", Rp1Reader.Text, Breakdown);
             Add("RP0.Programs.Program", "deadlineUT", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.SpaceCenterSettings", "salaryEngineers", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.SpaceCenterSettings", "EngineerIdleSalaryMult", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.LCSpaceCenter", "UnassignedEngineers", Rp1Reader.Numeric, Breakdown);
+            // RP-1's merged list of the three construction kinds, the one its
+            // Constructions row and Construction tab both walk.
+            Add("RP0.LCSpaceCenter", "Constructions", Rp1Reader.Presence, Breakdown);
+            Add("RP0.LaunchComplex", "Engineers", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.LaunchComplex", "Recon_Rollout", Rp1Reader.Presence, Breakdown);
+            Add("RP0.LaunchComplex", "Warehouse", Rp1Reader.Presence, Breakdown);
+            Add("RP0.LaunchComplex", "BuildList", Rp1Reader.Presence, Breakdown);
+            Add("RP0.ReconRolloutProject", "RRType", Rp1Reader.EnumText, Breakdown);
+            Add("RP0.ReconRolloutProject", "associatedID", Rp1Reader.Text, Breakdown);
+            Add("RP0.ReconRolloutProject", "launchPadID", Rp1Reader.Text, Breakdown);
+            Add("RP0.ReconRolloutProject", "cost", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.ReconRolloutProject", "progress", Rp1Reader.Numeric, Breakdown);
+            Add("RP0.ReconRolloutProject", "BP", Rp1Reader.Numeric, Breakdown);
+            // Handed straight back to the currency query as RP-1's own enum value.
+            Add("RP0.ReconRolloutProject", "TransactionReason", Rp1Reader.Presence, Breakdown);
+            Add("RP0.VesselProject", "shipID", Rp1Reader.GuidText, Breakdown);
+            Add("RP0.VesselProject", "shipName", Rp1Reader.Text, Breakdown);
+            foreach (var construction in new[]
+                     {
+                         "RP0.FacilityUpgradeProject",
+                         "RP0.LCConstructionProject",
+                         "RP0.PadConstructionProject",
+                     })
+            {
+                Add(construction, "name", Rp1Reader.Text, Breakdown);
+            }
 
             // ── The construction rate tables ────────────────────────────────
             const string Rates = "Rp1ConstructionRatesReflection";

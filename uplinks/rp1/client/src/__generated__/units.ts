@@ -294,6 +294,13 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1ConstructionCancelArgs": {
     id: "id",
   },
+  "Rp1ConstructionCostEntry": {
+    id: "id",
+    kind: "enum",
+    kscDisplayName: "text",
+    kscName: "id",
+    name: "text",
+  },
   "Rp1ConstructionEntry": {
     cost: "funds",
     currentLevel: "count",
@@ -414,6 +421,14 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     lcId: "id",
     reserveFunds: "funds",
     targetCount: "count",
+  },
+  "Rp1IntegrationTeamCostEntry": {
+    engineers: "count",
+    kscDisplayName: "text",
+    kscName: "id",
+    lcId: "id",
+    name: "text",
+    unassigned: "flag",
   },
   "Rp1LcPricing": {
     additionalPadCostMult: "ratio",
@@ -642,6 +657,16 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1RolloutArgs": {
     id: "id",
     pad: "id",
+  },
+  "Rp1RolloutCostEntry": {
+    associatedVesselId: "id",
+    kscDisplayName: "text",
+    kscName: "id",
+    launchPadId: "id",
+    lcId: "id",
+    lcName: "text",
+    type: "enum",
+    vesselName: "text",
   },
   "Rp1RushTerms": {
     rateMult: "ratio",
@@ -1138,10 +1163,13 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     astronautTraining: "Rp1BudgetHorizons",
     buildings: "Rp1BuildingUpkeepEntry[]",
     complexes: "Rp1ComplexUpkeepEntry[]",
+    constructions: "Rp1ConstructionCostEntry[]",
     courses: "Rp1CourseCostEntry[]",
     crew: "Rp1CrewCostEntry[]",
+    integrationTeams: "Rp1IntegrationTeamCostEntry[]",
     nautBaseSalary: "Rp1BudgetHorizons",
     programs: "Rp1ProgramFundingEntry[]",
+    rollouts: "Rp1RolloutCostEntry[]",
     trainingFees: "Rp1TrainingFeeEntry[]",
   },
   "Rp1BuildCost": {
@@ -1168,6 +1196,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1ComplexUpkeepEntry": {
     upkeep: "Rp1BudgetHorizons",
   },
+  "Rp1ConstructionCostEntry": {
+    cost: "Rp1BudgetHorizons",
+  },
   "Rp1ConstructionRateTable": {
     steps: "Rp1ConstructionRateStep[]",
   },
@@ -1184,6 +1215,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1FundingCurveEntry": {
     keys: "Rp1FundingCurveKey[]",
   },
+  "Rp1IntegrationTeamCostEntry": {
+    cost: "Rp1BudgetHorizons",
+  },
   "Rp1LcPricing": {
     resources: "Rp1LcResourcePrice[]",
   },
@@ -1199,6 +1233,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   },
   "Rp1ResearchRates": {
     steps: "Rp1ResearchRateStep[]",
+  },
+  "Rp1RolloutCostEntry": {
+    cost: "Rp1BudgetHorizons",
   },
   "Rp1Tooling": {
     parts: "Rp1ToolingEntry[]",
@@ -1225,10 +1262,13 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
     astronautTraining: "Rp1BudgetHorizons",
     buildings: "Rp1BuildingUpkeepEntry[]",
     complexes: "Rp1ComplexUpkeepEntry[]",
+    constructions: "Rp1ConstructionCostEntry[]",
     courses: "Rp1CourseCostEntry[]",
     crew: "Rp1CrewCostEntry[]",
+    integrationTeams: "Rp1IntegrationTeamCostEntry[]",
     nautBaseSalary: "Rp1BudgetHorizons",
     programs: "Rp1ProgramFundingEntry[]",
+    rollouts: "Rp1RolloutCostEntry[]",
     trainingFees: "Rp1TrainingFeeEntry[]",
   },
   "rp1.buildCost": {
@@ -1300,6 +1340,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   "Rp1ComplexEntry": {
     lcType: null,
   },
+  "Rp1ConstructionCostEntry": {
+    kind: null,
+  },
   "Rp1ConstructionEntry": {
     facilityType: null,
     kind: null,
@@ -1325,6 +1368,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "Rp1ProgramSpeedOption": {
     speed: null,
+  },
+  "Rp1RolloutCostEntry": {
+    type: null,
   },
   "Rp1Simulation": {
     kind: null,

@@ -9,7 +9,7 @@
  * derivation was copied from the v4.6.0.0 source. MaintenanceHandler is the same
  * in both. Nothing here has been seen in a running game.
  *
- * FOUR OF RP-1'S TABS, reproduced rather than approximated:
+ * SIX OF RP-1'S TABS AND ONE OF ITS ROWS, reproduced rather than approximated:
  *
  *   MaintenanceGUI.RenderFacilitiesTab
  *       One StructureRepair query per building in FacilitiesForMaintenance,
@@ -18,6 +18,14 @@
  *       The tab skips a complex that is not operational; UpdateUpkeep bills it
  *       its construction share all the same, so it is read here too. Each
  *       centre is headed by its LocalizeSiteName, which Rp1SiteNames reproduces.
+ *
+ *   MaintenanceGUI.RenderIntegrationTab
+ *       One SalaryEngineers query per centre on IntegrationSalaries, which
+ *       UpdateKCTSalaries fills from GetEffectiveIntegrationEngineersForSalary:
+ *       the centre's complexes, each through GetEffectiveEngineersForSalary,
+ *       plus its unassigned engineers at EngineerIdleSalaryMult. Those terms are
+ *       read live here and priced one line each with the tab's own query, so a
+ *       complex's team and a centre's idle pool are lines of their own.
  *
  *   MaintenanceGUI.RenderNautList and RenderAstronautsTab
  *       GetNautCost per crew member, base and flight summed then put through
@@ -40,6 +48,18 @@
  *       safe on the main thread because every public entry into
  *       TrainingDatabase clears it before use and none holds it across a call.
  *
+ *   MaintenanceGUI.RenderConstructionTab
+ *       ConstructionProject.GetConstructionCostOverTime per project in each
+ *       centre's Constructions list, called rather than reproduced. The Budget
+ *       tab's Constructions row is the sum of exactly these calls.
+ *
+ *   SpaceCenterManagement.GetReconRolloutCostOverTime(time, LaunchComplex)
+ *       The Budget tab's Rollout/Airlaunch Prep row, which no tab breaks down.
+ *       RP-1 has no per-operation method: this one runs a currency query per
+ *       billing operation (Rollout, Reconditioning and AirlaunchMount) on its
+ *       TransactionReason and sums them. Its body is reproduced one operation
+ *       at a time, so the lines sum to the row whatever the modifiers.
+ *
  *   MaintenanceGUI.RenderProgramTab
  *       Funds(ProgramFunding) on GetFundsForFutureTimestamp at the horizon less
  *       the same at now, per Program. The sum of these is ProgramHandler's
@@ -49,9 +69,10 @@
  *
  * AT RP-1'S UPKEEP CADENCE, as rp1.budget: recomputed only when
  * MaintenanceHandler.lastUpdate moves. RP-1 refreshes FacilityMaintenanceCosts
- * then, and schedules a refresh the moment a kerbal's status or type changes, so
- * the upkeep lines move when RP-1's do. The Program lines trail the game's by up
- * to that interval, as rp1.budget's Program Budget row does.
+ * and IntegrationSalaries then, and schedules a refresh the moment a kerbal's
+ * status or type changes, so the upkeep lines move when RP-1's do. The Program,
+ * rollout and construction lines trail the game's by up to that interval, as
+ * rp1.budget's rows for them do, and are read on the same tick those rows are.
  *
  * COST. Three currency queries a line and one FillBools per distinct training
  * target: a career with thirty crew, eight complexes, three Programs and a
@@ -90,6 +111,7 @@ namespace GonogoRp1Uplink
         private const string DatabaseTypeName = "RP0.Database";
         private const string SettingsTypeName = "RP0.SpaceCenterSettings";
         private const string KctUtilitiesTypeName = "RP0.KCTUtilities";
+        private const string LaunchComplexTypeName = "RP0.LaunchComplex";
 
         /// <summary>KSP's own, global-namespaced.</summary>
         private const string HighLogicTypeName = "HighLogic";
@@ -211,8 +233,203 @@ namespace GonogoRp1Uplink
                 Courses = Courses(crewHandler, training),
                 TrainingFees = TrainingFees(crewHandler, training),
                 Programs = Programs(ut),
+                IntegrationTeams = IntegrationTeams(spaceCenter, settings),
+                Rollouts = Rollouts(spaceCenter),
+                Constructions = Constructions(spaceCenter),
             };
         }
+
+        /// <summary>
+        /// The Integration tab's centres split into their terms: each complex's
+        /// team, then the centre's unassigned engineers, each priced as the tab
+        /// prices a centre.
+        /// </summary>
+        private List<Rp1IntegrationTeamCostRaw> IntegrationTeams(object spaceCenter, object? settings)
+        {
+            var salary = Rp1Types.ReadDouble(settings, "salaryEngineers");
+            var idleMult = Rp1Types.ReadDouble(settings, "EngineerIdleSalaryMult");
+            // By parameter type: the LCSpaceCenter overload has the same name and
+            // arity and answers for the whole centre.
+            var complexEngineers = Rp1Types.InstanceMethodOn(
+                spaceCenter, "GetEffectiveEngineersForSalary", LaunchComplexTypeName, 1);
+            var rows = new List<Rp1IntegrationTeamCostRaw>();
+            foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(spaceCenter, "KSCs")))
+            {
+                var kscName = Rp1Types.ReadString(ksc, "KSCName");
+                var kscDisplayName = _siteNames.For(kscName);
+                foreach (var lc in Rp1Types.Enumerate(Rp1Types.Member(ksc, "LaunchComplexes")))
+                {
+                    rows.Add(new Rp1IntegrationTeamCostRaw
+                    {
+                        KscName = kscName,
+                        KscDisplayName = kscDisplayName,
+                        Unassigned = false,
+                        LcId = Rp1Types.ReadGuidString(lc, "ID"),
+                        Name = Rp1Types.ReadString(lc, "Name"),
+                        Engineers = ReadInt(lc, "Engineers"),
+                        Cost = Salary(salary, Invoke(complexEngineers, spaceCenter, lc)),
+                    });
+                }
+                var unassigned = ReadInt(ksc, "UnassignedEngineers");
+                rows.Add(new Rp1IntegrationTeamCostRaw
+                {
+                    KscName = kscName,
+                    KscDisplayName = kscDisplayName,
+                    Unassigned = true,
+                    Engineers = unassigned,
+                    Cost = Salary(salary, unassigned == null || idleMult == null ? null : unassigned.Value * idleMult.Value),
+                });
+            }
+            return rows;
+        }
+
+        /// <summary>RenderIntegrationTab's line: salaried heads over the period, then the SalaryEngineers query.</summary>
+        private Rp1HorizonsRaw Salary(double? salaryPerYear, double? heads) =>
+            Horizons(days => salaryPerYear == null || heads == null
+                ? null
+                : Funds("SalaryEngineers", -heads.Value * salaryPerYear.Value * days / DaysPerYear));
+
+        /// <summary>Every operation GetReconRolloutCostOverTime bills, priced as it prices each one.</summary>
+        private List<Rp1RolloutCostRaw> Rollouts(object spaceCenter)
+        {
+            var rows = new List<Rp1RolloutCostRaw>();
+            foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(spaceCenter, "KSCs")))
+            {
+                var kscName = Rp1Types.ReadString(ksc, "KSCName");
+                var kscDisplayName = _siteNames.For(kscName);
+                foreach (var lc in Rp1Types.Enumerate(Rp1Types.Member(ksc, "LaunchComplexes")))
+                {
+                    var lcId = Rp1Types.ReadGuidString(lc, "ID");
+                    var lcName = Rp1Types.ReadString(lc, "Name");
+                    foreach (var op in Rp1Types.Enumerate(Rp1Types.Member(lc, "Recon_Rollout")))
+                    {
+                        var type = Rp1Types.ReadEnumName(op, "RRType");
+                        if (type != "Rollout" && type != "Reconditioning" && type != "AirlaunchMount")
+                        {
+                            continue;
+                        }
+                        var vesselId = Rp1Types.ReadString(op, "associatedID");
+                        rows.Add(new Rp1RolloutCostRaw
+                        {
+                            KscName = kscName,
+                            KscDisplayName = kscDisplayName,
+                            LcId = lcId,
+                            LcName = lcName,
+                            LaunchPadId = Rp1Types.ReadString(op, "launchPadID"),
+                            Type = type,
+                            AssociatedVesselId = string.IsNullOrEmpty(vesselId) ? null : vesselId,
+                            VesselName = VesselName(lc, vesselId),
+                            Cost = RolloutCost(op),
+                        });
+                    }
+                }
+            }
+            return rows;
+        }
+
+        /// <summary>
+        /// One operation's term of GetReconRolloutCostOverTime: what is left of
+        /// its cost, by the share of its time left that falls inside the period,
+        /// through the query for its own TransactionReason.
+        /// </summary>
+        private Rp1HorizonsRaw RolloutCost(object op)
+        {
+            var cost = Rp1Types.ReadDouble(op, "cost");
+            var progress = Rp1Types.ReadDouble(op, "progress");
+            var points = Rp1Types.ReadDouble(op, "BP");
+            var reason = Rp1Types.Member(op, "TransactionReason");
+            double? timeLeft = null;
+            var getTimeLeft = Rp1Types.InstanceMethod(op, "GetTimeLeft", 0);
+            if (getTimeLeft != null)
+            {
+                try
+                {
+                    timeLeft = Rp1Types.ToDouble(getTimeLeft.Invoke(op, Array.Empty<object>()));
+                }
+                catch (Exception)
+                {
+                    timeLeft = null;
+                }
+            }
+            return Horizons(days =>
+            {
+                if (cost == null || progress == null || points == null || reason == null || timeLeft == null)
+                {
+                    return null;
+                }
+                var span = days * SecondsPerDay;
+                var share = timeLeft.Value > span ? span / timeLeft.Value : 1d;
+                return Funds(reason, -cost.Value * (1d - progress.Value / points.Value) * share);
+            });
+        }
+
+        /// <summary>
+        /// The vehicle an operation moves, looked up as RP-1's FindVPByIDInLC looks
+        /// it up: the complex's warehouse, then its build list.
+        /// </summary>
+        private static string? VesselName(object lc, string? vesselId)
+        {
+            if (string.IsNullOrEmpty(vesselId))
+            {
+                return null;
+            }
+            foreach (var list in new[] { "Warehouse", "BuildList" })
+            {
+                foreach (var vp in Rp1Types.Enumerate(Rp1Types.Member(lc, list)))
+                {
+                    if (string.Equals(Rp1Types.ReadGuidString(vp, "shipID"), vesselId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Rp1Types.ReadString(vp, "shipName");
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>The Construction tab's projects, each at its own GetConstructionCostOverTime.</summary>
+        private List<Rp1ConstructionCostRaw> Constructions(object spaceCenter)
+        {
+            var rows = new List<Rp1ConstructionCostRaw>();
+            foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(spaceCenter, "KSCs")))
+            {
+                var kscName = Rp1Types.ReadString(ksc, "KSCName");
+                var kscDisplayName = _siteNames.For(kscName);
+                foreach (var project in Rp1Types.Enumerate(Rp1Types.Member(ksc, "Constructions")))
+                {
+                    var kind = ConstructionKind(project);
+                    var costOverTime = Rp1Types.InstanceMethod(project, "GetConstructionCostOverTime", 1);
+                    rows.Add(new Rp1ConstructionCostRaw
+                    {
+                        Id = kind == null ? null : Rp1ConstructionIds.Of(project, kind),
+                        KscName = kscName,
+                        KscDisplayName = kscDisplayName,
+                        Kind = kind,
+                        Name = Rp1Types.ReadString(project, "name"),
+                        Cost = Horizons(days => Invoke(costOverTime, project, days * SecondsPerDay)),
+                    });
+                }
+            }
+            return rows;
+        }
+
+        /// <summary>Which of RP-1's three construction types a project is, by the contract's name for it.</summary>
+        private static string? ConstructionKind(object project)
+        {
+            switch (project.GetType().FullName)
+            {
+                case "RP0.FacilityUpgradeProject":
+                    return "FacilityUpgrade";
+                case "RP0.LCConstructionProject":
+                    return "LaunchComplex";
+                case "RP0.PadConstructionProject":
+                    return "Pad";
+                default:
+                    return null;
+            }
+        }
+
+        private static int? ReadInt(object? target, string name) =>
+            Rp1Types.Member(target, name) is int value ? value : (int?)null;
 
         /// <summary>The Facilities tab's buildings, in its order, each only if RP-1 has priced it.</summary>
         private List<Rp1BuildingUpkeepRaw>? Buildings(object maintenance)
@@ -524,7 +741,20 @@ namespace GonogoRp1Uplink
         {
             try
             {
-                return Finite(Rp1Types.ToDouble(_funds!.Invoke(null, new object[] { Enum.Parse(_transactionReasons!, reason), amount, false })));
+                return Funds(Enum.Parse(_transactionReasons!, reason), amount);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>A currency query on a reason RP-1 handed over as its own enum value.</summary>
+        private double? Funds(object reason, double amount)
+        {
+            try
+            {
+                return Finite(Rp1Types.ToDouble(_funds!.Invoke(null, new[] { reason, amount, false })));
             }
             catch (Exception)
             {

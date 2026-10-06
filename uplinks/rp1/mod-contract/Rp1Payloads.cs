@@ -3867,10 +3867,12 @@ public sealed class Rp1BudgetForecastSample
 
 /// <summary>
 /// What sits under the Budget tab's rows: each building and launch complex's
-/// upkeep, each crew member's cost, each training course's cost and each
+/// upkeep, each integration team's salary, each crew member's cost, each
+/// training course's cost, each rollout's and each construction's spend and each
 /// Program's funding, at the same day, thirty days and 365.25 days as
-/// <c>rp1.budget</c>. These are the lines RP-1's Facilities, Astronauts and
-/// Programs tabs list.
+/// <c>rp1.budget</c>. These are the lines RP-1's Facilities, Integration,
+/// Astronauts, Construction and Programs tabs list, and the operations behind
+/// its Rollout/Airlaunch Prep row.
 ///
 /// <para><b>The lines add up to the <c>rp1.budget</c> row they sit under</b>
 /// while the career's currency modifiers are multipliers, which every shipped
@@ -3935,6 +3937,28 @@ public sealed class Rp1BudgetBreakdown
 
     /// <summary>Every running Program, with what it pays over each horizon.</summary>
     public List<Rp1ProgramFundingEntry>? Programs { get; set; }
+
+    /// <summary>
+    /// Every launch complex's integration team and every space centre's
+    /// unassigned engineers, with what each is paid. Together they are the
+    /// Integration Teams row.
+    /// </summary>
+    public List<Rp1IntegrationTeamCostEntry>? IntegrationTeams { get; set; }
+
+    /// <summary>
+    /// Every rollout, reconditioning and air-launch preparation RP-1 bills,
+    /// with the part of its cost that falls inside each horizon. Together they
+    /// are the Rollout/Airlaunch Prep row. A rollback, an air-launch unmount and
+    /// a recovery bill nothing and are not here.
+    /// </summary>
+    public List<Rp1RolloutCostEntry>? Rollouts { get; set; }
+
+    /// <summary>
+    /// Every construction at every space centre, in the Construction tab's
+    /// order, with the part of its remaining cost that falls inside each horizon.
+    /// Together they are the Constructions row.
+    /// </summary>
+    public List<Rp1ConstructionCostEntry>? Constructions { get; set; }
 }
 
 /// <summary>
@@ -4116,6 +4140,164 @@ public sealed class Rp1ProgramFundingEntry
     /// today's rate. Zero once it has paid out in full.
     /// </summary>
     public Rp1BudgetHorizons? Funding { get; set; }
+}
+
+/// <summary>
+/// What one launch complex's engineers are paid, or one space centre's
+/// unassigned engineers, the lines under the Integration Teams row.
+/// <internal>
+/// RP-1's Integration tab lists one line per centre, from
+/// MaintenanceHandler.IntegrationSalaries, which UpdateKCTSalaries fills with
+/// SpaceCenterManagement.GetEffectiveIntegrationEngineersForSalary per centre:
+/// the sum of GetEffectiveEngineersForSalary over the centre's complexes plus
+/// UnassignedEngineers at EngineerIdleSalaryMult. These are those terms, each
+/// priced with the tab's own SalaryEngineers query.
+/// </internal>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1IntegrationTeamCostEntry
+{
+    /// <summary>The space centre the engineers belong to.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? KscName { get; set; }
+
+    /// <summary>
+    /// What RP-1's Integration tab heads the centre with, absent on the same
+    /// conditions as <see cref="Rp1ComplexEntry.KscDisplayName"/>; a client falls
+    /// back to <see cref="KscName"/> as RP-1 does.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? KscDisplayName { get; set; }
+
+    /// <summary>
+    /// The centre's engineers assigned to no complex, rather than one complex's
+    /// team. They are paid a fraction of the full salary for doing nothing.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? Unassigned { get; set; }
+
+    /// <summary>The complex's id, the key <c>rp1.complexes</c> uses. Absent on an unassigned line.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? LcId { get; set; }
+
+    /// <summary>The complex's name as RP-1 shows it. Absent on an unassigned line.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Name { get; set; }
+
+    /// <summary>How many engineers the line pays.</summary>
+    [SitrepUnit(Units.Count)]
+    public int? Engineers { get; set; }
+
+    /// <summary>
+    /// What they are paid. A complex with no work in hand pays its team a
+    /// fraction of the full salary, a rushing one pays more, and a complex under
+    /// construction pays nothing.
+    /// </summary>
+    public Rp1BudgetHorizons? Cost { get; set; }
+}
+
+/// <summary>
+/// One rollout, reconditioning or air-launch preparation, the lines under the
+/// Rollout/Airlaunch Prep row.
+/// <internal>
+/// RP-1 has no per-operation method: SpaceCenterManagement's
+/// GetReconRolloutCostOverTime(time, LaunchComplex) runs one
+/// CurrencyUtils.Funds query per operation and sums them, and that body is
+/// reproduced here one operation at a time, so the row is exactly the sum of
+/// these lines whatever the modifiers.
+/// </internal>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1RolloutCostEntry
+{
+    [SitrepUnit(Units.Id)]
+    public string? KscName { get; set; }
+
+    /// <summary>The centre's display name, absent on the same conditions as <see cref="Rp1ComplexEntry.KscDisplayName"/>.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? KscDisplayName { get; set; }
+
+    /// <summary>The complex the operation runs on, the key <c>rp1.complexes</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? LcId { get; set; }
+
+    /// <summary>The complex's name as RP-1 shows it.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? LcName { get; set; }
+
+    /// <summary>The pad the operation is for, matching <c>rp1.operations[].launchPadId</c>.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? LaunchPadId { get; set; }
+
+    /// <summary>
+    /// RP-1's <c>RolloutReconType</c> name, one of the three that bill:
+    /// "Rollout", "Reconditioning" or "AirlaunchMount".
+    /// </summary>
+    [SitrepUnit(Units.Enumeration)]
+    public string? Type { get; set; }
+
+    /// <summary>The vehicle the operation concerns, as <c>rp1.operations[].associatedVesselId</c>.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? AssociatedVesselId { get; set; }
+
+    /// <summary>The vehicle's name, when it is in the complex's warehouse or build list.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? VesselName { get; set; }
+
+    /// <summary>
+    /// The part of what the operation still has to pay that falls inside each
+    /// horizon: all of it when the operation finishes inside the horizon, a
+    /// share by time otherwise.
+    /// </summary>
+    public Rp1BudgetHorizons? Cost { get; set; }
+}
+
+/// <summary>
+/// One construction's spend, the lines under the Constructions row.
+/// <internal>
+/// Each line is ConstructionProject.GetConstructionCostOverTime(time), called
+/// rather than reproduced, over LCSpaceCenter.Constructions: the same call and
+/// the same list SpaceCenterManagement.GetConstructionCostOverTime sums for the
+/// row and RenderConstructionTab prints per project.
+/// </internal>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1ConstructionCostEntry
+{
+    /// <summary>The construction's own id, the key <c>rp1.constructions</c> uses.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Id { get; set; }
+
+    [SitrepUnit(Units.Id)]
+    public string? KscName { get; set; }
+
+    /// <summary>What RP-1's Construction tab heads the centre with, absent on the same conditions as <see cref="Rp1ComplexEntry.KscDisplayName"/>.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? KscDisplayName { get; set; }
+
+    /// <summary>As <see cref="Rp1ConstructionEntry.Kind"/>: <c>FacilityUpgrade</c>, <c>LaunchComplex</c> or <c>Pad</c>.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public string? Kind { get; set; }
+
+    /// <summary>What is being built, as <see cref="Rp1ConstructionEntry.Name"/>.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// The part of its remaining cost that falls inside each horizon: all of it
+    /// when the construction finishes inside the horizon, a share by time
+    /// otherwise, and nothing while its rate is zero.
+    /// </summary>
+    public Rp1BudgetHorizons? Cost { get; set; }
 }
 
 /// <summary>

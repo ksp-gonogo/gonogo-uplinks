@@ -60,6 +60,37 @@ namespace GonogoRp1Uplink
                     ["deadlineUt"] = p.DeadlineUt,
                     ["funding"] = Horizons(p.Funding),
                 }),
+                ["integrationTeams"] = Rows(raw.IntegrationTeams, t => new Dictionary<string, object?>
+                {
+                    ["kscName"] = t.KscName,
+                    ["kscDisplayName"] = t.KscDisplayName,
+                    ["unassigned"] = t.Unassigned,
+                    ["lcId"] = t.LcId,
+                    ["name"] = t.Name,
+                    ["engineers"] = t.Engineers,
+                    ["cost"] = Horizons(t.Cost),
+                }),
+                ["rollouts"] = Rows(raw.Rollouts, r => new Dictionary<string, object?>
+                {
+                    ["kscName"] = r.KscName,
+                    ["kscDisplayName"] = r.KscDisplayName,
+                    ["lcId"] = r.LcId,
+                    ["lcName"] = r.LcName,
+                    ["launchPadId"] = r.LaunchPadId,
+                    ["type"] = r.Type,
+                    ["associatedVesselId"] = r.AssociatedVesselId,
+                    ["vesselName"] = r.VesselName,
+                    ["cost"] = Horizons(r.Cost),
+                }),
+                ["constructions"] = Rows(raw.Constructions, c => new Dictionary<string, object?>
+                {
+                    ["id"] = c.Id,
+                    ["kscName"] = c.KscName,
+                    ["kscDisplayName"] = c.KscDisplayName,
+                    ["kind"] = c.Kind,
+                    ["name"] = c.Name,
+                    ["cost"] = Horizons(c.Cost),
+                }),
             };
         }
 
