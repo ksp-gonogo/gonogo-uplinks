@@ -52,6 +52,50 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>The smallest settle a chain may ask for, so a chain cannot slew a dish every tick.</summary>
         public const double MinimumSettleSeconds = 1.0;
 
+        /// <summary>
+        /// Whether the settle time grows with the warp rate (see
+        /// <see cref="SettleInForce"/>). False is the other rule: one fixed
+        /// wait at every rate, whatever the chain asked for.
+        /// </summary>
+        public static readonly bool SettleFollowsWarp = true;
+
+        /// <summary>The longest a retargeted link was measured to take to show at 1x and at 10x, in game seconds: the next margin sample, about a second on.</summary>
+        public const double LinkUpSecondsUnwarped = 1.3;
+
+        /// <summary>
+        /// Game seconds a retargeted link takes to show, per unit of warp rate,
+        /// once that is more than <see cref="LinkUpSecondsUnwarped"/>: measured
+        /// as at most 60 game seconds at 1000x, where a rails frame is 20.
+        /// </summary>
+        public const double LinkUpSecondsPerWarpRate = 0.06;
+
+        /// <summary>How many measured link-up times an entry is given before it is judged, since each measurement was of the first sample to show the change and not of the slowest.</summary>
+        public const double LinkUpAllowance = 2.0;
+
+        /// <summary>How long a link takes to show after its antenna is aimed, in game seconds at <paramref name="warpRate"/>, as measured.</summary>
+        public static double LinkUpSeconds(double warpRate)
+        {
+            var rate = warpRate > 0.0 && !double.IsInfinity(warpRate) ? warpRate : 1.0;
+            return Math.Max(LinkUpSecondsUnwarped, LinkUpSecondsPerWarpRate * rate);
+        }
+
+        /// <summary>
+        /// The settle time the walk judges an entry against at
+        /// <paramref name="warpRate"/>: the chain's own, and never less than
+        /// the time a link was measured to take to show at that rate, with an
+        /// allowance. Thirty game seconds is a second and a half of real time
+        /// at 1000x, less than the link takes to appear, so a chain judged on
+        /// it there would call every entry dead and spin through its list.
+        /// </summary>
+        /// <param name="settleSeconds">The chain's settle time in force, from <see cref="SettleSecondsFor"/>.</param>
+        /// <param name="warpRate">The game's time-warp rate; anything that is not a positive number is read as 1.</param>
+        public static double SettleInForce(double settleSeconds, double warpRate)
+        {
+            return SettleFollowsWarp
+                ? Math.Max(settleSeconds, LinkUpAllowance * LinkUpSeconds(warpRate))
+                : settleSeconds;
+        }
+
         /// <summary>What the walk should do with an antenna this tick.</summary>
         internal enum Move
         {

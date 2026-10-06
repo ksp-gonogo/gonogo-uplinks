@@ -169,8 +169,9 @@ namespace Gonogo.RealAntennasUplink
                     continue;
                 }
 
+                var settle = RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate());
                 var decision = RaChainPolicy.Decide(
-                    entry.Walk, entry.Steps.Count, connected, nowUt, entry.SettleSeconds);
+                    entry.Walk, entry.Steps.Count, connected, nowUt, settle);
                 var blocked = Blocker(vessel, antennas[i]);
                 chains.Add(new RealAntennasAntennaChain
                 {
@@ -182,7 +183,7 @@ namespace Gonogo.RealAntennasUplink
                     // fallback doing its job.
                     WalkPhase = blocked != null && connected != true ? RaChainPolicy.StateBlocked : decision.State,
                     Detail = blocked ?? decision.Detail,
-                    SettleSeconds = entry.SettleSeconds,
+                    SettleSeconds = settle,
                     LastAppliedUt = entry.Walk.LastAppliedUt,
                     Laps = entry.Walk.Laps,
                     Connected = connected,
@@ -210,7 +211,7 @@ namespace Gonogo.RealAntennasUplink
             }
 
             var decision = RaChainPolicy.Decide(
-                entry.Walk, entry.Steps.Count, connected, nowUt, entry.SettleSeconds);
+                entry.Walk, entry.Steps.Count, connected, nowUt, RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate()));
             if (decision.Move != RaChainPolicy.Move.Apply || Blocker(vessel, antenna) != null)
             {
                 return;
@@ -229,6 +230,9 @@ namespace Gonogo.RealAntennasUplink
             // already said no to.
             RaChainPolicy.RecordApplied(entry.Walk, decision.Step, entry.Steps.Count, nowUt);
         }
+
+        /// <summary>The game's time-warp rate now, which the settle time follows.</summary>
+        private static double WarpRate() => TimeWarp.CurrentRate;
 
         /// <summary>
         /// The reason this antenna's chain cannot act, or null when it can.

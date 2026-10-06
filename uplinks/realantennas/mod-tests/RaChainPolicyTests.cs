@@ -195,6 +195,60 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.Equal(3, walk.Laps);
         }
 
+        /// <summary>The rig measured a retargeted link showing within 1.26 s at 1x, 1.2 game s at 10x and 60 game s at 1000x.</summary>
+        [Fact]
+        public void TheTimeALinkTakesToShowIsAsMeasuredAtEachWarpRate()
+        {
+            Assert.True(RaChainPolicy.LinkUpSeconds(1.0) >= 1.26);
+            Assert.True(RaChainPolicy.LinkUpSeconds(10.0) >= 1.2);
+            Assert.True(RaChainPolicy.LinkUpSeconds(1000.0) >= 60.0);
+            Assert.True(RaChainPolicy.LinkUpSeconds(100000.0) >= 6000.0);
+            Assert.True(RaChainPolicy.LinkUpSeconds(1.0) < 5.0);
+        }
+
+        /// <summary>
+        /// At 1000x the default thirty game seconds is gone in a second and a
+        /// half of real time, before the link can show. Judged on it, every
+        /// entry reads as dead and the chain spins through its list.
+        /// </summary>
+        [Fact]
+        public void UnderWarpAnEntryIsNotJudgedBeforeItsLinkCouldHaveShown()
+        {
+            Assert.True(RaChainPolicy.SettleFollowsWarp);
+            var settle = RaChainPolicy.SettleInForce(RaChainPolicy.DefaultSettleSeconds, 1000.0);
+            Assert.True(settle >= 2.0 * 60.0, "the settle at 1000x was " + settle);
+
+            var walk = new RaChainPolicy.Walk();
+            RaChainPolicy.RecordApplied(walk, 0, 3, 100.0);
+            Assert.Equal(RaChainPolicy.Move.Settle, RaChainPolicy.Decide(walk, 3, false, 100.0 + 60.0, settle).Move);
+            Assert.Equal(RaChainPolicy.Move.Apply, RaChainPolicy.Decide(walk, 3, false, 100.0 + settle, settle).Move);
+        }
+
+        [Fact]
+        public void WithoutWarpTheChainsOwnSettleStands()
+        {
+            Assert.Equal(30.0, RaChainPolicy.SettleInForce(30.0, 1.0));
+            Assert.Equal(30.0, RaChainPolicy.SettleInForce(30.0, 100.0));
+            Assert.Equal(600.0, RaChainPolicy.SettleInForce(600.0, 1000.0));
+        }
+
+        /// <summary>The smallest settle a chain may ask for is still long enough for a link to show at 1x.</summary>
+        [Fact]
+        public void TheShortestSettleAChainMayAskForIsLengthenedToWhatALinkNeeds()
+        {
+            Assert.True(RaChainPolicy.SettleInForce(RaChainPolicy.MinimumSettleSeconds, 1.0) >= 2.0 * 1.26);
+        }
+
+        [Fact]
+        public void AWarpRateThatIsNotAPositiveNumberIsReadAsNone()
+        {
+            var unwarped = RaChainPolicy.SettleInForce(30.0, 1.0);
+            Assert.Equal(unwarped, RaChainPolicy.SettleInForce(30.0, 0.0));
+            Assert.Equal(unwarped, RaChainPolicy.SettleInForce(30.0, -4.0));
+            Assert.Equal(unwarped, RaChainPolicy.SettleInForce(30.0, double.NaN));
+            Assert.Equal(unwarped, RaChainPolicy.SettleInForce(30.0, double.PositiveInfinity));
+        }
+
         [Fact]
         public void AnAbsentSettleRequestTakesTheDefault() =>
             Assert.Equal(RaChainPolicy.DefaultSettleSeconds, RaChainPolicy.SettleSecondsFor(null));
