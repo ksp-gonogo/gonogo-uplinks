@@ -78,7 +78,8 @@ export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
  *
  * `recorded` asks for no move at all, which is why it reads differently from the
  * rest: nothing is broken, the craft simply wrote this down while it was dark
- * and sent it when the link came back.
+ * and sent it when the link came back. `loading` and `no-game` ask for none
+ * either: the game itself has stopped sending, and says so.
  */
 export function outOfContactReason(grade: HeldGrade): string {
   switch (grade) {
@@ -90,5 +91,9 @@ export function outOfContactReason(grade: HeldGrade): string {
       return "This craft is out of contact. The burns below are the last set that got out before the blackout, and the burn count they are numbered against may have moved since.";
     case "recorded":
       return "The burns below came off this craft's own recording of the time it was out of contact, so they are exact for the moment shown and not for now. The burn count they are numbered against may have moved since.";
+    case "loading":
+      return "The game is loading a scene. The burns below are the last set sent before it began, and the burn count they are numbered against may have moved since.";
+    case "no-game":
+      return "No game is loaded. The burns below are the last set the game sent while one was.";
   }
 }
