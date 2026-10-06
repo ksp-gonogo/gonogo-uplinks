@@ -183,8 +183,8 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "6fd2b2b8e4464043",
-      "elements": 400,
+      "hash": "974807ffd57fc043",
+      "elements": 406,
       "text": "f6b83e92"
     },
     "avionics-controls-locked--default.png": {
@@ -238,8 +238,8 @@
       "text": "cfbb5a78"
     },
     "career-log--default.png": {
-      "hash": "0f3f41003ba923d3",
-      "elements": 586,
+      "hash": "440069dadbdf104c",
+      "elements": 592,
       "text": "180f3670"
     },
     "catalogue-picker--default.png": {
@@ -248,9 +248,9 @@
       "text": "0dc93d6f"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "bae076acc6b5ff17",
-      "elements": 308,
-      "text": "eb8a5e2d"
+      "hash": "71cfb8f85b0c45db",
+      "elements": 303,
+      "text": "09542347"
     },
     "catalogue-picker--mobile-9x8.png": {
       "hash": "bae076acc6b5ff17",
@@ -383,13 +383,13 @@
       "text": "8e8301c3"
     },
     "early-career--default.png": {
-      "hash": "c4a2f9b468a086f5",
-      "elements": 376,
+      "hash": "b5c14ac423879b90",
+      "elements": 382,
       "text": "6ffdb5ab"
     },
     "facilities-two-centres--default.png": {
-      "hash": "195f9dbf4938153a",
-      "elements": 389,
+      "hash": "b399644bc40b2add",
+      "elements": 395,
       "text": "d3a66d04"
     },
     "facility-tiers-in-flight--default.png": {
@@ -413,8 +413,8 @@
       "text": "5641a8f1"
     },
     "funds-alarm--default.png": {
-      "hash": "fa5caff86b2b750f",
-      "elements": 376,
+      "hash": "6eb2a9c7475faa04",
+      "elements": 382,
       "text": "e5879546"
     },
     "hire-target-standing--default.png": {
@@ -428,8 +428,8 @@
       "text": "359423e1"
     },
     "link-down--default.png": {
-      "hash": "e71b6aeba4445e03",
-      "elements": 416,
+      "hash": "3b86b6d6c45d05f0",
+      "elements": 422,
       "text": "6ffdb5ab"
     },
     "no-budget--default.png": {
@@ -518,8 +518,8 @@
       "text": "5152f63c"
     },
     "subsidy-clamped--default.png": {
-      "hash": "2e636bac1bceabf4",
-      "elements": 562,
+      "hash": "f78110b23582f6da",
+      "elements": 568,
       "text": "c25183d4"
     },
     "tooling-nothing-outstanding--default.png": {
