@@ -414,19 +414,23 @@ namespace GonogoPrincipiaUplink
         private FieldInfo? Field(Type type, string name)
         {
             var key = type.FullName + "." + name;
-            if (_fields.TryGetValue(key, out var cached))
+            // One of these is shared by every reader of a kind, and they are not all on one thread.
+            lock (_fields)
             {
-                return cached;
+                if (_fields.TryGetValue(key, out var cached))
+                {
+                    return cached;
+                }
+                FieldInfo? found = null;
+                for (var t = type; t != null && found == null; t = t.BaseType)
+                {
+                    found = t.GetField(
+                        name,
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                }
+                _fields[key] = found;
+                return found;
             }
-            FieldInfo? found = null;
-            for (var t = type; t != null && found == null; t = t.BaseType)
-            {
-                found = t.GetField(
-                    name,
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            }
-            _fields[key] = found;
-            return found;
         }
     }
 }
