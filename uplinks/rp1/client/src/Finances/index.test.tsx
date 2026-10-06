@@ -313,6 +313,48 @@ describe("Finances", () => {
     expect(screen.getByText("UNDER CONSTRUCTION")).toBeInTheDocument();
   });
 
+  it("opens the lines under Integration Teams, each complex's team and the centre's unassigned engineers", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /^3 complexes$/ }),
+    );
+    const line = (name: RegExp) =>
+      screen.getByRole("rowheader", { name }).closest("tr")?.textContent ?? "";
+    expect(line(/^LC-5/)).toMatch(/24 engineers/);
+    expect(line(/^LC-5/)).toMatch(/\(54,000[^)]*\)/);
+    expect(line(/^Hangar/)).toMatch(/\(15,000[^)]*\)/);
+    expect(line(/^Unassigned/)).toMatch(/8 engineers/);
+    expect(line(/^Unassigned/)).toMatch(/\(3,000[^)]*\)/);
+  });
+
+  it("opens the lines under Rollout / Airlaunch Prep, each operation by its vehicle and kind", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /^2 operations$/ }),
+    );
+    const line = (name: RegExp) =>
+      screen.getByRole("rowheader", { name }).closest("tr")?.textContent ?? "";
+    expect(line(/Vanguard TV-3/)).toMatch(/Rollout/);
+    expect(line(/Vanguard TV-3/)).toMatch(/\(1,500[^)]*\)/);
+    expect(line(/^Reconditioning/)).toMatch(/LC-5/);
+    expect(line(/^Reconditioning/)).toMatch(/\(600[^)]*\)/);
+  });
+
+  it("opens the lines under Constructions, each project by name", async () => {
+    const { fixture } = mount();
+    await feed(fixture);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /^1 construction$/ }),
+    );
+    const row = screen.getByRole("rowheader", { name: /^LC-14/ }).closest("tr");
+    expect(row?.textContent).toMatch(/\(27,000[^)]*\)/);
+  });
+
   it("names a running Program by the title and deadline the breakdown carries", async () => {
     const { fixture } = mount();
     await feed(fixture);
