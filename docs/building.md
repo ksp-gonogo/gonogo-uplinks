@@ -48,6 +48,19 @@ set does not carry.
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.
 
+## Watching a client while you work on it
+
+```bash
+pnpm uplink:watch rp1        # rebuilds uplinks/rp1/client on every save
+```
+
+It runs the client's own `gonogo-uplink bundle --watch`, so the bundle is the one
+that client's release build would write. To see it in a running app, start a
+gonogo checkout with `pnpm dev --uplink <path to uplinks/rp1>`: the app loads the
+build output, reports its state under Settings, Uplinks, Local builds, and
+reloads the page when the bundle changes. The command needs the client installed
+(`npm ci` in its directory) with an sdk new enough to have `--watch`.
+
 ## The full lifecycle, one Uplink
 
 ```bash
