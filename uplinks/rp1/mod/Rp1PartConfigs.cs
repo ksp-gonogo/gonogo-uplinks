@@ -28,24 +28,56 @@
 // command that answered it would spend an operator's funds on a question nobody
 // asked it. Those errors are reported with their base cost instead.
 //
+// THE EDITOR'S START-UP, PUT BACK FIRST. RP-1's button is pressed in the editor,
+// on parts whose modules have run their editor start-up. A craft loaded off
+// screen at the Space Center has run Awake and Load and nothing else, and three
+// modules' checks read state only that start-up sets, so each would refuse a
+// craft the button integrates:
+//
+//   RealFuels ModuleFuelTanks        OnAwake copies typesAvailable from the part
+//                                    prefab's module in the editor and in flight
+//                                    only. Without it every tank reports its own
+//                                    type "not available"
+//   ProceduralParts ProceduralPart   OnStart, in the editor only, raises a
+//                                    density the craft did not carry (-1) to the
+//                                    part's minimum
+//   ProceduralFairings
+//   ProceduralFairingSide            the same, for a density of exactly -1
+//
+// Each is restored the way that module's own code would, before its check is
+// asked. A restore that cannot be made changes nothing, so the module's own
+// refusal is reported as it stands.
+//
 // WHAT IS READ:
 //
 //   ShipConstruct.Parts / Part.Modules / Part.partInfo / AvailablePart.title
 //                                    KSP's own, the same walk the tooling and
 //                                    career-cost readings make over the editor's
 //                                    ship
+//   AvailablePart.partPrefab         KSP's own, the module twin RealFuels'
+//                                    FetchModuleFromPrefab copies from
+//   ModuleFuelTanks.typesAvailable   on the loaded module and its prefab twin
+//   ProceduralPart / ProceduralFairingSide .density / .minDensity
 //
-// WHAT IS INVOKED OR WRITTEN, each a thing RP-1 does on the same click:
+// WHAT IS INVOKED OR WRITTEN, each a thing RP-1 or the module's own editor
+// start-up does:
 //
 //   <module>.Validate(out, out, out, out)
 //   <module>.ResolveValidationError()
 //   RFECMPatcher.techNode            internal static, set before the resolve and
 //                                    cleared after it, as RP-1's PurchaseConfig
 //                                    does
+//   ModuleFuelTanks.typesAvailable   the prefab twin's types the loaded module
+//                                    lacks, added
+//   ProceduralPart / ProceduralFairingSide .density
+//                                    the editor's default, only where the craft
+//                                    left it unset
 //
-// PROVENANCE. Read out of an ilspycmd disassembly of the INSTALLED RP-1 RP0.dll.
-// Shape, not value: nothing here has been exercised against a running game.
+// PROVENANCE. Read out of an ilspycmd disassembly of the INSTALLED RP-1 RP0.dll,
+// and of the installed RealFuels, ProceduralParts and ProceduralFairings for the
+// start-up each restore reproduces.
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -59,6 +91,12 @@ namespace GonogoRp1Uplink
     public static class Rp1PartConfigs
     {
         private const string PatcherTypeName = "RP0.Harmony.RFECMPatcher";
+
+        private const string FuelTanksTypeName = "RealFuels.Tanks.ModuleFuelTanks";
+
+        private const string ProceduralPartTypeName = "ProceduralParts.ProceduralPart";
+
+        private const string FairingSideTypeName = "Keramzit.ProceduralFairingSide";
 
         /// <summary>
         /// The cost at or below which RP-1 resolves an error without asking,
@@ -87,8 +125,12 @@ namespace GonogoRp1Uplink
             var errors = new List<string>();
             foreach (var part in Rp1Types.Enumerate(Rp1Types.Member(ship, "Parts")))
             {
-                foreach (var module in Rp1Types.Enumerate(Rp1Types.Member(part, "Modules")))
+                var modules = new List<object>(Rp1Types.Enumerate(Rp1Types.Member(part, "Modules")));
+                List<object>? prefabModules = null;
+                for (var index = 0; index < modules.Count; index++)
                 {
+                    var module = modules[index];
+                    RestoreEditorStartUp(module, () => PrefabTwin(part, module, index, ref prefabModules));
                     var complaint = Complaint(module);
                     if (complaint == null)
                     {
@@ -104,6 +146,101 @@ namespace GonogoRp1Uplink
                 }
             }
             return errors.Count == 0 ? null : errors.ToArray();
+        }
+
+        /// <summary>
+        /// Puts back what the module's own editor start-up sets and its check
+        /// reads, for the three modules that need it; every other module is left
+        /// alone. Only ever adds what the editor would hold, so a restore that
+        /// fails part way leaves the check no more lenient than it was.
+        /// </summary>
+        private static void RestoreEditorStartUp(object module, Func<object?> prefabTwin)
+        {
+            try
+            {
+                if (IsA(module, FuelTanksTypeName))
+                {
+                    AddPrefabTankTypes(module, prefabTwin());
+                }
+                else if (IsA(module, ProceduralPartTypeName))
+                {
+                    // ProceduralPart.SetPFFields: density < 0 becomes Max(minDensity, 0).
+                    var density = Rp1Types.ReadDouble(module, "density");
+                    var minimum = Rp1Types.ReadDouble(module, "minDensity");
+                    if (density < 0 && minimum != null)
+                    {
+                        Rp1Types.WriteDouble(module, "density", Math.Max(minimum.Value, 0));
+                    }
+                }
+                else if (IsA(module, FairingSideTypeName))
+                {
+                    // ProceduralFairingSide.OnStart: density == -1 becomes minDensity.
+                    var density = Rp1Types.ReadDouble(module, "density");
+                    var minimum = Rp1Types.ReadDouble(module, "minDensity");
+                    if (density == -1.0 && minimum != null)
+                    {
+                        Rp1Types.WriteDouble(module, "density", minimum.Value);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Nothing restored means the module's own verdict stands.
+            }
+        }
+
+        /// <summary>
+        /// The prefab's tank types the loaded module lacks, added to it. The
+        /// editor's list is the prefab's copied in OnAwake plus whatever part
+        /// upgrades add after, so the union is what the editor holds.
+        /// </summary>
+        private static void AddPrefabTankTypes(object module, object? prefabTwin)
+        {
+            if (!(Rp1Types.Member(module, "typesAvailable") is IList available))
+            {
+                return;
+            }
+            foreach (var type in Rp1Types.Enumerate(Rp1Types.Member(prefabTwin, "typesAvailable")))
+            {
+                if (!available.Contains(type))
+                {
+                    available.Add(type);
+                }
+            }
+        }
+
+        /// <summary>
+        /// The module's counterpart on the part prefab, found as RealFuels'
+        /// FetchModuleFromPrefab finds it: the module at the same index when it is
+        /// of the same type, otherwise the first of that type. Null when the
+        /// prefab cannot be reached. The prefab's modules are read once per part.
+        /// </summary>
+        private static object? PrefabTwin(object part, object module, int index, ref List<object>? prefabModules)
+        {
+            if (prefabModules == null)
+            {
+                var prefab = Rp1Types.Member(Rp1Types.Member(part, "partInfo"), "partPrefab");
+                prefabModules = new List<object>(Rp1Types.Enumerate(Rp1Types.Member(prefab, "Modules")));
+            }
+            var type = module.GetType();
+            if (index < prefabModules.Count && type.IsInstanceOfType(prefabModules[index]))
+            {
+                return prefabModules[index];
+            }
+            return prefabModules.Find(type.IsInstanceOfType);
+        }
+
+        /// <summary>Whether the module's type, or one it derives from, has this full name.</summary>
+        private static bool IsA(object module, string fullName)
+        {
+            for (var type = module.GetType(); type != null; type = type.BaseType)
+            {
+                if (type.FullName == fullName)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
