@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The same early RP-1 career (1960) as rp1-budget.json, as rp1.budgetBreakdown carries it. The lines add up to that fixture's rows: buildings and complexes to Facilities, crew to the Astronauts tab's base and operational rows, courses to its training row, those three to Astronauts, and the Programs to Program Budget. A course costs its students times its template's fee, and a hire's salary is the base pay of the crew member with no proficiency. Payload data for the Finances screen's drill-downs; it names no widget, so it is not a render fixture."
+    "notes": "The same early RP-1 career (1960) as rp1-budget.json, as rp1.budgetBreakdown carries it. The lines add up to that fixture's rows: buildings and complexes to Facilities, crew to the Astronauts tab's base and operational rows, courses to its training row, those three to Astronauts, the Programs to Program Budget, the integration teams to Integration Teams, the rollouts to Rollout / Airlaunch Prep and the constructions to Constructions. A course costs its students times its template's fee, and a hire's salary is the base pay of the crew member with no proficiency. Payload data for the Finances screen's drill-downs; it names no widget, so it is not a render fixture."
   },
   "topic": "rp1.budgetBreakdown",
   "payload": {
@@ -191,6 +191,106 @@
           "day": 3500.0,
           "month": 101000.0,
           "year": 1150000.0
+        }
+      }
+    ],
+    "integrationTeams": [
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "unassigned": false,
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a01",
+        "name": "LC-5",
+        "engineers": 24,
+        "cost": {
+          "day": -1800.0,
+          "month": -54000.0,
+          "year": -657450.0
+        }
+      },
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "unassigned": false,
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a02",
+        "name": "LC-14",
+        "engineers": 0,
+        "cost": {
+          "day": 0.0,
+          "month": 0.0,
+          "year": 0.0
+        }
+      },
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "unassigned": false,
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a03",
+        "name": "Hangar",
+        "engineers": 8,
+        "cost": {
+          "day": -500.0,
+          "month": -15000.0,
+          "year": -182625.0
+        }
+      },
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "unassigned": true,
+        "lcId": null,
+        "name": null,
+        "engineers": 8,
+        "cost": {
+          "day": -100.0,
+          "month": -3000.0,
+          "year": -36525.0
+        }
+      }
+    ],
+    "rollouts": [
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a01",
+        "lcName": "LC-5",
+        "launchPadId": "LC-5",
+        "type": "Rollout",
+        "associatedVesselId": "7b1e2f4a-0c9d-4e3b-8f21-5a6c7d8e9f01",
+        "vesselName": "Vanguard TV-3",
+        "cost": {
+          "day": -50.0,
+          "month": -1500.0,
+          "year": -11400.0
+        }
+      },
+      {
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "lcId": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a01",
+        "lcName": "LC-5",
+        "launchPadId": "LC-5",
+        "type": "Reconditioning",
+        "associatedVesselId": null,
+        "vesselName": null,
+        "cost": {
+          "day": -100.0,
+          "month": -600.0,
+          "year": -600.0
+        }
+      }
+    ],
+    "constructions": [
+      {
+        "id": "4d0c7e1a-8b3f-4f6e-9a51-2c7d3e9b1a02",
+        "kscName": "us_cape_canaveral",
+        "kscDisplayName": "US - Cape Canaveral",
+        "kind": "LaunchComplex",
+        "name": "LC-14",
+        "cost": {
+          "day": -900.0,
+          "month": -27000.0,
+          "year": -180000.0
         }
       }
     ]

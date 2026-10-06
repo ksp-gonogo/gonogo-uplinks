@@ -61,7 +61,13 @@ type Funds = Value<"funds">;
 type FundsReading = Reading<Funds>;
 type Amount = Funds | FundsReading | null | undefined;
 type PeriodKey = Exclude<keyof Rp1BudgetPeriod, "span">;
-type Drill = "facilities" | "astronauts" | "programs";
+type Drill =
+  | "facilities"
+  | "integration"
+  | "astronauts"
+  | "rollouts"
+  | "constructions"
+  | "programs";
 type BudgetReading = TopicReading<Rp1Budget>;
 type BreakdownReading = TopicReading<Rp1BudgetBreakdown>;
 type LedgerReading = TopicReading<Rp1CareerLedger>;
@@ -82,14 +88,14 @@ interface BudgetRow {
 
 const RP1_ROWS: readonly { key: PeriodKey; label: string; drill?: Drill }[] = [
   { key: "facilities", label: "Facilities", drill: "facilities" },
-  { key: "integrationTeams", label: "Integration Teams" },
+  { key: "integrationTeams", label: "Integration Teams", drill: "integration" },
   { key: "researchTeams", label: "Research Teams" },
   { key: "astronauts", label: "Astronauts", drill: "astronauts" },
   { key: "upkeep", label: "Total upkeep" },
   { key: "subsidy", label: "Avg. Subsidy" },
   { key: "net", label: "Net (after subsidy)" },
-  { key: "rollout", label: "Rollout / Airlaunch Prep" },
-  { key: "constructions", label: "Constructions" },
+  { key: "rollout", label: "Rollout / Airlaunch Prep", drill: "rollouts" },
+  { key: "constructions", label: "Constructions", drill: "constructions" },
   { key: "programBudget", label: "Program Budget", drill: "programs" },
   { key: "balance", label: "Balance" },
   { key: "unlockCredit", label: "Unlock Credit" },
@@ -371,12 +377,6 @@ function linesFor(
   if (drill === "facilities") {
     const buildings = breakdown.buildings ?? [];
     const complexes = breakdown.complexes ?? [];
-    // RP-1's Facilities tab heads each centre's complexes with the centre's
-    // name once. One centre needs no heading, and two can each have an LC-1.
-    const byCentre = new Map<string | null | undefined, number[]>();
-    complexes.forEach((c, i) => {
-      byCentre.set(c.kscName, [...(byCentre.get(c.kscName) ?? []), i]);
-    });
     const complexLine = (i: number): Line => {
       const c = complexes[i];
       return {
@@ -392,16 +392,7 @@ function linesFor(
         amounts: reading.complexes[i].upkeep,
       };
     };
-    const grouped: Line[] =
-      byCentre.size > 1
-        ? [...byCentre].flatMap(([centre, at]) => [
-            {
-              id: `centre:${centre ?? at[0]}`,
-              label: <strong>{complexes[at[0]].kscDisplayName ?? centre}</strong>,
-            },
-            ...at.map(complexLine),
-          ])
-        : complexes.map((_, i) => complexLine(i));
+    const grouped = byCentre(complexes, complexLine);
     return {
       summary: `${count(buildings.length, "building")}, ${count(complexes.length, "complex", "complexes")}`,
       lines: [
@@ -454,6 +445,60 @@ function linesFor(
       ],
     };
   }
+  if (drill === "integration") {
+    const teams = breakdown.integrationTeams ?? [];
+    const complexes = teams.filter((t) => t.unassigned !== true).length;
+    return {
+      summary: count(complexes, "complex", "complexes"),
+      lines: byCentre(teams, (i) => {
+        const t = teams[i];
+        return {
+          id: t.unassigned === true ? `idle:${t.kscName ?? i}` : `team:${t.lcId ?? i}`,
+          label: (
+            <>
+              {t.unassigned === true ? "Unassigned" : t.name} ·{" "}
+              <Unit value={t.engineers} /> engineers
+            </>
+          ),
+          amounts: reading.integrationTeams[i].cost,
+        };
+      }),
+    };
+  }
+  if (drill === "rollouts") {
+    const operations = breakdown.rollouts ?? [];
+    return {
+      summary: count(operations.length, "operation"),
+      lines: operations.map((r, i) => {
+        const kind = rolloutLabel(r.type);
+        return {
+          id: `rollout:${i}`,
+          label:
+            r.vesselName == null ? (
+              <>
+                {kind} · {r.lcName}
+              </>
+            ) : (
+              <>
+                {r.vesselName} · {kind} · {r.lcName}
+              </>
+            ),
+          amounts: reading.rollouts[i].cost,
+        };
+      }),
+    };
+  }
+  if (drill === "constructions") {
+    const projects = breakdown.constructions ?? [];
+    return {
+      summary: count(projects.length, "construction"),
+      lines: byCentre(projects, (i) => ({
+        id: `construction:${projects[i].id ?? i}`,
+        label: projects[i].name,
+        amounts: reading.constructions[i].cost,
+      })),
+    };
+  }
   const running = breakdown.programs ?? [];
   return {
     summary: count(running.length, "Program"),
@@ -473,6 +518,47 @@ function linesFor(
       amounts: reading.programs[i].funding,
     })),
   };
+}
+
+/**
+ * Lines grouped under their space centre, as RP-1's tabs head each centre once.
+ * One centre needs no heading, and two can each have an LC-1.
+ */
+function byCentre(
+  rows: readonly {
+    kscName?: string | null;
+    kscDisplayName?: string | null;
+  }[],
+  line: (i: number) => Line,
+): Line[] {
+  const centres = new Map<string | null | undefined, number[]>();
+  rows.forEach((r, i) => {
+    centres.set(r.kscName, [...(centres.get(r.kscName) ?? []), i]);
+  });
+  if (centres.size <= 1) {
+    return rows.map((_, i) => line(i));
+  }
+  return [...centres].flatMap(([centre, at]) => [
+    {
+      id: `centre:${centre ?? at[0]}`,
+      label: <strong>{rows[at[0]].kscDisplayName ?? centre}</strong>,
+    },
+    ...at.map(line),
+  ]);
+}
+
+/** RP-1's names for the three operations its Rollout/Airlaunch Prep row bills. */
+function rolloutLabel(type: string | null | undefined): string {
+  switch (type) {
+    case "Rollout":
+      return "Rollout";
+    case "Reconditioning":
+      return "Reconditioning";
+    case "AirlaunchMount":
+      return "Airlaunch prep";
+    default:
+      return type ?? "Operation";
+  }
 }
 
 /**
