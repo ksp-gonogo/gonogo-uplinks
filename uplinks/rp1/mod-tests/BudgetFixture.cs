@@ -51,17 +51,73 @@ namespace RP0
         /// <summary>The spans GetBudgetDelta was asked for, in order.</summary>
         public readonly List<double> BudgetDeltaAsks = new List<double>();
 
-        public double GetConstructionCostOverTime(double time) => ConstructionCostPerDay * time / 86400d;
+        /// <summary>The settable per-day figure, plus RP-1's own sum over every centre's constructions.</summary>
+        public double GetConstructionCostOverTime(double time)
+        {
+            var total = ConstructionCostPerDay * time / 86400d;
+            foreach (var ksc in KSCs)
+            {
+                total += GetConstructionCostOverTime(time, ksc);
+            }
+            return total;
+        }
 
-        public double GetConstructionCostOverTime(double time, LCSpaceCenter ksc) => 0.0;
+        /// <summary>RP-1's own body.</summary>
+        public double GetConstructionCostOverTime(double time, LCSpaceCenter ksc)
+        {
+            var total = 0.0;
+            foreach (var construction in ksc.Constructions)
+            {
+                total += construction.GetConstructionCostOverTime(time);
+            }
+            return total;
+        }
 
         public double GetConstructionCostOverTime(double time, string kscName) => 0.0;
 
-        public double GetReconRolloutCostOverTime(double time) => RolloutCostPerDay * time / 86400d;
+        /// <summary>The settable per-day figure, plus RP-1's own sum over every centre's operations.</summary>
+        public double GetReconRolloutCostOverTime(double time)
+        {
+            var total = RolloutCostPerDay * time / 86400d;
+            foreach (var ksc in KSCs)
+            {
+                total += GetReconRolloutCostOverTime(time, ksc);
+            }
+            return total;
+        }
 
-        public double GetReconRolloutCostOverTime(double time, LCSpaceCenter ksc) => 0.0;
+        /// <summary>RP-1's own body.</summary>
+        public double GetReconRolloutCostOverTime(double time, LCSpaceCenter ksc)
+        {
+            var total = 0.0;
+            foreach (var lc in ksc.LaunchComplexes)
+            {
+                total += GetReconRolloutCostOverTime(time, lc);
+            }
+            return total;
+        }
 
-        public double GetReconRolloutCostOverTime(double time, LaunchComplex lc) => 0.0;
+        /// <summary>RP-1's own body: one currency query per operation that bills.</summary>
+        public double GetReconRolloutCostOverTime(double time, LaunchComplex lc)
+        {
+            var total = 0.0;
+            foreach (var op in lc.Recon_Rollout)
+            {
+                if (op.RRType == ReconRolloutProject.RolloutReconType.Rollout
+                    || op.RRType == ReconRolloutProject.RolloutReconType.Reconditioning
+                    || op.RRType == ReconRolloutProject.RolloutReconType.AirlaunchMount)
+                {
+                    var timeLeft = op.GetTimeLeft();
+                    var share = 1.0;
+                    if (timeLeft > time)
+                    {
+                        share = time / timeLeft;
+                    }
+                    total += CurrencyUtils.Funds(op.TransactionReason, -op.cost * (1.0 - op.progress / op.BP) * share);
+                }
+            }
+            return total;
+        }
 
         /// <summary>RP-1's own body, line for line.</summary>
         public double GetBudgetDelta(double deltaTime)

@@ -22,6 +22,9 @@ namespace GonogoRp1Uplink
         public List<Rp1CourseCostRaw>? Courses;
         public List<Rp1TrainingFeeRaw>? TrainingFees;
         public List<Rp1ProgramFundingRaw>? Programs;
+        public List<Rp1IntegrationTeamCostRaw>? IntegrationTeams;
+        public List<Rp1RolloutCostRaw>? Rollouts;
+        public List<Rp1ConstructionCostRaw>? Constructions;
     }
 
     /// <summary>One line at the Budget tab's three horizons, signed as RP-1 signs it: negative is money going out.</summary>
@@ -74,5 +77,39 @@ namespace GonogoRp1Uplink
         public string? Title;
         public double? DeadlineUt;
         public Rp1HorizonsRaw? Funding;
+    }
+
+    public sealed class Rp1IntegrationTeamCostRaw
+    {
+        public string? KscName;
+        public string? KscDisplayName;
+        public bool? Unassigned;
+        public string? LcId;
+        public string? Name;
+        public int? Engineers;
+        public Rp1HorizonsRaw? Cost;
+    }
+
+    public sealed class Rp1RolloutCostRaw
+    {
+        public string? KscName;
+        public string? KscDisplayName;
+        public string? LcId;
+        public string? LcName;
+        public string? LaunchPadId;
+        public string? Type;
+        public string? AssociatedVesselId;
+        public string? VesselName;
+        public Rp1HorizonsRaw? Cost;
+    }
+
+    public sealed class Rp1ConstructionCostRaw
+    {
+        public string? Id;
+        public string? KscName;
+        public string? KscDisplayName;
+        public string? Kind;
+        public string? Name;
+        public Rp1HorizonsRaw? Cost;
     }
 }

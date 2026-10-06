@@ -439,6 +439,155 @@ public class Rp1BudgetBreakdownTests : IDisposable
         Assert.Null(reader.CaptureOnMain(Ut));
     }
 
+    /// <summary>
+    /// Two constructions, a rollout beside a rollback, and two complexes with a
+    /// pool of unassigned engineers, each reason on a multiplier of its own.
+    /// </summary>
+    private static (LaunchComplex Pad, LaunchComplex Hangar, ReconRolloutProject Rollout) AProjectCareer()
+    {
+        var maintenance = ACareer();
+        var scm = SpaceCenterManagement.Instance!;
+        var pad = new LaunchComplex { Name = "LC-1", Engineers = 10 };
+        var hangar = new LaunchComplex { Name = "Hangar", Engineers = 4, IsRushing = true };
+        var vessel = new VesselProject { shipName = "Vanguard" };
+        pad.Warehouse.Add(vessel);
+        var rollout = new ReconRolloutProject
+        {
+            RRType = ReconRolloutProject.RolloutReconType.Rollout,
+            associatedID = vessel.shipID.ToString(),
+            launchPadID = "LC-1 Pad",
+            cost = 500.0,
+            BP = 100.0,
+            progress = 25.0,
+            TimeLeftValue = 5 * Day,
+        };
+        pad.Recon_Rollout.Add(rollout);
+        pad.Recon_Rollout.Add(new ReconRolloutProject
+        {
+            RRType = ReconRolloutProject.RolloutReconType.Rollback,
+            cost = 900.0,
+            BP = 100.0,
+            progress = 60.0,
+            TimeLeftValue = 2 * Day,
+        });
+
+        // Ten days left on the upgrade, so a month and a year take all of it and
+        // a day a tenth; four hundred on the pad, so even a year takes a share.
+        var upgrade = new FacilityUpgradeProject(SpaceCenterFacility.VehicleAssemblyBuilding, "vab", 2, 1, "VAB")
+        {
+            cost = 1000.0,
+            spentCost = 200.0,
+            BP = 100.0,
+            progress = 20.0,
+        };
+        upgrade.SetBuildRate(80.0 / (10 * Day));
+        var newPad = new PadConstructionProject { name = "Pad B", cost = 4000.0, BP = 400.0, RushMultiplierValue = 1.5 };
+        newPad.SetBuildRate(1.0 / Day);
+
+        var centre = new LCSpaceCenter
+        {
+            KSCName = "us_cape_canaveral",
+            Engineers = 20,
+            LaunchComplexes = { pad, hangar },
+            FacilityUpgrades = { upgrade },
+            Constructions = { upgrade, newPad },
+        };
+        pad.Ksc = centre;
+        hangar.Ksc = centre;
+        scm.KSCs.Add(centre);
+
+        maintenance.UpdateKCTSalaries();
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.SalaryEngineers] = 1.5;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.RocketRollout] = 0.8;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.StructureConstruction] = 0.9;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.StructureConstructionLC] = 1.25;
+        return (pad, hangar, rollout);
+    }
+
+    [Fact]
+    public void Rollouts_constructions_and_integration_teams_are_lines_that_add_up_to_their_rows()
+    {
+        AProjectCareer();
+
+        var lines = Read();
+        var rows = new Rp1BudgetReflection().CaptureOnMain(Ut)!;
+
+        foreach (var (row, horizon) in new[]
+                 {
+                     (rows.Day!, (Func<Rp1HorizonsRaw, double?>)(h => h.Day)),
+                     (rows.Month!, h => h.Month),
+                     (rows.Year!, h => h.Year),
+                 })
+        {
+            Assert.NotNull(row.IntegrationTeams);
+            Assert.NotEqual(0.0, row.Rollout);
+            Assert.NotEqual(0.0, row.Constructions);
+            Assert.Equal(row.IntegrationTeams!.Value, lines.IntegrationTeams!.Sum(t => horizon(t.Cost!)!.Value), 6);
+            Assert.Equal(row.Rollout!.Value, lines.Rollouts!.Sum(r => horizon(r.Cost!)!.Value), 6);
+            Assert.Equal(row.Constructions!.Value, lines.Constructions!.Sum(c => horizon(c.Cost!)!.Value), 6);
+        }
+    }
+
+    [Fact]
+    public void Each_complex_and_each_centres_unassigned_pool_is_an_integration_line()
+    {
+        var (pad, hangar, _) = AProjectCareer();
+
+        var teams = Read().IntegrationTeams!;
+
+        Assert.Equal(new[] { "LC-1", "Hangar", null }, teams.Select(t => t.Name));
+        Assert.Equal(new[] { pad.ID.ToString(), hangar.ID.ToString(), null }, teams.Select(t => t.LcId));
+        Assert.Equal(new bool?[] { false, false, true }, teams.Select(t => t.Unassigned));
+        Assert.Equal(new int?[] { 10, 4, 6 }, teams.Select(t => t.Engineers));
+        Assert.All(teams, t => Assert.Equal("us_cape_canaveral", t.KscName));
+        // Heads at the salary, the rush multiplier on the hangar, the idle
+        // fraction on the pool, scaled to the horizon before the query.
+        Assert.Equal(-10.0 * 1000 / 365.25 * 1.5, teams[0].Cost!.Day!.Value, 9);
+        Assert.Equal(-4.0 * 2.0 * 1000 * 30 / 365.25 * 1.5, teams[1].Cost!.Month!.Value, 9);
+        Assert.Equal(-6.0 * 0.25 * 1000 * 1.5, teams[2].Cost!.Year!.Value, 9);
+    }
+
+    [Fact]
+    public void A_rollout_that_bills_is_a_line_priced_as_RP1_prices_it_and_a_rollback_is_not()
+    {
+        var (pad, _, rollout) = AProjectCareer();
+
+        var line = Read().Rollouts!.Single();
+
+        Assert.Equal("Rollout", line.Type);
+        Assert.Equal(pad.ID.ToString(), line.LcId);
+        Assert.Equal("LC-1", line.LcName);
+        Assert.Equal("LC-1 Pad", line.LaunchPadId);
+        Assert.Equal(rollout.associatedID, line.AssociatedVesselId);
+        Assert.Equal("Vanguard", line.VesselName);
+        Assert.Equal("us_cape_canaveral", line.KscName);
+        // Three quarters of the price still to pay, a fifth of it in a day, all
+        // of it inside a month.
+        Assert.Equal(-500.0 * 0.75 / 5 * 0.8, line.Cost!.Day!.Value, 9);
+        Assert.Equal(-500.0 * 0.75 * 0.8, line.Cost!.Month!.Value, 9);
+        Assert.Equal(-500.0 * 0.75 * 0.8, line.Cost!.Year!.Value, 9);
+    }
+
+    [Fact]
+    public void Each_construction_is_a_line_in_the_Construction_tabs_order()
+    {
+        AProjectCareer();
+
+        var constructions = Read().Constructions!;
+
+        Assert.Equal(new[] { "FacilityUpgrade", "Pad" }, constructions.Select(c => c.Kind));
+        Assert.Equal(new[] { "VAB", "Pad B" }, constructions.Select(c => c.Name));
+        Assert.Equal("us_cape_canaveral", constructions[0].KscName);
+        Assert.NotNull(constructions[0].Id);
+        // The upgrade finishes inside a month, so a month and a year take the
+        // whole of its unspent cost; a day takes a tenth.
+        Assert.Equal(-800.0 * 0.9 / 10, constructions[0].Cost!.Day!.Value, 9);
+        Assert.Equal(-800.0 * 0.9, constructions[0].Cost!.Month!.Value, 9);
+        Assert.Equal(-800.0 * 0.9, constructions[0].Cost!.Year!.Value, 9);
+        // The pad is a complex's construction, rushed, with four hundred days to go.
+        Assert.Equal(-4000.0 * 1.5 * 1.25 * 365.25 / 400, constructions[1].Cost!.Year!.Value, 9);
+    }
+
     [Fact]
     public void The_payload_carries_every_line_under_its_contract_name()
     {
@@ -461,6 +610,12 @@ public class Rp1BudgetBreakdownTests : IDisposable
         AssertKeys(typeof(Rp1CourseCostEntry), First(payload, "courses"));
         AssertKeys(typeof(Rp1TrainingFeeEntry), First(payload, "trainingFees"));
         AssertKeys(typeof(Rp1ProgramFundingEntry), First(payload, "programs"));
+
+        AProjectCareer();
+        payload = Rp1BudgetBreakdownCapture.Build(Read())!;
+        AssertKeys(typeof(Rp1IntegrationTeamCostEntry), First(payload, "integrationTeams"));
+        AssertKeys(typeof(Rp1RolloutCostEntry), First(payload, "rollouts"));
+        AssertKeys(typeof(Rp1ConstructionCostEntry), First(payload, "constructions"));
     }
 
     private static Dictionary<string, object?> First(Dictionary<string, object?> payload, string key) =>

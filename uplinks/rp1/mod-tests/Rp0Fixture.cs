@@ -213,7 +213,7 @@ namespace RP0
         }
     }
 
-    public class LCOpsProject
+    public partial class LCOpsProject
     {
         public double BP;
         public double progress;
@@ -271,7 +271,7 @@ namespace RP0
         public new double progress => throw new InvalidOperationException("progress unreadable");
     }
 
-    public class ReconRolloutProject : LCOpsProject
+    public partial class ReconRolloutProject : LCOpsProject
     {
         public enum RolloutReconType
         {
@@ -836,6 +836,15 @@ namespace RP0
         DailyRepDecline = 0x10000L,
         ProgramFunding = 0x20000L,
         RateUnlockCreditIncrease = 0x40000L,
+
+        /// <summary>
+        /// The three a rollout-type operation bills under. The first two carry
+        /// RP-1's own values; the recovery bit is moved off RP-1's, which the
+        /// stand-in gives to StructureRepair.
+        /// </summary>
+        RocketRollout = 0x800000L,
+        AirLaunchRollout = 0x1000000L,
+        VesselRecovery = 0x100000L,
     }
 
     /// <summary>
@@ -1191,7 +1200,7 @@ namespace RP0
     /// as it does for <c>LCOpsProject</c>. Keeping it private here is what makes
     /// this fixture able to fail.
     /// </summary>
-    public abstract class ConstructionProject
+    public abstract partial class ConstructionProject
     {
         /// <summary>
         /// Makes <see cref="BP"/> unreadable, which is the one state a value
@@ -1857,7 +1866,7 @@ namespace RP0
         public static List<(string id, string displayName)>? GetAvailableSites() => Sites;
     }
 
-    public class LCSpaceCenter
+    public partial class LCSpaceCenter
     {
         public string KSCName = "";
         public int Engineers;

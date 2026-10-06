@@ -3729,10 +3729,12 @@ export interface Rp1BudgetForecastSample
 }
 /**
 * What sits under the Budget tab's rows: each building and launch complex's
-* upkeep, each crew member's cost, each training course's cost and each
-* Program's funding, at the same day, thirty days and 365.25 days as
-* `rp1.budget`. These are the lines RP-1's Facilities, Astronauts and Programs
-* tabs list.
+* upkeep, each integration team's salary, each crew member's cost, each
+* training course's cost, each rollout's and each construction's spend and
+* each Program's funding, at the same day, thirty days and 365.25 days as
+* `rp1.budget`. These are the lines RP-1's Facilities, Integration,
+* Astronauts, Construction and Programs tabs list, and the operations behind
+* its Rollout/Airlaunch Prep row.
 *
 * **The lines add up to the `rp1.budget` row they sit under** while the
 * career's currency modifiers are multipliers, which every shipped leader is.
@@ -3794,6 +3796,25 @@ export interface Rp1BudgetBreakdown
 	trainingFees?: Rp1TrainingFeeEntry[] | null;
 	/** Every running Program, with what it pays over each horizon. */
 	programs?: Rp1ProgramFundingEntry[] | null;
+	/**
+	* Every launch complex's integration team and every space centre's unassigned
+	* engineers, with what each is paid. Together they are the Integration Teams
+	* row.
+	*/
+	integrationTeams?: Rp1IntegrationTeamCostEntry[] | null;
+	/**
+	* Every rollout, reconditioning and air-launch preparation RP-1 bills, with
+	* the part of its cost that falls inside each horizon. Together they are the
+	* Rollout/Airlaunch Prep row. A rollback, an air-launch unmount and a recovery
+	* bill nothing and are not here.
+	*/
+	rollouts?: Rp1RolloutCostEntry[] | null;
+	/**
+	* Every construction at every space centre, in the Construction tab's order,
+	* with the part of its remaining cost that falls inside each horizon. Together
+	* they are the Constructions row.
+	*/
+	constructions?: Rp1ConstructionCostEntry[] | null;
 }
 /**
 * One line of the breakdown at the Budget tab's three horizons, as a funds
@@ -3912,6 +3933,100 @@ export interface Rp1ProgramFundingEntry
 	* today's rate. Zero once it has paid out in full.
 	*/
 	funding?: Rp1BudgetHorizons | null;
+}
+/**
+* What one launch complex's engineers are paid, or one space centre's
+* unassigned engineers, the lines under the Integration Teams row.
+*/
+export interface Rp1IntegrationTeamCostEntry
+{
+	/** The space centre the engineers belong to. */
+	kscName?: string | null;
+	/**
+	* What RP-1's Integration tab heads the centre with, absent on the same
+	* conditions as `Rp1ComplexEntry.kscDisplayName`; a client falls back to
+	* `Rp1IntegrationTeamCostEntry.kscName` as RP-1 does.
+	*/
+	kscDisplayName?: string | null;
+	/**
+	* The centre's engineers assigned to no complex, rather than one complex's
+	* team. They are paid a fraction of the full salary for doing nothing.
+	*/
+	unassigned?: boolean | null;
+	/**
+	* The complex's id, the key `rp1.complexes` uses. Absent on an unassigned
+	* line.
+	*/
+	lcId?: string | null;
+	/** The complex's name as RP-1 shows it. Absent on an unassigned line. */
+	name?: string | null;
+	/** How many engineers the line pays. */
+	engineers?: Value<"count"> | null;
+	/**
+	* What they are paid. A complex with no work in hand pays its team a fraction
+	* of the full salary, a rushing one pays more, and a complex under
+	* construction pays nothing.
+	*/
+	cost?: Rp1BudgetHorizons | null;
+}
+/**
+* One rollout, reconditioning or air-launch preparation, the lines under the
+* Rollout/Airlaunch Prep row.
+*/
+export interface Rp1RolloutCostEntry
+{
+	kscName?: string | null;
+	/**
+	* The centre's display name, absent on the same conditions as
+	* `Rp1ComplexEntry.kscDisplayName`.
+	*/
+	kscDisplayName?: string | null;
+	/** The complex the operation runs on, the key `rp1.complexes` uses. */
+	lcId?: string | null;
+	/** The complex's name as RP-1 shows it. */
+	lcName?: string | null;
+	/** The pad the operation is for, matching `rp1.operations[].launchPadId`. */
+	launchPadId?: string | null;
+	/**
+	* RP-1's `RolloutReconType` name, one of the three that bill: "Rollout",
+	* "Reconditioning" or "AirlaunchMount".
+	*/
+	type?: string | null;
+	/**
+	* The vehicle the operation concerns, as
+	* `rp1.operations[].associatedVesselId`.
+	*/
+	associatedVesselId?: string | null;
+	/** The vehicle's name, when it is in the complex's warehouse or build list. */
+	vesselName?: string | null;
+	/**
+	* The part of what the operation still has to pay that falls inside each
+	* horizon: all of it when the operation finishes inside the horizon, a share
+	* by time otherwise.
+	*/
+	cost?: Rp1BudgetHorizons | null;
+}
+/** One construction's spend, the lines under the Constructions row. */
+export interface Rp1ConstructionCostEntry
+{
+	/** The construction's own id, the key `rp1.constructions` uses. */
+	id?: string | null;
+	kscName?: string | null;
+	/**
+	* What RP-1's Construction tab heads the centre with, absent on the same
+	* conditions as `Rp1ComplexEntry.kscDisplayName`.
+	*/
+	kscDisplayName?: string | null;
+	/** As `Rp1ConstructionEntry.kind`: `FacilityUpgrade`, `LaunchComplex` or `Pad`. */
+	kind?: string | null;
+	/** What is being built, as `Rp1ConstructionEntry.name`. */
+	name?: string | null;
+	/**
+	* The part of its remaining cost that falls inside each horizon: all of it
+	* when the construction finishes inside the horizon, a share by time
+	* otherwise, and nothing while its rate is zero.
+	*/
+	cost?: Rp1BudgetHorizons | null;
 }
 /**
 * The `rp1.careerLedger` channel: RP-1's monthly financial ledger, the half of
