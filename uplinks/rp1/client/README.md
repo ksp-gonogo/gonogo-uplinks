@@ -62,6 +62,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |
 | `Rp1ComplexUpkeepEntry` | `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `operational` flag, `upkeep` Rp1BudgetHorizons |
+| `Rp1ConstructionCostEntry` | `cost` Rp1BudgetHorizons, `id` id, `kind` enum, `kscDisplayName` text, `kscName` id, `name` text |
 | `Rp1ConstructionRateStep` | `costMultiplier` ratio, `costPerDay` f/day, `finishesAt` ut, `workRate` ratio |
 | `Rp1ConstructionRateTable` | `id` id, `steps` Rp1ConstructionRateStep[] |
 | `Rp1CourseCostEntry` | `cost` Rp1BudgetHorizons, `id` id, `students` count |
@@ -69,6 +70,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1FacilityUpgradeRate` | `buildSeconds` s, `costPerDay` f/day, `facility` enum |
 | `Rp1FundingCurveKey` | `frac` ratio, `inTangent` 1, `outTangent` 1, `paidFraction` ratio |
 | `Rp1HireTarget` | `active` flag, `currentCount` count, `isResearch` flag, `lcId` id, `leftToHire` count, `targetCount` count, `timeLeft` s |
+| `Rp1IntegrationTeamCostEntry` | `cost` Rp1BudgetHorizons, `engineers` count, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `unassigned` flag |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
 | `Rp1LedgerPeriodEntry` | `confidenceAtClose` confidence, `constructionFees` funds, `endUt` ut, `engineersAtClose` count, `entryCosts` funds, `facilityMaintenance` funds, `fundsAtClose` funds, `hiringEngineers` funds, `hiringResearchers` funds, `launchFees` funds, `lcMaintenance` funds, `maintenanceFees` funds, `open` flag, `otherFees` funds, `otherFundsEarned` funds, `programFunds` funds, `repFromPrograms` rep, `reputationAtClose` rep, `researchersAtClose` count, `salaryCrew` funds, `salaryEngineers` funds, `salaryResearchers` funds, `scienceAtClose` science, `scienceEarnedAtClose` science, `spentUnlockCredit` funds, `startUt` ut, `subsidyPaidOut` funds, `subsidySize` funds, `toolingFees` funds, `trainingFees` funds, `unlockCreditAtClose` funds, `vesselPurchase` funds, `vesselRecovery` funds |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
@@ -76,6 +78,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
 | `Rp1RequiredTechEntry` | `id` id, `parts` text, `title` text |
 | `Rp1ResearchRateStep` | `finishesAt` ut, `researcherSalaryPerDay` f/day, `unlockCreditPerDay` f/day, `workRate` ratio |
+| `Rp1RolloutCostEntry` | `associatedVesselId` id, `cost` Rp1BudgetHorizons, `kscDisplayName` text, `kscName` id, `launchPadId` id, `lcId` id, `lcName` text, `type` enum, `vesselName` text |
 | `Rp1ToolingEntry` | `parameterSummary` text, `partId` id, `partTitle` text, `refitTargets` Rp1ToolingRefitTarget[], `refittable` flag, `symmetryCounterparts` count, `tooled` flag, `toolingCost` funds, `toolingType` id, `toolingTypeTitle` text, `untooledSurcharge` funds |
 | `Rp1ToolingRefitTarget` | `diameter` m, `length` m, `rfType` id |
 | `Rp1TrainingFeeEntry` | `perStudent` Rp1BudgetHorizons, `templateId` id |
