@@ -111,6 +111,53 @@ namespace Gonogo.RealAntennasUplink
             };
         }
 
+        /// <summary>
+        /// Moves the chain kept under <paramref name="address"/>, or under a
+        /// key for the same part on another craft, to <paramref name="key"/>,
+        /// walk position and all, and says whether one was moved. A chain
+        /// already under <paramref name="key"/> is left where it is, and
+        /// nothing else is taken in its place.
+        ///
+        /// <para>Two things bring a chain here under another name: a save made
+        /// before chains were keyed by part, which holds it under the command
+        /// address it was set against, and a craft that docked or undocked,
+        /// which carries the same part under a new craft id.</para>
+        /// </summary>
+        public bool Adopt(string? address, string key)
+        {
+            if (_chains.ContainsKey(key))
+            {
+                return false;
+            }
+            string? from = null;
+            // A position in the antenna list names whatever is there now, never one antenna.
+            if (address != null && !address.StartsWith(PositionalPrefix, System.StringComparison.Ordinal) && _chains.ContainsKey(address))
+            {
+                from = address;
+            }
+            if (from == null)
+            {
+                foreach (var held in _chains.Keys)
+                {
+                    if (RaChainKey.SamePart(held, key))
+                    {
+                        from = held;
+                        break;
+                    }
+                }
+            }
+            if (from == null)
+            {
+                return false;
+            }
+            _chains[key] = _chains[from];
+            _chains.Remove(from);
+            return true;
+        }
+
+        /// <summary>How the command address of an antenna whose part cannot be read begins: its place in the craft's antenna list.</summary>
+        internal const string PositionalPrefix = "index/";
+
         /// <summary>Empties the register, for a scenario module taking in a different save.</summary>
         public void Clear() => _chains.Clear();
     }

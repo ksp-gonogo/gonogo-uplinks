@@ -110,6 +110,93 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.Equal(0, register.Count);
         }
 
+        [Fact]
+        public void AKeyNamesTheCraftThePartAndWhichOfItsAntennas()
+        {
+            var key = RaChainKey.Of("3f2a-craft", 4071234567u, 1);
+
+            Assert.True(RaChainKey.IsStable(key));
+            Assert.False(RaChainKey.IsStable("1234/0"));
+            Assert.False(RaChainKey.IsStable("index/2"));
+            Assert.False(RaChainKey.IsStable(null));
+            Assert.NotEqual(key, RaChainKey.Of("3f2a-craft", 4071234567u, 0));
+            Assert.NotEqual(key, RaChainKey.Of("3f2a-craft", 4071234568u, 1));
+        }
+
+        [Fact]
+        public void TheSamePartIsKnownOnAnotherCraftAndADifferentPartOrAntennaIsNot()
+        {
+            var before = RaChainKey.Of("relay", 77u, 0);
+
+            Assert.True(RaChainKey.SamePart(before, RaChainKey.Of("station-it-docked-to", 77u, 0)));
+            Assert.False(RaChainKey.SamePart(before, RaChainKey.Of("relay", 78u, 0)));
+            Assert.False(RaChainKey.SamePart(before, RaChainKey.Of("relay", 77u, 1)));
+            Assert.False(RaChainKey.SamePart(before, "77/0"));
+            Assert.False(RaChainKey.SamePart(null, before));
+        }
+
+        /// <summary>A save made before chains were keyed by part holds a chain under the address it was set against. It is found there, once, and kept under the part from then on.</summary>
+        [Fact]
+        public void AChainSavedUnderItsCommandAddressIsTakenUnderItsPartWithItsWalkWhereItWas()
+        {
+            var register = new RaChainRegister();
+            register.Restore("1234/0", Steps("BodyCenter", "Vessel"), 45.0, 1, 900.0, 2);
+            var key = RaChainKey.Of("relay", 77u, 0);
+
+            Assert.True(register.Adopt("1234/0", key));
+
+            Assert.Null(register.Find("1234/0"));
+            var entry = register.Find(key)!;
+            Assert.Equal(1, entry.Walk.ActiveStep);
+            Assert.Equal(900.0, entry.Walk.LastAppliedUt);
+            Assert.Equal(2, entry.Walk.Laps);
+            Assert.Equal(45.0, entry.RequestedSettleSeconds);
+            Assert.Equal(1, register.Count);
+            Assert.False(register.Adopt("1234/0", key));
+        }
+
+        /// <summary>A relay that docks takes a new craft id and keeps its parts. Its chain goes with the part.</summary>
+        [Fact]
+        public void AChainFollowsItsPartOntoAnotherCraft()
+        {
+            var register = new RaChainRegister();
+            register.Set(RaChainKey.Of("relay", 77u, 0), Steps("BodyCenter"), null);
+            register.Set(RaChainKey.Of("relay", 78u, 0), Steps("Vessel"), null);
+            var docked = RaChainKey.Of("station", 77u, 0);
+
+            Assert.True(register.Adopt(null, docked));
+
+            Assert.Equal("BodyCenter", register.Find(docked)!.Steps.Single().Mode);
+            Assert.Null(register.Find(RaChainKey.Of("relay", 77u, 0)));
+            Assert.NotNull(register.Find(RaChainKey.Of("relay", 78u, 0)));
+        }
+
+        [Fact]
+        public void AChainAlreadyUnderItsKeyIsLeftAndNothingElseTakesItsPlace()
+        {
+            var register = new RaChainRegister();
+            var key = RaChainKey.Of("relay", 77u, 0);
+            register.Set(key, Steps("BodyCenter"), null);
+            register.Set("1234/0", Steps("Vessel"), null);
+
+            Assert.False(register.Adopt("1234/0", key));
+
+            Assert.Equal("BodyCenter", register.Find(key)!.Steps.Single().Mode);
+            Assert.NotNull(register.Find("1234/0"));
+        }
+
+        /// <summary>A position in the antenna list names whatever is there now, so a chain is never taken from under one.</summary>
+        [Fact]
+        public void AChainIsNeverTakenFromUnderAPositionInTheList()
+        {
+            var register = new RaChainRegister();
+            register.Set("index/0", Steps("BodyCenter"), null);
+
+            Assert.False(register.Adopt("index/0", RaChainKey.Of("relay", 77u, 0)));
+
+            Assert.NotNull(register.Find("index/0"));
+        }
+
         /// <summary>
         /// The settle in force is what the read-back reports, so the register has
         /// to apply the same default and the same clamp the walk is judged

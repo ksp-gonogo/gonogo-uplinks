@@ -83,8 +83,11 @@ namespace Gonogo.RealAntennasUplink
 
             var antennaId = args.AntennaId ?? "";
             var steps = args.Steps ?? new RealAntennasTargetStepArgs[0];
+            var key = KeyFor(vessel, antennaId);
             if (steps.Length == 0)
             {
+                _register.Set(key, steps, null);
+                // A chain a save still holds under the address is cleared with it.
                 _register.Set(antennaId, steps, null);
                 return CommandResult.Ok();
             }
@@ -106,8 +109,54 @@ namespace Gonogo.RealAntennasUplink
                 }
             }
 
-            _register.Set(antennaId, steps, args.SettleSeconds);
+            _register.Set(antennaId, new RealAntennasTargetStepArgs[0], null);
+            _register.Set(key, steps, args.SettleSeconds);
             return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// The key the named antenna's chain is kept under: its part's, or the
+        /// command address itself where the craft or the part cannot be read.
+        /// </summary>
+        private string KeyFor(Vessel? vessel, string antennaId)
+        {
+            if (vessel == null || string.IsNullOrEmpty(antennaId))
+            {
+                return antennaId;
+            }
+            try
+            {
+                var antennas = _targeting.Antennas(vessel);
+                var ids = _targeting.AntennaIds(antennas);
+                var keys = _targeting.ChainKeys(vessel, antennas);
+                for (var i = 0; i < ids.Length; i++)
+                {
+                    if (ids[i] == antennaId)
+                    {
+                        return keys[i] ?? antennaId;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // A craft whose antennas will not read keeps the chain under the address it was given.
+            }
+            return antennaId;
+        }
+
+        /// <summary>
+        /// The chain kept for one antenna, looked for under its part and then
+        /// under whatever it was kept as before: the command address in an
+        /// older save, or the same part on the craft it was on before a dock.
+        /// </summary>
+        private RaChainRegister.Entry? ChainOf(string antennaId, string? key, out string keptUnder)
+        {
+            keptUnder = key ?? antennaId;
+            if (key != null)
+            {
+                _register.Adopt(antennaId, key);
+            }
+            return _register.Find(keptUnder);
         }
 
         /// <summary>
@@ -128,7 +177,7 @@ namespace Gonogo.RealAntennasUplink
             {
                 try
                 {
-                    Walk(pair.Key, pair.Value.Vessel, pair.Value.Antenna, nowUt);
+                    Walk(pair.Key, pair.Value.AntennaId, pair.Value.Vessel, pair.Value.Antenna, nowUt);
                 }
                 catch (Exception ex)
                 {
@@ -155,6 +204,7 @@ namespace Gonogo.RealAntennasUplink
 
             var antennas = _targeting.Antennas(vessel);
             var ids = _targeting.AntennaIds(antennas);
+            var keys = _targeting.ChainKeys(vessel, antennas);
             var connected = Connected(vessel);
             var meta = new PayloadMeta
             {
@@ -163,7 +213,7 @@ namespace Gonogo.RealAntennasUplink
 
             for (var i = 0; i < ids.Length; i++)
             {
-                var entry = _register.Find(ids[i]);
+                var entry = ChainOf(ids[i], keys[i], out _);
                 if (entry == null)
                 {
                     continue;
@@ -195,9 +245,9 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>One antenna's chain: aim if the policy says so, and record it if the aim landed.</summary>
-        private void Walk(string antennaId, Vessel vessel, object antenna, double nowUt)
+        private void Walk(string keptUnder, string antennaId, Vessel vessel, object antenna, double nowUt)
         {
-            var entry = _register.Find(antennaId);
+            var entry = _register.Find(keptUnder);
             if (entry == null)
             {
                 return;
@@ -310,6 +360,9 @@ namespace Gonogo.RealAntennasUplink
         {
             public Vessel Vessel;
             public object Antenna;
+
+            /// <summary>The antenna's command address now, which an aim is sent against.</summary>
+            public string AntennaId;
         }
 
         /// <summary>
@@ -340,6 +393,7 @@ namespace Gonogo.RealAntennasUplink
 
                 IReadOnlyList<object> antennas;
                 string[] ids;
+                string?[] keys;
                 try
                 {
                     antennas = _targeting.Antennas(vessel);
@@ -348,6 +402,7 @@ namespace Gonogo.RealAntennasUplink
                         continue;
                     }
                     ids = _targeting.AntennaIds(antennas);
+                    keys = _targeting.ChainKeys(vessel, antennas);
                 }
                 catch (Exception)
                 {
@@ -356,11 +411,11 @@ namespace Gonogo.RealAntennasUplink
 
                 for (var i = 0; i < ids.Length; i++)
                 {
-                    if (_register.Find(ids[i]) == null || found.ContainsKey(ids[i]))
+                    if (ChainOf(ids[i], keys[i], out var keptUnder) == null || found.ContainsKey(keptUnder))
                     {
                         continue;
                     }
-                    found[ids[i]] = new Site { Vessel = vessel, Antenna = antennas[i] };
+                    found[keptUnder] = new Site { Vessel = vessel, Antenna = antennas[i], AntennaId = ids[i] };
                 }
             }
             return found;

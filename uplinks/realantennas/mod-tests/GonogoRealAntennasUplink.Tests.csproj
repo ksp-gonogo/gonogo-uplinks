@@ -63,6 +63,7 @@
          getting a decision wrong. -->
     <Compile Include="..\mod\RaChainPolicy.cs" />
     <Compile Include="..\mod\RaChainRegister.cs" />
+    <Compile Include="..\mod\RaChainKey.cs" />
     <!-- The home-command claimant's choice of station. It is handed the space
          centre's position rather than reading it (RaSpaceCentre is the KSP half),
          so nearest-station selection and the election are both headless. -->

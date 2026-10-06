@@ -415,6 +415,53 @@ namespace Gonogo.RealAntennasUplink
             return ids;
         }
 
+        /// <summary>
+        /// The key each antenna's chain is kept under, in list order (see
+        /// <see cref="RaChainKey"/>), or null for an antenna whose part cannot
+        /// be found either live or among the craft's saved parts.
+        /// </summary>
+        internal string?[] ChainKeys(Vessel vessel, IReadOnlyList<object> antennas)
+        {
+            var keys = new string?[antennas.Count];
+            var seen = new Dictionary<uint, int>();
+            var craft = vessel.id.ToString();
+            for (var i = 0; i < antennas.Count; i++)
+            {
+                var part = PartPersistentId(vessel, antennas[i]);
+                if (part == null)
+                {
+                    continue;
+                }
+                seen.TryGetValue(part.Value, out var ordinal);
+                seen[part.Value] = ordinal + 1;
+                keys[i] = RaChainKey.Of(craft, part.Value, ordinal);
+            }
+            return keys;
+        }
+
+        /// <summary>The persistent id of the part an antenna is on: off the part while the craft is loaded, and off its saved snapshot while it is not.</summary>
+        private uint? PartPersistentId(Vessel vessel, object antenna)
+        {
+            if (_ra.ReadPublicMember(_ra.Parent(antenna), "part") is Part part)
+            {
+                return part.persistentId;
+            }
+            var module = _ra.ParentSnapshot(antenna) as ProtoPartModuleSnapshot;
+            var saved = vessel.protoVessel != null ? vessel.protoVessel.protoPartSnapshots : null;
+            if (module == null || saved == null)
+            {
+                return null;
+            }
+            foreach (var savedPart in saved)
+            {
+                if (savedPart != null && savedPart.modules != null && savedPart.modules.Contains(module))
+                {
+                    return savedPart.persistentId;
+                }
+            }
+            return null;
+        }
+
         /// <summary>The flight id of the part an antenna belongs to, or null while its craft is unloaded.</summary>
         private string? FlightId(object antenna)
         {
