@@ -125,7 +125,7 @@ public class Part
     public List<object> Modules { get; } = new List<object>();
 }
 
-/// <summary>KSP's AvailablePart, reduced to the two members read.</summary>
+/// <summary>KSP's AvailablePart, reduced to the members read.</summary>
 public class PartInfo
 {
 #pragma warning disable IDE1006
@@ -136,6 +136,9 @@ public class PartInfo
     /// part-to-tech link. Empty on a part that needs nothing.
     /// </summary>
     public string TechRequired = "";
+
+    /// <summary>The part as the game database holds it, whose modules carry what each module's editor start-up copies.</summary>
+    public Part? partPrefab;
 #pragma warning restore IDE1006
 }
 

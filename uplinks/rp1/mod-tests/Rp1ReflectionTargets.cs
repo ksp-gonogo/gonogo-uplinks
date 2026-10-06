@@ -915,6 +915,10 @@ namespace GonogoRp1Uplink.Tests
             ["Part"] = "KSP's part type, named to match ToolingPartResizer.Resize's first parameter",
             ["ModuleROTank"] = "a third-party procedural-tank module, named to answer whether a refit could reshape this part at all",
             ["ProceduralPart"] = "the other procedural-part module, same question",
+            ["partPrefab"] = "KSP's AvailablePart.partPrefab, the module twin the part-config check restores RealFuels' editor tank types from",
+            ["typesAvailable"] = "RealFuels' ModuleFuelTanks.typesAvailable, which its OnAwake copies from the prefab only in the editor and in flight and the part-config check puts back",
+            ["density"] = "ProceduralParts' and ProceduralFairings' stringer density, given the editor's default by the part-config check where the craft left it unset",
+            ["minDensity"] = "the same two modules' minimum density, the default the editor gives an unset one",
         };
 
         /// <summary>

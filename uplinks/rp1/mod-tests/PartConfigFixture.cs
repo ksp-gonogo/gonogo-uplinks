@@ -56,6 +56,118 @@ namespace GonogoRp1Uplink.Tests
     }
 }
 
+namespace RealFuels.Tanks
+{
+    /// <summary>RealFuels' tank definition, reduced to the two names Validate quotes.</summary>
+    public sealed class TankDefinition
+    {
+        public TankDefinition(string name, string title)
+        {
+            this.name = name;
+            Title = title;
+        }
+
+#pragma warning disable IDE1006
+        public string name;
+#pragma warning restore IDE1006
+
+        public string Title;
+    }
+
+    /// <summary>
+    /// RealFuels' tank module, reduced to what its Validate reads. The instance
+    /// list starts empty and is only ever filled from the part prefab's, which is
+    /// what RealFuels' own OnAwake does in the editor and in flight and nowhere
+    /// else, so a module loaded at the Space Center holds an empty list.
+    /// </summary>
+    public sealed class ModuleFuelTanks
+    {
+#pragma warning disable IDE1006
+        public string type = "";
+
+        public List<TankDefinition> typesAvailable = new List<TankDefinition>();
+#pragma warning restore IDE1006
+
+        /// <summary>RealFuels' global definitions, by name, which Validate resolves the module's type through.</summary>
+        public static readonly Dictionary<string, TankDefinition> Definitions = new Dictionary<string, TankDefinition>();
+
+        public bool Validate(out string? error, out bool canBeResolved, out float costToResolve, out string? techToResolve)
+        {
+            error = null;
+            canBeResolved = false;
+            costToResolve = 0f;
+            techToResolve = null;
+            if (!Definitions.TryGetValue(type, out var definition))
+            {
+                error = "definition " + type + " has no global definition";
+            }
+            else if (!typesAvailable.Contains(definition))
+            {
+                error = "definition " + definition.Title + " is not available";
+            }
+            return error == null;
+        }
+    }
+}
+
+namespace ProceduralParts
+{
+    /// <summary>
+    /// ProceduralParts' part module, reduced to its density check. A craft saved
+    /// without a density leaves the field at -1, which only the editor's own
+    /// start-up turns into the part's minimum.
+    /// </summary>
+    public sealed class ProceduralPart
+    {
+#pragma warning disable IDE1006
+        public float density = -1f;
+
+        public float minDensity;
+#pragma warning restore IDE1006
+
+        public bool Validate(out string? error, out bool canBeResolved, out float costToResolve, out string? techToResolve)
+        {
+            error = null;
+            canBeResolved = false;
+            costToResolve = 0f;
+            techToResolve = null;
+            if (density + 0.0001 < minDensity)
+            {
+                error = "density needs to be " + minDensity.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + " or higher";
+                return false;
+            }
+            return true;
+        }
+    }
+}
+
+namespace Keramzit
+{
+    /// <summary>ProceduralFairings' side module, the same density check behind a different default.</summary>
+    public sealed class ProceduralFairingSide
+    {
+#pragma warning disable IDE1006
+        public float density = -1f;
+
+        public float minDensity = 0.01f;
+#pragma warning restore IDE1006
+
+        public bool Validate(out string? error, out bool canBeResolved, out float costToResolve, out string? techToResolve)
+        {
+            error = null;
+            canBeResolved = false;
+            costToResolve = 0f;
+            techToResolve = null;
+            if (density + 0.0001 < minDensity)
+            {
+                error = "density needs to be " + minDensity.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + " or higher";
+                return false;
+            }
+            return true;
+        }
+    }
+}
+
 namespace RP0.Harmony
 {
     /// <summary>

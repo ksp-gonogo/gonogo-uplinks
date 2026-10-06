@@ -399,6 +399,158 @@ namespace GonogoRp1Uplink.Tests
             Assert.True(_catalogue.AllReleased);
         }
 
+        /// <summary>
+        /// A part whose game-database prefab carries the given modules, as
+        /// RealFuels' FetchModuleFromPrefab finds them: by index, then by type.
+        /// </summary>
+        private static void PrefabOf(Part part, params object[] modules)
+        {
+            var prefab = new Part { partInfo = part.partInfo };
+            prefab.Modules.AddRange(modules);
+            part.partInfo!.partPrefab = prefab;
+        }
+
+        /// <summary>
+        /// RealFuels fills a tank's available types from the part prefab in
+        /// OnAwake only in the editor and in flight, so a craft loaded at the
+        /// Space Center holds none and every tank reports its own type "not
+        /// available". RP-1's button runs in the editor, where the copy has been
+        /// made, and integrates the craft.
+        /// </summary>
+        [Fact]
+        public void Starts_a_craft_whose_tank_type_the_part_prefab_offers_though_the_loaded_module_was_never_given_it()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            var steel = new RealFuels.Tanks.TankDefinition("Tank-Sep-Steel", "Steel Fuselage");
+            RealFuels.Tanks.ModuleFuelTanks.Definitions[steel.name] = steel;
+            var part = PartWith(
+                "Procedural Tank",
+                new PlainModule(),
+                new RealFuels.Tanks.ModuleFuelTanks { type = steel.name });
+            PrefabOf(
+                part,
+                new PlainModule(),
+                new RealFuels.Tanks.ModuleFuelTanks { typesAvailable = { steel } });
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Single(lc.BuildList);
+        }
+
+        /// <summary>
+        /// The control for the case above: a type the prefab does not offer is
+        /// one the editor would not offer either, and the refusal stands.
+        /// </summary>
+        [Fact]
+        public void Refuses_a_tank_type_the_part_prefab_does_not_offer_either()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            var steel = new RealFuels.Tanks.TankDefinition("Tank-Sep-Steel", "Steel Fuselage");
+            var aluminium = new RealFuels.Tanks.TankDefinition("Tank-Sep-Al", "Aluminium Fuselage");
+            RealFuels.Tanks.ModuleFuelTanks.Definitions[steel.name] = steel;
+            RealFuels.Tanks.ModuleFuelTanks.Definitions[aluminium.name] = aluminium;
+            var part = PartWith("Procedural Tank", new RealFuels.Tanks.ModuleFuelTanks { type = steel.name });
+            PrefabOf(part, new RealFuels.Tanks.ModuleFuelTanks { typesAvailable = { aluminium } });
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.False(result.Success);
+            Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
+            Assert.Contains("Procedural Tank: definition Steel Fuselage is not available", result.Detail!);
+            Assert.Empty(lc.BuildList);
+            Assert.True(_catalogue.AllReleased);
+        }
+
+        /// <summary>
+        /// A part whose prefab cannot be reached has nothing to restore from, and
+        /// the module's own refusal is reported rather than waved through.
+        /// </summary>
+        [Fact]
+        public void Refuses_a_tank_type_when_the_part_prefab_cannot_be_reached()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            var steel = new RealFuels.Tanks.TankDefinition("Tank-Sep-Steel", "Steel Fuselage");
+            RealFuels.Tanks.ModuleFuelTanks.Definitions[steel.name] = steel;
+            PartWith("Procedural Tank", new RealFuels.Tanks.ModuleFuelTanks { type = steel.name });
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.False(result.Success);
+            Assert.Contains("definition Steel Fuselage is not available", result.Detail!);
+            Assert.Empty(lc.BuildList);
+        }
+
+        /// <summary>
+        /// ProceduralParts leaves a density the craft file does not carry at -1,
+        /// and only its editor start-up raises it to the part's minimum. RP-1's
+        /// button sees the raised value and integrates the craft.
+        /// </summary>
+        [Fact]
+        public void Starts_a_procedural_part_whose_craft_carries_no_density()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            var module = new ProceduralParts.ProceduralPart { minDensity = 0.3f };
+            PartWith("Procedural Tank", module);
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Equal(0.3f, module.density);
+            Assert.Single(lc.BuildList);
+        }
+
+        /// <summary>
+        /// A density the craft DID carry is the operator's, and one below the
+        /// part's minimum is refused, as the editor refuses it.
+        /// </summary>
+        [Fact]
+        public void Refuses_a_procedural_part_saved_below_its_minimum_density()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            PartWith("Procedural Tank", new ProceduralParts.ProceduralPart { density = 0.2f, minDensity = 0.3f });
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.False(result.Success);
+            Assert.Contains("Procedural Tank: density needs to be 0.3 or higher", result.Detail!);
+            Assert.Empty(lc.BuildList);
+        }
+
+        [Fact]
+        public void Starts_a_fairing_side_whose_craft_carries_no_density()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            var module = new Keramzit.ProceduralFairingSide { minDensity = 0.18f };
+            PartWith("Fairing", module);
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.True(result.Success, result.Detail);
+            Assert.Equal(0.18f, module.density);
+            Assert.Single(lc.BuildList);
+        }
+
+        [Fact]
+        public void Refuses_a_fairing_side_saved_below_its_minimum_density()
+        {
+            var lc = Centre();
+            _catalogue.Add("Jet Trainer");
+            PartWith("Fairing", new Keramzit.ProceduralFairingSide { density = 0.1f, minDensity = 0.18f });
+
+            var result = Start("Jet Trainer", lc);
+
+            Assert.False(result.Success);
+            Assert.Contains("Fairing: density needs to be 0.18 or higher", result.Detail!);
+            Assert.Empty(lc.BuildList);
+        }
+
         [Fact]
         public void Refuses_and_charges_nothing_when_the_career_cannot_afford_it()
         {
