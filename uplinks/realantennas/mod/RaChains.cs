@@ -237,18 +237,20 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The reason this antenna's chain cannot act, or null when it can.
         ///
-        /// <para><b>An unloaded craft is the one real blocker.</b> An antenna
-        /// reached through a proto snapshot is a rebuilt copy, not the part's own
-        /// module, so aiming it changes an object the game is about to throw away
-        /// and leaves the saved aim point untouched. Reporting that plainly is the
-        /// honest state; aiming anyway would tell the operator their fallback had
-        /// fired when nothing had moved.</para>
+        /// <para><b>An unloaded craft is the one real blocker, and it is this
+        /// Uplink's own caution, not a limit of RealAntennas.</b> A target set
+        /// on an unloaded craft's antenna is written into its saved part and is
+        /// there when the craft next loads: that much has been measured. What
+        /// has not been seen is whether the craft's live link follows the new
+        /// aim while it stays unloaded. Until it has, a chain that walked there
+        /// could report a fallback as fired on a craft whose link never moved,
+        /// so it is held and says so.</para>
         /// </summary>
         private string? Blocker(Vessel vessel, object antenna)
         {
             if (_ra.ParentSnapshot(antenna) != null || !vessel.loaded)
             {
-                return "This craft is not loaded, where an aim would change a rebuilt copy of the antenna and not the craft's own, so the chain is held until it is.";
+                return "This craft is not loaded. A new aim would be saved with it, but whether its link would follow before it loads has not been established, so the chain is held until it is loaded.";
             }
             if (_ra.Steerable(antenna) != true)
             {
