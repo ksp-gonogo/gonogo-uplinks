@@ -2,9 +2,10 @@
 /**
  * Rebuilds one Uplink's client bundle on every save: `pnpm uplink:watch <name>`.
  *
- * Runs the CLIENT'S OWN copy of `gonogo-uplink bundle --watch`, the one its
- * pinned sdk ships, so the bundle it writes is the one that client's release
- * build would write and an author outside this repository runs the same command.
+ * Runs the CLIENT'S OWN copy of `uplink-tools bundle --watch`, the one its
+ * pinned `@ksp-gonogo/uplink-tools` ships, so the bundle it writes is the one
+ * that client's release build would write and an author outside this
+ * repository runs the same command.
  * Serve the result to a running app from a gonogo checkout with
  * `pnpm dev --uplink <path to uplinks/<name>>`.
  *
@@ -42,11 +43,11 @@ export function resolveWatch(name, root = ROOT) {
   const client = join(root, "uplinks", name, "client");
   const cli = join(
     client,
-    "node_modules/@ksp-gonogo/sitrep-sdk/bin/gonogo-uplink.mjs",
+    "node_modules/@ksp-gonogo/uplink-tools/bin/uplink-tools.mjs",
   );
   if (!existsSync(cli)) {
     return {
-      error: `${name}'s client has no installed sdk. Run \`npm ci\` in uplinks/${name}/client first`,
+      error: `${name}'s client has no installed uplink-tools. Run \`npm ci\` in uplinks/${name}/client first`,
     };
   }
   return {

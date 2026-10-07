@@ -243,7 +243,7 @@ jobs:
           dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo \
             -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
 
-      # `gonogo-uplink new` is held to producing an Uplink that builds: scaffold
+      # `uplink-tools new` is held to producing an Uplink that builds: scaffold
       # one beside the real ones with this leg's own CLI, then codegen, build, test
       # and typecheck it in both resolution modes. Run on one leg only, since it
       # proves the scaffold and the pinned toolchain rather than any one Uplink,
@@ -306,7 +306,7 @@ jobs:
         if: (failure() || steps.docs.outcome == 'failure') && inputs.client
         continue-on-error: true
         run: |
-          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- gonogo-uplink render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")
+          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- uplink-tools render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")
 
       # Uploaded on failure as well as success: a leg that fails is the one whose
       # output someone needs to read, and a success-only upload throws exactly

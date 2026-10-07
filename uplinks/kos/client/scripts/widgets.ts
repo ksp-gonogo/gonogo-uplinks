@@ -8,7 +8,7 @@
  *
  * The playwright + esbuild rendering HARNESS itself
  * (`@ksp-gonogo/components`'s `scripts/widgetRenderHarness.ts`) is NOT ported
- * here: the pictures of this widget come from `gonogo-uplink render` driving
+ * here: the pictures of this widget come from `uplink-tools render` driving
  * the `_scene` fixtures beside `__fixtures__/probe/`, and this file only
  * carries the lightweight config types + lookup the DOM-snapshot test needs.
  */
@@ -72,7 +72,7 @@ const WIDGETS: WidgetRenderConfig[] = [
      *
      * These fixtures live in a `probe/` SUBFOLDER of the widget's
      * `__fixtures__/`, apart from the `_scene` fixtures beside them: the
-     * `gonogo-uplink render` walker only takes files whose directory is
+     * `uplink-tools render` walker only takes files whose directory is
      * itself named `__fixtures__`, and it rejects a fixture carrying no
      * `_scene`. The subfolder is what keeps these two out of that walk while
      * leaving them beside the widget they belong to.

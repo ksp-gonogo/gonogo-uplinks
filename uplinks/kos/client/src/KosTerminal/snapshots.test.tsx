@@ -7,7 +7,7 @@
  * `@ksp-gonogo/components`'s render catalogue, where the widget's pictures
  * used to be taken from even though its source has always lived here: the
  * pictures now come from the `_scene` fixtures beside this folder's `probe/`
- * subfolder, driven by `gonogo-uplink render`, and the structural half is
+ * subfolder, driven by `uplink-tools render`, and the structural half is
  * this file.
  *
  * The `char-mode-badges` scenario carries the one state no `_scene` fixture

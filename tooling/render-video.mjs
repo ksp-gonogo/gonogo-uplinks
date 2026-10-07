@@ -4,7 +4,7 @@
  *
  * ## Why this exists
  *
- * `gonogo-uplink render` encodes a motion scene one way: GIF. That is the right
+ * `uplink-tools render` encodes a motion scene one way: GIF. That is the right
  * asset for the generated Uplink page, which is markdown rendered by GitHub, and
  * it is the wrong asset for showing a change to a person. The operator's
  * finding, 2026-09-11: a GIF pasted into the Claude app does not animate, so a
@@ -27,7 +27,7 @@
  * Usage:
  *   node tooling/render-video.mjs <uplink> [--scene <name>] [--fps <n>] [--loops <n>]
  *
- * Run `gonogo-uplink render --frames` (optionally `--scene <name>`) first: with
+ * Run `uplink-tools render --frames` (optionally `--scene <name>`) first: with
  * no `--frames` there are no numbered PNGs and this has nothing to encode, which
  * it says rather than writing an empty file.
  */
@@ -144,7 +144,7 @@ function main(argv) {
     throw new Error(
       `render-video: no *.frames directory under ${rendersDir}` +
         (only ? ` for scene "${only}"` : "") +
-        ". Run `gonogo-uplink render --frames` first: without it the harness " +
+        ". Run `uplink-tools render --frames` first: without it the harness " +
         "encodes its GIF and discards the numbered PNGs this reads.",
     );
   }

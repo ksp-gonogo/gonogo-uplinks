@@ -3,25 +3,26 @@
  * Builds one Uplink's client into the standalone ESM bundle the app `import()`s,
  * and writes the `gonogo-uplink.json` descriptor beside it.
  *
- * ## Why this file exists here rather than in the devkit
+ * ## Why this file still exists beside `uplink-tools bundle`
  *
- * It should be in the devkit, as `gonogo-uplink bundle`. It is not: the
- * `gonogo-uplink` CLI that `@ksp-gonogo/ui-kit` publishes has two verbs, `render`
- * and `docs`, and neither produces a loadable bundle. The only thing in the world
- * that builds an Uplink client bundle is an 80-line Vite plugin inside
- * `gonogo`'s `packages/app/vite.config.ts`, which is app-internal and does not
- * travel with an extracted Uplink.
+ * The devkit builds a bundle now: `uplink-tools bundle`, from
+ * `@ksp-gonogo/uplink-tools`, is what an author runs and what
+ * `pnpm uplink:watch` runs here. This file was written before it existed, as
+ * the reconstruction of the app's own bundling from the outside, and this
+ * repository's release still goes through it: `_uplink-tasks.yml` and
+ * `release-uplink.mjs` expect `artifacts/<id>.client.js` and its descriptor in
+ * one flat directory, where the tool writes `<out>/<id>/<id>.client.js`.
  *
- * So an author outside that repo can develop, typecheck and test an Uplink, and
- * cannot ship one. This is the reconstruction, written from the outside, and it
- * is the strongest case in the pilot for what the devkit still owes: every line
- * below is a line an author had to work out for themselves.
+ * Retiring it means moving those two callers to the tool's layout and checking
+ * that the descriptor it writes matches this one byte for byte. Until that is
+ * done the two must agree, and `uplink-bundle-settings.mjs` holds what they
+ * share.
  *
- * The four compatibility fields ARE derivable from published packages:
+ * The four compatibility fields are derived from published packages:
  * `EXTENSION_API_VERSION`, `CONTRACT_MAJOR` and `CONTRACT_MINOR` come off
  * `@ksp-gonogo/sitrep-sdk`, and `uiKitVersion` off the installed ui-kit's own
- * manifest. Nothing here has to be told them, which is the design working. The
- * externals list is the exception; see `uplink-bundle-settings.mjs`.
+ * manifest. The externals list is the exception; see
+ * `uplink-bundle-settings.mjs`.
  */
 
 import { createHash } from "node:crypto";

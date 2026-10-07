@@ -13,7 +13,7 @@ after(() => {
   for (const root of roots) rmSync(root, { recursive: true, force: true });
 });
 
-/** A checkout holding the named Uplinks, each with a client and optionally an installed sdk. */
+/** A checkout holding the named Uplinks, each with a client and optionally an installed uplink-tools. */
 function checkout(uplinks) {
   const root = mkdtempSync(join(tmpdir(), "uplink-watch-"));
   roots.push(root);
@@ -22,21 +22,21 @@ function checkout(uplinks) {
     mkdirSync(client, { recursive: true });
     writeFileSync(join(client, "package.json"), "{}");
     if (installed) {
-      const bin = join(client, "node_modules/@ksp-gonogo/sitrep-sdk/bin");
+      const bin = join(client, "node_modules/@ksp-gonogo/uplink-tools/bin");
       mkdirSync(bin, { recursive: true });
-      writeFileSync(join(bin, "gonogo-uplink.mjs"), "");
+      writeFileSync(join(bin, "uplink-tools.mjs"), "");
     }
   }
   return root;
 }
 
-test("runs the client's own gonogo-uplink in watch mode, from the client directory", () => {
+test("runs the client's own uplink-tools in watch mode, from the client directory", () => {
   const root = checkout({ rp1: true, scansat: true });
   const resolved = resolveWatch("rp1", root);
   const client = join(root, "uplinks/rp1/client");
   assert.equal(resolved.cwd, client);
   assert.deepEqual(resolved.args, [
-    join(client, "node_modules/@ksp-gonogo/sitrep-sdk/bin/gonogo-uplink.mjs"),
+    join(client, "node_modules/@ksp-gonogo/uplink-tools/bin/uplink-tools.mjs"),
     "bundle",
     "--watch",
     "--client",
@@ -57,7 +57,7 @@ test("no name asks for one", () => {
   assert.match(resolveWatch(undefined, root).error, /name an Uplink/);
 });
 
-test("a client with no installed sdk is told to install it", () => {
+test("a client with no installed uplink-tools is told to install it", () => {
   const root = checkout({ rp1: false });
   assert.match(resolveWatch("rp1", root).error, /npm ci/);
 });

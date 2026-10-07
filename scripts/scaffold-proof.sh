@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Holds `gonogo-uplink new` to the claim that it hands an author an Uplink that
+# Holds `uplink-tools new` to the claim that it hands an author an Uplink that
 # builds: scaffold one next to the real ones, then build and test it the way
 # every other leg does. A scaffold nobody proves rots silently, because the
 # template and the toolchain it feeds change on different days.
@@ -7,7 +7,7 @@
 #   scripts/scaffold-proof.sh <sibling>
 #
 # <sibling> is an Uplink whose client has its dependencies installed, so its
-# `gonogo-uplink` is the one run, and whose pins the scaffold inherits. Needs the
+# `uplink-tools` is the one run, and whose pins the scaffold inherits. Needs the
 # reference set (vendor/contract, vendor/devkit, vendor/ksp-managed) resolved.
 set -euo pipefail
 
@@ -16,7 +16,7 @@ id="scaffoldproof"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
-cli="$root/uplinks/$sibling/client/node_modules/.bin/gonogo-uplink"
+cli="$root/uplinks/$sibling/client/node_modules/.bin/uplink-tools"
 if [ ! -x "$cli" ]; then
   echo "::error::$cli is missing: install the $sibling client first"
   exit 1

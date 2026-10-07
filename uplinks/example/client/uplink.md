@@ -13,7 +13,7 @@ CI legs are green, the layout works.
 Everything else on the page beside this text is DERIVED: the widget list, the
 channels, the units, the compat numbers and the screenshots all come out of your
 registrations, your contract slice and your fixtures. `uplink.md` is the one file
-you write, and `gonogo-uplink docs` assembles the page from it.
+you write, and `uplink-tools docs` assembles the page from it.
 
 Put a lede here (what the Uplink is for, which mod it integrates, what someone
 has to install first) and, where a widget needs more than its own one-line

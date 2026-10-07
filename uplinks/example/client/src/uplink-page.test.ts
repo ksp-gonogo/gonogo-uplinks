@@ -8,7 +8,7 @@ import "./index.js";
 /**
  * The generated page, gated without a browser.
  *
- * `gonogo-uplink docs --check` asks two questions and only one of them needs
+ * `uplink-tools docs --check` asks two questions and only one of them needs
  * Chromium: whether the committed images are current does, whether the PROSE
  * still matches the registrations does not. This is the second question, and it
  * runs here because this suite has already loaded the client under jsdom with a

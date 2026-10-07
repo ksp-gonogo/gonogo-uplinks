@@ -97,7 +97,7 @@ const WIDGETS: WidgetRenderConfig[] = [
      * baselines beside it, since it cannot read another package's.
      *
      * They live in a `probe/` SUBFOLDER of the widget's own `__fixtures__/`,
-     * apart from the `_scene` fixtures beside them: the `gonogo-uplink render`
+     * apart from the `_scene` fixtures beside them: the `uplink-tools render`
      * walker only takes files whose directory is itself named `__fixtures__`,
      * and it rejects a fixture carrying no `_scene`. These three drive the
      * playwright PNG harness rather than a doc page, so the subfolder keeps

@@ -54,7 +54,7 @@ and nothing else of the app's.
 pnpm uplink:watch rp1        # rebuilds uplinks/rp1/client on every save
 ```
 
-It runs the client's own `gonogo-uplink bundle --watch`, so the bundle is the one
+It runs the client's own `uplink-tools bundle --watch`, so the bundle is the one
 that client's release build would write. To see it in a running app, start a
 gonogo checkout with `pnpm dev --uplink <path to uplinks/rp1>`: the app loads the
 build output, reports its state under Settings, Uplinks, Local builds, and
@@ -155,7 +155,7 @@ it, and every run would agree.
 Screenshots live in `client/docs/assets/`, which is COMMITTED, because the
 generated page references that path and a gitignored image is one GitHub draws as
 a broken icon. `renders/` is the other thing, gitignored: review output from
-`gonogo-uplink render`, regenerated on demand and never a gate.
+`uplink-tools render`, regenerated on demand and never a gate.
 
 The commit-back splits a page into its two halves. The prose, the manifest and
 `render-shape.json` are staged by BYTES, because each is derived from the
@@ -252,10 +252,12 @@ too? This scan exists because eleven Uplinks left `gonogo` before anyone asked.
 Everything below was reconstructed by hand to get this repo green. Each is a
 thing an author has to work out for themselves today, and each belongs upstream.
 
-1. **No bundler.** `gonogo-uplink` (from `@ksp-gonogo/ui-kit`) has `render` and
-   `docs` and no `bundle`. The only thing that builds an Uplink client bundle is
-   an 80-line Vite plugin inside the app. `tooling/bundle-uplink-client.mjs` is
-   the reconstruction. It should be `gonogo-uplink bundle`
+1. **Two bundlers.** `uplink-tools bundle` (from `@ksp-gonogo/uplink-tools`)
+   builds an Uplink client bundle and is what an author runs.
+   `tooling/bundle-uplink-client.mjs` is the reconstruction this repo wrote
+   before it existed, and the release here still goes through it because it
+   writes a flat `artifacts/<id>.client.js` where the tool writes
+   `<out>/<id>/<id>.client.js`. The release should move to the tool
 2. **The externalised-specifier list is published nowhere.** It lives in
    `packages/app/src/uplinks/externals/entries.ts`, so the bundler carries a hand
    copy of a list whose failure mode is a MISSING entry, which a copy agrees with

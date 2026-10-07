@@ -8,7 +8,7 @@ import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
 /**
  * This client's one version line, and it must equal `package.json`'s. The
  * declaration is the source of the number and `gonogo-uplink.json` is generated
- * FROM it, so the manifest cannot supply it. `gonogo-uplink docs` refuses to
+ * FROM it, so the manifest cannot supply it. `uplink-tools docs` refuses to
  * write a manifest whose declared version disagrees with the package's, so the
  * two cannot drift without something saying so.
  */
