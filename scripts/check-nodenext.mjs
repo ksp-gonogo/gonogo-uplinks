@@ -37,7 +37,7 @@
  *
  * Usage:
  *   node scripts/check-nodenext.mjs                every Uplink
- *   node scripts/check-nodenext.mjs example        one of them
+ *   node scripts/check-nodenext.mjs scansat        one of them
  */
 
 import { spawnSync } from "node:child_process";
@@ -76,7 +76,7 @@ for (const leg of legs) {
   if (!existsSync(config)) {
     console.error(
       `✖ ${leg.name}: no tsconfig.nodenext.json. Every client needs one, because the mode it does\n` +
-        "  not check is the one that fails silently. Copy the example's.",
+        "  not check is the one that fails silently. A scaffold from `uplink-tools new` has one to copy.",
     );
     exitCode = 1;
     continue;

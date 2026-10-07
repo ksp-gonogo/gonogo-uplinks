@@ -4,46 +4,56 @@ Reference for the build, the CI checks and what each one is for.
 
 ## What you need before anything builds
 
-Four things, all resolved through overridable MSBuild properties
-(`Directory.Build.props`) so you can point at a different install and re-run:
+An Uplink here is built the way an outside author's is. Everything of Gonogo's
+arrives as a package, and only the game is yours to supply:
 
-| Property | What | Where from |
-|---|---|---|
-| `KspManaged` | KSP's managed assemblies | your own KSP install, `KSP_x64_Data/Managed` |
-| `KspGameData` | the mod this Uplink wraps | your own `GameData` |
-| `GonogoContract` | `Sitrep.Contract.dll` per target framework, its codegen twin and `CodegenTwin.props` | `vendor/contract`, written by gonogo's vendoring script (below) |
-| `GonogoDevkit` | `Sitrep.Contract.TestSupport.dll`, the fakes and rule assertions a Tests project uses, and `Sitrep.Core.dll`, the real Courier/Archive delay engine | `vendor/devkit`, written by the same script |
+| What | Where from |
+|---|---|
+| KSP's managed assemblies (`KspManaged`) | your own KSP install, `KSP_x64_Data/Managed` |
+| the mod this Uplink wraps (`KspGameData`) | your own `GameData` |
+| `KspGonogo.Sitrep.Contract`, the one NuGet package every C# project references | `vendor/nuget`, which `nuget.config` names as a feed |
+| `@ksp-gonogo/sitrep-sdk`, `ui-kit` and `uplink-tools` | the three tarballs in `vendor/`, which each client's `package.json` names |
 
-The first two are not ours to redistribute and stay machine-local. The last two
-are gonogo's own, and both come from one run of a script in the gonogo repo, built
-from one gonogo commit:
+The first two are not ours to redistribute and stay machine-local. They are
+MSBuild properties (`Directory.Build.props`), so `-p:KspManaged=...`, or an
+environment variable of the same name, points a build at a different install.
+
+The package is the whole of the C# surface. A plugin and its contract slice
+compile against the `Sitrep.Contract` in it (compile-only, since GonogoCore
+provides the assembly in the game); a Tests project also gets
+`Sitrep.Contract.TestSupport`, the fakes and rule assertions, and `Sitrep.Core`,
+the real delay engine; and its `codegen` folder holds the twin and the props
+that `uplink-tools codegen` builds an Uplink's client types against. No project
+references a loose assembly of Gonogo's.
+
+### The pin
+
+One gonogo commit stands behind all four packages. `vendor/gonogo-ref` names it,
+and one line in `Directory.Build.props`, `GonogoContractVersion`, is the version
+every project references. The version carries the commit
+(`<release>-pin.g<first 12 of the sha>`), because NuGet's machine-wide cache
+would otherwise go on serving the first bytes it saw under a version packed
+twice.
+
+To move to a newer gonogo, from a gonogo checkout built at that commit:
 
 ```bash
-# from a gonogo checkout; pass the pin so you build what CI builds
-scripts/vendor-uplinks-reference-set.sh <this checkout> "$(cat <this checkout>/vendor/gonogo-ref)"
+scripts/vendor-uplinks-reference-set.sh <this checkout> <sha>   # the nupkg, the version line, vendor/gonogo-ref
+# then pack sitrep-sdk, ui-kit and uplink-tools with scripts/pack-publishable.mjs,
+# add each to vendor/ under its content-addressed name, and point every client's
+# package.json at the new files
 ```
 
-`vendor/gonogo-ref` names the one gonogo commit CI vendors from. The set carries
-the TypeScript emitter as well as the contract, so a different gonogo commit can
-write different `__generated__` files from an unchanged Uplink, and "Codegen is
-current" judges them against the pin. To move to a newer gonogo, change the sha,
-re-vendor, run `node tooling/codegen-uplink.mjs <uplink>` for every Uplink with a
-codegen twin, typecheck each client against what it wrote, and commit all of it
-together.
+Then, in every Uplink: `npm install` in `client/`, `uplink-tools codegen`,
+`uplink-tools page`, typecheck and test. Commit all of it together: the
+generated TypeScript and the manifests are judged against the pin, so a pin that
+moved without them is red in every Uplink at once. `scripts/check-vendor-pins.mjs`
+holds the pieces to each other.
 
-It builds from the COMMIT (`git archive`), not the working tree, replaces both
-directories wholesale, and writes the commit sha to `VENDORED_FROM` in each, so
-`vendor/contract` and `vendor/devkit` cannot disagree about where they came from
-and you can always tell which gonogo a build here was checked against. A Tests
-project that wants the shared fakes or the Unit-coverage sweep references
-`$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll` beside
-`$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll`; `xunit.assert`, the one
-other thing TestSupport needs, arrives with the Tests project's own xunit package.
-A Tests project that drives the delay engine end to end references
-`$(GonogoDevkit)\Sitrep.Core.dll` as well; it reaches nothing but `Sitrep.Contract`,
-so no satellite assemblies come with it. Both directories stay gitignored, and CI
-runs the same script to materialise them, then fails on any `HintPath` the resolved
-set does not carry.
+The vendoring script packs from the COMMIT (`git archive`), never the working
+tree, and leaves exactly one package in the feed. Once a release of the package
+is on nuget.org, `GonogoContractVersion` becomes that release's version and the
+vendored file goes.
 
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.
@@ -63,20 +73,47 @@ reloads the page when the bundle changes. The command needs the client installed
 
 ## The full lifecycle, one Uplink
 
+Every build step is a command of the published `uplink-tools`, the same ones an
+outside author runs. `tooling/uplink-tools.mjs <uplink> <command>` runs one for
+an Uplink here with that Uplink's own installed copy; inside `client/` the
+`npm run` scripts and `npx uplink-tools` do the same.
+
 ```bash
 node scripts/uplink-matrix.mjs                       # what CI will do, per Uplink
 cd uplinks/scansat/client && npm ci                  # client dependencies
 npm run typecheck && npm test                        # client half
-cd - && node tooling/codegen-uplink.mjs scansat      # regenerate committed types
-dotnet build  uplinks/scansat/mod/*.csproj -c Release
+npx uplink-tools codegen                             # regenerate committed types (--check: fail on drift)
+npx uplink-tools page                                # the generated page, with no browser
+cd - && dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
 node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED (or, if bundled, LINKED)
 node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
 node tooling/minsize-gate.mjs --only scansat         # does every widget fit its own minSize (Linux only, see below)
 node tooling/check-mod-version.mjs scansat           # parent mod, pinned vs newer
-node tooling/bundle-uplink-client.mjs scansat        # artifacts/<id>.client.js + descriptor
-node tooling/package-uplink-mod.mjs scansat          # artifacts/<GameData>.zip
+node tooling/uplink-tools.mjs scansat release --out artifacts   # bundle, bake, compile, verify, zip
 ```
+
+`release` is the order that matters. The app loads an installed Uplink's client
+only when its plugin says where the bundle lives and vouches for its hash, so the
+bundle is built and hashed, the hash is baked into the plugin's sources, and
+only then is the plugin compiled and zipped. `bundle`, `bake` and `package` are
+its steps, and each runs alone.
+
+A plugin's manifest reads three generated files, `Provenance.g.cs`,
+`ClientSource.g.cs` and `ExpectedClientHash.g.cs`, which are never committed.
+`uplink-tools bake` writes them, and a build of a fresh checkout that has none
+bakes them first (`Directory.Build.targets`), with no hash.
+
+## Starting a new Uplink
+
+```bash
+node tooling/uplink-tools.mjs <a sibling> new <id> --dir "$PWD/uplinks"
+```
+
+It goes to `uplinks/<id>/` pinned like its siblings: the same three tarballs and
+`$(GonogoContractVersion)`. There is no example Uplink to copy. The scaffold is
+the example, and `scripts/scaffold-proof.sh` makes a fresh one on every CI run
+and takes it through to a release, so it cannot rot.
 
 ## Rig-only dev tools: `mod-devtools/`
 
@@ -252,27 +289,23 @@ too? This scan exists because eleven Uplinks left `gonogo` before anyone asked.
 Everything below was reconstructed by hand to get this repo green. Each is a
 thing an author has to work out for themselves today, and each belongs upstream.
 
-1. **Two bundlers.** `uplink-tools bundle` (from `@ksp-gonogo/uplink-tools`)
-   builds an Uplink client bundle and is what an author runs.
-   `tooling/bundle-uplink-client.mjs` is the reconstruction this repo wrote
-   before it existed, and the release here still goes through it because it
-   writes a flat `artifacts/<id>.client.js` where the tool writes
-   `<out>/<id>/<id>.client.js`. The release should move to the tool
+1. **Two bundlers.** Closed. This repo wrote `tooling/bundle-uplink-client.mjs`
+   before `uplink-tools bundle` existed and released through it for a while
+   after. It is deleted, with the four scripts beside it (codegen, bake, package,
+   release): every build step here is the published command
 2. **The externalised-specifier list is published nowhere.** It lives in
    `packages/app/src/uplinks/externals/entries.ts`, so the bundler carries a hand
    copy of a list whose failure mode is a MISSING entry, which a copy agrees with
    by omission. That is how `/spine` shipped unresolvable
-3. **`Sitrep.Contract.TestSupport` is `IsPackable=false` and net10.0-only.** Ten
-   of the twelve Uplink test projects in `gonogo` reference it, so ten of twelve
-   cannot leave. Vendoring one DLL took this Uplink's 78 tests from
-   does-not-compile to green. It still is not a package, but it is no longer a
-   hand copy: `scripts/vendor-uplinks-reference-set.sh` in gonogo writes it to
-   `vendor/devkit` from a named commit
-4. **Codegen needs two artifacts nobody ships**: `Sitrep.Contract.Codegen.dll`
-   (the RT-attributed twin) and `CodegenTwin.props`. With both vendored, codegen
-   from here is byte-identical to the monorepo's committed output, so this is a
-   packaging job rather than a design one. The same script now writes both into
-   `vendor/contract`
+3. **`Sitrep.Contract.TestSupport` was not a package.** Closed. Ten of the
+   twelve Uplink test projects in `gonogo` referenced it, so ten of twelve could
+   not leave. It ships in the net10.0 group of `KspGonogo.Sitrep.Contract`, with
+   `Sitrep.Core` beside it, and a Tests project here references that package
+4. **Codegen needed two artifacts nobody shipped**: the RT-attributed twin of
+   `Sitrep.Contract` and `CodegenTwin.props`. Closed. Both ride in the same
+   package's `codegen` folder, outside every lib group so nothing can bind the
+   twin by accident, and `uplink-tools codegen` finds them through the package
+   the contract slice restored
 5. **ui-kit's published bundle cannot be loaded, and `server.deps.inline` only
    hides it.** Two named imports of CommonJS dependencies survive into its ESM
    dist: `styled` from styled-components (which publishes no `exports` field, so
@@ -298,8 +331,7 @@ thing an author has to work out for themselves today, and each belongs upstream.
 8. **The unit-map codegen emits extensionless relative imports.** `topic-map.ts`
    carries `from "./contract"`, which is TS2835 under `moduleResolution: nodenext`,
    so an Uplink cannot pass a nodenext typecheck however carefully it writes its
-   own sources. That is why `uplinks/example/client/tsconfig.nodenext.json` has
-   exactly one `exclude`, and deleting it is the acceptance test for the fix.
+   own sources.
    Checking both modes matters because they disagree SILENTLY: `declare module
    "./types"` binds under `bundler` and does not bind under `nodenext`, so a
    declaration merge vanishes and every key it contributed goes with it, which is

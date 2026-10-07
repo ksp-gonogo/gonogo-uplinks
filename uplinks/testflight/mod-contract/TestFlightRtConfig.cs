@@ -19,6 +19,9 @@ public static class TestFlightRtConfig
             .CamelCaseForProperties()
             .UseModules(true)
             .AutoOptionalProperties()
+            // The doc comments on the wire types, carried into the generated TypeScript without anything inside an <internal> element.
+            .GenerateDocumentation()
+            .UseVisitor<Sitrep.Contract.RtDocVisitor>()
             .GenerateDocumentation()
             .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 

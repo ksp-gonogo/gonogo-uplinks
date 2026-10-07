@@ -1,21 +1,24 @@
 <Project>
-  <!-- An Uplink's manifest names three generated files that are never committed
-       (a committed copy would carry whichever machine's DevPath last built it).
-       A release bakes them with the client bundle's hash before it compiles. Any
-       other build of a fresh checkout has none, so it bakes them here, without a
-       hash or a DevPath, and leaves a copy that is already there alone. -->
+  <!-- An Uplink's manifest reads generated files that are never committed (a
+       committed copy would carry whichever machine's DevPath last built it). A
+       release bakes them with the client bundle's hash before it compiles. Any
+       other build of a fresh checkout has none, so it bakes them here, with no
+       hash and no DevPath, and leaves a copy that is already there alone.
+
+       Provenance.g.cs is the one every bake writes: an Uplink with no client
+       half gets that file and no other. -->
   <PropertyGroup>
     <GonogoUplinkDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..'))</GonogoUplinkDir>
     <GonogoUplinkName>$([System.IO.Path]::GetFileName('$(GonogoUplinkDir)'))</GonogoUplinkName>
-    <GonogoBakedHash>$(GonogoUplinkDir)\mod\ExpectedClientHash.g.cs</GonogoBakedHash>
+    <GonogoBakedProvenance>$(GonogoUplinkDir)\mod\Provenance.g.cs</GonogoBakedProvenance>
   </PropertyGroup>
   <Target Name="BakeClientSourceWhenMissing"
           BeforeTargets="CoreCompile"
-          Condition="Exists('$(GonogoUplinkDir)\uplink.json') And !Exists('$(GonogoBakedHash)')">
-    <Exec Command="node &quot;$(MSBuildThisFileDirectory)tooling/bake-client-source.mjs&quot; $(GonogoUplinkName)" />
+          Condition="Exists('$(GonogoUplinkDir)\uplink.json') And !Exists('$(GonogoBakedProvenance)')">
+    <Exec Command="node &quot;$(MSBuildThisFileDirectory)tooling/uplink-tools.mjs&quot; $(GonogoUplinkName) bake" />
     <!-- The plugin project globs its sources before this runs, so files written just now are added by hand. -->
     <ItemGroup Condition="'$(MSBuildProjectDirectory)' == '$(GonogoUplinkDir)\mod'">
-      <GonogoBaked Include="$(GonogoUplinkDir)\mod\ClientSource.g.cs;$(GonogoBakedHash);$(GonogoUplinkDir)\mod\Provenance.g.cs" />
+      <GonogoBaked Include="$(GonogoUplinkDir)\mod\ClientSource.g.cs;$(GonogoUplinkDir)\mod\ExpectedClientHash.g.cs;$(GonogoBakedProvenance)" />
       <Compile Remove="@(GonogoBaked)" />
       <Compile Include="@(GonogoBaked)" Condition="Exists('%(FullPath)')" />
     </ItemGroup>

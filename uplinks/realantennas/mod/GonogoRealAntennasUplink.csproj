@@ -49,9 +49,7 @@
        design (§4.2). GonogoRealAntennasUplink.Contract is this Uplink's OWN
        wire payload slice and bundles into its own output. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
     <ProjectReference Include="..\mod-contract\GonogoRealAntennasUplink.Contract.csproj" />
   </ItemGroup>
 

@@ -69,8 +69,6 @@
        GonogoKerbalismUplink.csproj already uses for its own Sitrep.Contract
        reference. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 </Project>

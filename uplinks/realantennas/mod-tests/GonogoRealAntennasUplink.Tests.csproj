@@ -148,9 +148,7 @@
 
   <ItemGroup>
     <!-- PayloadMeta/Quality/Units and the [Sitrep*] attributes (KSP-free). -->
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
     <!-- GonogoRealAntennasUplink.Contract: this Uplink's own three wire payload
          types, relocated out of Sitrep.Contract/Comms.cs (see that project's
          header comment). RaLinkDown builds them and RealAntennasUnitCoverageTests
@@ -160,9 +158,6 @@
          relocated Uplink's <X>UnitCoverageTests calls (see
          UnitCoverageAssertion's own doc comment). The [Fact]s stay here, naming
          this Uplink's own types. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

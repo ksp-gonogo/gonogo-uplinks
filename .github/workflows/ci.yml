@@ -65,5 +65,5 @@ jobs:
       typecheck: ${{ matrix.typecheck }}
       test: ${{ matrix.test }}
       bundle: ${{ matrix.bundle }}
-      # One leg proves the scaffold; the example Uplink is the smallest.
-      scaffold: ${{ matrix.name == 'example' }}
+      # One leg proves the scaffold, with that leg's own installed tools.
+      scaffold: ${{ matrix.name == 'testflight' }}

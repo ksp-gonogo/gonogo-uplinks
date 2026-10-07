@@ -138,6 +138,77 @@ for (const file of existsSync(VENDOR) ? readdirSync(VENDOR).sort() : []) {
   }
 }
 
+/*
+ * The contract package. One .nupkg in vendor/nuget, at the version
+ * Directory.Build.props pins, packed from the commit vendor/gonogo-ref names,
+ * and referenced by every C# project through that one property. Each of those
+ * can come apart from the others silently: a second package left in the feed
+ * still satisfies a project nobody moved, and a project with its own literal
+ * version stops following the pin.
+ */
+const PACKAGE = "KspGonogo.Sitrep.Contract";
+const props = readFileSync(join(ROOT, "Directory.Build.props"), "utf8");
+const pinned = /<GonogoContractVersion>([^<]+)<\/GonogoContractVersion>/.exec(props)?.[1];
+const ref = readFileSync(join(VENDOR, "gonogo-ref"), "utf8").trim();
+const feed = join(VENDOR, "nuget");
+const packages = existsSync(feed)
+  ? readdirSync(feed).filter((file) => file.endsWith(".nupkg"))
+  : [];
+let projects = 0;
+if (!pinned) {
+  problems.push("Directory.Build.props declares no GonogoContractVersion.");
+} else {
+  const expected = `${PACKAGE}.${pinned}.nupkg`;
+  if (packages.length !== 1 || packages[0] !== expected) {
+    problems.push(
+      `vendor/nuget holds [${packages.join(", ") || "nothing"}], expected exactly ${expected}, the ` +
+        "version Directory.Build.props pins. A fresh clone restores no project without it.",
+    );
+  }
+  const label = /-pin\.g([0-9a-f]{12})$/.exec(pinned)?.[1];
+  if (!label || !ref.startsWith(label)) {
+    problems.push(
+      `GonogoContractVersion is ${pinned} and vendor/gonogo-ref is ${ref}. The version names the ` +
+        "gonogo commit the package was packed from, and the two must be the same commit.",
+    );
+  }
+}
+for (const name of readdirSync(join(ROOT, "uplinks")).sort()) {
+  const uplinkDir = join(ROOT, "uplinks", name);
+  for (const sub of readdirSync(uplinkDir, { withFileTypes: true })) {
+    if (!sub.isDirectory()) continue;
+    for (const file of readdirSync(join(uplinkDir, sub.name))) {
+      if (!file.endsWith(".csproj")) continue;
+      const text = readFileSync(join(uplinkDir, sub.name, file), "utf8");
+      // A comment may still name the old properties; a reference may not.
+      const live = text.replace(/<!--[\s\S]*?-->/g, "");
+      if (/\$\(GonogoContract\)|\$\(GonogoDevkit\)/.test(live)) {
+        problems.push(
+          `${name}/${sub.name}/${file} reads $(GonogoContract) or $(GonogoDevkit), which nothing ` +
+            "defines. Reference the package.",
+        );
+      }
+      for (const match of live.matchAll(
+        new RegExp(`Include="${PACKAGE.replaceAll(".", "\\.")}"\\s+Version="([^"]*)"`, "g"),
+      )) {
+        projects += 1;
+        if (match[1] !== "[$(GonogoContractVersion)]") {
+          problems.push(
+            `${name}/${sub.name}/${file} references ${PACKAGE} at ${match[1]}, not ` +
+              "[$(GonogoContractVersion)], so it will not move with the pin.",
+          );
+        }
+      }
+    }
+  }
+}
+if (projects < MINIMUM_UPLINKS) {
+  problems.push(
+    `only ${projects} project(s) reference ${PACKAGE}. Every plugin, slice and test project ` +
+      "does, so a walk that found this few read the wrong tree.",
+  );
+}
+
 if (uplinks < MINIMUM_UPLINKS || references < MINIMUM_REFERENCES) {
   console.error(
     `✖ walked ${uplinks} Uplink(s) and ${references} vendored reference(s), expected at least ` +
@@ -160,5 +231,7 @@ if (problems.length > 0) {
 
 console.log(
   `✓ ${references} vendored reference(s) across ${uplinks} Uplink(s): every one exists, is ` +
-    `content-addressed, matches its own name and matches the sha512 its lockfile records.`,
+    `content-addressed, matches its own name and matches the sha512 its lockfile records. ` +
+    `${projects} C# project(s) reference ${PACKAGE} at the one pinned version, ${pinned}, ` +
+    `whose package is the only one in vendor/nuget and names the commit in vendor/gonogo-ref.`,
 );

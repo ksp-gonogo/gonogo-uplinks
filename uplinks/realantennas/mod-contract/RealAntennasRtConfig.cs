@@ -61,6 +61,9 @@ public static class RealAntennasRtConfig
             .CamelCaseForProperties()
             .UseModules(true)
             .AutoOptionalProperties()
+            // The doc comments on the wire types, carried into the generated TypeScript without anything inside an <internal> element.
+            .GenerateDocumentation()
+            .UseVisitor<Sitrep.Contract.RtDocVisitor>()
             // Carry this slice's `///` prose onto its generated declarations, the
             // same way core does. See Sitrep.Contract.RtDocVisitor.
             .GenerateDocumentation()

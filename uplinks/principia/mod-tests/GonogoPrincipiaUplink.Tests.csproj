@@ -122,12 +122,7 @@
     <!-- Sitrep.Contract.TestSupport: CommandSubjectTests calls the shared
          CommandSubjectAssertion rather than restating ChannelEngine's own
          Subject-resolves rule. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
     <ProjectReference Include="..\mod-contract\GonogoPrincipiaUplink.Contract.csproj" />
   </ItemGroup>
 

@@ -117,9 +117,7 @@
     and must not bundle a second one.
   -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- GonogoKosUplink.Contract: THIS Uplink's own eleven wire types, relocated

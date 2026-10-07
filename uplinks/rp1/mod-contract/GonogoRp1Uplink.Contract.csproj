@@ -22,8 +22,6 @@
   <!-- Sitrep.Contract only, Private="false": the attributes and the core unit
        catalog are provided by the core mod at runtime, never copied here. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 </Project>

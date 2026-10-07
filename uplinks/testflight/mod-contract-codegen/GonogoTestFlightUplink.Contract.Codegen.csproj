@@ -4,12 +4,18 @@
     <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
     <AssemblyName>GonogoTestFlightUplink.Contract</AssemblyName>
     <RootNamespace>GonogoTestFlightUplink</RootNamespace>
+    <TargetFramework Condition="'$(GonogoCodegen)' == ''">netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <Import Project="$(GonogoContract)\CodegenTwin.props" />
+  <Import Project="$(GonogoCodegen)\CodegenTwin.props" Condition="'$(GonogoCodegen)' != ''" />
   <!-- The Sitrep.Contract twin, copied local so rtcli finds it beside the assembly it loads. -->
   <ItemGroup>
     <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\codegen\Sitrep.Contract.dll</HintPath>
+      <HintPath>$(GonogoCodegen)\Sitrep.Contract.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <!-- Built only by `uplink-tools codegen`, which passes GonogoCodegen: the codegen
+       folder of the KspGonogo.Sitrep.Contract package the contract slice restored. -->
+  <Target Name="RequireCodegenCommand" BeforeTargets="CoreCompile" Condition="'$(GonogoCodegen)' == ''">
+    <Error Text="This project is the contract slice's codegen twin, and only one command builds it: npx uplink-tools codegen" />
+  </Target>
 </Project>

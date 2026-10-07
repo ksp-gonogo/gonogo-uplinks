@@ -32,15 +32,10 @@
     <ProjectReference Include="..\mod-contract\GonogoFerramAerospaceResearchUplink.Contract.csproj" />
     <!-- The shared Unit-coverage sweep every relocated Uplink's own coverage
          test calls; the [Fact]s stay here, naming this Uplink's types. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
     <!-- The slice above reaches Sitrep.Contract through a ProjectReference in
          gonogo, and that stopped flowing once the slice took it as a plain
          assembly reference, so it is named here explicitly. -->
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
   </ItemGroup>
 
 </Project>

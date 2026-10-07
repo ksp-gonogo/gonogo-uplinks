@@ -56,13 +56,8 @@
          relocated Uplink's <X>UnitCoverageTests calls, extracted once five
          near-identical copies existed (see UnitCoverageAssertion's own doc
          comment). The [Fact]s stay here, naming this Uplink's own types. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
     <!-- KerbcastHealth builds Sitrep.Contract's UplinkHealth (KSP-free). -->
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
   </ItemGroup>
 
 </Project>

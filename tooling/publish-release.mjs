@@ -99,7 +99,7 @@ const bundleName = `${declared.id}.client.js`;
 if (!existsSync(join(from, bundleName))) {
   console.error(
     `✖ ${declared.id}: ${join(from, bundleName)} does not exist. Build it first:\n` +
-      `  node tooling/release-uplink.mjs ${name}`,
+      `  node tooling/uplink-tools.mjs ${name} release --out artifacts`,
   );
   process.exit(1);
 }

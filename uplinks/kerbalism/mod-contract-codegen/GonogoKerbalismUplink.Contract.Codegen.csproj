@@ -4,8 +4,9 @@
     <CodegenTwinSource>..\mod-contract</CodegenTwinSource>
     <AssemblyName>GonogoKerbalismUplink.Contract</AssemblyName>
     <RootNamespace>GonogoKerbalismUplink</RootNamespace>
+    <TargetFramework Condition="'$(GonogoCodegen)' == ''">netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <Import Project="$(GonogoContract)\CodegenTwin.props" />
+  <Import Project="$(GonogoCodegen)\CodegenTwin.props" Condition="'$(GonogoCodegen)' != ''" />
   <!-- The Sitrep.Contract TWIN, not the shipped contract: rtcli reads this
        assembly's metadata and resolves the core types it references, and it
        must see the same core assembly it always did, attributes included.
@@ -15,7 +16,12 @@
        codegen.sh used to hand-copy. -->
   <ItemGroup>
     <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\codegen\Sitrep.Contract.dll</HintPath>
+      <HintPath>$(GonogoCodegen)\Sitrep.Contract.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <!-- Built only by `uplink-tools codegen`, which passes GonogoCodegen: the codegen
+       folder of the KspGonogo.Sitrep.Contract package the contract slice restored. -->
+  <Target Name="RequireCodegenCommand" BeforeTargets="CoreCompile" Condition="'$(GonogoCodegen)' == ''">
+    <Error Text="This project is the contract slice's codegen twin, and only one command builds it: npx uplink-tools codegen" />
+  </Target>
 </Project>

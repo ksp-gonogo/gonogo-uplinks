@@ -77,7 +77,10 @@ public static class ScansatRtConfig
         builder.Global(g => g
             .CamelCaseForProperties()
             .UseModules(true)
-            .AutoOptionalProperties());
+            .AutoOptionalProperties()
+            // The doc comments on the wire types, carried into the generated TypeScript without anything inside an <internal> element.
+            .GenerateDocumentation()
+            .UseVisitor<Sitrep.Contract.RtDocVisitor>());
 
         // Held in a local for the same reason RtConfig.wirePayloadTypes is:
         // ApplyUnitValueTypes re-enters this exact set, only a type

@@ -1,10 +1,18 @@
 <Project>
-  <!-- Where the Gonogo contract assemblies live. An author points this at the
-       Sitrep.Contract.dll GonogoCore installs into GameData/Gonogo/Plugins/,
-       or at a vendored copy, and overrides it per environment with
-       -p:GonogoContract=... exactly as the KSP reference set is overridden. -->
-  <PropertyGroup Condition="'$(GonogoContract)' == ''">
-    <GonogoContract>$(MSBuildThisFileDirectory)vendor\contract</GonogoContract>
+  <!-- The one version of the Gonogo contract package every project here
+       references. An Uplink reaches Gonogo through KspGonogo.Sitrep.Contract and
+       nothing else: the assembly a plugin and its contract slice compile against,
+       the test support a test project uses, and the codegen twin behind the
+       generated client types all come out of that package.
+
+       The package is in vendor/nuget, which nuget.config names as a feed. It is
+       packed from the gonogo commit in vendor/gonogo-ref by that repo's
+       scripts/vendor-uplinks-reference-set.sh, which also writes this line, and
+       its version names the commit so no machine's NuGet cache can serve an older
+       pin's bytes under it. Once a release of the package is on nuget.org this
+       becomes that release's version and the vendored file goes. -->
+  <PropertyGroup>
+    <GonogoContractVersion>1.0.0-pin.gf244d24cca53</GonogoContractVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(KspManaged)' == ''">
     <KspManaged>$(MSBuildThisFileDirectory)vendor\ksp-managed</KspManaged>
@@ -12,11 +20,5 @@
   <!-- The author's own KSP GameData, where the mod this Uplink wraps is installed. -->
   <PropertyGroup Condition="'$(KspGameData)' == ''">
     <KspGameData>$(MSBuildThisFileDirectory)vendor\gamedata</KspGameData>
-  </PropertyGroup>
-  <!-- The Gonogo Uplink devkit: test doubles and shared assertions, shipped as a
-       release artifact rather than in GameData, because it carries an xunit
-       dependency KSP must never load. -->
-  <PropertyGroup Condition="'$(GonogoDevkit)' == ''">
-    <GonogoDevkit>$(MSBuildThisFileDirectory)vendor\devkit</GonogoDevkit>
   </PropertyGroup>
 </Project>

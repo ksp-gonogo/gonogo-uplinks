@@ -4,6 +4,21 @@
 
 import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
+/**
+* One scanner module on a `scansat.scanningVessels` vessel, mirrors SCANsat's
+* public `SCANcontroller.SCANsensor` fields (`SCANcontroller.cs:32-53`).
+* `ScanSensorEntry.type` is the numeric `SCANtype` bit value (AltimetryLoRes=1
+* / AltimetryHiRes=2 / Biome=8 / Anomaly=16 / ResourceLoRes=128 /
+* ResourceHiRes=256); a single vessel can carry scanners of several types.
+* `ScanSensorEntry.inRange` means the vessel is between
+* `ScanSensorEntry.minAlt` and `ScanSensorEntry.maxAlt`;
+* `ScanSensorEntry.bestRange` means it is at the high-fidelity
+* `ScanSensorEntry.bestAlt`. Below `minAlt` or above `maxAlt` both are false
+* and the scanner is idle.
+*
+* Every field nullable to mirror the permissive-on-absence convention the
+* other contract types use, a live entry always carries concrete values.
+*/
 export interface ScanSensorEntry
 {
 	type?: number | null;
@@ -14,6 +29,20 @@ export interface ScanSensorEntry
 	inRange?: boolean | null;
 	bestRange?: boolean | null;
 }
+/**
+* SCANsat's combined per-vessel `trackColor` (a stock `Color32`, 0-255
+* channels): reused as the tint for the minimap / MapView footprint so the
+* overlay matches the in-game ground track.
+*
+* Each channel is a Units.Count: an integral 0..255 byte straight off the
+* source `Color32` (the producer rounds `Color`'s 0..1 floats to bytes before
+* sending, see `Gonogo.ScansatUplink.ScanningVessels`), not a 0..1 ratio. A
+* single hex string would model this more cleanly, but the remodel's blast
+* radius (the pure builder, two parallel client schemas, two render sites that
+* index r/g/b, several fixtures, and a second breaking wire retype riding the
+* same Major) was judged not worth forcing: annotating the channels as the
+* counts they are is the honest, non-breaking statement.
+*/
 export interface ScanTrackColor
 {
 	r?: Value<"count"> | null;
@@ -21,6 +50,28 @@ export interface ScanTrackColor
 	b?: Value<"count"> | null;
 	a?: Value<"count"> | null;
 }
+/**
+* One entry in the `scansat.scanningVessels` channel payload, a single vessel
+* SCANsat is tracking. SCANsat tracks UNLOADED vessels too, so this list is
+* CROSS-VESSEL by design: a satellite mapping Kerbin and a probe orbiting Mun
+* both appear at once. The channel payload is a BARE ARRAY of these
+* (`ScanningVesselEntry[]`) or `null` (never a wrapper object) so the Topic
+* tag sits on this element type with `IsArray = true`.
+*
+* `ScanningVesselEntry.subLatitude` / `ScanningVesselEntry.subLongitude` are
+* the sub-satellite ground point (SCANsat's `SCANvessel.latitude` /
+* `longitude`); the scanning footprint is a band centred there.
+* `ScanningVesselEntry.groundTrackWidthDeg` is the per-side LATITUDE
+* half-width from SCANsat's `getFOV` replication (see
+* `Gonogo.ScansatUplink.GroundTrackFov`);
+* `ScanningVesselEntry.groundTrackLonHalfDeg` is the per-side LONGITUDE
+* half-width (`widthDeg / cos(|subLat|)`, capped at 120°, matching SCANsat's
+* coverage-paint widening). Both are `null` when the vessel currently has no
+* in-range sensors (nothing to paint).
+*
+* **Typing-only mirror** of `Gonogo.ScansatUplink.ScanningVessels.Build`: see
+* this file's header for the "no wire change, all fields nullable" rationale.
+*/
 export interface ScanningVesselEntry
 {
 	vesselId?: string | null;
@@ -34,6 +85,33 @@ export interface ScanningVesselEntry
 	groundTrackLonHalfDeg?: Value<"°"> | null;
 	trackColor?: ScanTrackColor | null;
 }
+/**
+* One SCANsat map-scanner part on the active vessel, mirrors SCANsat's public
+* `SCANexperiment` module (`SCAN_PartModules.SCANexperiment`, a `PartModule :
+* IScienceDataContainer`, one instance per map-scanner part). The
+* `scansat.science` channel payload is a BARE ARRAY of these
+* (`ScanScienceEntry[]`) or `null` (never a wrapper object) so the Topic tag
+* sits on this element type with `IsArray = true`.
+*
+* `ScanScienceEntry.partId` is the stable per-part id (`part.flightID`, the
+* same id space Sitrep's core science surface uses via
+* `InstrumentEntry.partId`); `ScanScienceEntry.expId` is the raw R&D
+* experiment id (`experimentType`, one of `SCANsatAltimetryLoRes` /
+* `SCANsatAltimetryHiRes` / `SCANsatBiomeAnomaly` / `SCANsatResources` /
+* `SCANsatVisual`); `ScanScienceEntry.title` is the friendly name (RADAR / SAR
+* / Multispectral / Resources / Visual); `ScanScienceEntry.hasData` is
+* `GetScienceCount() > 0`; `ScanScienceEntry.rerunnable` mirrors
+* `IsRerunnable()`, which SCANsat hard-codes to `true`.
+*
+* `ScanScienceEntry.deployed` and `ScanScienceEntry.inoperable` are ALWAYS
+* `false`: SCANsat map experiments have no deploy or inoperable lifecycle
+* (there is no persistent deployed flag, and a map experiment can never burn
+* out). These constants are honest, not lossy, there is no SCANsat source for
+* either.
+*
+* **Typing-only mirror** of `Gonogo.ScansatUplink.ScanScience.Build`: see this
+* file's header for the "no wire change, all fields nullable" rationale.
+*/
 export interface ScanScienceEntry
 {
 	partId?: string | null;
@@ -45,6 +123,32 @@ export interface ScanScienceEntry
 	rerunnable?: boolean | null;
 	inoperable?: boolean | null;
 }
+/**
+* One entry in a `scansat.anomalies.<body>` channel payload, a single SCANsat
+* "anomaly" (an easter-egg surface feature: a monolith, a UFO, etc.) known for
+* that body. Mirrors SCANsat's public `SCANsat.SCAN_Data.SCANanomaly`
+* (`Name`/`Longitude`/ `Latitude`/`Known`/`Detail`) field-for-field.
+*
+* **Not a `[SitrepTopic]`-tagged root**: unlike
+* `ScanScienceEntry`/`ScanningVesselEntry` (both single STATIC topics),
+* `scansat.anomalies.<body>` is a DYNAMIC per-body namespace, same family as
+* the coverage/mask/height/biome namespaces (`ScanChannels.AnomaliesPrefix`),
+* which have no `Sitrep.Contract` mirror at all. This type exists purely so
+* codegen gives the array ELEMENT shape a name (documentation +
+* drift-detection via the contract-shape baseline): it is never resolved from
+* a `TopicId`; the client subscribes to the runtime-computed sub-topic string
+* directly (`packages/sitrep-client/src/map-topic.ts`'s `SCANSAT_DYNAMIC`).
+*
+* `ScanAnomalyEntry.known` is true once the player has discovered the
+* anomaly's position (an Anomaly-type SCANsat scan); `ScanAnomalyEntry.detail`
+* is true once they have its name (an AnomalyDetail-type scan). Both are
+* re-derived by SCANsat itself from the body's coverage grid on every
+* `SCANdata.Anomalies` read, the uplink only mirrors current state.
+*
+* **Typing-only mirror** of `Gonogo.ScansatUplink.ScanAnomalies.Build`: see
+* `ScanScienceEntry`'s doc header for the "no wire change, all fields
+* nullable" rationale.
+*/
 export interface ScanAnomalyEntry
 {
 	name?: string | null;

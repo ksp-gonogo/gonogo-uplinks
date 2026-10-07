@@ -48,9 +48,7 @@
     author can reproduce: a vendored Sitrep.Contract.dll and nothing else.
   -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
   </ItemGroup>
 
 </Project>

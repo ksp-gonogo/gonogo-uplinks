@@ -49,9 +49,7 @@
   <!-- Sitrep.Contract ONLY of core's assemblies (Private="false"): the
        arm's-length compile surface a third-party uplink needs. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- GonogoKerbcastUplink.Contract: this Uplink's OWN wire types

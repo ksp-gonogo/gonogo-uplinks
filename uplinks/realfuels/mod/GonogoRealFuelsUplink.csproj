@@ -44,9 +44,7 @@
   <!-- Sitrep.Contract ONLY (Private="false"): the arm's-length compile surface a
        third-party uplink needs, provided by the core mod at runtime. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract" Private="false">
-      <HintPath>$(GonogoContract)\net472\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- GonogoRealFuelsUplink.Contract: this Uplink's OWN wire types. Private

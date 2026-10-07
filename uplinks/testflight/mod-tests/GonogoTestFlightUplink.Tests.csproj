@@ -36,13 +36,8 @@
        a corroborating pair: both green, and only one of them on the wire. -->
   <ItemGroup>
     <ProjectReference Include="..\mod-contract\GonogoTestFlightUplink.Contract.csproj" />
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
     <!-- Sitrep.Contract.TestSupport: the shared Unit-coverage sweep every slice runs. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

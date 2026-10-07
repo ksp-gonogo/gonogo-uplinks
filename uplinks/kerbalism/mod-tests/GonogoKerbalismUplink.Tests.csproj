@@ -75,9 +75,7 @@
        producer: they reach it through Sitrep.Contract.TestSupport's WirePayload,
        which is shipped, so the proof travels with the Uplink. -->
   <ItemGroup>
-    <Reference Include="Sitrep.Contract">
-      <HintPath>$(GonogoContract)\netstandard2.0\Sitrep.Contract.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
   </ItemGroup>
 
   <!-- The cross-language golden fixtures: this project asserts them against the
@@ -98,9 +96,6 @@
          relocated Uplink's <X>UnitCoverageTests calls, extracted once five
          near-identical copies existed (see UnitCoverageAssertion's own doc
          comment). The [Fact]s stay here, naming this Uplink's own types. -->
-    <Reference Include="Sitrep.Contract.TestSupport">
-      <HintPath>$(GonogoDevkit)\Sitrep.Contract.TestSupport.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

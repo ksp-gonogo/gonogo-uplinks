@@ -34,10 +34,10 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: "10.0.x" }
 
-      # The reference set an Uplink compiles against: KSP's own managed
-      # assemblies, the GameData of the mod this Uplink wraps, and the Gonogo
-      # contract and devkit. None of it is ours to redistribute and all four
-      # directories are gitignored, so they are materialised here and then
+      # The reference set an Uplink compiles against that is NOT ours: KSP's own
+      # managed assemblies and the GameData of the mod this Uplink wraps. Neither
+      # is ours to redistribute and both directories are gitignored, so they are
+      # materialised here and then
       # CHECKED before anything compiles: MSB3245 is a WARNING, so a HintPath
       # that does not exist takes the assembly off the compile surface and the
       # build carries on and exits 0.
@@ -67,34 +67,6 @@ jobs:
           path: .refs/ksp-managed
           persist-credentials: false
 
-      # The gonogo commit the reference set is built from, pinned in
-      # vendor/gonogo-ref. That set carries the TypeScript emitter behind every
-      # committed __generated__ file, so a floating ref let any generator change
-      # on gonogo's staging turn "Codegen is current" red in every Uplink at once
-      # with nothing here having changed. Moving the pin is a reviewed commit
-      # that regenerates in the same change.
-      - name: Read the gonogo pin
-        id: gonogo
-        run: |
-          set -euo pipefail
-          sha=$(tr -d '[:space:]' < vendor/gonogo-ref)
-          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
-            echo "::error file=vendor/gonogo-ref::expected one full 40-character gonogo commit sha, found '$sha'"
-            exit 1
-          fi
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-
-      # gonogo is public, so the job's own token reaches it. The vendor script
-      # reads the commit with `git archive` and never the working tree, so
-      # checkout's default depth-1 fetch is the whole of what it needs.
-      - name: Check out gonogo
-        uses: actions/checkout@v4
-        with:
-          repository: ksp-gonogo/gonogo
-          ref: ${{ steps.gonogo.outputs.sha }}
-          path: .refs/gonogo
-          persist-credentials: false
-
       # Every root lands at the `vendor/<x>` path Directory.Build.props already
       # defaults to, so no project needs a /p: override here that it would not
       # get on the author's own machine.
@@ -107,17 +79,10 @@ jobs:
           rm -rf "$vendor/ksp-managed" "$vendor/gamedata"
           cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/KSP_Data/Managed" "$vendor/ksp-managed"
           cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/GameData" "$vendor/gamedata"
-          "$GITHUB_WORKSPACE/.refs/gonogo/scripts/vendor-uplinks-reference-set.sh" "$GITHUB_WORKSPACE" "${{ steps.gonogo.outputs.sha }}"
-          vendored=$(tr -d '[:space:]' < "$vendor/contract/VENDORED_FROM")
-          if [ "$vendored" != "${{ steps.gonogo.outputs.sha }}" ]; then
-            echo "::error::the reference set was built from gonogo $vendored, not the pinned ${{ steps.gonogo.outputs.sha }}"
-            exit 1
-          fi
-          echo "gonogo_contract=$vendor/contract" >> "$GITHUB_OUTPUT"
 
       # The gate the MSB3245 warning is not. Every HintPath in this Uplink's own
-      # projects names one of the four roots and nothing else, so expanding them
-      # here covers the whole compile surface, and a hole is named with the
+      # projects names one of the two roots and nothing else, so expanding them
+      # here covers everything that is not a package, and a hole is named with the
       # csproj that wanted it instead of arriving later as a CS0246 about a type
       # nobody deleted.
       - name: Every reference this Uplink names resolves
@@ -129,8 +94,6 @@ jobs:
             while IFS= read -r hint; do
               path=$(printf '%s' "$hint" | sed \
                 -e 's#\\#/#g' \
-                -e 's#\$(GonogoContract)#vendor/contract#' \
-                -e 's#\$(GonogoDevkit)#vendor/devkit#' \
                 -e 's#\$(KspManaged)#vendor/ksp-managed#' \
                 -e 's#\$(KspGameData)#vendor/gamedata#')
               if [ ! -f "$path" ]; then
@@ -204,15 +167,13 @@ jobs:
         run: node scripts/check-nodenext.mjs "${{ inputs.name }}"
 
       # Codegen is verified rather than run: the generated TypeScript is
-      # committed, so a slice whose C# moved without regenerating produces a
-      # diff here instead of a client that types a payload the mod no longer
-      # sends.
+      # committed, so a slice whose C# moved without regenerating fails here
+      # instead of shipping a client that types a payload the mod no longer
+      # sends. `codegen --check` generates into a scratch directory and compares,
+      # against the contract package the slice itself restored.
       - name: Codegen is current
         if: inputs.codegen_csproj != ''
-        run: |
-          node tooling/codegen-uplink.mjs "${{ inputs.name }}" \
-            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
-          git diff --exit-code -- "uplinks/${{ inputs.name }}/client/src/__generated__"
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" codegen --check
 
       # ClientSource.g.cs and ExpectedClientHash.g.cs are gitignored and a mod
       # that reads them does not compile without them, so they are baked first,
@@ -220,16 +181,15 @@ jobs:
       - name: Build mod
         if: inputs.mod_csproj != '' && !inputs.publish
         run: |
-          node tooling/bake-client-source.mjs "${{ inputs.name }}"
-          dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo \
-            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+          node tooling/uplink-tools.mjs "${{ inputs.name }}" bake
+          dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo
 
       # A release DLL vouches for its client by carrying the bundle's sha256, so
       # the bundle is built and hashed before the DLL compiles, and packaged from
       # that same compile. The tests below then run against the DLL that ships.
       - name: Build the release pair
         if: inputs.publish
-        run: node tooling/release-uplink.mjs "${{ inputs.name }}"
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" release --out "$GITHUB_WORKSPACE/artifacts"
 
       # Rig-only tools that reach their mod by reflection. Nothing packages them,
       # so this build is the only thing that notices when one stops compiling.
@@ -240,12 +200,11 @@ jobs:
       - name: Test mod
         if: inputs.tests_csproj != ''
         run: |
-          dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo \
-            -p:GonogoContract="${{ steps.refs.outputs.gonogo_contract }}"
+          dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo
 
       # `uplink-tools new` is held to producing an Uplink that builds: scaffold
-      # one beside the real ones with this leg's own CLI, then codegen, build, test
-      # and typecheck it in both resolution modes. Run on one leg only, since it
+      # one beside the real ones with this leg's own CLI, and run the commands
+      # its closing message names, through to a release. Run on one leg only, since it
       # proves the scaffold and the pinned toolchain rather than any one Uplink,
       # and it deletes what it made.
       - name: Scaffold proof
@@ -262,11 +221,11 @@ jobs:
 
       - name: Bundle client
         if: inputs.bundle && !inputs.publish
-        run: node tooling/bundle-uplink-client.mjs "${{ inputs.name }}"
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" bundle --out "$GITHUB_WORKSPACE/artifacts"
 
       - name: Package mod
         if: inputs.mod_csproj != '' && !inputs.publish
-        run: node tooling/package-uplink-mod.mjs "${{ inputs.name }}"
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" package --out "$GITHUB_WORKSPACE/artifacts"
 
       # Gated on `client` and nothing else. It used to be gated on a `docs_check`
       # input derived from a `docs:check` script, and the example Uplink HAD that
