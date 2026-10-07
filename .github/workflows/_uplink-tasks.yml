@@ -81,8 +81,9 @@ jobs:
           cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/GameData" "$vendor/gamedata"
 
       # The gate the MSB3245 warning is not. Every HintPath in this Uplink's own
-      # projects names one of the two roots and nothing else, so expanding them
-      # here covers everything that is not a package, and a hole is named with the
+      # projects names one of the two roots, or the codegen twin the contract
+      # package carries, so expanding the roots here covers everything that is
+      # not a package, and a hole is named with the
       # csproj that wanted it instead of arriving later as a CS0246 about a type
       # nobody deleted.
       - name: Every reference this Uplink names resolves
@@ -92,6 +93,11 @@ jobs:
           missing=0
           for csproj in "uplinks/${{ inputs.name }}"/*/*.csproj; do
             while IFS= read -r hint; do
+              # The codegen twin of the contract comes out of the NuGet package,
+              # at a path only `uplink-tools codegen` knows once the package is
+              # restored. That command refuses a folder that does not hold it,
+              # so it is checked there and not here.
+              case "$hint" in '$(GonogoCodegen)'*) continue ;; esac
               path=$(printf '%s' "$hint" | sed \
                 -e 's#\\#/#g' \
                 -e 's#\$(KspManaged)#vendor/ksp-managed#' \
