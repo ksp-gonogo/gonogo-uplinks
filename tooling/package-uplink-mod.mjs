@@ -69,7 +69,8 @@ if (missing.length > 0) {
 }
 
 const staging = join(outDir, "gamedata", declared.gamedata);
-rmSync(join(outDir, "gamedata"), { recursive: true, force: true });
+// Only this Uplink's own folder is replaced: an out dir is shared by every Uplink packaged into it.
+rmSync(staging, { recursive: true, force: true });
 mkdirSync(join(staging, "Plugins"), { recursive: true });
 for (const dll of required) {
   cpSync(join(modBin, dll), join(staging, "Plugins", dll));
