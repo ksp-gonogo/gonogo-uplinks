@@ -1,0 +1,36 @@
+{
+  "widgets": [
+    {
+      "id": "aerodynamics",
+      "name": "Aerodynamics",
+      "description": "Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.",
+      "tags": [
+        "flight",
+        "ro"
+      ],
+      "channels": [
+        "aero.state"
+      ],
+      "optionalChannels": [],
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 4,
+        "h": 7
+      },
+      "minSize": {
+        "w": 4,
+        "h": 5
+      },
+      "tiny": false
+    }
+  ]
+}

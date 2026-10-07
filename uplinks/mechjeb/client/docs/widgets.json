@@ -1,0 +1,48 @@
+{
+  "widgets": [
+    {
+      "id": "mechjeb",
+      "name": "MechJeb",
+      "description": "Remote MechJeb autopilot control (engage ascent, execute next node, land at target) dispatched over the delayed-command path with per-command in-flight state.",
+      "tags": [
+        "control"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "comms.delay"
+      ],
+      "fields": [],
+      "actions": [
+        {
+          "id": "engage-ascent",
+          "label": "Engage ascent autopilot"
+        },
+        {
+          "id": "execute-node",
+          "label": "Execute next node"
+        },
+        {
+          "id": "land-at-target",
+          "label": "Land at target"
+        }
+      ],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 5,
+        "h": 7
+      },
+      "minSize": {
+        "w": 3,
+        "h": 5
+      },
+      "tiny": false
+    }
+  ]
+}

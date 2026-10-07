@@ -1,0 +1,80 @@
+{
+  "widgets": [
+    {
+      "id": "ship-systems",
+      "name": "Ship Systems",
+      "description": "Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resource as a meter with a per-source rate ledger, wear gauges, habitat, processes, and the power meter.",
+      "tags": [
+        "telemetry",
+        "kerbalism"
+      ],
+      "channels": [
+        "kerbalism.profile",
+        "kerbalism.lifesupport",
+        "vessel.resources",
+        "vessel.crew"
+      ],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "kerbalism.profile",
+        "kerbalism.lifesupport",
+        "vessel.resources",
+        "vessel.crew"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "ship-systems.life-support"
+      ],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 9,
+        "h": 15
+      },
+      "minSize": {
+        "w": 4,
+        "h": 5
+      },
+      "tiny": false
+    },
+    {
+      "id": "space-weather",
+      "name": "Space Weather",
+      "description": "Sun vantage plus vessel exposure: a per-star activity diagram for every star this vessel sees and a CME tracker (departure, transit progress, impact ETA, and the named target, the body below or the vessel itself out in solar orbit), then the craft's own habitat dose rate, belt/magnetopause position rings and shielding.",
+      "tags": [
+        "telemetry",
+        "kerbalism"
+      ],
+      "channels": [
+        "kerbalism.spaceweather"
+      ],
+      "optionalChannels": [
+        "vessel.flight"
+      ],
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 8,
+        "h": 11
+      },
+      "minSize": {
+        "w": 3,
+        "h": 4
+      },
+      "tiny": false
+    }
+  ]
+}

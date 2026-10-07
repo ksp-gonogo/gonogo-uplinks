@@ -1,0 +1,41 @@
+{
+  "widgets": [
+    {
+      "id": "scanning",
+      "name": "Scanning",
+      "description": "SCANsat status: per-scan-type coverage of the current body, the list of vessels SCANsat is tracking with their on-board scanners and live in-range state, and the body's known anomalies with discovery state.",
+      "tags": [
+        "scan",
+        "fleet"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "scansat.available",
+        "scansat.scanningVessels",
+        "vessel.identity",
+        "system.bodies",
+        "vessel.surface",
+        "vessel.flight"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "scanning.sections"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 6,
+        "h": 10
+      },
+      "minSize": {
+        "w": 3,
+        "h": 4
+      },
+      "tiny": false
+    }
+  ]
+}

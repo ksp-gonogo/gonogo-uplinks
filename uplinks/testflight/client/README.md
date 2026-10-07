@@ -10,14 +10,14 @@ TestFlight engine reliability on the fleet roster: failed engines, rated burn ne
 | Uplink id | `testflight` |
 | Version | `0.0.1` |
 | Wraps | TestFlight 2.12.0.0 (ckan) |
-| Built against | contract 29.20, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.21, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
-| `testflight.reliability` | `TestFlightReliabilitySummary` | – | – |
-| `testflight.reliabilityParts` | `TestFlightReliabilityPart[]` | – | – |
+| `testflight.reliability` | `TestFlightReliabilitySummary` | lossy-latest | delayed |
+| `testflight.reliabilityParts` | `TestFlightReliabilityPart[]` | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |

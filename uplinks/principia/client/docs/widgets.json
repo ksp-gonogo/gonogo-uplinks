@@ -1,0 +1,42 @@
+{
+  "widgets": [
+    {
+      "id": "libration-points",
+      "name": "Libration Points",
+      "description": "The five libration points of a body pair, drawn in the frame that turns with it so they hold still, with the craft's offset from the one it is nearest.",
+      "tags": [
+        "telemetry",
+        "navigation"
+      ],
+      "channels": [
+        "system.bodies"
+      ],
+      "optionalChannels": [
+        "vessel.orbit",
+        "vessel.identity"
+      ],
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [
+        {
+          "id": "cyclePair",
+          "label": "Cycle Pair"
+        }
+      ],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 6,
+        "h": 10
+      },
+      "minSize": {
+        "w": 4,
+        "h": 7
+      },
+      "tiny": false
+    }
+  ]
+}

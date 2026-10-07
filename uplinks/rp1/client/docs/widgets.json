@@ -1,0 +1,47 @@
+{
+  "widgets": [
+    {
+      "id": "rp1-vehicle-assembly",
+      "name": "Vehicle Assembly",
+      "description": "Every craft RP-1 is integrating, holding or could start, across every launch complex at every space centre: what it costs, how far along it is, why its clock reads what it reads, and the controls to start a build, roll one out, bring it back or scrap it.",
+      "tags": [
+        "rp1",
+        "career",
+        "vehicles"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "rp1.available",
+        "rp1.warehouse",
+        "rp1.buildQueue",
+        "rp1.buildable",
+        "rp1.complexes",
+        "rp1.pads",
+        "rp1.operations",
+        "rp1.buildCost",
+        "rp1.tooling",
+        "career.status",
+        "rp1.budget"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "rp1-vehicle-assembly.sections"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 7,
+        "h": 16
+      },
+      "minSize": {
+        "w": 4,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ]
+}

@@ -10,7 +10,7 @@ Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar.
 | Uplink id | `kerbcast` |
 | Version | `0.0.1` |
 | Wraps | kerbcast 1.8.1 (ckan) |
-| Built against | contract 29.20, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.21, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -41,7 +41,7 @@ Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera p
 | --- | --- |
 | Widget id | `camera-feed` |
 | Reads | `vessel.comms`, `comms.link`, `comms.delay` |
-| Actions | `nextCamera`, `prevCamera`, `zoomIn`, `zoomOut`, `panYaw`, `panPitch` |
+| Actions | Next camera (`nextCamera`), Previous camera (`prevCamera`), Zoom in (`zoomIn`), Zoom out (`zoomOut`), Pan yaw axis (`panYaw`), Pan pitch axis (`panPitch`) |
 | Slots | `camera-feed.overlay` |
 | Default size | 9 × 8 |
 | Scenes | 3 |

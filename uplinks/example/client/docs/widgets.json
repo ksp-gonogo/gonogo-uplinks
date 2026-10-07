@@ -1,0 +1,62 @@
+{
+  "widgets": [
+    {
+      "id": "example-heartbeat",
+      "name": "Heartbeat",
+      "description": "The example Uplink's one channel: how many times it has published, and the universal time of the last sample.",
+      "tags": [
+        "example"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "example.heartbeat"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 3,
+        "h": 3
+      },
+      "minSize": {
+        "w": 2,
+        "h": 2
+      },
+      "tiny": false
+    },
+    {
+      "id": "example-pulse-dial",
+      "name": "Pulse",
+      "description": "The example Uplink's publish cadence on a dial: the needle sweeps once per sixty publishes and the centre carries the true total.",
+      "tags": [
+        "example"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "example.heartbeat"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 4,
+        "h": 4
+      },
+      "minSize": {
+        "w": 3,
+        "h": 3
+      },
+      "tiny": false
+    }
+  ]
+}

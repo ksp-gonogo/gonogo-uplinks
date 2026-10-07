@@ -10,7 +10,7 @@ Publishes Principia's n-body state: how far each trajectory holds, the flight pl
 | Uplink id | `principia` |
 | Version | `0.0.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 29.20, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.21, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -70,7 +70,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | Widget id | `libration-points` |
 | Reads | `system.bodies` |
 | Uses if present | `vessel.orbit`, `vessel.identity` |
-| Actions | `cyclePair` |
+| Actions | Cycle Pair (`cyclePair`) |
 | Default size | 6 × 10 |
 | Scenes | 11 |
 

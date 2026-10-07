@@ -1,0 +1,65 @@
+{
+  "widgets": [
+    {
+      "id": "kos-script-trigger",
+      "name": "kOS Script Trigger",
+      "description": "Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the Uplink, and see the correlated result or error inline.",
+      "tags": [
+        "kos",
+        "control"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "kos.processors"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 10,
+        "h": 9
+      },
+      "minSize": {
+        "w": 6,
+        "h": 7
+      },
+      "tiny": false
+    },
+    {
+      "id": "kos-terminal",
+      "name": "kOS Terminal",
+      "description": "Interactive or read-only terminal for a kOS CPU, streamed in-process over the Uplink (no proxy).",
+      "tags": [
+        "kos",
+        "control",
+        "telemetry"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "kos.processors"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 18,
+        "h": 15
+      },
+      "minSize": {
+        "w": 8,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ]
+}

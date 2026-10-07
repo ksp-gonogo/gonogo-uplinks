@@ -10,7 +10,7 @@ Flies the vessel from the console: engage MechJeb's ascent autopilot, execute th
 | Uplink id | `mechjeb` |
 | Version | `0.0.1` |
 | Wraps | MechJeb2 2.15.3.0 (ckan) |
-| Built against | contract 29.20, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.21, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
@@ -37,7 +37,7 @@ Remote MechJeb autopilot control (engage ascent, execute next node, land at targ
 | --- | --- |
 | Widget id | `mechjeb` |
 | Reads | `comms.delay` |
-| Actions | `engage-ascent`, `execute-node`, `land-at-target` |
+| Actions | Engage ascent autopilot (`engage-ascent`), Execute next node (`execute-node`), Land at target (`land-at-target`) |
 | Only while present | `flight` |
 | Default size | 5 × 7 |
 | Scenes | 3 |

@@ -1,0 +1,62 @@
+{
+  "widgets": [
+    {
+      "id": "camera-feed",
+      "name": "Camera Feed",
+      "description": "Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera picker and Next/Previous switching.",
+      "tags": [
+        "camera"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "dataRequirements": [
+        "vessel.comms",
+        "comms.link",
+        "comms.delay"
+      ],
+      "fields": [],
+      "actions": [
+        {
+          "id": "nextCamera",
+          "label": "Next camera"
+        },
+        {
+          "id": "prevCamera",
+          "label": "Previous camera"
+        },
+        {
+          "id": "zoomIn",
+          "label": "Zoom in"
+        },
+        {
+          "id": "zoomOut",
+          "label": "Zoom out"
+        },
+        {
+          "id": "panYaw",
+          "label": "Pan yaw axis"
+        },
+        {
+          "id": "panPitch",
+          "label": "Pan pitch axis"
+        }
+      ],
+      "augmentSlots": [
+        "camera-feed.overlay"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 9,
+        "h": 8
+      },
+      "minSize": {
+        "w": 7,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ]
+}

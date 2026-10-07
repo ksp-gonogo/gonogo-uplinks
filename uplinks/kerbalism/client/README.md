@@ -10,19 +10,20 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `0.0.1` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 29.20, api 6.0.0, ui-kit 0.1.0 |
+| Built against | contract 29.21, api 6.0.0, ui-kit 0.1.0 |
 
 ## Wire
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
-| `kerbalism.crew` | `KerbalismCrewEntry[]` | – | – |
-| `kerbalism.features` | `KerbalismFeatures` | – | – |
-| `kerbalism.lifesupport` | `KerbalismLifeSupport` | – | – |
-| `kerbalism.profile` | `KerbalismProfile` | – | – |
-| `kerbalism.reliability` | `KerbalismReliabilitySummary` | – | – |
-| `kerbalism.reliabilityParts` | `KerbalismReliabilityPart[]` | – | – |
-| `kerbalism.spaceweather` | `KerbalismSpaceWeather` | – | – |
+| `kerbalism.crew` | `KerbalismCrewEntry[]` | lossy-latest | delayed |
+| `kerbalism.features` | `KerbalismFeatures` | lossy-latest | true-now |
+| `kerbalism.lifesupport` | `KerbalismLifeSupport` | lossy-latest | delayed |
+| `kerbalism.profile` | `KerbalismProfile` | lossy-latest | true-now |
+| `kerbalism.reliability` | `KerbalismReliabilitySummary` | lossy-latest | delayed |
+| `kerbalism.reliabilityParts` | `KerbalismReliabilityPart[]` | lossy-latest | delayed |
+| `kerbalism.spaceweather` | `KerbalismSpaceWeather` | lossy-latest | delayed |
+| `kerbalism.available` | – | lossy-latest | true-now |
 
 | Payload | Fields |
 | --- | --- |
