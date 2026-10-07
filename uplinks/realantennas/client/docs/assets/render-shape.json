@@ -8,8 +8,8 @@
       "text": "dcbed57d"
     },
     "ra-hop-rates-bottleneck--default.png": {
-      "hash": "e7b2d589c9a03351",
-      "elements": 102,
+      "hash": "e846a987caad678f",
+      "elements": 104,
       "text": "7ef4c237"
     },
     "ra-installed-nothing-to-report--default.png": {
@@ -18,13 +18,13 @@
       "text": "a42ec01f"
     },
     "ra-link-budget-closes--default.png": {
-      "hash": "24ce0d49340816a9",
-      "elements": 85,
+      "hash": "bb5368f38e2a9201",
+      "elements": 87,
       "text": "d6c6d467"
     },
     "ra-link-budget-open--default.png": {
-      "hash": "03368fe3467e5762",
-      "elements": 85,
+      "hash": "ad04ba23db169ba6",
+      "elements": 87,
       "text": "c96b3a78"
     }
   }
