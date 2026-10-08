@@ -114,10 +114,10 @@ namespace Gonogo.RealAntennasUplink
         /// it.</para>
         ///
         /// <para>The strength is the one reading that means something different
-        /// here (RA fills it with a rate-ladder headroom fraction, stock with a
-        /// range fraction). That is a defect in the wire field rather than in
-        /// this read, and it is carried through unchanged rather than papered
-        /// over: see <see cref="CommsLinkState.SignalStrength"/>.</para>
+        /// here: RA fills it with a rate-ladder headroom fraction, stock with a
+        /// range fraction. It is declared as
+        /// <see cref="SignalQuantity.DataRateHeadroom"/> so a client does not
+        /// compare it with a stock figure.</para>
         /// </summary>
         protected override CommsLinkState? LinkState()
         {
@@ -126,7 +126,8 @@ namespace Gonogo.RealAntennasUplink
             {
                 return null;
             }
-            return new CommsLinkState(conn.IsConnected, GradeOf(conn.GetControlLevel()), conn.SignalStrength);
+            return new CommsLinkState(conn.IsConnected, GradeOf(conn.GetControlLevel()), conn.SignalStrength,
+                SignalQuantity.DataRateHeadroom);
         }
 
         /// <summary>

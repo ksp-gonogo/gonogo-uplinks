@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -395,5 +395,56 @@
       "stars": "KerbalismStarInfo[]",
       "storms": "KerbalismStormEntry[]"
     }
+  },
+  "typeEnums": {
+    "KerbalismReliabilityBudget": {
+      "kind": null
+    },
+    "KerbalismReliabilityPart": {
+      "condition": null
+    },
+    "KerbalismReliabilitySummary": {
+      "coverage": null
+    },
+    "KerbalismResourceDef": {
+      "flowModeOrdinal": "KspResourceFlowMode"
+    },
+    "KerbalismStormEntry": {
+      "targetKind": "KerbalismStormTargetKind"
+    }
+  },
+  "topicEnums": {
+    "kerbalism.reliability": {
+      "coverage": null
+    },
+    "kerbalism.reliabilityParts": {
+      "condition": null
+    }
+  },
+  "enumMembers": {
+    "KerbalismStormTargetKind": {
+      "0": "Body",
+      "1": "Vessel"
+    },
+    "KspResourceFlowMode": {
+      "0": "NO_FLOW",
+      "1": "ALL_VESSEL",
+      "2": "STAGE_PRIORITY_FLOW",
+      "3": "STACK_PRIORITY_SEARCH",
+      "4": "ALL_VESSEL_BALANCE",
+      "5": "STAGE_PRIORITY_FLOW_BALANCE",
+      "6": "STAGE_STACK_FLOW",
+      "7": "STAGE_STACK_FLOW_BALANCE",
+      "8": "NULL"
+    }
+  },
+  "typeStatic": {
+
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }

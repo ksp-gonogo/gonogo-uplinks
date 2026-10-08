@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -390,5 +390,23 @@
       "burnFrames": "PrincipiaReferenceFrame[]",
       "plottingFrame": "PrincipiaReferenceFrame"
     }
+  },
+  "typeEnums": {
+
+  },
+  "topicEnums": {
+
+  },
+  "enumMembers": {
+
+  },
+  "typeStatic": {
+
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }

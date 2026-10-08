@@ -4,7 +4,7 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Pure mappers from the reflected <see cref="ScienceRaw"/> to the four elected
+    /// Pure mappers from the reflected <see cref="ScienceRaw"/> to the elected
     /// <c>science.*</c> payload shapes, plus this Uplink's own namespace of each
     /// one's provider extension bag. KSP-free (Sitrep.Contract only) so it is
     /// headless-testable, the same split as
@@ -30,9 +30,10 @@ namespace Gonogo.KerbalismUplink
     /// <c>valueModel</c> tag is what tells a reader the nulls are structural
     /// rather than "nothing yet".</para>
     ///
-    /// <para>Wire keys are camelCase, hand-written to match the generated
-    /// TypeScript, the same producer-owns-the-flatten rule every hand-built value
-    /// tree in the mod already follows.</para>
+    /// <para>Each mapper returns the contract's typed entries, and the provider's
+    /// own fields go in the entry's <c>Extensions</c> bag under
+    /// <see cref="ProviderId"/>. Keys inside the bag are camelCase, matching the
+    /// client's registered extension shapes.</para>
     /// </summary>
     public static class KerbalismScienceMap
     {
@@ -59,45 +60,45 @@ namespace Gonogo.KerbalismUplink
         /// channel stays unborn and silent rather than publishing an empty array
         /// (see <c>Sitrep.Contract.IScienceBackend</c> on why that matters).
         /// </summary>
-        public static List<object?>? Experiments(ScienceRaw raw)
+        public static List<ExperimentEntry>? Experiments(ScienceRaw raw)
         {
             if (!raw.Modeled) return null;
-            var list = new List<object?>();
+            var list = new List<ExperimentEntry>();
             foreach (var s in raw.Stored)
             {
-                list.Add(new Dictionary<string, object?>
+                list.Add(new ExperimentEntry
                 {
-                    ["partName"] = s.PartName,
+                    PartName = s.PartName,
                     // Kerbalism stores results on drives, never in the experiment
                     // module, so every row is stock's "container" case. Saying
                     // "experiment" would claim the result is still in the instrument
                     // and collectable from it, which it never is here.
-                    ["location"] = "container",
-                    ["experimentId"] = Text(s.ExperimentId),
-                    ["subjectId"] = Text(s.SubjectId),
-                    ["title"] = Text(s.Title),
+                    Location = "container",
+                    ExperimentId = Text(s.ExperimentId),
+                    SubjectId = Text(s.SubjectId),
+                    Title = Text(s.Title),
                     // NULL on purpose: mits, and Kerbalism has megabytes. Real
                     // figure in the bag as dataSizeMB.
-                    ["dataAmount"] = null,
+                    DataAmount = null,
                     // The fraction of this subject's science still to come, which is
                     // the closest thing to stock's "value of the next report" ratio
                     // that means anything under a linear model.
-                    ["scienceValueRatio"] = s.ScienceMaxValue > 0
-                        ? (object?)(s.ScienceRemainingTotal / s.ScienceMaxValue)
+                    ScienceValueRatio = s.ScienceMaxValue > 0
+                        ? (double?)(s.ScienceRemainingTotal / s.ScienceMaxValue)
                         : null,
                     // NULL on purpose: Kerbalism's stock bridge hardcodes these
                     // (1.0/1.0 for a file, 0.0/0.0 for a sample). Real per-megabyte
                     // value in the bag as sciencePerMB.
-                    ["baseTransmitValue"] = null,
-                    ["transmitBonus"] = null,
+                    BaseTransmitValue = null,
+                    TransmitBonus = null,
                     // A Kerbalism lab converts samples to files; it never turns a
                     // result into science, so there is no per-result lab value.
-                    ["labValue"] = null,
-                    ["deployed"] = null,
-                    ["inoperable"] = null,
-                    ["situation"] = Text(s.Situation),
-                    ["valueModel"] = ValueModel,
-                    ["extensions"] = new Dictionary<string, object?>
+                    LabValue = null,
+                    Deployed = null,
+                    Inoperable = null,
+                    Situation = Text(s.Situation),
+                    ValueModel = ValueModel,
+                    Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
                         {
@@ -138,10 +139,10 @@ namespace Gonogo.KerbalismUplink
         /// left out, a map scanner would be the one instrument on the vessel that
         /// appears in no list at all while quietly filling the drives.</para>
         /// </summary>
-        public static List<object?>? Instruments(ScienceRaw raw)
+        public static List<InstrumentEntry>? Instruments(ScienceRaw raw)
         {
             if (!raw.Modeled) return null;
-            var list = new List<object?>();
+            var list = new List<InstrumentEntry>();
             foreach (var e in raw.Experiments)
             {
                 var depleted = e.TakesSample && e.RemainingSampleMass.HasValue && e.RemainingSampleMass.Value <= 0;
@@ -149,24 +150,24 @@ namespace Gonogo.KerbalismUplink
                 var producing = (Same(e.ExpStatus, "Running") || Same(e.ExpStatus, "Forced"))
                     && string.IsNullOrEmpty(e.Issue);
 
-                list.Add(new Dictionary<string, object?>
+                list.Add(new InstrumentEntry
                 {
-                    ["partId"] = Text(e.PartId),
-                    ["partName"] = e.PartName,
-                    ["experimentId"] = Text(e.ExperimentId),
-                    ["title"] = Text(e.Title),
-                    ["deployed"] = producing,
-                    ["inoperable"] = broken || depleted,
+                    PartId = Text(e.PartId),
+                    PartName = e.PartName,
+                    ExperimentId = Text(e.ExperimentId),
+                    Title = Text(e.Title),
+                    Deployed = producing,
+                    Inoperable = broken || depleted,
                     // NULL, not false: repeat-running falls out of Kerbalism's state
                     // machine rather than being a cfg flag, so there is no fact here
                     // to report. False would say "this cannot be re-run", which is
                     // usually the opposite of the truth.
-                    ["rerunnable"] = null,
-                    ["resettable"] = null,
+                    Rerunnable = null,
+                    Resettable = null,
                     // Results live on drives, never in the module, so there is never
                     // anything to collect FROM the instrument.
-                    ["dataIsCollectable"] = false,
-                    ["extensions"] = new Dictionary<string, object?>
+                    DataIsCollectable = false,
+                    Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
                         {
@@ -194,25 +195,25 @@ namespace Gonogo.KerbalismUplink
                 else if (s.PowerDisabled == true) producing = false;
                 else producing = null;
 
-                list.Add(new Dictionary<string, object?>
+                list.Add(new InstrumentEntry
                 {
-                    ["partId"] = Text(s.PartId),
-                    ["partName"] = s.PartName,
-                    ["experimentId"] = Text(s.ExperimentId),
+                    PartId = Text(s.PartId),
+                    PartName = s.PartName,
+                    ExperimentId = Text(s.ExperimentId),
                     // No title: Kerbalism copies the raw experiment id off the deleted
                     // SCANexperiment and never carries SCANsat's friendly name, and
                     // inventing one here would put a second vocabulary on the wire.
-                    ["title"] = null,
-                    ["deployed"] = producing,
+                    Title = null,
+                    Deployed = producing,
                     // A map scanner is never spent and Kerbalism gives it no broken
                     // state, so there is a fact here and it is false.
-                    ["inoperable"] = false,
+                    Inoperable = false,
                     // Scanning resumes by itself whenever coverage can grow again, so
                     // "can this be re-run" is not a question the module answers.
-                    ["rerunnable"] = null,
-                    ["resettable"] = null,
-                    ["dataIsCollectable"] = false,
-                    ["extensions"] = new Dictionary<string, object?>
+                    Rerunnable = null,
+                    Resettable = null,
+                    DataIsCollectable = false,
+                    Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
                         {
@@ -236,19 +237,19 @@ namespace Gonogo.KerbalismUplink
         /// readout, an active flag); only the vocabulary of type values differs, and
         /// a free string already tolerates that.
         /// </summary>
-        public static List<object?>? Sensors(ScienceRaw raw)
+        public static List<SensorEntry>? Sensors(ScienceRaw raw)
         {
             if (!raw.Modeled) return null;
-            var list = new List<object?>();
+            var list = new List<SensorEntry>();
             foreach (var s in raw.Sensors)
             {
-                list.Add(new Dictionary<string, object?>
+                list.Add(new SensorEntry
                 {
-                    ["partId"] = Text(s.PartId),
-                    ["partName"] = s.PartName,
-                    ["type"] = Text(s.Type),
-                    ["readout"] = Text(s.Readout),
-                    ["active"] = s.Active,
+                    PartId = Text(s.PartId),
+                    PartName = s.PartName,
+                    Type = Text(s.Type),
+                    Readout = Text(s.Readout),
+                    Active = s.Active,
                 });
             }
             return list;
@@ -262,34 +263,34 @@ namespace Gonogo.KerbalismUplink
         /// data figures are megabytes, so the mits-typed <c>dataStored</c>/
         /// <c>dataStorage</c> pair is null too, with the rates in the bag.
         /// </summary>
-        public static List<object?>? Lab(ScienceRaw raw)
+        public static List<LabEntry>? Lab(ScienceRaw raw)
         {
             if (!raw.Modeled) return null;
-            var list = new List<object?>();
+            var list = new List<LabEntry>();
             foreach (var l in raw.Labs)
             {
-                list.Add(new Dictionary<string, object?>
+                list.Add(new LabEntry
                 {
-                    ["partName"] = l.PartName,
-                    ["dataStored"] = null,
-                    ["dataStorage"] = null,
-                    ["storedScience"] = null,
-                    ["processingData"] = ProcessingDataOf(l),
+                    PartName = l.PartName,
+                    DataStored = null,
+                    DataStorage = null,
+                    StoredScience = null,
+                    ProcessingData = ProcessingDataOf(l),
                     // Kerbalism's status IS the status text a stock lab would show,
                     // just typed: forwarded to both, so a widget that only reads the
                     // shared field still says something true.
-                    ["statusText"] = Text(l.Status),
+                    StatusText = Text(l.Status),
                     // Kerbalism bakes the researcher's level into the rate rather
                     // than exposing a headcount, so there is no count to report.
-                    ["scientistCount"] = null,
-                    ["scienceRate"] = null,
+                    ScientistCount = null,
+                    ScienceRate = null,
                     // Derived from the status word alone, so an unread status
                     // cannot answer it: "operational" is the reassuring half.
-                    ["isOperational"] = l.Status.Length == 0
+                    IsOperational = l.Status.Length == 0
                         ? (bool?)null
                         : !Same(l.Status, "DISABLED"),
-                    ["valueModel"] = ValueModel,
-                    ["extensions"] = new Dictionary<string, object?>
+                    ValueModel = ValueModel,
+                    Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
                         {
@@ -324,7 +325,7 @@ namespace Gonogo.KerbalismUplink
         /// Kerbalism's per-subject ledger is far richer than the two fields core
         /// carries, so those two are the lossy view and the ledger rides the bag.
         /// </summary>
-        public static List<object?>? ExperimentBreakdown(ScienceRaw raw)
+        public static List<ExperimentBreakdownEntry>? ExperimentBreakdown(ScienceRaw raw)
         {
             if (!raw.Modeled) return null;
 
@@ -341,23 +342,23 @@ namespace Gonogo.KerbalismUplink
                 bySubject[key] = s;
             }
 
-            var list = new List<object?>();
+            var list = new List<ExperimentBreakdownEntry>();
             foreach (var key in order)
             {
                 var s = bySubject[key];
-                list.Add(new Dictionary<string, object?>
+                list.Add(new ExperimentBreakdownEntry
                 {
-                    ["subjectId"] = Text(key),
-                    ["biome"] = Text(s.Biome),
-                    ["situation"] = Text(s.Situation),
-                    ["expTitle"] = Text(s.Title),
+                    SubjectId = Text(key),
+                    Biome = Text(s.Biome),
+                    Situation = Text(s.Situation),
+                    ExpTitle = Text(s.Title),
                     // NULL on purpose: mits. The summed megabyte figure is in the
                     // per-entry bag on science.experiments, where the sizes it sums
                     // also live.
-                    ["dataMits"] = null,
-                    ["remainingPotential"] = s.ScienceRemainingTotal,
-                    ["valueModel"] = ValueModel,
-                    ["extensions"] = new Dictionary<string, object?>
+                    DataMits = null,
+                    RemainingPotential = s.ScienceRemainingTotal,
+                    ValueModel = ValueModel,
+                    Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
                         {
@@ -377,7 +378,7 @@ namespace Gonogo.KerbalismUplink
         /// path: an absent string is null on this wire, never "". A widget checking
         /// truthiness would otherwise see a present-but-blank field.
         /// </summary>
-        private static object? Text(string? value) => string.IsNullOrEmpty(value) ? null : value;
+        private static string? Text(string? value) => string.IsNullOrEmpty(value) ? null : value;
 
         private static bool Same(string? a, string b) =>
             !string.IsNullOrEmpty(a) && string.Equals(a, b, System.StringComparison.OrdinalIgnoreCase);

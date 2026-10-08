@@ -347,12 +347,12 @@ namespace GonogoKerbalismUplink.Tests
             var scanning = Row(rows, "500");
             var stopped = Row(rows, "501");
 
-            Assert.Equal(true, scanning["deployed"]);
-            Assert.Equal(false, stopped["deployed"]);
-            Assert.Equal(false, scanning["inoperable"]);
-            Assert.Equal(false, stopped["inoperable"]);
+            Assert.Equal(true, scanning.Deployed);
+            Assert.Equal(false, stopped.Deployed);
+            Assert.Equal(false, scanning.Inoperable);
+            Assert.Equal(false, stopped.Inoperable);
             // No SCANsat vocabulary is invented for a name Kerbalism does not carry.
-            Assert.Null(scanning["title"]);
+            Assert.Null(scanning.Title);
         }
 
         /// <summary>
@@ -388,23 +388,21 @@ namespace GonogoKerbalismUplink.Tests
             };
             var rows = KerbalismScienceMap.Instruments(raw)!;
 
-            Assert.Null(Row(rows, "600")["deployed"]);
+            Assert.Null(Row(rows, "600").Deployed);
             // Cut for power IS an answer, even without a scanning flag.
-            Assert.Equal(false, Row(rows, "601")["deployed"]);
+            Assert.Equal(false, Row(rows, "601").Deployed);
             // Coverage still comes through: it is persisted on both generations.
             Assert.Equal(12.0, Ext(Row(rows, "600"))["bodyCoveragePercent"]);
         }
 
-        private static Dictionary<string, object?> Ext(Dictionary<string, object?> row) =>
-            (Dictionary<string, object?>)((Dictionary<string, object?>)row["extensions"]!)[
-                KerbalismScienceMap.ProviderId]!;
+        private static Dictionary<string, object?> Ext(InstrumentEntry row) =>
+            (Dictionary<string, object?>)row.Extensions![KerbalismScienceMap.ProviderId]!;
 
-        private static Dictionary<string, object?> Row(List<object?> rows, string partId)
+        private static InstrumentEntry Row(List<InstrumentEntry> rows, string partId)
         {
             foreach (var row in rows)
             {
-                var dict = (Dictionary<string, object?>)row!;
-                if ((string?)dict["partId"] == partId) return dict;
+                if (row.PartId == partId) return row;
             }
 
             throw new InvalidOperationException("No instrument row for partId " + partId);

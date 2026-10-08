@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -1230,5 +1230,133 @@
     "rp1.tooling": {
       "parts": "Rp1ToolingEntry[]"
     }
+  },
+  "typeEnums": {
+    "Rp1Avionics": {
+      "lockLevel": null
+    },
+    "Rp1BuildItemEntry": {
+      "projectType": null
+    },
+    "Rp1BuildStartArgs": {
+      "facility": "KspEditorFacility"
+    },
+    "Rp1BuildableCraftEntry": {
+      "facility": "KspEditorFacility"
+    },
+    "Rp1BuildingUpkeepEntry": {
+      "facility": null
+    },
+    "Rp1CareerEventEntry": {
+      "builtAt": null,
+      "detail": null,
+      "kind": null
+    },
+    "Rp1ComplexEntry": {
+      "lcType": null
+    },
+    "Rp1ConstructionCostEntry": {
+      "kind": null
+    },
+    "Rp1ConstructionEntry": {
+      "facilityType": null,
+      "kind": null
+    },
+    "Rp1FacilityEntry": {
+      "facility": null
+    },
+    "Rp1FacilityUpgradeRate": {
+      "facility": null
+    },
+    "Rp1OperationEntry": {
+      "type": null
+    },
+    "Rp1PadEntry": {
+      "status": null
+    },
+    "Rp1ProgramAcceptArgs": {
+      "speed": null
+    },
+    "Rp1ProgramEntry": {
+      "speed": null,
+      "status": null
+    },
+    "Rp1ProgramSpeedOption": {
+      "speed": null
+    },
+    "Rp1RolloutCostEntry": {
+      "type": null
+    },
+    "Rp1Simulation": {
+      "kind": null
+    },
+    "Rp1TrainingCourseEntry": {
+      "type": null
+    },
+    "Rp1TrainingTemplateEntry": {
+      "type": null
+    },
+    "Rp1WarehouseItemEntry": {
+      "projectType": null
+    }
+  },
+  "topicEnums": {
+    "rp1.avionics": {
+      "lockLevel": null
+    },
+    "rp1.buildQueue": {
+      "projectType": null
+    },
+    "rp1.buildable": {
+      "facility": "KspEditorFacility"
+    },
+    "rp1.complexes": {
+      "lcType": null
+    },
+    "rp1.constructions": {
+      "facilityType": null,
+      "kind": null
+    },
+    "rp1.facilities": {
+      "facility": null
+    },
+    "rp1.operations": {
+      "type": null
+    },
+    "rp1.pads": {
+      "status": null
+    },
+    "rp1.programs": {
+      "speed": null,
+      "status": null
+    },
+    "rp1.simulation": {
+      "kind": null
+    },
+    "rp1.training": {
+      "type": null
+    },
+    "rp1.trainingCatalogue": {
+      "type": null
+    },
+    "rp1.warehouse": {
+      "projectType": null
+    }
+  },
+  "enumMembers": {
+    "KspEditorFacility": {
+      "0": "None",
+      "1": "VAB",
+      "2": "SPH"
+    }
+  },
+  "typeStatic": {
+
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }

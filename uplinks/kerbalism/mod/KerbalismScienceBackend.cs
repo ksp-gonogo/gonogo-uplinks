@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GonogoKerbalismUplink;
 using Sitrep.Contract;
 
@@ -82,15 +83,15 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public ScienceRaw Latest => _latest;
 
-        public object? Experiments(KspSnapshot? snapshot) => KerbalismScienceMap.Experiments(_latest);
+        public IReadOnlyList<ExperimentEntry>? Experiments(KspSnapshot? snapshot) => KerbalismScienceMap.Experiments(_latest);
 
-        public object? Instruments(KspSnapshot? snapshot) => KerbalismScienceMap.Instruments(_latest);
+        public IReadOnlyList<InstrumentEntry>? Instruments(KspSnapshot? snapshot) => KerbalismScienceMap.Instruments(_latest);
 
-        public object? Sensors(KspSnapshot? snapshot) => KerbalismScienceMap.Sensors(_latest);
+        public IReadOnlyList<SensorEntry>? Sensors(KspSnapshot? snapshot) => KerbalismScienceMap.Sensors(_latest);
 
-        public object? Lab(KspSnapshot? snapshot) => KerbalismScienceMap.Lab(_latest);
+        public IReadOnlyList<LabEntry>? Lab(KspSnapshot? snapshot) => KerbalismScienceMap.Lab(_latest);
 
-        public object? ExperimentBreakdown(KspSnapshot? snapshot) => KerbalismScienceMap.ExperimentBreakdown(_latest);
+        public IReadOnlyList<ExperimentBreakdownEntry>? ExperimentBreakdown(KspSnapshot? snapshot) => KerbalismScienceMap.ExperimentBreakdown(_latest);
 
         /// <summary>
         /// Kerbalism has no fire-once "run this experiment now": running is a

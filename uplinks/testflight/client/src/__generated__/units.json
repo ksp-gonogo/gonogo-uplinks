@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -104,5 +104,36 @@
     "testflight.reliabilityParts": {
       "budgets": "TestFlightReliabilityBudget[]"
     }
+  },
+  "typeEnums": {
+    "TestFlightReliabilityBudget": {
+      "kind": null
+    },
+    "TestFlightReliabilityPart": {
+      "condition": null
+    },
+    "TestFlightReliabilitySummary": {
+      "coverage": null
+    }
+  },
+  "topicEnums": {
+    "testflight.reliability": {
+      "coverage": null
+    },
+    "testflight.reliabilityParts": {
+      "condition": null
+    }
+  },
+  "enumMembers": {
+
+  },
+  "typeStatic": {
+
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }

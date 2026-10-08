@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -249,5 +249,23 @@
       "borrowed": "RealAntennasBorrowedDish",
       "last": "RealAntennasLastBorrow"
     }
+  },
+  "typeEnums": {
+
+  },
+  "topicEnums": {
+
+  },
+  "enumMembers": {
+
+  },
+  "typeStatic": {
+
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }

@@ -12,7 +12,7 @@ import {
   lagrangePointsAt,
   librationOffsetOf,
   type SystemInstant,
-  type Vector3,
+  type Vec3Tuple,
 } from "@ksp-gonogo/sitrep-sdk/frames";
 
 export interface Resolved {
@@ -29,7 +29,7 @@ export function vesselInertialAt(
   elements: OrbitElements | null,
   referenceBodyIndex: number | null | undefined,
   system: SystemInstant,
-): Vector3 | null {
+): Vec3Tuple | null {
   if (elements === null || referenceBodyIndex == null) return null;
   if (!(elements.ecc >= 0 && elements.ecc < 1)) return null;
   const parent = system.positionByIndex.get(referenceBodyIndex);
@@ -47,7 +47,7 @@ export function resolveFor(
   secondaryIndex: number | null,
   ut: number,
   system: SystemInstant | null,
-  vesselInertial: Vector3 | null,
+  vesselInertial: Vec3Tuple | null,
 ): Resolved {
   const answer = lagrangePointsAt(
     facts,
@@ -97,7 +97,7 @@ export function autoPair(
   candidates: readonly LibrationPair[],
   ut: number,
   system: SystemInstant | null,
-  vesselInertial: Vector3 | null,
+  vesselInertial: Vec3Tuple | null,
   vesselBodyIndex: number | null | undefined,
   controlFrame?: ControlFrame | null,
 ): number | null {

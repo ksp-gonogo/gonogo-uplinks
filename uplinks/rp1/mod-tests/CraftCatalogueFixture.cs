@@ -73,11 +73,7 @@ namespace GonogoRp1Uplink.Tests
             };
             handle.Parts.AddRange(Parts);
             Loaded.Add(handle);
-            return new CraftLoad
-            {
-                Ship = handle,
-                Measured = record,
-            };
+            return CraftLoad.Loaded(handle, record);
         }
 
         public void Release(object? ship) => Released.Add(ship);

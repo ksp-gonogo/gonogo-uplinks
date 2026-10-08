@@ -10,7 +10,7 @@ Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and 
 | Uplink id | `aero` |
 | Version | `0.0.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 29.24, extension API 6.0.0 |
+| Built against | contract 31.0, extension API 6.0.0 |
 
 ## Wire
 

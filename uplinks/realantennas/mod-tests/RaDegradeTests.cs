@@ -29,7 +29,7 @@ namespace GonogoRealAntennasUplink.Tests
         public void TheRatingNamesRAsOwnRuleAndNotTheStockOne()
         {
             var model = RaDegrade.From(
-                new CommsLinkState(connected: true, CommsControlGrade.Full, signalStrength: 0.6));
+                new CommsLinkState(connected: true, CommsControlGrade.Full, signalStrength: 0.6, SignalQuantity.DataRateHeadroom));
 
             Assert.Equal("realantennas-rate-headroom", model.ModelId);
             Assert.NotEqual("commnet-range-fraction", model.ModelId);
@@ -59,7 +59,7 @@ namespace GonogoRealAntennasUplink.Tests
         public void ADisconnectedLinkRatesUnusableWhateverTheHeadroomFieldSays()
         {
             var model = RaDegrade.From(
-                new CommsLinkState(connected: false, CommsControlGrade.None, signalStrength: 0.9));
+                new CommsLinkState(connected: false, CommsControlGrade.None, signalStrength: 0.9, SignalQuantity.DataRateHeadroom));
 
             Assert.Equal(1.0, model.Level);
             Assert.Equal(RaDegrade.ModelId, model.ModelId);
@@ -77,7 +77,7 @@ namespace GonogoRealAntennasUplink.Tests
         public void AnOutOfRangeHeadroomNeverEscapesAsAnOutOfRangeRating(double headroom)
         {
             var level = RaDegrade.From(
-                new CommsLinkState(connected: true, CommsControlGrade.Full, headroom)).Level;
+                new CommsLinkState(connected: true, CommsControlGrade.Full, headroom, SignalQuantity.DataRateHeadroom)).Level;
 
             Assert.True(level == null || (level.Value >= 0.0 && level.Value <= 1.0));
         }

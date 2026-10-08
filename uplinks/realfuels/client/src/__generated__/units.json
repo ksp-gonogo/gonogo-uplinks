@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "vocabulary": [
     "%",
     "1",
@@ -91,5 +91,23 @@
     "realfuels.engines": {
       "engines": "RealFuelsEngineEntry[]"
     }
+  },
+  "typeEnums": {
+
+  },
+  "topicEnums": {
+
+  },
+  "enumMembers": {
+
+  },
+  "typeStatic": {
+    "RealFuelsEngineEntry": ["ratedBurnTimeSeconds", "ratedContinuousBurnTimeSeconds"]
+  },
+  "topicStatic": {
+
+  },
+  "typeDeterministicWhile": {
+
   }
 }
