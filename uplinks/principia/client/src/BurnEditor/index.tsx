@@ -736,7 +736,7 @@ export function BurnEditor() {
             <Cluster gap="related-dense" wrap justify="start">
               <ToggleButton
                 size="sm"
-                active={draft.inertiallyFixed}
+                pressed={draft.inertiallyFixed}
                 disabled={frozen}
                 onClick={() =>
                   setDraft({
@@ -749,7 +749,7 @@ export function BurnEditor() {
               </ToggleButton>
               <ToggleButton
                 size="sm"
-                active={draft.instantImpulse}
+                pressed={draft.instantImpulse}
                 disabled={frozen}
                 onClick={() =>
                   setDraft({ ...draft, instantImpulse: !draft.instantImpulse })

@@ -1401,7 +1401,7 @@ function KosTerminalScreen({
                      shell's completions have always gone. */
                 <ComboboxListbox
                   id={scriptListboxId}
-                  ariaLabel="Script picker"
+                  aria-label="Script picker"
                   placement="above"
                   groups={scriptListing.groups}
                   flatOptions={scriptListing.flat}

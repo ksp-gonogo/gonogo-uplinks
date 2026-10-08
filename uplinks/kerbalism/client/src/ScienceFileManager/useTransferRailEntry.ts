@@ -58,7 +58,7 @@ export function useTransferRailEntry(
           inFlight: [],
           tags: KERBALISM_TRANSFER_TAGS,
           effectiveDelaySeconds: oneWaySeconds,
-          ariaLabel: ribbonLabel,
+          "aria-label": ribbonLabel,
           ribbons: [
             {
               id: `kerbalism.transfer.${subjectId}`,

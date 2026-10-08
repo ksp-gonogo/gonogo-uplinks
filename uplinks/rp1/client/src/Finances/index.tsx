@@ -224,7 +224,7 @@ function PeriodPicker({
     >
       {PERIODS.map(({ id, label }) => (
         <ToggleButton
-          active={picked === id}
+          pressed={picked === id}
           key={id}
           onClick={() => onPick(id)}
           size="sm"
@@ -811,7 +811,7 @@ function CareerLog({
     <Section gap="related-dense" title="CAREER LOG">
       {months.length > RECENT_MONTHS && (
         <Cluster gap="related-dense" justify="start">
-          <ToggleButton active={all} onClick={() => setAll(!all)} size="sm">
+          <ToggleButton pressed={all} onClick={() => setAll(!all)} size="sm">
             All {months.length} months
           </ToggleButton>
         </Cluster>

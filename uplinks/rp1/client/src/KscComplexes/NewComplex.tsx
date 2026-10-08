@@ -102,7 +102,7 @@ export function NewComplexControl({
        the complex cards' own detail expander: the two are the same primitive and
        had drawn as two different controls. */
     <Disclosure
-      ariaLabel="Build a new launch complex"
+      aria-label="Build a new launch complex"
       asButton
       buttonSize="sm"
       chevron={false}

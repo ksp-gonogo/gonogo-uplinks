@@ -150,7 +150,7 @@ const formatDegrees = (v: number): string =>
  * The glyph goes in the caret LABEL because that is the only thing this control
  * can draw inside itself, and inside is the only place a label is free: a label
  * column beside three wheels this small is another 9px of picture per row, for
- * the same number of characters. The full word is on `ariaLabel`, which is the
+ * the same number of characters. The full word is on `aria-label`, which is the
  * accessible NAME and is never abbreviated, and again as a `title` on the
  * wrapper so a pointer can ask what "P" means. The wrapper exists only for that
  * title: `JogWheel` renders no `...rest`, so there is nowhere else to put it.
@@ -172,7 +172,7 @@ const formatDegrees = (v: number): string =>
  * "P" would announce "P" to a screen reader in place of its angle. An empty
  * format writes an empty valuetext, which falls back to `aria-valuenow`, so the
  * angle is read correctly by the one audience that cannot see the tape move.
- * The standing axis is named on `ariaLabel` and in the wrapper's `title`, and
+ * The standing axis is named on `aria-label` and in the wrapper's `title`, and
  * its angle is drawn — as a position rather than as digits — by the framing
  * preview at the foot of the same picture. Naming it on its face as well needs
  * a `JogWheel` that separates its caret label from its value text.
@@ -204,7 +204,7 @@ function AxisWheel({
     >
       <JogWheel
         {...wheel}
-        ariaLabel={name}
+        aria-label={name}
         label={false}
         format={(v) => (labelled ? `${glyph}${formatDegrees(v)}` : "")}
       />

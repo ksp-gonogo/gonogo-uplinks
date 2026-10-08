@@ -298,7 +298,7 @@ function HireTargetForm({
 
   return (
     <Disclosure
-      ariaLabel="Set a hire target"
+      aria-label="Set a hire target"
       asButton
       buttonSize="sm"
       chevron={false}

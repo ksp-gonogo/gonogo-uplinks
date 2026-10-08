@@ -140,7 +140,7 @@ export function ComplexCard({
           for a worded trigger, and it sizes to its label at the row's end.
         */}
         <Disclosure
-          ariaLabel={`Detail for ${name}`}
+          aria-label={`Detail for ${name}`}
           asButton
           buttonSize="sm"
           chevron={false}

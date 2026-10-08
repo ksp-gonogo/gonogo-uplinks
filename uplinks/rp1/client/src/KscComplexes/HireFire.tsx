@@ -94,7 +94,7 @@ export function HireFireControl({
 
   return (
     <Disclosure
-      ariaLabel="Hire or fire staff"
+      aria-label="Hire or fire staff"
       asButton
       buttonSize="sm"
       chevron={false}

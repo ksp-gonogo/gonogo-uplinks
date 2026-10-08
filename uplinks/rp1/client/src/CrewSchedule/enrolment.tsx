@@ -385,7 +385,7 @@ function Student({
 }>) {
   return (
     <ToggleButton
-      active={picked}
+      pressed={picked}
       disabled={candidate.refusal !== null && !picked}
       onClick={onToggle}
       size="sm"

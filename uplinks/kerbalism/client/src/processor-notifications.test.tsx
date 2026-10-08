@@ -226,12 +226,12 @@ describe("the notify guard's own gate, seen from inside an Uplink", () => {
       compute: () => ({ byName: new Map([["Oxygen", 12]]) }),
     });
     watch(fixture, handle);
-    const before = registered?.rate() ?? 0;
+    const before = registered?.windowTotal() ?? 0;
     runFrames(fixture, 5);
 
     // The mount evaluated first, so all five frames are ones the guard could
     // not read.
-    expect((registered?.rate() ?? 0) - before).toBe(5);
+    expect((registered?.windowTotal() ?? 0) - before).toBe(5);
 
     // Deliberate breach, so the gate's own documented escape.
     registered?.reset();

@@ -927,7 +927,7 @@ function ResourceLedgerRow({
           asButton
           buttonSize="sm"
           label={null}
-          ariaLabel={`Show rate breakdown for ${row.displayName}`}
+          aria-label={`Show rate breakdown for ${row.displayName}`}
         >
           <LedgerBody ledger={ledger} />
         </Disclosure>

@@ -261,7 +261,7 @@ function ModifyForm({
 
   return (
     <Disclosure
-      ariaLabel={`Renovate ${name}`}
+      aria-label={`Renovate ${name}`}
       asButton
       buttonSize="sm"
       chevron={false}

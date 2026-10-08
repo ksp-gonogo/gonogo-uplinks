@@ -939,7 +939,7 @@ function FundingCurveChart({
         <Stack gap="caption">
           <LineGraph
             height={140}
-            ariaLabel={
+            aria-label={
               perYear
                 ? `Funding per year over the duration of ${label(program)}`
                 : `Cumulative funding over the duration of ${label(program)}`

@@ -112,7 +112,7 @@ function CoastRow({
        */
       panelHeight="auto"
       label={label}
-      ariaLabel={`Show the mean elements of ${name}`}
+      aria-label={`Show the mean elements of ${name}`}
     >
       <OrbitAnalysisRows
         orbit={coast.analysis}

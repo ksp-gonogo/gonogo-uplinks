@@ -351,7 +351,7 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
           ]}
           thresholdStyle="marker"
           height={96}
-          ariaLabel="Radiation dose rate trend: ambient versus shielded, last 10 minutes"
+          aria-label="Radiation dose rate trend: ambient versus shielded, last 10 minutes"
         />
         {!hasTrend && (
           <GraphNotice placement="overlay">

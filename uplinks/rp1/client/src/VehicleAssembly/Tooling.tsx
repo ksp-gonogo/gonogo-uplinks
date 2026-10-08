@@ -379,7 +379,7 @@ function RefitControl({
 
   return (
     <Disclosure
-      ariaLabel={`Refit ${name} to a size the career already owns`}
+      aria-label={`Refit ${name} to a size the career already owns`}
       asButton
       buttonSize="sm"
       chevron={false}
