@@ -132,7 +132,7 @@ namespace GonogoRp1Uplink
     /// against a stand-in object graph, which is the only way a launch refusal
     /// can be watched happening without a career save to hand.</para>
     /// </summary>
-    public sealed class Rp1LaunchGate : ICommandGateEvaluator, ICommandGateItems
+    public sealed class Rp1LaunchGate : ICommandGateEvaluator, ICommandGateItems, ICommandGateInputs
     {
         /// <summary>
         /// The requirement kind this answers. Namespaced to this Uplink because a
@@ -157,7 +157,76 @@ namespace GonogoRp1Uplink
         public Rp1LaunchGate()
         {
             _scm = Rp1Types.Find(ScmTypeName);
+            Inputs = new[] { new GateInput("spaceCentre", ReadSpaceCentre) };
         }
+
+        /// <summary>
+        /// Every launch condition reads RP-1's space centre model, so it is one
+        /// input: the complexes with their limits, the vehicles on their build
+        /// lists and in their warehouses, the rollouts with whether each has
+        /// finished, and the pads.
+        /// </summary>
+        public IReadOnlyList<GateInput> Inputs { get; }
+
+        private object? ReadSpaceCentre()
+        {
+            var scm = ScmInstance();
+            if (scm == null)
+            {
+                return 0L;
+            }
+            long hash = Mix(1, Rp1Types.ReadBool(scm, "enabledForSave") == true ? 1 : 0);
+            foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(scm, "KSCs")))
+            {
+                foreach (var lc in Rp1Types.Enumerate(Rp1Types.Member(ksc, "LaunchComplexes")))
+                {
+                    hash = Mix(hash, Rp1Types.ReadString(lc, "Name")?.GetHashCode() ?? 0);
+                    hash = Mix(hash, Rp1Types.ReadEnumName(lc, "LCType")?.GetHashCode() ?? 0);
+                    hash = Mix(hash, Rp1Types.ReadBool(lc, "IsOperational") == true ? 1 : 0);
+                    hash = Mix(hash, Rp1Types.ReadBool(lc, "IsHumanRated") == true ? 1 : 0);
+                    hash = Mix(hash, Rp1Types.ReadDouble(lc, "MassMax")?.GetHashCode() ?? 0);
+                    hash = Mix(hash, Rp1Types.ReadDouble(lc, "MassMin")?.GetHashCode() ?? 0);
+                    hash = MixSize(hash, Rp1Types.Member(lc, "SizeMax"));
+                    foreach (var list in new[] { "Warehouse", "BuildList" })
+                    {
+                        foreach (var vp in Rp1Types.Enumerate(Rp1Types.Member(lc, list)))
+                        {
+                            hash = Mix(hash, Rp1Types.ReadString(vp, "shipName")?.GetHashCode() ?? 0);
+                            hash = Mix(hash, Rp1Types.ReadGuidString(vp, "shipID")?.GetHashCode() ?? 0);
+                            hash = Mix(hash, Rp1Types.ReadBool(vp, "humanRated") == true ? 1 : 0);
+                            hash = Mix(hash, Rp1Types.ReadEnumName(vp, "clampState")?.GetHashCode() ?? 0);
+                            hash = Mix(hash, Rp1Types.ReadDouble(vp, "mass")?.GetHashCode() ?? 0);
+                            hash = MixSize(hash, Rp1Types.Member(vp, "ShipSize"));
+                        }
+                    }
+                    foreach (var raw in Rp1Types.Enumerate(Rp1Types.Member(lc, "Recon_Rollout")))
+                    {
+                        var op = new Operation(raw);
+                        hash = Mix(hash, op.Type.GetHashCode());
+                        hash = Mix(hash, op.PadId?.GetHashCode() ?? 0);
+                        hash = Mix(hash, op.AssociatedId.GetHashCode());
+                        hash = Mix(hash, op.Complete == null ? 2 : op.Complete.Value ? 1 : 0);
+                    }
+                    foreach (var raw in Rp1Types.Enumerate(Rp1Types.Member(lc, "LaunchPads")))
+                    {
+                        var pad = new Pad(raw, Rp1Types.ReadString(raw, "name"));
+                        hash = Mix(hash, pad.Name?.GetHashCode() ?? 0);
+                        hash = Mix(hash, pad.Operational ? 1 : 0);
+                        hash = Mix(hash, pad.Destroyed ? 1 : 0);
+                    }
+                }
+            }
+            return hash;
+        }
+
+        private static long MixSize(long hash, object? size)
+        {
+            hash = Mix(hash, Rp1Types.ReadDouble(size, "x")?.GetHashCode() ?? 0);
+            hash = Mix(hash, Rp1Types.ReadDouble(size, "y")?.GetHashCode() ?? 0);
+            return Mix(hash, Rp1Types.ReadDouble(size, "z")?.GetHashCode() ?? 0);
+        }
+
+        private static long Mix(long hash, long value) => unchecked(hash * 31 + value);
 
         /// <summary>
         /// RP-1 is installed, decided on the TYPE resolving for the reason
@@ -732,6 +801,8 @@ namespace GonogoRp1Uplink
 
             /// <summary>Null when the operation would not say how far along it is.</summary>
             public bool? Complete { get; }
+
+            public string AssociatedId => _associatedId;
 
             public bool Mine(string shipId) =>
                 shipId.Length > 0

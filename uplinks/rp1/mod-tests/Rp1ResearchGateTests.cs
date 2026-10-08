@@ -4,6 +4,7 @@ using System.Linq;
 using GonogoRp1Uplink;
 using RP0;
 using Sitrep.Contract;
+using Sitrep.Contract.TestSupport;
 using Xunit;
 
 namespace GonogoRp1Uplink.Tests
@@ -71,6 +72,58 @@ namespace GonogoRp1Uplink.Tests
         }
 
         private GateVerdict Ask(string techId) => _gate.Evaluate(Rp1ResearchGate.Requirement(), Args.Of(techId));
+
+        private IReadOnlyDictionary<string, object?> Readings() =>
+            _gate.Inputs.ToDictionary(input => input.Name, input => input.Read());
+
+        private static IReadOnlyList<string> Moved(
+            IReadOnlyDictionary<string, object?> before, IReadOnlyDictionary<string, object?> after) =>
+            before.Keys.Where(name => !Equals(before[name], after[name])).ToList();
+
+        [Fact]
+        public void The_declared_inputs_are_named_once_and_read_the_same_twice()
+        {
+            Career(500f, ("start", 100), ("basic", 100));
+
+            var names = GateItemsConformance.AssertInputsAreReadable(_gate);
+
+            Assert.Contains("science", names);
+            Assert.Contains("queue", names);
+        }
+
+        [Fact]
+        public void A_change_in_the_science_balance_moves_the_science_input_and_no_other()
+        {
+            Career(500f, ("start", 100));
+            var before = Readings();
+
+            ResearchAndDevelopment.Instance!.science = 40f;
+
+            Assert.Equal(new[] { "science" }, Moved(before, Readings()));
+        }
+
+        [Fact]
+        public void Queuing_a_node_moves_the_queue_input()
+        {
+            Career(500f, ("start", 100));
+            var before = Readings();
+
+            Assert.True(_commands.Research(new Rp1TechResearchArgs { TechId = "start" }).Success);
+
+            Assert.Contains("queue", Moved(before, Readings()));
+        }
+
+        [Fact]
+        public void A_change_in_the_funds_or_a_launch_complex_moves_no_input()
+        {
+            Career(500f, ("start", 100));
+            var before = Readings();
+
+            Funding.Instance = new Funding { Funds = 9_000_000 };
+            SpaceCenterManagement.Instance!.KSCs.Add(new LCSpaceCenter { KSCName = "Another" });
+
+            Assert.Empty(Moved(before, Readings()));
+        }
 
         [Fact]
         public void A_node_the_career_can_pay_for_passes_and_nothing_is_charged()

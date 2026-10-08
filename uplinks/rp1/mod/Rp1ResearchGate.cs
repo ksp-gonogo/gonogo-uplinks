@@ -12,7 +12,7 @@ namespace GonogoRp1Uplink
     /// <summary>
     /// Whether one tech node can be queued for research now.
     /// </summary>
-    public sealed class Rp1ResearchGate : ICommandGateEvaluator, ICommandGateItems
+    public sealed class Rp1ResearchGate : ICommandGateEvaluator, ICommandGateItems, ICommandGateInputs
     {
         /// <summary>
         /// The requirement kind this answers. Namespaced to this Uplink because a
@@ -30,7 +30,24 @@ namespace GonogoRp1Uplink
         public Rp1ResearchGate(Rp1ResearchCommands research)
         {
             _research = research;
+            Inputs = new[]
+            {
+                new GateInput("model", () => research.ReadModel()),
+                new GateInput("science", () => research.ReadScience()),
+                new GateInput("queue", () => research.ReadQueue()),
+                new GateInput("techStates", () => research.ReadTechStates()),
+                new GateInput("costCeiling", () => research.ReadCostCeiling()),
+                new GateInput("modifiers", () => Rp1ResearchCommands.ReadModifiers()),
+            };
         }
+
+        /// <summary>
+        /// Everything <see cref="Rp1ResearchCommands.Judge"/> reads: the save's
+        /// research model, the science balance and the price modifiers that bear
+        /// on it, the queue and the researched states that refuse a node already
+        /// held, and the cost ceiling of the R&amp;D complex.
+        /// </summary>
+        public IReadOnlyList<GateInput> Inputs { get; }
 
         /// <summary>
         /// The requirement to put on <c>rp1.tech.research</c>. Names

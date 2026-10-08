@@ -4,6 +4,7 @@ using System.Linq;
 using GonogoRp1Uplink;
 using RP0;
 using Sitrep.Contract;
+using Sitrep.Contract.TestSupport;
 using Xunit;
 
 namespace GonogoRp1Uplink.Tests
@@ -593,5 +594,40 @@ namespace GonogoRp1Uplink.Tests
             Assert.Empty(_gate.Items(Rp1LaunchGate.Requirements().First()));
         }
 
+
+        [Fact]
+        public void The_declared_input_is_read_the_same_twice()
+        {
+            var lc = Centre();
+            lc.Warehouse.Add(Vehicle());
+
+            var names = GateItemsConformance.AssertInputsAreReadable(_gate);
+
+            Assert.Equal(new[] { "spaceCentre" }, names);
+        }
+
+        [Fact]
+        public void A_change_to_what_a_launch_reads_moves_the_input()
+        {
+            var lc = Centre();
+            lc.Warehouse.Add(Vehicle());
+            var before = _gate.Inputs[0].Read();
+
+            lc.Warehouse.Add(Vehicle("Atlas"));
+
+            Assert.NotEqual(before, _gate.Inputs[0].Read());
+        }
+
+        [Fact]
+        public void A_change_to_funds_does_not_move_the_input()
+        {
+            var lc = Centre();
+            lc.Warehouse.Add(Vehicle());
+            var before = _gate.Inputs[0].Read();
+
+            Funding.Instance = new Funding { Funds = 9_000_000 };
+
+            Assert.Equal(before, _gate.Inputs[0].Read());
+        }
     }
 }

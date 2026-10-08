@@ -574,6 +574,109 @@ namespace GonogoRp1Uplink
             }
         }
 
+        // ── What the research verdict reads, as comparable readings ───────
+
+        /// <summary>
+        /// Whether the save models research as a queue at all: the space centre
+        /// scenario, its managed flag and the preset arm, folded to one reading.
+        /// </summary>
+        internal long ReadModel()
+        {
+            if (!IsAvailable)
+            {
+                return 0;
+            }
+            var scm = Rp1Types.StaticValue(_scm!, "Instance");
+            if (scm == null)
+            {
+                return 1;
+            }
+            long hash = 2;
+            hash = Mix(hash, Rp1Types.ReadBool(scm, "enabledForSave") == true ? 1 : 0);
+            hash = Mix(hash, QueuesResearch() == true ? 1 : 0);
+            hash = Mix(hash, Rp1Types.StaticValue(_rnd!, "Instance") == null ? 0 : 1);
+            return hash;
+        }
+
+        /// <summary>The banked science, which every affordability test compares a node's price against.</summary>
+        internal double? ReadScience()
+        {
+            var rnd = IsAvailable ? Rp1Types.StaticValue(_rnd!, "Instance") : null;
+            return rnd == null ? (double?)null : ScienceBalance(rnd);
+        }
+
+        /// <summary>The nodes on RP-1's research queue, in order.</summary>
+        internal long ReadQueue()
+        {
+            var scm = IsAvailable ? Rp1Types.StaticValue(_scm!, "Instance") : null;
+            if (scm == null)
+            {
+                return 0;
+            }
+            long hash = 1;
+            foreach (var project in Rp1Types.Enumerate(Rp1Types.Member(scm, "TechList")))
+            {
+                hash = Mix(hash, Rp1Types.ReadString(project, "techID")?.GetHashCode() ?? 0);
+            }
+            return hash;
+        }
+
+        /// <summary>Which nodes the player has researched, which a node the career already holds is refused by.</summary>
+        internal long ReadTechStates()
+        {
+            if (!IsAvailable)
+            {
+                return 0;
+            }
+            var getState = Rp1Types.StaticMethod(_rnd!, "GetTechnologyState", 1);
+            var tree = Rp1Types.StaticValue(_assets!, "RnDTechTree");
+            var treeTechs = tree == null ? null : Rp1Types.InstanceMethod(tree, "GetTreeTechs", 0);
+            if (getState == null || treeTechs == null)
+            {
+                return 0;
+            }
+            long hash = 1;
+            var argument = new object[1];
+            foreach (var node in Rp1Types.Enumerate(treeTechs.Invoke(tree, null)))
+            {
+                argument[0] = Rp1Types.ReadString(node, "techID") ?? "";
+                hash = Mix(hash, getState.Invoke(null, argument)?.ToString()?.GetHashCode() ?? 0);
+            }
+            return hash;
+        }
+
+        /// <summary>The science cost the R&amp;D complex allows and the level it comes from.</summary>
+        internal long ReadCostCeiling()
+        {
+            if (!IsAvailable)
+            {
+                return 0;
+            }
+            var ceiling = ScienceCostCeiling(out var level);
+            return Mix(Mix(1, ceiling?.GetHashCode() ?? 0), level?.GetHashCode() ?? 0);
+        }
+
+        /// <summary>
+        /// The strategies and leaders in force and the factor each runs at, which
+        /// the modifier chain behind a node's price is built from.
+        /// </summary>
+        internal static long ReadModifiers()
+        {
+            long hash = 1;
+            foreach (var strategy in Rp1Types.Enumerate(Rp1Types.Member(Rp1StrategyCommands.StrategySystemInstance(), "Strategies")))
+            {
+                if (Rp1Types.ReadBool(strategy, "IsActive") != true)
+                {
+                    continue;
+                }
+                hash = Mix(hash, Rp1Types.ReadString(Rp1Types.Member(strategy, "Config"), "Name")?.GetHashCode() ?? 0);
+                hash = Mix(hash, Rp1Types.ReadDouble(strategy, "Factor")?.GetHashCode() ?? 0);
+            }
+            return hash;
+        }
+
+        private static long Mix(long hash, long value) => unchecked(hash * 31 + value);
+
         // ── RP-1's model, asked ────────────────────────────────────────────
 
         /// <summary>
