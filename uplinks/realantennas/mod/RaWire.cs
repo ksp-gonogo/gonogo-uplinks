@@ -164,6 +164,45 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
+        /// The <c>realantennas.retargeting</c> channel value: a bare ARRAY, one entry
+        /// per craft with something to say. An empty list is a legitimate value (no
+        /// craft is opted out and no dish has been borrowed), not typed absence.
+        /// </summary>
+        public static List<Dictionary<string, object?>> Retargeting(IReadOnlyList<RealAntennasVesselRetargeting> vessels)
+        {
+            var list = new List<Dictionary<string, object?>>(vessels.Count);
+            foreach (var vessel in vessels)
+            {
+                list.Add(new Dictionary<string, object?>
+                {
+                    ["vesselId"] = vessel.VesselId,
+                    ["allowed"] = vessel.Allowed,
+                    ["borrowed"] = vessel.Borrowed == null
+                        ? null
+                        : new Dictionary<string, object?>
+                        {
+                            ["dishId"] = vessel.Borrowed.DishId,
+                            ["peerId"] = vessel.Borrowed.PeerId,
+                            ["dishName"] = vessel.Borrowed.DishName,
+                            ["sinceUt"] = vessel.Borrowed.SinceUt,
+                            ["previousAim"] = vessel.Borrowed.PreviousAim,
+                        },
+                    ["last"] = vessel.Last == null
+                        ? null
+                        : new Dictionary<string, object?>
+                        {
+                            ["peerId"] = vessel.Last.PeerId,
+                            ["turnedUt"] = vessel.Last.TurnedUt,
+                            ["endedUt"] = vessel.Last.EndedUt,
+                            ["outcome"] = vessel.Last.Outcome,
+                        },
+                    ["meta"] = Meta(vessel.Meta),
+                });
+            }
+            return list;
+        }
+
+        /// <summary>
         /// One chain's entries. Every optional field is emitted whether or not the
         /// entry's mode reads it, so a client can render the entry it sent back
         /// without inferring which keys a mode implies.

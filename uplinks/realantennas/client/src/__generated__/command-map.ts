@@ -47,6 +47,7 @@
 
 import type {
   RealAntennasAntennaArgs,
+  RealAntennasSetAutoRetargetArgs,
   RealAntennasTargetArgs,
   RealAntennasTargetChainArgs,
 } from "./contract.js";
@@ -58,12 +59,14 @@ export interface GeneratedCommandArgsMap {
   "realantennas.antenna.target": RealAntennasTargetArgs;
   "realantennas.antenna.targetChain": RealAntennasTargetChainArgs;
   "realantennas.antenna.targetHome": RealAntennasAntennaArgs;
+  "realantennas.vessel.setAutoRetarget": RealAntennasSetAutoRetargetArgs;
 }
 
 export interface GeneratedCommandReplyMap {
   "realantennas.antenna.target": CommandResult;
   "realantennas.antenna.targetChain": CommandResult;
   "realantennas.antenna.targetHome": CommandResult;
+  "realantennas.vessel.setAutoRetarget": CommandResult;
 }
 
 /**
@@ -80,6 +83,7 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "realantennas.antenna.target": "CommandResult",
   "realantennas.antenna.targetChain": "CommandResult",
   "realantennas.antenna.targetHome": "CommandResult",
+  "realantennas.vessel.setAutoRetarget": "CommandResult",
 } as const satisfies Record<string, string>;
 
 /**
@@ -124,10 +128,12 @@ export const GENERATED_COMMAND_RAIL = {
   "realantennas.antenna.target": { replies: true, delayed: true },
   "realantennas.antenna.targetChain": { replies: true, delayed: true },
   "realantennas.antenna.targetHome": { replies: true, delayed: true },
+  "realantennas.vessel.setAutoRetarget": { replies: true, delayed: true },
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
   "realantennas.antenna.target",
   "realantennas.antenna.targetChain",
   "realantennas.antenna.targetHome",
+  "realantennas.vessel.setAutoRetarget",
 ] as const;

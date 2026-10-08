@@ -23,12 +23,27 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend
     {
         public const string Id = "realantennas";
 
         private readonly RaReflection _ra;
         private readonly Kernel? _kernel;
+        private readonly RaRetargetRegister? _retargets;
+        private readonly Func<RaDishTurner?>? _turner;
+
+        /// <summary>
+        /// Every node's antennas as the last capture read them, by plan id, for the
+        /// retarget model to answer questions about a peer. Written on the main
+        /// thread during a capture and read by the planner after it, so it is a
+        /// concurrent map; a value is replaced whole and never edited.
+        /// </summary>
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<RaPlannedAntenna>> _rosterAntennas =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<RaPlannedAntenna>>(StringComparer.Ordinal);
+
+        /// <summary>The antennas read at one instant, so the many pairs a capture asks about one node read it once.</summary>
+        private readonly Dictionary<CommNode, List<RaPlannedAntenna>?> _plannedAt = new Dictionary<CommNode, List<RaPlannedAntenna>?>();
+        private double _plannedUt = double.NaN;
 
         /// <param name="kernel">
         /// Core's capability registry, for the <c>activeVessel</c> resolution
@@ -36,10 +51,19 @@ namespace Gonogo.RealAntennasUplink
         /// no vessel at all: this backend then reports a link it could not see,
         /// which is the honest degradation, rather than the wrong craft's.
         /// </param>
-        public RaCommsBackend(RaReflection ra, Kernel? kernel = null)
+        /// <param name="retargets">The loans and opt-outs of dish turning. Null where this backend turns none.</param>
+        /// <param name="turner">The game-touching half of a dish turn, resolved when asked so it can be built after the backend.</param>
+        internal RaCommsBackend(RaReflection ra, Kernel? kernel, RaRetargetRegister? retargets, Func<RaDishTurner?>? turner)
         {
             _ra = ra;
             _kernel = kernel;
+            _retargets = retargets;
+            _turner = turner;
+        }
+
+        public RaCommsBackend(RaReflection ra, Kernel? kernel = null)
+            : this(ra, kernel, null, null)
+        {
         }
 
         public override string ProviderId => Id;
@@ -201,8 +225,8 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public IContactLinkModel? LinkModel(object? from, object? to, double ut)
         {
-            var fromAntennas = Planned(from);
-            var toAntennas = Planned(to);
+            var fromAntennas = Planned(from, ut);
+            var toAntennas = Planned(to, ut);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaContactLinkModel(fromAntennas, toAntennas);
@@ -218,8 +242,8 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public IContactLinkStrength? LinkStrength(object? from, object? to, double ut)
         {
-            var fromAntennas = Planned(from, placeAims: false);
-            var toAntennas = Planned(to, placeAims: false);
+            var fromAntennas = Planned(from, ut, placeAims: false);
+            var toAntennas = Planned(to, ut, placeAims: false);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaLinkStrength(fromAntennas, toAntennas);
@@ -228,15 +252,39 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>The least of the hops: a path carries the rate of its slowest link.</summary>
         public double Combine(IReadOnlyList<double> hopStrengths) => RaLinkStrength.Weakest(hopStrengths);
 
-        private List<RaPlannedAntenna>? Planned(object? node, bool placeAims = true)
+        private List<RaPlannedAntenna>? Planned(object? node, double ut, bool placeAims = true)
         {
-            if (!(node is CommNode))
+            if (!(node is CommNode commNode))
             {
                 return null;
             }
+            if (ut != _plannedUt)
+            {
+                _plannedAt.Clear();
+                _plannedUt = ut;
+            }
+            // The two flavours differ only in whether an aim the plan cannot place withholds the list.
+            if (placeAims && _plannedAt.TryGetValue(commNode, out var cached))
+            {
+                return cached;
+            }
+            var read = ReadPlanned(commNode, placeAims);
+            if (placeAims)
+            {
+                _plannedAt[commNode] = read;
+            }
+            return read;
+        }
+
+        private List<RaPlannedAntenna>? ReadPlanned(CommNode node, bool placeAims)
+        {
             var planned = new List<RaPlannedAntenna>();
             var index = 0;
-            foreach (var antenna in _ra.NodeAntennas(node))
+            var antennas = _ra.NodeAntennas(node);
+            var vessel = ResolveOwningVessel(node);
+            var nodeId = vessel == null ? null : "vessel:" + vessel.id;
+            var parts = vessel == null ? null : RaPartIds.Of(_ra, vessel, antennas);
+            foreach (var antenna in antennas)
             {
                 var one = new RaPlannedAntenna
                 {
@@ -258,12 +306,26 @@ namespace Gonogo.RealAntennasUplink
                     CodingRate = _ra.CodingRate(antenna),
                     EncoderRequiredEbN0Db = _ra.EncoderRequiredEbN0Db(antenna),
                     PowerDrawEc = _ra.PowerDrawLinear(antenna),
+                    AimLabel = _ra.Target(antenna)?.ToString(),
                 };
+                var part = parts?[planned.Count];
+                if (nodeId != null && part != null && one.Steerable)
+                {
+                    one.DishId = RaDishIds.Of(nodeId, part.Value.Part, part.Value.Ordinal);
+                }
                 if (!Aim(_ra.Target(antenna), one) && placeAims)
                 {
                     return null;
                 }
                 planned.Add(one);
+            }
+            if (nodeId != null)
+            {
+                _rosterAntennas[nodeId] = planned;
+            }
+            else if (node.isHome)
+            {
+                _rosterAntennas["ground:" + NodeDisplayName(node)] = planned;
             }
             return planned;
         }
@@ -302,6 +364,61 @@ namespace Gonogo.RealAntennasUplink
                     return false;
             }
         }
+
+        // ── Turning an idle dish ──────────────────────────────────────────
+
+        /// <summary>
+        /// What turning this node's dishes could do, from its antennas as they stand
+        /// now. A model is returned for every RealAntennas node, a craft with no
+        /// steered dish included, since a node that can only receive is still the
+        /// peer another node's dish is turned to.
+        /// </summary>
+        public IRetargetModel? RetargetModel(object? node, double ut)
+        {
+            var planned = Planned(node, ut);
+            var nodeId = node is CommNode commNode && ResolveOwningVessel(commNode) is Vessel vessel ? "vessel:" + vessel.id : null;
+            if (planned == null || nodeId == null || _retargets == null)
+            {
+                return null;
+            }
+            return new RaRetargetModel(
+                nodeId,
+                planned,
+                id => _rosterAntennas.TryGetValue(id, out var antennas) ? antennas : null,
+                id => AutoRetargetAllowed(id));
+        }
+
+        public bool AutoRetargetAllowed(string nodeId) =>
+            _retargets != null && RaDishIds.VesselGuid(nodeId) is string guid && _retargets.Allowed(guid);
+
+        /// <summary>
+        /// Whether the peer could receive what a node sent it, from the antennas the
+        /// last capture read: a peer with an omni can, one that is a ground station can,
+        /// and a peer whose antennas are all dishes can only when one is aimed at the
+        /// node. A peer nothing was read of is taken to receive.
+        /// </summary>
+        public bool PeerCanReceive(string peerId, string nodeId, double ut)
+        {
+            if (!_rosterAntennas.TryGetValue(peerId, out var antennas) || antennas.Count == 0)
+            {
+                return true;
+            }
+            foreach (var antenna in antennas)
+            {
+                if (!antenna.Steerable || antenna.Aim == RaAimKind.Untargeted
+                    || (antenna.Aim == RaAimKind.Vessel && string.Equals(antenna.AimNodeId, nodeId, StringComparison.Ordinal)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string? TurnDish(string nodeId, string dishId, string peerId, double ut) =>
+            _turner?.Invoke()?.Turn(nodeId, dishId, peerId, ut);
+
+        public bool RestoreDish(string recordId, double ut) =>
+            _turner?.Invoke()?.Restore(recordId, ut) ?? true;
 
         /// <summary>
         /// RA's occlusion geometry: the bare body radius, no multiplier (see

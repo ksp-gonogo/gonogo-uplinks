@@ -28,14 +28,23 @@ namespace Gonogo.RealAntennasUplink
     public sealed class RaChainScenario : ScenarioModule
     {
         private static readonly RaChainRegister Register = new RaChainRegister();
+        private static readonly RaRetargetRegister Retarget = new RaRetargetRegister();
 
         /// <summary>The process-lifetime register the Uplink's command handler and tick both hold.</summary>
         internal static RaChainRegister Chains => Register;
+
+        /// <summary>
+        /// The process-lifetime register of dishes on loan to a dish turn and of the
+        /// crafts opted out of it, saved with the chains: the loan's record has to
+        /// outlive a quit so a dish is never left on a borrowed aim.
+        /// </summary>
+        internal static RaRetargetRegister Retargets => Retarget;
 
         public override void OnAwake()
         {
             base.OnAwake();
             Register.Clear();
+            Retarget.Clear();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -44,6 +53,7 @@ namespace Gonogo.RealAntennasUplink
             try
             {
                 RaChainPersistence.Load(Register, node);
+                RaRetargetPersistence.Load(Retarget, node);
             }
             catch (Exception ex)
             {
@@ -57,6 +67,7 @@ namespace Gonogo.RealAntennasUplink
             try
             {
                 RaChainPersistence.Save(Register, node);
+                RaRetargetPersistence.Save(Retarget, node);
             }
             catch (Exception ex)
             {

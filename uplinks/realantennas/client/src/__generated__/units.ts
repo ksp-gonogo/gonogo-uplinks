@@ -136,6 +136,13 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     targeted: "flag",
     techLevel: "count",
   },
+  "RealAntennasBorrowedDish": {
+    dishId: "id",
+    dishName: "text",
+    peerId: "id",
+    previousAim: "text",
+    sinceUt: "ut",
+  },
   "RealAntennasHopExt": {
     band: "text",
     beamwidth: "°",
@@ -151,6 +158,16 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     bitsPerSec: "bit/s",
     fromNodeId: "id",
     toNodeId: "id",
+  },
+  "RealAntennasLastBorrow": {
+    endedUt: "ut",
+    outcome: "text",
+    peerId: "id",
+    turnedUt: "ut",
+  },
+  "RealAntennasSetAutoRetargetArgs": {
+    allow: "flag",
+    vessel: "id",
   },
   "RealAntennasTargetArgs": {
     altitude: "m",
@@ -188,6 +205,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     latitude: "°",
     longitude: "°",
     mode: "text",
+    vesselId: "id",
+  },
+  "RealAntennasVesselRetargeting": {
+    allowed: "flag",
     vesselId: "id",
   },
 };
@@ -248,6 +269,10 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     fromNodeId: "id",
     toNodeId: "id",
   },
+  "realantennas.retargeting": {
+    allowed: "flag",
+    vesselId: "id",
+  },
 };
 
 /**
@@ -285,12 +310,20 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "RealAntennasTargetChainArgs": {
     steps: "RealAntennasTargetStepArgs[]",
   },
+  "RealAntennasVesselRetargeting": {
+    borrowed: "RealAntennasBorrowedDish",
+    last: "RealAntennasLastBorrow",
+  },
 };
 
 /** The same, keyed by Topic id. */
 export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "realantennas.antennaChains": {
     steps: "RealAntennasTargetStep[]",
+  },
+  "realantennas.retargeting": {
+    borrowed: "RealAntennasBorrowedDish",
+    last: "RealAntennasLastBorrow",
   },
 };
 

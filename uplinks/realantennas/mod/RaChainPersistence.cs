@@ -57,16 +57,7 @@ namespace Gonogo.RealAntennasUplink
 
                 foreach (var step in pair.Value.Steps)
                 {
-                    var stepNode = chain.AddNode(StepNodeName);
-                    stepNode.AddValue("mode", step.Mode ?? "");
-                    AddIfSet(stepNode, "vesselId", step.VesselId);
-                    AddIfSet(stepNode, "bodyName", step.BodyName);
-                    AddIfSet(stepNode, "latitude", step.Latitude);
-                    AddIfSet(stepNode, "longitude", step.Longitude);
-                    AddIfSet(stepNode, "altitude", step.Altitude);
-                    AddIfSet(stepNode, "azimuth", step.Azimuth);
-                    AddIfSet(stepNode, "elevation", step.Elevation);
-                    AddIfSet(stepNode, "forward", step.Forward);
+                    WriteStep(chain.AddNode(StepNodeName), step);
                 }
             }
         }
@@ -99,23 +90,11 @@ namespace Gonogo.RealAntennasUplink
                 var steps = new List<RealAntennasTargetStepArgs>();
                 foreach (var stepNode in chain.GetNodes(StepNodeName))
                 {
-                    var mode = stepNode.GetValue("mode");
-                    if (string.IsNullOrEmpty(mode))
+                    var step = ReadStep(stepNode);
+                    if (step != null)
                     {
-                        continue;
+                        steps.Add(step);
                     }
-                    steps.Add(new RealAntennasTargetStepArgs
-                    {
-                        Mode = mode,
-                        VesselId = Read(stepNode, "vesselId"),
-                        BodyName = Read(stepNode, "bodyName"),
-                        Latitude = ReadDouble(stepNode, "latitude"),
-                        Longitude = ReadDouble(stepNode, "longitude"),
-                        Altitude = ReadDouble(stepNode, "altitude"),
-                        Azimuth = ReadDouble(stepNode, "azimuth"),
-                        Elevation = ReadDouble(stepNode, "elevation"),
-                        Forward = ReadDouble(stepNode, "forward"),
-                    });
                 }
 
                 register.Restore(
@@ -126,6 +105,42 @@ namespace Gonogo.RealAntennasUplink
                     ReadDouble(chain, "lastAppliedUt"),
                     ReadInt(chain, "laps") ?? 0);
             }
+        }
+
+        /// <summary>One target as a node: the same fields a chain entry carries.</summary>
+        internal static void WriteStep(ConfigNode stepNode, RealAntennasTargetStepArgs step)
+        {
+            stepNode.AddValue("mode", step.Mode ?? "");
+            AddIfSet(stepNode, "vesselId", step.VesselId);
+            AddIfSet(stepNode, "bodyName", step.BodyName);
+            AddIfSet(stepNode, "latitude", step.Latitude);
+            AddIfSet(stepNode, "longitude", step.Longitude);
+            AddIfSet(stepNode, "altitude", step.Altitude);
+            AddIfSet(stepNode, "azimuth", step.Azimuth);
+            AddIfSet(stepNode, "elevation", step.Elevation);
+            AddIfSet(stepNode, "forward", step.Forward);
+        }
+
+        /// <summary>A target read back, or null for a node with no mode.</summary>
+        internal static RealAntennasTargetStepArgs? ReadStep(ConfigNode stepNode)
+        {
+            var mode = stepNode.GetValue("mode");
+            if (string.IsNullOrEmpty(mode))
+            {
+                return null;
+            }
+            return new RealAntennasTargetStepArgs
+            {
+                Mode = mode,
+                VesselId = Read(stepNode, "vesselId"),
+                BodyName = Read(stepNode, "bodyName"),
+                Latitude = ReadDouble(stepNode, "latitude"),
+                Longitude = ReadDouble(stepNode, "longitude"),
+                Altitude = ReadDouble(stepNode, "altitude"),
+                Azimuth = ReadDouble(stepNode, "azimuth"),
+                Elevation = ReadDouble(stepNode, "elevation"),
+                Forward = ReadDouble(stepNode, "forward"),
+            };
         }
 
         private static void AddIfSet(ConfigNode node, string key, string? value)

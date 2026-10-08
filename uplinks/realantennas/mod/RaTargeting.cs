@@ -42,10 +42,48 @@ namespace Gonogo.RealAntennasUplink
     public sealed class RaTargeting
     {
         private readonly RaReflection _ra;
+        private readonly RaRetargetRegister? _retargets;
 
-        public RaTargeting(RaReflection ra)
+        /// <param name="ra">The reflection reach into RealAntennas.</param>
+        /// <param name="retargets">The loans of borrowed dishes, so an aim the operator gives a borrowed dish ends its loan with nothing written back. Null where nothing is borrowed.</param>
+        internal RaTargeting(RaReflection ra, RaRetargetRegister? retargets)
         {
             _ra = ra;
+            _retargets = retargets;
+        }
+
+        public RaTargeting(RaReflection ra)
+            : this(ra, null)
+        {
+        }
+
+        /// <summary>
+        /// The operator aimed <paramref name="antenna"/>. If it is a dish on loan, the
+        /// loan ends there: their aim is the one to keep, and a restore that wrote the
+        /// old one back over it would undo what they just asked for.
+        /// </summary>
+        private void NoteOperatorAimed(Vessel? vessel, object antenna)
+        {
+            if (_retargets == null || vessel == null)
+            {
+                return;
+            }
+            var antennas = Antennas(vessel);
+            var index = -1;
+            for (var i = 0; i < antennas.Count; i++)
+            {
+                if (ReferenceEquals(antennas[i], antenna))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            var part = index < 0 ? null : RaPartIds.Of(_ra, vessel, antennas)[index];
+            var loan = part == null ? null : _retargets.OpenOnPart(part.Value.Part, part.Value.Ordinal);
+            if (loan != null)
+            {
+                _retargets.Settle(loan.Id, RaBorrowOutcome.Taken, Planetarium.GetUniversalTime());
+            }
         }
 
         /// <summary>
@@ -126,7 +164,12 @@ namespace Gonogo.RealAntennasUplink
             {
                 return refusal!;
             }
-            return Apply(antenna!, values!);
+            var applied = Apply(antenna!, values!);
+            if (applied.Success)
+            {
+                NoteOperatorAimed(vessel, antenna!);
+            }
+            return applied;
         }
 
         /// <summary>
@@ -273,6 +316,7 @@ namespace Gonogo.RealAntennasUplink
             }
 
             InvalidateCache();
+            NoteOperatorAimed(vessel, antenna!);
             return CommandResult.Ok();
         }
 
@@ -371,6 +415,79 @@ namespace Gonogo.RealAntennasUplink
             return true;
         }
 
+        /// <summary>
+        /// MAIN THREAD: writes <paramref name="step"/> to an antenna with none of the
+        /// operator-facing gates: no tech-level check and no unlocked-mode check. It
+        /// is how a borrowed dish is turned and, above all, how it is put back, and
+        /// a restore that the gates could refuse (a mode the antenna has not earned,
+        /// a target craft since destroyed) would strand the dish. The plan's own
+        /// range and shape checks still apply, since a target the game cannot build
+        /// cannot be written. Null when written, else why not.
+        /// </summary>
+        internal string? WriteStep(Vessel? vessel, object antenna, RealAntennasTargetStepArgs step)
+        {
+            var mode = step.Mode ?? "";
+            CelestialBody? body = null;
+            if (mode == RaTargetPlan.ModeBodyCenter || mode == RaTargetPlan.ModeBodyLatLonAlt)
+            {
+                body = ResolveBody(step.BodyName);
+            }
+            var args = new RealAntennasTargetArgs
+            {
+                Mode = mode,
+                VesselId = step.VesselId,
+                BodyName = step.BodyName,
+                Latitude = step.Latitude,
+                Longitude = step.Longitude,
+                Altitude = step.Altitude,
+                Azimuth = step.Azimuth,
+                Elevation = step.Elevation,
+                Forward = step.Forward,
+            };
+            if (!RaTargetPlan.TryBuild(args, OwnVesselId(antenna, vessel), body?.name, body?.Radius ?? 0.0, out var values, out _, out var detail))
+            {
+                return detail ?? "The target could not be built.";
+            }
+            var result = Apply(antenna, values);
+            return result.Success ? null : result.Detail ?? "The target was refused.";
+        }
+
+        /// <summary>
+        /// MAIN THREAD: what an antenna is aimed at now, as the single-target
+        /// command takes it, or null when it holds no target or one this does not
+        /// recognise. A body's centre reads back as the surface point it is stored
+        /// as, which writes back identically.
+        /// </summary>
+        internal RealAntennasTargetStepArgs? DescribeStep(object antenna)
+        {
+            var target = _ra.Target(antenna);
+            var kind = _ra.TargetKind(target);
+            switch (kind)
+            {
+                case RaTargetPlan.ModeVessel:
+                    return new RealAntennasTargetStepArgs { Mode = kind, VesselId = NullIfEmpty(_ra.TargetVesselId(target)) };
+                case RaTargetPlan.ModeBodyLatLonAlt:
+                    var (latitude, longitude, altitude) = _ra.TargetLatLonAlt(target);
+                    return new RealAntennasTargetStepArgs
+                    {
+                        Mode = kind,
+                        BodyName = NullIfEmpty(_ra.TargetBodyName(target)),
+                        Latitude = latitude,
+                        Longitude = longitude,
+                        Altitude = altitude,
+                    };
+                case RaTargetPlan.ModeAzEl:
+                    return new RealAntennasTargetStepArgs { Mode = kind, Azimuth = _ra.TargetAzimuth(target), Elevation = _ra.TargetElevation(target) };
+                case RaTargetPlan.ModeOrbitRelative:
+                    return new RealAntennasTargetStepArgs { Mode = kind, Forward = _ra.TargetForward(target), Elevation = _ra.TargetElevation(target) };
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>RealAntennas' own display string for an antenna's aim, for words.</summary>
+        internal string AimLabel(object antenna) => _ra.Target(antenna)?.ToString() ?? "no target";
+
         private static CommandResult TechLevelRefusal(string mode, int? techLevel, int required) =>
             CommandResult.Fail(
                 CommandErrorCode.NotUnlocked,
@@ -440,27 +557,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>The persistent id of the part an antenna is on: off the part while the craft is loaded, and off its saved snapshot while it is not.</summary>
-        private uint? PartPersistentId(Vessel vessel, object antenna)
-        {
-            if (_ra.ReadPublicMember(_ra.Parent(antenna), "part") is Part part)
-            {
-                return part.persistentId;
-            }
-            var module = _ra.ParentSnapshot(antenna) as ProtoPartModuleSnapshot;
-            var saved = vessel.protoVessel != null ? vessel.protoVessel.protoPartSnapshots : null;
-            if (module == null || saved == null)
-            {
-                return null;
-            }
-            foreach (var savedPart in saved)
-            {
-                if (savedPart != null && savedPart.modules != null && savedPart.modules.Contains(module))
-                {
-                    return savedPart.persistentId;
-                }
-            }
-            return null;
-        }
+        private uint? PartPersistentId(Vessel vessel, object antenna) => RaPartIds.PartPersistentId(_ra, vessel, antenna);
 
         /// <summary>The flight id of the part an antenna belongs to, or null while its craft is unloaded.</summary>
         private string? FlightId(object antenna)

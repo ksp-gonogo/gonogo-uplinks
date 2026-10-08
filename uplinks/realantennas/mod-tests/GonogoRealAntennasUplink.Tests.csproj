@@ -41,6 +41,12 @@
          with it and is itself KSP-free (it reaches RA only by reflection). -->
     <Compile Include="..\mod\RaReach.cs" />
     <Compile Include="..\mod\RaContactModel.cs" />
+    <!-- Dish turning, headless: the id of a steered dish, what turning one would do
+         (the model the plan asks), and the register of what is owed to the craft
+         it was borrowed from. The game-touching half is RaDishTurner. -->
+    <Compile Include="..\mod\RaDishIds.cs" />
+    <Compile Include="..\mod\RaRetargetModel.cs" />
+    <Compile Include="..\mod\RaRetargetRegister.cs" />
     <Compile Include="..\mod\RaReflection.cs" />
     <!-- RaDegrade is RA's answer to the comms seam's quality question. It is
          handed the reading the backend already took rather than taking one, so
@@ -106,6 +112,7 @@
     <!-- The chain's save round-trip: a ConfigNode is KSP's, so both the code
          under test and the test naming it belong under the gate below. -->
     <Compile Remove="RaChainPersistenceTests.cs" />
+    <Compile Remove="RaRetargetPersistenceTests.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(KspManagedAvailable)' == 'true'">
@@ -122,6 +129,11 @@
          belongs under this gate, and it drags its own collaborators, all of
          which are either KSP-free or gated with it. -->
     <Compile Include="..\mod\RaCommsBackend.cs" />
+    <!-- RaCommsBackend turns dishes through the game-touching half, so the half it
+         names comes with it: part ids, targeting's writes and the turner itself. -->
+    <Compile Include="..\mod\RaPartIds.cs" />
+    <Compile Include="..\mod\RaTargeting.cs" />
+    <Compile Include="..\mod\RaDishTurner.cs" />
     <Compile Include="..\mod\RaHopExtensions.cs" />
     <Compile Include="Routing\**\*.cs" />
     <Compile Include="RaCommsBackendSharedShapeTests.cs" />
@@ -132,6 +144,8 @@
          last reached with nothing left to move it. -->
     <Compile Include="..\mod\RaChainPersistence.cs" />
     <Compile Include="RaChainPersistenceTests.cs" />
+    <Compile Include="..\mod\RaRetargetPersistence.cs" />
+    <Compile Include="RaRetargetPersistenceTests.cs" />
   </ItemGroup>
 
   <Target Name="WarnIfKspManagedMissing" BeforeTargets="Build" Condition="'$(KspManagedAvailable)' != 'true'">

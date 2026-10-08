@@ -41,6 +41,7 @@ import type {
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
   RealAntennasHopRate,
+  RealAntennasVesselRetargeting,
 } from "./__generated__/contract.js";
 import {
   GENERATED_ENUM_MEMBERS,
@@ -111,6 +112,18 @@ export const REALANTENNAS_ANTENNAS_TOPIC = "realantennas.antennas";
  */
 export const REALANTENNAS_CHAINS_TOPIC = "realantennas.antennaChains";
 
+/**
+ * Dish turning, per craft: a BARE ARRAY of {@link RealAntennasVesselRetargeting},
+ * one entry for every craft that is opted out of it, has a dish on loan, or has
+ * had one. A craft that may turn its idle dishes, and has not, has no entry. Its
+ * value MUST match `RealAntennasUplink.RetargetingTopic` in
+ * ../../RealAntennasUplink.cs.
+ *
+ * Delayed, and fleet-wide: it carries every craft, so an entry for another craft
+ * is delivered by the reported craft's delay and not its own.
+ */
+export const REALANTENNAS_RETARGETING_TOPIC = "realantennas.retargeting";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "realantennas.available": boolean;
@@ -120,6 +133,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "realantennas.hopRates": RealAntennasHopRate[];
     "realantennas.antennas": RealAntennasAntennaState[];
     "realantennas.antennaChains": RealAntennasAntennaChain[];
+    "realantennas.retargeting": RealAntennasVesselRetargeting[];
   }
 }
 
@@ -130,6 +144,7 @@ registerBarePrimitiveTopic(COMMS_LINK_MARGIN_TOPIC);
 registerBarePrimitiveTopic(REALANTENNAS_HOP_RATES_TOPIC);
 registerBarePrimitiveTopic(REALANTENNAS_ANTENNAS_TOPIC);
 registerBarePrimitiveTopic(REALANTENNAS_CHAINS_TOPIC);
+registerBarePrimitiveTopic(REALANTENNAS_RETARGETING_TOPIC);
 
 // The runtime half of the relocation. Both registries are fed, by looping over
 // the generated maps rather than naming entries, so a Topic or type added to
@@ -209,4 +224,10 @@ export type _ResolvesAntennas = Expect<
 >;
 export type _ResolvesChains = Expect<
   Equal<TopicPayload<"realantennas.antennaChains">, RealAntennasAntennaChain[]>
+>;
+export type _ResolvesRetargeting = Expect<
+  Equal<
+    TopicPayload<"realantennas.retargeting">,
+    RealAntennasVesselRetargeting[]
+  >
 >;

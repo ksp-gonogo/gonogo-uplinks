@@ -31,6 +31,7 @@ import type {
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
   RealAntennasHopRate,
+  RealAntennasVesselRetargeting,
 } from "./contract.js";
 
 export interface GeneratedTopicPayloadMap {
@@ -40,6 +41,7 @@ export interface GeneratedTopicPayloadMap {
   "realantennas.antennaChains": RealAntennasAntennaChain[];
   "realantennas.antennas": RealAntennasAntennaState[];
   "realantennas.hopRates": RealAntennasHopRate[];
+  "realantennas.retargeting": RealAntennasVesselRetargeting[];
 }
 
 export const GENERATED_TOPIC_IDS = [
@@ -49,6 +51,7 @@ export const GENERATED_TOPIC_IDS = [
   "realantennas.antennaChains",
   "realantennas.antennas",
   "realantennas.hopRates",
+  "realantennas.retargeting",
 ] as const;
 
 // The Topics whose payload is a bare JSON array of the element type, so a
@@ -58,4 +61,5 @@ export const GENERATED_COLLECTION_TOPIC_IDS = [
   "realantennas.antennaChains",
   "realantennas.antennas",
   "realantennas.hopRates",
+  "realantennas.retargeting",
 ] as const;

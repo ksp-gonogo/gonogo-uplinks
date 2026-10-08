@@ -41,10 +41,14 @@ export type {
   RealAntennasAntennaArgs,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
+  RealAntennasBorrowedDish,
   RealAntennasHopExt,
+  RealAntennasLastBorrow,
+  RealAntennasSetAutoRetargetArgs,
   RealAntennasTargetArgs,
   RealAntennasTargetChainArgs,
   RealAntennasTargetStep,
+  RealAntennasVesselRetargeting,
 } from "./__generated__/contract.js";
 // The per-hop forward-rate contribution: fills CommSignal's `comm-signal.hop-rates`
 // slot off `realantennas.hopRates`, so the base route schedule can render each

@@ -77,6 +77,21 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public const string ChainsTopic = "realantennas.antennaChains";
 
+        /// <summary>
+        /// The state of dish turning for every craft that has any: a bare ARRAY of
+        /// <see cref="RealAntennasVesselRetargeting"/>, one entry per craft that is
+        /// opted out, has a dish on loan, or has had one. Two segments, as every
+        /// channel here is (see <see cref="ChainsTopic"/>).
+        /// </summary>
+        public const string RetargetingTopic = "realantennas.retargeting";
+
+        /// <summary>
+        /// Allow or forbid a craft turning an idle dish on its own to carry a message.
+        /// Args: <see cref="RealAntennasSetAutoRetargetArgs"/>. Addressed to the craft
+        /// by id and delayed to that craft, whichever craft is reported.
+        /// </summary>
+        public const string SetAutoRetargetCommand = "realantennas.vessel.setAutoRetarget";
+
         /// <summary>Point one antenna at one thing. Args: <see cref="RealAntennasTargetArgs"/>.</summary>
         public const string TargetCommand = "realantennas.antenna.target";
 
@@ -141,6 +156,7 @@ namespace Gonogo.RealAntennasUplink
                 Delayed(HopRatesTopic),
                 Delayed(AntennasTopic),
                 Delayed(ChainsTopic),
+                Delayed(RetargetingTopic),
             },
             Commands = new List<CommandDeclaration>
             {
@@ -160,6 +176,10 @@ namespace Gonogo.RealAntennasUplink
                 // down.
                 // Its Subject is the chain channel, for the same reason.
                 new CommandDeclaration { Command = TargetChainCommand, Subject = ChainsTopic },
+                // Delayed to the craft it names, not to the reported one: the Subject
+                // is that craft's own node, which the "fleet." namespace core registers
+                // resolves for any craft, one on rails included.
+                new CommandDeclaration { Command = SetAutoRetargetCommand, Subject = "fleet.{args.Vessel}.retargeting" },
             },
         };
     }

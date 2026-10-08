@@ -91,7 +91,13 @@ namespace GonogoRealAntennasUplink.Tests
                 nameof(RealAntennasTargetStepArgs),
                 nameof(RealAntennasTargetStep),
                 nameof(RealAntennasTargetChainArgs),
-                nameof(RealAntennasAntennaChain));
+                nameof(RealAntennasAntennaChain),
+                // Dish turning: the opt-out command, the per-craft channel entry and
+                // the two small shapes it nests. A dish id is an identifier here too.
+                nameof(RealAntennasSetAutoRetargetArgs),
+                nameof(RealAntennasBorrowedDish),
+                nameof(RealAntennasLastBorrow),
+                nameof(RealAntennasVesselRetargeting));
 
         /// <summary>
         /// The antenna id is what both commands address, and it must stay a

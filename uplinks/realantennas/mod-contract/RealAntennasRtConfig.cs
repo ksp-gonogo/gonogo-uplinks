@@ -126,6 +126,12 @@ public static class RealAntennasRtConfig
             typeof(RealAntennasTargetStep),
             typeof(RealAntennasTargetChainArgs),
             typeof(RealAntennasAntennaChain),
+            // Dish turning. The command's args stay bare (they end in "Args"), and
+            // the channel's entry nests two small shapes, neither a channel root.
+            typeof(RealAntennasSetAutoRetargetArgs),
+            typeof(RealAntennasBorrowedDish),
+            typeof(RealAntennasLastBorrow),
+            typeof(RealAntennasVesselRetargeting),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

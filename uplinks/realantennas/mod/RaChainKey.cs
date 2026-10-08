@@ -41,6 +41,22 @@ namespace Gonogo.RealAntennasUplink
             return partA != null && partA == PartIn(b);
         }
 
+        /// <summary>The part's persistent id and the ordinal a key ends with, or null for anything <see cref="Of"/> did not make.</summary>
+        public static (uint Part, int Ordinal)? PartAndOrdinal(string? key)
+        {
+            var tail = PartIn(key);
+            if (tail == null)
+            {
+                return null;
+            }
+            var slash = tail.IndexOf('/');
+            return slash > 0
+                && uint.TryParse(tail.Substring(0, slash), NumberStyles.None, CultureInfo.InvariantCulture, out var part)
+                && int.TryParse(tail.Substring(slash + 1), NumberStyles.None, CultureInfo.InvariantCulture, out var ordinal)
+                    ? (part, ordinal)
+                    : ((uint, int)?)null;
+        }
+
         private static string PartOf(uint partPersistentId, int ordinal) =>
             partPersistentId.ToString(CultureInfo.InvariantCulture) + "/" + ordinal.ToString(CultureInfo.InvariantCulture);
 

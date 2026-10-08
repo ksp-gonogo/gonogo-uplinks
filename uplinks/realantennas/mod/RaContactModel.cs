@@ -26,6 +26,13 @@ namespace Gonogo.RealAntennasUplink
     {
         public string Id = "";
 
+        /// <summary>
+        /// The dish's id in a contact plan (see <see cref="RaDishIds"/>), or null
+        /// for an antenna the plan does not name: an omni, a ground station's, or
+        /// one whose part cannot be read.
+        /// </summary>
+        public string? DishId;
+
         /// <summary>False for an omni, whose beam covers every direction.</summary>
         public bool Steerable;
 
@@ -62,6 +69,9 @@ namespace Gonogo.RealAntennasUplink
 
         public RaAimKind Aim;
 
+        /// <summary>What the antenna is aimed at, in RealAntennas' own words, for a card that says so.</summary>
+        public string? AimLabel;
+
         /// <summary>The craft aimed at, as <c>"vessel:&lt;guid&gt;"</c>, when <see cref="Aim"/> is <see cref="RaAimKind.Vessel"/>.</summary>
         public string? AimNodeId;
 
@@ -80,7 +90,7 @@ namespace Gonogo.RealAntennasUplink
     /// happens; for the loaded one, a step its chain takes after losing contact is
     /// not foreseen here.</para>
     /// </summary>
-    public sealed class RaContactLinkModel : IContactLinkModel
+    public sealed class RaContactLinkModel : IAttributedContactLinkModel
     {
         /// <summary>The margin of a pair with no pairing that can close at all.</summary>
         public const double NoPairing = -1.0;
@@ -96,7 +106,33 @@ namespace Gonogo.RealAntennasUplink
 
         public double MarginAt(double ut, Sitrep.Contract.Vector3d from, Sitrep.Contract.Vector3d to, IContactPositions positions)
         {
+            var best = Best(ut, from, to, positions, out _, out _);
+            if (double.IsNegativeInfinity(best))
+            {
+                return NoPairing;
+            }
+            // Omnis at both ends with no solvable budget leave nothing to constrain.
+            return double.IsPositiveInfinity(best) ? 1.0 : best;
+        }
+
+        /// <summary>
+        /// The dishes of the pairing that gives <see cref="MarginAt"/> its margin.
+        /// On a tie the first pairing wins, so the answer is the same however many
+        /// times, and in whatever order, it is asked.
+        /// </summary>
+        public DishPair DishesAt(double ut, Sitrep.Contract.Vector3d from, Sitrep.Contract.Vector3d to, IContactPositions positions)
+        {
+            Best(ut, from, to, positions, out var a, out var b);
+            return new DishPair(a?.Steerable == true ? a.DishId : null, b?.Steerable == true ? b.DishId : null);
+        }
+
+        private double Best(
+            double ut, Sitrep.Contract.Vector3d from, Sitrep.Contract.Vector3d to, IContactPositions positions,
+            out RaPlannedAntenna? bestFrom, out RaPlannedAntenna? bestTo)
+        {
             var best = double.NegativeInfinity;
+            bestFrom = null;
+            bestTo = null;
             foreach (var a in _from)
             {
                 foreach (var b in _to)
@@ -113,15 +149,12 @@ namespace Gonogo.RealAntennasUplink
                     if (margin > best)
                     {
                         best = margin;
+                        bestFrom = a;
+                        bestTo = b;
                     }
                 }
             }
-            if (double.IsNegativeInfinity(best))
-            {
-                return NoPairing;
-            }
-            // Omnis at both ends with no solvable budget leave nothing to constrain.
-            return double.IsPositiveInfinity(best) ? 1.0 : best;
+            return best;
         }
 
         /// <summary>Two antennas pair unless both name a band and the bands differ.</summary>

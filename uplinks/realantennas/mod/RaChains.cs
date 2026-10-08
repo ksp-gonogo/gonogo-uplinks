@@ -51,12 +51,14 @@ namespace Gonogo.RealAntennasUplink
         private readonly RaReflection _ra;
         private readonly RaTargeting _targeting;
         private readonly RaChainRegister _register;
+        private readonly RaRetargetRegister? _retargets;
 
-        internal RaChains(RaReflection ra, RaTargeting targeting, RaChainRegister register)
+        internal RaChains(RaReflection ra, RaTargeting targeting, RaChainRegister register, RaRetargetRegister? retargets = null)
         {
             _ra = ra;
             _targeting = targeting;
             _register = register;
+            _retargets = retargets;
         }
 
         /// <summary>
@@ -248,7 +250,7 @@ namespace Gonogo.RealAntennasUplink
         private void Walk(string keptUnder, string antennaId, Vessel vessel, object antenna, double nowUt)
         {
             var entry = _register.Find(keptUnder);
-            if (entry == null)
+            if (entry == null || OnLoan(keptUnder))
             {
                 return;
             }
@@ -279,6 +281,19 @@ namespace Gonogo.RealAntennasUplink
             // might; stopping here would strand the craft on a target it has
             // already said no to.
             RaChainPolicy.RecordApplied(entry.Walk, decision.Step, entry.Steps.Count, nowUt);
+        }
+
+        /// <summary>
+        /// Whether the antenna's dish is on loan to a dish turn. The chain does not
+        /// walk then: a loss caused by the borrowed aim is not a loss for the chain,
+        /// and moving the dish would pull it off the peer a message is being sent to.
+        /// When the loan ends the walk's last-applied time is set to that moment, so a
+        /// craft that is still dark gives its preferred target its full settle first.
+        /// </summary>
+        private bool OnLoan(string chainKey)
+        {
+            var part = RaChainKey.PartAndOrdinal(chainKey);
+            return _retargets != null && part != null && _retargets.OpenOnPart(part.Value.Part, part.Value.Ordinal) != null;
         }
 
         /// <summary>The game's time-warp rate now, which the settle time follows.</summary>

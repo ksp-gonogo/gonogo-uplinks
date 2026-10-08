@@ -22,11 +22,14 @@ Elects RealAntennas as the comms backend when it is installed, so the comms read
 | `realantennas.antennaChains` | `RealAntennasAntennaChain[]` | lossy-latest | delayed |
 | `realantennas.antennas` | `RealAntennasAntennaState[]` | lossy-latest | delayed |
 | `realantennas.hopRates` | `RealAntennasHopRate[]` | lossy-latest | delayed |
+| `realantennas.retargeting` | `RealAntennasVesselRetargeting[]` | lossy-latest | delayed |
 | `realantennas.available` | – | lossy-latest | true-now |
 
 | Payload | Fields |
 | --- | --- |
+| `RealAntennasBorrowedDish` | `dishId` id, `dishName` text, `peerId` id, `previousAim` text, `sinceUt` ut |
 | `RealAntennasHopExt` | `band` text, `beamwidth` °, `codingRate` ratio, `encoder` text, `modulationBits` count, `powerDrawEc` units/s, `requiredEbN0` dB, `reverseBitsPerSec` bit/s, `techLevel` count |
+| `RealAntennasLastBorrow` | `endedUt` ut, `outcome` text, `peerId` id, `turnedUt` ut |
 | `RealAntennasTargetStep` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 | `RealAntennasTargetStepArgs` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 
@@ -37,10 +40,12 @@ Elects RealAntennas as the comms backend when it is installed, so the comms read
 | `realantennas.antenna.target` | `RealAntennasTargetArgs` | `CommandResult` |
 | `realantennas.antenna.targetChain` | `RealAntennasTargetChainArgs` | `CommandResult` |
 | `realantennas.antenna.targetHome` | `RealAntennasAntennaArgs` | `CommandResult` |
+| `realantennas.vessel.setAutoRetarget` | `RealAntennasSetAutoRetargetArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
 | `RealAntennasAntennaArgs` | `antennaId` id |
+| `RealAntennasSetAutoRetargetArgs` | `allow` flag, `vessel` id |
 | `RealAntennasTargetArgs` | `altitude` m, `antennaId` id, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 | `RealAntennasTargetChainArgs` | `antennaId` id, `settleSeconds` s, `steps` RealAntennasTargetStepArgs[] |
 
@@ -50,7 +55,7 @@ Elects RealAntennas as the comms backend when it is installed, so the comms read
 | --- | --- | --- | --- | --- | --- |
 | `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.dataRate`, `comms.path` | only while `realantennas` | 0 |  |
 | `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path` | only while `realantennas` | 3 |  |
-| `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `system.bodies`, `system.vessels` | only while `realantennas` | 1 |  |
+| `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `system.bodies`, `system.vessels` | only while `realantennas` | 1 |  |
 
 ![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](docs/assets/ra-link-budget-closes--default.png)
 

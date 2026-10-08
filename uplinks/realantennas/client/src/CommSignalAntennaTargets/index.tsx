@@ -42,6 +42,7 @@ import type {
 } from "../__generated__/contract.js";
 import { REALANTENNAS } from "../uplink.js";
 import { AntennaChain } from "./chain.js";
+import { Retargeting } from "./retargeting.js";
 // Side-effect imports: the Topic and command registrations this augment reads
 // and sends through.
 import "../commands";
@@ -427,6 +428,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
 function CommSignalAntennaTargets() {
   const antennasReading = useTelemetry("realantennas.antennas");
   const chainsReading = useTelemetry("realantennas.antennaChains");
+  const retargetingReading = useTelemetry("realantennas.retargeting");
   const bodiesReading = useTelemetry("system.bodies");
   const vesselsReading = useTelemetry("system.vessels");
 
@@ -459,6 +461,15 @@ function CommSignalAntennaTargets() {
         }))
       : [];
 
+  /*
+    The craft these antennas are on, from where the mod says it read them: the
+    switch and the loan below are about the same craft, whichever one is reported.
+  */
+  const source = antennas[0]?.meta?.source ?? "";
+  const reportedVessel = source.startsWith("vessel:")
+    ? source.slice("vessel:".length)
+    : "";
+
   return (
     <Stack gap="related-dense" aria-label="Antenna targeting">
       <SectionTitle>Antenna targeting</SectionTitle>
@@ -471,6 +482,15 @@ function CommSignalAntennaTargets() {
           vessels={vessels}
         />
       ))}
+      {reportedVessel ? (
+        <Retargeting
+          vesselId={reportedVessel}
+          entries={
+            retargetingReading.state === "observed" ? retargetingReading.value : []
+          }
+          vessels={vessels}
+        />
+      ) : null}
     </Stack>
   );
 }
@@ -482,6 +502,7 @@ registerAugment({
   channels: [
     "realantennas.antennas",
     "realantennas.antennaChains",
+    "realantennas.retargeting",
     "system.bodies",
     "system.vessels",
   ],

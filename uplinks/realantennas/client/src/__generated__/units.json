@@ -96,6 +96,13 @@
       "targeted": "flag",
       "techLevel": "count"
     },
+    "RealAntennasBorrowedDish": {
+      "dishId": "id",
+      "dishName": "text",
+      "peerId": "id",
+      "previousAim": "text",
+      "sinceUt": "ut"
+    },
     "RealAntennasHopExt": {
       "band": "text",
       "beamwidth": "°",
@@ -111,6 +118,16 @@
       "bitsPerSec": "bit/s",
       "fromNodeId": "id",
       "toNodeId": "id"
+    },
+    "RealAntennasLastBorrow": {
+      "endedUt": "ut",
+      "outcome": "text",
+      "peerId": "id",
+      "turnedUt": "ut"
+    },
+    "RealAntennasSetAutoRetargetArgs": {
+      "allow": "flag",
+      "vessel": "id"
     },
     "RealAntennasTargetArgs": {
       "altitude": "m",
@@ -148,6 +165,10 @@
       "latitude": "°",
       "longitude": "°",
       "mode": "text",
+      "vesselId": "id"
+    },
+    "RealAntennasVesselRetargeting": {
+      "allowed": "flag",
       "vesselId": "id"
     }
   },
@@ -202,6 +223,10 @@
       "bitsPerSec": "bit/s",
       "fromNodeId": "id",
       "toNodeId": "id"
+    },
+    "realantennas.retargeting": {
+      "allowed": "flag",
+      "vesselId": "id"
     }
   },
   "typeShapes": {
@@ -210,11 +235,19 @@
     },
     "RealAntennasTargetChainArgs": {
       "steps": "RealAntennasTargetStepArgs[]"
+    },
+    "RealAntennasVesselRetargeting": {
+      "borrowed": "RealAntennasBorrowedDish",
+      "last": "RealAntennasLastBorrow"
     }
   },
   "topicShapes": {
     "realantennas.antennaChains": {
       "steps": "RealAntennasTargetStep[]"
+    },
+    "realantennas.retargeting": {
+      "borrowed": "RealAntennasBorrowedDish",
+      "last": "RealAntennasLastBorrow"
     }
   }
 }

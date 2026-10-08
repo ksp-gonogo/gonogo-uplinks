@@ -45,6 +45,8 @@ namespace Gonogo.RealAntennasUplink
         public const string TargetCommand = RealAntennasManifest.TargetCommand;
         public const string TargetHomeCommand = RealAntennasManifest.TargetHomeCommand;
         public const string TargetChainCommand = RealAntennasManifest.TargetChainCommand;
+        public const string RetargetingTopic = RealAntennasManifest.RetargetingTopic;
+        public const string SetAutoRetargetCommand = RealAntennasManifest.SetAutoRetargetCommand;
 
         // Fallback link-budget inputs, used only when the live per-link read
         // returns null. RA exposes both per antenna: the receiver noise
@@ -77,6 +79,13 @@ namespace Gonogo.RealAntennasUplink
         private IChannelPublisher? _hopRates;
         private IChannelPublisher? _antennas;
         private IChannelPublisher? _chains;
+        private IChannelPublisher? _retargeting;
+
+        /// <summary>The dishes on loan and the crafts opted out of dish turning: the process's own register, saved with the game.</summary>
+        private readonly RaRetargetRegister _retargets = RaChainScenario.Retargets;
+
+        /// <summary>Turns another craft's idle dish and puts it back, built at Register beside targeting.</summary>
+        private RaDishTurner? _turner;
 
         /// <summary>Targeting's reflection + KSP half, built at Register once RA is confirmed present.</summary>
         private RaTargeting? _targeting;
@@ -126,7 +135,7 @@ namespace Gonogo.RealAntennasUplink
                     Capability = "comms",
                     Id = "realantennas",
                     Priority = 100.0,
-                    Factory = _ => new RaCommsBackend(_ra, host.Kernel),
+                    Factory = _ => new RaCommsBackend(_ra, host.Kernel, _retargets, () => _turner),
                 });
             }
             catch (Exception ex)
@@ -157,6 +166,7 @@ namespace Gonogo.RealAntennasUplink
             _hopRates = host.Publisher(HopRatesTopic);
             _antennas = host.Publisher(AntennasTopic);
             _chains = host.Publisher(ChainsTopic);
+            _retargeting = host.Publisher(RetargetingTopic);
 
             host.AddSampledSource(CaptureOnMain, HandleOnCourier, LinkQualityTopic, DataRateTopic, LinkMarginTopic, HopRatesTopic);
 
@@ -164,7 +174,7 @@ namespace Gonogo.RealAntennasUplink
             // the antenna walk reads every antenna on the craft and the mode
             // table beside it, and there is no reason to pay for that on a tick
             // where only a data rate was subscribed.
-            _targeting = new RaTargeting(_ra);
+            _targeting = new RaTargeting(_ra, _retargets);
             host.AddSampledSource(CaptureAntennasOnMain, HandleAntennasOnCourier, AntennasTopic);
 
             // UNGATED, and it must be. This capture's effect is the retargeting,
@@ -174,8 +184,10 @@ namespace Gonogo.RealAntennasUplink
             // channel open. That is the failure the gated overload's own doc
             // comment describes, and here it would be total: an operator would
             // believe they had a fallback and the craft would sit dark.
-            _chainWalk = new RaChains(_ra, _targeting, RaChainScenario.Chains);
+            _turner = new RaDishTurner(_ra, _targeting, _retargets, RaChainScenario.Chains);
+            _chainWalk = new RaChains(_ra, _targeting, RaChainScenario.Chains, _retargets);
             host.AddSampledSource(CaptureChainsOnMain, HandleChainsOnCourier);
+            host.AddSampledSource(CaptureRetargetingOnMain, HandleRetargetingOnCourier, RetargetingTopic);
 
             host.AddCommandHandler<RealAntennasTargetArgs, CommandResult>(
                 TargetCommand, args => _targeting.Target(ScopedVessel(), args));
@@ -183,6 +195,109 @@ namespace Gonogo.RealAntennasUplink
                 TargetHomeCommand, args => _targeting.TargetHome(ScopedVessel(), args));
             host.AddCommandHandler<RealAntennasTargetChainArgs, CommandResult>(
                 TargetChainCommand, args => _chainWalk.SetChain(ScopedVessel(), args));
+            host.AddCommandHandler<RealAntennasSetAutoRetargetArgs, CommandResult>(
+                SetAutoRetargetCommand, SetAutoRetarget);
+        }
+
+        /// <summary>
+        /// MAIN THREAD: <c>realantennas.vessel.setAutoRetarget</c>. Records whether a
+        /// craft may have a dish turned on its own. Opting a craft out while a dish of
+        /// it is on loan puts the dish back at once, before the answer is given, so the
+        /// operator who turned it off is not left with the dish still on a borrowed aim.
+        /// </summary>
+        private CommandResult SetAutoRetarget(RealAntennasSetAutoRetargetArgs? args)
+        {
+            if (args == null || !Guid.TryParse(args.Vessel, out var guid))
+            {
+                return CommandResult.Fail(CommandErrorCode.Range, "A craft is named by its id, as system.vessels gives it.");
+            }
+            var id = guid.ToString();
+            var known = false;
+            foreach (var vessel in FlightGlobals.Vessels ?? new List<Vessel>())
+            {
+                if (vessel != null && string.Equals(vessel.id.ToString(), id, StringComparison.OrdinalIgnoreCase))
+                {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known)
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound, "No craft with that id is in the game.");
+            }
+            _retargets.SetAllowed(id, args.Allow);
+            if (!args.Allow)
+            {
+                foreach (var loan in new List<RaRetargetRegister.Borrow>(_retargets.Open))
+                {
+                    if (string.Equals(loan.VesselId, id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _turner?.Restore(loan.Id, UtOf(null));
+                    }
+                }
+            }
+            return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// MAIN THREAD: the <c>realantennas.retargeting</c> value. Every craft that is
+        /// opted out, has a dish on loan, or has had one: published whole each time,
+        /// because the channel is LossyLatest and a craft whose loan has ended must
+        /// leave the wire rather than stay on it.
+        /// </summary>
+        internal object? CaptureRetargetingOnMain(KspSnapshot? snapshot)
+        {
+            var ut = UtOf(snapshot);
+            var vessels = new Dictionary<string, RealAntennasVesselRetargeting>(StringComparer.OrdinalIgnoreCase);
+            RealAntennasVesselRetargeting EntryOf(string id)
+            {
+                if (!vessels.TryGetValue(id, out var entry))
+                {
+                    entry = new RealAntennasVesselRetargeting
+                    {
+                        VesselId = id,
+                        Allowed = _retargets.Allowed(id),
+                        Meta = new PayloadMeta { Source = "vessel:" + id },
+                    };
+                    vessels[id] = entry;
+                }
+                return entry;
+            }
+            foreach (var id in _retargets.OptedOut)
+            {
+                EntryOf(id);
+            }
+            foreach (var loan in _retargets.Open)
+            {
+                EntryOf(loan.VesselId).Borrowed = new RealAntennasBorrowedDish
+                {
+                    DishId = loan.DishId,
+                    PeerId = loan.PeerId,
+                    DishName = loan.DishName,
+                    SinceUt = loan.TurnedUt,
+                    PreviousAim = loan.PreviousLabel,
+                };
+            }
+            foreach (var pair in _retargets.LastEnded)
+            {
+                EntryOf(pair.Key).Last = new RealAntennasLastBorrow
+                {
+                    PeerId = pair.Value.PeerId,
+                    TurnedUt = pair.Value.TurnedUt,
+                    EndedUt = pair.Value.SettledUt,
+                    Outcome = pair.Value.Outcome.ToString().ToLowerInvariant(),
+                };
+            }
+            return new RaRetargetingCapture { Ut = ut, Vessels = new List<RealAntennasVesselRetargeting>(vessels.Values) };
+        }
+
+        internal void HandleRetargetingOnCourier(object? captured)
+        {
+            if (captured is not RaRetargetingCapture capture)
+            {
+                return;
+            }
+            _retargeting?.Publish(RaWire.Retargeting(capture.Vessels), capture.Ut);
         }
 
         /// <summary>
@@ -203,6 +318,7 @@ namespace Gonogo.RealAntennasUplink
             }
 
             var ut = UtOf(snapshot);
+            _turner?.Evaluate(ut);
             _chainWalk.Evaluate(ut);
             return new RaChainCapture
             {
@@ -536,6 +652,12 @@ namespace Gonogo.RealAntennasUplink
         {
             public double Ut;
             public List<RealAntennasAntennaState> Antennas = new List<RealAntennasAntennaState>();
+        }
+
+        private sealed class RaRetargetingCapture
+        {
+            public double Ut;
+            public List<RealAntennasVesselRetargeting> Vessels = new List<RealAntennasVesselRetargeting>();
         }
 
         private sealed class RaChainCapture
