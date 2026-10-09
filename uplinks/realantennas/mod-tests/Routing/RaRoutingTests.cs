@@ -131,8 +131,8 @@ namespace Gonogo.RealAntennasUplink.Tests.Routing
             var net = new RaShapedNetwork((_, __) => throw new InvalidOperationException("must not solve"));
             var node = NodeAt(net, 0.0);
 
-            Assert.Null(RaRouting.Between("not-a-node", node));
-            Assert.Null(RaRouting.Between(node, 42));
+            Assert.Null(RaRouting.Between(Sitrep.Contract.CommsNodeHandle.Of("not-a-node")!.As<CommNode>(), node));
+            Assert.Null(RaRouting.Between(node, Sitrep.Contract.CommsNodeHandle.Of(42)!.As<CommNode>()));
         }
     }
 }

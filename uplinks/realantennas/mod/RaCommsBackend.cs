@@ -193,7 +193,7 @@ namespace Gonogo.RealAntennasUplink
         {
             var p = node.precisePosition;
             return new CommsNodeView(
-                node,
+                CommsNodeHandle.Of(node),
                 NodeId(node),
                 NodeDisplayName(node),
                 node.isHome,
@@ -206,16 +206,16 @@ namespace Gonogo.RealAntennasUplink
         /// that is a different question from stock's, and what it costs to get
         /// wrong).
         /// </summary>
-        public override IReadOnlyList<CommsRouteHop>? RouteBetween(object? from, object? to)
-            => RaRouting.Between(from, to);
+        public override IReadOnlyList<CommsRouteHop>? RouteBetween(CommsNodeHandle? from, CommsNodeHandle? to)
+            => RaRouting.Between(from?.As<CommNode>(), to?.As<CommNode>());
 
         /// <summary>
         /// RA's own reach rule between two nodes (see <see cref="RaReach"/> for
         /// why stock's rule silently reports zero reach for every craft on an RA
         /// install, which is what asking the seam instead of core fixes).
         /// </summary>
-        public override ICommsReachModel ReachModel(object? from, object? to)
-            => RaReach.Between(_ra, from, to);
+        public override ICommsReachModel ReachModel(CommsNodeHandle? from, CommsNodeHandle? to)
+            => RaReach.Between(_ra, from?.As<CommNode>(), to?.As<CommNode>());
 
         /// <summary>
         /// The pair's link as RA would close it, from every antenna's figures and
@@ -224,10 +224,10 @@ namespace Gonogo.RealAntennasUplink
         /// an azimuth and elevation, an orbit-relative direction): the pair then
         /// stays on line of sight and <see cref="ReachModel"/>, as before.
         /// </summary>
-        public IContactLinkModel? LinkModel(object? from, object? to, double ut)
+        public IContactLinkModel? LinkModel(CommsNodeHandle? from, CommsNodeHandle? to, double ut)
         {
-            var fromAntennas = Planned(from, ut);
-            var toAntennas = Planned(to, ut);
+            var fromAntennas = Planned(from?.As<CommNode>(), ut);
+            var toAntennas = Planned(to?.As<CommNode>(), ut);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaContactLinkModel(fromAntennas, toAntennas);
@@ -241,10 +241,10 @@ namespace Gonogo.RealAntennasUplink
         /// an aim the plan cannot place does not withhold the strength as it
         /// withholds the <see cref="LinkModel"/>.
         /// </summary>
-        public IContactLinkStrength? LinkStrength(object? from, object? to, double ut)
+        public IContactLinkStrength? LinkStrength(CommsNodeHandle? from, CommsNodeHandle? to, double ut)
         {
-            var fromAntennas = Planned(from, ut, placeAims: false);
-            var toAntennas = Planned(to, ut, placeAims: false);
+            var fromAntennas = Planned(from?.As<CommNode>(), ut, placeAims: false);
+            var toAntennas = Planned(to?.As<CommNode>(), ut, placeAims: false);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaLinkStrength(fromAntennas, toAntennas);
@@ -256,9 +256,9 @@ namespace Gonogo.RealAntennasUplink
         public IContactLinkStrength? RestoreLinkStrength(string modelId, IReadOnlyDictionary<string, object?> data) =>
             modelId == RaLinkStrength.Model ? RaLinkStrength.From(data) : null;
 
-        private List<RaPlannedAntenna>? Planned(object? node, double ut, bool placeAims = true)
+        private List<RaPlannedAntenna>? Planned(CommNode? commNode, double ut, bool placeAims = true)
         {
-            if (!(node is CommNode commNode))
+            if (commNode == null)
             {
                 return null;
             }
@@ -377,10 +377,11 @@ namespace Gonogo.RealAntennasUplink
         /// steered dish included, since a node that can only receive is still the
         /// peer another node's dish is turned to.
         /// </summary>
-        public IRetargetModel? RetargetModel(object? node, double ut)
+        public IRetargetModel? RetargetModel(CommsNodeHandle? node, double ut)
         {
-            var planned = Planned(node, ut);
-            var nodeId = node is CommNode commNode && ResolveOwningVessel(commNode) is Vessel vessel ? "vessel:" + vessel.id : null;
+            var commNode = node?.As<CommNode>();
+            var planned = Planned(commNode, ut);
+            var nodeId = commNode != null && ResolveOwningVessel(commNode) is Vessel vessel ? "vessel:" + vessel.id : null;
             if (planned == null || nodeId == null || _retargets == null)
             {
                 return null;

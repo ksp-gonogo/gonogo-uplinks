@@ -36,11 +36,11 @@ namespace Gonogo.RealAntennasUplink
         /// than an exception, which is the same graceful meaning and keeps a
         /// telemetry read from taking the uplink down.
         /// </summary>
-        internal static IReadOnlyList<CommsRouteHop>? Between(object? from, object? to)
+        internal static IReadOnlyList<CommsRouteHop>? Between(CommNode? start, CommNode? end)
         {
             try
             {
-                if (from is not CommNode start || to is not CommNode end || ReferenceEquals(start, end))
+                if (start == null || end == null || ReferenceEquals(start, end))
                 {
                     return null;
                 }
@@ -66,7 +66,9 @@ namespace Gonogo.RealAntennasUplink
                     }
                     hops.Add(new CommsRouteHop(
                         (link.a.precisePosition - link.b.precisePosition).magnitude,
-                        link.b.isHome || link.a.isHome));
+                        link.b.isHome || link.a.isHome,
+                        CommsNodeHandle.Of(link.a),
+                        CommsNodeHandle.Of(link.b)));
                 }
                 return hops;
             }

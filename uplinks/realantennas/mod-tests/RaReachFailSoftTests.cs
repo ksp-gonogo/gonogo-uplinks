@@ -26,7 +26,7 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void NoReflectionSurfaceDeclaresNothing()
         {
-            var model = RaReach.Between(null, new object(), new object());
+            var model = RaReach.Between(null, null, null);
 
             Assert.Equal(CommsReachModels.UnknownModelId, model.ModelId);
             Assert.Null(model.MaxRangeMeters);
@@ -40,7 +40,7 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void AnAbsentMaximumAnswersNeitherYesNorNo()
         {
-            var model = RaReach.Between(null, new object(), new object());
+            var model = RaReach.Between(null, null, null);
 
             Assert.Null(CommsReachModels.Reaches(model, 1.0));
             Assert.Null(CommsReachModels.Reaches(model, 4e10));

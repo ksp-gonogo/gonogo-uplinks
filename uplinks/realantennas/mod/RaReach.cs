@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sitrep.Contract;
+using CommNet;
 
 namespace Gonogo.RealAntennasUplink
 {
@@ -63,7 +64,7 @@ namespace Gonogo.RealAntennasUplink
         /// case apart from a failed read: both come back as no solvable budget.
         /// Saying so is honest; guessing which one it was is not.</para>
         /// </summary>
-        internal static ICommsReachModel Between(RaReflection? ra, object? from, object? to)
+        internal static ICommsReachModel Between(RaReflection? ra, CommNode? from, CommNode? to)
         {
             if (ra == null)
             {
