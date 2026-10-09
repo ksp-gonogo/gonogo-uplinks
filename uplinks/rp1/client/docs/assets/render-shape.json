@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "appoint-roster--default.png": {
-      "hash": "76594f257d00b9be",
+      "hash": "7c9c2ccaf9a74873",
       "elements": 175,
       "text": "0f635c8c"
     },
@@ -183,7 +183,7 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "1d44aea7ceb1e23a",
+      "hash": "974807ffd57fc043",
       "elements": 406,
       "text": "f6b83e92"
     },
@@ -238,32 +238,32 @@
       "text": "cfbb5a78"
     },
     "career-log--default.png": {
-      "hash": "ebaa7a354621828c",
+      "hash": "440069dadbdf104c",
       "elements": 592,
       "text": "180f3670"
     },
     "catalogue-picker--default.png": {
-      "hash": "ee3fa7064d2e5e74",
+      "hash": "b888941e9767111a",
       "elements": 293,
       "text": "0dc93d6f"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "7c1a05744fff2213",
+      "hash": "0e9d81c112957c48",
       "elements": 303,
       "text": "09542347"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "bda4484ce8589532",
+      "hash": "bae076acc6b5ff17",
       "elements": 308,
       "text": "eb8a5e2d"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "ee3fa7064d2e5e74",
+      "hash": "b888941e9767111a",
       "elements": 293,
       "text": "0dc93d6f"
     },
     "completed-program--default.png": {
-      "hash": "7aba1fbce24477d5",
+      "hash": "87bf0f045d3b281d",
       "elements": 292,
       "text": "2aa175b7"
     },
@@ -338,7 +338,7 @@
       "text": "1cb12557"
     },
     "crew-core-stats--default.png": {
-      "hash": "9efaa5ea82440f88",
+      "hash": "1edc125adc8c2484",
       "elements": 87,
       "text": "83d46f1b"
     },
@@ -353,42 +353,42 @@
       "text": "43fc79f9"
     },
     "crew-schedule-three-states--default.png": {
-      "hash": "17cd7bf1ce17d19b",
+      "hash": "44f4cdc5907500eb",
       "elements": 184,
       "text": "d199ebd7"
     },
     "crew-settings-honoured--default.png": {
-      "hash": "5c7bee06fa6d0450",
+      "hash": "8cfc2318fb566145",
       "elements": 166,
       "text": "88e472a3"
     },
     "crew-training-both-ways-out--default.png": {
-      "hash": "b30894ee105b37dc",
+      "hash": "9da42689ea715f3a",
       "elements": 89,
       "text": "30de93d0"
     },
     "crew-training-corner--default.png": {
-      "hash": "e702f1e927b6e781",
+      "hash": "21c9d989b15a59ce",
       "elements": 196,
       "text": "0461ab88"
     },
     "crew-training-refused--default.png": {
-      "hash": "0993f3475ef93102",
+      "hash": "fdb5e5da018b7ad3",
       "elements": 89,
       "text": "7f08b43b"
     },
     "crew-training-tab--default.png": {
-      "hash": "5ca65ddbb757681c",
+      "hash": "60cf5927edcd5696",
       "elements": 121,
       "text": "8e8301c3"
     },
     "early-career--default.png": {
-      "hash": "9d61a6379f7699d1",
+      "hash": "b5c14ac423879b90",
       "elements": 382,
       "text": "6ffdb5ab"
     },
     "facilities-two-centres--default.png": {
-      "hash": "995cc55453f8d412",
+      "hash": "b399644bc40b2add",
       "elements": 395,
       "text": "d3a66d04"
     },
@@ -413,7 +413,7 @@
       "text": "5641a8f1"
     },
     "funds-alarm--default.png": {
-      "hash": "90489740c31dc607",
+      "hash": "6eb2a9c7475faa04",
       "elements": 382,
       "text": "e5879546"
     },
@@ -428,22 +428,22 @@
       "text": "359423e1"
     },
     "link-down--default.png": {
-      "hash": "7ced9a706759cb10",
+      "hash": "3b86b6d6c45d05f0",
       "elements": 422,
       "text": "6ffdb5ab"
     },
     "no-budget--default.png": {
-      "hash": "937b4fa0e54d8544",
+      "hash": "6c4c96941b5aca07",
       "elements": 75,
       "text": "c03fa214"
     },
     "no-curve-table--default.png": {
-      "hash": "14e71c0bba9af4dc",
+      "hash": "2a6e052c6fc85d23",
       "elements": 304,
       "text": "7de10fa6"
     },
     "offer-frontloaded--default.png": {
-      "hash": "4c21ee58d6a55509",
+      "hash": "5e36ecf3a684d5da",
       "elements": 271,
       "text": "31837fa1"
     },
@@ -473,7 +473,7 @@
       "text": "ff71b6be"
     },
     "programs-screen--default.png": {
-      "hash": "c63f0cd8f199dd89",
+      "hash": "321ca63eaba599ef",
       "elements": 124,
       "text": "e1deb732"
     },
@@ -488,22 +488,22 @@
       "text": "1782c9be"
     },
     "rp1-full-admin-building--default.png": {
-      "hash": "cd4439432273677a",
+      "hash": "db75e669bccd5c6a",
       "elements": 313,
       "text": "0778f0f5"
     },
     "running-backloaded--default.png": {
-      "hash": "8cfce8e91eed22fc",
+      "hash": "87e55abe73961bc4",
       "elements": 318,
       "text": "9071f2ea"
     },
     "running-overrun-ready--default.png": {
-      "hash": "d3259fe6f0e3b4ff",
+      "hash": "5a6a327ae359a2fa",
       "elements": 237,
       "text": "a674455d"
     },
     "serving-leader--default.png": {
-      "hash": "5ab520a805f81223",
+      "hash": "631881e48ec73285",
       "elements": 192,
       "text": "474a04a8"
     },
@@ -518,7 +518,7 @@
       "text": "ea9a26dc"
     },
     "subsidy-clamped--default.png": {
-      "hash": "0a5304c427480242",
+      "hash": "f78110b23582f6da",
       "elements": 568,
       "text": "c25183d4"
     },
