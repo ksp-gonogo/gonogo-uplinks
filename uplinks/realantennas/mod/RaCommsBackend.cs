@@ -23,7 +23,7 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend, ILinkStrengthRestorer
     {
         public const string Id = "realantennas";
 
@@ -252,6 +252,9 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>The least of the hops: a path carries the rate of its slowest link.</summary>
         public double Combine(IReadOnlyList<double> hopStrengths) => RaLinkStrength.Weakest(hopStrengths);
+
+        public IContactLinkStrength? RestoreLinkStrength(string modelId, IReadOnlyDictionary<string, object?> data) =>
+            modelId == RaLinkStrength.Model ? RaLinkStrength.From(data) : null;
 
         private List<RaPlannedAntenna>? Planned(object? node, double ut, bool placeAims = true)
         {
