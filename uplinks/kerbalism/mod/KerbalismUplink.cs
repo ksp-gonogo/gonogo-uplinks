@@ -107,6 +107,19 @@ namespace Gonogo.KerbalismUplink
             {
                 Id = "kerbalism",
                 Version = "1.0.0",
+                // Null when the generated const is empty so the loader degrades to the
+                // two-way check; a real sha256-... once the release build bakes it.
+                Name = Provenance.Name,
+                Author = Provenance.Author,
+                Repo = Provenance.Repo,
+                ExpectedClientHash = string.IsNullOrEmpty(ExpectedClientHash.Value) ? null : ExpectedClientHash.Value,
+                // DevPath is null unless a dev build supplied one: the loader prefers it,
+                // so a released DLL carrying one points every user at another machine.
+                ClientSource = new UplinkClientSource
+                {
+                    Url = ClientSource.Url,
+                    DevPath = string.IsNullOrEmpty(ClientSource.DevPath) ? null : ClientSource.DevPath,
+                },
                 Channels = new List<ChannelDeclaration>
                 {
                     TrueNow(AvailableTopic),
