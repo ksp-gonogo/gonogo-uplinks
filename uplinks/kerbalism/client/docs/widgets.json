@@ -15,6 +15,10 @@
         "vessel.crew"
       ],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "kerbalism.profile",
         "kerbalism.lifesupport",
@@ -56,6 +60,10 @@
       "optionalChannels": [
         "vessel.flight"
       ],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [],
       "fields": [],
       "actions": [],

@@ -12,6 +12,10 @@
         "aero.state"
       ],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [],
       "fields": [],
       "actions": [],

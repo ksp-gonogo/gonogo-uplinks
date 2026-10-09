@@ -8,19 +8,19 @@
       "text": "e4a8e2c6"
     },
     "atmospheric-final-approach-site--default.png": {
-      "hash": "dcad9a4d7c7c8314",
-      "elements": 1065,
-      "text": "a3e267d2"
+      "hash": "b3d71a1832c712ea",
+      "elements": 302,
+      "text": "cdd1aa61"
     },
     "ballistic-capsule--default.png": {
-      "hash": "7d3e9d9a373e7843",
-      "elements": 203,
-      "text": "002f4e1b"
+      "hash": "e3e63cdfe0a69716",
+      "elements": 206,
+      "text": "280dd627"
     },
     "entry-badges--default.png": {
-      "hash": "0474b883230e6631",
-      "elements": 214,
-      "text": "9a123ba1"
+      "hash": "2ce2bb72686bb431",
+      "elements": 216,
+      "text": "e39d959b"
     },
     "no-aero-model--default.png": {
       "hash": "dbc3f943a1c9e6df",
@@ -28,9 +28,9 @@
       "text": "a3d38ca0"
     },
     "no-aero-model-installed--default.png": {
-      "hash": "cefc3c8cdc2b3aec",
-      "elements": 200,
-      "text": "47fd0736"
+      "hash": "2efdeff19cd7a629",
+      "elements": 202,
+      "text": "8ed61f1b"
     },
     "reentry-high-alpha--default.png": {
       "hash": "e616d19d4135a9c5",
@@ -38,19 +38,19 @@
       "text": "579cadf4"
     },
     "subsonic-final-approach--default.png": {
-      "hash": "3f606067e1dd10e3",
-      "elements": 206,
-      "text": "027b4efd"
+      "hash": "7a78411553a34d72",
+      "elements": 214,
+      "text": "62c56d1c"
     },
     "vacuum-final-approach-mun--default.png": {
-      "hash": "83955b9c19518f20",
-      "elements": 986,
-      "text": "95f6ee7f"
+      "hash": "150a80beb1a7197c",
+      "elements": 212,
+      "text": "2067dcad"
     },
     "winged-entry-high-alpha--default.png": {
-      "hash": "0474b883230e6631",
-      "elements": 214,
-      "text": "9a123ba1"
+      "hash": "2ce2bb72686bb431",
+      "elements": 216,
+      "text": "e39d959b"
     },
     "winged-subsonic-climb--default.png": {
       "hash": "ae0937431a6ba8f0",

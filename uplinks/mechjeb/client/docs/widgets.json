@@ -9,6 +9,10 @@
       ],
       "channels": [],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "comms.delay"
       ],

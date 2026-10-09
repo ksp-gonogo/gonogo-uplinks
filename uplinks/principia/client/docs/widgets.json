@@ -15,6 +15,10 @@
         "vessel.orbit",
         "vessel.identity"
       ],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [],
       "fields": [],
       "actions": [

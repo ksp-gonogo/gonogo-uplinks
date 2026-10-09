@@ -11,6 +11,10 @@
       ],
       "channels": [],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "rp1.available",
         "rp1.warehouse",

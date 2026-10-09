@@ -10,6 +10,10 @@
       ],
       "channels": [],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "kos.processors"
       ],
@@ -41,6 +45,10 @@
       ],
       "channels": [],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "kos.processors"
       ],

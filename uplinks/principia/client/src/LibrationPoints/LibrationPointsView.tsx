@@ -8,6 +8,7 @@ import {
   useActionInput,
   useProcessor,
   useStream,
+  useSystemInstant,
   useTelemetry,
   useViewUt,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -82,6 +83,7 @@ export function LibrationPointsComponent({
   id,
 }: Readonly<ComponentProps<LibrationPointsConfig>>) {
   const catalogue = useProcessor(CELESTIAL_FACTS);
+  const poses = useSystemInstant();
   const facts =
     catalogue?.state === "observed" || catalogue?.state === "held"
       ? catalogue.value
@@ -227,7 +229,7 @@ export function LibrationPointsComponent({
               offset={offset}
               hasCraft={orbit !== undefined}
               craftMarking={orbitMarking}
-              ephemerisFigure={ephemerisFigureOf(catalogue, [
+              ephemerisFigure={ephemerisFigureOf(poses, [
                 primaryBody,
                 secondaryBody,
               ])}

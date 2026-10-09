@@ -9,6 +9,7 @@
   "_scene": {
     "widget": "libration-points",
     "caption": "The catalogue alone, with no active vessel",
+    "unchangedWhenHeld": "With no vessel the points are placed from the pair's fixed ephemeris orbits alone, which stay exact when the link drops, and there are no craft rows to hold.",
     "config": {
       "pair": "Mun"
     }

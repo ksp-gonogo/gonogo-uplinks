@@ -10,6 +10,10 @@
       ],
       "channels": [],
       "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
       "dataRequirements": [
         "scansat.available",
         "scansat.scanningVessels",

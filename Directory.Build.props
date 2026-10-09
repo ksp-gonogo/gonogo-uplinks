@@ -12,7 +12,7 @@
        pin's bytes under it. Once a release of the package is on nuget.org this
        becomes that release's version and the vendored file goes. -->
   <PropertyGroup>
-    <GonogoContractVersion>1.0.0-pin.ga18140198fa6</GonogoContractVersion>
+    <GonogoContractVersion>1.0.0-pin.g0fd87a9481f0</GonogoContractVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(KspManaged)' == ''">
     <KspManaged>$(MSBuildThisFileDirectory)vendor\ksp-managed</KspManaged>
