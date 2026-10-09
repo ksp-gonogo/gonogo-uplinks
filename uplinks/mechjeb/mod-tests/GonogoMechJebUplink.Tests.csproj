@@ -45,5 +45,7 @@
     <Compile Include="..\mod\MechJebUplink.cs" />
     <Compile Include="..\mod\MechJebUnlockGate.cs" />
     <Compile Include="..\mod\ExpectedClientHash.g.cs" />
+    <Compile Include="..\mod\Provenance.g.cs" />
+    <Compile Include="..\mod\ClientSource.g.cs" />
   </ItemGroup>
 </Project>

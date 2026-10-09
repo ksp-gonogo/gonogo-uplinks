@@ -219,7 +219,17 @@ namespace Gonogo.KosUplink
             // (packages/app/scripts/bake-uplink-hash.ts → ExpectedClientHash.g.cs) and held
             // current by bakedClientHash.test.ts, because a hash that has fallen behind its
             // client source is a refusal on every load rather than a stale artifact.
+            Name = Provenance.Name,
+            Author = Provenance.Author,
+            Repo = Provenance.Repo,
             ExpectedClientHash = string.IsNullOrEmpty(ExpectedClientHash.Value) ? null : ExpectedClientHash.Value,
+            // DevPath is null unless a dev build supplied one: the loader prefers it,
+            // so a released DLL carrying one points every user at another machine.
+            ClientSource = new UplinkClientSource
+            {
+                Url = ClientSource.Url,
+                DevPath = string.IsNullOrEmpty(ClientSource.DevPath) ? null : ClientSource.DevPath,
+            },
             Channels = new List<ChannelDeclaration>
             {
                 // CPU listing: vessel-derived (which CPUs exist), rides the

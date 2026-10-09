@@ -153,7 +153,17 @@ namespace Gonogo.MechJebUplink
             // bakedClientHash.test.ts, because a hash that has fallen behind its
             // client source is a refusal on every load rather than a stale
             // artifact.
+            Name = Provenance.Name,
+            Author = Provenance.Author,
+            Repo = Provenance.Repo,
             ExpectedClientHash = string.IsNullOrEmpty(ExpectedClientHash.Value) ? null : ExpectedClientHash.Value,
+            // DevPath is null unless a dev build supplied one: the loader prefers it,
+            // so a released DLL carrying one points every user at another machine.
+            ClientSource = new UplinkClientSource
+            {
+                Url = ClientSource.Url,
+                DevPath = string.IsNullOrEmpty(ClientSource.DevPath) ? null : ClientSource.DevPath,
+            },
             // Command-only: see the class doc comment. MechJeb readouts are
             // derivable client-side, so there is nothing to publish.
             Channels = new List<ChannelDeclaration>(),

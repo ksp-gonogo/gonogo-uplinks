@@ -42,6 +42,10 @@ jobs:
       # warning, a second of hashing before twelve legs each spend a minute
       # discovering the same missing tarball at `npm ci`.
       - run: node scripts/check-vendor-pins.mjs
+      # Does every Uplink that ships a client give its manifest a ClientSource.
+      # A question about the SET, and a null one compiles and loads in game with
+      # the client never fetched. Plants a violation and fails as BLIND if unseen.
+      - run: node tooling/check-client-source.mjs
       - run: node --test "tooling/*.test.mjs"
 
   uplink:
