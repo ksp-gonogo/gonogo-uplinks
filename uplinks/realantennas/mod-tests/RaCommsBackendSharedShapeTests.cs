@@ -42,7 +42,7 @@ namespace GonogoRealAntennasUplink.Tests
         private static readonly string[] SharedShape =
         {
             nameof(ICommsBackend.Connectivity),
-            nameof(ICommsBackend.SignalStrength),
+            nameof(ICommsBackend.Signal),
             nameof(ICommsBackend.ControlState),
             nameof(ICommsBackend.Path),
             nameof(ICommsBackend.Network),

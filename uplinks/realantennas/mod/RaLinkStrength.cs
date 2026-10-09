@@ -47,7 +47,7 @@ namespace Gonogo.RealAntennasUplink
         public ContactHopFacts FactsAt(double ut, double separationMeters)
         {
             var worth = RaLinkWorth.At(_from, _to, separationMeters);
-            return new ContactHopFacts(worth.Strength, RaLinkWorth.Extensions(worth));
+            return new ContactHopFacts(worth.Strength, SignalQuantity.DataRateHeadroom, RaLinkWorth.Extensions(worth));
         }
 
         /// <summary>The least of the hops, and 0 for none: a path carries the rate of its slowest link.</summary>

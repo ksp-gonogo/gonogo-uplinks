@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Gonogo.RealAntennasUplink;
+using Sitrep.Contract;
 using Xunit;
 
 namespace Gonogo.RealAntennasUplink.Tests
@@ -119,7 +120,8 @@ namespace Gonogo.RealAntennasUplink.Tests
             var link = new RaLinkStrength(One(Antenna()), One(Antenna()));
 
             Sitrep.Contract.TestSupport.PathStrengthConformance.AssertLinkStrengthContract(link, 0.0, 1e13);
-            Assert.Equal(1.0, link.FactsAt(0.0, 1_000.0).Strength, 9);
+            Assert.Equal(1.0, link.FactsAt(0.0, 1_000.0).HopStrength, 9);
+            Assert.Equal(SignalQuantity.DataRateHeadroom, link.FactsAt(0.0, 1_000.0).Quantity);
             Assert.NotNull(link.FactsAt(0.0, 1_000.0).Extensions);
         }
 

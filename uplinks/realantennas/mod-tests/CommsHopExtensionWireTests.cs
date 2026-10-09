@@ -139,7 +139,7 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.Contains(
                 "\"hops\":[{\"from\":\"vessel\",\"to\":\"home\"," +
                 "\"fromIsHome\":false,\"toIsHome\":true,\"kind\":0," +
-                "\"distanceMeters\":1234.5,\"strength\":null}]",
+                "\"distanceMeters\":1234.5,\"strength\":null,\"quantity\":null}]",
                 json);
         }
     }

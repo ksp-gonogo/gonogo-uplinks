@@ -77,7 +77,7 @@ namespace Gonogo.RealAntennasUplink.Tests
             {
                 var was = original.FactsAt(0.0, separation);
                 var now = restored.FactsAt(0.0, separation);
-                Assert.Equal(was.Strength, now.Strength, 12);
+                Assert.Equal(was.HopStrength, now.HopStrength, 12);
                 Assert.Equal(
                     JsonSerializer.Serialize(was.Extensions),
                     JsonSerializer.Serialize(now.Extensions));
