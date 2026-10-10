@@ -67,6 +67,7 @@ describe("drawFootprints: pure geometry", () => {
     drawFootprints(
       ctx,
       600,
+      360,
       "Kerbin",
       [vessel({ body: "Mun" })],
       (lat, lon) => ({
@@ -82,6 +83,7 @@ describe("drawFootprints: pure geometry", () => {
     drawFootprints(
       ctx,
       600,
+      360,
       "Kerbin",
       [vessel({ groundTrackWidthDeg: null, groundTrackLonHalfDeg: null })],
       (lat, lon) => ({ x: lon, y: lat }),
@@ -97,6 +99,7 @@ describe("drawFootprints: pure geometry", () => {
     drawFootprints(
       ctx,
       600,
+      360,
       "Kerbin",
       [vessel({ subLatitude: null, subLongitude: null })],
       (lat, lon) => ({ x: lon, y: lat }),
@@ -106,7 +109,7 @@ describe("drawFootprints: pure geometry", () => {
 
   it("paints a rect for an in-range vessel", () => {
     const ctx = fakeCtx();
-    drawFootprints(ctx, 600, "Kerbin", [vessel({})], (lat, lon) => ({
+    drawFootprints(ctx, 600, 360, "Kerbin", [vessel({})], (lat, lon) => ({
       x: lon,
       y: lat,
     }));
@@ -117,7 +120,7 @@ describe("drawFootprints: pure geometry", () => {
 
   it("draws a held footprint as a dashed outline with no fill", () => {
     const live = fakeCtx();
-    drawFootprints(live, 600, "Kerbin", [vessel({})], (lat, lon) => ({
+    drawFootprints(live, 600, 360, "Kerbin", [vessel({})], (lat, lon) => ({
       x: lon,
       y: lat,
     }));
@@ -128,6 +131,7 @@ describe("drawFootprints: pure geometry", () => {
     drawFootprints(
       held,
       600,
+      360,
       "Kerbin",
       [vessel({})],
       (lat, lon) => ({ x: lon, y: lat }),
@@ -137,11 +141,22 @@ describe("drawFootprints: pure geometry", () => {
     expect((held as unknown as { lineDash: number[] }).lineDash).toEqual([4, 3]);
   });
 
-  it("splits into two rects when the footprint wraps the antimeridian", () => {
+  /** A 360 px world from -180 at x 0, the overlay one world wide: what `project` gives at the fit zoom. */
+  const world = (lat: number, lon: number) => ({
+    x: (((lon + 180) % 360) + 360) % 360,
+    y: 90 - lat,
+  });
+  const fills = (ctx: CanvasRenderingContext2D) =>
+    (ctx as unknown as { calls: string[] }).calls
+      .filter((c) => c.startsWith("fillRect"))
+      .map((c) => c.slice("fillRect ".length).split(",").map(Number));
+
+  it("draws a footprint across the antimeridian on both edges of the map, as one width", () => {
     const ctx = fakeCtx();
     drawFootprints(
       ctx,
-      600,
+      360,
+      360,
       "Kerbin",
       [
         vessel({
@@ -149,10 +164,35 @@ describe("drawFootprints: pure geometry", () => {
           groundTrackLonHalfDeg: value("°", 5),
         }),
       ],
-      (lat, lon) => ({ x: lon, y: lat }),
+      world,
     );
-    const calls = (ctx as unknown as { calls: string[] }).calls;
-    expect(calls.filter((c) => c.startsWith("fillRect")).length).toBe(2);
+    // West edge at 174 degrees, ten degrees wide: leaving the east edge and back in at the west.
+    expect(fills(ctx).map(([x, , w]) => [x, w])).toEqual([
+      [-6, 10],
+      [354, 10],
+    ]);
+  });
+
+  it("draws a footprint in every repeat of the world a wide view shows", () => {
+    const ctx = fakeCtx();
+    // The view is two and a half worlds wide.
+    drawFootprints(ctx, 900, 360, "Kerbin", [vessel({})], world);
+    expect(fills(ctx).map(([x]) => x)).toEqual(
+      [173.9, 533.9, 893.9].map((x) => expect.closeTo(x, 6)),
+    );
+  });
+
+  it("covers the whole view when the footprint is wider than the world", () => {
+    const ctx = fakeCtx();
+    drawFootprints(
+      ctx,
+      900,
+      360,
+      "Kerbin",
+      [vessel({ groundTrackLonHalfDeg: value("°", 200) })],
+      world,
+    );
+    expect(fills(ctx).map(([x, , w]) => [x, w])).toEqual([[0, 900]]);
   });
 
   // The gotcha this task exists to fix: the old MapView-internal
@@ -170,7 +210,7 @@ describe("drawFootprints: pure geometry", () => {
   // different zoom level hands in.
   it("uses a fixed screen-space stroke width, independent of zoom", () => {
     const zoom1 = fakeCtx();
-    drawFootprints(zoom1, 600, "Kerbin", [vessel({})], (lat, lon) => ({
+    drawFootprints(zoom1, 600, 360, "Kerbin", [vessel({})], (lat, lon) => ({
       x: lon,
       y: lat,
     }));
@@ -180,7 +220,7 @@ describe("drawFootprints: pure geometry", () => {
     // camZoom` port would shrink the stroke here. The fixed constant must
     // not move.
     const zoom10 = fakeCtx();
-    drawFootprints(zoom10, 6000, "Kerbin", [vessel({})], (lat, lon) => ({
+    drawFootprints(zoom10, 6000, 3600, "Kerbin", [vessel({})], (lat, lon) => ({
       x: lon * 10,
       y: lat * 10,
     }));

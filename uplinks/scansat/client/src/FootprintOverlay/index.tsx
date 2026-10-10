@@ -15,8 +15,14 @@
 // has to do, to cancel out a zoom-scaling `ctx.setTransform(...)` the caller
 // applied; `project()` already hands back post-camera-transform screen pixels,
 // so there is no such transform here to compensate for and dividing would
-// shrink the stroke twice. The rest of the geometry (the antimeridian-wrap
-// split, the whole-globe span case) is an affine zoom+pan either way.
+// shrink the stroke twice. The rest of the geometry is an affine zoom+pan
+// either way.
+//
+// The map repeats east and west, one world every `worldW * camera.zoom`
+// overlay pixels, and `project()` places a point in the repeat nearest the
+// centre of the view. So a footprint is one rectangle laid from its west edge,
+// drawn again in every repeat of the world in view, and a footprint across the
+// antimeridian is simply one whose repeats both reach the view.
 //
 // Presence-gated on `requires: "scansat"`: renders only while
 // `scansat.available` is live, so an install without SCANsat never mounts
@@ -39,17 +45,12 @@ const STROKE_WIDTH_PX = 1.5;
 
 const HELD_DASH = [4, 3];
 
-function wrapLon180(lon: number): number {
-  const wrapped = ((((lon + 180) % 360) + 360) % 360) - 180;
-  return wrapped === 180 ? -180 : wrapped;
-}
-
 /**
  * Paint every scanning vessel's footprint rectangle onto the overlay
  * canvas, in already-projected SCREEN-space pixels via `project`. Only
  * vessels on `bodyName` are drawn. `width` is the overlay layer's pixel
- * width (used for the whole-globe-span and antimeridian-wrap-right-side
- * cases, replacing the old `WORLD_W`).
+ * width, and `repeatWidth` the pixels one world spans across, after which
+ * the map repeats.
  *
  * `held` draws each footprint as a dashed outline with no fill, the way
  * MapView draws its own held vessel marker: the list is what was last really
@@ -66,12 +67,13 @@ export function drawFootprints(
     | "setLineDash"
   >,
   width: number,
+  repeatWidth: number,
   bodyName: string | undefined,
   vessels: readonly SCANScanningVessel[],
   project: (lat: number, lon: number) => { x: number; y: number },
   held = false,
 ): void {
-  if (!bodyName) return;
+  if (!bodyName || !(repeatWidth > 0)) return;
   ctx.setLineDash(held ? HELD_DASH : []);
 
   for (const v of vessels) {
@@ -119,33 +121,25 @@ export function drawFootprints(
     const rectY = Math.min(yTop, yBot);
     const rectH = Math.abs(yBot - yTop);
 
-    // Longitude band, wrapped to [-180, 180) before projecting so the
-    // wrap-split decision below is correct regardless of what the body
-    // offset inside `project` does with the raw value.
-    const lonLo = wrapLon180(subLon - halfLon);
-    const lonHi = wrapLon180(subLon + halfLon);
-    const { x: xLoRaw } = project(0, lonLo);
-    const { x: xHiRaw } = project(0, lonHi);
+    const { x: xWest } = project(0, subLon - halfLon);
+    const rectW = ((halfLon * 2) / 360) * repeatWidth;
 
     ctx.fillStyle = fill;
     ctx.strokeStyle = stroke;
     ctx.lineWidth = STROKE_WIDTH_PX;
 
-    if (halfLon * 2 >= 360) {
-      // Spans the whole map: single full-width rect.
+    if (rectW >= repeatWidth) {
+      // Spans the whole world, so every repeat of it: one band across the view.
       ctx.fillRect(0, rectY, width, rectH);
       ctx.strokeRect(0, rectY, width, rectH);
-    } else if (xHiRaw > xLoRaw) {
-      const rw = xHiRaw - xLoRaw;
-      ctx.fillRect(xLoRaw, rectY, rw, rectH);
-      ctx.strokeRect(xLoRaw, rectY, rw, rectH);
-    } else {
-      // Wraps the antimeridian: two slices.
-      const rwRight = width - xLoRaw;
-      ctx.fillRect(xLoRaw, rectY, rwRight, rectH);
-      ctx.strokeRect(xLoRaw, rectY, rwRight, rectH);
-      ctx.fillRect(0, rectY, xHiRaw, rectH);
-      ctx.strokeRect(0, rectY, xHiRaw, rectH);
+      continue;
+    }
+    const first = Math.ceil(-(xWest + rectW) / repeatWidth);
+    const last = Math.floor((width - xWest) / repeatWidth);
+    for (let k = first; k <= last; k++) {
+      const rectX = xWest + k * repeatWidth;
+      ctx.fillRect(rectX, rectY, rectW, rectH);
+      ctx.strokeRect(rectX, rectY, rectW, rectH);
     }
   }
 }
@@ -162,8 +156,25 @@ function FootprintOverlay(ctx: SlotProps<"map-view.overlay">) {
     if (!c2d) return;
     c2d.clearRect(0, 0, ctx.width, ctx.height);
     if (!Array.isArray(vessels)) return;
-    drawFootprints(c2d, ctx.width, ctx.bodyName, vessels, ctx.project, held);
-  }, [vessels, held, ctx.width, ctx.height, ctx.bodyName, ctx.project]);
+    drawFootprints(
+      c2d,
+      ctx.width,
+      ctx.worldW * ctx.camera.zoom,
+      ctx.bodyName,
+      vessels,
+      ctx.project,
+      held,
+    );
+  }, [
+    vessels,
+    held,
+    ctx.width,
+    ctx.height,
+    ctx.worldW,
+    ctx.camera.zoom,
+    ctx.bodyName,
+    ctx.project,
+  ]);
 
   return (
     <canvas
