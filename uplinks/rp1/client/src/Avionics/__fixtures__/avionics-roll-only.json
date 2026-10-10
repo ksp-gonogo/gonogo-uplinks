@@ -9,7 +9,6 @@
     "caption": "AFTER: roll authority survives the tonnage check, in a caution tone and its own words",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
-    "unchangedWhenHeld": "The badge is RP-1's lock verdict as a word, No control or Roll only, and carries no figure an operator could take for a current reading.",
     "paints": ["ATTITUDE", "Roll only"]
   },
   "_stream": {

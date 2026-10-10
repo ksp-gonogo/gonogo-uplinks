@@ -10,7 +10,6 @@
     "caption": "AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
-    "unchangedWhenHeld": "The badge is RP-1's lock verdict as a word, No control or Roll only, and carries no figure an operator could take for a current reading.",
     "paints": ["ATTITUDE", "No control"]
   },
   "_stream": {
