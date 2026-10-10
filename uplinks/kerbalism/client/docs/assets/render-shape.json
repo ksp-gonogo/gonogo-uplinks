@@ -13,9 +13,9 @@
       "text": "52c0d842"
     },
     "dose-band-from-a-fitted-rate--default.png": {
-      "hash": "9ea73ebed164bbfa",
+      "hash": "decba69da947d7d1",
       "elements": 78,
-      "text": "38d177de"
+      "text": "03834eae"
     },
     "dose-band-reaching-critical--default.png": {
       "hash": "74a7813a5ffbb4ea",
@@ -113,9 +113,9 @@
       "text": "632bed9c"
     },
     "radiation-dose-critical-stopped-arriving--default.png": {
-      "hash": "7f872ff34dc81147",
+      "hash": "7d22f17ffdf1ee0a",
       "elements": 156,
-      "text": "464768d6"
+      "text": "709c7d6b"
     },
     "radiation-rising--default.png": {
       "hash": "ec43bce35340436d",
@@ -128,14 +128,14 @@
       "text": "1b4e5925"
     },
     "radiation-rising-stopped-arriving--default.png": {
-      "hash": "8badecc216ef401b",
+      "hash": "9bbebab814efbe7f",
       "elements": 100,
-      "text": "c15a61ee"
+      "text": "160c38d1"
     },
     "radiation-rising-stopped-arriving-later--default.png": {
-      "hash": "03be04191572bb86",
+      "hash": "ec68979935419ee0",
       "elements": 108,
-      "text": "06c4806b"
+      "text": "368e7cc7"
     },
     "storm-inbound--default.png": {
       "hash": "3014ce0481d4b610",
