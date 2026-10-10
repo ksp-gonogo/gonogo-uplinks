@@ -1,4 +1,4 @@
-import type { AnyContribution } from "@ksp-gonogo/sitrep-sdk";
+import type { AnyContribution, Reading } from "@ksp-gonogo/sitrep-sdk";
 import { getContributionsForSlot, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import { crewCoreStats, nautSalaryStat } from "./coreStats.js";
@@ -22,6 +22,26 @@ const BREAKDOWN = {
   },
 };
 
+/** The quantity a stat draws, whether it was handed over bare or as a held reading. */
+function figureOf(
+  stat: { value?: unknown } | null | undefined,
+): { magnitude: number; unit: string } | undefined {
+  const drawn = stat?.value;
+  if (typeof drawn !== "object" || drawn === null) return undefined;
+  if ("state" in drawn) {
+    return (drawn as { value?: { magnitude: number; unit: string } }).value;
+  }
+  return drawn as { magnitude: number; unit: string };
+}
+
+const HELD_READING: Reading<unknown> = {
+  state: "held",
+  value: undefined,
+  asOfUt: value("ut", 0),
+  grade: "disconnected",
+  reckoning: { status: "none" },
+};
+
 function crewRow(overrides: Record<string, unknown> = {}) {
   return { name: "Wernher Kerman", ...overrides };
 }
@@ -33,8 +53,8 @@ describe("crewCoreStats", () => {
     expect(inTraining?.label).toBe("In Training");
     // A `Value`, not a formatted number: the host widget draws it through its own
     // `Unit` so a contributed figure ladders its unit like every other reading.
-    expect(inTraining?.value?.magnitude).toBe(4);
-    expect(inTraining?.value?.unit).toBe("count");
+    expect(figureOf(inTraining)?.magnitude).toBe(4);
+    expect(figureOf(inTraining)?.unit).toBe("count");
     expect(inTraining?.detail).toBe("3 courses");
   });
 
@@ -68,7 +88,7 @@ describe("crewCoreStats", () => {
     const lapsing = stats.find((s) => s.id === "training-lapsing");
 
     expect(lapsing?.label).toBe("Training Lapsing");
-    expect(lapsing?.value?.magnitude).toBe(2);
+    expect(figureOf(lapsing)?.magnitude).toBe(2);
     expect(lapsing?.tone).toBe("warn");
   });
 
@@ -77,7 +97,7 @@ describe("crewCoreStats", () => {
     const stats = crewCoreStats(PROGRAM, [crewRow()]);
     const lapsing = stats.find((s) => s.id === "training-lapsing");
 
-    expect(lapsing?.value?.magnitude).toBe(0);
+    expect(figureOf(lapsing)?.magnitude).toBe(0);
     expect(lapsing?.tone).toBe("neutral");
   });
 
@@ -116,21 +136,19 @@ describe("crewCoreStats", () => {
     expect(stats.map((s) => s.id)).not.toContain("in-training");
   });
 
-  it("says a figure is held once its channel is", () => {
+  it("draws a figure as held once its channel is", () => {
     const held = crewCoreStats(PROGRAM, [crewRow()], {
-      program: true,
-      crew: true,
+      program: HELD_READING,
+      crew: HELD_READING,
     });
-    expect(held.find((s) => s.id === "in-training")?.detail).toBe(
-      "3 courses · HELD",
-    );
-    expect(held.find((s) => s.id === "training-lapsing")?.detail).toBe(
-      "HELD",
-    );
+    for (const id of ["in-training", "training-lapsing"]) {
+      const drawn = held.find((s) => s.id === id)?.value;
+      expect(drawn).toMatchObject({ state: "held" });
+    }
     const live = crewCoreStats(PROGRAM, [crewRow()]);
-    expect(
-      live.find((s) => s.id === "training-lapsing")?.detail,
-    ).toBeUndefined();
+    expect(live.find((s) => s.id === "training-lapsing")?.value).toMatchObject({
+      unit: "count",
+    });
   });
 
   it("reads each channel's currency off its reading", () => {
@@ -153,16 +171,16 @@ describe("crewCoreStats", () => {
             grade: "disconnected",
             reckoning: { status: "none" },
           };
-    const detailOf = (state: "observed" | "held") =>
+    const drawnOf = (state: "observed" | "held") =>
       (
         contribution.compute({
-          "rp1:crew-reading": reading(state, [crewRow()]),
-          "rp1:crew-program-reading": reading(state, PROGRAM),
-          "rp1:budget-breakdown-reading": reading(state, BREAKDOWN),
-        } as never) as { id: string; detail?: string }[]
-      ).find((s) => s.id === "training-lapsing")?.detail;
-    expect(detailOf("observed")).toBeUndefined();
-    expect(detailOf("held")).toBe("HELD");
+          "rp1.crew": reading(state, [crewRow()]),
+          "rp1.crewProgram": reading(state, PROGRAM),
+          "rp1.budgetBreakdown": reading(state, BREAKDOWN),
+        } as never) as { id: string; value?: object }[]
+      ).find((s) => s.id === "training-lapsing")?.value;
+    expect(drawnOf("observed")).not.toHaveProperty("state");
+    expect(drawnOf("held")).toMatchObject({ state: "held" });
   });
 
   it("leads the strip with what a hire adds per day", () => {
@@ -177,9 +195,9 @@ describe("crewCoreStats", () => {
       reckoning: { status: "none" },
     });
     const stats = contribution.compute({
-      "rp1:crew-reading": observed([crewRow()]),
-      "rp1:crew-program-reading": observed(PROGRAM),
-      "rp1:budget-breakdown-reading": observed(BREAKDOWN),
+      "rp1.crew": observed([crewRow()]),
+      "rp1.crewProgram": observed(PROGRAM),
+      "rp1.budgetBreakdown": observed(BREAKDOWN),
     } as never) as { id: string }[];
     expect(stats.map((s) => s.id)).toEqual([
       "naut-salary",
@@ -207,8 +225,8 @@ describe("nautSalaryStat", () => {
     const stat = nautSalaryStat(BREAKDOWN);
 
     expect(stat?.label).toBe("Salary per Naut");
-    expect(stat?.value?.unit).toBe("f/day");
-    expect(stat?.value?.magnitude).toBeCloseTo(41.07);
+    expect(figureOf(stat)?.unit).toBe("f/day");
+    expect(figureOf(stat)?.magnitude).toBeCloseTo(41.07);
     expect(stat?.detail).toBe("added by each hire");
   });
 
@@ -218,9 +236,9 @@ describe("nautSalaryStat", () => {
     expect(nautSalaryStat({ nautBaseSalary: null })).toBeNull();
   });
 
-  it("says the figure is held once its channel is", () => {
-    expect(nautSalaryStat(BREAKDOWN, true)?.detail).toBe(
-      "added by each hire · HELD",
-    );
+  it("draws the figure as held once its channel is", () => {
+    expect(nautSalaryStat(BREAKDOWN, HELD_READING)?.value).toMatchObject({
+      state: "held",
+    });
   });
 });

@@ -5,6 +5,7 @@ import type {
   KerbalismStarInfo,
   KerbalismStormEntry,
 } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
@@ -132,12 +133,18 @@ function bearingMetres(
  */
 export function computeCmeEntities(
   weather: KerbalismSpaceWeather | null | undefined,
+  held = false,
 ): CmeEntity[] {
   if (!weather) return [];
   const ejectionSpeedMps = magnitudeOf(weather.stormEjectionSpeed);
   const entities: CmeEntity[] = [];
   for (const storm of weather.storms ?? []) {
-    const entity = computeStormEntity(storm, weather.stars, ejectionSpeedMps);
+    const entity = computeStormEntity(
+      storm,
+      weather.stars,
+      ejectionSpeedMps,
+      held,
+    );
     if (entity) entities.push(entity);
   }
   return entities;
@@ -147,6 +154,7 @@ function computeStormEntity(
   storm: KerbalismStormEntry,
   stars: readonly KerbalismStarInfo[] | null | undefined,
   ejectionSpeedMps: number | null,
+  held: boolean,
 ): CmeEntity | null {
   const state = magnitudeOf(storm.stormState);
   if (state == null || state === 0) return null;
@@ -225,6 +233,7 @@ function computeStormEntity(
       tone: "warn" as const,
     },
     meta,
+    ...(held ? { currency: "held" as const } : {}),
   };
 }
 
@@ -233,5 +242,9 @@ KERBALISM.registerContribution({
   contributes: "system-view.entities",
   deps: ["kerbalism.spaceweather"],
   requires: "kerbalism",
-  compute: (topics) => computeCmeEntities(topics["kerbalism.spaceweather"]),
+  compute: (topics) =>
+    computeCmeEntities(
+      lastValue(topics["kerbalism.spaceweather"]),
+      topics["kerbalism.spaceweather"].state === "held",
+    ),
 });

@@ -10,7 +10,7 @@ Principia's n-body flight on the dashboard: how far each trajectory holds, the f
 | Uplink id | `principia` |
 | Version | `0.0.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -69,9 +69,10 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | --- | --- |
 | Widget id | `libration-points` |
 | Reads | `system.bodies` |
-| Uses if present | `vessel.orbit`, `vessel.identity` |
-| Actions | Cycle Pair (`cyclePair`) |
+| Also reads, if published | `vessel.orbit`, `vessel.identity` |
+| Actions to bind | Cycle Pair (`cyclePair`) |
 | Default size | 6 × 10 |
+| Smallest size | 4 × 7 |
 | Scenes | 11 |
 
 ![A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies](docs/assets/mun-l1-holding-station--default.png)

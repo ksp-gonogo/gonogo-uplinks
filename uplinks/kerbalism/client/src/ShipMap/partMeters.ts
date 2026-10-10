@@ -2,13 +2,13 @@ import {
   type ContributionEntry,
   value as quantity,
   type Reading,
-  type TopicReading,
   type Value,
   type VesselParts,
 } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, magnitudeOr, type Quantityish } from "@ksp-gonogo/ui-kit";
 import type { KerbalismProfile } from "../__generated__/contract.js";
 import { resourceFacts } from "../ecosystem.js";
+import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // The Kerbalism half of the `ship-map.part-meters` self-contribution:
@@ -166,31 +166,14 @@ export function kerbalismPartMeterReadings(
   }));
 }
 
-/**
- * `kerbalism:vessel-parts-reading`. `vessel.parts` as a reading, since a
- * contribution is handed a topic's payload and never its currency.
- */
-const VESSEL_PARTS_READING = KERBALISM.registerProcessor({
-  id: "vessel-parts-reading",
-  deps: [{ reading: "vessel.parts" }] as const,
-  compute: ([parts]: readonly [TopicReading<VesselParts>]):
-    | VesselParts
-    | undefined =>
-    parts.state === "observed" || parts.state === "held"
-      ? parts.value
-      : undefined,
-});
-
 KERBALISM.registerContribution({
   id: "ship-map-part-meters",
   contributes: "ship-map.part-meters",
-  // `vessel.parts` stays a bare dep beside the reading: the bare id is what
-  // subscribes the topic, and the processor only reads what is stored.
-  deps: ["vessel.parts", VESSEL_PARTS_READING, "kerbalism.profile"],
+  deps: ["vessel.parts", "kerbalism.profile"],
   requires: "kerbalism",
   compute: (topics) =>
     kerbalismPartMeterReadings(
-      topics[VESSEL_PARTS_READING.id],
-      topics["kerbalism.profile"],
+      topics["vessel.parts"],
+      lastValue(topics["kerbalism.profile"]),
     ),
 });

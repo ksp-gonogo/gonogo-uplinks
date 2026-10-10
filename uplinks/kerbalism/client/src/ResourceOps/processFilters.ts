@@ -1,5 +1,6 @@
 import type { IsruConverterEntry } from "@ksp-gonogo/sitrep-sdk";
 import { readKerbalismIsruConverterExt } from "../isru.js";
+import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
@@ -57,5 +58,6 @@ KERBALISM.registerContribution({
   contributes: "resource-ops.filters",
   deps: ["isru.converters"],
   requires: "kerbalism",
-  compute: (topics) => computeKerbalismProcessTerms(topics["isru.converters"]),
+  compute: (topics) =>
+    computeKerbalismProcessTerms(lastValue(topics["isru.converters"])),
 });

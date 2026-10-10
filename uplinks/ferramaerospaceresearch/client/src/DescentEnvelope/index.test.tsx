@@ -5,7 +5,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
-import { AERO_STATE, aeroBadges, aeroDescentLayers } from "./index.js";
+import { aeroBadges, aeroDescentLayers } from "./index.js";
 
 /**
  * The plot's own anchors, describing a Kerbin entry at 28 km whose
@@ -226,7 +226,7 @@ describe("surface gravity", () => {
    * (`.in`, `.minus`) fails against the fixture while working in the app.
    */
   const topicsForBody = (name: string, gees: number | null) => ({
-    [AERO_STATE.id]: {
+    "aero.state": {
       state: "observed",
       atUt: value("ut", 0),
       reckoning: { status: "none" },
@@ -238,18 +238,18 @@ describe("surface gravity", () => {
         aeroModelValid: true,
       },
     },
-    "vessel.landing": {
+    "vessel.landing": observed({
       terminalVelocity: value("m/s", PLOT.plotTerminal),
       projectedTouchdownSpeed: value("m/s", PLOT.plotTouchdown),
-    },
-    "vessel.flight": {
+    }),
+    "vessel.flight": observed({
       surfaceSpeed: value("m/s", PLOT.speed),
-    },
-    "vessel.surface": {
+    }),
+    "vessel.surface": observed({
       heightFromTerrain: value("m", PLOT.altitude),
-    },
-    "vessel.identity": { parentBodyIndex: 1 },
-    "system.bodies": {
+    }),
+    "vessel.identity": observed({ parentBodyIndex: 1 }),
+    "system.bodies": observed({
       bodies: [
         {
           index: 1,
@@ -257,7 +257,14 @@ describe("surface gravity", () => {
           ...(gees === null ? {} : { surfaceGravity: value("g", gees) }),
         },
       ],
-    },
+    }),
+  });
+
+  const observed = (payload: unknown) => ({
+    state: "observed",
+    atUt: value("ut", 0),
+    reckoning: { status: "none" },
+    value: payload,
   });
 
   const layerIds = (name: string, gees: number | null) => {
@@ -287,10 +294,10 @@ describe("surface gravity", () => {
     const plot = descentPlot();
     if (!plot) throw new Error("the descent-envelope contribution is missing");
     const topics = topicsForBody("Kerbin", 1);
-    const live = topics[AERO_STATE.id];
+    const live = topics["aero.state"];
     const held = {
       ...topics,
-      [AERO_STATE.id]: {
+      "aero.state": {
         state: "held",
         asOfUt: value("ut", 0),
         grade: "transport",
@@ -305,6 +312,10 @@ describe("surface gravity", () => {
       ).map((l) => l.id);
     expect(ids(topics)).not.toContain("held");
     expect(ids(held)).toContain("held");
+    const heldOf = (input: unknown) =>
+      (plot.compute(input as never) as { held?: { state: string } }[])[0]?.held;
+    expect(heldOf(topics)?.state).toBe("observed");
+    expect(heldOf(held)?.state).toBe("held");
   });
 
   /* Nothing to read and nothing to guess from: the projection is withheld

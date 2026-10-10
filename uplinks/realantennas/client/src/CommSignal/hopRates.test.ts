@@ -1,4 +1,4 @@
-import { value } from "@ksp-gonogo/sitrep-sdk";
+import { type Reading, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import type { RealAntennasHopRate } from "../__generated__/contract.js";
 import { computeRealAntennasHopRates } from "./hopRates.js";
@@ -19,6 +19,14 @@ function hop(
     bitsPerSec: value("bit/s", bits),
   } as RealAntennasHopRate;
 }
+
+const HELD: Reading<unknown> = {
+  state: "held",
+  value: undefined,
+  asOfUt: value("ut", 0),
+  grade: "disconnected",
+  reckoning: { status: "none" },
+};
 
 describe("computeRealAntennasHopRates", () => {
   it("relays each hop's node ids verbatim and unwraps the rate magnitude", () => {
@@ -49,6 +57,14 @@ describe("computeRealAntennasHopRates", () => {
 
     expect(entries).toEqual([
       { fromNodeId: "b", toNodeId: "home", bitsPerSec: 9600 },
+    ]);
+  });
+
+  it("hands the reading to every entry so a held rate is drawn as held", () => {
+    const entries = computeRealAntennasHopRates([hop("a", "b", 9600)], HELD);
+
+    expect(entries).toEqual([
+      { fromNodeId: "a", toNodeId: "b", bitsPerSec: 9600, held: HELD },
     ]);
   });
 });

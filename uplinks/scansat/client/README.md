@@ -10,7 +10,7 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | Uplink id | `scansat` |
 | Version | `0.0.1` |
 | Wraps | SCANsat 20.4 (ckan) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,9 +40,10 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 | | |
 | --- | --- |
 | Widget id | `scanning` |
-| Reads | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `system.bodies`, `vessel.surface`, `vessel.flight` |
+| Reads, as flat keys | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `system.bodies`, `vessel.surface`, `vessel.flight` |
 | Slots | `scanning.sections` |
 | Default size | 6 × 10 |
+| Smallest size | 3 × 4 |
 | Scenes | 2 |
 
 ![Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies](docs/assets/kerbin-partial-scan--default.png)

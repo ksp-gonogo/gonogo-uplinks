@@ -10,7 +10,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `0.0.1` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -75,8 +75,9 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Widget id | `ship-systems` |
 | Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew` |
 | Slots | `ship-systems.life-support` |
-| Only while present | `flight` |
+| Needs | a vessel in flight |
 | Default size | 9 × 15 |
+| Smallest size | 4 × 5 |
 | Scenes | 4 |
 
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](docs/assets/ec-shortage-limits-water--default.png)
@@ -89,9 +90,10 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | --- | --- |
 | Widget id | `space-weather` |
 | Reads | `kerbalism.spaceweather` |
-| Uses if present | `vessel.flight` |
-| Only while present | `flight` |
+| Also reads, if published | `vessel.flight` |
+| Needs | a vessel in flight |
 | Default size | 8 × 11 |
+| Smallest size | 3 × 4 |
 | Scenes | 8 |
 
 ![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](docs/assets/nominal--default.png)
@@ -124,7 +126,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:space-weather-badge` | `space-weather.badges` | `kerbalism.spaceweather` | only while `kerbalism` |
 | `kerbalism:system-view-cme` | `system-view.entities` | `kerbalism.spaceweather` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meta` | `ship-map.part-meta` | `kerbalism.lifesupport` | only while `kerbalism` |
-| `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `processor:kerbalism:vessel-parts-reading`, `kerbalism.profile` | only while `kerbalism` |
+| `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
 
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](docs/assets/radiation-dose-critical--default.png)
@@ -142,7 +144,6 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | processor | `kerbalism:ship-systems` |
 | processor | `kerbalism:crew-survival` |
 | processor | `kerbalism:crew-rule-readings` |
-| processor | `kerbalism:vessel-parts-reading` |
 | forward model | `kerbalism.crew` |
 | forward model | `vessel.resources` |
 

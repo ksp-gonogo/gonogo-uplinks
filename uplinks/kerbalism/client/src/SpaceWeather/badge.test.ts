@@ -1,7 +1,23 @@
+import { type Reading, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import { spaceWeatherBadges } from "./badge.js";
 
+const HELD: Reading<unknown> = {
+  state: "held",
+  value: undefined,
+  asOfUt: value("ut", 0),
+  grade: "disconnected",
+  reckoning: { status: "none" },
+};
+
 describe("spaceWeatherBadges", () => {
+  it("hands the reading to the badge so a held verdict is drawn as held", () => {
+    expect(
+      spaceWeatherBadges({ stormInProgress: true }, HELD)?.[0]?.held,
+    ).toBe(HELD);
+    expect(spaceWeatherBadges({}, HELD)).toBeNull();
+  });
+
   it("flags a storm in progress as Storm in progress (nogo)", () => {
     expect(spaceWeatherBadges({ stormInProgress: true })).toEqual([
       {

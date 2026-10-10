@@ -10,7 +10,7 @@ Puts a kOS CPU's real terminal on the dashboard, streamed in process with no pro
 | Uplink id | `kos` |
 | Version | `0.0.1` |
 | Wraps | kOS 1.6.0.1 (ckan) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -51,8 +51,9 @@ Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the 
 | | |
 | --- | --- |
 | Widget id | `kos-script-trigger` |
-| Reads | `kos.processors` |
+| Reads, as flat keys | `kos.processors` |
 | Default size | 10 × 9 |
+| Smallest size | 6 × 7 |
 | Scenes | 2 |
 
 ![Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing](docs/assets/two-cpus-idle--default.png)
@@ -64,8 +65,9 @@ The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it 
 | | |
 | --- | --- |
 | Widget id | `kos-terminal` |
-| Reads | `kos.processors` |
+| Reads, as flat keys | `kos.processors` |
 | Default size | 18 × 15 |
+| Smallest size | 8 × 6 |
 | Scenes | 4 |
 
 ![A script running: kOS redraws the screen in chunks and the terminal repaints as they land](docs/assets/boot-then-run--default.gif)

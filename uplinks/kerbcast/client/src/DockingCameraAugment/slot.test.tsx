@@ -39,6 +39,7 @@ const HUD_CONTEXT = {
   ax: undefined,
   ay: undefined,
   distance: 42,
+  held: undefined,
   cameraFlightId: undefined,
 };
 

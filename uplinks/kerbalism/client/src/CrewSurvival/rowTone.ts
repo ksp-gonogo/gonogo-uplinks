@@ -1,4 +1,4 @@
-import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, Reading } from "@ksp-gonogo/sitrep-sdk";
 import { KERBALISM } from "../uplink.js";
 import { CREW_SURVIVAL, type CrewSurvival, survivalFrom } from "./processor.js";
 
@@ -26,11 +26,16 @@ type CrewRowToneEntry = ContributionEntry<"crew-status.row-tone">;
  */
 function rowTones(
   survival: CrewSurvival | undefined,
+  held?: Reading<unknown>,
 ): CrewRowToneEntry[] | null {
   if (!survival) return null;
   const entries = survival.kerbals
     .filter((k) => k.tone === "nogo")
-    .map((k) => ({ crewName: k.name, tone: "nogo" as const }));
+    .map((k) => ({
+      crewName: k.name,
+      tone: "nogo" as const,
+      ...(held === undefined ? {} : { held }),
+    }));
   return entries.length > 0 ? entries : null;
 }
 
@@ -40,7 +45,10 @@ KERBALISM.registerContribution({
   deps: [CREW_SURVIVAL],
   requires: "kerbalism",
   compute: (topics) =>
-    rowTones(survivalFrom(topics[CREW_SURVIVAL.id])?.survival),
+    rowTones(
+      survivalFrom(topics[CREW_SURVIVAL.id])?.survival,
+      topics[CREW_SURVIVAL.id],
+    ),
 });
 
 export { rowTones };

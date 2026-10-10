@@ -1,5 +1,7 @@
+import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
 import type { Rp1Avionics } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
@@ -71,6 +73,7 @@ import { RP1 } from "../uplink.js";
  */
 export function avionicsBadges(
   avionics: Rp1Avionics | null | undefined,
+  held?: Reading<unknown>,
 ): BadgeEntry[] | null {
   const level = avionics?.lockLevel;
   if (level !== "Locked" && level !== "Axial") return null;
@@ -80,6 +83,7 @@ export function avionicsBadges(
       id: "rp1-avionics-lock",
       label: level === "Locked" ? "No control" : "Roll only",
       tone: level === "Locked" ? "nogo" : "warn",
+      ...(held === undefined ? {} : { held }),
     },
   ];
 }
@@ -89,5 +93,6 @@ RP1.registerContribution({
   contributes: "navball.badges",
   requires: "rp1",
   deps: ["rp1.avionics"],
-  compute: (topics) => avionicsBadges(topics["rp1.avionics"]),
+  compute: (topics) =>
+    avionicsBadges(lastValue(topics["rp1.avionics"]), topics["rp1.avionics"]),
 });

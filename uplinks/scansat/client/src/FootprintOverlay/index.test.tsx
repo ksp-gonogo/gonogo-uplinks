@@ -215,6 +215,7 @@ function overlayProps(
     vesselLat: undefined,
     vesselLon: undefined,
     project: (lat: number, lon: number) => ({ x: lon, y: lat }),
+    held: undefined,
     ...overrides,
   };
 }

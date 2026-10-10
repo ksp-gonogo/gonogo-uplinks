@@ -1,6 +1,7 @@
-import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, Reading } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import type { KerbalismLifeSupport } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
@@ -33,6 +34,7 @@ type PartMetaEntry = ContributionEntry<"ship-map.part-meta">;
  */
 export function computeKerbalismPartMeta(
   lifeSupport: KerbalismLifeSupport | null | undefined,
+  held?: Reading<unknown>,
 ): PartMetaEntry[] {
   if (!lifeSupport) return [];
   const entries: PartMetaEntry[] = [];
@@ -64,6 +66,7 @@ export function computeKerbalismPartMeta(
           : unread
             ? "unknown"
             : "idle",
+      ...(held === undefined ? {} : { held }),
     });
   }
   return entries;
@@ -75,5 +78,8 @@ KERBALISM.registerContribution({
   deps: ["kerbalism.lifesupport"],
   requires: "kerbalism",
   compute: (topics) =>
-    computeKerbalismPartMeta(topics["kerbalism.lifesupport"]),
+    computeKerbalismPartMeta(
+      lastValue(topics["kerbalism.lifesupport"]),
+      topics["kerbalism.lifesupport"],
+    ),
 });

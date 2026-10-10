@@ -1,3 +1,4 @@
+import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
 import { SHIP_SYSTEMS, type ShipSystems } from "../processor.js";
 import { KERBALISM } from "../uplink.js";
@@ -17,8 +18,12 @@ import { KERBALISM } from "../uplink.js";
 // vessel carries no header clutter.
 // ---------------------------------------------------------------------------
 
-function statusBadges(ship: ShipSystems | undefined): BadgeEntry[] | null {
+function statusBadges(
+  ship: ShipSystems | undefined,
+  held?: Reading<unknown>,
+): BadgeEntry[] | null {
   if (!ship) return null;
+  const marked = held === undefined ? {} : { held };
   const { causes, supplies } = ship.summary;
   const rootCause = causes[0];
   if (rootCause !== undefined) {
@@ -27,6 +32,7 @@ function statusBadges(ship: ShipSystems | undefined): BadgeEntry[] | null {
         id: "ship-systems-status",
         label: `${rootCause.displayName} critical`,
         tone: "nogo",
+        ...marked,
       },
     ];
   }
@@ -37,6 +43,7 @@ function statusBadges(ship: ShipSystems | undefined): BadgeEntry[] | null {
         id: "ship-systems-status",
         label: `${low.displayName} low`,
         tone: "warn",
+        ...marked,
       },
     ];
   }
@@ -59,6 +66,7 @@ KERBALISM.registerContribution({
       reading?.state === "observed" || reading?.state === "held"
         ? reading.value
         : undefined,
+      reading,
     );
   },
 });

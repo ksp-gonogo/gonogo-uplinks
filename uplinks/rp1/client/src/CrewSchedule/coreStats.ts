@@ -1,16 +1,12 @@
-import type {
-  ContributionEntry,
-  Reading,
-  TopicPayload,
-  TopicReading,
-} from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, Reading } from "@ksp-gonogo/sitrep-sdk";
 import { modSettingDep, value } from "@ksp-gonogo/sitrep-sdk";
-import { magnitudeOf } from "@ksp-gonogo/ui-kit";
+import { heldFigureOf, magnitudeOf } from "@ksp-gonogo/ui-kit";
 import type {
   Rp1BudgetBreakdown,
   Rp1CrewEntry,
   Rp1CrewProgram,
 } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 
@@ -65,17 +61,6 @@ function lapsingCrew(crew: readonly Rp1CrewEntry[]): number {
     .length;
 }
 
-/** Joins a figure's qualifier with the held note, either of which may be absent. */
-function withHeld(detail: string | undefined, held: boolean) {
-  if (!held) return detail;
-  return detail === undefined
-    ? HELD_DETAIL
-    : `${detail} · ${HELD_DETAIL}`;
-}
-
-// A stat's value is a bare quantity, so the kit cannot mark a held one itself.
-const HELD_DETAIL = "HELD";
-
 /**
  * What pressing Hire adds to the career's upkeep, per day, beside the host's
  * "Next Hire" price.
@@ -91,7 +76,7 @@ const HELD_DETAIL = "HELD";
  */
 export function nautSalaryStat(
   breakdown: Rp1BudgetBreakdown | undefined,
-  held = false,
+  held?: Reading<unknown>,
 ): StatEntry | null {
   // Signed as a funds change, so money going out is negative.
   const perDay = magnitudeOf(breakdown?.nautBaseSalary?.day);
@@ -99,15 +84,15 @@ export function nautSalaryStat(
   return {
     id: "naut-salary",
     label: "Salary per Naut",
-    value: value("f/day", -perDay),
-    detail: withHeld("added by each hire", held),
+    value: heldFigureOf(value("f/day", -perDay), held),
+    detail: "added by each hire",
   };
 }
 
 export function crewCoreStats(
   program: Rp1CrewProgram | undefined,
   crew: readonly Rp1CrewEntry[] | undefined,
-  held: { program: boolean; crew: boolean } = { program: false, crew: false },
+  held: { program?: Reading<unknown>; crew?: Reading<unknown> } = {},
   missionTrainingEnabled?: boolean,
 ): readonly StatEntry[] {
   const stats: StatEntry[] = [];
@@ -117,8 +102,8 @@ export function crewCoreStats(
     stats.push({
       id: "in-training",
       label: "In Training",
-      value: value("count", inTraining),
-      detail: withHeld(coursesDetail(program), held.program),
+      value: heldFigureOf(value("count", inTraining), held.program),
+      detail: coursesDetail(program),
     });
   }
 
@@ -129,8 +114,7 @@ export function crewCoreStats(
     stats.push({
       id: "training-lapsing",
       label: "Training Lapsing",
-      value: value("count", lapsing),
-      detail: withHeld(undefined, held.crew),
+      value: heldFigureOf(value("count", lapsing), held.crew),
       // Toned only when there is something to act on. A permanent amber zero
       // is an alarm about nothing, and it spends the emphasis the strip needs
       // for the case where the figure is real.
@@ -141,48 +125,13 @@ export function crewCoreStats(
   return stats;
 }
 
-function lastValue<T>(
-  reading: TopicReading<T> | Reading<T> | undefined,
-): T | undefined {
-  return reading?.state === "observed" || reading?.state === "held"
-    ? reading.value
-    : undefined;
-}
-
-/*
- * The three channels with their currency, since a contribution's own topic deps
- * arrive as bare payloads and a stat cannot carry a reading.
- */
-const CREW_READING = RP1.registerProcessor({
-  id: "crew-reading",
-  deps: [{ reading: "rp1.crew" }] as const,
-  compute: ([reading]: readonly [TopicReading<TopicPayload<"rp1.crew">>]) =>
-    lastValue(reading),
-});
-
-const BUDGET_BREAKDOWN_READING = RP1.registerProcessor({
-  id: "budget-breakdown-reading",
-  deps: [{ reading: "rp1.budgetBreakdown" }] as const,
-  compute: ([reading]: readonly [
-    TopicReading<TopicPayload<"rp1.budgetBreakdown">>,
-  ]) => lastValue(reading),
-});
-
-const CREW_PROGRAM_READING = RP1.registerProcessor({
-  id: "crew-program-reading",
-  deps: [{ reading: "rp1.crewProgram" }] as const,
-  compute: ([reading]: readonly [
-    TopicReading<TopicPayload<"rp1.crewProgram">>,
-  ]) => lastValue(reading),
-});
-
 RP1.registerContribution({
   id: "crew-core-stats",
   contributes: "astronaut-complex.readouts",
   deps: [
-    CREW_READING,
-    CREW_PROGRAM_READING,
-    BUDGET_BREAKDOWN_READING,
+    "rp1.crew",
+    "rp1.crewProgram",
+    "rp1.budgetBreakdown",
     modSettingDep("rp1", "missionTrainingEnabled"),
   ],
   /*
@@ -192,22 +141,16 @@ RP1.registerContribution({
    */
   requires: "rp1",
   compute: (topics) => {
-    const program = topics[CREW_PROGRAM_READING.id];
-    const crew = topics[CREW_READING.id];
-    const breakdown = topics[BUDGET_BREAKDOWN_READING.id];
+    const program = topics["rp1.crewProgram"];
+    const crew = topics["rp1.crew"];
+    const breakdown = topics["rp1.budgetBreakdown"];
     // First, so it sits in the strip straight after the host's own three and
     // as near "Next Hire" as a contributed cell can.
-    const salary = nautSalaryStat(
-      lastValue(breakdown),
-      breakdown?.state === "held",
-    );
+    const salary = nautSalaryStat(lastValue(breakdown), breakdown);
     const stats = crewCoreStats(
       lastValue(program),
       lastValue(crew),
-      {
-        program: program?.state === "held",
-        crew: crew?.state === "held",
-      },
+      { program, crew },
       topics["settings.rp1.missionTrainingEnabled"],
     );
     return salary === null ? stats : [salary, ...stats];

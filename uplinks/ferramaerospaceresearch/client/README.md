@@ -10,7 +10,7 @@ Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of 
 | Uplink id | `aero` |
 | Version | `0.0.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -29,8 +29,9 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 | --- | --- |
 | Widget id | `aerodynamics` |
 | Reads | `aero.state` |
-| Only while present | `flight` |
+| Needs | a vessel in flight |
 | Default size | 4 × 7 |
+| Smallest size | 4 × 5 |
 | Scenes | 4 |
 
 ![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
@@ -39,16 +40,10 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
-| `aero:descent-envelope` | `plots` | `processor:aero:aero-state-reading`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `system.bodies` | only while `aero` |
-| `aero:descent-envelope-badges` | `landing-status.badges` | `processor:aero:aero-state-reading` | only while `aero` |
+| `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `system.bodies` | only while `aero` |
+| `aero:descent-envelope-badges` | `landing-status.badges` | `aero.state` | only while `aero` |
 
 ![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](docs/assets/winged-entry-high-alpha--default.png)
 
 ![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](docs/assets/entry-badges--default.png)
-
-## Models
-
-| Kind | Id |
-| --- | --- |
-| processor | `aero:aero-state-reading` |
 

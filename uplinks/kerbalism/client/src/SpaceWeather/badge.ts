@@ -1,5 +1,7 @@
+import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
 import type { KerbalismSpaceWeather } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // The Space Weather panel badge.
@@ -21,11 +23,18 @@ import { KERBALISM } from "../uplink.js";
 
 function spaceWeatherBadges(
   weather: KerbalismSpaceWeather | null | undefined,
+  held?: Reading<unknown>,
 ): BadgeEntry[] | null {
   if (!weather) return null;
+  const marked = held === undefined ? {} : { held };
   if (weather.stormInProgress === true) {
     return [
-      { id: "space-weather-status", label: "Storm in progress", tone: "nogo" },
+      {
+        id: "space-weather-status",
+        label: "Storm in progress",
+        tone: "nogo",
+        ...marked,
+      },
     ];
   }
   if (
@@ -33,7 +42,9 @@ function spaceWeatherBadges(
     weather.innerBelt === true ||
     weather.outerBelt === true
   ) {
-    return [{ id: "space-weather-status", label: "Exposed", tone: "warn" }];
+    return [
+      { id: "space-weather-status", label: "Exposed", tone: "warn", ...marked },
+    ];
   }
   return null;
 }
@@ -43,7 +54,11 @@ KERBALISM.registerContribution({
   contributes: "space-weather.badges",
   deps: ["kerbalism.spaceweather"],
   requires: "kerbalism",
-  compute: (topics) => spaceWeatherBadges(topics["kerbalism.spaceweather"]),
+  compute: (topics) =>
+    spaceWeatherBadges(
+      lastValue(topics["kerbalism.spaceweather"]),
+      topics["kerbalism.spaceweather"],
+    ),
 });
 
 export { spaceWeatherBadges };

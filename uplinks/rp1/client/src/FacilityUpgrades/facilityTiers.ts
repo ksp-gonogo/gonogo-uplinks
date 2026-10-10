@@ -1,5 +1,6 @@
-import { magnitudeOf } from "@ksp-gonogo/sitrep-sdk";
+import { magnitudeOf, type Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { Rp1FacilityEntry } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
 
 /**
@@ -38,6 +39,7 @@ import { RP1 } from "../uplink.js";
  */
 export function facilityTiers(
   rows: readonly Rp1FacilityEntry[] | null | undefined,
+  held?: Reading<unknown>,
 ) {
   if (!Array.isArray(rows)) return [];
   return rows.flatMap((row) => {
@@ -61,6 +63,7 @@ export function facilityTiers(
         currentTier,
         maxTier,
         ...(upgradeCost === null ? {} : { upgradeCost }),
+        ...(held === undefined ? {} : { held }),
       },
     ];
   });
@@ -71,5 +74,9 @@ RP1.registerContribution({
   contributes: "space-center-status.facilities",
   requires: "rp1",
   deps: ["rp1.facilities"],
-  compute: (topics) => facilityTiers(topics["rp1.facilities"]),
+  compute: (topics) =>
+    facilityTiers(
+      lastValue(topics["rp1.facilities"]),
+      topics["rp1.facilities"],
+    ),
 });

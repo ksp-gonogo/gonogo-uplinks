@@ -1,9 +1,7 @@
 import type {
   BadgeEntry,
   PlotLayer,
-  Reading,
   TopicPayload,
-  TopicReading,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   getBody,
@@ -13,6 +11,8 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import { writeQuantity } from "@ksp-gonogo/ui-kit";
+import { drawnFrom } from "../drawnFrom.js";
+import { lastValue } from "../lastValue.js";
 // Side-effect import: registers aero.state's unit map and augments
 // TopicPayloadMap. This module reads the Topic, so it pulls the registration
 // itself rather than relying on the package entry's import order.
@@ -397,35 +397,12 @@ function surfaceGravityOf(
     : null;
 }
 
-/**
- * `aero.state` with its currency, since a contribution's own topic deps arrive
- * as bare payloads and these marks must say when the reading is held.
- */
-export const AERO_STATE = AERO.registerProcessor({
-  id: "aero-state-reading",
-  deps: [{ reading: "aero.state" }] as const,
-  compute: ([reading]: readonly [
-    TopicReading<TopicPayload<"aero.state">>,
-  ]): TopicPayload<"aero.state"> | undefined =>
-    reading.state === "observed" || reading.state === "held"
-      ? reading.value
-      : undefined,
-});
-
-function aeroStateOf(
-  reading: Reading<TopicPayload<"aero.state">> | undefined,
-) {
-  return reading?.state === "observed" || reading?.state === "held"
-    ? reading.value
-    : undefined;
-}
-
 AERO.registerContribution({
   id: "descent-envelope",
   contributes: "plots",
   requires: "aero",
   deps: [
-    AERO_STATE,
+    "aero.state",
     "vessel.landing",
     "vessel.flight",
     "vessel.surface",
@@ -433,10 +410,10 @@ AERO.registerContribution({
     "system.bodies",
   ],
   compute: (topics) => {
-    const reading = topics[AERO_STATE.id];
-    const state = aeroStateOf(reading);
-    const landing = topics["vessel.landing"];
-    const flight = topics["vessel.flight"];
+    const reading = topics["aero.state"];
+    const state = lastValue(reading);
+    const landing = lastValue(topics["vessel.landing"]);
+    const flight = lastValue(topics["vessel.flight"]);
     const alpha = state?.angleOfAttack?.magnitude ?? null;
     const stall = state?.stallFraction?.magnitude ?? null;
     const modelTerminal = state?.terminalVelocity?.magnitude ?? null;
@@ -452,11 +429,11 @@ AERO.registerContribution({
         (alpha == null && stall == null && modelTerminal == null),
       plotTerminal: landing?.terminalVelocity?.magnitude ?? null,
       plotTouchdown: landing?.projectedTouchdownSpeed?.magnitude ?? null,
-      altitude: heightAboveTerrain(topics["vessel.surface"], flight),
+      altitude: heightAboveTerrain(lastValue(topics["vessel.surface"]), flight),
       speed: flight?.surfaceSpeed?.magnitude ?? null,
       surfaceGravity: surfaceGravityOf(
-        topics["vessel.identity"],
-        topics["system.bodies"],
+        lastValue(topics["vessel.identity"]),
+        lastValue(topics["system.bodies"]),
       ),
     };
     const layers = aeroDescentLayers(inputs);
@@ -466,7 +443,18 @@ AERO.registerContribution({
     // it". The model's curve exists to part from the drag back-out, so with no
     // envelope on the board it has nothing to part from and correctly draws
     // nothing rather than standing up a rival corridor beside the real one.
-    return [{ subject: "descent-envelope", layers }];
+    return [
+      {
+        subject: "descent-envelope",
+        layers,
+        held: drawnFrom([
+          reading,
+          topics["vessel.landing"],
+          topics["vessel.flight"],
+          topics["vessel.surface"],
+        ]),
+      },
+    ];
   },
 });
 
@@ -474,9 +462,9 @@ AERO.registerContribution({
   id: "descent-envelope-badges",
   contributes: "landing-status.badges",
   requires: "aero",
-  deps: [AERO_STATE],
+  deps: ["aero.state"],
   compute: (topics) => {
-    const reading = topics[AERO_STATE.id];
-    return aeroBadges(aeroStateOf(reading), reading?.state === "held");
+    const reading = topics["aero.state"];
+    return aeroBadges(lastValue(reading), reading.state === "held");
   },
 });

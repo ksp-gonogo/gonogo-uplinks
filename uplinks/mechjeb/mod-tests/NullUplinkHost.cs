@@ -29,8 +29,8 @@ namespace GonogoMechJebUplink.Tests
         public void AddSampler(ISnapshotSampler sampler) => throw NotExpected();
         public void AddChannelSource(string topic, Func<KspSnapshot?, object?> map) => throw NotExpected();
         public IChannelPublisher Publisher(string topic) => throw NotExpected();
-        public void AddSampledSource(Func<KspSnapshot?, object?> captureOnMainThread, Action<object?> handleOnCourier) => throw NotExpected();
-        public void AddSampledSource(Func<KspSnapshot?, object?> captureOnMainThread, Action<object?> handleOnCourier, params string[] subscriptionTopicPrefixes) => throw NotExpected();
+        public void AddSampledSource(Func<KspSnapshot?, object?> captureOnMainThread, Action<object?> handleOffMainThread) => throw NotExpected();
+        public void AddSampledSource(Func<KspSnapshot?, object?> captureOnMainThread, Action<object?> handleOffMainThread, params string[] subscriptionTopicPrefixes) => throw NotExpected();
         public bool IsAnyTopicSubscribed(string topicPrefix) => throw NotExpected();
         public IDynamicChannelSource RegisterDynamicNamespace(string prefix, ChannelDeclaration template) => throw NotExpected();
         public void AddCommandHandler<TArgs, TResult>(string command, Func<TArgs, TResult> handler) => throw NotExpected();

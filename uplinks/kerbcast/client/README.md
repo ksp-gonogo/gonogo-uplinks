@@ -10,7 +10,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | Uplink id | `kerbcast` |
 | Version | `0.0.1` |
 | Wraps | kerbcast 1.8.1 (ckan) |
-| Built against | contract 35.0, extension API 6.0.0 |
+| Built against | contract 36.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,10 +40,11 @@ A live view from a camera on the active craft. Pick which camera to watch, step 
 | | |
 | --- | --- |
 | Widget id | `camera-feed` |
-| Reads | `vessel.comms`, `comms.link`, `comms.delay` |
-| Actions | Next camera (`nextCamera`), Previous camera (`prevCamera`), Zoom in (`zoomIn`), Zoom out (`zoomOut`), Pan yaw axis (`panYaw`), Pan pitch axis (`panPitch`) |
+| Reads, as flat keys | `vessel.comms`, `comms.link`, `comms.delay` |
+| Actions to bind | Next camera (`nextCamera`), Previous camera (`prevCamera`), Zoom in (`zoomIn`), Zoom out (`zoomOut`), Pan yaw axis (`panYaw`), Pan pitch axis (`panPitch`) |
 | Slots | `camera-feed.overlay` |
 | Default size | 9 × 8 |
+| Smallest size | 7 × 6 |
 | Scenes | 3 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](docs/assets/camera-feed-fixed--default.png)

@@ -1,5 +1,7 @@
+import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
 import type { Rp1Simulation } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
 
 /**
@@ -16,9 +18,17 @@ import { RP1 } from "../uplink.js";
  */
 export function simulationBadges(
   simulation: Rp1Simulation | null | undefined,
+  held?: Reading<unknown>,
 ): BadgeEntry[] | null {
   if (simulation?.active !== true) return null;
-  return [{ id: "rp1-simulation", label: "SIMULATION", tone: "caution" }];
+  return [
+    {
+      id: "rp1-simulation",
+      label: "SIMULATION",
+      tone: "caution",
+      ...(held === undefined ? {} : { held }),
+    },
+  ];
 }
 
 RP1.registerContribution({
@@ -26,5 +36,9 @@ RP1.registerContribution({
   contributes: "app.header-badges",
   requires: "rp1",
   deps: ["rp1.simulation"],
-  compute: (topics) => simulationBadges(topics["rp1.simulation"]),
+  compute: (topics) =>
+    simulationBadges(
+      lastValue(topics["rp1.simulation"]),
+      topics["rp1.simulation"],
+    ),
 });

@@ -1,3 +1,4 @@
+import type { Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
 import { KERBALISM } from "../uplink.js";
 import {
@@ -110,6 +111,7 @@ KERBALISM.registerContribution({
 function bandBadges(
   readings: RuleReadings | undefined,
   survival: CrewSurvival | undefined,
+  held?: Reading<unknown>,
 ): BadgeEntry[] | null {
   if (!readings) return null;
   const criticalNow = new Set(
@@ -137,7 +139,14 @@ function bandBadges(
     atRisk.size === 1
       ? "Crew critical in model range"
       : `${atRisk.size} crew critical in model range`;
-  return [{ id: "crew-survival-band", label, tone: "warn" }];
+  return [
+    {
+      id: "crew-survival-band",
+      label,
+      tone: "warn",
+      ...(held === undefined ? {} : { held }),
+    },
+  ];
 }
 
 KERBALISM.registerContribution({
@@ -152,6 +161,7 @@ KERBALISM.registerContribution({
         ? rules.value
         : undefined,
       survivalFrom(topics[CREW_SURVIVAL.id])?.survival,
+      rules,
     );
   },
 });

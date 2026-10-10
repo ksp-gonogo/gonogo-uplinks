@@ -1,5 +1,6 @@
-import type { ContributionEntry } from "@ksp-gonogo/sitrep-sdk";
+import type { ContributionEntry, Reading } from "@ksp-gonogo/sitrep-sdk";
 import type { RealAntennasHopRate } from "../__generated__/contract.js";
+import { lastValue } from "../lastValue.js";
 import { REALANTENNAS_HOP_RATES_TOPIC } from "../topics.js";
 import { REALANTENNAS } from "../uplink.js";
 
@@ -34,6 +35,7 @@ type HopRateEntry = ContributionEntry<"comm-signal.hop-rates">;
  */
 export function computeRealAntennasHopRates(
   wire: readonly RealAntennasHopRate[] | null | undefined,
+  held?: Reading<unknown>,
 ): HopRateEntry[] {
   if (!wire) return [];
   const entries: HopRateEntry[] = [];
@@ -44,6 +46,7 @@ export function computeRealAntennasHopRates(
       fromNodeId: hop.fromNodeId,
       toNodeId: hop.toNodeId,
       bitsPerSec: bits,
+      ...(held === undefined ? {} : { held }),
     });
   }
   return entries;
@@ -55,5 +58,8 @@ REALANTENNAS.registerContribution({
   requires: "realantennas",
   deps: [REALANTENNAS_HOP_RATES_TOPIC],
   compute: (topics) =>
-    computeRealAntennasHopRates(topics[REALANTENNAS_HOP_RATES_TOPIC]),
+    computeRealAntennasHopRates(
+      lastValue(topics[REALANTENNAS_HOP_RATES_TOPIC]),
+      topics[REALANTENNAS_HOP_RATES_TOPIC],
+    ),
 });

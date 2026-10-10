@@ -1,6 +1,14 @@
-import { value } from "@ksp-gonogo/sitrep-sdk";
+import { type Reading, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import { avionicsBadges } from "./badge.js";
+
+const HELD: Reading<unknown> = {
+  state: "held",
+  value: undefined,
+  asOfUt: value("ut", 0),
+  grade: "disconnected",
+  reckoning: { status: "none" },
+};
 
 /**
  * The Navball's avionics badge.
@@ -11,6 +19,18 @@ import { avionicsBadges } from "./badge.js";
  * be reliably nothing.
  */
 describe("avionicsBadges", () => {
+  it("hands the reading to the badge so a held verdict is drawn as held", () => {
+    expect(avionicsBadges({ lockLevel: "Locked" }, HELD)).toEqual([
+      {
+        id: "rp1-avionics-lock",
+        label: "No control",
+        tone: "nogo",
+        held: HELD,
+      },
+    ]);
+  });
+
+
   it("draws nothing for a vessel RP-1 has cleared", () => {
     expect(
       avionicsBadges({
