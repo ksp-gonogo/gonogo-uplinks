@@ -14,6 +14,6 @@ export const AERO = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "Aerodynamics",
   description:
-    "Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, " +
-    "lift and drag.",
+    "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle " +
+    "of attack, sideslip, stall, lift and drag.",
 });

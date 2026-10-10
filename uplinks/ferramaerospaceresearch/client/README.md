@@ -3,7 +3,7 @@
 
 # Aerodynamics
 
-Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and drag.
+Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.
 
 | | |
 | --- | --- |
@@ -23,7 +23,7 @@ Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and 
 
 ### Aerodynamics
 
-Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.
+Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Ferram Aerospace Research computes them. Shows that FAR is unavailable instead of zeros when it is not installed.
 
 | | |
 | --- | --- |

@@ -3,7 +3,7 @@
 
 # Kerbcast
 
-Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar. Aim and zoom ride the Uplink; the video stays on kerbcast's own WebRTC path.
+Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.
 
 | | |
 | --- | --- |
@@ -35,7 +35,7 @@ Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar.
 
 ### Camera Feed
 
-Live camera streams from in-flight Hullcam VDS parts, with an in-widget camera picker and Next/Previous switching.
+A live view from a camera on the active craft. Pick which camera to watch, step to the next or previous one, and aim and zoom the ones that can.
 
 | | |
 | --- | --- |

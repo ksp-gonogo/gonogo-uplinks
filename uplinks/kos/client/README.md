@@ -59,7 +59,7 @@ Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the 
 
 ### kOS Terminal
 
-Interactive or read-only terminal for a kOS CPU, streamed in-process over the Uplink (no proxy).
+The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.
 
 | | |
 | --- | --- |

@@ -18,6 +18,6 @@ export const KERBCAST = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "Kerbcast",
   description:
-    "Live in-flight camera views from Hullcam VDS parts, fed by the kerbcast sidecar. " +
-    "Aim and zoom ride the Uplink; the video stays on kerbcast's own WebRTC path.",
+    "Live in-flight camera views from Hullcam VDS parts, with aim and zoom " +
+    "controls, streamed by kerbcast.",
 });

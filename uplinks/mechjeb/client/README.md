@@ -31,7 +31,7 @@ Flies the vessel from the console: engage MechJeb's ascent autopilot, execute th
 
 ### MechJeb
 
-Remote MechJeb autopilot control (engage ascent, execute next node, land at target) dispatched over the delayed-command path with per-command in-flight state.
+Engage MechJeb's ascent autopilot, execute the next node, or land at the target. Shows the one-way light time each command costs and which commands are still in flight.
 
 | | |
 | --- | --- |

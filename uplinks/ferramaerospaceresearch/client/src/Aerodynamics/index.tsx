@@ -203,7 +203,7 @@ registerComponent<AeroConfig>({
   id: "aerodynamics",
   name: "Aerodynamics",
   description:
-    "Angle of attack, sideslip, stall, lift and drag: the aerodynamic state a full-fidelity aerodynamics model computes.",
+    "Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Ferram Aerospace Research computes them. Shows that FAR is unavailable instead of zeros when it is not installed.",
   tags: ["flight", "ro"],
   defaultSize: { w: 4, h: 7 },
   minSize: { w: 4, h: 5 },

@@ -1519,7 +1519,7 @@ registerComponent<KosTerminalConfig>({
   id: "kos-terminal",
   name: "kOS Terminal",
   description:
-    "Interactive or read-only terminal for a kOS CPU, streamed in-process over the Uplink (no proxy).",
+    "The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.",
   tags: ["kos", "control", "telemetry"],
   defaultSize: { w: 18, h: 15 },
   minSize: { w: 8, h: 6 },

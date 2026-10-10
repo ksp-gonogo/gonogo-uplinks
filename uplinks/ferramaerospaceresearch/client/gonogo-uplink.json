@@ -1,7 +1,7 @@
 {
   "id": "aero",
   "name": "Aerodynamics",
-  "description": "Reports FAR's own aerodynamic state: angle of attack, sideslip, stall, lift and drag.",
+  "description": "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "version": "0.0.1",

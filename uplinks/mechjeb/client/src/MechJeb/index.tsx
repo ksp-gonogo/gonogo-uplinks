@@ -351,7 +351,7 @@ registerComponent<MechJebConfig>({
   id: "mechjeb",
   name: "MechJeb",
   description:
-    "Remote MechJeb autopilot control (engage ascent, execute next node, land at target) dispatched over the delayed-command path with per-command in-flight state.",
+    "Engage MechJeb's ascent autopilot, execute the next node, or land at the target. Shows the one-way light time each command costs and which commands are still in flight.",
   tags: ["control"],
   defaultSize: { w: 5, h: 7 },
   minSize: { w: 3, h: 5 },
