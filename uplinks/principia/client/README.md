@@ -3,7 +3,7 @@
 
 # Principia
 
-Publishes Principia's n-body state: how far each trajectory holds, the flight plan and its burns, the reference frame they are expressed in, and the integrator settings.
+Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.
 
 | | |
 | --- | --- |

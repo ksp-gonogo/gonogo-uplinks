@@ -49,7 +49,7 @@
     {
       "id": "space-weather",
       "name": "Space Weather",
-      "description": "Sun vantage plus vessel exposure: a per-star activity diagram for every star this vessel sees and a CME tracker (departure, transit progress, impact ETA, and the named target, the body below or the vessel itself out in solar orbit), then the craft's own habitat dose rate, belt/magnetopause position rings and shielding.",
+      "description": "Solar activity and radiation: each star's activity, coronal mass ejections with departure, transit progress, impact ETA and what they will hit, and the craft's own habitat dose rate, belt and magnetopause position and shielding.",
       "tags": [
         "telemetry",
         "kerbalism"

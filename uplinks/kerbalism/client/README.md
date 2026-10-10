@@ -83,7 +83,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 
 ### Space Weather
 
-Sun vantage plus vessel exposure: a per-star activity diagram for every star this vessel sees and a CME tracker (departure, transit progress, impact ETA, and the named target, the body below or the vessel itself out in solar orbit), then the craft's own habitat dose rate, belt/magnetopause position rings and shielding.
+Solar activity and radiation: each star's activity, coronal mass ejections with departure, transit progress, impact ETA and what they will hit, and the craft's own habitat dose rate, belt and magnetopause position and shielding.
 
 | | |
 | --- | --- |

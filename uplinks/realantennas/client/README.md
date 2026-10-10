@@ -3,7 +3,7 @@
 
 # RealAntennas
 
-Elects RealAntennas as the comms backend when it is installed, so the comms readouts carry RF link geometry, data rate and a re-derived link margin.
+Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.
 
 | | |
 | --- | --- |
