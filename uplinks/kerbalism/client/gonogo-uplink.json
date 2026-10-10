@@ -4,7 +4,7 @@
   "description": "Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.1",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "contractMajor": 36,

@@ -4,7 +4,7 @@
   "description": "TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.1",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "contractMajor": 36,
