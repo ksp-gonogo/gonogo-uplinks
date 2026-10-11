@@ -74,7 +74,7 @@ describe("Kerbalism data transfer on the delay rail", () => {
     expect(rail[0].ribbons[0].id).toBe(`kerbalism.transfer.${SUBJECT_ID}`);
     expect(rail[0].ribbons[0].tags).toEqual({
       direction: "telemetry",
-      continuity: "continuous",
+      kind: "continuous",
       delivery: "fire-and-forget",
     });
   });

@@ -224,6 +224,7 @@ namespace GonogoRp1Uplink
                 RequirementsText = EmptyAsAbsent(ReadString(program, "requirementsPrettyText")),
                 ObjectivesText = EmptyAsAbsent(ReadString(program, "objectivesPrettyText")),
                 ConfidenceCostBySpeed = ReadConfidenceCosts(program),
+                SpeedLabelBySpeed = SpeedLabels(),
                 ProgramsToDisableOnAccept = NameList(
                     Rp1Types.Member(program, "programsToDisableOnAccept")),
                 IsActive = acceptedState == Rp1ProgramStates.Active,
@@ -302,6 +303,51 @@ namespace GonogoRp1Uplink
                 });
             }
             return overlays;
+        }
+
+        private Dictionary<string, string>? _speedLabels;
+
+        /// <summary>
+        /// The text of RP-1's speed buttons, which it looks up by position
+        /// (<c>#rp0_Admin_Program_Speed0</c> upward) in speed order. A tag the
+        /// Localizer cannot resolve leaves that speed unlabelled rather than
+        /// carrying the raw tag.
+        /// </summary>
+        private Dictionary<string, string> SpeedLabels()
+        {
+            if (_speedLabels != null)
+            {
+                return _speedLabels;
+            }
+            var labels = new Dictionary<string, string>(StringComparer.Ordinal);
+            try
+            {
+                var localizer = Rp1Types.Find("KSP.Localization.Localizer");
+                var format = localizer == null ? null : Rp1Types.StaticMethod(localizer, "Format", 1);
+                if (format != null)
+                {
+                    for (var i = 0; i < Rp1ProgramSpeeds.All.Length; i++)
+                    {
+                        var tag = "#rp0_Admin_Program_Speed" + i;
+                        var text = format.Invoke(null, new object[] { tag }) as string;
+                        if (!string.IsNullOrEmpty(text) && text![0] != '#')
+                        {
+                            labels[Rp1ProgramSpeeds.All[i]] = text;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // fail-soft: unlabelled speeds read by their enum name
+            }
+            // Cached only once the Localizer has answered, because before the
+            // language loads it answers nothing and that must not stick.
+            if (labels.Count == Rp1ProgramSpeeds.All.Length)
+            {
+                _speedLabels = labels;
+            }
+            return labels;
         }
 
         /// <summary>

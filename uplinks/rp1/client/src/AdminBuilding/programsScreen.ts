@@ -53,7 +53,7 @@ export const RP1_ADMIN_SCREENS = Object.freeze([
 
 RP1.registerContribution({
   id: "programs-screen",
-  contributes: "strategies.screens",
+  contributes: "admin-building.screens",
   /*
    * The domain gate rather than a dep on the topic: the aggregation subscribes
    * `rp1.available` itself for anything naming `requires`, so the screen appears

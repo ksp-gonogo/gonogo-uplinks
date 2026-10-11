@@ -51,12 +51,13 @@ namespace GonogoTestFlightUplink
                     new()
                     {
                         Topic = AvailableTopic,
+                        Kind = SampleKind.Discrete,
                         Delivery = Delivery.LossyLatest,
                         Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                         Delay = DelayRole.TrueNow,
                     },
-                    Delayed(ReliabilityTopic),
-                    Delayed(ReliabilityPartsTopic),
+                    Delayed(ReliabilityTopic, SampleKind.Discrete),
+                    Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
                 },
                 // Presence-gated at the manifest: on an install without TestFlight
                 // the command is not merely unhandled, it does not exist.
@@ -70,8 +71,9 @@ namespace GonogoTestFlightUplink
             };
         }
 
-        private static ChannelDeclaration Delayed(string topic) => new()
+        private static ChannelDeclaration Delayed(string topic, SampleKind kind) => new()
         {
+            Kind = kind,
             Topic = topic,
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

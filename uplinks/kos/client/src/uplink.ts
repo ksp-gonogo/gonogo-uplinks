@@ -5,6 +5,7 @@
 // relying on a per-widget field someone has to remember to set.
 import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { KOS_ERROR_CODES } from "./__generated__/error-codes.js";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 /**
  * This client's one version line, and it must equal `package.json`'s. The
@@ -25,6 +26,7 @@ export const KOS = defineUplinkClient({
   description:
     "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no " +
     "proxy to run, and dispatches kerboscripts to a chosen CPU.",
+  tags: GENERATED_CONTRACT_TAGS,
 });
 
 registerErrorCodes(KOS_ERROR_CODES);

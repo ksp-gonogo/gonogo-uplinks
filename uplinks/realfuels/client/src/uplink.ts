@@ -3,6 +3,7 @@
 // picker's mod search tags derive "realfuels" automatically, and the
 // render/docs tool knows which client the bundle's registrations belong to.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // This declaration is the source of the client's version, not the manifest: `gonogo-uplink.json` is generated FROM it, so it cannot supply the number that goes into it. Keep it equal to `package.json`'s.
 const UPLINK_VERSION = "0.0.1";
@@ -16,4 +17,5 @@ export const REALFUELS = defineUplinkClient({
   description:
     "Reports per-engine RealFuels limits: ignitions remaining, ullage " +
     "stability and pressure feed, plus cryogenic boiloff.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

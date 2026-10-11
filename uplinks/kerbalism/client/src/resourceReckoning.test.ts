@@ -162,7 +162,7 @@ describe("when the model's own arithmetic leaves the range", () => {
     // Food is the only level moving and the model has nothing left to say.
     expect(1100).toBeLessThan(RESOURCE_RATE_HORIZON_SECONDS);
 
-    expect(readAt(900 + 1100).reckoning.status).toBe("none");
+    expect(readAt(900 + 1100).reckoning.status).toBe("declined");
   });
 
   it("withdraws a filling level at the moment it would reach capacity", () => {
@@ -171,8 +171,8 @@ describe("when the model's own arithmetic leaves the range", () => {
     // the horizon. The old model reported a full tank for the other 900 s.
     const filling = lifeSupport({ rates: { Food: value("units/s", 1) } });
 
-    expect(readAt(900 + 400, filling).reckoning.status).toBe("none");
-    expect(readAt(900 + 1199, filling).reckoning.status).toBe("none");
+    expect(readAt(900 + 400, filling).reckoning.status).toBe("declined");
+    expect(readAt(900 + 1199, filling).reckoning.status).toBe("declined");
   });
 
   it("leaves a crossed level where it was last observed and carries on with the rest", () => {
@@ -200,7 +200,7 @@ describe("when the model's own arithmetic leaves the range", () => {
 describe("when the model refuses", () => {
   it("offers nothing when Kerbalism is not on the stream at all", () => {
     // The STORE's decline, raised for an unresolved dep before the model runs.
-    expect(readAt(1100, NO_LIFESUPPORT).reckoning.status).toBe("none");
+    expect(readAt(1100, NO_LIFESUPPORT).reckoning.status).toBe("declined");
   });
 
   it("declines when Kerbalism publishes no last-advanced stamp", () => {
@@ -208,7 +208,7 @@ describe("when the model refuses", () => {
     // substituting a capture time: with no anchor there is no interval.
     const unstamped = lifeSupport({ asOfKerbalismUt: undefined });
 
-    expect(readAt(1100, unstamped).reckoning.status).toBe("none");
+    expect(readAt(1100, unstamped).reckoning.status).toBe("declined");
   });
 
   it("declines at the view time the accumulators were advanced at", () => {
@@ -225,7 +225,7 @@ describe("when the model refuses", () => {
     const outside = 900 + RESOURCE_RATE_HORIZON_SECONDS + 1;
 
     expect(readAt(inside, slow).reckoning.status).toBe("available");
-    expect(readAt(outside, slow).reckoning.status).toBe("none");
+    expect(readAt(outside, slow).reckoning.status).toBe("declined");
   });
 
   it("declines when no resource on the vessel has a rate to integrate", () => {
@@ -233,18 +233,16 @@ describe("when the model refuses", () => {
       rates: { Nitrogen: value("units/s", -1) },
     });
 
-    expect(readAt(1100, irrelevant).reckoning.status).toBe("none");
+    expect(readAt(1100, irrelevant).reckoning.status).toBe("declined");
   });
 });
 
 /**
- * The refusals, read back as REASONS rather than as an absence.
+ * The refusals, read back as REASONS rather than as a status.
  *
- * `vessel.resources` carries no `[SitrepReckonable]` mark, so `Reading` has no
- * `declined` field and every case above can only show `reckoning: { status: "none" }`. Four
- * distinct refusals collapse into one observable answer, and calling the model
- * directly is the only way to tell them apart. If the field is ever marked,
- * these become assertions on `ReckonableReading.declined` and this block goes.
+ * A refused read shows `declined` and the reason the model gave, which the
+ * store forwards. Four distinct refusals reduce to that one status, so the
+ * model is called directly to tell them apart.
  */
 describe("the reason a refusal gives", () => {
   const declineOf = (ls: LifeSupport | null, viewUt: number) => {
@@ -394,7 +392,7 @@ describe("under a one-way light time", () => {
   });
 
   it("offers nothing for a current reading when there is no light time to cross", () => {
-    expect(readDelayed(RECEIVED_UT, 0).reckoning.status).toBe("none");
+    expect(readDelayed(RECEIVED_UT, 0).reckoning.status).toBe("declined");
   });
 });
 

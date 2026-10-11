@@ -152,6 +152,7 @@ namespace GonogoPrincipiaUplink
                 new ChannelDeclaration
                 {
                     Topic = SettingsTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.TrueNow,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -162,6 +163,7 @@ namespace GonogoPrincipiaUplink
                 new ChannelDeclaration
                 {
                     Topic = PlanTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.Delayed,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -172,6 +174,7 @@ namespace GonogoPrincipiaUplink
                 new ChannelDeclaration
                 {
                     Topic = AnalysisTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.Delayed,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

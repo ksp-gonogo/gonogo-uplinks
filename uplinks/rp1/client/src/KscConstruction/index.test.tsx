@@ -253,6 +253,43 @@ describe("KscConstruction", () => {
     expect(visibleText()).not.toContain("RP-1 has not costed this yet");
   });
 
+  it("calls a construction the career cannot pay for stalled, and says it is the funds", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({
+        name: "Runway",
+        workRate: 1,
+        rate: 0,
+        affordableFraction: 0,
+        timeLeftSeconds: null,
+        stalled: true,
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("STALLED")).toBeInTheDocument();
+    });
+    expect(visibleText()).toContain("no funds to draw");
+  });
+
+  it("marks a construction slowed to what the career can pay", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({ workRate: 1, affordableFraction: 0.25 }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("SLOWED BY FUNDS")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("STALLED")).not.toBeInTheDocument();
+  });
+
   it("flags a construction being rushed, which costs more per day", async () => {
     const { fixture } = mount();
     fixture.emit("rp1.available", true);

@@ -97,6 +97,7 @@ namespace Gonogo.KosUplink
                 KosChannels.ComputePrefix,
                 new ChannelDeclaration
                 {
+                    Kind = SampleKind.Event,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
@@ -149,6 +150,7 @@ namespace Gonogo.KosUplink
                 KosChannels.TerminalPrefix,
                 new ChannelDeclaration
                 {
+                    Kind = SampleKind.Event,
                     // Reliable-ordered: terminal output is a discrete event
                     // stream: a dropped frame corrupts the buffer.
                     Delivery = Delivery.ReliableOrdered,
@@ -228,6 +230,7 @@ namespace Gonogo.KosUplink
                 KosChannels.RunPrefix,
                 new ChannelDeclaration
                 {
+                    Kind = SampleKind.Event,
                     Delivery = Delivery.ReliableOrdered,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,

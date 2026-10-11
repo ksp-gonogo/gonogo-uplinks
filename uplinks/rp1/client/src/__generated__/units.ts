@@ -302,6 +302,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     name: "text",
   },
   "Rp1ConstructionEntry": {
+    affordableFraction: "ratio",
     cost: "funds",
     currentLevel: "count",
     engineersToReadd: "count",
@@ -621,6 +622,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     confidenceCost: "confidence",
     durationSeconds: "s",
     fundingPerDay: "f/day",
+    label: "text",
     speed: "enum",
   },
   "Rp1RequiredTechEntry": {
@@ -880,6 +882,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     refreshedAt: "ut",
   },
   "rp1.constructions": {
+    affordableFraction: "ratio",
     cost: "funds",
     currentLevel: "count",
     engineersToReadd: "count",
@@ -1464,3 +1467,28 @@ export const GENERATED_ENUM_MEMBERS: Readonly<Record<string, Readonly<Record<num
     2: "SPH",
   },
 };
+
+/**
+ * The value tags this contract declares, registered by its client under its
+ * own id: `topics` holds each value's declared sample kind and entry key by
+ * Topic and path (`*` crosses a list or dictionary), and `reckonable` every
+ * value a declared model carries forward, with the inputs it needs.
+ */
+export const GENERATED_CONTRACT_TAGS = {
+  topics: {
+    "rp1.avionics": {
+      "vesselMassTons": { kind: "continuous" },
+    },
+    "rp1.budget": {
+      "reputation": { kind: "continuous" },
+    },
+    "rp1.crew": {
+      "*.trainingFractionComplete": { kind: "continuous" },
+    },
+    "rp1.fundTarget": {
+      "timeLeft": { kind: "continuous" },
+    },
+  },
+  reckonable: [
+  ],
+} as const;

@@ -140,6 +140,7 @@ public sealed class PrincipiaOrbitAnalysis
 
     /// <summary>How far along the NEXT analysis is, from zero to one. Not the age
     /// of this one.</summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Ratio)]
     public double? ProgressOfNextAnalysis { get; set; }
 

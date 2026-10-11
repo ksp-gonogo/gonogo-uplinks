@@ -252,6 +252,13 @@ namespace GonogoRp1Uplink
             {
                 return Rp1LeaderVerdict.Refuse("RP-1 has disabled this leader in its configuration");
             }
+            if (Rp1Types.ReadBool(config, "CannotActivative") == true)
+            {
+                // The padlock cards RP-1's Administration screen draws for leaders
+                // not yet earned. Their requirements pass, and CanActivate
+                // refuses them without a reason of its own.
+                return Rp1LeaderVerdict.Refuse("this card is RP-1's locked placeholder for a leader not yet earned");
+            }
 
             object? unlocked;
             object? available;

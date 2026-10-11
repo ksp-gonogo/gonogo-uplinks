@@ -4,6 +4,7 @@
 // search tags (effectiveSearchTags) derive "scansat" automatically instead
 // of relying on a per-widget field someone has to remember to set.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 /**
  * This client's one version line, and it must equal `package.json`'s. The
@@ -22,4 +23,5 @@ export const SCANSAT = defineUplinkClient({
     "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey " +
     "data onto the mission-control dashboard: what has been scanned, by " +
     "which craft, and where the anomalies are.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

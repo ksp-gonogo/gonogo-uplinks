@@ -73,7 +73,11 @@ namespace GonogoRp1Uplink
                     // measures against a complex; the total is not on this wire
                     // because nothing compares against it.
                     Mass = file.MassExcludingClamps ?? file.Mass,
-                    Cost = file.Cost,
+                    // Null by design: the catalogue's figure is stock's price for
+                    // the file, and RP-1 charges its own, which differs. That
+                    // figure comes off the loaded parts of the craft and is
+                    // settled by rp1.build.start, so no price is previewed.
+                    Cost = null,
                     MissingParts = file.MissingParts,
                     LockedParts = file.LockedParts,
                     UnpurchasedParts = file.UnpurchasedParts,

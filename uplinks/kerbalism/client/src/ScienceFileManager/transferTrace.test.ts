@@ -11,7 +11,7 @@ describe("KERBALISM_TRANSFER_TAGS", () => {
   it("is continuous fire-and-forget telemetry, because nothing acknowledges a drained file", () => {
     expect(KERBALISM_TRANSFER_TAGS).toEqual({
       direction: "telemetry",
-      continuity: "continuous",
+      kind: "continuous",
       delivery: "fire-and-forget",
     });
   });

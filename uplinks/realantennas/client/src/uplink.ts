@@ -6,6 +6,7 @@
 // the raw `registerAugment` from core; only the contribution needs the SDK-typed
 // handle.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // This declaration is the source of the client's version, not the manifest: `gonogo-uplink.json` is generated FROM it, so it cannot supply the number that goes into it. Keep it equal to `package.json`'s.
 const UPLINK_VERSION = "0.0.1";
@@ -19,4 +20,5 @@ export const REALANTENNAS = defineUplinkClient({
   description:
     "Shows RealAntennas' radio links in the comms readouts when it is installed: " +
     "band, data rate and link margin.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

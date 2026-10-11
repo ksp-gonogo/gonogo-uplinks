@@ -4,6 +4,7 @@
 // remember at each registration.
 import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { PRINCIPIA_ERROR_CODES } from "./__generated__/error-codes.js";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // TODO(version): build-inject this from gonogo-uplink.json.
 const UPLINK_VERSION = "0.0.1";
@@ -16,6 +17,7 @@ export const PRINCIPIA = defineUplinkClient({
     "Principia's n-body flight on the dashboard: how far each trajectory holds, the " +
     "flight plan and its burns, the reference frame they are quoted in, and " +
     "the integrator settings.",
+  tags: GENERATED_CONTRACT_TAGS,
 });
 
 registerErrorCodes(PRINCIPIA_ERROR_CODES);

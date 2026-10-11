@@ -4,6 +4,13 @@ using Sitrep.Contract;
 using Reinforced.Typings.Attributes;
 #endif
 
+[assembly: SitrepReckonableOn(
+    "vessel.resources",
+    "resources.*.current",
+    ReckoningBases.RateIntegration,
+    "@kerbalism.lifesupport#rates",
+    "@kerbalism.lifesupport#asOfKerbalismUt")]
+
 namespace GonogoKerbalismUplink;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -701,9 +708,11 @@ public class KerbalismLifeSupport
 #endif
 public class KerbalismCrewRule
 {
+    [SitrepEntryKey]
     [SitrepUnit(Units.Text)]
     public string? Name { get; set; }
     /// <summary>Current accumulator value ("problem") from KerbalData.rules.</summary>
+    [SitrepReckonable(ReckoningBases.RateIntegration, "fatalThreshold")]
     [SitrepUnit(Units.ResourceUnits)]
     public double? Problem { get; set; }
     /// <summary>
@@ -732,6 +741,7 @@ public class KerbalismCrewRule
 [SitrepTopic("kerbalism.crew", isArray: true)]
 public class KerbalismCrewEntry
 {
+    [SitrepEntryKey]
     [SitrepUnit(Units.Text)]
     public string? Name { get; set; }
     [SitrepUnit(Units.Text)]

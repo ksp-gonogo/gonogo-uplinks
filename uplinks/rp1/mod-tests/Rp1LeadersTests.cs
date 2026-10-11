@@ -122,6 +122,18 @@ namespace GonogoRp1Uplink.Tests
         }
 
         [Fact]
+        public void Appoint_refuses_a_locked_placeholder_card_and_the_roster_does_not_offer_it()
+        {
+            Roster(Leader("leaderLockedAdmin", c => c.CannotActivative = true));
+
+            Assert.Contains("placeholder", Appoint("leaderLockedAdmin").Detail);
+            Assert.Empty(StrategyCallLog.Calls);
+            var card = Assert.Single(new Rp1LeadersReflection().Read(5000d)!.Leaders);
+            Assert.False(card.CanAppoint);
+            Assert.Contains("placeholder", card.AppointBlockedReason);
+        }
+
+        [Fact]
         public void Appoint_goes_ahead_once_the_cooldown_has_run()
         {
             Roster(Leader("leaderKorolev"));

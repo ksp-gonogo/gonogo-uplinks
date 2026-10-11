@@ -122,6 +122,7 @@ public sealed class RealFuelsEngineEntry
     /// 0.15 unstable, below that very unstable. Null when the engine models no
     /// ullage or the simulation has not run.
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Ratio)]
     public double? UllageStability { get; set; }
 
@@ -132,6 +133,7 @@ public sealed class RealFuelsEngineEntry
     /// flameout. Derived from <see cref="UllageStability"/> by RealFuels' own
     /// stability exponent, so it is not a restatement of it.
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Ratio)]
     public double? IgnitionProbability { get; set; }
 

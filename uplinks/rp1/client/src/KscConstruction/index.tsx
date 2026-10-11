@@ -263,6 +263,7 @@ function TierStep({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
 function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
   if (row.timeLeftSeconds !== undefined && row.timeLeftSeconds !== null) {
     const throttle = magnitudeOf(row.workRate);
+    const funded = magnitudeOf(row.affordableFraction);
     return (
       <>
         <Countdown value={row.timeLeftSeconds} /> until it is finished
@@ -278,13 +279,23 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
             <Unit value={row.workRate} />
           </>
         )}
+        {funded !== null && funded > 0 && funded < 1 && (
+          <>
+            {" "}
+            <Badge tone="caution">SLOWED BY FUNDS</Badge> meeting{" "}
+            <Unit value={row.affordableFraction} /> of its draw
+          </>
+        )}
       </>
     );
   }
   if (row.stalled === true) {
     return (
       <>
-        <Badge tone="caution">STALLED</Badge> no end date while work is stopped
+        <Badge tone="caution">STALLED</Badge>{" "}
+        {magnitudeOf(row.affordableFraction) === 0
+          ? "no funds to draw, so no end date until the career can pay"
+          : "no end date while work is stopped"}
       </>
     );
   }

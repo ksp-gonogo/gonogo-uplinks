@@ -57,6 +57,7 @@ namespace Gonogo.KerbalismUplink
             _host = host;
             _source = host.RegisterDynamicNamespace(KerbalismFleetScope.Prefix, new ChannelDeclaration
             {
+                Kind = SampleKind.Continuous,
                 Delivery = Delivery.LossyLatest,
                 Delay = DelayRole.Delayed,
                 Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

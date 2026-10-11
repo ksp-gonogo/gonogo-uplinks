@@ -1627,22 +1627,35 @@ export interface Rp1ConstructionEntry
 	*/
 	workRate?: Value<"ratio"> | null;
 	/**
-	* Effective rate: the costed base rate times the throttle. Null until RP-1 has
-	* costed the project, which it does when the construction queue changes or the
-	* career's own rate modifiers move, so a freshly loaded save can legitimately
-	* answer nothing here.
+	* Effective rate: the costed base rate times the throttle times
+	* `Rp1ConstructionEntry.affordableFraction`, which is what RP-1 does to a
+	* construction the career cannot pay for. Null until RP-1 has costed the
+	* project, which it does when the construction queue changes or the career's
+	* own rate modifiers move, so a freshly loaded save can legitimately answer
+	* nothing here.
 	*/
 	rate?: Value<"bp/s"> | null;
 	/**
-	* Seconds to completion at the current rate. No efficiency ramp, unlike a
-	* vehicle: a construction's rate does not improve with the crew, because it
-	* has no crew.
+	* The share of one day's draw at the current throttle that the career's funds
+	* meet, 0 to 1, by the same arithmetic RP-1 throttles a construction by (funds
+	* over the draw, floored at 0 and capped at 1). Below 1 the construction is
+	* slowed to that share and `Rp1ConstructionEntry.rate` and
+	* `Rp1ConstructionEntry.timeLeftSeconds` already carry it; at 0 nothing is
+	* drawn and nothing is built. Null when the draw or the balance could not be
+	* read, or the project is not costed.
+	*/
+	affordableFraction?: Value<"ratio"> | null;
+	/**
+	* Seconds to completion at the current `Rp1ConstructionEntry.rate`. No
+	* efficiency ramp, unlike a vehicle: a construction's rate does not improve
+	* with the crew, because it has no crew. Null at a zero rate.
 	*/
 	timeLeftSeconds?: Value<"s"> | null;
 	/**
-	* The rate resolved and is zero: costed and going nowhere, which under RP-1
-	* means the throttle is at zero. A different fact from a null
-	* `Rp1ConstructionEntry.rate`.
+	* The effective `Rp1ConstructionEntry.rate` resolved and is zero: costed and
+	* going nowhere, because the throttle is at zero or the career has no funds to
+	* draw. `Rp1ConstructionEntry.affordableFraction` tells the two apart. A
+	* different fact from a null `Rp1ConstructionEntry.rate`.
 	*/
 	stalled?: boolean | null;
 	/** The whole price of the work, quoted when it was queued. */
@@ -2280,6 +2293,13 @@ export interface Rp1ProgramSpeedOption
 	/** RP-1's `Program.Speed` name: "Slow", "Normal" or "Fast". */
 	speed?: string | null;
 	/**
+	* What RP-1's Administration building calls this speed, which is not its
+	* `Rp1ProgramSpeedOption.speed` name: its buttons are labelled by position, so
+	* the enum's "Slow" reads as RP-1's first button, not as the word. Null when
+	* the game's localisation had not loaded.
+	*/
+	label?: string | null;
+	/**
 	* Confidence this speed costs, straight out of RP-1's per-speed table. Zero is
 	* a real price and the shipped catalogue charges it for `Slow`; absent means
 	* the table could not be read.
@@ -2592,14 +2612,14 @@ export interface Rp1BuildableCraftEntry
 	*/
 	mass?: Value<"t"> | null;
 	/**
-	* Stock's price for the craft, in funds.
+	* Always null: no price is previewed.
 	*
-	* **Not what the career will be charged.** RP-1 prices a vessel purchase
-	* through its own currency query, which leaders and strategies move, and that
-	* query fires a game-wide event: running it once per craft per tick would
-	* broadcast to every mod listening, so it is asked once, at the press, by the
-	* command. This is the list price a widget can show beside a balance; the
-	* charge is settled when the operator commits.
+	* RP-1 charges what its own vessel measurement of the loaded craft comes to,
+	* with tooling and its part pricing in it, then runs that through a currency
+	* query leaders and strategies move. None of that is knowable from the craft
+	* file, and stock's price for the file differs from the charge, so a figure
+	* beside the build control would be wrong. The charge is settled by
+	* `rp1.build.start` and reads back on `rp1.buildQueue[].cost`.
 	*/
 	cost?: Value<"funds"> | null;
 	/**

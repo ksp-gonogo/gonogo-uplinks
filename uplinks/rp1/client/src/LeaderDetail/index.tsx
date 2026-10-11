@@ -55,7 +55,7 @@ type CareerStrategyEntry = NonNullable<
  * One RP-1 leader, and what appointing or dismissing it costs.
  *
  * <para>The BODY of the Administration Building's Leaders screen, contributed
- * as an augment on `strategies.screen-body`. The host lists the leader cards
+ * as an augment on `admin-building.screen-body`. The host lists the leader cards
  * above without verbs; this carries them, each with its cost beside it in the
  * currency it costs. Appointing charges nothing on RP-1's shipped leaders, and
  * says so. Dismissing costs reputation, a share of what the career holds now,
@@ -484,7 +484,7 @@ function DismissControl({
 
 registerAugment({
   id: "rp1-leader-detail",
-  augments: "strategies.screen-body",
+  augments: "admin-building.screen-body",
   component: LeaderDetail,
   channels: [
     "rp1.available",

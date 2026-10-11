@@ -100,7 +100,7 @@ export function BuildableSection() {
 }
 
 /**
- * One saved craft: what it is, what stock says it costs, and where it could be
+ * One saved craft: what it is, and where it could be
  * built.
  *
  * <para>The card is toned by whether ANY complex would take it, because that is
@@ -125,13 +125,7 @@ function CraftCard({
     <ProjectCard
       detail={
         <>
-          {editorOf(craft)} ·
-          {/* `~` rather than "costs about": the tilde is the conventional mark
-              for an approximation and costs three characters where the phrase
-              cost fourteen, on a card that is read at a glance. It is stock's
-              price, which is what the wire can state before the press; RP-1
-              settles the charge when the operator commits. */}{" "}
-          ~<Unit value={craft.cost} />
+          {editorOf(craft)}
         </>
       }
       name={name}
@@ -171,7 +165,7 @@ function CraftCard({
                 aria-label={`Start building ${name} at ${complexLabel(complex)}`}
                 commandLabel={`Start building ${name} at ${complexLabel(complex)}`}
                 confirmAriaLabel={`Confirm starting ${name} at ${complexLabel(complex)}`}
-                confirmLabel={<SpendWording cost={craft.cost} />}
+                confirmLabel="Start build"
                 handle={handle}
                 key={complex.lcId ?? complexLabel(complex)}
                 /* One button per complex, always named, even when there is
@@ -273,26 +267,6 @@ function partRefusal(craft: Rp1BuildableCraftEntry): string | null {
     return `researched but not bought, unlock at R&D first: ${unpurchased.join(", ")}`;
   }
   return null;
-}
-
-/**
- * What a build will cost, on the confirm wording rather than the resting one.
- * An operator scanning a list wants the names; an operator about to spend wants
- * the number.
- *
- * <para>"about", because the wire carries stock's price and RP-1 settles the
- * charge at the press: leaders and strategies move what a vessel purchase
- * costs, and quoting the unmodified figure as final would send an operator
- * looking for funds they already have.</para>
- */
-function SpendWording({
-  cost,
-}: Readonly<{ cost: Rp1BuildableCraftEntry["cost"] }>) {
-  return (
-    <>
-      Spend ~<Unit value={cost} />
-    </>
-  );
 }
 
 /**

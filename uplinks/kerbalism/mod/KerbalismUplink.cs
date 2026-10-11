@@ -122,14 +122,14 @@ namespace Gonogo.KerbalismUplink
                 },
                 Channels = new List<ChannelDeclaration>
                 {
-                    TrueNow(AvailableTopic),
-                    TrueNow(FeaturesTopic),
-                    Static(ProfileTopic),
-                    Delayed(SpaceWeatherTopic),
-                    Delayed(LifeSupportTopic),
-                    Delayed(CrewTopic),
-                    Delayed(ReliabilityTopic),
-                    Delayed(ReliabilityPartsTopic),
+                    TrueNow(AvailableTopic, SampleKind.Discrete),
+                    TrueNow(FeaturesTopic, SampleKind.Discrete),
+                    Static(ProfileTopic, SampleKind.Discrete),
+                    Delayed(SpaceWeatherTopic, SampleKind.Continuous),
+                    Delayed(LifeSupportTopic, SampleKind.Continuous),
+                    Delayed(CrewTopic, SampleKind.Continuous),
+                    Delayed(ReliabilityTopic, SampleKind.Discrete),
+                    Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
                 },
                 // Presence-gated at construction, unlike the channels above:
                 // _k.IsAvailable is a cheap, session-stable reflection probe
@@ -169,9 +169,10 @@ namespace Gonogo.KerbalismUplink
             Subject = subject,
         };
 
-        private static ChannelDeclaration TrueNow(string topic) => new()
+        private static ChannelDeclaration TrueNow(string topic, SampleKind kind) => new()
         {
             Topic = topic,
+            Kind = kind,
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
             Delay = DelayRole.TrueNow,
@@ -183,9 +184,10 @@ namespace Gonogo.KerbalismUplink
         /// or rejoining subscriber still gets it, and sampled at most once a
         /// minute so a static payload costs nothing to carry.
         /// </summary>
-        private static ChannelDeclaration Static(string topic) => new()
+        private static ChannelDeclaration Static(string topic, SampleKind kind) => new()
         {
             Topic = topic,
+            Kind = kind,
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(
                 keyframeIntervalUt: 300,
@@ -194,9 +196,10 @@ namespace Gonogo.KerbalismUplink
             Delay = DelayRole.TrueNow,
         };
 
-        private static ChannelDeclaration Delayed(string topic) => new()
+        private static ChannelDeclaration Delayed(string topic, SampleKind kind) => new()
         {
             Topic = topic,
+            Kind = kind,
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
             Delay = DelayRole.Delayed,

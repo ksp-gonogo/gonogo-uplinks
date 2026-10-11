@@ -2,6 +2,7 @@
 // with, registered so a refused repair reads in TestFlight's own words.
 import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { TESTFLIGHT_ERROR_CODES } from "./__generated__/error-codes.js";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 const UPLINK_VERSION = "0.0.1";
 
@@ -12,6 +13,7 @@ export const TESTFLIGHT = defineUplinkClient({
   description:
     "TestFlight engine reliability on the fleet roster: failed engines, rated " +
     "burn nearly spent and survival odds, with TestFlight's own repair.",
+  tags: GENERATED_CONTRACT_TAGS,
 });
 
 registerErrorCodes(TESTFLIGHT_ERROR_CODES);

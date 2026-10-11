@@ -5,7 +5,7 @@
   "_scene": {
     "widget": "rp1-vehicle-assembly",
     "size": { "w": 8, "h": 20 },
-    "caption": "A career whose centre has a name rather than a site id, with nothing built and three saved craft: Atlas buildable at either complex, Redstone at LC-2 only with LC-1's mass floor spelled out, and Saturn I too heavy for both with each complex's limit named, every button confirming a price against the balance drawn at the top",
+    "caption": "A career whose centre has a name rather than a site id, with nothing built and three saved craft: Atlas buildable at either complex, Redstone at LC-2 only with LC-1's mass floor spelled out, and Saturn I too heavy for both with each complex's limit named, every button confirming against the balance drawn at the top with no price previewed",
     "paints": [
       "ASSEMBLY",
       "289,848f",
@@ -15,7 +15,6 @@
       "Saturn I",
       "Build at LC-1",
       "Build at LC-2",
-      "~",
       "Launch complexes:",
       "Cape Canaveral"
     ]
@@ -112,7 +111,7 @@
             "facility": 1,
             "partCount": 42,
             "mass": 120,
-            "cost": 40000,
+            "cost": null,
             "missingParts": [],
             "lockedParts": [],
             "unpurchasedParts": [],
@@ -141,7 +140,7 @@
             "facility": 1,
             "partCount": 21,
             "mass": 30,
-            "cost": 12400,
+            "cost": null,
             "missingParts": [],
             "lockedParts": [],
             "unpurchasedParts": [],
@@ -172,7 +171,7 @@
             "facility": 1,
             "partCount": 96,
             "mass": 512,
-            "cost": 214000,
+            "cost": null,
             "missingParts": [],
             "lockedParts": [],
             "unpurchasedParts": [],

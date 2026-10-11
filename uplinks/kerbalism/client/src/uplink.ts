@@ -5,6 +5,7 @@
 // it, instead of relying on a per-registration field someone has to remember.
 import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { KERBALISM_ERROR_CODES } from "./__generated__/error-codes.js";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // This declaration is the source of the client's version, not the manifest: `gonogo-uplink.json` is generated FROM it, so it cannot supply the number that goes into it. Keep it equal to `package.json`'s.
 const UPLINK_VERSION = "0.0.1";
@@ -18,6 +19,7 @@ export const KERBALISM = defineUplinkClient({
   description:
     "Kerbalism life support as one ledger: every profile resource as a meter with the " +
     "per-source rates that move it, plus wear, habitat, processes and power.",
+  tags: GENERATED_CONTRACT_TAGS,
 });
 
 registerErrorCodes(KERBALISM_ERROR_CODES);

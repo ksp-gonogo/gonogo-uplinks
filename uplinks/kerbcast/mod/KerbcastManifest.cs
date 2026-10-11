@@ -42,6 +42,7 @@ namespace Gonogo.KerbcastUplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.TrueNow,
@@ -56,6 +57,7 @@ namespace Gonogo.KerbcastUplink
                 new ChannelDeclaration
                 {
                     Topic = CamerasTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,

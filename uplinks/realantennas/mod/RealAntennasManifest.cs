@@ -119,8 +119,9 @@ namespace Gonogo.RealAntennasUplink
         /// A fact about the install rather than about any craft, known on the
         /// ground the moment it is true. Only the presence gate is one.
         /// </summary>
-        private static ChannelDeclaration TrueNow(string topic) => new ChannelDeclaration
+        private static ChannelDeclaration TrueNow(string topic, SampleKind kind) => new ChannelDeclaration
         {
+            Kind = kind,
             Requires = Requirement.None,
             Topic = topic,
             Delivery = Delivery.LossyLatest,
@@ -134,8 +135,9 @@ namespace Gonogo.RealAntennasUplink
         /// and per-hop rates are readings of the far end of the link as much as
         /// the antennas are, so every one of them waits for the light.
         /// </summary>
-        private static ChannelDeclaration Delayed(string topic) => new ChannelDeclaration
+        private static ChannelDeclaration Delayed(string topic, SampleKind kind) => new ChannelDeclaration
         {
+            Kind = kind,
             Requires = Requirement.None,
             Topic = topic,
             Delivery = Delivery.LossyLatest,
@@ -162,14 +164,14 @@ namespace Gonogo.RealAntennasUplink
             },
             Channels = new List<ChannelDeclaration>
             {
-                TrueNow(AvailableTopic),
-                Delayed(LinkQualityTopic),
-                Delayed(DataRateTopic),
-                Delayed(LinkMarginTopic),
-                Delayed(HopRatesTopic),
-                Delayed(AntennasTopic),
-                Delayed(ChainsTopic),
-                Delayed(RetargetingTopic),
+                TrueNow(AvailableTopic, SampleKind.Discrete),
+                Delayed(LinkQualityTopic, SampleKind.Continuous),
+                Delayed(DataRateTopic, SampleKind.Continuous),
+                Delayed(LinkMarginTopic, SampleKind.Continuous),
+                Delayed(HopRatesTopic, SampleKind.Continuous),
+                Delayed(AntennasTopic, SampleKind.Discrete),
+                Delayed(ChainsTopic, SampleKind.Discrete),
+                Delayed(RetargetingTopic, SampleKind.Discrete),
             },
             Commands = new List<CommandDeclaration>
             {

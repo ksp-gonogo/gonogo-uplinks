@@ -271,6 +271,7 @@ namespace Gonogo.KerbalismUplink
             {
                 list.Add(new LabEntry
                 {
+                    PartId = Text(l.PartId),
                     PartName = l.PartName,
                     DataStored = null,
                     DataStorage = null,

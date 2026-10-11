@@ -375,7 +375,7 @@ describe("joining the window to the observation", () => {
 
     expect(
       fixture.store.sampleReading<Crew>("kerbalism.crew").reckoning.status,
-    ).toBe("none");
+    ).toBe("declined");
   });
 
   it("does not read a departed kerbal's history as the newcomer who took their slot", () => {
@@ -421,7 +421,7 @@ describe("when the model refuses", () => {
   it("offers nothing on a flat accumulator, whatever the profile's rate says", () => {
     // The whole point: `degenPerSec` is 0.002 in every fixture here, so a model
     // integrating the DECLARED rate would answer 0.14 for this kerbal.
-    expect(readRun(1060, FLAT).reckoning.status).toBe("none");
+    expect(readRun(1060, FLAT).reckoning.status).toBe("declined");
   });
 
   it("offers nothing from a single sample", () => {
@@ -429,7 +429,7 @@ describe("when the model refuses", () => {
     // raises `insufficient-history` on its behalf below `minSamples`, and
     // `observedSlope` refuses a lone pair anyway. The floor is the cheaper of
     // the two, so the assertion that pins it is on the declaration below.
-    expect(readRun(1060, [CLIMBING[2]]).reckoning.status).toBe("none");
+    expect(readRun(1060, [CLIMBING[2]]).reckoning.status).toBe("declined");
   });
 
   it("offers nothing past the horizon", () => {
@@ -438,7 +438,7 @@ describe("when the model refuses", () => {
 
     // A high threshold, so the clamp is not what withdraws the model instead.
     expect(readRun(inside, CLIMBING, 1e6).reckoning.status).toBe("available");
-    expect(readRun(outside, CLIMBING, 1e6).reckoning.status).toBe("none");
+    expect(readRun(outside, CLIMBING, 1e6).reckoning.status).toBe("declined");
   });
 
   it("declares a window with a floor of two, because one point is not a slope", () => {

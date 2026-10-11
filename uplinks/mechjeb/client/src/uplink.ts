@@ -4,6 +4,7 @@
 // (effectiveSearchTags) derive "mechjeb" automatically instead of relying on
 // a per-widget field someone has to remember to set.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // This declaration is the source of the client's version, not the manifest: `gonogo-uplink.json` is generated FROM it, so it cannot supply the number that goes into it. Keep it equal to `package.json`'s.
 const UPLINK_VERSION = "0.0.1";
@@ -15,4 +16,5 @@ export const MECHJEB = defineUplinkClient({
   description:
     "Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the " +
     "next node, or land at the selected target, over the delayed command path.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

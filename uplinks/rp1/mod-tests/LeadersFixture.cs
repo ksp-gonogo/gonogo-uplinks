@@ -17,6 +17,8 @@ namespace RP0
 
         public bool IsDisabled { get; set; }
 
+        public bool CannotActivative { get; set; }
+
         /// <summary>What the compiled REQUIREMENTS predicate answers.</summary>
         public bool Unlocked { get; set; } = true;
 

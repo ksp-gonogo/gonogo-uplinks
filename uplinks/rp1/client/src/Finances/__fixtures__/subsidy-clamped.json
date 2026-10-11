@@ -1,7 +1,7 @@
 {
   "_scene": {
     "augment": "rp1-finances",
-    "hostWidget": "strategies",
+    "hostWidget": "admin-building",
     "size": {
       "w": 14,
       "h": 24

@@ -280,11 +280,8 @@ function movingAccumulators(
 /**
  * The model, as a pure function of the observation, the window and the view
  * time. Lifted out of the registration for the same reason
- * `reckonResourceLevels` is: `kerbalism.crew` cannot carry a
- * `[SitrepReckonable]` mark (the gate refuses an array Topic outright, and
- * `value` sits on a nested type that publishes no Topic of its own), so a
- * plain `Reading` reduces every refusal here to `reckoning: { status: "none" }` and only a
- * direct caller can check which one fired.
+ * `reckonResourceLevels` is: its decline reasons are testable directly,
+ * without a store and a frame to read them back through.
  */
 export function reckonCrewAccumulators(
   point: TimelinePoint<Crew>,

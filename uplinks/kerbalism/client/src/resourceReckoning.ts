@@ -298,12 +298,8 @@ function intervalOrDecline(
  * reckons to.
  *
  * Lifted out of the registration rather than written inside it so its DECLINE
- * REASONS are testable. `vessel.resources` carries no `[SitrepReckonable]` mark
- * (see this file's header for why the mark would be a promise core cannot
- * keep), so a plain `Reading` reduces every refusal below to
- * `reckoning: { status: "none" }` and a consumer never sees which one fired. The reasons
- * are still worth getting right, and a caller of this function is the only
- * thing that can check them.
+ * REASONS are testable directly, without a store and a frame to read them back
+ * through.
  */
 export function reckonResourceLevels(
   observed: Resources | null,

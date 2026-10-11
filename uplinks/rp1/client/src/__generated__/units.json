@@ -262,6 +262,7 @@
       "name": "text"
     },
     "Rp1ConstructionEntry": {
+      "affordableFraction": "ratio",
       "cost": "funds",
       "currentLevel": "count",
       "engineersToReadd": "count",
@@ -581,6 +582,7 @@
       "confidenceCost": "confidence",
       "durationSeconds": "s",
       "fundingPerDay": "f/day",
+      "label": "text",
       "speed": "enum"
     },
     "Rp1RequiredTechEntry": {
@@ -835,6 +837,7 @@
       "refreshedAt": "ut"
     },
     "rp1.constructions": {
+      "affordableFraction": "ratio",
       "cost": "funds",
       "currentLevel": "count",
       "engineersToReadd": "count",

@@ -1021,26 +1021,41 @@ public sealed class Rp1ConstructionEntry
     public double? WorkRate { get; set; }
 
     /// <summary>
-    /// Effective rate: the costed base rate times the throttle. Null until RP-1
-    /// has costed the project, which it does when the construction queue changes
-    /// or the career's own rate modifiers move, so a freshly loaded save can
+    /// Effective rate: the costed base rate times the throttle times
+    /// <see cref="AffordableFraction"/>, which is what RP-1 does to a
+    /// construction the career cannot pay for. Null until RP-1 has costed the
+    /// project, which it does when the construction queue changes or the
+    /// career's own rate modifiers move, so a freshly loaded save can
     /// legitimately answer nothing here.
     /// </summary>
     [SitrepUnit(Contract.Units.BuildPointsPerSecond)]
     public double? Rate { get; set; }
 
     /// <summary>
-    /// Seconds to completion at the current rate. No efficiency ramp, unlike a
-    /// vehicle: a construction's rate does not improve with the crew, because it
-    /// has no crew.
+    /// The share of one day's draw at the current throttle that the career's
+    /// funds meet, 0 to 1, by the same arithmetic RP-1 throttles a construction
+    /// by (funds over the draw, floored at 0 and capped at 1). Below 1 the
+    /// construction is slowed to that share and <see cref="Rate"/> and
+    /// <see cref="TimeLeftSeconds"/> already carry it; at 0 nothing is drawn and
+    /// nothing is built. Null when the draw or the balance could not be read, or
+    /// the project is not costed.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? AffordableFraction { get; set; }
+
+    /// <summary>
+    /// Seconds to completion at the current <see cref="Rate"/>. No efficiency
+    /// ramp, unlike a vehicle: a construction's rate does not improve with the
+    /// crew, because it has no crew. Null at a zero rate.
     /// </summary>
     [SitrepUnit(Units.Seconds)]
     public double? TimeLeftSeconds { get; set; }
 
     /// <summary>
-    /// The rate resolved and is zero: costed and going nowhere, which under RP-1
-    /// means the throttle is at zero. A different fact from a null
-    /// <see cref="Rate"/>.
+    /// The effective <see cref="Rate"/> resolved and is zero: costed and going
+    /// nowhere, because the throttle is at zero or the career has no funds to
+    /// draw. <see cref="AffordableFraction"/> tells the two apart. A different
+    /// fact from a null <see cref="Rate"/>.
     /// </summary>
     [SitrepUnit(Units.Flag)]
     public bool? Stalled { get; set; }
@@ -1954,6 +1969,15 @@ public sealed class Rp1ProgramSpeedOption
     public string? Speed { get; set; }
 
     /// <summary>
+    /// What RP-1's Administration building calls this speed, which is not its
+    /// <see cref="Speed"/> name: its buttons are labelled by position, so the
+    /// enum's "Slow" reads as RP-1's first button, not as the word. Null when the
+    /// game's localisation had not loaded.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Confidence this speed costs, straight out of RP-1's per-speed table.
     /// Zero is a real price and the shipped catalogue charges it for
     /// <c>Slow</c>; absent means the table could not be read.
@@ -2225,6 +2249,7 @@ public sealed class Rp1CrewEntry
     /// at zero points, which makes its own fraction a NaN: a NaN is not a
     /// progress and must not reach a bar.
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Ratio)]
     public double? TrainingFractionComplete { get; set; }
 
@@ -2365,14 +2390,15 @@ public sealed class Rp1BuildableCraftEntry
     public double? Mass { get; set; }
 
     /// <summary>
-    /// Stock's price for the craft, in funds.
+    /// Always null: no price is previewed.
     ///
-    /// <para><b>Not what the career will be charged.</b> RP-1 prices a vessel
-    /// purchase through its own currency query, which leaders and strategies
-    /// move, and that query fires a game-wide event: running it once per craft
-    /// per tick would broadcast to every mod listening, so it is asked once, at
-    /// the press, by the command. This is the list price a widget can show
-    /// beside a balance; the charge is settled when the operator commits.</para>
+    /// <para>RP-1 charges what its own vessel measurement of the loaded craft
+    /// comes to, with tooling and its part pricing in it, then runs that through
+    /// a currency query leaders and strategies move. None of that is knowable
+    /// from the craft file, and stock's price for the file differs from the
+    /// charge, so a figure beside the build control would be wrong. The charge
+    /// is settled by <c>rp1.build.start</c> and reads back on
+    /// <c>rp1.buildQueue[].cost</c>.</para>
     /// </summary>
     [SitrepUnit(Units.Funds)]
     public double? Cost { get; set; }
@@ -2708,6 +2734,7 @@ public sealed class Rp1FundTarget
     /// RP-1's estimate of the wait, iterated against the income curve rather
     /// than divided out of it. An INTERVAL, so seconds.
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Sitrep.Contract.Units.Seconds)]
     public double? TimeLeft { get; set; }
 }
@@ -3590,6 +3617,7 @@ public sealed class Rp1Avionics
     /// verdict was reached on. A readout showing total mass beside this limit
     /// would draw NO-GO on the pad for a vessel RP-1 has already cleared.</para>
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Tonnes)]
     public double? VesselMassTons { get; set; }
 
@@ -3683,6 +3711,7 @@ public sealed class Rp1Budget
     /// The reputation every subsidy and decay figure here was computed from,
     /// read at the same instant.
     /// </summary>
+    [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Sitrep.Contract.Units.Reputation)]
     public double? Reputation { get; set; }
 

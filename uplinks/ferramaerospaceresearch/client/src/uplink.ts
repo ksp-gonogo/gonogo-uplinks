@@ -3,6 +3,7 @@
 // search tags derive "aero" automatically rather than relying on a per-widget
 // field somebody has to remember to set.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // The source of the client's version, not the manifest: `gonogo-uplink.json` is
 // generated FROM it, so it cannot supply the number that goes into it. Keep it
@@ -16,4 +17,5 @@ export const AERO = defineUplinkClient({
   description:
     "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle " +
     "of attack, sideslip, stall, lift and drag.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

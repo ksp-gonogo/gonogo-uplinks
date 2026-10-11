@@ -155,6 +155,7 @@ namespace GonogoRp1Uplink
                 options.Add(new Dictionary<string, object?>
                 {
                     ["speed"] = speed,
+                    ["label"] = p.SpeedLabelBySpeed.TryGetValue(speed, out var label) ? label : null,
                     // Absent when the table has no row for this speed, which is
                     // not the same as free: RP-1 loads a missing CONFIDENCECOSTS
                     // key as zero itself, so a real zero arrives as one.

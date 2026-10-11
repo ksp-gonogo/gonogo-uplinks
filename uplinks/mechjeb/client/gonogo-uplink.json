@@ -4,11 +4,15 @@
   "description": "Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the next node, or land at the selected target, over the delayed command path.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "MechJeb2",
+    "builtAgainst": "2.15.3.0"
+  },
   "version": "0.0.1",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
-  "contractMajor": 36,
-  "contractMinor": 0,
+  "contractMajor": 37,
+  "contractMinor": 1,
   "bundleUrl": "mechjeb/mechjeb.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"

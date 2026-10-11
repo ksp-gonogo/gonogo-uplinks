@@ -218,7 +218,11 @@ public class Rp1ScUplinkTests : IDisposable
         Assert.Contains(facts, f => f.Label == "SpaceCenterManagement");
         Assert.Contains(facts, f => f.Label == "Confidence");
         Assert.Contains(facts, f => f.Label == "save mode");
-        Assert.Contains(facts, f => f.Label == "read against" && f.Value == "RP-1 v4.6.0.0");
+        Assert.DoesNotContain(facts, f => f.Label == "read against");
+        var version = Assert.Single(facts, f => f.Label == "RP-1 version");
+        Assert.True(
+            version.Value == "not found" || version.Value!.StartsWith("RP-1 v"),
+            "the version is read off the installed assembly, never a constant: " + version.Value);
     }
 
     [Fact]

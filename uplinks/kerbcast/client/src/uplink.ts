@@ -9,6 +9,7 @@
 // registry by client, the generated page and the render harness included, saw a
 // bundle declaring no Uplink at all.
 import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
+import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // TODO(version): build-inject this from gonogo-uplink.json.
 const UPLINK_VERSION = "0.0.1";
@@ -20,4 +21,5 @@ export const KERBCAST = defineUplinkClient({
   description:
     "Live in-flight camera views from Hullcam VDS parts, with aim and zoom " +
     "controls, streamed by kerbcast.",
+  tags: GENERATED_CONTRACT_TAGS,
 });

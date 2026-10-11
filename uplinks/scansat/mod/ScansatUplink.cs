@@ -166,6 +166,7 @@ namespace Gonogo.ScansatUplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Requires = Requirement.None,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -177,6 +178,7 @@ namespace Gonogo.ScansatUplink
                 new ChannelDeclaration
                 {
                     Topic = ScanningVesselsTopic,
+                    Kind = SampleKind.Continuous,
                     Requires = Requirement.None,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -189,6 +191,7 @@ namespace Gonogo.ScansatUplink
                 new ChannelDeclaration
                 {
                     Topic = ScienceTopic,
+                    Kind = SampleKind.Discrete,
                     Requires = Requirement.None,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -260,18 +263,19 @@ namespace Gonogo.ScansatUplink
             // PQS/BiomeMap (SCANsat-independent): they're released under the
             // discover-by-scanning fiction alongside the delayed coverage
             // that reveals them (spec §2.2).
-            ChannelDeclaration Template(string prefix) => new ChannelDeclaration
+            ChannelDeclaration Template(string prefix, SampleKind kind) => new ChannelDeclaration
             {
+                Kind = kind,
                 Delivery = Delivery.LossyLatest,
                 Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                 Delay = DelayRole.Delayed,
                 Requires = ScanChannels.RequiresFor(prefix),
             };
-            _coverageSource = host.RegisterDynamicNamespace(ScanChannels.CoveragePrefix, Template(ScanChannels.CoveragePrefix));
-            _maskSource = host.RegisterDynamicNamespace(ScanChannels.MaskPrefix, Template(ScanChannels.MaskPrefix));
-            _heightSource = host.RegisterDynamicNamespace(ScanChannels.HeightPrefix, Template(ScanChannels.HeightPrefix));
-            _biomeSource = host.RegisterDynamicNamespace(ScanChannels.BiomePrefix, Template(ScanChannels.BiomePrefix));
-            _anomaliesSource = host.RegisterDynamicNamespace(ScanChannels.AnomaliesPrefix, Template(ScanChannels.AnomaliesPrefix));
+            _coverageSource = host.RegisterDynamicNamespace(ScanChannels.CoveragePrefix, Template(ScanChannels.CoveragePrefix, SampleKind.Continuous));
+            _maskSource = host.RegisterDynamicNamespace(ScanChannels.MaskPrefix, Template(ScanChannels.MaskPrefix, SampleKind.Discrete));
+            _heightSource = host.RegisterDynamicNamespace(ScanChannels.HeightPrefix, Template(ScanChannels.HeightPrefix, SampleKind.Discrete));
+            _biomeSource = host.RegisterDynamicNamespace(ScanChannels.BiomePrefix, Template(ScanChannels.BiomePrefix, SampleKind.Discrete));
+            _anomaliesSource = host.RegisterDynamicNamespace(ScanChannels.AnomaliesPrefix, Template(ScanChannels.AnomaliesPrefix, SampleKind.Discrete));
 
             // Capture-on-main / handle-on-Courier (see
             // IUplinkHost.AddSampledSource): EVERY KSP/SCANsat/stock read now

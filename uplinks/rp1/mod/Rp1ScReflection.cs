@@ -144,6 +144,12 @@ namespace GonogoRp1Uplink
         /// </summary>
         public string? AssemblyIdentity { get; }
 
+        /// <summary>
+        /// The installed RP0 assembly's version alone, as "<c>v4.7.0.0</c>", for
+        /// the health line that says which RP-1 the rows were read from.
+        /// </summary>
+        public string? InstalledVersion { get; }
+
         public Rp1ScReflection()
         {
             _scm = Rp1Types.Find(ScmTypeName);
@@ -160,6 +166,7 @@ namespace GonogoRp1Uplink
                 {
                     var name = _scm.Assembly.GetName();
                     AssemblyIdentity = name.Name + ", " + name.Version;
+                    InstalledVersion = name.Version == null ? null : "RP-1 v" + name.Version;
                 }
                 catch (Exception)
                 {
@@ -529,8 +536,17 @@ namespace GonogoRp1Uplink
                 // out for a reason that has nothing to do with its envelope, so
                 // publishing envelope refusals against one would answer a
                 // question nobody asked and read as the reason it cannot move.
-                item.RolloutRefusals = RolloutRefusals(lc, vp);
-                item.RolloutCost = RolloutCost(vp);
+                if (lcType == Rp1Envelope.HangarType)
+                {
+                    // Nothing rolls out of a hangar, so no price is quoted and the
+                    // refusal is the one the command gives.
+                    item.RolloutRefusals = new[] { Rp1VehicleCommands.HangarRolloutRefusal };
+                }
+                else
+                {
+                    item.RolloutRefusals = RolloutRefusals(lc, vp);
+                    item.RolloutCost = RolloutCost(vp);
+                }
                 raw.Warehouse.Add(item);
             }
 

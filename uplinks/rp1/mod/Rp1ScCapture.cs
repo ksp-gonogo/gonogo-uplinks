@@ -298,6 +298,7 @@ namespace GonogoRp1Uplink
                     ["progressRatio"] = c.ProgressRatio,
                     ["workRate"] = c.WorkRate,
                     ["rate"] = c.Rate,
+                    ["affordableFraction"] = c.AffordableFraction,
                     ["timeLeftSeconds"] = c.TimeLeftSeconds,
                     ["stalled"] = c.Stalled,
                     ["cost"] = c.Cost,

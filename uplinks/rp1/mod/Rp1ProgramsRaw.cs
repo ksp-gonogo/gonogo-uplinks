@@ -115,6 +115,13 @@ namespace GonogoRp1Uplink
         /// </summary>
         public Dictionary<string, double> ConfidenceCostBySpeed = new Dictionary<string, double>();
 
+        /// <summary>
+        /// What RP-1's own screens call each speed, keyed by speed NAME. Its
+        /// localisation tags name the buttons by position, not by the enum
+        /// identifier, so the enum name is not what an operator reads there.
+        /// </summary>
+        public Dictionary<string, string> SpeedLabelBySpeed = new Dictionary<string, string>();
+
         /// <summary>Programs this one closes off on accept, by RP-1's internal name.</summary>
         public List<string> ProgramsToDisableOnAccept = new List<string>();
 

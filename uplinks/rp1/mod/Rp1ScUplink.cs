@@ -634,6 +634,7 @@ namespace GonogoRp1Uplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.TrueNow,
@@ -642,37 +643,37 @@ namespace GonogoRp1Uplink
                 // queues, complexes, payroll, Programs and currencies are held at
                 // the home command, so each vantage learns a change after its own
                 // delay to home.
-                AtHome(CentresTopic),
-                AtHome(ComplexesTopic),
-                AtHome(BuildQueueTopic),
-                AtHome(WarehouseTopic),
+                AtHome(CentresTopic, SampleKind.Discrete),
+                AtHome(ComplexesTopic, SampleKind.Discrete),
+                AtHome(BuildQueueTopic, SampleKind.Continuous),
+                AtHome(WarehouseTopic, SampleKind.Discrete),
                 // An EMPTY list is a real answer here, unlike the singletons
                 // below: a career with no craft saved has nothing to start,
                 // and so does an install whose core cannot open craft files.
                 // Both are things an operator needs told rather than left to
                 // read as silence.
-                AtHome(BuildableTopic),
-                AtHome(PadsTopic),
-                AtHome(OperationsTopic),
-                AtHome(ConstructionsTopic),
-                AtHome(ResearchTopic),
+                AtHome(BuildableTopic, SampleKind.Discrete),
+                AtHome(PadsTopic, SampleKind.Discrete),
+                AtHome(OperationsTopic, SampleKind.Continuous),
+                AtHome(ConstructionsTopic, SampleKind.Continuous),
+                AtHome(ResearchTopic, SampleKind.Continuous),
                 // An empty list is a real answer: a stock install has no RP-1
                 // cost table, and an operator whose facility section is silent
                 // needs to know which of the two silences they are looking at.
-                AtHome(FacilitiesTopic),
+                AtHome(FacilitiesTopic, SampleKind.Discrete),
                 // Both singletons are legitimately absent from the first tick:
                 // a stock install has no payroll and no Confidence module, and
                 // without this the client would wait for a value that is never
                 // coming instead of being told there is none.
-                AtHome(PersonnelTopic, absenceIsData: true),
+                AtHome(PersonnelTopic, SampleKind.Discrete, absenceIsData: true),
                 // The rush terms come out of RP-1's own settings, so an install
                 // whose settings could not be read publishes nothing rather than
                 // the shipped defaults. Quoting a price the career does not
                 // charge is worse than declining to quote one.
-                AtHome(RushTermsTopic, absenceIsData: true),
-                AtHome(LcPricingTopic, absenceIsData: true),
-                AtHome(ConfidenceTopic, absenceIsData: true),
-                AtHome(FundTargetTopic, absenceIsData: true),
+                AtHome(RushTermsTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(LcPricingTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(ConfidenceTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(FundTargetTopic, SampleKind.Discrete, absenceIsData: true),
                 // All three Program channels publish NOTHING rather than an
                 // empty list when RP-1's ProgramHandler is not live. The
                 // distinction matters more here than anywhere else on this
@@ -682,23 +683,23 @@ namespace GonogoRp1Uplink
                 // curve table is the same shape one layer down: RP-1 ships
                 // twelve curves and pays every Program on one of them, so an
                 // empty table could only say it pays on none.
-                AtHome(ProgramsTopic, absenceIsData: true),
-                AtHome(ProgramSlotsTopic, absenceIsData: true),
-                AtHome(ProgramFundingCurvesTopic, absenceIsData: true),
+                AtHome(ProgramsTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(ProgramSlotsTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(ProgramFundingCurvesTopic, SampleKind.Discrete, absenceIsData: true),
                 // Both crew channels publish NOTHING rather than an empty list or
                 // a bag of falses when RP-1's CrewHandler is not live. An empty
                 // crew list would say "RP-1 is scheduling nobody" and a false
                 // crewRnREnabled would say crew rest is switched OFF, and both
                 // are claims about a career on a save RP-1 is not managing at all.
-                AtHome(CrewTopic, absenceIsData: true),
-                AtHome(CrewProgramTopic, absenceIsData: true),
-                AtHome(TrainingTopic, absenceIsData: true),
+                AtHome(CrewTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(CrewProgramTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(TrainingTopic, SampleKind.Discrete, absenceIsData: true),
                 // Same disposition, one step further out. An empty catalogue would
                 // say the install has no crewed part that can be trained on, which
                 // RP-1 never means: it generates a template from every one of them,
                 // so nothing to enrol on is a claim about the reader rather than
                 // about the career.
-                AtHome(TrainingCatalogueTopic, absenceIsData: true),
+                AtHome(TrainingCatalogueTopic, SampleKind.Discrete, absenceIsData: true),
                 // Absence here is a THIRD kind again, and the one most easily
                 // misread: no editor ship, or RP-1's tooling switched off. That
                 // second case matters because RP-1's own level lookup short-circuits
@@ -706,31 +707,31 @@ namespace GonogoRp1Uplink
                 // built then would report a finished vehicle. Saying nothing is the
                 // only honest answer, and absenceIsData is what tells a client that
                 // the silence is the answer rather than a wait.
-                AtHome(ToolingTopic, absenceIsData: true),
+                AtHome(ToolingTopic, SampleKind.Discrete, absenceIsData: true),
                 // Same scene and the same absence as the tooling channel beside it:
                 // no vehicle being designed means no breakdown, and a payload of
                 // zeros would read as a vehicle that costs nothing to fly.
-                AtHome(BuildCostTopic, absenceIsData: true),
+                AtHome(BuildCostTopic, SampleKind.Discrete, absenceIsData: true),
                 // Absence here is a THIRD state and the field says which of the
                 // other two applies. Nothing at all means RP-1's log handler could
                 // not be read; `enabled: false` means the career is not keeping a
                 // log and never will; enabled with no rows means it is keeping one
                 // and nothing has happened yet. A client shown only the rows could
                 // not tell a quiet career from an unrecorded one.
-                AtHome(CareerEventsTopic, absenceIsData: true),
+                AtHome(CareerEventsTopic, SampleKind.Discrete, absenceIsData: true),
                 // Absent wherever RP-1 is not running a career in the loaded
                 // scene. A budget of zeros would read as a programme that costs
                 // nothing and earns nothing.
-                AtHome(BudgetTopic, absenceIsData: true),
-                AtHome(BudgetBreakdownTopic, absenceIsData: true),
-                AtHome(ConstructionRatesTopic, absenceIsData: true),
-                AtHome(ResearchRatesTopic, absenceIsData: true),
-                AtHome(LeadersTopic, absenceIsData: true),
+                AtHome(BudgetTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(BudgetBreakdownTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(ConstructionRatesTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(ResearchRatesTopic, SampleKind.Discrete, absenceIsData: true),
+                AtHome(LeadersTopic, SampleKind.Discrete, absenceIsData: true),
                 // The same three states as the career events beside it: nothing
                 // when the log handler could not be read, `enabled: false` when the
                 // career keeps no log, and enabled with no periods before any
                 // money has moved.
-                AtHome(CareerLedgerTopic, absenceIsData: true),
+                AtHome(CareerLedgerTopic, SampleKind.Discrete, absenceIsData: true),
                 // The one channel here that is NOT space-centre state, and so the
                 // one not held at home. Its subject is a craft in flight and its
                 // verdict changes as that craft burns propellant and sheds
@@ -750,6 +751,7 @@ namespace GonogoRp1Uplink
                 new ChannelDeclaration
                 {
                     Topic = SimulationTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.TrueNow,
@@ -758,6 +760,7 @@ namespace GonogoRp1Uplink
                 new ChannelDeclaration
                 {
                     Topic = AvionicsTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
@@ -1034,9 +1037,10 @@ namespace GonogoRp1Uplink
             Requires = Rp1BuildCommands.Requirements(),
         };
 
-        private static ChannelDeclaration AtHome(string topic, bool absenceIsData = false) => new ChannelDeclaration
+        private static ChannelDeclaration AtHome(string topic, SampleKind kind, bool absenceIsData = false) => new ChannelDeclaration
         {
             Topic = topic,
+            Kind = kind,
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
             Delay = DelayRole.Delayed,
@@ -1649,7 +1653,7 @@ namespace GonogoRp1Uplink
 
             // Gated on its namespace: its whole effect is its return value, and
             // each figure it answers is one a client subscribed to.
-            _fundsReachedAtSource = host.RegisterDynamicNamespace(FundsReachedAtPrefix, AtHome(FundsReachedAtPrefix));
+            _fundsReachedAtSource = host.RegisterDynamicNamespace(FundsReachedAtPrefix, AtHome(FundsReachedAtPrefix, SampleKind.Discrete));
             _fundsReachedAtSource.OnSubscribed(topic => _fundsReachedAtAsked.TryAdd(topic, 0));
             host.AddSampledSource(
                 CaptureFundsReachedAtOnMain,
@@ -1739,6 +1743,11 @@ namespace GonogoRp1Uplink
             // value or in-game hour moved costs one settings read and a fold over
             // the active strategies.
             raw.HirePrices = _hirePrices.CaptureOnMain(raw.Ut);
+            // The rate tables are priced on RP-1's upkeep cadence and served from
+            // their cache otherwise, so asking for them here costs a recompute
+            // only on the ticks the rates channel would have paid for anyway.
+            Rp1ConstructionAffordability.Apply(
+                raw.Constructions, _constructionRates.CaptureOnMain(raw.Ut), Rp1Pricing.FundsBalance());
             return raw;
         }
 
@@ -2274,7 +2283,7 @@ namespace GonogoRp1Uplink
                         ? "ShouldLock resolved"
                         : "ControlLockerUtils.ShouldLock not found"),
                 new UplinkHealthFact("save mode", EnabledForSave ? "enabled" : "not enabled for this save"),
-                new UplinkHealthFact("read against", "RP-1 v4.6.0.0"),
+                new UplinkHealthFact("RP-1 version", _rp1.InstalledVersion ?? "not found"),
                 new UplinkHealthFact(
                     "confidence withholding",
                     _derivedCurrencyRegistrationError != null

@@ -72,6 +72,7 @@ namespace GonogoRealFuelsUplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.TrueNow,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -79,6 +80,7 @@ namespace GonogoRealFuelsUplink
                 new ChannelDeclaration
                 {
                     Topic = EnginesTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.Delayed,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -86,6 +88,7 @@ namespace GonogoRealFuelsUplink
                 new ChannelDeclaration
                 {
                     Topic = BoiloffTopic,
+                    Kind = SampleKind.Continuous,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.Delayed,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

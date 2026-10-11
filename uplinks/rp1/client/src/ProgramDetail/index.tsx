@@ -78,7 +78,7 @@ export const RP1_PROGRAM_COMPLETE_COMMAND = "rp1.program.complete";
  * accepting it costs and closes off.
  *
  * <para>The BODY of the Administration Building's Programs screen, contributed
- * as an augment on `strategies.screen-body`. It was a standalone widget until
+ * as an augment on `admin-building.screen-body`. It was a standalone widget until
  * the building grew screens, which made a second Programs surface out of the
  * one the operator already opens the building for. It carries the RP-1 verbs
  * itself, Accept and Complete, because the host card's Deactivate would strand
@@ -417,7 +417,9 @@ function ChosenProgram({
           <Stack as="ul" gap="rows" style={LIST_STYLE}>
             <Row wrap>
               <RowName>Speed</RowName>
-              <Text>{program.speed ?? NULL_DISPLAY}</Text>
+              <Text>
+                {speedLabel(program.speedOptions, program.speed) ?? NULL_DISPLAY}
+              </Text>
             </Row>
             <Row wrap>
               <RowName>Slots taken</RowName>
@@ -602,6 +604,7 @@ function AcceptControl({
     (speed === program.speed ? program.confidenceCost : null);
   const short = outOfReach(cost, confidenceHeld);
   const name = label(program);
+  const speedName = speedLabel(program.speedOptions, speed);
 
   return (
     <Section>
@@ -629,11 +632,11 @@ function AcceptControl({
             <>{NULL_DISPLAY} RP-1 did not say which speeds this Program offers</>
           ) : cost == null ? (
             <>
-              {NULL_DISPLAY} RP-1 did not price {speed} speed
+              {NULL_DISPLAY} RP-1 did not price {speedName} speed
             </>
           ) : (
             <>
-              <Unit value={cost} /> Confidence at {speed} speed
+              <Unit value={cost} /> Confidence at {speedName} speed
             </>
           )}
           {short && (
@@ -649,9 +652,9 @@ function AcceptControl({
              refused control announcing the acceptance it would have made
              describes something that will not happen. */
           aria-label={short || speed === null ? undefined : `Accept ${name}`}
-          commandLabel={`Accept ${name} at ${speed ?? NULL_DISPLAY} speed`}
+          commandLabel={`Accept ${name} at ${speedName ?? NULL_DISPLAY} speed`}
           confirmAriaLabel={`Confirm accepting ${name}`}
-          confirmLabel={<AcceptWording cost={cost} speed={speed} />}
+          confirmLabel={<AcceptWording cost={cost} speed={speedName} />}
           disabled={short || speed === null}
           handle={handle}
           label="Accept"
@@ -667,6 +670,24 @@ function AcceptControl({
       </Cluster>
     </Section>
   );
+}
+
+/**
+ * The word RP-1's own screens use for a speed. Its buttons are labelled by
+ * position, so the name the command takes ("Slow") is not what an operator reads
+ * in the Administration building; the label rides each speed option and the name
+ * stands in when the game had not said.
+ */
+function speedLabel(
+  options: readonly Rp1ProgramSpeedOption[] | null | undefined,
+  speed: string | null | undefined,
+): string | null {
+  if (speed === null || speed === undefined) {
+    return null;
+  }
+  const label = present(options)?.find((option) => option.speed === speed)
+    ?.label;
+  return typeof label === "string" && label !== "" ? label : speed;
 }
 
 /**
@@ -708,7 +729,7 @@ function SpeedChoice({
           )
         }
       >
-        <Text size="xs">{speed}</Text>
+        <Text size="xs">{option.label ?? speed}</Text>
       </SubjectHeading>
       <Text size="xs" level="muted">
         {/* Named, because RP-1's Confidence renders as a bare count and a
@@ -1112,7 +1133,7 @@ function SpeedLadder({
             header: "Speed",
             render: (row) => (
               <Text>
-                {row.speed ?? NULL_DISPLAY}
+                {row.label ?? row.speed ?? NULL_DISPLAY}
                 {row.speed === chosen && (
                   <>
                     {" "}
@@ -1295,7 +1316,7 @@ function outOfReach(
 
 registerAugment({
   id: "rp1-program-detail",
-  augments: "strategies.screen-body",
+  augments: "admin-building.screen-body",
   component: ProgramDetail,
   channels: [
     "rp1.available",

@@ -1575,6 +1575,7 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.StrategyRP0", "DateDeactivated", Rp1Reader.Numeric, Leaders);
             Add("RP0.StrategyRP0", "RemovePenaltyDuration", Rp1Reader.Numeric, Leaders);
             Add("RP0.StrategyConfigRP0", "IsDisabled", Rp1Reader.Bool, Leaders);
+            Add("RP0.StrategyConfigRP0", "CannotActivative", Rp1Reader.Bool, Leaders);
             Add("RP0.StrategyConfigRP0", "SetupCosts", Rp1Reader.Presence, Leaders);
             Add("RP0.StrategyConfigRP0", "RemoveOnDeactivate", Rp1Reader.Bool, Leaders);
             Add("RP0.StrategyConfigRP0", "RemoveOnDeactivateTag", Rp1Reader.Text, Leaders);

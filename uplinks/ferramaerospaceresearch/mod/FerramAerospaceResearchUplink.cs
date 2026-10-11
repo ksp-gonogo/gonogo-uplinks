@@ -96,6 +96,7 @@ namespace GonogoFerramAerospaceResearchUplink
                 new ChannelDeclaration
                 {
                     Topic = AvailableTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.TrueNow,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
@@ -103,6 +104,7 @@ namespace GonogoFerramAerospaceResearchUplink
                 new ChannelDeclaration
                 {
                     Topic = StateTopic,
+                    Kind = SampleKind.Continuous,
                     Delivery = Delivery.LossyLatest,
                     Delay = DelayRole.Delayed,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),

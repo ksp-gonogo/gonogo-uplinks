@@ -424,6 +424,10 @@ namespace GonogoRp1Uplink
         public double? WorkRate;
 
         public double? Rate;
+
+        /// <summary>The share of a day's draw the career's funds meet, absent when it cannot be said.</summary>
+        public double? AffordableFraction;
+
         public double? TimeLeftSeconds;
         public bool Stalled;
 

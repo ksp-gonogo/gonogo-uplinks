@@ -552,3 +552,22 @@ export const GENERATED_ENUM_MEMBERS: Readonly<Record<string, Readonly<Record<num
     8: "NULL",
   },
 };
+
+/**
+ * The value tags this contract declares, registered by its client under its
+ * own id: `topics` holds each value's declared sample kind and entry key by
+ * Topic and path (`*` crosses a list or dictionary), and `reckonable` every
+ * value a declared model carries forward, with the inputs it needs.
+ */
+export const GENERATED_CONTRACT_TAGS = {
+  topics: {
+    "kerbalism.crew": {
+      "*.name": { entryKey: true },
+      "*.rules.*.name": { entryKey: true },
+    },
+  },
+  reckonable: [
+    { topic: "kerbalism.crew", field: "*.rules.*.problem", basis: "rate-integration", inputs: [ { topic: "", path: "fatalThreshold" } ] },
+    { topic: "vessel.resources", field: "resources.*.current", basis: "rate-integration", inputs: [ { topic: "kerbalism.lifesupport", path: "rates" }, { topic: "kerbalism.lifesupport", path: "asOfKerbalismUt" } ] },
+  ],
+} as const;

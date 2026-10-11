@@ -122,6 +122,9 @@ namespace GonogoRp1Uplink
     /// </summary>
     public sealed class Rp1VehicleCommands
     {
+        /// <summary>Why nothing rolls out of a hangar, as the command and the warehouse preview both say it.</summary>
+        public const string HangarRolloutRefusal = "a hangar's vehicles are air-launched rather than rolled out to a pad";
+
         /// <summary>Move a finished vehicle out of the warehouse and onto a pad.</summary>
         public const string RolloutCommand = "rp1.vehicle.rollout";
 
@@ -318,7 +321,7 @@ namespace GonogoRp1Uplink
                 // rollout control for a hangar at all.
                 return CommandResult.Fail(
                     CommandErrorCode.WrongState,
-                    complexName + " is a hangar, and a hangar's vehicles are air-launched rather than rolled out to a pad");
+                    complexName + " is a hangar, and " + HangarRolloutRefusal);
             }
 
             if (Rp1Types.ReadBool(vessel, "AllPartsValid") == false)

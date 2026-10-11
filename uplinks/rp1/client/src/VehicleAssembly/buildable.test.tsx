@@ -51,7 +51,7 @@ function craft(overrides: Record<string, unknown> = {}) {
         refusals: [],
       },
     ],
-    cost: 40_000,
+    cost: null,
     craftFile: "Atlas LV-3B",
     facility: 1,
     lockedParts: [],
@@ -156,10 +156,7 @@ describe("starting a build from a saved craft", () => {
     });
   });
 
-  it("names the price on the confirm wording, beside the balance the widget already draws", async () => {
-    // The repo's funds rule: a control that spends is never visible without a
-    // balance visible in the same widget. The host widget draws the balance;
-    // this proves the two are on screen together.
+  it("quotes no price on the card or the confirm, since RP-1 settles its own charge at the press", async () => {
     await withOneSavedCraft();
     const user = userEvent.setup();
 
@@ -171,7 +168,7 @@ describe("starting a build from a saved craft", () => {
 
     const text = visibleText(document.body);
     expect(text).toContain("289,848");
-    expect(text).toMatch(/Spend ~/);
+    expect(text).not.toMatch(/Spend|~/);
   });
 
   it("draws no control and gives the reason when no complex would take the craft", async () => {

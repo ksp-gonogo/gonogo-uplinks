@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `0.0.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 36.0, extension API 6.0.0 |
+| Built against | contract 37.1, extension API 6.0.0 |
 
 ## Wire
 
@@ -75,7 +75,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1LedgerPeriodEntry` | `confidenceAtClose` confidence, `constructionFees` funds, `endUt` ut, `engineersAtClose` count, `entryCosts` funds, `facilityMaintenance` funds, `fundsAtClose` funds, `hiringEngineers` funds, `hiringResearchers` funds, `launchFees` funds, `lcMaintenance` funds, `maintenanceFees` funds, `open` flag, `otherFees` funds, `otherFundsEarned` funds, `programFunds` funds, `repFromPrograms` rep, `reputationAtClose` rep, `researchersAtClose` count, `salaryCrew` funds, `salaryEngineers` funds, `salaryResearchers` funds, `scienceAtClose` science, `scienceEarnedAtClose` science, `spentUnlockCredit` funds, `startUt` ut, `subsidyPaidOut` funds, `subsidySize` funds, `toolingFees` funds, `trainingFees` funds, `unlockCreditAtClose` funds, `vesselPurchase` funds, `vesselRecovery` funds |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
-| `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `speed` enum |
+| `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `label` text, `speed` enum |
 | `Rp1RequiredTechEntry` | `id` id, `parts` text, `title` text |
 | `Rp1ResearchRateStep` | `finishesAt` ut, `researcherSalaryPerDay` f/day, `unlockCreditPerDay` f/day, `workRate` ratio |
 | `Rp1RolloutCostEntry` | `associatedVesselId` id, `cost` Rp1BudgetHorizons, `kscDisplayName` text, `kscName` id, `launchPadId` id, `lcId` id, `lcName` text, `type` enum, `vesselName` text |
@@ -182,12 +182,12 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `strategies.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
-| `rp1-leader-detail` | `strategies.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
+| `rp1-finances` | `admin-building.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
+| `rp1-leader-detail` | `admin-building.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
-| `rp1-program-detail` | `strategies.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
+| `rp1-program-detail` | `admin-building.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
 | `rp1-research-queue` | `tech-tree.sections` | – |  | 2 |  |
 | `rp1-start-research` | `tech-tree.sections` | `rp1.available`, `career.status`, `rp1.research` | only while `rp1` | 2 |  |
 | `rp1-vehicle-assembly-build-cost` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
@@ -242,7 +242,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
-| `rp1:programs-screen` | `strategies.screens` | – | only while `rp1` |
+| `rp1:programs-screen` | `admin-building.screens` | – | only while `rp1` |
 | `rp1:crew-core-stats` | `astronaut-complex.readouts` | `rp1.crew`, `rp1.crewProgram`, `rp1.budgetBreakdown`, `settings.rp1` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |

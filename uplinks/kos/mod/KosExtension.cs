@@ -237,6 +237,7 @@ namespace Gonogo.KosUplink
                 new ChannelDeclaration
                 {
                     Topic = KosChannels.ProcessorsTopic,
+                    Kind = SampleKind.Discrete,
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
