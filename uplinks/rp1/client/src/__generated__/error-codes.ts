@@ -3,7 +3,7 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 
-import type { ErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
+import type { UplinkErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
 
 /**
  * The refusals RP-1's commands answer with that say more than a core code can:
@@ -38,11 +38,11 @@ export const Rp1ErrorCodes = {
 export type Rp1ErrorCodes = (typeof Rp1ErrorCodes)[keyof typeof Rp1ErrorCodes];
 
 /**
- * Every code declared here, with the sentence an operator reads for it.
+ * Every code in this table, the refusals and the faults together as one flat list, each with the sentence an operator reads for it.
  *
  * @category Error codes
  */
-export const RP1_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
+export const RP1_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
   {
     id: "rp1.notManaging",
     kind: "refusal",

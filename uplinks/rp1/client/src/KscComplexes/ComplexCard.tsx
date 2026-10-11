@@ -644,7 +644,7 @@ function RushControl({
 
   return (
     <CommandButton
-      active={rushing}
+      pressed={rushing}
       args={{ lcId, rushing: !rushing }}
       aria-label={
         rushing

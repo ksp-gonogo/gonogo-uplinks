@@ -246,7 +246,7 @@ function ScienceDataAboardRowAugment({
               handle={sendCmd}
               args={{ subjectId, flag: send.next }}
               commandLabel={send.on ? "Cancel send" : "Send"}
-              active={send.on}
+              pressed={send.on}
               disabled={!send.read}
               title={send.read ? undefined : UNREAD_FLAG_TITLE}
               label={send.read ? (send.on ? "Queued" : "Send") : "Unknown"}
@@ -290,7 +290,7 @@ function ScienceDataAboardRowAugment({
               handle={analyzeCmd}
               args={{ subjectId, flag: analyze.next }}
               commandLabel={analyze.on ? "Cancel analyze" : "Analyze"}
-              active={analyze.on}
+              pressed={analyze.on}
               disabled={!analyze.read}
               title={analyze.read ? undefined : UNREAD_FLAG_TITLE}
               label={

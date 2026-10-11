@@ -3,7 +3,7 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 
-import type { ErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
+import type { UplinkErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
 
 /**
  * The refusals kOS's commands answer with that say more than a core code can:
@@ -30,11 +30,11 @@ export const KosErrorCodes = {
 export type KosErrorCodes = (typeof KosErrorCodes)[keyof typeof KosErrorCodes];
 
 /**
- * Every code declared here, with the sentence an operator reads for it.
+ * Every code in this table, the refusals and the faults together as one flat list, each with the sentence an operator reads for it.
  *
  * @category Error codes
  */
-export const KOS_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
+export const KOS_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
   {
     id: "kos.terminalHeld",
     kind: "refusal",

@@ -3,7 +3,7 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 
-import type { ErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
+import type { UplinkErrorCodeDeclaration } from "@ksp-gonogo/sitrep-sdk";
 
 /**
  * Why TestFlight refused a repair, each refining the root a client classifies
@@ -40,11 +40,11 @@ export const TestFlightErrorCodes = {
 export type TestFlightErrorCodes = (typeof TestFlightErrorCodes)[keyof typeof TestFlightErrorCodes];
 
 /**
- * Every code declared here, with the sentence an operator reads for it.
+ * Every code in this table, the refusals and the faults together as one flat list, each with the sentence an operator reads for it.
  *
  * @category Error codes
  */
-export const TESTFLIGHT_ERROR_CODES: readonly ErrorCodeDeclaration[] = [
+export const TESTFLIGHT_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
   {
     id: "testflight.notModelled",
     kind: "refusal",
