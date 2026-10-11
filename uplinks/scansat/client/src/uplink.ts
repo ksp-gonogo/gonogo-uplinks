@@ -12,7 +12,7 @@ import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
  * write a manifest whose declared version disagrees with the package's, so the
  * two cannot drift without something saying so.
  */
-const UPLINK_VERSION = "1.0.0-rc.1";
+const UPLINK_VERSION = "0.0.1";
 
 export const SCANSAT = defineUplinkClient({
   id: "scansat",

@@ -133,9 +133,12 @@ jobs:
       # file in setup), and inlining makes Vite perform the extension search Node
       # refuses to. A dependency no Node process can import passes vitest with
       # inlining on, which is how six weeks of an unimportable sdk went unnoticed.
+      # A dependency from outside gonogo that the client bundle inlines is linked
+      # with the bundle's own esbuild settings instead, since the bundle is the
+      # only thing that ever loads it.
       - name: Published dependencies load
         if: inputs.client
-        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only loadable
+        run: node tooling/check-published-loadability.mjs "${{ inputs.name }}"
 
       - name: Test client
         if: inputs.test
@@ -143,8 +146,12 @@ jobs:
         run: npm test
 
       # A `minSize` is the smallest tile the app will ever let an operator drag
-      # a widget to, so it is a promise, and `check --only minsize` holds every
-      # widget to it in a real browser.
+      # a widget to, so it is a promise, and gonogo holds the widgets living
+      # there to it. That gate reads its registration list from the bundle
+      # targets precisely so an Uplink which LEAVES gonogo leaves the check
+      # behind with it, which is why this side needs its own: without it the six
+      # Uplinks already moved lost it at their removal commit, and every one
+      # still to move would.
       #
       # The browser is the CLIENT's own playwright, for the reason the docs step
       # below gives: run from the repo root, npx finds none and fetches the
@@ -154,7 +161,7 @@ jobs:
         if: inputs.client
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
-          node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only minsize
+          node tooling/minsize-gate.mjs --only "${{ inputs.name }}"
 
       # The mode a client does not check is the one that fails silently:
       # `declare module` bindings resolve under bundler and not under nodenext, so
@@ -210,11 +217,13 @@ jobs:
         if: inputs.scaffold
         run: scripts/scaffold-proof.sh "${{ inputs.name }}"
 
-      # The parent mod's version, read from THIS Uplink's own uplink.json: a "mod"
-      # block that names no version or an unknown tier is a claim with nothing
-      # to verify.
-      - name: Parent mod version is declared
-        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only manifest
+      # The parent mod's version, read from THIS Uplink's own uplink.json rather
+      # than from anything central. `mod.tier` decides whether a newer published
+      # version can be discovered at all; see tooling/check-mod-version.mjs.
+      - name: Parent mod version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tooling/check-mod-version.mjs "${{ inputs.name }}"
 
       - name: Bundle client
         if: inputs.bundle && !inputs.publish

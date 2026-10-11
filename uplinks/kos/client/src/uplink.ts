@@ -13,7 +13,7 @@ import { KOS_ERROR_CODES } from "./__generated__/error-codes.js";
  * write a manifest whose declared version disagrees with the package's, so the
  * two cannot drift unnoticed.
  */
-const UPLINK_VERSION = "1.0.0-rc.1";
+const UPLINK_VERSION = "0.0.1";
 
 // "kOS" (the mod/community's own capitalisation) rather than the "kos"
 // id: best-effort human label for management/health surfaces; not load-

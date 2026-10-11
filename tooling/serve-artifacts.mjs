@@ -61,7 +61,7 @@ const host = flag("--host", "0.0.0.0");
 if (!existsSync(SERVE)) {
   console.error(
     `✖ ${SERVE} does not exist, so this would serve 404s that look like a loader problem.\n` +
-      "  Publish one first: node tooling/uplink-tools.mjs <name> publish --to <release host>",
+      "  Publish one first: node tooling/publish-release.mjs <name> --to <release host>",
   );
   process.exit(1);
 }

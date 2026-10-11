@@ -6,7 +6,7 @@ import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { PRINCIPIA_ERROR_CODES } from "./__generated__/error-codes.js";
 
 // TODO(version): build-inject this from gonogo-uplink.json.
-const UPLINK_VERSION = "1.0.0-rc.1";
+const UPLINK_VERSION = "0.0.1";
 
 export const PRINCIPIA = defineUplinkClient({
   id: "principia",
