@@ -7,7 +7,7 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
-import { wearRates } from "./ecosystem.js";
+import { processesByModifier, wearRates } from "./ecosystem.js";
 import { type LightChange, nextLightChange } from "./shadowHorizon.js";
 import {
   KERBALISM_LIFESUPPORT_TOPIC,
@@ -177,14 +177,100 @@ export interface ResourceBoundaryCrossing {
   readonly atUt: Value<"ut">;
 }
 
+/** A net rate that holds from `fromUt` until the next segment starts. */
+interface RateSegment {
+  readonly fromUt: number;
+  readonly perSecond: number;
+}
+
 /** One level the rates actually move, with the boundary it is heading for. */
 interface MovingLevel {
   readonly name: string;
-  readonly perSecond: number;
   readonly current: number;
+  readonly capacity: number;
+  /** The rate over time: the measured one, then one more per process that stops. */
+  readonly segments: readonly RateSegment[];
   readonly boundary: ResourceBoundary;
-  /** The UT it reaches that boundary at. Finite: the rate is non-zero. */
+  /** The UT it reaches that boundary at, or infinity when it never does. */
   readonly crossesAtUt: number;
+}
+
+/** A running part's process, as the rates it adds to each resource it touches. */
+interface RunningProcess {
+  readonly inputs: ReadonlySet<string>;
+  readonly contribution: ReadonlyMap<string, number>;
+}
+
+/**
+ * The processes whose rates are part of the measured ones: running, not broken,
+ * with a recipe in the profile. A process contributes capacity times its live
+ * modifier product times (output - input) to each resource its recipe names,
+ * the same sum the ledger shows.
+ */
+function runningProcesses(
+  lifeSupport: LifeSupport,
+  profile: Profile | undefined,
+): RunningProcess[] {
+  const byModifier = processesByModifier(profile);
+  const out: RunningProcess[] = [];
+  for (const entry of lifeSupport.processes ?? []) {
+    if (entry.broken === true || entry.running !== true) continue;
+    const def = entry.resource ? byModifier.get(entry.resource) : undefined;
+    const capacity = magnitudeOf(entry.capacity);
+    if (!def || capacity === null || capacity <= 0) continue;
+    const scale = capacity * (magnitudeOf(entry.envModifier) ?? 1);
+    const contribution = new Map<string, number>();
+    for (const [name, rate] of Object.entries(def.outputs ?? {})) {
+      contribution.set(name, (magnitudeOf(rate) ?? 0) * scale);
+    }
+    for (const [name, rate] of Object.entries(def.inputs ?? {})) {
+      contribution.set(
+        name,
+        (contribution.get(name) ?? 0) - (magnitudeOf(rate) ?? 0) * scale,
+      );
+    }
+    out.push({ inputs: new Set(Object.keys(def.inputs ?? {})), contribution });
+  }
+  return out;
+}
+
+function levelAt(
+  current: number,
+  segments: readonly RateSegment[],
+  ut: number,
+): number {
+  let level = current;
+  segments.forEach((segment, i) => {
+    const end = Math.min(ut, segments[i + 1]?.fromUt ?? ut);
+    if (end > segment.fromUt)
+      level += segment.perSecond * (end - segment.fromUt);
+  });
+  return level;
+}
+
+/** The first UT a level carried along its segments reaches an end of its range, and which end. */
+function firstCrossing(
+  current: number,
+  capacity: number,
+  segments: readonly RateSegment[],
+): { atUt: number; boundary: ResourceBoundary } | null {
+  let level = current;
+  for (let i = 0; i < segments.length; i++) {
+    const { fromUt, perSecond } = segments[i];
+    const duration =
+      (segments[i + 1]?.fromUt ?? Number.POSITIVE_INFINITY) - fromUt;
+    if (perSecond < 0 && level + perSecond * duration <= 0) {
+      return { atUt: fromUt + level / -perSecond, boundary: "floor" };
+    }
+    if (perSecond > 0 && level + perSecond * duration >= capacity) {
+      return {
+        atUt: fromUt + (capacity - level) / perSecond,
+        boundary: "ceiling",
+      };
+    }
+    level += perSecond * duration;
+  }
+  return null;
 }
 
 /**
@@ -196,28 +282,107 @@ interface MovingLevel {
  * unchanged rather than a claim that arithmetic happened. A level whose amount
  * or capacity cannot be read is dropped here as well, so the model never names
  * a path it then declines to move.
+ *
+ * ## A process stops when its input runs out
+ *
+ * The measured rates are sums over the running processes, so a level that
+ * empties while it is the input of one cannot go on feeding it. At the first
+ * instant such a level reaches zero, every running process that consumes it
+ * stops: its contribution comes off each resource it touched and the rate of
+ * each of those changes from that instant. That can empty a second level, which
+ * stops further processes, and so on. A level already empty at the observation
+ * is left alone, because its measured rates already show the stall.
  */
 function movingLevels(
   observed: Resources,
+  lifeSupport: LifeSupport,
   rates: NonNullable<LifeSupport["rates"]>,
+  profile: Profile | undefined,
   asOfUt: number,
 ): MovingLevel[] {
-  const moving: MovingLevel[] = [];
+  interface Tracked {
+    current: number;
+    capacity: number;
+    segments: RateSegment[];
+  }
+  const tracked = new Map<string, Tracked>();
+  const measured = new Map<string, number>();
   for (const name of Object.keys(rates).sort()) {
     const amount = observed.resources[name];
     const perSecond = magnitudeOf(rates[name]);
-    if (!amount || perSecond === null || perSecond === 0) continue;
+    if (!amount || perSecond === null) continue;
     const current = magnitudeOf(amount.current);
     const capacity = magnitudeOf(amount.max);
     if (current === null || capacity === null) continue;
-    const boundary: ResourceBoundary = perSecond < 0 ? "floor" : "ceiling";
-    const distance = perSecond < 0 ? current : capacity - current;
+    measured.set(name, perSecond);
+    tracked.set(name, {
+      current,
+      capacity,
+      segments: [{ fromUt: asOfUt, perSecond }],
+    });
+  }
+
+  const running = runningProcesses(lifeSupport, profile);
+  const alive = new Set(running);
+  const rate = new Map(measured);
+  while (alive.size > 0) {
+    let stopsAt = Number.POSITIVE_INFINITY;
+    let emptied: string | null = null;
+    for (const [name, level] of tracked) {
+      if (
+        level.current <= 0 ||
+        !running.some((p) => alive.has(p) && p.inputs.has(name))
+      ) {
+        continue;
+      }
+      const crossing = firstCrossing(
+        level.current,
+        level.capacity,
+        level.segments,
+      );
+      if (crossing?.boundary === "floor" && crossing.atUt < stopsAt) {
+        stopsAt = crossing.atUt;
+        emptied = name;
+      }
+    }
+    if (emptied === null) break;
+    for (const process of running) {
+      if (!alive.has(process) || !process.inputs.has(emptied)) continue;
+      alive.delete(process);
+      for (const [name, contributed] of process.contribution) {
+        const level = tracked.get(name);
+        if (!level) continue;
+        const next = (rate.get(name) ?? 0) - contributed;
+        rate.set(name, next);
+        const last = level.segments[level.segments.length - 1];
+        if (last.fromUt === stopsAt) {
+          level.segments[level.segments.length - 1] = {
+            fromUt: stopsAt,
+            perSecond: next,
+          };
+        } else {
+          level.segments.push({ fromUt: stopsAt, perSecond: next });
+        }
+      }
+    }
+  }
+
+  const moving: MovingLevel[] = [];
+  for (const [name, level] of tracked) {
+    if (level.segments.every((segment) => segment.perSecond === 0)) continue;
+    const crossing = firstCrossing(
+      level.current,
+      level.capacity,
+      level.segments,
+    );
+    const lastRate = level.segments[level.segments.length - 1].perSecond;
     moving.push({
       name,
-      perSecond,
-      current,
-      boundary,
-      crossesAtUt: asOfUt + distance / Math.abs(perSecond),
+      current: level.current,
+      capacity: level.capacity,
+      segments: level.segments,
+      boundary: crossing?.boundary ?? (lastRate < 0 ? "floor" : "ceiling"),
+      crossesAtUt: crossing?.atUt ?? Number.POSITIVE_INFINITY,
     });
   }
   return moving;
@@ -259,13 +424,13 @@ export function resourceBoundaryCrossings(
   if (rates === null) return [];
   const asOfUt = magnitudeOf(lifeSupport.asOfKerbalismUt);
   if (asOfUt === null) return [];
-  return movingLevels(observed, rates, asOfUt).map(
-    ({ name, boundary, crossesAtUt }) => ({
+  return movingLevels(observed, lifeSupport, rates, profile, asOfUt)
+    .filter(({ crossesAtUt }) => Number.isFinite(crossesAtUt))
+    .map(({ name, boundary, crossesAtUt }) => ({
       resource: name,
       boundary,
       atUt: value("ut", crossesAtUt),
-    }),
-  );
+    }));
 }
 
 /**
@@ -401,7 +566,7 @@ export function reckonResourceLevels(
   if (typeof elapsed !== "number") return { declined: elapsed };
 
   // Which levels actually move, settled BEFORE the model is offered.
-  const rated = movingLevels(observed, rates, asOfUt);
+  const rated = movingLevels(observed, lifeSupport, rates, profile, asOfUt);
   if (rated.length === 0) {
     return {
       declined: {
@@ -452,7 +617,7 @@ export function reckonResourceLevels(
        * what `Reckoning.modelled` promises about the paths it does not name.
        */
       const resources: Resources["resources"] = { ...observed.resources };
-      for (const { name, perSecond, current, crossesAtUt } of moving) {
+      for (const { name, current, segments, crossesAtUt } of moving) {
         /*
          * The filter above settles COVERAGE, for the instant the frame reckons
          * to. This settles the VALUE, for whatever time the caller asks at, so
@@ -461,7 +626,7 @@ export function reckonResourceLevels(
         if (at >= crossesAtUt) continue;
         resources[name] = {
           ...observed.resources[name],
-          current: value("units", current + perSecond * (at - asOfUt)),
+          current: value("units", levelAt(current, segments, at)),
         };
       }
       return { ...observed, resources };

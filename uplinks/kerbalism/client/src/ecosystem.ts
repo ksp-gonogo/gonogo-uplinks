@@ -134,7 +134,7 @@ export interface Ledger {
 }
 
 /** Index the profile's processes by the pseudo-resource that joins to a part. */
-function processesByModifier(
+export function processesByModifier(
   profile: KerbalismProfile | undefined,
 ): Map<string, KerbalismProcessDef> {
   const out = new Map<string, KerbalismProcessDef>();
