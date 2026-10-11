@@ -9,7 +9,7 @@ import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 // The source of the client's version, not the manifest: `gonogo-uplink.json` is
 // generated FROM it, so it cannot supply the number that goes into it. Keep it
 // equal to `package.json`'s.
-const UPLINK_VERSION = "0.0.1";
+const UPLINK_VERSION = "1.0.0-rc.1";
 
 export const RP1 = defineUplinkClient({
   id: "rp1",
