@@ -14,7 +14,7 @@ import "./index.js";
 /**
  * What SpaceWeather does when its readings stop being current.
  *
- * The decision: it keeps the board and withholds the VERDICTS on it. A green
+ * The decision: it keeps the board and withholds the verdicts on it. A green
  * "Sheltered" pill is a statement about the habitat now, and a craft that has
  * since flown into a belt would keep wearing it for as long as the link stayed
  * down, so the pill, the storm reassurance, the lit belt rings and the "you are
@@ -25,7 +25,7 @@ import "./index.js";
  * withheld. That half is rewritten rather than deleted, and the case that
  * earned it survives intact one test down: the verdict must still not persist.
  *
- * The other assertions that earn this file are the ones about the REASON, since
+ * The other assertions that earn this file are the ones about the reason, since
  * a widget that draws nothing satisfies almost every test ever written about
  * it. Each case below checks which of the reasons it is: dated, confirmed to
  * have no data, or not yet arrived. All three used to render the same fabricated

@@ -37,7 +37,7 @@ export type VehicleHandles = Readonly<{
 
 /**
  * One vehicle: what it is, where it has got to, what it cost, why its clock
- * reads what it reads, and every action that acts on THIS copy of it. Moving it
+ * reads what it reads, and every action that acts on this copy of it. Moving it
  * to a pad, bringing it back and scrapping it are all of them; nothing here
  * starts a build, because RP-1 exposes no command that starts one.
  *
@@ -46,14 +46,14 @@ export type VehicleHandles = Readonly<{
  * so the complex is what groups a flat list rather than a detail worth
  * suppressing when there happens to be one of them.</para>
  *
- * <para>Every control ARMS before it dispatches. A scrap moves career funds and
+ * <para>Every control arms before it dispatches. A scrap moves career funds and
  * a rollback throws away a rollout that has been part-paid for, and the ui-kit
  * rule for anything in that class is that one press must not commit it. The
  * price is on the confirm wording rather than the resting one: an operator
  * scanning a list wants the names, and an operator about to spend wants the
  * number.</para>
  *
- * <para>Which controls appear is decided by the vehicle's OPERATION, not by
+ * <para>Which controls appear is decided by the vehicle's operation, not by
  * guesswork: RP-1 refuses a rollout for a vehicle already moving and refuses a
  * scrap for one on its way to a pad, so a card that offered those would be
  * offering a press that can only be refused.</para>
@@ -133,7 +133,7 @@ export function VehicleCard({
 /**
  * The bar this card draws, or undefined when there is no work to report.
  *
- * <para>An operation OUTRANKS the build: a vehicle that has finished
+ * <para>An operation outranks the build: a vehicle that has finished
  * integrating and is rolling out has a fraction for the rollout and none left
  * for the build, and drawing the build's would say the move had not
  * started.</para>
@@ -167,7 +167,7 @@ function progressOf(
 }
 
 /**
- * The clock, and what it is counting DOWN TO.
+ * The clock, and what it is counting down to.
  *
  * <para>A bare "45d" is the defect this replaces: it was the only number on the
  * card with no noun, so it could equally have been how long the vehicle has
@@ -258,14 +258,14 @@ function TimeLeft({
 /**
  * The two things about a vehicle's complex that decide how fast its work goes.
  *
- * <para>Staffing is a RATE control rather than a capability one: RP-1 scales
+ * <para>Staffing is a rate control rather than a capability one: RP-1 scales
  * every project inside a complex by the portion of its engineer places that are
  * filled, so a complex nobody is assigned to makes no progress at all however
  * many engineers the centre has hired. That is why the count is on the card
  * rather than only on the staffing screen: it is the answer to "why is this
  * taking so long".</para>
  *
- * <para>Rushing rides here for the same reason, and on EVERY card the complex
+ * <para>Rushing rides here for the same reason, and on every card the complex
  * owns rather than only the ones being integrated: RP-1's rush multiplier is
  * applied to a complex's rollouts, rollbacks and reconditionings as well as its
  * integrations, so a rollout card at a rushing complex is a rushed rollout. The
@@ -298,7 +298,7 @@ function ComplexRate({
 }
 
 /**
- * Where the vehicle is. An operation on it OUTRANKS the list it sits in: a
+ * Where the vehicle is. An operation on it outranks the list it sits in: a
  * rolled-out vehicle is still in the warehouse, so "BUILT" would be true and
  * useless.
  */
@@ -331,7 +331,7 @@ function VehicleState({
 }
 
 /**
- * Every action available to one vehicle right NOW, as a wrapping strip of
+ * Every action available to one vehicle right now, as a wrapping strip of
  * buttons.
  *
  * <para>No "Actions" label in front of them. A row of arm-then-confirm buttons
@@ -339,12 +339,12 @@ function VehicleState({
  * third of the width off the controls it named.</para>
  *
  * <para><b>Nothing but buttons on the button line.</b> Every sentence
- * explaining why a control is ABSENT goes underneath, on its own line.
+ * explaining why a control is absent goes underneath, on its own line.
  * Interleaved, a refusal read as a caption belonging to the button beside it,
  * which is the one reading that is never true: it explains the button that is
  * not there.</para>
  *
- * <para>The rollout PRICE sits above the line for the mirror-image reason. It is
+ * <para>The rollout price sits above the line for the mirror-image reason. It is
  * one figure for the whole move whichever pad it goes to, so a copy beside each
  * pad button would restate one price two and three times, and a single copy
  * inside the row would read as belonging to whichever button it landed
@@ -461,11 +461,11 @@ function VehicleActions({
  * What the rollout will cost the career, beside the control that spends it.
  *
  * <para><b>"Over the rollout", the same three words the facility upgrades use,
- * and for the same reason: RP-1 takes NOTHING at the press.</b> It draws the
+ * and for the same reason: RP-1 takes nothing at the press.</b> It draws the
  * price down as the move proceeds, and a career that cannot cover a tick
  * advances by the fraction it can afford and carries on. So there is no
  * affordability verdict here and there must never be one: a shortfall makes a
- * rollout SLOWER, and "cannot afford" would describe a refusal RP-1 does not
+ * rollout slower, and "cannot afford" would describe a refusal RP-1 does not
  * make.</para>
  *
  * <para>An unpriced move still offers the control. The command reads the price
@@ -489,7 +489,7 @@ function RolloutPrice({
 }
 
 /**
- * One rollout control per ELIGIBLE pad.
+ * One rollout control per eligible pad.
  *
  * <para><b>The pad is always named.</b> The command requires it, per the
  * operator's ruling: choosing a launch site is a decision an operator makes, so
@@ -497,7 +497,7 @@ function RolloutPrice({
  * meant. The convenience belongs here instead, and this is what it looks like:
  * one pad means one button, and pressing it commits to that pad by name.</para>
  *
- * <para>Draws NOTHING when the list is empty, rather than the sentence saying
+ * <para>Draws nothing when the list is empty, rather than the sentence saying
  * why. The caller owns that sentence, because it also owns the vehicle's own
  * refusals and only one of the two is worth printing; see
  * <c>withheldRolloutReason</c>.</para>
@@ -542,7 +542,7 @@ function RolloutControls({
 }
 
 /**
- * What a scrap pays back. RP-1 refunds the vehicle in FULL, integrating or
+ * What a scrap pays back. RP-1 refunds the vehicle in full, integrating or
  * finished alike, which is the fact that makes this control safe to offer and
  * expensive to press by accident: getting the vehicle back means paying for the
  * integration time again.

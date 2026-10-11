@@ -12,7 +12,7 @@ import "./index.js";
  * The generated page, gated without a browser.
  *
  * `uplink-tools docs --check` asks two questions and only one of them needs
- * Chromium: whether the committed images are current does, whether the PROSE
+ * Chromium: whether the committed images are current does, whether the prose
  * still matches the registrations does not. This is the second question, run
  * here because this suite has already loaded the client under jsdom with a host
  * installed, which is exactly what the check needs and nothing more.

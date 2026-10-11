@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 /**
- * Composing a flight plan at the command centre and sending it to a REAL game.
+ * Composing a flight plan at the command centre and sending it to a real game.
  *
  * <p>This is the journey that was driven by hand on 2026-08-24 and found three
  * faults stacked behind each other: `Value`s on the wire where the receiving

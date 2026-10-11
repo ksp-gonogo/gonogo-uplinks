@@ -46,7 +46,7 @@ export const RP1_FACILITY_UPGRADE_COMMAND = "rp1.facility.upgrade";
  * whole section is worded around.</b> RP-1 does not sell a facility upgrade: it
  * adds a construction project, and `ConstructionProject.AddProgress` draws the
  * funds down as the work advances, throttling itself to whatever fraction the
- * career can meet at the time. So a short career gets a SLOWER upgrade, never a
+ * career can meet at the time. So a short career gets a slower upgrade, never a
  * refused one, and there is no affordability verdict here of any kind. The host
  * widget's own stock control has one and is right to: `career.facility.upgrade`
  * buys a tier outright, which is a different act at a different price, and
@@ -64,7 +64,7 @@ export const RP1_FACILITY_UPGRADE_COMMAND = "rp1.facility.upgrade";
  * `career.facilities`, and that is what lets this section answer away
  * from the space centre.</b> The stock channel reads the live
  * `UpgradeableFacility` objects, which KSP puts in the SPACECENTER scene only;
- * RP-1 reads the level KSP persists in the SAVE and denormalises it against its
+ * RP-1 reads the level KSP persists in the save and denormalises it against its
  * own config tier count, which is what its upkeep pass does in all four scenes.
  * The stock channel is still read as a fallback, for a career whose RP-1 cost
  * table has not loaded.</para>
@@ -74,7 +74,7 @@ export const RP1_FACILITY_UPGRADE_COMMAND = "rp1.facility.upgrade";
  * for `GetUpgradeCost()` and for the level table that sets the build's duration.
  * Both come out of `Database.FacilityLevelCosts` instead, which is where these
  * rows already get their price, so `rp1.facility.upgrade` now queues from
- * wherever the operator is standing and its requirement asks whether ANY source
+ * wherever the operator is standing and its requirement asks whether any source
  * can price a tier. See `Rp1FacilityUpgradeCommands`' header for the
  * member-by-member equivalence.</para>
  *
@@ -243,7 +243,7 @@ interface NextTier {
  *
  * <para>Null covers two different silences and neither is a row: a facility
  * already at its ceiling, and one whose tiers no channel sent. The caller tells
- * them apart by asking whether ANY facility answered, because a career at its
+ * them apart by asking whether any facility answered, because a career at its
  * ceiling and a reading that never arrived are the same empty section
  * otherwise.</para>
  *
@@ -282,7 +282,7 @@ type TierBearing = Pick<
 >;
 
 /**
- * Whether this entry stated a tier AND a ceiling. Both, because a tier without a
+ * Whether this entry stated a tier and a ceiling. Both, because a tier without a
  * ceiling cannot say whether there is a step left, and the section's whole
  * "nothing has arrived" branch turns on the difference between an absent reading
  * and a building already at the top.

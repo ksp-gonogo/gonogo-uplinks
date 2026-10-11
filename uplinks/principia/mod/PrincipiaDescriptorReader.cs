@@ -44,7 +44,7 @@ namespace GonogoPrincipiaUplink
     /// embeds, so a version's interface can be identified before a single call is
     /// made into it.
     ///
-    /// <para>The descriptor is what makes an ABI break DETECTABLE rather than fatal.
+    /// <para>The descriptor is what makes an ABI break detectable rather than fatal.
     /// It is byte-identical across all six shipped builds of a release, so its hash
     /// names a release's interface exactly, and Principia offers no interface version
     /// to gate on otherwise.</para>
@@ -124,7 +124,7 @@ namespace GonogoPrincipiaUplink
         /// stop. Zero, with <paramref name="failure"/> set, when the end cannot be
         /// established.
         ///
-        /// <para><b>The boundary test is that the walk lands EXACTLY on its own last
+        /// <para><b>The boundary test is that the walk lands exactly on its own last
         /// field, never past it.</b> The obvious alternative, re-encoding the region
         /// and requiring byte equality, does not work and was measured not working:
         /// truncate the real descriptor by one byte and a re-encode reproduces the

@@ -46,9 +46,9 @@ import { PRINCIPIA } from "../uplink.js";
  * Compose a flight plan here and send it whole.
  *
  * <p><b>Why this sits beside the burn editor rather than replacing it.</b> The
- * editor changes the plan the vessel is ALREADY flying, one burn at a time, and
+ * editor changes the plan the vessel is already flying, one burn at a time, and
  * each change is its own message. This builds a plan that does not exist yet and
- * sends it as ONE: five separate burn commands are five light-times, each able
+ * sends it as one: five separate burn commands are five signal delays, each able
  * to arrive late, out of order or not at all, and a vessel that received three of
  * them would fly a trajectory nobody composed and nobody approved.</p>
  *
@@ -277,7 +277,7 @@ export function PlanComposer() {
  *
  * <p>The verdict is the point of this row. A plan whose first burn is closer
  * than the round trip cannot be flown from here however healthy the link looks:
- * the press leaves at a view instant already one light time old, spends another
+ * the press leaves at a view instant already one signal delay old, spends another
  * in flight, and lands after the burn should have lit. Saying so before the
  * press is the difference between an operator knowing that and believing they
  * acted.</p>
@@ -319,7 +319,7 @@ function ReadyPlan({
    * The send, in the shape the kit's command control takes.
    *
    * <p>The dispatch is the shared one and the args are already built by the send
-   * handle, so this contributes only the press. A REFUSAL is re-thrown, because
+   * handle, so this contributes only the press. A refusal is re-thrown, because
    * the handle resolves on one: the control settles on its own promise, and a
    * resolved refusal would leave the button reading as though the plan went. The
    * sentence itself stays on the status line below, which is where a refusal has

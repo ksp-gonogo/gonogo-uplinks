@@ -52,7 +52,7 @@ import {
 } from "./__generated__/units.js";
 
 /**
- * The bare-boolean presence-gate Topic. Its value MUST match
+ * The bare-boolean presence-gate Topic. Its value must match
  * `KerbalismUplink.AvailableTopic` in ../KerbalismUplink.cs: `topics.test.ts`
  * asserts that, and so does the same file for each of the five below.
  */

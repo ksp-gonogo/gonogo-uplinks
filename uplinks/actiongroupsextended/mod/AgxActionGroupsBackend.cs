@@ -8,7 +8,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
     /// The AGX <see cref="IActionGroupsBackend"/>: the higher-priority
     /// backend elected for the exclusive <c>"actionGroups"</c> capability
     /// when AGExt is loaded.
-    /// Produces the SAME <see cref="ActionGroupState"/> the stock backend
+    /// Produces the same <see cref="ActionGroupState"/> the stock backend
     /// produces (no new wire type, no contract change) just a longer,
     /// player-named list sourced from AGX instead of stock's ten anonymous
     /// customs.

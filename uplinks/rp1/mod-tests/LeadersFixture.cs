@@ -19,7 +19,7 @@ namespace RP0
 
         public bool CannotActivative { get; set; }
 
-        /// <summary>What the compiled REQUIREMENTS predicate answers.</summary>
+        /// <summary>What the compiled requirements predicate answers.</summary>
         public bool Unlocked { get; set; } = true;
 
         public Dictionary<CurrencyRP0, double> SetupCosts { get; set; } = new Dictionary<CurrencyRP0, double>();

@@ -6,7 +6,7 @@ namespace GonogoPrincipiaUplink
 {
     /// <summary>
     /// The propagation provider for an install whose physics is n-body: it states
-    /// that trajectories here are INTEGRATED, and forwards every closed-form
+    /// that trajectories here are integrated, and forwards every closed-form
     /// question to the two-body solver it displaced.
     ///
     /// <para><b>What it adds is one fact, and that fact is the whole point.</b>
@@ -20,7 +20,7 @@ namespace GonogoPrincipiaUplink
     /// states it.</para>
     ///
     /// <para><b>It answers one question of its own, and that question is the
-    /// horizon.</b> <see cref="CanPropagate"/> takes a WINDOW because a provider that
+    /// horizon.</b> <see cref="CanPropagate"/> takes a window because a provider that
     /// integrates has a limit and the interface is where it states one. Forwarding it
     /// answered "yes, always", which left core applying a fixed fraction of a cycle
     /// to every craft in the save; that fraction was measured five times too long for
@@ -36,14 +36,14 @@ namespace GonogoPrincipiaUplink
     /// two-body questions with two-body answers, and the producer's own trajectory
     /// exports either write to the save or abort the process on state we do not
     /// control, so there is no honest integrated substitute to forward them to. The
-    /// integrated answer, the one this marker promises, is the ARC, and that is
+    /// integrated answer, the one this marker promises, is the arc, and that is
     /// computed against the force model this Uplink publishes separately. Carrying
     /// a second copy of two-body motion in here to answer the rest would be the
     /// duplication the propagation seam exists to prevent, which is why the
     /// displaced solver arrives as a constructor argument.</para>
     ///
     /// <para><b>Registered whether or not a force model could be read.</b> Whether
-    /// trajectories are integrated is a property of the INSTALL, and it does not
+    /// trajectories are integrated is a property of the install, and it does not
     /// stop being true because a gravity-model config is missing. Withholding this
     /// registration when the model is absent would publish closed-form elements
     /// with no complaint attached, which is precisely the reading that made a dead
@@ -99,7 +99,7 @@ namespace GonogoPrincipiaUplink
         /// </param>
         /// <param name="parentOf">
         /// Which body a body orbits, or null for the root and for anything the game
-        /// will not say. Needed only by the BODY horizon, which has to know the frame
+        /// will not say. Needed only by the body horizon, which has to know the frame
         /// a body's own conic is measured in; a craft carries that on its target and a
         /// body deliberately does not, because which body a body orbits is the
         /// provider's to know rather than the caller's to assert. Injected on the same
@@ -108,7 +108,7 @@ namespace GonogoPrincipiaUplink
         /// </param>
         /// <param name="bodyName">
         /// The gravity model's name for a body index, needed only to find the primary's
-        /// J2: the neighbourhood lists everything BUT the primary. Null, or a null
+        /// J2: the neighbourhood lists everything but the primary. Null, or a null
         /// answer, leaves oblateness out of the bound, which is what a model with no J2
         /// gets anyway.
         /// </param>
@@ -163,8 +163,8 @@ namespace GonogoPrincipiaUplink
         /// <see cref="PrincipiaHorizonBound.ToleranceMetres"/> of the path it is
         /// tangent to, computed from the force model published beside it.</para>
         ///
-        /// <para><b>A BODY is passed straight through, and that is not an
-        /// oversight.</b> The horizon is a statement about a CRAFT's osculating
+        /// <para><b>A body is passed straight through, and that is not an
+        /// oversight.</b> The horizon is a statement about a craft's osculating
         /// elements. A body's are the producer's own ephemeris, fitted to a
         /// millimetre and re-read every sample, and the acceleration walk that
         /// computes a bound asks this very question about each perturber it wants to
@@ -173,7 +173,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>The instant itself is always answerable when the solver can reach
         /// it, however perturbed the craft is. A zero-length window asks where
-        /// something IS, which the osculating elements answer exactly by
+        /// something is, which the osculating elements answer exactly by
         /// construction, and it is what every visibility and encounter caller asks
         /// for.</para>
         /// </summary>
@@ -388,19 +388,19 @@ namespace GonogoPrincipiaUplink
         /// per body and why one number for the catalogue would have been wrong for
         /// almost all of it. See <c>BodyEphemerisHorizonTests</c>.</para>
         ///
-        /// <para><b>Held per body and only ever re-measured once it has EXPIRED.</b>
+        /// <para><b>Held per body and only ever re-measured once it has expired.</b>
         /// Thirty-four bodies each paying a four-revolution integration per sample is
         /// not affordable on the Courier thread, and no fraction of a sample interval
         /// is a defensible thing to recompute on. What is defensible is this: the
-        /// cached answer is an absolute instant, the span handed back is what is LEFT
+        /// cached answer is an absolute instant, the span handed back is what is left
         /// of it, and a new measurement is taken when nothing is. So the published
         /// horizon never reaches past an instant that was measured from a real sample,
         /// it shrinks between measurements rather than drifting either way, and being
         /// short is the safe direction for a bound to be wrong in.</para>
         ///
-        /// <para><b>A cached answer is thrown away when the clock goes BACKWARDS</b>,
+        /// <para><b>A cached answer is thrown away when the clock goes backwards</b>,
         /// which in this game is a revert or a load and neither is rare. The instant a
-        /// measurement was taken AT is held beside the one it reaches to, because
+        /// measurement was taken at is held beside the one it reaches to, because
         /// without it an answer measured at a later sample would be handed to an
         /// earlier one as a span of everything between them, which is the one way this
         /// cache could over-vouch rather than under-vouch.</para>

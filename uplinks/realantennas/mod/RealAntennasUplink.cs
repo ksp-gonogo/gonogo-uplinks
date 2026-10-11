@@ -7,19 +7,19 @@ namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
     /// The GonogoRealAntennasUplink (comms-uplink-design.md §2.2, §4). A
-    /// SEPARATE (non-bundled) uplink, discovered by the same
+    /// separate (non-bundled) uplink, discovered by the same
     /// <c>[SitrepUplink]</c> assembly scan as every other. It does three things:
     ///
     /// <list type="number">
     /// <item>When RealAntennas is loaded (the <see cref="RaReflection"/> probe,
     /// §4.2), it registers a higher-priority <c>"comms"</c> provider on the
-    /// engine Kernel so <see cref="RaCommsBackend"/> WINS the exclusive comms
+    /// engine Kernel so <see cref="RaCommsBackend"/> wins the exclusive comms
     /// election: geometry/connectivity via stock CommNet, hops enriched with RA
-    /// data rate. Registering the provider IS the gate (§2.2): absent RA, no
+    /// data rate. Registering the provider is the gate (§2.2): absent RA, no
     /// provider is registered and CommNet vanilla stays elected.</item>
     /// <item>It declares + sources the RA-ONLY channels
     /// (<c>comms.linkQuality</c>/<c>comms.dataRate</c>/<c>comms.linkMargin</c>)
-    /// in its OWN manifest, bypassing the election entirely (§2.2). Data rate is
+    /// in its own manifest, bypassing the election entirely (§2.2). Data rate is
     /// read live off the RACommLink; margin/quality are RE-DERIVED by
     /// <see cref="RaLinkBudget"/> from RA's public antenna props (§4.3), never
     /// reflected off a live field.</item>
@@ -28,7 +28,7 @@ namespace Gonogo.RealAntennasUplink
     /// home is the ground station nearest KSP's space centre.</item>
     /// </list>
     ///
-    /// <para>NO compile-time reference to RA's CC-BY-SA-4.0 assembly, every RA
+    /// <para>No compile-time reference to RA's CC-BY-SA-4.0 assembly, every RA
     /// member is reached by reflection (§4.1/§4.2). Compile surface is
     /// <c>Sitrep.Contract</c> + stock KSP only.</para>
     /// </summary>
@@ -200,7 +200,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// MAIN THREAD: <c>realantennas.vessel.setAutoRetarget</c>. Records whether a
+        /// Main thread: <c>realantennas.vessel.setAutoRetarget</c>. Records whether a
         /// craft may have a dish turned on its own. Opting a craft out while a dish of
         /// it is on loan puts the dish back at once, before the answer is given, so the
         /// operator who turned it off is not left with the dish still on a borrowed aim.
@@ -240,7 +240,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// MAIN THREAD: the <c>realantennas.retargeting</c> value. Every craft that is
+        /// Main thread: the <c>realantennas.retargeting</c> value. Every craft that is
         /// opted out, has a dish on loan, or has had one: published whole each time,
         /// because the channel is LossyLatest and a craft whose loan has ended must
         /// leave the wire rather than stay on it.
@@ -304,7 +304,7 @@ namespace Gonogo.RealAntennasUplink
         /// MAIN-THREAD capture for <c>realantennas.antennaChains</c>, and the
         /// tick the fallback walk runs on.
         ///
-        /// <para>The walk goes FIRST, so the value published beside it describes
+        /// <para>The walk goes first, so the value published beside it describes
         /// the state the craft is now in rather than the one it was in before this
         /// tick moved it. An operator watching a chain advance would otherwise see
         /// every entry one tick late, which on a delayed channel is indistinguishable
@@ -329,7 +329,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// COURIER-THREAD handle for <c>realantennas.antennaChains</c>: the
-        /// flattened array. An empty array is PUBLISHED rather than withheld, for
+        /// flattened array. An empty array is published rather than withheld, for
         /// the same reason the antenna list is: the channel is LossyLatest, so
         /// withholding would leave the previous craft's chains on the wire.
         /// </summary>
@@ -362,7 +362,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// COURIER-THREAD handle for <c>realantennas.antennas</c>: the flattened
-        /// array. An empty array is PUBLISHED rather than withheld, because the
+        /// array. An empty array is published rather than withheld, because the
         /// channel is LossyLatest: withholding it on a craft with no antennas
         /// would leave the previous craft's list standing on the wire.
         /// </summary>
@@ -404,7 +404,7 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// MAIN-THREAD capture: reads the RA link off the live control path.
         ///
-        /// <para>The vessel is resolved ONCE here and threaded through every
+        /// <para>The vessel is resolved once here and threaded through every
         /// helper below. Five separate resolutions on one tick could disagree
         /// with each other across a vessel switch, and would give the hop rates a
         /// different subject from the margin computed beside them.</para>
@@ -622,8 +622,8 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Whether a link's FORWARD direction (its stored <c>a -&gt; b</c>) is the
-        /// operator's DOWNLINK (vessel -&gt; home). True when <c>link.a</c> is the
+        /// Whether a link's forward direction (its stored <c>a -&gt; b</c>) is the
+        /// operator's downlink (vessel -&gt; home). True when <c>link.a</c> is the
         /// reported vessel's own comm node, so <c>a -&gt; b</c> runs away from the
         /// vessel toward home. Falls back to true, the plain Down=Fwd mapping,
         /// when the vessel node cannot be identified: a coin-flip for that link

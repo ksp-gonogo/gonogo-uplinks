@@ -14,23 +14,23 @@ import { KERBALISM } from "./uplink.js";
 
 /**
  * A kerbal's survival accumulators, carried forward at the rate they are
- * OBSERVED to be moving.
+ * observed to be moving.
  *
  * ## Why not the rate the profile declares
  *
  * `KerbalismCrewRule` publishes the accumulator and a rate side by side, which
  * is the shape a rate integration wants, and taking the published rate would
- * be wrong. `degenPerSec` is a CONFIGURATION CONSTANT off
+ * be wrong. `degenPerSec` is a configuration constant off
  * `Profile.rules[].degeneration`, and `KerbalismCrewEntry.deathClockUt`'s own
  * doc states the condition it omits: "a rule only degenerates once its input
- * resource is gone". So the declared rate is what the rule WOULD do while
+ * resource is gone". So the declared rate is what the rule would do while
  * starved, not what it is doing, and a model integrating it would advance a
  * perfectly supplied kerbal towards their fatal threshold on schedule. That is
  * a modelled rate presented as an observation, which is the failure the whole
  * reckoning type exists to prevent.
  *
  * The declared window is what makes the honest version possible. Two samples of
- * `value` ARE the rate that is happening, whatever the profile says, and a flat
+ * `value` are the rate that is happening, whatever the profile says, and a flat
  * pair is positive evidence that the rule is not degenerating: the input
  * resource is still aboard. `minSamples: 2` is therefore load-bearing rather
  * than decoration, and the store raises `insufficient-history` on this model's
@@ -38,7 +38,7 @@ import { KERBALISM } from "./uplink.js";
  *
  * ## Fitted over `(stamp, value)` pairs, and the stamp is not the wire time
  *
- * The x-axis is each entry's own `asOfUt`, the UT Kerbalism last ADVANCED the
+ * The x-axis is each entry's own `asOfUt`, the UT Kerbalism last advanced the
  * accumulators, not the sample's `validAt`. Unloaded craft take their Kerbalism
  * turn one per physics tick in rotation, so two consecutive wire points can
  * carry the same `asOfUt` (the craft did not take a turn between them) and the
@@ -46,13 +46,13 @@ import { KERBALISM } from "./uplink.js";
  * Fitting against `validAt` would read that as a slope of zero over a gap the
  * game never simulated.
  *
- * Which also means the pairs can collapse onto ONE instant, and a slope over no
+ * Which also means the pairs can collapse onto one instant, and a slope over no
  * time is not a slope: see {@link observedSlope}.
  *
  * ## What it does not touch
  *
  * `deathClockUt` is an absolute instant the mod derived from the reading at
- * `asOfUt`, and its contract is explicit that "It is NOT restamped to now:
+ * `asOfUt`, and its contract is explicit that "It is not restamped to now:
  * nothing is advanced, the instant is exactly the one the stamped-at reading
  * implied". Carrying it forward would move a deadline nobody moved. Every
  * sibling here (the name, the trait, the declared rate, the threshold, the
@@ -62,7 +62,7 @@ import { KERBALISM } from "./uplink.js";
 /**
  * How far a degenerating accumulator stays honest, in seconds.
  *
- * The observed slope says the rule is starved RIGHT NOW, and what ends that is
+ * The observed slope says the rule is starved right now, and what ends that is
  * the input resource coming back: a converter catching up, a craft docking, a
  * crew transfer. None of those is predictable from this channel, and none of
  * them shows up in the fit's own error, which only grows with the slope's
@@ -80,7 +80,7 @@ export const CREW_DEGENERATION_HORIZON_SECONDS = 600;
 /**
  * The lookback handed to this model, and the floor below which it does not run.
  *
- * `spanUt` is game seconds of LOOKBACK, never a count of expected samples: the
+ * `spanUt` is game seconds of lookback, never a count of expected samples: the
  * stream is change-gated, so a rule that changed twice in half an hour carries
  * two points in that half hour and a rule under heavy load carries dozens.
  * Half an hour is long enough to hold a pair across a slow background craft's
@@ -97,7 +97,7 @@ type Crew = TopicPayload<"kerbalism.crew">;
 
 /** A least-squares slope over irregularly spaced samples, and how well it is known. */
 export interface ObservedSlope {
-  /** Units per second of STAMP time. */
+  /** Units per second of stamp time. */
   readonly perSecond: number;
   /**
    * One standard error of `perSecond`, or `undefined` where the fit cannot
@@ -132,13 +132,13 @@ export interface ObservedSlope {
  * known. That is what lets this model offer a `sigma1` band where
  * `resourceReckoning.ts` can offer nothing: its rate is one measured sample
  * from the wire with no distribution behind it, and this one is an estimate
- * with a spread. So the window does not only make a RATE available where there
- * was none, it makes an UNCERTAINTY available, and the two arrive together
+ * with a spread. So the window does not only make a rate available where there
+ * was none, it makes an uncertainty available, and the two arrive together
  * here so they cannot disagree.
  *
- * It is the error on the SLOPE only. The anchor the model integrates from is a
+ * It is the error on the slope only. The anchor the model integrates from is a
  * measurement whose own error nothing on this wire publishes, so the band this
- * feeds says how well the MODEL knows what it added, which is exactly what
+ * feeds says how well the model knows what it added, which is exactly what
  * `Reckoning.bands` is documented to mean.
  */
 export function fitSlope(
@@ -192,14 +192,14 @@ interface Moving {
 /**
  * The `(asOfUt, value)` pairs one rule contributes across the window.
  *
- * Joined by NAME on both axes rather than by position: a crew list is a roster
+ * Joined by name on both axes rather than by position: a crew list is a roster
  * and a kerbal can leave it, so index `1` in an older sample is not necessarily
  * the same person. A rule missing from an older sample simply contributes no
  * pair, which is what leaves the fit shorter rather than wrong.
  *
- * ## The window can span a change of SUBJECT, which the store does not cut at
+ * ## The window can span a change of subject, which the store does not cut at
  *
- * A break in the RECORD is truncated before a model sees it, and a change of
+ * A break in the record is truncated before a model sees it, and a change of
  * subject is not a break: the store hands back a contiguous run that may
  * straddle a vessel switch. `verticalAccelerationOver` reached the same
  * conclusion for a descent rate and filters the same way. The name join

@@ -6,18 +6,18 @@ using System.Reflection;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// The arm's-length REFLECTION surface onto RealAntennas (comms-uplink-design.md
-    /// §4.2/§4.3). NO compile-time reference to RA's assembly exists anywhere in this
+    /// The arm's-length reflection surface onto RealAntennas (comms-uplink-design.md
+    /// §4.2/§4.3). No compile-time reference to RA's assembly exists anywhere in this
     /// project: every RA member is reached by runtime reflection against the loaded
     /// <c>RealAntennas</c> assembly, so the CC-BY-SA-4.0 ShareAlike boundary is never
-    /// crossed (§4.1): we USE the running mod's public API, we don't INCORPORATE its
+    /// crossed (§4.1): we use the running mod's public API, we don't incorporate its
     /// code.
     ///
     /// <para>Viability (source-verified §4.3): <c>RealAntenna</c>/<c>RealAntennaDigital</c>
     /// and <c>RACommLink</c> are public classes with public properties
     /// (<c>Gain</c>/<c>TxPower</c>/<c>SymbolRate</c>/<c>Frequency</c>;
     /// <c>FwdDataRate</c>/<c>RevDataRate</c>) reachable straightforwardly. Link margin
-    /// is NOT stored publicly on the live graph, it is RE-DERIVED by
+    /// is not stored publicly on the live graph, it is RE-DERIVED by
     /// <see cref="RaLinkBudget"/> from the public antenna props, not reflected.</para>
     ///
     /// <para>Fail-soft throughout: a missing type/member (an RA version whose surface
@@ -246,13 +246,13 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// The live <c>ModuleRealAntenna</c> behind this antenna, non-null only
-        /// while its vessel is LOADED. Held as a bare <c>object</c>.
+        /// while its vessel is loaded. Held as a bare <c>object</c>.
         /// </summary>
         public object? Parent(object antenna) => ReadMember(antenna, "Parent");
 
         /// <summary>
         /// The persisted module snapshot behind this antenna, non-null only while
-        /// its vessel is UNLOADED. Its presence is the load-state test the
+        /// its vessel is unloaded. Its presence is the load-state test the
         /// targeting commands guard on.
         /// </summary>
         public object? ParentSnapshot(object antenna) => ReadMember(antenna, "ParentSnapshot");
@@ -265,7 +265,7 @@ namespace Gonogo.RealAntennasUplink
         ///
         /// <para>Derived from the runtime type name because nothing stores the
         /// mode: <c>AntennaTarget</c> has one subclass per kind and the mode enum
-        /// is only ever used to CHOOSE one.</para>
+        /// is only ever used to choose one.</para>
         /// </summary>
         public string? TargetKind(object? target)
         {
@@ -282,7 +282,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// A target's <c>vesselId</c>: the vessel aimed at for a <c>Vessel</c>
-        /// target, and the vessel the angles are measured FROM for the two
+        /// target, and the vessel the angles are measured from for the two
         /// attitude kinds.
         /// </summary>
         public string? TargetVesselId(object? target) => ReadMember(target, "vesselId") as string;
@@ -396,7 +396,7 @@ namespace Gonogo.RealAntennasUplink
         ///
         /// <para>The parameter is non-nullable and that is the whole point.
         /// Assigning null is the one write on this surface that throws, on any
-        /// antenna whose craft is unloaded, and the throw is NOT atomic: the
+        /// antenna whose craft is unloaded, and the throw is not atomic: the
         /// antenna has already been cleared and its saved <c>TARGET</c> node
         /// already deleted by the time it happens, so a caller that caught it
         /// would report failure having destroyed the aim point.</para>

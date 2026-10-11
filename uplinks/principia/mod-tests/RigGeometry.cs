@@ -14,7 +14,7 @@ namespace GonogoPrincipiaUplink.Tests
     ///
     /// <para><b>One declaration, shared by every suite that measures a departure.</b>
     /// It was nested inside the craft-bound suite, and a second suite measuring
-    /// BODIES against a second transcription of it would have two evaluators agreeing
+    /// bodies against a second transcription of it would have two evaluators agreeing
     /// with themselves and nothing comparing them. A copy of a measured thing is the
     /// one kind of duplication that cannot be caught by reading either half.</para>
     /// </summary>
@@ -86,7 +86,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The same conic seen from the other end: where the PRIMARY is, in this
+        /// The same conic seen from the other end: where the primary is, in this
         /// body's frame. A local copy because a lambda in a struct may not close
         /// over <c>this</c>.
         /// </summary>

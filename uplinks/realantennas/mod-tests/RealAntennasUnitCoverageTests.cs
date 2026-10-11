@@ -10,7 +10,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// The per-Uplink half of the uplink-types-out-of-core plan's Unit guard
     /// (§5b): now that the three RA-only comms payload types live in their own
     /// assembly (<c>GonogoRealAntennasUplink.Contract</c>) instead of
-    /// <c>Sitrep.Contract</c>, nothing FORCES a future property on this Uplink's
+    /// <c>Sitrep.Contract</c>, nothing forces a future property on this Uplink's
     /// own contract types to declare its unit. The sweep itself is
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
@@ -36,7 +36,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// as a bare number is the same ambiguity the margin has, one step closer to
     /// the craft.</para>
     ///
-    /// <para>This test only checks the ATTRIBUTE side (every scalar wire property
+    /// <para>This test only checks the attribute side (every scalar wire property
     /// carries <c>[SitrepUnit]</c>); the generated-file/import side is
     /// <c>generated-value-import.test.ts</c> in this Uplink's client package, and
     /// the runtime-registry side is <c>topics.test.ts</c> there.</para>
@@ -51,10 +51,10 @@ namespace GonogoRealAntennasUplink.Tests
 
         /// <summary>
         /// Every type in the slice is reached by the sweep, and nothing else is.
-        /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes VACUOUSLY on
+        /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes vacuously on
         /// any type the sweep does not reach, so a type losing its
         /// <c>[SitrepContract]</c> tag would leave the remaining green looking
-        /// untouched. It also pins the extraction BOUNDARY: this slice must hold
+        /// untouched. It also pins the extraction boundary: this slice must hold
         /// the three provider-private payloads and nothing from the shared comms
         /// family, so a later commit dragging <c>CommsHop</c> or
         /// <c>CommsConnectivity</c> across reds here rather than passing quietly.

@@ -11,14 +11,14 @@ import { LEADERS_SCREEN } from "./leadersScreen.js";
  * building an RP-1 operator opens has screens, and a stock one does not, which
  * is why the host widget asks rather than assumes.</para>
  *
- * <para>The screen is contributed whenever RP-1 is running, NOT when the career
+ * <para>The screen is contributed whenever RP-1 is running, not when the career
  * happens to be carrying a Program. A career between Programs still has a
  * Programs screen, and drawing one only once something is in it would make an
  * empty screen and a missing one look identical.</para>
  */
 /**
  * The screen's id, shared with the augment that draws its body: an augment is
- * bound to the SLOT rather than to one screen, so it is handed `screenId` and
+ * bound to the slot rather than to one screen, so it is handed `screenId` and
  * decides. Exported so the two agree by construction.
  */
 export const PROGRAMS_SCREEN_ID = "programs";

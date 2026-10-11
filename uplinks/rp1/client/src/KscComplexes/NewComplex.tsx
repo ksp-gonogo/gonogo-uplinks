@@ -28,7 +28,7 @@ export const RP1_COMPLEX_NEW_COMMAND = "rp1.complex.new";
  *
  * <para><b>Every field is required and none is defaulted, which is deliberate
  * rather than strict.</b> The tonnage, the envelope and the human rating are all
- * PRICED: human rating alone multiplies the pad half by 1.5 and the integration
+ * priced: human rating alone multiplies the pad half by 1.5 and the integration
  * half by 2, so a substituted default would silently halve or double the price of
  * the thing being bought. The tonnage does something worse than cost money, and
  * the form says so: RP-1 records it as `massOrig` and holds every later renovation

@@ -30,7 +30,7 @@ namespace Gonogo.KerbalismUplink
     /// <c>KerbalismFileActuator</c>'s live reflection glue so it is
     /// unit-testable without a live vessel. Picks the lab-adjacent,
     /// non-source candidate with the most available sample capacity, but
-    /// only when it can hold the WHOLE sample: a partial move would split the
+    /// only when it can hold the whole sample: a partial move would split the
     /// sample across two drives, a worse state than refusing.
     /// </summary>
     public static class KerbalismMoveDestinationSelector

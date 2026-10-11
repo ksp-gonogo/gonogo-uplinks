@@ -73,13 +73,13 @@ export interface KerbalSurvival {
   worstRule: KerbalRuleState | undefined;
   /**
    * The margin to act: the time to this kerbal's death clock less the one-way
-   * light time, so it is how long is left to send something that lands in time.
+   * signal delay, so it is how long is left to send something that lands in time.
    * Zero once nothing sent can: too late.
    *
    * A reading derived from `kerbalism.crew`: the observation measures from the
    * received edge, and where the crew model reaches past it, its reckoning
    * measures from the craft's present and is drawn beside it with the modelled
-   * mark. No value while the deadline or the light time is unknown, which is
+   * mark. No value while the deadline or the signal delay is unknown, which is
    * never a large number: a kerbal whose deadline cannot be computed and one
    * with years of supplies must not render the same.
    */
@@ -159,14 +159,14 @@ export function onFatalAxis(
 /**
  * Normalize one wire rule's raw accumulator to a 0..1-toward-fatal fraction.
  * Kerbalism's default profile uses `fatal_threshold=1.0` for most rules but
- * overrides it per-rule (radiation's is 50), dividing by the rule's OWN
+ * overrides it per-rule (radiation's is 50), dividing by the rule's own
  * `fatalThreshold` rather than assuming it's always 1 keeps every rule
  * comparable on the same 0..1 scale (ported unchanged from CrewStatus's
  * old `ruleFraction`, moved here with the rest of the Kerbalism-specific
  * logic it contaminated the base widget with).
  *
  * Exported for `./ruleReadings`, which needs the same figure keyed by the
- * WIRE's own rule position rather than by this derivation's sorted one.
+ * wire's own rule position rather than by this derivation's sorted one.
  */
 export function ruleFraction(rule: KerbalismCrewRule): number | null {
   // Null rather than 0 on either half. A rule whose accumulator or whose
@@ -269,7 +269,7 @@ export function marginToAct(
   );
 }
 
-/** The one-way light time a command crosses, or null while there is no measurable path. */
+/** The one-way signal delay a command crosses, or null while there is no measurable path. */
 export function oneWayOf(delay: CommsDelay | undefined): Value<"s"> | null {
   const oneWay = delay?.oneWaySeconds;
   return oneWay?.isFinite() === true ? oneWay : null;
@@ -315,7 +315,7 @@ export function deriveCrewSurvival(
  * `kerbalism:crew-survival`. The owner-stamped Processor handle. Import it
  * to consume the derivation, never re-declare it.
  *
- * `kerbalism.crew` is taken as a READING, so the derivation answers with its
+ * `kerbalism.crew` is taken as a reading, so the derivation answers with its
  * currency and a display can say when a death clock is a held one. Every
  * figure here comes off that one Topic; `vessel.crew` supplies only names and
  * order, so its currency is not the answer's and it stays a bare dep.

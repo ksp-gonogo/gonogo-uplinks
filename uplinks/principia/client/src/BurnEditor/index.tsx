@@ -50,7 +50,7 @@ import "../topics";
 
 /**
  * When an edit to a burn stops being able to reach it: `commandWindow`, whose
- * doc carries the reasoning. Measured against the DRAFT's ignition rather than
+ * doc carries the reasoning. Measured against the draft's ignition rather than
  * the burn's, because the draft's is the instant that gets written.
  */
 const editWindow = commandWindow;
@@ -96,7 +96,7 @@ function draftOf(burn: PrincipiaPlannedBurn): Draft {
  *
  * Both writes send all three, and an edit that omits a component leaves the
  * plugin's own in place, so a partial triple is the one thing neither control may
- * dispatch: the mod refuses it on arrival a light time later, and the burn it
+ * dispatch: the mod refuses it on arrival a signal delay later, and the burn it
  * would have been refused over is one whose Dv nobody could read in the first
  * place.
  */
@@ -112,7 +112,7 @@ function statedTriple(
  * The Dv triple, one axis per row.
  *
  * <para>The producer's own axis names are kept, with one exception: its tangent
- * IS stock's prograde and saying so costs nothing. Normal and binormal are NOT
+ * is stock's prograde and saying so costs nothing. Normal and binormal are not
  * glossed, because the Frenet normal is the in-plane one and stock's normal is
  * the out-of-plane one, so translating them would be a physics error wearing a
  * friendlier label. Getting the vocabulary right and the axis wrong is the
@@ -138,7 +138,7 @@ function DeltaVRow({
   label: string;
   hint?: string;
   /**
-   * Null when the mod could not read this component. The box goes EMPTY rather
+   * Null when the mod could not read this component. The box goes empty rather
    * than to a zero: an empty number field says nothing, and a zero says the burn
    * has no delta-v on this axis. It stays typeable, because stating all three is
    * the one edit that mends a burn whose triple went singular.
@@ -239,7 +239,7 @@ export function deltaVMagnitude(draft: Draft): number | null {
  * plan does about it.
  *
  * <para><b>Why the console has to offer this at all.</b> Principia's flight plan
- * is the mod's actual new mechanic, and it is a mechanic because it is TUNED: a
+ * is the mod's actual new mechanic, and it is a mechanic because it is tuned: a
  * transfer is found by moving one burn a few minutes and a few metres per second
  * at a time and reading what happens to two periapses. A console that mirrors
  * the plan and cannot change it turns the operator back to the game window for
@@ -248,14 +248,14 @@ export function deltaVMagnitude(draft: Draft): number | null {
  * <para><b>What is deliberately not here.</b> The resulting arc. Seeing the
  * curve before committing to the real burn wants an integrated trajectory, and
  * the only thing that can draw one is the propagation seam, which currently has
- * no production implementer. The instant-impulse profile IS here, because it is
+ * no production implementer. The instant-impulse profile is here, because it is
  * a property of the burn rather than of the drawing, and Principia will draw its
  * arc in the game's own map.</para>
  *
  * <para>Every control is disabled until the write surface says it is armed, and
  * the reason it is not travels with the plan rather than being discovered by
  * trying. Which plan slot those burns belong to, and whether there is a slot at
- * all, is `PlanSlots` above: this section edits the burns INSIDE whichever plan
+ * all, is `PlanSlots` above: this section edits the burns inside whichever plan
  * that names.</para>
  */
 export function BurnEditor() {

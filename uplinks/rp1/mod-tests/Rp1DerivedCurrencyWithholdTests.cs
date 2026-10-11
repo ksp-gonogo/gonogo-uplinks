@@ -23,8 +23,8 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para><b>What these tests are and are not.</b> The award arithmetic in the
     /// stand-in is <c>RP0.Confidence.OnCurrenciesModified</c>'s, copied member for
-    /// member off the shipped assembly, so the SHAPE of the leak and of the fix is
-    /// real. The VALUES a running RP-1 would price are not, and nothing here can
+    /// member off the shipped assembly, so the shape of the leak and of the fix is
+    /// real. The values a running RP-1 would price are not, and nothing here can
     /// establish them: there is no RP-1 install on this machine or the test rig. The
     /// yardstick from the rig (+100 confidence per 25 science) is used as the award
     /// so the numbers in a red match the numbers in the measurement.</para>
@@ -108,7 +108,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The science-points total the award is PRICED from moves at earn too, off
+        /// The science-points total the award is priced from moves at earn too, off
         /// an <c>OnCurrencyModified</c> handler with no reason filter at all. Leaving
         /// it moved would mean the reveal prices its award against a career that has
         /// already had the science, which is a wrong number as well as a leak.
@@ -173,7 +173,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// A withhold at a UT nothing was observed at must change nothing and must
-        /// SAY so. Restoring an older reading would erase a currency movement that
+        /// say so. Restoring an older reading would erase a currency movement that
         /// had nothing to do with this change, and a silent no-op is how the leak
         /// would report itself fixed.
         /// </summary>
@@ -194,7 +194,7 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>
         /// Confidence spent between the observation and the withhold is a real
         /// withdrawal, and restoring a pre-spend reading would hand it back. The rule
-        /// is that only an INCREASE is ever taken away.
+        /// is that only an increase is ever taken away.
         /// </summary>
         [Fact]
         public void a_spend_between_the_observation_and_the_withhold_is_not_handed_back()
@@ -210,7 +210,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// Funds and reputation derive no confidence in RP-1: the award is priced off
-        /// the query's SCIENCE input only. A withhold naming another primary currency
+        /// the query's science input only. A withhold naming another primary currency
         /// must leave the balance alone rather than treat every neutralise as a
         /// science one.
         /// </summary>

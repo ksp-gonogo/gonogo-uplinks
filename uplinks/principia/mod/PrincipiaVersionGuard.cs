@@ -32,7 +32,7 @@ namespace GonogoPrincipiaUplink
     }
 
     /// <summary>
-    /// Detects Principia by ASSEMBLY PRESENCE AND VERSION ONLY.
+    /// Detects Principia by assembly presence and version only.
     ///
     /// <para><b>It binds no members, and that is the whole design.</b> Every other
     /// version guard in this repo probes the members its Uplink then calls;
@@ -40,14 +40,14 @@ namespace GonogoPrincipiaUplink
     /// allowed to call. Principia's external plugin API was deleted, and the
     /// surviving native exports all require an opaque handle obtainable only
     /// through a non-public method, must be bound by <c>dlsym</c> rather than
-    /// <c>[DllImport]</c>, and abort the KSP PROCESS on a bad argument
+    /// <c>[DllImport]</c>, and abort the KSP process on a bad argument
     /// (<c>CHECK</c>/<c>LOG(FATAL)</c>) rather than throwing something
     /// catchable. A process abort is categorically worse than every failure the
     /// graceful-degradation rule exists to prevent, so that route is refused
     /// and this Uplink never takes it.</para>
     ///
     /// <para>What presence alone buys is real: the elected propagation provider
-    /// can state that its trajectories are INTEGRATED rather than analytic, and
+    /// can state that its trajectories are integrated rather than analytic, and
     /// bound how far they may be extrapolated. Both are computed from telemetry
     /// already on our own wire, so this guard is the only thing that has to know
     /// the mod exists at all.</para>
@@ -83,16 +83,16 @@ namespace GonogoPrincipiaUplink
         public const string AssemblyName = "principia.ksp_plugin_adapter";
 
         /// <summary>
-        /// There is NO version gate, deliberately, and this is the one guard here
+        /// There is no version gate, deliberately, and this is the one guard here
         /// that differs from its siblings on purpose.
         ///
-        /// <para>A version allowlist exists to protect MEMBER BINDING: a sibling
+        /// <para>A version allowlist exists to protect member binding: a sibling
         /// guard pins a range because it is about to call members that a
         /// different release might have moved. This guard calls nothing, so there
         /// is no compatibility to protect and a range would gate on a risk it
         /// does not carry.</para>
         ///
-        /// <para>It would also be a time bomb. Principia versions by DATE:
+        /// <para>It would also be a time bomb. Principia versions by date:
         /// the installed adapter reads <c>2026.08.12.215</c>, so its major is
         /// <c>2026</c>. A first draft of this guard pinned majors <c>1..1</c> from
         /// an assumption about the scheme and would have reported a working
@@ -100,13 +100,13 @@ namespace GonogoPrincipiaUplink
         /// it and reading the assembly, not by reasoning, and a date-based scheme
         /// means any hardcoded range needs revisiting monthly.</para>
         ///
-        /// <para>The version is still READ and reported, because a bug report
+        /// <para>The version is still read and reported, because a bug report
         /// wants it. It is just not a gate.</para>
         /// </summary>
         public const string ObservedAdapterVersion = "2026.08.12.215";
 
         /// <summary>
-        /// Probes a candidate assembly. Null (the mod absent) is the ORDINARY
+        /// Probes a candidate assembly. Null (the mod absent) is the ordinary
         /// case, not an error: Principia is optional and everything degrades to
         /// the stock two-body provider without it.
         /// </summary>
@@ -145,7 +145,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Finds Principia's adapter among loaded assemblies and probes it.
         /// Enumeration failures degrade to unavailable rather than propagating:
-        /// a reflection fault must not take the mod down over an OPTIONAL
+        /// a reflection fault must not take the mod down over an optional
         /// dependency.
         /// </summary>
         public static PrincipiaGuardResult ProbeLoaded()

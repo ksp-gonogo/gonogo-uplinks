@@ -92,7 +92,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// The receipt for one attempted write.
         ///
-        /// <para><paramref name="plan"/> is the reading taken AFTER the write, in
+        /// <para><paramref name="plan"/> is the reading taken after the write, in
         /// the same frame, and it is null exactly when nothing was attempted. That
         /// pairing is what makes the receipt falsifiable: a client can see that the
         /// burn count changed, or that the plan's end instant moved without being

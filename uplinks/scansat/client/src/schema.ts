@@ -13,7 +13,7 @@
  * These shapes carry `Value<U>` where the contract does, not bare numbers.
  *
  * Never bare `number`, because every quantity here arrives hydrated: this
- * Uplink's `topics.ts` feeds its own generated unit AND type maps into the sdk's
+ * Uplink's `topics.ts` feeds its own generated unit and type maps into the sdk's
  * runtime registry, so `wrapTopicPayload` retypes `subLatitude`, `altitude`,
  * every sensor altitude and the whole nested `trackColor` before a widget sees
  * them. The mismatch was not cosmetic: `subLatitude.toFixed(2)` threw
@@ -23,7 +23,7 @@
  *
  * Found by the first fed render of this widget through the Uplink render
  * harness, which is what a fed render is for: no test in this package feeds a
- * scanning vessel in its WIRE shape, so every one of them passed.
+ * scanning vessel in its wire shape, so every one of them passed.
  */
 import type { Value } from "@ksp-gonogo/sitrep-sdk";
 

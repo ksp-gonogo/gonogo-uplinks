@@ -74,7 +74,7 @@ function warehoused(overrides: Record<string, unknown> = {}) {
   };
 }
 
-/** One pad operation, joined to the pad by NAME, which is what the wire carries. */
+/** One pad operation, joined to the pad by name, which is what the wire carries. */
 function padOp(overrides: Record<string, unknown> = {}) {
   return {
     kscName: "Cape",
@@ -168,7 +168,7 @@ describe("LaunchComplexStatus", () => {
   /**
    * The defect this section was rekeyed to dissolve.
    *
-   * A rollout that has FINISHED leaves the vehicle in the warehouse list and
+   * A rollout that has finished leaves the vehicle in the warehouse list and
    * takes its operation away, so a section reading the warehouse alone reported
    * "BUILT, in the warehouse, ready to roll out" for a vehicle the operator
    * could see standing on the pad. RP-1 answers the question separately, through

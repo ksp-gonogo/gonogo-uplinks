@@ -270,7 +270,7 @@ describe("CrewSchedule", () => {
   });
 
   /**
-   * The setting is HONOURED, not reported. Retirement switched off means the
+   * The setting is honoured, not reported. Retirement switched off means the
    * concept is absent from the save, so it is absent from the surface: not an
    * empty cell, not a line saying retirement is off, and not the word anywhere.
    */
@@ -321,7 +321,7 @@ describe("CrewSchedule", () => {
   });
 
   /**
-   * A kerbal with a course AND a lapse, on a save with mission training off:
+   * A kerbal with a course and a lapse, on a save with mission training off:
    * the course still reads, because a proficiency runs regardless, and the
    * lapse does not, because RP-1 stops checking mission training entirely
    * (`CheckCrewForPart` returns true without asking). A deadline nothing will
@@ -355,7 +355,7 @@ describe("CrewSchedule", () => {
   });
 
   /**
-   * WHICH course, not how it is going. The percentage, the finish date and the
+   * Which course, not how it is going. The percentage, the finish date and the
    * two ways off it belong to the course and are drawn once on it; drawn here
    * they appeared once per student on a course two kerbals share.
    */
@@ -385,7 +385,7 @@ describe("CrewSchedule", () => {
 
   /**
    * The line names the course whether or not anybody has started it, and says
-   * nothing else either way. Whether it is RUNNING is the corner mark's job
+   * nothing else either way. Whether it is running is the corner mark's job
    * (`badge.tsx`), read while scanning the roster rather than in this block; it
    * used to lead this line, which is where the two facts were conflated.
    */

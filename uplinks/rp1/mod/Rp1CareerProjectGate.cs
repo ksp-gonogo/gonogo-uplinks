@@ -113,7 +113,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// RP-1 is installed, decided on the TYPE resolving for the reason
+        /// RP-1 is installed, decided on the type resolving for the reason
         /// <see cref="Rp1ScReflection"/>'s own probe gives. False means neither
         /// requirement is contributed at all, so both commands keep exactly the
         /// requirements core declares and the stock path is byte-for-byte what it

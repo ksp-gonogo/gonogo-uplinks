@@ -14,7 +14,7 @@ namespace GonogoPrincipiaUplink
     ///
     /// <para><b>Which body lands in which slot is decided per kind, because the
     /// producer decides it per kind.</b> The centred kinds name one body and use
-    /// the centre slot. The direction kinds name the pair with the SELECTED body
+    /// the centre slot. The direction kinds name the pair with the selected body
     /// first, which is the producer's deliberate inversion: the body it wants held
     /// fixed is the one the selector sits on, and the frame it builds calls the held
     /// body the primary. The pulsating kind names the same pair the other way

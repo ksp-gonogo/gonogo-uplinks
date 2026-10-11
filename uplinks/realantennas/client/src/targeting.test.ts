@@ -44,7 +44,7 @@ describe("the realantennas.antennas targeting channel", () => {
   });
 
   /**
-   * The channel value is a bare ARRAY, and a client that got an object here
+   * The channel value is a bare array, and a client that got an object here
    * would silently render nothing rather than fail. Driving a real frame through
    * the decode path is what distinguishes the two.
    */

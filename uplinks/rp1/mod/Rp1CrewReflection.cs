@@ -70,7 +70,7 @@ namespace GonogoRp1Uplink
         private readonly Type? _handler;
         private readonly Type? _database;
 
-        /// <summary>RP-1's crew handler type resolved. Gated on the TYPE, never on an assembly name.</summary>
+        /// <summary>RP-1's crew handler type resolved. Gated on the type, never on an assembly name.</summary>
         public bool IsAvailable => _handler != null;
 
         public Rp1CrewReflection()
@@ -80,7 +80,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Whether RP-1 counts this name as a retiree, asked of RP-1's LIVE set.
+        /// Whether RP-1 counts this name as a retiree, asked of RP-1's live set.
         ///
         /// <para>Answered independently of <see cref="Read"/> because the
         /// crew-standing backend is asked for every kerbal on every space-centre
@@ -123,7 +123,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// One kerbal's LIVE standing facts, for the crew-standing backend: the
+        /// One kerbal's live standing facts, for the crew-standing backend: the
         /// course they are on and its ETA, and the date their career ends.
         ///
         /// <para>Its own read for the reason <see cref="IsRetired"/> is its own
@@ -136,7 +136,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para>Costed for that call pattern rather than for elegance. The
         /// retirement date is one dictionary probe. The course walk is over
-        /// <c>TrainingCourses</c>, which holds COURSES and not kerbals, so a
+        /// <c>TrainingCourses</c>, which holds courses and not kerbals, so a
         /// roster of thirty against a handful of live courses is a low hundreds of
         /// iterations per capture, and it stops at the first course this kerbal is
         /// enrolled on.</para>
@@ -166,7 +166,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// A struct with no <c>Standing</c> on it, deliberately. Deciding that an
-        /// enrolled kerbal is <c>Training</c> is the BACKEND's job; this type's job
+        /// enrolled kerbal is <c>Training</c> is the backend's job; this type's job
         /// is to say what RP-1 holds. Reflection that decides a standing is
         /// reflection a headless test cannot exercise without also asserting the
         /// policy.
@@ -184,7 +184,7 @@ namespace GonogoRp1Uplink
             public double? RetiresAtUt { get; }
 
             /// <summary>
-            /// The kerbal is enrolled on a course that has STARTED. Enrolment
+            /// The kerbal is enrolled on a course that has started. Enrolment
             /// alone is not this: a course RP-1 has not begun makes no progress
             /// and has no finish date, and reporting an unstarted enrolment as a
             /// standing would tell an operator a crew is being trained when it is
@@ -420,7 +420,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// The course walk's whole answer: the per-kerbal index, the two
         /// programme-level counts, and the course-level rows, so the list is
-        /// walked ONCE. A completed course is not a course RP-1 still holds and is
+        /// walked once. A completed course is not a course RP-1 still holds and is
         /// excluded from all four.
         /// </summary>
         private readonly struct CoursesRaw
@@ -610,7 +610,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// One kerbal's entry, or null for a MISS. Null too for a dictionary that
+        /// One kerbal's entry, or null for a miss. Null too for a dictionary that
         /// could not be read at all, which is why the map is nullable: a miss in a
         /// table RP-1 handed over and a table it would not hand over are different
         /// facts, and only the first of them has a meaning worth defaulting.
@@ -646,9 +646,9 @@ namespace GonogoRp1Uplink
         /// tick reads it once. Walked as <see cref="IDictionary"/> rather than
         /// cast, for the reason <see cref="Strings"/> gives.
         ///
-        /// <para>NULL rather than empty when the member could not be read, or when
+        /// <para>Null rather than empty when the member could not be read, or when
         /// the walk broke part way through it and left a partial table behind. An
-        /// empty dictionary answers every lookup with a MISS, and a miss is a fact
+        /// empty dictionary answers every lookup with a miss, and a miss is a fact
         /// about one kerbal that callers legitimately default; a table nobody could
         /// read is a fact about the table, and returning it as empty is what lets
         /// one unreadable member default every kerbal in the career.</para>
@@ -705,7 +705,7 @@ namespace GonogoRp1Uplink
             Rp1Types.Member(target, name) as string;
 
         /// <summary>
-        /// An enum member read as its NAME. RP-1's ordinals are its own business
+        /// An enum member read as its name. RP-1's ordinals are its own business
         /// and shift between releases; a name is stable and is what a client maps.
         /// </summary>
         private static string? EnumName(object? value)

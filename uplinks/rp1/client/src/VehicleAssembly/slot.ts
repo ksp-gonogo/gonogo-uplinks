@@ -3,7 +3,7 @@
  *
  * <para>`sections` is a framework-universal segment, so `${widgetId}.sections`
  * exists for every widget without one being declared. What is declared here is
- * its PROPS type: a plain marker carrying none, so a section decides for itself
+ * its props type: a plain marker carrying none, so a section decides for itself
  * what to read off the wire rather than being handed a projection of the
  * host widget's.</para>
  *

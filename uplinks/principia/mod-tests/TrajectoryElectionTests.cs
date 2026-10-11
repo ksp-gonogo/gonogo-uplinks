@@ -7,7 +7,7 @@ namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
     /// Whether anything in production can make a craft's trajectory be published as
-    /// INTEGRATED, asserted by running the election rather than by setting the flag
+    /// integrated, asserted by running the election rather than by setting the flag
     /// the election feeds.
     ///
     /// <para><b>This is the check the shipped-dead slice did not have, and could not
@@ -16,7 +16,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// behind that gate opened it by handing the consumer a lambda returning true,
     /// so all of them passed while nothing in the whole repository implemented the
     /// interface and the horizon reported closed-form on every live frame. A test
-    /// that sets the gate cannot notice that; one that RESOLVES the gate has to.</para>
+    /// that sets the gate cannot notice that; one that resolves the gate has to.</para>
     ///
     /// <para><b>What each side owns.</b> This file owns the Uplink's half: a real
     /// <see cref="Kernel"/>, the real <c>Register</c>, a real <c>Resolve</c>, and
@@ -56,7 +56,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// With no Uplink registering anything, the winner is the vanilla and it does
-        /// NOT claim to integrate.
+        /// not claim to integrate.
         ///
         /// <para>The paired half of the test above, and the half that makes it mean
         /// something: a gate that opens for everything is not a gate. If this ever
@@ -173,7 +173,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The displaced two-body solver, recording which questions reached it. It is
-        /// deliberately NOT an integrated trajectory source: it stands in for the
+        /// deliberately not an integrated trajectory source: it stands in for the
         /// thing whose absence of that marker is what the gate distinguishes.
         /// </summary>
         private sealed class RecordingConics : IPropagationProvider

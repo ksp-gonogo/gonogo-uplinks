@@ -23,7 +23,7 @@ public class KerbcastAimOutcomeTests
 
     /// <summary>
     /// kerbcast clamps an out-of-range angle to the camera's own bounds and
-    /// refuses only when the id does not resolve, so its own false IS a
+    /// refuses only when the id does not resolve, so its own false is a
     /// not-found and keeps that code.
     /// </summary>
     [Fact]

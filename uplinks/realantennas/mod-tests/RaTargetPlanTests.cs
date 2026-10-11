@@ -185,7 +185,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// RealAntennas parses the id with <c>new Guid(...)</c>, which THROWS on a
+        /// RealAntennas parses the id with <c>new Guid(...)</c>, which throws on a
         /// malformed string, inside the load it performs for us. Refusing here is
         /// what keeps that from becoming an exception out of the command.
         /// </summary>
@@ -290,7 +290,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Azimuth and elevation are measured FROM the antenna's own craft, so the
+        /// Azimuth and elevation are measured from the antenna's own craft, so the
         /// id in the node is that craft's and never a target's: RealAntennas'
         /// own targeting window fills it the same way.
         /// </summary>

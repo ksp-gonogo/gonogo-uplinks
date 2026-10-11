@@ -6,10 +6,10 @@ using Sitrep.Contract.TestSupport;
 using Xunit;
 
 /// <summary>
-/// The <c>"crewStanding"</c> capability is EXCLUSIVE, so when this Uplink wins it
+/// The <c>"crewStanding"</c> capability is exclusive, so when this Uplink wins it
 /// stock does not answer underneath. It must therefore answer under the
 /// subscriptions a real session holds, and here the harshest case is also the
-/// COMMONEST one: a dashboard watching the crew roster and no <c>rp1.*</c> topic
+/// commonest one: a dashboard watching the crew roster and no <c>rp1.*</c> topic
 /// at all.
 ///
 /// <para><b>What this exists to catch.</b> Every <c>rp1.*</c> reading rides a
@@ -23,7 +23,7 @@ using Xunit;
 /// queue.</para>
 ///
 /// <para>So the cases below drive ticks with the crew roster's own topic
-/// subscribed and no <c>rp1.*</c> topic subscribed, and ask the ELECTION what it
+/// subscribed and no <c>rp1.*</c> topic subscribed, and ask the election what it
 /// answers rather than asking the registration whether it happened. A
 /// registration-shape assertion cannot see this: the provider is registered
 /// either way, and what changes is whether the instance behind it was ever
@@ -63,7 +63,7 @@ public class CrewStandingStarvationTests : IDisposable
 
     /// <summary>
     /// The same reading with the Uplink's own topics watched. Paired with the case
-    /// above so a green there is a claim about the SUBSCRIPTIONS and not about
+    /// above so a green there is a claim about the subscriptions and not about
     /// RP-1 being absent from the fixture: if the fixture were the reason, both
     /// would answer null and neither would say so.
     /// </summary>
@@ -81,7 +81,7 @@ public class CrewStandingStarvationTests : IDisposable
     }
 
     /// <summary>
-    /// The backend answers BEFORE any tick has run at all, which is the state
+    /// The backend answers before any tick has run at all, which is the state
     /// core's first space-centre capture arrives in. A backend that needed a tick
     /// would report the first roster of every session as a list of fatalities.
     /// </summary>
@@ -98,7 +98,7 @@ public class CrewStandingStarvationTests : IDisposable
     }
 
     /// <summary>
-    /// A retirement that happens BETWEEN ticks reaches the next roster, because
+    /// A retirement that happens between ticks reaches the next roster, because
     /// the backend queries RP-1's live set rather than a copy taken at capture
     /// time. A cached answer would keep a fresh retiree reading as a fatality for
     /// as long as nothing of ours was subscribed, which is indefinitely.
@@ -155,7 +155,7 @@ public class CrewStandingStarvationTests : IDisposable
     /// <summary>
     /// The vanilla, present so the election has something to fall back to. It maps
     /// the roster status through the contract's own derivation, which is what the
-    /// stock backend does, so a starved RP-1 provider reads as a FATALITY here
+    /// stock backend does, so a starved RP-1 provider reads as a fatality here
     /// rather than as null: the exact wrong answer these cases exist to catch.
     /// </summary>
     private sealed class StockStandIn : ICrewStandingBackend

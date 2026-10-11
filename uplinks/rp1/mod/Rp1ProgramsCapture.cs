@@ -229,7 +229,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// What a Program has still to pay. Absent unless it has started paying:
-        /// on an offer, the total is money that MIGHT be earned rather than money
+        /// on an offer, the total is money that might be earned rather than money
         /// outstanding, and the two are not the same commitment.
         /// </summary>
         private static double? FundsRemaining(Rp1ProgramRaw p)

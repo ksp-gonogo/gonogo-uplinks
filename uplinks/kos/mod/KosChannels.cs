@@ -15,7 +15,7 @@ namespace Gonogo.KosUplink
     /// centralised-feed keys byte-for-byte so the client could migrate without
     /// a wire change; that registry was later deleted and nothing subscribes.
     /// <see cref="ComputePrefix"/> and <see cref="ComputeStatusSubTopic"/>
-    /// survive as the shape a compute feed WOULD take, not as a live
+    /// survive as the shape a compute feed would take, not as a live
     /// surface.</para>
     /// </summary>
     public static class KosChannels
@@ -59,7 +59,7 @@ namespace Gonogo.KosUplink
         /// <c>coreId</c> from a concrete <c>kos.terminal.&lt;coreId&gt;</c>
         /// topic string. Used by the <see cref="TerminalPrefix"/> dynamic
         /// namespace's <c>IDynamicChannelSource.OnSubscribed</c> listener to
-        /// translate the subscribed TOPIC the engine hands back into the
+        /// translate the subscribed topic the engine hands back into the
         /// coreId <c>KosTerminalManager.NotifySubscribed</c> expects: see
         /// Gap A of the terminal-integrity adversarial review. Returns false for
         /// anything not under <see cref="TerminalPrefix"/> or whose

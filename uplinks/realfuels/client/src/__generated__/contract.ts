@@ -22,13 +22,13 @@ export interface RealFuelsEngineEntry
 	/** The engine part's display title. */
 	partName?: string | null;
 	/**
-	* Ignitions left in the budget, RAW: the live counter RealFuels decrements on
+	* Ignitions left in the budget, raw: the live counter RealFuels decrements on
 	* each successful light.
 	*
-	* It is NOT a plain count, and reading it as one is the mistake this Uplink
+	* It is not a plain count, and reading it as one is the mistake this Uplink
 	* exists to prevent. RealFuels overloads the value three ways: a positive
 	* number is a real budget, `-1` means unlimited, and `0` means the engine can
-	* be lit ONLY on the pad with a launch clamp attached
+	* be lit only on the pad with a launch clamp attached
 	* (`ModuleEnginesRF.IgnitionUpdate` refuses the light otherwise). Telling an
 	* operator "0 ignitions" and telling them "ground ignition only" are the same
 	* wire value and opposite briefings.
@@ -57,10 +57,10 @@ export interface RealFuelsEngineEntry
 	*
 	* It is what decides which of the two meanings a configured `0` carries:
 	* `EngineConfigTechLevels.ConfigIgnitions` rewrites a config's 0 to the
-	* unlimited sentinel UNLESS the part sets this, in which case the 0 survives
+	* unlimited sentinel unless the part sets this, in which case the 0 survives
 	* as a real ground-only budget. The normalisation happens on the way into the
 	* live module, so `RealFuelsEngineEntry.groundIgnitionOnly` is already
-	* unambiguous; this travels so a consumer can say WHY an engine is ground-only
+	* unambiguous; this travels so a consumer can say why an engine is ground-only
 	* rather than merely that it is. Null when the part carries no engine-config
 	* module.
 	*/
@@ -120,7 +120,7 @@ export interface RealFuelsEngineEntry
 * bind.
 *
 * The switches travel with the rows rather than on a channel of their own
-* because they change what a row MEANS: with
+* because they change what a row means: with
 * `RealFuelsEngines.ignitionsLimited` off, every budget on the vessel is moot
 * and an operator reading "2 left" would be reading a limit the game is not
 * enforcing.
@@ -138,8 +138,8 @@ export interface RealFuelsEngines
 	*/
 	ullageSimulated?: boolean | null;
 	/**
-	* The engines, in part order. An EMPTY list is a vessel with no RealFuels
-	* engines on it; a NULL list is a vessel the Uplink could not read. The two
+	* The engines, in part order. An empty list is a vessel with no RealFuels
+	* engines on it; a null list is a vessel the Uplink could not read. The two
 	* are different and are kept different.
 	*/
 	engines?: RealFuelsEngineEntry[] | null;
@@ -152,10 +152,10 @@ export interface RealFuelsEngines
 export interface RealFuelsBoiloff
 {
 	/**
-	* Mass boiling off across every cryogenic tank on the vessel, as a RATE.
+	* Mass boiling off across every cryogenic tank on the vessel, as a rate.
 	*
 	* RealFuels' own `ModuleFuelTanks.BoiloffMassRate` is misnamed and is not
-	* this: it is the mass ACCUMULATED over the physics interval just past
+	* this: it is the mass accumulated over the physics interval just past
 	* (`CalculateTankBoiloff` multiplies by the interval before adding, and the
 	* one branch of it that does divide back out feeds a different property). This
 	* Uplink divides the vessel total by the same interval RealFuels itself was

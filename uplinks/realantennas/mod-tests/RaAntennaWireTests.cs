@@ -8,7 +8,7 @@ using Xunit;
 namespace GonogoRealAntennasUplink.Tests
 {
     /// <summary>
-    /// The wire shape of <c>realantennas.antennas</c>, through the REAL
+    /// The wire shape of <c>realantennas.antennas</c>, through the real
     /// codec, via <c>WirePayload</c>, so the bytes are asserted rather
     /// than the builder. Same regression as <see cref="RaWireTests"/> guards for
     /// the other channels: a payload with no route through <c>AppendValue</c>
@@ -43,7 +43,7 @@ namespace GonogoRealAntennasUplink.Tests
             Meta = new PayloadMeta { Source = "vessel:1" },
         };
 
-        /// <summary>The channel value is a bare ARRAY, like realantennas.hopRates beside it.</summary>
+        /// <summary>The channel value is a bare array, like realantennas.hopRates beside it.</summary>
         [Fact]
         public void ChannelValueIsABareArray()
         {
@@ -109,7 +109,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// The two FLAGS keep the same discipline, and it is the one they were
+        /// The two flags keep the same discipline, and it is the one they were
         /// added for. A <c>steerable</c> nobody could read is null, never false:
         /// false names a dish an omni, and a client with no third state to draw
         /// hides its targeting controls on the strength of a read that failed.
@@ -127,7 +127,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// The other half of the same rule: a read that SUCCEEDED and came back
+        /// The other half of the same rule: a read that succeeded and came back
         /// false still travels as false. Nullability is a third answer, not a
         /// reason to stop asserting the second one.
         /// </summary>
@@ -152,7 +152,7 @@ namespace GonogoRealAntennasUplink.Tests
         /// <summary>
         /// An empty list is a real answer, not typed absence: the channel is
         /// LossyLatest, so withholding it on a craft with no antennas would leave
-        /// the PREVIOUS craft's antennas standing on the wire.
+        /// the previous craft's antennas standing on the wire.
         /// </summary>
         [Fact]
         public void EmptyListSerializesAsAnEmptyArray()

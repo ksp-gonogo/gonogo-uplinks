@@ -17,7 +17,7 @@ registerComponent<CameraFeedConfig>({
   /**
    * Down from 11x7. Eleven columns were what the aim cluster needed while it
    * was a 357px strip; it is now a 110x88 block, and the frame holds the
-   * CAMERA's aspect rather than the tile's, so width past what the height can
+   * camera's aspect rather than the tile's, so width past what the height can
    * use is empty panel either side of the picture.
    *
    * <p>The chrome is now 2px of width and 18px of height: the panel border and

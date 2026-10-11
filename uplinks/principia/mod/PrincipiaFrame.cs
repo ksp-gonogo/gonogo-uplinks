@@ -161,7 +161,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// The Frenet tangent, EXPRESSED IN THE PLAYER'S CURRENT PLOTTING FRAME.
+        /// The Frenet tangent, expressed in the player's current plotting frame.
         ///
         /// <para>So is the normal and so is the binormal. The number changes
         /// meaning when the player changes frame, which is why a frame qualifier
@@ -199,7 +199,7 @@ namespace GonogoPrincipiaUplink
         /// The orbit analyser's latest completed result, as Principia's own struct.
         ///
         /// <para>There is deliberately no way to ask for a ground-track recurrence
-        /// HYPOTHESIS, and that costs nothing. Principia fits a closest recurrence
+        /// hypothesis, and that costs nothing. Principia fits a closest recurrence
         /// during the analysis and its no-hypothesis path falls back to that one,
         /// so the recurrence and the equatorial crossings arrive on this call
         /// anyway. Supplying a pair would only let an operator override the fit
@@ -254,7 +254,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Hands back the gate that can CREATE a plan, or the refusal that stopped
+        /// Hands back the gate that can create a plan, or the refusal that stopped
         /// it.
         ///
         /// <para>On the vessel rather than on the plan, because its precondition is
@@ -319,10 +319,10 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Forces the plan open and hands back the gate that says so.
         ///
-        /// <para>Materialising IS reading a plan field: a plan carried in from a save
+        /// <para>Materialising is reading a plan field: a plan carried in from a save
         /// is a serialised message until one of these calls opens it. The reason it
         /// gets a type of its own is that two things on this surface need the plan
-        /// OPEN rather than merely present, and both of them fail by throwing a C++
+        /// open rather than merely present, and both of them fail by throwing a C++
         /// exception across the native boundary rather than by answering wrongly.
         /// The producer's own window is safe from that by an accident of ordering,
         /// which is not a thing to inherit.</para>
@@ -407,7 +407,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// The burns' initial plotted velocities, which are a SEPARATE cursor
+        /// The burns' initial plotted velocities, which are a separate cursor
         /// because they are bounded by a different count.
         ///
         /// <para>That read indexes the plan's segments, not its burns, and it

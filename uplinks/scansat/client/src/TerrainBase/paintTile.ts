@@ -123,7 +123,7 @@ export function tileToPixelRect(
 
 /**
  * Per-tile coverage alpha, `[0, 1]`. Looks up the gate's composite byte at
- * the tile's top-left pixel in GATE space (`gate.width`/`height`,
+ * the tile's top-left pixel in gate space (`gate.width`/`height`,
  * typically also 2048×1024, but computed independently from the canvas
  * paint resolution rather than assumed equal to it).
  *
@@ -162,10 +162,10 @@ export function withAlpha(rgbComponents: string, alpha: number): string {
 /**
  * effectiveAlpha = layerOpacity * coverageAlpha.
  * `coverageAlpha` is surveyed-ness, from `coverageAlphaForTile`;
- * `layerOpacity` is this LAYER's own translucency, e.g. a layer drawn on
+ * `layerOpacity` is this layer's own translucency, e.g. a layer drawn on
  * top of another, more opaque one. These are two separate channels that
  * must multiply, not collapse into one: a fully-surveyed tile on a
- * translucent layer should still show the layer BENEATH it, and a
+ * translucent layer should still show the layer beneath it, and a
  * partially-surveyed tile on that same layer should be dimmer still, not
  * one or the other.
  */

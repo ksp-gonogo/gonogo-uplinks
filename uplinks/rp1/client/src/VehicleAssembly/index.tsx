@@ -22,7 +22,7 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  * Build another copy of a design RP-1 already holds. Must match
  * `Rp1BuildCommands.RepeatCommand`.
  *
- * <para><b>Exported and still without a control.</b> It COPIES something the
+ * <para><b>Exported and still without a control.</b> It copies something the
  * centre already has, so a button for it can order a second Atlas and can never
  * order a first one. The general case now exists as `rp1.build.start`, which
  * starts any saved craft at any complex that will take it, and a repeat is that
@@ -40,15 +40,15 @@ type VehicleAssemblyConfig = Record<string, never>;
  *
  * <para><b>Purely construction and rollout for vehicles.</b> A launch complex
  * shows up in three widgets answering three different questions, and the
- * division is settled. The Space Center holds the career's INFRASTRUCTURE: the
+ * division is settled. The Space Center holds the career's infrastructure: the
  * global buildings and their upgrades, the space centres, the launch complexes
  * inside each, and the management of those complexes, which is who is assigned
  * where, what each level costs, and the choice to rush. Launch Director asks
  * what can fly right now. This asks what is being built and how fast. A complex
  * here is where work is happening rather than a thing being administered.</para>
  *
- * <para>So this widget administers NOTHING: no rush toggle, no staff
- * assignment, no complex level, no payroll. It shows the CONSEQUENCES of those
+ * <para>So this widget administers nothing: no rush toggle, no staff
+ * assignment, no complex level, no payroll. It shows the consequences of those
  * decisions, because they are what its clocks are made of. A card whose complex
  * is rushing says so, and one whose complex has nobody assigned says that
  * instead of reporting a stall an operator would go looking for a fault behind.
@@ -168,7 +168,7 @@ export function VehicleAssembly() {
 }
 
 /**
- * What a launch complex IS, and which space centre it belongs to.
+ * What a launch complex is, and which space centre it belongs to.
  *
  * <para>The cards below are tagged `LC-1`, and an operator who has not read
  * RP-1's own documentation has no way to know from that tag whether LC-1 is a
@@ -177,7 +177,7 @@ export function VehicleAssembly() {
  * one contains the other. This line says it once, at the top, so every tag
  * below it can stay a tag.</para>
  *
- * <para>The nesting is: a career has ONE set of facilities (the VAB, the SPH,
+ * <para>The nesting is: a career has one set of facilities (the VAB, the SPH,
  * Mission Control), several space centres, and each centre holds launch
  * complexes, each of which holds pads. This names the middle two, because those
  * are the two the cards are tagged with; the pads name themselves on the
@@ -217,7 +217,7 @@ type Centre = Readonly<{ name: string; complexes: readonly string[] }>;
  *
  * <para>A complex RP-1 gave no name to is skipped rather than drawn as a dash:
  * this line exists to let an operator match a card's tag to a place, and a dash
- * matches no tag. A complex with no CENTRE is gathered under a centre named for
+ * matches no tag. A complex with no centre is gathered under a centre named for
  * what is known about it, because dropping it would leave a tag on a card with
  * nothing up here to match.</para>
  */

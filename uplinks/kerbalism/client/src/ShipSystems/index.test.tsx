@@ -172,7 +172,7 @@ function renderWidget(fixture: ReturnType<typeof newFixture>) {
  * so a bare `emit` here would silently no-op.
  * A dummy `client.subscribe` per topic flips that gate exactly the way a
  * companion widget reading the same topic would in production, this is a
- * TEST concern only: see this file's own report for the production-side
+ * test concern only: see this file's own report for the production-side
  * open question it surfaces (nothing else on a real dashboard currently
  * subscribes to the brand-new `kerbalism.profile` topic either).
  */
@@ -585,13 +585,13 @@ describe("fmtAmt", () => {
  * frame while `kerbalism.profile` is not, and a Kerbalism install with the
  * pressure or comfort feature switched off reports the block empty.
  *
- * Each case emits its OWN lifesupport payload, unlike every case above, and
+ * Each case emits its own lifesupport payload, unlike every case above, and
  * the processor's re-derivation lands a tick after the emit `act` returns. Up
- * to that point the tree still carries the PREVIOUS case's habitat (the
+ * to that point the tree still carries the previous case's habitat (the
  * evaluator keeps a processor's last value across stores by design, see
  * `processorEvaluator`'s `resetFrameTracking`), so an anchor both states share
  * resolves early and the assertions read the wrong render. Each case therefore
- * waits on the habitat head reading what THIS payload implies.
+ * waits on the habitat head reading what this payload implies.
  */
 describe("ShipSystemsComponent: habitat readings that never arrived", () => {
   function renderWithHabitat(habitat: Record<string, unknown> | undefined) {

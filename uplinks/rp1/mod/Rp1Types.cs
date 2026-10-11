@@ -16,7 +16,7 @@ namespace GonogoRp1Uplink
     /// Shared because two readers need the same hops and a second copy of a
     /// null-safe reflection walk is a second place for the safety to be got
     /// slightly wrong. The provenance rules these follow, and the list of RP-1
-    /// members deliberately NOT called, are in <see cref="Rp1ScReflection"/>'s
+    /// members deliberately not called, are in <see cref="Rp1ScReflection"/>'s
     /// header.
     /// </remarks>
     public static class Rp1Types
@@ -25,7 +25,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Resolves a type by full name across the loaded assemblies, preferring
-        /// RP-1's own if it is identifiable by name. The name scan is a FAST PATH
+        /// RP-1's own if it is identifiable by name. The name scan is a fast path
         /// only: presence is decided by whether the type resolved, never by an
         /// assembly name, because RP-1 historically shipped its construction-time
         /// fork under an assembly called <c>KerbalConstructionTime</c> and a name
@@ -174,7 +174,7 @@ namespace GonogoRp1Uplink
         /// and it is still a write, so it lives beside the reads where the same
         /// null-safety and provenance rules apply to it.
         ///
-        /// <para>A telemetry READ must never write to the player's save (see
+        /// <para>A telemetry read must never write to the player's save (see
         /// <see cref="Rp1ScReflection"/>'s header). This is not one: it is the
         /// delay model's own correction, and the value it writes is a value RP-1
         /// itself held one event earlier.</para>
@@ -235,7 +235,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// An enum member read as its NAME. RP-1's ordinals are its own business
+        /// An enum member read as its name. RP-1's ordinals are its own business
         /// and shift between releases; a name is stable, legible in a bug report,
         /// and is what a client maps.
         /// </summary>
@@ -293,7 +293,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// A public instance method by name and arity. Arity rather than the
-        /// parameter TYPES because those are RP-1's own and naming them would
+        /// parameter types because those are RP-1's own and naming them would
         /// need the compile-time reference this assembly deliberately does not
         /// have.
         /// </summary>
@@ -311,7 +311,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A public instance method resolved MOST-DERIVED FIRST, walking the base
+        /// A public instance method resolved MOST-DERIVED first, walking the base
         /// chain rather than trusting the order <see cref="Type.GetMethods()"/>
         /// happens to return.
         /// </summary>
@@ -369,7 +369,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A public instance method by name, arity AND the full name of its first
+        /// A public instance method by name, arity and the full name of its first
         /// parameter's type, for the overloads arity alone cannot tell apart.
         ///
         /// <para>The instance twin of <see cref="StaticMethodOn"/>, needed for the
@@ -377,7 +377,7 @@ namespace GonogoRp1Uplink
         /// <c>GetEffectiveEngineersForSalary(LaunchComplex)</c> and
         /// <c>GetEffectiveEngineersForSalary(LCSpaceCenter)</c>, so a
         /// name-and-arity match picks whichever the runtime lists first and would
-        /// report a whole CENTRE's payroll against one launch complex.</para>
+        /// report a whole centre's payroll against one launch complex.</para>
         /// </summary>
         public static MethodInfo? InstanceMethodOn(object target, string name, string firstParameterTypeFullName, int parameterCount)
         {
@@ -437,7 +437,7 @@ namespace GonogoRp1Uplink
         /// binding flags, because the two want opposite defaults. Everything else
         /// this Uplink invokes is public API, and a public-only lookup is what
         /// makes an accidental reach into RP-1's internals fail loudly here rather
-        /// than work until the release that renames it. This exists for ONE
+        /// than work until the release that renames it. This exists for one
         /// member: <c>PatchKSCFacilityContextMenu.GetTechGate(string, int)</c>,
         /// the rule that decides whether a facility tier is unlocked. It is
         /// reached rather than reproduced because its body is a lookup into a
@@ -461,13 +461,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A public static method by name, arity AND the full name of its first
+        /// A public static method by name, arity and the full name of its first
         /// parameter's type, for the overloads arity alone cannot tell apart.
         ///
         /// <para>Needed because RP-1 declares
         /// <c>ChangeEngineers(LaunchComplex, int)</c> and
         /// <c>ChangeEngineers(LCSpaceCenter, int)</c>, so a name-and-arity match
-        /// picks whichever the runtime lists first and would move a CENTRE's
+        /// picks whichever the runtime lists first and would move a centre's
         /// engineer pool when a complex was meant. The type is named as a string
         /// for the same reason everything else here is: this assembly holds no
         /// reference to RP-1 and cannot name the type any other way.</para>
@@ -565,12 +565,12 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Writes a named STATIC property or field on a type.
+        /// Writes a named static property or field on a type.
         /// </summary>
         /// <remarks>
         /// The write twin of <see cref="StaticValue"/>, and a separate method rather
         /// than an overload of <see cref="WriteMember"/> because that one takes an
-        /// INSTANCE: handed a <see cref="Type"/> it resolves members on
+        /// instance: handed a <see cref="Type"/> it resolves members on
         /// <c>System.RuntimeType</c> and fails, which is a silent false rather than
         /// an error. Two of RP-1's statics are genuinely written (the contract
         /// payload figures on <c>ContractGUI</c>), and they are what this exists for.
@@ -605,7 +605,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A public constructor by arity. Optional parameters COUNT, because
+        /// A public constructor by arity. Optional parameters count, because
         /// reflection does not apply defaults: RP-1's rollout constructor takes
         /// four with the last defaulted, and an invoke has to pass all four.
         /// </summary>
@@ -629,7 +629,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A public constructor by arity AND the full name of its first
+        /// A public constructor by arity and the full name of its first
         /// parameter's type, for the types arity alone cannot tell apart.
         ///
         /// <para>The constructor twin of <see cref="InstanceMethodOn"/>, and it
@@ -677,7 +677,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// The per-candidate try is not defensive padding. <c>GetParameters</c>
-        /// LOADS each parameter's type, so one overload referencing a type from an
+        /// loads each parameter's type, so one overload referencing a type from an
         /// absent assembly throws, and an unguarded loop would lose every later
         /// overload with it. RP-1's <c>KCTUtilities</c> is a hundred-method static
         /// class reaching KSP, ROUtils and its own types, which is exactly the

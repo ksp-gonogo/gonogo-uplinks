@@ -7,7 +7,7 @@ using kOS.UserIO;
 namespace Gonogo.KosUplink
 {
     /// <summary>
-    /// The PURE kOS.Safe screen-diff → xterm-mapper pipeline, extracted out of
+    /// The pure kOS.Safe screen-diff → xterm-mapper pipeline, extracted out of
     /// <see cref="KosProcessorScreen"/> so it can be driven headlessly (no
     /// KSP/Unity process, no live <c>kOSProcessor</c>) by the terminal-harness
     /// tests. It references only <c>kOS.Safe</c> (<see cref="ScreenSnapShot"/> /

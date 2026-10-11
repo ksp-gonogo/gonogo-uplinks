@@ -16,21 +16,21 @@ namespace Gonogo.RealAntennasUplink.DevTools
     /// vessel, re-derives the antenna from them, and forces CommNet to rebuild, so
     /// KSP's own link budget genuinely closes a route home.
     ///
-    /// <para><b>The link is REAL.</b> Nothing here fabricates a route or answers on
+    /// <para><b>The link is real.</b> Nothing here fabricates a route or answers on
     /// CommNet's behalf. It raises transmit power, gain, tech level and band on the
     /// real <c>ModuleRealAntenna</c>, then makes RealAntennas re-read them; whether a
     /// route appears is CommNet's own answer, read afterwards from
     /// <c>vessel.connection.ControlPath</c>. That matters because the currency-delay
     /// arm reads exactly that path and deliberately ignores
     /// <c>Gonogo.KSP.DevCommsOverride</c>, so a faked route would prove nothing about
-    /// the light-time it produces.</para>
+    /// the signal delay it produces.</para>
     ///
     /// <para><b>Why a recalculation call is not optional.</b> RealAntennas snapshots
-    /// txPower / gain / frequency / encoder / symbol rate into a burst-job array ONCE,
+    /// txPower / gain / frequency / encoder / symbol rate into a burst-job array once,
     /// in <c>Precompute.GatherAllAntennas</c>, called from <c>Precompute.Initialize</c>.
     /// The per-frame <c>UpdateAllAntennas</c> refreshes position and pointing only.
     /// Writing a KSPField and stopping there therefore changes the part's right-click
-    /// menu and NOTHING about the link budget. The sequence that does land is:
+    /// menu and nothing about the link budget. The sequence that does land is:
     /// set the fields, invoke <c>ModuleRealAntenna.RecalculateFields()</c> (private:
     /// it pushes the fields onto the <c>RealAntenna</c> that Precompute reads),
     /// then <c>RACommNetVessel.DiscoverAntennas()</c>, which calls
@@ -73,7 +73,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
     /// refused before anything is written.</para>
     ///
     /// <para><b>There is deliberately no amwTemp field.</b> RealAntennas reads a
-    /// module's <c>AMWTemp</c> only for GROUND stations; a vessel antenna's receive
+    /// module's <c>AMWTemp</c> only for ground stations; a vessel antenna's receive
     /// noise comes from <c>TechLevelInfo.ReceiverNoiseTemperature</c>
     /// (<c>Physics.AntennaMicrowaveTemp</c>). Offering the field would be offering a
     /// setting nothing re-reads, which is the exact trap this addon exists to avoid.
@@ -85,33 +85,33 @@ namespace Gonogo.RealAntennasUplink.DevTools
     /// however much power it has. The result reports how many home antennas share the
     /// boosted band, so "boost too small" and "nothing to talk to" stay distinguishable.</para>
     ///
-    /// <para><b>The boost is TRANSIENT, and this addon now says so and fixes it.</b>
+    /// <para><b>The boost is transient, and this addon now says so and fixes it.</b>
     /// Everything it writes is a KSPField on a live <c>ModuleRealAntenna</c>, and
     /// reloading the vessel re-instantiates that module from the save, whose fields
     /// still hold the craft's real antenna parameters. The boost is then gone with no
     /// announcement of any kind, and a lapsed boost and a boost that never worked
     /// produce the same unroutable craft.</para>
     ///
-    /// <para>So a successful request now STANDS on its vessel, and every
+    /// <para>So a successful request now stands on its vessel, and every
     /// <see cref="StandingVerifySeconds"/> the standing boosts are checked against what
     /// their antennas actually hold and re-asserted where they have reverted. Both
     /// halves matter. Re-asserting alone would be an instrument that cannot express its
     /// own failure, working or silently not with the result file reading the same
     /// either way; detecting alone would leave an accurate account of a craft that is
     /// once again out of contact. The result file therefore carries
-    /// <c>boostState</c> - HOLDING, LAPSED AND RE-ASSERTED n times, or NOT WATCHED -
-    /// plus one LAPSE node per occasion, and the file keeps being rewritten after the
+    /// <c>boostState</c> - Holding, lapsed and RE-ASSERTED n times, or not watched -
+    /// plus one lapse node per occasion, and the file keeps being rewritten after the
     /// settle window closes, which is exactly when a lapse happens.</para>
     ///
     /// <para><c>once: false</c> re-instantiates this every flight-scene load, and
-    /// <see cref="_lastAppliedId"/> is deliberately an INSTANCE field, unlike
+    /// <see cref="_lastAppliedId"/> is deliberately an instance field, unlike
     /// gonogo's <c>GonogoDevTeleport</c>'s static one: applying the same absolute
     /// parameters twice is idempotent, and a boost wants re-asserting after a revert
     /// or a scene change rather than lasting exactly one scene per KSP process. That
-    /// same field is why nothing needs persisting to disk for a KSP RESTART either -
+    /// same field is why nothing needs persisting to disk for a KSP restart either -
     /// the request cfg survives, so a new process re-applies it on its first flight
     /// scene. <see cref="StandingBoosts"/> is static to survive the scene reloads
-    /// WITHIN a process, which the request cfg cannot help with because the id has
+    /// within a process, which the request cfg cannot help with because the id has
     /// already been claimed.</para>
     /// </summary>
     [KSPAddon(KSPAddon.Startup.Flight, once: false)]
@@ -173,7 +173,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// lapsed boost and a boost that never worked read identically.</para>
         ///
         /// <para>Static, so it survives the flight-scene reloads this addon is
-        /// re-instantiated by. Across a KSP RESTART nothing is needed: the request cfg
+        /// re-instantiated by. Across a KSP restart nothing is needed: the request cfg
         /// persists and <see cref="_lastAppliedId"/> is an instance field, so a new
         /// process re-applies the standing request on its first flight scene anyway,
         /// which is what that field is an instance field for.</para>
@@ -383,11 +383,11 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// instrument that cannot express its own failure: it would go on working, or
         /// silently stop, and a result file would read the same either way. Detecting
         /// alone would leave the operator with an accurate account of a craft that is
-        /// once again unroutable. So it says LAPSED, loudly, in the log and in the
+        /// once again unroutable. So it says lapsed, loudly, in the log and in the
         /// result file, and then fixes it, and reports the count of times it has had
         /// to.</para>
         ///
-        /// <para>An unloaded vessel is SKIPPED rather than called lapsed. Its
+        /// <para>An unloaded vessel is skipped rather than called lapsed. Its
         /// <c>ModuleRealAntenna</c> instances do not exist to check, so there is nothing
         /// to compare against and nothing to write to; the boost re-lands when it loads
         /// and this pass next runs.</para>
@@ -502,7 +502,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         }
 
         /// <summary>
-        /// Writes a lapse into the result file, and into the LIVE watch if one is
+        /// Writes a lapse into the result file, and into the live watch if one is
         /// running so a lapse mid-settle is visible in the same reading it corrupted.
         /// A lapse on a craft the last request was not about is still logged and still
         /// counted, but is not written into that request's result, because it did not
@@ -538,7 +538,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// Re-read the route on a timer after the boost lands. A rebuild is not
         /// instantaneous: InvalidateCache only sets a flag, the next UpdateEarly
         /// re-runs Precompute.Initialize, and the graph rebuild follows that. Reading
-        /// ControlPath in the same frame as the write would report the OLD answer and
+        /// ControlPath in the same frame as the write would report the old answer and
         /// call the tool broken.
         /// </summary>
         private void PollWatch()
@@ -1120,7 +1120,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
 
         /// <summary>
         /// Invoke <c>ModuleRealAntenna.RecalculateFields()</c>. It is private, and it
-        /// is the ONLY thing that copies the KSPFields onto the <c>RealAntenna</c>
+        /// is the only thing that copies the KSPFields onto the <c>RealAntenna</c>
         /// (tech level info, tx power, band, symbol rate, gain, modulation bits) that
         /// Precompute later snapshots. Without it the write is cosmetic.
         /// </summary>
@@ -1668,10 +1668,10 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// a live module, and a vessel reload re-instantiates that module from the save,
         /// so the boost vanishes with no announcement. A lapsed boost and a boost that
         /// never worked produce the same unroutable craft, and telling them apart by hand
-        /// cost a run. So the state is named: HOLDING, or LAPSED with how many times and
+        /// cost a run. So the state is named: holding, or lapsed with how many times and
         /// what was done each time.</para>
         ///
-        /// <para><c>NOT WATCHED</c> is its own answer rather than HOLDING. A request that
+        /// <para><c>NOT WATCHED</c> is its own answer rather than holding. A request that
         /// changed nothing does not stand, so nothing is checking it, and reporting that
         /// as "holding" would be the tool claiming to guard something it is not.</para>
         /// </summary>

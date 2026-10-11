@@ -46,7 +46,7 @@ function mount() {
  * ten thousand seconds behind a clock pinned at `VIEW_UT` and every test would
  * quietly be exercising the stale path.
  *
- * The emit is AWAITED and then WAITED ON, because delivery is asynchronous: the
+ * The emit is awaited and then waited on, because delivery is asynchronous: the
  * sample reaches the store after the emit returns, so a synchronous assertion
  * reads the pending state and every test in this file would be asserting against
  * an empty widget while looking like it had a plan. The slot badge is the settle
@@ -66,7 +66,7 @@ async function emitPlan(
  * A plan write's answer as the mod actually sends it: a `CommandResult` whose
  * `payload` is the receipt.
  *
- * The receipt used to be scripted here FLAT, as if it were the whole reply, and
+ * The receipt used to be scripted here flat, as if it were the whole reply, and
  * the widget read it flat to match. Both halves of that were wrong in the same
  * direction, so the pair agreed and the fixture proved nothing: the banner it
  * asserted has never once appeared against a real mod. `JsonWriter`'s
@@ -87,12 +87,12 @@ function lastSent(stream: ReturnType<typeof mount>) {
 
 /**
  * The id the widget composes for an untouched draft of the fixture's one burn:
- * the whole of it, the way APPLY's is, so a second composition at the same index
+ * the whole of it, the way apply's is, so a second composition at the same index
  * and instant is not answered out of the mod's receipt cache.
  */
 const DEFAULT_ADD_REQUEST_ID = `insert-0-${VIEW_UT + 3600}-100-100-0-false-false`;
 
-/** Press ADD BURN on the open form and confirm it. */
+/** Press add burn on the open form and confirm it. */
 async function pressAddBurn() {
   await userEvent.click(
     screen.getByRole("button", { name: "Add a burn from these values" }),
@@ -104,13 +104,13 @@ async function pressAddBurn() {
   );
 }
 
-/** Open burn 1, press ADD BURN, and confirm it. */
+/** Open burn 1, press add burn, and confirm it. */
 async function addABurn() {
   await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
   await pressAddBurn();
 }
 
-/** Open burn 1, press REMOVE, and confirm it. */
+/** Open burn 1, press remove, and confirm it. */
 async function removeTheSelectedBurn() {
   await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
   await userEvent.click(
@@ -123,7 +123,7 @@ async function removeTheSelectedBurn() {
   );
 }
 
-/** Open burn 1, press APPLY, and confirm it. */
+/** Open burn 1, press apply, and confirm it. */
 async function applyTheEditedBurn() {
   await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
   await userEvent.click(
@@ -253,7 +253,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * Countdown to the burn's START. Principia's own convention, and the reason
+   * Countdown to the burn's start. Principia's own convention, and the reason
    * the row shows an hour rather than the half-burn instant a stock node would
    * have been placed at.
    */
@@ -368,7 +368,7 @@ describe("BurnEditor", () => {
     await act(async () => {});
   });
 
-  /** A frame declined with a PAIR reads both of them, not the centre slot. */
+  /** A frame declined with a pair reads both of them, not the centre slot. */
   it("names a paired frame with both of its bodies", async () => {
     const stream = mount();
     await emitPlan(stream, {
@@ -389,7 +389,7 @@ describe("BurnEditor", () => {
 
   /**
    * A burn whose manoeuvring frame cannot be written back is marked on the list
-   * AND frozen in the editor. Sending it would abort the game, and the producer's
+   * and frozen in the editor. Sending it would abort the game, and the producer's
    * own guard against that is invisible from here.
    */
   it("marks and freezes a burn whose frame cannot be written back", async () => {
@@ -466,8 +466,8 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * <b>The destructive one.</b> REMOVE deletes a burn out of the plan the craft
-   * is flying, and it is deliberately NOT frozen by the edit deadline or the
+   * <b>The destructive one.</b> remove deletes a burn out of the plan the craft
+   * is flying, and it is deliberately not frozen by the edit deadline or the
    * burn-struct verdict, so this is the only thing standing between the control
    * and a burn that may be under thrust.
    *
@@ -498,7 +498,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * A burn the mod says IS running freezes the same three, rather than being
+   * A burn the mod says is running freezes the same three, rather than being
    * offered locally and refused a light time later.
    */
   it("freezes every write, REMOVE included, on a burn that is running", async () => {
@@ -537,7 +537,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * "Locked" is a property OF THE FRAME, and the mod withholds `frameEditable`
+   * "Locked" is a property of the frame, and the mod withholds `frameEditable`
    * when the frame extension would not read at all, so the whitelist was never
    * checked against anything. It used to coerce that to false, which put "FRAME
    * LOCKED" and "THIS FRAME CANNOT BE WRITTEN BACK" on screen about a frame
@@ -618,8 +618,8 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * A plan whose keyframes stopped arriving is still SHOWN, and is no longer
-   * EDITABLE. Both halves are asserted here because either alone passes for the
+   * A plan whose keyframes stopped arriving is still shown, and is no longer
+   * editable. Both halves are asserted here because either alone passes for the
    * wrong reason: a widget that blanked on a stale reading would satisfy the
    * disabled assertion, and the one that shipped satisfied the visible one by
    * collapsing every non-pending arm into a live plan.
@@ -678,7 +678,7 @@ describe("BurnEditor", () => {
    * The failure this pair exists for: the ignition countdown reads a full hour
    * and the burn is already unreachable.
    *
-   * A press leaves at the operator's VIEW instant, which trails reality by one
+   * A press leaves at the operator's view instant, which trails reality by one
    * one-way delay, and the command then spends a second one-way delay in
    * flight. So an edit lands two one-way delays after the instant shown on
    * screen, and at a thirty-light-minute vantage every control stays enabled
@@ -749,7 +749,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * At a vantage with no delay the deadline IS ignition, and the existing
+   * At a vantage with no delay the deadline is ignition, and the existing
    * ignition countdown already says so. A second countdown reading the same
    * number would be furniture.
    */
@@ -769,16 +769,16 @@ describe("BurnEditor", () => {
    *
    * `PlanCommands.EditBurn` refuses both with `LayoutUnverified` whenever the
    * plan holds burns and `BurnLayoutVerified` is false, and that state is
-   * REACHABLE beside `armed: true`: `PrincipiaLayoutProbe.Run` records the
+   * reachable beside `armed: true`: `PrincipiaLayoutProbe.Run` records the
    * verdicts and returns null "whatever the verdicts were", and `Arm` refuses
-   * only when NEITHER struct survived. So a burn probe that failed while the
+   * only when neither struct survived. So a burn probe that failed while the
    * integrator's passed arms the surface and leaves every burn edit refused.
    *
    * The mod publishes `burnLayoutVerified` for exactly this, in its own words:
    * "an operator had no way to know that the check covering the edit they were
    * about to make had never run". Nothing in this Uplink read the field.
    *
-   * REMOVE is deliberately not frozen with them: dropping a burn writes no burn
+   * Remove is deliberately not frozen with them: dropping a burn writes no burn
    * struct, and `PlanCommands.RemoveBurn` takes no verdict.
    */
   it("freezes the two burn writes when the burn struct was never verified", async () => {
@@ -820,17 +820,17 @@ describe("BurnEditor", () => {
    * The whole insert, end to end: the press, the args the mod binds, and the
    * receipt read back off the reply.
    *
-   * <p>The args are asserted VERBATIM, and the two that used to be missing are
+   * <p>The args are asserted verbatim, and the two that used to be missing are
    * the point. `PrincipiaBurnEditArgs` is "every field optional, an omitted
    * field means leave it", and the burn the plugin receives is the one at
-   * `burnIndex` READ BACK with the stated fields changed. ADD BURN sends the
-   * whole draft, `inertiallyFixed` and `profile` included, exactly as APPLY
+   * `burnIndex` read back with the stated fields changed. Add burn sends the
+   * whole draft, `inertiallyFixed` and `profile` included, exactly as apply
    * does: `PlanCommands.EditBurn` hands an insert and a replace to the same
    * `PrincipiaBurnRules.Apply`, which branches on neither, so the two fields
    * cost an insert nothing and their absence was silently discarding two live
    * toggles.</p>
    *
-   * <p>The request id covers the whole draft for the same reason APPLY's does:
+   * <p>The request id covers the whole draft for the same reason apply's does:
    * a repeated id is answered out of the mod's receipt cache without a write,
    * so an id that omitted the Dv triple and the toggles made every press after
    * the first at one index and instant a no-op.</p>
@@ -872,7 +872,7 @@ describe("BurnEditor", () => {
    * <p>"ADD LIKE THIS" said the template won and the command half-agreed: it
    * sent the draft's instant and Dv triple while dropping the draft's attitude
    * mode and propulsion, so an operator who flipped either toggle and pressed it
-   * got the template's silently. Both toggles are still LIVE here, which is the
+   * got the template's silently. Both toggles are still live here, which is the
    * assertion that makes this a coupling and not two: a control an operator can
    * work must reach the command beside it.</p>
    */
@@ -956,7 +956,7 @@ describe("BurnEditor", () => {
   /**
    * The whole remove, end to end. The index is the whole of the request:
    * `PrincipiaBurnRemoveArgs` carries no ignition instant and no components, so
-   * the mod drops whichever burn holds that index WHEN THE WRITE LANDS.
+   * the mod drops whichever burn holds that index when the write lands.
    *
    * <p>Which is why the id is `remove-${index}` and why that is the second
    * weakest of the ten: indices shift as burns are added and removed, so the
@@ -1012,7 +1012,7 @@ describe("BurnEditor", () => {
    * A write the mod answered from its own store is not a write.
    *
    * The request id is content-addressed from the draft, so tuning a burn to 105
-   * and back to 100 sends the SAME id as the first edit did, and the mod answers
+   * and back to 100 sends the same id as the first edit did, and the mod answers
    * the second one with the receipt it stored the first time: the plugin is never
    * called, the plan stays at 105, and the receipt reads `Written`. Nudge and
    * revert is what tuning is, so a control that reports that as success reports
@@ -1037,7 +1037,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * The RECEIPT READER, and not the refusal path.
+   * The receipt reader, and not the refusal path.
    *
    * <p>A receipt is the authority on whether anything landed, and `replayed` is
    * only one of the two ways it can say no. The contract's own words: "Nothing
@@ -1047,7 +1047,7 @@ describe("BurnEditor", () => {
    *
    * <p><b>The pairing scripted here is one the producer never sends, and this
    * test is not coverage of a refusal.</b> `PlanCommands.Settle` answers every
-   * non-`Written` outcome with `Success = false`, so a refused write REJECTS in
+   * non-`Written` outcome with `Success = false`, so a refused write rejects in
    * the spine, `onConfirmed` never runs, and the banner asserted below cannot
    * fire on that path in production: only the replay arm reaches it. It is
    * scripted anyway because the receipt is the authority and the envelope is
@@ -1076,7 +1076,7 @@ describe("BurnEditor", () => {
   /**
    * An arm answered from the mod's own store is not an arm.
    *
-   * This one's request id is composed from the VESSEL alone, so it never
+   * This one's request id is composed from the vessel alone, so it never
    * varies: the second press an operator makes on the same craft sends the id
    * the first went under, and `PlanCommands.Arm` answers it out of
    * `_receipts` before it touches the plugin or the write surface. Both presses
@@ -1208,7 +1208,7 @@ describe("BurnEditor", () => {
    * statement about the wrong quantity, in the same shape as the encounter UT
    * that rendered as "46d 2h" and gave the vocabulary its `ut` token.
    *
-   * Asserted on the FORM rather than on the document, because "5min 20s" is a
+   * Asserted on the form rather than on the document, because "5min 20s" is a
    * plausible string elsewhere on this widget (a burn's duration is one), and a
    * whole-document assertion would pass or fail for the wrong reason.
    */
@@ -1224,9 +1224,9 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * The three Dv fields are only three VELOCITIES under the producer's Cartesian
+   * The three Dv fields are only three velocities under the producer's Cartesian
    * coordinate system. Its other three are spherical and put a magnitude and two
-   * ANGLES in the same three slots, which the producer's own write rule states
+   * angles in the same three slots, which the producer's own write rule states
    * in full when it refuses such an edit: writing components onto one "would set
    * a triple the plugin does not read, so the burn would come back unchanged and
    * look like a write that landed".
@@ -1273,10 +1273,10 @@ describe("BurnEditor", () => {
    * The mod withholds the whole triple when any one of the three is not a finite
    * number, which is what Principia's own singular-manoeuvre state reads as. The
    * form used to substitute a zero per component, so a burn nobody could measure
-   * came up as three boxes of `0` under a MAGNITUDE of `0.0 m/s`, and the two
+   * came up as three boxes of `0` under a magnitude of `0.0 m/s`, and the two
    * writes that send the triple were live over it.
    *
-   * Asserted on the BOXES and on the form's own magnitude row, never on the list
+   * Asserted on the boxes and on the form's own magnitude row, never on the list
    * above them: the row already renders the dash for the same absence, off the
    * separate `deltaV` field, so a whole-document assertion would have passed with
    * the substitution still in place.
@@ -1305,7 +1305,7 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * And neither write may fabricate one. APPLY and ADD both send all three
+   * And neither write may fabricate one. Apply and add both send all three
    * components, so an unstated component would go out as whatever the form was
    * showing; with nothing to show there is nothing honest to send.
    */
@@ -1379,7 +1379,7 @@ describe("BurnEditor", () => {
    * a date nothing aboard had. The mod refuses the resulting write as stale, so
    * what it cost was a light-time round trip to find that out.
    *
-   * Asserted on the BOXES, never on the document: the row above renders the dash
+   * Asserted on the boxes, never on the document: the row above renders the dash
    * for the same absence, so a whole-document assertion passes with the
    * substitution still in place.
    */

@@ -55,7 +55,7 @@ namespace GonogoPrincipiaUplink
 
         /// <summary>
         /// The same frame resolver the settings reading uses, rather than a second
-        /// one beside it. A burn's frame arrives as body INDICES on a descriptor,
+        /// one beside it. A burn's frame arrives as body indices on a descriptor,
         /// and the rules for turning those into names are not obvious: which slot a
         /// kind actually reads, that a side can be a set rather than a body, and
         /// that "no body" is a real value. Two copies of that would be two things
@@ -94,8 +94,8 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// The same reading, inside a frame the caller already opened.
         ///
-        /// <para>Separate because a write has to be followed by a re-read IN THE
-        /// SAME FRAME, and opening a second frame is not a smaller version of that:
+        /// <para>Separate because a write has to be followed by a re-read in the
+        /// same frame, and opening a second frame is not a smaller version of that:
         /// opening one bumps the session's generation and kills every gate the first
         /// one handed out, so a reader that opens its own frame cannot be called from
         /// inside a write.</para>

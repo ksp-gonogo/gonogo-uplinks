@@ -141,7 +141,7 @@ namespace GonogoKosUplink.Tests
         }
 
         /// <summary>
-        /// A version we could not READ is not a version inside the pin.
+        /// A version we could not read is not a version inside the pin.
         /// <c>AssemblyName.Version</c> is nullable, and treating null as
         /// in-range makes the whole version pin unreachable for exactly the
         /// assembly it can say least about. The guard's contract is that

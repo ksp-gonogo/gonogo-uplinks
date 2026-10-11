@@ -10,7 +10,7 @@ import { aeroBadges, aeroDescentLayers } from "./index.js";
 /**
  * The plot's own anchors, describing a Kerbin entry at 28 km whose
  * constant-drag-coefficient back-out puts terminal at 300 m/s now and 95 m/s at
- * the ground. Both curves are derived from these, so the ONLY thing that can
+ * the ground. Both curves are derived from these, so the only thing that can
  * separate them is the physics, which is what the second curve exists to show.
  */
 const PLOT = {

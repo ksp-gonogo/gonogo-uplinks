@@ -10,7 +10,7 @@ namespace GonogoPrincipiaUplink;
 /// analysis, for the vessel now and for each coast of its flight plan.
 ///
 /// <para><b>Why this is not derived from the elements the rest of the stream
-/// carries.</b> These are MEAN elements: a boxcar filter over one sidereal
+/// carries.</b> These are mean elements: a boxcar filter over one sidereal
 /// period applied to the equinoctial set, taken from a fixed-step n-body
 /// integration in the primary-centred frame, with the primary chosen as the body
 /// of smallest osculating period rather than the sphere-of-influence parent.
@@ -68,7 +68,7 @@ public sealed class PrincipiaAnalysis
 /// One coast of the flight plan, and what orbit it puts the craft in.
 ///
 /// <para>The coast before burn <c>n</c> carries index <c>n</c>; the last entry
-/// is the coast after the final burn and is the orbit the plan ENDS in, which is
+/// is the coast after the final burn and is the orbit the plan ends in, which is
 /// the one an operator is usually asking about.</para>
 /// </summary>
 #if SITREP_CODEGEN
@@ -104,7 +104,7 @@ public sealed class PrincipiaCoastAnalysis
 /// <para><b>Every element is a band, and flattening one is a fidelity loss.</b>
 /// A mean element over an analysis window is a range with a midpoint, and the
 /// width is the number that says whether the orbit is stable. The adjectives the
-/// producer builds its orbit description from read the band ENDS, not the
+/// producer builds its orbit description from read the band ends, not the
 /// midpoint: circular is <c>eccentricity.max &lt; 0.01</c>, not a midpoint
 /// test.</para>
 ///
@@ -116,10 +116,10 @@ public sealed class PrincipiaCoastAnalysis
 /// hypothesis is given, deriving the crossings on the way, so the only thing a
 /// hypothesis buys is an operator's nominal orbit to compare against.</para>
 ///
-/// <para><b>The solar times of the nodes are here too, as ANGLES.</b> They were
+/// <para><b>The solar times of the nodes are here too, as angles.</b> They were
 /// held back on the grounds that an angle with π at noon is a time of day rather
 /// than a duration and this contract has no unit that says so. True, and beside
-/// the point: what the reading is FOR is sun-synchronicity, which is decided by
+/// the point: what the reading is for is sun-synchronicity, which is decided by
 /// how little the band widens. A drift in degrees answers that exactly, the same
 /// way the crossings do. Rendering the position as a clock is a separate job
 /// needing a unit nothing here has yet.</para>
@@ -138,7 +138,7 @@ public sealed class PrincipiaOrbitAnalysis
     [SitrepUnit(Units.Seconds)]
     public double? MissionDurationSeconds { get; set; }
 
-    /// <summary>How far along the NEXT analysis is, from zero to one. Not the age
+    /// <summary>How far along the next analysis is, from zero to one. Not the age
     /// of this one.</summary>
     [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Units.Ratio)]
@@ -157,7 +157,7 @@ public sealed class PrincipiaOrbitAnalysis
     /// index.
     ///
     /// <para>Resolved here rather than at a readout because the index is the
-    /// PRODUCER's, and only the game the producer is running in can turn one into
+    /// producer's, and only the game the producer is running in can turn one into
     /// a body. It is also half the orbit description: "circular Kerbin orbit"
     /// needs the body as much as it needs the eccentricity.</para>
     /// </summary>
@@ -183,13 +183,13 @@ public sealed class PrincipiaOrbitAnalysis
     public bool? ElementsPresent { get; set; }
 
     /// <summary>
-    /// The instant the elements are measured FROM: the start of the span the
+    /// The instant the elements are measured from: the start of the span the
     /// analysis integrated, on the same clock as every other instant here.
     ///
     /// <para>A coast's analysis is anchored at the coast's own start. The
     /// vessel's current-orbit analysis is anchored wherever the craft's history
     /// happened to have reached when the producer last ran one, which is what
-    /// makes this the field that says how OLD the elements are. Both are the
+    /// makes this the field that says how old the elements are. Both are the
     /// same quantity and a client can treat them alike.</para>
     ///
     /// <para>Null means the epoch could not be established, which is a different
@@ -246,7 +246,7 @@ public sealed class PrincipiaOrbitAnalysis
     public PrincipiaAngleInterval? MeanInclinationDegrees { get; set; }
 
     /// <summary>
-    /// How many turns of the PRIMARY the ground track takes to repeat, Capderou's
+    /// How many turns of the primary the ground track takes to repeat, Capderou's
     /// Cᴛₒ.
     ///
     /// <para>Rotations rather than days: the producer counts the primary's own
@@ -288,7 +288,7 @@ public sealed class PrincipiaOrbitAnalysis
     /// Where the craft crosses the equator northbound, as a band of longitudes
     /// over the analysed span.
     ///
-    /// <para>Read the WIDTH rather than the position. A band that barely widens
+    /// <para>Read the width rather than the position. A band that barely widens
     /// is a track that repeats over the same ground, which is what decides
     /// whether an orbit may be called synchronous at all.</para>
     /// </summary>
@@ -303,7 +303,7 @@ public sealed class PrincipiaOrbitAnalysis
     ///
     /// <para>An angle rather than a clock reading, which is both what the producer
     /// stores and what the question needs: sun-synchronicity is decided by how
-    /// little this band WIDENS, not by where it sits. Rendering it as a time of day
+    /// little this band widens, not by where it sits. Rendering it as a time of day
     /// is a client's job and needs a unit this contract does not have.</para>
     ///
     /// <para>Absent unless the producer had a mean sun to measure against, which
@@ -370,13 +370,13 @@ public sealed class PrincipiaOrbitAnalysis
 /// A closed interval in metres.
 ///
 /// <para><b>Why three interval types rather than one.</b> A unit travels with a
-/// TYPE on this wire, not with the field that holds it, so a single shared
+/// type on this wire, not with the field that holds it, so a single shared
 /// interval could carry only one unit for every band that used it. Sharing one
 /// would land a semi-major axis and an eccentricity in the same renderer with the
 /// same symbol, and a dimensionless number printed in metres is a wrong number
 /// rather than an ugly one.</para>
 ///
-/// <para>Kept as the two ENDS rather than a midpoint and a half-width, because
+/// <para>Kept as the two ends rather than a midpoint and a half-width, because
 /// the ends are what the producer's own adjective tests read: a midpoint is a
 /// derivation a client can make, and an end is not one it can recover.</para>
 /// </summary>

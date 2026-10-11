@@ -11,7 +11,7 @@ namespace Gonogo.KerbalismUplink.DevTools
     /// DEV-ONLY fixture collector for the Kerbalism uplink design work. Polls
     /// <c>PluginData/kerbalism-dump-request.cfg</c> (a <c>KERBDUMP { id, scenario }</c> node,
     /// same request/result-cfg pattern as gonogo's <c>GonogoDevForceComms</c> /
-    /// GonogoDevStampScan) and, on a NEW id, reflects into Kerbalism at RUNTIME (no
+    /// GonogoDevStampScan) and, on a new id, reflects into Kerbalism at runtime (no
     /// compile-time Kerbalism reference: pure reflection, version-agnostic, builds even
     /// with Kerbalism absent) and dumps a fixture JSON of everything the uplink will need:
     ///   - <c>Kerbalism.System.API</c>: every public static method that takes just a
@@ -26,7 +26,7 @@ namespace Gonogo.KerbalismUplink.DevTools
     ///     mod (TestFlight, RealFuels, RP-1, RealHeat, ROLib/ROSolar, SolverEngines, ...), field/prop dumped.
     /// Output: <c>PluginData/kerbalism-fixture-&lt;scenario&gt;.json</c>. Result cfg records ok + path + counts.
     /// The whole thing is fail-soft: a missing type / thrown method is recorded as null, never fatal.
-    /// Runs at both FLIGHT and the SPACE CENTER (<c>FlightAndKSC</c>) so the body registry can be
+    /// Runs at both flight and the space center (<c>FlightAndKSC</c>) so the body registry can be
     /// captured with no vessel in play; every vessel-specific section below null-guards on
     /// <c>FlightGlobals.ActiveVessel</c> being absent.
     /// </summary>

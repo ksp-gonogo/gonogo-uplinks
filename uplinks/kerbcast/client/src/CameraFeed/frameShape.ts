@@ -6,7 +6,7 @@
  * size (`useReportDisplaySize`, on by default via `renderSize="auto"`), and the
  * game renders the camera at exactly that resolution. A frame that took the
  * tile's shape therefore asked KSP for a view of the tile's shape, so a wide,
- * short tile got a wide, short FIELD OF VIEW. Nothing was ever scaled
+ * short tile got a wide, short field of view. Nothing was ever scaled
  * anisotropically (the SDK's `<video>` is `object-fit: contain`) and nothing was
  * cropped; the shot itself was being recomposed by the layout.
  */
@@ -19,7 +19,7 @@ export const DEFAULT_FEED_ASPECT = 16 / 9;
 /**
  * The shape of the picture this camera actually produces, as width ÷ height.
  *
- * `operatorWidth`/`operatorHeight` first, because that is the camera's OWN
+ * `operatorWidth`/`operatorHeight` first, because that is the camera's own
  * configured size (kerbcast's `KerbcastSettings` defaults it to 1024x576) and
  * the one number here that is not downstream of this widget's own layout.
  * `renderWidth`/`renderHeight` is the effective size after adaptive shedding,

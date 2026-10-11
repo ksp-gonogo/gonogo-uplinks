@@ -37,8 +37,8 @@ export const RP1_TECH_RESEARCH_COMMAND = "rp1.tech.research";
  * Start a node researching, beside the tech tree that can only say which ones
  * are owned and the queue that says which are being worked.
  *
- * <para><b>It spends SCIENCE, and all of it at the press.</b> RP-1 charges
- * `scienceCost` in full at ENQUEUE rather than on completion, so the balance
+ * <para><b>It spends science, and all of it at the press.</b> RP-1 charges
+ * `scienceCost` in full at enqueue rather than on completion, so the balance
  * beside this control is the science balance and not the funds one, and the
  * charge is the whole reason a second press on a node already queued is refused
  * rather than treated as satisfied. The figure quoted here is the exact integer
@@ -196,17 +196,17 @@ export function StartResearch() {
  * <para>Three exclusions and each is a different fact. An owned node has nothing
  * to start. A queued one is refused by RP-1's own check, ahead of the charge, so
  * offering it is offering a press that cannot land. A node whose parents are not
- * all researched is the one the COMMAND would accept and the tree cannot reach;
+ * all researched is the one the command would accept and the tree cannot reach;
  * see this section's own doc for why the client is the only side that can ask.</para>
  *
  * <para>Ordered by price, so the picker opens on the cheapest thing the career
  * can start. RP-1's tree runs to several hundred nodes and the reachable frontier
  * is what an operator is choosing between; alphabetical order would scatter it.</para>
  *
- * <para>A node whose price could not be read sorts AFTER every priced one,
+ * <para>A node whose price could not be read sorts after every priced one,
  * partitioned rather than compared. Treating an absent cost as zero made it the
  * cheapest thing in the tree and therefore the picker's own default selection,
- * offered under a heading that says cheapest-first and with no SHORT badge
+ * offered under a heading that says cheapest-first and with no short badge
  * possible on it, because the shortfall reading needs the cost the row does not
  * have. Partitioned rather than compared for the reason the career log is: the
  * comparison has no honest answer, and an unstable sort would then shuffle the

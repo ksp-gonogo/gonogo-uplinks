@@ -1,17 +1,17 @@
 /**
  * Backend 0: encoded transform on the receiver. Proves the wiring is real: when
  * `KerbcastDataSource.getReceiverForStream` resolves a receiver and
- * `RTCRtpScriptTransform` exists, this backend is tried FIRST and, on
+ * `RTCRtpScriptTransform` exists, this backend is tried first and, on
  * success, surfaces `raw` itself (unchanged) as the delayed stream, no new
  * track, the delay happens in place upstream of decode.
  *
- * DELIBERATELY A SEPARATE FILE from `useKerbcastStream.delay.test.tsx`:
+ * Deliberately A separate file from `useKerbcastStream.delay.test.tsx`:
  * `kerbcastDelayWorkerClient.ts` caches its shared `Worker` in module-level
  * state (`getSharedWorker()`, `sharedWorker !== undefined` short-circuit):
  * once any test in a given module graph resolves it to `null` (because
  * `Worker` was undefined in jsdom at that moment), every later test in the
- * SAME file inherits that cached `null`, even after stubbing `Worker`.
- * Vitest gives each test FILE its own fresh module graph by default, so a
+ * same file inherits that cached `null`, even after stubbing `Worker`.
+ * Vitest gives each test file its own fresh module graph by default, so a
  * separate file is the correct isolation boundary here, not reordering
  * (fragile to future edits) and not `vi.resetModules()` (this module has no
  * exported reset hook, and reaching into its internals would be more
@@ -86,7 +86,7 @@ function registerFakeKerbcastSourceWithReceiver(
 /**
  * Minimal fake `Worker`: `getSharedWorker()` is shared, module-level
  * state (`kerbcastDelayWorkerClient.ts`), so stubbing `Worker` to make
- * Backend 0 reachable ALSO makes Backend 2 (`createWorkerFrameDelayStream`)
+ * Backend 0 reachable also makes Backend 2 (`createWorkerFrameDelayStream`)
  * reachable if Backend 0 falls through: it awaits a `pipelineReady`/
  * `pipelineError` reply that a truly no-op fake would never send, hanging
  * the test forever at `{kind: "connecting"}`. Replying `pipelineError`

@@ -50,7 +50,7 @@ interface SwitchRowProps {
 
 /**
  * One craft's switch. Off means the craft never has a dish turned on its own;
- * the change rides that craft's light-time like any other order to it, so the
+ * the change rides that craft's signal delay like any other order to it, so the
  * switch shows what the craft was last known to be set to and the order sits on
  * the delay rail until it lands.
  */

@@ -13,7 +13,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection pattern is
 * mandatory; see `GonogoKerbcastUplink.csproj`'s header). Every field below is
 * read off kerbcast's `KerbcastCameraView`, except the docking fields, which
-* this Uplink DERIVES from the stock KSP `Part` the view carries.
+* this Uplink derives from the stock KSP `Part` the view carries.
 *
 * R7 typed-absence discipline: every field is nullable. A camera whose pan
 * bounds could not be read carries `null`, never a 0 that a consumer would
@@ -23,7 +23,7 @@ export interface KerbcastCameraEntry
 {
 	/**
 	* kerbcast's own camera handle (`KerbcastCameraView.FlightId`): the id every
-	* kerbcast command and the WebRTC `subscribe` take. NOTE this is NOT reliably
+	* kerbcast command and the WebRTC `subscribe` take. Note this is not reliably
 	* a KSP part id: kerbcast synthesises a hash for the 2nd+ camera module on a
 	* multi-camera part. Use `KerbcastCameraEntry.partId` when you want part
 	* identity; use this when you want to talk to kerbcast.
@@ -36,7 +36,7 @@ export interface KerbcastCameraEntry
 	*/
 	partId?: number | null;
 	/**
-	* kerbcast's camera name. NOT unique: Hullcam's docking-port patch names every
+	* kerbcast's camera name. Not unique: Hullcam's docking-port patch names every
 	* docking-port camera "NavCam", which is precisely why
 	* `KerbcastCameraEntry.isDockingCamera` is derived from the part's modules
 	* rather than sniffed from this string.
@@ -80,7 +80,7 @@ export interface KerbcastCameraEntry
 	* Whether this camera is mounted on a docking port, the operator-facing
 	* question "which of my cameras can I dock with".
 	*
-	* DERIVED, not reported by kerbcast: kerbcast has no docking concept on its
+	* Derived, not reported by kerbcast: kerbcast has no docking concept on its
 	* wire at all. This Uplink reads the stock `ModuleDockingNode` off the
 	* camera's own `Part` (the part handle kerbcast's control facade already
 	* carries) and answers from the part's actual modules. That is why it is

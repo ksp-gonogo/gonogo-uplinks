@@ -58,7 +58,7 @@ import { MinimapForActiveVessel } from "./Minimap.js";
  * to any of its slots. Read with `useWidgetScope("scanning")`.
  *
  * It was `scanning.sections`'s slot props, which is what kept that slot from
- * being the universal `sections` segment: the body is a SCOPE, not something a
+ * being the universal `sections` segment: the body is a scope, not something a
  * coverage-row augment's own job needs handing to it.
  */
 export interface ScanningScope {
@@ -122,7 +122,7 @@ const DISPLAY_SCAN_TYPES: SCANType[] = [
 ];
 
 /**
- * The value of a FACT: something that stays true until an event changes it, and no
+ * The value of a fact: something that stays true until an event changes it, and no
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
  * and must not collapse into it.
@@ -144,8 +144,8 @@ function stillTrue<T, A>(
 }
 
 /**
- * Resolve the active vessel's current body NAME. `vessel.identity` only
- * carries the stable `system.bodies` INDEX (`parentBodyIndex`), the same
+ * Resolve the active vessel's current body name. `vessel.identity` only
+ * carries the stable `system.bodies` index (`parentBodyIndex`), the same
  * index/name split `AnomalyOverlay/index.tsx`'s `useBodyIndexByName` and
  * `packages/components/src/MapView/vanillaPoiProvider.ts`'s
  * `useBodyNameByIndex` resolve elsewhere; this is the single-body variant of

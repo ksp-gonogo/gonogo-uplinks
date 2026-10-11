@@ -14,7 +14,7 @@ namespace GonogoRealFuelsUplink
     ///
     /// <para>It models no failure and no reliability: TestFlight owns those and
     /// has its own Uplink. RealFuels has no failure model of its own, it only
-    /// DISPLAYS TestFlight's numbers in its editor UI, so the two do not
+    /// displays TestFlight's numbers in its editor UI, so the two do not
     /// overlap.</para>
     ///
     /// <para>Reaches every RealFuels member by runtime reflection

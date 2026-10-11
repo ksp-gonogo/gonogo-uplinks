@@ -36,7 +36,7 @@ type Crew = TopicPayload<typeof KERBALISM_CREW_TOPIC>;
  * rather than present with a zero, for the reason `ruleFraction` returns null
  * instead of 0. Zero on that axis is the reading that says the crew is fine.
  *
- * A plain record and never a `Map`, because a Processor result is DATA: the
+ * A plain record and never a `Map`, because a Processor result is data: the
  * evaluator's notify guard compares one frame's answer against the last by
  * walking own enumerable keys, and a `Map` hides its entries behind methods,
  * so every consumer would be woken on every frame with nothing able to notice.
@@ -60,7 +60,7 @@ export function ruleKey(kerbalName: string, ruleName: string): string {
  * The whole derivation, pure, so a test drives it against a real reading off a
  * live stream without reaching the Processor registry.
  *
- * Keyed by NAME rather than by wire position, because position is what the
+ * Keyed by name rather than by wire position, because position is what the
  * consumer does not have: the Processor sorts each kerbal's rules worst-first
  * and drops the ones it cannot place, so its indices are not the wire's. Two
  * kerbals sharing a name (legal in KSP) resolve to the first seat, which is

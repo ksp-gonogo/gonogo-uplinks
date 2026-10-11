@@ -7,13 +7,13 @@ namespace Gonogo.ActionGroupsExtendedUplink
     /// The GonogoActionGroupsExtendedUplink. When
     /// Action Groups Extended is loaded (the <see cref="AgxReflection"/>
     /// probe), it registers a higher-priority <c>"actionGroups"</c> provider
-    /// on the engine Kernel so <see cref="AgxActionGroupsBackend"/> WINS the
+    /// on the engine Kernel so <see cref="AgxActionGroupsBackend"/> wins the
     /// exclusive action-groups election: mirroring the exact election shape
     /// <c>GonogoRealAntennasUplink</c> uses for comms. Registering the
-    /// provider IS the gate: absent AGX, no provider is registered and the
+    /// provider is the gate: absent AGX, no provider is registered and the
     /// stock backend stays elected.
     ///
-    /// <para>Ships ZERO client code and declares NO channels/commands of its
+    /// <para>Ships zero client code and declares no channels/commands of its
     /// own: the vessel uplink owns <c>vessel.control</c> and resolves the
     /// elected backend at capture time via
     /// <c>ActionGroupsElection.Elected(...)</c>. AGX changes only which
@@ -21,10 +21,10 @@ namespace Gonogo.ActionGroupsExtendedUplink
     /// unchanged, so no wire type is new here (<c>ContractShapeGateTests</c>
     /// / <c>WirePayloadCoverageTests</c> must stay green untouched).</para>
     ///
-    /// <para>NO compile-time reference to AGExt's GPL3 assembly anywhere in
+    /// <para>No compile-time reference to AGExt's GPL3 assembly anywhere in
     /// this project: every AGExt member is reached by reflection
     /// (<see cref="AgxReflection"/>). Compile surface is
-    /// <c>Sitrep.Contract</c> ONLY.</para>
+    /// <c>Sitrep.Contract</c> only.</para>
     /// </summary>
     [SitrepUplink("actionGroupsExtended")]
     public sealed class ActionGroupsExtendedUplink : ISitrepUplink
@@ -32,7 +32,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
 
         /// <summary>
         /// The id and priority this uplink registers its action-groups backend
-        /// under. They live HERE rather than in core: core owns the capability and
+        /// under. They live here rather than in core: core owns the capability and
         /// its stock vanilla, and a provider owns its own identity. Any positive
         /// priority beats the vanilla structurally; the value only matters if a
         /// second provider for this capability ever appears.

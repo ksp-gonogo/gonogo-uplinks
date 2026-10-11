@@ -14,7 +14,7 @@ namespace Gonogo.KerbalismUplink
     /// <c>ChannelEngine</c> is constructed with <c>executeCommandsOnMainThread: true</c>,
     /// so every command handler is marshaled here before it runs.
     ///
-    /// <para>Every method resolves against the LIVE drive walk, never the
+    /// <para>Every method resolves against the live drive walk, never the
     /// <see cref="KerbalismFileCommandProvider"/> pre-filter's snapshot: that
     /// snapshot only rules out an obviously-stale request cheaply before this
     /// class is ever reached, it can still have moved on by the time a
@@ -42,7 +42,7 @@ namespace Gonogo.KerbalismUplink
         /// <c>activeVessel</c> capability rather than from KSP.
         ///
         /// <para>The substitution bites twice here. The science listing an
-        /// operator picks a subject id off is the CRAFT's, so during an EVA a
+        /// operator picks a subject id off is the craft's, so during an EVA a
         /// subject resolved against KSP's answer, the kerbal, finds no drive
         /// holding it and every verb refuses <c>NotFound</c> for every file on
         /// screen. And transmitting or dumping science is a normal thing to do
@@ -129,13 +129,13 @@ namespace Gonogo.KerbalismUplink
         /// deliberately independent.
         ///
         /// <para>Fails <see cref="KerbalismErrorCodes.NoDriveSpace"/> when no
-        /// lab-adjacent drive (other than the source) has room for the FULL
+        /// lab-adjacent drive (other than the source) has room for the full
         /// sample; a partial move would leave the sample split across two
         /// drives, a worse state than refusing.</para>
         ///
         /// <para>Fails <see cref="CommandErrorCode.Unreadable"/> when the
         /// sample's size, mass or crediting flag cannot be read: those three are
-        /// what the destination copy is written FROM, so a substituted one would
+        /// what the destination copy is written from, so a substituted one would
         /// be recorded into the save rather than merely displayed wrong.
         /// <see cref="CommandErrorCode.NotFound"/> is kept for a sample that
         /// reads as zero-sized, and for one no drive holds: an unread sample is
@@ -238,7 +238,7 @@ namespace Gonogo.KerbalismUplink
             return CommandResult.Ok();
         }
 
-        /// <summary>Resolve a wire subject id to the live drive that currently holds it as a FILE, or a typed failure.</summary>
+        /// <summary>Resolve a wire subject id to the live drive that currently holds it as a file, or a typed failure.</summary>
         private bool TryResolveFile(string subjectId, out object drive, out object subject, out RefusalCode? error)
         {
             drive = null!;
@@ -271,7 +271,7 @@ namespace Gonogo.KerbalismUplink
             return true;
         }
 
-        /// <summary>Resolve a wire subject id to the live drive that currently holds it as a SAMPLE, or a typed failure.</summary>
+        /// <summary>Resolve a wire subject id to the live drive that currently holds it as a sample, or a typed failure.</summary>
         private bool TryResolveSample(string subjectId, out object drive, out object subject, out RefusalCode? error)
         {
             drive = null!;

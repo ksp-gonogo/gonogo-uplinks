@@ -2,7 +2,7 @@
  * FramingPreview: the SVG preview of where a dialled camera setpoint will
  * frame. A fixed, centred feed frame (the current live view) plus the target
  * sub-region the setpoint transforms to (`computeTargetFraming`), drawn as an
- * amber quad with a centroid dot. On `committing`, ONE simultaneous unwind
+ * amber quad with a centroid dot. On `committing`, one simultaneous unwind
  * morph runs (pan to centre + zoom to full frame via an affine transform, and
  * amber to white), with the feed frame fading out: the preview "resolves" into
  * the new live view.

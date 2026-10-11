@@ -66,7 +66,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Which of the two struct round trips actually ran and passed.
         ///
-        /// <para>Published because arming is allowed on a PARTIAL verification: a
+        /// <para>Published because arming is allowed on a partial verification: a
         /// plan with no burns has none to round-trip, so the surface can arm on the
         /// integrator's verdict alone while the burn struct stands
         /// undemonstrated. A gate may pass on that; it may not report it as full
@@ -121,8 +121,8 @@ namespace GonogoPrincipiaUplink
         /// itself out on is the same answer the write gate refuses on.
         ///
         /// <para>Null when the frame extension could not be read at all, which is a
-        /// different fact from a frame that is locked: false is a property OF THE
-        /// FRAME, and publishing it for a frame nobody read put "FRAME LOCKED" and
+        /// different fact from a frame that is locked: false is a property of the
+        /// frame, and publishing it for a frame nobody read put "FRAME LOCKED" and
         /// "THIS FRAME CANNOT BE WRITTEN BACK" on screen about a frame this build
         /// never saw. Either way the write stays refused.</para>
         /// </summary>
@@ -133,7 +133,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Null when its ignition or its cutoff could not be read, so the
         /// window cannot be tested. False used to cover that case, which withheld
-        /// the BURNING badge from a burn that may have been under thrust and handed
+        /// the burning badge from a burn that may have been under thrust and handed
         /// out the edit and remove controls for it.</para>
         /// </summary>
         public bool? Executing;

@@ -5,12 +5,12 @@ using Reinforced.Typings.Fluent;
 namespace GonogoKerbalismUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration: mirrors
+/// This Uplink's own codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
 /// this assembly's wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way every Uplink's own
 /// <c>Configure</c> does. Deliberately names no sibling Uplink: doing so would
-/// trip THAT Uplink's own frontend uplink-boundary token.
+/// trip that Uplink's own frontend uplink-boundary token.
 ///
 /// <para><b>Seven Topic-tagged roots, so the topic-map leg is not optional.</b>
 /// <see cref="KerbalismSpaceWeather"/>, <see cref="KerbalismProfile"/>,
@@ -21,15 +21,15 @@ namespace GonogoKerbalismUplink;
 /// <c>[SitrepTopic]</c>, so <c>EmitTopicMap</c> is wired below. The remaining
 /// types are nested-only, extension or command shapes and deliberately
 /// carry no <c>[SitrepTopic]</c>: they exist to give a field's element shape a
-/// name. <c>kerbalism.available</c> is a BARE JSON boolean declared
+/// name. <c>kerbalism.available</c> is a bare JSON boolean declared
 /// client-side (<c>registerBarePrimitiveTopic</c> in this Uplink's
 /// <c>client/src/topics.ts</c>), so it never flows through codegen at all.
 /// </para>
 ///
 /// <para><b>Deeply nested, and the unit map is only half of what codegen has to
 /// emit for it.</b>
-/// <c>EmitUnitMap</c> writes a field -&gt; unit map AND a field -&gt;
-/// nested-type SHAPE map from one reflection pass, and this slice needs the
+/// <c>EmitUnitMap</c> writes a field -&gt; unit map and a field -&gt;
+/// nested-type shape map from one reflection pass, and this slice needs the
 /// second half at four separate roots:
 /// <see cref="KerbalismSpaceWeather"/>'s <c>Stars</c>/<c>Storms</c>,
 /// <see cref="KerbalismCrewEntry"/>'s <c>Rules</c>,
@@ -40,7 +40,7 @@ namespace GonogoKerbalismUplink;
 /// <c>wrapTopicPayload</c> stops at the array and every per-kerbal dose,
 /// per-star distance and per-process capacity arrives as a bare number while
 /// the generated type still says <c>Value&lt;...&gt;</c>. The runtime
-/// registration in this Uplink's client MUST feed BOTH the topic-keyed and the
+/// registration in this Uplink's client must feed both the topic-keyed and the
 /// TYPE-keyed registries for that reason: see <c>client/src/topics.ts</c>.
 /// </para>
 ///
@@ -68,7 +68,7 @@ namespace GonogoKerbalismUplink;
 /// <see cref="KerbalismProcessDef.Inputs"/>/<see cref="KerbalismProcessDef.Outputs"/>
 /// are <c>Dictionary&lt;string, double&gt;</c> with a declared unit, which
 /// codegen emits as <c>{ [key: string]: Value&lt;"units/s"&gt; }</c>: the unit
-/// belongs to each VALUE and the key is a resource/rule NAME, so nothing
+/// belongs to each value and the key is a resource/rule name, so nothing
 /// camel-cases it. These four are the only live examples of the form: the core
 /// SDK's own generated output contains none, so its mechanism test runs off a
 /// registered synthetic Topic to stay mod-agnostic and non-vacuous, and the
@@ -83,10 +83,10 @@ namespace GonogoKerbalismUplink;
 /// (<c>sitrep-sdk</c>'s <c>unitsForTopic</c>/<c>shapesForTopic</c>), and the
 /// SDK's own generated map has nothing for a type declared outside
 /// <c>Sitrep.Contract</c>. So this Uplink's client package (<c>topics.ts</c>)
-/// calls the SDK's <c>registerTopicUnits</c> AND <c>registerTypeUnits</c> at
+/// calls the SDK's <c>registerTopicUnits</c> and <c>registerTypeUnits</c> at
 /// module load, feeding them the unit and shape maps this Configure emits
 /// below. Both legs are needed: <c>ApplyUnitValueTypes</c> fixes the
-/// codegen-time TYPE, never the decode-time VALUE.</para>
+/// codegen-time type, never the decode-time value.</para>
 /// </summary>
 public static class KerbalismRtConfig
 {

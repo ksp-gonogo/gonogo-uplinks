@@ -41,7 +41,7 @@ namespace Gonogo.ScansatUplink
 
         /// <summary>
         /// True when the packed planes differ (either direction, bits set
-        /// OR cleared, per the R7 keyframe-on-change model that must
+        /// or cleared, per the R7 keyframe-on-change model that must
         /// represent shrink/reset/quickload, spec §2.3 step 3/§2.3
         /// "why keyframe-on-change and not a set-only delta").
         /// </summary>

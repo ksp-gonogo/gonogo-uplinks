@@ -62,7 +62,7 @@ namespace GonogoRp1Uplink
         /// <summary>One of the <c>Rp1ProgramStates</c> constants.</summary>
         public string? State;
 
-        /// <summary>RP-1's <c>Program.Speed</c> as its NAME, never its ordinal.</summary>
+        /// <summary>RP-1's <c>Program.Speed</c> as its name, never its ordinal.</summary>
         public string? Speed;
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// RP-1's catalogue funding for this Program, before the career's funds
         /// multiplier. Carried alongside the total because a program modifier
-        /// overwrites THIS field, and the total has to move with it.
+        /// overwrites this field, and the total has to move with it.
         /// </summary>
         public double? BaseFunding;
 
@@ -108,7 +108,7 @@ namespace GonogoRp1Uplink
         public string? ObjectivesText;
 
         /// <summary>
-        /// The whole per-speed Confidence table, keyed by speed NAME. Carried
+        /// The whole per-speed Confidence table, keyed by speed name. Carried
         /// alongside the single price at the selected speed because the operator
         /// is choosing between the three, and a modifier can override any of
         /// them independently.
@@ -116,7 +116,7 @@ namespace GonogoRp1Uplink
         public Dictionary<string, double> ConfidenceCostBySpeed = new Dictionary<string, double>();
 
         /// <summary>
-        /// What RP-1's own screens call each speed, keyed by speed NAME. Its
+        /// What RP-1's own screens call each speed, keyed by speed name. Its
         /// localisation tags name the buttons by position, not by the enum
         /// identifier, so the enum name is not what an operator reads there.
         /// </summary>
@@ -162,8 +162,8 @@ namespace GonogoRp1Uplink
     }
 
     /// <summary>
-    /// One key of a funding curve. The position and value are what a key IS, so a
-    /// key missing either is dropped rather than carried; the TANGENTS are
+    /// One key of a funding curve. The position and value are what a key is, so a
+    /// key missing either is dropped rather than carried; the tangents are
     /// nullable, because an absent one costs only the segment it bounds.
     /// </summary>
     public sealed class Rp1FundingCurveKeyRaw

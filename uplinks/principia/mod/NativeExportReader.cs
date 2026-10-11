@@ -13,7 +13,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>No known magic. The refusing answer.</summary>
         Unknown = 0,
 
-        /// <summary>ELF, what Principia's Linux build is.</summary>
+        /// <summary>Elf, what Principia's Linux build is.</summary>
         Elf = 1,
 
         /// <summary>PE/COFF, what Principia's Windows build is.</summary>
@@ -79,11 +79,11 @@ namespace GonogoPrincipiaUplink
     /// like, so the check would be the thing that breaks the game it was meant to
     /// protect.</para>
     ///
-    /// <para>Three formats, because Principia ships three: ELF's <c>.dynsym</c>,
+    /// <para>Three formats, because Principia ships three: elf's <c>.dynsym</c>,
     /// PE's export directory, and Mach-O's <c>LC_SYMTAB</c>. Which one a file is
     /// comes from its own first bytes, never its name: Principia's macOS build is
     /// called <c>principia.so</c> and is a Mach-O, so an extension-led guess reads
-    /// it as an ELF and fails.</para>
+    /// it as an elf and fails.</para>
     ///
     /// <para>Reads through a <see cref="Stream"/> in bounded windows. The Linux
     /// builds are around 270 MB because they ship unstripped, and this runs inside

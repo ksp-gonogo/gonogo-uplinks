@@ -14,7 +14,7 @@ namespace Gonogo.KosUplink
     /// delegates the actual diff + xterm-map to <see cref="ScreenDiffMapper"/>
     /// (which references only <c>kOS.Safe</c> + kOS's own
     /// <c>TerminalXtermMapper</c>, no <c>kOSProcessor</c>/window). That split is
-    /// what lets the pure diff pipeline: the SAME pipeline kOS's telnet server
+    /// what lets the pure diff pipeline: the same pipeline kOS's telnet server
     /// uses, be exercised headlessly by the terminal-harness tests while this
     /// shell stays KSP-only. Nothing here touches telnet or node-pty.
     ///

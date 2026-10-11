@@ -8,7 +8,7 @@ using Xunit;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// Opens the INSTALLED RP-1 plugin assemblies from the directory the BUILD
+    /// Opens the installed RP-1 plugin assemblies from the directory the build
     /// found, so the binary that ran cannot disagree with the build that decided
     /// the check was possible.
     /// </summary>
@@ -103,10 +103,10 @@ namespace GonogoRp1Uplink.Tests
     }
 
     /// <summary>
-    /// The RP-1 Uplink integrates with RP-1 ENTIRELY BY REFLECTION, private fields
+    /// The RP-1 Uplink integrates with RP-1 entirely by reflection, private fields
     /// included, so nothing in the compiler and nothing else in this suite can
     /// notice a future RP-1 release renaming or reshaping what the walk reads.
-    /// This is the check that can: it opens the INSTALLED RP0.dll and holds every
+    /// This is the check that can: it opens the installed RP0.dll and holds every
     /// target in <see cref="Rp1ReflectionTargets"/> against it.
     /// </summary>
     /// <remarks>
@@ -118,17 +118,17 @@ namespace GonogoRp1Uplink.Tests
     /// it while the stand-in goes on carrying the old name, so every test stays
     /// green. It is a self-consistency check. This is the compatibility check.</para>
     ///
-    /// <para><b>What this CANNOT do, in the same plain voice.</b> It proves the
+    /// <para><b>What this cannot do, in the same plain voice.</b> It proves the
     /// members exist, that they are the kind the walk resolves (a readable
     /// property or a field, instance or static as the walk assumes), and that
     /// their declared types are ones the reader accepts. It proves nothing
-    /// whatever about a RUNNING RP-1. It cannot tell you that <c>Instance</c> is
+    /// whatever about a running RP-1. It cannot tell you that <c>Instance</c> is
     /// non-null in any scene, that a member still holds the quantity its name
     /// suggests, that <c>PredictWeightedEfficiency</c> returns an efficiency
     /// rather than the interval its early-out returns, that a private collection
     /// still contains the things the walk expects to find in it, or that writing a
     /// confidence balance back leaves RP-1 in a state it agrees with. A member
-    /// that kept its name and changed its MEANING passes this class completely,
+    /// that kept its name and changed its meaning passes this class completely,
     /// and so does a member whose containing object is never populated. Those stay
     /// live-game questions, and there is no RP-1 install on this machine or the
     /// test rig to answer them.</para>
@@ -466,11 +466,11 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// The research command's authored node covers every <c>[Persistent]</c>
-        /// field the SHIPPED <c>ResearchProject</c> loads, and no more.
+        /// field the shipped <c>ResearchProject</c> loads, and no more.
         /// </summary>
         /// <remarks>
         /// <para>This is the check the whole <c>Load(ConfigNode)</c> route was
-        /// chosen for. That route's claim is that its failure mode is a CHECKLIST
+        /// chosen for. That route's claim is that its failure mode is a checklist
         /// rather than a reading-comprehension test, and a checklist is only worth
         /// having if something reads the list off the thing being checked. It does:
         /// the field names come out of RP0.dll's metadata by attribute, so a
@@ -485,7 +485,7 @@ namespace GonogoRp1Uplink.Tests
         /// every value assertion in <c>Rp1ResearchCommandsTests</c> agrees with
         /// it.</para>
         ///
-        /// <para>The EXTRA direction is checked as well, and is not tidiness: a key
+        /// <para>The extra direction is checked as well, and is not tidiness: a key
         /// this Uplink authors that RP-1 does not load is a typo in a field name,
         /// and the field it was meant for is the one silently taking its
         /// default.</para>

@@ -53,7 +53,7 @@ public sealed class Rp1CentreEntry
     public string? KscName { get; set; }
 
     /// <summary>
-    /// What to CALL this centre. <see cref="KscName"/> is an id and reads like
+    /// What to call this centre. <see cref="KscName"/> is an id and reads like
     /// one (<c>us_cape_canaveral</c>); this is the name KSCSwitcher's own site
     /// config gives it, localised as RP-1's Budget tab localises it, and the one
     /// a surface should render.
@@ -84,7 +84,7 @@ public sealed class Rp1CentreEntry
     public int? LaunchComplexCount { get; set; }
 
     /// <summary>
-    /// At least one launch complex BEYOND the hangar is operational, mirroring
+    /// At least one launch complex beyond the hangar is operational, mirroring
     /// RP-1's own reading: its loop deliberately skips index 0, which is always
     /// the hangar, so this answers "is there a pad-side complex to work with"
     /// rather than "does this centre exist".
@@ -170,7 +170,7 @@ public sealed class Rp1ComplexEntry
     [SitrepUnit(Units.Flag)]
     public bool? IsOperational { get; set; }
 
-    /// <summary>Rushing: work goes faster and salaries cost more, set per COMPLEX under RP-1.</summary>
+    /// <summary>Rushing: work goes faster and salaries cost more, set per complex under RP-1.</summary>
     [SitrepUnit(Units.Flag)]
     public bool? IsRushing { get; set; }
 
@@ -190,13 +190,13 @@ public sealed class Rp1ComplexEntry
     public double? Efficiency { get; set; }
 
     /// <summary>
-    /// The OTHER complexes whose crew rating is the same record as this one's,
+    /// The other complexes whose crew rating is the same record as this one's,
     /// by their <see cref="LcId"/>, sorted, this complex excluded.
     ///
     /// <para><see cref="Efficiency"/> alone is misleading and this is what fixes
     /// it. RP-1 does not rate a complex, it rates an <c>LCEfficiency</c> record
     /// and attaches similar complexes to the same one, so the number here is a
-    /// figure two or three complexes SHARE: work done at any of them moves it at
+    /// figure two or three complexes share: work done at any of them moves it at
     /// all of them, and a client that reads it as this complex's own crew will
     /// report a rating that climbed while nobody worked here.</para>
     ///
@@ -204,7 +204,7 @@ public sealed class Rp1ComplexEntry
     /// keeps no id on one and a synthetic key would be ours rather than the
     /// game's. Null when RP-1 holds no record: the hangar, which is rated at the
     /// ceiling and shares with nothing, and a pad complex nobody has worked yet,
-    /// the same miss that leaves <see cref="Efficiency"/> null. EMPTY is the
+    /// the same miss that leaves <see cref="Efficiency"/> null. Empty is the
     /// different, real answer that the record exists and covers this complex
     /// alone.</para>
     /// </summary>
@@ -227,18 +227,18 @@ public sealed class Rp1ComplexEntry
     public bool? HumanRated { get; set; }
 
     /// <summary>
-    /// How many of this complex's pads are OPERATIONAL, RP-1's own
+    /// How many of this complex's pads are operational, RP-1's own
     /// <c>LaunchPadCount</c>, and the number the pad-dismantle rule is stated
     /// against: RP-1 will only delete a pad while the complex still has two.
     ///
     /// <para>Not derivable from the <c>rp1.pads</c> rows beside it, which is why
     /// it is here rather than left to a client. A pad's <c>state</c> tests
-    /// destroyed FIRST, so a pad that has been wrecked reports <c>Destroyed</c>
+    /// destroyed first, so a pad that has been wrecked reports <c>Destroyed</c>
     /// whatever its operational flag says, and counting rows that are not
     /// <c>Nonoperational</c> gets the wrong answer exactly when a launch has just
     /// gone badly.</para>
     ///
-    /// <para>Zero is a REAL answer and never means absent: a pad complex still
+    /// <para>Zero is a real answer and never means absent: a pad complex still
     /// under construction has pads and none of them operational, which is the
     /// state that makes it unusable.</para>
     /// </summary>
@@ -246,10 +246,10 @@ public sealed class Rp1ComplexEntry
     public int? LaunchPadCount { get; set; }
 
     /// <summary>
-    /// The LIGHTEST vehicle this complex will accept, RP-1's
+    /// The lightest vehicle this complex will accept, RP-1's
     /// <c>floor(massMax * lcMassMinFraction)</c>.
     ///
-    /// <para>An eligibility floor, and NOT the bottom of the renovation envelope.
+    /// <para>An eligibility floor, and not the bottom of the renovation envelope.
     /// That is <see cref="MassOrig"/>'s business, and confusing the two is the
     /// standing trap of this payload: three tonnage figures, one of which is
     /// about vehicles and two of which are about the complex.</para>
@@ -262,7 +262,7 @@ public sealed class Rp1ComplexEntry
     public double? MassMax { get; set; }
 
     /// <summary>
-    /// The tonnage this complex was ORIGINALLY built at, and the only thing that
+    /// The tonnage this complex was originally built at, and the only thing that
     /// bounds renovating it. RP-1 refuses a modify unless the new
     /// <see cref="MassMax"/> lands inside
     /// <c>max(3, floor(massOrig * 2))</c> and <c>max(1, ceil(massOrig * 0.5))</c>,
@@ -270,7 +270,7 @@ public sealed class Rp1ComplexEntry
     /// cannot say whether a renovation it is about to offer is legal.
     ///
     /// <para><b><see cref="MassMax"/> is not a substitute for it.</b> MassMax is
-    /// the value the envelope CONTAINS and the value a renovation moves; it
+    /// the value the envelope contains and the value a renovation moves; it
     /// equals this only on a complex nobody has renovated. <see cref="MassMin"/>
     /// is a third quantity again, about which vehicles fit rather than about
     /// renovation.</para>
@@ -280,7 +280,7 @@ public sealed class Rp1ComplexEntry
     /// is still right.</para>
     ///
     /// <para>Null for the hangar, which RP-1 records at its no-limit sentinel and
-    /// exempts from the margin check outright. Null rather than zero ALWAYS: a
+    /// exempts from the margin check outright. Null rather than zero always: a
     /// zero here computes an envelope of 3t to 1t, which is a confident wrong
     /// answer where absence is a readable one.</para>
     /// </summary>
@@ -310,12 +310,12 @@ public sealed class Rp1ComplexEntry
     /// <summary>
     /// The resources this complex can load, by RP-1's own resource names, sorted.
     ///
-    /// <para>An ELIGIBILITY fact and not a capacity: a vehicle needing a
+    /// <para>An eligibility fact and not a capacity: a vehicle needing a
     /// resource absent from this list cannot be built here at all, however the
     /// complex is staffed. Empty is a real answer for a complex that handles
     /// none, and null is RP-1 not having said.</para>
     ///
-    /// <para>The CAPACITIES behind these names are
+    /// <para>The capacities behind these names are
     /// <see cref="ResourceCapacities"/>, and a client renovating the complex
     /// needs those rather than these.</para>
     /// </summary>
@@ -327,14 +327,14 @@ public sealed class Rp1ComplexEntry
     /// own resource name, in units of that resource.
     ///
     /// <para><b>Carried because a renovation cannot be commanded without it.</b>
-    /// <c>Rp1ComplexModifyArgs.Resources</c> is a SET and absent means NONE, so a
+    /// <c>Rp1ComplexModifyArgs.Resources</c> is a set and absent means none, so a
     /// client that renovates the tonnage and says nothing about resources strips
     /// every one of them: RP-1 would then price the removal, strand any vehicle
     /// that needed the fluid, and leave a complex that cannot fuel what it was
     /// built for. A client that means "keep these" has to send them, and it can
     /// only do that if it can read them.</para>
     ///
-    /// <para><b>The unit IS established, and an earlier note here said
+    /// <para><b>The unit is established, and an earlier note here said
     /// otherwise.</b> RP-1 keeps
     /// <c>LCData.resourcesHandled</c> as a <c>Dictionary&lt;string, double&gt;</c>
     /// and prices it through <c>Formula.ResourceTankCost(name, amount, ...)</c>,
@@ -344,26 +344,26 @@ public sealed class Rp1ComplexEntry
     /// exactly.</para>
     ///
     /// <para>Not <see cref="SitrepUnitAttribute"/>-tagged, and it cannot be: the
-    /// unit differs per KEY, because a unit of liquid oxygen and a unit of
+    /// unit differs per key, because a unit of liquid oxygen and a unit of
     /// kerosene are different quantities. A per-resource number is what RP-1
     /// stores and what <c>Rp1ComplexNewArgs.Resources</c> already takes, so the
     /// reading matches the command's own shape.</para>
     ///
-    /// <para>Null is RP-1 not having said. EMPTY is the real, different answer
+    /// <para>Null is RP-1 not having said. Empty is the real, different answer
     /// that the complex handles nothing, which is most early-career pads.</para>
     /// </summary>
     public Dictionary<string, double>? ResourceCapacities { get; set; }
 
     /// <summary>
     /// The identity RP-1 groups complexes by for crew rating: complexes sharing
-    /// this key are on ONE efficiency record.
+    /// this key are on one efficiency record.
     ///
-    /// <para>Efficiency is a MEMBERSHIP, not a relationship. RP-1 rates an
+    /// <para>Efficiency is a membership, not a relationship. RP-1 rates an
     /// <c>LCEfficiency</c> rather than a complex, and attaches a complex to an
     /// existing record only when its mass limit, size limits, type, human rating
-    /// and handled resources are ALL equal, so the complexes carrying one key are
+    /// and handled resources are all equal, so the complexes carrying one key are
     /// an equivalence class. Group by this rather than by centre: two identical
-    /// complexes at DIFFERENT space centres share a record, and two complexes at
+    /// complexes at different space centres share a record, and two complexes at
     /// one centre with different mass limits do not.</para>
     ///
     /// <para>Derived by this Uplink rather than left to a client, because the
@@ -371,15 +371,15 @@ public sealed class Rp1ComplexEntry
     /// right is the producer's job: a client comparing four of them would be
     /// right until two complexes differed only in the fifth. The amounts it
     /// compares are on the wire as <see cref="ResourceCapacities"/>, so a client
-    /// COULD now reconstruct this; it should not, because the key is RP-1's
+    /// could now reconstruct this; it should not, because the key is RP-1's
     /// equivalence and not an arithmetic result.</para>
     ///
     /// <para>It names a group and nothing else: it is not an RP-1 id, it is not
     /// stable across game versions, and it must never be shown to an operator.
-    /// Null when the pieces could not be read, which is NOT "belongs to no
+    /// Null when the pieces could not be read, which is not "belongs to no
     /// group": every complex RP-1 can rate belongs to exactly one.</para>
     ///
-    /// <para>Does not capture the whole model. Complexes that are merely SIMILAR
+    /// <para>Does not capture the whole model. Complexes that are merely similar
     /// still move each other's ratings: <c>IncreaseEfficiency(..., distribute)</c>
     /// pays every other record a share scaled by closeness, so a rating can climb
     /// where nobody worked. This key answers who shares a number, never what else
@@ -398,7 +398,7 @@ public sealed class Rp1ComplexEntry
     public double? SalaryPerDay { get; set; }
 
     /// <summary>
-    /// What rushing this complex ADDS to its daily crew bill: the difference
+    /// What rushing this complex adds to its daily crew bill: the difference
     /// between what the crew draws rushing and what the same crew draws not
     /// rushing, always stated as the increase.
     ///
@@ -410,7 +410,7 @@ public sealed class Rp1ComplexEntry
     /// rushing it costs nothing extra and buys nothing.</para>
     ///
     /// <para>Not <see cref="SalaryPerDay"/> times the rush multiplier. RP-1
-    /// multiplies only the part of the crew that is WORKING, and leaves the rest
+    /// multiplies only the part of the crew that is working, and leaves the rest
     /// at the idle fraction, so that product overstates the increase at every
     /// complex where the two differ. Null when the split could not be resolved,
     /// which is not zero.</para>
@@ -435,7 +435,7 @@ public sealed class Rp1ComplexEntry
     public double? UpkeepPerDay { get; set; }
 
     /// <summary>
-    /// What ONE more launch pad at this complex would cost, which is the price
+    /// What one more launch pad at this complex would cost, which is the price
     /// <c>rp1.pad.new</c> commits the career to.
     ///
     /// <para>A curve over the complex's own tonnage and envelope times RP-1's
@@ -445,8 +445,8 @@ public sealed class Rp1ComplexEntry
     /// reimplementation in TypeScript would agree with the transcription rather
     /// than with RP-1.</para>
     ///
-    /// <para>ABSENT for a hangar, which has no pad to add, and whenever RP-1
-    /// would not price one. Absent is NOT free: a control must refuse to quote
+    /// <para>Absent for a hangar, which has no pad to add, and whenever RP-1
+    /// would not price one. Absent is not free: a control must refuse to quote
     /// rather than quote zero.</para>
     ///
     /// <para>Note the money does not leave at the press. RP-1 draws a
@@ -472,10 +472,10 @@ public sealed class Rp1BuildItemEntry
 {
     /// <summary>
     /// RP-1's own stable identity for this vehicle (<c>KCTPersistentID</c>), and
-    /// the ONLY thing a command may address it by.
+    /// the only thing a command may address it by.
     ///
     /// <para>A name cannot do the job. The repeat-build loop that this Uplink's
-    /// commands exist for produces several vehicles of the SAME name at the same
+    /// commands exist for produces several vehicles of the same name at the same
     /// complex on purpose, which is what building another one of a design means,
     /// so <see cref="ShipName"/> plus <see cref="LcId"/> stops identifying a row
     /// the moment the feature is used once.</para>
@@ -489,7 +489,7 @@ public sealed class Rp1BuildItemEntry
     public string? Id { get; set; }
 
     /// <summary>
-    /// RP-1's <c>shipID</c>, and the ONLY key that joins this vehicle to the
+    /// RP-1's <c>shipID</c>, and the only key that joins this vehicle to the
     /// rollout, rollback or recovery moving it.
     ///
     /// <para>A second id, and it has to be. <see cref="Id"/> is
@@ -498,7 +498,7 @@ public sealed class Rp1BuildItemEntry
     /// (<c>ReconRolloutProject.associatedID</c>, published here as
     /// <see cref="Rp1OperationEntry.AssociatedVesselId"/>). Without this field
     /// on the wire a client can read that a rollout is happening and cannot say
-    /// WHICH vehicle it is happening to, which is precisely the fact that
+    /// which vehicle it is happening to, which is precisely the fact that
     /// decides whether a row offers Roll Out or Roll Back.</para>
     ///
     /// <para>Not solved by making the operation carry the persistent id
@@ -594,7 +594,7 @@ public sealed class Rp1WarehouseItemEntry
     /// <summary>
     /// RP-1's <c>shipID</c>. See <see cref="Rp1BuildItemEntry.ShipId"/> for why
     /// a vehicle carries two ids; this is the list where it matters, because a
-    /// rollout only ever moves a FINISHED vehicle and so every rollout on the
+    /// rollout only ever moves a finished vehicle and so every rollout on the
     /// wire joins to a row here.
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -608,22 +608,22 @@ public sealed class Rp1WarehouseItemEntry
     /// <para><b>Why this is on the wire rather than computed by the client.</b>
     /// Eligibility has two halves and they live at different levels. The pad half
     /// is per-pad and is <see cref="Rp1PadEntry.State"/> plus
-    /// <see cref="Rp1PadEntry.HasVesselWaiting"/>. This is the VEHICLE half, and
+    /// <see cref="Rp1PadEntry.HasVesselWaiting"/>. This is the vehicle half, and
     /// it is per-COMPLEX rather than per-pad: the same answer for every pad the
     /// complex owns, because what it measures is the vehicle against the
     /// complex's envelope. Publishing it per (vehicle, pad) pair would be an
     /// N-by-M matrix restating one fact.</para>
     ///
-    /// <para>It could ALMOST be derived client-side, and that is the trap. Mass,
+    /// <para>It could almost be derived client-side, and that is the trap. Mass,
     /// the complex's ceiling and floor and its human rating are all already
-    /// published, but the vehicle's SIZE is not, so an axis check is impossible
+    /// published, but the vehicle's size is not, so an axis check is impossible
     /// there; and a client that reproduced the rest would be the third
     /// independent copy of RP-1's envelope rule in this repo, after the launch
     /// gate and the command. Copies of a rule drift, and a client copy would
     /// drift where nothing tests it.</para>
     ///
     /// <para>Null carries the same meaning an unreadable envelope has everywhere
-    /// else here: OFFER the control and let the command refuse. The command
+    /// else here: offer the control and let the command refuse. The command
     /// re-checks at the moment of the press against the live object, so the worst
     /// case is a refusal one step later, against the certainty of hiding a
     /// control that would have worked.</para>
@@ -644,15 +644,15 @@ public sealed class Rp1WarehouseItemEntry
     public double? Cost { get; set; }
 
     /// <summary>
-    /// What moving this vehicle to a pad will cost, RP-1's own price for THIS
+    /// What moving this vehicle to a pad will cost, RP-1's own price for this
     /// vehicle at the complex holding it.
     ///
-    /// <para><b>A total drawn down OVER the rollout, not a charge at the
+    /// <para><b>A total drawn down over the rollout, not a charge at the
     /// press.</b> RP-1 bills a rollout the way it bills a construction: nothing
     /// leaves the treasury when the operator commits, and each tick takes the
     /// share of the total that tick's progress earned. A career that cannot
     /// cover a tick is not refused, it advances by the fraction it can afford
-    /// and carries on, so a shortfall here SLOWS the move and never blocks it.
+    /// and carries on, so a shortfall here slows the move and never blocks it.
     /// A client must price this as a rate over the move; "cannot afford" is a
     /// refusal RP-1 does not make.</para>
     ///
@@ -725,8 +725,8 @@ public sealed class Rp1PadEntry
     /// "Free" means a launch aimed here will not work.
     ///
     /// <internal>
-    /// Named `status` rather than `state` because `state` is a RESERVED
-    /// READING KEY: a payload field spelled like a currency member cannot be
+    /// Named `status` rather than `state` because `state` is a reserved
+    /// reading key: a payload field spelled like a currency member cannot be
     /// reached through the field accessor at all, so the one field a caller
     /// most needs off a pad was the one field the accessor could not address.
     /// </internal>
@@ -738,14 +738,14 @@ public sealed class Rp1PadEntry
     /// The pad is in service, as opposed to still being built.
     ///
     /// <para><b>Not derivable from <see cref="State"/>, which is why it is here.</b>
-    /// RP-1's <c>LaunchPadState</c> reports <c>Destroyed</c> BEFORE it consults the
+    /// RP-1's <c>LaunchPadState</c> reports <c>Destroyed</c> before it consults the
     /// service flag, and a pad can be both destroyed and in service, and that is
     /// exactly the pad awaiting reconditioning after its own launch. So a pad
     /// reading "Destroyed" says nothing about whether it counts as one of the
     /// complex's working pads.</para>
     ///
     /// <para>That count is what the pad-dismantle rule turns on: RP-1 will not
-    /// remove a pad unless the complex keeps another OPERATIONAL one, and it
+    /// remove a pad unless the complex keeps another operational one, and it
     /// enforces that by silently doing nothing. A client without this field cannot
     /// tell whether <c>rp1.pad.dismantle</c> is offerable, which is what it was
     /// added for.</para>
@@ -762,7 +762,7 @@ public sealed class Rp1PadEntry
     ///
     /// <para><b>The one condition <see cref="State"/> cannot express, and the
     /// reason this field had to exist.</b> That property derives its answer from
-    /// the OPERATIONS on the pad, and a vehicle already sent to the launch site
+    /// the operations on the pad, and a vehicle already sent to the launch site
     /// has no operation left: it simply sits there. So a pad in exactly this
     /// state reports "Free" and refuses a rollout, and a client choosing from
     /// state alone would offer a pad the mod can only reject. RP-1 asks the same
@@ -779,7 +779,7 @@ public sealed class Rp1PadEntry
 
     /// <summary>
     /// The vessel already standing on the pad, by name, for a client that wants
-    /// to say WHICH craft is in the way. Null whenever
+    /// to say which craft is in the way. Null whenever
     /// <see cref="HasVesselWaiting"/> is not true.
     /// </summary>
     [SitrepUnit(Units.Text)]
@@ -808,7 +808,7 @@ public sealed class Rp1OperationEntry
     public string? LaunchPadId { get; set; }
 
     /// <summary>
-    /// RP-1's <c>RolloutReconType</c> name. SEVEN arms, not the five a KCT-shaped
+    /// RP-1's <c>RolloutReconType</c> name. Seven arms, not the five a KCT-shaped
     /// client would map: "Reconditioning", "Rollout", "Rollback", "Recovery",
     /// "None", "AirlaunchMount", "AirlaunchUnmount". A table missing the last two
     /// renders an air-launched programme as unknown.
@@ -824,7 +824,7 @@ public sealed class Rp1OperationEntry
 
     /// <summary>
     /// Fraction done, counting the right way round for a reversed operation: a
-    /// rollback and an air-launch unmount run progress DOWN to zero.
+    /// rollback and an air-launch unmount run progress down to zero.
     /// </summary>
     [SitrepUnit(Units.Ratio)]
     public double? ProgressRatio { get; set; }
@@ -838,7 +838,7 @@ public sealed class Rp1OperationEntry
     public double? Rate { get; set; }
 
     /// <summary>
-    /// Seconds to completion, SEQUENCED against the other blocking operations
+    /// Seconds to completion, sequenced against the other blocking operations
     /// on this complex rather than divided out of this one's share: each
     /// survivor speeds up as its neighbours finish, so the share division alone
     /// answers early. Absent when the sequence cannot be computed, never the
@@ -852,7 +852,7 @@ public sealed class Rp1OperationEntry
     public bool? Stalled { get; set; }
 
     /// <summary>
-    /// How many OTHER blocking operations are sharing this complex. They run at
+    /// How many other blocking operations are sharing this complex. They run at
     /// once, each taking the fraction of the complex its build points earn it,
     /// so a peer is why this is slower than it looks and is what an operator
     /// reads when <see cref="TimeLeftSeconds"/> is absent.
@@ -867,14 +867,14 @@ public sealed class Rp1OperationEntry
     /// The part of <see cref="Cost"/> nothing has been billed for yet: the share
     /// the progress still to be made will draw.
     ///
-    /// <para>What FINISHING this move costs from here, and the figure a control
+    /// <para>What finishing this move costs from here, and the figure a control
     /// that resumes one has to quote. RP-1 draws a rollout's price down as the
     /// rollout proceeds rather than taking it at the press, so an operation
     /// already half done has already paid half its price and
     /// <see cref="Cost"/> overstates what a press commits to by the half
     /// gone.</para>
     ///
-    /// <para>Counted the same way for a REVERSED operation, which bills nothing
+    /// <para>Counted the same way for a reversed operation, which bills nothing
     /// while it runs: it is what completing the rollout from here would draw,
     /// which is exactly what an operator turning a rollback round is about to
     /// spend. Absent when RP-1 has not costed the project in build points, which
@@ -889,7 +889,7 @@ public sealed class Rp1OperationEntry
 }
 
 /// <summary>
-/// One thing being BUILT at a space centre, as opposed to one vehicle being
+/// One thing being built at a space centre, as opposed to one vehicle being
 /// integrated inside it. Three RP-1 project kinds share this row shape: a
 /// facility upgrade, a launch complex being built or modified, and a pad being
 /// added to a complex.
@@ -899,7 +899,7 @@ public sealed class Rp1OperationEntry
 /// that moves in months and consumes the funds a Program pays out. An operator
 /// reading only the queue sees the fast half of an RP-1 career's calendar.</para>
 ///
-/// <para><b>Construction runs in PARALLEL, and integration does not.</b> RP-1
+/// <para><b>Construction runs in parallel, and integration does not.</b> RP-1
 /// zeroes a vehicle's rate at any queue position but the head, and a research
 /// node's likewise, so those two queues advance one item at a time. A
 /// construction's rate does not depend on its queue position at all, so every
@@ -907,7 +907,7 @@ public sealed class Rp1OperationEntry
 /// construction rate is a per-day constant scaled by the career's own modifiers,
 /// which is why no engineer count appears on this row.</para>
 ///
-/// <para>ONE ROW SHAPE DISCRIMINATED BY <see cref="Kind"/>, the same choice
+/// <para>One row shape discriminated by <see cref="Kind"/>, the same choice
 /// <see cref="Rp1ProgramEntry"/> argues for: the fields only one kind has are
 /// absent on the others rather than split across three Topics that would have to
 /// be read together to answer "what is being built here".</para>
@@ -980,7 +980,7 @@ public sealed class Rp1ConstructionEntry
     public int? TargetLevel { get; set; }
 
     /// <summary>
-    /// This is a MODIFICATION of an existing launch complex rather than a new
+    /// This is a modification of an existing launch complex rather than a new
     /// one. LaunchComplex rows only, and the distinction is what an operator
     /// plans around: a modify takes the complex out of service while it runs.
     /// </summary>
@@ -1011,7 +1011,7 @@ public sealed class Rp1ConstructionEntry
 
     /// <summary>
     /// The operator's own throttle on this construction, 0 to 1.5. Above 1 is
-    /// RUSHING, which buys speed at a higher daily cost.
+    /// rushing, which buys speed at a higher daily cost.
     ///
     /// <para>The cost multiplier a rate above 1 buys, and the draw per day and
     /// finish date at every rate, are on <c>rp1.constructionRates</c>, which
@@ -1065,7 +1065,7 @@ public sealed class Rp1ConstructionEntry
     public double? Cost { get; set; }
 
     /// <summary>
-    /// Paid so far. A construction is billed AS IT PROGRESSES rather than up
+    /// Paid so far. A construction is billed as it progresses rather than up
     /// front, so this and <see cref="Cost"/> together are the only place a
     /// part-paid commitment is visible: cancel at half done and half the money is
     /// gone.
@@ -1094,7 +1094,7 @@ public sealed class Rp1ConstructionEntry
 /// work rate RP-1 offers, and what each facility's next tier would draw and take
 /// at the full rate.
 ///
-/// <para><b>A construction is a PROGRESSIVE spend.</b> Nothing is charged when
+/// <para><b>A construction is a progressive spend.</b> Nothing is charged when
 /// one is queued or its rate is set: RP-1 draws the funds as the work advances,
 /// and slows the work when the career cannot meet the draw. So the readout beside
 /// a rate control is the draw per day and the finish date, and there is no
@@ -1200,7 +1200,7 @@ public sealed class Rp1FacilityUpgradeRate
 /// Credit per day, and when the node being researched would finish, at every
 /// work rate RP-1's slider offers.
 ///
-/// <para><b>Research is a PROGRESSIVE spend.</b> Setting the rate charges
+/// <para><b>Research is a progressive spend.</b> Setting the rate charges
 /// nothing. Researchers draw their salary every day, the idle share of it when
 /// stopped, and the rate trades that salary against research speed and Unlock
 /// Credit accrual. So the readout beside a rate control is the pay, the credit
@@ -1402,24 +1402,24 @@ public sealed class Rp1Personnel
     public double? ResearcherSalaryPerHeadPerDay { get; set; }
 
     /// <summary>
-    /// What ONE PAID head costs, the same for either role, and the figure that
+    /// What one paid head costs, the same for either role, and the figure that
     /// actually leaves the balance. Null when RP-1's settings could not be read.
     ///
-    /// <para><b>Applicants are hired FREE</b>, so the paid headcount is
+    /// <para><b>Applicants are hired free</b>, so the paid headcount is
     /// <c>max(0, wanted - </c><see cref="Applicants"/><c>)</c> rather than
     /// <c>wanted</c>. A total taken as headcount times this overcharges by up to
     /// the whole applicant pool, and RP-1 says as much in its own words: its hire
     /// button reads "Applicants can be hired for free!" while any are
     /// waiting.</para>
     ///
-    /// <para>Hiring is charged UP FRONT and is genuinely refused on
+    /// <para>Hiring is charged up front and is genuinely refused on
     /// affordability, unlike a facility upgrade, so a balance is an honest thing
     /// to state beside a hire, provided it is stated against the applicant-netted
     /// total.</para>
     /// <internal>
     /// RP0.Database.SettingsSC.HireCost, read raw and on purpose.
     /// KCTUtilities.HireStaff is the only funds deduction on the hiring path and
-    /// its whole money step multiplies THIS value; KCTUtilities.SpendFunds runs
+    /// its whole money step multiplies this value; KCTUtilities.SpendFunds runs
     /// no modifier query, and RP-1's Harmony prefix on Funding.AddFunds banks the
     /// raw amount before firing OnCurrencyModifierQuery and never reads the query
     /// back. See Rp1HirePriceQuery's header for why publishing a raw settings
@@ -1430,7 +1430,7 @@ public sealed class Rp1Personnel
     public double? HireCost { get; set; }
 
     /// <summary>
-    /// What RP-1 QUOTES for one engineer: the same price after its own currency
+    /// What RP-1 quotes for one engineer: the same price after its own currency
     /// modifiers, which is the number on its Hire button and the one its
     /// auto-hire scheduler and its <see cref="Rp1HireTarget.TimeLeft"/> forecast
     /// divide by. Null when the query could not be asked, which leaves
@@ -1460,7 +1460,7 @@ public sealed class Rp1Personnel
     /// is keyed on a per-role transaction reason and three of the four shipped
     /// hiring leaders move only the researcher half.
     /// <internal>
-    /// The HiringResearchers reason. RP-1 matches a modifier's reasons BITWISE
+    /// The HiringResearchers reason. RP-1 matches a modifier's reasons bitwise
     /// against a composite, so a leader naming only the parent `Hiring` reason
     /// (OKB-52 Chelomey does) moves both roles; asking RP-1 rather than reading
     /// multipliers out of config is what gets that for free.
@@ -1475,7 +1475,7 @@ public sealed class Rp1Personnel
     /// fact about staffing rather than about any one complex, even when it names
     /// one.
     ///
-    /// <para>ONE slot, not one per kind: RP-1 holds a single target and
+    /// <para>One slot, not one per kind: RP-1 holds a single target and
     /// <see cref="Rp1HireTarget.IsResearch"/> says which kind it hires, so
     /// setting a researcher target replaces an engineer one.</para>
     /// </summary>
@@ -1483,25 +1483,25 @@ public sealed class Rp1Personnel
 }
 
 /// <summary>
-/// What it costs to BUILD here: the terms a client needs to price a complex the
+/// What it costs to build here: the terms a client needs to price a complex the
 /// operator is still describing.
 ///
 /// <para><b>Why this exists at all, when a built complex's prices are published
 /// on the complex.</b> A renovation or a new pad is priced against something that
-/// already exists, so its figure can be computed where RP-1 lives and sent. A NEW
+/// already exists, so its figure can be computed where RP-1 lives and sent. A new
 /// complex is priced against what the operator is typing, and there is no such
 /// thing to hang a figure on. Asking the mod per keystroke is not an option: these
 /// commands are delay-aware and a career commanding from a remote vantage would
 /// wait minutes for each quote, so a form that could not price until a round trip
 /// returned could not price at all.</para>
 ///
-/// <para><b>So the split is by whether the arithmetic needs GAME DATA.</b> The pad
+/// <para><b>So the split is by whether the arithmetic needs game data.</b> The pad
 /// and integration halves of RP-1's price are a closed form over tonnage, envelope
 /// and human rating, touching nothing but the numbers the operator entered; a
 /// client computes those. The resource half needs a tank definition, a resource
 /// definition and a settings multiplier per resource, none of which a client can
 /// know, so it is sent. It is one number per resource because RP-1's own
-/// expression is LINEAR in the amount: everything else in
+/// expression is linear in the amount: everything else in
 /// <c>Formula.ResourceTankCost</c> is constant per resource, so a client
 /// multiplies and is exactly right rather than approximately.</para>
 /// </summary>
@@ -1515,7 +1515,7 @@ public sealed class Rp1LcPricing
     /// <summary>
     /// What every pad past the first costs, as a fraction of the pad price.
     ///
-    /// <para>Applied ONCE when a pad is added to a complex. A renovation uses the
+    /// <para>Applied once when a pad is added to a complex. A renovation uses the
     /// same figure differently, as <c>1 + (pads - 1) * mult</c>, because that one
     /// reprices every pad the complex already has.</para>
     ///
@@ -1525,7 +1525,7 @@ public sealed class Rp1LcPricing
     /// career's own figure. Say the multiplier is the shipped default rather than
     /// quoting it as read.</para>
     /// <internal>
-    /// Written from Rp1LcCostModel.ReadAdditionalPadCostMult, deliberately NOT
+    /// Written from Rp1LcCostModel.ReadAdditionalPadCostMult, deliberately not
     /// from AdditionalPadCostMult: the latter is the arithmetic half and applies
     /// DefaultAdditionalPadCostMult, so publishing it made this nullable field
     /// null never, and a substituted 0.5 indistinguishable from a read one.
@@ -1537,7 +1537,7 @@ public sealed class Rp1LcPricing
     /// <summary>
     /// The fluids a complex can be built to handle, and what each costs per unit.
     ///
-    /// <para>ABSENT means RP-1 would not say, which a form must refuse to price on
+    /// <para>Absent means RP-1 would not say, which a form must refuse to price on
     /// rather than treat as an empty list: a complex quoted without its resources
     /// is quoted under its true cost.</para>
     /// </summary>
@@ -1559,10 +1559,10 @@ public sealed class Rp1LcResourcePrice
     public string? Name { get; set; }
 
     /// <summary>
-    /// Funds per unit of capacity, for a PAD complex.
+    /// Funds per unit of capacity, for a pad complex.
     ///
     /// <para>RP-1's own expression is linear in the amount, so this is the whole of
-    /// it and a client multiplies. ABSENT where a pad complex ignores this resource,
+    /// it and a client multiplies. Absent where a pad complex ignores this resource,
     /// which is not the same as zero: ignored means the resource cannot be chosen,
     /// where zero would mean it is free.</para>
     ///
@@ -1634,14 +1634,14 @@ public sealed class Rp1Confidence
 /// <para>Programs are RP-1's commitment mechanic and the largest single source
 /// of career funding: accepting one draws down a fixed total over a fixed
 /// duration, on a curve, against a deadline that costs reputation once it
-/// passes. They are a DIFFERENT mechanic from the reputation subsidy core
+/// passes. They are a different mechanic from the reputation subsidy core
 /// already publishes as <c>career.status.economy.subsidyPerDay</c>: the subsidy
 /// is a floor that grows with the calendar and is lerped up by reputation, and
 /// it arrives whether or not any Program is running. An operator reading only
 /// the subsidy sees the smaller half of their income and none of the obligation
 /// attached to the larger half.</para>
 ///
-/// <para>ONE ROW SHAPE FOR EVERY STATE, discriminated by <see cref="State"/>,
+/// <para>One row shape for every state, discriminated by <see cref="State"/>,
 /// rather than one Topic per state. RP-1's own Administration building shows
 /// one list; the fields that only an accepted Program has are absent on the
 /// others, which is the same distinction <see cref="Rp1WarehouseItemEntry"/>
@@ -1670,7 +1670,7 @@ public sealed class Rp1ProgramEntry
     ///
     /// <internal>
     /// Named `status` rather than `state` for the reason `Rp1PadEntry.Status`
-    /// carries: `state` is a RESERVED READING KEY, so a field spelled that way
+    /// carries: `state` is a reserved reading key, so a field spelled that way
     /// is unreachable through the field accessor.
     /// </internal>
     /// </summary>
@@ -1695,7 +1695,7 @@ public sealed class Rp1ProgramEntry
     public bool? IsHumanSpaceflight { get; set; }
 
     /// <summary>
-    /// The catalogue duration BEFORE the speed multiplier and before the
+    /// The catalogue duration before the speed multiplier and before the
     /// currency-modifier pass RP-1 runs over it. The duration actually in force
     /// is only observable through <see cref="DeadlineUt"/>, and only once a
     /// Program has been accepted, because RP-1 computes it by broadcasting a
@@ -1773,7 +1773,7 @@ public sealed class Rp1ProgramEntry
 
     /// <summary>
     /// Confidence this Program costs at <see cref="Speed"/>, read from RP-1's
-    /// own per-speed table. This is the RAW cost: RP-1's Administration building
+    /// own per-speed table. This is the raw cost: RP-1's Administration building
     /// shows it after a currency-modifier pass that a leader can shift, and that
     /// pass broadcasts to the whole save, so it is not run here.
     /// </summary>
@@ -1824,7 +1824,7 @@ public sealed class Rp1ProgramEntry
 
     /// <summary>
     /// Accepting is possible right now on RP-1's own reading: not already
-    /// active, not completed, not disabled, requirements met. It does NOT
+    /// active, not completed, not disabled, requirements met. It does not
     /// include the Confidence check, which RP-1 makes with a broadcast query;
     /// compare <see cref="ConfidenceCost"/> against <c>rp1.confidence</c> for
     /// that half.
@@ -1854,7 +1854,7 @@ public sealed class Rp1ProgramEntry
     /// The duration actually in force, which is what the deadline, the funding
     /// curve and the payment schedule are all measured against.
     ///
-    /// <para>TWO PROVENANCES, and the difference is worth knowing. On an
+    /// <para>Two provenances, and the difference is worth knowing. On an
     /// accepted Program this is derived exactly from the state RP-1 persists:
     /// its own funding tick leaves <c>deadlineUT</c>, <c>lastPaymentUT</c> and
     /// <c>fracElapsed</c> consistent with each other, so the duration falls out
@@ -2118,7 +2118,7 @@ public sealed class Rp1FundingCurveEntry
     /// <summary>
     /// This is the curve RP-1 falls back to. It matters because the fallback is
     /// not an error path: <c>ProgramHandlerSettings.FundingCurve</c> returns it
-    /// for an empty name AND for a name it does not hold, so a Program whose
+    /// for an empty name and for a name it does not hold, so a Program whose
     /// <see cref="Rp1ProgramEntry.FundingCurve"/> is absent is genuinely paid on
     /// this curve rather than on none.
     /// </summary>
@@ -2159,8 +2159,8 @@ public sealed class Rp1FundingCurveEntry
 /// One kerbal's RP-1 schedule: when their career ends, what they are training on
 /// now, and what training they are about to lose.
 ///
-/// <para>The channel is a BARE ARRAY of these entries, one per kerbal RP-1 has
-/// any record of, keyed by <see cref="Name"/>. That is deliberately NOT the
+/// <para>The channel is a bare array of these entries, one per kerbal RP-1 has
+/// any record of, keyed by <see cref="Name"/>. That is deliberately not the
 /// whole roster: RP-1 tracks a retirement date for crew it manages, and a kerbal
 /// with no row is a kerbal RP-1 is not scheduling, which is a different answer
 /// from one whose dates are all absent.</para>
@@ -2181,7 +2181,7 @@ public sealed class Rp1CrewEntry
     public string? Name { get; set; }
 
     /// <summary>
-    /// Whether RP-1 counts this kerbal as a retiree. The SAME fact the
+    /// Whether RP-1 counts this kerbal as a retiree. The same fact the
     /// crewStanding capability puts on the stock roster, carried here as well
     /// because this channel is read by a surface that is already looking at RP-1
     /// rows and should not have to join back to answer "did this schedule
@@ -2193,7 +2193,7 @@ public sealed class Rp1CrewEntry
     /// <summary>
     /// When this kerbal retires, as universal time. Absent when RP-1 holds no
     /// retirement date for them, which is a real state (a kerbal hired this tick,
-    /// or a save where retirement is switched off) and NOT a retirement due now:
+    /// or a save where retirement is switched off) and not a retirement due now:
     /// RP-1's own getter answers 0 there, and 0 is a date.
     /// </summary>
     [SitrepUnit(Units.UniversalTime)]
@@ -2202,7 +2202,7 @@ public sealed class Rp1CrewEntry
     /// <summary>
     /// The furthest that date could still be pushed: the current date plus the
     /// extension this kerbal has not yet spent. RP-1 caps the total extension a
-    /// career can earn per kerbal, so this is a CEILING rather than a forecast,
+    /// career can earn per kerbal, so this is a ceiling rather than a forecast,
     /// and it is what makes <see cref="RetiresAtUt"/> actionable: a date three
     /// years out that can be pushed to fifteen is a different planning problem
     /// from one that cannot move.
@@ -2213,7 +2213,7 @@ public sealed class Rp1CrewEntry
     /// <summary>
     /// Extension already earned and spent against the cap, in seconds. Zero is a
     /// truthful reading (a kerbal who has flown nothing interesting has earned
-    /// nothing), so it is NOT folded to absent; absent means RP-1 has no
+    /// nothing), so it is not folded to absent; absent means RP-1 has no
     /// retirement record for the kerbal at all.
     /// </summary>
     [SitrepUnit(Units.Seconds)]
@@ -2263,7 +2263,7 @@ public sealed class Rp1CrewEntry
     public double? TrainingFinishesAtUt { get; set; }
 
     /// <summary>
-    /// When this kerbal's SOONEST mission training lapses, as universal time.
+    /// When this kerbal's soonest mission training lapses, as universal time.
     /// Absent when nothing they hold is perishable.
     ///
     /// <para>The soonest rather than the whole list, because that is the one an
@@ -2284,7 +2284,7 @@ public sealed class Rp1CrewEntry
 }
 
 /// <summary>
-/// The <c>rp1.crewProgram</c> channel payload: the RULES this career's personnel
+/// The <c>rp1.crewProgram</c> channel payload: the rules this career's personnel
 /// schedule runs under, as opposed to any one kerbal's place in it.
 ///
 /// <para>A wrapper object, not an array: these are career-wide switches and
@@ -2336,20 +2336,20 @@ public sealed class Rp1CrewProgram
 ///
 /// <para><b>Why this exists beside <c>spaceCenter.savedShips</c>.</b> That
 /// channel is the stock craft-folder listing and answers a different question:
-/// what could be LAUNCHED. It carries no craft-file address, no notion of a
+/// what could be launched. It carries no craft-file address, no notion of a
 /// launch complex, and stock's own cost rather than the one RP-1 charges. Under
 /// RP-1 a craft is not launched from a folder at all: it is integrated at a
 /// complex that decides what it may weigh and how large it may be, and a widget
-/// offering to start a build has to know which complexes would take it BEFORE
+/// offering to start a build has to know which complexes would take it before
 /// the press or it is offering a control that can only refuse.</para>
 ///
-/// <para><b>This is a PREVIEW, and the command is the authority.</b> Everything
-/// here is measured from the craft FILE without loading it, because loading one
-/// instantiates a part per PART node and a sampled capture must not do that
+/// <para><b>This is a preview, and the command is the authority.</b> Everything
+/// here is measured from the craft file without loading it, because loading one
+/// instantiates a part per part node and a sampled capture must not do that
 /// every tick. Two of RP-1's own arms cannot be answered that way: whether the
 /// craft is human-rated, which RP-1 derives from part tags, and whether the
-/// complex stocks the resources it needs. Both are therefore NOT applied here,
-/// and the direction is deliberate: an unanswerable arm PERMITS, so the control
+/// complex stocks the resources it needs. Both are therefore not applied here,
+/// and the direction is deliberate: an unanswerable arm permits, so the control
 /// stays pressable and <c>rp1.build.start</c> gives RP-1's own refusal. A dark
 /// control with a reason nobody could establish is the dead end this channel
 /// exists to remove.</para>
@@ -2362,7 +2362,7 @@ public sealed class Rp1CrewProgram
 public sealed class Rp1BuildableCraftEntry
 {
     /// <summary>
-    /// The craft FILE's own name, without its extension, and what
+    /// The craft file's own name, without its extension, and what
     /// <c>rp1.build.start</c> is addressed with. See
     /// <see cref="Rp1BuildStartArgs.CraftFile"/> for why it is not the ship
     /// name.
@@ -2446,7 +2446,7 @@ public sealed class Rp1BuildableComplex
     /// <summary>
     /// Nothing this preview can see stops the build.
     ///
-    /// <para>True is not a promise. It means every arm that COULD be answered
+    /// <para>True is not a promise. It means every arm that could be answered
     /// from the craft file passed, and the two that could not were not applied;
     /// see the type doc. False is firmer: <see cref="Refusals"/> names a reason
     /// RP-1 itself would give.</para>
@@ -2477,7 +2477,7 @@ public sealed class Rp1BuildableComplex
 ///
 /// <para><b>Why the setup costs are here.</b> The stock entry carries
 /// <c>initialCostFunds</c>, <c>initialCostScience</c> and
-/// <c>initialCostReputation</c>, and RP-1 NEVER CHARGES THEM:
+/// <c>initialCostReputation</c>, and RP-1 never charges them:
 /// <c>PerformActivate</c> spends <c>ConfigRP0.SetupCosts</c> and nothing else.
 /// On shipped content both are zero, so a control reading the stock fields as
 /// "the price" is right by accident and would go on saying "no cost" the moment
@@ -2536,7 +2536,7 @@ public class Rp1LeaderEntry
     public string? AppointBlockedReason { get; set; }
 
     /// <summary>
-    /// The instant a dismissed leader's re-hire cooldown ends. An INSTANT, so a
+    /// The instant a dismissed leader's re-hire cooldown ends. An instant, so a
     /// UT. Absent when the leader was never dismissed or has no cooldown.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
@@ -2559,10 +2559,10 @@ public class Rp1LeaderEntry
     public double? SetupConfidence { get; set; }
 
     /// <summary>
-    /// The reputation dismissal costs RIGHT NOW, on a serving leader.
+    /// The reputation dismissal costs right now, on a serving leader.
     ///
     /// <para>RP-1's own <c>DeactivateCost()</c>, the figure dismissal takes.
-    /// Never funds and never a refund, and a fraction of CURRENT reputation
+    /// Never funds and never a refund, and a fraction of current reputation
     /// rather than a fixed figure, so it moves as reputation does: a flat 20%
     /// until the leader's least duration, then falling to zero over the removal
     /// penalty window. A client must show it at the moment of the decision
@@ -2591,7 +2591,7 @@ public class Rp1LeaderEntry
     public bool? RemoveOnDeactivate { get; set; }
 
     /// <summary>
-    /// How long after dismissal the leader can be hired again. An INTERVAL, so
+    /// How long after dismissal the leader can be hired again. An interval, so
     /// seconds rather than a UT. Zero on a leader that is removed for good.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.Seconds)]
@@ -2599,14 +2599,14 @@ public class Rp1LeaderEntry
 
     /// <summary>
     /// The instant dismissal becomes possible at all, on a serving leader. An
-    /// INSTANT, so a UT.
+    /// instant, so a UT.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
     public double? CanRemoveFromUt { get; set; }
 
     /// <summary>
     /// The instant dismissal stops costing reputation, on a serving leader. An
-    /// INSTANT, so a UT.
+    /// instant, so a UT.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
     public double? FreeToRemoveFromUt { get; set; }
@@ -2619,7 +2619,7 @@ public class Rp1LeaderEntry
 /// <para>RP-1 runs this as a background project rather than a one-off purchase:
 /// it spends funds on new hires as they become affordable, so the operator
 /// commits once and the career keeps drawing down against it for as long as it
-/// takes. That makes it a thing the operator must be able to SEE, because it
+/// takes. That makes it a thing the operator must be able to see, because it
 /// spends money when nobody is looking.</para>
 ///
 /// <para>It is silently cleared when the complex it hires for is modified or
@@ -2627,7 +2627,7 @@ public class Rp1LeaderEntry
 /// survivable: the operator watches it disappear rather than believing in a
 /// schedule that no longer exists.</para>
 ///
-/// <para>NO PROGRESS FRACTION, deliberately. RP-1's own
+/// <para>No progress fraction, deliberately. RP-1's own
 /// <c>GetFractionComplete()</c> divides two ints and widens the result
 /// afterwards, confirmed at IL as <c>div</c> then <c>conv.r8</c>, so it reads
 /// zero for the whole hire and snaps to one at the end. Reproducing it would
@@ -2676,7 +2676,7 @@ public sealed class Rp1HireTarget
 
     /// <summary>
     /// RP-1's estimate of how long until the target is met, which is really a
-    /// forecast of when the funds will exist. An INTERVAL, so seconds.
+    /// forecast of when the funds will exist. An interval, so seconds.
     /// </summary>
     [SitrepUnit(Sitrep.Contract.Units.Seconds)]
     public double? TimeLeft { get; set; }
@@ -2685,7 +2685,7 @@ public sealed class Rp1HireTarget
 /// <summary>
 /// A standing instruction to stop time warp once the balance reaches a figure.
 ///
-/// <para>A warp STOP CONDITION rather than a transaction, and it PERSISTS past
+/// <para>A warp stop condition rather than a transaction, and it persists past
 /// the warp it stopped: warping again resumes toward the same figure. An
 /// operator who does not know it is set reads the next unexplained warp halt as
 /// the game misbehaving.</para>
@@ -2718,7 +2718,7 @@ public sealed class Rp1FundTarget
 
     /// <summary>
     /// RP-1's estimate of the wait, iterated against the income curve rather
-    /// than divided out of it. An INTERVAL, so seconds.
+    /// than divided out of it. An interval, so seconds.
     /// </summary>
     [SitrepSampleKind(SampleKind.Continuous)]
     [SitrepUnit(Sitrep.Contract.Units.Seconds)]
@@ -2740,13 +2740,13 @@ public sealed class Rp1FundTarget
 /// otherwise, because dropping one student below the minimum would strand the
 /// rest.</para>
 ///
-/// <para>NO PER-COURSE COST, and it is not an omission. Training is a per-day
+/// <para>No PER-COURSE cost, and it is not an omission. Training is a per-day
 /// upkeep rather than a purchase, and RP-1's own formula needs
-/// <c>TrainingDatabase.FillBools</c>, which fills and resets SHARED MUTABLE
-/// STATIC arrays: a telemetry read must not move the game's scratch state. The
+/// <c>TrainingDatabase.FillBools</c>, which fills and resets shared mutable
+/// static arrays: a telemetry read must not move the game's scratch state. The
 /// career-wide figure is already published on the economy capability, and
 /// <see cref="Students"/> with <see cref="Started"/> are what drive it, since
-/// only a STARTED course is paid for at all.</para>
+/// only a started course is paid for at all.</para>
 /// </summary>
 [SitrepContract]
 [SitrepTopic("rp1.training", isArray: true)]
@@ -2815,26 +2815,26 @@ public sealed class Rp1TrainingCourseEntry
     public bool? Completed { get; set; }
 
     /// <summary>
-    /// When the course itself finishes. An INSTANT, so a UT.
+    /// When the course itself finishes. An instant, so a UT.
     ///
-    /// <para>There is deliberately NO progress fraction beside it. RP-1's own is
+    /// <para>There is deliberately no progress fraction beside it. RP-1's own is
     /// sound arithmetic, unlike its hire and R&amp;R fractions, but it already
     /// rides <c>rp1.crew</c> per kerbal and a course with no students has no
     /// progress to report, so a copy here would be duplication that also makes
     /// this date look like something a client could integrate toward.</para>
     ///
-    /// <para>NOT when the crew can fly: see <see cref="StudentsAvailableAtUt"/>.</para>
+    /// <para>Not when the crew can fly: see <see cref="StudentsAvailableAtUt"/>.</para>
     /// </summary>
     [SitrepUnit(Units.UniversalTime)]
     public double? CompletesAtUt { get; set; }
 
     /// <summary>
-    /// When the last student becomes available again, which is LATER than
+    /// When the last student becomes available again, which is later than
     /// <see cref="CompletesAtUt"/> and is the date a mission planner actually
     /// needs.
     ///
     /// <para>RP-1 marks each student inactive for <b>120%</b> of the course's base
-    /// time at the moment it STARTS, so a kerbal stays grounded for roughly a
+    /// time at the moment it starts, so a kerbal stays grounded for roughly a
     /// fifth of the course again after it has finished. Read from the students'
     /// own inactive window rather than derived, so it stays right if RP-1 changes
     /// the multiplier.</para>
@@ -2853,13 +2853,13 @@ public sealed class Rp1TrainingCourseEntry
 /// <summary>
 /// One training RP-1 could be asked to run: a template, not a course.
 ///
-/// <para>The ENROLABLE side of <see cref="Rp1TrainingCourseEntry"/>. A course row
+/// <para>The enrolable side of <see cref="Rp1TrainingCourseEntry"/>. A course row
 /// exists because somebody started it; a template row exists because the install
 /// has a crewed part that can be trained on, whether or not anyone ever will. An
 /// operator picking a training reads this list; an operator watching one in
 /// progress reads the other.</para>
 ///
-/// <para><b>NO AC-LEVEL REQUIREMENT, and it is a refusal rather than an
+/// <para><b>no AC-LEVEL requirement, and it is a refusal rather than an
 /// oversight.</b> RP-1 gates each proficiency training on an Astronaut Complex
 /// tier, and the getter that states it,
 /// <c>TrainingTemplate.ACLevelRequirement</c>, reaches
@@ -2902,7 +2902,7 @@ public sealed class Rp1TrainingTemplateEntry
     public string? Target { get; set; }
 
     /// <summary>
-    /// How long the course takes with nobody on it yet. An INTERVAL, so seconds.
+    /// How long the course takes with nobody on it yet. An interval, so seconds.
     ///
     /// <para>The persisted field, read directly rather than through
     /// <c>GetBaseTime</c>. With an empty student list that method returns this
@@ -2911,7 +2911,7 @@ public sealed class Rp1TrainingTemplateEntry
     /// mutates the shared tracker described on this type. So the field is both the
     /// safe read and the right one.</para>
     ///
-    /// <para>It is a FLOOR for a real enrolment, not a quote. RP-1 lengthens a
+    /// <para>It is a floor for a real enrolment, not a quote. RP-1 lengthens a
     /// proficiency course by each student's prior proficiency and a mission course
     /// by their stupidity, and the elapsed time then divides by a build rate the
     /// Astronaut Complex tier sets. The course's own
@@ -2956,10 +2956,10 @@ public sealed class Rp1TrainingTemplateEntry
 /// <summary>
 /// One tooling RP-1 would charge for on the ship currently in the editor.
 ///
-/// <para><b>What tooling IS, because the row does not read without it.</b> RP-1
+/// <para><b>What tooling is, because the row does not read without it.</b> RP-1
 /// keeps a CAREER-GLOBAL database keyed on a tooling type and an ordered tuple of
 /// parameters, not on a part. Two parts of different sizes share one tooling
-/// whenever their type matches and every parameter is within FOUR PERCENT, so
+/// whenever their type matches and every parameter is within four percent, so
 /// paying for one part can leave a neighbour free. A row here is therefore a
 /// tooling this part needs, not a thing this part owns.</para>
 /// </summary>
@@ -3006,7 +3006,7 @@ public sealed class Rp1ToolingEntry
     /// <c>IsUnlocked</c> rather than anything derived here.
     ///
     /// <para><b>There is no level beside it, and that is an omission with a
-    /// reason.</b> Tooling is genuinely PARTIAL: a diameter can be owned while a
+    /// reason.</b> Tooling is genuinely partial: a diameter can be owned while a
     /// length is not. RP-1 answers the level only when handed the right parameter
     /// tuple, which is the thing above that cannot be read uniformly, and asking
     /// with the wrong tuple returns a confidently wrong level. The economics of a
@@ -3017,14 +3017,14 @@ public sealed class Rp1ToolingEntry
     public bool? Tooled { get; set; }
 
     /// <summary>
-    /// What finishing THIS tooling costs now. Lower on a partly-owned tooling,
+    /// What finishing this tooling costs now. Lower on a partly-owned tooling,
     /// which is where the missing level shows itself.
     /// </summary>
     [SitrepUnit(Units.Funds)]
     public double? ToolingCost { get; set; }
 
     /// <summary>
-    /// What NOT tooling costs, per build, for ever.
+    /// What not tooling costs, per build, for ever.
     ///
     /// <para>This is the number the decision actually turns on and the reason the
     /// row exists. An untooled part carries a surcharge onto the vessel's cost
@@ -3041,9 +3041,9 @@ public sealed class Rp1ToolingEntry
     public string? PartId { get; set; }
 
     /// <summary>
-    /// How many OTHER parts a refit of this one would take with it.
+    /// How many other parts a refit of this one would take with it.
     ///
-    /// <para>Carried so it can be said BEFORE the press. RP-1's own refit resizes
+    /// <para>Carried so it can be said before the press. RP-1's own refit resizes
     /// every symmetry counterpart and tells you how many afterwards, in a screen
     /// message; a console can put the number beside the control instead, which is
     /// the same disclosure at the moment it can still change the answer.</para>
@@ -3060,10 +3060,10 @@ public sealed class Rp1ToolingEntry
     public bool? Refittable { get; set; }
 
     /// <summary>
-    /// The sizes this part could be REFITTED to: owned toolings it can be
+    /// The sizes this part could be refitted to: owned toolings it can be
     /// reshaped onto instead of buying a new one.
     ///
-    /// <para><b>Why a list and not two numbers.</b> A refit moves a part TO a
+    /// <para><b>Why a list and not two numbers.</b> A refit moves a part to a
     /// size, so it needs a size to move to, and there is no default one. The
     /// career's owned toolings are the only legal targets, and which of them a
     /// given part can take depends on the tank materials it has unlocked, so the
@@ -3075,16 +3075,16 @@ public sealed class Rp1ToolingEntry
     /// with something the part can use; all three are applied before a row
     /// reaches this list.</para>
     ///
-    /// <para><b>It is a true SUBSET of what RP-1's window offers, deliberately.</b>
-    /// The rows are the sizes owned for the part's OWN tooling type. RP-1 merges a
+    /// <para><b>It is a true subset of what RP-1's window offers, deliberately.</b>
+    /// The rows are the sizes owned for the part's own tooling type. RP-1 merges a
     /// whole bucket of related types, which also lets it offer a refit onto
     /// another material's tooling, and the bucketing is a ten-branch private over
     /// type-name prefixes inside its GUI. Narrowing loses options; transcribing a
     /// GUI private would risk offering an illegal one.</para>
     ///
-    /// <para>NULL where the question does not apply: a part already tooled, a part
+    /// <para>Null where the question does not apply: a part already tooled, a part
     /// nothing can reshape (see <see cref="Refittable"/>), or a tooling type RP-1
-    /// offers no refit for. EMPTY is the real, different answer that the career
+    /// offers no refit for. Empty is the real, different answer that the career
     /// owns nothing this part could move to.</para>
     /// </summary>
     public List<Rp1ToolingRefitTarget>? RefitTargets { get; set; }
@@ -3142,7 +3142,7 @@ public sealed class Rp1ToolingRefitTarget
 /// "tooled" for everything when tooling is disabled, so a reading taken then would
 /// report a ship with nothing left to do. The channel says nothing instead.</para>
 ///
-/// <para>EDITOR ONLY. The whole reading comes off the ship on the editor's table,
+/// <para>Editor only. The whole reading comes off the ship on the editor's table,
 /// so there is no sample from anywhere else and none is implied.</para>
 /// </summary>
 [SitrepContract]
@@ -3155,7 +3155,7 @@ public sealed class Rp1Tooling
     /// <summary>
     /// RP-1's own price for tooling everything untooled on this ship.
     ///
-    /// <para><b>NOT the sum of the rows.</b> Tooling one part can leave another
+    /// <para><b>not the sum of the rows.</b> Tooling one part can leave another
     /// free, because a tooling matches any part of the same type within four per
     /// cent, so adding the column up overstates. This is RP-1's own deduplicated
     /// figure, taken off the field it caches it in rather than by asking its window
@@ -3181,11 +3181,11 @@ public sealed class Rp1Tooling
 
 /// <summary>
 /// The <c>rp1.buildCost</c> channel: what putting the vehicle on the editor's
-/// table into the sky will actually cost, in FUNDS, line by line.
+/// table into the sky will actually cost, in funds, line by line.
 ///
 /// <para><b>This is deliberately not RP-1's own "Cost Breakdown".</b> That tab
 /// shows <c>effectiveCost</c>, which is the input to
-/// <c>Formula.GetVesselBuildPoints</c> and therefore decides how LONG integration
+/// <c>Formula.GetVesselBuildPoints</c> and therefore decides how long integration
 /// takes. It is a dimensionless comparability metric that the producer's own
 /// tooltip describes as being for comparing rockets against each other, and it
 /// buys nothing. A number that looks like money, is labelled like money and is not
@@ -3193,7 +3193,7 @@ public sealed class Rp1Tooling
 /// it. Integration effort is a real question and belongs on a channel of its own,
 /// named for what it drives.</para>
 ///
-/// <para>EDITOR ONLY, like <c>rp1.tooling</c> beside it: every figure is read off
+/// <para>Editor only, like <c>rp1.tooling</c> beside it: every figure is read off
 /// the vehicle being designed.</para>
 /// </summary>
 [SitrepContract]
@@ -3209,7 +3209,7 @@ public sealed class Rp1BuildCost
     /// <para><b>This already contains <see cref="UntooledSurcharge"/>.</b> The
     /// surcharge reaches the vessel through <c>IPartCostModifier</c>, which the
     /// game persists onto each part as <c>modCost</c> and folds into the part cost
-    /// before anyone here sees it. So the surcharge below is an OF WHICH, never an
+    /// before anyone here sees it. So the surcharge below is an of which, never an
     /// addend, and a client that adds the two has charged the operator twice for
     /// the same thing.</para>
     /// </summary>
@@ -3221,7 +3221,7 @@ public sealed class Rp1BuildCost
     /// parts, and therefore how much of it would go away if the tooling were
     /// bought.
     ///
-    /// <para>A SUBSET of the line above, not a line of its own. It is also the
+    /// <para>A subset of the line above, not a line of its own. It is also the
     /// number that makes <see cref="ToolingCost"/> a decision rather than an
     /// expense: the surcharge is paid on every copy of this vehicle ever built,
     /// and the tooling is paid once.</para>
@@ -3241,7 +3241,7 @@ public sealed class Rp1BuildCost
 
     /// <summary>
     /// Entry costs for parts on this vehicle the career has not yet paid for.
-    /// Distinct from researching the tech: RP-1 charges to unlock the NODE and
+    /// Distinct from researching the tech: RP-1 charges to unlock the node and
     /// again to buy the part.
     /// </summary>
     [SitrepUnit(Units.Funds)]
@@ -3302,13 +3302,13 @@ public sealed class Rp1RequiredTechEntry
     /// The node as the career's own tech tree titles it, e.g. "Supersonic Flight".
     ///
     /// <para>KSP's <c>ResearchAndDevelopment.GetTechnologyTitle</c>, which is a
-    /// title dictionary keyed on node id and consults researched state NOWHERE, so
+    /// title dictionary keyed on node id and consults researched state nowhere, so
     /// it answers for an unresearched node. It loads from
     /// <c>Parameters.Career.TechTreeUrl</c>, so under RP-1 these are RP-1's own
     /// titles rather than stock's, by construction and not by arrangement.</para>
     ///
-    /// <para><b>ABSENT rather than the id when the tree has no title.</b>
-    /// <c>GetTechnologyTitle</c> answers an unknown id with the EMPTY STRING, and
+    /// <para><b>absent rather than the id when the tree has no title.</b>
+    /// <c>GetTechnologyTitle</c> answers an unknown id with the empty string, and
     /// two wrong things could be done with that: publish the blank, which renders
     /// as a nameless node, or substitute the id, which makes this field a lie about
     /// what it is. A client already holds <see cref="Id"/> and can fall back to it
@@ -3327,8 +3327,8 @@ public sealed class Rp1RequiredTechEntry
     /// parts gathered under the node each one names.</para>
     ///
     /// <para><b>Three states, and the middle one is the one worth the care.</b>
-    /// ABSENT means the editor ship could not be read at all, so nothing is claimed
-    /// about which parts are waiting. EMPTY means the ship WAS read and nothing on
+    /// absent means the editor ship could not be read at all, so nothing is claimed
+    /// about which parts are waiting. Empty means the ship was read and nothing on
     /// it names this node, which is a real answer and happens: a node can be
     /// required by something other than a part. A populated list is the parts
     /// themselves. An empty list is therefore never suppressed, because an operator
@@ -3353,7 +3353,7 @@ public sealed class Rp1RequiredTechEntry
 #endif
 public sealed class Rp1CareerEventEntry
 {
-    /// <summary>When it happened. An INSTANT, so a UT.</summary>
+    /// <summary>When it happened. An instant, so a UT.</summary>
     [SitrepUnit(Units.UniversalTime)]
     public double? Ut { get; set; }
 
@@ -3367,7 +3367,7 @@ public sealed class Rp1CareerEventEntry
 
     /// <summary>
     /// What happened, in RP-1's own words: a contract's display name, a vessel's
-    /// name, a tech node, a leader, a facility, or the PART that failed.
+    /// name, a tech node, a leader, a facility, or the part that failed.
     ///
     /// <para>Six kinds, six sources, and the last two were added after four of them
     /// were found to have no name at all. A facility construction carries only its
@@ -3407,7 +3407,7 @@ public sealed class Rp1CareerEventEntry
     public double? Cost { get; set; }
 
     /// <summary>
-    /// Whether a leader was HIRED (<c>true</c>) or dismissed. Absent on every other
+    /// Whether a leader was hired (<c>true</c>) or dismissed. Absent on every other
     /// kind.
     ///
     /// <para>Without it the row is a name and a price that read identically either
@@ -3434,7 +3434,7 @@ public sealed class Rp1CareerEventEntry
 ///
 /// <para><b>Only half of RP-1's career log is here, and that is deliberate.</b> Its
 /// <c>CareerLog</c> holds two unrelated things: six lists of dated events, and a
-/// monthly FINANCIAL LEDGER of about thirty figures per period. The ledger is a
+/// monthly financial ledger of about thirty figures per period. The ledger is a
 /// balance sheet and travels on <c>rp1.careerLedger</c>; putting twelve rows a
 /// year of accounts onto an event timeline would make both worse.</para>
 /// </summary>
@@ -3471,20 +3471,20 @@ public sealed class Rp1CareerEvents
 /// One of the space centre's buildings, as RP-1 knows it: the tier it is at, the
 /// tier it can reach, and what the next step costs.
 ///
-/// <para><b>This channel exists because it answers OUTSIDE the space centre and
+/// <para><b>This channel exists because it answers outside the space centre and
 /// <c>career.status.facilities</c> does not.</b> Core reads a tier off the live
 /// <c>UpgradeableFacility</c> MonoBehaviours, which KSP only puts in the
 /// SPACECENTER scene, so every tier and price on that payload is absent from the
 /// editor, from flight and from the tracking station. RP-1 does not read them
 /// that way. <c>KCTUtilities.GetFacilityLevel</c> denormalises the level KSP
-/// PERSISTS in the save against a tier count RP-1 loads from config, and RP-1's
+/// persists in the save against a tier count RP-1 loads from config, and RP-1's
 /// own <c>MaintenanceHandler.UpdateUpkeep</c> calls it for every facility in all
 /// four scenes to bill the career for them. So on an RP-1 install these three
 /// facts are readable wherever the operator is standing, and this channel
 /// carries them there.</para>
 ///
 /// <para>Not a replacement for the stock payload: it carries no tier
-/// DESCRIPTIONS, because those come off the live facility and are genuinely
+/// descriptions, because those come off the live facility and are genuinely
 /// scene-bound. What it carries is the tier, the ceiling and the price.</para>
 /// </summary>
 [SitrepContract]
@@ -3545,7 +3545,7 @@ public sealed class Rp1FacilityEntry
 /// the mass its fitted avionics support has its controls taken away, in flight,
 /// by an input lock. <b>Nothing stock says this has happened.</b> The lock is an
 /// <c>InputLockManager</c> control lock plus a per-frame zeroing of the flight
-/// control state, and neither touches the vessel's control LEVEL, so
+/// control state, and neither touches the vessel's control level, so
 /// <c>vessel.comms.controlState</c> reads full control throughout. RP-1's only flight
 /// signal is a screen message posted once, for eight seconds, on the transition.
 /// This channel is the persistent readout that gap leaves missing.</para>
@@ -3597,7 +3597,7 @@ public sealed class Rp1Avionics
     /// <summary>
     /// The mass RP-1 weighed against that limit, in tonnes.
     ///
-    /// <para><b>Not the vessel's total mass.</b> In the editor and at PRELAUNCH
+    /// <para><b>Not the vessel's total mass.</b> In the editor and at prelaunch
     /// RP-1 discounts launch clamps and anything hanging off pad infrastructure,
     /// which are heavy, so this is the smaller figure and it is the one the
     /// verdict was reached on. A readout showing total mass beside this limit
@@ -3609,7 +3609,7 @@ public sealed class Rp1Avionics
 
     /// <summary>
     /// An interplanetary-rated unit is being held to its near-Earth limit. A
-    /// SECOND lock reason alongside the tonnage: RP-1 raises its own reminder for
+    /// second lock reason alongside the tonnage: RP-1 raises its own reminder for
     /// this one, and a vessel comfortably inside its supported mass can still be
     /// limited by it.
     /// </summary>
@@ -3656,7 +3656,7 @@ public sealed class Rp1Simulation
 ///
 /// <para><b>Every figure is RP-1's, at RP-1's horizon.</b> The tab's Day, Month
 /// and Year columns are separate computations rather than one daily figure
-/// scaled: the subsidy is AVERAGED over the horizon as reputation decays and the
+/// scaled: the subsidy is averaged over the horizon as reputation decays and the
 /// subsidy curve climbs, the constructions and rollouts are costed against what
 /// finishes inside it, and a Program pays on its own curve. A month here is
 /// RP-1's thirty days and a year its Julian 365.25.</para>
@@ -3758,7 +3758,7 @@ public sealed class Rp1Budget
 
 /// <summary>
 /// One column of RP-1's Budget tab: every row it draws, at one horizon, as the
-/// funds change over that horizon. NEGATIVE is money going out, which is how
+/// funds change over that horizon. Negative is money going out, which is how
 /// RP-1 signs them and how it prints them (in parentheses).
 ///
 /// <para>The rows are RP-1's own arithmetic, row for row, with the career's
