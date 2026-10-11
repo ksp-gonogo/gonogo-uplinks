@@ -139,10 +139,13 @@ for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
 //
 // Driven by looping over the generated maps rather than naming each entry, so a
 // type or Topic added to this Uplink's contract later needs no new call site.
-for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
+for (const topic of new Set([
+  ...Object.keys(GENERATED_TOPIC_UNITS),
+  ...Object.keys(GENERATED_TOPIC_SHAPES),
+])) {
   registerTopicUnits(
     topic,
-    units,
+    GENERATED_TOPIC_UNITS[topic] ?? {},
     GENERATED_TOPIC_SHAPES[topic] ?? {},
     GENERATED_TOPIC_STATICS[topic] ?? [],
     GENERATED_TOPIC_ENUMS[topic] ?? {},

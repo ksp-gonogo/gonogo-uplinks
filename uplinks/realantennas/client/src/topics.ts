@@ -164,10 +164,13 @@ registerBarePrimitiveTopic(REALANTENNAS_RETARGETING_TOPIC);
 // real entry each. It was wired before anything in the slice nested, on the
 // grounds that the loop form would need no edit when something did, and that is
 // what happened.
-for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
+for (const topic of new Set([
+  ...Object.keys(GENERATED_TOPIC_UNITS),
+  ...Object.keys(GENERATED_TOPIC_SHAPES),
+])) {
   registerTopicUnits(
     topic,
-    units,
+    GENERATED_TOPIC_UNITS[topic] ?? {},
     GENERATED_TOPIC_SHAPES[topic] ?? {},
     GENERATED_TOPIC_STATICS[topic] ?? [],
     GENERATED_TOPIC_ENUMS[topic] ?? {},

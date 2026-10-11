@@ -64,10 +64,13 @@ registerBarePrimitiveTopic(AERO_STATE_TOPIC);
 // Topic added to this Uplink's contract later needs no new call site. Both
 // registries: the topic-keyed one covers a payload's own fields, and the
 // type-keyed one is what a nested shape resolves through.
-for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
+for (const topic of new Set([
+  ...Object.keys(GENERATED_TOPIC_UNITS),
+  ...Object.keys(GENERATED_TOPIC_SHAPES),
+])) {
   registerTopicUnits(
     topic,
-    units,
+    GENERATED_TOPIC_UNITS[topic] ?? {},
     GENERATED_TOPIC_SHAPES[topic] ?? {},
     GENERATED_TOPIC_STATICS[topic] ?? [],
     GENERATED_TOPIC_ENUMS[topic] ?? {},

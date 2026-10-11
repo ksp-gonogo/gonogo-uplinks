@@ -59,10 +59,13 @@ for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
 
 // Both registries: the Topic's own fields, and the budget shape nested inside a
 // part, which the decode resolves by type name.
-for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
+for (const topic of new Set([
+  ...Object.keys(GENERATED_TOPIC_UNITS),
+  ...Object.keys(GENERATED_TOPIC_SHAPES),
+])) {
   registerTopicUnits(
     topic,
-    units,
+    GENERATED_TOPIC_UNITS[topic] ?? {},
     GENERATED_TOPIC_SHAPES[topic] ?? {},
     GENERATED_TOPIC_STATICS[topic] ?? [],
     GENERATED_TOPIC_ENUMS[topic] ?? {},

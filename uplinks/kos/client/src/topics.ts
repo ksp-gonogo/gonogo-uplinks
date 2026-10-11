@@ -108,10 +108,13 @@ for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
 // `topics.test.ts` therefore asserts the REGISTRY contents rather than a
 // decode-time hydration, and asserts the bare decode is bare for the stated
 // reason. Deleting either loop below turns a specific assertion there red.
-for (const [topic, units] of Object.entries(GENERATED_TOPIC_UNITS)) {
+for (const topic of new Set([
+  ...Object.keys(GENERATED_TOPIC_UNITS),
+  ...Object.keys(GENERATED_TOPIC_SHAPES),
+])) {
   registerTopicUnits(
     topic,
-    units,
+    GENERATED_TOPIC_UNITS[topic] ?? {},
     GENERATED_TOPIC_SHAPES[topic] ?? {},
     GENERATED_TOPIC_STATICS[topic] ?? [],
     GENERATED_TOPIC_ENUMS[topic] ?? {},
