@@ -125,6 +125,8 @@ export function TrainingEnrolment() {
   const name = titleOf(selected);
   const chosen = candidates.filter((candidate) => picked.has(candidate.name));
   const refusal = enrolRefusal(selected, chosen);
+  const queues = chosen.some((candidate) => candidate.onLeave);
+  const verb = queues ? "Queue" : "Enrol";
 
   return (
     <Section>
@@ -251,15 +253,15 @@ export function TrainingEnrolment() {
                    rides `title` and the line above. */
                 aria-label={
                   refusal === null
-                    ? `Enrol ${students(chosen.length)} on ${name}`
+                    ? `${verb} ${students(chosen.length)} on ${name}`
                     : undefined
                 }
-                commandLabel={`Enrol ${students(chosen.length)} on ${name}`}
-                confirmAriaLabel={`Confirm enrolling ${students(chosen.length)} on ${name}`}
-                confirmLabel={`Enrol ${students(chosen.length)} on ${name}`}
+                commandLabel={`${verb} ${students(chosen.length)} on ${name}`}
+                confirmAriaLabel={`Confirm ${queues ? "queueing" : "enrolling"} ${students(chosen.length)} on ${name}`}
+                confirmLabel={`${verb} ${students(chosen.length)} on ${name}`}
                 disabled={refusal !== null}
                 handle={enrol}
-                label="Enrol"
+                label={verb}
                 size="sm"
                 title={refusal ?? undefined}
               />
@@ -389,11 +391,17 @@ function Student({
       disabled={candidate.refusal !== null && !picked}
       onClick={onToggle}
       size="sm"
-      title={candidate.refusal?.sentence}
+      title={
+        candidate.refusal?.sentence ??
+        (candidate.onLeave
+          ? `${candidate.name} is on leave, so the course is queued and starts when they are back`
+          : undefined)
+      }
       tone={candidate.refusal === null ? undefined : "nogo"}
     >
       {candidate.name}
       {candidate.refusal !== null && ` · ${candidate.refusal.tag}`}
+      {candidate.refusal === null && candidate.onLeave && " · on leave"}
     </ToggleButton>
   );
 }
@@ -403,6 +411,8 @@ interface Candidate {
   name: string;
   /** Why this kerbal cannot be a student, or null. */
   refusal: Refusal | null;
+  /** On leave after a flight: RP-1 4.7 queues a course with them on it. */
+  onLeave: boolean;
 }
 
 /** One reason, said twice: at the length a control's label has room for, and whole. */
@@ -452,7 +462,11 @@ function candidatesOf(
     ) {
       continue;
     }
-    candidates.push({ name, refusal: studentRefusal(row, training) });
+    candidates.push({
+      name,
+      refusal: studentRefusal(row, training),
+      onLeave: row.standing === CrewStanding.Resting,
+    });
   }
   return [
     ...candidates.filter((candidate) => candidate.refusal === null),
@@ -463,9 +477,11 @@ function candidatesOf(
 /**
  * Why RP-1 would refuse this kerbal as a student, or null.
  *
- * <para>The three conditions a client can establish, in RP-1's own terms:
- * `MeetsStudentReqs` turns down a kerbal who is already training, grounded, or
- * off-world. It also turns down one missing the training's own prerequisite, and
+ * <para>The two conditions a client can establish, in RP-1's own terms:
+ * `MeetsStudentReqs` turns down a kerbal who is already training or off-world.
+ * A kerbal on leave is not turned down: RP-1 4.7 queues the course until they
+ * are back, and the command says so itself on an install that cannot. It also
+ * turns down one missing the training's own prerequisite, and
  * the Astronaut Complex tier gates the course itself; NEITHER is on the wire, so
  * both leave the control pressable and let the command refuse in RP-1's own
  * words. That is the same call the build controls make about a condition nobody
@@ -484,12 +500,6 @@ function studentRefusal(
     return {
       sentence: `${name} is already on a training course`,
       tag: "in training",
-    };
-  }
-  if (row.standing === CrewStanding.Resting) {
-    return {
-      sentence: `${name} is standing down after a flight`,
-      tag: "resting",
     };
   }
   if (row.standing === CrewStanding.Assigned) {

@@ -460,12 +460,6 @@ describe("the seat bounds", () => {
 describe("who RP-1 would refuse", () => {
   it.each([
     [
-      "standing down after a flight",
-      CrewStanding.Resting,
-      `${VALENTINA} is standing down after a flight`,
-      "resting",
-    ],
-    [
       "off-world",
       CrewStanding.Assigned,
       `${VALENTINA} is off-world`,
@@ -488,6 +482,37 @@ describe("who RP-1 would refuse", () => {
     // a kerbal's name in the same chip, so dimming alone would leave "cannot be
     // picked" looking like "not picked yet".
     expect(control).toHaveAccessibleName(new RegExp(`${VALENTINA} . ${tag}`));
+  });
+
+  /**
+   * RP-1 4.7 queues a course with a kerbal on leave on it and starts it once
+   * they are back, so leave is no longer a refusal: the kerbal stays pickable,
+   * wears the state on the label, and the send control says it queues.
+   */
+  it("offers a kerbal on leave and says the course queues", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount();
+    await present(fixture, {
+      roster: [
+        rosterRow(LUDREY),
+        rosterRow(VALENTINA, { standing: CrewStanding.Resting }),
+      ],
+    });
+
+    const control = await student(VALENTINA);
+    expect(control).toBeEnabled();
+    expect(control).toHaveAccessibleName(new RegExp(`${VALENTINA} . on leave`));
+    expect(control).toHaveAccessibleDescription(
+      `${VALENTINA} is on leave, so the course is queued and starts when they are back`,
+    );
+
+    await pick(user, LUDREY);
+    await user.click(control);
+    expect(
+      await screen.findByRole("button", {
+        name: "Queue 2 students on Mission training: Gemini",
+      }),
+    ).toBeEnabled();
   });
 
   /**
@@ -731,7 +756,7 @@ describe("the reading order", () => {
       roster: [
         rosterRow(VALENTINA, { standing: CrewStanding.Assigned }),
         rosterRow(LUDREY),
-        rosterRow(NEDCAS, { standing: CrewStanding.Resting }),
+        rosterRow(NEDCAS, { standing: CrewStanding.Assigned }),
       ],
     });
 

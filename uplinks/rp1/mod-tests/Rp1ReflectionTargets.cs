@@ -782,6 +782,7 @@ namespace GonogoRp1Uplink.Tests
             ["Reputation"] = "stock Reputation, whose Instance the budget reads the career's reputation from",
             ["reputation"] = "stock Reputation.reputation, the figure RP-1's reputation tooltip computes from",
             ["inactiveTimeEnd"] = "stock ProtoCrewMember.inactiveTimeEnd, the ground-until date that outlasts a training course",
+            ["inactive"] = "stock ProtoCrewMember.inactive, the grounded flag that says a kerbal is on leave and so is queued onto a course rather than started on one",
             ["IsActive"] = "stock Strategies.Strategy.IsActive, read to refuse a strategy that is already committed",
             ["Factor"] = "stock Strategies.Strategy.Factor, the commitment level, written before the gate and restored on a refusal",
             ["GroupTags"] = "stock Strategies.Strategy.GroupTags, handed to HasConflictingActiveStrategies as arm 2's input",

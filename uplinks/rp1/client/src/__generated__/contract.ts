@@ -429,11 +429,16 @@ export interface Rp1TrainingEnrolArgs
 	* The kerbals to enrol, by the names `spaceCenter.crewRoster` and `rp1.crew`
 	* both key on.
 	*
-	* All of them or none: a kerbal RP-1 will not take (already training,
-	* grounded, off-world, an applicant rather than crew, or barred by the
+	* All of them or none: a kerbal RP-1 will not take (already training or
+	* queued, off-world, an applicant rather than crew, or barred by the
 	* training's own prerequisite) refuses the whole command by name rather than
 	* being dropped from a course that then starts one seat short. RP-1's own
 	* `AddStudent` checks none of that, so a partial enrolment would be silent.
+	*
+	* A kerbal on leave after a flight is taken where the install has a training
+	* queue (RP-1 4.7): the course is queued unstarted, nobody is grounded by it,
+	* and RP-1 starts it once every student is back. Where it has none, a kerbal
+	* on leave refuses the command like any other.
 	*/
 	crew?: string[];
 }

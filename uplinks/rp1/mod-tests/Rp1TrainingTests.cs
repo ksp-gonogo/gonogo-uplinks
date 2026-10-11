@@ -215,7 +215,8 @@ public class Rp1TrainingTests : IDisposable
     /// <summary>
     /// The refusal RP-1's own <c>AddStudent</c> would not give: it checks nothing
     /// but a seat maximum and a duplicate, so a grounded kerbal would be enrolled
-    /// silently. The whole command refuses rather than the one kerbal being
+    /// silently. Where RP-1 has no queue (4.6) a kerbal on leave is one it will
+    /// not take, and the whole command refuses rather than the one kerbal being
     /// dropped, because a course quietly starting a seat short is the failure an
     /// operator cannot see.
     /// </summary>
@@ -225,6 +226,7 @@ public class Rp1TrainingTests : IDisposable
         var bob = new ProtoCrewMember("Bob");
         var jeb = new ProtoCrewMember("Jeb") { inactive = true };
         var handler = Career(bob, jeb);
+        handler.PendingTrainingCourses = null!;
         handler.TrainingTemplates.Add(Template(seatMin: 2, seatMax: 2));
 
         var result = new Rp1TrainingCommands().Enrol(
@@ -238,11 +240,66 @@ public class Rp1TrainingTests : IDisposable
 
     /// <summary>
     /// RP-1 4.7's gate takes a defaulted <c>allowInactive</c>, and true is how its
-    /// screen puts a kerbal on leave onto a QUEUED course. This command starts a
-    /// course, so it asks with false and a kerbal on leave stays refused.
+    /// screen puts a kerbal on leave onto a QUEUED course, so it is asked with
+    /// true wherever the queue is there to take the course.
     /// </summary>
     [Fact]
-    public void Asks_RP1s_gate_to_refuse_a_kerbal_on_leave()
+    public void Asks_RP1s_gate_to_admit_a_kerbal_on_leave_where_there_is_a_queue()
+    {
+        var handler = Career(new ProtoCrewMember("Bob"));
+        handler.TrainingTemplates.Add(Template());
+
+        Enrol("Bob");
+
+        Assert.Equal(new[] { true }, TrainingCourse.AllowInactiveAsked);
+    }
+
+    /// <summary>With no queue to hold the course the gate is asked as 4.6 asks it.</summary>
+    [Fact]
+    public void Asks_RP1s_gate_to_refuse_a_kerbal_on_leave_where_there_is_no_queue()
+    {
+        var handler = Career(new ProtoCrewMember("Bob"));
+        handler.PendingTrainingCourses = null!;
+        handler.TrainingTemplates.Add(Template());
+
+        Enrol("Bob");
+
+        Assert.Equal(new[] { false }, TrainingCourse.AllowInactiveAsked);
+    }
+
+    /// <summary>
+    /// 4.7's "Queue Training": a student on leave means the course is parked on
+    /// the pending list and not started. Nobody is grounded by it, it is not on
+    /// the running roster, and no upkeep update is owed, because none of those
+    /// happen until RP-1 starts it once every student is back.
+    /// </summary>
+    [Fact]
+    public void Queues_the_course_when_a_student_is_on_leave_instead_of_starting_it()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var jeb = new ProtoCrewMember("Jeb") { inactive = true, inactiveTimeEnd = 500.0 };
+        var handler = Career(bob, jeb);
+        handler.TrainingTemplates.Add(Template(seatMin: 2, seatMax: 2));
+
+        var result = new Rp1TrainingCommands().Enrol(
+            new Rp1TrainingEnrolArgs { TemplateId = "prof-capsule", Crew = new List<string> { "Bob", "Jeb" } });
+
+        Assert.True(result.Success, result.Detail);
+        Assert.Empty(handler.TrainingCourses);
+        var course = Assert.Single(handler.PendingTrainingCourses);
+        Assert.False(course.Started);
+        Assert.Equal(new[] { bob, jeb }, course.Students);
+        Assert.False(bob.inactive);
+        Assert.Equal(500.0, jeb.inactiveTimeEnd);
+        Assert.Equal(0, MaintenanceHandler.Instance!.UpkeepUpdatesScheduled);
+    }
+
+    /// <summary>
+    /// Nobody on leave means 4.7's screen draws Start Training, and so does the
+    /// command: the queue is for the case it exists for.
+    /// </summary>
+    [Fact]
+    public void Starts_the_course_rather_than_queueing_it_when_nobody_is_on_leave()
     {
         var bob = new ProtoCrewMember("Bob");
         var handler = Career(bob);
@@ -250,7 +307,28 @@ public class Rp1TrainingTests : IDisposable
 
         Enrol("Bob");
 
-        Assert.Equal(new[] { false }, TrainingCourse.AllowInactiveAsked);
+        Assert.Single(handler.TrainingCourses);
+        Assert.Empty(handler.PendingTrainingCourses);
+    }
+
+    /// <summary>
+    /// A queued course still honours the seat bounds RP-1's new-course tab
+    /// states, asked before anything is parked.
+    /// </summary>
+    [Fact]
+    public void Refuses_a_queue_that_is_over_the_seat_maximum()
+    {
+        var bob = new ProtoCrewMember("Bob");
+        var jeb = new ProtoCrewMember("Jeb") { inactive = true };
+        var handler = Career(bob, jeb);
+        handler.TrainingTemplates.Add(Template(seatMax: 1));
+
+        var result = new Rp1TrainingCommands().Enrol(
+            new Rp1TrainingEnrolArgs { TemplateId = "prof-capsule", Crew = new List<string> { "Bob", "Jeb" } });
+
+        Assert.False(result.Success);
+        Assert.Equal(CommandErrorCode.Range, result.ErrorCode);
+        Assert.Empty(handler.PendingTrainingCourses);
     }
 
     /// <summary>

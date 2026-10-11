@@ -669,12 +669,17 @@ public class Rp1TrainingEnrolArgs
     /// The kerbals to enrol, by the names <c>spaceCenter.crewRoster</c> and
     /// <c>rp1.crew</c> both key on.
     ///
-    /// <para>All of them or none: a kerbal RP-1 will not take (already training,
-    /// grounded, off-world, an applicant rather than crew, or barred by the
+    /// <para>All of them or none: a kerbal RP-1 will not take (already training or
+    /// queued, off-world, an applicant rather than crew, or barred by the
     /// training's own prerequisite) refuses the whole command by name rather than
     /// being dropped from a course that then starts one seat short. RP-1's own
     /// <c>AddStudent</c> checks none of that, so a partial enrolment would be
     /// silent.</para>
+    ///
+    /// <para>A kerbal on leave after a flight is taken where the install has a
+    /// training queue (RP-1 4.7): the course is queued unstarted, nobody is
+    /// grounded by it, and RP-1 starts it once every student is back. Where it has
+    /// none, a kerbal on leave refuses the command like any other.</para>
     /// </summary>
     [SitrepUnit(Units.Id)]
     public List<string>? Crew { get; set; }

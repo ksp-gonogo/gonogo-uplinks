@@ -24,10 +24,12 @@
 //   3  new TrainingCourse(template)
 //   4  ACLevelRequirement vs KCTUtilities.GetFacilityLevel(AstronautComplex)
 //   5  the named crew's size against SeatMin and SeatMax
-//   6  MeetsStudentReqs (allowInactive false on 4.7), then AddStudent, per kerbal
-//   7  StartCourse
-//   8  TrainingCourses.Add
-//   9  MaintenanceHandler.ScheduleMaintenanceUpdate
+//   6  MeetsStudentReqs (allowInactive true where the queue exists, false
+//      otherwise), then AddStudent, per kerbal
+//   7  a student on leave and a queue: PendingTrainingCourses.Add, and done
+//   8  StartCourse
+//   9  TrainingCourses.Add
+//   10 MaintenanceHandler.ScheduleMaintenanceUpdate
 //
 // Steps 1-6 touch nothing RP-1 keeps: the course is a local object until step 8,
 // and AddStudent only appends to its own list. So a refusal anywhere before step 7
@@ -70,13 +72,15 @@
 // RP-1 4.7'S QUEUE. Its screen can pick a kerbal who is on leave, and a course
 // with one on it is not started but parked on CrewHandler.PendingTrainingCourses
 // ("Queue Training"), which RP-1 starts once every student is back. Enrolment
-// here only ever starts a course, so a kerbal on leave is refused as on 4.6. The
-// queue still matters to all three commands:
+// does the same: with a student on leave the course is parked on that list
+// without StartCourse (nobody is grounded, no upkeep update is owed), and with
+// nobody on leave it starts as before. Where the install has no such list (4.6)
+// a kerbal on leave is refused. The queue matters to all three commands:
 //
-//   enrol    refuses a kerbal already on a queued course. Only the students on
-//            leave are grounded, so the others pass MeetsStudentReqs, and RP-1's
-//            screen keeps them off a second course by its own map rather than
-//            by that gate
+//   enrol    queues as above, and refuses a kerbal already on a queued course.
+//            Only the students on leave are grounded, so the others pass
+//            MeetsStudentReqs, and RP-1's screen keeps them off a second course
+//            by its own map rather than by that gate
 //   cancel   on a queued course is TrainingGUI.CancelPendingCourse, which only
 //            drops the course off the queue. Never CompleteCourse: its
 //            un-grounding loop would end the leave the course is waiting on
@@ -209,10 +213,16 @@ namespace GonogoRp1Uplink
                     return seats;
                 }
 
-                var enrolled = AddStudents(course, args.Crew, students);
+                var queue = Rp1Types.Member(instance, PendingCoursesMember);
+                var enrolled = AddStudents(course, args.Crew, students, allowInactive: queue != null);
                 if (enrolled != null)
                 {
                     return enrolled;
+                }
+
+                if (queue != null && students.Exists(member => Rp1Types.ReadBool(member, "inactive") == true))
+                {
+                    return Queue(course, queue);
                 }
 
                 var courses = Rp1Types.Member(instance, "TrainingCourses");
@@ -238,6 +248,21 @@ namespace GonogoRp1Uplink
             {
                 return CommandResult.Fail(CommandErrorCode.WrongState, "Enrolling failed: " + Rp1Types.ExceptionReason(e));
             }
+        }
+
+        /// <summary>
+        /// RP-1 4.7's "Queue Training": the course goes onto the pending list
+        /// unstarted, and RP-1 starts it once every student is back from leave.
+        /// </summary>
+        private static CommandResult Queue(object course, object queue)
+        {
+            var add = Rp1Types.InstanceMethod(queue, "Add", 1);
+            if (add == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.ModeUnavailable, "RP-1's training queue does not expose a way to queue a course.");
+            }
+            add.Invoke(queue, new[] { course });
+            return CommandResult.Ok();
         }
 
         /// <summary>
@@ -492,9 +517,9 @@ namespace GonogoRp1Uplink
         /// rather than dropping that kerbal, because a course quietly starting one
         /// seat short is the failure an operator cannot see.
         /// </remarks>
-        private static CommandResult? AddStudents(object course, IReadOnlyList<string> names, IReadOnlyList<object> students)
+        private static CommandResult? AddStudents(object course, IReadOnlyList<string> names, IReadOnlyList<object> students, bool allowInactive)
         {
-            var meets = StudentGate(course);
+            var meets = StudentGate(course, allowInactive);
             var add = Rp1Types.InstanceMethodOn(course, "AddStudent", CrewMemberTypeName, 1);
             if (meets == null || add == null)
             {
@@ -521,16 +546,17 @@ namespace GonogoRp1Uplink
         /// <remarks>
         /// RP-1 4.7 gave <c>MeetsStudentReqs</c> a defaulted <c>allowInactive</c>,
         /// and reflection counts a defaulted parameter, so 4.7's two-argument
-        /// shape is asked for first and 4.6's one-argument shape after it. The flag
-        /// goes false: true is how RP-1's screen lets a kerbal on leave onto a
-        /// QUEUED course, and this command only starts one.
+        /// shape is asked for first and 4.6's one-argument shape after it, which
+        /// has no such flag and refuses a kerbal on leave. True is how RP-1's
+        /// screen lets a kerbal on leave onto a QUEUED course, so the caller
+        /// passes it only where the queue is there to take the course.
         /// </remarks>
-        public static Func<object, object?>? StudentGate(object course)
+        public static Func<object, object?>? StudentGate(object course, bool allowInactive = false)
         {
             var current = Rp1Types.InstanceMethodOn(course, "MeetsStudentReqs", CrewMemberTypeName, 2);
             if (current != null && current.GetParameters()[1].ParameterType == typeof(bool))
             {
-                return student => current.Invoke(course, new[] { student, false });
+                return student => current.Invoke(course, new[] { student, allowInactive });
             }
             var legacy = Rp1Types.InstanceMethodOn(course, "MeetsStudentReqs", CrewMemberTypeName, 1);
             return legacy == null ? (Func<object, object?>?)null : student => legacy.Invoke(course, new[] { student });
