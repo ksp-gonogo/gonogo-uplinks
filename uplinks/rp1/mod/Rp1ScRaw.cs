@@ -222,7 +222,6 @@ namespace GonogoRp1Uplink
 
         public int? PartCount;
         public double? Mass;
-        public double? Cost;
         public string[]? MissingParts;
         public string[]? LockedParts;
         public string[]? UnpurchasedParts;

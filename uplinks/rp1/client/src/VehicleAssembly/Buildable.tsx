@@ -154,6 +154,13 @@ function CraftCard({
         </Text>
       ) : (
         <Stack gap="related-dense">
+          {/* RP-1 takes the whole price in funds at the press, from the
+              loaded parts through a currency query leaders and strategies
+              move, so no figure exists before it. It refuses when the career
+              cannot cover it, and the balance is in the widget header. */}
+          <Text size="xs" level="muted">
+            Priced by RP-1 when started, charged up front in funds
+          </Text>
           <Cluster gap="related-dense" justify="start" wrap>
             {eligible.map((complex) => (
               <CommandButton

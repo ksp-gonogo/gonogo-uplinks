@@ -38,7 +38,6 @@ namespace GonogoRp1Uplink.Tests
                 SizeX = 3.0,
                 SizeY = sizeY,
                 SizeZ = 3.0,
-                Cost = 40_000.0,
                 MissingParts = new string[0],
                 LockedParts = new string[0],
                 UnpurchasedParts = new string[0],

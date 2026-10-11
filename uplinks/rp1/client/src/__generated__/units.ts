@@ -179,7 +179,6 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     refusals: "text",
   },
   "Rp1BuildableCraftEntry": {
-    cost: "funds",
     craftFile: "id",
     facility: "enum",
     lockedParts: "text",
@@ -816,7 +815,6 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     totalPoints: "bp",
   },
   "rp1.buildable": {
-    cost: "funds",
     craftFile: "id",
     facility: "enum",
     lockedParts: "text",

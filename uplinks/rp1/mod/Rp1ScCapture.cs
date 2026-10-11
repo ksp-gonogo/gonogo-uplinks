@@ -118,7 +118,6 @@ namespace GonogoRp1Uplink
                     ["facility"] = c.FacilityOrdinal,
                     ["partCount"] = c.PartCount,
                     ["mass"] = c.Mass,
-                    ["cost"] = c.Cost,
                     ["missingParts"] = c.MissingParts,
                     ["lockedParts"] = c.LockedParts,
                     ["unpurchasedParts"] = c.UnpurchasedParts,

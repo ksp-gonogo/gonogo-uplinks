@@ -51,7 +51,6 @@ function craft(overrides: Record<string, unknown> = {}) {
         refusals: [],
       },
     ],
-    cost: null,
     craftFile: "Atlas LV-3B",
     facility: 1,
     lockedParts: [],
@@ -121,6 +120,26 @@ describe("starting a build from a saved craft", () => {
         name: /Start building Atlas LV-3B at LC-1/i,
       }),
     ).toBeInTheDocument();
+  });
+
+  it("says beside the control that RP-1 prices the build when it is started, up front", async () => {
+    /*
+     * RP-1 charges a vehicle's whole price in funds at the press and prices it
+     * from the loaded parts through a currency query, so nothing before the
+     * press can quote it. The card says that instead of showing nothing.
+     */
+    await withOneSavedCraft();
+
+    expect(
+      await screen.findByText(/Priced by RP-1 when started, charged up front/i),
+    ).toBeInTheDocument();
+  });
+
+  it("does not claim a price for a craft that cannot be built", async () => {
+    await withOneSavedCraft({ missingParts: ["fooPart"] });
+
+    await screen.findByText(/Cannot be built/i);
+    expect(screen.queryByText(/Priced by RP-1/i)).not.toBeInTheDocument();
   });
 
   it("dispatches the craft file, the editor and the complex that was pressed", async () => {

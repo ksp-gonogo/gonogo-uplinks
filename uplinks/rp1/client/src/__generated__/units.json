@@ -139,7 +139,6 @@
       "refusals": "text"
     },
     "Rp1BuildableCraftEntry": {
-      "cost": "funds",
       "craftFile": "id",
       "facility": "enum",
       "lockedParts": "text",
@@ -771,7 +770,6 @@
       "totalPoints": "bp"
     },
     "rp1.buildable": {
-      "cost": "funds",
       "craftFile": "id",
       "facility": "enum",
       "lockedParts": "text",

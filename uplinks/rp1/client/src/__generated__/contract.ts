@@ -2617,17 +2617,6 @@ export interface Rp1BuildableCraftEntry
 	*/
 	mass?: Value<"t"> | null;
 	/**
-	* Always null: no price is previewed.
-	*
-	* RP-1 charges what its own vessel measurement of the loaded craft comes to,
-	* with tooling and its part pricing in it, then runs that through a currency
-	* query leaders and strategies move. None of that is knowable from the craft
-	* file, and stock's price for the file differs from the charge, so a figure
-	* beside the build control would be wrong. The charge is settled by
-	* `rp1.build.start` and reads back on `rp1.buildQueue[].cost`.
-	*/
-	cost?: Value<"funds"> | null;
-	/**
 	* Parts the craft names that this install does not have, so nothing can build
 	* it. An empty array when it is whole.
 	*/
