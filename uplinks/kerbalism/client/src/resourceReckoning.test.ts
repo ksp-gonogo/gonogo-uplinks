@@ -9,6 +9,7 @@ import {
   reckonResourceLevels,
   resourceBoundaryCrossings,
 } from "./resourceReckoning.js";
+import { BODIES, circular, HOME_RADIUS, period } from "./test/lightFixtures.js";
 
 /**
  * Carrying a consumable level forward at Kerbalism's own measured rate, as a
@@ -437,20 +438,77 @@ describe("a wear gauge on the same crossing path as a consumable", () => {
 
   it("dates the gauge's floor from the declared drain, times the process capacity", () => {
     // 0.25 units at 0.001 x 2 per second off the UT 900 stamp: empty at UT 1025.
-    expect(
-      resourceBoundaryCrossings(GAUGES, running(2), PROFILE),
-    ).toEqual([
+    expect(resourceBoundaryCrossings(GAUGES, running(2), PROFILE)).toEqual([
       { resource: "_ScrubberLife", boundary: "floor", atUt: value("ut", 1025) },
     ]);
   });
 
   it("gives no time without the profile, rather than a guess", () => {
-    expect(resourceBoundaryCrossings(GAUGES, running(2), undefined)).toEqual([]);
+    expect(resourceBoundaryCrossings(GAUGES, running(2), undefined)).toEqual(
+      [],
+    );
   });
 
   it("gives no time when the process capacity is unreadable", () => {
     const unreadable = running(2);
     (unreadable.processes?.[0] as { capacity?: unknown }).capacity = undefined;
     expect(resourceBoundaryCrossings(GAUGES, unreadable, PROFILE)).toEqual([]);
+  });
+});
+
+/*
+ * Food drains from UT 900. A craft in a 900 km orbit starting at the middle of
+ * the shadow leaves it after about 330 s, so a rate measured there holds that
+ * long; a flat span would have held it for 1200 s.
+ */
+describe("a rate that ends where the craft moves between sunlight and shadow", () => {
+  const SMA = 900_000;
+  const answerAt = (
+    orbit: ReturnType<typeof circular> | null,
+    viewUt: number,
+  ) =>
+    reckonResourceLevels(
+      AMOUNTS,
+      lifeSupport({
+        asOfKerbalismUt: value("ut", 0),
+        rates: { Food: value("units/s", -0.01) },
+      }),
+      viewUt,
+      undefined,
+      orbit,
+      BODIES,
+    );
+
+  it("is carried up to the crossing", () => {
+    const crossing =
+      (period(SMA) * Math.asin(HOME_RADIUS / SMA)) / (2 * Math.PI);
+    expect(answerAt(circular(SMA, 0), crossing - 5)).toHaveProperty("reckon");
+  });
+
+  it("is declined past the crossing, naming the state the craft enters", () => {
+    const crossing =
+      (period(SMA) * Math.asin(HOME_RADIUS / SMA)) / (2 * Math.PI);
+    const answer = answerAt(circular(SMA, 0), crossing + 5);
+    expect(answer).toMatchObject({
+      declined: {
+        reason: "beyond-horizon",
+        note: expect.stringContaining("sunlight"),
+      },
+    });
+  });
+
+  it("is carried past the flat span when the next crossing is hours away", () => {
+    expect(answerAt(circular(6_000_000, Math.PI), 1500)).toHaveProperty(
+      "reckon",
+    );
+  });
+
+  it("keeps the flat span without an orbit", () => {
+    expect(answerAt(null, RESOURCE_RATE_HORIZON_SECONDS - 5)).toHaveProperty(
+      "reckon",
+    );
+    expect(answerAt(null, RESOURCE_RATE_HORIZON_SECONDS + 5)).toHaveProperty(
+      "declined",
+    );
   });
 });

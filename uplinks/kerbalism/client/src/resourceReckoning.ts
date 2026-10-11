@@ -8,6 +8,7 @@ import type {
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
 import { wearRates } from "./ecosystem.js";
+import { type LightChange, nextLightChange } from "./shadowHorizon.js";
 import {
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
@@ -59,7 +60,13 @@ import { KERBALISM } from "./uplink.js";
  */
 
 /**
- * How far a net consumable rate stays honest, in seconds.
+ * How far a net consumable rate stays honest, in seconds, when the craft's
+ * orbit shows no move between sunlight and its parent body's shadow.
+ *
+ * With an orbit around a body, the rate instead holds up to the next such move,
+ * the moment solar charging starts or stops (see {@link nextLightChange}). That
+ * layer only moves the span; the rate itself is still carried as measured, so a
+ * rate that stops because another resource ran dry is not modelled.
  *
  * The span a net rate is assumed to describe the same regime. It is not an
  * arithmetic limit: the drift of a held rate under a changing draw is the
@@ -118,6 +125,8 @@ import { KERBALISM } from "./uplink.js";
 export const RESOURCE_RATE_HORIZON_SECONDS = 1200;
 
 type Resources = TopicPayload<"vessel.resources">;
+type Orbit = TopicPayload<"vessel.orbit">;
+type Bodies = TopicPayload<"system.bodies">;
 type LifeSupport = TopicPayload<"kerbalism.lifesupport">;
 type Profile = TopicPayload<"kerbalism.profile">;
 
@@ -260,6 +269,34 @@ export function resourceBoundaryCrossings(
 }
 
 /**
+ * How long a measured net rate is carried, and the light change that ends it
+ * when the craft's orbit shows one. Without one the span is
+ * {@link RESOURCE_RATE_HORIZON_SECONDS}.
+ */
+interface RateHorizon {
+  readonly seconds: number;
+  readonly enters?: LightChange["enters"];
+}
+
+const FLAT_HORIZON: RateHorizon = { seconds: RESOURCE_RATE_HORIZON_SECONDS };
+
+/**
+ * The span a rate measured at `asOfUt` holds for: up to the craft's next move
+ * between sunlight and its parent body's shadow, where a net charge rate
+ * changes sign, and the flat span when the orbit shows no such crossing.
+ */
+function rateHorizon(
+  orbit: Orbit | null | undefined,
+  bodies: Bodies | null | undefined,
+  asOfUt: number,
+): RateHorizon {
+  const change = nextLightChange(orbit, bodies, asOfUt);
+  return change === null
+    ? FLAT_HORIZON
+    : { seconds: change.seconds, enters: change.enters };
+}
+
+/**
  * The interval to carry the accumulators across, or the reason not to.
  *
  * Never negative: a stamp can sit marginally ahead of the instant the frame
@@ -270,6 +307,7 @@ export function resourceBoundaryCrossings(
 function intervalOrDecline(
   asOfUt: number,
   reckonUt: number,
+  horizon: RateHorizon,
 ): number | ReckoningDecline {
   const elapsed = reckonUt - asOfUt;
   if (!Number.isFinite(elapsed)) {
@@ -284,11 +322,14 @@ function intervalOrDecline(
       note: "no interval since Kerbalism last evaluated",
     };
   }
-  if (elapsed > RESOURCE_RATE_HORIZON_SECONDS) {
+  if (elapsed > horizon.seconds) {
     return {
       reason: "beyond-horizon",
       input: "@kerbalism.lifesupport#rates",
-      note: `rates measured ${Math.round(elapsed)} seconds ago`,
+      note:
+        horizon.enters === undefined
+          ? `rates measured ${Math.round(elapsed)} seconds ago`
+          : `rates measured ${Math.round(elapsed)} seconds ago, before the craft enters ${horizon.enters}`,
     };
   }
   return elapsed;
@@ -307,6 +348,8 @@ export function reckonResourceLevels(
   lifeSupport: LifeSupport | null | undefined,
   reckonUt: number,
   profile?: Profile,
+  orbit?: Orbit | null,
+  bodies?: Bodies | null,
 ): ReckonerAnswer<Resources> {
   if (observed == null) {
     return {
@@ -350,7 +393,11 @@ export function reckonResourceLevels(
       },
     };
   }
-  const elapsed = intervalOrDecline(asOfUt, reckonUt);
+  const elapsed = intervalOrDecline(
+    asOfUt,
+    reckonUt,
+    rateHorizon(orbit, bodies, asOfUt),
+  );
   if (typeof elapsed !== "number") return { declined: elapsed };
 
   // Which levels actually move, settled BEFORE the model is offered.
@@ -422,9 +469,20 @@ export function reckonResourceLevels(
   };
 }
 
+function readingValue<T>(reading: { state: string; value?: T }): T | undefined {
+  return reading.state === "observed" || reading.state === "held"
+    ? reading.value
+    : undefined;
+}
+
 KERBALISM.registerReckoner("vessel.resources", {
-  deps: [KERBALISM_LIFESUPPORT_TOPIC, { reading: KERBALISM_PROFILE_TOPIC }],
-  reckon: (point, [lifeSupportPoint, profile], { reckonUt }) =>
+  deps: [
+    KERBALISM_LIFESUPPORT_TOPIC,
+    { reading: KERBALISM_PROFILE_TOPIC },
+    { reading: "vessel.orbit" },
+    { reading: "system.bodies" },
+  ],
+  reckon: (point, [lifeSupportPoint, profile, orbit, bodies], { reckonUt }) =>
     reckonResourceLevels(
       point.payload,
       lifeSupportPoint?.payload,
@@ -432,5 +490,7 @@ KERBALISM.registerReckoner("vessel.resources", {
       profile.state === "observed" || profile.state === "held"
         ? profile.value
         : undefined,
+      readingValue(orbit),
+      readingValue(bodies),
     ),
 });
