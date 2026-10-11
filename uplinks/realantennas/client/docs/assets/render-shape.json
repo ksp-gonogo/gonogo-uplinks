@@ -3,14 +3,14 @@
   "engine": "chromium",
   "assets": {
     "ra-antenna-targets--default.png": {
-      "hash": "809dc101daf58982",
+      "hash": "9cb17d90a263ca3a",
       "elements": 101,
-      "text": "65f7c5e1"
+      "text": "59fea3c1"
     },
     "ra-hop-rates-bottleneck--default.png": {
-      "hash": "e846a987caad678f",
+      "hash": "62515a6d741c9fa4",
       "elements": 104,
-      "text": "7ef4c237"
+      "text": "efa55202"
     },
     "ra-installed-nothing-to-report--default.png": {
       "hash": "02b6027237f75203",
@@ -18,14 +18,14 @@
       "text": "a42ec01f"
     },
     "ra-link-budget-closes--default.png": {
-      "hash": "bb5368f38e2a9201",
+      "hash": "e9cdc93bd914a2b6",
       "elements": 87,
-      "text": "d6c6d467"
+      "text": "8a6af233"
     },
     "ra-link-budget-open--default.png": {
-      "hash": "ad04ba23db169ba6",
+      "hash": "fc14e03b5d506519",
       "elements": 87,
-      "text": "c96b3a78"
+      "text": "6225daeb"
     }
   }
 }
