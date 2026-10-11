@@ -61,10 +61,11 @@ import { KERBALISM } from "./uplink.js";
 /**
  * How far a net consumable rate stays honest, in seconds.
  *
- * Chosen rather than measured, and stated here as one constant so widening it
- * is a decision somebody takes rather than a number that drifts. Two things
- * inform it. A `rates` entry is a NET rate over the whole vessel, so what
- * invalidates it is a discrete event: a converter switching, a crew shift, a
+ * The span a net rate is assumed to describe the same regime. It is not an
+ * arithmetic limit: the drift of a held rate under a changing draw is the
+ * discrete events below, not accumulating noise. Two things inform it. A
+ * `rates` entry is a NET rate over the whole vessel, so what invalidates it is
+ * a discrete event: a converter switching, a crew shift, a
  * light coming on. The shortest such event with a knowable period is the
  * orbital shadow boundary, where a craft's net electric-charge rate flips sign
  * outright, and a low orbit crosses one every twenty minutes or so.

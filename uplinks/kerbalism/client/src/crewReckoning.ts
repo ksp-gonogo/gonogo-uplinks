@@ -62,13 +62,14 @@ import { KERBALISM } from "./uplink.js";
 /**
  * How far a degenerating accumulator stays honest, in seconds.
  *
- * Chosen rather than measured. The observed slope says the rule is starved
- * RIGHT NOW, and what ends that is the input resource coming back: a converter
- * catching up, a craft docking, a crew transfer. None of those is predictable
- * from this channel, so the horizon is a statement about how long "still
- * starved" is a safe assumption rather than a property of the arithmetic.
+ * The observed slope says the rule is starved RIGHT NOW, and what ends that is
+ * the input resource coming back: a converter catching up, a craft docking, a
+ * crew transfer. None of those is predictable from this channel, and none of
+ * them shows up in the fit's own error, which only grows with the slope's
+ * sigma. So the horizon is an assumption about how long "still starved" holds,
+ * not a limit the arithmetic imposes, and it is not derivable from the model.
  *
- * Ten minutes is the round number inside that. The clamp at
+ * Ten minutes is the span the assumption is held for. The clamp at
  * `fatalThreshold` is the other limiter and the sharper one: past the threshold
  * the kerbal is dead and every rate here is about someone who no longer has
  * one, so the model stops rather than carrying the accumulator up into a range
