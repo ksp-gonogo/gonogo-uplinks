@@ -86,10 +86,10 @@ npx uplink-tools codegen                             # regenerate committed type
 npx uplink-tools page                                # the generated page, with no browser
 cd - && dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
-node tooling/check-published-loadability.mjs scansat  # can its deps be IMPORTED (or, if bundled, LINKED)
+node tooling/uplink-tools.mjs scansat check --only loadable  # can its published deps be IMPORTED in bare node
 node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
-node tooling/minsize-gate.mjs --only scansat         # does every widget fit its own minSize (Linux only, see below)
-node tooling/check-mod-version.mjs scansat           # parent mod, pinned vs newer
+node tooling/uplink-tools.mjs scansat check --only minsize   # does every widget fit its own minSize (Linux only, see below)
+node tooling/uplink-tools.mjs scansat check --only manifest  # the parent mod's version is declared
 node tooling/uplink-tools.mjs scansat release --out artifacts   # bundle, bake, compile, verify, zip
 ```
 
@@ -103,6 +103,34 @@ A plugin's manifest reads three generated files, `Provenance.g.cs`,
 `ClientSource.g.cs` and `ExpectedClientHash.g.cs`, which are never committed.
 `uplink-tools bake` writes them, and a build of a fresh checkout that has none
 bakes them first (`Directory.Build.targets`), with no hash.
+
+## Releasing: candidates, full releases, SpaceDock and CKAN
+
+A release is a tag, `<uplink id>-v<version>`, on a commit on main. `release.yml` builds that Uplink, publishes its client to the `releases` branch and attaches the plugin zip to a GitHub release.
+
+- **A candidate** has a version ending `-rc.<n>`, such as `kos-v1.0.0-rc.1`. Its GitHub release is a prerelease, and nothing is uploaded to SpaceDock, so nothing reaches CKAN. Candidates are `1.0.0-rc.N`, the version the full release will be.
+- **A full release** has a plain `X.Y.Z` version. It is refused unless the repository variable `ALLOW_FULL_RELEASE` is `true`, which only the operator sets. It then also goes to SpaceDock, which forwards it to CKAN.
+- **A dry run** is the `release` workflow dispatched by hand on main with a `tag`. It resolves the tag, runs the whole build, copies the client into a scratch folder and prints what it would publish, including the SpaceDock mod and file it would upload. It pushes nothing, never logs in and sends nothing to SpaceDock.
+
+An Uplink's version is written in `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts` and the version folder of `client.url` in `uplink.json`, and `release` refuses while they disagree. `node tooling/resolve-release-tag.mjs <tag>` says whether a tag matches.
+
+### SpaceDock
+
+The upload mirrors the Gonogo mod's: a cookie login (SpaceDock has no API tokens), a multipart upload to `/api/mod/<id>/update`, a version that is always bare (`1.0.0`, never `v1.0.0`, since CKAN orders a leading `v` before every digit), and a changelog of the feature and fix commits that touched the Uplink since its previous stable tag. A version the listing already holds is not uploaded twice. A full release fails before anything is published, rather than skipping, when any of these three is missing:
+
+- the secret `SPACEDOCK_USERNAME`
+- the secret `SPACEDOCK_PASSWORD`, both held by the organisation
+- the Uplink's listing id, `spacedock.modId` in its `uplink.json`; an id is never guessed
+
+The listing id is in `uplink.json`, not in a repository variable per Uplink, because it is a fact about that Uplink: it travels with it if the Uplink ever leaves this repository, and a variable would stay behind. It is public, so it needs no secret.
+
+```json
+"spacedock": { "modId": 4021 }
+```
+
+Three things stop a candidate reaching SpaceDock: the SpaceDock steps' `if:` excludes a prerelease tag and a dry run, `tooling/spacedock-release.mjs eligible` refuses one again inside the step, and `tooling/release-safety.test.mjs` fails CI if a step that touches SpaceDock loses either guard.
+
+CKAN indexes from SpaceDock, so there is no CKAN step and no CKAN file in this repository.
 
 ## Starting a new Uplink
 
@@ -129,7 +157,7 @@ Uplink's `mod-tests` compiles in, as realantennas does with `AntennaProbeVerdict
 
 ## The minSize gate only answers honestly on Linux
 
-`minsize-gate.mjs` measures clipping in PIXELS, so macOS and Linux disagree at the
+`check --only minsize` measures clipping in PIXELS, so macOS and Linux disagree at the
 margin — and here that disagreement is a pass/fail, not a prettier picture. On
 2026-09-17 CI reported scansat's `scanning` widget as `title-clipped 3px` while the
 same command on the same commit reported `0 do not fit` on macOS.
@@ -142,7 +170,7 @@ does agree with it exactly:
 # and the vendored .tgz pins, with node_modules EXCLUDED. npm install inside on the
 # first pass. Match the RESOLVED playwright, not the ^ range in the manifest.
 podman run --rm -v "$STAGE:/w:Z" -w /w mcr.microsoft.com/playwright:v1.62.1-noble \
-  bash -lc 'cd /w && node tooling/minsize-gate.mjs --only <id>'
+  bash -lc 'cd /w && node tooling/uplink-tools.mjs <id> check --only minsize'
 ```
 
 Stage a copy rather than mounting the live worktree: an `npm install` inside Linux
@@ -243,18 +271,16 @@ on. Measured both ways against the same pre-fix sdk:
 | without it | ERR_MODULE_NOT_FOUND |
 
 That is how six weeks of an unimportable sdk went unnoticed while every gate was
-green. So `tooling/check-published-loadability.mjs` asks the question in a bare
+green. So `check --only loadable` asks the question in a bare
 `node` process with no bundler anywhere near it, and reports it separately. Two
 different claims: the tests say your code works, that says anyone can install what
 it needs.
 
-That bare-Node load is the check for gonogo's own published packages, the ones
-whose manifest names gonogo's repository, because an outside author may load them
-in Node. A package from anywhere else that the client bundle inlines reaches nobody
-except through that bundle, where an extensionless import is normal, so it is
-LINKED instead: esbuild, with the bundler's own settings
-(`tooling/uplink-bundle-settings.mjs`), must resolve every import of each of its
-entry points and find every name imported.
+It tries every entry point of every `@ksp-gonogo` package the client depends on.
+Two planted modules, one that loads and one that throws, must be told apart first,
+or it stops as BLIND. The kit's root barrel and the entry points that reach it
+cannot be imported by a bare Node today (styled-components publishes no `exports`
+map); `check` lists them as exempt and warns when one starts loading.
 
 The same split applies to typechecking. `bundler` and `nodenext` disagree
 SILENTLY: `declare module "./types"` binds under one and not the other, so a
