@@ -8,7 +8,7 @@ using Xunit;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// Starting a new design building from a saved craft file: the command that
+    /// Starting a NEW design building from a saved craft file: the command that
     /// closes the dead end RP-1's own model leaves.
     ///
     /// <para>The refusals come first here, deliberately and in the order they are
@@ -17,15 +17,15 @@ namespace GonogoRp1Uplink.Tests
     /// craft at all". A handler that only did the happy path would be a button
     /// that charges a career for a vehicle its launch complex refuses.</para>
     ///
-    /// <para>The case that decides whether the feature is <c>SAFE</c> is
+    /// <para>The case that decides whether the feature is SAFE is
     /// <see cref="Refuses_and_charges_nothing_when_the_career_cannot_afford_it"/>,
     /// for the reason <c>Rp1BuildCommandsTests</c> gives at length: RP-1's own
     /// SpendFunds performs no affordability test, so an unasked currency query is
     /// a career driven into negative funds with nothing to show.</para>
     ///
-    /// <para>The case that decides whether it leaks is
+    /// <para>The case that decides whether it LEAKS is
     /// <see cref="Gives_the_loaded_craft_back_even_when_it_refuses"/>. A load
-    /// instantiates a Unity part per part node; a refusal that returned without
+    /// instantiates a Unity part per PART node; a refusal that returned without
     /// releasing would leave a craft standing at the world origin, once per
     /// press.</para>
     /// </summary>
@@ -505,7 +505,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A density the craft did carry is the operator's, and one below the
+        /// A density the craft DID carry is the operator's, and one below the
         /// part's minimum is refused, as the editor refuses it.
         /// </summary>
         [Fact]

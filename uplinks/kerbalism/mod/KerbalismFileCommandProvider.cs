@@ -9,18 +9,18 @@ namespace Gonogo.KerbalismUplink
     /// (<c>kerbalism.file.*</c>/<c>kerbalism.sample.*</c>): the command-side
     /// twin of <see cref="KerbalismScienceMap"/>, and the Kerbalism-domain
     /// analogue of <c>Sitrep.Host.ScienceCommandProvider</c>. Each
-    /// <c>Handle*</c> method resolves the subject against the same plain
+    /// <c>Handle*</c> method resolves the subject against the SAME plain
     /// <see cref="ScienceRaw"/> snapshot <see cref="KerbalismScienceBackend"/>
     /// stashes off its main-thread capture (see that type's doc comment on
     /// why that hand-off is already cross-thread-safe plain data), checks it
     /// is the kind the verb requires, and only then calls the matching
     /// <see cref="IKerbalismFileActuator"/> method. No KSP/Kerbalism type
-    /// appears anywhere in this file: every check that needs the live drive
+    /// appears anywhere in this file: every check that needs the LIVE drive
     /// (has the subject moved since the snapshot, is there capacity/a lab to
     /// receive it) is the actuator's job against the live drive.
     ///
     /// <para><b>Delayed (uplink to the craft):</b> every verb here actuates
-    /// Kerbalism state on the vessel, so all five ride the same signal delay
+    /// Kerbalism state ON the vessel, so all five ride the same light-time
     /// delay every other vessel actuation does, declared <c>delayed: true</c>
     /// in <c>KerbalismUplink</c>'s command table.</para>
     /// </summary>
@@ -73,8 +73,8 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// The one check every verb needs before touching the actuator:
         /// Kerbalism must be modelling science at all, the subject id must be
-        /// well-formed, and it must resolve in the snapshot as the kind this
-        /// verb requires. A subject that resolves as the wrong kind (e.g.
+        /// well-formed, and it must resolve in the snapshot AS THE KIND this
+        /// verb requires. A subject that resolves as the WRONG kind (e.g.
         /// <c>analyze</c> against a file's subject id) is reported the same
         /// as an absent subject, <see cref="CommandErrorCode.NotFound"/>: from
         /// the caller's side "there is no ANALYZABLE result with this id" and

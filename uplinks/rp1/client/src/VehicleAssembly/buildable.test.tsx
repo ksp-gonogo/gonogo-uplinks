@@ -77,7 +77,7 @@ function mount() {
 
 /**
  * RP-1's presence gate, and the wait for what it mounts to reach the wire.
- * Waited on the subscription rather than on anything drawn, for the reason the
+ * Waited on the SUBSCRIPTION rather than on anything drawn, for the reason the
  * widget's own suite gives at length: the sections draw nothing until their
  * lists arrive, so there is no mark on screen that says the subscription is
  * open.

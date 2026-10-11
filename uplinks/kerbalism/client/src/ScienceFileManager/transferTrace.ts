@@ -10,7 +10,7 @@ export const KERBALISM_TRANSFER_TAGS = railTagsForTelemetry("continuous");
 /** UT seconds one amplitude sample covers. */
 export const TRANSFER_STEP_SECONDS = 1;
 
-/** Samples kept, so a long signal delay still has a trace to span it. */
+/** Samples kept, so a long light-time still has a trace to span it. */
 const HISTORY_SAMPLES = 900;
 
 /**
@@ -33,7 +33,7 @@ export const EMPTY_TRANSFER_TRACE: TransferTrace = {
 };
 
 /**
- * Fold one observation of a file's transfer into its trace.
+ * Fold one OBSERVATION of a file's transfer into its trace.
  *
  * Fed by arrivals only: `atUt` is when the drive was read, and the trace never
  * advances on a clock. An unread rate (`null`) adds nothing, since "not

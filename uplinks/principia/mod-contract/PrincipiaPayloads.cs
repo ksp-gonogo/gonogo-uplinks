@@ -19,7 +19,7 @@ namespace GonogoPrincipiaUplink;
 /// <para><b>The same type serves two different selectors and that is the point.</b>
 /// One instance names the global plotting frame; another names one burn's
 /// manœuvring frame, and the two are routinely different. <see cref="Selector"/>
-/// says which, because reusing the component is right and reusing the label is
+/// says which, because reusing the component is right and reusing the LABEL is
 /// the bug.</para>
 ///
 /// <para>The kind travels as the producer's own enum value rather than as a
@@ -62,7 +62,7 @@ public sealed class PrincipiaReferenceFrame
     /// first.
     ///
     /// <para>A rotating frame turns about a pair of bodies; a pulsating one turns
-    /// about a pair of sets, and holds the separation of their two mass centres
+    /// about a pair of SETS, and holds the separation of their two mass centres
     /// fixed. A Sun-Earth pulsating frame's primary side is Sun, Mercury and
     /// Venus, not Sun alone, because the producer's set builder walks the star's
     /// children and stops at the selected body. Publishing only the head loses
@@ -99,7 +99,7 @@ public sealed class PrincipiaReferenceFrame
     public string? TargetVesselName { get; set; }
 
     /// <summary>The body the target vessel orbits. The producer declines the
-    /// target frame's name and its description with this body rather than with
+    /// target frame's NAME and its description with this body rather than with
     /// the selected celestial, so a console without it cannot call the frame by
     /// the name the game is calling it.</summary>
     [SitrepUnit(Units.Text)]
@@ -108,7 +108,7 @@ public sealed class PrincipiaReferenceFrame
 
 /// <summary>
 /// The <c>principia.settings</c> channel: every setting that changes what
-/// another number means, on one surface.
+/// another number MEANS, on one surface.
 ///
 /// <para><b>Why these are grouped and why they come before the readouts they
 /// qualify.</b> A setting here is not a preference. The plotting frame decides
@@ -123,7 +123,7 @@ public sealed class PrincipiaReferenceFrame
 /// <para><b>Where each value comes from decides whether it can be believed.</b>
 /// The per-vessel and per-plan integrator bounds are read from the producer's own
 /// plugin, through the precondition protocol, so they are what that vessel's
-/// prediction and that plan actually used rather than what a slider was last set
+/// prediction and that plan ACTUALLY used rather than what a slider was last set
 /// to globally. The rest are plain managed fields on the producer's windows and
 /// are correct whenever they are read. Nothing here is inferred from a default:
 /// a value that could not be read is null, because an invented tolerance is a
@@ -140,9 +140,9 @@ public sealed class PrincipiaReferenceFrame
 ///
 /// <para><c>DelayRole.TrueNow</c>: these are the operator's own settings and the
 /// local mod's configuration, held on the machine the command centre runs
-/// beside. There is no signal delay for them to travel, and delaying them would
+/// beside. There is no light-time for them to travel, and delaying them would
 /// mean someone who tightened a tolerance kept reading their old basis for every
-/// propagated number until signal delay had passed.</para>
+/// propagated number until light-time had passed.</para>
 /// </summary>
 [SitrepContract]
 [SitrepTopic("principia.settings")]
@@ -211,7 +211,7 @@ public sealed class PrincipiaSettings
     [SitrepUnit(Units.Text)]
     public string? TargetCelestialBody { get; set; }
 
-    /// <summary>True when the game is also drawing stock patched conics. The one
+    /// <summary>True when the game is ALSO drawing stock patched conics. The one
     /// setting that tells an operator they are being shown two contradictory
     /// futures; the producer's own label for it ends "do not use for flight
     /// planning!".</summary>
@@ -220,7 +220,7 @@ public sealed class PrincipiaSettings
 
     // ---- What changes the numeric answer ----
 
-    /// <summary>The window the orbit analyser has been asked to analyse over. The
+    /// <summary>The window the orbit analyser has been ASKED to analyse over. The
     /// analysis payload reports the duration it actually covered, and the two
     /// differ while an analysis is still catching up; this is the request.</summary>
     [SitrepUnit(Units.Seconds)]
@@ -265,7 +265,7 @@ public sealed class PrincipiaSettings
     [SitrepUnit(Units.Count)]
     public double? PredictionMaxSteps { get; set; }
 
-    /// <summary>The flight plan's integration tolerance, which is a different
+    /// <summary>The FLIGHT PLAN's integration tolerance, which is a different
     /// setting from the prediction's despite sharing a label in game. Conflated,
     /// a plan failure gets explained by a prediction setting and the operator
     /// changes the wrong control.</summary>
@@ -307,9 +307,9 @@ public sealed class PrincipiaSettings
     public double? OptimiserTargetAltitudeMetres { get; set; }
 
     /// <summary>The inclination the optimiser is solving for, or null when
-    /// inclination is not an objective. Null and zero are different instructions
+    /// inclination is NOT an objective. Null and zero are different instructions
     /// and rendering the first as the second would show an equatorial target that
-    /// nobody asked for. The optimised body is not here: it comes from the
+    /// nobody asked for. The optimised BODY is not here: it comes from the
     /// plotting frame, which is the coupling most easily got wrong.</summary>
     [SitrepUnit(Units.Degrees)]
     public double? OptimiserTargetInclinationDegrees { get; set; }
@@ -322,8 +322,8 @@ public sealed class PrincipiaSettings
     [SitrepUnit(Units.Seconds)]
     public double? HistoryLengthSeconds { get; set; }
 
-    /// <summary>True when apsis, node and approach markers are hidden in the
-    /// frame now selected. This is the per-frame answer rather than the global
+    /// <summary>True when apsis, node and approach markers are hidden IN THE
+    /// FRAME NOW SELECTED. This is the per-frame answer rather than the global
     /// one: a marker's absence in game reads as "does not exist" when it means
     /// "hidden here", which sends an operator looking for a physics problem that
     /// is a view setting.</summary>
@@ -396,13 +396,13 @@ public sealed class PrincipiaSettings
     [SitrepUnit(Units.Count)]
     public int? FlushThreshold { get; set; }
 
-    /// <summary>True when the operator has asked for a journal. It takes effect
+    /// <summary>True when the operator has ASKED for a journal. It takes effect
     /// on the next load, so it is deliberately not the same fact as
     /// <see cref="Journaling"/>.</summary>
     [SitrepUnit(Units.Flag)]
     public bool? RecordJournalRequested { get; set; }
 
-    /// <summary>True when a recorder is actually running. This is the state that
+    /// <summary>True when a recorder is ACTUALLY running. This is the state that
     /// stops us reading, precisely because it is the actual one: gating on the
     /// requested flag instead would stop us a session early and then fail to stop
     /// us at all in the case that matters.</summary>

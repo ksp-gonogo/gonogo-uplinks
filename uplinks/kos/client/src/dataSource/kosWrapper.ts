@@ -6,7 +6,7 @@ import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
  * kerboscript in sync with the bundled source. The wrapper checks a
  * sidecar `.ver` file; if it doesn't match the bundled hash it deletes
  * the old `.ks` + `.ver`, rewrites them line-by-line, then RUNPATHs
- * the script. Costs one exists + READALL on the steady state.
+ * the script. Costs one EXISTS + READALL on the steady state.
  *
  * Wire cost: the bundled body is embedded in the wrapper text every
  * dispatch, so every executeScript pays the body's byte cost on the
@@ -36,20 +36,20 @@ const VERSION_SUFFIX = ".ver";
  *     across statement boundaries at the REPL, so `IF needsWrite { }`
  *     errored with "Undefined Variable Name 'needswrite'".
  *   - Wrap in `FUNCTION gonogoWrapperEnsure { ... }`, kOS REPL keeps
- *     prior function definitions cached and ignores re-definitions.
+ *     prior FUNCTION definitions cached and ignores re-definitions.
  *     Adding a 4th `bodyText` parameter caused the cached 3-parameter
  *     version to reject calls with "Number of arguments ... Called
  *     with too many arguments."
  *
  * Current approach: use plain `SET` assignments at REPL top level.
- * `@LAZYGLOBAL on` is the REPL default, so set on an undeclared name
+ * `@LAZYGLOBAL on` is the REPL default, so SET on an undeclared name
  * creates a real global that persists across statements. Names get
  * a `gonogoWrapper` prefix so they don't collide with whatever a
  * user has set up in their session.
  *
- * Steady-state path is tiny: exists + READALL + trim + equality
+ * Steady-state path is tiny: EXISTS + READALL + TRIM + equality
  * check, then RUNPATH. Only the one-time-per-version branch carries
- * the log storm.
+ * the LOG storm.
  */
 export function buildKosWrapper(opts: BuildKosWrapperOptions): string {
   const { path, body, version, args } = opts;
@@ -130,7 +130,7 @@ function formatBareArg(arg: KosScriptArg): string {
  * Sentinels the kOS data-source parser keys off. The wrapper's source is
  * echoed verbatim by the kOS REPL on dispatch, so any contiguous
  * `[KOSDATA]...[/KOSDATA]` (or KOSERROR) byte sequence in the wrapper text
- * (even inside a string literal) gets matched by the parser before
+ * (even inside a string literal) gets matched by the parser BEFORE
  * the actual script runs. That captures the wrapper's source as the
  * widget's payload and the real script's [KOSDATA] never lands.
  *
@@ -140,10 +140,10 @@ function formatBareArg(arg: KosScriptArg): string {
  * source.
  *
  * The sentinels are written as prefixes (no trailing `]`) so they catch
- * both the bare `[KOSDATA]` form and the topic-tagged `[KOSDATA:foo]`
+ * both the bare `[KOSDATA]` form AND the topic-tagged `[KOSDATA:foo]`
  * form. Without that, scripts that emit `[KOSDATA:topic]...[/KOSDATA]`
  * leave the open marker intact in wrapper-echoed source; a later
- * `[/KOSDATA]` from the real script's print then closes it and the lazy
+ * `[/KOSDATA]` from the real script's PRINT then closes it and the lazy
  * parser regex captures the wrapper source as the payload.
  */
 const PARSER_SENTINELS = ["[KOSDATA", "[/KOSDATA", "[KOSERROR", "[/KOSERROR"];

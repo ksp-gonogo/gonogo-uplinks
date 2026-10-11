@@ -125,7 +125,7 @@ namespace GonogoRp1Uplink
         private bool? _kscSwitcherLoaded;
 
         /// <summary>
-        /// RP-1 is installed. Gated on the type resolving, never on an assembly
+        /// RP-1 is installed. Gated on the TYPE resolving, never on an assembly
         /// name: RP-1 historically shipped its construction-time fork under an
         /// assembly called <c>KerbalConstructionTime</c>, so a name match is not
         /// evidence that the types exist, and an Uplink that publishes
@@ -139,7 +139,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// The assembly the space-centre type actually came from, as
         /// "<c>name, version</c>", for the health facts. Taken from the resolved
-        /// type rather than from a name scan, so it names the assembly that
+        /// TYPE rather than from a name scan, so it names the assembly that
         /// answered rather than one that merely matched.
         /// </summary>
         public string? AssemblyIdentity { get; }
@@ -189,7 +189,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Whether the flight currently on screen is one of RP-1's simulations
+        /// Whether the flight currently on screen is one of RP-1's SIMULATIONS
         /// rather than a real mission, or null when RP-1 cannot answer.
         ///
         /// <para>Null covers three cases that all mean "do not claim anything":
@@ -900,7 +900,7 @@ namespace GonogoRp1Uplink
         /// confidence genuinely sits at 0, so the getter cannot tell an operator
         /// which of the two they are looking at.
         ///
-        /// <para>The field read is held to the same rule, and was not: an
+        /// <para>The FIELD read is held to the same rule, and was not: an
         /// unreadable balance substituted to 0 put the conflation back one level
         /// down, where it both misinforms the readout and darkens the Accept
         /// button on a Program the career can afford. A client already draws the
@@ -931,7 +931,7 @@ namespace GonogoRp1Uplink
         /// rollout and repair queues, which are exactly what
         /// <c>GetAllLCOps()</c> enumerates. Zero means integration can proceed.
         ///
-        /// <para>Absent the moment one operation will not answer, rather than a
+        /// <para>Absent the moment ONE operation will not answer, rather than a
         /// sum short by that operation's points. Zero is the value that clears
         /// integration and hands every vehicle on the complex a full-speed rate,
         /// so a total that quietly omits a blocking rollout does not read as a
@@ -965,7 +965,7 @@ namespace GonogoRp1Uplink
         /// One operation's contribution to the blocking total: its absolute build
         /// points while it is incomplete, and nothing once it is done. Absent
         /// when the points or the progress could not be read, because completion
-        /// is a comparison between the two and a pair of substituted zeros
+        /// is a comparison BETWEEN the two and a pair of substituted zeros
         /// satisfies it: an unreadable operation would otherwise report itself
         /// finished and contribute nothing.
         /// </summary>
@@ -1089,7 +1089,7 @@ namespace GonogoRp1Uplink
             /// <summary>The fraction of full salary an engineer assigned to nothing draws.</summary>
             public double? EngineerIdleSalaryMult;
 
-            /// <summary>What a working engineer draws at while the complex rushes.</summary>
+            /// <summary>What a WORKING engineer draws at while the complex rushes.</summary>
             public double? RushSalaryMult;
 
             /// <summary><c>GetEffectiveEngineersForSalary(LaunchComplex)</c>, by first-parameter type.</summary>
@@ -1104,7 +1104,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Resolves this tick's money members. The two salary lookups are keyed on
-        /// their first parameter's type and not on arity: RP-1 declares a centre
+        /// their first parameter's TYPE and not on arity: RP-1 declares a centre
         /// overload of the same name and arity, and picking it would report a
         /// whole centre's payroll against one launch complex.
         /// </summary>
@@ -1133,7 +1133,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// What a crew draws per day, from RP-1's own effective headcount.
         ///
-        /// <para>RP-1's method is called rather than mirrored, unlike the rate
+        /// <para>RP-1's method is CALLED rather than mirrored, unlike the rate
         /// arithmetic this file reproduces, and the two are different situations
         /// rather than an inconsistency. The rate helpers had to be gone round
         /// because they persist an efficiency record on a cache miss; these read
@@ -1151,7 +1151,7 @@ namespace GonogoRp1Uplink
         /// RP-1's effective head count for one complex or one centre: the number
         /// its salary bill is a rate times, with idle and rushing crew already
         /// weighted. Split out from <see cref="SalaryPerDay"/> because the rush
-        /// delta is recovered from the count and not from the money.
+        /// delta is recovered from the COUNT and not from the money.
         /// </summary>
         private double? EffectiveEngineers(Payroll payroll, MethodInfo? method, object subject) =>
             method == null || payroll.Scm == null
@@ -1225,7 +1225,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// A centre's own upkeep: its complexes' figures, summed off the rows just
-        /// read. Absent unless every complex answered, because a centre whose
+        /// read. Absent unless EVERY complex answered, because a centre whose
         /// costs could not be read has not been shown to be free, and one whose
         /// costs were three-fifths read has not been shown to cost three fifths.
         /// A partial sum is the worse of the two: it is a plausible bill, in the
@@ -1290,13 +1290,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The same dictionary with its values, which is what a renovation has to
+        /// The same dictionary with its VALUES, which is what a renovation has to
         /// send back to keep the complex's fluids.
         ///
         /// <para>Read as a separate walk rather than folded into
         /// <see cref="ReadResourcesHandled"/> because the two answer different
         /// questions and are allowed to fail apart: an entry whose value will not
-        /// widen to a double is dropped from here while the name still travels,
+        /// widen to a double is dropped from here while the NAME still travels,
         /// so a client's eligibility reading stays complete even where its
         /// capacity reading has a hole. RP-1 stores whole units, rounding up, so
         /// what is read is what it charges for.</para>
@@ -1334,16 +1334,16 @@ namespace GonogoRp1Uplink
         /// The identity RP-1 groups launch complexes by for crew rating, as a
         /// stable key two complexes share when RP-1 would put them on one record.
         ///
-        /// <para>Why A key and not the fields. RP-1 does not rate a complex, it
+        /// <para>WHY A KEY AND NOT THE FIELDS. RP-1 does not rate a complex, it
         /// rates an <c>LCEfficiency</c> and attaches a complex to an existing one
-        /// only when <c>Formula.GetLCCloseness</c> scores exactly 1.0, which
+        /// only when <c>Formula.GetLCCloseness</c> scores EXACTLY 1.0, which
         /// <c>LCData.Compare</c> reaches only on massMax, sizeMax, lcType,
         /// isHumanRated and resourcesHandled all being equal. So membership is an
         /// equivalence class, and this key names it.</para>
         ///
         /// <para>Derived here rather than client-side because
-        /// <see cref="Rp1ComplexRaw.ResourcesHandled"/> carries the resource names
-        /// and RP-1 compares names and amounts. A client grouping on what it can
+        /// <see cref="Rp1ComplexRaw.ResourcesHandled"/> carries the resource NAMES
+        /// and RP-1 compares NAMES AND AMOUNTS. A client grouping on what it can
         /// see would be right until two complexes handled the same resources in
         /// different amounts, and then silently wrong. The amounts are not
         /// published instead because their unit is not established: searched the
@@ -1575,7 +1575,7 @@ namespace GonogoRp1Uplink
         /// the type or its static could not be read.
         ///
         /// <para>Absent rather than 1.0, on the same grounds
-        /// <see cref="ReadRushRateMult"/> states. It is read as a ratio, so a
+        /// <see cref="ReadRushRateMult"/> states. It is read as a RATIO, so a
         /// substituted 1.0 renders every hangar at "100% efficiency", which is a
         /// crew at the top of RP-1's scale and the one reading the operator would
         /// never question. It is also the ramp's ceiling, so the same substitution
@@ -1664,7 +1664,7 @@ namespace GonogoRp1Uplink
         /// <c>rp1.complexes</c> and a client joining on it would find nothing.
         ///
         /// <para>The record itself is passed in, never fetched here. Asking a
-        /// complex for its <c>EfficiencySource</c> constructs and persists one on
+        /// complex for its <c>EfficiencySource</c> CONSTRUCTS and PERSISTS one on
         /// a miss, which is the trap the whole efficiency read is arranged
         /// around; the caller has already looked it up through
         /// <c>LCToEfficiency</c> and a miss stays a miss.</para>
@@ -1805,12 +1805,12 @@ namespace GonogoRp1Uplink
         /// answer from false and is why this is a <c>bool?</c>.
         /// </summary>
         /// <remarks>
-        /// The one member this capture invokes rather than reads, and it is worth
+        /// The one member this capture INVOKES rather than reads, and it is worth
         /// saying why that is safe here when the file header forbids it generally.
         /// The rule the header sets is that a sampled read must not write to the
         /// player's save, and the objection to RP-1's display helpers is precise:
-        /// they reach <c>LaunchComplex.Efficiency</c>, whose getter constructs and
-        /// persists an <c>LCEfficiency</c> on a cache miss.
+        /// they reach <c>LaunchComplex.Efficiency</c>, whose getter CONSTRUCTS and
+        /// PERSISTS an <c>LCEfficiency</c> on a cache miss.
         ///
         /// <para><c>HasVesselWaitingToBeLaunched</c> has no such arm. Its whole
         /// body reads <c>lastLoadedVesselId</c>, asks
@@ -1829,10 +1829,10 @@ namespace GonogoRp1Uplink
         /// RP-1's own reasons this vehicle cannot leave its complex, or null when
         /// it has none.
         ///
-        /// <para>Reproduced from fields, never invoked, and that is not a
+        /// <para>REPRODUCED from fields, never invoked, and that is not a
         /// preference. <c>VesselProject.MeetsFacilityRequirements</c> calls
         /// <c>GetTotalMass</c>, <c>GetShipSize</c> and <c>HasClamps</c>, and each
-        /// of those memoises its answer onto the vehicle when the stored value is
+        /// of those MEMOISES its answer onto the vehicle when the stored value is
         /// zero or untested. Those are <c>[Persistent]</c> fields, so invoking it
         /// from a sampled capture would have a telemetry read edit the player's
         /// save, which the file header forbids outright. The command invokes it
@@ -1841,7 +1841,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para><b>The comparison itself is no longer written here.</b> It lives
         /// in <see cref="Rp1Envelope"/>, which this hands measurements to, because
-        /// a craft file needs the same arithmetic against measurements that come
+        /// a craft FILE needs the same arithmetic against measurements that come
         /// from a file rather than from a vehicle and a third copy was not worth
         /// having. <see cref="Rp1LaunchGate"/> still carries its own: it is
         /// load-bearing for every launch and its inputs are live objects rather

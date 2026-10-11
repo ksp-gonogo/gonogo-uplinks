@@ -17,7 +17,7 @@ namespace GonogoPrincipiaUplink
     /// <para><b>Why the version constant is separate from the read gate's.</b> They
     /// hold the same string today and they answer different questions. The session's
     /// gate asks "were these READS analysed for abort safety". This one asks "were
-    /// these writes analysed, and is the struct layout the one they were analysed
+    /// these WRITES analysed, and is the struct layout the one they were analysed
     /// with", and the second question has an answer the first does not depend on:
     /// the burn struct is generated at the producer's build time from a schema that
     /// gained a field and lost one in this very release. Sharing one constant would
@@ -33,7 +33,7 @@ namespace GonogoPrincipiaUplink
     public sealed class PrincipiaWriteAuthority
     {
         /// <summary>
-        /// The exact producer build whose write entry points and struct shapes were
+        /// The exact producer build whose WRITE entry points and struct shapes were
         /// read, as its own <c>GetVersion</c> reports it.
         /// </summary>
         public const string WriteAnalysedPluginVersion =
@@ -83,7 +83,7 @@ namespace GonogoPrincipiaUplink
         public string? LayoutFailure { get; private set; }
 
         /// <summary>
-        /// True when the surface could be armed: right build, writes bound. Says
+        /// True when the surface COULD be armed: right build, writes bound. Says
         /// nothing about whether it is armed.
         /// </summary>
         public bool Available => _versionMatches && _writesBound;

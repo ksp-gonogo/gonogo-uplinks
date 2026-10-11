@@ -57,7 +57,7 @@ namespace GonogoTestFlightUplink
         public bool IsAvailable => _asm != null && _coreInterface != null;
 
         /// <summary>
-        /// Whether the one member that decides a part's condition resolved. A
+        /// Whether the one member that decides a part's CONDITION resolved. A
         /// partially-bound binder (this bound, the rated-time reads not) still
         /// models reliability: budgets are simply absent, and absent is not the
         /// same as unreadable.
@@ -155,7 +155,7 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// One raw reading per active TestFlight core on the vessel. A read that
+        /// One raw reading per ACTIVE TestFlight core on the vessel. A read that
         /// did not bind, or threw, leaves its field null; nothing is substituted.
         /// </summary>
         public IEnumerable<EngineReliabilityRaw> Engines(Vessel v)
@@ -245,7 +245,7 @@ namespace GonogoTestFlightUplink
         /// here would put a second authority beside the one that acts, and would
         /// refuse repairs the game allows.</para>
         ///
-        /// <para>A repair also awards flight data (<c>duRepair</c>, read from the
+        /// <para>A repair also AWARDS flight data (<c>duRepair</c>, read from the
         /// part's config), which is why this must never be simulated: the state
         /// change belongs to TestFlight.</para>
         /// </summary>
@@ -291,7 +291,7 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// The <paramref name="occurrence"/>-th active core on the part with this
+        /// The <paramref name="occurrence"/>-th ACTIVE core on the part with this
         /// flightID, walked in the same order and with the same two liveness
         /// filters <see cref="Engines"/> uses to mint the id. Two different walks
         /// would number the cores differently and repair the wrong one.
@@ -345,7 +345,7 @@ namespace GonogoTestFlightUplink
         /// contingent one: an exploded part, a fired docking clamp and a snapped
         /// solar mechanism answer false whatever the crew do.
         ///
-        /// <para>A failure whose predicate did not bind is treated as repairable,
+        /// <para>A failure whose predicate did not BIND is treated as repairable,
         /// which is the recoverable direction: attempting one TestFlight would
         /// have declined costs a round trip, where declining one it would have
         /// allowed hides a repair the operator could have made.</para>
@@ -384,7 +384,7 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// The active failures' own titles, which is a far better statement of
+        /// The active failures' OWN titles, which is a far better statement of
         /// what is wrong than any threshold on a probability.
         /// </summary>
         private string? FailureTitles(object core)

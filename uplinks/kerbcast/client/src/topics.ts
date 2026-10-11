@@ -44,13 +44,13 @@ import {
 } from "./__generated__/units.js";
 
 /**
- * The bare-boolean presence-gate Topic this Uplink publishes. Its value must match
+ * The bare-boolean presence-gate Topic this Uplink publishes. Its value MUST match
  * `KerbcastUplink.AvailableTopic` in ../KerbcastUplink.cs: `topics.test.ts` asserts that.
  */
 export const KERBCAST_AVAILABLE_TOPIC = "kerbcast.available";
 
 /**
- * The camera control inventory Topic. Its value must match
+ * The camera CONTROL inventory Topic. Its value MUST match
  * `KerbcastUplink.CamerasTopic` in ../KerbcastUplink.cs: `topics.test.ts` asserts that.
  */
 export const KERBCAST_CAMERAS_TOPIC = "kerbcast.cameras";

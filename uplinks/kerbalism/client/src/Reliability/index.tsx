@@ -16,7 +16,7 @@ import { actionable, repairCostResolver } from "./repair.js";
 import { isNoteworthy, rowFor } from "./rows.js";
 
 /**
- * The value of a fact, which stays true until an event changes it and no event
+ * The value of a FACT, which stays true until an event changes it and no event
  * can reach us down a link that is not delivering. Held counts; a pending or
  * unowned reading does not.
  */

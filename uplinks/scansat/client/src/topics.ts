@@ -52,20 +52,20 @@ import {
 } from "./__generated__/units.js";
 
 /**
- * The bare-boolean presence-gate Topic this Uplink publishes. Its value must match
+ * The bare-boolean presence-gate Topic this Uplink publishes. Its value MUST match
  * `ScansatUplink.AvailableTopic` in ../ScansatUplink.cs: `topics.test.ts` asserts that.
  */
 export const SCANSAT_AVAILABLE_TOPIC = "scansat.available";
 
 /**
- * The cross-vessel scanning-fleet Topic. Its value must match
+ * The cross-vessel scanning-fleet Topic. Its value MUST match
  * `ScansatUplink.ScanningVesselsTopic` in ../ScansatUplink.cs: `topics.test.ts`
  * asserts that.
  */
 export const SCANSAT_SCANNING_VESSELS_TOPIC = "scansat.scanningVessels";
 
 /**
- * The per-part map-experiment Topic. Its value must match
+ * The per-part map-experiment Topic. Its value MUST match
  * `ScansatUplink.ScienceTopic` in ../ScansatUplink.cs: `topics.test.ts` asserts that.
  */
 export const SCANSAT_SCIENCE_TOPIC = "scansat.science";

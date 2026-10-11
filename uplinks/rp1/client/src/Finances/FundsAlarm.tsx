@@ -45,7 +45,7 @@ const ASK_AFTER_MS = 400;
  * An alarm on the career balance, with RP-1's own forecast of when it fires.
  *
  * <para><b>It spends nothing, and no affordability line belongs here.</b> The
- * figure is the balance the alarm is measured against, not a price: the alarm
+ * figure is the balance the alarm is MEASURED against, not a price: the alarm
  * is the app's, evaluated in the simulation at the active command centre, and
  * it stops a warp on the tick that centre learns the balance.</para>
  *

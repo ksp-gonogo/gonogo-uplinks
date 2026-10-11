@@ -15,7 +15,7 @@ namespace GonogoPrincipiaUplink
     /// them are indices its UI recomputes on every repaint. Reading the plugin's
     /// own per-vessel parameters answers the same question directly, so the patch
     /// is gone: the numbers now work from the first tick instead of from the first
-    /// time an operator happened to open a window, they are that vessel's bound
+    /// time an operator happened to open a window, they are that VESSEL's bound
     /// rather than the last global slider position, and this Uplink patches
     /// nothing at all on the settings path.</para>
     ///
@@ -86,7 +86,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Bound lazily and at most once per refusal, because the version
         /// gate's answer does not change within a session and re-asking it every
-        /// tick would turn a stated outage into a log flood. It is retried while
+        /// tick would turn a stated outage into a log flood. It IS retried while
         /// the answer is "no plugin yet": the addon exists before the plugin does,
         /// so a bind attempted at the main menu has to be allowed to succeed
         /// later.</para>

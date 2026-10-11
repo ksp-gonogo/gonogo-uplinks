@@ -6,7 +6,7 @@ namespace GonogoMechJebUplink.Tests
     public class UplinkManifestArmingTests
     {
         /// <summary>
-        /// This Uplink is armed: ExpectedClientHash.g.cs carries a real hash, so the
+        /// This Uplink is ARMED: ExpectedClientHash.g.cs carries a real hash, so the
         /// manifest the loader reads must carry it too or the arming does nothing
         /// (the loader records the mod-hash arm as pending and falls back to the
         /// two-way index==bytes check, with nothing red anywhere).

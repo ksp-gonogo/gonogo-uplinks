@@ -10,7 +10,7 @@ namespace GonogoKerbalismUplink.Tests
     /// The per-Uplink half of the uplink-types-out-of-core plan's Unit guard
     /// (§5b): now that the <c>kerbalism.*</c> payload types live in their
     /// own assembly (<c>GonogoKerbalismUplink.Contract</c>) instead of
-    /// <c>Sitrep.Contract</c>, nothing forces a future property on this Uplink's
+    /// <c>Sitrep.Contract</c>, nothing FORCES a future property on this Uplink's
     /// own contract types to declare its unit. The sweep itself is
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
@@ -30,12 +30,12 @@ namespace GonogoKerbalismUplink.Tests
     /// annotated POCOs, which must stay exempt (each element carries its own
     /// units) while a future <c>List&lt;double&gt;</c> is still demanded. Note
     /// <see cref="KerbalismRuleDef.Modifiers"/> is the contrast case: a
-    /// <c>List&lt;string&gt;</c> is a sequence of scalars and does carry an
+    /// <c>List&lt;string&gt;</c> IS a sequence of scalars and DOES carry an
     /// annotation.</item>
     /// <item><b>Dictionary</b>: <see cref="KerbalismProfile.Resources"/> is a
     /// map of POCOs and <see cref="KerbalismLifeSupport.Rates"/> a map of bare
     /// doubles. The shared <c>ElementType</c> collapses every dictionary to
-    /// <c>object</c>, so neither is required to be annotated. Rates is annotated
+    /// <c>object</c>, so NEITHER is required to be annotated. Rates is annotated
     /// anyway, and has to be: the unit is what makes it renderable. That is a
     /// real hole in the mechanical guard, not a quirk to leave implied, so it
     /// gets its own assertion below.</item>
@@ -44,7 +44,7 @@ namespace GonogoKerbalismUplink.Tests
     /// of shape resolution and then fans out to three leaves.</item>
     /// </list>
     ///
-    /// <para>This test only checks the attribute side (every scalar wire
+    /// <para>This test only checks the ATTRIBUTE side (every scalar wire
     /// property carries <c>[SitrepUnit]</c>); the generated-file/import side is
     /// <c>generated-value-import.test.ts</c> in this Uplink's client package,
     /// and the decode-time side is <c>topics.test.ts</c> there.</para>
@@ -61,7 +61,7 @@ namespace GonogoKerbalismUplink.Tests
         /// Every one of this Uplink's contract types is reached by the sweep,
         /// asserted rather than assumed.
         /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes
-        /// vacuously on any type the sweep does not reach, and there are two
+        /// VACUOUSLY on any type the sweep does not reach, and there are two
         /// silent ways for that to happen: a type loses <c>[SitrepContract]</c>,
         /// or a nested type stops being referenced by its parent. Most of them
         /// are nested-only, which is what makes it worth spelling out
@@ -143,7 +143,7 @@ namespace GonogoKerbalismUplink.Tests
         /// <summary>
         /// The hole in the mechanical guard, stated rather than left implied. The
         /// shared <c>ElementType</c> collapses every dictionary to
-        /// <c>object</c>, so a name-keyed map is never required to declare a
+        /// <c>object</c>, so a name-keyed map is never REQUIRED to declare a
         /// unit, whichever kind of value it holds. That is right for
         /// <see cref="KerbalismProfile.Resources"/> (a map of POCOs, each
         /// carrying its own units) and wrong-but-unenforceable for

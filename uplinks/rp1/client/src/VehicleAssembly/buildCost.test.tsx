@@ -73,7 +73,7 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * No reading is not a free vehicle. RP-1 keeps its editor figures only while a
+   * No reading is NOT a free vehicle. RP-1 keeps its editor figures only while a
    * ship is on the table, and a column of zeros would say the launch costs
    * nothing.
    */
@@ -112,7 +112,7 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * The containment is structural, so this asserts the structure rather than a
+   * The containment is STRUCTURAL, so this asserts the structure rather than a
    * sentence. The surcharge is inside the vehicle cost, and an operator who reads
    * the column as a sum arrives at more than the launch costs; the indent is what
    * stops that, on every render and at every size, where prose was clipped away at
@@ -120,7 +120,7 @@ describe("BuildCostSection: funds, and only funds", () => {
    *
    * <para>Asserted through the marker the indent container carries rather than
    * through a class or a pixel offset: the test should fail if the row stops being
-   * subordinate, not if the design system changes how far it insets.</para>
+   * SUBORDINATE, not if the design system changes how far it insets.</para>
    */
   it("nests the surcharge under the vehicle cost rather than beside it", async () => {
     const stream = mount();
@@ -171,7 +171,7 @@ describe("BuildCostSection: funds, and only funds", () => {
    * Not a cost, and on the costs section anyway: it is the reason a vehicle that
    * prices fine still cannot be flown.
    *
-   * <para>The node is named by its title, which is what the wire now carries
+   * <para>The node is named by its TITLE, which is what the wire now carries
    * beside the id. `supersonicFlight` is an identifier and said nothing about
    * what the node is.</para>
    */
@@ -191,7 +191,7 @@ describe("BuildCostSection: funds, and only funds", () => {
    * A node the career's tree has no title for falls back to its ID rather than
    * rendering nameless.
    *
-   * <para>This is why the wire leaves the title absent instead of substituting
+   * <para>This is why the wire leaves the title ABSENT instead of substituting
    * the id: a producer that substituted would leave a client unable to tell a
    * titled node from an untitled one, and unable to make this choice at all. An
    * id is at least searchable in a tech tree.</para>
@@ -205,17 +205,17 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * One badge, however many nodes are missing.
+   * ONE badge, however many nodes are missing.
    *
    * <para>This drew a critical badge per tech id, so a vehicle missing five
-   * nodes got five red alarms. Severity is a reading about the vehicle and the
+   * nodes got five red alarms. Severity is a reading about the VEHICLE and the
    * vehicle has one state here: it needs tech the career has not researched.
    * The fifth red badge says nothing the first did not, and using severity as
    * decoration spends the one signal that is supposed to mean "this cannot
    * fly".</para>
    *
    * <para>Both halves are asserted, and the pair is what makes it meaningful:
-   * five nodes are on screen as five rows, and the state is said once over
+   * five nodes ARE on screen as five rows, and the state is said ONCE over
    * them.</para>
    */
   it("draws one severity badge whatever the number of missing nodes", async () => {
@@ -240,10 +240,10 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * The half that makes a row an answer rather than a name, and the operator's
+   * The half that makes a row an ANSWER rather than a name, and the operator's
    * actual question: "it's not clear what the tech is needed for".
    *
-   * <para>The parts sit under their node rather than the node being repeated
+   * <para>The parts sit UNDER their node rather than the node being repeated
    * beside each part. This surface is about the vehicle and has no part list of
    * its own, so the question it answers is what the vehicle is missing; a node
    * blocking two parts is one thing to research, not two rows.</para>
@@ -267,7 +267,7 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * A node nothing on the ship names says so, rather than leaving a blank under
+   * A node NOTHING on the ship names says so, rather than leaving a blank under
    * it.
    *
    * <para>A node can be required by something other than a part, so an empty
@@ -290,7 +290,7 @@ describe("BuildCostSection: funds, and only funds", () => {
   });
 
   /**
-   * And the third state: an absent parts list draws nothing at all, because the
+   * And the third state: an ABSENT parts list draws nothing at all, because the
    * editor ship could not be read and no claim is available to make.
    *
    * <para>The complement of the test above, and what stops that sentence being

@@ -95,7 +95,7 @@ namespace GonogoRp1Uplink
 
         private readonly Type? _handler;
 
-        /// <summary>RP-1's Program handler type resolved. Gated on the type, never on an assembly name.</summary>
+        /// <summary>RP-1's Program handler type resolved. Gated on the TYPE, never on an assembly name.</summary>
         public bool IsAvailable => _handler != null;
 
         public Rp1ProgramsReflection()
@@ -351,7 +351,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A per-speed Confidence table, keyed by speed name so nothing
+        /// A per-speed Confidence table, keyed by speed NAME so nothing
         /// downstream has to hold an RP-1 enum. Reads the same
         /// <c>confidenceCosts</c> field off either a Program, where it is the
         /// catalogue price, or a modifier, where it is an override.
@@ -389,7 +389,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// Enumerated rather than indexed on purpose: the enumerator yields the
-        /// key array a <c>HermiteCurve</c> holds after it compiles itself, so a
+        /// key array a <c>HermiteCurve</c> holds AFTER it compiles itself, so a
         /// curve whose config spelled two values per key instead of four hands
         /// over the tangents RP-1 derived and evaluates against, not the blanks
         /// the file carried. Nothing in the shipped table takes that path today.
@@ -479,7 +479,7 @@ namespace GonogoRp1Uplink
             Rp1Types.Member(target, name) as string;
 
         /// <summary>
-        /// An enum member read as its name. RP-1's ordinals are its own business
+        /// An enum member read as its NAME. RP-1's ordinals are its own business
         /// and shift between releases; a name is stable and is what a client maps.
         /// </summary>
         private static string? EnumName(object? value)

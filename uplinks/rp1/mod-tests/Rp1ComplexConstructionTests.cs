@@ -12,10 +12,10 @@ namespace GonogoRp1Uplink.Tests
     /// Building a launch complex, renovating one, and adding a pad, against the
     /// stand-in RP-1 object graph.
     ///
-    /// <para>The price these commands carry is pinned separately and far more
+    /// <para>The PRICE these commands carry is pinned separately and far more
     /// thoroughly, in <see cref="Rp1LcCostModelTests"/>. What this file is for is
     /// everything around it: that the figure reaches the project at all, that the
-    /// write order is RP-1's, that a renovation cannot strand a vehicle, and that
+    /// write ORDER is RP-1's, that a renovation cannot strand a vehicle, and that
     /// the two lists RP-1 keeps as observable are added to through the shadowing
     /// overload rather than the base one.</para>
     ///
@@ -33,7 +33,7 @@ namespace GonogoRp1Uplink.Tests
     /// The order is RP-1's and it is load-bearing: the staff target is cleared before
     /// the crew move, and the crew move happens before the project exists.</item>
     /// <item><see cref="A_renovation_carries_the_BUILD_tonnage_through_untouched"/>.
-    /// <c>massOrig</c> fixes the renovation envelope for the complex's life and is
+    /// <c>massOrig</c> fixes the renovation envelope for the complex's life AND is
     /// the curve the per-metre charge is lerped over. Substituting the new limit
     /// would widen the envelope illegally and misprice every axis.</item>
     /// <item><see cref="Outside_a_career_the_change_is_applied_rather_than_queued"/>.
@@ -44,7 +44,7 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para>What these cannot do is stated in <c>Rp0Fixture</c>'s own header and
     /// applies unchanged, with one addition of their own: the price is checked to
-    /// have arrived, never to be right. Rightness is the cost model's suite, and
+    /// have ARRIVED, never to be right. Rightness is the cost model's suite, and
     /// beyond that a comparison against a running RP-1 that has not been done.</para>
     /// </summary>
     public class Rp1ComplexConstructionTests : IDisposable

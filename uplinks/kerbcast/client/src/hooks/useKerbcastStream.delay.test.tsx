@@ -2,16 +2,16 @@
  * `useKerbcastStream`'s optional delayed-playout wiring.
  * `useDelayedPlayout` returns a discriminated
  * `DelayedPlayoutResult` (`"raw" | "connecting" | "delayed" |
- * "unavailable"`) rather than `MediaStream | null`, and tries two backends
+ * "unavailable"`) rather than `MediaStream | null`, and tries TWO backends
  * in order (Chrome's main-thread Breakout Box, then a worker-hosted one)
- * before ever reporting `"unavailable"`. There is no live-passthrough fallback
+ * before ever reporting `"unavailable"`. There is NO live-passthrough fallback
  * when delay was requested:
  * a browser that can build neither backend reports `"unavailable"`, full
  * stop: never the raw stream.
  *
  * jsdom can't produce a real WebRTC `MediaStream`/track, has no
  * `MediaStreamTrackProcessor`/`Generator` (Chrome's shape), and has no
- * `Worker` either: so every test in the first `describe` block below
+ * `Worker` either: so EVERY test in the first `describe` block below
  * exercises the "neither backend can build here" path, which is exactly
  * what a real, fully-unsupported browser would see too. That's the direct
  * successor to this file's old "fallback-path" tests, same real,
@@ -26,8 +26,8 @@
  *
  * The genuine per-frame delay-TIMING proof (frame N released only once the
  * clock reaches frame N's own stamped UT) lives at the pipeline level in
- * `../frameDelay.blockColour.test.ts`. This file proves the hook's
- * lifecycle wiring and backend-selection/status reporting.
+ * `../frameDelay.blockColour.test.ts`. This file proves the HOOK's
+ * lifecycle wiring AND backend-selection/status reporting.
  */
 
 import type { DelayClockLike } from "@ksp-gonogo/sitrep-sdk";
@@ -122,7 +122,7 @@ type FakeFrame = ReturnType<typeof fakeFrame>;
 /** A controllable fake video track: `push()` delivers a frame to whichever
  *  `FakeProcessor` reader is currently reading it (immediately if a read is
  *  already pending, queued otherwise): lets a test inject a frame into the
- *  real pipeline built by the hook, without a real `MediaStreamTrack`. */
+ *  REAL pipeline built by the hook, without a real `MediaStreamTrack`. */
 function fakeControllableVideoTrack() {
   const queue: FakeFrame[] = [];
   let pendingResolve: ((r: { done: false; value: FakeFrame }) => void) | null =
@@ -151,7 +151,7 @@ type FakeControllableVideoTrack = ReturnType<typeof fakeControllableVideoTrack>;
 
 /** A raw `MediaStream` stand-in that actually implements `getVideoTracks()`,
  *  unlike the opaque string tokens used elsewhere in this file, this one
- *  can drive the supported path, where `createFrameDelayStream` looks for a
+ *  can drive the SUPPORTED path, where `createFrameDelayStream` looks for a
  *  real video track on `raw`. */
 function fakeVideoStream(track: FakeControllableVideoTrack): MediaStream {
   return {
@@ -163,7 +163,7 @@ function fakeVideoStream(track: FakeControllableVideoTrack): MediaStream {
  * Stubs the three WebCodecs/DOM globals `createFrameDelayStream` touches
  * (`MediaStreamTrackProcessor`, `MediaStreamTrackGenerator`, `MediaStream`)
  * with minimal fakes wired to `fakeControllableVideoTrack`, so
- * `isFrameDelaySupported()` reports true and the real pipeline build/
+ * `isFrameDelaySupported()` reports true and the REAL pipeline build/
  * dispose code in `frameDelay.ts` (Backend 1, Chrome's main-thread shape)
  * runs against fakes instead of hitting the "neither backend available"
  * path. Each stubbed constructor records every instance it creates (reset

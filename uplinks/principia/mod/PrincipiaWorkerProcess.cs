@@ -31,7 +31,7 @@ namespace GonogoPrincipiaUplink
     /// is a script rather than an assembly.</para>
     ///
     /// <para>The channel is injected. Spawning is one line of production code and an
-    /// impossible thing to unit test; everything above it is where a mistake would
+    /// impossible thing to unit test; everything ABOVE it is where a mistake would
     /// be silent, so that half is testable without a process.</para>
     /// </summary>
     public static class PrincipiaWorkerProcess
@@ -42,9 +42,9 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>This is the first thing worth asking, and not a warm-up. The
         /// build's selection turns on the FMA bit, so anything deciding whether a
-        /// worker reproduces the game's arithmetic needs that bit as the game host
+        /// worker reproduces the game's arithmetic needs that bit as the GAME HOST
         /// reports it. Read anywhere else it answers a different question in the
-        /// shape of the right one, which is why it is asked here, in a process on
+        /// shape of the right one, which is why it is asked HERE, in a process on
         /// the game's own machine, rather than wherever the asking code happens to
         /// be running.</para>
         ///

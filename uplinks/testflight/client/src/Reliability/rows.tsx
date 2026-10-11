@@ -48,7 +48,7 @@ function drivingBudget(
 
 /**
  * Whether this engine earns a row: a condition not plainly nominal, a rated burn
- * nearly spent, or a survival chance worth mentioning. An unrecognised condition
+ * nearly spent, or a survival chance worth mentioning. An UNRECOGNISED condition
  * selects, and {@link rowFor} is total so it still renders.
  */
 export function isNoteworthy(part: TestFlightReliabilityPart): boolean {
@@ -90,7 +90,7 @@ function burnRow(budget: TestFlightReliabilityBudget): Row {
 }
 
 /**
- * One row per noteworthy engine, first match wins, and total: every selected
+ * One row per noteworthy engine, first match wins, and TOTAL: every selected
  * engine renders something. TestFlight grades no failure above another, so a
  * failed engine is simply "failed", in its failures' own titles.
  */

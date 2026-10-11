@@ -13,7 +13,7 @@ export type Vehicle = Rp1BuildItemEntry | Rp1WarehouseItemEntry;
 /**
  * The rollout or rollback moving this vehicle, or undefined.
  *
- * <para>Joined on <c>shipId</c>, which is a different id from the <c>id</c> a
+ * <para>Joined on <c>shipId</c>, which is a DIFFERENT id from the <c>id</c> a
  * command addresses: RP-1 stamps an operation's <c>associatedID</c> from
  * <c>shipID</c>, and the two ids live on the same vehicle for exactly this
  * reason. A vehicle with no <c>shipId</c> comes back as not moving, which is
@@ -22,7 +22,7 @@ export type Vehicle = Rp1BuildItemEntry | Rp1WarehouseItemEntry;
  * twice.</para>
  *
  * <para>Reconditioning and recovery are deliberately not matched. A
- * reconditioning belongs to a pad and carries the pad's id, and a recovery is a
+ * reconditioning belongs to a PAD and carries the pad's id, and a recovery is a
  * flight-scene operation with no control on this widget.</para>
  */
 export function operationFor(
@@ -44,7 +44,7 @@ export function operationFor(
 /**
  * Whether a rollout has finished, so the vehicle is standing on the pad rather
  * than moving to it. An unreadable fraction reads as still moving: RP-1 leaves
- * it absent on an uncosted project, and claiming a vehicle had arrived on that
+ * it absent on an uncosted project, and claiming a vehicle had ARRIVED on that
  * basis is the one wrong answer an operator would act on.
  */
 export function atPad(operation: Rp1OperationEntry): boolean {
@@ -71,7 +71,7 @@ export function settled(
 /**
  * Every pad at this complex, eligible or not.
  *
- * <para>All of them rather than only the usable ones, because the unusable ones
+ * <para>All of them rather than only the usable ones, because the UNUSABLE ones
  * carry the reason. A widget handed only the free pads can draw the buttons and
  * cannot say why there are none.</para>
  */
@@ -90,19 +90,19 @@ export function padsAt(
  * and nothing is standing on them.
  *
  * <para><b>Eligibility comes off the wire, not from a rule reproduced here.</b>
- * A pad is offerable when RP-1 says its state is Free and that no craft is
+ * A pad is offerable when RP-1 says its state is Free AND that no craft is
  * standing on it, and those are two separate facts because <c>state</c> cannot
  * see the second: a vehicle already sent to the launch site has no operation
- * left on the pad, so the pad still reads Free. The vehicle's own half arrives
+ * left on the pad, so the pad still reads Free. The VEHICLE's own half arrives
  * as <c>rolloutRefusals</c> and is weighed separately, because it is the same
  * answer for every pad the complex owns.</para>
  *
- * <para><c>hasVesselWaiting</c> is checked for true rather than for falsiness.
+ * <para><c>hasVesselWaiting</c> is checked for TRUE rather than for falsiness.
  * Null means the mod could not answer, and treating that as "occupied" would
  * hide a working control; the command re-checks at the press, so the worst case
  * of offering it is a refusal one step later.</para>
  *
- * <para>Returns names rather than pads because the name is the whole of what a
+ * <para>Returns NAMES rather than pads because the name is the whole of what a
  * rollout needs, and reading it here is what lets the caller pass it without an
  * assertion: a pad RP-1 gave no name to cannot be commanded at all.</para>
  */
@@ -156,7 +156,7 @@ export function noPadReason(pads: readonly Rp1PadEntry[]): string {
  * one or when the question does not arise.
  *
  * <para>Two separate refusals collapse into one line here because an operator
- * only ever has one next move. RP-1's own reasons come first and outrank the
+ * only ever has one next move. RP-1's own reasons come first and OUTRANK the
  * pads entirely: no pad at this complex can take a vehicle its complex will not
  * release, so naming a busy pad as well would send an operator to clear
  * something that was never in the way.</para>
@@ -215,16 +215,16 @@ export function rolloutRefusalsOf(
  * What pressing a rollout on this vehicle commits the career to, as RP-1's own
  * figure, or undefined when it did not price one.
  *
- * <para><b>A total drawn down over the move, and not a charge at the press.</b>
+ * <para><b>A total drawn down OVER the move, and not a charge at the press.</b>
  * RP-1 bills a rollout the way it bills a construction: each tick takes the
  * share of the price that tick's progress earned, and a career that cannot cover
  * a tick advances by the fraction it can afford rather than being refused. So
- * this prices a rate, a shortfall slows the move, and nothing on this card may
+ * this prices a RATE, a shortfall slows the move, and nothing on this card may
  * say a rollout cannot be afforded.</para>
  *
  * <para>Two different numbers, because there are two different presses. A
  * vehicle standing in the warehouse is quoted its whole rollout price. One
- * already half rolled back is resumed rather than started, and RP-1 bills only
+ * already half rolled BACK is resumed rather than started, and RP-1 bills only
  * the progress still to make, so its remaining figure is the one that answers
  * what the press costs: the full price would overstate it by everything the
  * first attempt already paid.</para>
@@ -279,7 +279,7 @@ export function unstaffed(complex: Rp1ComplexEntry | undefined): boolean {
 /**
  * The vehicles, ordered so that everything at one launch complex sits together.
  *
- * <para>What makes a flat list read as grouped by complex without nesting it
+ * <para>What makes a flat list read as GROUPED by complex without nesting it
  * under headings. RP-1's own order for the complexes is kept, so a career's
  * oldest complex leads, and within a complex the wire order is kept: RP-1 lists
  * a build queue in the order it will work through it, and re-sorting that would

@@ -34,7 +34,7 @@ export interface FundingCurvePoint {
   /** Cumulative funds paid by this point, which is what the curve integrates to. */
   funds: number;
   /**
-   * Funds per year at this point, the local slope of the cumulative curve.
+   * Funds per YEAR at this point, the local slope of the cumulative curve.
    *
    * <p>This is what RP-1's own Program screen plots, and it is the series worth
    * looking at: a cumulative curve only ever rises, so its shape carries one
@@ -43,7 +43,7 @@ export interface FundingCurvePoint {
    * directly.</p>
    *
    * <p>`null` when the sample's axis is fractions of the term rather than
-   * years, because RP-1 published no duration and a rate per year cannot be
+   * years, because RP-1 published no duration and a rate PER YEAR cannot be
    * stated without one. A rate per fraction-of-term would be a different
    * quantity wearing the same axis.</p>
    */
@@ -154,10 +154,10 @@ export interface SampleRequest {
  * A curve sampled into chart points, or null when there is nothing honest to
  * draw.
  *
- * <para>Null is the answer for a missing curve and for a missing total, and the
+ * <para>Null is the answer for a missing curve AND for a missing total, and the
  * second is the one worth stating: without the total there is a shape but no
  * money, and a chart with a funds axis and no funds on it would be inventing
- * the only quantity it claims to show. A missing duration is different, because
+ * the only quantity it claims to show. A missing DURATION is different, because
  * the curve's own axis is fraction-of-duration and it needs no conversion: the
  * sample comes back on that axis instead, saying so, and the caller labels it
  * for what it is.</para>

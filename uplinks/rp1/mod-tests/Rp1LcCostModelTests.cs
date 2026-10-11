@@ -18,10 +18,10 @@ namespace GonogoRp1Uplink.Tests
     /// a wrong price onto a construction project, and RP-1 then draws that figure
     /// out of the career's funds over the following weeks of game time.</para>
     ///
-    /// <para><b>Mostly relationships rather than magic numbers, on purpose.</b> A
+    /// <para><b>Mostly RELATIONSHIPS rather than magic numbers, on purpose.</b> A
     /// test that restates the formula and compares it to the formula agrees with
     /// itself whatever either says. So each clause of RP-1's arithmetic is pinned
-    /// as the property that clause exists to produce: a downgrade costs half what
+    /// as the property that clause EXISTS to produce: a downgrade costs half what
     /// the same move costs upward, a tonnage change costs at least a thousand, a
     /// growth is capped at what building outright would have cost. Those hold only
     /// if the clause is present and correct, and none of them can be satisfied by
@@ -33,12 +33,12 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para><b>What these cannot do.</b> The stand-in reproduces
     /// <c>LCData.GetCostStats</c> and <c>ResModifyCost</c> from the shipped source,
-    /// so a wrong combination of them is caught here and a wrong transcription of
+    /// so a wrong COMBINATION of them is caught here and a wrong transcription of
     /// them is not: both this file and the fixture were read off the same
     /// disassembly, and if that reading is wrong they agree wrongly. The check
-    /// that closes that gap is a different kind (RP-1's own Modify window, showing
+    /// that closes that gap is a different KIND (RP-1's own Modify window, showing
     /// its "Modify Cost" for a renovation this model has quoted) and it needs a
-    /// running game. It has not been done.</para>
+    /// running game. It has NOT been done.</para>
     /// </summary>
     public class Rp1LcCostModelTests
     {

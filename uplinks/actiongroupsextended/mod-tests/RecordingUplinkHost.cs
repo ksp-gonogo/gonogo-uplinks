@@ -5,20 +5,20 @@ using Sitrep.Contract;
 namespace Gonogo.ActionGroupsExtendedUplink.Tests
 {
     /// <summary>
-    /// A host this uplink can be registered into and ticked, written here rather
+    /// A host this uplink can be registered into and TICKED, written here rather
     /// than borrowed, because everything an Uplink's test project may reference is
     /// everything its author can install: <c>Sitrep.Contract</c>, and that is all
     /// this file names. gonogo's <c>docs/uplink-isolation.md</c> ("Testing a NEW
     /// Uplink") is why this is written per-Uplink rather than reached for from a
     /// shared harness, and names the sibling projects that answered it the same way.
     ///
-    /// <para><b>Its <see cref="Kernel"/> is a real one</b>, with the action-groups
+    /// <para><b>Its <see cref="Kernel"/> is a REAL one</b>, with the action-groups
     /// capability already declared on it. That is the order the engine guarantees:
     /// every capability is declared in a pass that completes before any Uplink's
     /// <c>Register</c> runs, so a registration can never race ahead of its
     /// declaration, and registering into an undeclared capability throws. A recorded
     /// list of registrations could not answer the question that matters here anyway,
-    /// which is what the election then resolves.</para>
+    /// which is what the election then RESOLVES.</para>
     ///
     /// <para><b>Why ticking is here at all.</b> A capability fed by a
     /// subscription-gated capture is skipped on every tick where nothing under its
@@ -67,7 +67,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         /// <summary>
         /// Runs the election, which the engine does once every Uplink has registered
         /// and before any tick. A capability queried before this resolves to nothing,
-        /// which is a fact about the order rather than about the registration.
+        /// which is a fact about the ORDER rather than about the registration.
         /// </summary>
         public void Resolve() => Kernel.Resolve(new ResolveOptions { KernelVersion = "1.0.0" });
 
@@ -175,7 +175,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         public void SetAvailability(Availability availability) => Availability = availability;
 
         /// <summary>
-        /// Answered against the same set <see cref="DriveTick"/> gates on, so a handle
+        /// Answered against the SAME set <see cref="DriveTick"/> gates on, so a handle
         /// deciding whether to publish sees exactly what the capture gate saw. Outside
         /// a tick nothing is subscribed, which is the honest answer at registration time.
         /// </summary>
@@ -196,7 +196,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         ///
         /// <para>A host that quietly accepted every call would pass its callers'
         /// assertions while the Uplink did something else entirely on the way past.
-        /// Throwing means the recorded set is the whole set: this uplink declares no
+        /// Throwing means the recorded set is the WHOLE set: this uplink declares no
         /// channels, no commands and no delay of its own, and if that stops being
         /// true the tests fail and say which seam it started using.</para>
         /// </summary>

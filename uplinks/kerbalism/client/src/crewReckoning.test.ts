@@ -11,14 +11,14 @@ import {
 
 /**
  * Carrying a kerbal's survival accumulators forward at the rate they are
- * observed to be moving, not at the rate the profile declares.
+ * OBSERVED to be moving, not at the rate the profile declares.
  *
  * `KerbalismCrewRule` publishes both, side by side, and the declared one is a
  * trap: `degenPerSec` is a config constant off `Profile.rules[].degeneration`,
  * and the contract says in terms that "a rule only degenerates once its input
  * resource is gone". Integrating it unconditionally would kill a perfectly
  * healthy kerbal on schedule. The declared window is what makes the honest
- * version possible: two samples of `value` are the rate that is actually
+ * version possible: two samples of `value` are the rate that is ACTUALLY
  * happening, and a flat pair says the rule is not degenerating at all.
  *
  * Every fixture spaces its samples irregularly. The stream is change-gated, so
@@ -100,7 +100,7 @@ function problemBand(reading: TopicReading<Crew>) {
   return bandIn(problem.band, "units");
 }
 
-/** Climbing by 0.01/s of stamp time, sampled at three uneven wire instants. */
+/** Climbing by 0.01/s of STAMP time, sampled at three uneven wire instants. */
 const CLIMBING = [
   [1000, 0.1, 1000],
   [1017, 0.3, 1020],
@@ -264,7 +264,7 @@ describe("carrying an accumulator forward", () => {
 });
 
 /**
- * A crew list is a roster, so the join across the window has to be by name.
+ * A crew list is a ROSTER, so the join across the window has to be by name.
  * Position is not identity: a kerbal transfers off, and index 1 in an older
  * sample is a different person from index 1 in the newest one.
  */
@@ -450,7 +450,7 @@ describe("when the model refuses", () => {
  * The band, and why this model can offer one where `resourceReckoning.ts`
  * cannot.
  *
- * Its rate is a fit, so it has residuals, and residuals are evidence about how
+ * Its rate is a FIT, so it has residuals, and residuals are evidence about how
  * well the trend is known. `resourceReckoning`'s rate is one measured sample
  * off the wire with no distribution behind it, so a band there would be
  * fabricated. `sigma1` is the honest kind here and `bound` would not be: a

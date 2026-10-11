@@ -40,7 +40,7 @@ namespace GonogoRp1Uplink
         /// One row per craft file, each carrying one verdict per complex.
         ///
         /// <para>Craft with no complexes to judge them still get a row: the
-        /// listing is what tells an operator the career has designs saved, and a
+        /// listing is what tells an operator the career HAS designs saved, and a
         /// new career with no launch complex built yet needs to be told that the
         /// complex is what is missing rather than the craft.</para>
         /// </summary>
@@ -146,7 +146,7 @@ namespace GonogoRp1Uplink
         /// the catalogue measured, or null when it measured neither.
         ///
         /// <para>Inferred rather than asked, because the difference between a
-        /// total mass and a clamps-excluded one is the clamps: a craft where the
+        /// total mass and a clamps-excluded one IS the clamps: a craft where the
         /// two agree has none. Null when either figure is missing, which makes no
         /// comparison at all rather than claiming a craft has no clamps because
         /// nobody weighed it.</para>

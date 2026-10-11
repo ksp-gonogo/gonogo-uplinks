@@ -30,7 +30,7 @@ namespace Gonogo.RealAntennasUplink;
 // ====================================================================
 
 /// <summary>
-/// One entry of a chain as the operator sends it: a target, and nothing about
+/// One entry of a chain as the OPERATOR SENDS it: a target, and nothing about
 /// when to use it. Position in the chain is what says when.
 ///
 /// <para>This is the mode-and-parameters half of
@@ -61,7 +61,7 @@ public class RealAntennasTargetStepArgs
     /// <summary>
     /// One of <c>Vessel</c>, <c>BodyCenter</c>, <c>BodyLatLonAlt</c>,
     /// <c>AzEl</c>, <c>OrbitRelative</c>. Anything else is refused, and it is
-    /// refused for the whole chain rather than for the entry: a chain accepted
+    /// refused for the WHOLE chain rather than for the entry: a chain accepted
     /// with one unusable entry in it would silently skip a fallback the
     /// operator is relying on.
     /// </summary>
@@ -105,7 +105,7 @@ public class RealAntennasTargetStepArgs
 }
 
 /// <summary>
-/// One entry of a chain as the craft reports it, on
+/// One entry of a chain as the CRAFT REPORTS it, on
 /// <c>realantennas.antennaChains</c>. Field for field the same target as
 /// <see cref="RealAntennasTargetStepArgs"/>, which is what the operator sent.
 ///
@@ -124,7 +124,7 @@ public class RealAntennasTargetStep
     /// <c>BodyLatLonAlt</c>, <c>AzEl</c> or <c>OrbitRelative</c>.
     ///
     /// <para>It comes back as the operator sent it, including
-    /// <c>BodyCenter</c>, which is not how RealAntennas stores the target it
+    /// <c>BodyCenter</c>, which is NOT how RealAntennas stores the target it
     /// lowers to. This is the chain the craft is holding rather than a reading
     /// of the antenna, and a chain is what was asked for.</para>
     /// </summary>
@@ -169,7 +169,7 @@ public class RealAntennasTargetStep
 /// ordered list of targets, to be tried in order whenever the craft has no
 /// link.
 ///
-/// <para>Sending an empty list clears the chain, which is the only way to stop
+/// <para>Sending an EMPTY list clears the chain, which is the only way to stop
 /// a walk. There is no second command for it: a clear is the same operator
 /// decision as a change, and a chain of no entries is not a chain.</para>
 ///
@@ -218,17 +218,17 @@ public class RealAntennasTargetChainArgs
 /// <summary>
 /// One antenna's fallback chain as the craft currently holds it, on the
 /// <c>realantennas.antennaChains</c> channel: the list, which entry is in
-/// place, and why. The channel value is a bare array of these, one entry per
+/// place, and why. The channel value is a bare ARRAY of these, one entry per
 /// antenna of the reported craft that has a chain, so an empty array means the
 /// craft has none.
 ///
-/// <para>Delayed, for the same reason <c>realantennas.antennas</c> is: this is
+/// <para>DELAYED, for the same reason <c>realantennas.antennas</c> is: this is
 /// state held on the craft, and the walk that changes it happens there.</para>
 ///
-/// <para>Scoped to the reported craft, though the craft walks every chain it
+/// <para>Scoped to the REPORTED craft, though the craft walks every chain it
 /// holds. A chain set on another vessel keeps being evaluated and is simply not
 /// described here, because a delayed channel is delayed by the reported
-/// vessel's own signal delay and cannot carry another craft's state at the right
+/// vessel's own light-time and cannot carry another craft's state at the right
 /// age.</para>
 /// </summary>
 [SitrepContract]
@@ -302,14 +302,14 @@ public class RealAntennasAntennaChain
     /// signal the whole walk turns on.
     ///
     /// <para><c>null</c> means nobody could read it, and the walk treats that as
-    /// a reason not to act: advancing on an unreadable signal would slew a dish
+    /// a reason NOT to act: advancing on an unreadable signal would slew a dish
     /// that may be carrying the link.</para>
     /// </summary>
     [SitrepUnit(Units.Flag)]
     public bool? Connected { get; set; }
 
     /// <summary>
-    /// Whether this antenna is an endpoint of one of the craft's live links,
+    /// Whether THIS antenna is an endpoint of one of the craft's live links,
     /// rather than a dish aimed somewhere that nothing is using.
     ///
     /// <para>It is not what the walk decides on, and it is what tells an

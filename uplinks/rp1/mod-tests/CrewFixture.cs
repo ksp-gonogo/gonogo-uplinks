@@ -39,7 +39,7 @@ public partial class ProtoCrewMember
     public string name => _name;
 
     /// <summary>
-    /// Stock's ground-until date. RP-1 writes it at course start, for 120% of the
+    /// Stock's ground-until date. RP-1 WRITES it at course start, for 120% of the
     /// course's base time, so it outlasts the course and is the date a crew member
     /// can actually fly again.
     /// </summary>
@@ -122,7 +122,7 @@ namespace RP0.Crew
         public bool isTemporary;
 
         /// <summary>
-        /// The persisted base time. Read as a field by the catalogue walk, because
+        /// The persisted base time. Read as a FIELD by the catalogue walk, because
         /// <c>GetBaseTime</c> returns exactly this for an empty student list and
         /// reaches a mutating shared static for a non-empty one.
         /// </summary>
@@ -212,7 +212,7 @@ namespace RP0.Crew
         /// RP-1's own three constructors, and the two single-argument ones are the
         /// point: both are public, so a production lookup matching on arity alone
         /// would build a course out of a template it then read as a save node. The
-        /// ConfigNode overload exists here to make that mistake fail rather than
+        /// ConfigNode overload exists here to make that mistake FAIL rather than
         /// pass by luck of declaration order.
         /// </summary>
         public TrainingCourse()
@@ -236,7 +236,7 @@ namespace RP0.Crew
         /// <summary>
         /// RP-1's student gate, in RP-1's order and 4.7's shape. Not a full copy:
         /// the real one also reads a kerbal's type, roster status and career log,
-        /// and what the command has to get right is that it asks this before
+        /// and what the command has to get right is that it ASKS this before
         /// adding rather than what the answer is made of.
         /// </summary>
         public bool MeetsStudentReqs(ProtoCrewMember student, bool allowInactive = false)
@@ -251,8 +251,8 @@ namespace RP0.Crew
 
         /// <summary>
         /// RP-1's own pair, and the string overload is declared for the reason the
-        /// ConfigNode constructor is: it goes through the roster indexer and adds
-        /// the null it gets back for a name nobody holds, so a command that
+        /// ConfigNode constructor is: it goes through the roster indexer and ADDS
+        /// THE NULL it gets back for a name nobody holds, so a command that
         /// resolved by arity alone would enrol nobody and report success.
         /// </summary>
         public void AddStudent(ProtoCrewMember student)
@@ -401,7 +401,7 @@ namespace RP0.Crew
         }
 
         /// <summary>
-        /// Replaces the extension table with one that throws part way through its
+        /// Replaces the extension table with one that throws PART WAY through its
         /// own enumeration, standing in for RP-1 handing over a persistent
         /// dictionary that will not finish being walked.
         ///
@@ -481,7 +481,7 @@ namespace RP0.Crew
         }
 
         /// <summary>
-        /// Replaces the retiree set with a collection that implements only
+        /// Replaces the retiree set with a collection that implements ONLY
         /// <see cref="IEnumerable{T}"/>, standing in for a future RP-1 whose
         /// persistence type no longer derives from <c>HashSet&lt;string&gt;</c>.
         /// The reader's fast path is a <see cref="ICollection{T}"/> probe, and a

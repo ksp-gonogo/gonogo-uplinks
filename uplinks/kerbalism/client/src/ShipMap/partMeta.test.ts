@@ -8,7 +8,7 @@ import { computeKerbalismPartMeta } from "./partMeta.js";
  * round-trip rather than handed over as a typed object.
  *
  * That is the whole point of the unread cases below. Codegen types a `bool?` as
- * `boolean | undefined`, but the mod writes an unread flag as JSON null with the
+ * `boolean | undefined`, but the mod writes an unread flag as JSON NULL with the
  * key still on the wire, so a null is what actually reaches the contribution and
  * the generated type says it cannot happen (the same trap `ScienceFileManager`'s
  * `DriveCapacity` records). Parsing the frame reproduces exactly that: a null

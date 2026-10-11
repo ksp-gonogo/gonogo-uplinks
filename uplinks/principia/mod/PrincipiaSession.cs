@@ -6,7 +6,7 @@ namespace GonogoPrincipiaUplink
     /// Thrown when a read was attempted outside the frame that licensed it, or
     /// through a gate that was never licensed at all.
     ///
-    /// <para>It is thrown instead of making the call, which is the point: the
+    /// <para>It is thrown INSTEAD of making the call, which is the point: the
     /// alternative to this exception is not a wrong number, it is the player's
     /// running KSP disappearing. An Uplink's sampled source is already wrapped in
     /// the host's fail-soft, so the cost of being loud here is one skipped sample
@@ -61,11 +61,11 @@ namespace GonogoPrincipiaUplink
         /// as Principia's own <c>GetVersion</c> reports it.
         ///
         /// <para>This is the native library's git description, which pins the
-        /// commit: the trailing sha is the revision whose C++ bodies were read to
+        /// COMMIT: the trailing sha is the revision whose C++ bodies were read to
         /// decide which calls in <see cref="PrincipiaCalls.Allowed"/> are safe. It
         /// is not the managed assembly's file version (<c>2026.08.12.215</c>,
         /// carried separately by <see cref="PrincipiaVersionGuard"/>), and gating
-        /// on that string instead is a mistake that fails closed and therefore
+        /// on that string instead is a mistake that fails CLOSED and therefore
         /// looks like caution while being a permanent outage. The two are checked
         /// against the shipped binaries rather than inferred from each other.</para>
         /// </summary>
@@ -93,7 +93,7 @@ namespace GonogoPrincipiaUplink
         public string Version { get; private set; } = string.Empty;
 
         /// <summary>
-        /// Whether this session may change a flight plan, which is a narrower
+        /// Whether this session may CHANGE a flight plan, which is a narrower
         /// permission than reading one and is decided on its own terms.
         ///
         /// <para>Always present, frequently closed. A session binds whenever the
@@ -182,7 +182,7 @@ namespace GonogoPrincipiaUplink
         /// <para>A frame left undisposed does not leave a hole: the next
         /// <see cref="TryBeginFrame"/> bumps the generation too, so the previous
         /// frame's gates die at the frame boundary either way. Disposal is what
-        /// makes them die at the end of the callback rather than at the start of
+        /// makes them die at the end of the CALLBACK rather than at the start of
         /// the next one.</para>
         /// </summary>
         public bool TryBeginFrame(out PrincipiaFrame? frame)

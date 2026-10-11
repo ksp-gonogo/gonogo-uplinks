@@ -35,8 +35,8 @@ export type { RealAntennasHopExt };
 export const REALANTENNAS_PROVIDER_ID = "realantennas";
 
 /**
- * The owner the bag is registered against: the generated interface name of the
- * nested shape carrying it, since `CommsHop` is reached through `comms.path`'s
+ * The OWNER the bag is registered against: the generated interface name of the
+ * NESTED shape carrying it, since `CommsHop` is reached through `comms.path`'s
  * `hops` array rather than being a Topic of its own. `wrapTopicPayload` walks
  * `comms.path -> hops[] -> CommsHop`, and at each element resolves this owner to
  * hydrate the RA namespace's quantities.
@@ -66,7 +66,7 @@ registerProviderExtensionShape(
  * bag off) or the hop carried no RA namespace.
  *
  * The cast at the end is the honest edge of the mechanism: the shape is owned at
- * both ends by this package (the C# `RealAntennasHopExt` generates this TS type and
+ * BOTH ends by this package (the C# `RealAntennasHopExt` generates this TS type AND
  * the wire keys `RaHopExtensions` writes), kept in agreement by the golden fixture
  * both sides assert against. What is checked here is only what a consumer cannot
  * assume: that a namespace is present and is an object at all.

@@ -37,8 +37,8 @@ namespace GonogoRp1Uplink
     ///
     /// <para><b>The masses are RP-1's, not the vessel's own.</b>
     /// <see cref="VesselMassTons"/> is the figure <c>ShouldLock</c> compares
-    /// against, which is not <c>Vessel.totalMass</c>: in the editor and at
-    /// prelaunch it zeroes launch clamps and any part hanging off pad
+    /// against, which is NOT <c>Vessel.totalMass</c>: in the editor and at
+    /// PRELAUNCH it zeroes launch clamps and any part hanging off pad
     /// infrastructure. Clamps are heavy, so the two disagree by the most at the
     /// exact moment an operator is reading the number.</para>
     /// </remarks>
@@ -49,7 +49,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The mass the fitted avionics support (tonnes): RP-1's <c>maxMass</c>,
-        /// the max across parts of each part's summed <c>CurrentMassLimit</c>,
+        /// the MAX across parts of each part's summed <c>CurrentMassLimit</c>,
         /// counting only units that have electricity reaching them.
         /// </summary>
         public double? SupportedMassTons;
@@ -63,7 +63,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Whether some fitted unit is an interplanetary-rated one held to its
-        /// near-Earth limit. A second lock reason on top of the tonnage: a vessel
+        /// near-Earth limit. A SECOND lock reason on top of the tonnage: a vessel
         /// can be inside its supported mass on paper and still be limited by this,
         /// and RP-1 posts its own separate reminder for it.
         /// </summary>

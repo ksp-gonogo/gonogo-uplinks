@@ -14,13 +14,13 @@ import { buildKosRunCommand } from "./kosWrapper.js";
  * `KosDataSource.executeScript`'s Uplink implementation: dispatches the
  * kerboscript wrapper text (see `kosWrapper.ts`'s `buildKosRunCommand`) via
  * the `kos.run` command and resolves with the correlated `kos.run.<coreId>`
- * result. This is the only transport `executeScript` uses, there is no
+ * result. This is the ONLY transport `executeScript` uses, there is no
  * telnet path anymore.
  *
  * The `kos.processors` push channel it subscribes to for tagname → coreId
  * resolution doubles as the app's CPU-discovery feed: `onProcessorsChanged`
  * surfaces the processor list (which carries each CPU's `tag`) to the
- * screen-side registry. The subscription is standing, established the
+ * screen-side registry. The subscription is STANDING, established the
  * moment a `TelemetryClient` is adopted (`adopt`, driven eagerly by the
  * `KosCpuDiscovery` mount) and held for that client's lifetime, so
  * discovery works whenever a sitrep stream is mounted, not only while a
@@ -53,7 +53,7 @@ interface InFlightRun {
 /**
  * Per-CPU FIFO in front of `kos.run` dispatches to a single `coreId`. A kOS
  * CPU's REPL is single-threaded (only one command may be in flight) so
- * calls to the same core are serialised here; calls to different cores get
+ * calls to the SAME core are serialised here; calls to different cores get
  * their own queue and run in parallel.
  */
 class KosUplinkCpuQueue {
@@ -224,7 +224,7 @@ export class KosUplinkExecutor {
   }
 
   /**
-   * Adopt `client` for discovery without dispatching a run, the eager
+   * Adopt `client` for discovery WITHOUT dispatching a run, the eager
    * entry point the `KosCpuDiscovery` mount calls so the `kos.processors`
    * subscription (and thus CPU discovery) stands up as soon as a sitrep
    * stream is mounted. Idempotent for the same client; a different client
@@ -235,7 +235,7 @@ export class KosUplinkExecutor {
   }
 
   /**
-   * True once a `TelemetryClient` is adopted and the mod has reported at
+   * True once a `TelemetryClient` is adopted AND the mod has reported at
    * least one CPU on `kos.processors`: i.e. the sitrep stream is live and
    * kOS is actually present. Drives `KosDataSource`'s status pill.
    */

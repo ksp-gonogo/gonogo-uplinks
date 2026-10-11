@@ -7,12 +7,12 @@ namespace Gonogo.ScansatUplink
     /// Pure (SCANsat/KSP-type-free) builder for the
     /// <c>scansat.scanningVessels</c> wire payload: one
     /// <c>Dictionary&lt;string, object?&gt;</c> per tracked vessel, keyed with
-    /// the exact camelCase field names the client decodes (JsonWriter emits a
+    /// the EXACT camelCase field names the client decodes (JsonWriter emits a
     /// dict's keys verbatim; the client's <c>SCANScanningVessel</c> /
     /// <c>GonogoScansatUplink.ScanningVesselEntry</c> mirror these). Kept SCANsat-
     /// type-free: the uplink's <see cref="ScansatUplink.BuildScanningVessels"/>
     /// reads the SCANsat <c>SCANvessel</c>/<c>SCANsensor</c> fields and passes
-    /// plain scalars in here: so the whole shaping path (including the
+    /// PLAIN scalars in here: so the whole shaping path (including the
     /// per-side FoV widths via <see cref="GroundTrackFov"/>) is unit-testable
     /// headlessly with no SCANsat/KSP DLLs present, the same headless-test
     /// split as <see cref="GroundTrackFov"/> and <see cref="ScanGrids"/>.
@@ -54,17 +54,17 @@ namespace Gonogo.ScansatUplink
         /// Builds the wire dict for one tracked vessel. <paramref name="sensors"/>
         /// feeds both the emitted <c>sensors</c> array and the
         /// <c>groundTrackWidthDeg</c> FoV replication. When no sensor is
-        /// in-range the FoV is 0, and both <c>groundTrackWidthDeg</c> and
+        /// in-range the FoV is 0, and BOTH <c>groundTrackWidthDeg</c> and
         /// <c>groundTrackLonHalfDeg</c> emit <c>null</c> (nothing to paint):
         /// matching the client contract. The same nulls stand in for an
-        /// unread altitude or home radius, which are two of the FoV's inputs:
+        /// UNREAD altitude or home radius, which are two of the FoV's inputs:
         /// see the note on those parameters.
         /// </summary>
         /// <param name="vesselName">
         /// v.vessel.vesselName, or <c>null</c> when SCANsat is tracking a
         /// vessel whose KSP <c>Vessel</c> is not resolvable: the same cause as
         /// an absent <paramref name="altitude"/>, and it takes the same answer.
-        /// An empty string was a different claim, that the craft carries no
+        /// An empty string was a DIFFERENT claim, that the craft carries no
         /// name, and the widget drew it as "(unnamed)" for a craft whose name
         /// had simply never been read.
         /// </param>
@@ -159,7 +159,7 @@ namespace Gonogo.ScansatUplink
         }
 
         /// <summary>
-        /// Per-side longitude half-width in degrees:
+        /// Per-side LONGITUDE half-width in degrees:
         /// <c>widthDeg / cos(|subLat|)</c>, capped at
         /// <see cref="LonHalfWidthCapDeg"/>: the 1/cos widening SCANsat
         /// applies inside its coverage-paint loop (near the poles cos → 0, so

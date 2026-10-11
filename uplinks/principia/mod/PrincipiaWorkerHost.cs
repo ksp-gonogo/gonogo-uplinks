@@ -14,7 +14,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// The save routes trigonometry through the platform's C library and the
         /// worker is on a different platform. That library is not in the borrowed
-        /// file, so there is nothing to reproduce with, and an estimate offered here
+        /// file, so there is nothing to reproduce WITH, and an estimate offered here
         /// would be presented beside numbers that are the game's.
         /// </summary>
         TrigNotBorrowable = 2,
@@ -27,7 +27,7 @@ namespace GonogoPrincipiaUplink
     /// <summary>
     /// One machine's numeric configuration, as it bears on reproducing Principia.
     ///
-    /// <para>These are facts about a host and must be gathered from that host. The
+    /// <para>These are facts about a HOST and must be gathered from that host. The
     /// FMA bit in particular is the one an implementation reaches for locally out of
     /// convenience: read on the worker when the question was about the game host, it
     /// does not fail, it answers the wrong question in the shape of the right one.</para>
@@ -46,7 +46,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Whether the CPU reports FMA, which is the single bit Principia's loader
         /// dispatches on: the FMA build is selected if and only if this is set. Null
-        /// means nobody has established it, which is not the same as false.
+        /// means nobody has established it, which is NOT the same as false.
         /// </summary>
         public bool? HasFma { get; }
 
@@ -95,13 +95,13 @@ namespace GonogoPrincipiaUplink
     /// than one that refuses, and it looks exactly like success.</para>
     ///
     /// <para><b>Spawning a worker beside KSP is possible, and that is measured rather
-    /// than assumed.</b> KSP runs inside a pressure-vessel mount namespace, separate
+    /// than assumed.</b> KSP runs inside a pressure-vessel MOUNT namespace, separate
     /// from a host shell's, which is why a check run over SSH says nothing about what
     /// the game can do. Read from inside instead, on a live game:</para>
     ///
     /// <list type="bullet">
-    /// <item><description>KSP already has a child, <c>kerbcast-sidecar</c>, a native
-    /// elf shipped under its own mod's GameData folder and started by that mod. A
+    /// <item><description>KSP already HAS a child, <c>kerbcast-sidecar</c>, a native
+    /// ELF shipped under its own mod's GameData folder and started by that mod. A
     /// plugin starting a process is not a thing to prove, it is a thing already
     /// happening.</description></item>
     /// <item><description>That child's mount namespace is byte-identical to KSP's, so
@@ -114,7 +114,7 @@ namespace GonogoPrincipiaUplink
     /// which therefore work across this boundary.</description></item>
     /// </list>
     ///
-    /// <para>One thing the container does not have is a managed runtime: no
+    /// <para>One thing the container does NOT have is a managed runtime: no
     /// <c>mono</c>, no <c>dotnet</c>. A worker is a native executable shipped beside
     /// the mod, which is exactly what the working precedent is.</para>
     /// </summary>

@@ -68,7 +68,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// Ignition unreadable. Not false: false says the craft is not under thrust,
+        /// Ignition unreadable. Not false: false says the craft is NOT under thrust,
         /// and that is the claim that hands out the edit and remove controls.
         /// </summary>
         [Fact]
@@ -116,7 +116,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// The clock is the third thing the execution state needs, and it was the one
+        /// The CLOCK is the third thing the execution state needs, and it was the one
         /// nobody checked. It used to collapse to 0.0 universal time, which is Year 1
         /// Day 1, so the window comparison was false for every burn a real career can
         /// hold and a plan mid ignition read as idle from end to end.
@@ -176,7 +176,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// The frame extension is what the editable whitelist is checked against, so
         /// a burn carrying no readable frame has no answer. False is a statement
-        /// about the frame and rendered as "FRAME LOCKED" beside "THIS FRAME CANNOT
+        /// ABOUT THE FRAME and rendered as "FRAME LOCKED" beside "THIS FRAME CANNOT
         /// BE WRITTEN BACK".
         /// </summary>
         [Fact]
@@ -192,7 +192,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Null(described.FrameEditable);
         }
 
-        /// <summary>A frame that did read still answers, so the whitelist keeps
+        /// <summary>A frame that DID read still answers, so the whitelist keeps
         /// working for the case it was written for.</summary>
         [Theory]
         [InlineData(6000, true)]
@@ -253,7 +253,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// The flagged case, so the last-n rule is demonstrated still working rather
         /// than only demonstrated absent. Two burns, one flagged, and it is the
-        /// last one, which is the producer's own rule.
+        /// LAST one, which is the producer's own rule.
         /// </summary>
         [Fact]
         public void AReadableAnomalousCountStillFlagsTheLastBurns()
@@ -319,7 +319,7 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
-    /// The refusals. Each of these used to permit on an unreadable read, which is
+    /// The refusals. Each of these used to PERMIT on an unreadable read, which is
     /// the inverse-of-a-sentinel case: null meaning "no refusal" in the same
     /// function where null also means "the guard could not answer".
     /// </summary>
@@ -385,7 +385,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Not BurnExecuting. That code states the craft is under thrust, and
+        /// Not BurnExecuting. That code states the craft IS under thrust, and
         /// borrowing it for an answer nobody got would put the reason for the
         /// refusal into a sentence nobody read.
         /// </summary>
@@ -408,7 +408,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// <b>The destructive one.</b> A remove against a burn whose ignition would
+        /// <b>The destructive one.</b> A REMOVE against a burn whose ignition would
         /// not read used to come back Written, so the operator's own console
         /// confirmed it had deleted a burn that may have been under thrust. The
         /// plugin is asserted to have been left alone, because a refusal that still
@@ -464,7 +464,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// <b>The destructive one for the clock.</b> The burn is under thrust at the
+        /// <b>The destructive one for the clock.</b> The burn IS under thrust at the
         /// instant the game holds, and the remove is aimed straight at it.
         ///
         /// <para>The clock used to collapse to 0.0 when it would not decode, and
@@ -543,8 +543,8 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// <b>The one that ends the game.</b> Creating a plan measures its end an
-        /// hour from now where the operator named none, and checks the result
-        /// against now; both of those readings were the same fabricated zero. So a
+        /// hour FROM now where the operator named none, and checks the result
+        /// AGAINST now; both of those readings were the same fabricated zero. So a
         /// career at UT 120000 got a plan ending at UT 3600, and Principia asserts
         /// on a plan that ends before it starts rather than returning an error.
         ///
@@ -632,7 +632,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// A whole composed plan, which is the shape a command centre under signal
         /// delay actually sends. Its ignitions are checked against the instant the
-        /// plan arrived, and against a fabricated zero every future instant looks
+        /// plan ARRIVED, and against a fabricated zero every future instant looks
         /// ahead, so a plan whose burns had all passed installed itself.
         /// </summary>
         [Fact]
@@ -668,7 +668,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Arming is the one place the instant is a reading rather than a guard, so
+        /// Arming is the one place the instant is a READING rather than a guard, so
         /// it goes through and the receipt says the reading is unstamped. Telling an
         /// operator their plan was read at Year 1 Day 1 is the alternative, and the
         /// burns' execution state goes with it.
@@ -805,7 +805,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The bool twin fails closed instead of answering null, and that is the
+        /// The bool twin FAILS CLOSED instead of answering null, and that is the
         /// deliberate difference. Every call behind this predicate aborts the
         /// process on a guid the plugin does not hold, so "we could not tell" has
         /// to stop the lookup rather than travel up as a null for a caller to

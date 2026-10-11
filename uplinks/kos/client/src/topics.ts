@@ -56,7 +56,7 @@ import {
 } from "./__generated__/units.js";
 
 /**
- * The kOS CPU discovery Topic (an array channel). Its value must match
+ * The kOS CPU discovery Topic (an array channel). Its value MUST match
  * `KosChannels.ProcessorsTopic` in ../../KosChannels.cs: `topics.test.ts`
  * asserts that.
  */

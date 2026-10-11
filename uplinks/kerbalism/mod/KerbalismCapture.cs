@@ -6,7 +6,7 @@ namespace Gonogo.KerbalismUplink
     /// <summary>
     /// Pure plain-data mappers: a captured snapshot -> the value-tree dictionaries
     /// that mirror the Sitrep.Contract Kerbalism POCOs field-for-field (camelCase
-    /// wire keys). No KSP/Unity/Kerbalism types: headless-testable against the
+    /// wire keys). NO KSP/Unity/Kerbalism types: headless-testable against the
     /// captured fixtures. The uplink's
     /// capture-on-main reflection (KerbalismReflection) fills KerbalismSnapshot +
     /// the *Raw lists; these mappers run off the main thread (Courier).
@@ -20,9 +20,9 @@ namespace Gonogo.KerbalismUplink
         /// absence-versus-zero decision lives here rather than in the
         /// KSP-bound caller, where nothing headless could reach it.
         ///
-        /// <para>Nothing is substituted. An unanswered read stays null and rides
+        /// <para>NOTHING is substituted. An unanswered read stays null and rides
         /// to the wire as null, which every field it maps to already declares;
-        /// an unanswered rate has its key omitted, which
+        /// an unanswered RATE has its key omitted, which
         /// <c>KerbalismLifeSupport.Rates</c> already declares as its spelling for
         /// "no rate reported". Both were fabricated zeros, and both had a
         /// consumer-side guard standing unreachable behind them: see
@@ -70,17 +70,17 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// The amount held of each resource a rule consumes, which is what the
+        /// The amount held of each resource a RULE consumes, which is what the
         /// death clock's first stage needs (how long until degeneration starts)
         /// and the only reason amounts are read at all: the life-support channel
         /// deliberately carries rates only, because <c>vessel.resources</c>
         /// already carries amounts for the active craft. Rule inputs rather than
         /// every profile resource, so the read stays a handful of lookups.
         ///
-        /// <para>A resource whose amount could not be read is omitted rather than
+        /// <para>A resource whose amount could not be read is OMITTED rather than
         /// carried at zero, because
         /// <see cref="KerbalismDeathClock.SoonestFatalSeconds"/> reads a missing
-        /// key as "not derivable" and a zero as an empty tank, which brings every
+        /// key as "not derivable" and a zero as an EMPTY TANK, which brings every
         /// deadline that rule feeds forward to now.</para>
         /// </summary>
         public static Dictionary<string, double> RuleInputAmounts(
@@ -170,7 +170,7 @@ namespace Gonogo.KerbalismUplink
         /// Kerbalism uses to gate a process, e.g. "_Scrubber") are excluded, they
         /// are plumbing, not consumables.
         ///
-        /// <para>The authoritative list, and deliberately the only one. It drives
+        /// <para>THE authoritative list, and deliberately the ONLY one. It drives
         /// both which names <c>CaptureOnMain</c> asks Kerbalism for a rate about and
         /// what <c>kerbalism.profile</c> declares, so the two cannot drift; a second
         /// list anywhere would be a hardcoding in a new disguise. Asserted by
@@ -423,7 +423,7 @@ namespace Gonogo.KerbalismUplink
     /// <summary>
     /// Plain scalar snapshot of one vessel's Kerbalism state (KSP-free).
     ///
-    /// <para>Every scalar is nullable, and null means Kerbalism's API did not
+    /// <para>Every scalar is NULLABLE, and null means Kerbalism's API did not
     /// answer for that reading rather than that the reading is zero. The
     /// distinction is the whole point on this struct: these are claims about
     /// whether a crew can breathe, and each of the payload fields they map to is
@@ -446,7 +446,7 @@ namespace Gonogo.KerbalismUplink
         /// <see cref="KerbalismCapture.ResourceNames"/> reading the loaded
         /// profile, never from a list in gonogo.
         ///
-        /// <para>A resource Kerbalism reports no rate for is omitted, never
+        /// <para>A resource Kerbalism reports no rate for is OMITTED, never
         /// carried at zero: <c>KerbalismLifeSupport.Rates</c> declares a present
         /// zero to be a measured balance, and <see cref="KerbalismDeathClock"/>
         /// reads one as "this rule is not closing in on anyone" and skips the

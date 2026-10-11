@@ -22,7 +22,7 @@ namespace Gonogo.RealAntennasUplink
     ///
     /// <para><b>The output is byte-identical to what core used to write.</b> Same
     /// key order, same camelCase names, and <c>meta</c> as a nested
-    /// <c>{ source, quality }</c> with quality as its integer ordinal rather than
+    /// <c>{ source, quality }</c> with quality as its integer ORDINAL rather than
     /// its name, which is the convention every enum on this wire follows
     /// (<c>JsonWriter.AppendPayloadMeta</c> is the mirror). The POCOs stay as the
     /// typing mirror the TS codegen reflects over; this is the only thing that
@@ -57,7 +57,7 @@ namespace Gonogo.RealAntennasUplink
             };
 
         /// <summary>
-        /// The <c>realantennas.hopRates</c> channel value: a bare array, one
+        /// The <c>realantennas.hopRates</c> channel value: a bare ARRAY, one
         /// flattened entry per hop that has a readable forward rate. Keyed by the
         /// same node ids <c>comms.path</c> carries, so the client joins each rate
         /// onto the existing route without this Uplink republishing the topology.
@@ -80,7 +80,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// The <c>realantennas.antennas</c> channel value: a bare array, one
+        /// The <c>realantennas.antennas</c> channel value: a bare ARRAY, one
         /// flattened entry per antenna on the reported craft. An empty list is a
         /// legitimate value (a craft carrying no RealAntennas antenna at all),
         /// not typed absence.
@@ -88,7 +88,7 @@ namespace Gonogo.RealAntennasUplink
         /// <para>Every nullable stays null rather than collapsing to a zero: a
         /// beamwidth that could not be read and a beamwidth of zero are
         /// different facts, and only one of them is true of any antenna. The
-        /// same holds for the two flags, which are nullable for the same
+        /// same holds for the two FLAGS, which are nullable for the same
         /// reason: <c>steerable</c> null is not <c>false</c>, and writing it as
         /// false would name a dish an omni.</para>
         /// </summary>
@@ -128,7 +128,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// The <c>realantennas.antennaChains</c> channel value: a bare array,
+        /// The <c>realantennas.antennaChains</c> channel value: a bare ARRAY,
         /// one flattened entry per chained antenna on the reported craft. An
         /// empty list is a legitimate value (the craft holds no chain), not typed
         /// absence.
@@ -164,7 +164,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// The <c>realantennas.retargeting</c> channel value: a bare array, one entry
+        /// The <c>realantennas.retargeting</c> channel value: a bare ARRAY, one entry
         /// per craft with something to say. An empty list is a legitimate value (no
         /// craft is opted out and no dish has been borrowed), not typed absence.
         /// </summary>

@@ -46,14 +46,14 @@ export function resolveStreamBlock(
  * Replay a fixture's declared emits in order, flushing a provider frame either
  * side of each one.
  *
- * `StubTransport.emit` silently drops a sample for a topic nothing has
+ * `StubTransport.emit` silently DROPS a sample for a topic nothing has
  * subscribed to yet, and the later emits in a kOS Terminal fixture are exactly
  * that case: the widget only subscribes to `kos.terminal.<coreId>` once a CPU
  * has resolved off `kos.processors`, which takes a frame, and it reads
  * `comms.delay` / `comms.link` from inside the same subtree.
  *
  * `transport.isSubscribed` cannot be used to wait for that. It answers for the
- * carried set the fixture declares, not for a live subscriber, so it reads true
+ * CARRIED set the fixture declares, not for a live subscriber, so it reads true
  * from the moment the Provider mounts and a poll on it returns instantly. That
  * is not a hypothetical: polling it dropped three of this fixture's four emits,
  * and the widget rendered a terminal with no text, no delay badge and no
@@ -101,7 +101,7 @@ export function modePixels(mode: { w: number; h: number }): {
  *
  * The shared jsdom shim is a no-op in all three methods: it exists to stop a
  * mount crashing and never calls its callback, so any widget gating content on
- * a measured box renders that content never under a snapshot harness. The
+ * a measured box renders that content NEVER under a snapshot harness. The
  * reported box is the mode's own pixel size rather than a constant, so the
  * modes stay distinguishable and a size-gated branch is exercised at the size
  * it is gated on.
@@ -151,7 +151,7 @@ export async function flushProviderFrame(): Promise<void> {
  * class or id attribute that changes per build. Without this the snapshot
  * churns on every styled-components release and file edit.
  *
- * Also strips xterm's platform class. `xterm-scrollable-element` picks up a
+ * Also strips xterm's PLATFORM class. `xterm-scrollable-element` picks up a
  * trailing `mac` / `windows` / `linux` token from the host it renders on, so a
  * snapshot taken here recorded `mac` and CI, on Linux, produced the same DOM
  * without it: fourteen renders red on a difference that is not about this

@@ -5,7 +5,7 @@ namespace GonogoKerbcastUplink.Tests;
 
 /// <summary>
 /// The <c>kerbcast.cameras</c> wire mapping. These pin two things that drift
-/// silently otherwise: the clean full names the project mandates
+/// silently otherwise: the CLEAN FULL NAMES the project mandates
 /// (<c>fieldOfView</c>, never kerbcast's own <c>fov</c>), and R7 typed absence
 /// (an unreadable member travels as null, never as a 0 that reads like a real
 /// measurement).

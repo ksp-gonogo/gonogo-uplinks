@@ -10,7 +10,7 @@ namespace Gonogo.KosUplink;
 /// Args for the <c>kos.run</c> command, the general-purpose in-process
 /// replacement for the standalone telnet proxy's ad-hoc RUNPATH path
 /// (<c>kos-uplink-full-migration.md</c>). It
-/// carries the whole literal command text to type into the CPU's REPL,
+/// carries the WHOLE literal command text to type into the CPU's REPL,
 /// exactly what the app already builds client-side for the telnet path
 /// (a bare <c>RUNPATH("path", args...).</c> line, or the multi-line managed-
 /// sync wrapper from <c>packages/app/src/dataSources/kosWrapper.ts</c>). The
@@ -18,7 +18,7 @@ namespace Gonogo.KosUplink;
 /// into the interpreter exactly like <c>kos.keystroke</c> types terminal
 /// input, via the same <c>TermWindow.ProcessOneInputChar</c> seam.
 ///
-/// <para>Delivered delayed, single-in-flight-per-CPU (spec §3.0):
+/// <para>Delivered DELAYED, single-in-flight-per-CPU (spec §3.0):
 /// reachability + the <c>HasBooted</c>/<c>IsWaitingForCommand()</c> idle-
 /// prompt guard are re-checked at delivery on the KSP main thread. A second
 /// <c>kos.run</c> for a CPU that already
@@ -71,7 +71,7 @@ public class KosRunArgs
 /// <see cref="Error"/> is non-null, a successful <c>[KOSDATA]</c> parse
 /// carries <see cref="Fields"/> with <see cref="Error"/> null; an explicit
 /// script-author <c>[KOSERROR]</c> carries <see cref="Error"/> with
-/// <see cref="Fields"/> null. Field values keep the exact
+/// <see cref="Fields"/> null. Field VALUES keep the exact
 /// <c>KosDataParser.Coerce</c> shape (bool / double / string) the telnet
 /// path already produces: no re-typing on the wire.</para>
 /// </summary>

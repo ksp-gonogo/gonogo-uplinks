@@ -74,8 +74,8 @@ namespace Gonogo.KosUplink
     /// CPU whenever <see cref="NotifySubscribed"/> was called for it since
     /// the last poll: the THREAD-SAFE seam the terminal's dynamic-namespace
     /// registration wires to <c>IDynamicChannelSource.OnSubscribed</c>,
-    /// which the engine invokes on the courier thread for every individual
-    /// session subscribe (a first subscriber, a second simultaneous viewer,
+    /// which the engine invokes on the COURIER thread for EVERY individual
+    /// session subscribe (a first subscriber, a SECOND simultaneous viewer,
     /// or a resubscribe faster than one poll tick), never gated on whether
     /// some aggregate subscriber count merely stayed the same across a
     /// sampling window. So every late/reconnecting/new viewer: none of
@@ -134,10 +134,10 @@ namespace Gonogo.KosUplink
         private double _accumulatedSeconds;
 
         /// <param name="knownCoreIds">Current CPU <c>KOSCoreId</c>s (main thread; real impl reads <c>kOSProcessor.AllInstances()</c>).</param>
-        /// <param name="isSubscribed">Is <c>kos.terminal.&lt;coreId&gt;</c> currently subscribed (e.g. <c>host.IsAnyTopicSubscribed</c>)? A pure "should I bother reading/publishing this CPU's screen at all" gate, the reseed decision is <see cref="NotifySubscribed"/>'s job, not this one.</param>
+        /// <param name="isSubscribed">Is <c>kos.terminal.&lt;coreId&gt;</c> CURRENTLY subscribed (e.g. <c>host.IsAnyTopicSubscribed</c>)? A pure "should I bother reading/publishing this CPU's screen at all" gate, the reseed decision is <see cref="NotifySubscribed"/>'s job, not this one.</param>
         /// <param name="publish">Publish a frame to <c>kos.terminal.&lt;coreId&gt;</c> at the given UT (the current clock read; the terminal channel is <c>Delivery.ReliableOrdered</c>, so the engine forwards each frame in order regardless of whether several share a <c>ValidAt</c>).</param>
         /// <param name="createScreen">Build (or resolve) the screen reader for a CPU; null when the CPU is gone.</param>
-        /// <param name="nowUt">Current UT (main-thread clock read, e.g. <c>host.NowUt</c>). May return the same value across several consecutive polls, harmless: the ReliableOrdered lane forwards each frame per-sample, in order, so same-UT frames do not coalesce.</param>
+        /// <param name="nowUt">Current UT (main-thread clock read, e.g. <c>host.NowUt</c>). May return the SAME value across several consecutive polls, harmless: the ReliableOrdered lane forwards each frame per-sample, in order, so same-UT frames do not coalesce.</param>
         /// <param name="pollIntervalSeconds">Downlink cadence (kOS's own screen loop is 20 Hz, 0.05s).</param>
         /// <param name="keyframeIntervalSeconds">
         /// Periodic full-repaint (keyframe) cadence per subscribed CPU. The
@@ -167,7 +167,7 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>
-        /// THREAD-SAFE: call from any thread (in production, the Courier
+        /// THREAD-SAFE: call from ANY thread (in production, the Courier
         /// thread, via the callback wired to
         /// <c>IDynamicChannelSource.OnSubscribed</c> for the
         /// <c>kos.terminal.</c> namespace) to record that <paramref name="coreId"/>

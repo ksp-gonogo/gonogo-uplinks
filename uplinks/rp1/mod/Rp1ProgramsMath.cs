@@ -114,7 +114,7 @@ namespace GonogoRp1Uplink
         /// The overridden funding at the career's own funds multiplier, taken as
         /// the ratio the catalogue row already carries rather than by reading the
         /// multiplier: RP-1 puts base and total through the same linear
-        /// conversion, so the ratio is the multiplier and needs no second game
+        /// conversion, so the ratio IS the multiplier and needs no second game
         /// read.
         ///
         /// <para>Absent when the catalogue row cannot supply that ratio, which
@@ -360,7 +360,7 @@ namespace GonogoRp1Uplink
         /// promised". Empty on a completed Program, which is RP-1's own rule.</para>
         ///
         /// <para>Empty too on a running Program whose elapsed fraction or paid-out
-        /// total could not be read. Those two are what move the table off year 1,
+        /// total could not be read. Those two are what MOVE the table off year 1,
         /// and substituting them restarts it there from a zero running total: the
         /// result is the whole original promise, every row overstated by what the
         /// career has already banked, rendered under a column headed "Pays".

@@ -21,8 +21,8 @@ import { kindOf } from "./template.js";
  * on a training course still reads `Available` to KSP's own roster, so the
  * Astronaut Complex files them under Available beside everybody who could fly
  * tomorrow, and nothing in the identity line says otherwise. The mark used to
- * ride the "Course" line in the block below, which is the right place for which
- * course and the wrong place for the fact that there is one: the block is read
+ * ride the "Course" line in the block below, which is the right place for WHICH
+ * course and the wrong place for the fact THAT there is one: the block is read
  * once an operator has settled on a kerbal, and this is the fact that decides
  * which kerbal they settle on. Scanning six cards for a free crew, the corner is
  * what is read and the block is what is skipped.</para>

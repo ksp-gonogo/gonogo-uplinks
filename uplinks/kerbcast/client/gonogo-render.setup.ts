@@ -17,7 +17,7 @@ import { KerbcastDataSource } from "./src/KerbcastDataSource";
 /**
  * The camera each scene is of, by fixture name.
  *
- * What varies between these scenes is the camera's capabilities rather than
+ * What varies between these scenes is the CAMERA's capabilities rather than
  * anything on the stream, and a camera is not a topic: it arrives over the
  * sidecar's own channel. So the scene picks its camera here, by the fixture's
  * own name, which is the one thing the setup is told about the scene it is
@@ -72,7 +72,7 @@ const CAMERAS: Record<string, MockCameraInit> = {
  * The render size is the shipped one, not a round number: kerbcast's own
  * `KerbcastSettings` defaults `Width`/`Height` to 1024x576, and every camera
  * takes those unless a part-specific override says otherwise. It matters here
- * because the widget's frame now holds the camera's aspect, so a fixture that
+ * because the widget's frame now holds the CAMERA's aspect, so a fixture that
  * declared a square camera was a picture of a shape no shipped install
  * produces.
  */
@@ -95,10 +95,10 @@ const FEED_W_PX = 512;
 const FEED_H_PX = 288;
 
 /**
- * The scene whose subject is a held input, which the fixture format cannot
+ * The scene whose subject is a HELD INPUT, which the fixture format cannot
  * express on its own.
  *
- * A `_scene.steps` entry can wait, click, or hold a pointer on a control; there
+ * A `_scene.steps` entry can wait, click, or hold a POINTER on a control; there
  * is no step that dispatches a component action, so a film of what a bound
  * stick does to the staged wheel cannot be written as a fixture. This reaches
  * the same registry the serial-input platform dispatches through and drives the
@@ -120,7 +120,7 @@ let stickReleaseTimer: ReturnType<typeof setTimeout> | null = null;
  * Push the yaw stick fully right, and centre it partway through the film.
  *
  * Wall-clock rather than frame-indexed, because the driver owns the frame loop
- * and an Uplink's setup cannot see it. That fixes only where in the film the
+ * and an Uplink's setup cannot see it. That fixes only WHERE in the film the
  * release lands, not whether it happens: both halves of the gesture are real
  * dispatches through the real handler.
  */
@@ -145,7 +145,7 @@ let realFetch: typeof fetch | null = null;
  * A camera view: a star field and a planet limb rising into frame.
  *
  * Deliberately synthetic rather than a captured still. What the scenes are of is
- * the chrome over the feed, and a recognisably-drawn backdrop reads as "a feed
+ * the CHROME over the feed, and a recognisably-drawn backdrop reads as "a feed
  * is here" without anyone mistaking it for a real capture.
  */
 function paintScene(

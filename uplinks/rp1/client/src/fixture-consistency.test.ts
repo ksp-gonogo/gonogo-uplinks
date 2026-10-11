@@ -13,9 +13,9 @@ import { describe, expect, it } from "vitest";
  * and "cannot roll out: this complex has no pads" from a fixture that declared
  * an operational pad complex and emitted no `rp1.pads`. A widget cannot catch
  * any of them, because each is a state the widget is right to render: an
- * operational complex with no pads is a complex with nowhere to roll out to.
+ * operational complex with no pads IS a complex with nowhere to roll out to.
  *
- * So the question is asked of the fixture instead, before anything renders.
+ * So the question is asked of the FIXTURE instead, before anything renders.
  * These are the pairs of topics whose payloads have to agree with each other,
  * and a fixture that emits one and contradicts it with the other is caught
  * here, named, and never photographed.
@@ -62,10 +62,10 @@ interface ConstructionRow {
 }
 
 /**
- * Every operational pad complex a vehicle fixture declares has at least one
+ * Every operational pad complex a VEHICLE fixture declares has at least one
  * pad.
  *
- * RP-1 creates a `Pad`-type launch complex with its pad and never takes the
+ * RP-1 creates a `Pad`-type launch complex WITH its pad and never takes the
  * last one away, so a complex that is operational and has none is not a career
  * state: it is a fixture that forgot `rp1.pads`. The widget renders it as
  * "cannot roll out: this complex has no pads", which is a sentence an operator
@@ -224,10 +224,10 @@ const FACILITY_COMMAND = "career.facility.upgrade";
 const GATE_FAIL = 1;
 
 /**
- * The fixture describes a save RP-1 manages and leaves a facility with a tier
+ * The fixture describes a save RP-1 manages AND leaves a facility with a tier
  * left to buy, which is what puts the host widget's own Upgrade control on screen.
  *
- * <para>A priced tier, because that is what the host widget gates its own
+ * <para>A PRICED tier, because that is what the host widget gates its own
  * control on: a facility whose `upgradeCost` did not arrive draws no Upgrade
  * button and has nothing to contradict.</para>
  */
@@ -261,7 +261,7 @@ function careerFacilities(
   return found;
 }
 
-/** Whether the fixture publishes a standing fail verdict for this command. */
+/** Whether the fixture publishes a standing FAIL verdict for this command. */
 function blocks(emits: readonly Emit[], command: string): boolean {
   for (const emit of emits) {
     if (emit.topic !== "system.uplink.gates") continue;
@@ -285,7 +285,7 @@ const VEHICLES_WIDGET = "rp1-vehicle-assembly";
 
 /**
  * Whether this scene puts the craft listing on screen, which is a question
- * about the slot and not about the widget.
+ * about the SLOT and not about the widget.
  *
  * <para>All three of the vehicle sections are bound into
  * `rp1-vehicle-assembly.sections`, and a scene naming any one of them mounts
@@ -314,7 +314,7 @@ function aboutVehicles(emits: readonly Emit[]): boolean {
   );
 }
 
-/** The payload of the last emit on a topic, or undefined when none emits it. */
+/** The payload of the LAST emit on a topic, or undefined when none emits it. */
 function payloadRows<T>(
   emits: readonly Emit[],
   topic: string,

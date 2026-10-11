@@ -30,14 +30,14 @@ const SESSION_CS = join(UPLINK_ROOT, "mod", "PrincipiaSession.cs");
 
 /**
  * Where a `pluginVersion` literal may legitimately appear. A root rather than a
- * file list, so a new fixture is covered the day it is added instead of the day
+ * file list, so a NEW fixture is covered the day it is added instead of the day
  * somebody remembers this file exists.
  */
 const SCAN_ROOTS = [join(UPLINK_ROOT, "client", "src")];
 
 /**
  * Generated mirrors of the contract declare the field as a plain string type,
- * naming its unit rather than a value, and that declaration matches the
+ * naming its UNIT rather than a value, and that declaration matches the
  * literal scan below exactly, so they are excluded by path rather than
  * filtered on what the value looks like: a rule that skipped anything not
  * resembling a version would also skip the stale value this test exists to

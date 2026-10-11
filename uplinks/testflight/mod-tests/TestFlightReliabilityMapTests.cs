@@ -55,7 +55,7 @@ public class TestFlightReliabilityMapTests
     }
 
     /// <summary>
-    /// The two ratings are independent and diverge by an order of magnitude under
+    /// The two ratings are INDEPENDENT and diverge by an order of magnitude under
     /// RO, so each is its own budget and each names its scope in the label. A
     /// single "remaining rated burn" slot had to pick one and be wrong about the
     /// other.

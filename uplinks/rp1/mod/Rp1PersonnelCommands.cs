@@ -107,9 +107,9 @@ namespace GonogoRp1Uplink
         /// The command can run: RP-1's space centre and its static helpers
         /// resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length: a
-        /// method-level gate on the manifest cannot say why it fired, because a
+        /// method-level gate on the MANIFEST cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
         /// The method lookup happens at the press and refuses with a sentence
         /// naming what was not recognised.</para>
@@ -159,7 +159,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Sets a launch complex's assigned engineer count.
         ///
-        /// <para>A set, so re-sending it is harmless and it lands on the count
+        /// <para>A SET, so re-sending it is harmless and it lands on the count
         /// that was asked for however stale the operator's view was. A target
         /// already met changes nothing and succeeds: the asked-for state is the
         /// state.</para>

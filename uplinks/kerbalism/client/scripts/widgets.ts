@@ -8,8 +8,8 @@
  * `GonogoBreakingGroundUplink/client/scripts/widgets.ts`, which carries the
  * same three widgets' worth of config for the same reason.
  *
- * The playwright + esbuild rendering harness itself
- * (`@ksp-gonogo/components`'s `scripts/widgetRenderHarness.ts`) is not ported
+ * The playwright + esbuild rendering HARNESS itself
+ * (`@ksp-gonogo/components`'s `scripts/widgetRenderHarness.ts`) is NOT ported
  * here: this file only carries the lightweight config types + lookup this
  * package's own DOM-snapshot tests need.
  */

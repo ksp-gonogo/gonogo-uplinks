@@ -114,7 +114,7 @@ describe("CoastAnalysisSection", () => {
   });
 
   /**
-   * The last coast is the orbit the plan ends in, which is the one an operator
+   * The last coast is the orbit the plan ENDS in, which is the one an operator
    * is usually asking about, so it is named rather than numbered.
    */
   it("names the final coast and numbers the rest", async () => {
@@ -151,7 +151,7 @@ describe("CoastAnalysisSection", () => {
   });
 
   /**
-   * The bands are behind a disclosure and the epoch travels with them, because
+   * The bands are behind a disclosure and the epoch travels WITH them, because
    * the same rows are shown under the current orbit too and a qualifier left in
    * one header is one the other surface silently drops.
    */

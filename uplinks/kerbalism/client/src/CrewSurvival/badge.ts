@@ -95,7 +95,7 @@ KERBALISM.registerContribution({
 });
 
 /**
- * Kerbals the crew model says could be critical while their own figures are
+ * Kerbals the crew model says COULD be critical while their own figures are
  * not: a rule whose model interval reaches the critical fraction on its
  * pessimistic end.
  *
@@ -105,7 +105,7 @@ KERBALISM.registerContribution({
  * way, because no band is not a band that is comfortably clear.
  *
  * The words say it is the model's range. Not `bandClaim`: that states a value
- * is inside an interval, and this states that the interval's far end reaches
+ * is INSIDE an interval, and this states that the interval's far end reaches
  * a line, which is a different claim regardless of wording.
  */
 function bandBadges(

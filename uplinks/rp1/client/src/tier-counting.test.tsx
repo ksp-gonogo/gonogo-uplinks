@@ -111,14 +111,14 @@ describe("RP-1 facility tiers are counted one way across the whole screen", () =
   });
 
   /**
-   * One number about a building's tier, and it is the tier the building is at.
+   * ONE number about a building's tier, and it is the tier the building is at.
    *
-   * <para>The badge named the tier the press would buy and the line under it
+   * <para>The badge named the tier the press would BUY and the line under it
    * named the tier the building was at, so the reviewed render carried "TO TIER
    * 3" over "now at tier 2 of 3" beside a grid cell reading "2 / 3": three
    * numbers, all correct, for one Launch Pad. Naming the step more clearly did
    * not fix that, because the step is not a reading at all. The card states
-   * where the building is; the control carries the verb, and names the
+   * where the building IS; the control carries the verb, and names the
    * destination only on a confirm the operator has already armed.</para>
    */
   it("gives a building one tier number, the one it is at", async () => {

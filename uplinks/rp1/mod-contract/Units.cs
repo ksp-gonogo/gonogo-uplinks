@@ -5,7 +5,7 @@ namespace GonogoRp1Uplink.Contract
     /// and judged by the same codegen check.
     /// </summary>
     /// <remarks>
-    /// Both tokens name a category rather than a scale, so neither claims a
+    /// Both tokens name a CATEGORY rather than a scale, so neither claims a
     /// physical dimension and neither invents a private axis. RP-1 build points
     /// are an internal work quantity with no conversion to anything core knows,
     /// and Confidence is RP-1's own currency, a sibling of funds and science

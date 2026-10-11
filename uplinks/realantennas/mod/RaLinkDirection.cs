@@ -6,14 +6,14 @@ namespace Gonogo.RealAntennasUplink
     ///
     /// <para><b>Why this is not a fixed mapping.</b> RA's <c>FwdDataRate</c> is the
     /// throughput in the link's stored <c>a -&gt; b</c> direction, and RA assigns
-    /// <c>a</c>/<c>b</c> by node index, not by vessel-vs-home role
+    /// <c>a</c>/<c>b</c> by NODE INDEX, not by vessel-vs-home role
     /// (<c>Precompute</c> calls <c>MakeLink(..., a: Nodes[x], b: Nodes[y])</c> with
     /// <c>x &lt;= y</c>). So whether <c>Fwd</c> is the vessel-to-home (downlink) or
     /// home-to-vessel (uplink) direction depends on the arbitrary registration
     /// order of the two endpoints, which is exactly why the old fixed
     /// <c>Down = Fwd, Up = Rev</c> mapping was flagged in-code as possibly swapped.
     /// RA's own <c>RACommNetwork.MaxDataRateToHome</c> resolves it the same way this
-    /// does: by checking which endpoint the path is traversing from.</para>
+    /// does: by checking which endpoint the path is traversing FROM.</para>
     ///
     /// <para>Pure and KSP-free so it is exercised headlessly; the caller supplies
     /// <paramref name="forwardIsDownlink"/> (whether the link's <c>a</c> node is

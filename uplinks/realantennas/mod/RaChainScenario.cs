@@ -18,7 +18,7 @@ namespace Gonogo.RealAntennasUplink
     /// flight. The walk itself runs from the Uplink's own tick, not from here:
     /// this module is the save half and nothing else.</para>
     ///
-    /// <para>The register is a static, and deliberately: this module is created
+    /// <para>The register is a STATIC, and deliberately: this module is created
     /// and destroyed by the game once per scene, while the Uplink's command
     /// handler and its tick are registered once at startup and hold the register
     /// for the life of the process. OnAwake clears it so a second save loaded in

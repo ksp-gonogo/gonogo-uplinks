@@ -4,7 +4,7 @@
  *
  * Drives the real handle, the real interval and the real controlled `JogWheel`,
  * over the same stub wire the dispatch tests use. Fake timers because the thing
- * under test is what a held input does over time, and the only honest way to
+ * under test is what a held input does OVER TIME, and the only honest way to
  * ask that of a ticking control is to let time pass.
  */
 
@@ -58,7 +58,7 @@ async function hold(ms: number): Promise<void> {
 /**
  * How far a full-deflection hold carries the draft in `ms`.
  *
- * Whole ticks, and deliberately so: each tick applies a fixed step rather than
+ * Whole ticks, and deliberately so: each tick applies a FIXED step rather than
  * a measured elapsed time, so a second of holding buys the sixteen ticks that
  * fit in it and not sixteen and two thirds. The draft therefore trails real
  * time slightly, which is the side of the trade a setpoint wants: the operator

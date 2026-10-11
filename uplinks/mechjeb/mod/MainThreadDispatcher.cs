@@ -11,7 +11,7 @@ namespace Gonogo.MechJebUplink
     /// The main-thread dispatch spine every MechJeb2/vessel touch must route
     /// through: MechJeb2 (like every other KSP/Unity API) mutates its
     /// autopilot state on the KSP/Unity main thread; the Sitrep SDK pump (the
-    /// WebSocket read/write loop) is a background thread. Calling a MechJeb2
+    /// WebSocket read/write loop) is a BACKGROUND thread. Calling a MechJeb2
     /// member directly from that thread races Unity in exactly the way
     /// <c>GonogoKosUplink.MainThreadDispatcher</c>'s doc comment describes
     /// for kOS: this class is that same spine, copied and renamed for this
@@ -19,7 +19,7 @@ namespace Gonogo.MechJebUplink
     /// shared one to reuse across optional, independently-deployed
     /// extensions).
     ///
-    /// Deliberately has zero UnityEngine dependency so it is fully
+    /// Deliberately has ZERO UnityEngine dependency so it is fully
     /// unit-testable outside the KSP/Unity process. The Unity-touching half
     /// (the addon that calls <see cref="Drain"/> from <c>Update()</c>) is a
     /// separate, thin class for exactly this reason
@@ -52,7 +52,7 @@ namespace Gonogo.MechJebUplink
         /// <summary>
         /// Schedules <paramref name="action"/> to run on the next
         /// <see cref="Drain"/>, FIFO relative to every other currently- or
-        /// previously-enqueued action. Safe to call from any thread.
+        /// previously-enqueued action. Safe to call from ANY thread.
         /// </summary>
         public void Dispatch(Action action)
         {
@@ -66,7 +66,7 @@ namespace Gonogo.MechJebUplink
 
         /// <summary>
         /// Runs every action queued as of entry, in FIFO order, on the
-        /// calling thread, which must be the KSP main thread in production.
+        /// CALLING thread, which MUST be the KSP main thread in production.
         /// Each action runs in its own try/catch so one throwing action can
         /// never stall or drop the actions behind it. Bounded to a snapshot
         /// of the queue's length at entry so a self-dispatching action cannot
@@ -99,10 +99,10 @@ namespace Gonogo.MechJebUplink
         public int PendingCount => _queue.Count;
 
         /// <summary>
-        /// True iff the calling thread is the thread that drains this
+        /// True iff the calling thread IS the thread that drains this
         /// dispatcher (recorded on the most recent <see cref="Drain"/>): the
         /// reentrancy signal that lets <see cref="MechJebUplink.RunOnMainThread"/>
-        /// run inline rather than Dispatch-and-block when it is already on
+        /// run inline rather than Dispatch-and-block when it is already ON
         /// the main thread. False until the first <see cref="Drain"/>.
         /// </summary>
         public bool IsOnDrainThread => _drainThreadId == Thread.CurrentThread.ManagedThreadId;

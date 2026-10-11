@@ -10,10 +10,10 @@ namespace Gonogo.RealAntennasUplink
     /// command, walks every chain the save holds once a tick, and describes the
     /// scoped craft's chains for the wire.
     ///
-    /// <para>Main thread only. The walk reads a craft's comms connectivity and
+    /// <para>MAIN THREAD ONLY. The walk reads a craft's comms connectivity and
     /// aims antennas, both of which are the same live-KSP reads
     /// <see cref="RaTargeting"/> already runs on main, and the chain's evaluation
-    /// is registered on an ungated sampled source for that reason: a walk that
+    /// is registered on an UNGATED sampled source for that reason: a walk that
     /// only ran while a client was subscribed would be a fallback that worked
     /// only while someone was watching it, which is the opposite of the
     /// feature.</para>
@@ -35,7 +35,7 @@ namespace Gonogo.RealAntennasUplink
     public sealed class RaChains
     {
         /// <summary>
-        /// Soft cap on chained aims, which is the thing worth budgeting rather
+        /// Soft cap on chained AIMS, which is the thing worth budgeting rather
         /// than the evaluation rate: evaluating costs a connectivity read per
         /// chained craft, and aiming a dish costs a network re-solve.
         ///
@@ -62,10 +62,10 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: <c>realantennas.antenna.targetChain</c>. Stores an ordered
+        /// MAIN THREAD: <c>realantennas.antenna.targetChain</c>. Stores an ordered
         /// list of targets against one antenna, replacing whatever it held.
         ///
-        /// <para>Every entry is checked before any of them is stored, through the
+        /// <para>Every entry is checked before ANY of them is stored, through the
         /// same planning path a single-target press goes through. A chain is
         /// accepted whole or refused whole: half a chain is a fallback with a hole
         /// in it, and the operator would not find out where until the walk got
@@ -162,7 +162,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: one pass over every chain in the save, aiming at most one
+        /// MAIN THREAD: one pass over every chain in the save, aiming at most one
         /// entry per antenna.
         ///
         /// <para>Fail-soft per chain rather than per pass: a craft whose antennas
@@ -190,7 +190,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: the <c>realantennas.antennaChains</c> value for the
+        /// MAIN THREAD: the <c>realantennas.antennaChains</c> value for the
         /// reported craft, one entry per chained antenna it carries. Empty when it
         /// carries none, which is a real answer and not typed absence: the channel
         /// is LossyLatest, so withholding it would leave the previous craft's
@@ -329,7 +329,7 @@ namespace Gonogo.RealAntennasUplink
         /// turns on, and CommNet's answer rather than a geometric one.
         ///
         /// <para>RealAntennas replaces the solver behind it, so on an RA install
-        /// this is RA's answer, occlusion and out-of-cone relays included, which a
+        /// this IS RA's answer, occlusion and out-of-cone relays included, which a
         /// re-derived link budget is not: a positive margin has accompanied a link
         /// that was down. <c>null</c> when there is no connection object to ask,
         /// which the walk treats as a reason to do nothing.</para>
@@ -381,7 +381,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Every chained antenna the game can currently see, found in one pass
+        /// Every chained antenna the game can currently see, found in ONE pass
         /// over the vessel list rather than one pass per chain.
         ///
         /// <para>A chain whose antenna is nowhere is left alone rather than
@@ -442,7 +442,7 @@ namespace Gonogo.RealAntennasUplink
         /// same refusals.
         /// </summary>
         /// <summary>
-        /// The chain as the craft reports it, which is the same targets in the
+        /// The chain as the craft REPORTS it, which is the same targets in the
         /// same order under the read-side type. The two differ only in that the
         /// read side carries each number with its unit, and the split is the one
         /// the single-target command already makes between its args and the

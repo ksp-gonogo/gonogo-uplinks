@@ -39,7 +39,7 @@ import "../topics.js";
  *
  * <para>Stock's question is "can I afford this upgrade". RP-1's is a
  * commitment: a facility upgrade, a new launch complex, a second pad each take
- * months, are billed as they progress rather than up front, and cannot be
+ * months, are billed AS they progress rather than up front, and cannot be
  * cancelled without losing what has already been paid. The host widget's own
  * upgrade control answers none of that, so the money already committed to work
  * in flight is not visible anywhere else.</para>
@@ -229,7 +229,7 @@ function Detail({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
  * `UpgradeableObject.SetLevel`, so it is the same index
  * `career.status.facilities[x].currentTier` carries, and every surface that
  * shows a tier to an operator adds one: the host widget's grid, this Uplink's
- * facility upgrades cards, and KSP's own R&amp;D dialog, which calls a fully
+ * FACILITY UPGRADES cards, and KSP's own R&amp;D dialog, which calls a fully
  * upgraded VAB "Level 3". Drawn raw, an R&amp;D upgrade read "level 1 to 2"
  * under a grid cell reading "2 / 3" for the same building.</para>
  *

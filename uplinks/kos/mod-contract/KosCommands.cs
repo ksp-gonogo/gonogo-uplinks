@@ -48,7 +48,7 @@ public class KosProcessorInfo
 
     /// <summary>The CPU part's display title (<c>kOSProcessor.part.partInfo.title</c>,
     /// e.g. "Probe Core"): null when the part or its info is unavailable. Lets the
-    /// picker label a CPU by what it is when it carries no name-tag, instead of a
+    /// picker label a CPU by what it IS when it carries no name-tag, instead of a
     /// bare "CPU &lt;id&gt;".</summary>
     [SitrepUnit(Units.Text)]
     public string? PartName { get; set; }

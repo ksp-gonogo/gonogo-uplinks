@@ -7,11 +7,11 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Reads the real shipped Principia builds, when this machine has them.
+    /// Reads the REAL shipped Principia builds, when this machine has them.
     ///
     /// <para>Local-only by necessity: the builds are about 270 MB each and are a
     /// third party's, so they can never be committed and CI can never run this.
-    /// It skips when they are absent rather than failing, which is the same
+    /// It SKIPS when they are absent rather than failing, which is the same
     /// judgement `map-topic.rawFieldResolution.fixture.test.ts` already settled for
     /// the same reason: an earlier version of that test failed loudly on a missing
     /// local-only input and simply reddened CI forever.</para>
@@ -26,7 +26,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// Measured across all six shipped builds of `2026081218-Levi-Civita`. The
         /// descriptor is byte-identical in every one, which is what lets a hash name
-        /// a release rather than a file.
+        /// a RELEASE rather than a file.
         /// </summary>
         private const string ExpectedSha256 =
             "b2569d212a9fbbe5334e49ed05f08b464a4e387469231245e3f682f5c6ce11b3";

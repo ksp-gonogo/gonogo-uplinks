@@ -7,7 +7,7 @@ namespace GonogoRp1Uplink
     /// a zero delay modifier for as long as RP-1 says the flight on screen is one
     /// and the operator has not asked for delay during simulations.
     ///
-    /// <para>A rehearsal has no spacecraft, so by default it has no signal delay,
+    /// <para>A rehearsal has no spacecraft, so by default it has no light-time,
     /// and modelling a distance to a craft that is not there would put a
     /// fictional delay on every command. An operator rehearsing the delayed
     /// procedure itself turns <c>delayInSimulation</c> on, and the modifier is

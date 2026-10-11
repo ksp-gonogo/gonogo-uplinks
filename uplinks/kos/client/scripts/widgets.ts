@@ -6,8 +6,8 @@
  * snapshot tests read the sizes from one place. The same file two other Uplink
  * clients already carry, for the same reason and in the same shape.
  *
- * The playwright + esbuild rendering harness itself
- * (`@ksp-gonogo/components`'s `scripts/widgetRenderHarness.ts`) is not ported
+ * The playwright + esbuild rendering HARNESS itself
+ * (`@ksp-gonogo/components`'s `scripts/widgetRenderHarness.ts`) is NOT ported
  * here: the pictures of this widget come from `uplink-tools render` driving
  * the `_scene` fixtures beside `__fixtures__/probe/`, and this file only
  * carries the lightweight config types + lookup the DOM-snapshot test needs.

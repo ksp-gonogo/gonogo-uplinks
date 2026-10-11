@@ -44,7 +44,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The direction kind names the pair with the selected body first. That is
+        /// The direction kind names the pair with the SELECTED body first. That is
         /// the producer's own inversion rather than an ordering we chose: the body
         /// it wants held fixed is the one the selector sits on, and the frame it
         /// builds calls the held body the primary. Reversed, the burn is planned in
@@ -96,7 +96,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A target frame is defined against a vessel and carries no kind at all, so
+        /// A target frame is defined against a VESSEL and carries no kind at all, so
         /// there is no descriptor to build a burn from. Said rather than guessed at:
         /// picking a kind here would put a frame on the burn the operator never
         /// chose.

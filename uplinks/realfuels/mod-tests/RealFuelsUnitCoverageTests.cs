@@ -24,9 +24,9 @@ namespace GonogoRealFuelsUplink.Tests
         /// <summary>
         /// The three types are reached and nothing else is.
         /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> would pass on an
-        /// empty set, which is what a type quietly losing
+        /// EMPTY set, which is what a type quietly losing
         /// <c>[SitrepContract]</c> leaves behind. It also pins that
-        /// <see cref="RealFuelsEngineEntry"/> is reached: it carries no
+        /// <see cref="RealFuelsEngineEntry"/> is REACHED: it carries no
         /// <c>[SitrepTopic]</c> of its own and is only on the wire as the element
         /// type of <see cref="RealFuelsEngines.Engines"/>, which is exactly the
         /// shape a sweep can walk past.

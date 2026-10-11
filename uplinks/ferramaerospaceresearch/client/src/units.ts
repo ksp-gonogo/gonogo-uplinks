@@ -23,10 +23,10 @@
 import { registerUnit } from "@ksp-gonogo/sitrep-sdk";
 
 /**
- * The type half of the same two tokens, merged into the sdk's declarations
+ * The TYPE half of the same two tokens, merged into the sdk's declarations
  * table through the published package name.
  *
- * `registerUnit` types its argument from this declaration, so a symbol nobody
+ * `registerUnit` types its argument FROM this declaration, so a symbol nobody
  * declared is a compile error there rather than a unit the runtime knows and
  * the compiler does not. That is also what makes `Value<"kg/m²">` legal in a
  * widget's own code, and what lets `<Unit format>` and `as` check a ballistic

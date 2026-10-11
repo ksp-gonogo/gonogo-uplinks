@@ -16,7 +16,7 @@ namespace GonogoPrincipiaUplink
     /// against, and that is what <see cref="UplinkHealthState"/> answers. Which file,
     /// which release, which hash and how many exports are what somebody diagnosing a
     /// bad answer has to quote, and those are facts rather than status: nobody reads
-    /// a sha at a glance and nobody reports an unvetted build without one.</para>
+    /// a SHA at a glance and nobody reports an unvetted build without one.</para>
     ///
     /// <para>Built once and held, because <see cref="ISitrepUplink.Health"/> is
     /// polled on every roster sample while the gate that produced this scans tens of

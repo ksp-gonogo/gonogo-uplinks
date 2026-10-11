@@ -34,7 +34,7 @@ export function sentCommand<
 /**
  * Record a dispatch with its args typed by this Uplink's generated args map.
  *
- * Typing at the push rather than at each read, for a test that keeps a handle
+ * Typing at the PUSH rather than at each read, for a test that keeps a handle
  * on the array and waits for it to fill: a filtered copy is a snapshot, and a
  * `waitFor` over one never sees the dispatch it is waiting for.
  */

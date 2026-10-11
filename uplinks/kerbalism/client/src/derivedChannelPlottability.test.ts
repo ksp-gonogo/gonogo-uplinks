@@ -11,8 +11,8 @@ import { describe, expect, it } from "vitest";
  * per resource and could not be plotted, though not for a shortage of numbers.
  * The reason outlives that channel, which is why it is pinned here on a probe.
  *
- * Scalars inside an array are unreachable. `TimelineStore`'s
- * `resolveDerivedTopic` splits a subtopic on its last dot and takes exactly one
+ * Scalars inside an ARRAY are unreachable. `TimelineStore`'s
+ * `resolveDerivedTopic` splits a subtopic on its LAST dot and takes exactly one
  * segment, so a payload rooted at `{resources: [...]}` offers exactly one
  * subtopic, whose value is the array. There is no syntax that indexes an
  * element, and keying by name instead would still need two segments.

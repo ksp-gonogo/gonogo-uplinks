@@ -16,7 +16,7 @@ namespace GonogoTestFlightUplink
     public static class TestFlightModuleFold
     {
         /// <summary>
-        /// The sum over the part's modules, or null if any of them could not be
+        /// The sum over the part's modules, or null if ANY of them could not be
         /// read. A partial sum of failure rates understates the risk, and the
         /// survival probability derived from it is optimistic by an amount nobody
         /// downstream can see.
@@ -38,7 +38,7 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// The largest reading over the part's modules, or null if any of them
+        /// The largest reading over the part's modules, or null if ANY of them
         /// could not be read. The rating governs a burn budget and the survival
         /// horizon, so a max taken over only the readable modules quietly moves
         /// both: it is the highest rating we happened to see, presented as the

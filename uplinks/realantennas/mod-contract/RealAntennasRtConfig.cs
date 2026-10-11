@@ -5,13 +5,13 @@ using Reinforced.Typings.Fluent;
 namespace Gonogo.RealAntennasUplink;
 
 /// <summary>
-/// This Uplink's own codegen configuration: mirrors
+/// This Uplink's OWN codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
 /// this assembly's three wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way each earlier relocated
 /// Uplink's own <c>Configure</c> does (the uplink-types-out-of-core plan's
 /// mechanism, unchanged here; the plan doc names the six earlier steps, this
-/// file does not, since naming a sibling Uplink would trip its own frontend
+/// file does not, since naming a sibling Uplink would trip ITS own frontend
 /// uplink-boundary token).
 ///
 /// <para><b>It began as three types, three Topic-tagged roots, and has grown
@@ -20,8 +20,8 @@ namespace Gonogo.RealAntennasUplink;
 /// were the whole of it, and the slice carried no command args at all, because
 /// the only thing a client could do with RealAntennas was look at it. Targeting
 /// added a channel and two commands, and the fallback chain added a channel, a
-/// command and the slice's first nested types, so <c>EmitUnitMap</c>'s field
-/// -&gt; nested-type shape half is no longer empty. The one nested shape in the
+/// command and the slice's first NESTED types, so <c>EmitUnitMap</c>'s field
+/// -&gt; nested-type SHAPE half is no longer empty. The one nested shape in the
 /// comms family proper, <c>CommsHop</c>, still hangs off <c>CommsPath</c> and
 /// stays core with it.</para>
 ///
@@ -35,7 +35,7 @@ namespace Gonogo.RealAntennasUplink;
 /// (<c>Units.Decibels</c>). Only <see cref="CommsLinkMargin.ClosesLink"/> is a
 /// non-quantity (<c>Units.Flag</c>), and it is a bool. So the retyping this call
 /// exists to perform is visible in every one of the three generated interfaces,
-/// and the runtime hydration below can be proved by decoding a frame rather than
+/// and the runtime hydration below can be proved by DECODING a frame rather than
 /// by inspecting a registry.</para>
 ///
 /// <para>Invoked by <c>mod/codegen.sh</c>'s per-uplink codegen step, writing
@@ -48,7 +48,7 @@ namespace Gonogo.RealAntennasUplink;
 /// to read these three straight out of the SDK's own generated map because the
 /// types lived in <c>Sitrep.Contract</c>. It does not any more, so this Uplink's
 /// client package (<c>topics.ts</c>) calls the SDK's <c>registerTopicUnits</c>
-/// and <c>registerTypeUnits</c> at module load, feeding them the maps this
+/// AND <c>registerTypeUnits</c> at module load, feeding them the maps this
 /// Configure emits below. Both halves were wired before anything in this slice
 /// nested, on the grounds that the loop form would need no new call site when
 /// something did, and the fallback chain's entries are what did.</para>

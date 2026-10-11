@@ -10,7 +10,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// A host that records what an Uplink asked for and nothing else, so a
     /// declaration and a registration can be compared to each other.
     ///
-    /// <para>Its <see cref="Kernel"/> is a real one, not a recorder. What an Uplink
+    /// <para>Its <see cref="Kernel"/> is a REAL one, not a recorder. What an Uplink
     /// registers into a capability is only half a wiring claim: the other half is
     /// what the election then resolves, and a recorded list of registrations cannot
     /// answer that. Resolving the real kernel can.</para>
@@ -28,7 +28,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// callable so a test can drive one rather than only count it.
         ///
         /// <para>Recorded because the interesting question about a sampled source is
-        /// not whether it was registered but whether it runs under the subscriptions
+        /// not whether it was registered but whether it RUNS under the subscriptions
         /// a client actually holds. See <see cref="DriveTick"/>.</para>
         /// </summary>
         public List<SampledSourceRecord> SampledSources { get; } =
@@ -45,7 +45,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// Runs the election, which the engine does once every Uplink has
         /// registered and before any tick. A capability queried before this
-        /// resolves to nothing, which is a fact about the order rather than about
+        /// resolves to nothing, which is a fact about the ORDER rather than about
         /// the registration.
         /// </summary>
         public void Resolve() =>
@@ -55,7 +55,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// One engine tick, with <paramref name="subscribedTopics"/> standing for
         /// what clients currently hold.
         ///
-        /// <para>Applies the same rule the engine applies: a source with no declared
+        /// <para>Applies the SAME rule the engine applies: a source with no declared
         /// prefixes always captures, and a source with prefixes captures only when
         /// some subscribed topic starts with one of them (ordinal). See
         /// <c>ChannelEngine.AnyTopicPrefixSubscribed</c>, which this mirrors, and
@@ -144,7 +144,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The capture/handle pairs registered with no topic prefixes, which the
+        /// The capture/handle pairs registered with NO topic prefixes, which the
         /// engine therefore runs on every tick regardless of what is subscribed.
         ///
         /// <para>Recorded as the callable pair rather than counted, because what a
@@ -159,7 +159,7 @@ namespace GonogoPrincipiaUplink.Tests
         public Availability? Availability { get; private set; }
 
         /// <summary>
-        /// A real kernel, with the capabilities core declares already declared on it.
+        /// A REAL kernel, with the capabilities core declares already declared on it.
         ///
         /// <para>Declared here rather than per test because that is the order the
         /// engine guarantees: every capability is declared in a pass that completes
@@ -172,7 +172,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// lives in an assembly an Uplink may not reference, and that constraint is
         /// the point rather than a limitation. What matters here is that the vanilla
         /// exists, is reachable through <see cref="ProviderContext.Vanilla{T}"/>,
-        /// and does not claim integrated trajectories.</para>
+        /// and does NOT claim integrated trajectories.</para>
         /// </summary>
         public Kernel Kernel { get; } = Declared();
 
@@ -270,7 +270,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// Every payload published, in order, with the topic it went to.
         ///
         /// <para>Recorded because "the channel is sourced" is a claim about a value
-        /// arriving, and a registration list cannot make it: a source attached to
+        /// ARRIVING, and a registration list cannot make it: a source attached to
         /// the right topic and never reached publishes nothing forever and says so
         /// nowhere.</para>
         /// </summary>
@@ -314,7 +314,7 @@ namespace GonogoPrincipiaUplink.Tests
         ///
         /// <para>A recording host that quietly accepted every call would pass its
         /// callers' assertions while the Uplink did something else entirely on the
-        /// way past. Throwing means the recorded set is the whole set: if
+        /// way past. Throwing means the recorded set is the WHOLE set: if
         /// registration starts doing something new, the callers fail and say
         /// so.</para>
         /// </summary>
@@ -345,7 +345,7 @@ namespace GonogoPrincipiaUplink.Tests
             throw NotExpected("AddChannelSource");
 
         /// <summary>
-        /// Answered rather than refused, and against the same set
+        /// Answered rather than refused, and against the SAME set
         /// <see cref="DriveTick"/> gates on, so a handle that decides whether to
         /// publish sees exactly what the capture gate saw. Outside a tick nothing
         /// is subscribed, which is the honest answer at registration time.

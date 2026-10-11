@@ -9,7 +9,7 @@ namespace GonogoRp1Uplink
     public static class Rp1CareerCostCapture
     {
         /// <summary>
-        /// The funds breakdown, or nothing when there is no vehicle being
+        /// The funds breakdown, or NOTHING when there is no vehicle being
         /// designed. Absent rather than zeroed: a payload of zeros would read as a
         /// vehicle that costs nothing to fly.
         /// </summary>
@@ -37,7 +37,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para>A null title and a null parts list are both written out as nulls
         /// rather than dropped, because each means something on the wire: no title
-        /// in the career's tree, and no readable editor ship. An empty parts list
+        /// in the career's tree, and no readable editor ship. An EMPTY parts list
         /// is not the same as a null one and survives as an empty list.</para>
         /// </summary>
         private static List<object?>? RequiredTechs(List<Rp1RequiredTechRaw>? rows)
@@ -60,7 +60,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The career timeline, or nothing when RP-1's log handler is not live.
+        /// The career timeline, or NOTHING when RP-1's log handler is not live.
         /// That third state matters: it is distinct from logging switched off and
         /// from logging on with nothing recorded, and all three would otherwise
         /// look like an empty list.

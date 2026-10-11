@@ -6,7 +6,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 import { PayloadMeta } from '@ksp-gonogo/sitrep-sdk';
 
 /**
-* One entry of a chain as the operator sends it: a target, and nothing about
+* One entry of a chain as the OPERATOR SENDS it: a target, and nothing about
 * when to use it. Position in the chain is what says when.
 *
 * This is the mode-and-parameters half of `RealAntennasTargetArgs` with the
@@ -30,7 +30,7 @@ export interface RealAntennasTargetStepArgs
 {
 	/**
 	* One of `Vessel`, `BodyCenter`, `BodyLatLonAlt`, `AzEl`, `OrbitRelative`.
-	* Anything else is refused, and it is refused for the whole chain rather than
+	* Anything else is refused, and it is refused for the WHOLE chain rather than
 	* for the entry: a chain accepted with one unusable entry in it would silently
 	* skip a fallback the operator is relying on.
 	*/
@@ -56,7 +56,7 @@ export interface RealAntennasTargetStepArgs
 	forward?: number;
 }
 /**
-* One entry of a chain as the craft reports it, on
+* One entry of a chain as the CRAFT REPORTS it, on
 * `realantennas.antennaChains`. Field for field the same target as
 * `RealAntennasTargetStepArgs`, which is what the operator sent.
 *
@@ -70,7 +70,7 @@ export interface RealAntennasTargetStep
 	* The target's mode: `Vessel`, `BodyCenter`, `BodyLatLonAlt`, `AzEl` or
 	* `OrbitRelative`.
 	*
-	* It comes back as the operator sent it, including `BodyCenter`, which is not
+	* It comes back as the operator sent it, including `BodyCenter`, which is NOT
 	* how RealAntennas stores the target it lowers to. This is the chain the craft
 	* is holding rather than a reading of the antenna, and a chain is what was
 	* asked for.
@@ -97,7 +97,7 @@ export interface RealAntennasTargetStep
 * Args for `realantennas.antenna.targetChain`: hand one antenna an ordered
 * list of targets, to be tried in order whenever the craft has no link.
 *
-* Sending an empty list clears the chain, which is the only way to stop a
+* Sending an EMPTY list clears the chain, which is the only way to stop a
 * walk. There is no second command for it: a clear is the same operator
 * decision as a change, and a chain of no entries is not a chain.
 *
@@ -136,14 +136,14 @@ export interface RealAntennasTargetChainArgs
 /**
 * One antenna's fallback chain as the craft currently holds it, on the
 * `realantennas.antennaChains` channel: the list, which entry is in place, and
-* why. The channel value is a bare array of these, one entry per antenna of
+* why. The channel value is a bare ARRAY of these, one entry per antenna of
 * the reported craft that has a chain, so an empty array means the craft has
 * none.
 *
-* Delayed, for the same reason `realantennas.antennas` is: this is state held
+* DELAYED, for the same reason `realantennas.antennas` is: this is state held
 * on the craft, and the walk that changes it happens there.
 *
-* Scoped to the reported craft, though the craft walks every chain it holds. A
+* Scoped to the REPORTED craft, though the craft walks every chain it holds. A
 * chain set on another vessel keeps being evaluated and is simply not
 * described here, because a delayed channel is delayed by the reported
 * vessel's own light-time and cannot carry another craft's state at the right
@@ -199,13 +199,13 @@ export interface RealAntennasAntennaChain
 	* Whether the craft holding this antenna has a comms link, which is the signal
 	* the whole walk turns on.
 	*
-	* `null` means nobody could read it, and the walk treats that as a reason not
+	* `null` means nobody could read it, and the walk treats that as a reason NOT
 	* to act: advancing on an unreadable signal would slew a dish that may be
 	* carrying the link.
 	*/
 	connected?: boolean | null;
 	/**
-	* Whether this antenna is an endpoint of one of the craft's live links, rather
+	* Whether THIS antenna is an endpoint of one of the craft's live links, rather
 	* than a dish aimed somewhere that nothing is using.
 	*
 	* It is not what the walk decides on, and it is what tells an operator whether
@@ -238,7 +238,7 @@ export interface CommsDataRate
 }
 /**
 * The `comms.linkMargin` payload: RealAntennas-ONLY. Re-derived by the
-* RealAntennas uplink from RA's public static link-budget math, not read off a
+* RealAntennas uplink from RA's public static link-budget math, NOT read off a
 * live field (comms-uplink-design.md §4.3: margin is computed transiently
 * inside RA's internal Precompute job and not stored anywhere public).
 */
@@ -251,7 +251,7 @@ export interface CommsLinkMargin
 /**
 * RealAntennas' namespace of a `CommsHop`'s provider extension bag: the
 * per-hop RA facts core's shared `CommsHop` shape does not (and should not)
-* declare, carried under the provider id `"realantennas"` and typed here
+* declare, carried under the provider id `"realantennas"` and typed HERE
 * rather than in core (see `Sitrep.Contract/ProviderExtensions.cs` for the
 * mechanism, and a sibling Uplink's reliability extension for the exemplar).
 *
@@ -297,22 +297,22 @@ export interface RealAntennasHopExt
 }
 /**
 * One entry of the `realantennas.hopRates` channel: the RealAntennas forward
-* band rate for a single hop, keyed by the same node ids `comms.path` already
+* band rate for a single hop, keyed by the SAME node ids `comms.path` already
 * carries (`RaCommsBackend.NodeId(link.a)`/ `NodeId(link.b)`), so a client can
-* join a rate onto the route the core schedule already renders without this
+* join a rate onto the route the core schedule already renders WITHOUT this
 * Uplink republishing the topology.
 *
 * RealAntennas' relay graph subclasses stock CommNet's (`RACommNode :
 * CommNet.CommNode`, `RACommLink : CommNet.CommLink`), so the hop set and its
-* node ids are identical to `comms.path`'s: this channel only embellishes each
+* node ids are identical to `comms.path`'s: this channel ONLY embellishes each
 * existing hop with its bitrate, it never re-derives the path. The channel
-* value is a bare array of these entries (one per hop that has a readable
+* value is a bare ARRAY of these entries (one per hop that has a readable
 * rate), self-flattened at the publish boundary by `RaWire.HopRates` the same
 * way this Uplink's other channels flatten, so core's serializer never needs
 * to know the type exists.
 *
-* TRUE-NOW like the rest of the comms family: it describes the link as KSC
-* sees it, computed ground-side. Absent entirely without RealAntennas
+* TRUE-NOW like the rest of the comms family: it describes the link AS KSC
+* SEES IT, computed ground-side. Absent entirely without RealAntennas
 * installed (this Uplink is not even elected), and a hop whose rate cannot be
 * read this tick simply yields no entry, never a 0 sentinel.
 */
@@ -394,7 +394,7 @@ export interface RealAntennasLastBorrow
 /**
 * One craft's dish turning, an entry of `realantennas.retargeting`: whether it
 * may turn a dish on its own, which dish of it is on loan, and how the last
-* loan ended. The channel value is a bare array with an entry for every craft
+* loan ended. The channel value is a bare ARRAY with an entry for every craft
 * that is opted out, has a dish on loan, or has had one.
 *
 * As the reported craft's own delay delivers it: the channel is `Delayed` and
@@ -416,11 +416,11 @@ export interface RealAntennasVesselRetargeting
 /**
 * One antenna of the reported craft, on the `realantennas.antennas` channel:
 * what it is, what it can do, and where it is currently pointed. The channel
-* value is a bare array of these, one entry per antenna, in the order
+* value is a bare ARRAY of these, one entry per antenna, in the order
 * RealAntennas holds them.
 *
-* Delayed, unlike the rest of this Uplink's channels. The others describe the
-* link as KSC computes it ground-side and are true now; where a dish is
+* DELAYED, unlike the rest of this Uplink's channels. The others describe the
+* LINK as KSC computes it ground-side and are true now; where a dish is
 * pointed is a property of the craft, and the commands that change it ride the
 * Courier's light-time delay. A true-now readout beside a delayed command
 * would show the new aim point while the command was still in flight.
@@ -436,7 +436,7 @@ export interface RealAntennasAntennaState
 	*
 	* An index alone would not do. Both commands are `Delayed`, so a command
 	* dispatched against "the second antenna" arrives minutes later against
-	* whatever is second by then, and a decoupled part between the two moments
+	* whatever is second BY THEN, and a decoupled part between the two moments
 	* aims a different dish.
 	*/
 	antennaId: string;
@@ -453,7 +453,7 @@ export interface RealAntennasAntennaState
 	* "steerable" flag), and an antenna that is not steerable refuses both
 	* commands.
 	*
-	* `null` means the antenna is here and nobody could read its shape: not that
+	* `null` means the antenna is here and nobody could read its shape: NOT that
 	* it is an omni. Collapsing the two badges a dish as an omni and hides its
 	* targeting controls on the strength of a read that never happened. Both
 	* commands refuse an unreadable antenna as well, but they say which of the two
@@ -493,11 +493,11 @@ export interface RealAntennasAntennaState
 	*/
 	minimumDistance?: Value<"m"> | null;
 	/**
-	* The stored kind of the current target: `Vessel`, `BodyLatLonAlt`, `AzEl` or
+	* The STORED kind of the current target: `Vessel`, `BodyLatLonAlt`, `AzEl` or
 	* `OrbitRelative`. Null when the antenna holds no target.
 	*
 	* `BodyCenter` never appears here, and the omission is deliberate.
-	* RealAntennas has five mode names and four target classes: "body centre" is a
+	* RealAntennas has five mode NAMES and four target classes: "body centre" is a
 	* way of filling in a `BodyLatLonAlt` (lat 0, lon 0, altitude minus the body's
 	* radius) and nothing records that it was chosen that way. Reporting the
 	* stored kind is a read; reporting `BodyCenter` would be a guess about how the
@@ -511,7 +511,7 @@ export interface RealAntennasAntennaState
 	targetLabel?: string | null;
 	/**
 	* The target vessel's id, for a `Vessel` target. For `AzEl` and
-	* `OrbitRelative` this is the craft the angles are measured from, which is the
+	* `OrbitRelative` this is the craft the angles are measured FROM, which is the
 	* antenna's own, not something being aimed at.
 	*/
 	targetVesselId?: string | null;
@@ -535,11 +535,11 @@ export interface RealAntennasAntennaState
 	/** Deflection from prograde of an `OrbitRelative` target (degrees, -180..180). */
 	targetForward?: Value<"°"> | null;
 	/**
-	* The mode names `realantennas.antenna.target` will accept for this antenna:
+	* The mode names `realantennas.antenna.target` will accept for THIS antenna:
 	* every mode the install declares whose tech level this antenna has reached.
 	*
 	* It is per-antenna because the gate is per-antenna, and it is on the wire
-	* because the gate is data. The five levels are config, not code, and Realism
+	* because the gate is DATA. The five levels are config, not code, and Realism
 	* Overhaul moves three of them, so a client that hard-coded the stock numbers
 	* would offer modes this install refuses and hide modes it allows.
 	*/
@@ -570,7 +570,7 @@ export interface RealAntennasTargetArgs
 	mode: string;
 	/**
 	* The vessel to point at, for `Vessel`. Ignored by every other mode: `AzEl`
-	* and `OrbitRelative` are measured from the antenna's own craft, which the
+	* and `OrbitRelative` are measured from the antenna's OWN craft, which the
 	* handler fills in, so a caller cannot aim one craft's dish by another craft's
 	* attitude.
 	*/
@@ -586,7 +586,7 @@ export interface RealAntennasTargetArgs
 	* surface, altitude 0: the aim point is a three-component vector with no
 	* spelling for a missing component, and a lat/lon with no altitude is not an
 	* ambiguous request. `RealAntennasTargetArgs.latitude` and
-	* `RealAntennasTargetArgs.longitude` have no such default and are refused when
+	* `RealAntennasTargetArgs.longitude` have no such default and are REFUSED when
 	* absent, because 0, 0 is a specific place nobody asked for.
 	*/
 	altitude?: number;

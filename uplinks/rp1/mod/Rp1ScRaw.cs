@@ -102,7 +102,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// <see cref="Engineers"/> less what the complexes hold, so absent the
         /// moment either half is. The two were read independently and a
-        /// substituted zero on one side of the subtraction published a negative
+        /// substituted zero on one side of the subtraction published a NEGATIVE
         /// idle count beside a staffed centre.
         /// </summary>
         public int? UnassignedEngineers;
@@ -171,14 +171,14 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The same resources with their capacities, which is what a renovation
-        /// has to send back to keep them: <c>rp1.complex.modify</c> takes a set
+        /// has to send back to keep them: <c>rp1.complex.modify</c> takes a SET
         /// and treats absent as none.
         /// </summary>
         public Dictionary<string, double>? ResourceCapacities;
 
         /// <summary>
         /// The identity RP-1 groups complexes by for crew rating. Two complexes
-        /// carrying the same key are on one efficiency record, so work at either
+        /// carrying the same key are on ONE efficiency record, so work at either
         /// moves the rating at both; a different key is a different record.
         /// Derived mod-side because RP-1 compares resource amounts this payload
         /// does not carry.
@@ -251,7 +251,7 @@ namespace GonogoRp1Uplink
         public string? Id;
 
         /// <summary>
-        /// RP-1's shipID, which is a different id from <see cref="Id"/> and the
+        /// RP-1's shipID, which is a DIFFERENT id from <see cref="Id"/> and the
         /// one <see cref="Rp1OperationRaw.AssociatedVesselId"/> carries. Both are
         /// on the wire because both are needed: one addresses a vehicle, the
         /// other joins it to the rollout moving it.
@@ -264,7 +264,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Build points banked so far, and null when RP-1 would not say. A
-        /// substituted zero publishes a vehicle not started, which is a claim
+        /// substituted zero publishes a vehicle NOT STARTED, which is a claim
         /// about where the integration stands rather than a gap in the readout.
         /// </summary>
         public double? Progress;
@@ -283,7 +283,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// What the vehicle cost to build, and null when RP-1 would not price
-        /// it. A substituted zero here publishes a free rocket, which is a
+        /// it. A substituted zero here publishes a FREE ROCKET, which is a
         /// claim about the career's money rather than a missing readout.
         /// </summary>
         public double? Cost;
@@ -297,7 +297,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// RP-1's reasons this vehicle cannot leave its complex, or null when it
-        /// has none. Only ever populated for a warehouse row: a vehicle still
+        /// has none. Only ever populated for a WAREHOUSE row: a vehicle still
         /// being integrated cannot roll out for a reason that has nothing to do
         /// with its envelope.
         /// </summary>
@@ -305,7 +305,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// RP-1's price for rolling this vehicle out, or null when it would not
-        /// price one. Only ever populated for a warehouse row, for the same
+        /// price one. Only ever populated for a WAREHOUSE row, for the same
         /// reason <see cref="RolloutRefusals"/> is: a vehicle still being
         /// integrated has no rollout to be quoted for.
         /// </summary>
@@ -336,8 +336,8 @@ namespace GonogoRp1Uplink
         ///
         /// <para>Published because <see cref="State"/> cannot substitute for it and
         /// the launch-complex dismantle rule turns on it: RP-1 will not remove a
-        /// pad unless the complex keeps another operational one, and
-        /// <c>LCLaunchPad.State</c> reports <c>Destroyed</c> before it consults
+        /// pad unless the complex keeps another OPERATIONAL one, and
+        /// <c>LCLaunchPad.State</c> reports <c>Destroyed</c> BEFORE it consults
         /// <c>isOperational</c>, so a destroyed pad's service flag is unreadable
         /// from the state alone. Without this a client cannot tell whether a
         /// dismantle is offerable at all.</para>
@@ -348,7 +348,7 @@ namespace GonogoRp1Uplink
         public bool? IsOperational;
 
         /// <summary>
-        /// A craft is standing on the pad in prelaunch. Nullable because the
+        /// A craft is standing on the pad in PRELAUNCH. Nullable because the
         /// three answers are distinct: true, false, and "the question could not
         /// be asked", and only the first should stop a client offering the pad.
         /// </summary>
@@ -445,7 +445,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Science the node costs, absent rather than zero. This is the one
         /// currency RP-1 genuinely refuses a purchase over, so a substituted zero
-        /// tells an operator a node is free and that they can always afford it.
+        /// tells an operator a node is FREE and that they can always afford it.
         /// </summary>
         public int? ScienceCost;
 

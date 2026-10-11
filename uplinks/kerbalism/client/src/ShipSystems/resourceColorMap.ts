@@ -18,18 +18,18 @@ import { useMemo } from "react";
 // rather than breaking the map.
 // ---------------------------------------------------------------------------
 
-/** NUL-separated: a resource name is never expected to contain a nul byte,
+/** NUL-separated: a resource name is never expected to contain a NUL byte,
  *  unlike a space (a third-party Uplink could plausibly name one "Waste
  *  Heat"), so the join/split roundtrip below stays lossless. */
 const KEY_SEPARATOR = "\u0000";
 
 /**
  * Stable `name -> colour` map over `names`, recomputed only when the
- * resource set changes (add/remove a resource), never merely because the
+ * resource SET changes (add/remove a resource), never merely because the
  * caller rebuilt the array reference this render (the common case: Ship
  * Systems derives its resource list fresh from live telemetry every
  * render). Achieved with two memo stages: a cheap sorted/deduped key string
- * first, then the actual colour lookups keyed off that string, so a
+ * first, then the actual colour lookups keyed off THAT string, so a
  * same-membership array with a new reference short-circuits before touching
  * `resourceColor` at all.
  */

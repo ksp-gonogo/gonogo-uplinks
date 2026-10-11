@@ -86,7 +86,7 @@ namespace GonogoPrincipiaUplink
         private readonly PrincipiaSecularSeeds _secularSeeds = new PrincipiaSecularSeeds();
 
         /// <summary>
-        /// Whether the gate has already answered, read and written on the main
+        /// Whether the gate has already answered, read and written on the MAIN
         /// thread only.
         ///
         /// <para>Separate from <see cref="_binaryHealth"/>, which the Courier thread
@@ -313,7 +313,7 @@ namespace GonogoPrincipiaUplink
         /// MAIN-THREAD capture: asks the plugin for the selected plan, every tick.
         ///
         /// <para>Published every tick rather than on change, unlike the window
-        /// mirror, and the difference is what the payload claims. That one asserts a
+        /// mirror, and the difference is what the payload CLAIMS. That one asserts a
         /// past observation, so re-stamping it would move the observation forward in
         /// time; this one is the plugin's answer as of now and saying so repeatedly
         /// is honest.</para>
@@ -552,7 +552,7 @@ namespace GonogoPrincipiaUplink
         /// not.
         ///
         /// <para>Published every tick rather than on change, unlike the flight plan.
-        /// The difference is what the payload claims: a flight-plan sample asserts a
+        /// The difference is what the payload CLAIMS: a flight-plan sample asserts a
         /// past observation, so re-stamping it would move that observation forward in
         /// time, while these settings are true now and saying so repeatedly is
         /// honest.</para>
@@ -564,7 +564,7 @@ namespace GonogoPrincipiaUplink
         /// of. So the managed half is read, the actual journaling state is taken from
         /// it, and if a recorder is active the whole reading is thrown away and
         /// replaced by a stated outage before the plugin is touched at all. It gates
-        /// on the actual state rather than the requested one deliberately: the
+        /// on the ACTUAL state rather than the requested one deliberately: the
         /// request only takes effect on load, so gating on it would stop us a session
         /// early and then fail to stop us at all in the case that matters.</para>
         /// </summary>
@@ -622,7 +622,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Is anyone watching <paramref name="topic"/>?
         ///
-        /// <para>Asked on the publish rather than on the reading. The reading feeds
+        /// <para>Asked on the PUBLISH rather than on the reading. The reading feeds
         /// an election as well as a channel, so skipping it starves the election;
         /// skipping the publish starves nothing, because a late subscriber is given
         /// the current value by the emitter's keyframe-on-subscribe. That is the
@@ -653,7 +653,7 @@ namespace GonogoPrincipiaUplink
         private double UtOf(KspSnapshot? snapshot) => snapshot?.Ut ?? _host!.NowUt();
 
         /// <summary>
-        /// Unavailable is the ordinary answer, not a fault: Principia is optional
+        /// Unavailable is the ORDINARY answer, not a fault: Principia is optional
         /// and the stock two-body provider stays correct without it. The reason
         /// string is carried so the roster can say which of "not installed" and
         /// "installed but not a version we know" it is, because those want

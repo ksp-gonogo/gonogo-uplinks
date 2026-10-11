@@ -99,7 +99,7 @@ namespace GonogoFerramAerospaceResearchUplink
         /// Whether this Uplink can read a FAR reading at all.
         /// </summary>
         /// <remarks>
-        /// Deliberately a type probe and not an assembly-name one. An assembly
+        /// Deliberately a TYPE probe and not an assembly-name one. An assembly
         /// called <c>FerramAerospaceResearch</c> whose internals have moved
         /// answers true to a name probe and then misses every member, so the
         /// Uplink reports itself healthy while publishing nothing. The three
@@ -232,9 +232,9 @@ namespace GonogoFerramAerospaceResearchUplink
         /// not be walked, and the call threw or returned a non-bool.
         ///
         /// <para>It used to answer false for all four, argued as the cautious
-        /// direction. It is not the cautious direction: false here is FAR's own
+        /// direction. It is not the cautious direction: false here is FAR's OWN
         /// statement that the model has not caught up with the vehicle's shape,
-        /// which the widgets draw as model outdated and which makes every mark on
+        /// which the widgets draw as MODEL OUTDATED and which makes every mark on
         /// the descent envelope faint and dashed. Substituted, it makes that
         /// claim about FAR's internals out of a read that failed, and both
         /// widgets already ask it as <c>aeroModelValid === false</c> precisely so

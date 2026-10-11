@@ -5,7 +5,7 @@ import { recordDispatch } from "../test/recordedCommands.js";
  * `KosDataSource` boundary (not just the underlying `KosUplinkExecutor`,
  * see `dataSources/kosUplinkExecutor.test.ts` for that unit-level coverage).
  * Proves the wiring: `getActiveTelemetryClient()` availability is the
- * only thing that gates dispatch, and there is no telnet fallback when a
+ * ONLY thing that gates dispatch, and there is no telnet fallback when a
  * client is present but the CPU can't be resolved or times out, those
  * still surface as Uplink errors, never a silent drop to telnet.
  */

@@ -81,9 +81,9 @@ namespace RP0
         public double EngineerIdleSalaryMult = 0.25;
 
         /// <summary>
-        /// An int on the real type, and one value for both roles: RP-1 charges a
+        /// An int on the real type, and ONE value for both roles: RP-1 charges a
         /// head the same whether it is an engineer or a researcher, and the roles
-        /// diverge only in the transaction reason the quote is asked under. 200 is
+        /// diverge only in the transaction reason the QUOTE is asked under. 200 is
         /// RP-1's own compiled default; the shipped SpaceCenterSettings.cfg raises
         /// it to 300.
         /// </summary>
@@ -91,7 +91,7 @@ namespace RP0
 
         /// <summary>
         /// What a second and subsequent launch pad costs, relative to the first.
-        /// RP-1 ships 0.5, and it is the one settings value the cost model falls
+        /// RP-1 ships 0.5, and it is the ONE settings value the cost model falls
         /// back to a default for rather than refusing on: it scales a price rather
         /// than deciding whether an act is legal.
         /// </summary>
@@ -123,7 +123,7 @@ namespace RP0
         public static readonly List<SpaceCenterFacility> LockedFacilities = new List<SpaceCenterFacility>();
 
         /// <summary>
-        /// The era table a node's research rate comes out of. A
+        /// The era table a node's research RATE comes out of. A
         /// <c>PersistentDictionaryNodeKeyed&lt;TechPeriod&gt;</c> on the real
         /// type, which is a <c>Dictionary&lt;string, TechPeriod&gt;</c>
         /// underneath. A plain dictionary here, because the walk enumerates it
@@ -229,7 +229,7 @@ namespace RP0
 
         /// <summary>
         /// Whether the operation has finished, which is what tells a pad with a
-        /// vessel on it from a pad with a rollout still moving one: RP-1 gives two
+        /// vessel ON it from a pad with a rollout still moving one: RP-1 gives two
         /// different refusals for the two, off this one test.
         /// </summary>
         public bool IsComplete() => progress >= BP;
@@ -300,13 +300,13 @@ namespace RP0
         }
 
         /// <summary>
-        /// Four parameters with the last defaulted, exactly as the shipped one
+        /// FOUR parameters with the last defaulted, exactly as the shipped one
         /// declares them, because a reflected invoke applies no defaults and a
         /// three-parameter stand-in would let a three-argument call pass here and
         /// fail in the game.
         ///
         /// <para>The real one prices the rollout through <c>Formula</c> and
-        /// spends nothing, which is the property the whole no-affordability-check
+        /// spends NOTHING, which is the property the whole no-affordability-check
         /// argument rests on. Reproduced: a cost is set and no funds move.</para>
         /// </summary>
         public ReconRolloutProject(VesselProject vessel, RolloutReconType type, string id, string launchSite = "")
@@ -386,7 +386,7 @@ namespace RP0
         public string KCTPersistentID = Guid.NewGuid().ToString("N");
 
         /// <summary>
-        /// Private on the real type, and private here on purpose: a reader that
+        /// PRIVATE on the real type, and private here on purpose: a reader that
         /// only looked at public members would find nothing, and would find
         /// nothing in the game either.
         /// </summary>
@@ -403,7 +403,7 @@ namespace RP0
         public LaunchComplex LC => _lc!;
 
         /// <summary>
-        /// The complex a vehicle is bound to, by id, and the only way RP-1's own
+        /// The complex a vehicle is bound to, by id, and the ONLY way RP-1's own
         /// code retargets one: its build-list add takes an override complex and
         /// assigns this, so the setter's resolve-through-the-manager step is the
         /// behaviour a caller depends on rather than an implementation detail.
@@ -419,7 +419,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// The constructor that measures a craft: the only one RP-1 has that
+        /// The constructor that MEASURES a craft: the only one RP-1 has that
         /// turns a loaded ship into a vehicle it will integrate, and the reason a
         /// build cannot be started from a craft file without live parts.
         ///
@@ -467,7 +467,7 @@ namespace RP0
 
         /// <summary>
         /// A fresh vehicle carrying the same design, same complex, and a new
-        /// identity. The real one copies a great deal more; what it must not do,
+        /// identity. The real one copies a great deal more; what it must NOT do,
         /// and what a test needs to be able to see, is reuse the id.
         /// </summary>
         public VesselProject CreateCopy() => new VesselProject
@@ -492,7 +492,7 @@ namespace RP0
         public List<string> FacilityRefusals = new List<string>();
 
         /// <summary>
-        /// The refusals the next measured vehicle is born with. Static because a
+        /// The refusals the NEXT measured vehicle is born with. Static because a
         /// build started from a craft file constructs the vehicle inside the
         /// handler, so a test has nowhere to set them on the instance.
         /// </summary>
@@ -500,7 +500,7 @@ namespace RP0
 
         /// <summary>
         /// The real one measures mass, size, human-rating, clamps and stocked
-        /// resources against the complex's stats and appends a sentence per
+        /// resources against the complex's stats and APPENDS a sentence per
         /// failure. The append is the part the reading depends on: a caller that
         /// only took the bool would have nothing to tell an operator.
         /// </summary>
@@ -510,14 +510,14 @@ namespace RP0
             return FacilityRefusals.Count == 0;
         }
 
-        /// <summary>Whether this vehicle still fits a proposed specification, which is what a renovation asks.</summary>
+        /// <summary>Whether this vehicle still fits a PROPOSED specification, which is what a renovation asks.</summary>
         public bool MeetsRequirements = true;
 
         /// <summary>
-        /// The second overload, and the reason both are here: RP-1 declares
+        /// The SECOND overload, and the reason both are here: RP-1 declares
         /// <c>MeetsFacilityRequirements(List&lt;string&gt;)</c> beside
         /// <c>MeetsFacilityRequirements(LCData, List&lt;string&gt;, bool = false)</c>,
-        /// and the defaulted third parameter makes the second one arity three to
+        /// and the defaulted third parameter makes the second one ARITY THREE to
         /// reflection. A fixture carrying only the one-argument form let a lookup at
         /// the wrong arity resolve to nothing and a renovation's strand check never
         /// fire, which is precisely what happened.
@@ -568,7 +568,7 @@ namespace RP0
 
         /// <summary>
         /// Which pad the vehicle is bound for, by index into its complex's pads.
-        /// A rollout writes this, and -1 is the unset value the real constructor
+        /// A rollout WRITES this, and -1 is the unset value the real constructor
         /// starts it at.
         /// </summary>
         public int launchSiteIndex = -1;
@@ -601,7 +601,7 @@ namespace RP0
     /// <summary>
     /// A vehicle whose total cost comes back as something no reader can turn into
     /// a number, which is what a retyped <c>GetTotalCost</c> looks like from the
-    /// outside: the call succeeds and its answer is not a price.
+    /// outside: the call SUCCEEDS and its answer is not a price.
     ///
     /// <para>Retyped rather than thrown deliberately. A throw already refuses,
     /// through the catch that wraps the whole pricing walk; the reading that got
@@ -614,7 +614,7 @@ namespace RP0
 
     /// <summary>
     /// RP-1's static helpers, of which the build-list add is the one this
-    /// Uplink invokes. Its shipped body spends before it appends and performs no
+    /// Uplink invokes. Its shipped body spends BEFORE it appends and performs no
     /// affordability test of its own, and both halves of that are reproduced,
     /// because the second is the reason the handler has a currency query at all.
     /// </summary>
@@ -622,7 +622,7 @@ namespace RP0
     {
         /// <summary>
         /// What a test says finishes next, and the reason the warp commands ask it
-        /// before handing anything to the warp controller: the real one returns null
+        /// BEFORE handing anything to the warp controller: the real one returns null
         /// both when there is no active space centre and when nothing anywhere is in
         /// progress, and RP-1's own Create cannot survive either.
         /// </summary>
@@ -643,13 +643,13 @@ namespace RP0
         /// <summary>Made to throw part-way, to pin what an operator is told when it does.</summary>
         public static bool ThrowOnAdd;
 
-        /// <summary>The same, for the scrap path, whose refund is the last thing it does.</summary>
+        /// <summary>The same, for the scrap path, whose refund is the LAST thing it does.</summary>
         public static bool ThrowOnScrap;
 
         /// <summary>
         /// Every <c>ChangeEngineers</c> call, in order, as (subject, delta).
-        /// Recorded rather than counted because the subject is the point: RP-1
-        /// declares a same-arity overload taking a space centre, and a handler
+        /// Recorded rather than counted because the SUBJECT is the point: RP-1
+        /// declares a same-arity overload taking a space CENTRE, and a handler
         /// that resolved by arity alone would move a centre's engineer pool while
         /// looking, from a counter, exactly correct.
         /// </summary>
@@ -663,11 +663,11 @@ namespace RP0
         /// </summary>
         public static readonly List<string> ExperimentalNodes = new List<string>();
 
-        /// <summary>Made to throw, to pin that a failed convenience does not undo a node that is queued.</summary>
+        /// <summary>Made to throw, to pin that a failed convenience does not undo a node that IS queued.</summary>
         public static bool ThrowOnExperimental;
 
         /// <summary>
-        /// RP-1's facility tier: an index, unlike stock's normalised fraction,
+        /// RP-1's facility TIER: an index, unlike stock's normalised fraction,
         /// which is why RP-1 asks its own converter everywhere it gates on a
         /// building. Settable per facility so a test can put the Astronaut Complex
         /// below a training's requirement.
@@ -713,7 +713,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// The shipped body: remove, then refund in full. Order reproduced,
+        /// The shipped body: remove, THEN refund in full. Order reproduced,
         /// because a throw between the two is the one way an operator can lose a
         /// vehicle and not be paid for it, and a handler has to say so.
         /// </summary>
@@ -826,7 +826,7 @@ namespace RP0
         /// <summary>
         /// RP-1's own composite, and the reason a hire modifier cannot be found by
         /// looking for the two role tokens. One shipped leader (OKB-52 Chelomey)
-        /// names only this, so a match that was not bitwise would miss it
+        /// names ONLY this, so a match that was not bitwise would miss it
         /// entirely.
         /// </summary>
         Hiring = HiringEngineers | HiringResearchers,
@@ -852,7 +852,7 @@ namespace RP0
     /// upkeep source and what its Budget tab asks per row.
     /// </summary>
     /// <remarks>
-    /// Modelled affine rather than as a bare multiplier, because RP-1's own is:
+    /// Modelled AFFINE rather than as a bare multiplier, because RP-1's own is:
     /// CurrencyModifierQueryRP0.GetTotal returns
     /// <c>input * multiplier + postMultiplierDelta</c>. The offset is what makes
     /// pricing a sum different from summing two prices, and a stand-in that only
@@ -938,7 +938,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// RP-1's priced-transaction query: what a purchase will actually cost once
+    /// RP-1's priced-transaction query: what a purchase will ACTUALLY cost once
     /// leaders and strategies have had their say, which is why the handler asks
     /// this rather than reading the vehicle's stored cost.
     /// </summary>
@@ -987,7 +987,7 @@ namespace RP0
             return new CurrencyModifierQueryRP0(f0 * Multiplier, s0 * ScienceMultiplier);
         }
 
-        /// <summary>The delta, so a charge is negative. The handler negates it back.</summary>
+        /// <summary>The delta, so a charge is NEGATIVE. The handler negates it back.</summary>
         public double GetTotal(CurrencyRP0 c, bool includeHidden = false)
         {
             switch (c)
@@ -1033,7 +1033,7 @@ namespace RP0
         /// <summary>
         /// A property on the real type, over its own destruction ConfigNode. The
         /// node is a KSP type this assembly does not have, so the stand-in keeps
-        /// the shape (a read-only bool property) and takes its answer from a
+        /// the SHAPE (a read-only bool property) and takes its answer from a
         /// field a test can set.
         /// </summary>
         public bool DestroyedValue;
@@ -1042,12 +1042,12 @@ namespace RP0
 
         public bool IsDestroyed => DestroyedValue;
 
-        /// <summary>The craft sitting on this pad in prelaunch, if a test put one there.</summary>
+        /// <summary>The craft sitting on this pad in PRELAUNCH, if a test put one there.</summary>
         public Vessel? Waiting;
 
         /// <summary>
         /// The one condition <see cref="State"/> cannot see: a pad with no
-        /// operation on it reads Free even when a craft has already been sent to
+        /// OPERATION on it reads Free even when a craft has already been sent to
         /// the launch site and is sitting there. The out parameter is what carries
         /// the craft's name into the refusal, and is typed here because a reader
         /// that passed the wrong arity would find nothing.
@@ -1065,7 +1065,7 @@ namespace RP0
         /// <summary>
         /// RP-1's three-argument constructor, the only way a pad is made. Arity is
         /// what production matches on, so the shape here has to be the shipped one
-        /// exactly, and <c>isOperational</c> starts false: a pad is under
+        /// exactly, and <c>isOperational</c> starts FALSE: a pad is under
         /// construction until its project completes.
         /// </summary>
         public LCLaunchPad(Guid id, string name, float lvl)
@@ -1083,7 +1083,7 @@ namespace RP0
         public LaunchComplex? LC => Lc;
 
         /// <summary>
-        /// RP-1's own rename, including its silent return on a duplicate name.
+        /// RP-1's own rename, INCLUDING its silent return on a duplicate name.
         /// </summary>
         /// <remarks>
         /// Reproduced rather than corrected, and this is the fixture's single most
@@ -1130,7 +1130,7 @@ namespace RP0
         /// </summary>
         /// <remarks>
         /// The index shift is reproduced because it is the reason the complex
-        /// dismantle removes pads last first: every vessel pointing past the
+        /// dismantle removes pads LAST FIRST: every vessel pointing past the
         /// removed pad has its index decremented, so a forward walk would shift the
         /// same indices repeatedly. A fixture without it would let that ordering
         /// bug pass.
@@ -1194,7 +1194,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// The construction base. <c>_buildRate</c> is private on the real type and
+    /// The construction base. <c>_buildRate</c> is PRIVATE on the real type and
     /// declared on this abstract base, so a reader that resolves it from the
     /// concrete subclass has to walk the base chain with non-public flags, exactly
     /// as it does for <c>LCOpsProject</c>. Keeping it private here is what makes
@@ -1270,8 +1270,8 @@ namespace RP0
         /// <summary>
         /// The call that turns a price into a build duration. The real body is
         /// <c>BP = Formula.GetConstructionBP(cost, oldCost, FacilityType)</c>,
-        /// which is RP-1's own curve and is deliberately not reproduced: what a
-        /// test can assert is that both arguments reached it and which they were,
+        /// which is RP-1's own curve and is deliberately NOT reproduced: what a
+        /// test can assert is that BOTH arguments reached it and which they were,
         /// so the sum below is only a deterministic function of the two and
         /// carries no claim about RP-1's arithmetic.
         /// </summary>
@@ -1360,7 +1360,7 @@ namespace RP0
         public void SetFacility(SpaceCenterFacility facility) => sFacilityType = facility;
 
         /// <summary>
-        /// RP-1's own duplicate guard, and it searches every centre rather than
+        /// RP-1's own duplicate guard, and it searches EVERY centre rather than
         /// the active one. Reproduced with that reach on purpose: a per-centre
         /// stand-in would let a test pass while production queued a second entry
         /// for a facility already being upgraded at another KSC.
@@ -1401,7 +1401,7 @@ namespace RP0
 
         /// <summary>
         /// The specification the complex becomes when the project completes. A
-        /// copy on the real type, made through <c>SetFrom</c>: a project holding
+        /// COPY on the real type, made through <c>SetFrom</c>: a project holding
         /// the caller's own object would change under it.
         /// </summary>
         public LCData lcData = new LCData();
@@ -1462,7 +1462,7 @@ namespace RP0
         /// <summary>
         /// Records the index rather than reproducing RP-1's rate formula, which
         /// reaches a preset, a leader table and Planetarium: what a test can
-        /// meaningfully hold is that the queue position handed over is the one
+        /// meaningfully hold is that the queue POSITION handed over is the one
         /// the node landed at, because that is the argument production computes.
         /// </summary>
         public double UpdateBuildRate(int index)
@@ -1474,7 +1474,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// A node whose throttle cannot be read. A subclass rather than a flag on the
+    /// A node whose throttle cannot be read. A SUBCLASS rather than a flag on the
     /// base, because the base's throttle is a <c>[Persistent]</c> field that
     /// <c>ConfigNode.LoadObjectFromConfig</c> is driven by, and the reader
     /// resolves the most-derived declaration first.
@@ -1508,7 +1508,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// A complex whose crew ceiling cannot be read, which is the other reading
+    /// A complex whose crew CEILING cannot be read, which is the other reading
     /// the efficiency ramp is derived from: the ramp's input is the fraction of
     /// the cap that is staffed, so an unreadable cap is not a cap of zero.
     /// </summary>
@@ -1536,7 +1536,7 @@ namespace RP0
 
     /// <summary>
     /// A complex whose resource table names a resource and gives a capacity
-    /// nothing can read as a number. RP-1 compares names and amounts, so this is
+    /// nothing can read as a number. RP-1 compares names AND amounts, so this is
     /// the half of the comparison a group key cannot stand in for.
     /// </summary>
     public class LaunchComplexWithUnreadableResourceAmount : LaunchComplex
@@ -1546,12 +1546,12 @@ namespace RP0
     }
 
     /// <summary>
-    /// A complex whose own gate disagrees with its own lists, which is the one
+    /// A complex whose own gate disagrees with its own lists, which is the ONE
     /// state the dismantle's last guard exists for: <c>CanDismantle</c> answers
     /// yes off an empty warehouse while the warehouse itself holds a vehicle, and
     /// the build list beside it will not answer at all.
     ///
-    /// <para>Built as a divergent object rather than by letting a test set the
+    /// <para>Built as a divergent OBJECT rather than by letting a test set the
     /// bool, which <see cref="LaunchComplex.CanModifyButton"/>'s own remarks rule
     /// out: the point there is that a test cannot invent a refusal its state does
     /// not support, and this invents the opposite, an agreement the state does not
@@ -1626,7 +1626,7 @@ namespace RP0
         /// <summary>
         /// Derived on the real type, and derived here for the same reason the
         /// walk reads it rather than counting <see cref="LaunchPads"/> itself:
-        /// the answer is the operational pads, which is not the list's length.
+        /// the answer is the OPERATIONAL pads, which is not the list's length.
         /// </summary>
         public int LaunchPadCount
         {
@@ -1656,7 +1656,7 @@ namespace RP0
         /// </summary>
         /// <remarks>
         /// A field behind a property on the real type, and the source of truth for
-        /// the four figures the fields above also expose. Kept in sync by
+        /// the four figures the fields above also expose. Kept in SYNC by
         /// <see cref="SyncFromStats"/> rather than derived, because the real type
         /// carries both and a fixture where the two could disagree would let a
         /// reader that used the wrong one pass.
@@ -1677,7 +1677,7 @@ namespace RP0
         /// <summary>
         /// RP-1's two-argument constructor, the only way a complex is made. It
         /// copies the specification rather than holding the caller's object, takes
-        /// the name off it, and does not set IsOperational: a complex is under
+        /// the name off it, and does NOT set IsOperational: a complex is under
         /// construction until its project completes.
         /// </summary>
         public LaunchComplex(LCData lcData, LCSpaceCenter ksc)
@@ -1706,11 +1706,11 @@ namespace RP0
         }
 
         /// <summary>
-        /// Whether nothing is going on here at all, which is the one gate a
+        /// Whether nothing is going on here at all, which is the ONE gate a
         /// dismantle turns on.
         /// </summary>
         /// <remarks>
-        /// Derived from the same four lists the real property reads, deliberately,
+        /// DERIVED from the same four lists the real property reads, deliberately,
         /// rather than exposed as a settable bool. A fixture that let a test set
         /// this could set it inconsistently with the state the test built, and the
         /// property that makes a dismantle test meaningful is that the refusal and
@@ -1743,7 +1743,7 @@ namespace RP0
         public bool CanDismantle => CanModifyButton;
 
         /// <summary>
-        /// The weaker gate a renovation turns on: it permits a complex with
+        /// The weaker gate a RENOVATION turns on: it permits a complex with
         /// vehicles in it and only refuses one with an operation moving a vehicle.
         /// </summary>
         public bool CanModifyReal
@@ -1762,7 +1762,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// RP-1's own rename, which validates nothing: it writes the name in two
+        /// RP-1's own rename, which validates NOTHING: it writes the name in two
         /// places and stops. Reproduced without a duplicate check, because the
         /// command's duplicate refusal is ours and a fixture that checked would
         /// make it untestable.
@@ -1792,7 +1792,7 @@ namespace RP0
 
         /// <summary>
         /// RP-1's own delete, in the four things it does that matter here: it drops
-        /// the complex's efficiency contribution, clears a staff target that named
+        /// the complex's efficiency contribution, CLEARS a staff target that named
         /// it, unregisters its pads, and removes it from its centre.
         /// </summary>
         /// <remarks>
@@ -1838,10 +1838,10 @@ namespace RP0
         /// The engineers a specification can hold.
         /// </summary>
         /// <remarks>
-        /// Not RP-1's curve. The cost model only passes this answer through, so a
+        /// NOT RP-1's curve. The cost model only passes this answer through, so a
         /// deterministic stand-in carries no claim about the shipped arithmetic
         /// while still proving the three arguments reached it in the right order.
-        /// Resolved by first-parameter type in production, which is why the float
+        /// Resolved by first-parameter TYPE in production, which is why the float
         /// comes first here.
         /// </remarks>
         public static int MaxEngineersCalc(float massMax, UnityEngine.Vector3 sizeMax, bool isHuman) =>
@@ -1849,7 +1849,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// RP-1's shim over KSCSwitcher, which is where a space centre's display name
+    /// RP-1's shim over KSCSwitcher, which is where a space centre's DISPLAY name
     /// comes from: RP-1 itself keeps only the id.
     /// </summary>
     /// <remarks>
@@ -1878,11 +1878,11 @@ namespace RP0
         /// </summary>
         public int LCIndex;
 
-        /// <summary>How many times the selection was switched away, so a test can pin that it was and before the delete.</summary>
+        /// <summary>How many times the selection was switched away, so a test can pin that it was and BEFORE the delete.</summary>
         public int SwitchAwayCalls;
 
         /// <summary>
-        /// RP-1's own selection switch. Arity one, not zero: the parameter is
+        /// RP-1's own selection switch. ARITY ONE, not zero: the parameter is
         /// optional in C# and reflection applies no defaults, so a production
         /// invoke has to pass it and a fixture declaring the zero-argument form
         /// would let a broken lookup pass.
@@ -1898,7 +1898,7 @@ namespace RP0
         public List<LaunchComplex> LaunchComplexes = new List<LaunchComplex>();
         /// <summary>
         /// A <c>PersistentObservableList</c> rather than a plain list, and that is
-        /// the whole point of it: its <c>Add</c> shadows <c>List&lt;T&gt;.Add</c>
+        /// the whole point of it: its <c>Add</c> SHADOWS <c>List&lt;T&gt;.Add</c>
         /// and fires the events RP-1's own UI listens on, so a handler that bound
         /// to the base overload would queue the project and tell nobody while a
         /// count-based assertion agreed with it completely.
@@ -1912,7 +1912,7 @@ namespace RP0
         public string? AssociatedGroundStation => GroundStation;
 
         /// <summary>
-        /// Derived on the real type, exactly as here: hired minus the sum of what
+        /// DERIVED on the real type, exactly as here: hired minus the sum of what
         /// the complexes hold. So assigning a complex a crew moves this without
         /// anything writing to it, which is why the assignment command reads it
         /// again after every change rather than tracking a pool of its own.
@@ -1948,7 +1948,7 @@ namespace RP0
     /// convenient ones: <c>IsValid</c> is a positive headcount, and the kind of
     /// staff is inferred from whether a complex is named rather than stored.
     ///
-    /// <para>No <c>GetFractionComplete</c>. RP-1 has one and it divides two ints
+    /// <para>NO <c>GetFractionComplete</c>. RP-1 has one and it divides two ints
     /// before widening, so it reads zero until the last hire lands; leaving it out
     /// here keeps a test from ever asserting on the broken shape.</para>
     /// </summary>
@@ -1985,7 +1985,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// The warp's fund stop-condition. Its two figures are private exactly as
+    /// The warp's fund stop-condition. Its two figures are PRIVATE exactly as
     /// RP-1 declares them, so a test that reads them proves the production walk
     /// reaches a non-public field rather than proving a convenient fixture.
     /// </summary>
@@ -2082,7 +2082,7 @@ namespace RP0
     {
         /// <summary>
         /// RP-1's cached Tool-All total for the ship in the editor, kept current by
-        /// its own editor-ship-modified handler. Static, as the real one is.
+        /// its own editor-ship-modified handler. STATIC, as the real one is.
         ///
         /// <para>The reading takes this rather than asking RP-1's window to price
         /// the ship, because the window prices by performing every purchase for
@@ -2095,7 +2095,7 @@ namespace RP0
 
         /// <summary>
         /// Rolling the finished vehicle out. RP-1 computes it in the VAB only and
-        /// leaves it at zero for a spaceplane, which the reading turns into an
+        /// leaves it at ZERO for a spaceplane, which the reading turns into an
         /// absence rather than a free rollout.
         /// </summary>
         public static double EditorRolloutCost;
@@ -2131,7 +2131,7 @@ namespace RP0
         public List<LaunchComplex> RegisteredComplexes = new List<LaunchComplex>();
 
         /// <summary>
-        /// How many efficiency records were cleared by a dismantle, which is the
+        /// How many efficiency records were CLEARED by a dismantle, which is the
         /// permanent loss RP-1's own dialog names nowhere.
         /// </summary>
         public int ClearedEfficiencyRecords;
@@ -2152,7 +2152,7 @@ namespace RP0
 
         /// <summary>
         /// A <c>PersistentObservableList</c> rather than a plain list, and that
-        /// is the whole point of it: its <c>Add</c> shadows <c>List&lt;T&gt;.Add</c>
+        /// is the whole point of it: its <c>Add</c> SHADOWS <c>List&lt;T&gt;.Add</c>
         /// and fires the events RP-1's own UI listens on, so a handler that bound
         /// to the base overload would queue the node and tell nobody while a
         /// count-based assertion agreed with it completely.
@@ -2192,7 +2192,7 @@ namespace RP0
         /// rush multiplier. The real body has three more branches (an idle
         /// complex, a hangar, a human-rated complex building an uncrewed vehicle),
         /// and none of them is what this fixture is for: what the walk has to get
-        /// right is which overload it called.
+        /// right is which OVERLOAD it called.
         /// </summary>
         public double GetEffectiveEngineersForSalary(LaunchComplex lc) =>
             lc.Engineers * lc.RushSalary;
@@ -2215,7 +2215,7 @@ namespace RP0
         /// <summary>
         /// The overload that makes the complex one findable by accident: same
         /// name, same arity, a whole centre's payroll instead of one complex's.
-        /// Present so a resolver ignoring parameter types is wrong here too.
+        /// Present so a resolver ignoring parameter types is wrong HERE too.
         /// </summary>
         public double GetEffectiveEngineersForSalary(LCSpaceCenter ksc) =>
             GetEffectiveIntegrationEngineersForSalary(ksc);
@@ -2251,7 +2251,7 @@ namespace RP0
         public static Confidence? Instance { get; set; }
 
         /// <summary>
-        /// The real type's push channel to its own UI. Static, and its only
+        /// The real type's push channel to its own UI. Static, and its ONLY
         /// subscriber in the shipped assembly is <c>ConfidenceWidget</c>, whose
         /// handler assigns the number straight into a text label. So the label
         /// changes on this event and on nothing else, and a balance put back
@@ -2262,8 +2262,8 @@ namespace RP0
 
         /// <summary>
         /// Makes the two balance members unreadable, so a test can put the walk
-        /// in the one state it cannot reach with a value: RP-1's module is live
-        /// and the numbers on it are not there. Held as private properties for
+        /// in the one state it cannot reach with a value: RP-1's module IS live
+        /// and the numbers on it are not there. Held as private PROPERTIES for
         /// that reason alone; the real type declares plain private fields, and
         /// the reader resolves either the same way.
         /// </summary>
@@ -2302,7 +2302,7 @@ namespace RP0
         /// <c>OnCurrenciesModified</c>'s arithmetic, verbatim from the shipped
         /// assembly: bank the award, fire the widget's event when the number
         /// moved, and ratchet the lifetime total on an increase only. This is the
-        /// step that happens before the interceptor's neutralise gets a look in,
+        /// step that happens BEFORE the interceptor's neutralise gets a look in,
         /// which is the whole defect.
         /// </summary>
         public void AwardForScience(double award)
@@ -2335,7 +2335,7 @@ namespace RP0
 
     /// <summary>
     /// RP-1's prepaid unlock allowance. Shaped like the shipped handler in the
-    /// one respect the reading depends on: a public getter over a private
+    /// one respect the reading depends on: a PUBLIC getter over a PRIVATE
     /// persisted field, so a reader that only looked at public fields would find
     /// nothing here and would find nothing in the game either.
     /// </summary>
@@ -2377,10 +2377,10 @@ namespace RP0
         public double NautInFlightUpkeepPerDay;
 
         /// <summary>
-        /// RP-1's own total, and negative, which is the one place its sign
+        /// RP-1's own total, and NEGATIVE, which is the one place its sign
         /// convention differs from every field above it. The shipped
         /// UpdateUpkeep builds it as a sum of currency-modifier queries run on
-        /// negated costs, and SpaceCenterManagement adds it straight to the
+        /// NEGATED costs, and SpaceCenterManagement adds it straight to the
         /// subsidy to get a net funds delta per day. A test holding a positive
         /// here would agree with a reading that puts a credit on the wire where
         /// the career is being drained.
@@ -2408,7 +2408,7 @@ namespace RP0
         /// our parts add up to it rather than to a total the test itself chose.
         /// </summary>
         /// <remarks>
-        /// The crew line is one query on base + in-flight here, because that is
+        /// The crew line is ONE query on base + in-flight here, because that is
         /// what UpdateUpkeep does. Our breakdown prices the two separately,
         /// matching RP-1's own Budget tab, so the two arrangements agree exactly
         /// while the SalaryCrew modifier is a pure multiplier and differ by one
@@ -2434,7 +2434,7 @@ namespace RP0
         public double DefaultLcUpkeep;
 
         /// <summary>
-        /// Complexes RP-1 refuses to price, so a test can leave one row of a
+        /// Complexes RP-1 refuses to price, so a test can leave ONE row of a
         /// centre unreadable and see what the centre's own total then says.
         /// </summary>
         public readonly HashSet<LaunchComplex> UnpriceableComplexes = new HashSet<LaunchComplex>();
@@ -2449,7 +2449,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// The arity-2 overload, private on the real type as it is here, so a
+        /// The arity-2 overload, PRIVATE on the real type as it is here, so a
         /// lookup by public name and arity finds the one above and only the one
         /// above.
         /// </summary>
@@ -2574,7 +2574,7 @@ namespace ROUtils.DataTypes
     /// </summary>
     public class PersistentObservableList<T> : System.Collections.Generic.List<T>
     {
-        /// <summary>Every item that went in through the shadowing Add, in order.</summary>
+        /// <summary>Every item that went in through the SHADOWING Add, in order.</summary>
         public System.Collections.Generic.List<T> Observed { get; } = new System.Collections.Generic.List<T>();
 
         /// <summary>Made to throw, to pin what an operator is told when the queue refuses a node already paid for.</summary>

@@ -72,7 +72,7 @@ export const MAX_STEPS_OPTIONS = [
 /**
  * Why neither remedy can be dispatched, or null when both can.
  *
- * <p>The arm sentence is the mod's, passed through rather than reworded: it
+ * <p>The arm sentence is the MOD's, passed through rather than reworded: it
  * names the guard and it is the same sentence every other Principia write
  * surface shows for the same state. The optimiser's is ours, because the write
  * surface publishes the flag and not a sentence about it.</p>

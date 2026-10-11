@@ -32,7 +32,7 @@ describe("planWriteReceipt", () => {
   /**
    * The bug this file exists for.
    *
-   * Both write surfaces cast the envelope to a receipt, so `outcome`, `refusal`
+   * Both write surfaces cast the ENVELOPE to a receipt, so `outcome`, `refusal`
    * and `replayed` were read off a `CommandResult` that carries none of them.
    * They came back `undefined` on every plan write ever made, which is the one
    * value that reads as "fine" at each of the three call sites.
@@ -49,7 +49,7 @@ describe("planWriteReceipt", () => {
   });
 
   /**
-   * `outcome` is the receipt's required field and its zero is the closed
+   * `outcome` is the receipt's required field and its zero is the CLOSED
    * answer, so a payload missing it cannot be defaulted: zero would invent a
    * refusal nobody issued.
    */

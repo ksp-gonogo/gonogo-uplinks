@@ -22,7 +22,7 @@ import { SHIP_SYSTEMS, type ShipSystems } from "./processor.js";
  * level from one observed twenty minutes ago, and the widget presented a
  * last-contact projection as current with nothing in the render saying so.
  *
- * It now takes the reading and reports its own provenance. Not a nested
+ * It now takes the READING and reports its own provenance. Not a nested
  * `Reading`: a summary reasoning across resources is not one Topic's currency.
  */
 

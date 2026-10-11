@@ -47,16 +47,16 @@ export const RP1_TOOLING_REFIT_COMMAND = "rp1.tooling.refit";
  * What tooling the vehicle being designed needs, what finishing it costs, and
  * what it costs not to.
  *
- * <para><b>Tooling is career-global and keyed on a size, not on a part.</b> RP-1
+ * <para><b>Tooling is career-global and keyed on a SIZE, not on a part.</b> RP-1
  * holds a database of toolings, each one a type and an ordered tuple of
  * parameters, and a part is tooled when the career owns a tooling of its type
  * whose parameters match within four per cent. Two parts of one size are
  * therefore one purchase between them, and the second is free. That is the fact
- * this section is shaped around: the rows are purchases, gathered from the parts
+ * this section is shaped around: the rows are PURCHASES, gathered from the parts
  * that need them, rather than one row per part.</para>
  *
  * <para><b>Two money figures, asking different questions.</b> A purchase's price
- * is paid once. Its parts' surcharges are paid on every copy of the vehicle ever
+ * is paid ONCE. Its parts' surcharges are paid on EVERY copy of the vehicle ever
  * built, for ever, because an untooled part carries a penalty through the game's
  * own part-cost modifier. The decision an operator is making here is never "what
  * does tooling cost", it is "tool once, or pay that again on every build", so
@@ -75,12 +75,12 @@ export const RP1_TOOLING_REFIT_COMMAND = "rp1.tooling.refit";
  * host widget draws both balances for the same reason.</para>
  *
  * <para><b>Two ways to close the gap, and the second one is free.</b> A part can
- * have its tooling bought, or it can be reshaped to a size the career already
+ * have its tooling bought, or it can be RESHAPED to a size the career already
  * owns. The second spends nothing at all and is the one an early career reaches
  * for, so it is offered on the part rather than left to the game's own window:
  * `rp1.tooling[].refitTargets` carries the owned sizes this part could move to,
  * already filtered by RP-1's own material picker to ones it can actually use.
- * A refit is per part where a purchase is per size, which is why the presses
+ * A refit is per PART where a purchase is per SIZE, which is why the presses
  * live on the part rows and the price lives on the card.</para>
  */
 export function ToolingSection() {
@@ -169,7 +169,7 @@ export function ToolingSection() {
  *
  * <para>The parts are held rather than counted, because a purchase covering
  * three parts and a purchase covering one are the same price and a bare count
- * would not say which parts stop being penalised.</para>
+ * would not say WHICH parts stop being penalised.</para>
  */
 interface Purchase {
   key: string;
@@ -188,7 +188,7 @@ interface Purchase {
  *
  * <para>The key is the tooling type and the parameter summary together, which is
  * the contract's own statement of when two rows are one purchase. It is the
- * exact match only: RP-1 also covers anything within four per cent, so two
+ * EXACT match only: RP-1 also covers anything within four per cent, so two
  * different sizes can share a tooling in a way nothing on this wire can see.
  * That residue is precisely why the whole-ship price is RP-1's own figure and is
  * never added up from here.</para>
@@ -274,7 +274,7 @@ function PurchaseCard({
 /**
  * One part this purchase covers, and what flying it untooled costs per build.
  *
- * <para>Drawn nested under the once-off price, and the indent is the statement:
+ * <para>Drawn NESTED under the once-off price, and the indent is the statement:
  * the surcharge belongs to the part, the price belongs to the purchase, and a
  * card with two parts has one price and two surcharges. Level with each other
  * they read as two entries in one column, which is the reading that makes an
@@ -284,7 +284,7 @@ function PurchaseCard({
  * by the purchase either way, and dropping it would understate what the money
  * buys.</para>
  *
- * <para><b>A part under an owned tooling is named and carries no charge.</b> RP-1
+ * <para><b>A part under an OWNED tooling is named and carries no charge.</b> RP-1
  * reports its surcharge as a zero rather than as absent, because its part-cost
  * modifier genuinely adds nothing to a tooled part, and a zero drawn beside the
  * word "per build" is a bill for nothing. Nothing is what a tooled part owes, and
@@ -296,7 +296,7 @@ function PurchaseCard({
  * card's width two different tanks both rendered as "Procedural ...", so the card
  * showed two identical rows naming two different parts. `Row`'s own `wrap` did
  * not buy back enough, because the minimum width it guarantees is still shorter
- * than a part title. A part title is the only thing here that says which part
+ * than a part title. A part title is the only thing here that says WHICH part
  * stops being penalised, so it is the last thing that may go, and text that
  * wraps cannot truncate. The right-aligned money column is given up for it; the
  * figure the card is read for is the once-off price above, and that one keeps
@@ -341,19 +341,19 @@ function PartCharge({
  * <para><b>It spends nothing, and that is the whole of its money statement.</b>
  * `ToolingPartResizer.Resize` changes the part's geometry and its tank material
  * and touches no currency anywhere, read on the shipped RP-1 v4.6.0.0 RP0.dll.
- * So the line beside the presses names what the refit stops costing rather than
+ * So the line beside the presses names what the refit STOPS costing rather than
  * what it costs: the untooled surcharge is charged on every copy of the vehicle
  * ever built, and a part refitted onto an owned tooling stops paying it.</para>
  *
  * <para><b>It reaches further than the part named, and says so first.</b> Every
  * symmetry counterpart is resized too and the material is applied across the
- * part's group. RP-1 discloses both afterwards in a screen message; the count is
+ * part's group. RP-1 discloses both AFTERWARDS in a screen message; the count is
  * on the wire so it can be said while it can still change the answer.</para>
  *
  * <para><b>Each row is a size, and the material is the producer's.</b> The rows
  * are owned toolings RP-1's own picker has already matched to something this
  * part can use, tech locks included, so the press sends back the material it was
- * given rather than choosing one. A part with no rows gets no control: empty
+ * given rather than choosing one. A part with no rows gets no control: EMPTY
  * means the career owns nowhere to move, and buying the tooling is then the only
  * way.</para>
  */
@@ -433,7 +433,7 @@ function RefitControl({
  *
  * <para>The accessible name follows RP-1's own sentence for the act and its
  * three-decimal rendering, because that is the wording an operator who has used
- * the game's window already reads. It spells metres rather than carrying RP-1's
+ * the game's window already reads. It spells METRES rather than carrying RP-1's
  * `d=3.000m, L=5.000m`: a symbol beside a number in a string is announced as a
  * letter, and the visible figures beside the press are `Unit`s, which is where
  * the symbol belongs. A row missing either figure is dropped rather than pressed

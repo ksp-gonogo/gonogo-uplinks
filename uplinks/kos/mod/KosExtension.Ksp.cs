@@ -359,7 +359,7 @@ namespace Gonogo.KosUplink
         /// the owning CPU's <c>KOSCoreId</c> (spec §4.2:
         /// <c>AllInstances().First(p =&gt; p.GetScreen() == __instance)</c>).
         /// Returns -1 when no CPU owns the screen (should not happen for a
-        /// script print, but fail-soft). Called only on block completion; never
+        /// script PRINT, but fail-soft). Called ONLY on block completion; never
         /// per <c>PRINT</c> fragment: so its <c>AllInstances()</c> allocation
         /// is off the hot path.
         /// </summary>

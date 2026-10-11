@@ -11,7 +11,7 @@ namespace GonogoRp1Uplink.Tests
     /// magnitude with no ladder and no screen-reader wording.
     ///
     /// <para>The second assertion is the one that can catch what the first
-    /// cannot: an exhaustiveness sweep passes vacuously over an empty set, which
+    /// cannot: an exhaustiveness sweep passes vacuously over an EMPTY set, which
     /// is exactly what a type quietly losing <c>[SitrepContract]</c> leaves
     /// behind.</para>
     /// </summary>

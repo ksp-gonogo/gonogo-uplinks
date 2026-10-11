@@ -29,7 +29,7 @@ import { useId, useState } from "react";
 import { MECHJEB } from "../uplink.js";
 
 /**
- * MechJeb: a delayed-command control surface rather than a telemetry readout,
+ * MechJeb: a delayed-command CONTROL surface rather than a telemetry readout,
  * because MechJeb's own readouts are all derivable from what the stream already
  * carries. Three remote-autopilot
  * commands (engage ascent autopilot, execute the next maneuver node, land at
@@ -39,7 +39,7 @@ import { MECHJEB } from "../uplink.js";
  * no-reply) exactly like `LandingStatus`'s gear/brakes rows.
  *
  * Co-located with the `GonogoMechJebUplink` mod
- * (`mod/GonogoMechJebUplink/MechJebUplink.cs`), which handles `mechjeb.*` by
+ * (`mod/GonogoMechJebUplink/MechJebUplink.cs`), which HANDLES `mechjeb.*` by
  * direct-linking MechJeb2's own ascent-autopilot, node-executor and
  * landing-autopilot API. Command
  * handling is fail-soft: MechJeb2 absent, or an API drift the version guard
@@ -134,7 +134,7 @@ function commandChip(
  * state, so all three buttons below are inert.
  *
  * <p><b>An unread roster is not an unavailable uplink.</b> Only a roster that
- * arrived and named this Uplink unavailable returns a reason here; before that
+ * ARRIVED and named this Uplink unavailable returns a reason here; before that
  * the answer is null and the commands stay live, because a press that turns out
  * to be refused says so honestly and a disabled button on no evidence does not.</p>
  */

@@ -41,7 +41,7 @@ function newFixture() {
  * the universal `crew-status.meters` segment for this kerbal.
  *
  * The survival meters used to be a React augment this file rendered directly.
- * They are data now, so a test that only called the compute function would
+ * They are DATA now, so a test that only called the compute function would
  * prove nothing about them reaching a row; this mounts the whole chain, so a
  * break anywhere along it shows up here.
  */

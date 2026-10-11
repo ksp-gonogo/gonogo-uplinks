@@ -127,7 +127,7 @@ export function ContractPayload() {
 /**
  * A typed mass as the plain kilogram integer the command's wire carries.
  *
- * <para>The one place this control reaches for `.magnitude`, and it is unavoidable
+ * <para>The ONE place this control reaches for `.magnitude`, and it is unavoidable
  * rather than convenient: `rp1.contracts.setPayload` declares
  * `commsPayload` as an `int?` in kilograms, because RP-1 stores it as an `int` and
  * validates it against integer bounds and an integer step. So a raw number has to

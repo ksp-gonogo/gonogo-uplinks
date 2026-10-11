@@ -40,7 +40,7 @@ export interface PlanDraft {
   id: string;
 
   /**
-   * How many times what this draft would send has changed. The mod answers a
+   * How many times what this draft would SEND has changed. The mod answers a
    * request id it has already seen out of its replay cache without reading the
    * plan, so the request id is the draft at its revision: a corrected plan gets
    * a new id and a retransmission of the same one does not.

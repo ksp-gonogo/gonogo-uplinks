@@ -77,7 +77,7 @@ interface SpaceWeatherData {
   radiationRadPerHour: number | null;
   stormState: StormState;
   /**
-   * The three environment flags are the diagram's own state and keep a stated
+   * The three environment flags are the diagram's own state and keep a STATED
    * default of false at the point of use: a ring the mod did not report is a
    * ring not drawn, and the coercion escalates rather than reassures
    * (an unreported magnetosphere reads as "Unshielded"). {@link stormState}
@@ -88,12 +88,12 @@ interface SpaceWeatherData {
   magnetosphere: boolean;
   /**
    * Also a stated false, for a different reason from the three above: this is
-   * the ground's prediction off the star, never the vessel's own report (a
+   * the GROUND's prediction off the star, never the vessel's own report (a
    * blackout kills the downlink that would carry one). False draws no tag, which
    * is "no blackout predicted" and not "the link is up".
    */
   blackout: boolean;
-  /** Null when unreported: the pair is a fraction, and a fabricated denominator invents one. */
+  /** Null when unreported: the pair is a FRACTION, and a fabricated denominator invents one. */
   shieldingValue: number | null;
   shieldingCapacity: number | null;
   /** null when the vessel's altitude is held: the rings then draw no "you are here" dot */
@@ -101,7 +101,7 @@ interface SpaceWeatherData {
   seed: number;
   /** Every star this vessel sees, its own vantage on each. 1..N, uniform for a binary pack. */
   stars: KerbalismStarInfo[];
-  /** Every CME slot the mod reports, including state 0 (none): callers filter. */
+  /** Every CME slot the mod reports, INCLUDING state 0 (none): callers filter. */
   storms: KerbalismStormEntry[];
   /** `PreferencesRadiation.Instance.StormEjectionSpeed`, m/s. Null until first capture. */
   stormEjectionSpeedMps: number | null;
@@ -125,9 +125,9 @@ type SpaceWeatherRead =
   | { readable: false; absence: WeatherAbsence };
 
 /**
- * The judgements on this record cannot be dated. The measurements can, and are.
+ * The JUDGEMENTS on this record cannot be dated. The measurements can, and are.
  *
- * <p>What genuinely cannot survive a dropped link is the craft's position in the
+ * <p>What genuinely cannot survive a dropped link is the craft's POSITION in the
  * environment: the three belt flags say where it sits in a magnetic field right
  * now, and it has since moved. `stormState`'s `none` is a promise, so it goes to
  * `unknown` rather than keeping a reassurance nobody can still vouch for. Both
@@ -144,7 +144,7 @@ type SpaceWeatherRead =
  * <p>The old objection to keeping `shieldingCapacity` was that it is only drawn
  * as the denominator of a ratio whose numerator is withheld, making "0.0 / 3.3"
  * a verdict assembled from one number we have and one we do not. That dissolves
- * once the record is held whole: both halves come from the same delivery and
+ * once the record is held WHOLE: both halves come from the same delivery and
  * carry the same date, so the meter draws a dated ratio rather than a mixed one.
  * The objection was to a half-held panel, which is not what this is.</p>
  *
@@ -205,7 +205,7 @@ function useSpaceWeather(): SpaceWeatherRead {
         : "none";
   /**
    * The timeline renders the storm phase without a numeric countdown, because
-   * the mod emits storm presence only: `stormIncoming` and `stormInProgress`
+   * the mod emits storm PRESENCE only: `stormIncoming` and `stormInProgress`
    * are bools and there is no onset or clear clock behind them. A countdown
    * would need a mod-side storm-onset clock on the Topic, which Kerbalism
    * tracks internally but does not currently surface.
@@ -316,7 +316,7 @@ const TONE_HEX: Record<Tone, string> = {
  * could make falsely, and it is the reassuring one. A craft sitting in a storm
  * or a belt is still reported as such with no dose rate at all.
  *
- * <p>`held` outranks all of them, because every arm here is a claim about
+ * <p>`held` outranks all of them, because EVERY arm here is a claim about
  * the situation now and none of them survives a dropped link. Withholding via
  * the record's own fields was not enough: the first arm fires on a held dose of
  * 3 rad/h alone, so a board whose belts had gone dark and whose storm state had
@@ -481,7 +481,7 @@ const STAR_FILL = "var(--color-tag-yellow-fg)";
 /**
  * `KerbalismStormTargetKind.Vessel`, as its ordinal.
  *
- * The enum's value lives in the Kerbalism Uplink's barrel, and importing a
+ * The ENUM'S VALUE lives in the Kerbalism Uplink's barrel, and importing a
  * value from there runs that client's `defineUplinkClient` registration at
  * module load, which throws in any tree with no host installed and is not a
  * component library's business to trigger. The type import at the top of this
@@ -489,7 +489,7 @@ const STAR_FILL = "var(--color-tag-yellow-fg)";
  */
 const STORM_TARGET_VESSEL: KerbalismStormTargetKind = 1;
 
-/** Seeded per star, so a ring's shape is stable whichever other stars render beside it. */
+/** Seeded per STAR, so a ring's shape is stable whichever other stars render beside it. */
 function seedForStar(name: string): number {
   let s = name.length * 101 + 1;
   for (let i = 0; i < name.length; i++) s = (s * 31 + name.charCodeAt(i)) | 0;
@@ -511,10 +511,10 @@ interface StarActivity {
 
 /**
  * A star's activity level in 0..1, honestly derived from whether and how
- * imminent an in-transit CME is for this star. 0 is no CME at all, a tight and
+ * imminent an in-transit CME is for THIS star. 0 is no CME at all, a tight and
  * calm ring. It ramps toward 1 as an inbound CME's transit progress nears
  * impact, the same figure the tracker cards show, and an arrived CME reads as
- * the maximum. The level drives the ring's colour, weight, turbulence and its
+ * the maximum. The level drives the ring's colour, weight, turbulence AND its
  * distance from the star, so quiet and active are never confusable.
  */
 function starActivity(
@@ -577,7 +577,7 @@ const cmeRingPulse = keyframes`
 
 /**
  * The only animated cue in this widget, and only ever on an active ring. The
- * `prefers-reduced-motion` guard lives inside the same rule as the animation:
+ * `prefers-reduced-motion` guard lives INSIDE the same rule as the animation:
  * wrapping the keyframes alone would leave it running for a reduced-motion
  * reader.
  */
@@ -595,7 +595,7 @@ const RingPath = styled.path<{ $active: boolean }>`
  * One star: the star itself, its own activity ring, and a directional spike per
  * active storm.
  *
- * Spike direction is explicitly representational. Kerbalism models CME emission
+ * Spike DIRECTION is explicitly representational. Kerbalism models CME emission
  * as radial from the source star and carries no bearing data at all, so spikes
  * fan out at fixed, evenly spaced angles rather than pointing at real geometry.
  * The existence of a spike is the honest signal; its angle is not.
@@ -667,7 +667,7 @@ function StarDiagram({
 
 /**
  * Transit-progress colour. A progress bar's usual fill reads as "on track", and
- * a CME closing in is the opposite of that: further along the bar means closer
+ * a CME closing in is the opposite of that: further along the bar means CLOSER
  * to impact, so a green fill reads as reassuring for what is a threat. Colour keys on imminence instead, cool while
  * the CME is far out, ramping through amber into red as it nears 100, and
  * pinned to red the instant it has arrived whatever the percentage says.
@@ -688,7 +688,7 @@ function transitThreatColor(storm: StormDerived): string {
  * they aim at different things. Around a body the slot is the shared
  * `Storm.StormKey(body, star)` one and every vessel in that SOI sees the same
  * storm, so the body is the target. With no body SOI, `Storm.Update(Vessel)`
- * rolls per-vessel against that vessel's own sun distance, so the vessel is the
+ * rolls per-vessel against that vessel's own sun distance, so the VESSEL is the
  * target and no other craft shares the storm: hence the "(current vessel)"
  * qualifier, which says the CME is aimed at this craft in deep space rather
  * than at a body it happens to be near.

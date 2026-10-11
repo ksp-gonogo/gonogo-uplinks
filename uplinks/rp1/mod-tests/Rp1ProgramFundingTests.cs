@@ -10,7 +10,7 @@ using Xunit;
 /// schedule that falls out of the two.
 /// </summary>
 /// <remarks>
-/// Every expectation here is arithmetic taken from the shipped RP-1 v4.6.0.0
+/// Every expectation here is arithmetic taken from the SHIPPED RP-1 v4.6.0.0
 /// RP0.dll rather than from a captured row, so a test that goes red says RP-1
 /// changed its arithmetic and not that a save moved on:
 ///
@@ -102,7 +102,7 @@ public class Rp1ProgramFundingTests
     /// A tangent nobody could read makes the segment it bounds absent, never a
     /// segment interpolated through a slope of zero.
     ///
-    /// <para>Zero is a plateau. Substituted into Flat's straight first segment it
+    /// <para>Zero is a PLATEAU. Substituted into Flat's straight first segment it
     /// bends the line into a curve that leaves 0 flat, arrives at 1 flat, and
     /// reads 0.5 at the midpoint by coincidence rather than by construction: the
     /// funds/yr series the chart draws from the slope is flat across the whole
@@ -263,7 +263,7 @@ public class Rp1ProgramFundingTests
     }
 
     /// <summary>
-    /// A running Program whose paid-out total or elapsed fraction is unreadable
+    /// A RUNNING Program whose paid-out total or elapsed fraction is unreadable
     /// has no schedule either. Substituted, the table restarted at year 1 from a
     /// zero running total and republished the entire original promise under a
     /// column headed "Pays": every row overstated by what the career has already
@@ -282,7 +282,7 @@ public class Rp1ProgramFundingTests
     }
 
     /// <summary>
-    /// An offer is unaffected: it has paid nothing, so the whole schedule from
+    /// An OFFER is unaffected: it has paid nothing, so the whole schedule from
     /// year 1 is the right answer there and the guard above must not swallow it.
     /// </summary>
     [Fact]
@@ -304,11 +304,11 @@ public class Rp1ProgramFundingTests
     /// <para>The Hermite sum divides by the span between the two keys of the
     /// segment and that division is what the guard covers, because a NaN here
     /// does not stop at the arithmetic: the writer routes a non-finite double to
-    /// a sentinel string, so it survives serialisation and lands in a numeric
+    /// a sentinel STRING, so it survives serialisation and lands in a numeric
     /// field on the wire.</para>
     ///
-    /// <para>This test does not go red with the guard removed, and that is the
-    /// finding rather than a gap in it. The segment search takes the last key at
+    /// <para>This test does NOT go red with the guard removed, and that is the
+    /// finding rather than a gap in it. The segment search takes the LAST key at
     /// or below the sample, so the only way to select a zero-span pair is for its
     /// right-hand key to be the final one, and the clamp above the loop has
     /// already returned by then. The sweep is what establishes that: it samples
@@ -650,7 +650,7 @@ public class Rp1ProgramFundingReflectionTests : IDisposable
     /// nullability the contract already declares, rather than read as a slope of
     /// zero.
     ///
-    /// <para>The key's position and value are what a key is, so they still arrive
+    /// <para>The key's POSITION and VALUE are what a key is, so they still arrive
     /// and the key is still carried: dropping it instead would merge the segments
     /// either side of it and reshape a stretch of the curve nobody asked about,
     /// which is a second wrong answer rather than an absent one.</para>

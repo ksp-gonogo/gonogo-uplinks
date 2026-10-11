@@ -6,7 +6,7 @@ namespace Gonogo.KerbalismUplink
 {
     /// <summary>
     /// The <c>kerbalism.vessel.&lt;guid&gt;.*</c> namespace: life support and
-    /// crew survival for craft other than the one being flown.
+    /// crew survival for craft OTHER than the one being flown.
     ///
     /// <para><b>Why this can exist at all.</b> Kerbalism simulates the whole
     /// fleet, not the active craft: its resource cache walks proto part
@@ -31,7 +31,7 @@ namespace Gonogo.KerbalismUplink
         /// Per-craft Kerbalism reads per second. A career-scale save is a few
         /// hundred craft and the sample cadence is ~1 UT-second at 1x, but the
         /// gate means the realistic steady state is the handful a dashboard
-        /// actually shows, so this is set to catch the gate failing rather than
+        /// actually shows, so this is set to catch the gate FAILING rather than
         /// to bound normal use: a namespace-wide gate on a large save would
         /// breach it immediately.
         /// </summary>
@@ -70,7 +70,7 @@ namespace Gonogo.KerbalismUplink
             host.AddSampledSource(CaptureOnMain, HandleOnCourier, KerbalismFleetScope.Prefix);
         }
 
-        /// <summary>MAIN-THREAD capture: one bundle per watched craft, nothing for the rest.</summary>
+        /// <summary>MAIN-THREAD capture: one bundle per WATCHED craft, nothing for the rest.</summary>
         internal object? CaptureOnMain(KspSnapshot? snapshot)
         {
             var all = FlightGlobals.Vessels;

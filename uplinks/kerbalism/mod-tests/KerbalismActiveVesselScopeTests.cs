@@ -11,7 +11,7 @@ namespace Gonogo.KerbalismUplink.Tests
     ///
     /// <para><b>What broke.</b> Core started reporting the craft a kerbal
     /// stepped out of rather than the kerbal, so <c>vessel.parts</c> lists the
-    /// craft's parts. This backend went on resolving <c>partId</c> against
+    /// CRAFT's parts. This backend went on resolving <c>partId</c> against
     /// <c>FlightGlobals.ActiveVessel</c>, which during an EVA is the kerbal and
     /// has one part. Every part id the operator could see came back
     /// <c>no-such-part</c> - and going outside to fix a failed part is the whole
@@ -77,7 +77,7 @@ namespace Gonogo.KerbalismUplink.Tests
             Assert.Contains("class KerbalismReliabilityBackend", Read("KerbalismReliabilityBackend.cs"));
         }
 
-        /// <summary>Reads on code lines only; a doc comment naming the stock property is prose about KSP.</summary>
+        /// <summary>Reads on CODE lines only; a doc comment naming the stock property is prose about KSP.</summary>
         private static int CountDirectReads(string source) =>
             source.Split('\n')
                 .Where(line => !line.TrimStart().StartsWith("//", StringComparison.Ordinal))

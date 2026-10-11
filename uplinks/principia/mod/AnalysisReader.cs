@@ -23,7 +23,7 @@ namespace GonogoPrincipiaUplink
     /// most of this Uplink's life that was believed to forfeit the ground-track
     /// recurrence and the equatorial crossings. It does not. The producer fits a
     /// closest recurrence during the analysis itself, and its no-hypothesis path
-    /// falls back to that one rather than clearing it, deriving the crossings on
+    /// falls BACK to that one rather than clearing it, deriving the crossings on
     /// the way. Supplying a pair is an operator's manual override for comparing
     /// against a nominal orbit, not a precondition for getting an answer.</para>
     ///
@@ -162,7 +162,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>One, which is what the producer's own analyser window passes. It
         /// indexes the two passes as <c>2n - 1</c> and <c>2n</c>, so the first
-        /// revolution is 1 and not 0: zero asks for pass -1 and pass 0, which is
+        /// revolution is 1 and NOT 0: zero asks for pass -1 and pass 0, which is
         /// not a revolution anybody flew.</para>
         ///
         /// <para>This used to be zero, on the recorded grounds that the value
@@ -288,7 +288,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Kept as an angle rather than converted to a clock reading. That
         /// is the producer's own representation, it is what decides
-        /// sun-synchronicity (the band's width, not its position), and turning it
+        /// sun-synchronicity (the band's WIDTH, not its position), and turning it
         /// into hours here would put a duration's unit on something that is a time
         /// of day.</para>
         /// </summary>

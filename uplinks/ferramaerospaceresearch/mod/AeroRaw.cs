@@ -7,10 +7,10 @@ namespace GonogoFerramAerospaceResearchUplink
     /// tests, never pull in the game or the reflection surface.
     /// </summary>
     /// <remarks>
-    /// <para><see cref="DynamicPressureKpa"/> is on this DTO and deliberately not
+    /// <para><see cref="DynamicPressureKpa"/> is on this DTO and deliberately NOT
     /// on the wire: <c>vessel.flight</c> already carries dynamic pressure and
     /// carries it correctly under FAR (FAR's own flight-data window reads the
-    /// same stock value). It is here because it is the discriminator the mapper
+    /// same stock value). It is here because it is the DISCRIMINATOR the mapper
     /// needs. FAR zeroes the whole force-and-coefficient group below a fixed
     /// dynamic-pressure floor rather than leaving it undefined, so without this
     /// field the mapper cannot tell a measured zero from a placeholder one.</para>

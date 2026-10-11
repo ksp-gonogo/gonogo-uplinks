@@ -7,19 +7,19 @@ using Sitrep.Contract;
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// The GonogoKerbcastUplink: kerbcast's control plane as a first-class
+    /// The GonogoKerbcastUplink: kerbcast's CONTROL plane as a first-class
     /// Uplink, discovered by the same <c>[SitrepUplink]</c> assembly scan as
     /// every other.
     ///
     /// <para><b>What this owns:</b> the camera inventory
-    /// (<c>kerbcast.cameras</c>: identity, capabilities, and the derived
+    /// (<c>kerbcast.cameras</c>: identity, capabilities, and the DERIVED
     /// docking-port association), the presence gate
     /// (<c>kerbcast.available</c>), the aim/zoom commands
     /// (<c>kerbcast.setFieldOfView</c>/<c>kerbcast.setPan</c>), and (the point
-    /// of the exercise) a real, contract-reported health state that lands in
+    /// of the exercise) a real, contract-reported HEALTH state that lands in
     /// <c>system.uplinks</c> alongside every other Uplink's.</para>
     ///
-    /// <para><b>What this does not own: the video.</b> kerbcast's H.264 stream
+    /// <para><b>What this does NOT own: the video.</b> kerbcast's H.264 stream
     /// runs sidecar -> browser over WebRTC and stays there. A UT-indexed,
     /// keyframed telemetry channel is the wrong shape for encoded media, and
     /// the WebRTC path already works. The client's delay authority
@@ -36,7 +36,7 @@ namespace Gonogo.KerbcastUplink
     /// contract-only. Implementing <see cref="ISitrepUplink.Health"/> here is
     /// what earns the row back honestly: the mod itself reports whether
     /// kerbcast is installed, running, and seeing cameras, over the one Sitrep
-    /// connection, exactly like every other Uplink. This is the first real
+    /// connection, exactly like every other Uplink. This is the FIRST real
     /// <see cref="ISitrepUplink.Health"/> implementation in the repo.</para>
     ///
     /// <para>kerbcast is reached through <see cref="IKerbcastApi"/>, whose one
@@ -130,7 +130,7 @@ namespace Gonogo.KerbcastUplink
         }
 
         /// <summary>
-        /// kerbcast absent or unreadable: report why, and register inert sources
+        /// kerbcast absent or unreadable: report why, and register INERT sources
         /// so <c>kerbcast.available:false</c> still reaches the client. That
         /// false is load-bearing, it is what lets a client augment gated on
         /// <c>requires: "kerbcast"</c> compose its slot without kerbcast rather
@@ -221,7 +221,7 @@ namespace Gonogo.KerbcastUplink
         }
 
         /// <summary>
-        /// The mandatory healthcheck: polled on the Courier thread every
+        /// The MANDATORY healthcheck: polled on the Courier thread every
         /// <c>system.uplinks</c> sample, so it only ever reads cached volatile
         /// state written by the main-thread capture. Never touches KSP or
         /// kerbcast directly.

@@ -14,7 +14,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// not. Two quantities, one field, and every consumer that derived a quality
     /// from it was silently computing a different curve per install. What makes
     /// <c>comms.degrade</c> different is not the arithmetic, which is the same
-    /// expression here, it is that the answer arrives named. The name is what
+    /// expression here, it is that the ANSWER ARRIVES NAMED. The name is what
     /// this file pins.</para>
     /// </summary>
     public class RaDegradeTests
@@ -37,7 +37,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Nothing to read is unrated, not unusable: same discipline as the stock
+        /// Nothing to read is UNRATED, not unusable: same discipline as the stock
         /// rule, and for the same reason. A tick where the link could not be read
         /// says nothing about the link, and rating it 1 would black a feed out on
         /// a craft whose telemetry never stopped arriving.

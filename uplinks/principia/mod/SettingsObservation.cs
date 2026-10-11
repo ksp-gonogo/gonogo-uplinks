@@ -12,7 +12,7 @@ namespace GonogoPrincipiaUplink
     /// it would make the second impossible to express and the first look
     /// unique.</para>
     ///
-    /// <para>The kind is the producer's own enum value, not an index and not a
+    /// <para>The kind is the producer's own enum VALUE, not an index and not a
     /// name. Naming it would mean calling one of the producer's four namers, and
     /// every one of them reaches a fatal log through a default branch.</para>
     /// </summary>
@@ -30,7 +30,7 @@ namespace GonogoPrincipiaUplink
         /// The bodies on each side, of which the two singular fields above are the
         /// heads.
         ///
-        /// <para>A pulsating frame turns about a pair of sets rather than a pair of
+        /// <para>A pulsating frame turns about a pair of SETS rather than a pair of
         /// bodies, so the singular fields cannot express it: a Sun-Earth frame's
         /// primary side is Sun, Mercury and Venus. Left empty for the frames whose
         /// sides really are one body each, so an empty list means "the head is the
@@ -45,7 +45,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Carried beside the names rather than instead of them because they
         /// answer different questions. A name is what an operator reads; an index
-        /// is what a frame is built from, and a writer that had only names would
+        /// is what a frame is BUILT from, and a writer that had only names would
         /// have to search the body table for one, which is a guess wherever two
         /// bodies share a name.</para>
         ///

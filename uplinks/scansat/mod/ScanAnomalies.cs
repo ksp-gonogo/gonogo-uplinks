@@ -6,14 +6,14 @@ namespace Gonogo.ScansatUplink
     /// <summary>
     /// Pure (SCANsat/KSP-type-free) builder for the <c>scansat.anomalies.&lt;body&gt;</c>
     /// wire payload: one <c>Dictionary&lt;string, object?&gt;</c> per SCANsat
-    /// "anomaly" (an easter-egg surface feature: a monolith, a ufo, etc.) known
-    /// for the body, keyed with the exact camelCase field names the client
+    /// "anomaly" (an easter-egg surface feature: a monolith, a UFO, etc.) known
+    /// for the body, keyed with the EXACT camelCase field names the client
     /// decodes (JsonWriter emits a dict's keys verbatim; the client's
     /// <c>SCANAnomalyEntry</c> (<c>packages/core/src/schemas/scansat.ts</c>)
     /// mirrors these). Kept SCANsat-type-free: the uplink's
     /// <see cref="ScansatUplink.CaptureOnMain"/> reads SCANsat's
     /// <c>SCANdata.Anomalies</c> (<c>SCANanomaly[]</c>) on the main thread and
-    /// passes plain scalars in here: so the whole shaping path is
+    /// passes PLAIN scalars in here: so the whole shaping path is
     /// unit-testable headlessly with no SCANsat/KSP DLLs present, the same
     /// headless-test split as <see cref="ScanningVessels"/>/<see cref="ScanScience"/>.
     /// </summary>

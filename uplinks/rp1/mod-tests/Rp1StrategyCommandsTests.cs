@@ -95,9 +95,9 @@ namespace GonogoRp1Uplink.Tests
         // ── The two orderings, which are the point of this file ──────────────
 
         /// <summary>
-        /// The program half runs first. In-screen it runs inside Register(),
+        /// The program half runs FIRST. In-screen it runs inside Register(),
         /// which is step 2 of PerformActivate and before its alarm block, so
-        /// running it second leaves the template in place and the alarm is minted
+        /// running it second leaves the TEMPLATE in place and the alarm is minted
         /// against a deadline of zero, silently.
         /// </summary>
         [Fact]
@@ -113,7 +113,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// The consequence of getting that order wrong, asserted directly rather
-        /// than only as a sequence: the alarm block must see the accepted
+        /// than only as a sequence: the alarm block must see the ACCEPTED
         /// deadline, never the template's unassigned zero.
         /// </summary>
         [Fact]
@@ -164,7 +164,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// The speed is written before RP-1 is asked, because RP-1 prices the
-        /// Confidence threshold at the Program's current speed. Asked first, a
+        /// Confidence threshold at the Program's CURRENT speed. Asked first, a
         /// Program RP-1 had at Fast would be refused at Normal for a price the
         /// operator did not choose.
         /// </summary>
@@ -283,7 +283,7 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>
         /// Arm 9, and the reason it matters: <c>StrategyEffect.CanActivate</c> is
         /// virtual, so a mod's effect refuses for reasons we cannot enumerate.
-        /// The semantics are "refuse if ANY effect refuses", which is not what
+        /// The semantics are "refuse if ANY effect refuses", which is NOT what
         /// the decompiler renders for that loop.
         /// </summary>
         [Fact]
@@ -351,7 +351,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// PerformActivate dereferences the space centre unguarded, after the
+        /// PerformActivate dereferences the space centre unguarded, AFTER the
         /// currency charge. So it is checked before anything is written and
         /// refused on, rather than discovered part-way through.
         /// </summary>
@@ -441,7 +441,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// And the ceiling still permits when it is the unreadable half. That is
+        /// And the ceiling still permits when IT is the unreadable half. That is
         /// no known limit rather than a known limit with nothing to check against
         /// it, and refusing there would refuse every activation on a save whose
         /// Administration level cannot be read.

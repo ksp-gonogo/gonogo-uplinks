@@ -23,13 +23,13 @@ export const RP1_WARP_TO_COMPLETE_COMMAND = "rp1.warp.toComplete";
  *
  * <para><b>Why this is an augment rather than a widget.</b> Warping is one act
  * with one piece of state, and the dashboard already has a control for it. RP-1
- * does not add a second kind of warp; it adds something worth warping to, which
+ * does not add a second kind of warp; it adds something worth warping TO, which
  * is a stop condition rather than a new concept. So this binds
  * <c>warp-control.stepper</c>, the slot that exists for exactly this, and an
  * operator reads one warp control rather than hunting for whichever panel owns
  * the mod's version.</para>
  *
- * <para><b>RP-1 drives warp for one thing.</b> Stopping a warp at a balance is
+ * <para><b>RP-1 drives warp for ONE thing.</b> Stopping a warp at a balance is
  * a threshold alarm on the career balance, set from the Finances tab beside
  * RP-1's forecast of when it fires. What stays here is a fund target RP-1's own
  * Maintenance screen stood up, because it halts warps and an operator should

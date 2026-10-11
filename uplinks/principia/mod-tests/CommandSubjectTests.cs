@@ -10,7 +10,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// Core's startup check on command Subjects, run against this Uplink's own
     /// manifest so a missing one fails here rather than on a rig.
     ///
-    /// <para>Core's <c>ChannelEngine.ValidateCommandSubjects</c> marks the whole
+    /// <para>Core's <c>ChannelEngine.ValidateCommandSubjects</c> marks the WHOLE
     /// Uplink unavailable when any command that rides the signal delay names no
     /// <see cref="CommandDeclaration.Subject"/> resolving to a declared channel or
     /// dynamic namespace, which took this Uplink dark in a real install. That

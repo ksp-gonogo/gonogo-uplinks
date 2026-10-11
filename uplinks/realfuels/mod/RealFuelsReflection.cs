@@ -126,7 +126,7 @@ namespace GonogoRealFuelsUplink
 
         /// <summary>
         /// The <c>literalZeroIgnitions</c> flag off the engine-config module that
-        /// configures this engine. A part can carry more than one config module
+        /// configures THIS engine. A part can carry more than one config module
         /// (a bimodal engine does), so the one naming this engine through
         /// <c>pModule</c> is preferred and the part's first is the fallback.
         /// </summary>

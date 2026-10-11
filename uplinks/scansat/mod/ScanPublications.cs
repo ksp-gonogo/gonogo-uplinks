@@ -34,9 +34,9 @@ namespace Gonogo.ScansatUplink
     /// The COURIER-SIDE half of the SCANsat uplink's capture-on-main /
     /// handle-on-Courier split (see <see cref="ScanCapture"/> and
     /// <see cref="Sitrep.Contract.IUplinkHost.AddSampledSource"/>): the
-    /// hashing / keyframe-on-change / packing logic, driven entirely by
+    /// hashing / keyframe-on-change / packing logic, driven ENTIRELY by
     /// the plain <see cref="ScanCapture"/> payload the main thread already
-    /// gathered. It touches zero KSP/Unity/SCANsat API: every input is data
+    /// gathered. It touches ZERO KSP/Unity/SCANsat API: every input is data
     /// on the capture, every output is a <see cref="ScanPublication"/>
     /// descriptor, which is exactly why it lives in its own file and is
     /// exercised headlessly (no SCANsat/KSP DLLs) by
@@ -50,7 +50,7 @@ namespace Gonogo.ScansatUplink
         /// plane-changed gate the pre-split <c>Sample</c> did.
         /// <paramref name="lastHashByBody"/> and
         /// <paramref name="lastPackedByBodyType"/> are the Courier-owned
-        /// keyframe-on-change state and are mutated in place as new keyframes
+        /// keyframe-on-change state and ARE mutated in place as new keyframes
         /// are emitted, identical semantics to the fields they replace.
         /// Height/biome are emitted once per body visit (when
         /// <see cref="ScanCapture.IncludeHeightBiome"/> is set, which the

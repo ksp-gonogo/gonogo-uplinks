@@ -23,7 +23,7 @@ import { kindOf } from "./template.js";
  * has nothing to say about any of them, because stock has none of the
  * concepts.</para>
  *
- * <para><b>Dates only, and no controls.</b> A roster row's question is where
+ * <para><b>Dates only, and no controls.</b> A roster row's question is WHERE
  * this kerbal stands, and it answers that in at most three lines. It used to
  * carry a training picker and two leave buttons as well, which put a full
  * enrolment form on every idle naut and rendered one shared course's cancel
@@ -32,7 +32,7 @@ import { kindOf } from "./template.js";
  * a running course, and the two ways off it, are `courses.tsx`.</para>
  *
  * <para><b>No tab strip of its own, and no box either.</b> This renders inside
- * one roster row, and the Astronaut Complex builds a tab per crew standing
+ * ONE roster row, and the Astronaut Complex builds a tab per crew standing
  * around those rows: the scenes press "Active" to reach them. A second tab strip
  * inside a row would be tabs over one kerbal, under the tabs that already sort
  * the kerbals. It used to draw a `Card` so the block read as one thing rather
@@ -51,7 +51,7 @@ import { kindOf } from "./template.js";
  * <para><b>A retiree gets the date they retired and nothing else.</b> RP-1
  * retires a kerbal by writing stock's Dead into the roster, and core keeps
  * stock's standing with "Retired" as the reason, so the host files them beside
- * the fallen. The retired mark in the card's corner (`badge.tsx`) and this
+ * the fallen. The RETIRED mark in the card's corner (`badge.tsx`) and this
  * block's date are what tell the two apart. A course or a lapse date on a
  * career that has ended is a schedule nobody will keep, so neither is
  * drawn.</para>
@@ -108,7 +108,7 @@ export function CrewSchedule({
 }
 
 /**
- * When this career ends, how far the date can still be pushed, and by what.
+ * When this career ends, how far the date can still be pushed, and BY WHAT.
  *
  * <para>The ceiling is the half that makes the date actionable: a retirement
  * three years out that interesting flights can push to fifteen is a different
@@ -128,7 +128,7 @@ export function CrewSchedule({
  * So the line names the two mechanisms instead of implying a press, which
  * answers the question the old wording provoked.</para>
  *
- * <para>Absent when RP-1 holds no date, which is a real state and not a
+ * <para>Absent when RP-1 holds no date, which is a real state and NOT a
  * retirement due now: RP-1's own getter answers zero there, and the mod side
  * turns that into an absence rather than a date. Also silent when retirement is
  * switched off for the save, because a date nothing will act on is worse than no
@@ -185,7 +185,7 @@ function retiredLine(row: Rp1CrewEntry) {
 }
 
 /**
- * Which course this kerbal is on, and nothing else about it.
+ * WHICH course this kerbal is on, and nothing else about it.
  *
  * <para>The course's own progress, its finish date, the date its crew comes free
  * and the two ways off it are one row down the panel in `courses.tsx`, on the
@@ -195,8 +195,8 @@ function retiredLine(row: Rp1CrewEntry) {
  * where, and this answers exactly that.</para>
  *
  * <para>Enrolment is still told from progress, and the mark that tells them
- * apart has moved to the corner of the card (`badge.tsx`). It used to lead this
- * line, which is where which course belongs and not where that there is one
+ * apart has moved to the CORNER of the card (`badge.tsx`). It used to lead this
+ * line, which is where WHICH course belongs and not where THAT there is one
  * does: this block is read once an operator has settled on a kerbal, and whether
  * that kerbal is on a course at all is what decides which one they settle on.
  * The corner is read while scanning the names; this line is read after.</para>
@@ -227,14 +227,14 @@ function trainingLine(row: Rp1CrewEntry) {
  * qualified crew into an unqualified one while the vehicle is still being
  * integrated, and it happens on a date nothing else on the dashboard shows.</para>
  *
- * <para>The kind is stated rather than left to the target, because only one of
+ * <para>The kind is stated rather than left to the target, because only ONE of
  * RP-1's two kinds can lapse at all: a proficiency is a permanent qualification
  * on the part, and mission training expires a set interval after the course
  * completes. "Atlas-D training lapses" left an operator to work out which of the
  * two they were about to lose.</para>
  *
  * <para>Absent entirely on a save with mission training switched off, and that
- * is not tidiness: RP-1 stops checking mission training there, so a lapse date
+ * is not tidiness: RP-1 stops CHECKING mission training there, so a lapse date
  * that survived the switch being thrown is a deadline nothing will enforce.
  * <c>CheckCrewForPart</c> returns true without asking, and
  * <c>NautHasTrainingForPart</c> clears its mission branch on the same flag. A

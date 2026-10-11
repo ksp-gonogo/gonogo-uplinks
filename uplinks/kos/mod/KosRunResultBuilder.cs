@@ -11,7 +11,7 @@ namespace Gonogo.KosUplink
     /// completed <c>kos.run</c> dispatch.
     ///
     /// <para>Mirrors <c>KosProcessorInfoBuilder</c>'s same self-flattening
-    /// producer pattern: the contract POCO is the typing mirror;
+    /// producer pattern: the contract POCO is the TYPING mirror;
     /// <c>JsonWriter</c> walks this dictionary directly: no hand-written
     /// <c>AppendKosRunResult</c> case needed any more. <paramref name="fields"/>
     /// is itself a <c>Dictionary&lt;string, object?&gt;</c> and reaches

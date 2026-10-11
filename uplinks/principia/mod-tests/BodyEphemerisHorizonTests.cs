@@ -7,7 +7,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// How far this Uplink will vouch for a body's published elements, and the
+    /// How far this Uplink will vouch for a BODY's published elements, and the
     /// measurement that says a body needs bounding at all.
     ///
     /// <para><b>The question the ruling left open, answered with numbers.</b> A body
@@ -17,7 +17,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// matters was an open guess: a planet's drift might sit under a pixel at any
     /// scale anyone draws, while a moon under a nearby giant might not. It is not a
     /// guess now. Against the same rig geometry and the same law that bounds a craft,
-    /// a moon is vouched for in minutes and a planet in hours, three orders of
+    /// a moon is vouched for in MINUTES and a planet in HOURS, three orders of
     /// magnitude apart, so one number for the catalogue would have been the shortest
     /// of them applied to everything.</para>
     ///
@@ -25,13 +25,13 @@ namespace GonogoPrincipiaUplink.Tests
     /// <see cref="ConicDeparture"/> integrates the difference between a published
     /// conic and the path a neighbourhood bends it onto; nothing in it is about
     /// craft, and a moon about its planet is the same problem with different numbers.
-    /// What is new is the caller, so the numbers below are checked against a
+    /// What is new is the CALLER, so the numbers below are checked against a
     /// different kind of instrument rather than against the law that produced them,
     /// per <see cref="DepartsAtTheRateAClosedFormTidalEstimateSays"/>.</para>
     ///
-    /// <para><b>What is not measured here, stated plainly.</b> These are the stock
+    /// <para><b>What is NOT measured here, stated plainly.</b> These are the stock
     /// system's geometry and the stock masses, run through the law. Nobody has yet
-    /// stood a body's published conic next to the producer's own ephemeris on a rig
+    /// stood a body's published conic next to the producer's OWN ephemeris on a rig
     /// running n-body physics and differenced them, which is what was done for craft
     /// on 2026-09-05. The seam publishes what the provider computes, so that
     /// measurement changes these numbers without changing any shape; until it is run,
@@ -92,7 +92,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A different kind of instrument, because a span checked against the law that
+        /// A DIFFERENT KIND of instrument, because a span checked against the law that
         /// produced it checks nothing.
         ///
         /// <para>Where a body's orbit is small against the perturber's distance, the
@@ -103,11 +103,11 @@ namespace GonogoPrincipiaUplink.Tests
         /// <b>1.155</b>, the second further out because a window of thirty hours is
         /// long enough for the tide's own direction to have turned, which a free fall
         /// under a fixed pull cannot know about. Both are the integration coming in
-        /// slightly later, which is the direction a constant-pull estimate should
+        /// slightly LATER, which is the direction a constant-pull estimate should
         /// err.</para>
         ///
         /// <para><b>Minmus is deliberately not in this check, and the reason is worth
-        /// keeping.</b> It orbits four times further from Kerbin than the Mun does, so
+        /// keeping.</b> It orbits FOUR times further from Kerbin than the Mun does, so
         /// <c>r/d</c> is 4 and the tidal expression above, which assumes the opposite,
         /// is not an estimate of anything there. The integrated answer is still the
         /// one published: it forms the difference of two real pulls rather than
@@ -345,7 +345,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The cached answer is an absolute instant and what comes back is what is
-        /// left of it, so a horizon published from a later sample never reaches past
+        /// LEFT of it, so a horizon published from a later sample never reaches past
         /// one that was measured from a real one. It shrinks between measurements,
         /// which is the safe direction for a bound to be wrong in.
         /// </summary>
@@ -367,7 +367,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// answer is dropped rather than stretched.
         ///
         /// <para>What comes back is a fresh measurement at a different phase of the
-        /// Mun's own orbit, so it is a different number rather than the same one:
+        /// Mun's own orbit, so it is a DIFFERENT number rather than the same one:
         /// 3296 s against 2921 s. What it is not is 12 921 s, which is what stretching
         /// the held instant across the ten thousand reverted seconds would have
         /// produced, and that gap is what this asserts on.</para>
@@ -406,7 +406,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// The existing pass-through stays exactly as it was, and this is the reason
         /// the body horizon is a separate question. The acceleration walk that
-        /// computes any bound places each perturbing body through
+        /// computes ANY bound places each perturbing body through
         /// <c>CanPropagate</c>, so bounding a body there would refuse the walk the
         /// bound is made of.
         /// </summary>
@@ -424,13 +424,13 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// A century: far past anything this provider will vouch for as an
-        /// integrated path, and irrelevant to the question a body solve answers.
+        /// integrated path, and irrelevant to the question a body SOLVE answers.
         /// </summary>
         private const double ACentury = 100.0 * 365.0 * 24.0 * 3600.0;
 
         /// <summary>
         /// Propagating a body is unbounded however far ahead it is asked, even
-        /// though that same body's ephemeris is bounded. The two answers are about
+        /// though that same body's ephemeris IS bounded. The two answers are about
         /// different things and must not converge.
         ///
         /// <para>An ephemeris horizon says how long a body's osculating elements
@@ -487,7 +487,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// satellites, which is the rule <c>PrincipiaPerturbers.Around</c> walks.
         ///
         /// <para>Every arm is filled rather than just the one the bound sums, because
-        /// the primary's mass is joined through the child's own walk: that walk is the
+        /// the primary's MASS is joined through the child's own walk: that walk is the
         /// only table pairing a propagation index with the string the gravity model is
         /// keyed on, and a body always lists its parent. A stub that answered for the
         /// primary alone would have returned null for every body and looked like a

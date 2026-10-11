@@ -4,7 +4,7 @@
  * column; pitch is the same wheel turned a quarter turn, standing beside them,
  * which is what turns three tapes in a line into a block roughly as tall as it
  * is wide. The three sit inside the existing `CommandGroup` commit container, so
- * the whole vector dispatches as one delayed command on an explicit commit
+ * the whole vector dispatches as ONE delayed command on an explicit commit
  * (never on a child's own change). Vanilla-safe: props only, no gonogo data
  * hooks. The `gated`/`gatedReason`/`commitLabel` pass straight through to
  * `CommandGroup`, whose own gating disables the commit under `no-path`, so this
@@ -50,7 +50,7 @@ export interface CameraSetpointInputProps {
 }
 
 /**
- * One wheel box, CSS px, drawn twice: the flat wheels are `LONG x SHORT` and
+ * ONE wheel box, CSS px, drawn twice: the flat wheels are `LONG x SHORT` and
  * the standing one is `SHORT x LONG`. Same control, quarter turn. Against the
  * kit's 120x40 (horizontal) and 40x120 (vertical) defaults, which are both far
  * too big for a corner of a video.
@@ -61,12 +61,12 @@ export interface CameraSetpointInputProps {
  * kit clamps a smaller ask up to it anyway, so asking for less would be a number
  * that silently did not apply.
  *
- * `LONG` is set by text rather than by taste: a flat wheel's caret label is the
+ * `LONG` is set by TEXT rather than by taste: a flat wheel's caret label is the
  * kit's `--font-size-sm` mono and it carries an axis glyph, a sign, up to three
  * digits and a degree sign, which is 40px of type inside 6px of border and
  * padding.
  *
- * The standing wheel used to take the stack's height (52) instead of `LONG`,
+ * The standing wheel used to take the STACK's height (52) instead of `LONG`,
  * on a "span the pair you stand beside" rule. It is within 2px of the same
  * number and it is the wrong rule: it made the pitch box a function of how many
  * flat axes happen to be stacked, so a third flat axis would have stretched the
@@ -93,7 +93,7 @@ const AXIS_GAP_PX = 4;
  * cluster keeps one rhythm; the width is what "Commit" measures in the
  * uppercase mono that scope also hands the button.
  *
- * Its height is not written down here because nothing needs it: the commit is
+ * Its HEIGHT is not written down here because nothing needs it: the commit is
  * shorter than the wheels it stands beside, so the cluster's depth is theirs.
  * It measures 24 in the same render, which is the wheels' own short axis and
  * the WCAG 2.2 SC 2.5.8 target floor: the mono face is what took it there, from
@@ -108,7 +108,7 @@ const COMMIT_WIDTH_PX = 63;
  * and the commit beside both.
  *
  * Composed from its parts rather than written down, so it cannot go stale
- * behind a change to a wheel's size. The commit is in it now, because it is on
+ * behind a change to a wheel's size. The commit is IN it now, because it is on
  * the same line: `orientation="row"` trades its whole line of height for its
  * own width, which is the trade a control drawn on a 194px-tall picture wants.
  */
@@ -133,7 +133,7 @@ export const SETPOINT_INPUT_HEIGHT_PX = Math.max(
 
 /**
  * A caret label, in the one typographic detail that is load-bearing here: the
- * true minus sign rather than the hyphen `writeQuantity` writes.
+ * true MINUS SIGN rather than the hyphen `writeQuantity` writes.
  *
  * A hyphen is a line-break opportunity, and the caret label is centred in a box
  * five characters wide, so `P-10°` broke after the hyphen and drew "P-" over
@@ -147,20 +147,20 @@ const formatDegrees = (v: number): string =>
  * One axis, named twice over: a glyph a sighted operator reads at 12px inside a
  * 50px box, and the full word for everyone else.
  *
- * The glyph goes in the caret label because that is the only thing this control
+ * The glyph goes in the caret LABEL because that is the only thing this control
  * can draw inside itself, and inside is the only place a label is free: a label
  * column beside three wheels this small is another 9px of picture per row, for
  * the same number of characters. The full word is on `aria-label`, which is the
- * accessible name and is never abbreviated, and again as a `title` on the
+ * accessible NAME and is never abbreviated, and again as a `title` on the
  * wrapper so a pointer can ask what "P" means. The wrapper exists only for that
  * title: `JogWheel` renders no `...rest`, so there is nowhere else to put it.
  *
- * The standing wheel carries no caret label, and that survives the wheel being
+ * The STANDING wheel carries no caret label, and that survives the wheel being
  * its flat partner turned rather than a thin strip, because a quarter turn is
- * the one thing the kit's `orientation` prop does not do to the caret label: it
+ * the one thing the kit's `orientation` prop does NOT do to the caret label: it
  * turns the drag axis, the tape, the caret bar and `aria-orientation`, and
  * leaves the label an upright `<span>` centred in the box. So the room a label
- * has is the box's width either way, and standing, that width is
+ * has is the box's WIDTH either way, and standing, that width is
  * `WHEEL_SHORT_PX`: 18px of content inside the kit's border and compact inset,
  * against the 40px `P−10°` measures in the kit's `--font-size-sm` mono. Both
  * numbers are measured off the rendered control, and the kit's root is
@@ -168,7 +168,7 @@ const formatDegrees = (v: number): string =>
  * is one sliced through the middle.
  *
  * Nor can the axis be named there instead of measured. `JogWheel` writes
- * `aria-valuetext` from whatever `format` returns, so a wheel drawing a bare
+ * `aria-valuetext` FROM whatever `format` returns, so a wheel drawing a bare
  * "P" would announce "P" to a screen reader in place of its angle. An empty
  * format writes an empty valuetext, which falls back to `aria-valuenow`, so the
  * angle is read correctly by the one audience that cannot see the tape move.

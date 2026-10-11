@@ -12,7 +12,7 @@ namespace Gonogo.KosUplink
     /// request/response correlation: see <c>kos-uplink-full-migration.md</c>.
     /// A kOS CPU's interpreter is a single-threaded REPL (only one command
     /// can be "in flight" at a time, guarded by <c>IsWaitingForCommand()</c>
-    /// at the KSP-touching call site), so this only ever needs to track one
+    /// at the KSP-touching call site), so this only ever needs to track ONE
     /// armed request per CPU, not a general request table.
     ///
     /// <para><b>Wiring:</b> the KSP-touching <c>Run(KosRunArgs)</c> command
@@ -86,7 +86,7 @@ namespace Gonogo.KosUplink
         ///
         /// <para>The arm has to come first because a trivial one-tick script
         /// can complete its <c>[KOSDATA]</c> block synchronously inside the
-        /// typing call (<c>OnPrint</c> runs inline inside kOS's print), so the
+        /// typing call (<c>OnPrint</c> runs inline inside kOS's PRINT), so the
         /// manager must already be expecting the result before any character
         /// reaches the interpreter. That ordering is why the undo is needed:
         /// there is no way to check the window first and arm afterwards.</para>
@@ -120,7 +120,7 @@ namespace Gonogo.KosUplink
         /// <summary>True while a run is armed (in flight) for <paramref name="coreId"/>.</summary>
         public bool IsArmed(int coreId) => _pending.ContainsKey(coreId);
 
-        /// <summary>True while any CPU has an armed run, widens OnPrint's subscription gate so accumulation isn't starved when nobody subscribes to kos.compute.* (see the migration plan's "Subscription-gate fix").</summary>
+        /// <summary>True while ANY CPU has an armed run, widens OnPrint's subscription gate so accumulation isn't starved when nobody subscribes to kos.compute.* (see the migration plan's "Subscription-gate fix").</summary>
         public bool HasAnyArmed() => _pending.Count > 0;
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>
-        /// Disarm <paramref name="coreId"/> Without publishing: for a CPU
+        /// Disarm <paramref name="coreId"/> WITHOUT publishing: for a CPU
         /// going away (reboot/unload) mid-run, so a later unrelated block
         /// from a freshly-booted CPU with the same id isn't mis-attributed
         /// to the abandoned request. Also how <see cref="ArmAndType"/> undoes

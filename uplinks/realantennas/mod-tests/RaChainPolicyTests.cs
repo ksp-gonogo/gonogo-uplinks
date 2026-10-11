@@ -9,7 +9,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// <para>It is worth pinning harder than most decisions in this Uplink
     /// because nothing else will notice it being wrong. A single-target press has
     /// an operator watching the result; a chain acts on its own, minutes of
-    /// signal delay away, and the two ways it can fail quietly are opposites: a
+    /// light-time away, and the two ways it can fail quietly are opposites: a
     /// walk that never moves leaves a craft dark while reporting a fallback, and
     /// a walk that moves too eagerly slews a dish off the link it already
     /// had.</para>
@@ -88,7 +88,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// An unreadable link is a reason to do nothing, never a quiet "no". A
+        /// An unreadable link is a reason to do NOTHING, never a quiet "no". A
         /// walk that advanced on it would slew whichever dish might be the one
         /// carrying the link, on the strength of a read that never happened.
         /// </summary>
@@ -137,7 +137,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// The first application is not a lap. It is the walk starting, and
+        /// The FIRST application is not a lap. It is the walk starting, and
         /// counting it would report a chain as having been all the way round
         /// before it had tried anything.
         /// </summary>
@@ -177,7 +177,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Deciding must not move the walk. The chain channel describes it every
+        /// Deciding must not MOVE the walk. The chain channel describes it every
         /// tick, so a describe that mutated would make the reported numbers depend
         /// on who happened to be subscribed.
         /// </summary>

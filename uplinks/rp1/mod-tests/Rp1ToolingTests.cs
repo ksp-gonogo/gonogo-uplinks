@@ -101,7 +101,7 @@ public class Rp1ToolingTests : IDisposable
 
     /// <summary>
     /// And the complement, which is what stops the two above passing vacuously: a
-    /// live editor career does publish.
+    /// live editor career DOES publish.
     /// </summary>
     [Fact]
     public void Publishes_when_there_is_a_ship_and_tooling_is_on()
@@ -134,10 +134,10 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// A symmetry list nobody could read publishes absent, never a reach of zero.
+    /// A symmetry list nobody could read publishes ABSENT, never a reach of zero.
     ///
     /// <para>This one is a command consequence rather than a readout. Zero is what
-    /// suppresses the line beside the Refit press, so the substitution let an
+    /// SUPPRESSES the line beside the Refit press, so the substitution let an
     /// operator confirm a refit believing only the named part changes while RP-1
     /// resizes every counterpart with it.</para>
     /// </summary>
@@ -162,7 +162,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// The total is RP-1's own cached figure and is deliberately not derived here.
+    /// The total is RP-1's own CACHED figure and is deliberately not derived here.
     /// It is not the sum of the rows either: tooling one part can leave a neighbour
     /// free, because a tooling covers anything of its type within four per cent. A
     /// reading that added the column up would overstate, and this pins that we take
@@ -210,7 +210,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// The batch is asked for a real purchase and never a simulation.
+    /// The batch is asked for a REAL purchase and never a simulation.
     ///
     /// <para>RP-1's own window prices a ship by calling this same method with
     /// <c>isSimulation: true</c>, which saves the tooling database, performs every
@@ -284,7 +284,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// A refit spends nothing. It is an edit to the craft rather than a career
+    /// A refit SPENDS NOTHING. It is an edit to the craft rather than a career
     /// transaction, and the assertion that it bought nothing is what stops it
     /// drifting into the purchase's shape.
     /// </summary>
@@ -328,7 +328,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// A size is required in both dimensions. A refit moves a part to a size, and
+    /// A size is required in both dimensions. A refit moves a part TO a size, and
     /// there is no default size to move it to; guessing one would reshape somebody's
     /// craft to a number nobody chose.
     /// </summary>
@@ -348,7 +348,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     /// <summary>
-    /// The part is named, never taken from whichever part-action window happens to
+    /// The part is NAMED, never taken from whichever part-action window happens to
     /// be open. RP-1's own control reads that window; its underlying Resize takes a
     /// part, and a verb whose subject depends on a panel being open is one an
     /// operator at another console cannot use.

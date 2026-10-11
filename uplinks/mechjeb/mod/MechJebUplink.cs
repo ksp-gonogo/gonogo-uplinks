@@ -43,7 +43,7 @@ namespace Gonogo.MechJebUplink
     /// the actual engage calls in <c>MechJebController.cs</c>, the real
     /// Debug.LogError/GameObject wiring) lives in
     /// <c>MechJebUplink.Ksp.cs</c>, which the test project deliberately does
-    /// not compile: a headless build has no MechJeb2.dll/UnityEngine.dll
+    /// NOT compile: a headless build has no MechJeb2.dll/UnityEngine.dll
     /// reference assemblies to link against. The two halves meet at
     /// <see cref="InstallProductionDefaults"/>, a partial method: implemented
     /// (real MechJeb2/Unity wiring) in the production assembly, silently a
@@ -242,7 +242,7 @@ namespace Gonogo.MechJebUplink
         /// <para><b>Timeout is drop-not-run</b> (mirrors
         /// <c>GonogoKosUplink.KosExtension.RunOnMainThread</c>'s M1 fix): the
         /// waiter marks the job <see cref="MainThreadJob.Abandoned"/> on
-        /// timeout and does not dispose the handle; the dispatcher then drops
+        /// timeout and does NOT dispose the handle; the dispatcher then DROPS
         /// an abandoned job (never runs <paramref name="work"/>) and disposes
         /// the handle itself. Exactly one side disposes, and no
         /// <c>Set()</c> ever lands on a disposed handle. This is what

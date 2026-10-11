@@ -27,7 +27,7 @@ const NEUTRAL_CAPTURE_SAMPLE: CaptureClockSample = {
 };
 
 /**
- * The per-lease contribution the shared cache reads: the live capture-clock
+ * The per-lease contribution the shared cache reads: the LIVE capture-clock
  * source. A pipeline is shared across every consumer of one camera and
  * outlives whichever consumer happened to build it, so the build must read
  * the capture UT through `ctx.contribution()` (the first still-live lease's),
@@ -42,9 +42,9 @@ interface CaptureContribution {
 }
 
 /**
- * One delayed pipeline per camera track, shared app-wide. Keyed by the raw
+ * ONE delayed pipeline per camera track, shared app-wide. Keyed by the raw
  * `MediaStream` object identity: every consumer of one kerbcast camera gets
- * the same `cam.mediaStream` reference (the data source refcounts the camera),
+ * the SAME `cam.mediaStream` reference (the data source refcounts the camera),
  * so two widgets on one camera share a single processor and the same delayed
  * output. A `MediaStreamTrack` admits only one `MediaStreamTrackProcessor`
  * (and an `RTCRtpReceiver` only one `RTCRtpScriptTransform`); delaying once at
@@ -107,7 +107,7 @@ export function useKerbcastStream(flightId: number | null): MediaStream | null {
  * entirely for LAN passthrough; see `DelayedPlayoutResult`'s `"raw"` kind, the
  * one retained live-video path.
  *
- * A real per-frame delay:
+ * A REAL per-frame delay:
  * every video frame read off the track is individually stamped with the
  * live interpolated capture UT and gated on the shared clock; see
  * `../frameDelay.ts` (main-thread backend, Chrome) and `../worker/`
@@ -116,13 +116,13 @@ export function useKerbcastStream(flightId: number | null): MediaStream | null {
  * verification this dual-backend split rests on).
  */
 export interface KerbcastStreamDelayOptions {
-  /** The delay clock: pass the same instance telemetry reads
+  /** THE delay clock: pass the SAME instance telemetry reads
    *  (the app's `ViewClock`, or an equivalent). Kept as a structural type
    *  here so this file never imports the concrete `ViewClock` class, which
    *  stays app-internal: `DelayClockLike` comes from the SDK root, the rest of
    *  the pipeline from `@ksp-gonogo/sitrep-sdk/media`. */
   view: DelayClockLike;
-  /** Capture-UT to stamp each captured video frame with, called once per
+  /** Capture-UT to stamp EACH captured video frame with, called once per
    *  frame the pipeline reads off the track, not once per stream
    *  reference.
    *
@@ -131,7 +131,7 @@ export interface KerbcastStreamDelayOptions {
    *  unmounted. Frames are then held against the last UT the clock actually
    *  produced rather than stamped with a fabricated one. A frame stamped
    *  UT 0 is older than any edge the `view` can hold, so the buffer releases
-   *  it at once and the picture runs live beside correctly-delayed
+   *  it at once and the picture runs LIVE beside correctly-delayed
    *  telemetry: the one outcome the delay model must never produce. */
   captureUt(): number | null;
   /** The raw (un-interpolated) capture-clock sample backing `captureUt`.
@@ -159,13 +159,13 @@ export interface KerbcastStreamDelayOptions {
  * - `"raw"`: no `delay` options were supplied at all (the one retained
  *   live-video path: "there is genuinely nothing to delay", not a delay
  *   failure). `stream` may itself be `null` while the camera connects.
- * - `"connecting"`: delay was requested, but there's nothing to show yet:
+ * - `"connecting"`: delay WAS requested, but there's nothing to show yet:
  *   the raw stream hasn't arrived, or a pipeline build is in flight.
  * - `"delayed"`: a real per-frame delay pipeline is up; `stream` is its
  *   output.
  * - `"unavailable"`: delay was requested and expected, but no backend
  *   could build a pipeline here. Per decision 5 of the design doc, this is
- *   never papered over with the live stream, the caller must render an
+ *   NEVER papered over with the live stream, the caller must render an
  *   explicit "can't delay" state instead (see `CameraFeed.tsx`).
  */
 export type DelayedPlayoutResult =
@@ -183,14 +183,14 @@ const CONNECTING: DelayedPlayoutResult = { kind: "connecting" };
  * (the default) this is a strict passthrough, it returns `{kind: "raw",
  * stream: raw}` unchanged, so the LAN case spins up no pipeline at all.
  *
- * With `delay`, three backends are tried in order:
+ * With `delay`, THREE backends are tried in order:
  *
  *  0. **Encoded transform on the receiver** (`attachEncodedWorkerFrameDelay`),
  *     tried first when `getUplinkHandle("kerbcast")` can resolve an
  *     `RTCRtpReceiver` for `raw` (via `KerbcastDataSource.getReceiverForStream`)
- *     and `RTCRtpScriptTransform` exists. Empirically confirmed cross-browser
- *     correct on Chromium, Firefox and WebKit, and the only
- *     backend that can reach Firefox at all. Delays in place (no new track):
+ *     AND `RTCRtpScriptTransform` exists. Empirically confirmed cross-browser
+ *     correct on Chromium, Firefox and WebKit, and the ONLY
+ *     backend that can reach Firefox at all. Delays IN PLACE (no new track):
  *     on success the result's `stream` is `raw` itself, unchanged, the delay
  *     happens transparently upstream of decode.
  *  1. **Main-thread Breakout Box** (`isFrameDelaySupported()` /
@@ -201,9 +201,9 @@ const CONNECTING: DelayedPlayoutResult = { kind: "connecting" };
  *     tried only when (0) and (1) are both unavailable. Safari and WebKit
  *     support this, which is what puts it behind (1) rather than ahead.
  *
- * If no backend can build a pipeline, resolves `{kind: "unavailable",
+ * If NO backend can build a pipeline, resolves `{kind: "unavailable",
  * reason}`: **never** the raw stream. Falling back to `raw` would hand the
- * operator undelayed video while the telemetry beside it is delayed, and a
+ * operator UNDELAYED video while the telemetry beside it is delayed, and a
  * one-time console warning is not something they will see. "Can't delay" is a
  * first-class, visible state the caller renders explicitly.
  */
@@ -292,22 +292,22 @@ export function useDelayedPlayout(
 }
 
 /**
- * Build one delayed pipeline for a camera track, the `build` function the
+ * Build ONE delayed pipeline for a camera track, the `build` function the
  * shared cache runs at most once per camera. Tries the three backends in the
  * documented order and returns a `BuiltDelayedStream` whose `result` is the
  * `DelayedPlayoutResult` every consumer of this camera then sees, plus the
  * `dispose`/`flush` handles the cache calls on last-release / timeline-reset.
  *
  * Reads the capture clock through `ctx.contribution()` (the first still-live
- * lease's), not a closure over any one consumer's refs, the pipeline outlives
+ * lease's), NOT a closure over any one consumer's refs, the pipeline outlives
  * whichever consumer built it, and a frozen capture UT would stamp frames
- * against a dead clock. `view` (the one `ViewClock`) is the same instance for
+ * against a dead clock. `view` (the ONE `ViewClock`) is the same instance for
  * every consumer, so capturing it here is safe.
  *
- * Not `async`: the sync backends (encoded, main-thread Breakout Box, and the
+ * NOT `async`: the sync backends (encoded, main-thread Breakout Box, and the
  * "unavailable" outcomes) return a `BuiltDelayedStream` synchronously so the
  * shared cache settles in the same tick, with no spurious extra "connecting"
- * frame. Only the worker backend returns a Promise (it genuinely awaits
+ * frame. ONLY the worker backend returns a Promise (it genuinely awaits
  * `createWorkerFrameDelayStream`).
  */
 function buildDelayedPipeline(

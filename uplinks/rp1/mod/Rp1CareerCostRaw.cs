@@ -11,7 +11,7 @@ namespace GonogoRp1Uplink
         public double Ut;
 
         /// <summary>
-        /// The vehicle itself, and it already contains
+        /// The vehicle itself, and it ALREADY CONTAINS
         /// <see cref="UntooledSurcharge"/>: the surcharge reaches the vessel
         /// through IPartCostModifier and is folded into each part's cost before
         /// this is read. Adding the two would double-count.
@@ -37,13 +37,13 @@ namespace GonogoRp1Uplink
         public string? Id;
 
         /// <summary>
-        /// Absent where the tree has no title, never the id and never a blank:
+        /// ABSENT where the tree has no title, never the id and never a blank:
         /// GetTechnologyTitle answers an unknown id with the empty string.
         /// </summary>
         public string? Title;
 
         /// <summary>
-        /// Null where the editor ship could not be read, empty where it was read
+        /// NULL where the editor ship could not be read, EMPTY where it was read
         /// and nothing on it names this node. The two are different answers and a
         /// client renders them differently.
         /// </summary>
@@ -56,7 +56,7 @@ namespace GonogoRp1Uplink
         public double Ut;
 
         /// <summary>
-        /// RP-1's log handler was live and the rows below came off it. A third
+        /// RP-1's log handler was live and the rows below came off it. A THIRD
         /// state beside <see cref="Enabled"/>'s two: false publishes the channel's
         /// absence, and the capture mints the raw either way so that absence is
         /// stamped at the tick that found it rather than at the start of the game.
@@ -64,7 +64,7 @@ namespace GonogoRp1Uplink
         public bool Available;
 
         /// <summary>
-        /// Whether RP-1 is keeping the log. False is not an empty log: a career
+        /// Whether RP-1 is keeping the log. FALSE is not an empty log: a career
         /// with logging off has no history and never will, which is a different
         /// answer from one that has recorded nothing yet.
         /// </summary>
@@ -88,7 +88,7 @@ namespace GonogoRp1Uplink
         public double? Cost;
 
         /// <summary>
-        /// Whether a leader was hired or dismissed. A leader row without it is a
+        /// Whether a leader was HIRED or dismissed. A leader row without it is a
         /// name and a cost that read the same either way.
         /// </summary>
         public bool? IsAdd;

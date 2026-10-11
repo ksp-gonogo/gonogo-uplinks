@@ -52,7 +52,7 @@ namespace Gonogo.RealAntennasUplink
     /// them all as home for comms, so no flag on a station says which one holds the
     /// career ledger. The space centre survives the replacement, and every planet pack
     /// rebuilds a station beside it: Kerbal Space Center on stock, Gael Space Center on
-    /// GPP, us - Cape Canaveral on RSS.</para>
+    /// GPP, US - Cape Canaveral on RSS.</para>
     ///
     /// <para>Registered only while RealAntennas is loaded, at <see cref="Priority"/>,
     /// below a career overhaul's claimant, which knows which centre holds the ledger

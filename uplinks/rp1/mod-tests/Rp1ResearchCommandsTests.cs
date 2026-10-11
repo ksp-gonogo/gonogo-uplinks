@@ -71,7 +71,7 @@ namespace GonogoRp1Uplink.Tests
         /// </summary>
         /// <remarks>
         /// The tree's node carries <c>Available</c> deliberately. That is the
-        /// config default a real tech tree hands back, the player's own state is
+        /// CONFIG DEFAULT a real tech tree hands back, the player's own state is
         /// the empty proto-node table beside it, and a walk that took the tree's
         /// answer would report every node already researched.
         /// </remarks>
@@ -107,7 +107,7 @@ namespace GonogoRp1Uplink.Tests
         /// <para>A key production forgets to author does not throw here: it leaves
         /// the field at the constructor's default, which is exactly what the
         /// shipped game would persist. So each is asserted against a value that is
-        /// not that default.</para>
+        /// NOT that default.</para>
         /// </summary>
         [Fact]
         public void Authors_every_persistent_field_RP1_loads()
@@ -128,7 +128,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The default the checklist above is measured against is a real default,
+        /// The default the checklist above is measured against is a REAL default,
         /// not one this test asserts twice: a project RP-1 loads from an empty
         /// node keeps its constructor's values, so an unauthored key is silent.
         /// </summary>
@@ -220,7 +220,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// Parts already bought off the node travel with it, read from the live
+        /// Parts already bought off the node travel with it, read from the LIVE
         /// proto node rather than invented. RP-1's own constructor reaches the
         /// same list.
         /// </summary>
@@ -299,7 +299,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The debit itself is the unmodified integer, because
+        /// The debit itself is the UNMODIFIED integer, because
         /// <c>RDTech.ResearchTech</c>'s own <c>AddScience(-scienceCost, ...)</c>
         /// is: the modifier chain decides affordability there and does not decide
         /// the charge.
@@ -359,7 +359,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The ceiling is read through the string overload, chosen by parameter
+        /// The ceiling is read through the STRING overload, chosen by parameter
         /// type. KSP declares <c>GetFacilityLevel(SpaceCenterFacility)</c> beside
         /// it at the same arity, and an arity-only lookup takes whichever
         /// reflection lists first: bind to the enum one and the invoke throws on
@@ -383,7 +383,7 @@ namespace GonogoRp1Uplink.Tests
         // ── the queue ──────────────────────────────────────────────────────
 
         /// <summary>
-        /// The node goes in through the shadowing <c>Add</c>, which is the one
+        /// The node goes in through the SHADOWING <c>Add</c>, which is the one
         /// that fires RP-1's list events. A handler bound to
         /// <c>List&lt;T&gt;.Add</c> leaves the queue looking identical and every
         /// subscriber untold, so the count alone cannot see the difference and
@@ -505,7 +505,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// Asked before the charge, deliberately: the science leaves at enqueue,
+        /// Asked BEFORE the charge, deliberately: the science leaves at enqueue,
         /// so a second press of a control an operator thought had not landed would
         /// pay for the same node twice.
         /// </summary>
@@ -525,7 +525,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// RP-1's own prefix returns true, letting the stock instant unlock
+        /// RP-1's own prefix returns TRUE, letting the stock instant unlock
         /// through, unless all three of its general settings hold. A project
         /// queued in that save is one nothing will work through.
         /// </summary>
@@ -580,7 +580,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A save with no R&amp;D at all. Checked before the state read for a
+        /// A save with no R&amp;D at all. Checked BEFORE the state read for a
         /// reason worth keeping: stock's <c>GetTechnologyState</c> answers
         /// <c>Available</c> when its instance is null, so a handler that asked it
         /// first would tell an operator on a sandbox save that every node was
@@ -626,7 +626,7 @@ namespace GonogoRp1Uplink.Tests
         // ── availability and diagnosis ─────────────────────────────────────
 
         /// <summary>
-        /// Availability turns on the types, so the command is declared wherever
+        /// Availability turns on the TYPES, so the command is declared wherever
         /// RP-1 and KSP are, and every narrower condition is answered at the press
         /// with a sentence.
         /// </summary>

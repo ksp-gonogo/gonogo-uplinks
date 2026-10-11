@@ -24,7 +24,7 @@ namespace GonogoPrincipiaUplink
     /// churns: the burn gained a field and lost one in the very release this Uplink
     /// is keyed to. The shapes agree across the three compilers Principia ships for
     /// under the rules those compilers follow, and that is an argument rather than
-    /// evidence. A padding difference on one platform is a silent write corruption
+    /// evidence. A padding difference on ONE platform is a silent write corruption
     /// on that platform only, and it is invisible from the managed side: nothing
     /// fails to resolve, nothing throws, and the burn that lands in the save is
     /// plausible.</para>
@@ -127,7 +127,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Reads burn zero, replaces it with itself, and reads it again.
         ///
-        /// <para>Burn zero rather than the last one, because replacing the last
+        /// <para>Burn zero rather than the last one, because replacing the LAST
         /// manoeuvre can move the plan's end instant. With an identical burn the move
         /// is a no-op, and choosing the earliest burn keeps the probe from depending
         /// on that being true.</para>
@@ -201,7 +201,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Round-trips a built burn through an empty plan, then takes it out again.
+        /// Round-trips a BUILT burn through an empty plan, then takes it out again.
         ///
         /// <para><b>Why an empty plan can be probed at all now.</b> The round trip
         /// needs a burn, not a burn that came from the plan, and one built from the
@@ -321,7 +321,7 @@ namespace GonogoPrincipiaUplink
         /// <para>The same comparison the probe makes, offered to the one caller that
         /// makes the demonstration and the write in a single act: a burn built rather
         /// than copied has no earlier round trip behind it, so the insert that
-        /// originates it is the round trip. Sharing the comparison is the point. Two
+        /// originates it IS the round trip. Sharing the comparison is the point. Two
         /// notions of "the same burn" would let one of them drift, and the drifted
         /// one would be the one deciding whether somebody's plan is trustworthy.</para>
         /// </summary>
@@ -329,7 +329,7 @@ namespace GonogoPrincipiaUplink
             DescribeBurnDifference(went, came) == null;
 
         /// <summary>
-        /// Which fields of a burn came back different, and what the two values
+        /// WHICH fields of a burn came back different, and what the two values
         /// were, or null when nothing changed.
         ///
         /// <para><b>This exists because the refusal it feeds used to assert a cause
@@ -368,7 +368,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>The split is the whole of the tolerance rule. A field with a
         /// <see cref="Number"/> is a real quantity and is compared within
-        /// <see cref="MaxUlps"/>; everything else is discrete and is compared
+        /// <see cref="MaxUlps"/>; everything else is DISCRETE and is compared
         /// exactly, because a coordinate system or a frame kind that came back
         /// different is corruption and there is no "nearly" about it.</para>
         ///
@@ -382,7 +382,7 @@ namespace GonogoPrincipiaUplink
         /// are small integers and a frame ordinal, and adjacent integers are about
         /// 2^52 ULPs apart as doubles, so a four-ULP tolerance could not conflate two
         /// of them either. The split is here so that a discrete field which one day
-        /// takes a value where it would matter is already on the right side of the
+        /// takes a value where it WOULD matter is already on the right side of the
         /// line.</para>
         /// </summary>
         private readonly struct Component
@@ -427,7 +427,7 @@ namespace GonogoPrincipiaUplink
         /// that may be 0.001 or 3,000, a thrust in kilonewtons. One absolute epsilon
         /// would be far too loose for the Δv and far too tight for the UT, and three
         /// hand-picked ones would be three numbers to justify. An ULP is
-        /// scale-relative by construction, so one rule is right for all of them.</para>
+        /// scale-relative by construction, so ONE rule is right for all of them.</para>
         ///
         /// <para><b>What this still catches, which is the point.</b> Four ULPs at the
         /// measured instant is about 4e-12 seconds, and at a Δv of 1 m/s about 9e-16
@@ -450,7 +450,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>The non-finite guards are belt and braces rather than the
         /// mechanism: <c>ReflectedMembers.AsDouble</c> already turns a NaN or an
-        /// infinity into an absence, so a value that came back non-finite reaches the
+        /// infinity into an ABSENCE, so a value that came back non-finite reaches the
         /// comparison as an unreadable one and fails against the number that went in
         /// without this method being asked. The guards are here so that a future
         /// caller with a rawer source cannot get "NaN is within four ULPs of NaN" out

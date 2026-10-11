@@ -1,12 +1,12 @@
 /**
- * Rate in, position out: what a held analog input does to the draft setpoint.
+ * Rate in, position out: what a held analog input does to the DRAFT setpoint.
  *
  * The staged surface holds a target the operator is composing, not a readback
  * of where the camera is, so an input bound to it cannot be a "set this value"
  * action: there is no value to set, there is a wheel to turn. A held stick
  * therefore moves the draft continuously and lets go when the input returns to
  * rest, which is the same gesture the SDK's live pan ball answers with a pan
- * rate, pointed at a number instead of at a camera.
+ * RATE, pointed at a number instead of at a camera.
  *
  * Pure arithmetic, no React and no clock, so the rate policy is readable and
  * testable on its own and the surface only owns when to tick it.
@@ -24,7 +24,7 @@ export type AxisRates = Record<SetpointAxis, number>;
 export const REST_RATES: AxisRates = { yaw: 0, pitch: 0, fov: 0 };
 
 /**
- * Degrees of draft movement per second at full deflection.
+ * Degrees of DRAFT movement per second at full deflection.
  *
  * Deliberately not the ~90 deg/s the plugin pans a camera at (the figure the
  * kerbcast SDK sizes `settleTimeoutMs` against). That number is chosen for
@@ -88,7 +88,7 @@ function clamp(v: number, min: number, max: number): number {
  * is the one that decides it: the bounds are the camera's real gimbal limits,
  * so pinning at one is the honest reading of where it could actually point;
  * `JogWheel`'s own `applyDelta` clamps, so every other way into this value
- * already behaves this way; and a held input that latched off at a bound would
+ * already behaves this way; and a held input that LATCHED OFF at a bound would
  * need a fresh event to come back, which is exactly what a stick pushed past
  * the limit and then pulled back does not produce.
  *
@@ -97,7 +97,7 @@ function clamp(v: number, min: number, max: number): number {
  * kill the fine end of the range outright; the caret already reads to the
  * degree through its own formatter, and the command carries a float either way.
  *
- * Returns the same object when nothing moved (every axis at rest or pinned), so
+ * Returns the SAME object when nothing moved (every axis at rest or pinned), so
  * a caller holding this in state re-renders only on a real change.
  */
 export function advanceSetpoint(

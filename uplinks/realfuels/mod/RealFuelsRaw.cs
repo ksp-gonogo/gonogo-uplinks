@@ -40,7 +40,7 @@ namespace GonogoRealFuelsUplink
     }
 
     /// <summary>
-    /// The vessel's boiloff as RealFuels holds it: an accumulated mass and the
+    /// The vessel's boiloff as RealFuels holds it: an accumulated MASS and the
     /// interval it accumulated over, kept apart so the mapper can turn them into
     /// a rate or decline to (see <see cref="RealFuelsCapture.BuildBoiloff"/>).
     /// </summary>

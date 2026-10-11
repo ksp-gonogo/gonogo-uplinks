@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { ShipSystemsComponent } from "./index.js";
 
 /**
- * A ProcessController the mod could see but could not read.
+ * A ProcessController the mod could see but could not READ.
  *
  * `running` and `broken` are both `bool?` on the contract and the mod stopped
  * flattening them, so a scrubber whose module fields moved arrives with neither
@@ -19,7 +19,7 @@ import { ShipSystemsComponent } from "./index.js";
  * operator fixes by reaching for a toggle rather than by looking closer. The
  * header fraction counted it among the not-running too.
  *
- * Its own file for the same reason `noTank.test.tsx` is: the timeline store
+ * Its own FILE for the same reason `noTank.test.tsx` is: the timeline store
  * outlives one `setupStreamFixture`, so a `kerbalism.lifesupport` sample from
  * another file's describe wins over the one emitted here.
  */

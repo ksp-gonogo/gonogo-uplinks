@@ -15,14 +15,14 @@ namespace GonogoRp1Uplink.Tests
     /// to corrupt a career rather than a way to be untidy:</para>
     /// <list type="bullet">
     /// <item><see cref="Prices_and_times_the_project_from_the_live_facility"/>.
-    /// <c>SetBP</c> takes the price and the cumulative prior cost, and the second
-    /// is what decides how long the build takes. Nothing on the wire would reveal
+    /// <c>SetBP</c> takes the price AND the cumulative prior cost, and the second
+    /// is what decides how LONG the build takes. Nothing on the wire would reveal
     /// a wrong one: the project simply completes at the wrong time.</item>
     /// <item><see cref="Refuses_a_facility_whose_last_segment_is_not_a_KSP_facility"/>.
     /// The facility type cannot be derived the way RP-1 derives it, so it is
     /// parsed from the id. RP-1's own fall-through answers the Vehicle Assembly
     /// Building for anything it does not recognise, and a defaulted parse would
-    /// queue an upgrade against the wrong building.</item>
+    /// queue an upgrade against the WRONG BUILDING.</item>
     /// <item><see cref="Refuses_when_another_centre_already_has_the_facility_queued"/>.
     /// RP-1's guard searches every centre, and it must: a per-centre check lets a
     /// second project appear and two projects then race to set one level.</item>
@@ -32,7 +32,7 @@ namespace GonogoRp1Uplink.Tests
     /// two numbers, or an upgrade queued in flight builds for a different length
     /// of time than the same upgrade queued at the space centre.</item>
     /// <item><see cref="Queues_from_the_cost_table_for_an_id_no_live_facility_answers_to"/>.
-    /// The key RP-1's own <c>GetFacilityReferencesById</c> answers by throwing
+    /// The key RP-1's own <c>GetFacilityReferencesById</c> answers by THROWING
     /// rather than refusing.</item>
     /// <item><see cref="Refuses_a_building_RP1_does_not_upgrade_off_scene"/>.
     /// RP-1's <c>IsUpgradeable</c> takes a live building and so cannot be called
@@ -127,7 +127,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A career with a launch pad RP-1 prices and KSP has not built: the state
+        /// A career with a launch pad RP-1 prices and KSP has NOT built: the state
         /// of every scene but the space centre.
         /// </summary>
         private static LCSpaceCenter OffSceneCareer(int tier = 0, params int[] tierCosts)
@@ -161,7 +161,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A bare facility name and the full id it normalises to are the same
+        /// A bare facility name and the full id it normalises to are the SAME
         /// press, and the project records the normalised form either way.
         /// </summary>
         /// <remarks>
@@ -186,7 +186,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The price and the duration, both taken off the live facility and both
+        /// The price and the DURATION, both taken off the live facility and both
         /// handed to RP-1's own formula.
         /// </summary>
         /// <remarks>
@@ -255,7 +255,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// An unreadable duration refuses, the way every other step of this
+        /// An unreadable duration REFUSES, the way every other step of this
         /// command does. Substituted to zero it reported the upgrade as
         /// instantaneous in the confirmation the operator reads immediately after
         /// pressing, and queued it anyway: build points are the whole duration of
@@ -326,7 +326,7 @@ namespace GonogoRp1Uplink.Tests
         /// RP-1 derives the <c>SpaceCenterFacility</c> from the clickable scene
         /// object, not from the id, and falls through to the Vehicle Assembly
         /// Building for anything it does not recognise. This command starts from
-        /// an id, so it parses the last segment, and a failed parse must refuse:
+        /// an id, so it parses the last segment, and a failed parse must REFUSE:
         /// a modded or KSCSwitcher site whose id ends in something else is exactly
         /// the case where a default would be silently wrong.
         /// </remarks>
@@ -349,11 +349,11 @@ namespace GonogoRp1Uplink.Tests
         /// <remarks>
         /// RP-1 gives the VAB, the SPH, the Launch Pad, the Runway and R&amp;D a
         /// <c>1, 1, 1</c> upgrade ladder its own config calls "cosmetic only", and
-        /// then drives their level itself from the mean of the buildings it does
+        /// then DRIVES their level itself from the mean of the buildings it does
         /// upgrade. A project queued against one would cost a single fund, finish
         /// almost at once, and have the level it set overwritten by RP-1's own
         /// averaging: the same "state RP-1's model has no way to produce" that
-        /// <see cref="Rp1CareerProjectGate"/> keeps the stock command out of,
+        /// <see cref="Rp1CareerProjectGate"/> keeps the STOCK command out of,
         /// arriving through this command instead.
         /// </remarks>
         [Fact]
@@ -370,7 +370,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A locked facility is refused before the tier and the tech gate are
+        /// A locked facility is refused BEFORE the tier and the tech gate are
         /// considered, which is the order RP-1's own menu takes: the button is
         /// disabled outright rather than shown with a price nobody can act on.
         /// </summary>
@@ -406,11 +406,11 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The same trap wearing a number. <c>Enum.Parse</c> accepts an ordinal as
+        /// The same trap wearing a number. <c>Enum.Parse</c> accepts an ORDINAL as
         /// readily as a name, so an id ending in "2" would come back as
         /// <c>LaunchPad</c> from a segment that names no building at all: the
         /// wrong-building bug in a second costume, and the reason the facility is
-        /// matched to a name rather than parsed outright.
+        /// matched to a NAME rather than parsed outright.
         /// </summary>
         [Fact]
         public void Refuses_a_facility_whose_last_segment_is_an_enum_ordinal()
@@ -464,13 +464,13 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The two price sources produce the same two arguments to <c>SetBP</c>,
+        /// The two price sources produce the SAME two arguments to <c>SetBP</c>,
         /// which is the whole claim this change rests on.
         /// </summary>
         /// <remarks>
         /// Both halves matter and only one of them is visible anywhere else. The
         /// cost is what an operator reads back; the cumulative term is what decides
-        /// how long the build takes, and a wrong one produces a project that
+        /// how LONG the build takes, and a wrong one produces a project that
         /// finishes at the wrong time with nothing on any surface saying so. The
         /// same tier, the same ladder and the same multiplier are fed to each arm
         /// and the outputs are compared, rather than either being compared to a
@@ -498,7 +498,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The live building wins where both answer, which is what keeps the space
+        /// The live building WINS where both answer, which is what keeps the space
         /// centre at literal parity with RP-1's own button.
         /// </summary>
         /// <remarks>
@@ -538,7 +538,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// RP-1's locked buildings are refused off-scene too, matched the way
-        /// <c>IsUpgradeable</c> matches them: a case-insensitive substring of the
+        /// <c>IsUpgradeable</c> matches them: a case-insensitive SUBSTRING of the
         /// facility id, not an equality against its last segment.
         /// </summary>
         /// <remarks>
@@ -622,7 +622,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A gate on a different tier is not this tier's gate. The lookup is keyed
+        /// A gate on a DIFFERENT tier is not this tier's gate. The lookup is keyed
         /// on the target level, so reading it with the wrong one would block an
         /// upgrade that is perfectly available.
         /// </summary>
@@ -656,7 +656,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// RP-1's duplicate guard searches every centre, so a project queued at
+        /// RP-1's duplicate guard searches EVERY centre, so a project queued at
         /// another KSC refuses this one. A per-centre check would let a second
         /// project appear and the two would race to set one level.
         /// </summary>
@@ -690,7 +690,7 @@ namespace GonogoRp1Uplink.Tests
         /// A save RP-1 declines to run in has no construction queue at all, and
         /// the stock purchase is the whole of what happens. Refusing here is what
         /// makes the two commands complementary rather than both refusing:
-        /// <see cref="Rp1CareerProjectGate"/> passes in exactly this case.
+        /// <see cref="Rp1CareerProjectGate"/> PASSES in exactly this case.
         /// </summary>
         [Fact]
         public void Refuses_a_save_RP1_does_not_manage_and_the_stock_gate_passes_it()
@@ -752,7 +752,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// The requirement is answerable with no arguments, which is the only way
-        /// a control can be dark before anyone presses it.
+        /// a control can be dark BEFORE anyone presses it.
         /// </summary>
         [Fact]
         public void Pricing_requirement_is_answerable_with_no_arguments()
@@ -790,7 +790,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A cost table that exists and prices nothing is a cold start, not an
+        /// A cost table that EXISTS and prices nothing is a cold start, not an
         /// answer. It is created at type load and filled by a coroutine, so a
         /// non-null empty table is the state during loading.
         /// </summary>
@@ -840,7 +840,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The gate and the handler give the same answer for the same state,
+        /// The gate and the handler give the SAME answer for the same state,
         /// which is what stops a live control refusing every press, and equally
         /// what stops a dark control hiding a press that would have worked.
         /// </summary>

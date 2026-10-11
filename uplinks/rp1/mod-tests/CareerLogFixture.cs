@@ -19,7 +19,7 @@ namespace RP0
     public abstract class CareerEvent
     {
         /// <summary>
-        /// Makes <see cref="UT"/> unreadable on this event, which is what a mixed
+        /// Makes <see cref="UT"/> unreadable on THIS event, which is what a mixed
         /// timeline needs: one row RP-1 will not date sitting among rows it will.
         /// A static switch could only make every row undated at once, and the
         /// ordering question only exists when the two kinds are in one list.
@@ -71,7 +71,7 @@ namespace RP0
         public string? LaunchID;
         public string? Part;
 
-        /// <summary>A plain string on the real type, not an enum, unlike its siblings.</summary>
+        /// <summary>A plain STRING on the real type, not an enum, unlike its siblings.</summary>
         public string? Type;
     }
 
@@ -92,7 +92,7 @@ namespace RP0
     /// <summary>
     /// The sixth kind, which this fixture did not model at all until the reading it
     /// feeds was found to produce a nameless row for it. Its absence was invisible:
-    /// production walks <c>_facilityConstructionEvents</c> by name, a fixture
+    /// production walks <c>_facilityConstructionEvents</c> by NAME, a fixture
     /// without that field yields null, and an empty walk asserts nothing.
     /// </summary>
     public class FacilityConstructionEvent : CareerEvent
@@ -166,7 +166,7 @@ namespace RP0
         public static CareerLog? Instance;
 
         /// <summary>
-        /// Whether the career is being logged. False is not an empty log, and the
+        /// Whether the career is being logged. FALSE is not an empty log, and the
         /// reading has to keep the two apart.
         /// </summary>
         public bool IsEnabled = true;

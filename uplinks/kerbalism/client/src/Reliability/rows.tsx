@@ -31,7 +31,7 @@ function serviceBudget(
 
 /**
  * Whether this part earns a row: a condition not plainly nominal, or a service
- * clock nearly run down. An unrecognised condition selects, and {@link rowFor}
+ * clock nearly run down. An UNRECOGNISED condition selects, and {@link rowFor}
  * is total so it still renders.
  */
 export function isNoteworthy(part: KerbalismReliabilityPart): boolean {
@@ -78,11 +78,11 @@ function joined(
 }
 
 /**
- * One row per noteworthy part, first match wins, and total: every selected
+ * One row per noteworthy part, first match wins, and TOTAL: every selected
  * part renders something.
  *
  * A service-due part never shows a future countdown on its own: an EVA
- * inspection that finds a part worn makes it due now whatever its clock says,
+ * inspection that finds a part worn makes it due NOW whatever its clock says,
  * so only an overdue clock is quoted beside the word.
  */
 export function rowFor(part: KerbalismReliabilityPart): Row {

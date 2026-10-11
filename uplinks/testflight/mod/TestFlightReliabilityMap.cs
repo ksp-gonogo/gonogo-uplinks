@@ -67,13 +67,13 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// The two rated-burn budgets. They are independent ratings, not two views
-        /// of one: under RO a bntr rates 36000 s cumulative against 3600 s
+        /// The two rated-burn budgets. They are INDEPENDENT ratings, not two views
+        /// of one: under RO a BNTR rates 36000 s cumulative against 3600 s
         /// continuous, so a single "remaining rated burn" slot has to pick one and
         /// be wrong about the other. Each names its scope in the label so the
         /// number on screen cannot be read as the other one.
         ///
-        /// <para>When the two rated limits are equal only the cumulative one is
+        /// <para>When the two rated limits are EQUAL only the cumulative one is
         /// emitted, labelled plainly "rated burn": that mirrors TestFlight's own
         /// GUI collapsing to a single field, and avoids two identical rows.</para>
         ///

@@ -6,7 +6,7 @@ import { SCANSAT_DYNAMIC_PREFIXES } from "./topics.js";
 
 /**
  * Cross-boundary contract test for SCANsat's dynamic per-(body, type)
- * namespaces. Both sides of the wire must describe them with the same prefix
+ * namespaces. Both sides of the wire must describe them with the SAME prefix
  * strings, or a namespace desyncs silently: the mod publishing under one string
  * while the client resolves another.
  *

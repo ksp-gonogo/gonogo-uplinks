@@ -18,7 +18,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// raw. A core serializer cannot reference an Uplink assembly, so the flatten
     /// moved to the producer (<see cref="RaWire"/>), the same publish-boundary
     /// pattern every other Uplink in this repository already used. These tests
-    /// still go through the real codec, via <c>WirePayload</c>, so
+    /// still go through the REAL codec, via <c>WirePayload</c>, so
     /// they prove the bytes rather than the builder: what a subscriber receives is
     /// what is asserted.</para>
     ///
@@ -73,8 +73,8 @@ namespace GonogoRealAntennasUplink.Tests
 
         /// <summary>
         /// <c>meta</c> is the part the flatten is easiest to get subtly wrong, and
-        /// the part no field assertion above would catch: it is a nested object
-        /// whose <c>quality</c> is the enum's integer ordinal, not its name, which
+        /// the part no field assertion above would catch: it is a NESTED object
+        /// whose <c>quality</c> is the enum's integer ORDINAL, not its name, which
         /// is the convention every other enum on this wire follows. A builder that
         /// wrote the name instead would serialize fine and decode to a string on a
         /// client expecting a number.

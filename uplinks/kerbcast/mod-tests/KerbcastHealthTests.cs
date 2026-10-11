@@ -8,7 +8,7 @@ namespace GonogoKerbcastUplink.Tests;
 /// The mandatory healthcheck's state machine: the reason the kerbcast Uplink
 /// exists (see <see cref="KerbcastHealth"/>'s doc and commit 45111e44).
 ///
-/// <para>These assert the distinctions, not just the enum: an operator looking
+/// <para>These assert the DISTINCTIONS, not just the enum: an operator looking
 /// at a black camera feed must be able to tell "kerbcast isn't installed" from
 /// "you're in the VAB" from "the sidecar died" from "your craft has no camera
 /// on it", because those are four different fixes.</para>

@@ -53,9 +53,9 @@ namespace GonogoKosUplink.Tests
         /// call shape a plain <c>HashSet&lt;int&gt;</c> would (so every
         /// pre-existing single-subscriber test, one <c>Add</c>, one
         /// <c>Remove</c>, keeps compiling and behaving identically) while
-        /// also letting a test model a second simultaneous subscriber by
-        /// calling <c>Add</c> twice for the same id. Note: this is
-        /// deliberately not the reseed signal (Gap A), that is
+        /// ALSO letting a test model a second simultaneous subscriber by
+        /// calling <c>Add</c> twice for the same id. NOTE: this is
+        /// deliberately NOT the reseed signal (Gap A), that is
         /// <see cref="KosTerminalManager.NotifySubscribed"/>, modelled by
         /// <see cref="Harness.Subscribe"/> below, which mirrors production's
         /// separation between "is this CPU currently subscribed at all"
@@ -131,10 +131,10 @@ namespace GonogoKosUplink.Tests
 
             /// <summary>
             /// Models a session subscribing: bumps the aggregate count
-            /// (Poll's "is anyone watching" gate) and fires the production
+            /// (Poll's "is anyone watching" gate) AND fires the production
             /// per-session subscribe-transition signal
             /// (<see cref="KosTerminalManager.NotifySubscribed"/>) exactly
-            /// as ChannelEngine.ProcessSubscribe does for every individual
+            /// as ChannelEngine.ProcessSubscribe does for EVERY individual
             /// session subscribe, on the Courier thread, regardless of
             /// whether the aggregate count actually changed.
             /// </summary>

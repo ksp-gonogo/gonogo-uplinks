@@ -12,7 +12,7 @@ namespace Gonogo.KerbalismUplink
     /// reading the right amount.
     ///
     /// <para><b>The gate is per craft, never per namespace.</b> A namespace-wide
-    /// "is anyone watching kerbalism.vessel.*" test passes as soon as one probe
+    /// "is anyone watching kerbalism.vessel.*" test passes as soon as ONE probe
     /// is on screen, and every tick after that walks every vessel in the save
     /// doing habitat, resource and rule reflection for craft nobody asked
     /// about.</para>
@@ -23,7 +23,7 @@ namespace Gonogo.KerbalismUplink
         /// The dynamic namespace prefix. Declares
         /// <c>ChannelDeclaration.PerVesselNode</c> at registration so each
         /// craft's payload records on its own node and reveals at its own
-        /// signal delay.
+        /// light-time.
         /// </summary>
         public const string Prefix = "kerbalism.vessel.";
 

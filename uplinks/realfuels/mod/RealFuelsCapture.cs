@@ -70,7 +70,7 @@ namespace GonogoRealFuelsUplink
         }
 
         /// <summary>
-        /// Boiloff as a rate in kg/s, from the mass RealFuels accumulated and the
+        /// Boiloff as a RATE in kg/s, from the mass RealFuels accumulated and the
         /// interval it accumulated over.
         ///
         /// <para>RealFuels' <c>BoiloffMassRate</c> is not one: its base
@@ -99,7 +99,7 @@ namespace GonogoRealFuelsUplink
         /// the reflection walk so the fold's absence rules are testable headless.
         ///
         /// <para>A tank whose <c>SupportsBoiloff</c> could not be read, or which
-        /// supports boiloff but whose mass could not be read, makes the vessel's
+        /// supports boiloff but whose mass could not be read, makes the VESSEL's
         /// mass and tank count unknown. Both were previously skipped: the mass
         /// became a sum over the tanks that answered, and the count became the
         /// number of tanks that answered yes, so an install where the member had

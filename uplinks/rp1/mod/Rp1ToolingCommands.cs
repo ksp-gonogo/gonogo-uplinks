@@ -96,7 +96,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// RP-1's tooling module base and its resizer resolved. Both, because the
+        /// RP-1's tooling module base AND its resizer resolved. Both, because the
         /// two commands need one each and a build missing either should not offer
         /// the pair.
         /// </summary>

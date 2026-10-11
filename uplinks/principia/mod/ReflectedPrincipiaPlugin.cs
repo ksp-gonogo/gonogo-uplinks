@@ -137,7 +137,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Resolves one audited write, through the write register rather than the
+        /// Resolves one audited WRITE, through the write register rather than the
         /// read one.
         ///
         /// <para>The read register screens every name carrying a write verb and
@@ -246,11 +246,11 @@ namespace GonogoPrincipiaUplink
         /// was not the readout: the instant is the one every write guard compares a
         /// burn against, and each of those comparisons is false at zero, so a guard
         /// asking whether a burn is running right now answered a question about the
-        /// start of the campaign and permitted the edit.</para>
+        /// start of the campaign and PERMITTED the edit.</para>
         /// </summary>
         public double? CurrentTime(IntPtr plugin) => Double("CurrentTime", plugin);
 
-        /// <summary>Fails closed on an unreadable answer: every other call on this
+        /// <summary>Fails CLOSED on an unreadable answer: every other call on this
         /// surface aborts the process on a guid the plugin does not hold, so "we
         /// could not tell" has to stop the lookup rather than travel.</summary>
         public bool HasVessel(IntPtr plugin, string vesselGuid) =>
@@ -279,13 +279,13 @@ namespace GonogoPrincipiaUplink
         /// operator's nominal orbit to compare the fit against rather than a way of
         /// asking for the fit. Nothing here wants to compare against a nominal, so
         /// the pair is written once as null and the caller cannot get it wrong.
-        /// Null does not forfeit the recurrence: Principia falls back to the one it
+        /// Null does NOT forfeit the recurrence: Principia falls back to the one it
         /// fitted during the analysis.</para>
         /// </summary>
         public object? VesselGetAnalysis(IntPtr plugin, string vesselGuid, int groundTrackRevolution) =>
             Call("VesselGetAnalysis", plugin, vesselGuid, null, null, groundTrackRevolution);
 
-        /// <summary>Fails closed, like <see cref="HasVessel"/>: asking a plan read of
+        /// <summary>Fails CLOSED, like <see cref="HasVessel"/>: asking a plan read of
         /// a vessel that has no plan aborts. The observation says "we could not look"
         /// through <c>PlanCount</c> being null beside it.</summary>
         public bool FlightPlanExists(IntPtr plugin, string vesselGuid) =>
@@ -312,7 +312,7 @@ namespace GonogoPrincipiaUplink
         public object? FlightPlanGetAdaptiveStepParameters(IntPtr plugin, string vesselGuid) =>
             Call("FlightPlanGetAdaptiveStepParameters", plugin, vesselGuid);
 
-        /// <summary>A cursor bound rather than a published count, so an unreadable
+        /// <summary>A CURSOR BOUND rather than a published count, so an unreadable
         /// answer fails closed to zero: the burn reads it bounds are the ones that
         /// abort out of range, and iterating none is the only safe reading of "we do
         /// not know how many". It is not the anomalous count, which is published and
@@ -425,7 +425,7 @@ namespace GonogoPrincipiaUplink
         /// <para>A mismatch here is the producer having changed a return type
         /// between releases, and the reflected call still resolving: the invoke
         /// succeeds and hands back something this build cannot read. Resolving that
-        /// to 0 / 0.0 / false published a fact nobody read, and the facts these
+        /// to 0 / 0.0 / false published a FACT nobody read, and the facts these
         /// calls carry are ones an operator acts on: a zero anomalous count says no
         /// burn is flagged, a zero plan count renders "PLAN 1 OF 0", and a false
         /// optimisation state says it is safe to write. Null is the only answer that

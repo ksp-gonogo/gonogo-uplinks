@@ -11,7 +11,7 @@ namespace Gonogo.RealAntennasUplink
     /// reported craft's antennas for <c>realantennas.antennas</c>, and applies
     /// the two commands that write to them.
     ///
-    /// <para>Main thread only, both halves. The read runs from the Uplink's
+    /// <para>MAIN THREAD ONLY, both halves. The read runs from the Uplink's
     /// capture-on-main hook; the writes create a <c>GameObject</c> and add a
     /// component, and the production <c>ChannelEngine</c> is constructed
     /// <c>executeCommandsOnMainThread: true</c>, so every command handler is
@@ -29,7 +29,7 @@ namespace Gonogo.RealAntennasUplink
     /// and tested headlessly. This class resolves handles and performs effects.</para>
     ///
     /// <para><b>There is deliberately no clear-target command, and there should
-    /// not be one.</b> Both commands here move an antenna between targets, which
+    /// not be one.</b> Both commands here MOVE an antenna between targets, which
     /// is the only thing RealAntennas itself does to a vessel dish: it assigns a
     /// null target in exactly one place, for a ground station. An antenna holding
     /// no target takes no pointing loss in any direction, so a command that put a
@@ -87,7 +87,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: one <see cref="RealAntennasAntennaState"/> per antenna on
+        /// MAIN THREAD: one <see cref="RealAntennasAntennaState"/> per antenna on
         /// the reported craft, in RealAntennas' own list order. Empty when there
         /// is no craft or it carries no RealAntennas antenna, which is a real
         /// answer rather than typed absence: the previous craft's antennas must
@@ -155,7 +155,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: <c>realantennas.antenna.target</c>. Points one antenna at
+        /// MAIN THREAD: <c>realantennas.antenna.target</c>. Points one antenna at
         /// one thing, then invalidates the network cache.
         /// </summary>
         public CommandResult Target(Vessel? vessel, RealAntennasTargetArgs? args)
@@ -173,7 +173,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: everything <see cref="Target"/> does except aiming the
+        /// MAIN THREAD: everything <see cref="Target"/> does EXCEPT aiming the
         /// antenna. <c>Ok</c> means this request would be accepted as it stands.
         ///
         /// <para>It is what lets a fallback chain be checked entry by entry at the
@@ -256,11 +256,11 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: <c>realantennas.antenna.targetHome</c>. Hands the antenna
+        /// MAIN THREAD: <c>realantennas.antenna.targetHome</c>. Hands the antenna
         /// to RealAntennas' own <c>SetDefaultTarget()</c>, then invalidates the
         /// network cache.
         ///
-        /// <para><b>"Home" here is the home body's centre, and nothing else.</b>
+        /// <para><b>"Home" here is the home body's CENTRE, and nothing else.</b>
         /// That is what <c>SetDefaultTarget</c> writes: a fixed point on
         /// <c>Planetarium.fetch.Home</c> at latitude 0, longitude 0, altitude
         /// minus the body's radius. It is not the space centre, not the ground
@@ -326,7 +326,7 @@ namespace Gonogo.RealAntennasUplink
         ///
         /// <para>The invalidate is not housekeeping and it is not optional.
         /// RealAntennas' link solver reads antennas out of a mirror that
-        /// refreshes the aim direction on every network rebuild but the
+        /// refreshes the aim DIRECTION on every network rebuild but the
         /// has-a-target flag only on a full re-gather. Without the invalidate a
         /// dish that had no target keeps being solved as though it still had
         /// none, for as long as nothing else happens to trigger a re-gather:
@@ -416,7 +416,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: writes <paramref name="step"/> to an antenna with none of the
+        /// MAIN THREAD: writes <paramref name="step"/> to an antenna with none of the
         /// operator-facing gates: no tech-level check and no unlocked-mode check. It
         /// is how a borrowed dish is turned and, above all, how it is put back, and
         /// a restore that the gates could refuse (a mode the antenna has not earned,
@@ -453,7 +453,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Main thread: what an antenna is aimed at now, as the single-target
+        /// MAIN THREAD: what an antenna is aimed at now, as the single-target
         /// command takes it, or null when it holds no target or one this does not
         /// recognise. A body's centre reads back as the surface point it is stored
         /// as, which writes back identically.

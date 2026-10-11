@@ -30,7 +30,7 @@ export const RP1_SCRAP_COMMAND = "rp1.vehicle.scrap";
  * across every launch complex.
  *
  * <para><b>Gathered by complex, without being nested under it.</b> The cards
- * are ordered so that everything at one complex sits together, which is what
+ * are ORDERED so that everything at one complex sits together, which is what
  * makes a flat list read as grouped; the complex is not made a heading, because
  * a complex is not the subject here. It is where work is happening, and an
  * operator scanning for what is nearly finished should not have to open three
@@ -44,7 +44,7 @@ export const RP1_SCRAP_COMMAND = "rp1.vehicle.scrap";
  * and the controls for staffing and rushing live where the complex itself is
  * administered.</para>
  *
- * <para>The complexes, the pads and the operations are read here rather than
+ * <para>The complexes, the pads and the operations are read HERE rather than
  * passed in, because each contributed section is an independent consumer of
  * this Uplink's wire. That is what makes the two of them a working example of
  * the contribution API rather than two halves of one widget that happen to be

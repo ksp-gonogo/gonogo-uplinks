@@ -1,10 +1,10 @@
 /**
  * Parser for the `[KOSDATA] k=v;k=v [/KOSDATA]` wire format that kOS widget
- * scripts must emit on stdout. Pure function, no I/O.
+ * scripts MUST emit on stdout. Pure function, no I/O.
  *
  * The input is any chunk of kOS terminal output, the parser locates the
  * marker pair, parses the key/value body, and returns an object. Text
- * outside the markers (REPL prompt, run echo, stray PRINTs) is ignored.
+ * outside the markers (REPL prompt, RUN echo, stray PRINTs) is ignored.
  *
  * If the chunk contains multiple `[KOSDATA] ... [/KOSDATA]` blocks, the last
  * one wins. That matches the intended contract: scripts emit exactly one,
@@ -53,12 +53,12 @@ export const DEFAULT_KOS_TOPIC = "default";
  * Strip ANSI control sequences. kOS's GUI repaint emits screen contents
  * with a cursor-position escape (`ESC [ row ; col H`) injected at every
  * terminal line wrap, which can split our `[KOSDATA]` marker, observed
- * in the wild as `[/KOSDA<ESC[22;1H>TA]`. Stripping these before the
+ * in the wild as `[/KOSDA<ESC[22;1H>TA]`. Stripping these BEFORE the
  * marker scan makes the parser robust to wrapping across PTY rows.
  *
  * Sequences covered:
  *   - CSI: `ESC [ params final-byte`
- *   - Osc: `ESC ] ... BEL` (title-set, etc.)
+ *   - OSC: `ESC ] ... BEL` (title-set, etc.)
  *   - Bare 2-byte escapes: `ESC <letter>` or `ESC ?` etc.
  */
 const ANSI_RE =

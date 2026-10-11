@@ -23,11 +23,11 @@ import type {
 import { ComplexCard } from "./ComplexCard.js";
 
 /**
- * One space centre, and the launch complexes at it.
+ * ONE space centre, and the launch complexes at it.
  *
  * <para>The middle rung of RP-1's hierarchy, and the one stock KSP has no
  * counterpart for. Stock has a set of buildings; RP-1 has a set of buildings per
- * career, then a centre, then complexes at that centre, and every staffing
+ * CAREER, then a centre, then complexes at that centre, and every staffing
  * question is asked at a different one of those three. This block is what makes
  * the middle one visible: a heading naming the place, the pool of engineers it
  * holds that no complex has claimed, and its complexes nested under it.</para>

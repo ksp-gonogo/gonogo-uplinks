@@ -78,10 +78,10 @@ export const SCAN_SCIENCE_READING_ID = SCAN_SCIENCE_READING.id;
  * The slot's four lifecycle flags are plain booleans with no third state: the
  * host widget draws a badge per flag, so there is nowhere on a row to put "nobody
  * read this". That is what made `=== true` a lie by construction rather than a
- * convenience, because it turns an absent flag into a definite off, and an
+ * convenience, because it turns an absent flag into a definite OFF, and an
  * absent `rerunnable` in particular flips a SCANsat scanner's badge to
  * ONE-SHOT. So an entry that does not carry all four as real booleans is not
- * an entry in the shape this Uplink speaks, and the whole frame declines: no
+ * an entry in the shape this Uplink speaks, and the whole FRAME declines: no
  * row fabricates a badge, and no row goes quietly missing either, since a
  * short list drawn as complete is the same defect one rung along and the host
  * widget counts these rows in its own header.
@@ -126,7 +126,7 @@ export function parseScanScience(raw: unknown): ScanScienceRow[] | null {
 }
 
 /**
- * Exported because it is pure, which makes it the cheapest thing here to test:
+ * Exported because it is PURE, which makes it the cheapest thing here to test:
  * hand it a topics bag, assert the rows.
  *
  * Every row carries the one reading its flags were parsed from, so the host

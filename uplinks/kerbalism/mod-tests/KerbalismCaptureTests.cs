@@ -33,7 +33,7 @@ public class KerbalismCaptureTests
 
     /// <summary>
     /// A CME slot names its target, so the client can say who the storm is
-    /// inbound to: the SOI body for a vessel around a body, the vessel itself
+    /// inbound TO: the SOI body for a vessel around a body, the vessel itself
     /// for one in solar orbit (Kerbalism rolls those per-vessel). The kind rides
     /// as its integer ordinal, like every other contract enum on the wire.
     /// </summary>
@@ -393,7 +393,7 @@ public class KerbalismCaptureTests
     }
 
     /// <summary>
-    /// An instant needs an anchor, so a derivable remaining-time with no
+    /// An instant needs an anchor, so a derivable remaining-time with NO
     /// <c>asOfUt</c> publishes nothing rather than an unanchored figure.
     /// </summary>
     ///
@@ -519,7 +519,7 @@ public class KerbalismReliabilityMapTests
     }
 
     /// <summary>
-    /// The state Kerbalism calls "needs service": preventive, not yet broken. The
+    /// The state Kerbalism calls "needs service": preventive, NOT yet broken. The
     /// old shape carried it in a field named NeedsRepair, so the roster printed the
     /// word "repair" for a part that wanted an inspection.
     /// </summary>
@@ -579,7 +579,7 @@ public class KerbalismReliabilityMapTests
     }
 
     /// <summary>
-    /// A service-due part whose clock cannot be read carries no budget rather than a
+    /// A service-due part whose clock cannot be read carries NO budget rather than a
     /// made-up one: NeedsMaintenance() has a second, unrelated source (an EVA
     /// inspection's wear flag), so a part can be due now with its clock far away.
     /// </summary>
@@ -599,9 +599,9 @@ public class KerbalismReliabilityMapTests
     }
 
     /// <summary>
-    /// Two entries sharing a raw id is the normal case, not a corner: the proto
+    /// Two entries sharing a raw id is the NORMAL case, not a corner: the proto
     /// constructor sets partId = 0 for every part on an unloaded vessel, and
-    /// BuildList iterates modules, so one probe core with two redundancy blocks
+    /// BuildList iterates MODULES, so one probe core with two redundancy blocks
     /// yields two entries with the same flightID.
     /// </summary>
     [Fact]

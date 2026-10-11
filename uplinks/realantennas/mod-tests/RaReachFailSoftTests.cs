@@ -11,7 +11,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// <para>Every other path through <see cref="RaReach"/> needs a running
     /// RealAntennas, but this one does not and is the one most worth pinning: a
     /// moved reflection surface, an install without RA, or a node with no
-    /// antennas must all come back absent. Zero would assert that RA carries the
+    /// antennas must all come back ABSENT. Zero would assert that RA carries the
     /// pair nowhere, and a contact predictor reading that goes permanently dark
     /// on the strength of a failed read rather than falling back to geometry.</para>
     /// </summary>

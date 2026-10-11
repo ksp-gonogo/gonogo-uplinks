@@ -57,7 +57,7 @@ import {
 
 /**
  * The Domain presence gate: a bare JSON boolean the RA uplink emits (TrueNow)
- * while RealAntennas is loaded. Its value must match
+ * while RealAntennas is loaded. Its value MUST match
  * `RealAntennasUplink.AvailableTopic` in ../../RealAntennasUplink.cs. The RA
  * augments bind `requires: "realantennas"`, which resolves to this Topic, so
  * their detail composes into CommSignal only when RA is actually running.
@@ -65,7 +65,7 @@ import {
 export const REALANTENNAS_AVAILABLE_TOPIC = "realantennas.available";
 
 /**
- * Link margin normalised to 0..1. Its value must match
+ * Link margin normalised to 0..1. Its value MUST match
  * `RealAntennasUplink.LinkQualityTopic` in ../../RealAntennasUplink.cs:
  * `topics.test.ts` asserts that.
  */
@@ -78,9 +78,9 @@ export const COMMS_DATA_RATE_TOPIC = "comms.dataRate";
 export const COMMS_LINK_MARGIN_TOPIC = "comms.linkMargin";
 
 /**
- * Per-hop forward band rate: a bare array of {@link RealAntennasHopRate}, one
+ * Per-hop forward band rate: a BARE ARRAY of {@link RealAntennasHopRate}, one
  * entry per hop that has a readable rate, keyed by the same node ids
- * `comms.path` carries. Its value must match `RealAntennasUplink.HopRatesTopic`
+ * `comms.path` carries. Its value MUST match `RealAntennasUplink.HopRatesTopic`
  * in ../../RealAntennasUplink.cs. The `comm-signal.hop-rates` contribution (see
  * ./CommSignal/hopRates.ts) reads it and joins each rate onto the route the core
  * CommSignal schedule already renders, so CommSignal never names RealAntennas.
@@ -88,21 +88,21 @@ export const COMMS_LINK_MARGIN_TOPIC = "comms.linkMargin";
 export const REALANTENNAS_HOP_RATES_TOPIC = "realantennas.hopRates";
 
 /**
- * Per-antenna targeting state: a bare array of {@link RealAntennasAntennaState},
+ * Per-antenna targeting state: a BARE ARRAY of {@link RealAntennasAntennaState},
  * one entry per antenna on the scoped craft, carrying what each antenna is, which
  * target modes its tech level has earned, and where it is currently pointed. Its
- * value must match `RealAntennasUplink.AntennasTopic` in
+ * value MUST match `RealAntennasUplink.AntennasTopic` in
  * ../../RealAntennasUplink.cs.
  *
- * Delayed, like every reading of the craft or its link here: it describes the
+ * DELAYED, like every reading of the craft or its link here: it describes the
  * craft, and the two commands that write to it are delayed too.
  */
 export const REALANTENNAS_ANTENNAS_TOPIC = "realantennas.antennas";
 
 /**
- * Per-antenna fallback chains: a bare array of
+ * Per-antenna FALLBACK CHAINS: a BARE ARRAY of
  * {@link RealAntennasAntennaChain}, one entry per antenna of the scoped craft
- * that is holding a chain, so an empty array means it holds none. Its value must
+ * that is holding a chain, so an empty array means it holds none. Its value MUST
  * match `RealAntennasUplink.ChainsTopic` in ../../RealAntennasUplink.cs.
  *
  * Delayed like `realantennas.antennas`, and for the same reason: it is state
@@ -113,10 +113,10 @@ export const REALANTENNAS_ANTENNAS_TOPIC = "realantennas.antennas";
 export const REALANTENNAS_CHAINS_TOPIC = "realantennas.antennaChains";
 
 /**
- * Dish turning, per craft: a bare array of {@link RealAntennasVesselRetargeting},
+ * Dish turning, per craft: a BARE ARRAY of {@link RealAntennasVesselRetargeting},
  * one entry for every craft that is opted out of it, has a dish on loan, or has
  * had one. A craft that may turn its idle dishes, and has not, has no entry. Its
- * value must match `RealAntennasUplink.RetargetingTopic` in
+ * value MUST match `RealAntennasUplink.RetargetingTopic` in
  * ../../RealAntennasUplink.cs.
  *
  * Delayed, and fleet-wide: it carries every craft, so an entry for another craft

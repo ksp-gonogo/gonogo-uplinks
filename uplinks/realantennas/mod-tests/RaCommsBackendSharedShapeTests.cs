@@ -14,7 +14,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// down to a byte-identical <c>"no connection to a command source"</c>
     /// string. The behavioural tests elsewhere check that each backend produces
     /// the right payload; what they cannot check is that the two are produced by
-    /// one implementation, which is the property that stops them drifting again.
+    /// ONE implementation, which is the property that stops them drifting again.
     /// A duplicate that agrees today passes every behavioural test right up
     /// until somebody edits one copy.</para>
     ///
@@ -36,7 +36,7 @@ namespace GonogoRealAntennasUplink.Tests
     public class RaCommsBackendSharedShapeTests
     {
         /// <summary>
-        /// The accessors whose shape the contract owns. Every one of these was a
+        /// The accessors whose SHAPE the contract owns. Every one of these was a
         /// duplicated implementation before <see cref="CommsBackendBase"/>.
         /// </summary>
         private static readonly string[] SharedShape =
@@ -50,7 +50,7 @@ namespace GonogoRealAntennasUplink.Tests
         };
 
         /// <summary>
-        /// The questions a backend genuinely answers differently. These must
+        /// The questions a backend genuinely answers differently. These MUST
         /// stay per-backend: a shared implementation of any of them would be
         /// core deciding a backend's own rule, which is the defect class this
         /// seam exists to prevent.

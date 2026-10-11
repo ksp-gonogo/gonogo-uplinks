@@ -21,16 +21,16 @@ namespace Gonogo.ActionGroupsExtendedUplink
         /// whatever order the underlying call returns them. Null means "no
         /// data this tick" / a read failure, the contract's documented
         /// typed absence, mirroring <c>IActionGroupsBackend.Groups()</c>'s
-        /// null contract: and must never be conflated with an empty list
+        /// null contract: and must NEVER be conflated with an empty list
         /// (which would assert "this vessel has zero groups").
         ///
         /// <para><b>Two failures, two shapes, and which one you get depends on
         /// whether the group can still be identified.</b> AGExt reads each
         /// group's state through its own surface, so one group can fail while
-        /// the rest answer. A group whose state cannot be read is returned
+        /// the rest answer. A group whose STATE cannot be read is returned
         /// present with a null <see cref="AgxGroup.State"/>, so the other nine
         /// are not withheld along with it and the operator still sees a group
-        /// the vessel has. A group whose index cannot be read has no identity
+        /// the vessel has. A group whose INDEX cannot be read has no identity
         /// to hang that unknown on — it cannot be placed in the list or
         /// commanded — so it still declines the whole tick rather than
         /// shortening the list silently.</para>

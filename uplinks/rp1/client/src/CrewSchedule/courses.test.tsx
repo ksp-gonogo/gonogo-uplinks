@@ -95,8 +95,8 @@ describe("TrainingCourses", () => {
   });
 
   /**
-   * Most of a career runs no course at all, and a section titled training
-   * courses with nothing under it is a row of chrome saying nothing.
+   * Most of a career runs no course at all, and a section titled TRAINING
+   * COURSES with nothing under it is a row of chrome saying nothing.
    */
   it("renders nothing while the career is running no course", async () => {
     const { fixture, view } = mount();
@@ -130,7 +130,7 @@ describe("TrainingCourses", () => {
   });
 
   /**
-   * "Mission" is the name of a kind of training in RP-1, not of a flight:
+   * "Mission" is the name of a KIND OF TRAINING in RP-1, not of a flight:
    * `TrainingTemplate.TrainingType` has two members and this is the second.
    * Rendered raw beside a date it reads as a mission lasting thirty days.
    */
@@ -213,7 +213,7 @@ describe("TrainingCourses", () => {
   });
 
   /**
-   * The date the course finishes is not the date its crew can fly: RP-1 grounds
+   * The date the course finishes is NOT the date its crew can fly: RP-1 grounds
    * each student for 120% of the course's length from the moment it starts, so
    * the date a flight gets planned against is the later one.
    */
@@ -239,7 +239,7 @@ describe("TrainingCourses", () => {
   });
 
   /**
-   * One cancel for one course, where a control on each student's roster row
+   * ONE cancel for one course, where a control on each student's roster row
    * drew the same act once per student. RP-1 addresses a course by one of its
    * students, so that is what the command carries.
    */

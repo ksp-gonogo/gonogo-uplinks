@@ -150,11 +150,11 @@ public class Rp1ScUplinkTests : IDisposable
     /// year 1 day 1: wrong as a reading, and on a Delayed HeldAtHome channel also
     /// older than every edge, so it went straight past the signal delay.</para>
     /// <para>Withholding the publish would fix the number by deleting the sample,
-    /// which is worse. These are sampled sources, and
+    /// which is worse. These are SAMPLED sources, and
     /// <c>ChannelEngine.ProcessPublish</c> carries no <c>absenceIsData</c> birth
     /// gate (only <c>ProcessTick</c>'s mapper loop does), so this publish is the
     /// only thing that ever puts their absence on the wire. Without it every
-    /// channel below sits at syncing forever on the main menu and on any save
+    /// channel below sits at SYNCING forever on the main menu and on any save
     /// RP-1 does not manage.</para>
     /// </remarks>
     [Theory]

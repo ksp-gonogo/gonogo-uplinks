@@ -1,17 +1,17 @@
 /**
  * Kerboscript for the `/`-script picker's live drive listing.
- * Resurrected verbatim from the deleted KosFiles widget (`git show
+ * Resurrected VERBATIM from the deleted KosFiles widget (`git show
  * 855bd024^:mod/GonogoKosUplink/client/src/KosFiles/filesScript.ts`): same
  * [KOSDATA] contract, same two-mode dispatcher. The picker only ever
  * dispatches the "list" op; "read" is kept intact rather than trimmed, to
  * stay a faithful resurrection instead of a re-derived rewrite of a script
  * that was already proven correct.
  *
- *   Run files("list", "0:")             → emits a JSON listing of that
+ *   RUN files("list", "0:")             → emits a JSON listing of that
  *                                          volume's top-level files.
- *   Run files("list", "0:/scripts")     → emits a JSON listing of a
+ *   RUN files("list", "0:/scripts")     → emits a JSON listing of a
  *                                          subdirectory.
- *   Run files("read", "0:/path.ks")     → emits the file's text content.
+ *   RUN files("read", "0:/path.ks")     → emits the file's text content.
  *
  * Output contract:
  *   [KOSDATA]op=list;path=<absolute>;listing=<json-array>[/KOSDATA]
@@ -116,7 +116,7 @@ export interface KosFileEntry {
   name: string;
   /**
    * The entry's size in bytes, or null/absent when the volume could not say
-   * (an older kOS with no size suffix, or a listing written by an older copy
+   * (an older kOS with no SIZE suffix, or a listing written by an older copy
    * of this script). Optional rather than `number`, because the field could
    * not carry the absence at all while it was declared non-optional, and a
    * substituted 0 reads as a file that is genuinely empty.

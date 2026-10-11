@@ -194,8 +194,8 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// <c>RDTech.State.Available</c>, which <c>UnlockTech</c> sets and which
-        /// therefore means researched rather than "can be researched". Compared
-        /// by name because the ordinal is KSP's to renumber.
+        /// therefore means RESEARCHED rather than "can be researched". Compared
+        /// by NAME because the ordinal is KSP's to renumber.
         /// </summary>
         private const string ResearchedState = "Available";
 
@@ -240,16 +240,16 @@ namespace GonogoRp1Uplink
         /// preset, its pricing and the KSP types this route authors against all
         /// resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length: a
-        /// method-level gate on the manifest cannot say why it fired, because a
+        /// method-level gate on the MANIFEST cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
         /// The method lookups happen at the press and refuse with a sentence
         /// naming what was not recognised.</para>
         ///
         /// <para>KSP's own types are in the test as well as RP-1's, and that is
         /// deliberate rather than defensive. This route does not merely read
-        /// RP-1: it authors a ConfigNode and charges a currency, and without
+        /// RP-1: it AUTHORS a ConfigNode and charges a currency, and without
         /// <c>ConfigNode</c> or <c>ResearchAndDevelopment</c> there is no route
         /// at all, so a command declared without them would be one that can only
         /// refuse.</para>
@@ -312,8 +312,8 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Queues a tech node for research, at RP-1's price and RP-1's rate.
         ///
-        /// <para>Not idempotent in the way the staffing command is, and it cannot
-        /// be: this spends. A node already on the queue is refused rather than
+        /// <para>NOT idempotent in the way the staffing command is, and it cannot
+        /// be: this SPENDS. A node already on the queue is refused rather than
         /// quietly succeeding, because "the asked-for state is the state" would
         /// mean a second press of a control an operator thought had not landed
         /// paid for the same node twice.</para>
@@ -683,7 +683,7 @@ namespace GonogoRp1Uplink
         /// Whether RP-1 turns a tech unlock into a queued project in this save,
         /// as its own Harmony prefix decides it.
         ///
-        /// <para><c>Prefix_UnlockTech</c> returns true, i.e. lets the stock
+        /// <para><c>Prefix_UnlockTech</c> returns TRUE, i.e. lets the stock
         /// instant unlock run, unless <c>Enabled</c>, <c>TechUnlockTimes</c> and
         /// <c>BuildTimes</c> all hold. A save where they do not has no research
         /// queue to add to, so this command has nothing to do there and the
@@ -749,7 +749,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The player's state for this node, by name, never the tree asset's
+        /// The PLAYER's state for this node, by name, never the tree asset's
         /// config default. <c>Available</c> here means researched, because that
         /// is what <c>UnlockTech</c> sets it to.
         /// </summary>
@@ -821,7 +821,7 @@ namespace GonogoRp1Uplink
         /// this call, so asking RP-1's own overload directly is asking the
         /// question <c>ResearchTech</c> asks, not a different one.</para>
         ///
-        /// <para>The charge is the unmodified integer, because
+        /// <para>The CHARGE is the unmodified integer, because
         /// <c>ResearchTech</c>'s own <c>AddScience(-scienceCost, ...)</c> is: the
         /// modifier chain decides affordability there and does not decide the
         /// debit. What comes back here is the modified figure and it is used for
@@ -869,7 +869,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The refusal for a price that could not be computed, and it refuses for
+        /// The refusal for a price that could not be computed, and it REFUSES for
         /// the reason <see cref="Rp1Pricing"/> gives: RP-1's <c>AddScience</c>
         /// prefix performs no affordability test of its own, so proceeding on an
         /// unreadable price is how a career ends up at zero science with nothing
@@ -889,7 +889,7 @@ namespace GonogoRp1Uplink
         /// the facility's normalised level.
         ///
         /// <para>Absent when either hop could not be read, and the caller refuses
-        /// on that. It sits before the charge, so refusing costs an operator a
+        /// on that. It sits BEFORE the charge, so refusing costs an operator a
         /// press and never a currency.</para>
         /// </summary>
         private double? ScienceCostCeiling(out double? level)
@@ -938,9 +938,9 @@ namespace GonogoRp1Uplink
         /// reads off a <c>ResearchProject</c>, plus the <c>ProtoNode</c> subnode
         /// <c>ResearchProject.Load</c> hands to <c>new ProtoTechNode(node)</c>.
         ///
-        /// <para>Data rather than a ConfigNode, so the checklist this route stands
+        /// <para>DATA rather than a ConfigNode, so the checklist this route stands
         /// on can be checked. <c>Rp1InstalledCompatibilityTests</c> reads the
-        /// <c>[Persistent]</c> fields off the shipped <c>RP0.ResearchProject</c>
+        /// <c>[Persistent]</c> fields off the SHIPPED <c>RP0.ResearchProject</c>
         /// and asserts this covers every one of them, which is a different kind
         /// of check from a stand-in that agrees with whatever we wrote.</para>
         /// </summary>
@@ -977,7 +977,7 @@ namespace GonogoRp1Uplink
         /// Every value the authored node carries, worked out from primitives that
         /// have already been read.
         ///
-        /// <para>Pure, and public, because it is the checklist: seven keys for the
+        /// <para>Pure, and public, because it IS the checklist: seven keys for the
         /// project and three plus the parts for its proto node. Nothing here
         /// touches the game, so a test can hold it to the shipped assembly's own
         /// field list without an install of anything.</para>
@@ -1152,7 +1152,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The names of parts already bought off this node, from the live proto
+        /// The names of parts already bought off this node, from the LIVE proto
         /// node. Empty for a node the save has never held state for, which is the
         /// ordinary case for anything about to be researched.
         /// </summary>
@@ -1285,7 +1285,7 @@ namespace GonogoRp1Uplink
         // ── Reflection oddments ────────────────────────────────────────────
 
         /// <summary>
-        /// A method resolved MOST-DERIVED first, walking the base chain rather
+        /// A method resolved MOST-DERIVED FIRST, walking the base chain rather
         /// than trusting the order <c>GetMethods</c> happens to return.
         /// </summary>
         /// <remarks>

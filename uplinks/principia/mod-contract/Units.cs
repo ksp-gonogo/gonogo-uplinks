@@ -16,7 +16,7 @@ namespace GonogoPrincipiaUplink.Contract
     /// contract first, so a precession published under it would render in rad/h
     /// beside a crew dosimeter. The magnitudes are wrong for reading too: nodal
     /// precession in low orbit is around 1e-6 rad/s.</para>
-    /// <para><b>Per hour, where the producer's own window says per day.</b> A day
+    /// <para><b>Per HOUR, where the producer's own window says per day.</b> A day
     /// is not a fixed quantity in this game: stock runs a six-hour Kerbin day,
     /// stock's own setting turns that off, and a planet pack replaces the
     /// calendar outright. An hour is an hour under all three. The cost is that

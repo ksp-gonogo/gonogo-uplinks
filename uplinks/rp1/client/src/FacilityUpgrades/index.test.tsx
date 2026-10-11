@@ -88,7 +88,7 @@ const AWAY = {
 
 /**
  * What RP-1 answers for the same two buildings, from the same place: it
- * denormalises the level KSP persists in the save against its own config tier
+ * denormalises the level KSP persists in the SAVE against its own config tier
  * count, so this channel carries the identical figures whatever scene the
  * operator is in.
  */
@@ -135,7 +135,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
   });
 
   /**
-   * One number about a building's tier, and it is the tier the building is at.
+   * ONE number about a building's tier, and it is the tier the building is AT.
    *
    * <para>Every tier on the wire is KSP's own zero-based facility level, and
    * this card used to render `level + 2`, the tier the press buys, as a badge
@@ -272,7 +272,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
   });
 
   /**
-   * The OFF-SCENE case, and the reason `rp1.facilities` exists.
+   * THE OFF-SCENE CASE, and the reason `rp1.facilities` exists.
    *
    * <para>Core's channel has gone silent because KSP instantiates the buildings
    * in the SPACECENTER scene only. RP-1's has not: it reads the level KSP
@@ -301,7 +301,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
    *
    * <para>It used to answer with two sentences: that no tier had arrived, and
    * that a construction already under way keeps building wherever the operator
-   * is. Both were true and neither was a reading. The host widget carries one
+   * is. Both were true and neither was a reading. The host widget carries ONE
    * absence marker for the whole facilities area, this section is part of that
    * area, and a paragraph underneath the marker explaining the mod's internals
    * is the second opinion the marker exists to prevent.</para>
@@ -371,7 +371,7 @@ describe("FacilityUpgrades: the tier a career can commit to next", () => {
    * <para>A career whose buildings are all at their ceiling has no step left
    * either, so a check on "did anything price a next tier" would send an
    * operator to the space centre they are already standing in. The question is
-   * whether any facility answered its tiers.</para>
+   * whether any facility ANSWERED its tiers.</para>
    */
   it("says nothing is left rather than blaming the scene when every tier is bought", async () => {
     const stream = mount();

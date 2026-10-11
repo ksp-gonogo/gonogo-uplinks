@@ -11,10 +11,10 @@ namespace GonogoKerbalismUplink.Tests
     /// the stash it was handed, and refuses the two commands it cannot honestly
     /// perform.
     ///
-    /// <para>The election mechanics (a provider above vanilla wins, vanilla wins
+    /// <para>The election MECHANICS (a provider above vanilla wins, vanilla wins
     /// when absent, discovery order cannot lose a provider) are proven against the
     /// real <c>Kernel</c> in <c>Sitrep.Host.Tests.ScienceElectionTests</c>. They
-    /// cannot be proven here with the real backend, because this project deliberately
+    /// cannot be proven HERE with the real backend, because this project deliberately
     /// compiles only the KSP-free files of a KSP-referencing Uplink and never
     /// references <c>Sitrep.Host</c>. What is provable here is the half that the
     /// election then hands the topics to, which is what this file does.</para>
@@ -35,7 +35,7 @@ namespace GonogoKerbalismUplink.Tests
         };
 
         /// <summary>
-        /// The id the Kernel elects it under is the key its extension namespaces live
+        /// The id the Kernel elects it under IS the key its extension namespaces live
         /// at. If those two ever diverged, the election would work and every client
         /// reader would return undefined, which is the quietest possible failure.
         /// </summary>
@@ -66,7 +66,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// A stashed capture is what the reads serve, and it serves the latest one:
+        /// A stashed capture is what the reads serve, and it serves the LATEST one:
         /// the whole point of the stash is that the Courier-thread mapper answers
         /// from the most recent main-thread read rather than reaching for live KSP
         /// itself.
@@ -87,7 +87,7 @@ namespace GonogoKerbalismUplink.Tests
         /// Both commands refuse with a typed error rather than reporting a success
         /// that changed nothing. Kerbalism has no fire-once run (running is a
         /// continuous state its own machine owns) and no send-now transmit (files
-        /// drain highest-value-first whenever link and EC allow), so an ok here would
+        /// drain highest-value-first whenever link and EC allow), so an OK here would
         /// be a lie the operator acts on.
         /// </summary>
         [Fact]
