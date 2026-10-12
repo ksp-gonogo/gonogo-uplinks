@@ -138,6 +138,16 @@ jobs:
             npm ci --no-audit --no-fund
           fi
 
+      # A committed page records the sdk version that wrote it and the files that
+      # sdk writes, so a build against any other package version fails the page
+      # test for that reason alone. Under rc-check the page is rewritten by the
+      # candidate's own tools first, and the test then proves the code still
+      # describes itself. The step names what it wrote: a file listed here that
+      # main does not carry (a new generated file) is what the next re-pin commits.
+      - name: Write the page the published tools generate
+        if: inputs.packages_version != '' && inputs.client
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" page
+
       - name: Typecheck client
         if: inputs.typecheck
         working-directory: uplinks/${{ inputs.name }}/client
