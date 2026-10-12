@@ -224,7 +224,7 @@ namespace Gonogo.RealAntennasUplink
                 var settle = RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate());
                 var decision = RaChainPolicy.Decide(
                     entry.Walk, entry.Steps.Count, connected, nowUt, settle);
-                var blocked = Blocker(vessel, antennas[i]);
+                var blocked = Blocker(antennas[i]);
                 chains.Add(new RealAntennasAntennaChain
                 {
                     AntennaId = ids[i],
@@ -264,7 +264,7 @@ namespace Gonogo.RealAntennasUplink
 
             var decision = RaChainPolicy.Decide(
                 entry.Walk, entry.Steps.Count, connected, nowUt, RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate()));
-            if (decision.Move != RaChainPolicy.Move.Apply || Blocker(vessel, antenna) != null)
+            if (decision.Move != RaChainPolicy.Move.Apply || Blocker(antenna) != null)
             {
                 return;
             }
@@ -302,27 +302,12 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The reason this antenna's chain cannot act, or null when it can.
         ///
-        /// <para><b>An unloaded craft is the one real blocker, and it is this
-        /// Uplink's own caution, not a limit of RealAntennas.</b> A target set
-        /// on an unloaded craft's antenna is written into its saved part and is
-        /// there when the craft next loads: that much has been measured. What
-        /// has not been seen is whether the craft's live link follows the new
-        /// aim while it stays unloaded. Until it has, a chain that walked there
-        /// could report a fallback as fired on a craft whose link never moved,
-        /// so it is held and says so.</para>
+        /// <para>Whether the craft is loaded is not a reason. An unloaded craft's
+        /// antennas resolve off its saved parts, an aim written to one lands in the
+        /// part and is there when the craft next loads, and the craft's link
+        /// follows the new aim while it stays unloaded.</para>
         /// </summary>
-        private string? Blocker(Vessel vessel, object antenna)
-        {
-            if (_ra.ParentSnapshot(antenna) != null || !vessel.loaded)
-            {
-                return "This craft is not loaded. A new aim would be saved with it, but whether its link would follow before it loads has not been established, so the chain is held until it is loaded.";
-            }
-            if (_ra.Steerable(antenna) != true)
-            {
-                return "RealAntennas will not confirm this antenna can be aimed, so the chain is held rather than aiming one that may be fixed.";
-            }
-            return null;
-        }
+        private string? Blocker(object antenna) => RaChainPolicy.Blocker(_ra.Steerable(antenna));
 
         /// <summary>
         /// Whether a craft has a working comms link: the whole signal the walk

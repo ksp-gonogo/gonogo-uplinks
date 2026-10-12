@@ -194,12 +194,12 @@ describe("an antenna holding a fallback chain", () => {
         chain({
           walkPhase: "blocked",
           connected: false,
-          detail: "This craft is not loaded, so the chain is held until it is.",
+          detail: "RealAntennas will not confirm this antenna can be aimed, so the chain is held.",
         }),
       ],
     );
 
-    expect(screen.getByText(/This craft is not loaded/)).toBeTruthy();
+    expect(screen.getByText(/will not confirm this antenna can be aimed/)).toBeTruthy();
   });
 
   /**

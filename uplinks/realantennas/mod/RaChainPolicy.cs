@@ -155,6 +155,16 @@ namespace Gonogo.RealAntennasUplink
         public const string StateBlocked = "blocked";
 
         /// <summary>
+        /// The reason an antenna's chain cannot act, or null when it can: a dish
+        /// RealAntennas will not confirm is steerable is held rather than aimed,
+        /// since it may be fixed.
+        /// </summary>
+        public static string? Blocker(bool? steerable) =>
+            steerable == true
+                ? null
+                : "RealAntennas will not confirm this antenna can be aimed, so the chain is held rather than aiming one that may be fixed.";
+
+        /// <summary>
         /// The settle time in force: the chain's own, clamped to
         /// <see cref="MinimumSettleSeconds"/>, or
         /// <see cref="DefaultSettleSeconds"/> when it named none.
