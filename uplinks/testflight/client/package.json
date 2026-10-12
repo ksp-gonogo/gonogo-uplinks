@@ -1,7 +1,7 @@
 {
   "name": "@ksp-gonogo/gonogo-testflight-uplink",
   "license": "MIT",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.1",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
