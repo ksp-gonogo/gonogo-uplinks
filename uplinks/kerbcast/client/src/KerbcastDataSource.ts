@@ -1,6 +1,7 @@
 import {
   type CameraState,
   type ClientMessage,
+  ErrorCode,
   KerbcastClient,
   type KerbcastConnectionState,
   type KerbcastDataChannel,
@@ -87,8 +88,15 @@ const RECONNECT_MAX_MS = 30_000;
 // session already connected keeps the pool it negotiated at its own connect.
 export const SLOT_COUNT = 32;
 
-/** The sidecar's `error` message when a `subscribe` names a camera it does not have. */
+/**
+ * The wording of a refusal from a sidecar older than 1.10.0, which sent no
+ * `code` and no `flightId`. Matched only when the code is absent.
+ */
 const NO_LIVE_CAMERA = /^no live camera with flight_id=(\d+)/;
+const NO_FREE_SLOT = /^no free slot/;
+
+/** Why the sidecar declined to bind a camera into a slot. */
+export type KerbcastRefusal = ErrorCode;
 
 // The kerbcast WebRTC stream needs the same TURN relay the PeerJS host uses
 // for non-LAN delivery. The gonogo relay bundles coturn and serves the
@@ -432,6 +440,19 @@ export class KerbcastDataSource {
    */
   private awaitingSlot: number[] = [];
 
+  /**
+   * Cameras the sidecar declined to bind and why, until the camera binds,
+   * is released, or the peer is lost. `camera-not-found` is not recorded
+   * here: it means the camera is not registered yet, so it waits in
+   * {@link notThereYet} instead of being reported as refused.
+   */
+  private refusals = new Map<number, KerbcastRefusal>();
+
+  /** Cameras the sidecar said it does not have yet, subscribed again once they register. */
+  private notThereYet = new Set<number>();
+
+  private refusalListeners = new Set<() => void>();
+
   private pingWatchdog: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
@@ -608,6 +629,9 @@ export class KerbcastDataSource {
       return;
     }
     this.desiredSubs.delete(flightId);
+    this.notThereYet.delete(flightId);
+    this.dropAwaiting(flightId);
+    this.setRefusal(flightId, undefined);
     if (this.status === "connected") {
       void this.client.unsubscribe(flightId).catch(() => {
         /* already tearing down */
@@ -785,6 +809,7 @@ export class KerbcastDataSource {
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
+          this.retryNotThereYet();
           this.reconnectAttempts = 0;
           if (this.reconnectTimer !== null) {
             clearTimeout(this.reconnectTimer);
@@ -800,6 +825,7 @@ export class KerbcastDataSource {
       }),
       client.on("cameras-change", () => {
         KERBCAST_CAMERAS_BUDGET.record();
+        this.retryNotThereYet();
       }),
       client.on("settings-change", (payload) => {
         // Diagnostic: is THIS connected instance receiving + applying the
@@ -872,6 +898,41 @@ export class KerbcastDataSource {
     });
   }
 
+  /** Why the sidecar declined to bind `flightId`, or undefined when it has not. */
+  refusalFor(flightId: number): KerbcastRefusal | undefined {
+    return this.refusals.get(flightId);
+  }
+
+  /** Called whenever a camera is refused or stops being refused. */
+  onRefusalsChange(cb: () => void): () => void {
+    this.refusalListeners.add(cb);
+    return () => this.refusalListeners.delete(cb);
+  }
+
+  private setRefusal(flightId: number, reason: KerbcastRefusal | undefined): void {
+    if (this.refusals.get(flightId) === reason) return;
+    if (reason === undefined) this.refusals.delete(flightId);
+    else this.refusals.set(flightId, reason);
+    this.refusalListeners.forEach((cb) => {
+      cb();
+    });
+  }
+
+  /**
+   * Subscribe again to every camera that was reported missing and has since
+   * registered. Runs on each camera-list change, so a camera named at connect
+   * before KSP had it is bound the moment it appears.
+   */
+  private retryNotThereYet(): void {
+    if (this.status !== "connected" || this.notThereYet.size === 0) return;
+    const registered = new Set(this.client.cameras.map((c) => c.flightId));
+    for (const flightId of [...this.notThereYet]) {
+      if (!registered.has(flightId)) continue;
+      this.notThereYet.delete(flightId);
+      if (this.desiredSubs.has(flightId)) this.requestSlot(flightId);
+    }
+  }
+
   private dropAwaiting(flightId: number): void {
     const at = this.awaitingSlot.indexOf(flightId);
     if (at !== -1) this.awaitingSlot.splice(at, 1);
@@ -885,18 +946,64 @@ export class KerbcastDataSource {
   private observeSlotMessage(msg: { type?: string; content?: unknown }): void {
     if (msg.type === "slot-map") {
       const { flightId } = (msg.content ?? {}) as { flightId?: number | null };
-      if (flightId != null) this.dropAwaiting(flightId);
+      if (flightId != null) {
+        this.dropAwaiting(flightId);
+        this.notThereYet.delete(flightId);
+        this.setRefusal(flightId, undefined);
+      }
       return;
     }
     if (msg.type !== "error") return;
-    const message = (msg.content as { message?: unknown } | undefined)?.message;
-    if (typeof message !== "string") return;
+    const refusal = this.readRefusal(
+      (msg.content ?? {}) as { message?: unknown; flightId?: unknown; code?: unknown },
+    );
+    if (!refusal) return;
+    this.dropAwaiting(refusal.flightId);
+    if (refusal.reason === ErrorCode.CameraNotFound) {
+      this.notThereYet.add(refusal.flightId);
+      // The camera may already be registered by the time the refusal is read.
+      this.retryNotThereYet();
+    } else {
+      this.setRefusal(refusal.flightId, refusal.reason);
+    }
+  }
+
+  /**
+   * Which camera a refusal is about and why. A sidecar from 1.10.0 states both
+   * as `flightId` and `code`. Older ones state neither, so the wording says why,
+   * and the camera is the one named in the wording or, for a missing slot, the
+   * oldest bind still unanswered because the sidecar answers in send order.
+   */
+  private readRefusal(content: {
+    message?: unknown;
+    flightId?: unknown;
+    code?: unknown;
+  }): { flightId: number; reason: KerbcastRefusal } | undefined {
+    const coded = Object.values(ErrorCode).find((c) => c === content.code);
+    if (coded && typeof content.flightId === "number") {
+      return { flightId: content.flightId, reason: coded };
+    }
+    const message = typeof content.message === "string" ? content.message : "";
     const missing = NO_LIVE_CAMERA.exec(message);
-    if (missing) this.dropAwaiting(Number(missing[1]));
+    if (missing) {
+      return { flightId: Number(missing[1]), reason: ErrorCode.CameraNotFound };
+    }
+    const oldest = this.awaitingSlot[0];
+    if ((coded === ErrorCode.NoFreeSlot || NO_FREE_SLOT.test(message)) && oldest !== undefined) {
+      return { flightId: oldest, reason: ErrorCode.NoFreeSlot };
+    }
+    return undefined;
   }
 
   private forgetSlotState(): void {
     this.awaitingSlot = [];
+    this.notThereYet.clear();
+    if (this.refusals.size > 0) {
+      this.refusals.clear();
+      this.refusalListeners.forEach((cb) => {
+        cb();
+      });
+    }
   }
 
   private setStatus(status: DataSourceStatus): void {

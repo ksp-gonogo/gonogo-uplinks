@@ -1,4 +1,8 @@
-import { ErrorCode, ErrorSource } from "@ksp-gonogo/kerbcast";
+import {
+  ErrorCode,
+  ErrorSource,
+  type KerbcastTransport,
+} from "@ksp-gonogo/kerbcast";
 import { MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import {
   GAME_HOST_KEY,
@@ -412,6 +416,125 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     expect(sidecar.slotMidFor(42)).toBeDefined();
 
     ds.disconnect();
+  });
+
+  describe("refusals", () => {
+    it("a coded no-free-slot refusal names its camera, whatever order binds were asked in", async () => {
+      const { ds, sidecar } = await connectedSidecar();
+      ds.subscribeCamera(42);
+      ds.subscribeCamera(43);
+      const changes = vi.fn();
+      ds.onRefusalsChange(changes);
+
+      sidecar.fireError({
+        message: "no free slot - negotiate more video transceivers",
+        source: ErrorSource.Sidecar,
+        flightId: 43,
+        code: ErrorCode.NoFreeSlot,
+      });
+
+      expect(ds.refusalFor(43)).toBe(ErrorCode.NoFreeSlot);
+      expect(ds.refusalFor(42)).toBeUndefined();
+      expect(changes).toHaveBeenCalledTimes(1);
+
+      ds.unsubscribeCamera(43);
+      expect(ds.refusalFor(43)).toBeUndefined();
+
+      ds.disconnect();
+    });
+
+    it("a no-free-slot error from a sidecar older than 1.10.0 is read as the oldest unanswered bind", async () => {
+      const sidecar = new MockSidecar();
+      mockFetch();
+      const inner = sidecar.createTransport();
+      // Subscribes go unanswered, the way they are until the sidecar replies.
+      const transport: KerbcastTransport = {
+        createPeer: (ice) => {
+          const peer = inner.createPeer(ice);
+          return {
+            ...peer,
+            createDataChannel: (label) => {
+              const channel = peer.createDataChannel(label);
+              return {
+                ...channel,
+                send: (payload) => {
+                  if (!payload.includes('"subscribe"')) channel.send(payload);
+                },
+              };
+            },
+          };
+        },
+      };
+      const ds = makeTracked({ port: 1 }, transport);
+      await ds.connect();
+      sidecar.open();
+      sidecar.setConnectionState("connected");
+      ds.subscribeCamera(42);
+      ds.subscribeCamera(43);
+
+      sidecar.fireError({ message: "no free slot", source: ErrorSource.Sidecar });
+
+      expect(ds.refusalFor(42)).toBe(ErrorCode.NoFreeSlot);
+      expect(ds.refusalFor(43)).toBeUndefined();
+
+      ds.disconnect();
+    });
+
+    it("a camera-destroyed refusal is reported against its camera", async () => {
+      const { ds, sidecar } = await connectedSidecar();
+      ds.subscribeCamera(42);
+
+      sidecar.fireError({
+        message: "camera destroyed",
+        source: ErrorSource.Sidecar,
+        flightId: 42,
+        code: ErrorCode.CameraDestroyed,
+      });
+
+      expect(ds.refusalFor(42)).toBe(ErrorCode.CameraDestroyed);
+
+      ds.disconnect();
+    });
+
+    it("a camera named at connect that is not there yet is not refused, and binds once it registers", async () => {
+      const { ds, sidecar } = await connectedSidecar([42]);
+      ds.subscribeCamera(99);
+      const before = subscribeCount(sidecar, 99);
+
+      sidecar.fireError({
+        message: "no live camera with flight_id=99",
+        source: ErrorSource.Sidecar,
+        flightId: 99,
+        code: ErrorCode.CameraNotFound,
+      });
+      expect(ds.refusalFor(99)).toBeUndefined();
+
+      sidecar.setCameras([{ flightId: 42 }, { flightId: 99 }]);
+
+      expect(subscribeCount(sidecar, 99)).toBe(before + 1);
+      expect(sidecar.slotMidFor(99)).toBeDefined();
+
+      ds.disconnect();
+    });
+
+    it("a camera-not-found refusal for a camera nobody shows any more is not retried", async () => {
+      const { ds, sidecar } = await connectedSidecar([42]);
+      ds.subscribeCamera(99);
+      sidecar.fireError({
+        message: "no live camera with flight_id=99",
+        source: ErrorSource.Sidecar,
+        flightId: 99,
+        code: ErrorCode.CameraNotFound,
+      });
+      ds.unsubscribeCamera(99);
+      const before = subscribeCount(sidecar, 99);
+
+      sidecar.setCameras([{ flightId: 42 }, { flightId: 99 }]);
+
+      expect(subscribeCount(sidecar, 99)).toBe(before);
+
+      ds.disconnect();
+    });
   });
 
   it("re-binds on-screen cameras via the initial offer set (cold start / reconnect)", async () => {
