@@ -55,7 +55,7 @@ namespace GonogoPrincipiaUplink
     // source text and matches a type's bases on the same line as its name, so a
     // legal wrap here reports every seam this type satisfies as implemented by
     // nothing.
-    public sealed class PrincipiaPropagationProvider : IPropagationProvider, IIntegratedTrajectorySource, IBodyEphemerisHorizon, ISecularPropagation
+    public sealed class PrincipiaPropagationProvider : IPropagationProvider, IIntegratedTrajectorySource, IBodyEphemerisHorizon, ISecularPropagation, IPropagationDeparture
     {
         public const string ProviderIdValue = "principia-propagation";
 
@@ -72,6 +72,14 @@ namespace GonogoPrincipiaUplink
         private double _boundSma = double.NaN;
         private double? _boundSpan;
         private bool _hasBound;
+
+        private readonly object _envelopeGate = new object();
+        private string? _envelopeVesselId;
+        private double _envelopeFromUt = double.NaN;
+        private double _envelopeUntilUt = double.NaN;
+        private double _envelopeSma = double.NaN;
+        private IReadOnlyList<PropagationDepartureKnot>? _envelope;
+        private bool _hasEnvelope;
 
         private readonly object _bodyGate = new object();
         private readonly Dictionary<int, BodyBound> _bodyBounds = new Dictionary<int, BodyBound>();
@@ -311,6 +319,24 @@ namespace GonogoPrincipiaUplink
         private double? ComputeBoundSeconds(
             PropagationTarget target, double fromUt, OrbitElements elements, bool includeJ2 = true)
         {
+            var departure = BuildDeparture(target, fromUt, elements, includeJ2);
+            if (departure == null)
+            {
+                return null;
+            }
+
+            return PrincipiaHorizonBound.SpanSeconds(
+                departure, _conics.CharacteristicCycleSeconds(target));
+        }
+
+        /// <summary>
+        /// The craft's published conic set against everything this Uplink can place
+        /// around it, or null when there is no force model or the displaced solver
+        /// cannot describe the craft.
+        /// </summary>
+        private ConicDeparture? BuildDeparture(
+            PropagationTarget target, double fromUt, OrbitElements elements, bool includeJ2)
+        {
             var model = _forceModel();
             if (model == null)
             {
@@ -362,8 +388,92 @@ namespace GonogoPrincipiaUplink
                 }
             }
 
-            return PrincipiaHorizonBound.SpanSeconds(
-                departure, _conics.CharacteristicCycleSeconds(target));
+            return departure;
+        }
+
+        /// <summary>The most knots an envelope carries: enough to follow a tide, few enough to ship.</summary>
+        public const int EnvelopeKnots = 16;
+
+        /// <summary>The most integration steps one envelope is allowed to cost.</summary>
+        public const int EnvelopeMaxSteps = 2048;
+
+        /// <summary>
+        /// How far the craft's published conic may be from the path it flies, stepped
+        /// up to <paramref name="untilUt"/>, from the same integration the horizon is
+        /// measured with and at the same step: a sixty-fourth of the craft's own
+        /// revolution.
+        ///
+        /// <para>Null wherever nothing is measurable: a body, a craft without osculating
+        /// elements or a repeat to step against, no force model, nothing summed into the
+        /// departure, or a window that would cost more than
+        /// <see cref="EnvelopeMaxSteps"/> steps. Null states no error, which a client
+        /// reads as no band; zeros would state an error of nothing.</para>
+        ///
+        /// <para>Held for the last craft and window asked about, because core asks once
+        /// per sample and the integration is the whole cost.</para>
+        /// </summary>
+        public IReadOnlyList<PropagationDepartureKnot>? DepartureFor(
+            PropagationTarget target, double fromUt, double untilUt)
+        {
+            var elements = target.Osculating;
+            if (target.Kind != PropagationTargetKind.Vessel || elements == null
+                || double.IsNaN(fromUt) || double.IsInfinity(fromUt)
+                || double.IsNaN(untilUt) || double.IsInfinity(untilUt) || !(untilUt > fromUt))
+            {
+                return null;
+            }
+
+            lock (_envelopeGate)
+            {
+                if (_hasEnvelope
+                    && string.Equals(_envelopeVesselId, target.Id, StringComparison.Ordinal)
+                    && _envelopeFromUt.Equals(fromUt)
+                    && _envelopeUntilUt.Equals(untilUt)
+                    && _envelopeSma.Equals(elements.Value.Sma))
+                {
+                    return _envelope;
+                }
+            }
+
+            var knots = ComputeEnvelope(target, fromUt, untilUt, elements.Value);
+
+            lock (_envelopeGate)
+            {
+                _hasEnvelope = true;
+                _envelopeVesselId = target.Id;
+                _envelopeFromUt = fromUt;
+                _envelopeUntilUt = untilUt;
+                _envelopeSma = elements.Value.Sma;
+                _envelope = knots;
+            }
+            return knots;
+        }
+
+        private IReadOnlyList<PropagationDepartureKnot>? ComputeEnvelope(
+            PropagationTarget target, double fromUt, double untilUt, OrbitElements elements)
+        {
+            var cycle = _conics.CharacteristicCycleSeconds(target);
+            if (cycle == null || !(cycle.Value > 0.0) || double.IsInfinity(cycle.Value)
+                || !(elements.Sma > 0.0) || !(elements.Mu > 0.0))
+            {
+                return null;
+            }
+
+            var window = untilUt - fromUt;
+            var steps = (int)Math.Ceiling(window / (cycle.Value / PrincipiaHorizonBound.StepsPerRevolution));
+            if (steps < 1 || steps > EnvelopeMaxSteps)
+            {
+                return null;
+            }
+
+            var departure = BuildDeparture(target, fromUt, elements, includeJ2: true);
+            if (departure == null)
+            {
+                return null;
+            }
+
+            var meanMotion = Math.Sqrt(elements.Mu / (elements.Sma * elements.Sma * elements.Sma));
+            return departure.Envelope(window, steps, EnvelopeKnots, meanMotion);
         }
 
         public ClosestApproach? SolveClosestApproach(

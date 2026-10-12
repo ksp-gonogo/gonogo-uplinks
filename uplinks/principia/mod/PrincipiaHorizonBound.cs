@@ -221,6 +221,64 @@ namespace GonogoPrincipiaUplink
             return null;
         }
 
+        /// <summary>
+        /// The largest drift reached anywhere up to each of <paramref name="knots"/>
+        /// evenly spaced instants across <paramref name="window"/> seconds, as position
+        /// metres and velocity metres per second, integrated in <paramref name="steps"/>
+        /// steps. Null when there is nothing to integrate or the offset reaches the
+        /// centre it is measured from, because a drift that cannot be measured is not
+        /// stated as zero.
+        ///
+        /// <para>Each figure is a running maximum taken at every step, so a knot is a
+        /// cap on the drift anywhere before it even though the drift itself rises and
+        /// falls. The oblateness term is a rate of the mean elements, so it enters the
+        /// position as <c>rate * time</c>, and the velocity as that distance turned by
+        /// <paramref name="meanMotion"/>: an along-track error of <c>d</c> metres is a
+        /// phase offset that rotates the velocity vector by <c>d / a</c>, which is
+        /// <c>n d</c> metres per second.</para>
+        /// </summary>
+        public IReadOnlyList<PropagationDepartureKnot>? Envelope(
+            double window, int steps, int knots, double meanMotion)
+        {
+            if (!HasCraft || !Any || !(window > 0.0) || double.IsInfinity(window)
+                || steps < 1 || knots < 1 || double.IsNaN(meanMotion) || double.IsInfinity(meanMotion)
+                || meanMotion < 0.0)
+            {
+                return null;
+            }
+
+            knots = Math.Min(knots, steps);
+            var h = window / steps;
+            var run = new Run(this);
+            var metres = 0.0;
+            var rate = 0.0;
+            var result = new List<PropagationDepartureKnot>(knots);
+            var taken = 0;
+            for (var k = 1; k <= knots; k++)
+            {
+                var target = (int)((long)steps * k / knots);
+                for (; taken < target; taken++)
+                {
+                    run.Advance(h, run.AccelerationNow());
+                    var m = run.Departure;
+                    var v = run.VelocityDeparture(meanMotion);
+                    if (double.IsNaN(m) || double.IsInfinity(m) || double.IsNaN(v) || double.IsInfinity(v))
+                    {
+                        return null;
+                    }
+                    metres = Math.Max(metres, m);
+                    rate = Math.Max(rate, v);
+                }
+                result.Add(new PropagationDepartureKnot
+                {
+                    UntilUt = k == knots ? _fromUt + window : _fromUt + run.Time,
+                    Metres = metres,
+                    MetresPerSecond = rate,
+                });
+            }
+            return result;
+        }
+
         /// <summary>Where inside one step the tolerance was first reached.</summary>
         private double Bracket(State before, double taken, double tolerance)
         {
@@ -302,6 +360,9 @@ namespace GonogoPrincipiaUplink
 
             public double Departure =>
                 _offset.Magnitude() + _owner._j2DriftRate * Time;
+
+            public double VelocityDeparture(double meanMotion) =>
+                _rate.Magnitude() + _owner._j2DriftRate * Time * meanMotion;
 
             public State Snapshot() => new State(Time, _offset, _rate);
 

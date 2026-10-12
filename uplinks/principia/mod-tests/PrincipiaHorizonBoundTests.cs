@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using GonogoPrincipiaUplink;
 using Sitrep.Contract;
+using Sitrep.Contract.TestSupport;
 using Xunit;
 
 namespace GonogoPrincipiaUplink.Tests
@@ -545,6 +546,60 @@ namespace GonogoPrincipiaUplink.Tests
 
             Assert.True(provider.CanPropagate(Target(craft), frame, SampleUt, SampleUt));
             Assert.False(provider.CanPropagate(Target(craft), frame, SampleUt, SampleUt + 1.0));
+        }
+
+        // === The departure envelope: a band for an n-body install ====================
+
+        [Fact]
+        public void ADepartureFromTheProviderMeetsTheEnvelopeContract()
+        {
+            var craft = Fleet["kerbin-relay-2599km"];
+            var provider = ProviderFor(craft);
+
+            PropagationDepartureConformance.AssertPropagationDepartureContract(
+                provider, Target(craft), SampleUt, SampleUt + craft.Span);
+        }
+
+        [Fact]
+        public void TheEnvelopeCapsTheDriftTheHorizonIsMeasuredWith()
+        {
+            // The measured crossing is where the conic is 100 m off, so an envelope
+            // carried to it ends at that tolerance and one carried to the published
+            // span, a third shorter, ends inside it. The envelope and the horizon are
+            // one integration, so they cannot disagree about where 100 m is.
+            var craft = Fleet["kerbin-relay-2599km"];
+            var provider = ProviderFor(craft);
+
+            var atSpan = provider.DepartureFor(Target(craft), SampleUt, SampleUt + craft.Span)!;
+            Assert.InRange(atSpan[atSpan.Count - 1].Metres, 20.0, PrincipiaHorizonBound.ToleranceMetres);
+
+            var crossing = craft.Span * PrincipiaHorizonBound.SafetyFactor;
+            var atCrossing = provider.DepartureFor(Target(craft), SampleUt, SampleUt + crossing)!;
+            Assert.InRange(atCrossing[atCrossing.Count - 1].Metres, 98.0, 102.0);
+            Assert.True(atCrossing[atCrossing.Count - 1].MetresPerSecond > 0.0);
+        }
+
+        [Fact]
+        public void TheEnvelopeIsNullForABodyAndWithNoForceModel()
+        {
+            var craft = Fleet["kerbin-relay-2599km"];
+            var untilUt = SampleUt + craft.Span;
+
+            Assert.Null(ProviderFor(craft).DepartureFor(PropagationTarget.Body(Mun), SampleUt, untilUt));
+
+            var noModel = new PrincipiaPropagationProvider(
+                new StubConics(craft), () => null, _ => KerbinPerturbers, StockParents);
+            Assert.Null(noModel.DepartureFor(Target(craft), SampleUt, untilUt));
+        }
+
+        [Fact]
+        public void TheEnvelopeIsNullWhenNothingIsSummedRatherThanZeros()
+        {
+            var craft = Fleet["kerbin-relay-2599km"];
+            var alone = new PrincipiaPropagationProvider(
+                new StubConics(craft), StockMasses, _ => new PrincipiaPerturber[0], StockParents);
+
+            Assert.Null(alone.DepartureFor(Target(craft), SampleUt, SampleUt + craft.Span));
         }
 
         [Fact]
