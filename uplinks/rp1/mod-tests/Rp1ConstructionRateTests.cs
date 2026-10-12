@@ -333,7 +333,7 @@ public class Rp1ConstructionRateTests : IDisposable
             },
         };
 
-        var payload = Rp1ConstructionRatesCapture.Build(raw)!;
+        var payload = WireJson.Checked(Rp1ConstructionRatesCapture.Build(raw)!);
 
         Assert.Equal(12.0, payload["refreshedAt"]);
         var table = (Dictionary<string, object?>)((List<object?>)payload["constructions"]!).Single()!;

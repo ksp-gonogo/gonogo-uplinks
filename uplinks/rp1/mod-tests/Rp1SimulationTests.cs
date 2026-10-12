@@ -220,7 +220,7 @@ public class Rp1SimulationTests : IDisposable
     [Fact]
     public void The_capture_mapper_states_no_kind_for_an_unknown_orbit_choice()
     {
-        var payload = Rp1SimulationCapture.Build(true, null);
+        var payload = WireJson.Checked(Rp1SimulationCapture.Build(true, null));
 
         Assert.Equal(true, payload!["active"]);
         Assert.Null(payload["kind"]);

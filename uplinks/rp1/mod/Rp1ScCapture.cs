@@ -76,7 +76,7 @@ namespace GonogoRp1Uplink
                     ["resourcesHandled"] = c.ResourcesHandled,
                     // The capacities behind those names, on the same terms. A
                     // renovation has to send the whole set back to keep them.
-                    ["resourceCapacities"] = c.ResourceCapacities,
+                    ["resourceCapacities"] = AsWireObject(c.ResourceCapacities),
                     ["efficiencyGroupKey"] = c.EfficiencyGroupKey,
                     ["salaryPerDay"] = c.SalaryPerDay,
                     ["rushSalaryDeltaPerDay"] = c.RushSalaryDeltaPerDay,
@@ -85,6 +85,28 @@ namespace GonogoRp1Uplink
                 });
             }
             return list;
+        }
+
+        /// <summary>
+        /// A name-to-number map as the host's serializer takes an object: it
+        /// writes only <c>IDictionary&lt;string, object?&gt;</c> as one, and a
+        /// <c>Dictionary&lt;string, double&gt;</c> is not that (the type
+        /// parameter is not covariant for a value type), so it fell through to
+        /// the array case, threw on its first entry, and took the whole topic
+        /// down. Even empty it would have been written as <c>[]</c>.
+        /// </summary>
+        private static Dictionary<string, object?>? AsWireObject(Dictionary<string, double>? map)
+        {
+            if (map == null)
+            {
+                return null;
+            }
+            var wire = new Dictionary<string, object?>(map.Count);
+            foreach (var pair in map)
+            {
+                wire[pair.Key] = pair.Value;
+            }
+            return wire;
         }
 
         /// <summary>

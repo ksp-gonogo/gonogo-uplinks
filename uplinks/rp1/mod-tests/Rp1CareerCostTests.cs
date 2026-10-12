@@ -46,10 +46,10 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     private static Dictionary<string, object?>? Cost() =>
-        Rp1CareerCostCapture.BuildCost(new Rp1CareerCostReflection().ReadCost(ut: 100.0));
+        WireJson.Checked(Rp1CareerCostCapture.BuildCost(new Rp1CareerCostReflection().ReadCost(ut: 100.0)));
 
     private static Dictionary<string, object?>? Events() =>
-        Rp1CareerCostCapture.BuildEvents(new Rp1CareerCostReflection().ReadEvents(ut: 100.0));
+        WireJson.Checked(Rp1CareerCostCapture.BuildEvents(new Rp1CareerCostReflection().ReadEvents(ut: 100.0)));
 
     // ── The funds breakdown ─────────────────────────────────────────────────
 

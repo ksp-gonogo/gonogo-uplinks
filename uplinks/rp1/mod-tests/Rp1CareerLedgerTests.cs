@@ -21,7 +21,7 @@ public class Rp1CareerLedgerTests : IDisposable
     public void Dispose() => CareerLog.Instance = null;
 
     private static Dictionary<string, object?>? Ledger(Rp1CareerLedgerReflection? reader = null) =>
-        Rp1CareerLedgerCapture.Build((reader ?? new Rp1CareerLedgerReflection()).Read(ut: 100.0));
+        WireJson.Checked(Rp1CareerLedgerCapture.Build((reader ?? new Rp1CareerLedgerReflection()).Read(ut: 100.0)));
 
     private static List<Dictionary<string, object?>> Periods(Dictionary<string, object?>? ledger) =>
         ((List<object?>)ledger!["periods"]!).Cast<Dictionary<string, object?>>().ToList();

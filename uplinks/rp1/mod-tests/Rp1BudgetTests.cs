@@ -404,7 +404,7 @@ public class Rp1BudgetTests : IDisposable
     public void The_payload_carries_every_row_under_its_contract_name()
     {
         ACareer();
-        var payload = Rp1BudgetCapture.Build(Read())!;
+        var payload = WireJson.Checked(Rp1BudgetCapture.Build(Read())!);
 
         var contract = typeof(Rp1Budget).GetProperties().Select(p => Camel(p.Name)).OrderBy(n => n);
         Assert.Equal(contract, payload.Keys.OrderBy(n => n));

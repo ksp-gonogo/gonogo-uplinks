@@ -69,7 +69,7 @@ public class Rp1ToolingTests : IDisposable
     }
 
     private static Dictionary<string, object?>? Read() =>
-        Rp1ToolingCapture.Build(new Rp1ToolingReflection().Read(ut: 100.0));
+        WireJson.Checked(Rp1ToolingCapture.Build(new Rp1ToolingReflection().Read(ut: 100.0)));
 
     private static Dictionary<string, object?> Row(Dictionary<string, object?>? payload) =>
         (Dictionary<string, object?>)((List<object?>)payload!["parts"]!)[0]!;

@@ -101,7 +101,7 @@ public class Rp1ProgramsReflectionTests : IDisposable
 
         var row = Assert.Single(raw.Programs);
         Assert.Null(row.Slots);
-        var wire = (Dictionary<string, object?>)Rp1ProgramsCapture.BuildPrograms(raw)![0]!;
+        var wire = (Dictionary<string, object?>)WireJson.Checked(Rp1ProgramsCapture.BuildPrograms(raw))![0]!;
         Assert.Null(wire["slots"]);
     }
 

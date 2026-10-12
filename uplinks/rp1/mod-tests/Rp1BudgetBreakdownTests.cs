@@ -600,7 +600,7 @@ public class Rp1BudgetBreakdownTests : IDisposable
         ProgramHandler.Instance = new ProgramHandler();
         ProgramHandler.Instance.ActivePrograms.Add(new Program { name = "p" });
 
-        var payload = Rp1BudgetBreakdownCapture.Build(Read())!;
+        var payload = WireJson.Checked(Rp1BudgetBreakdownCapture.Build(Read())!);
 
         AssertKeys(typeof(Rp1BudgetBreakdown), payload);
         AssertKeys(typeof(Rp1BudgetHorizons), (Dictionary<string, object?>)payload["astronautBase"]!);

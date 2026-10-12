@@ -117,6 +117,75 @@ public class Rp1ScCaptureTests
         Assert.Empty(Rp1ScCapture.BuildResearch(raw));
     }
 
+    [Fact]
+    public void A_complex_with_resource_capacities_serialises_as_an_object()
+    {
+        var raw = Populated();
+        raw.Complexes[0].ResourceCapacities = new Dictionary<string, double>
+        {
+            ["LqdOxygen"] = 1500.0,
+            ["Kerosene"] = 800.5,
+        };
+
+        var json = WireJson.Write(Rp1ScCapture.BuildComplexes(raw));
+
+        Assert.Contains("\"resourceCapacities\":{\"LqdOxygen\":1500", json);
+        Assert.Contains("\"Kerosene\":800.5", json);
+    }
+
+    [Fact]
+    public void A_complex_that_handles_nothing_publishes_an_empty_object_not_an_array()
+    {
+        var raw = Populated();
+        raw.Complexes[0].ResourceCapacities = new Dictionary<string, double>();
+
+        Assert.Contains("\"resourceCapacities\":{}", WireJson.Write(Rp1ScCapture.BuildComplexes(raw)));
+    }
+
+    [Fact]
+    public void A_complex_under_construction_serialises()
+    {
+        var raw = Populated();
+        raw.Complexes.Add(new Rp1ComplexRaw
+        {
+            KscName = "Cape",
+            Name = "New LC",
+            IsOperational = false,
+            Engineers = null,
+            ResourceCapacities = new Dictionary<string, double> { ["LqdOxygen"] = 0.0 },
+        });
+
+        var json = WireJson.Write(Rp1ScCapture.BuildComplexes(raw));
+
+        Assert.Contains("\"name\":\"New LC\"", json);
+        Assert.Contains("\"isOperational\":false", json);
+    }
+
+    /// <summary>
+    /// Every topic this mapper feeds goes through the host's serializer, the
+    /// one that threw on a typed dictionary in production, with every
+    /// collection a raw record can carry filled in.
+    /// </summary>
+    [Fact]
+    public void Every_mapped_topic_serialises_through_the_hosts_writer()
+    {
+        var raw = Populated();
+        raw.Complexes[0].ResourceCapacities = new Dictionary<string, double> { ["Kerosene"] = 1.0 };
+
+        foreach (var build in new Func<Rp1ScRaw, object?>[]
+        {
+            Rp1ScCapture.BuildCentres, Rp1ScCapture.BuildComplexes, Rp1ScCapture.Buildable,
+            Rp1ScCapture.BuildQueue, Rp1ScCapture.BuildWarehouse, Rp1ScCapture.BuildPads,
+            Rp1ScCapture.BuildOperations, Rp1ScCapture.BuildFacilities, Rp1ScCapture.BuildConstructions,
+            Rp1ScCapture.BuildResearch, Rp1ScCapture.BuildPersonnel, Rp1ScCapture.BuildNextCompletion,
+            Rp1ScCapture.BuildFundTarget, Rp1ScCapture.BuildLcPricing, Rp1ScCapture.BuildRushTerms,
+            Rp1ScCapture.BuildConfidence,
+        })
+        {
+            Assert.False(string.IsNullOrEmpty(WireJson.Write(build(raw))));
+        }
+    }
+
     /// <summary>One of everything, so every mapper has a row to build.</summary>
     private static Rp1ScRaw Populated() => new Rp1ScRaw
     {

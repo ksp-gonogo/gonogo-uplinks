@@ -243,7 +243,7 @@ namespace GonogoRp1Uplink.Tests
             var raw = new Rp1LeadersRaw { Ut = 1d, Available = true };
             raw.Leaders.Add(new Rp1LeaderRaw { StrategyId = "leaderKorolev" });
 
-            var row = Rp1LeadersCapture.BuildLeaders(raw)!.Single();
+            var row = WireJson.Checked(Rp1LeadersCapture.BuildLeaders(raw))!.Single();
 
             var declared = typeof(Rp1LeaderEntry).GetProperties()
                 .Select(p => char.ToLowerInvariant(p.Name[0]) + p.Name.Substring(1))

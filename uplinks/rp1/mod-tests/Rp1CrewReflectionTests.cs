@@ -672,7 +672,7 @@ public class Rp1CrewCaptureTests
             },
         };
 
-        var row = Assert.IsType<Dictionary<string, object?>>(Assert.Single(Rp1CrewCapture.BuildCrew(raw)!));
+        var row = Assert.IsType<Dictionary<string, object?>>(Assert.Single(WireJson.Checked(Rp1CrewCapture.BuildCrew(raw))!));
 
         Assert.Equal("Wernher Kerman", row["name"]);
         Assert.Equal(true, row["retired"]);

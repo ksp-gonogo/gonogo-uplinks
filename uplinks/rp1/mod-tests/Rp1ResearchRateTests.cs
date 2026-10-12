@@ -208,7 +208,7 @@ public class Rp1ResearchRateTests : IDisposable
     {
         Queue();
 
-        var wire = Rp1ResearchRatesCapture.Build(new Rp1ResearchRatesReflection().CaptureOnMain(Ut))!;
+        var wire = WireJson.Checked(Rp1ResearchRatesCapture.Build(new Rp1ResearchRatesReflection().CaptureOnMain(Ut))!);
 
         Assert.Equal("basicRocketry", wire["techId"]);
         Assert.Equal(Ut, wire["refreshedAt"]);
