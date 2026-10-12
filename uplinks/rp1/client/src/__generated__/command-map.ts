@@ -77,7 +77,6 @@ import type {
   Rp1TrainingEnrolArgs,
   Rp1TrainingLeaveArgs,
   Rp1VehicleArgs,
-  Rp1WarpArgs,
 } from "./contract.js";
 import type {
   CommandResult,
@@ -119,7 +118,6 @@ export interface GeneratedCommandArgsMap {
   "rp1.vehicle.rollback": Rp1VehicleArgs;
   "rp1.vehicle.rollout": Rp1RolloutArgs;
   "rp1.vehicle.scrap": Rp1VehicleArgs;
-  "rp1.warp.toComplete": Rp1WarpArgs;
 }
 
 export interface GeneratedCommandReplyMap {
@@ -157,7 +155,6 @@ export interface GeneratedCommandReplyMap {
   "rp1.vehicle.rollback": CommandResult;
   "rp1.vehicle.rollout": CommandResult;
   "rp1.vehicle.scrap": CommandResult;
-  "rp1.warp.toComplete": CommandResult;
 }
 
 /**
@@ -205,7 +202,6 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.vehicle.rollback": "CommandResult",
   "rp1.vehicle.rollout": "CommandResult",
   "rp1.vehicle.scrap": "CommandResult",
-  "rp1.warp.toComplete": "CommandResult",
 } as const satisfies Record<string, string>;
 
 /**
@@ -281,7 +277,6 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.vehicle.rollback": { replies: true, delayed: true },
   "rp1.vehicle.rollout": { replies: true, delayed: true },
   "rp1.vehicle.scrap": { replies: true, delayed: true },
-  "rp1.warp.toComplete": { replies: true, delayed: false },
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
@@ -319,5 +314,4 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.vehicle.rollback",
   "rp1.vehicle.rollout",
   "rp1.vehicle.scrap",
-  "rp1.warp.toComplete",
 ] as const;

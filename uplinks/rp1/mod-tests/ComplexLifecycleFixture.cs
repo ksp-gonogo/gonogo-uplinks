@@ -406,51 +406,6 @@ namespace RP0
 
         public bool IsComplete() => Complete;
     }
-
-    /// <summary>
-    /// RP-1's warp controller, in the two members this Uplink reaches.
-    /// </summary>
-    /// <remarks>
-    /// <para><c>Create</c> reproduces the shape that matters and the defect that
-    /// matters: a null target means "the next thing to finish", and RP-1 then
-    /// dereferences that target's name without a null check. So a Create called
-    /// with nothing to warp to throws, exactly as the shipped one does, and a
-    /// command that failed to guard would fail here rather than in a career.</para>
-    /// <para>The real type is <c>internal</c>, which reflection reaches anyway;
-    /// public here because a test assembly has no way to be inside RP-1's.</para>
-    /// </remarks>
-    public static class KCTWarpController
-    {
-        /// <summary>Every target Create was handed, so a test can pin which one it aimed at.</summary>
-        public static readonly System.Collections.Generic.List<ISpaceCenterProject?> Created =
-            new System.Collections.Generic.List<ISpaceCenterProject?>();
-
-        /// <summary>Set to make Create throw after recording, which is a warp that may have started.</summary>
-        public static bool Throws;
-
-        public static void Reset()
-        {
-            Created.Clear();
-            Throws = false;
-        }
-
-        public static void Create(ISpaceCenterProject warpTarget)
-        {
-            var target = warpTarget ?? KCTUtilities.GetNextThingToFinish();
-            Created.Add(target);
-            if (Throws)
-            {
-                throw new System.InvalidOperationException("the warp controller could not be created");
-            }
-            // The shipped defect, reproduced: no null check before the name is read.
-            // The nullable warning is the fixture working. Suppressed rather than
-            // fixed, because adding the check here would stop reproducing the thing
-            // this fake exists to reproduce.
-#pragma warning disable CS8602
-            _ = target.GetItemName();
-#pragma warning restore CS8602
-        }
-    }
 }
 
 namespace RP0

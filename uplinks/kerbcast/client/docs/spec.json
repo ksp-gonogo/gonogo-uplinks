@@ -1,0 +1,254 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "kerbcast",
+    "name": "Kerbcast",
+    "version": "1.0.0-rc.1",
+    "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
+    "wraps": {
+      "name": "kerbcast",
+      "builtAgainst": "1.8.1",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "kerbcast.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "kerbcast.cameras",
+      "payload": "KerbcastCameraEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "cameraId",
+          "unit": "id"
+        },
+        {
+          "name": "cameraName",
+          "unit": "text"
+        },
+        {
+          "name": "dockingPortNodeType",
+          "unit": "text"
+        },
+        {
+          "name": "dockingPortState",
+          "unit": "text"
+        },
+        {
+          "name": "fieldOfView",
+          "unit": "°"
+        },
+        {
+          "name": "fieldOfViewMaximum",
+          "unit": "°"
+        },
+        {
+          "name": "fieldOfViewMinimum",
+          "unit": "°"
+        },
+        {
+          "name": "isDockingCamera",
+          "unit": "flag"
+        },
+        {
+          "name": "panPitch",
+          "unit": "°"
+        },
+        {
+          "name": "panPitchMaximum",
+          "unit": "°"
+        },
+        {
+          "name": "panPitchMinimum",
+          "unit": "°"
+        },
+        {
+          "name": "panYaw",
+          "unit": "°"
+        },
+        {
+          "name": "panYawMaximum",
+          "unit": "°"
+        },
+        {
+          "name": "panYawMinimum",
+          "unit": "°"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "partName",
+          "unit": "text"
+        },
+        {
+          "name": "partTitle",
+          "unit": "text"
+        },
+        {
+          "name": "supportsPan",
+          "unit": "flag"
+        },
+        {
+          "name": "supportsZoom",
+          "unit": "flag"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [],
+  "otherPayloads": [],
+  "commands": [
+    {
+      "id": "kerbcast.setFieldOfView",
+      "args": "KerbcastSetFieldOfViewArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbcast.setPan",
+      "args": "KerbcastSetPanArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "KerbcastSetFieldOfViewArgs",
+      "fields": [
+        {
+          "name": "cameraId",
+          "unit": "id"
+        },
+        {
+          "name": "fieldOfView",
+          "unit": "°"
+        }
+      ]
+    },
+    {
+      "name": "KerbcastSetPanArgs",
+      "fields": [
+        {
+          "name": "cameraId",
+          "unit": "id"
+        },
+        {
+          "name": "pitch",
+          "unit": "°"
+        },
+        {
+          "name": "yaw",
+          "unit": "°"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "camera-feed",
+      "name": "Camera Feed",
+      "description": "A live view from a camera on the active craft. Pick which camera to watch, step to the next or previous one, and aim and zoom the ones that can.",
+      "tags": [
+        "camera"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "vessel.comms",
+        "comms.link",
+        "comms.delay"
+      ],
+      "fields": [],
+      "actions": [
+        {
+          "id": "nextCamera",
+          "label": "Next camera"
+        },
+        {
+          "id": "prevCamera",
+          "label": "Previous camera"
+        },
+        {
+          "id": "zoomIn",
+          "label": "Zoom in"
+        },
+        {
+          "id": "zoomOut",
+          "label": "Zoom out"
+        },
+        {
+          "id": "panYaw",
+          "label": "Pan yaw axis"
+        },
+        {
+          "id": "panPitch",
+          "label": "Pan pitch axis"
+        }
+      ],
+      "augmentSlots": [
+        "camera-feed.overlay"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 9,
+        "h": 8
+      },
+      "minSize": {
+        "w": 7,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [
+    {
+      "id": "kerbcast-crew-avatar",
+      "augments": "crew-status.avatar",
+      "channels": [],
+      "requires": "kerbcast",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "kerbcast-docking-camera",
+      "augments": "targeting.camera",
+      "channels": [
+        "kerbcast.cameras"
+      ],
+      "requires": "kerbcast",
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}

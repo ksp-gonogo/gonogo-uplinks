@@ -69,6 +69,13 @@ namespace GonogoRp1Uplink
         /// </summary>
         public Rp1ConfidenceRaw? Confidence;
 
+        /// <summary>
+        /// RP-1's own next thing to finish, read through the same call its
+        /// warp-to-complete button makes. Null when RP-1 does not manage the
+        /// save or the call would not answer, which publishes nothing.
+        /// </summary>
+        public Rp1NextCompletionRaw? NextCompletion;
+
         public Rp1RushTermsRaw? RushTerms;
         public Rp1LcPricingRaw? LcPricing;
 
@@ -484,6 +491,26 @@ namespace GonogoRp1Uplink
         public bool? IsResearch;
         public string? LcId;
         public double? TimeLeftSeconds;
+    }
+
+    /// <summary>The project RP-1 reports it will finish next, and when.</summary>
+    public sealed class Rp1NextCompletionRaw
+    {
+        /// <summary>
+        /// The universal time it is expected to finish: the tick's UT plus the
+        /// project's own time left. Absent when nothing is in progress or the
+        /// time left is not a finite positive figure.
+        /// </summary>
+        public double? Ut;
+
+        /// <summary>One of <c>build</c>, <c>construction</c>, <c>research</c>, <c>training</c> or <c>other</c>; absent with <see cref="Ut"/>.</summary>
+        public string? Kind;
+
+        /// <summary>The project's name as RP-1 shows it.</summary>
+        public string? Label;
+
+        /// <summary>A project is in progress. False when RP-1 reports nothing to finish.</summary>
+        public bool InProgress;
     }
 
     /// <summary>The balance a warp is running toward, and how far off it is.</summary>

@@ -392,7 +392,6 @@ namespace GonogoRp1Uplink.Tests
                     Rp1ComplexConstructionCommands.NewComplexCommand,
                     Rp1ComplexConstructionCommands.ModifyComplexCommand,
                     Rp1ComplexConstructionCommands.NewPadCommand,
-                    Rp1WarpCommands.ToCompleteCommand,
                     Rp1ToolingCommands.ToolAllCommand,
                     Rp1ToolingCommands.RefitCommand,
                     Rp1ContractCommands.SetPayloadCommand,
@@ -491,9 +490,7 @@ namespace GonogoRp1Uplink.Tests
             Assert.NotEmpty(declared);
             Assert.Empty(declared.Where(id => !tagged.ContainsKey(id)));
 
-            Assert.Equal(
-                new[] { Rp1WarpCommands.ToCompleteCommand },
-                declared.Where(id => tagged[id] == DelayRole.TrueNow).OrderBy(id => id, StringComparer.Ordinal).ToArray());
+            Assert.Empty(declared.Where(id => tagged[id] == DelayRole.TrueNow));
         }
 
         [Fact]
@@ -521,7 +518,6 @@ namespace GonogoRp1Uplink.Tests
                     Rp1BuildStartCommands.GateKind,
                     Rp1FacilityUpgradeCommands.GateKind,
                     Rp1ResearchGate.GateKind,
-                    Rp1WarpCommands.GateKind,
                 },
                 kinds.ToArray());
         }

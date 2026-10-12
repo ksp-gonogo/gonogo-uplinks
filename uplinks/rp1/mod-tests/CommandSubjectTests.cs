@@ -27,7 +27,7 @@ namespace GonogoRp1Uplink.Tests
         [Fact]
         public void Every_delayed_command_names_a_Subject_that_resolves()
         {
-            Assert.Empty(CommandSubjectAssertion.Violations(BuildEveryCommand(), typeof(Rp1WarpArgs).Assembly));
+            Assert.Empty(CommandSubjectAssertion.Violations(BuildEveryCommand(), typeof(Rp1Confidence).Assembly));
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace GonogoRp1Uplink.Tests
                 },
             };
 
-            var violations = CommandSubjectAssertion.Violations(planted, typeof(Rp1WarpArgs).Assembly);
+            var violations = CommandSubjectAssertion.Violations(planted, typeof(Rp1Confidence).Assembly);
 
             Assert.Equal(2, violations.Count);
         }

@@ -41,6 +41,7 @@ import type {
   Rp1FundTarget,
   Rp1LcPricing,
   Rp1LeaderEntry,
+  Rp1NextCompletion,
   Rp1OperationEntry,
   Rp1PadEntry,
   Rp1Personnel,
@@ -155,6 +156,13 @@ export const RP1_LC_PRICING_TOPIC = "rp1.lcPricing";
 
 /** RP-1's own currency, absent rather than zero when the module is not live. */
 export const RP1_CONFIDENCE_TOPIC = "rp1.confidence";
+
+/**
+ * The next project RP-1 will finish, as an instant: `ut` is the game's clock
+ * now plus that project's time left, so it moves as the queue does. An alarm
+ * follows it (see `WarpTargets`), and `ut` is null while nothing is in progress.
+ */
+export const RP1_NEXT_COMPLETION_TOPIC = "rp1.nextCompletion";
 
 /**
  * Every Program RP-1 knows about, running, finished or on offer, discriminated
@@ -404,6 +412,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "rp1.rushTerms": Rp1RushTerms;
     "rp1.lcPricing": Rp1LcPricing;
     "rp1.confidence": Rp1Confidence;
+    "rp1.nextCompletion": Rp1NextCompletion;
     "rp1.programs": Rp1ProgramEntry[];
     "rp1.programSlots": Rp1ProgramSlots;
     "rp1.programFundingCurves": Rp1FundingCurveEntry[];
@@ -548,6 +557,9 @@ export type _ResolvesRp1LcPricing = Expect<
 >;
 export type _ResolvesRp1Confidence = Expect<
   Equal<TopicPayload<"rp1.confidence">, Rp1Confidence>
+>;
+export type _ResolvesRp1NextCompletion = Expect<
+  Equal<TopicPayload<"rp1.nextCompletion">, Rp1NextCompletion>
 >;
 export type _ResolvesRp1Programs = Expect<
   Equal<TopicPayload<"rp1.programs">, Rp1ProgramEntry[]>

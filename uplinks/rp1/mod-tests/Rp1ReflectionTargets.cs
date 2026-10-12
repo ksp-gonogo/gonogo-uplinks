@@ -235,12 +235,8 @@ namespace GonogoRp1Uplink.Tests
             // rather than guessed when it will not resolve, because enabledForSave is
             // true for sandbox too.
             new Rp1TypeTarget(RoUtils, "ROUtils.KSPUtils", "Rp1ComplexConstructionCommands"),
-            // RP-1's warp controller, and the one type in this manifest that is
-            // INTERNAL on the shipped assembly. Reflection reaches it anyway, and
-            // an internal type is a rename risk rather than an API promise, which is
-            // exactly why it is pinned.
-            new Rp1TypeTarget(Rp0, "RP0.KCTWarpController", "Rp1WarpCommands"),
-            new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1WarpCommands"),
+            // RP-1's project helpers, asked which project finishes next.
+            new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1ScReflection"),
             // RP-1's contract tab, reached for its BOUNDS and its private contract-name
             // lists rather than for anything it draws, and its persisted settings node,
             // which is the only state this Uplink writes that is not career state.
@@ -622,20 +618,13 @@ namespace GonogoRp1Uplink.Tests
             // never fire.
             new Rp1MethodTarget(Rp0, "RP0.VesselProject", "MeetsFacilityRequirements", 3, false, "Rp1ComplexConstructionCommands"),
             new Rp1MethodTarget(Rp0, "RP0.HireStaffProject", "Clear", 0, false, "Rp1ComplexConstructionCommands"),
-            // ── Warping ─────────────────────────────────────────────────────
-            // ARITY ONE, and its argument carries a MEANING rather than being
-            // optional: null means "the next thing to finish" and anything else
-            // means that project.
-            new Rp1MethodTarget(Rp0, "RP0.KCTWarpController", "Create", 1, true, "Rp1WarpCommands"),
-            // The GUARD rather than the action, and losing it is worse than losing
-            // Create: RP-1's own Create dereferences this answer without a null
-            // check, having already attached its controller, so a warp with nothing
-            // to warp to throws instead of refusing.
-            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetNextThingToFinish", 0, true, "Rp1WarpCommands"),
-            // What a project calls itself, for the refusal sentence. Declared on the
-            // interface every warp target implements, which is what lets a fund
-            // target and a half-built rocket be named the same way.
-            new Rp1MethodTarget(Rp0, "RP0.ISpaceCenterProject", "GetItemName", 0, false, "Rp1WarpCommands"),
+            // ── Next project to finish ──────────────────────────────────────
+            // RP-1's own answer to which project completes first, across every
+            // centre and every kind: the instant rp1.nextCompletion publishes.
+            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetNextThingToFinish", 0, true, "Rp1ScReflection"),
+            // What a project calls itself, declared on the interface every project
+            // implements, so a fund target and a half-built rocket are named alike.
+            new Rp1MethodTarget(Rp0, "RP0.ISpaceCenterProject", "GetItemName", 0, false, "Rp1ScReflection"),
             // RP-1's own facility TIER, an index, rather than stock's normalised
             // fraction. Asked at exactly the point RP-1's own training screen asks
             // it: against a course's AC-level requirement, before it is offered a

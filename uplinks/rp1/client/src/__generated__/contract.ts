@@ -821,50 +821,6 @@ export interface Rp1PadDismantleArgs
 	padId?: string;
 }
 /**
-* Args for `rp1.warp.toComplete`, which takes none.
-*
-* It does not name what to warp to, because it is not a choice: RP-1 holds
-* exactly one next-thing-to-finish, whichever of the career's projects has the
-* least time left, across every centre. A command carrying an id would imply a
-* roster that does not exist.
-*
-* **There is no `rp1.warp.stop`, deliberately.** RP-1's warp controller
-* destroys itself the moment it observes a warp rate of zero
-* (`KCTWarpController::FixedUpdate` IL_002c-IL_003e: the rate index is read,
-* and a zero branches straight to `DestroyGameObject` and returns), so core's
-* own `time.setWarpIndex` already ends an RP-1 warp and the widget's existing
-* "1x" button already sends it. A second command to stop warping would be two
-* controls doing one thing, and the operator would have to know which of them
-* RP-1 respects. It respects both.
-*
-* **There is no `rp1.warp.toFundTarget` either.** Warping until the balance
-* reaches a figure is not a command: it is a threshold alarm on
-* `career.status` / `economy.funds` at the active command centre, which halts
-* the warp inside the simulation on the tick that centre learns the balance.
-* Warping to the next completion has no such spelling, because nothing
-* publishes the next project to finish as an instant a threshold could
-* address: the candidates live across four array Topics, and a dotted path
-* cannot index a list.
-*
-* **instant, and the only `rp1.*` command that is.** Every other command in
-* this Uplink is an order a second command centre can issue, so it crosses the
-* gap like any other order. This one is not an order, it is a clock change:
-* warp is sim-meta, and signal delay fiction does not apply to a ground-side
-* simulation control, which is the same principle core states on
-* `time.setWarpIndex`. Delayed, an operator selecting a warp with a craft
-* thirty light-minutes out would wait thirty minutes for their own clock to
-* move.
-*
-* The paragraph above settles it independently: core's `time.setWarpIndex`
-* already ends an RP-1 warp, and the WarpControl widget's "1x" button already
-* sends it. A command that one instant control already terminates cannot be in
-* a different delay class from it, so this is the class that is consistent
-* rather than an exemption carved for convenience.
-*/
-export interface Rp1WarpArgs
-{
-}
-/**
 * Args for `rp1.tooling.toolAll`: buy every tooling the ship on the editor's
 * table is missing, in one purchase.
 *
@@ -2077,6 +2033,48 @@ export interface Rp1Confidence
 	confidence?: Value<"confidence"> | null;
 	/** Confidence earned over the whole career, which never falls. */
 	earned?: Value<"confidence"> | null;
+}
+/**
+* The next project RP-1 will finish, anywhere in the career, as an instant.
+* Useful for an alarm that stops the warp the moment the build, research,
+* construction or training in progress that finishes first completes: the
+* alarm follows `Rp1NextCompletion.ut`, so it keeps up when a shorter project
+* overtakes the one it was waiting for.
+*
+* RP-1's own answer, taken from the same call its warp-to-complete button
+* uses, across every centre and every kind of project. `Rp1NextCompletion.ut`
+* is the game's universal time now plus that project's time left, so it moves
+* as RP-1 recomputes the time left and is not a fixed deadline.
+*
+* The Topic is present whenever RP-1 manages the save. A career with nothing
+* in progress publishes it with a null `Rp1NextCompletion.ut`, which is an
+* answer ("nothing to wait for") and not a gap.
+*/
+export interface Rp1NextCompletion
+{
+	/**
+	* The universal time the next project is expected to finish, or null when
+	* nothing is in progress or RP-1 cannot say (a project with no build rate has
+	* no finishing time).
+	*/
+	ut?: Value<"ut"> | null;
+	/**
+	* What kind of project it is: `build` (a vehicle in integration or recovery),
+	* `construction` (a facility or complex), `research` (a tech node), `training`
+	* (a crew course) or `other`. Null while `Rp1NextCompletion.ut` is null.
+	*/
+	kind?: string | null;
+	/**
+	* The project's name as RP-1 shows it, or null while `Rp1NextCompletion.ut` is
+	* null.
+	*/
+	label?: string | null;
+	/**
+	* What `Rp1NextCompletion.ut` rests on: `next-to-finish` (RP-1's own next
+	* thing to finish, with a finishing time), `no-estimate` (a project is in
+	* progress but RP-1 cannot give a finishing time) or `none-in-progress`.
+	*/
+	basis: string;
 }
 /**
 * One RP-1 Program, whether it is running, finished, or merely on offer.

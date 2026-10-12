@@ -385,6 +385,29 @@ namespace GonogoRp1Uplink
             };
         }
 
+        /// <summary>
+        /// The next project to finish, as an instant. Null when RP-1 would not
+        /// answer, which publishes nothing; nothing in progress is a record with
+        /// no instant.
+        /// </summary>
+        public static Dictionary<string, object?>? BuildNextCompletion(Rp1ScRaw raw)
+        {
+            var next = raw.NextCompletion;
+            if (next == null)
+            {
+                return null;
+            }
+            return new Dictionary<string, object?>
+            {
+                ["ut"] = next.Ut,
+                ["kind"] = next.Kind,
+                ["label"] = next.Label,
+                ["basis"] = !next.InProgress
+                    ? "none-in-progress"
+                    : next.Ut == null ? "no-estimate" : "next-to-finish",
+            };
+        }
+
         /// <summary>The warp's fund stop-condition, on the same terms as the hire target.</summary>
         public static Dictionary<string, object?>? BuildFundTarget(Rp1ScRaw raw)
         {

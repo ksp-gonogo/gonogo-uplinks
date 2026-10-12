@@ -505,6 +505,12 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     vesselPurchase: "funds",
     vesselRecovery: "funds",
   },
+  "Rp1NextCompletion": {
+    basis: "enum",
+    kind: "enum",
+    label: "text",
+    ut: "ut",
+  },
   "Rp1OperationEntry": {
     associatedVesselId: "id",
     blockingPeers: "count",
@@ -973,6 +979,12 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     strategyId: "id",
     title: "text",
   },
+  "rp1.nextCompletion": {
+    basis: "enum",
+    kind: "enum",
+    label: "text",
+    ut: "ut",
+  },
   "rp1.operations": {
     associatedVesselId: "id",
     blockingPeers: "count",
@@ -1367,6 +1379,10 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   "Rp1FacilityUpgradeRate": {
     facility: null,
   },
+  "Rp1NextCompletion": {
+    basis: null,
+    kind: null,
+  },
   "Rp1OperationEntry": {
     type: null,
   },
@@ -1420,6 +1436,10 @@ export const GENERATED_TOPIC_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "rp1.facilities": {
     facility: null,
+  },
+  "rp1.nextCompletion": {
+    basis: null,
+    kind: null,
   },
   "rp1.operations": {
     type: null,

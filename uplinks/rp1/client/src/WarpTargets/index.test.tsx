@@ -1,6 +1,8 @@
 import {
   act,
+  clearRequestedAlarms,
   getAugmentsForSlot,
+  getRequestedAlarms,
   screen,
   setupStreamFixture,
   waitFor,
@@ -10,11 +12,14 @@ import {
   renderWithRail as render,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { RP1_FUND_TARGET_CANCEL_COMMAND } from "./FundTarget.js";
-import { RP1_WARP_TO_COMPLETE_COMMAND, WarpTargets } from "./index.js";
+import { RP1_NEXT_COMPLETION_ALARM_KEY, WarpTargets } from "./index.js";
 
-function mount(fundTarget?: Record<string, unknown>) {
+function mount(
+  fundTarget?: Record<string, unknown>,
+  nextCompletion?: Record<string, unknown>,
+) {
   const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
@@ -26,11 +31,24 @@ function mount(fundTarget?: Record<string, unknown>) {
     if (fundTarget !== undefined) {
       fixture.emit("rp1.fundTarget", fundTarget);
     }
+    fixture.emit(
+      "rp1.nextCompletion",
+      nextCompletion ?? {
+        ut: 5_000_000,
+        kind: "build",
+        label: "Atlas 3",
+        basis: "next-to-finish",
+      },
+    );
   });
   return { fixture, view };
 }
 
 describe("WarpTargets", () => {
+  beforeEach(() => {
+    clearRequestedAlarms();
+  });
+
   it("binds the slot the host widget already has for a mod's warp target", () => {
     /*
      * An augment rather than a widget, and the assertion is that it LANDS in the
@@ -58,23 +76,47 @@ describe("WarpTargets", () => {
     });
   });
 
-  it('names what it warps to rather than saying only "next"', async () => {
+  it("asks for an alarm that follows the next completion, and sends RP-1 nothing", async () => {
     const user = userEvent.setup();
     const { fixture, view } = mount();
 
     await user.click(
       await screen.findByRole("button", {
-        name: "Warp until RP-1's next project finishes",
+        name: "Set an alarm for when Atlas 3 finishes. It spends nothing.",
       }),
     );
 
-    const sent = fixture.transport.sentCommands.find(
-      (c) => c.command === RP1_WARP_TO_COMPLETE_COMMAND,
-    );
-    // No arguments at all: RP-1 holds exactly one next-thing-to-finish, so a
-    // command carrying an id would imply a roster that does not exist.
-    expect(sent?.args).toEqual({});
+    /*
+     * An alarm the mod follows, not a command: RP-1 manages no warp for this, the
+     * alarm in the operator's own list is what stops it. The topic and path are
+     * the ones the mod reads on every tick, so the alarm re-aims when a shorter
+     * project overtakes the one named on the button.
+     */
+    expect(getRequestedAlarms()).toEqual([
+      {
+        uplinkId: "rp1",
+        key: RP1_NEXT_COMPLETION_ALARM_KEY,
+        name: "Next RP-1 project finishes",
+        trigger: {
+          kind: "instant",
+          topic: "rp1.nextCompletion",
+          fieldPath: "ut",
+          leadSeconds: 10,
+        },
+      },
+    ]);
+    expect(fixture.transport.sentCommands).toEqual([]);
     await expectNoA11yViolations(view.container);
+  });
+
+  it("is dark while nothing is in progress, and says so", async () => {
+    mount(undefined, { ut: null, kind: null, label: null, basis: "none-in-progress" });
+
+    const button = await screen.findByRole("button", {
+      name: /Set an alarm for when the next project finishes/,
+    });
+    expect(button).toBeDisabled();
+    expect(screen.getByText("nothing in progress")).toBeInTheDocument();
   });
 
   it("offers no way to stop warping, because the host widget already does", async () => {
@@ -129,7 +171,7 @@ describe("WarpTargets", () => {
     mount({ active: false });
 
     await screen.findByRole("button", {
-      name: "Warp until RP-1's next project finishes",
+      name: /Set an alarm for when Atlas 3 finishes/,
     });
     /*
      * RP-1's own cancel asks IsValid first and refuses when nothing stands, so a

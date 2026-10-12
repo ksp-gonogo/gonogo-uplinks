@@ -73,7 +73,7 @@ public class Rp1ScUplinkTests : IDisposable
                 && c.Topic != Rp1ScUplink.AvailableTopic
                 && c.Topic != Rp1ScUplink.SimulationTopic)
             .ToList();
-        Assert.Equal(31, atHome.Count);
+        Assert.Equal(32, atHome.Count);
         Assert.All(atHome, c =>
         {
             Assert.Equal(DelayRole.Delayed, c.Delay);

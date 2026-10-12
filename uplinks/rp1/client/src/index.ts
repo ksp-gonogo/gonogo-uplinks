@@ -115,4 +115,4 @@ export {
   RP1_SCRAP_COMMAND,
 } from "./VehicleAssembly/VehicleSection.js";
 export { WarehouseSection } from "./VehicleAssembly/Warehouse.js";
-export { RP1_WARP_TO_COMPLETE_COMMAND, WarpTargets } from "./WarpTargets/index.js";
+export { WarpTargets } from "./WarpTargets/index.js";

@@ -1,0 +1,605 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "realantennas",
+    "name": "RealAntennas",
+    "version": "1.0.0-rc.1",
+    "description": "Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.",
+    "wraps": {
+      "name": "RealAntennas",
+      "builtAgainst": "2.11.1.0",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "comms.dataRate",
+      "payload": "CommsDataRate",
+      "array": false,
+      "fields": [
+        {
+          "name": "downBitsPerSec",
+          "unit": "bit/s"
+        },
+        {
+          "name": "upBitsPerSec",
+          "unit": "bit/s"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "comms.linkMargin",
+      "payload": "CommsLinkMargin",
+      "array": false,
+      "fields": [
+        {
+          "name": "closesLink",
+          "unit": "flag"
+        },
+        {
+          "name": "decibelMargin",
+          "unit": "dB"
+        },
+        {
+          "name": "quality",
+          "unit": "ratio"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "realantennas.antennaChains",
+      "payload": "RealAntennasAntennaChain",
+      "array": true,
+      "fields": [
+        {
+          "name": "activeStep",
+          "unit": "count"
+        },
+        {
+          "name": "antennaId",
+          "unit": "id"
+        },
+        {
+          "name": "carrying",
+          "unit": "flag"
+        },
+        {
+          "name": "connected",
+          "unit": "flag"
+        },
+        {
+          "name": "detail",
+          "unit": "text"
+        },
+        {
+          "name": "laps",
+          "unit": "count"
+        },
+        {
+          "name": "lastAppliedUt",
+          "unit": "ut"
+        },
+        {
+          "name": "settleSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "steps",
+          "shape": "RealAntennasTargetStep[]"
+        },
+        {
+          "name": "walkPhase",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "realantennas.antennas",
+      "payload": "RealAntennasAntennaState",
+      "array": true,
+      "fields": [
+        {
+          "name": "antennaId",
+          "unit": "id"
+        },
+        {
+          "name": "availableTargetModes",
+          "unit": "text"
+        },
+        {
+          "name": "beamwidth",
+          "unit": "°"
+        },
+        {
+          "name": "cone10Db",
+          "unit": "°"
+        },
+        {
+          "name": "cone3Db",
+          "unit": "°"
+        },
+        {
+          "name": "gain",
+          "unit": "dB"
+        },
+        {
+          "name": "index",
+          "unit": "count"
+        },
+        {
+          "name": "minimumDistance",
+          "unit": "m"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "steerable",
+          "unit": "flag"
+        },
+        {
+          "name": "targetAltitude",
+          "unit": "m"
+        },
+        {
+          "name": "targetAzimuth",
+          "unit": "°"
+        },
+        {
+          "name": "targetBodyName",
+          "unit": "text"
+        },
+        {
+          "name": "targetElevation",
+          "unit": "°"
+        },
+        {
+          "name": "targetForward",
+          "unit": "°"
+        },
+        {
+          "name": "targetKind",
+          "unit": "text"
+        },
+        {
+          "name": "targetLabel",
+          "unit": "text"
+        },
+        {
+          "name": "targetLatitude",
+          "unit": "°"
+        },
+        {
+          "name": "targetLongitude",
+          "unit": "°"
+        },
+        {
+          "name": "targetVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "targeted",
+          "unit": "flag"
+        },
+        {
+          "name": "techLevel",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "realantennas.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "realantennas.hopRates",
+      "payload": "RealAntennasHopRate",
+      "array": true,
+      "fields": [
+        {
+          "name": "bitsPerSec",
+          "unit": "bit/s"
+        },
+        {
+          "name": "fromNodeId",
+          "unit": "id"
+        },
+        {
+          "name": "toNodeId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "realantennas.retargeting",
+      "payload": "RealAntennasVesselRetargeting",
+      "array": true,
+      "fields": [
+        {
+          "name": "allowed",
+          "unit": "flag"
+        },
+        {
+          "name": "borrowed",
+          "shape": "RealAntennasBorrowedDish"
+        },
+        {
+          "name": "last",
+          "shape": "RealAntennasLastBorrow"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "RealAntennasBorrowedDish",
+      "fields": [
+        {
+          "name": "dishId",
+          "unit": "id"
+        },
+        {
+          "name": "dishName",
+          "unit": "text"
+        },
+        {
+          "name": "peerId",
+          "unit": "id"
+        },
+        {
+          "name": "previousAim",
+          "unit": "text"
+        },
+        {
+          "name": "sinceUt",
+          "unit": "ut"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasLastBorrow",
+      "fields": [
+        {
+          "name": "endedUt",
+          "unit": "ut"
+        },
+        {
+          "name": "outcome",
+          "unit": "text"
+        },
+        {
+          "name": "peerId",
+          "unit": "id"
+        },
+        {
+          "name": "turnedUt",
+          "unit": "ut"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasTargetStep",
+      "fields": [
+        {
+          "name": "altitude",
+          "unit": "m"
+        },
+        {
+          "name": "azimuth",
+          "unit": "°"
+        },
+        {
+          "name": "bodyName",
+          "unit": "text"
+        },
+        {
+          "name": "elevation",
+          "unit": "°"
+        },
+        {
+          "name": "forward",
+          "unit": "°"
+        },
+        {
+          "name": "latitude",
+          "unit": "°"
+        },
+        {
+          "name": "longitude",
+          "unit": "°"
+        },
+        {
+          "name": "mode",
+          "unit": "text"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasTargetStepArgs",
+      "fields": [
+        {
+          "name": "altitude",
+          "unit": "m"
+        },
+        {
+          "name": "azimuth",
+          "unit": "°"
+        },
+        {
+          "name": "bodyName",
+          "unit": "text"
+        },
+        {
+          "name": "elevation",
+          "unit": "°"
+        },
+        {
+          "name": "forward",
+          "unit": "°"
+        },
+        {
+          "name": "latitude",
+          "unit": "°"
+        },
+        {
+          "name": "longitude",
+          "unit": "°"
+        },
+        {
+          "name": "mode",
+          "unit": "text"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "RealAntennasHopExt",
+      "fields": [
+        {
+          "name": "band",
+          "unit": "text"
+        },
+        {
+          "name": "beamwidth",
+          "unit": "°"
+        },
+        {
+          "name": "codingRate",
+          "unit": "ratio"
+        },
+        {
+          "name": "encoder",
+          "unit": "text"
+        },
+        {
+          "name": "modulationBits",
+          "unit": "count"
+        },
+        {
+          "name": "powerDrawEc",
+          "unit": "units/s"
+        },
+        {
+          "name": "requiredEbN0",
+          "unit": "dB"
+        },
+        {
+          "name": "reverseBitsPerSec",
+          "unit": "bit/s"
+        },
+        {
+          "name": "techLevel",
+          "unit": "count"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "realantennas.antenna.target",
+      "args": "RealAntennasTargetArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "realantennas.antenna.targetChain",
+      "args": "RealAntennasTargetChainArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "realantennas.antenna.targetHome",
+      "args": "RealAntennasAntennaArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "realantennas.vessel.setAutoRetarget",
+      "args": "RealAntennasSetAutoRetargetArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "RealAntennasAntennaArgs",
+      "fields": [
+        {
+          "name": "antennaId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasSetAutoRetargetArgs",
+      "fields": [
+        {
+          "name": "allow",
+          "unit": "flag"
+        },
+        {
+          "name": "vessel",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasTargetArgs",
+      "fields": [
+        {
+          "name": "altitude",
+          "unit": "m"
+        },
+        {
+          "name": "antennaId",
+          "unit": "id"
+        },
+        {
+          "name": "azimuth",
+          "unit": "°"
+        },
+        {
+          "name": "bodyName",
+          "unit": "text"
+        },
+        {
+          "name": "elevation",
+          "unit": "°"
+        },
+        {
+          "name": "forward",
+          "unit": "°"
+        },
+        {
+          "name": "latitude",
+          "unit": "°"
+        },
+        {
+          "name": "longitude",
+          "unit": "°"
+        },
+        {
+          "name": "mode",
+          "unit": "text"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasTargetChainArgs",
+      "fields": [
+        {
+          "name": "antennaId",
+          "unit": "id"
+        },
+        {
+          "name": "settleSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "steps",
+          "shape": "RealAntennasTargetStepArgs[]"
+        }
+      ]
+    }
+  ],
+  "widgets": [],
+  "augments": [
+    {
+      "id": "realantennas-comm-signal-antenna-targets",
+      "augments": "comm-signal.sections",
+      "channels": [
+        "realantennas.antennas",
+        "realantennas.antennaChains",
+        "realantennas.retargeting",
+        "system.bodies",
+        "system.vessels"
+      ],
+      "requires": "realantennas",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "realantennas-comm-signal-badge",
+      "augments": "comm-signal.badges",
+      "channels": [
+        "comms.dataRate",
+        "comms.path"
+      ],
+      "requires": "realantennas",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "realantennas-comm-signal-section",
+      "augments": "comm-signal.sections",
+      "channels": [
+        "comms.linkMargin",
+        "comms.path"
+      ],
+      "requires": "realantennas",
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [
+    {
+      "id": "realantennas:comm-signal-hop-rates",
+      "contributes": "comm-signal.hop-rates",
+      "deps": [
+        "realantennas.hopRates"
+      ],
+      "requires": "realantennas",
+      "settings": []
+    }
+  ],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}

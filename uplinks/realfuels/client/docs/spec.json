@@ -1,0 +1,155 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "realfuels",
+    "name": "RealFuels",
+    "version": "1.0.0-rc.1",
+    "description": "Reports per-engine RealFuels limits: ignitions remaining, ullage stability and pressure feed, plus cryogenic boiloff.",
+    "wraps": {
+      "name": "RealFuels",
+      "builtAgainst": "15.15.0",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "realfuels.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "realfuels.boiloff",
+      "payload": "RealFuelsBoiloff",
+      "array": false,
+      "fields": [
+        {
+          "name": "boiloffRate",
+          "unit": "kg/s"
+        },
+        {
+          "name": "cryogenicTankCount",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "realfuels.engines",
+      "payload": "RealFuelsEngines",
+      "array": false,
+      "fields": [
+        {
+          "name": "engines",
+          "shape": "RealFuelsEngineEntry[]"
+        },
+        {
+          "name": "ignitionsLimited",
+          "unit": "flag"
+        },
+        {
+          "name": "ullageSimulated",
+          "unit": "flag"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "RealFuelsEngineEntry",
+      "fields": [
+        {
+          "name": "feedPressureOk",
+          "unit": "flag"
+        },
+        {
+          "name": "groundIgnitionOnly",
+          "unit": "flag"
+        },
+        {
+          "name": "ignitionProbability",
+          "unit": "ratio"
+        },
+        {
+          "name": "ignitionsRemaining",
+          "unit": "count"
+        },
+        {
+          "name": "ignitionsUnlimited",
+          "unit": "flag"
+        },
+        {
+          "name": "literalZeroIgnitions",
+          "unit": "flag"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "partName",
+          "unit": "text"
+        },
+        {
+          "name": "predictedMaximumResiduals",
+          "unit": "ratio"
+        },
+        {
+          "name": "pressureFed",
+          "unit": "flag"
+        },
+        {
+          "name": "ratedBurnTimeSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "ratedContinuousBurnTimeSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "ullageModelled",
+          "unit": "flag"
+        },
+        {
+          "name": "ullageStability",
+          "unit": "ratio"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [],
+  "commands": [],
+  "commandArgs": [],
+  "widgets": [],
+  "augments": [
+    {
+      "id": "realfuels-fuel-status-section",
+      "augments": "fuel-status.sections",
+      "channels": [
+        "realfuels.engines",
+        "realfuels.boiloff"
+      ],
+      "requires": "realfuels",
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}

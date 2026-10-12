@@ -465,6 +465,12 @@
       "vesselPurchase": "funds",
       "vesselRecovery": "funds"
     },
+    "Rp1NextCompletion": {
+      "basis": "enum",
+      "kind": "enum",
+      "label": "text",
+      "ut": "ut"
+    },
     "Rp1OperationEntry": {
       "associatedVesselId": "id",
       "blockingPeers": "count",
@@ -928,6 +934,12 @@
       "strategyId": "id",
       "title": "text"
     },
+    "rp1.nextCompletion": {
+      "basis": "enum",
+      "kind": "enum",
+      "label": "text",
+      "ut": "ut"
+    },
     "rp1.operations": {
       "associatedVesselId": "id",
       "blockingPeers": "count",
@@ -1282,6 +1294,10 @@
     "Rp1FacilityUpgradeRate": {
       "facility": null
     },
+    "Rp1NextCompletion": {
+      "basis": null,
+      "kind": null
+    },
     "Rp1OperationEntry": {
       "type": null
     },
@@ -1333,6 +1349,10 @@
     },
     "rp1.facilities": {
       "facility": null
+    },
+    "rp1.nextCompletion": {
+      "basis": null,
+      "kind": null
     },
     "rp1.operations": {
       "type": null

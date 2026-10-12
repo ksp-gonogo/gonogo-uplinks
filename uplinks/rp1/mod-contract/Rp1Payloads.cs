@@ -1629,6 +1629,60 @@ public sealed class Rp1Confidence
 }
 
 /// <summary>
+/// The next project RP-1 will finish, anywhere in the career, as an instant.
+/// Useful for an alarm that stops the warp the moment the build, research,
+/// construction or training in progress that finishes first completes: the
+/// alarm follows <see cref="Ut"/>, so it keeps up when a shorter project
+/// overtakes the one it was waiting for.
+///
+/// <para>RP-1's own answer, taken from the same call its warp-to-complete button
+/// uses, across every centre and every kind of project. <see cref="Ut"/> is the
+/// game's universal time now plus that project's time left, so it moves as RP-1
+/// recomputes the time left and is not a fixed deadline.</para>
+///
+/// <para>The Topic is present whenever RP-1 manages the save. A career with
+/// nothing in progress publishes it with a null <see cref="Ut"/>, which is an
+/// answer ("nothing to wait for") and not a gap.</para>
+/// </summary>
+[SitrepContract]
+[SitrepTopic("rp1.nextCompletion")]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1NextCompletion
+{
+    /// <summary>
+    /// The universal time the next project is expected to finish, or null when
+    /// nothing is in progress or RP-1 cannot say (a project with no build rate
+    /// has no finishing time).
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? Ut { get; set; }
+
+    /// <summary>
+    /// What kind of project it is: <c>build</c> (a vehicle in integration or
+    /// recovery), <c>construction</c> (a facility or complex), <c>research</c> (a
+    /// tech node), <c>training</c> (a crew course) or <c>other</c>. Null while
+    /// <see cref="Ut"/> is null.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Enumeration)]
+    public string? Kind { get; set; }
+
+    /// <summary>The project's name as RP-1 shows it, or null while <see cref="Ut"/> is null.</summary>
+    [SitrepUnit(Sitrep.Contract.Units.Text)]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// What <see cref="Ut"/> rests on: <c>next-to-finish</c> (RP-1's own next
+    /// thing to finish, with a finishing time), <c>no-estimate</c> (a project is
+    /// in progress but RP-1 cannot give a finishing time) or
+    /// <c>none-in-progress</c>.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.Enumeration)]
+    public string Basis { get; set; } = "none-in-progress";
+}
+
+/// <summary>
 /// One RP-1 Program, whether it is running, finished, or merely on offer.
 ///
 /// <para>Programs are RP-1's commitment mechanic and the largest single source

@@ -1165,66 +1165,6 @@ public class Rp1PadDismantleArgs
 }
 
 /// <summary>
-/// Args for <c>rp1.warp.toComplete</c>, which takes none.
-///
-/// <para>It does not name what to warp to, because it is not a choice: RP-1
-/// holds exactly one next-thing-to-finish, whichever of the career's projects
-/// has the least time left, across every centre. A command carrying an id would
-/// imply a roster that does not exist.</para>
-///
-/// <para><b>There is no <c>rp1.warp.stop</c>, deliberately.</b> RP-1's warp
-/// controller destroys itself the moment it observes a warp rate of zero
-/// (<c>KCTWarpController::FixedUpdate</c> IL_002c-IL_003e: the rate index is read,
-/// and a zero branches straight to <c>DestroyGameObject</c> and returns), so
-/// core's own <c>time.setWarpIndex</c> already ends an RP-1 warp and the widget's
-/// existing "1x" button already sends it. A second command to stop warping would
-/// be two controls doing one thing, and the operator would have to know which of
-/// them RP-1 respects. It respects both.</para>
-///
-/// <para><b>There is no <c>rp1.warp.toFundTarget</c> either.</b> Warping until
-/// the balance reaches a figure is not a command: it is a threshold alarm on
-/// <c>career.status</c> / <c>economy.funds</c> at the active command centre,
-/// which halts the warp inside the simulation on the tick that centre learns the
-/// balance. Warping to the next completion
-/// has no such spelling, because nothing publishes the next project to finish as
-/// an instant a threshold could address: the candidates live across four array
-/// Topics, and a dotted path cannot index a list.
-/// <internal>
-/// Both <c>rp1.warp.toFundTarget</c> and <c>rp1.fundTarget.set</c> existed until
-/// 2026-09-13 and were removed together, on the ruling that RP-1 must not manage
-/// warp on the app's behalf. They were one controller wearing two names:
-/// FundTargetProject returns project type None, spends nothing and builds
-/// nothing, so the setter was only ever a way to aim the warp. Nothing was
-/// stranded; RP-1's own Maintenance screen still carries the whole feature
-/// (MaintenanceGUI.RenderSummaryTab's "Warp to Fund Target").
-/// </internal></para>
-///
-/// <para><b>instant, and the only <c>rp1.*</c> command that is.</b> Every other
-/// command in this Uplink is an order a second command centre can issue, so it
-/// crosses the gap like any other order. This one is not an order, it is a clock
-/// change: warp is sim-meta, and signal delay fiction does not apply to a
-/// ground-side simulation control, which is the same principle core states on
-/// <c>time.setWarpIndex</c>. Delayed, an operator selecting a warp with a craft
-/// thirty light-minutes out would wait thirty minutes for their own clock to
-/// move.</para>
-///
-/// <para>The paragraph above settles it independently: core's
-/// <c>time.setWarpIndex</c> already ends an RP-1 warp, and the WarpControl
-/// widget's "1x" button already sends it. A command that one instant control
-/// already terminates cannot be in a different delay class from it, so this is
-/// the class that is consistent rather than an exemption carved for
-/// convenience.</para>
-/// </summary>
-[SitrepContract]
-#if SITREP_CODEGEN
-[TsInterface]
-#endif
-[SitrepCommand("rp1.warp.toComplete", Delay = DelayRole.TrueNow)]
-public class Rp1WarpArgs
-{
-}
-
-/// <summary>
 /// Args for <c>rp1.tooling.toolAll</c>: buy every tooling the ship on the editor's
 /// table is missing, in one purchase.
 ///

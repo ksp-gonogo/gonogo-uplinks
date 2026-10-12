@@ -97,6 +97,7 @@ namespace GonogoRp1Uplink
         private const string DatabaseTypeName = "RP0.Database";
         private const string FormulaTypeName = "RP0.Formula";
         private const string MaintenanceTypeName = "RP0.MaintenanceHandler";
+        private const string UtilitiesTypeName = "RP0.KCTUtilities";
 
         /// <summary>KSCSwitcher's own type, not RP-1's.</summary>
         private const string KscSwitcherLoaderTypeName = "regexKSP.KSCLoader";
@@ -114,6 +115,7 @@ namespace GonogoRp1Uplink
         private readonly Type? _formula;
         private readonly Type? _lcType;
         private readonly Type? _maintenance;
+        private readonly Type? _utilities;
 
         /// <summary>Cached MethodInfo per (type, method): the one member kind read by invoke rather than by value.</summary>
         private readonly Dictionary<string, MemberInfo?> _methods = new Dictionary<string, MemberInfo?>();
@@ -159,6 +161,7 @@ namespace GonogoRp1Uplink
             _formula = Rp1Types.Find(FormulaTypeName);
             _lcType = Rp1Types.Find("RP0.LaunchComplexType");
             _maintenance = Rp1Types.Find(MaintenanceTypeName);
+            _utilities = Rp1Types.Find(UtilitiesTypeName);
 
             if (_scm != null)
             {
@@ -344,9 +347,101 @@ namespace GonogoRp1Uplink
             raw.RushTerms = ReadRushTerms(payroll.Settings);
             raw.LcPricing = ReadLcPricing();
             raw.Confidence = ReadConfidence();
+            raw.NextCompletion = ReadNextCompletion(ut);
             raw.HireTarget = ReadHireTarget(Member(scm, "staffTarget"));
             raw.FundTarget = ReadFundTarget(Member(scm, "fundTarget"));
             return raw;
+        }
+
+        /// <summary>
+        /// RP-1's own next thing to finish, as an instant.
+        ///
+        /// <para>Asked of <c>KCTUtilities.GetNextThingToFinish</c>, the call
+        /// RP-1's warp-to-complete button makes, so the answer is RP-1's across
+        /// every centre and every kind of project and cannot disagree with its
+        /// own button. The instant is the clock now plus the project's time
+        /// left, which RP-1 recomputes every frame, so it moves as the queue
+        /// does.</para>
+        ///
+        /// <para>Null when the question cannot be asked at all (the helper is
+        /// missing or RP-1 is not managing the save), which publishes nothing.
+        /// Nothing in progress is an answer, not a gap: it reads as an in-progress
+        /// flag of false and no instant. A project whose time left is not a
+        /// finite positive number (<c>GetTimeLeft</c> is infinity at a zero build
+        /// rate) is in progress with no instant, never a made-up one.</para>
+        /// </summary>
+        public Rp1NextCompletionRaw? ReadNextCompletion(double ut)
+        {
+            if (_utilities == null || _scm == null)
+            {
+                return null;
+            }
+            var scm = Rp1Types.StaticValue(_scm, "Instance");
+            if (scm == null || ReadBool(scm, "enabledForSave") != true)
+            {
+                return null;
+            }
+            var next = Rp1Types.StaticMethod(_utilities, "GetNextThingToFinish", 0);
+            if (next == null)
+            {
+                return null;
+            }
+            object? project;
+            try
+            {
+                project = next.Invoke(null, Array.Empty<object>());
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            if (project == null)
+            {
+                return new Rp1NextCompletionRaw { InProgress = false };
+            }
+
+            var left = TimeLeftOf(project);
+            var finite = left != null && !double.IsNaN(left.Value) && !double.IsInfinity(left.Value) && left.Value > 0;
+            string? label = null;
+            try
+            {
+                label = Rp1Types.InstanceMethod(project, "GetItemName", 0)?.Invoke(project, null) as string;
+            }
+            catch (Exception)
+            {
+                label = null;
+            }
+            return new Rp1NextCompletionRaw
+            {
+                InProgress = true,
+                Ut = finite ? ut + left!.Value : (double?)null,
+                Kind = finite ? KindOf(project) : null,
+                Label = finite ? label : null,
+            };
+        }
+
+        /// <summary>The wire kind for one of RP-1's project types, by the type's own name.</summary>
+        private static string KindOf(object project)
+        {
+            var name = project.GetType().Name;
+            if (name.IndexOf("Research", StringComparison.Ordinal) >= 0 || name.IndexOf("Tech", StringComparison.Ordinal) >= 0)
+            {
+                return "research";
+            }
+            if (name.IndexOf("Training", StringComparison.Ordinal) >= 0 || name.IndexOf("Course", StringComparison.Ordinal) >= 0)
+            {
+                return "training";
+            }
+            if (name.IndexOf("Construction", StringComparison.Ordinal) >= 0 || name.IndexOf("Upgrade", StringComparison.Ordinal) >= 0)
+            {
+                return "construction";
+            }
+            if (name.IndexOf("Vessel", StringComparison.Ordinal) >= 0 || name.IndexOf("Build", StringComparison.Ordinal) >= 0
+                || name.IndexOf("Rollout", StringComparison.Ordinal) >= 0 || name.IndexOf("LCOps", StringComparison.Ordinal) >= 0)
+            {
+                return "build";
+            }
+            return "other";
         }
 
         /// <summary>

@@ -44,6 +44,7 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1LcPricing),
                 nameof(Rp1LcResourcePrice),
                 nameof(Rp1Confidence),
+                nameof(Rp1NextCompletion),
                 nameof(Rp1ProgramEntry),
                 nameof(Rp1ProgramSlots),
                 nameof(Rp1ProgramSpeedOption),
@@ -125,10 +126,6 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1PadNewArgs),
                 nameof(Rp1PadRenameArgs),
                 nameof(Rp1PadDismantleArgs),
-                // Warping takes no arguments at all, and one empty type serves both
-                // commands: neither names what to warp to, because RP-1 holds
-                // exactly one next-thing-to-finish and exactly one fund target.
-                nameof(Rp1WarpArgs),
                 nameof(Rp1ContractPayloadArgs));
     }
 }

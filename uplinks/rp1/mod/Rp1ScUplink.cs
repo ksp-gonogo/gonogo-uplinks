@@ -65,6 +65,9 @@ namespace GonogoRp1Uplink
         public const string LcPricingTopic = "rp1.lcPricing";
         public const string ConfidenceTopic = "rp1.confidence";
         public const string FundTargetTopic = "rp1.fundTarget";
+
+        /// <summary>The next project RP-1 will finish, as an instant an alarm can follow.</summary>
+        public const string NextCompletionTopic = "rp1.nextCompletion";
         public const string ProgramsTopic = "rp1.programs";
         public const string ProgramSlotsTopic = "rp1.programSlots";
         public const string ProgramFundingCurvesTopic = "rp1.programFundingCurves";
@@ -376,13 +379,6 @@ namespace GonogoRp1Uplink
         private readonly Rp1ComplexConstructionCommands _complexConstruction = new Rp1ComplexConstructionCommands();
 
         /// <summary>
-        /// Warping to something RP-1 is waiting for. Its own class because it
-        /// touches no complex, no vehicle and no balance: it hands RP-1's warp
-        /// controller a target and stops.
-        /// </summary>
-        private readonly Rp1WarpCommands _warp = new Rp1WarpCommands();
-
-        /// <summary>
         /// The payload mass RP-1's repeating satellite contracts require. Its own
         /// class because it is the only write here that changes a setting rather
         /// than career state, and the only one whose act invalidates contract
@@ -525,6 +521,7 @@ namespace GonogoRp1Uplink
         private IChannelPublisher? _rushTerms;
         private IChannelPublisher? _lcPricing;
         private IChannelPublisher? _confidence;
+        private IChannelPublisher? _nextCompletion;
 
         private IChannelPublisher? _fundTarget;
         private IChannelPublisher? _programList;
@@ -587,7 +584,7 @@ namespace GonogoRp1Uplink
                 _researchCommands.IsAvailable, _strategies.IsAvailable, _targets.IsAvailable,
                 _trainingWrites.IsAvailable, _complexLifecycle.IsAvailable,
                 _complexConstruction.IsAvailable, _complexConstruction.IsPadAvailable,
-                _warp.IsAvailable, _toolingWrites.IsAvailable, _contracts.IsAvailable,
+                _toolingWrites.IsAvailable, _contracts.IsAvailable,
                 _constructionWrites.IsAvailable, _researchRateWrites.IsAvailable);
             _crewStanding = new Rp1CrewStandingBackend(_crew);
         }
@@ -606,7 +603,6 @@ namespace GonogoRp1Uplink
             bool complexLifecycleModelResolved,
             bool complexConstructionModelResolved,
             bool padConstructionModelResolved,
-            bool warpModelResolved,
             bool toolingModelResolved,
             bool contractModelResolved,
             bool constructionModelResolved,
@@ -674,6 +670,9 @@ namespace GonogoRp1Uplink
                 AtHome(LcPricingTopic, SampleKind.Discrete, absenceIsData: true),
                 AtHome(ConfidenceTopic, SampleKind.Discrete, absenceIsData: true),
                 AtHome(FundTargetTopic, SampleKind.Discrete, absenceIsData: true),
+                // Present whenever RP-1 manages the save, with no instant while
+                // nothing is in progress: that is an answer an alarm needs.
+                AtHome(NextCompletionTopic, SampleKind.Continuous, absenceIsData: true),
                 // All three Program channels publish NOTHING rather than an
                 // empty list when RP-1's ProgramHandler is not live. The
                 // distinction matters more here than anywhere else on this
@@ -781,7 +780,7 @@ namespace GonogoRp1Uplink
                 researchModelResolved, strategyModelResolved, targetModelResolved,
                 trainingModelResolved, complexLifecycleModelResolved,
                 complexConstructionModelResolved, padConstructionModelResolved,
-                warpModelResolved, toolingModelResolved, contractModelResolved,
+                toolingModelResolved, contractModelResolved,
                 constructionModelResolved, researchRateModelResolved),
             ErrorCodes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes)),
         };
@@ -819,7 +818,6 @@ namespace GonogoRp1Uplink
             bool complexLifecycleModelResolved,
             bool complexConstructionModelResolved,
             bool padConstructionModelResolved,
-            bool warpModelResolved,
             bool toolingModelResolved,
             bool contractModelResolved,
             bool constructionModelResolved,
@@ -963,28 +961,6 @@ namespace GonogoRp1Uplink
             {
                 commands.Add(Declare(Rp1ComplexConstructionCommands.NewPadCommand, PadsTopic));
             }
-            // TWO requirements, and the second is the only SCENE condition here
-            // besides the facility upgrade's: RP-1's warp controller ticks in
-            // flight, at the space centre and at the tracking station, and a warp
-            // started anywhere else would set a rate and never step it down, which
-            // overshoots the thing it was aimed at.
-            //
-            // This is also the only INSTANT command this Uplink serves, and that is
-            // not an oversight: warp is a change to the operator's own clock rather
-            // than an order to anything, so light-time does not apply to it.
-            // Declared on Rp1WarpArgs, which carries the full reasoning.
-            if (warpModelResolved)
-            {
-                commands.Add(new CommandDeclaration
-                {
-                    Command = Rp1WarpCommands.ToCompleteCommand,
-                    Requires = new[]
-                    {
-                        Rp1BuildCommands.Requirements()[0],
-                        Rp1WarpCommands.SceneRequirement(),
-                    },
-                });
-            }
             // Its own flag again, on RP-1's tooling model, which nothing else here
             // touches. Both commands act on the editor ship rather than the space
             // centre, and neither shares a dependency with the writes above.
@@ -1028,10 +1004,7 @@ namespace GonogoRp1Uplink
         /// command's args type in this Uplink's contract slice now, which is the
         /// same declaration the SDK codegen hands the client.</para>
         ///
-        /// <para>Every command this factory mints delays. The one that does not is
-        /// <c>rp1.warp.toComplete</c>, which is declared separately above for its
-        /// scene requirement and is a clock change rather than an order: see
-        /// <c>Rp1WarpArgs</c>.</para>
+        /// <para>Every command this factory mints delays.</para>
         ///
         /// <para><paramref name="subject"/> is the channel carrying the state the
         /// command changes. Core routes the order's delay through that channel's
@@ -1336,19 +1309,6 @@ namespace GonogoRp1Uplink
             });
             Register(() =>
             {
-                if (_warp.IsAvailable)
-                {
-                    // Its own evaluator beside the shared one, for the same reason
-                    // the facility upgrade has one: the condition is about the SCENE
-                    // rather than about RP-1's model, and it is answerable before
-                    // anyone chooses what to warp toward.
-                    host.AddGateEvaluator(_warp);
-                    host.AddCommandHandler<Rp1WarpArgs, CommandResult>(
-                        Rp1WarpCommands.ToCompleteCommand, _warp.ToComplete);
-                }
-            });
-            Register(() =>
-            {
                 if (_complexConstruction.IsAvailable)
                 {
                     host.AddCommandHandler<Rp1ComplexNewArgs, CommandResult<Dictionary<string, object?>>>(
@@ -1489,6 +1449,25 @@ namespace GonogoRp1Uplink
                 _scetThresholdRegistrationError = ex.Message;
             }
 
+            // The next project to finish as a Topic an alarm can follow, so a warp
+            // is stopped on the tick the project completes and re-aimed by the
+            // simulation itself when a shorter one overtakes it. Its own
+            // registration and fail-soft, beside the confidence one.
+            try
+            {
+                host.Kernel.RegisterProvider(new ProviderRegistration
+                {
+                    Capability = ScetThresholdCapability.Id,
+                    Id = "rp1-next-completion",
+                    Factory = _ => new Rp1NextCompletionThresholdSource(
+                        snapshot => _rp1.ReadNextCompletion(UtOf(snapshot))),
+                });
+            }
+            catch (Exception ex)
+            {
+                _scetThresholdRegistrationError = ex.Message;
+            }
+
             // Which command centre holds the career ledger: the oldest space centre
             // RP-1 still holds. Fail-softed on its own like the arms above; a claimant
             // that fails to register leaves the runner-up claimant answering.
@@ -1518,6 +1497,7 @@ namespace GonogoRp1Uplink
             _lcPricing = host.Publisher(LcPricingTopic);
             _confidence = host.Publisher(ConfidenceTopic);
             _fundTarget = host.Publisher(FundTargetTopic);
+            _nextCompletion = host.Publisher(NextCompletionTopic);
             _programList = host.Publisher(ProgramsTopic);
             _programSlots = host.Publisher(ProgramSlotsTopic);
             _programCurves = host.Publisher(ProgramFundingCurvesTopic);
@@ -1554,7 +1534,8 @@ namespace GonogoRp1Uplink
                 RushTermsTopic,
                 LcPricingTopic,
                 ConfidenceTopic,
-                FundTargetTopic);
+                FundTargetTopic,
+                NextCompletionTopic);
 
             // Gated, and safe to gate: this capture's ENTIRE effect is its
             // return value. It stashes nothing, elects nothing, and no command
@@ -1846,6 +1827,7 @@ namespace GonogoRp1Uplink
             _lcPricing?.Publish(Rp1ScCapture.BuildLcPricing(raw), raw.Ut);
             _confidence?.Publish(Rp1ScCapture.BuildConfidence(raw), raw.Ut);
             _fundTarget?.Publish(Rp1ScCapture.BuildFundTarget(raw), raw.Ut);
+            _nextCompletion?.Publish(Rp1ScCapture.BuildNextCompletion(raw), raw.Ut);
         }
 
         /// <summary>
@@ -2420,12 +2402,6 @@ namespace GonogoRp1Uplink
                     !_contracts.IsAvailable
                         ? "not registered: RP-1 contract types not found"
                         : "rp1.contracts.setPayload registered (" + _contracts.MethodDiagnosis() + ")"),
-                new UplinkHealthFact(
-                    "warp command",
-                    !_warp.IsAvailable
-                        ? "not registered: RP-1 warp types not found"
-                        : "rp1.warp.toComplete registered ("
-                          + _warp.MethodDiagnosis() + ")"),
                 new UplinkHealthFact(
                     "home command claimant",
                     _homeCommandRegistrationError != null

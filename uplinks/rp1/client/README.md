@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `1.0.0-rc.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 40.0, extension API 6.0.0 |
+| Built against | contract 40.2, extension API 6.0.0 |
 
 ## Wire
 
@@ -35,6 +35,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.fundTarget` | `Rp1FundTarget` | lossy-latest | delayed |
 | `rp1.lcPricing` | `Rp1LcPricing` | lossy-latest | delayed |
 | `rp1.leaders` | `Rp1LeaderEntry[]` | lossy-latest | delayed |
+| `rp1.nextCompletion` | `Rp1NextCompletion` | lossy-latest | delayed |
 | `rp1.operations` | `Rp1OperationEntry[]` | lossy-latest | delayed |
 | `rp1.pads` | `Rp1PadEntry[]` | lossy-latest | delayed |
 | `rp1.personnel` | `Rp1Personnel` | lossy-latest | delayed |
@@ -122,7 +123,6 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `rp1.vehicle.rollback` | `Rp1VehicleArgs` | `CommandResult` |
 | `rp1.vehicle.rollout` | `Rp1RolloutArgs` | `CommandResult` |
 | `rp1.vehicle.scrap` | `Rp1VehicleArgs` | `CommandResult` |
-| `rp1.warp.toComplete` | `Rp1WarpArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
@@ -156,7 +156,6 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1TrainingEnrolArgs` | `crew` id, `templateId` id |
 | `Rp1TrainingLeaveArgs` | `crewName` id |
 | `Rp1VehicleArgs` | `id` id |
-| `Rp1WarpArgs` | – |
 
 ## Widgets
 

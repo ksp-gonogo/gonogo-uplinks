@@ -1,0 +1,200 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "testflight",
+    "name": "TestFlight",
+    "version": "1.0.0-rc.1",
+    "description": "TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.",
+    "wraps": {
+      "name": "TestFlight",
+      "builtAgainst": "2.12.0.0",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "testflight.reliability",
+      "payload": "TestFlightReliabilitySummary",
+      "array": false,
+      "fields": [
+        {
+          "name": "boundMembers",
+          "unit": "text"
+        },
+        {
+          "name": "coverage",
+          "unit": "enum"
+        },
+        {
+          "name": "unboundMembers",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "testflight.reliabilityParts",
+      "payload": "TestFlightReliabilityPart",
+      "array": true,
+      "fields": [
+        {
+          "name": "budgets",
+          "shape": "TestFlightReliabilityBudget[]"
+        },
+        {
+          "name": "condition",
+          "unit": "enum"
+        },
+        {
+          "name": "conditionDetail",
+          "unit": "text"
+        },
+        {
+          "name": "configuration",
+          "unit": "text"
+        },
+        {
+          "name": "flightData",
+          "unit": "1"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "survival",
+          "unit": "ratio"
+        },
+        {
+          "name": "survivalHorizonSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "TestFlightReliabilityBudget",
+      "fields": [
+        {
+          "name": "consumed",
+          "unit": "ratio"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "label",
+          "unit": "text"
+        },
+        {
+          "name": "limitSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "usedSeconds",
+          "unit": "s"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "TestFlightRepairOutcome",
+      "fields": [
+        {
+          "name": "failuresCleared",
+          "unit": "count"
+        },
+        {
+          "name": "repaired",
+          "unit": "flag"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "testflight.repair",
+      "args": "TestFlightRepairPartArgs",
+      "result": "CommandResultOf<TestFlightRepairOutcome>"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "TestFlightRepairPartArgs",
+      "fields": [
+        {
+          "name": "partId",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "widgets": [],
+  "augments": [
+    {
+      "id": "testflight-reliability-updates",
+      "augments": "fleet-roster.updates",
+      "channels": [],
+      "requires": "testflight",
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": [
+    {
+      "id": "testflight.noSuchPart",
+      "refines": "notFound",
+      "sentence": "no engine TestFlight is tracking has that id",
+      "meaning": "No live TestFlight core aboard has that id."
+    },
+    {
+      "id": "testflight.nothingFailed",
+      "refines": "notFound",
+      "sentence": "that engine has no active TestFlight failure",
+      "meaning": "The engine is tracked and carries no active failure."
+    },
+    {
+      "id": "testflight.notModelled",
+      "refines": "modeUnavailable",
+      "sentence": "TestFlight is not reporting failures for that engine",
+      "meaning": "TestFlight is installed and the reader could not reach its repair or failure-list members."
+    },
+    {
+      "id": "testflight.repairDeclined",
+      "refines": "modeUnavailable",
+      "sentence": "TestFlight left the failure standing",
+      "meaning": "TestFlight was asked to repair and left the failure standing without saying why."
+    },
+    {
+      "id": "testflight.unrepairable",
+      "refines": "capabilityMismatch",
+      "sentence": "TestFlight marks that failure as beyond repair",
+      "meaning": "Every active failure on the engine is a class TestFlight says no repair can fix: an explosion, a fired docking clamp, a snapped solar mechanism."
+    }
+  ]
+}
