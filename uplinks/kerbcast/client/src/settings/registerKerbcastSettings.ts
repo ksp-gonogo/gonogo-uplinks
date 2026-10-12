@@ -1,9 +1,9 @@
-import { registerSetting } from "@ksp-gonogo/sitrep-sdk";
+import { registerSetting, SettingKind } from "@ksp-gonogo/sitrep-sdk";
 
 registerSetting({
   // Gates ambient crew facecams; the Facecam Wall widget is exempt, since placing it is the opt-in.
   id: "kerbcast.embeddedFacecams",
-  type: "boolean",
+  type: SettingKind.Bool,
   defaultValue: true,
   category: "Kerbcast",
   label: "Embedded facecams",

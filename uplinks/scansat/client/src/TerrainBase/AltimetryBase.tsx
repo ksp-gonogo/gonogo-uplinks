@@ -32,6 +32,7 @@ import {
   CELESTIAL_FACTS,
   getBody,
   registerAugment,
+  SettingKind,
   type SlotProps,
   useProcessor,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -166,7 +167,7 @@ registerAugment({
   settings: [
     {
       key: "show",
-      type: "boolean",
+      type: SettingKind.Bool,
       label: "Show altimetry",
       default: true,
     },

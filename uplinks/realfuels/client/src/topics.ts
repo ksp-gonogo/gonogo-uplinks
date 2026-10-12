@@ -1,6 +1,6 @@
 import type { TopicPayload } from "@ksp-gonogo/sitrep-sdk";
 import {
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
   registerTypeUnits,
@@ -38,9 +38,9 @@ export const REALFUELS_AVAILABLE_TOPIC = "realfuels.available";
 export const REALFUELS_ENGINES_TOPIC = "realfuels.engines";
 export const REALFUELS_BOILOFF_TOPIC = "realfuels.boiloff";
 
-registerBarePrimitiveTopic(REALFUELS_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(REALFUELS_ENGINES_TOPIC);
-registerBarePrimitiveTopic(REALFUELS_BOILOFF_TOPIC);
+registerUplinkTopic(REALFUELS_AVAILABLE_TOPIC);
+registerUplinkTopic(REALFUELS_ENGINES_TOPIC);
+registerUplinkTopic(REALFUELS_BOILOFF_TOPIC);
 
 // The runtime half, and this Domain needs BOTH registries.
 //

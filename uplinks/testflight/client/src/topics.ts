@@ -5,7 +5,7 @@
 // module so the augmentation reaches the emitted `dist/index.d.ts`.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerCollectionTopic,
   registerEnumMembers,
   registerTopicUnits,
@@ -48,9 +48,9 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(TESTFLIGHT_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(TESTFLIGHT_RELIABILITY_TOPIC);
-registerBarePrimitiveTopic(TESTFLIGHT_RELIABILITY_PARTS_TOPIC);
+registerUplinkTopic(TESTFLIGHT_AVAILABLE_TOPIC);
+registerUplinkTopic(TESTFLIGHT_RELIABILITY_TOPIC);
+registerUplinkTopic(TESTFLIGHT_RELIABILITY_PARTS_TOPIC);
 
 // The parts Topic's unit map describes one engine, not the list.
 for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {

@@ -4,7 +4,7 @@
 //   Topic to `TopicPayloadMap`, so `useTelemetry("rp1.buildQueue")` resolves to
 //   `Rp1BuildItemEntry[]` in any program that statically imports this module.
 //
-//   RUNTIME: `registerBarePrimitiveTopic` feeds the SDK's runtime registry, so
+//   RUNTIME: `registerUplinkTopic` feeds the SDK's runtime registry, so
 //   `isTopicId` and the replay recorder know these strings without the SDK ever
 //   naming one, and `registerTopicUnits` feeds the decode-time unit lookup that
 //   turns a bare number on the wire into the `Value<"bp">` the type promises.
@@ -14,7 +14,7 @@
 // Domain presence gate.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerDynamicTopicPrefix,
   registerEnumMembers,
   registerTopicUnits,
@@ -426,40 +426,40 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(RP1_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(RP1_CENTRES_TOPIC);
-registerBarePrimitiveTopic(RP1_COMPLEXES_TOPIC);
-registerBarePrimitiveTopic(RP1_BUILD_QUEUE_TOPIC);
-registerBarePrimitiveTopic(RP1_WAREHOUSE_TOPIC);
-registerBarePrimitiveTopic(RP1_BUILDABLE_TOPIC);
-registerBarePrimitiveTopic(RP1_PADS_TOPIC);
-registerBarePrimitiveTopic(RP1_OPERATIONS_TOPIC);
-registerBarePrimitiveTopic(RP1_CONSTRUCTIONS_TOPIC);
-registerBarePrimitiveTopic(RP1_FACILITIES_TOPIC);
-registerBarePrimitiveTopic(RP1_RESEARCH_TOPIC);
-registerBarePrimitiveTopic(RP1_PERSONNEL_TOPIC);
-registerBarePrimitiveTopic(RP1_RUSH_TERMS_TOPIC);
-registerBarePrimitiveTopic(RP1_LC_PRICING_TOPIC);
-registerBarePrimitiveTopic(RP1_CONFIDENCE_TOPIC);
-registerBarePrimitiveTopic(RP1_PROGRAMS_TOPIC);
-registerBarePrimitiveTopic(RP1_PROGRAM_SLOTS_TOPIC);
-registerBarePrimitiveTopic(RP1_PROGRAM_FUNDING_CURVES_TOPIC);
-registerBarePrimitiveTopic(RP1_CREW_TOPIC);
-registerBarePrimitiveTopic(RP1_CREW_PROGRAM_TOPIC);
-registerBarePrimitiveTopic(RP1_FUND_TARGET_TOPIC);
-registerBarePrimitiveTopic(RP1_TRAINING_TOPIC);
-registerBarePrimitiveTopic(RP1_TRAINING_CATALOGUE_TOPIC);
-registerBarePrimitiveTopic(RP1_TOOLING_TOPIC);
-registerBarePrimitiveTopic(RP1_BUILD_COST_TOPIC);
-registerBarePrimitiveTopic(RP1_CAREER_EVENTS_TOPIC);
-registerBarePrimitiveTopic(RP1_AVIONICS_TOPIC);
-registerBarePrimitiveTopic(RP1_SIMULATION_TOPIC);
-registerBarePrimitiveTopic(RP1_BUDGET_TOPIC);
-registerBarePrimitiveTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
-registerBarePrimitiveTopic(RP1_CONSTRUCTION_RATES_TOPIC);
-registerBarePrimitiveTopic(RP1_RESEARCH_RATES_TOPIC);
-registerBarePrimitiveTopic(RP1_LEADERS_TOPIC);
-registerBarePrimitiveTopic(RP1_CAREER_LEDGER_TOPIC);
+registerUplinkTopic(RP1_AVAILABLE_TOPIC);
+registerUplinkTopic(RP1_CENTRES_TOPIC);
+registerUplinkTopic(RP1_COMPLEXES_TOPIC);
+registerUplinkTopic(RP1_BUILD_QUEUE_TOPIC);
+registerUplinkTopic(RP1_WAREHOUSE_TOPIC);
+registerUplinkTopic(RP1_BUILDABLE_TOPIC);
+registerUplinkTopic(RP1_PADS_TOPIC);
+registerUplinkTopic(RP1_OPERATIONS_TOPIC);
+registerUplinkTopic(RP1_CONSTRUCTIONS_TOPIC);
+registerUplinkTopic(RP1_FACILITIES_TOPIC);
+registerUplinkTopic(RP1_RESEARCH_TOPIC);
+registerUplinkTopic(RP1_PERSONNEL_TOPIC);
+registerUplinkTopic(RP1_RUSH_TERMS_TOPIC);
+registerUplinkTopic(RP1_LC_PRICING_TOPIC);
+registerUplinkTopic(RP1_CONFIDENCE_TOPIC);
+registerUplinkTopic(RP1_PROGRAMS_TOPIC);
+registerUplinkTopic(RP1_PROGRAM_SLOTS_TOPIC);
+registerUplinkTopic(RP1_PROGRAM_FUNDING_CURVES_TOPIC);
+registerUplinkTopic(RP1_CREW_TOPIC);
+registerUplinkTopic(RP1_CREW_PROGRAM_TOPIC);
+registerUplinkTopic(RP1_FUND_TARGET_TOPIC);
+registerUplinkTopic(RP1_TRAINING_TOPIC);
+registerUplinkTopic(RP1_TRAINING_CATALOGUE_TOPIC);
+registerUplinkTopic(RP1_TOOLING_TOPIC);
+registerUplinkTopic(RP1_BUILD_COST_TOPIC);
+registerUplinkTopic(RP1_CAREER_EVENTS_TOPIC);
+registerUplinkTopic(RP1_AVIONICS_TOPIC);
+registerUplinkTopic(RP1_SIMULATION_TOPIC);
+registerUplinkTopic(RP1_BUDGET_TOPIC);
+registerUplinkTopic(RP1_BUDGET_BREAKDOWN_TOPIC);
+registerUplinkTopic(RP1_CONSTRUCTION_RATES_TOPIC);
+registerUplinkTopic(RP1_RESEARCH_RATES_TOPIC);
+registerUplinkTopic(RP1_LEADERS_TOPIC);
+registerUplinkTopic(RP1_CAREER_LEDGER_TOPIC);
 registerDynamicTopicPrefix(RP1_FUNDS_REACHED_AT_PREFIX);
 
 // Driven by looping the generated maps rather than naming each entry, so a

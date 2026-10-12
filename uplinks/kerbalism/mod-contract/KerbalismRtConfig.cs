@@ -22,7 +22,7 @@ namespace GonogoKerbalismUplink;
 /// types are nested-only, extension or command shapes and deliberately
 /// carry no <c>[SitrepTopic]</c>: they exist to give a field's element shape a
 /// name. <c>kerbalism.available</c> is a bare JSON boolean declared
-/// client-side (<c>registerBarePrimitiveTopic</c> in this Uplink's
+/// client-side (<c>registerUplinkTopic</c> in this Uplink's
 /// <c>client/src/topics.ts</c>), so it never flows through codegen at all.
 /// </para>
 ///

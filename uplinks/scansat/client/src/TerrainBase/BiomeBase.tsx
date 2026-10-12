@@ -18,6 +18,7 @@
 import {
   getBody,
   registerAugment,
+  SettingKind,
   type SlotProps,
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect } from "react";
@@ -109,7 +110,7 @@ registerAugment({
   settings: [
     {
       key: "show",
-      type: "boolean",
+      type: SettingKind.Bool,
       label: "Show biome",
       default: true,
     },

@@ -15,7 +15,7 @@
 //   • TYPE: a `declare module "@ksp-gonogo/sitrep-sdk"` augmentation adds each
 //     Topic to `TopicPayloadMap`, so `useTelemetry("kerbalism.crew")` resolves to
 //     `KerbalismCrewEntry[]` in any program that statically imports this module.
-//   • RUNTIME: `registerBarePrimitiveTopic(...)` at module load feeds the SDK's
+//   • RUNTIME: `registerUplinkTopic(...)` at module load feeds the SDK's
 //     runtime registry, so `isTopicId` / `getAllKnownTopicIds` enumerate them
 //     without the SDK ever naming the string.
 //
@@ -23,7 +23,7 @@
 // ambient augmentation), so importing the package wires every half.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerCollectionTopic,
   registerEnumMembers,
   registerTopicUnits,
@@ -92,14 +92,14 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(KERBALISM_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_SPACEWEATHER_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_PROFILE_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_LIFESUPPORT_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_CREW_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_FEATURES_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_RELIABILITY_TOPIC);
-registerBarePrimitiveTopic(KERBALISM_RELIABILITY_PARTS_TOPIC);
+registerUplinkTopic(KERBALISM_AVAILABLE_TOPIC);
+registerUplinkTopic(KERBALISM_SPACEWEATHER_TOPIC);
+registerUplinkTopic(KERBALISM_PROFILE_TOPIC);
+registerUplinkTopic(KERBALISM_LIFESUPPORT_TOPIC);
+registerUplinkTopic(KERBALISM_CREW_TOPIC);
+registerUplinkTopic(KERBALISM_FEATURES_TOPIC);
+registerUplinkTopic(KERBALISM_RELIABILITY_TOPIC);
+registerUplinkTopic(KERBALISM_RELIABILITY_PARTS_TOPIC);
 
 // `kerbalism.crew`'s and `kerbalism.reliabilityParts`' unit maps describe one
 // element, not the list, so a field path under either names no value of the

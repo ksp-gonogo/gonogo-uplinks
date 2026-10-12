@@ -27,7 +27,7 @@
 
 import "./uplink.js"; // defineUplinkClient(KOS): idempotent re-registration
 import "./dataSource/kos.js"; // registerUplinkHandle("kos", kosSource): idempotent
-// registerBarePrimitiveTopic("kos.processors") + the two unit-registry loops,
+// registerUplinkTopic("kos.processors") + the two unit-registry loops,
 // all idempotent (a Set, and last-write-wins Maps), so re-running them from both
 // this file AND `index.ts`'s re-export is harmless in the same way the two above
 // are. It has to be HERE and not only in `index.ts`, because this is the module

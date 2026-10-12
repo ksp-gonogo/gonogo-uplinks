@@ -28,7 +28,7 @@ namespace GonogoScansatUplink;
 //     `robotics.available`, whose PROVIDER genuinely emits an object). It is
 //     bare-registered client-side instead, by this Uplink's OWN client package
 //     (`mod/GonogoScansatUplink/client/src/topics.ts`, which maps it to
-//     `boolean` and calls `registerBarePrimitiveTopic`); this file adds no type
+//     `boolean` and calls `registerUplinkTopic`); this file adds no type
 //     for it.
 //
 //   • scansat.scanningVessels : a BARE JSON array. Its element shape is the

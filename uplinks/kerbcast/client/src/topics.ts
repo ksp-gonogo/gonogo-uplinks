@@ -12,7 +12,7 @@
 //     `TopicPayloadMap`, so `useTelemetry("kerbcast.available")` resolves to `boolean` in
 //     any program that statically imports this module (the accepted Option-A trade-off:
 //     a dynamically-loaded Uplink never statically imported types it `unknown` until load).
-//   • RUNTIME: `registerBarePrimitiveTopic(...)` at module load feeds the SDK's runtime
+//   • RUNTIME: `registerUplinkTopic(...)` at module load feeds the SDK's runtime
 //     registry, so `isTopicId` / `getAllKnownTopicIds` enumerate it without the SDK ever
 //     naming the string.
 //
@@ -30,7 +30,7 @@
 
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -62,8 +62,8 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(KERBCAST_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(KERBCAST_CAMERAS_TOPIC);
+registerUplinkTopic(KERBCAST_AVAILABLE_TOPIC);
+registerUplinkTopic(KERBCAST_CAMERAS_TOPIC);
 
 // The runtime half. The SDK's own generated unit map knows nothing about
 // KerbcastCameraEntry, so it cannot hydrate kerbcast.cameras's nine

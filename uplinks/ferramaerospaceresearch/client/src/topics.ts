@@ -4,7 +4,7 @@
 //   Topic to `TopicPayloadMap`, so `useTelemetry("aero.state")` resolves to
 //   `AeroState` in any program that statically imports this module.
 //
-//   RUNTIME: `registerBarePrimitiveTopic` feeds the SDK's runtime registry, so
+//   RUNTIME: `registerUplinkTopic` feeds the SDK's runtime registry, so
 //   `isTopicId` and the replay recorder know these strings without the SDK ever
 //   naming one, and `registerTopicUnits` feeds the decode-time unit lookup that
 //   turns a bare number on the wire into the `Value<>` the type promises.
@@ -14,7 +14,7 @@
 // Domain presence gate.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
   registerTypeUnits,
@@ -57,8 +57,8 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(AERO_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(AERO_STATE_TOPIC);
+registerUplinkTopic(AERO_AVAILABLE_TOPIC);
+registerUplinkTopic(AERO_STATE_TOPIC);
 
 // Driven by looping the generated maps rather than naming each entry, so a
 // Topic added to this Uplink's contract later needs no new call site. Both

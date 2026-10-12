@@ -1,4 +1,8 @@
-import { isReadOnlySetting, settingTypeOf } from "@ksp-gonogo/sitrep-sdk";
+import {
+  isReadOnlySetting,
+  SettingKind,
+  settingKindOf,
+} from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import type { PrincipiaSettings } from "../__generated__/contract.js";
 import { FRAME_TYPE } from "../plottingFrame.js";
@@ -6,8 +10,8 @@ import { PRINCIPIA_SETTINGS } from "./registerPrincipiaSettings.js";
 
 /*
  * The rows are asserted through the SAME two predicates the renderer asks,
- * `isReadOnlySetting` and `settingTypeOf`, rather than by reading the literals
- * back. A row that declared `type: "text"` and answered a boolean would pass a
+ * `isReadOnlySetting` and `settingKindOf`, rather than by reading the literals
+ * back. A row that declared `type: SettingKind.Text` and answered a boolean would pass a
  * literal check and render "On" where a frame name belongs.
  */
 
@@ -161,8 +165,8 @@ describe("Principia settings rows", () => {
     // rather than unwrapping to a bare number: a tolerance shown as a naked 1
     // is the readout `Unit` exists to stop.
     expect(
-      settingTypeOf(rowById("principia.settings.predictionTolerance")),
-    ).toBe("number");
+      settingKindOf(rowById("principia.settings.predictionTolerance")),
+    ).toBe(SettingKind.Number);
     expect(shown("principia.settings.predictionTolerance", FULL)).toMatchObject(
       {
         magnitude: 1,

@@ -9,7 +9,7 @@
 //   • TYPE: a `declare module "@ksp-gonogo/sitrep-sdk"` augmentation adds them to
 //     `TopicPayloadMap`, so `useTelemetry("comms.linkMargin")` resolves to
 //     `CommsLinkMargin` in any program that statically imports this module.
-//   • RUNTIME: `registerBarePrimitiveTopic(...)` at module load feeds the SDK's
+//   • RUNTIME: `registerUplinkTopic(...)` at module load feeds the SDK's
 //     runtime registry, so `isTopicId` / `getAllKnownTopicIds` enumerate them
 //     without the SDK ever naming the strings.
 //
@@ -29,7 +29,7 @@
 // this was a partial extract rather than a file move.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
   registerTypeUnits,
@@ -137,14 +137,14 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(REALANTENNAS_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(COMMS_LINK_QUALITY_TOPIC);
-registerBarePrimitiveTopic(COMMS_DATA_RATE_TOPIC);
-registerBarePrimitiveTopic(COMMS_LINK_MARGIN_TOPIC);
-registerBarePrimitiveTopic(REALANTENNAS_HOP_RATES_TOPIC);
-registerBarePrimitiveTopic(REALANTENNAS_ANTENNAS_TOPIC);
-registerBarePrimitiveTopic(REALANTENNAS_CHAINS_TOPIC);
-registerBarePrimitiveTopic(REALANTENNAS_RETARGETING_TOPIC);
+registerUplinkTopic(REALANTENNAS_AVAILABLE_TOPIC);
+registerUplinkTopic(COMMS_LINK_QUALITY_TOPIC);
+registerUplinkTopic(COMMS_DATA_RATE_TOPIC);
+registerUplinkTopic(COMMS_LINK_MARGIN_TOPIC);
+registerUplinkTopic(REALANTENNAS_HOP_RATES_TOPIC);
+registerUplinkTopic(REALANTENNAS_ANTENNAS_TOPIC);
+registerUplinkTopic(REALANTENNAS_CHAINS_TOPIC);
+registerUplinkTopic(REALANTENNAS_RETARGETING_TOPIC);
 
 // The runtime half of the relocation. Both registries are fed, by looping over
 // the generated maps rather than naming entries, so a Topic or type added to

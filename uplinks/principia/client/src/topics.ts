@@ -1,5 +1,5 @@
 import {
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
   registerTypeUnits,
@@ -29,9 +29,9 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic("principia.plan");
-registerBarePrimitiveTopic("principia.settings");
-registerBarePrimitiveTopic("principia.analysis");
+registerUplinkTopic("principia.plan");
+registerUplinkTopic("principia.settings");
+registerUplinkTopic("principia.analysis");
 
 // The runtime half of the type above: `ApplyUnitValueTypes` fixes the
 // codegen-time TYPE, and this fixes the decode-time VALUE. Without it every

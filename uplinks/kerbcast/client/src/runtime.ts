@@ -20,7 +20,7 @@
 // assertion).
 //
 // `registerUplinkHandle("kerbcast", kerbcastSource)` (in `KerbcastDataSource`)
-// and `registerBarePrimitiveTopic("kerbcast.available")` (in `topics`) are
+// and `registerUplinkTopic("kerbcast.available")` (in `topics`) are
 // Map-based and idempotent: re-running them from both this file AND the
 // loaded bundle is harmless, unlike `registerComponent`.
 //
@@ -33,7 +33,7 @@
 // loader's own full-package bundle (flag on): neither of which this split
 // affects.
 
-import "./topics.js"; // registerBarePrimitiveTopic("kerbcast.available"): idempotent
+import "./topics.js"; // registerUplinkTopic("kerbcast.available"): idempotent
 import "./KerbcastDataSource.js"; // kerbcastSource singleton + registerUplinkHandle("kerbcast", ...), idempotent
 import "./rootProvider.js"; // registerRootProvider + registerRevealedEventSource, both idempotent
 

@@ -68,7 +68,7 @@ export { parseScanScience } from "./ScienceInstruments/index.js";
 // Side-effect registration. Kept as bare imports so the built dist/index.js
 // retains them and bundlers won't tree-shake the registerComponent()/
 // registerAugment() calls away.
-import "./topics.js"; // registerBarePrimitiveTopic("scansat.available") + TopicPayloadMap augment
+import "./topics.js"; // registerUplinkTopic("scansat.available") + TopicPayloadMap augment
 import "./uplink.js"; // defineUplinkClient(SCANSAT): every widget/augment below stamps `owner: SCANSAT`
 import "./Scanning/index.js";
 import "./ScienceInstruments/index.js";

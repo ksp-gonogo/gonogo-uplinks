@@ -32,7 +32,7 @@ namespace GonogoKerbalismUplink;
 // project's .csproj header for the rule.
 //
 // kerbalism.available is a BARE JSON boolean declared client-side
-// (mod/GonogoKerbalismUplink/client/src/topics.ts via registerBarePrimitiveTopic),
+// (mod/GonogoKerbalismUplink/client/src/topics.ts via registerUplinkTopic),
 // NOT here, same treatment as the other Uplinks' bare `<domain>.available`.
 // ─────────────────────────────────────────────────────────────────────────────
 

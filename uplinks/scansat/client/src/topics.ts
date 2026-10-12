@@ -13,7 +13,7 @@
 //     `TopicPayloadMap`, so `useTelemetry("scansat.available")` resolves to `boolean` in
 //     any program that statically imports this module (the accepted Option-A trade-off:
 //     a dynamically-loaded Uplink never statically imported types it `unknown` until load).
-//   • RUNTIME: `registerBarePrimitiveTopic(...)` at module load feeds the SDK's runtime
+//   • RUNTIME: `registerUplinkTopic(...)` at module load feeds the SDK's runtime
 //     registry, so `isTopicId` / `getAllKnownTopicIds` enumerate it without the SDK ever
 //     naming the string.
 //
@@ -29,7 +29,7 @@
 
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerDynamicTopicPrefix,
   registerEnumMembers,
   registerTopicUnits,
@@ -78,9 +78,9 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(SCANSAT_AVAILABLE_TOPIC);
-registerBarePrimitiveTopic(SCANSAT_SCANNING_VESSELS_TOPIC);
-registerBarePrimitiveTopic(SCANSAT_SCIENCE_TOPIC);
+registerUplinkTopic(SCANSAT_AVAILABLE_TOPIC);
+registerUplinkTopic(SCANSAT_SCANNING_VESSELS_TOPIC);
+registerUplinkTopic(SCANSAT_SCIENCE_TOPIC);
 
 /**
  * The per-body namespaces the mod publishes under, each the matching

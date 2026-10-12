@@ -1,9 +1,12 @@
 import type {
   SettingDefinition,
   SettingDefinitionOf,
-  SettingType,
 } from "@ksp-gonogo/sitrep-sdk";
-import { magnitudeOf, registerSetting } from "@ksp-gonogo/sitrep-sdk";
+import {
+  magnitudeOf,
+  registerSetting,
+  SettingKind,
+} from "@ksp-gonogo/sitrep-sdk";
 import type {
   PrincipiaReferenceFrame,
   PrincipiaSettings,
@@ -178,16 +181,16 @@ function ordinalOf(
 }
 
 /**
- * One row, typed at its own {@link SettingType} and handed back as the union.
+ * One row, typed at its own {@link SettingKind} and handed back as the union.
  *
  * The rows are a list rather than thirty-seven bare `registerSetting` calls so
  * that a test can put a payload through a `select` without standing up the
  * app's settings surface, which an Uplink may not import. The generic is what
- * `registerSetting` itself has: declaring `type: "number"` and then selecting a
+ * `registerSetting` itself has: declaring `type: SettingKind.Number` and then selecting a
  * string is a compile error here, at the row, rather than a `Switch` rendering
  * a tolerance at runtime.
  */
-const row = <T extends SettingType = "boolean">(
+const row = <T extends SettingKind = SettingKind.Bool>(
   def: SettingDefinitionOf<T>,
 ): SettingDefinition => def as SettingDefinition;
 
@@ -198,7 +201,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.health",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => {
       const s = settings(p);
@@ -217,7 +220,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.suspendedReason",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => settings(p)?.readingSuspendedReason,
     category: CATEGORY,
@@ -230,7 +233,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.build",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => settings(p)?.pluginVersion,
     category: CATEGORY,
@@ -243,7 +246,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.observedAt",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.observedAtUt,
     category: CATEGORY,
@@ -257,7 +260,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frame",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => {
       const f = frame(p);
@@ -281,7 +284,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameKind",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => {
       const f = frame(p);
@@ -299,7 +302,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameSelector",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.selector,
     category: CATEGORY,
@@ -313,7 +316,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameCentre",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.centreBody,
     category: CATEGORY,
@@ -327,7 +330,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.framePrimary",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.primaryBody,
     category: CATEGORY,
@@ -339,7 +342,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameSecondary",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.secondaryBody,
     category: CATEGORY,
@@ -351,7 +354,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.framePrimaries",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => bodyList(frame(p)?.primaryBodies),
     category: CATEGORY,
@@ -365,7 +368,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameSecondaries",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => bodyList(frame(p)?.secondaryBodies),
     category: CATEGORY,
@@ -377,7 +380,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameTargetSelected",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => frame(p)?.targetFrameSelected,
     category: CATEGORY,
@@ -391,7 +394,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameTargetVessel",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.targetVesselName,
     category: CATEGORY,
@@ -404,7 +407,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameTargetPrimary",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => frame(p)?.targetPrimaryBody,
     category: CATEGORY,
@@ -418,7 +421,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameHasApsides",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => {
       const f = frame(p);
@@ -437,7 +440,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.frameLengthsPulsate",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => {
       const f = frame(p);
@@ -456,7 +459,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.targetVessel",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => settings(p)?.targetVesselName,
     category: CATEGORY,
@@ -470,7 +473,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.targetCelestial",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => settings(p)?.targetCelestialBody,
     category: CATEGORY,
@@ -483,7 +486,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.selectingTargetVessel",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.selectingTargetVessel,
     category: CATEGORY,
@@ -497,7 +500,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.selectingTargetCelestial",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.selectingTargetCelestial,
     category: CATEGORY,
@@ -513,7 +516,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.patchedConics",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.displayPatchedConics,
     category: CATEGORY,
@@ -529,7 +532,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.predictionVessel",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => settings(p)?.predictionVesselId,
     category: CATEGORY,
@@ -543,7 +546,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.predictionTolerance",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.predictionToleranceMetres,
     category: CATEGORY,
@@ -557,7 +560,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.predictionMaxSteps",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.predictionMaxSteps,
     category: CATEGORY,
@@ -573,7 +576,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.flightPlanCount",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.flightPlanCount,
     category: CATEGORY,
@@ -587,7 +590,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.selectedFlightPlan",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.selectedFlightPlan,
     category: CATEGORY,
@@ -601,7 +604,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.planInitialTime",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.planInitialTimeUt,
     category: CATEGORY,
@@ -613,7 +616,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.planDesiredFinalTime",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.planDesiredFinalTimeUt,
     category: CATEGORY,
@@ -627,7 +630,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.planActualFinalTime",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.planActualFinalTimeUt,
     category: CATEGORY,
@@ -641,7 +644,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.planTolerance",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.planToleranceMetres,
     category: CATEGORY,
@@ -655,7 +658,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.planMaxSteps",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.planMaxSteps,
     category: CATEGORY,
@@ -669,7 +672,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.optimiserAltitude",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.optimiserTargetAltitudeMetres,
     category: CATEGORY,
@@ -683,7 +686,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.optimiserInclination",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.optimiserTargetInclinationDegrees,
     category: CATEGORY,
@@ -697,7 +700,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.burnFrames",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => burnFrameLabels(settings(p)?.burnFrames),
     category: CATEGORY,
@@ -711,7 +714,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.burnFrameDiffers",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => {
       const s = settings(p);
@@ -736,7 +739,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.analysisWindow",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.analysisMissionDurationRequestedSeconds,
     category: CATEGORY,
@@ -750,7 +753,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.recurrenceAutodetect",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.recurrenceAutodetect,
     category: CATEGORY,
@@ -764,7 +767,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.recurrenceRevolutions",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.recurrenceRevolutionsPerCycle,
     category: CATEGORY,
@@ -778,7 +781,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.recurrenceDays",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.recurrenceDaysPerCycle,
     category: CATEGORY,
@@ -790,7 +793,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.groundTrackRevolution",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.groundTrackRevolution,
     category: CATEGORY,
@@ -804,7 +807,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.stabilityGridMaxEMinI",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.stabilityGridMaxEccentricityMinInclination,
     category: CATEGORY,
@@ -818,7 +821,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.stabilityGridMinEMaxI",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.stabilityGridMinEccentricityMaxInclination,
     category: CATEGORY,
@@ -830,7 +833,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.showElementGraphs",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.showElementGraphs,
     category: CATEGORY,
@@ -846,7 +849,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.historyLength",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.historyLengthSeconds,
     category: CATEGORY,
@@ -860,7 +863,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.markersHiddenHere",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.unpinnedMarkersHiddenHere,
     category: CATEGORY,
@@ -874,7 +877,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.framesHidingMarkers",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.framesHidingUnpinnedMarkers,
     category: CATEGORY,
@@ -888,7 +891,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.celestialsHiddenHere",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.unpinnedCelestialsHiddenHere,
     category: CATEGORY,
@@ -900,7 +903,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.framesHidingCelestials",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.framesHidingUnpinnedCelestials,
     category: CATEGORY,
@@ -912,7 +915,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.pinnedCelestials",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => bodyList(settings(p)?.pinnedCelestials),
     category: CATEGORY,
@@ -926,7 +929,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.targetPinned",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.targetPinned,
     category: CATEGORY,
@@ -941,7 +944,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.showManoeuvreOnNavball",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.showManoeuvreOnNavball,
     category: CATEGORY,
@@ -957,7 +960,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.verboseLevel",
     backing: "stream-backed",
-    type: "number",
+    type: SettingKind.Number,
     topic: "principia.settings",
     select: (p) => settings(p)?.verboseLevel,
     category: CATEGORY,
@@ -970,7 +973,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.logThreshold",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => severityName(ordinalOf(settings(p)?.logThreshold)),
     category: CATEGORY,
@@ -984,7 +987,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.stderrThreshold",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => severityName(ordinalOf(settings(p)?.stderrThreshold)),
     category: CATEGORY,
@@ -996,7 +999,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.flushThreshold",
     backing: "stream-backed",
-    type: "text",
+    type: SettingKind.Text,
     topic: "principia.settings",
     select: (p) => severityName(ordinalOf(settings(p)?.flushThreshold)),
     category: CATEGORY,
@@ -1010,7 +1013,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.recordJournalRequested",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.recordJournalRequested,
     category: CATEGORY,
@@ -1024,7 +1027,7 @@ export const PRINCIPIA_SETTINGS: readonly SettingDefinition[] = [
   row({
     id: "principia.settings.journaling",
     backing: "stream-backed",
-    type: "boolean",
+    type: SettingKind.Bool,
     topic: "principia.settings",
     select: (p) => settings(p)?.journaling,
     category: CATEGORY,

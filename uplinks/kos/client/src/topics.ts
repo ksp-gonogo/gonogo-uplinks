@@ -8,7 +8,7 @@
 //   • TYPE: a `declare module "@ksp-gonogo/sitrep-sdk"` augmentation adds the
 //     Topic to `TopicPayloadMap`, so `useTelemetry("kos.processors")` resolves to
 //     `KosProcessorInfo[]` in any program that statically imports this module.
-//   • RUNTIME: `registerBarePrimitiveTopic(...)` at module load feeds the SDK's
+//   • RUNTIME: `registerUplinkTopic(...)` at module load feeds the SDK's
 //     runtime registry, so `isTopicId` / `getAllKnownTopicIds` enumerate it
 //     without the SDK ever naming the string.
 //
@@ -35,7 +35,7 @@
 // relocation.
 import {
   type TopicPayload,
-  registerBarePrimitiveTopic,
+  registerUplinkTopic,
   registerCollectionTopic,
   registerEnumMembers,
   registerTopicUnits,
@@ -68,7 +68,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
   }
 }
 
-registerBarePrimitiveTopic(KOS_PROCESSORS_TOPIC);
+registerUplinkTopic(KOS_PROCESSORS_TOPIC);
 
 // The unit map below describes one CPU, not the list, so a field path under
 // `kos.processors` names no value of the Topic's own.
