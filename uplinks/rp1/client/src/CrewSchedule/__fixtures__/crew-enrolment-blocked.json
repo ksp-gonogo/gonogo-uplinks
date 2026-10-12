@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "notes": "A Gemini crew that cannot be filled, and the two names that are the reason. RP-1 refuses the whole command by the name of the first student it will not take rather than starting the course a seat short, so a generic failure would send an operator through the roster hunting for who. Valentina is off-world and Nedcas is standing down after a flight, both dark and both carrying their reason; Ludrey is picked and is the only name the career has left, one short of the two Gemini needs. The dark Enrol says which arithmetic failed, not that something did",
-    "why-two-refusals": "One dark name reads as that kerbal's problem. Two, for two different reasons, is what makes the sentence a fact about the CAREER: this crew is not available this month",
+    "notes": "A Gemini crew that cannot be filled, and the two names that are the reason. RP-1 refuses the whole command by the name of the first student it will not take rather than starting the course a seat short, so a generic failure would send an operator through the roster hunting for who. Valentina is off-world and Orbert is already on a training course, both dark and both carrying their reason; Ludrey is picked and is the only name the career has left, one short of the two Gemini needs. The dark Enrol says which arithmetic failed, not that something did",
+    "why-two-refusals": "One dark name reads as that kerbal's problem. Two, for two different reasons (off-world, and in training), is what makes the sentence a fact about the CAREER: this crew is not available this month. A kerbal on leave after a flight is not among them: RP-1 4.7 queues a course with them on it, so the picker draws them pressable with an on-leave tag rather than refused",
     "why-an-applicant-in-the-roster": "Sinta is an APPLICANT, and she is here to be absent from the picker. RP-1 refuses a kerbal who is not yet crew, so candidatesOf drops an applicant rather than refusing them, and a roster that carries nobody with isApplicant set never exercises that branch on any render"
   },
   "_scene": {
@@ -10,7 +10,7 @@
       "w": 11,
       "h": 11
     },
-    "caption": "Gemini seats two and the career has one naut free: Valentina is off-world and Nedcas is standing down after a flight, so the enrolment is dark with the count rather than failing at the press",
+    "caption": "Gemini seats two and the career has one naut free: Valentina is off-world and Orbert is already on a training course, so the enrolment is dark with the count rather than failing at the press",
     "before": [
       {
         "press": "Ludrey Kerman"
@@ -24,8 +24,8 @@
       "Lapses after completion",
       "seats 2",
       "Ludrey Kerman",
-      "Nedcas Kerman",
-      "resting",
+      "Orbert Kerman",
+      "in training",
       "Valentina Kerman",
       "Enrol",
       "off-world"
@@ -88,20 +88,17 @@
             "standing": 2
           },
           {
-            "name": "Nedcas Kerman",
+            "name": "Orbert Kerman",
             "trait": "Engineer",
             "experienceLevel": 1,
             "situation": "Available",
             "situationOrdinal": 0,
-            "available": false,
-            "unavailableReason": "Resting",
-            "inactive": true,
-            "inactiveUntilUt": 3200000,
-            "standingEndsAtUt": 3200000,
+            "available": true,
+            "unavailableReason": "",
             "courage": 0.6,
             "stupidity": 0.55,
             "experienceLevelDelta": 0.05,
-            "standing": 4
+            "standing": 2
           },
           {
             "name": "Valentina Kerman",
@@ -142,7 +139,7 @@
             "latestRetiresAtUt": 158723200
           },
           {
-            "name": "Nedcas Kerman",
+            "name": "Orbert Kerman",
             "retired": false,
             "retiresAtUt": 40000000,
             "latestRetiresAtUt": 40000000
@@ -157,7 +154,22 @@
       },
       {
         "topic": "rp1.training",
-        "payload": []
+        "payload": [
+          {
+            "id": "prof_Atlas-D",
+            "name": "Proficiency: Atlas-D",
+            "type": "Proficiency",
+            "target": "Atlas-D",
+            "students": ["Orbert Kerman"],
+            "seatMin": 1,
+            "seatMax": 4,
+            "started": true,
+            "completed": false,
+            "completesAtUt": 2296000,
+            "isTemporary": false,
+            "studentsAvailableAtUt": 2900000
+          }
+        ]
       },
       {
         "topic": "rp1.trainingCatalogue",
