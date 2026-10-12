@@ -142,7 +142,7 @@ namespace Gonogo.RealAntennasUplink.Tests
         [Fact]
         public void DownLinkQuality_IsZero()
         {
-            Assert.Equal(0.0, RaLinkDown.LinkQuality("vessel:test").Value);
+            Assert.Equal(0.0, RaLinkDown.LinkMargin("vessel:test").Quality);
         }
 
         [Fact]

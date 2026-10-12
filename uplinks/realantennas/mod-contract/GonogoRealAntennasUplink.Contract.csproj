@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    GonogoRealAntennasUplink's OWN contract slice: the three RA-only wire payload
+    GonogoRealAntennasUplink's OWN contract slice: the RA-only wire payload
     types that used to sit inside mod/Sitrep.Contract/Comms.cs, relocated here per
     the operator mandate that NO uplink-specific wire type may live in core, even
     for an in-monorepo Uplink (see
@@ -9,12 +9,10 @@
     because it is a PARTIAL extract from a shared-shape file rather than a
     whole-file move.
 
-    The three: CommsLinkQuality (comms.linkQuality), CommsDataRate
-    (comms.dataRate), CommsLinkMargin (comms.linkMargin). Recounted from
-    RtConfig.wirePayloadTypes rather than trusted, and three is what it is: the
-    first slice whose inventory the plan had right. No enum moves with them (all
-    four comms enums are referenced by types that stay core), so this slice needs
-    no enum codegen leg.
+    The link payloads: CommsDataRate (comms.dataRate) and CommsLinkMargin
+    (comms.linkMargin, which carries the normalised quality). No enum moves with
+    them (all four comms enums are referenced by types that stay core), so this
+    slice needs no enum codegen leg.
 
     WHAT STAYED, and why the boundary falls where it does. comms.* is a
     two-provider channel family: Gonogo.KSP/CommsCoreUplink.cs owns the shared
@@ -23,7 +21,7 @@
     CommsSignal / CommsControl / CommsPath / CommsNetwork /
     CommsDelay / CommsLink, their nested CommsHop / CommsNetworkNode /
     CommsNetworkEdge, the four enums, and the ICommsBackend capability interface
-    this Uplink IMPLEMENTS from outside are all core, and stay. Only the three
+    this Uplink IMPLEMENTS from outside are all core, and stay. Only the
     channels this Uplink declares in its OWN manifest and publishes itself moved.
 
     The sharpest case is CommsHop.BandRateBitsPerSec, which Comms.cs itself
@@ -36,7 +34,7 @@
     Deliberately its own small project rather than folding into
     GonogoRealAntennasUplink.csproj: that one is net48-only and reaches into a
     KSP/Unity reference set (UnityEngine, Assembly-CSharp, stock CommNet) that
-    rtcli could not load. These three types are plain DTOs touching nothing but
+    rtcli could not load. These types are plain DTOs touching nothing but
     Sitrep.Contract, so the split keeps the codegen input clean. The dual-target
     boilerplate below stays a straight copy of Sitrep.Contract.csproj's.
 

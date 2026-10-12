@@ -94,9 +94,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "CommsLinkMargin": {
     closesLink: "flag",
     decibelMargin: "dB",
-  },
-  "CommsLinkQuality": {
-    value: "ratio",
+    quality: "ratio",
   },
   "RealAntennasAntennaArgs": {
     antennaId: "id",
@@ -225,9 +223,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
   "comms.linkMargin": {
     closesLink: "flag",
     decibelMargin: "dB",
-  },
-  "comms.linkQuality": {
-    value: "ratio",
+    quality: "ratio",
   },
   "realantennas.antennaChains": {
     activeStep: "count",

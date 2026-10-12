@@ -8,21 +8,21 @@ namespace GonogoRealAntennasUplink.Tests
 {
     /// <summary>
     /// The per-Uplink half of the uplink-types-out-of-core plan's Unit guard
-    /// (§5b): now that the three RA-only comms payload types live in their own
+    /// (§5b): now that the RA-only comms payload types live in their own
     /// assembly (<c>GonogoRealAntennasUplink.Contract</c>) instead of
     /// <c>Sitrep.Contract</c>, nothing forces a future property on this Uplink's
     /// own contract types to declare its unit. The sweep itself is
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
     ///
-    /// <para><b>Why no baseline file.</b> Every scalar property on all three types
+    /// <para><b>Why no baseline file.</b> Every scalar property on the link types
     /// is already annotated, so the surface starts, and must stay, entirely
     /// covered: same zero-pending starting point as every other relocated
     /// slice.</para>
     ///
     /// <para><b>What is distinctive about the link half of this slice: it is
     /// nearly all real quantities.</b> Four of the five annotated properties on
-    /// the three link channels name a dimension the unit model resolves (a ratio,
+    /// the two link channels name a dimension the unit model resolves (a ratio,
     /// two bit rates, a decibel margin), and the fifth is a bool flag. Decibels is
     /// the case worth naming: a margin printed without its unit is not merely
     /// bare, it is ambiguous with the ratio on the sibling channel.</para>
@@ -46,7 +46,7 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void EveryScalarWirePropertyDeclaresAUnit() =>
             UnitCoverageAssertion.AssertExhaustive(
-                typeof(CommsLinkQuality).Assembly,
+                typeof(CommsLinkMargin).Assembly,
                 "Units.Decibels/Units.BitsPerSecond");
 
         /// <summary>
@@ -55,19 +55,18 @@ namespace GonogoRealAntennasUplink.Tests
         /// any type the sweep does not reach, so a type losing its
         /// <c>[SitrepContract]</c> tag would leave the remaining green looking
         /// untouched. It also pins the extraction boundary: this slice must hold
-        /// the three provider-private payloads and nothing from the shared comms
+        /// the provider-private link payloads and nothing from the shared comms
         /// family, so a later commit dragging <c>CommsHop</c> or
         /// <c>CommsConnectivity</c> across reds here rather than passing quietly.
         /// </summary>
         [Fact]
         public void EveryRelocatedTypeIsReachedByTheCoverageScan() =>
             UnitCoverageAssertion.AssertContractTypesAreExactly(
-                typeof(CommsLinkQuality).Assembly,
-                nameof(CommsLinkQuality),
+                typeof(CommsLinkMargin).Assembly,
                 nameof(CommsDataRate),
                 nameof(CommsLinkMargin),
                 // The RA namespace of CommsHop's provider extension bag: RA-owned,
-                // so its unit coverage is guarded here alongside the three private
+                // so its unit coverage is guarded here alongside the private
                 // channels rather than in core (CommsHop itself stays core).
                 nameof(RealAntennasHopExt),
                 // The element type of the realantennas.hopRates channel: the

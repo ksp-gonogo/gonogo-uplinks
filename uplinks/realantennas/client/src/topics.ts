@@ -1,8 +1,7 @@
 // GonogoRealAntennasUplink client-owned Topic registration: every Topic only
 // this Uplink can source, and both halves of their unit registry.
 //
-// The payload types behind `comms.linkQuality` / `comms.dataRate` /
-// `comms.linkMargin` live in THIS Uplink's own contract slice
+// The payload types behind `comms.dataRate` / `comms.linkMargin` live in THIS Uplink's own contract slice
 // (GonogoRealAntennasUplink.Contract), not Sitrep.Contract's Comms.cs, so the
 // SDK generates nothing for them and they are registered here:
 //
@@ -17,13 +16,13 @@
 // alone) so the augmentation reaches the emitted `dist/index.d.ts`: see that
 // file's own comment.
 //
-// ## Why these three and not the rest of comms.*
+// ## Why these and not the rest of comms.*
 //
 // The comms family has two kinds of channel. Most of it is a SHARED shape that
 // whichever backend wins the "comms" capability election fills: stock CommNet, or
 // this Uplink's RaCommsBackend when RealAntennas is installed. Those stay in the
 // SDK, generated from core, because they exist with or without this mod. These
-// three are the ones no election can produce: they are declared in this Uplink's
+// are the ones no election can produce: they are declared in this Uplink's
 // OWN manifest and published by it directly, and without RealAntennas installed
 // they simply never emit. That is the line the relocation drew, and it is why
 // this was a partial extract rather than a file move.
@@ -37,7 +36,6 @@ import {
 import type {
   CommsDataRate,
   CommsLinkMargin,
-  CommsLinkQuality,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
   RealAntennasHopRate,
@@ -64,17 +62,13 @@ import {
  */
 export const REALANTENNAS_AVAILABLE_TOPIC = "realantennas.available";
 
-/**
- * Link margin normalised to 0..1. Its value must match
- * `RealAntennasUplink.LinkQualityTopic` in ../../RealAntennasUplink.cs:
- * `topics.test.ts` asserts that.
- */
-export const COMMS_LINK_QUALITY_TOPIC = "comms.linkQuality";
-
 /** Bidirectional throughput, read live off the RA CommNet graph. */
 export const COMMS_DATA_RATE_TOPIC = "comms.dataRate";
 
-/** Re-derived link budget: decibel margin plus whether the link closes. */
+/**
+ * Re-derived link budget: decibel margin, whether the link closes, and the
+ * margin normalised to a 0..1 quality.
+ */
 export const COMMS_LINK_MARGIN_TOPIC = "comms.linkMargin";
 
 /**
@@ -127,7 +121,6 @@ export const REALANTENNAS_RETARGETING_TOPIC = "realantennas.retargeting";
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "realantennas.available": boolean;
-    "comms.linkQuality": CommsLinkQuality;
     "comms.dataRate": CommsDataRate;
     "comms.linkMargin": CommsLinkMargin;
     "realantennas.hopRates": RealAntennasHopRate[];
@@ -138,7 +131,6 @@ declare module "@ksp-gonogo/sitrep-sdk" {
 }
 
 registerUplinkTopic(REALANTENNAS_AVAILABLE_TOPIC);
-registerUplinkTopic(COMMS_LINK_QUALITY_TOPIC);
 registerUplinkTopic(COMMS_DATA_RATE_TOPIC);
 registerUplinkTopic(COMMS_LINK_MARGIN_TOPIC);
 registerUplinkTopic(REALANTENNAS_HOP_RATES_TOPIC);
@@ -209,9 +201,6 @@ type Equal<A, B> =
 type Expect<T extends true> = T;
 export type _ResolvesRealAntennasAvailable = Expect<
   Equal<TopicPayload<"realantennas.available">, boolean>
->;
-export type _ResolvesLinkQuality = Expect<
-  Equal<TopicPayload<"comms.linkQuality">, CommsLinkQuality>
 >;
 export type _ResolvesDataRate = Expect<
   Equal<TopicPayload<"comms.dataRate">, CommsDataRate>

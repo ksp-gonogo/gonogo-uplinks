@@ -4,14 +4,14 @@ using Sitrep.Contract;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// Builds the wire shapes for this Uplink's three private channels: one
+    /// Builds the wire shapes for this Uplink's private link channels: one
     /// <c>Dictionary&lt;string, object?&gt;</c> per payload, keyed camelCase to
     /// match the generated TS interfaces field for field.
     ///
     /// <para><b>Why this exists at all.</b> Until the wire types moved out of
     /// <c>Sitrep.Contract</c>, this Uplink published the POCOs raw and core's
     /// <c>JsonWriter</c> carried a hand-written <c>case</c> plus an
-    /// <c>AppendComms*</c> helper for each of the three. Those types now live in
+    /// <c>AppendComms*</c> helper for each. Those types now live in
     /// <c>GonogoRealAntennasUplink.Contract</c>, and a core serializer may not
     /// reference an Uplink's assembly, so the flatten moved to the producer,
     /// where every other Uplink in this repository already does it. Without this
@@ -33,13 +33,6 @@ namespace Gonogo.RealAntennasUplink
     /// </summary>
     public static class RaWire
     {
-        public static Dictionary<string, object?> LinkQuality(CommsLinkQuality q) =>
-            new Dictionary<string, object?>
-            {
-                ["value"] = q.Value,
-                ["meta"] = Meta(q.Meta),
-            };
-
         public static Dictionary<string, object?> DataRate(CommsDataRate r) =>
             new Dictionary<string, object?>
             {
@@ -53,6 +46,7 @@ namespace Gonogo.RealAntennasUplink
             {
                 ["decibelMargin"] = m.DecibelMargin,
                 ["closesLink"] = m.ClosesLink,
+                ["quality"] = m.Quality,
                 ["meta"] = Meta(m.Meta),
             };
 

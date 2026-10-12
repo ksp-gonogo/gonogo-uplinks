@@ -16,7 +16,7 @@ namespace Gonogo.RealAntennasUplink
     /// geometry-only budget ignores occlusion / out-of-cone relays, so it must
     /// never be the authority on whether the link closes, CommNet connectivity
     /// is. When the link is down these report the honest state: the link does
-    /// not close, quality is nil, throughput is a genuine zero.</para>
+    /// not close, quality is zero, throughput is a genuine zero.</para>
     /// </summary>
     public static class RaLinkDown
     {
@@ -24,12 +24,7 @@ namespace Gonogo.RealAntennasUplink
         {
             DecibelMargin = 0.0,
             ClosesLink = false,
-            Meta = new PayloadMeta { Source = source },
-        };
-
-        public static CommsLinkQuality LinkQuality(string source) => new CommsLinkQuality
-        {
-            Value = 0.0,
+            Quality = 0.0,
             Meta = new PayloadMeta { Source = source },
         };
 

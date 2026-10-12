@@ -152,7 +152,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// Normalise a link margin (dB) to a 0..1 quality for
-        /// <c>comms.linkQuality</c>. Maps a <paramref name="fullScaleDb"/>-wide
+        /// <see cref="CommsLinkMargin.Quality"/>. Maps a <paramref name="fullScaleDb"/>-wide
         /// window ending at 0 dB (link-close) onto [0,1]: at/below
         /// <c>-fullScaleDb</c> ⇒ 0, at/above <c>+fullScaleDb</c> ⇒ 1, linear
         /// between. Purely a display normalisation, documented as best-effort.

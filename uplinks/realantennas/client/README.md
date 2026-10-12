@@ -18,7 +18,6 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | --- | --- | --- | --- |
 | `comms.dataRate` | `CommsDataRate` | lossy-latest | delayed |
 | `comms.linkMargin` | `CommsLinkMargin` | lossy-latest | delayed |
-| `comms.linkQuality` | `CommsLinkQuality` | lossy-latest | delayed |
 | `realantennas.antennaChains` | `RealAntennasAntennaChain[]` | lossy-latest | delayed |
 | `realantennas.antennas` | `RealAntennasAntennaState[]` | lossy-latest | delayed |
 | `realantennas.hopRates` | `RealAntennasHopRate[]` | lossy-latest | delayed |

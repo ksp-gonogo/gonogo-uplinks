@@ -11,11 +11,10 @@ import { describe, expect, it } from "vitest";
 // mechanism this test verifies actually took effect in the emitted file, not just
 // in the C# call site.
 //
-// The densest slice of the seven on units, and the least at risk of going
-// vacuous: FOUR properties across three types retype (a ratio, two bit rates, a
-// decibel margin), so every interface here carries at least one Value. Each is
-// pinned by name below anyway, because "the file has some Value in it" would
-// survive three of the four silently reverting to bare numbers.
+// Four properties across two link types retype (a ratio, two bit rates, a
+// decibel margin), so every link interface carries at least one Value. Each is
+// pinned by name below, because "the file has some Value in it" would survive
+// three of the four silently reverting to bare numbers.
 
 const generatedContractPath = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -40,7 +39,7 @@ describe("generated contract.ts: Value usage resolves to core", () => {
   it("keeps every declared quantity typed as a Value, by name", () => {
     const src = source();
 
-    expect(src).toMatch(/value:\s*Value<"ratio">;/);
+    expect(src).toMatch(/quality:\s*Value<"ratio">;/);
     expect(src).toMatch(/upBitsPerSec:\s*Value<"bit\/s">;/);
     expect(src).toMatch(/downBitsPerSec:\s*Value<"bit\/s">;/);
     expect(src).toMatch(/decibelMargin:\s*Value<"dB">;/);
@@ -71,8 +70,8 @@ describe("generated contract.ts: Value usage resolves to core", () => {
       /import\s*\{\s*PayloadMeta\s*\}\s*from\s*['"]@ksp-gonogo\/sitrep-sdk['"]/,
     );
     expect(src).not.toMatch(/meta:\s*any;/);
-    // The three link channels, the per-antenna targeting state, the retargeting
+    // The two link channels, the per-antenna targeting state, the retargeting
     // state, and the per-antenna fallback chain.
-    expect(src.match(/meta:\s*PayloadMeta;/g)).toHaveLength(6);
+    expect(src.match(/meta:\s*PayloadMeta;/g)).toHaveLength(5);
   });
 });

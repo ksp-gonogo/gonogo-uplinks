@@ -11,7 +11,7 @@ namespace Gonogo.RealAntennasUplink;
 // last step). The shared half stays there, and the split is not arbitrary:
 // Comms.cs's own header describes a PROVIDER axis, where the elected backend
 // (stock CommNet, or this Uplink's RaCommsBackend) sources the shared
-// channels, and a private set only this Uplink can source. These three are
+// channels, and a private set only this Uplink can source. These are
 // that private set, declared in RealAntennasUplink.Manifest and published by
 // RealAntennasUplink.HandleOnCourier: nothing else in the mod can produce
 // them, and without this Uplink installed they simply never emit.
@@ -22,30 +22,10 @@ namespace Gonogo.RealAntennasUplink;
 // R7 discipline, inherited unchanged: every payload carries PayloadMeta;
 // absence is a nullable (T?), never a NaN/0/-1 sentinel.
 //
-// The wire FORMAT of all three is byte-for-byte what it was in core. What
-// changed is which assembly declares the names, plus who writes the bytes:
-// core's JsonWriter used to carry a hand-written case per type, and now
-// RaWire flattens them producer-side (the same self-flattening pattern the
-// rest of this codebase's publishers use), so core no longer needs to know
-// these types exist at all. That is the whole point of the relocation, and
-// it is why this slice, unlike its predecessors, had to touch the serializer.
+// RaWire flattens these payloads producer-side (the self-flattening pattern
+// the rest of this codebase's publishers use), so core's serializer does not
+// need to know these types exist.
 // ====================================================================
-
-/// <summary>
-/// The <c>comms.linkQuality</c> payload: RealAntennas-ONLY (absent without
-/// RA). Link margin normalised to 0..1 (comms-uplink-design.md §2.2/§4.3).
-/// </summary>
-[SitrepContract]
-#if SITREP_CODEGEN
-[TsInterface]
-#endif
-[SitrepTopic("comms.linkQuality")]
-public class CommsLinkQuality
-{
-    [SitrepUnit(Units.Ratio)]
-    public double Value { get; set; }
-    public PayloadMeta Meta { get; set; } = new();
-}
 
 /// <summary>
 /// The <c>comms.dataRate</c> payload: RealAntennas-ONLY. Bidirectional link
@@ -71,6 +51,8 @@ public class CommsDataRate
 /// RealAntennas uplink from RA's public static link-budget math, not read off
 /// a live field (comms-uplink-design.md §4.3: margin is computed transiently
 /// inside RA's internal Precompute job and not stored anywhere public).
+/// Carries the margin, whether it closes the link, and the margin normalised
+/// to a 0..1 quality, so all three are published together or not at all.
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN
@@ -83,6 +65,16 @@ public class CommsLinkMargin
     public double DecibelMargin { get; set; }
     [SitrepUnit(Units.Flag)]
     public bool ClosesLink { get; set; }
+
+    /// <summary>
+    /// <see cref="DecibelMargin"/> normalised onto 0..1: 0 at or below
+    /// -20 dB of margin, 1 at or above +20 dB, linear between, and 0 when the
+    /// link is down. A display figure for a signal-strength bar, not a
+    /// measurement.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double Quality { get; set; }
+
     public PayloadMeta Meta { get; set; } = new();
 }
 

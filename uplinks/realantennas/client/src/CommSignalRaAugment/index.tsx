@@ -7,8 +7,8 @@
 // base widget ever importing backend-aware code, and both augments read
 // RealAntennas' OWN Topics only.
 //
-// This is where the RA integration finally RENDERS. The three RA-only channels
-// (`comms.dataRate` / `comms.linkMargin` / `comms.linkQuality`) and the per-hop
+// This is where the RA integration finally RENDERS. The RA-only link channels
+// (`comms.dataRate` / `comms.linkMargin`) and the per-hop
 // `extensions.realantennas` bag have reached the SDK end to end for a while with
 // no reader; these augments are that reader.
 //

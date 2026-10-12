@@ -36,14 +36,6 @@ namespace GonogoRealAntennasUplink.Tests
             WirePayload.Of(value, "comms");
 
         [Fact]
-        public void LinkQualitySerializesToItsCamelCaseWireShape()
-        {
-            var el = Write(RaWire.LinkQuality(new CommsLinkQuality { Value = 0.9, Meta = new PayloadMeta() }));
-
-            Assert.Equal(0.9, el.GetProperty("value").GetDouble());
-        }
-
-        [Fact]
         public void DataRateSerializesBothDirections()
         {
             var el = Write(RaWire.DataRate(new CommsDataRate
@@ -58,17 +50,19 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         [Fact]
-        public void LinkMarginSerializesMarginAndClosure()
+        public void LinkMarginSerializesMarginClosureAndQuality()
         {
             var el = Write(RaWire.LinkMargin(new CommsLinkMargin
             {
                 DecibelMargin = 3.5,
                 ClosesLink = true,
+                Quality = 0.9,
                 Meta = new PayloadMeta(),
             }));
 
             Assert.Equal(3.5, el.GetProperty("decibelMargin").GetDouble());
             Assert.True(el.GetProperty("closesLink").GetBoolean());
+            Assert.Equal(0.9, el.GetProperty("quality").GetDouble());
         }
 
         /// <summary>
@@ -82,9 +76,9 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void MetaIsNestedWithQualityAsItsOrdinal()
         {
-            var el = Write(RaWire.LinkQuality(new CommsLinkQuality
+            var el = Write(RaWire.LinkMargin(new CommsLinkMargin
             {
-                Value = 0.5,
+                Quality = 0.5,
                 Meta = new PayloadMeta { Source = "vessel:1" },
             }));
 
@@ -105,13 +99,11 @@ namespace GonogoRealAntennasUplink.Tests
             var margin = Write(RaWire.LinkMargin(RaLinkDown.LinkMargin("vessel:1")));
             Assert.False(margin.GetProperty("closesLink").GetBoolean());
             Assert.Equal(0.0, margin.GetProperty("decibelMargin").GetDouble());
+            Assert.Equal(0.0, margin.GetProperty("quality").GetDouble());
 
             var rate = Write(RaWire.DataRate(RaLinkDown.DataRate("vessel:1")));
             Assert.Equal(0.0, rate.GetProperty("upBitsPerSec").GetDouble());
             Assert.Equal(0.0, rate.GetProperty("downBitsPerSec").GetDouble());
-
-            var quality = Write(RaWire.LinkQuality(RaLinkDown.LinkQuality("vessel:1")));
-            Assert.Equal(0.0, quality.GetProperty("value").GetDouble());
         }
 
         /// <summary>
@@ -125,6 +117,6 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void RawPocoWouldNotSerialize() =>
             Assert.ThrowsAny<System.Exception>(
-                () => Write(new CommsLinkQuality { Value = 0.9, Meta = new PayloadMeta() }));
+                () => Write(new CommsLinkMargin { Quality = 0.9, Meta = new PayloadMeta() }));
     }
 }

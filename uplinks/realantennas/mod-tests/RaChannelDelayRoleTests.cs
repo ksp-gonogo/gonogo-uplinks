@@ -15,7 +15,6 @@ namespace GonogoRealAntennasUplink.Tests
     {
         [Theory]
         [InlineData(RealAntennasManifest.LinkMarginTopic)]
-        [InlineData(RealAntennasManifest.LinkQualityTopic)]
         [InlineData(RealAntennasManifest.DataRateTopic)]
         [InlineData(RealAntennasManifest.HopRatesTopic)]
         [InlineData(RealAntennasManifest.AntennasTopic)]
@@ -33,6 +32,14 @@ namespace GonogoRealAntennasUplink.Tests
             var trueNow = RealAntennasManifest.Build().Channels.Where(c => c.Delay == DelayRole.TrueNow).Select(c => c.Topic);
 
             Assert.Equal(new[] { RealAntennasManifest.AvailableTopic }, trueNow.ToArray());
+        }
+
+        [Fact]
+        public void LinkQualityRidesTheMarginChannelNotATopicOfItsOwn()
+        {
+            var topics = RealAntennasManifest.Build().Channels.Select(c => c.Topic);
+
+            Assert.DoesNotContain("comms.linkQuality", topics);
         }
 
         [Fact]

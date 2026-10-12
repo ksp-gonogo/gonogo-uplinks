@@ -10,12 +10,12 @@
 // exists. What it DOES register is two augments into the base CommSignal widget's
 // slots (`comm-signal.badges` / `comm-signal.sections`), so the RA-only detail
 // appears inside CommSignal only when RA is installed and CommSignal stays
-// RA-agnostic. Those augments are the reader the three RA-only channels
-// (`comms.linkQuality` / `comms.dataRate` / `comms.linkMargin`) and the per-hop
+// RA-agnostic. Those augments are the reader the two RA-only channels
+// (`comms.dataRate` / `comms.linkMargin`) and the per-hop
 // `extensions.realantennas` bag were waiting for: the data reached the SDK end to
 // end and then stopped, and now it renders.
 //
-// So the package's surface is its Topics (the three payload types + the hop-bag
+// So the package's surface is its Topics (the link payload types + the hop-bag
 // type and their registrations, relocated out of the core contract) plus the RA
 // CommSignal augments and the typed hop-bag reader.
 //
@@ -37,7 +37,6 @@
 export type {
   CommsDataRate,
   CommsLinkMargin,
-  CommsLinkQuality,
   RealAntennasAntennaArgs,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,

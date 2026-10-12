@@ -14,13 +14,12 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
-// Side-effect import: registers the three RA-only Topics into the SDK's runtime
+// Side-effect import: registers the RA-only Topics into the SDK's runtime
 // registry and feeds this Uplink's own generated unit/shape maps into BOTH
 // halves of the relocated unit registry.
 import {
   COMMS_DATA_RATE_TOPIC,
   COMMS_LINK_MARGIN_TOPIC,
-  COMMS_LINK_QUALITY_TOPIC,
   REALANTENNAS_AVAILABLE_TOPIC,
 } from "./topics.js";
 
@@ -39,9 +38,8 @@ function csTopic(constName: string): string {
   return m[1];
 }
 
-describe("the three RA-only Topics (relocated out of Sitrep.Contract)", () => {
+describe("the RA-only link Topics (relocated out of Sitrep.Contract)", () => {
   it.each([
-    ["LinkQualityTopic", COMMS_LINK_QUALITY_TOPIC],
     ["DataRateTopic", COMMS_DATA_RATE_TOPIC],
     ["LinkMarginTopic", COMMS_LINK_MARGIN_TOPIC],
   ])("%s registers the same string the C# Uplink declares", (name, topic) => {
@@ -54,11 +52,7 @@ describe("the three RA-only Topics (relocated out of Sitrep.Contract)", () => {
   // between the relocation and `isTopicId("comms.linkMargin")` silently going
   // false for every consumer.
   it("are known TopicIds once this client's topics module has loaded", () => {
-    for (const topic of [
-      COMMS_LINK_QUALITY_TOPIC,
-      COMMS_DATA_RATE_TOPIC,
-      COMMS_LINK_MARGIN_TOPIC,
-    ]) {
+    for (const topic of [COMMS_DATA_RATE_TOPIC, COMMS_LINK_MARGIN_TOPIC]) {
       expect(isTopicId(topic), `${topic} is not a known TopicId`).toBe(true);
       expect(getAllKnownTopicIds()).toContain(topic);
     }
@@ -165,22 +159,24 @@ describe("registerTopicUnits: hydration at decode time", () => {
     const fixture = setupStreamFixture();
     const { result } = renderHook(
       () => {
-        const reading = useTelemetry(COMMS_LINK_QUALITY_TOPIC);
+        const reading = useTelemetry(COMMS_LINK_MARGIN_TOPIC);
         return reading.state === "observed" ? reading.value : undefined;
       },
       { wrapper: fixture.Provider },
     );
 
-    fixture.emit(COMMS_LINK_QUALITY_TOPIC, {
-      value: 0.9,
+    fixture.emit(COMMS_LINK_MARGIN_TOPIC, {
+      decibelMargin: 6,
+      closesLink: true,
+      quality: 0.9,
       meta: { source: "vessel:1", quality: 1 },
     });
 
     await waitFor(() => {
-      expect(result.current?.value).toBeDefined();
+      expect(result.current?.quality).toBeDefined();
     });
 
-    expect(result.current?.value).toMatchObject({
+    expect(result.current?.quality).toMatchObject({
       magnitude: 0.9,
       unit: "ratio",
     });
@@ -190,8 +186,7 @@ describe("registerTopicUnits: hydration at decode time", () => {
   // the loop registered only the two topics it exercises richly, and a Topic
   // silently dropping out of the registry is the regression a widened contract is
   // most likely to introduce.
-  it("restores unitsForTopic for all three relocated Topics", () => {
-    expect(unitsForTopic(COMMS_LINK_QUALITY_TOPIC)).toEqual({ value: "ratio" });
+  it("restores unitsForTopic for both relocated Topics", () => {
     expect(unitsForTopic(COMMS_DATA_RATE_TOPIC)).toEqual({
       upBitsPerSec: "bit/s",
       downBitsPerSec: "bit/s",
@@ -199,6 +194,7 @@ describe("registerTopicUnits: hydration at decode time", () => {
     expect(unitsForTopic(COMMS_LINK_MARGIN_TOPIC)).toEqual({
       decibelMargin: "dB",
       closesLink: "flag",
+      quality: "ratio",
     });
   });
 });
@@ -208,9 +204,9 @@ describe("registerTypeUnits: the type-keyed half", () => {
   // today and no decode goes through them. They are registered anyway, by the
   // same generic loop, and this is what would catch that loop being dropped as
   // "unused" by a future reader who checked only the decode.
-  it("restores unitsForType for all three relocated types", () => {
-    expect(unitsForType("CommsLinkQuality").value).toBe("ratio");
+  it("restores unitsForType for both relocated types", () => {
     expect(unitsForType("CommsDataRate").upBitsPerSec).toBe("bit/s");
     expect(unitsForType("CommsLinkMargin").decibelMargin).toBe("dB");
+    expect(unitsForType("CommsLinkMargin").quality).toBe("ratio");
   });
 });

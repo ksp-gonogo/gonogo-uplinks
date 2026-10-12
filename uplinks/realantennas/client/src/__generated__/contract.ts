@@ -217,15 +217,6 @@ export interface RealAntennasAntennaChain
 	meta: PayloadMeta;
 }
 /**
-* The `comms.linkQuality` payload: RealAntennas-ONLY (absent without RA). Link
-* margin normalised to 0..1 (comms-uplink-design.md §2.2/§4.3).
-*/
-export interface CommsLinkQuality
-{
-	value: Value<"ratio">;
-	meta: PayloadMeta;
-}
-/**
 * The `comms.dataRate` payload: RealAntennas-ONLY. Bidirectional link data
 * rate in bits/sec, read live per-hop off the RA CommNet graph
 * (comms-uplink-design.md §4.3: "reachable cleanly").
@@ -240,12 +231,20 @@ export interface CommsDataRate
 * The `comms.linkMargin` payload: RealAntennas-ONLY. Re-derived by the
 * RealAntennas uplink from RA's public static link-budget math, not read off a
 * live field (comms-uplink-design.md §4.3: margin is computed transiently
-* inside RA's internal Precompute job and not stored anywhere public).
+* inside RA's internal Precompute job and not stored anywhere public). Carries
+* the margin, whether it closes the link, and the margin normalised to a 0..1
+* quality, so all three are published together or not at all.
 */
 export interface CommsLinkMargin
 {
 	decibelMargin: Value<"dB">;
 	closesLink: boolean;
+	/**
+	* `CommsLinkMargin.decibelMargin` normalised onto 0..1: 0 at or below -20 dB
+	* of margin, 1 at or above +20 dB, linear between, and 0 when the link is
+	* down. A display figure for a signal-strength bar, not a measurement.
+	*/
+	quality: Value<"ratio">;
 	meta: PayloadMeta;
 }
 /**

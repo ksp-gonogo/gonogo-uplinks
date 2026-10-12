@@ -27,7 +27,6 @@
 import type {
   CommsDataRate,
   CommsLinkMargin,
-  CommsLinkQuality,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
   RealAntennasHopRate,
@@ -37,7 +36,6 @@ import type {
 export interface GeneratedTopicPayloadMap {
   "comms.dataRate": CommsDataRate;
   "comms.linkMargin": CommsLinkMargin;
-  "comms.linkQuality": CommsLinkQuality;
   "realantennas.antennaChains": RealAntennasAntennaChain[];
   "realantennas.antennas": RealAntennasAntennaState[];
   "realantennas.hopRates": RealAntennasHopRate[];
@@ -47,7 +45,6 @@ export interface GeneratedTopicPayloadMap {
 export const GENERATED_TOPIC_IDS = [
   "comms.dataRate",
   "comms.linkMargin",
-  "comms.linkQuality",
   "realantennas.antennaChains",
   "realantennas.antennas",
   "realantennas.hopRates",

@@ -18,7 +18,7 @@ namespace Gonogo.RealAntennasUplink
     /// data rate. Registering the provider is the gate (§2.2): absent RA, no
     /// provider is registered and CommNet vanilla stays elected.</item>
     /// <item>It declares + sources the RA-ONLY channels
-    /// (<c>comms.linkQuality</c>/<c>comms.dataRate</c>/<c>comms.linkMargin</c>)
+    /// (<c>comms.dataRate</c>/<c>comms.linkMargin</c>)
     /// in its own manifest, bypassing the election entirely (§2.2). Data rate is
     /// read live off the RACommLink; margin/quality are RE-DERIVED by
     /// <see cref="RaLinkBudget"/> from RA's public antenna props (§4.3), never
@@ -35,7 +35,6 @@ namespace Gonogo.RealAntennasUplink
     [SitrepUplink("realantennas")]
     public sealed class RealAntennasUplink : ISitrepUplink
     {
-        public const string LinkQualityTopic = RealAntennasManifest.LinkQualityTopic;
         public const string DataRateTopic = RealAntennasManifest.DataRateTopic;
         public const string LinkMarginTopic = RealAntennasManifest.LinkMarginTopic;
         public const string HopRatesTopic = RealAntennasManifest.HopRatesTopic;
@@ -73,7 +72,6 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         private IUplinkHost? _host;
 
-        private IChannelPublisher? _linkQuality;
         private IChannelPublisher? _dataRate;
         private IChannelPublisher? _linkMargin;
         private IChannelPublisher? _hopRates;
@@ -160,7 +158,6 @@ namespace Gonogo.RealAntennasUplink
             // `requires` resolves against.
             host.AddChannelSource(AvailableTopic, _ => _ra != null && _ra.IsAvailable);
 
-            _linkQuality = host.Publisher(LinkQualityTopic);
             _dataRate = host.Publisher(DataRateTopic);
             _linkMargin = host.Publisher(LinkMarginTopic);
             _hopRates = host.Publisher(HopRatesTopic);
@@ -168,7 +165,7 @@ namespace Gonogo.RealAntennasUplink
             _chains = host.Publisher(ChainsTopic);
             _retargeting = host.Publisher(RetargetingTopic);
 
-            host.AddSampledSource(CaptureOnMain, HandleOnCourier, LinkQualityTopic, DataRateTopic, LinkMarginTopic, HopRatesTopic);
+            host.AddSampledSource(CaptureOnMain, HandleOnCourier, DataRateTopic, LinkMarginTopic, HopRatesTopic);
 
             // Its own sampled source rather than a sixth topic on the one above:
             // the antenna walk reads every antenna on the craft and the mode
@@ -441,7 +438,6 @@ namespace Gonogo.RealAntennasUplink
             if (!IsConnected(vessel) || link == null)
             {
                 capture.LinkMargin = RaLinkDown.LinkMargin(capture.Source);
-                capture.LinkQuality = RaLinkDown.LinkQuality(capture.Source);
                 capture.DataRate = RaLinkDown.DataRate(capture.Source);
                 return capture;
             }
@@ -512,7 +508,7 @@ namespace Gonogo.RealAntennasUplink
                     // returns double.NegativeInfinity for a non-positive symbol
                     // rate (and NaN is possible from degenerate inputs). A
                     // non-finite double is not valid JSON on the wire, so instead
-                    // of publishing it we leave BOTH margin and quality unset
+                    // of publishing it we leave the whole payload unset
                     // (payload-level typed absence: the derived quality is
                     // meaningless when the margin it comes from is invalid). net48
                     // has no double.IsFinite, hence the explicit NaN/Infinity test.
@@ -522,17 +518,13 @@ namespace Gonogo.RealAntennasUplink
                         capture.LinkMargin = new CommsLinkMargin
                         {
                             DecibelMargin = margin,
+                            Quality = RaLinkBudget.NormaliseQuality(margin),
                             // We only reach this branch when CommNet reports the
                             // link connected, so the link DOES close, the
                             // authoritative state wins over the geometry-only
                             // margin sign (which can disagree, e.g. a marginal but
                             // negotiated link).
                             ClosesLink = true,
-                            Meta = meta,
-                        };
-                        capture.LinkQuality = new CommsLinkQuality
-                        {
-                            Value = RaLinkBudget.NormaliseQuality(margin),
                             Meta = meta,
                         };
                     }
@@ -546,7 +538,7 @@ namespace Gonogo.RealAntennasUplink
         /// COURIER-THREAD handle: publish only the payloads we could compute (typed
         /// absence otherwise), each flattened to its wire dictionary on the way out.
         ///
-        /// <para>The flatten is what lets these three types live in this Uplink's own
+        /// <para>The flatten is what lets these types live in this Uplink's own
         /// contract slice rather than in core. Core's serializer carries no case per
         /// type, so <see cref="RaWire"/> writes the wire dictionary itself;
         /// publishing the POCO raw from here reaches the serializer's default branch
@@ -560,7 +552,6 @@ namespace Gonogo.RealAntennasUplink
             }
             if (capture.DataRate != null) _dataRate?.Publish(RaWire.DataRate(capture.DataRate), capture.Ut);
             if (capture.LinkMargin != null) _linkMargin?.Publish(RaWire.LinkMargin(capture.LinkMargin), capture.Ut);
-            if (capture.LinkQuality != null) _linkQuality?.Publish(RaWire.LinkQuality(capture.LinkQuality), capture.Ut);
             if (capture.HopRates != null) _hopRates?.Publish(RaWire.HopRates(capture.HopRates), capture.Ut);
         }
 
@@ -644,7 +635,6 @@ namespace Gonogo.RealAntennasUplink
             public string Source = "";
             public CommsDataRate? DataRate;
             public CommsLinkMargin? LinkMargin;
-            public CommsLinkQuality? LinkQuality;
             public List<RealAntennasHopRate>? HopRates;
         }
 

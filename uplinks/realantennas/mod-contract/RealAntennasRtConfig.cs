@@ -7,36 +7,27 @@ namespace Gonogo.RealAntennasUplink;
 /// <summary>
 /// This Uplink's own codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
-/// this assembly's three wire types, and reuses
+/// this assembly's wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way each earlier relocated
 /// Uplink's own <c>Configure</c> does (the uplink-types-out-of-core plan's
 /// mechanism, unchanged here; the plan doc names the six earlier steps, this
 /// file does not, since naming a sibling Uplink would trip its own frontend
 /// uplink-boundary token).
 ///
-/// <para><b>It began as three types, three Topic-tagged roots, and has grown
-/// past that in both directions.</b> The three link channels
-/// (<c>comms.linkQuality</c>, <c>comms.dataRate</c>, <c>comms.linkMargin</c>)
-/// were the whole of it, and the slice carried no command args at all, because
-/// the only thing a client could do with RealAntennas was look at it. Targeting
-/// added a channel and two commands, and the fallback chain added a channel, a
-/// command and the slice's first nested types, so <c>EmitUnitMap</c>'s field
-/// -&gt; nested-type shape half is no longer empty. The one nested shape in the
-/// comms family proper, <c>CommsHop</c>, still hangs off <c>CommsPath</c> and
-/// stays core with it.</para>
+/// <para>The link channels are <c>comms.dataRate</c> and
+/// <c>comms.linkMargin</c>; the rest of the slice is the targeting surface
+/// (channels, commands and their nested step types), so <c>EmitUnitMap</c>'s
+/// field -&gt; nested-type shape half has entries to emit. The one nested shape
+/// in the comms family proper, <c>CommsHop</c>, hangs off <c>CommsPath</c> and
+/// stays in core with it.</para>
 ///
-/// <para><b>Every declared quantity here is real, which is what makes this
-/// slice the mirror image of the one before it.</b> All four annotated
-/// properties name a dimension the unit model resolves:
-/// <see cref="CommsLinkQuality.Value"/> (<c>Units.Ratio</c>),
-/// <see cref="CommsDataRate.UpBitsPerSec"/> and
-/// <see cref="CommsDataRate.DownBitsPerSec"/>
-/// (<c>Units.BitsPerSecond</c>), and <see cref="CommsLinkMargin.DecibelMargin"/>
-/// (<c>Units.Decibels</c>). Only <see cref="CommsLinkMargin.ClosesLink"/> is a
-/// non-quantity (<c>Units.Flag</c>), and it is a bool. So the retyping this call
-/// exists to perform is visible in every one of the three generated interfaces,
-/// and the runtime hydration below can be proved by decoding a frame rather than
-/// by inspecting a registry.</para>
+/// <para>Every declared quantity on the link channels names a dimension the
+/// unit model resolves: <see cref="CommsLinkMargin.Quality"/>
+/// (<c>Units.Ratio</c>), <see cref="CommsDataRate.UpBitsPerSec"/> and
+/// <see cref="CommsDataRate.DownBitsPerSec"/> (<c>Units.BitsPerSecond</c>), and
+/// <see cref="CommsLinkMargin.DecibelMargin"/> (<c>Units.Decibels</c>).
+/// <see cref="CommsLinkMargin.ClosesLink"/> is a non-quantity
+/// (<c>Units.Flag</c>), and it is a bool.</para>
 ///
 /// <para>Invoked by <c>mod/codegen.sh</c>'s per-uplink codegen step, writing
 /// into <c>mod/GonogoRealAntennasUplink/client/src/__generated__/</c>, never
@@ -76,11 +67,9 @@ public static class RealAntennasRtConfig
         // registered with rtcli may have its properties retyped.
         var wireTypes = new[]
         {
-            // comms.linkQuality: link margin normalised to 0..1
-            typeof(CommsLinkQuality),
             // comms.dataRate: bidirectional throughput off the RA graph
             typeof(CommsDataRate),
-            // comms.linkMargin: re-derived link budget, dB + does-it-close
+            // comms.linkMargin: re-derived link budget, dB, does-it-close, quality 0..1
             typeof(CommsLinkMargin),
             // The RealAntennas namespace of CommsHop's provider extension bag. No
             // [SitrepTopic] (it is a nested bag type, reached through comms.path's
@@ -148,7 +137,7 @@ public static class RealAntennasRtConfig
         // either flat DTOs or command args with no envelope-adjacent field. rtcli
         // only knows the types this run exports, so a property whose type lives in
         // Sitrep.Contract resolves to `any` with a RT0003 warning, which would
-        // hand the client an untyped `meta` on all three channels and lose the
+        // hand the client an untyped `meta` on every channel and lose the
         // source/quality pair every consumer reads. Pointing it at the SDK's
         // already-generated PayloadMeta is the same move ApplyUnitValueTypes makes
         // for Value/Vec3Of just above: the core shape is imported, never
@@ -172,18 +161,7 @@ public static class RealAntennasRtConfig
         {
             Sitrep.Contract.RtConfig.EmitTopicMap(
                 topicMapOut!,
-                typeof(RealAntennasRtConfig).Assembly,
-                // <see cref="CommsLinkQuality.Value"/> is spelled like a Reading
-                // currency member, so it cannot be reached as a field reading:
-                // see RtConfig.CheckReservedFieldNames. It is this slice's twin
-                // of core's comms.signalStrength.value, which became
-                // comms.signal.strength at Major 17. The analogous rename here is
-                // NOT settled: comms.link is already a topic, so comms.link.quality
-                // would collide with a field read on it. A renamed member on a
-                // wire-visible type is breaking, so it costs a Major. Shrink-only:
-                // delete this line in the same commit as the rename, or the codegen
-                // leg refuses it as stale.
-                new[] { "comms.linkQuality.value" });
+                typeof(RealAntennasRtConfig).Assembly);
         }
 
         // This slice declares commands as of the targeting surface, so it emits

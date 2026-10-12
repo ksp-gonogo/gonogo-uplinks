@@ -10,7 +10,6 @@ namespace Gonogo.RealAntennasUplink
     /// </summary>
     public static class RealAntennasManifest
     {
-        public const string LinkQualityTopic = "comms.linkQuality";
         public const string DataRateTopic = "comms.dataRate";
         public const string LinkMarginTopic = "comms.linkMargin";
 
@@ -165,7 +164,6 @@ namespace Gonogo.RealAntennasUplink
             Channels = new List<ChannelDeclaration>
             {
                 TrueNow(AvailableTopic, SampleKind.Discrete),
-                Delayed(LinkQualityTopic, SampleKind.Continuous),
                 Delayed(DataRateTopic, SampleKind.Continuous),
                 Delayed(LinkMarginTopic, SampleKind.Continuous),
                 Delayed(HopRatesTopic, SampleKind.Continuous),
