@@ -1,3 +1,4 @@
+import { ErrorCode, ErrorSource } from "@ksp-gonogo/kerbcast";
 import { MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import {
   GAME_HOST_KEY,
@@ -378,6 +379,37 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
 
     expect(sidecar.slotMidFor(42)).toBeUndefined();
     expect(sidecar.slotMidFor(43)).toBeDefined();
+
+    ds.disconnect();
+  });
+
+  it.each([
+    ["an old-shape error with an em dash and no code", { message: "no free slot \u2014 every transceiver is bound" }],
+    ["a hyphenated message with no code", { message: "no free slot - every transceiver is bound" }],
+    ["a coded refusal carrying its flightId", { message: "no free slot", flightId: 42, code: ErrorCode.NoFreeSlot }],
+  ])("a refused subscribe as %s leaves the connection up and later binds working", async (_name, payload) => {
+    const { ds, sidecar } = await connectedSidecar();
+
+    ds.subscribeCamera(42);
+    sidecar.fireError({ source: ErrorSource.Sidecar, ...payload });
+
+    expect(ds.status).toBe("connected");
+    ds.subscribeCamera(43);
+    expect(sidecar.slotMidFor(43)).toBeDefined();
+
+    ds.disconnect();
+  });
+
+  it("an old-shape camera-not-found error still releases the bind it was about", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+
+    ds.subscribeCamera(42);
+    sidecar.fireError({ source: ErrorSource.Sidecar, message: "no live camera with flight_id=42" });
+
+    expect(ds.status).toBe("connected");
+    ds.unsubscribeCamera(42);
+    ds.subscribeCamera(42);
+    expect(sidecar.slotMidFor(42)).toBeDefined();
 
     ds.disconnect();
   });
