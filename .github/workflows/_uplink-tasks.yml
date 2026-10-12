@@ -185,11 +185,12 @@ jobs:
       # The mode a client does not check is the one that fails silently:
       # `declare module` bindings resolve under bundler and not under nodenext, so
       # a Topic declaration merge vanishes and takes its keys with it. Zero
-      # errors, red or green; see scripts/check-nodenext.mjs for why there is no
-      # debt list and for the fault class this gate structurally cannot see.
+      # errors, red or green. There is no debt list. The published `check` command
+      # proves its own compiler sees a planted fault first, and cannot see an
+      # unresolvable side-effect import (docs/building.md).
       - name: Typecheck client under nodenext
         if: inputs.typecheck
-        run: node scripts/check-nodenext.mjs "${{ inputs.name }}"
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only nodenext
 
       # Codegen is verified rather than run: the generated TypeScript is
       # committed, so a slice whose C# moved without regenerating fails here

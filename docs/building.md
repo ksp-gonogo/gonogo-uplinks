@@ -87,7 +87,7 @@ npx uplink-tools page                                # the generated page, with 
 cd - && dotnet build  uplinks/scansat/mod/*.csproj -c Release
 dotnet test   uplinks/scansat/mod-tests/*.csproj -c Release
 node tooling/uplink-tools.mjs scansat check --only loadable  # can its published deps be IMPORTED in bare node
-node scripts/check-nodenext.mjs scansat              # the resolution mode that fails silently
+node tooling/uplink-tools.mjs scansat check --only nodenext # the resolution mode that fails silently
 node tooling/uplink-tools.mjs scansat check --only minsize   # does every widget fit its own minSize (Linux only, see below)
 node tooling/uplink-tools.mjs scansat check --only manifest  # the parent mod's version is declared
 node tooling/uplink-tools.mjs scansat release --out artifacts   # bundle, bake, compile, verify, zip
@@ -302,7 +302,7 @@ The same split applies to typechecking. `bundler` and `nodenext` disagree
 SILENTLY: `declare module "./types"` binds under one and not the other, so a
 declaration merge vanishes and every key it contributed goes with it. Every Uplink
 declares its own Topics through exactly that mechanism, so both modes are checked,
-and `scripts/check-nodenext.mjs` holds every client at zero.
+and `uplink-tools check --only nodenext` holds every client at zero.
 
 Know what that gate cannot see. tsc raises TS2834/TS2835 only for an import that
 BINDS something, so a side-effect import of an unresolvable specifier
