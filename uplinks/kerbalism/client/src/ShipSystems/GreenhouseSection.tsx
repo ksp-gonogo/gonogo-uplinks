@@ -18,22 +18,22 @@ import { KERBALISM } from "../uplink.js";
  * non-Kerbalism life-support source can leave the slot empty with no code
  * change on either side, matching every other `*.sections` slot's contract.
  *
- * Renders ONLY the fields Kerbalism's own `Greenhouse.Data` class actually
+ * Renders only the fields Kerbalism's own `Greenhouse.Data` class actually
  * carries (`natural`, `artificial`, `issue`) plus the part's persisted
  * `active` toggle and its derived continuous food-production rate. There is
- * deliberately NO growth meter and NO time-to-harvest countdown anywhere in
+ * deliberately no growth meter and no time-to-harvest countdown anywhere in
  * this file, neither concept exists in the module (production is
  * continuous via a ResourceRecipe, not a discrete harvest event); grounded
  * against `src/Kerbalism/Modules/Greenhouse.cs`.
  *
- * `natural` and `artificial` are NEVER summed or combined into one figure:
+ * `natural` and `artificial` are never summed or combined into one figure:
  * the real lighting gate is `natural + artificial >= light_tolerance`, so a
  * lamp only ever needs to cover the shortfall against the sun, not double
  * the total. Presenting a combined number would misrepresent that as "more
  * light is always better," when a bright lamp on an already-lit greenhouse
  * contributes nothing the sun wasn't already providing.
  *
- * NOT YET fed by live data: `GonogoKerbalismUplink`'s capture pipeline does
+ * Not yet fed by live data: `GonogoKerbalismUplink`'s capture pipeline does
  * not populate `kerbalism.lifesupport.greenhouses` yet, see
  * `KerbalismLifeSupport.Greenhouses`'s own doc comment in
  * `mod/Sitrep.Contract/KerbalismPayloads.cs`. This section is wired and
@@ -80,7 +80,7 @@ export interface LifeSupportSlotContext {
    * Current ambient (unshielded) dose rate, rad/s, from
    * `kerbalism.spaceweather`. Ambient, not the crew's shielded/habitat
    * figure: a greenhouse part's own tolerance is a limit on what's hitting
-   * the HULL, not on what the vessel's habitat shielding lets through to
+   * the hull, not on what the vessel's habitat shielding lets through to
    * the crew. 0 when no spaceweather frame has landed yet, which never
    * trips a threshold check on its own.
    */
@@ -126,12 +126,12 @@ function fmtRatePerDay(perSec: number | null): string {
 
 /**
  * `tooHigh` (this widget's own client-side ambient-vs-tolerance check, see
- * `radiationTooHigh` below) folds into BOTH the tone and the state label,
+ * `radiationTooHigh` below) folds into both the tone and the state label,
  * not just the standalone "Radiation too high" badge: grounded against
  * Kerbalism's own `Greenhouse.SimulateGreenhouse`
  * (`src/Kerbalism/Modules/Greenhouse.cs`), exceeding `radiation_tolerance`
  * makes the module return before it ever queues the food `ResourceRecipe`,
- * i.e. production HALTS outright for that tick, the same as a lighting or
+ * i.e. production halts outright for that tick, the same as a lighting or
  * pressure failure, not a mere slowdown. Without folding `tooHigh` in here,
  * a growing greenhouse whose mod-reported `issue` field hasn't yet caught
  * up (see this file's own "NOT YET fed by live data" doc comment) could
@@ -139,7 +139,7 @@ function fmtRatePerDay(perSec: number | null): string {
  * visible contradiction: this widget's own real bug, not a hypothetical.
  * `warning`, not `critical`: a greenhouse halt is recoverable once the
  * storm passes, the same rung the host widget's Degraded status folds it
- * into. "Growing" and "Off" carry NO severity (decorative grey chips):
+ * into. "Growing" and "Off" carry no severity (decorative grey chips):
  * ordinary operating states earn no colour, the same resting-tone rule the
  * host's process list follows.
  */
@@ -160,12 +160,12 @@ function greenhouseStateLabel(g: GreenhouseRow, tooHigh: boolean): string {
 /**
  * Instantaneous threshold flag, never a trend: a greenhouse carries no
  * radiation memory of its own (unlike a crew rule, which accumulates), so
- * this reads only the CURRENT ambient rate against the part's own fixed
+ * this reads only the current ambient rate against the part's own fixed
  * tolerance, no history involved. `<= 0` on either side means "nothing to
  * compare" (an unreported tolerance, or no spaceweather frame yet) and
  * never flags.
  *
- * This is a genuine HALT, not a degrade: verified against Kerbalism's own
+ * This is a genuine halt, not a degrade: verified against Kerbalism's own
  * `Greenhouse.SimulateGreenhouse` (`src/Kerbalism/Modules/Greenhouse.cs`),
  * which returns before queuing the food `ResourceRecipe` whenever
  * `radiation > radiation_tolerance` (same early-return as a lighting or
@@ -186,7 +186,7 @@ function radiationTooHigh(
 }
 
 /**
- * ONE greenhouse entry, rendered in the same two-line-per-item budget as the
+ * One greenhouse entry, rendered in the same two-line-per-item budget as the
  * Processes section above it (a title/badge row + a single compact value
  * line) so a fully-populated widget (broken process + habitat detail +
  * greenhouse + power) still fits the default grid size without pushing the

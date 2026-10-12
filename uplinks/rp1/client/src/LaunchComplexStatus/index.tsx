@@ -28,9 +28,9 @@ import { RP1 } from "../uplink.js";
 import "../topics.js";
 
 /**
- * What RP-1 knows about ONE pad, beside the pad's own row.
+ * What RP-1 knows about one pad, beside the pad's own row.
  *
- * <para>Stock's answer to "what is on this pad" is a vessel sitting at PRELAUNCH,
+ * <para>Stock's answer to "what is on this pad" is a vessel sitting at prelaunch,
  * and RP-1's is three facts stock has no counterpart for: which launch complex
  * owns the pad, what the pad is currently doing, and which vehicle is standing
  * on it or on its way. The host widget reads the first from
@@ -162,7 +162,7 @@ export function LaunchComplexStatus({
 
 /**
  * The rollout, rollback or reconditioning this pad is under, joined on the pad's
- * NAME: <c>Rp1OperationEntry.LaunchPadId</c> carries that rather than the pad's
+ * name: <c>Rp1OperationEntry.LaunchPadId</c> carries that rather than the pad's
  * own id. A pad with no name comes back as not under any operation, which is the
  * safe direction: the row then falls through to the pad's own state.
  */
@@ -185,7 +185,7 @@ function padOperation(
  * Which vehicle this pad is holding or receiving, in the operator's words, or
  * undefined when the pad reports nothing on it.
  *
- * <para>A vehicle ALREADY at the launch site has no operation left: RP-1 answers
+ * <para>A vehicle already at the launch site has no operation left: RP-1 answers
  * that separately through <c>LCLaunchPad.HasVesselWaitingToBeLaunched</c>, which
  * is <c>hasVesselWaiting</c> here. Null there means the question could not be
  * answered, which is not the same as no vehicle and does not collapse into

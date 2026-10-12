@@ -21,11 +21,11 @@ import { KERBALISM } from "./uplink.js";
  * ## Why this is a reckoner now, when the same model was a derived channel
  *
  * `resourceProjection.ts` argues at length that this model cannot be a
- * reckoner, and states its reason plainly: "A `ReckonerFor` is handed ONE
+ * reckoner, and states its reason plainly: "A `ReckonerFor` is handed one
  * `TimelinePoint` and cannot see across that split." The split is real and
  * deliberate (`vessel.resources` carries amounts and capacities,
  * `kerbalism.lifesupport` carries the rates, and the latter says in terms why),
- * but a reckoner is no longer handed one point: it DECLARES its inputs and the
+ * but a reckoner is no longer handed one point: it declares its inputs and the
  * store resolves them, so the rate arrives here as a dep. So the model belongs
  * on the Topic whose value it advances, where every existing reader of that
  * Topic gets it, rather than on a parallel Topic each widget has to know to
@@ -39,15 +39,15 @@ import { KERBALISM } from "./uplink.js";
  *
  * ## Which UT it integrates from, and it is not the wire's
  *
- * `asOfUt` is the UT Kerbalism last ADVANCED its accumulators, and for a
+ * `asOfUt` is the UT Kerbalism last advanced its accumulators, and for a
  * background craft it sits well behind the read time: unloaded vessels take
  * their Kerbalism turn one per physics tick, in rotation. So a payload can be
  * perfectly live on the wire and already minutes old as a model, and the
  * interval to integrate over is `reckonUt - asOfUt`, never `reckonUt` minus
  * the sample's `validAt`. `reckonUt` is the craft's present, which a current
- * reading under light time is a one-way trip behind.
+ * reading under signal delay is a one-way trip behind.
  *
- * That is also why this model does NOT follow `core-reckoners`'
+ * That is also why this model does not follow `core-reckoners`'
  * `elapsedOrDecline` and withhold itself on a live reading. That posture is
  * right for a first-order extrapolation whose only anchor is the loss of
  * contact: on a live reading it would replace a measured value with arithmetic
@@ -55,7 +55,7 @@ import { KERBALISM } from "./uplink.js";
  * accumulator lag, which exists whether or not the last packet arrived on
  * time, so `Reading`'s `{state: "observed", reckoning: "available"}` arm is
  * the one this model wants and it is there for precisely this. What it declines
- * on instead is a ZERO interval, which is the same refusal measured against
+ * on instead is a zero interval, which is the same refusal measured against
  * the right clock.
  */
 
@@ -86,18 +86,18 @@ import { KERBALISM } from "./uplink.js";
  * obvious move is to carry that bracket here and drop the constant. It is the
  * wrong move, because the two answer different questions.
  *
- * A band says HOW WRONG the number might be. A horizon says whether the model
- * still describes the same REGIME. Those come apart precisely here, because
- * what invalidates a `rates` entry is not accumulating noise but a DISCRETE
+ * A band says how wrong the number might be. A horizon says whether the model
+ * still describes the same regime. Those come apart precisely here, because
+ * what invalidates a `rates` entry is not accumulating noise but a discrete
  * event: a converter switching, a crew shift, a craft crossing into shadow. At
- * a shadow boundary the net electric-charge rate flips SIGN, and after that the
+ * a shadow boundary the net electric-charge rate flips sign, and after that the
  * model is not imprecise, it is integrating in the wrong direction. A band
  * widening symmetrically around a falling line does not contain a rising one,
  * so no interval this model could offer would cover the case the horizon is
  * for.
  *
  * Twenty minutes is roughly a low orbit, which is where that constant comes
- * from. The better version of this withdraws on EVIDENCE rather than at a
+ * from. The better version of this withdraws on evidence rather than at a
  * chosen number: window `kerbalism.lifesupport` through `depWindows` and
  * decline when the observed rate has changed sign inside the window. That is a
  * strictly better model and it is not this one.
@@ -105,17 +105,17 @@ import { KERBALISM } from "./uplink.js";
  * ## And why this model offers no band at all
  *
  * `BandKind` is `"bound" | "sigma1"` and the honest interval here is neither.
- * The bracket `resourceProjection.ts` mints spans two NAMED SCENARIOS (the rate
+ * The bracket `resourceProjection.ts` mints spans two named scenarios (the rate
  * held for the whole interval; the rate stopped the instant contact was lost),
  * which its own doc is explicit is "not a bound on the truth", because a
  * converter switching on can put the real level outside it. It is not a sigma
  * either: the wire carries exactly one rate sample, so there is no distribution
  * to take a standard deviation of. Stamping `"bound"` on it would promise
  * containment this wire cannot support, and a fabricated band is worse than
- * none. `kerbalism.crew`'s model DOES band, because its rate is a fit with
+ * none. `kerbalism.crew`'s model does band, because its rate is a fit with
  * residuals; see `crewReckoning.ts`.
  *
- * ## And why it is a CEILING on reach rather than the only reason to stop
+ * ## And why it is a ceiling on reach rather than the only reason to stop
  *
  * A level also withdraws the moment the model's own arithmetic carries it out
  * of the range the quantity can occupy, and for most tanks that comes a long
@@ -140,11 +140,11 @@ export type ResourceBoundary = "floor" | "ceiling";
  * ## Why the model publishes this rather than clamping
  *
  * The level used to be clamped into `[0, capacity]` and the model went on
- * answering, which put a tank at ZERO on a craft whose last observation saw it
+ * answering, which put a tank at zero on a craft whose last observation saw it
  * full, for as long as the horizon allowed. A clamp is not a withdrawal: it is
  * a confident positive claim, and at a readout it is indistinguishable from an
  * observation of an empty tank. The clamp was symmetric, so a positive net rate
- * did the same thing at the other end and reported a FULL one.
+ * did the same thing at the other end and reported a full one.
  *
  * The model stops at the crossing instead, and hands the crossed level back at
  * its last observed value. That withdrawal is honest and it is also silent,
@@ -158,7 +158,7 @@ export type ResourceBoundary = "floor" | "ceiling";
  * already has for an absolute moment (`Reckoning.atUt` is one). A duration
  * would be the same fact measured from the frame, so it would have to be
  * recomputed every frame and would need a second anchor stated beside it to
- * mean anything at all. This one is a fact about the OBSERVATION and does not
+ * mean anything at all. This one is a fact about the observation and does not
  * move as the view time does.
  *
  * It sits on its own entry point rather than on the model's answer for exactly
@@ -166,7 +166,7 @@ export type ResourceBoundary = "floor" | "ceiling";
  * ask for it, and it is still there on the frames where the model has withdrawn
  * and has no answer to hang it off.
  *
- * `boundary` names the END of the range rather than the condition, because the
+ * `boundary` names the end of the range rather than the condition, because the
  * two ends are one rule. Zero is not a special number here: a consumer renders
  * `"floor"` as empty and `"ceiling"` as full, and nothing upstream of that has
  * to know which of them a given craft is heading for.
@@ -409,7 +409,7 @@ function ratesWithWear(
 
 /**
  * When each moving level leaves the range it can occupy, for a consumer that
- * wants to say WHEN. See {@link ResourceBoundaryCrossing}.
+ * wants to say when. See {@link ResourceBoundaryCrossing}.
  *
  * Empty rather than a throw for every absence the model itself declines on: no
  * observation, no ledger, no rates, and no stamp to anchor the moment to.
@@ -466,7 +466,7 @@ function rateHorizon(
  *
  * Never negative: a stamp can sit marginally ahead of the instant the frame
  * reckons to, and "carried for -0.4 s" is not a thing to model. Zero is a
- * DECLINE rather than an identity projection, because a model that answers
+ * decline rather than an identity projection, because a model that answers
  * with the observation has modelled nothing and should not claim to have.
  */
 function intervalOrDecline(
@@ -504,8 +504,8 @@ function intervalOrDecline(
  * The model itself, as a pure function of the two payloads and the instant it
  * reckons to.
  *
- * Lifted out of the registration rather than written inside it so its DECLINE
- * REASONS are testable directly, without a store and a frame to read them back
+ * Lifted out of the registration rather than written inside it so its decline
+ * reasons are testable directly, without a store and a frame to read them back
  * through.
  */
 export function reckonResourceLevels(

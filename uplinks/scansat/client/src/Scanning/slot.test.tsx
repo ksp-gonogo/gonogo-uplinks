@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ScanningComponent } from "./index.js";
 
 /**
- * Scanning augment-slot exposure: SCANsat-OWNED widget exposing a slot OTHER
+ * Scanning augment-slot exposure: SCANsat-OWNED widget exposing a slot other
  * Uplinks fill. `scanning.sections` is exposed but ships no filler here (that
  * is an Uplink augment): an empty slot must render cleanly, and a test augment
  * registered into it must appear, receiving the widget's body focus as typed

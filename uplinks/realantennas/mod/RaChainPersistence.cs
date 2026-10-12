@@ -7,7 +7,7 @@ namespace Gonogo.RealAntennasUplink
     /// ConfigNode round-trip for <see cref="RaChainRegister"/>: one child node per
     /// chained antenna, one grandchild per entry.
     ///
-    /// <para><see cref="Load"/> restores INTO the caller's existing register
+    /// <para><see cref="Load"/> restores into the caller's existing register
     /// rather than replacing it, so the scenario module can hold one register for
     /// the process and have OnLoad fill that same instance, which is what lets a
     /// command handler registered once at startup keep writing to the register the
@@ -66,7 +66,7 @@ namespace Gonogo.RealAntennasUplink
         /// Reads the node back if it is there. A save from before this existed, or
         /// a new game, has none and the register is left as it was.
         ///
-        /// <para>A chain whose node will not parse is SKIPPED rather than
+        /// <para>A chain whose node will not parse is skipped rather than
         /// throwing. The cost of dropping one is that one antenna stops falling
         /// back, and the cost of throwing is the whole module's OnLoad, which
         /// would take every other chain with it.</para>

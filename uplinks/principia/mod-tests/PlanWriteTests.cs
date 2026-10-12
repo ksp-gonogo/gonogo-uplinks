@@ -181,7 +181,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The write authority compares the build against its OWN constant, not the
+        /// The write authority compares the build against its own constant, not the
         /// session's. They hold the same string today and answer different
         /// questions, and the separation is what stops a future decision to keep
         /// reading across a version bump carrying the writes with it.
@@ -203,7 +203,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// An edit before arming is refused, and the SAME edit after the real arm
+        /// An edit before arming is refused, and the same edit after the real arm
         /// command lands. Nothing between the two is hand-set.
         /// </summary>
         [Fact]
@@ -236,7 +236,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Arming IS the probe: it reads Principia's own burn, hands the identical
+        /// Arming is the probe: it reads Principia's own burn, hands the identical
         /// burn straight back, and reads again. Those writes are the probe's, and a
         /// test can see them.
         /// </summary>
@@ -257,7 +257,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A burn that does NOT survive the round trip leaves the surface unarmed
+        /// A burn that does not survive the round trip leaves the surface unarmed
         /// for burn edits, with the probe's own finding on the wire.
         ///
         /// <para>This is the platform struct-layout failure the write report calls
@@ -288,7 +288,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The probe CAN prove the struct on a plan with no burns, by building a burn
+        /// The probe can prove the struct on a plan with no burns, by building a burn
         /// and round-tripping that, and it takes its own burn back out afterwards.
         ///
         /// <para>Driven directly rather than through an arm, because an arm
@@ -343,12 +343,12 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Arming a plan with NO burns writes nothing to the producer.
+        /// Arming a plan with no burns writes nothing to the producer.
         ///
-        /// <para>The probe CAN prove the struct on an empty plan, by building a burn
+        /// <para>The probe can prove the struct on an empty plan, by building a burn
         /// and round-tripping that, and the mechanism is covered directly below. It
         /// is deliberately not reached from an arm, and the reason is a design one
-        /// rather than a fear: an arm is what an operator does to ASK whether editing
+        /// rather than a fear: an arm is what an operator does to ask whether editing
         /// is possible, so it must not itself be a write. The proof an empty plan
         /// needs is taken by the insert instead, where the operator has actually
         /// asked for a burn, and <c>ComposeFirstBurn</c> reverts what it wrote when
@@ -412,7 +412,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// Deleting asks whether a plan exists ONE MORE TIME, immediately before the
+        /// Deleting asks whether a plan exists one more time, immediately before the
         /// call, and refuses rather than reaching the entry point.
         ///
         /// <para>The double raises on the delete path when there is no plan because
@@ -714,7 +714,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Empty(plugin.Writes);
         }
 
-        /// <summary>A burn wholly in the past IS editable. It cannot be re-flown,
+        /// <summary>A burn wholly in the past is editable. It cannot be re-flown,
         /// tidying a plan is a real thing to want, and the producer's own window
         /// allows it too.</summary>
         [Fact]
@@ -749,16 +749,16 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A REQUESTED ignition instant that has already passed by the time the
+        /// A requested ignition instant that has already passed by the time the
         /// write arrives is refused.
         ///
         /// <para><b>Why this is a guard and not an operator error.</b> Under signal
         /// delay the operator composes the edit against a plan that left the game one
-        /// light time ago and the edit spends another light time getting back, so an
+        /// signal delay ago and the edit spends another signal delay getting back, so an
         /// instant that was comfortably in the future when they pressed can be in the
         /// past on arrival with nothing done wrong at either end. Nothing else in the
         /// chain tests it: the finiteness check does not look at the clock,
-        /// <see cref="PrincipiaBurnRules.RejectExecuting"/> tests the burn's CURRENT
+        /// <see cref="PrincipiaBurnRules.RejectExecuting"/> tests the burn's current
         /// ignition rather than the requested one, and a declared precondition runs
         /// at dispatch, before the courier is involved, which is the wrong end of the
         /// delay entirely.</para>
@@ -858,11 +858,11 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// An insert with nothing to copy BUILDS the burn, from the loaded build's
+        /// An insert with nothing to copy builds the burn, from the loaded build's
         /// own struct type.
         ///
         /// <para>The layout rule this used to be refused by is about a stale field
-        /// SET: a shape written down here resolves rather than throws, and writes a
+        /// set: a shape written down here resolves rather than throws, and writes a
         /// plausible wrong burn into somebody's save. A struct made from the type
         /// the producer's own entry point declares carries exactly this build's
         /// fields, which is the same guarantee a copy has.</para>
@@ -952,7 +952,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A REPLACE still refuses: it names a burn, and there is no burn there. The
+        /// A replace still refuses: it names a burn, and there is no burn there. The
         /// building path is the insert's alone.
         /// </summary>
         [Fact]
@@ -1005,11 +1005,11 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A composed plan sent to a craft with NO PLAN AT ALL makes one for it.
+        /// A composed plan sent to a craft with no plan at all makes one for it.
         ///
         /// <para>"Install this plan on that craft" is the whole of what the command
         /// means. Requiring a separate create first would put the two halves a
-        /// light-time apart, which is exactly what sending a plan as one message
+        /// signal delay apart, which is exactly what sending a plan as one message
         /// exists to avoid.</para>
         /// </summary>
         [Fact]
@@ -1089,7 +1089,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// An insert takes an index EQUAL to the burn count, which appends, where a
+        /// An insert takes an index equal to the burn count, which appends, where a
         /// replace at the same index would abort. The two bounds differ by one and
         /// the difference is a process abort, so it is asserted rather than assumed.
         /// </summary>
@@ -1145,7 +1145,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// Writing components onto a burn expressed in one of the producer's
-        /// SPHERICAL coordinate systems is refused. The plugin would read a
+        /// spherical coordinate systems is refused. The plugin would read a
         /// magnitude and two angles instead, so the burn would come back unchanged
         /// and look exactly like a write that landed.
         /// </summary>
@@ -1250,7 +1250,7 @@ namespace GonogoPrincipiaUplink.Tests
 
 
         /// <summary>
-        /// The receipt carries a reading of the plan taken AFTER the write, in the
+        /// The receipt carries a reading of the plan taken after the write, in the
         /// same frame, so a client can see what changed rather than take our word
         /// for it. A shortened horizon that dropped a burn is visible in the burn
         /// count.
@@ -1272,7 +1272,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A retry that reuses its request id replays the receipt and does NOT write
+        /// A retry that reuses its request id replays the receipt and does not write
         /// again. A plan write re-integrates synchronously, so repeating one is
         /// expensive as well as wrong, and this is what makes a retry safe to send.
         /// </summary>
@@ -1296,7 +1296,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Single(plugin.Known(Guid).Burns);
         }
 
-        /// <summary>A replay reports the outcome, the guard AND the typed code it
+        /// <summary>A replay reports the outcome, the guard and the typed code it
         /// reported the first time, including a failure: the honest answer to "what
         /// happened to request 7" does not change on being asked twice, and a client
         /// branching on the coarse code must not see it move under a retry.</summary>
@@ -1386,7 +1386,7 @@ namespace GonogoPrincipiaUplink.Tests
         ///
         /// <para><b>This suite could not see it.</b>
         /// <see cref="CreateRefusesAnEndInstantBeforeNow"/> armed the authority
-        /// DIRECTLY, skipping exactly the gate that made the command unreachable,
+        /// directly, skipping exactly the gate that made the command unreachable,
         /// so it passed over the defect by construction. These two go through the
         /// commands a client actually has and nothing else.</para>
         /// </summary>

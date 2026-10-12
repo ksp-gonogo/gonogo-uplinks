@@ -9,7 +9,7 @@ namespace GonogoPrincipiaUplink
     ///
     /// <para><b>Not one plugin call happens here</b>, and that is what makes this
     /// half safe to run every tick regardless of scene, vessel or plugin state.
-    /// The settings that DO come from the plugin (the per-vessel prediction bound
+    /// The settings that do come from the plugin (the per-vessel prediction bound
     /// and the per-plan integrator bound) are read through the precondition
     /// protocol instead, in <see cref="NativeSettingsReader"/>.</para>
     ///
@@ -159,7 +159,7 @@ namespace GonogoPrincipiaUplink
         /// The body the target vessel orbits, or null when there is no target.
         ///
         /// <para>Two hops rather than one because the producer names and describes
-        /// the target frame with the target's PRIMARY, not with the celestial its
+        /// the target frame with the target's primary, not with the celestial its
         /// own selector is sitting on. Reading it from the vessel's orbit is the
         /// same route the producer takes.</para>
         /// </summary>
@@ -186,7 +186,7 @@ namespace GonogoPrincipiaUplink
         /// rotating kinds are named by it and its parent, in that order, which is
         /// the same pair the producer passes to its own format strings.</para>
         ///
-        /// <para>A pulsating frame additionally turns about a pair of SETS, and
+        /// <para>A pulsating frame additionally turns about a pair of sets, and
         /// those are filled here too. Everything else on this class reads a value
         /// the producer already computed; this one is the exception, because the
         /// sets exist only inside the producer's own iterator and the method that
@@ -234,7 +234,7 @@ namespace GonogoPrincipiaUplink
         /// <paramref name="end"/>.
         ///
         /// <para>The stop is what makes this worth writing out. A Sun-Earth
-        /// pulsating frame's primary side is the Sun's system UP TO Earth, so it is
+        /// pulsating frame's primary side is the Sun's system up to Earth, so it is
         /// Sun, Mercury and Venus, and Mars and everything beyond are excluded.
         /// That is order-dependent on a list the game owns, so replicating it
         /// literally is the only way to get the producer's frame rather than a
@@ -338,7 +338,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Whether markers and celestials are hidden IN THE FRAME NOW SELECTED,
+        /// Whether markers and celestials are hidden in the frame now selected,
         /// which is the operator-facing question the two counts cannot answer.
         ///
         /// <para><b>How the frame is matched without asking the producer to build
@@ -350,7 +350,7 @@ namespace GonogoPrincipiaUplink
         /// would have to reach a fatal-logging method to obtain.</para>
         ///
         /// <para>Our side of the comparison is reconstructed from the selector's
-        /// own two fields by the producer's rule, and the producer does not use ONE
+        /// own two fields by the producer's rule, and the producer does not use one
         /// rule. The centred kinds key on the selected body with no primaries. The
         /// pulsating kind keys on the parent then the selected body. The direction
         /// kinds key on those two the other way round, which is the producer's own
@@ -462,7 +462,7 @@ namespace GonogoPrincipiaUplink
         /// order it holds them.
         ///
         /// <para>The array shape is not a formality: a pulsating frame's side is a
-        /// SET, and the entries past the first are the rest of the mass that decides
+        /// set, and the entries past the first are the rest of the mass that decides
         /// where the frame's origin sits. Taking the head is what the reading did
         /// before, and it lost them without saying so.</para>
         ///
@@ -564,7 +564,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para><c>bodyName</c> rather than <c>name</c>, and the reason is about
         /// reflection rather than about meaning: the two agree, but the game's
-        /// <c>name</c> SHADOWS the engine's own, so a by-name walk up the base chain
+        /// <c>name</c> shadows the engine's own, so a by-name walk up the base chain
         /// can bind either. The plain field is unambiguous.</para>
         /// </summary>
         private string? BodyName(object body)
@@ -574,7 +574,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// An enum member as its declared VALUE, not its position.
+        /// An enum member as its declared value, not its position.
         ///
         /// <para>The producer numbers its frame kinds explicitly from 6000, so the
         /// two differ, and a converted ordinal is the number the wire is defined

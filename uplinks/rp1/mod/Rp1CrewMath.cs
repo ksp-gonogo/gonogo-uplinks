@@ -9,7 +9,7 @@ namespace GonogoRp1Uplink
     /// header gives about the build queue, and one more specific to training:
     /// <c>TrainingCourse.GetTimeLeft</c> divides by <c>GetBuildRate()</c>, whose
     /// cache-miss path runs <c>CalculateBuildRate</c>, which reaches
-    /// <c>CurrencyUtils.Rate</c>, which FIRES a GameEvents modifier query at every
+    /// <c>CurrencyUtils.Rate</c>, which fires a GameEvents modifier query at every
     /// modifier in the save. That is a thing to run, not a thing to read, and it
     /// is the same fence <c>Rp1ProgramsReflection</c> stands behind.
     ///
@@ -43,7 +43,7 @@ namespace GonogoRp1Uplink
         /// <c>(BP - progress) / rate</c> added to now. Absent when the rate has not
         /// been computed yet (RP-1 leaves its cache at -1 until the first tick
         /// advances the course) or is zero, and absent for a course that has not
-        /// STARTED, because an unstarted course makes no progress and a date for
+        /// started, because an unstarted course makes no progress and a date for
         /// it would be a promise nothing is keeping.
         /// </summary>
         public static double? FinishesAtUt(double ut, bool started, double? progress, double? totalPoints, double? rate)
@@ -66,7 +66,7 @@ namespace GonogoRp1Uplink
         /// of the career-wide extension cap. Absent when there is no date, which
         /// is exactly the branch RP-1's own getter answers 0 for.
         ///
-        /// <para>Absent too when the extension ALREADY CONSUMED could not be read.
+        /// <para>Absent too when the extension already consumed could not be read.
         /// It is subtracted from the cap, so treating it as zero hands back the
         /// whole cap and dates the ceiling later than the save holds it, by however
         /// much this kerbal has already spent. A retirement date is planning-

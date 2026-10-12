@@ -45,7 +45,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Setting a chain REWINDS the walk. An index into the list the operator
+        /// Setting a chain rewinds the walk. An index into the list the operator
         /// has just replaced says nothing about the new one, and the first entry
         /// of a freshly sent chain is the one they mean to be tried first.
         /// </summary>
@@ -66,7 +66,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Restoring does NOT rewind, and that is the difference between the two
+        /// Restoring does not rewind, and that is the difference between the two
         /// ways in. A reload mid-outage must not send the craft back to a target
         /// it has already tried, and must not slew it off the entry that is
         /// currently working.
@@ -86,7 +86,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// A saved position the restored list cannot hold is DROPPED, never
+        /// A saved position the restored list cannot hold is dropped, never
         /// clamped. It means the chain was edited between the save and the load,
         /// and clamping would aim at whatever happened to be last.
         /// </summary>

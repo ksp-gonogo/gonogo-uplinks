@@ -5,12 +5,12 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Kerbalism's <see cref="IScienceBackend"/>: the provider that WINS the
+    /// Kerbalism's <see cref="IScienceBackend"/>: the provider that wins the
     /// <c>"science"</c> capability election when Kerbalism is installed, so the
     /// existing <c>science.*</c> topics carry Kerbalism's model instead of a stock
     /// walk that would report an empty vessel. Registered at
     /// <see cref="KerbalismUplink"/>'s Register, only when the reflection probe
-    /// confirms the mod is loaded: registering IS the gate.
+    /// confirms the mod is loaded: registering is the gate.
     ///
     /// <para><b>Why it wins outright rather than augmenting.</b> Kerbalism does not
     /// add to stock science, it replaces it: results live on its own drives, not in
@@ -18,10 +18,10 @@ namespace Gonogo.KerbalismUplink
     /// report on a Kerbalism vessel. Two parallel topics would have meant two
     /// widgets and two mental models permanently.</para>
     ///
-    /// <para><b>Why this reads a STASH rather than live Kerbalism.</b> The elected
+    /// <para><b>Why this reads a stash rather than live Kerbalism.</b> The elected
     /// backend's read methods are called from a channel mapper, which runs on the
     /// engine's Courier thread, where touching a live KSP/Unity API is a crash or
-    /// garbage-data risk. So the Uplink captures Kerbalism on the MAIN thread
+    /// garbage-data risk. So the Uplink captures Kerbalism on the main thread
     /// through <c>AddSampledSource</c> (the seam that exists for exactly this) and
     /// hands the plain <see cref="ScienceRaw"/> bundle here via
     /// <see cref="Stash"/>; the mapping itself is pure and runs where it is asked
@@ -55,7 +55,7 @@ namespace Gonogo.KerbalismUplink
         /// Same Courier-thread-only data as every read method below.
         ///
         /// <para>Refreshed every tick, because the capture that stashes it is
-        /// registered UNGATED. The channel mappers above would be fine either way,
+        /// registered ungated. The channel mappers above would be fine either way,
         /// since their topics are the ones a gate would key on. The command
         /// pre-filter would not: a caller that sends a file verb without having
         /// subscribed a science topic in this session would read the default
@@ -102,7 +102,7 @@ namespace Gonogo.KerbalismUplink
         /// <see cref="KerbalismErrorCodes.ContinuousScience"/> rather than reporting a
         /// success that changed nothing.
         ///
-        /// <para>A start/stop command surface that fits BOTH models is the right fix
+        /// <para>A start/stop command surface that fits both models is the right fix
         /// and belongs to the command-verb step, not here: adding it would change
         /// the shared command contract, which this pass deliberately does not
         /// touch.</para>
@@ -115,7 +115,7 @@ namespace Gonogo.KerbalismUplink
         /// draining files highest-value-first whenever the link and EC allow, so
         /// "transmit this now" has nothing to trigger. The live rate and the
         /// transmitting flag are on the entry's extension namespace, which is how a
-        /// widget shows the operator what IS happening instead of offering a button
+        /// widget shows the operator what is happening instead of offering a button
         /// that does nothing.
         /// </summary>
         public CommandResult TransmitExperiment(ExperimentActionArgs args) =>

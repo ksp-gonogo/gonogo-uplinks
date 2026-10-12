@@ -6,7 +6,7 @@ import type { PrincipiaPlan } from "./__generated__/contract.js";
 /**
  * How long until the burn at `burnIndex` ignites, derived from the plan reading.
  *
- * To IGNITION, never to a node: Principia anchors a burn to its start. The
+ * To ignition, never to a node: Principia anchors a burn to its start. The
  * observation counts from the received edge; where a model carries the plan
  * past it, the model's figure counts from the craft's present and is drawn
  * beside it with the modelled mark. No value where the burn or its ignition

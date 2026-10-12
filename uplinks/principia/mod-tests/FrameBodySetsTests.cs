@@ -7,7 +7,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// The bodies a rotating frame turns about, on both paths that can produce
     /// them.
     ///
-    /// <para>A pulsating frame's sides are SETS, and the side that a reader
+    /// <para>A pulsating frame's sides are sets, and the side that a reader
     /// recognises by name is only the head of one. The two paths reach that fact
     /// differently and both are exercised here: the plotting selector holds one
     /// body and the sets are walked from it, and a burn's descriptor already
@@ -202,7 +202,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A burn carries the bodies of its OWN frame, so a client holding the
+        /// A burn carries the bodies of its own frame, so a client holding the
         /// burn can name the frame its delta-v is quoted in.
         ///
         /// <para>The same frames also travel on the settings channel, as a bare

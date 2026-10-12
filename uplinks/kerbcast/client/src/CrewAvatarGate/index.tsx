@@ -31,7 +31,7 @@ import { selectKerbalCamera } from "./selectKerbalCamera.js";
  *  - `requires: "kerbcast"` (below), the augment doesn't mount at all
  *    without the Uplink present; `<AugmentSlot>` enforces this.
  *  - the "kerbcast.embeddedFacecams" kill-switch (design item g): a
- *    COMPONENT-BOUNDARY split: OFF returns before the subscribing child
+ *    COMPONENT-BOUNDARY split: off returns before the subscribing child
  *    mounts, so no facecam stream is ever requested.
  *
  * `selectKerbalCamera` correlates CrewStatus's name-keyed roster row

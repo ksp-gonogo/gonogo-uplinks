@@ -15,7 +15,7 @@ const CREW_META: PayloadMeta = {
 const units = (n: number) => value("units", n);
 /**
  * The frame's view time every case reads at. The wire carries the death clock
- * as an INSTANT, so a deadline N seconds out is stamped `VIEW_UT + N`: that is
+ * as an instant, so a deadline N seconds out is stamped `VIEW_UT + N`: that is
  * the whole point of the change, and writing the fixtures this way is what
  * makes a forgotten subtraction fail rather than pass.
  */

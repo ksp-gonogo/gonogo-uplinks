@@ -11,7 +11,7 @@ namespace Gonogo.KosUplink
     /// kOS CPU.
     ///
     /// <para>Same self-flattening producer pattern already used elsewhere in
-    /// this codebase: the contract POCO is the TYPING mirror (what TS codegen
+    /// this codebase: the contract POCO is the typing mirror (what TS codegen
     /// reflects over), and <c>JsonWriter</c> walks this dictionary to make
     /// the actual bytes: no hand-written <c>AppendKosProcessorInfo</c> case
     /// needed any more. Keys are camelCase to match the generated TS shape,

@@ -100,7 +100,7 @@ namespace GonogoPrincipiaUplink.Tests
         // ── The next burn ───────────────────────────────────────────────────
 
         /// <summary>
-        /// The producer's own rule: the first burn whose CUTOFF is still ahead, not
+        /// The producer's own rule: the first burn whose cutoff is still ahead, not
         /// the first whose ignition is. A burn already under way is the one being
         /// flown, and calling it past would point an operator at the burn after the
         /// one their engines are lit for.

@@ -100,7 +100,7 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>
         /// Nothing was swallowed while registering against a working host.
         ///
-        /// <para>The COMMAND registrations only. The capability providers are
+        /// <para>The command registrations only. The capability providers are
         /// excluded because a bare Kernel has no capabilities registered and core
         /// registers them before any Uplink runs, so their failure here is a
         /// property of the harness rather than of the Uplink.</para>

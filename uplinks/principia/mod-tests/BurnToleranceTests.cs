@@ -121,9 +121,9 @@ namespace GonogoPrincipiaUplink.Tests
         /// A coordinate system one away is a different coordinate system, and is
         /// refused.
         ///
-        /// <para><b>This does NOT prove that the discrete fields are compared
+        /// <para><b>This does not prove that the discrete fields are compared
         /// exactly, and it was named as though it did until a planted change showed
-        /// otherwise.</b> Comparing the coordinate system as a QUANTITY instead
+        /// otherwise.</b> Comparing the coordinate system as a quantity instead
         /// leaves every test here green, because 1 and 2 as doubles are about 2^52
         /// ULPs apart and no tolerance of four could conflate them. The exact/quantity
         /// split for these fields is a statement of intent that their own values
@@ -155,16 +155,16 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A value that came back NOT A NUMBER is refused, and by a route worth
+        /// A value that came back not A number is refused, and by a route worth
         /// naming because it is not the tolerance.
         ///
-        /// <para>The reader turns a non-finite double into an ABSENCE before any
+        /// <para>The reader turns a non-finite double into an absence before any
         /// comparison sees it, so a burn whose instant came back NaN reads as a
         /// number that went in and an unreadable value that came back, and those
         /// never match. The tolerance is not consulted and could not help if it
         /// were.</para>
         ///
-        /// <para>Two NaNs would therefore compare EQUAL here, as two unreadable
+        /// <para>Two NaNs would therefore compare equal here, as two unreadable
         /// values. That is unreachable rather than tolerated: the composer refuses a
         /// burn built from a value that is not a number, so a NaN cannot be the thing
         /// that went in.</para>
@@ -183,7 +183,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The case the comparison could not see until now: same kind, same Δv, same
-        /// instant, different BODY. Every other field agrees, so before the frame
+        /// instant, different body. Every other field agrees, so before the frame
         /// indices joined the snapshot this burn round-tripped clean.
         /// </summary>
         [Fact]
@@ -230,7 +230,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Null(PrincipiaLayoutProbe.DescribeBurnDifference(FromPlugin(), FromPlugin()));
         }
 
-        /// <summary>A burn as it comes OUT of the plugin: a frame with all four slots.</summary>
+        /// <summary>A burn as it comes out of the plugin: a frame with all four slots.</summary>
         private static FakeBurn FromPlugin(int centre = 1, int primary = -1, int secondary = -1)
         {
             var burn = new FakeBurn(new FakeBurnFrameParameters(6000, centre, primary, secondary))

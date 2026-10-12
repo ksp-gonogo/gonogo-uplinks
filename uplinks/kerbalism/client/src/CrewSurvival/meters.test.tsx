@@ -22,7 +22,7 @@ import { ruleReadings } from "./ruleReadings.js";
  * The reckoned band, on the meter it is about.
  *
  * `crewReckoning.ts` mints a genuine `sigma1` interval per moving accumulator
- * in the accumulator's OWN unit, and the bar it belongs on is drawn as a
+ * in the accumulator's own unit, and the bar it belongs on is drawn as a
  * fraction of the rule's fatal threshold. So this file is about the trip
  * between those two: that the interval reaches the meter at all, that it
  * arrives on the axis the track is drawn on, and that a rule the model
@@ -100,7 +100,7 @@ function ReadingProbe({
 
 /**
  * Mount over a live stream, then put `run` on the wire, answering with the
- * reading the tree ends up seeing. The tree exists BEFORE the first sample
+ * reading the tree ends up seeing. The tree exists before the first sample
  * lands, which is the order production runs in.
  */
 function readingOver(run: Run, children?: ReactNode, viewUt = VIEW_UT) {

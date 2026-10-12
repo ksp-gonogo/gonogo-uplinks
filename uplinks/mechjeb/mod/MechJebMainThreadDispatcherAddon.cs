@@ -7,14 +7,14 @@ namespace Gonogo.MechJebUplink
 {
     /// <summary>
     /// Drains <see cref="Dispatcher"/> once per Unity frame, on the KSP main
-    /// thread: the ONLY place a MechJeb2 API call from this uplink may
+    /// thread: the only place a MechJeb2 API call from this uplink may
     /// happen. Owned by <see cref="MechJebUplink"/>, which instantiates
     /// exactly one of these on a dedicated, <c>DontDestroyOnLoad</c>
     /// GameObject during <see cref="MechJebUplink.Register"/>. Mirrors
     /// <c>GonogoKosUplink.KosMainThreadDispatcherAddon</c> exactly, minus its
     /// terminal-poll cadence (this Uplink has no sampled/polled feed).
     ///
-    /// Deliberately NOT <c>[KSPAddon]</c>-annotated: that attribute only
+    /// Deliberately not <c>[KSPAddon]</c>-annotated: that attribute only
     /// controls KSP's own auto-instantiation at defined scene-load stages,
     /// and GonogoMechJebUplink is a separately-deployed, optional uplink with
     /// no compile-time hook into core Gonogo's addon to auto-instantiate

@@ -24,7 +24,7 @@ import {
 
 /**
  * Shared lookup: matched by `crewIndex` first (the row order CrewStatus
- * renders IS `vessel.crew.crew`'s own order, and so is `CREW_SURVIVAL.kerbals`,
+ * renders is `vessel.crew.crew`'s own order, and so is `CREW_SURVIVAL.kerbals`,
  * both built from the same array), falling back to a name search only if that
  * position's name has drifted (e.g. a future base-widget change that
  * filters/reorders the roster).
@@ -63,12 +63,12 @@ function warningFor(kerbal: KerbalSurvival): {
       return { label: "too late", severity: "nogo" };
     }
     /**
-     * The margin is a DURATION, so it renders on the composite time ladder
+     * The margin is a duration, so it renders on the composite time ladder
      * ("2h 15m"), never as a scalar with a symbol beside it: "~4M TO ACT"
      * would be an "M" indistinguishable from metres once the Badge's
      * `text-transform: uppercase` gets hold of it.
      *
-     * `writeQuantity` rather than `<Unit>` because a Badge label is a STRING
+     * `writeQuantity` rather than `<Unit>` because a Badge label is a string
      * here, and the `time` kind is exactly where the two agree: the ladder
      * interleaves its own parts with the number, so the symbol comes back
      * empty and nothing is appended. The unit is game seconds (`s`, a
@@ -96,10 +96,10 @@ function warningFor(kerbal: KerbalSurvival): {
  * slot (renders inline in the roster row's `Cluster`, right next to the
  * kerbal's name, per `CrewBadgeContext`'s own doc comment: "a future
  * Kerbalism Habitat/Radiation Uplink can badge each kerbal"). Fed by the
- * SAME `CREW_SURVIVAL` Processor the survival METERS read (`./meters`) and the
+ * same `CREW_SURVIVAL` Processor the survival meters read (`./meters`) and the
  * panel badge reads (`./badge`): one per-frame derivation, three consumers.
  *
- * Still an augment, unlike the meters: what it draws is a CONSEQUENCE, and it
+ * Still an augment, unlike the meters: what it draws is a consequence, and it
  * is the one thing here whose rendering the host has no rule for.
  *
  * A reading that has stopped arriving is drawn and says so in the label, in

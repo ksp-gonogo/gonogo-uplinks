@@ -132,9 +132,9 @@ public class ScanTrackColor
 
 /// <summary>
 /// One entry in the <c>scansat.scanningVessels</c> channel payload, a single
-/// vessel SCANsat is tracking. SCANsat tracks UNLOADED vessels too, so this
+/// vessel SCANsat is tracking. SCANsat tracks unloaded vessels too, so this
 /// list is CROSS-VESSEL by design: a satellite mapping Kerbin and a probe
-/// orbiting Mun both appear at once. The channel payload is a BARE ARRAY of
+/// orbiting Mun both appear at once. The channel payload is a bare array of
 /// these (<c>ScanningVesselEntry[]</c>) or <c>null</c> (never a wrapper
 /// object) so the Topic tag sits on this element type with
 /// <c>IsArray = true</c>.
@@ -142,10 +142,10 @@ public class ScanTrackColor
 /// <para><see cref="SubLatitude"/> / <see cref="SubLongitude"/> are the
 /// sub-satellite ground point (SCANsat's <c>SCANvessel.latitude</c> /
 /// <c>longitude</c>); the scanning footprint is a band centred there.
-/// <see cref="GroundTrackWidthDeg"/> is the per-side LATITUDE half-width from
+/// <see cref="GroundTrackWidthDeg"/> is the per-side latitude half-width from
 /// SCANsat's <c>getFOV</c> replication (see
 /// <c>Gonogo.ScansatUplink.GroundTrackFov</c>);
-/// <see cref="GroundTrackLonHalfDeg"/> is the per-side LONGITUDE half-width
+/// <see cref="GroundTrackLonHalfDeg"/> is the per-side longitude half-width
 /// (<c>widthDeg / cos(|subLat|)</c>, capped at 120°, matching SCANsat's
 /// coverage-paint widening). Both are <c>null</c> when the vessel currently has
 /// no in-range sensors (nothing to paint).</para>
@@ -194,7 +194,7 @@ public class ScanningVesselEntry
 /// One SCANsat map-scanner part on the active vessel, mirrors SCANsat's
 /// public <c>SCANexperiment</c> module (<c>SCAN_PartModules.SCANexperiment</c>,
 /// a <c>PartModule : IScienceDataContainer</c>, one instance per map-scanner
-/// part). The <c>scansat.science</c> channel payload is a BARE ARRAY of these
+/// part). The <c>scansat.science</c> channel payload is a bare array of these
 /// (<c>ScanScienceEntry[]</c>) or <c>null</c> (never a wrapper object) so the
 /// Topic tag sits on this element type with <c>IsArray = true</c>.
 ///
@@ -204,12 +204,12 @@ public class ScanningVesselEntry
 /// experiment id (<c>experimentType</c>, one of <c>SCANsatAltimetryLoRes</c> /
 /// <c>SCANsatAltimetryHiRes</c> / <c>SCANsatBiomeAnomaly</c> /
 /// <c>SCANsatResources</c> / <c>SCANsatVisual</c>); <see cref="Title"/> is the
-/// friendly name (RADAR / SAR / Multispectral / Resources / Visual);
+/// friendly name (radar / sar / Multispectral / Resources / Visual);
 /// <see cref="HasData"/> is <c>GetScienceCount() &gt; 0</c>;
 /// <see cref="Rerunnable"/> mirrors <c>IsRerunnable()</c>, which SCANsat
 /// hard-codes to <c>true</c>.</para>
 ///
-/// <para><see cref="Deployed"/> and <see cref="Inoperable"/> are ALWAYS
+/// <para><see cref="Deployed"/> and <see cref="Inoperable"/> are always
 /// <c>false</c>: SCANsat map experiments have no deploy or inoperable
 /// lifecycle (there is no persistent deployed flag, and a map experiment can
 /// never burn out). These constants are honest, not lossy, there is no
@@ -254,17 +254,17 @@ public class ScanScienceEntry
 /// <summary>
 /// One entry in a <c>scansat.anomalies.&lt;body&gt;</c> channel payload, a
 /// single SCANsat "anomaly" (an easter-egg surface feature: a monolith, a
-/// UFO, etc.) known for that body. Mirrors SCANsat's public
+/// ufo, etc.) known for that body. Mirrors SCANsat's public
 /// <c>SCANsat.SCAN_Data.SCANanomaly</c> (<c>Name</c>/<c>Longitude</c>/
 /// <c>Latitude</c>/<c>Known</c>/<c>Detail</c>) field-for-field.
 ///
 /// <para><b>Not a <c>[SitrepTopic]</c>-tagged root</b>: unlike
 /// <see cref="ScanScienceEntry"/>/<see cref="ScanningVesselEntry"/> (both
-/// single STATIC topics), <c>scansat.anomalies.&lt;body&gt;</c> is a DYNAMIC
+/// single static topics), <c>scansat.anomalies.&lt;body&gt;</c> is a dynamic
 /// per-body namespace, same family as the coverage/mask/height/biome
 /// namespaces (<c>ScanChannels.AnomaliesPrefix</c>), which have no
 /// <c>Sitrep.Contract</c> mirror at all. This type exists purely so codegen
-/// gives the array ELEMENT shape a name (documentation + drift-detection via
+/// gives the array element shape a name (documentation + drift-detection via
 /// the contract-shape baseline): it is never resolved from a
 /// <c>TopicId</c>; the client subscribes to the runtime-computed sub-topic
 /// string directly (<c>packages/sitrep-client/src/map-topic.ts</c>'s

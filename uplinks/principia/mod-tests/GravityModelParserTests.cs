@@ -5,7 +5,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// The gravity-model parse, driven against the SHIPPED file's own spellings.
+    /// The gravity-model parse, driven against the shipped file's own spellings.
     ///
     /// <para>Every block below is copied verbatim from the RSS gravity model that
     /// ships with the producer, units included, because the unit is where this

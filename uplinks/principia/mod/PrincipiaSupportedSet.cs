@@ -15,7 +15,7 @@ namespace GonogoPrincipiaUplink
 
         /// <summary>
         /// Lowercase hex SHA-256 of the embedded descriptor, which is byte-identical
-        /// across all six builds of a release and so names the INTERFACE rather than
+        /// across all six builds of a release and so names the interface rather than
         /// the file.
         /// </summary>
         public string DescriptorSha256 { get; }
@@ -53,7 +53,7 @@ namespace GonogoPrincipiaUplink
         /// and compared against the compiled binary, never on the strength of it
         /// looking similar to the last one. The measurement for this entry covered all
         /// six shipped builds: 170 exports and 33 interchange structs derived from the
-        /// descriptor alone, checked against DWARF on both Linux builds and PDB on both
+        /// descriptor alone, checked against dwarf on both Linux builds and PDB on both
         /// Windows builds.
         /// </summary>
         private static readonly PrincipiaRelease[] Known =

@@ -33,7 +33,7 @@ namespace GonogoPrincipiaUplink
         public PrincipiaBinaryVariant Variant { get; }
         public string? ActivePath { get; }
 
-        /// <summary>Set whenever a descriptor was read, INCLUDING for an unknown
+        /// <summary>Set whenever a descriptor was read, including for an unknown
         /// release, because recording it is how the next release gets vetted.</summary>
         public string? DescriptorSha256 { get; }
 
@@ -73,7 +73,7 @@ namespace GonogoPrincipiaUplink
 
     /// <summary>
     /// Decides whether the Principia build the game loaded is one we may call into,
-    /// entirely by READING it. Nothing here loads, maps or executes the binary, which
+    /// entirely by reading it. Nothing here loads, maps or executes the binary, which
     /// is what lets it run on a player's machine before the first call.
     ///
     /// <para>The order is not arbitrary. Each step needs the previous one's answer and
@@ -88,7 +88,7 @@ namespace GonogoPrincipiaUplink
     public static class PrincipiaConformanceGate
     {
         /// <summary>
-        /// The vetted set is DATA, and taking it as an argument is what lets every arm
+        /// The vetted set is data, and taking it as an argument is what lets every arm
         /// of this gate be exercised: the recognised and disagreeing-count arms both
         /// need a hash that matches, and a descriptor cannot be synthesised to order.
         /// </summary>

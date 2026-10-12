@@ -24,7 +24,7 @@ export type PrincipiaPlanWriteCommand =
   | "principia.plan.send";
 
 /**
- * What a plan write RESOLVES with: the command envelope, whose `payload` is the
+ * What a plan write resolves with: the command envelope, whose `payload` is the
  * receipt.
  *
  * <p>The envelope and the receipt are two objects and the difference between
@@ -37,14 +37,14 @@ export type PrincipiaPlanWriteCommand =
 export type PrincipiaPlanWriteReply = CommandReply<PrincipiaPlanWriteCommand>;
 
 /**
- * A plan-write handle passed DOWN to a subsection, keeping its reply type.
+ * A plan-write handle passed down to a subsection, keeping its reply type.
  *
  * <p>Now nothing but the SDK's own `UseCommandResultFor`, named for this command
  * family. It was written by hand because a bare `UseCommandResult` defaulted its
  * reply to `unknown`, so a `useCommand("principia.plan.delete")` handed one row
  * deep arrived having forgotten what it answers with, and every Uplink that
  * wanted the guarantee had to know to write its own. The default is now the
- * command envelope and the typed form ships on the SDK, so this alias is a NAME
+ * command envelope and the typed form ships on the SDK, so this alias is a name
  * for the family rather than a repair of the hook.</p>
  */
 export type PrincipiaPlanWriteHandle =
@@ -57,7 +57,7 @@ export type PrincipiaPlanWriteHandle =
  * <p>Narrowed rather than cast. The payload crosses the wire as a dictionary,
  * because a core serializer may not reference an Uplink's assembly and this
  * Uplink's producer therefore flattens its own receipt (see `JsonWriter`'s
- * "producer owns the flatten" boundary). `outcome` is the receipt's REQUIRED
+ * "producer owns the flatten" boundary). `outcome` is the receipt's required
  * field, so a payload without it is not a receipt and is reported as none
  * rather than defaulted: its zero is the closed answer, and a missing field read
  * as zero would invent a refusal nobody issued. `refusal` is a code id, or
@@ -80,7 +80,7 @@ export function planWriteReceipt(
  * Whether a receipt says the plan was left exactly as it was.
  *
  * <p>Two ways it can say so, and a widget reading only one of them reports a
- * write that never happened. A REPLAY is the mod answering a repeated request id
+ * write that never happened. A replay is the mod answering a repeated request id
  * out of its own store without calling the plugin, and it resolves like any
  * other success. An outcome that is not `Written` is the receipt refusing the
  * envelope around it, which the contract requires a reader to honour: "Nothing

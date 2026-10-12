@@ -15,7 +15,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * correct there even with FAR installed: FAR's own flight-data window reads
 * the stock dynamic pressure, and its integrator registration overrides forces
 * and exposed areas rather than the atmosphere. What no channel carried before
-* this one is the vessel's ATTITUDE TO THE AIRFLOW and what that attitude is
+* this one is the vessel's attitude to the airflow and what that attitude is
 * costing it: angle of attack, sideslip, how much of the wing is stalled, the
 * lift and drag it is producing, and the two figures a descent is judged by.
 *
@@ -48,7 +48,7 @@ export interface AeroState
 	* How much of the vessel's wing area is stalled, weighted by area: 0 is fully
 	* attached flow, 1 is every wing stalled. Absent on a craft with no
 	* aerodynamic wing surfaces at all, which is most rockets, because the
-	* quantity is a fraction OF wing area and there is none.
+	* quantity is a fraction of wing area and there is none.
 	*/
 	stallFraction?: Value<"ratio"> | null;
 	/** Whole-vessel lift coefficient, referenced to `AeroState.referenceArea`. */
@@ -70,7 +70,7 @@ export interface AeroState
 	* model, the model substitutes exactly one square metre, and the two
 	* coefficients beside it are then a force over dynamic pressure rather than
 	* coefficients. Nothing published distinguishes that substitution:
-	* `AeroState.aeroModelValid` is a different predicate and is NOT the one that
+	* `AeroState.aeroModelValid` is a different predicate and is not the one that
 	* branch turns on, so reading this against it would be wrong. Treat an exact 1
 	* with suspicion on a craft with no wings, and read the coefficients as
 	* relative rather than absolute.
@@ -115,7 +115,7 @@ export interface AeroState
 	* Whether the aerodynamics model's voxelisation of this vessel is current.
 	* False after a stage separation, a deployment or a docking until the model
 	* has re-run, during which every coefficient above still describes the
-	* PREVIOUS shape. It is a qualifier on the readings beside it rather than a
+	* previous shape. It is a qualifier on the readings beside it rather than a
 	* reading of its own, which is why it stays present when they go absent.
 	*
 	* False is the model's own verdict on itself, so it is worth drawing: null is

@@ -116,7 +116,7 @@ function emitAll(fixture: ReturnType<typeof newFixture>, oxygen: number) {
  * Mount a consumer of `handle` and count how many times the snapshot it holds
  * is replaced by a different one.
  *
- * Counting HANDOVERS rather than renders, because `useSyncExternalStore` can
+ * Counting handovers rather than renders, because `useSyncExternalStore` can
  * re-run a render for reasons of its own; and rather than distinct values,
  * because the evaluator's runtime survives between tests in this file and the
  * absolute count would then depend on what ran before.

@@ -13,7 +13,7 @@ const HELD: Reading<unknown> = {
 /**
  * The Navball's avionics badge.
  *
- * The reason it exists is the reason most of these cases are about SILENCE: the
+ * The reason it exists is the reason most of these cases are about silence: the
  * badge is the only persistent surface for a loss of control the stock flag
  * cannot see, so what it says has to be a claim, and what it does not say has to
  * be reliably nothing.
@@ -86,7 +86,7 @@ describe("avionicsBadges", () => {
   /**
    * The width invariant, asserted here rather than left to a render to discover.
    *
-   * `Panel`'s header aside collapses on a MEASURED fit, so a second pill at the
+   * `Panel`'s header aside collapses on a measured fit, so a second pill at the
    * Navball's default width takes the whole row behind a chevron: the alert, and
    * the widget's own SAS and RCS badges with it. Measured at 8x11, not assumed.
    * A detail that hides the alert it qualifies is worth less than nothing on a

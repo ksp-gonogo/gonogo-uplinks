@@ -89,9 +89,9 @@ namespace GonogoMechJebUplink.Tests
         /// Regression for the same self-deadlock <c>GonogoKosUplink</c> hit
         /// (kos-uplink-gap): in production the <c>ChannelEngine</c> is built
         /// <c>executeCommandsOnMainThread:true</c>, so a mechjeb.* command
-        /// handler is frequently ALREADY running on the KSP main thread by
+        /// handler is frequently already running on the KSP main thread by
         /// the time this runs. <see cref="MainThreadDispatcher.Drain"/> runs
-        /// on that SAME Unity main thread
+        /// on that same Unity main thread
         /// (<c>MechJebMainThreadDispatcherAddon.Update</c>). Without the
         /// reentrancy check, <see cref="MechJebUplink.RunOnMainThread"/> would
         /// <c>Dispatch</c> to that same thread and block on <c>Done.Wait</c>,
@@ -134,11 +134,11 @@ namespace GonogoMechJebUplink.Tests
         }
 
         /// <summary>
-        /// The same self-deadlock proven under the FULL production thread
+        /// The same self-deadlock proven under the full production thread
         /// topology, pumped exactly as production pumps it (mirrors
         /// <c>KosExtensionRunOnMainThreadTests.KosCommand_UnderProductionThreadTopology_CompletesInsteadOfDeadlocking</c>):
-        /// ONE "Unity main thread" drains BOTH the engine's marshalled-command
-        /// mailbox (== <c>ChannelEngine.RunPendingCommands</c>) AND the
+        /// one "Unity main thread" drains both the engine's marshalled-command
+        /// mailbox (== <c>ChannelEngine.RunPendingCommands</c>) and the
         /// MechJeb <see cref="MainThreadDispatcher"/> (==
         /// <c>MechJebMainThreadDispatcherAddon.Update</c>). A background
         /// "Courier" thread dispatches the command by marshalling the handler

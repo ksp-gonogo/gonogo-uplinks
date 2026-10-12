@@ -6,7 +6,7 @@ using Xunit;
 namespace GonogoTestFlightUplink.Tests
 {
     /// <summary>
-    /// TestFlight HAS a repair feature, and this Uplink used to answer a
+    /// TestFlight has a repair feature, and this Uplink used to answer a
     /// hardcoded <c>refused</c> for it, documented as deliberate on the grounds
     /// that TestFlight repairs through in-game surfaces of its own. It has none:
     /// the three shipped assemblies contain no repair button at all, and their
@@ -70,7 +70,7 @@ namespace GonogoTestFlightUplink.Tests
         }
 
         /// <summary>
-        /// A failure list that could not be READ is not an empty one. Counted as
+        /// A failure list that could not be read is not an empty one. Counted as
         /// zero it answered "no such part" for a core the walk had just
         /// found, so pressing Repair on a row that says <c>failed</c> denied the
         /// part existed while the row sat beside the button.
@@ -87,8 +87,8 @@ namespace GonogoTestFlightUplink.Tests
         }
 
         /// <summary>
-        /// The liveness filter is a GUARD and fails CLOSED. Written
-        /// <c>== false</c> it failed OPEN on null, which is what an unbound or
+        /// The liveness filter is a guard and fails closed. Written
+        /// <c>== false</c> it failed open on null, which is what an unbound or
         /// throwing property read returns, so the regression that made the read
         /// fail was also the one that let the core through.
         /// </summary>
@@ -138,7 +138,7 @@ namespace GonogoTestFlightUplink.Tests
         /// <summary>
         /// Source text, because the walk reaches a live <c>Vessel</c>. It checks
         /// the two decisions that make this a real repair rather than a plausible
-        /// one: the CORE's ForceRepair (the failure's own leaves the core's list
+        /// one: the core's ForceRepair (the failure's own leaves the core's list
         /// stale, so the part repairs and the row stays red), and that no crew
         /// gate was invented for a model that has none.
         /// </summary>

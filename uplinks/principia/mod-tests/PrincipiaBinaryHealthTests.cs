@@ -21,7 +21,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// nothing-yet test drives the same capture; and the wire-shape test moved to
     /// <c>ChannelEngineTests.SystemUplinksReportsMixedSelfReportedAndDerivedHealth</c>,
     /// which exercises the real socket and now covers every uplink's facts rather
-    /// than this one's. There is nothing left to assert about the shape HERE: a fact
+    /// than this one's. There is nothing left to assert about the shape here: a fact
     /// holds a string, so the POCO that took the whole uplink down in-game is no
     /// longer a thing this Uplink can hand over.</para>
     /// </summary>

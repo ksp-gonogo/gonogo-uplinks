@@ -5,7 +5,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Every EXCLUSIVE capability this Uplink wins must answer without any of this
+    /// Every exclusive capability this Uplink wins must answer without any of this
     /// Uplink's own topics being subscribed.
     ///
     /// <para><b>The failure this exists to catch.</b> A subscription-gated sampled
@@ -82,7 +82,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <para><c>vessel.maneuver</c> is built from whatever won the maneuver-plan
         /// election, the election is exclusive, and this Uplink's source answers out
         /// of the plan observation. A null plan does not read as "silence" on that
-        /// channel: the payload is still published, with its planner field ABSENT,
+        /// channel: the payload is still published, with its planner field absent,
         /// and an absent planner is documented to mean there is no planner. So the
         /// operator of a craft with a plan is told, positively, that it has none.
         /// That is worse than silence, and nothing anywhere says it happened.</para>

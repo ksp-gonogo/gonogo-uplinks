@@ -19,7 +19,7 @@ namespace Gonogo.MechJebUplink
 {
     /// <summary>
     /// The direct-call bridge to MechJeb2: get the active vessel's master
-    /// core, read the module off the core, engage. Every member here is LOCKED
+    /// core, read the module off the core, engage. Every member here is locked
     /// against the MechJeb2 version named by <c>mod.builtAgainst</c> in this
     /// Uplink's <c>uplink.json</c>:
     ///
@@ -37,7 +37,7 @@ namespace Gonogo.MechJebUplink
     /// arg DTO carries kilometres, see <see cref="MechJebAscentArgs"/>), then
     /// <c>MechJebModuleAscentBaseAutopilot.Users.Add(controller)</c> --
     /// <c>Users</c> is the public <c>UserPool</c> every <c>ComputerModule</c>
-    /// carries, NOT a bare <c>enabled = true</c>. <c>UserPool.Add</c> sets
+    /// carries, not a bare <c>enabled = true</c>. <c>UserPool.Add</c> sets
     /// <c>Enabled = true</c> on the module it controls, which is what makes the
     /// pool the engage handshake rather than a bookkeeping list.</item>
     /// <item>Node executor: <c>MechJebModuleNodeExecutor.ExecuteOneNode(controller)</c>.</item>
@@ -79,7 +79,7 @@ namespace Gonogo.MechJebUplink
     /// only debt entry and points here.</para>
     ///
     /// <para><b>The code says routing would work.</b> Read against the shipped
-    /// 2.15.3.0: <see cref="MechJebCore"/> is a <c>PartModule</c> on the SHIP, so
+    /// 2.15.3.0: <see cref="MechJebCore"/> is a <c>PartModule</c> on the ship, so
     /// an EVA never changes the vessel it is attached to and its
     /// <c>OnFlyByWire</c> hook stays there; its <c>FixedUpdate</c> returns early
     /// only when it is not that vessel's master core, and the
@@ -96,7 +96,7 @@ namespace Gonogo.MechJebUplink
     /// carries no MechJeb core, so <c>GetMasterMechJeb()</c> is null and all
     /// three refuse with <see cref="CommandErrorCode.NoVessel"/>. Nothing is
     /// lying today, so routing cannot remove a lie, only introduce one. And what
-    /// the assembly cannot settle is whether the autopilot's OUTPUT lands:
+    /// the assembly cannot settle is whether the autopilot's output lands:
     /// <c>Drive</c> writes a <c>FlightCtrlState</c>, and
     /// <c>Vessel.FeedInputFeed</c> hands that to the parts only when
     /// <c>loaded &amp;&amp; !packed &amp;&amp; !physicsHoldLock &amp;&amp;
@@ -110,7 +110,7 @@ namespace Gonogo.MechJebUplink
     /// at the reported craft and watch whether it turns and lights its engines.
     /// (2) Repeat with no probe core and confirm it does nothing, which makes
     /// core's uncontrollable-craft refusal part of any routed command here.
-    /// (3) Engage the ascent autopilot and watch whether it STAGES; if it does
+    /// (3) Engage the ascent autopilot and watch whether it stages; if it does
     /// not, that command needs a documented partial rather than a plain success.
     /// (1) and (3) answered make routing honest.</para>
     /// </summary>
@@ -119,7 +119,7 @@ namespace Gonogo.MechJebUplink
         /// <summary>
         /// See <see cref="MechJebModuleAscentSettings.DesiredOrbitAltitude"/> /
         /// <see cref="EditableDoubleMult"/>: the settings module stores the
-        /// target altitude in METRES; the arg DTO carries kilometres (matching
+        /// target altitude in metres; the arg DTO carries kilometres (matching
         /// the pre-existing widget's own <c>altitudeKm</c> input).
         /// </summary>
         private const double MetresPerKilometre = 1000.0;

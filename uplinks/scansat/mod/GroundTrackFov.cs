@@ -25,14 +25,14 @@ namespace Gonogo.ScansatUplink
     }
 
     /// <summary>
-    /// Replicates SCANsat's PRIVATE <c>SCANcontroller.getFOV(SCANvessel,
+    /// Replicates SCANsat's private <c>SCANcontroller.getFOV(SCANvessel,
     /// CelestialBody)</c> (SCANcontroller.cs:1916-1963) faithfully from its
     /// public inputs, per scansat-migration-spec.md §0D. This is
-    /// deliberately NOT the <c>doScanPass</c> FOV block (SCANcontroller.cs
+    /// deliberately not the <c>doScanPass</c> FOV block (SCANcontroller.cs
     /// :2970-3007), which additionally applies a latitude-inflation term
     /// (<c>fovW = fov * (1/cosLookUp[lat])</c>) that <c>getFOV</c> does not
     /// have, copying that block would produce a wrong, pole-inflated
-    /// footprint. See NOTICE-SCANSAT.txt for the BSD attribution this
+    /// footprint. See NOTICE-SCANSAT.txt for the bsd attribution this
     /// replication carries.
     ///
     /// Pure function (no SCANsat or KSP types) unit-testable headlessly

@@ -7,13 +7,13 @@ namespace Gonogo.KosUplink
 {
     /// <summary>
     /// Drains <see cref="Dispatcher"/> once per Unity frame, on the KSP
-    /// main thread: the ONLY place a kOS API call from this uplink may
+    /// main thread: the only place a kOS API call from this uplink may
     /// happen. Owned
     /// by <see cref="KosExtension"/>, which instantiates exactly one of
     /// these on a dedicated, <c>DontDestroyOnLoad</c> GameObject during
     /// <see cref="KosExtension.Register"/>.
     ///
-    /// Deliberately NOT <c>[KSPAddon]</c>-annotated: that attribute only
+    /// Deliberately not <c>[KSPAddon]</c>-annotated: that attribute only
     /// controls KSP's own auto-instantiation at defined scene-load stages,
     /// and Gonogo.KosUplink is a separately-deployed, optional uplink with no
     /// compile-time hook into core Gonogo's addon to auto-instantiate

@@ -78,7 +78,7 @@ public class KerbalismScienceExperimentExt
 
     /// <summary>
     /// Science per megabyte for this subject (Kerbalism's <c>SciencePerMB</c>):
-    /// LINEAR, no diminishing-returns curve, which is why the entry is tagged
+    /// linear, no diminishing-returns curve, which is why the entry is tagged
     /// <c>valueModel: "kerbalism-linear"</c>. This is also the real answer to
     /// "what is transmitting this worth", the question core's
     /// <c>BaseTransmitValue</c>/<c>TransmitBonus</c> pair answers under stock and
@@ -91,7 +91,7 @@ public class KerbalismScienceExperimentExt
     /// <summary>
     /// <c>"file"</c> (transmissible) or <c>"sample"</c> (physical, needs analysis
     /// or return). Stock has no type tag: every result is implicitly transmissible
-    /// at some scalar. The distinction drives what an operator can DO with the
+    /// at some scalar. The distinction drives what an operator can do with the
     /// result, so it is the most consequential Kerbalism-only field here.
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -155,17 +155,17 @@ public class KerbalismScienceExperimentExt
 /// <summary>
 /// Kerbalism's sub-tree of one <c>science.instruments</c> entry: the running-state
 /// machine and its reason, which is what stock's flat
-/// <c>Deployed</c>/<c>Inoperable</c> pair is a lossy projection OF.
+/// <c>Deployed</c>/<c>Inoperable</c> pair is a lossy projection of.
 ///
 /// <para>Stock asks "is it deployed, is it spent". Kerbalism's experiment is either
 /// stopped, running, forced, or broken, and when it is not producing there is a
-/// REASON, one of ten short-circuits it evaluates every tick (shrouded, no EC, no
+/// reason, one of ten short-circuits it evaluates every tick (shrouded, no EC, no
 /// crew, sample depleted, an unmet requirement out of 62, no storage, ...). The
 /// reason is the single field that makes a 62-condition gate legible without
 /// modelling 62 conditions, and it is the field an operator actually needs: "why is
 /// my experiment not running".</para>
 ///
-/// <para>Two DIFFERENT modules land in this one bag, told apart by
+/// <para>Two different modules land in this one bag, told apart by
 /// <see cref="Kind"/>. Kerbalism's own <c>Experiment</c> is the usual one. A SCANsat
 /// map scanner is the other: Kerbalism's SCANsat support strips the
 /// <c>SCANexperiment</c> module off the part and fits its own
@@ -200,14 +200,14 @@ public class KerbalismScienceInstrumentExt
     public string? Issue { get; set; }
 
     /// <summary>
-    /// The SIMULATED state: <c>Stopped</c> | <c>Running</c> | <c>Forced</c> |
+    /// The simulated state: <c>Stopped</c> | <c>Running</c> | <c>Forced</c> |
     /// <c>Broken</c>. What the vessel is set to do.
     /// </summary>
     [SitrepUnit(Units.Id)]
     public string? RunningState { get; set; }
 
     /// <summary>
-    /// The DERIVED display state: <c>Stopped</c> | <c>Running</c> | <c>Forced</c> |
+    /// The derived display state: <c>Stopped</c> | <c>Running</c> | <c>Forced</c> |
     /// <c>Waiting</c> | <c>Issue</c> | <c>Broken</c>. What is actually happening,
     /// which differs from <see cref="RunningState"/> exactly when something is in
     /// the way.
@@ -240,7 +240,7 @@ public class KerbalismScienceInstrumentExt
     public double? RemainingSampleMass { get; set; }
 
     /// <summary>
-    /// SCANNER ONLY. Whether SCANsat is sweeping right now. A scanner produces data
+    /// Scanner only. Whether SCANsat is sweeping right now. A scanner produces data
     /// as a side effect of coverage growing, so this is the closest thing it has to
     /// an experiment's Running state. Null on older Kerbalism builds, which keep no
     /// such flag: <see cref="PowerDisabled"/> is then the only state available.
@@ -249,7 +249,7 @@ public class KerbalismScienceInstrumentExt
     public bool? Scanning { get; set; }
 
     /// <summary>
-    /// SCANNER ONLY. Kerbalism cut this scanner for want of EC and will restart it
+    /// Scanner only. Kerbalism cut this scanner for want of EC and will restart it
     /// once the vessel is back above a quarter charge. Distinct from an operator
     /// switching it off, which this stays false for.
     /// </summary>
@@ -257,7 +257,7 @@ public class KerbalismScienceInstrumentExt
     public bool? PowerDisabled { get; set; }
 
     /// <summary>
-    /// SCANNER ONLY. How much of the current body this sensor type has covered.
+    /// Scanner only. How much of the current body this sensor type has covered.
     /// The number the produced data is a function of: coverage rising is the event
     /// that writes a file, so a stalled percentage explains a scanner that is on
     /// and yielding nothing.
@@ -266,7 +266,7 @@ public class KerbalismScienceInstrumentExt
     public double? BodyCoveragePercent { get; set; }
 
     /// <summary>
-    /// SCANNER ONLY. The EC draw Kerbalism bills for this scanner, loaded or in the
+    /// Scanner only. The EC draw Kerbalism bills for this scanner, loaded or in the
     /// background. Zero means the part was patched without a rate rather than that
     /// scanning is free.
     /// </summary>
@@ -276,7 +276,7 @@ public class KerbalismScienceInstrumentExt
 
 /// <summary>
 /// Kerbalism's sub-tree of one <c>science.lab</c> entry. The lab is the payload
-/// where the two models differ most in KIND, not degree: stock's lab is terminal
+/// where the two models differ most in kind, not degree: stock's lab is terminal
 /// (stored data becomes science per game-day), Kerbalism's is an intermediate stage
 /// (a sample is analysed into a transmissible file, which then still has to be
 /// sent). So the Kerbalism backend leaves core's <c>ScienceRate</c> null, tags the
@@ -295,7 +295,7 @@ public class KerbalismScienceLabExt
 
     /// <summary>
     /// The rate actually in effect, with the researcher's experience level already
-    /// multiplied in. Kerbalism exposes the OUTPUT of its crew bonus, not the
+    /// multiplied in. Kerbalism exposes the output of its crew bonus, not the
     /// headcount input stock's <c>ScientistCount</c> carries, so the two are not
     /// two views of one number and both are worth having.
     /// </summary>

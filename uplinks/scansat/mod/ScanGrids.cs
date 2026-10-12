@@ -162,7 +162,7 @@ namespace Gonogo.ScansatUplink
             };
         }
 
-        /// <summary><c>SCANHeightGrid</c>: {width, height, minMetres, maxMetres, heights(base64 Int16 LE)}.</summary>
+        /// <summary><c>SCANHeightGrid</c>: {width, height, minMetres, maxMetres, heights(base64 Int16 le)}.</summary>
         public static Dictionary<string, object?> BuildHeightPayload(int width, int height, HeightGrid grid)
         {
             return new Dictionary<string, object?>

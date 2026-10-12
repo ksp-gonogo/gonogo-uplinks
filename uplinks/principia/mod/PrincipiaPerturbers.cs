@@ -8,7 +8,7 @@ namespace GonogoPrincipiaUplink
     /// primary: the primary's parent, its siblings and its own satellites.
     ///
     /// <para><b>The neighbourhood, not the system, and the narrowing costs
-    /// nothing.</b> The perturbation scales as the CUBE of the distance ratio, so a
+    /// nothing.</b> The perturbation scales as the cube of the distance ratio, so a
     /// body one link further out contributes a term the bound cannot see, while each
     /// one asked for costs a walk of the body tree through the displaced solver.
     /// Measured on the rig against the stock system, a 250 km Kerbin orbit takes
@@ -29,7 +29,7 @@ namespace GonogoPrincipiaUplink
     /// <para><c>bodyName</c> is also the key the producer's own gravity-model config
     /// is written in, so a mass looked up by it agrees with the model this Uplink
     /// publishes. A body the model does not name is dropped from the sum by the
-    /// caller, which SHORTENS the horizon rather than lengthening it.</para>
+    /// caller, which shortens the horizon rather than lengthening it.</para>
     ///
     /// <para>Cached per primary under a lock: the hierarchy does not change during a
     /// save, so rebuilding the list per bound would spend real time reaching the same
@@ -130,7 +130,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Beside <see cref="Around"/> because it reads the same table under the
         /// same constraint: plain managed fields only, never a native accessor, because
-        /// this runs on the Courier thread. It is what a BODY's own horizon needs and a
+        /// this runs on the Courier thread. It is what a body's own horizon needs and a
         /// craft's does not, a craft carrying its primary on the target it arrives
         /// as.</para>
         ///

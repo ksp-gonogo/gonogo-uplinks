@@ -5,7 +5,7 @@ using Xunit;
 /// <summary>
 /// The two-stage deadline, against Kerbalism's own <c>Rule.Execute</c>: a rule
 /// degenerates only once its input resource is gone, and then climbs
-/// <c>degeneration * k * variance</c> per second (per INTERVAL, for an interval
+/// <c>degeneration * k * variance</c> per second (per interval, for an interval
 /// rule) until <c>fatal_threshold</c>.
 ///
 /// <para>Rule shapes here mirror Kerbalism's default profile: breathing is

@@ -122,10 +122,10 @@ describe("Aerodynamics", () => {
   });
 
   /**
-   * MODEL OUTDATED says FAR's model has not caught up with the vehicle's shape.
+   * Model outdated says FAR's model has not caught up with the vehicle's shape.
    * Coalesced from an absent flag, it was raised whenever the channel had said
    * nothing at all, so the widget claimed something about FAR's internals while
-   * simultaneously reporting NO AERO DATA.
+   * simultaneously reporting no aero data.
    */
   it("does not flag one it has no reading for", async () => {
     const { view } = mount();

@@ -9,7 +9,7 @@ namespace GonogoRealAntennasUplink.Tests
     /// which its link budget stops closing.
     ///
     /// <para>The solve is a rearrangement of <see cref="RaLinkBudget.LinkMarginDb"/>
-    /// rather than a search, so the test that matters is that the two AGREE: a
+    /// rather than a search, so the test that matters is that the two agree: a
     /// closed form that has drifted from the formula it was derived from is
     /// exactly the kind of error that produces plausible numbers forever. Every
     /// case below is checked against the forward budget rather than against a
@@ -96,7 +96,7 @@ namespace GonogoRealAntennasUplink.Tests
         /// <summary>
         /// Doubling the transmit power is +3 dB, and free-space loss goes as
         /// distance squared, so +3 dB is a factor of sqrt(2) in range. Pinning
-        /// the SHAPE of the curve, not just its direction: a solve that used the
+        /// the shape of the curve, not just its direction: a solve that used the
         /// wrong divisor would still be monotone.
         /// </summary>
         [Fact]
@@ -111,7 +111,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// Inputs that make the question meaningless answer ABSENT, not zero. A
+        /// Inputs that make the question meaningless answer absent, not zero. A
         /// zero would assert that RA carries this pair nowhere, which is a claim
         /// about the game rather than about a failed read.
         /// </summary>

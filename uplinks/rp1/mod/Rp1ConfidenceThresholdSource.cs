@@ -11,7 +11,7 @@ namespace GonogoRp1Uplink
     /// <para><b>Why an alarm and not a readout.</b> Confidence is the currency a
     /// Program costs, and it accrues over months of game time that an operator
     /// spends warping. Watching it from the ground means reading a number that is
-    /// a light-time old and acting a poll interval later, by which point the warp
+    /// a signal delay old and acting a poll interval later, by which point the warp
     /// has carried the clock past whatever was worth stopping for. A SCET
     /// threshold is evaluated inside the simulation and halts the warp on the tick
     /// the condition matches.</para>

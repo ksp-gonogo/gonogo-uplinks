@@ -22,7 +22,7 @@ namespace Gonogo.RealAntennasUplink
     /// a best-effort re-derivation of RA's public formulas rather than RA's own
     /// verdict, and a cross-backend scale should be built from what the game
     /// itself decided. A consumer that wants the physics reads the margin
-    /// channel; this is the one number that means the same KIND of thing on
+    /// channel; this is the one number that means the same kind of thing on
     /// every install.</para>
     ///
     /// <para>Pure and KSP-free: it is handed the reading the backend already
@@ -41,7 +41,7 @@ namespace Gonogo.RealAntennasUplink
         ///
         /// <para>A link RA reports as down rates 1 rather than being read off a
         /// headroom fraction that has no meaning once no rate closes at all. A
-        /// tick with nothing to read stays UNRATED, because it is a statement
+        /// tick with nothing to read stays unrated, because it is a statement
         /// about the read and not about the link.</para>
         /// </summary>
         internal static ICommsDegradeModel From(CommsLinkState? state)

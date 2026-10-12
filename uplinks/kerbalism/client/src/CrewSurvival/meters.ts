@@ -56,7 +56,7 @@ const pct = (v: number): string =>
   writeQuantity(value("%", v * 100), { decimals: 0 });
 
 /**
- * EVERY rule Kerbalism reports for each kerbal, not only the worst one, so a
+ * Every rule Kerbalism reports for each kerbal, not only the worst one, so a
  * radiation dose sitting at 40% never hides behind a stress rule the operator
  * happened to be watching. Each meter is generic telemetry: a 0..1-toward-fatal
  * magnitude, nothing more.

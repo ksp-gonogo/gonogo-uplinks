@@ -13,9 +13,9 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para>The whole point of the command is
     /// <see cref="Withdraws_each_affected_contract_type_EXACTLY_once"/>. RP-1's own
-    /// tab compares the slider against the stored setting BEFORE writing it back and
+    /// tab compares the slider against the stored setting before writing it back and
     /// runs every draw frame, so a drag across the range fires the withdrawal at
-    /// every hundred-unit step. What it withdraws is pre-generated OFFERS rather
+    /// every hundred-unit step. What it withdraws is pre-generated offers rather
     /// than accepted contracts, so the cost is churn rather than loss, but it is
     /// still ninety-six rounds of churn for one decision.</para>
     ///
@@ -23,7 +23,7 @@ namespace GonogoRp1Uplink.Tests
     /// <see cref="Reports_that_the_withdrawal_hook_is_absent_which_RP1_cannot"/>.
     /// The delegate lives in CC_RP0 and RP0.dll only reads it, so on an install
     /// without ContractConfigurator's RP-0 half the payload changes and every
-    /// pending offer silently keeps the OLD requirement. RP-1's tab reports that
+    /// pending offer silently keeps the old requirement. RP-1's tab reports that
     /// exactly as it reports success.</para>
     /// </summary>
     public class Rp1ContractCommandsTests : IDisposable

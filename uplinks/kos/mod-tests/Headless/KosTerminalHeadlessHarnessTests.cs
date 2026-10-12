@@ -13,12 +13,12 @@ using Xunit;
 namespace GonogoKosUplink.Tests.Headless
 {
     /// <summary>
-    /// The KSP-free, end-to-end terminal harness: it drives a REAL
+    /// The KSP-free, end-to-end terminal harness: it drives a real
     /// <c>kOS.Safe.Screen.ScreenBuffer</c> (the same screen type a live kOS CPU
-    /// runs), runs its snapshots through the REAL <see cref="ScreenDiffMapper"/>,
+    /// runs), runs its snapshots through the real <see cref="ScreenDiffMapper"/>,
     /// real <c>ScreenSnapShot.DiffFrom</c> + real
     /// <c>kOS.UserIO.TerminalXtermMapper</c>, no KSP/Unity process: through the
-    /// REAL <see cref="KosTerminalManager"/> and into a REAL
+    /// real <see cref="KosTerminalManager"/> and into a real
     /// <see cref="Courier"/>/<c>Archive</c> delay engine driven by a
     /// <see cref="ManualClock"/>, then reconstructs the client-side screen from
     /// the delivered chunks and asserts it matches an independent real-pipeline
@@ -28,7 +28,7 @@ namespace GonogoKosUplink.Tests.Headless
     /// assert <see cref="KosTerminalManager"/>'s published stamps in isolation
     /// and never model <c>Archive.ReadAtVantage</c>'s "latest sample as of the
     /// light-lagged scene" coalescing (the state re-read lane the terminal is
-    /// deliberately NOT on). Here the whole chain runs, so a
+    /// deliberately not on). Here the whole chain runs, so a
     /// same-<c>ValidAt</c> collision doesn't just return a wrong number, it
     /// silently corrupts the reconstructed screen. See
     /// <see cref="Burst_ConstantValidAt_LossyLatestLane_StillCoalescesAndCorruptsTheScreen"/>
@@ -130,11 +130,11 @@ namespace GonogoKosUplink.Tests.Headless
         }
 
         /// <summary>
-        /// The canonical rendered screen for <paramref name="buffer"/>: the REAL
+        /// The canonical rendered screen for <paramref name="buffer"/>: the real
         /// pipeline's one-shot full render (final snapshot diffed against a blank
         /// baseline captured before any content, then xterm-mapped) applied to a
         /// fresh client. Independent of the incremental burst path, so it is a
-        /// fair oracle for what the client SHOULD end up showing.
+        /// fair oracle for what the client should end up showing.
         /// </summary>
         private static string RenderFinalScreen(IScreenBuffer buffer, IScreenSnapShot blankBaseline)
         {
@@ -717,7 +717,7 @@ namespace GonogoKosUplink.Tests.Headless
         }
 
         /// <summary>
-        /// Runs the real pipeline under NONZERO signal delay while dropping
+        /// Runs the real pipeline under nonzero signal delay while dropping
         /// exactly one incremental diff in transit: the exact class the
         /// reveal-gate discards on a comms blip / quickload, and returns the
         /// mod's final screen (truth) next to the client's reconstruction.

@@ -5,7 +5,7 @@ using Xunit;
 
 /// <summary>
 /// Which Kerbalism resources the life-support ledger carries: now every one the
-/// LOADED PROFILE mentions, and nothing gonogo chose.
+/// loaded profile mentions, and nothing gonogo chose.
 ///
 /// <para><b>What this file used to be.</b> A pin. <c>kerbalism.lifesupport</c>
 /// named its consumables as four fixed properties, food/water/oxygen/
@@ -27,11 +27,11 @@ using Xunit;
 /// ledger follows it without a line of gonogo changing. The static definitions
 /// travel alongside on <c>kerbalism.profile</c>.</para>
 ///
-/// <para><b>What is NOT lost, and never was.</b> Amounts and capacities reach the
+/// <para><b>What is not lost, and never was.</b> Amounts and capacities reach the
 /// app for every resource regardless: <c>vessel.resources</c> is a name-keyed map
 /// and <c>KspHost.BuildPartResources</c> iterates every <c>PartResource</c> on
 /// every part, so a tank of Nitrogen shows up there like any other. What was lost
-/// was the RATE, because <c>ResourceAverageRate</c> is Kerbalism's own API, is
+/// was the rate, because <c>ResourceAverageRate</c> is Kerbalism's own API, is
 /// the one number the generic path cannot derive, and was called for exactly four
 /// names. That is the gap this closed.</para>
 ///

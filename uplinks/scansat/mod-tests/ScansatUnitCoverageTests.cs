@@ -10,7 +10,7 @@ namespace GonogoScansatUplink.Tests
     /// <see cref="ScanSensorEntry"/>/<see cref="ScanTrackColor"/>/
     /// <see cref="ScanScienceEntry"/>/<see cref="ScanAnomalyEntry"/> live in
     /// their own assembly (<c>GonogoScansatUplink.Contract</c>) instead of
-    /// <c>Sitrep.Contract</c>, nothing FORCES a future property on this Uplink's
+    /// <c>Sitrep.Contract</c>, nothing forces a future property on this Uplink's
     /// own contract types to declare its unit. The sweep itself is
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
@@ -29,7 +29,7 @@ namespace GonogoScansatUplink.Tests
     /// while still demanding an annotation on a future
     /// <c>List&lt;double&gt;</c>.</para>
     ///
-    /// <para>This test only checks the ATTRIBUTE side (every scalar wire
+    /// <para>This test only checks the attribute side (every scalar wire
     /// property carries <c>[SitrepUnit]</c>); the generated-file/import side is
     /// <c>generated-value-import.test.ts</c> in this Uplink's client package,
     /// and the decode-time side is <c>topics.test.ts</c> there.</para>

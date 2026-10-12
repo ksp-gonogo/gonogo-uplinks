@@ -5,7 +5,7 @@
 namespace GonogoTestFlightUplink
 {
     /// <summary>
-    /// One TestFlight core module's readings. EVERY field is nullable and every
+    /// One TestFlight core module's readings. Every field is nullable and every
     /// one starts null.
     ///
     /// <para>That is the whole point of the type. The previous version carried
@@ -21,13 +21,13 @@ namespace GonogoTestFlightUplink
     {
         public string PartId = "";
         public string? Title;
-        /// <summary>The ACTIVE engine config's alias. An RO part carries many configs and the part title is not the flying identity.</summary>
+        /// <summary>The active engine config's alias. An RO part carries many configs and the part title is not the flying identity.</summary>
         public string? Configuration;
         /// <summary>ITestFlightCore.GetPartStatus(): 0 when nothing is failed, non-zero when something is. Null when the member did not bind or the call threw.</summary>
         public int? PartStatus;
         /// <summary>Flight-data maturity in du (0 to maxData, 10000 under RO): how far up the reliability curve this config has climbed.</summary>
         public double? FlightData;
-        /// <summary>Sum over the part's reliability modules of GetBaseFailureRate(LIVE flight data), per second.</summary>
+        /// <summary>Sum over the part's reliability modules of GetBaseFailureRate(live flight data), per second.</summary>
         public double? BaseFailureRate;
         public double? RatedContinuousSeconds;
         public double? RunContinuousSeconds;
@@ -37,7 +37,7 @@ namespace GonogoTestFlightUplink
         public string? FailureTitles;
         /// <summary>
         /// P(survive <see cref="SurvivalHorizonSeconds"/> seconds of operation),
-        /// asked of TestFlight's OWN <c>FailureRateToReliability</c> at the LIVE
+        /// asked of TestFlight's own <c>FailureRateToReliability</c> at the live
         /// base failure rate rather than reimplemented here, so the two cannot
         /// disagree about the exponential. Null whenever either input is missing.
         /// </summary>

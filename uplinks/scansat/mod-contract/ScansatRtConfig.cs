@@ -5,26 +5,26 @@ using Reinforced.Typings.Fluent;
 namespace GonogoScansatUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration: mirrors
+/// This Uplink's own codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
 /// this assembly's five wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way each earlier relocated
 /// Uplink's own <c>Configure</c> does (the uplink-types-out-of-core plan's
 /// mechanism, unchanged here; the plan doc names the three earlier steps, this
-/// file does not, since naming a sibling Uplink would trip ITS own frontend
+/// file does not, since naming a sibling Uplink would trip its own frontend
 /// uplink-boundary token).
 ///
-/// <para><b>The first relocation with NESTED payload types.</b> Every
+/// <para><b>The first relocation with nested payload types.</b> Every
 /// predecessor moved flat DTOs. <see cref="ScanningVesselEntry"/> carries
 /// <c>List&lt;ScanSensorEntry&gt; Sensors</c> and <c>ScanTrackColor
 /// TrackColor</c>, so the generated artifact this Uplink needs is not just a
-/// unit map but a SHAPE map too (<c>GENERATED_TOPIC_SHAPES</c>: field name ->
+/// unit map but a shape map too (<c>GENERATED_TOPIC_SHAPES</c>: field name ->
 /// nested type name), which is how <c>wrapTopicPayload</c> knows to recurse
 /// into each sensor's <c>fov</c>/<c>minAlt</c>/<c>maxAlt</c>/<c>bestAlt</c>
 /// rather than stopping at the array. <c>RtConfig.EmitUnitMap</c> already emits
 /// both halves from one reflection pass, so this Configure needs no extra call,
 /// but the runtime registration in this Uplink's client
-/// (<c>registerTopicUnits(topic, units, shapes)</c>) MUST pass the shapes
+/// (<c>registerTopicUnits(topic, units, shapes)</c>) must pass the shapes
 /// argument, not just the units, or the nested quantities silently arrive bare.
 /// </para>
 ///
@@ -36,7 +36,7 @@ namespace GonogoScansatUplink;
 /// (An Uplink whose whole contract slice is inbound-only command args has no
 /// Topic to name and skips that call; two of the plan's earlier steps were in
 /// that position.)
-/// <see cref="ScanAnomalyEntry"/> deliberately carries NO
+/// <see cref="ScanAnomalyEntry"/> deliberately carries no
 /// <c>[SitrepTopic]</c>: <c>scansat.anomalies.&lt;body&gt;</c> is a dynamic
 /// per-body namespace the client subscribes to by runtime-computed string (see
 /// that type's own doc comment), so it exists purely to give the array element
@@ -44,7 +44,7 @@ namespace GonogoScansatUplink;
 /// nested-only, likewise untagged.</para>
 ///
 /// <para>None of these five types has a name ending in <c>"Args"</c>, so
-/// <c>ApplyUnitValueTypes</c> retypes the quantity properties on ALL of them:
+/// <c>ApplyUnitValueTypes</c> retypes the quantity properties on all of them:
 /// there is no inbound-only member of this set for it to skip, unlike the
 /// command-arg slices earlier in the plan. See
 /// <c>generated-value-import.test.ts</c> in this Uplink's client package, which
@@ -62,12 +62,12 @@ namespace GonogoScansatUplink;
 /// out of the SDK's own generated map because these types lived in
 /// <c>Sitrep.Contract</c>. They do not any more, so this Uplink's client
 /// package (<c>topics.ts</c>) now calls the SDK's <c>registerTopicUnits</c> at
-/// module load, feeding it the UNIT and SHAPE maps this Configure emits below
+/// module load, feeding it the unit and shape maps this Configure emits below
 /// (see that file's comment for why: <c>ApplyUnitValueTypes</c> only fixes the
-/// codegen-time TYPE, not the decode-time VALUE). Without this,
+/// codegen-time type, not the decode-time value). Without this,
 /// subLatitude/subLongitude/altitude/groundTrackWidthDeg/groundTrackLonHalfDeg
 /// and every nested sensor altitude would arrive as bare numbers at runtime
-/// while the TYPE still says <c>Value&lt;"deg"&gt;</c>/<c>Value&lt;"m"&gt;</c>.
+/// while the type still says <c>Value&lt;"deg"&gt;</c>/<c>Value&lt;"m"&gt;</c>.
 /// </para>
 /// </summary>
 public static class ScansatRtConfig

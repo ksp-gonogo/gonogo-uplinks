@@ -20,7 +20,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// nanometre.</para>
     ///
     /// <para><b>The crossing each case names is what the rig measured</b>, by
-    /// integrating the FULL perturbed path at a step seventy-five times finer than
+    /// integrating the full perturbed path at a step seventy-five times finer than
     /// this law takes and differencing it against the conic in closed form. That is
     /// separate machinery from the law, which integrates the difference directly;
     /// grading the law against a restatement of itself would grade nothing.</para>
@@ -196,7 +196,7 @@ namespace GonogoPrincipiaUplink.Tests
         ///
         /// <para>A horizon longer than the instant the conic is actually 100 m off is
         /// the failure this seam exists to prevent, and it is the one thing here that
-        /// may never regress. The margin is uniform because the law LANDS on the
+        /// may never regress. The margin is uniform because the law lands on the
         /// crossing rather than bounding it: what separates the two columns is
         /// <see cref="PrincipiaHorizonBound.SafetyFactor"/> and nothing else.</para>
         /// </summary>
@@ -255,7 +255,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// The check that catches the whole class of error this file has now made
         /// twice: an instrument asked for a number that is known independently.
         ///
-        /// <para>With nothing in the force model the conic IS the path, so the
+        /// <para>With nothing in the force model the conic is the path, so the
         /// departure is zero at every instant, exactly. The mod's own arc integrator
         /// asked the same question answers 106 m over 700 s, and that difference is
         /// the truncation which two earlier sets of constants here were mostly

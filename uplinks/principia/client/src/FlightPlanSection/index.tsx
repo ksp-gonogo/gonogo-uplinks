@@ -45,13 +45,13 @@ import "../topics";
  * who can see that the plan is six hours old can act on it, where one shown
  * nothing assumes there is nothing.</para>
  *
- * <para><b>This used to read a mirror of the game's planner WINDOW, and the
+ * <para><b>This used to read a mirror of the game's planner window, and the
  * difference matters to what the absent case means.</b> That mirror refreshed
  * only while the player had the panel open, so no sample meant "nobody has
  * looked" and the widget had to say so. The plan comes from the plugin now and
  * arrives whenever there is a session, so no sample means there is no session,
  * no plugin or no vessel, and a vessel that simply has no plan says so
- * positively on a sample that DID arrive.</para>
+ * positively on a sample that did arrive.</para>
  */
 type PlanView =
   | { kind: "unread" }
@@ -61,7 +61,7 @@ type PlanView =
  * The plan's own sample instant wins over the transport's.
  *
  * They agree in production, because the producer stamps the sample at the instant
- * it asked. But they are different KINDS of fact: the payload field is the
+ * it asked. But they are different kinds of fact: the payload field is the
  * producer's statement about when it looked, and the sample UT is transport
  * metadata about when the frame is dated. Anything that re-stamps a sample (a
  * replay, a re-publish) would break the agreement, and then the widget would show
@@ -72,7 +72,7 @@ type PlanView =
 function planView(reading: TopicReading<PrincipiaPlan>): PlanView {
   switch (reading.state) {
     /**
-     * The three absences are grouped on purpose: this section renders the CONTENTS
+     * The three absences are grouped on purpose: this section renders the contents
      * of a plan, and none of them has anything different to say about a plan there
      * is no content for. Which absence it is belongs to the widget frame around this
      * section, which says it once for the whole widget rather than once per section.
@@ -354,17 +354,17 @@ export function FlightPlanSection() {
 /**
  * Whether this is the burn the integrator named as next.
  *
- * Both indices have to be READ before they can agree, and the naive version
- * LOOKS CORRECT, which is why this is spelled out at the comparison rather than
+ * Both indices have to be read before they can agree, and the naive version
+ * looks correct, which is why this is spelled out at the comparison rather than
  * left to the reader.
  *
  * `magnitudeOf(burn.index) === magnitudeOf(plan.firstFutureBurnIndex)` is what
- * anyone would write. It is wrong for the ABSENT case: with neither index
- * readable both funnel to null, `null === null` holds, and EVERY row is marked
+ * anyone would write. It is wrong for the absent case: with neither index
+ * readable both funnel to null, `null === null` holds, and every row is marked
  * next. A payload that lost one field would not go blank and would not error, it
  * would point confidently at the wrong burn on every line, in the widget whose
  * whole purpose is to point at one. The same shape as a `=== undefined` check
- * against a `number | null` field: a comparison that is TRUE when nothing is
+ * against a `number | null` field: a comparison that is true when nothing is
  * there. Requiring a real index on both sides means an unreadable one marks
  * nothing, which is the honest answer.
  */

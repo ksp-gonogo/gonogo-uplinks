@@ -9,14 +9,14 @@ import { KERBALISM_CREW_TOPIC, KERBALISM_LIFESUPPORT_TOPIC } from "./topics.js";
 
 /**
  * The three leaves that used to be spelled like a `Reading` currency member,
- * pinned as FIELD READINGS.
+ * pinned as field readings.
  *
  * This is the assertion the rename exists for, and it is why a doc comment
  * would not do. A topic reading is `TopicCurrency<P> & TopicFields<P>`, so a
  * payload field called `value` or `asOfUt` lands on the currency's own member
  * and the intersection collapses: the field cannot be reached through the
  * reading at all, and the currency answers in its place. Reaching each of these
- * THROUGH the reading is what the old spelling made impossible, so putting the
+ * through the reading is what the old spelling made impossible, so putting the
  * old name back turns these assertions red rather than leaving them green.
  */
 describe("the renamed reserved leaves are reachable through the reading", () => {

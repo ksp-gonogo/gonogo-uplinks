@@ -26,34 +26,34 @@ export const RP1_COMPLEX_MODIFY_COMMAND = "rp1.complex.modify";
  *
  * <para><b>Nothing is spent at the press, so there is no affordability
  * verdict.</b> A construction under RP-1 is not a purchase: the project is added
- * to its queue and funds are drawn AS IT BUILDS, at a rate that falls when the
+ * to its queue and funds are drawn as it builds, at a rate that falls when the
  * career is short. So a complex cannot overdraw a career, an up-front check
  * would refuse work RP-1 itself would happily start and simply run slowly, and a
  * balance that does not cover the quote is a pace problem. That is the same
  * reading `PadNewControl` and `NewComplexControl` state, in the same words.</para>
  *
- * <para><b>YOU PAY TO DOWNGRADE, and that is said out loud.</b> RP-1 charges half
+ * <para><b>you pay to downgrade, and that is said out loud.</b> RP-1 charges half
  * the difference in both halves for a reduction, plus a floor of 1,000 funds for
  * any movement of the tonnage limit at all. An operator shrinking a complex is
  * the one most likely to expect money back, so the quote names the case rather
  * than leaving a bill to be discovered.</para>
  *
- * <para><b>IT TAKES THE COMPLEX'S WHOLE CREW OFF</b>, which is not a side effect
+ * <para><b>it takes the complex's whole crew off</b>, which is not a side effect
  * chosen here: RP-1 does <c>ChangeEngineers(lc, -lc.Engineers)</c> as the first
  * thing it does and pops a dialog saying so afterwards. The count is beside the
  * press instead, where it can still change the answer, and the toggle that puts
  * them back is next to it.</para>
  *
  * <para><b>The fluids are sent back unchanged, and the control does not offer to
- * edit them.</b> `Rp1ComplexModifyArgs.resources` is a SET and absent means NONE,
+ * edit them.</b> `Rp1ComplexModifyArgs.resources` is a set and absent means none,
  * so a renovation that says nothing about them strips every one. Editing them
  * would need a price this wire does not carry for a renovation (the per-unit
- * figures on `rp1.lcPricing` are a PAD BUILD's, and there is no hangar twin at
+ * figures on `rp1.lcPricing` are a pad build's, and there is no hangar twin at
  * all), and quoting a renovation under its true cost is worse than not offering
  * the field. So the current set goes back verbatim and the quote's resource half
  * is exactly zero.</para>
  *
- * <para>ABSENT when RP-1 has not said what the complex holds. Absent is not
+ * <para>Absent when RP-1 has not said what the complex holds. Absent is not
  * empty: renovating on a guess of "no fluids" would strip whatever it actually
  * has.</para>
  */
@@ -96,7 +96,7 @@ export function ModifyControl({
  *
  * <para>The hangar draws neither tonnage nor human rating, and that is enforced
  * by not rendering them: RP-1 forces the rating true and holds the limit where
- * it is, and the command REFUSES either argument rather than discarding it, so a
+ * it is, and the command refuses either argument rather than discarding it, so a
  * field here could only ever produce a refusal.</para>
  *
  * <para>Every field starts at what the complex already is, so the form opens
@@ -373,7 +373,7 @@ function ModifyForm({
 }
 
 /**
- * The command's arguments, with the two the hangar refuses OMITTED rather than
+ * The command's arguments, with the two the hangar refuses omitted rather than
  * sent as the values it would have forced.
  */
 function renovationArgs({

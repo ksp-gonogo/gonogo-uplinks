@@ -43,7 +43,7 @@ namespace RP0
     /// it takes crew, and what it can fuel.
     /// </summary>
     /// <remarks>
-    /// FOUR public constructors on the real type, three of which take a single
+    /// Four public constructors on the real type, three of which take a single
     /// argument (<c>LCData</c>, <c>LaunchComplex</c>, and the seven-argument one).
     /// All four are here, because a production caller that resolved one of the
     /// three by arity alone would pick whichever the runtime listed first, and a
@@ -71,7 +71,7 @@ namespace RP0
         /// <summary>The fraction of a complex's mass a vehicle must at least be. A settings value on the real type.</summary>
         public static float MassMinFraction = 0.5f;
 
-        /// <summary>The upper renovation limit, derived from the BUILD tonnage rather than the current one.</summary>
+        /// <summary>The upper renovation limit, derived from the build tonnage rather than the current one.</summary>
         public float MaxPossibleMass => Math.Max(3f, (float)Math.Floor(massOrig * 2f));
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace RP0
         /// </summary>
         /// <remarks>
         /// Reproduced rather than stubbed, and that is the point of this fixture:
-        /// <see cref="GonogoRp1Uplink.Rp1LcCostModel"/> exists to COMBINE these
+        /// <see cref="GonogoRp1Uplink.Rp1LcCostModel"/> exists to combine these
         /// three figures into a renovation price, and a stub returning round
         /// numbers would let a wrong combination agree with itself. The return is
         /// their sum, which is separately what a renovation's prior cost is.
@@ -213,7 +213,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// The price of the resource DIFFERENCE, which is asymmetric: a reduction
+        /// The price of the resource difference, which is asymmetric: a reduction
         /// is charged at a tenth of a tank, and the whole difference then at 0.6 of
         /// a fresh one.
         /// </summary>
@@ -253,7 +253,7 @@ namespace RP0
         }
 
         /// <summary>
-        /// Whether a complex of this kind ignores a resource, which is the FLAG
+        /// Whether a complex of this kind ignores a resource, which is the flag
         /// arithmetic RP-1's own resource list does inline. Fuel is 1, PadIgnore is
         /// 4, HangarIgnore is 8.
         /// </summary>
@@ -306,10 +306,10 @@ namespace RP0
         /// What moving a vehicle to a pad costs.
         /// </summary>
         /// <remarks>
-        /// <para>NOT the shipped expression, which mixes the vehicle's effective
+        /// <para>Not the shipped expression, which mixes the vehicle's effective
         /// cost, its complex's mass ceiling and an engineer-salary subsidy term:
         /// reproducing that would test this file's arithmetic rather than the
-        /// reflection's. What IS reproduced is everything production depends on:
+        /// reflection's. What is reproduced is everything production depends on:
         /// the signature (static, one <c>VesselProject</c>), and an answer that
         /// varies per vehicle, so two vehicles cannot silently share a price and
         /// a capture that quoted the wrong one would look right.</para>
@@ -326,11 +326,11 @@ namespace RP0
 namespace ROUtils
 {
     /// <summary>
-    /// The ONE thing this Uplink reaches in RP-1's utility assembly: whether the
+    /// The one thing this Uplink reaches in RP-1's utility assembly: whether the
     /// save is a career.
     /// </summary>
     /// <remarks>
-    /// <para>It decides whether a construction is QUEUED against funding or applied
+    /// <para>It decides whether a construction is queued against funding or applied
     /// at once, and it is a genuinely different answer from
     /// <c>SpaceCenterManagement.enabledForSave</c>, which is true for sandbox and
     /// science-sandbox as well. That is why the commands refuse rather than guess
@@ -394,7 +394,7 @@ namespace RP0
 
         /// <summary>
         /// Makes the project decline to name itself, which a refusal sentence has to
-        /// survive. NULL rather than a throw, deliberately: RP-1's own Create reads
+        /// survive. Null rather than a throw, deliberately: RP-1's own Create reads
         /// the name too, so a throwing name would break Create rather than exercise
         /// the fallback, and the fallback is what is under test.
         /// </summary>
@@ -411,9 +411,9 @@ namespace RP0
     /// RP-1's warp controller, in the two members this Uplink reaches.
     /// </summary>
     /// <remarks>
-    /// <para><c>Create</c> reproduces the shape that matters and the DEFECT that
+    /// <para><c>Create</c> reproduces the shape that matters and the defect that
     /// matters: a null target means "the next thing to finish", and RP-1 then
-    /// dereferences that target's name WITHOUT a null check. So a Create called
+    /// dereferences that target's name without a null check. So a Create called
     /// with nothing to warp to throws, exactly as the shipped one does, and a
     /// command that failed to guard would fail here rather than in a career.</para>
     /// <para>The real type is <c>internal</c>, which reflection reaches anyway;
@@ -425,7 +425,7 @@ namespace RP0
         public static readonly System.Collections.Generic.List<ISpaceCenterProject?> Created =
             new System.Collections.Generic.List<ISpaceCenterProject?>();
 
-        /// <summary>Set to make Create throw AFTER recording, which is a warp that may have started.</summary>
+        /// <summary>Set to make Create throw after recording, which is a warp that may have started.</summary>
         public static bool Throws;
 
         public static void Reset()
@@ -459,13 +459,13 @@ namespace RP0
     /// RP-1's contract tab, in the members the payload command reaches.
     /// </summary>
     /// <remarks>
-    /// <para>The two contract-name arrays are PRIVATE static on the real type, and
+    /// <para>The two contract-name arrays are private static on the real type, and
     /// private here for the same reason: production reads them rather than writing
     /// the four names down, so that an RP-1 release adding a fourth comsat type has
     /// its offers withdrawn without being told. A fixture exposing them publicly
     /// would let a reader that could not reach the real ones pass.</para>
-    /// <para><see cref="WithdrawContractAction"/> starts NULL, which is the state
-    /// that matters most: RP0.dll only ever READS this field and CC_RP0.dll assigns
+    /// <para><see cref="WithdrawContractAction"/> starts null, which is the state
+    /// that matters most: RP0.dll only ever reads this field and CC_RP0.dll assigns
     /// it, so on an install without ContractConfigurator's RP-0 half it stays null,
     /// RP-1's own tab changes the payload and silently invalidates nothing, and the
     /// command has to be able to say so.</para>
@@ -488,7 +488,7 @@ namespace RP0
 
         private static readonly string[] _weatherSatContracts = { "GEOWeather" };
 
-        /// <summary>Every contract name the hook was asked to withdraw, in order, so a test can pin that each went ONCE.</summary>
+        /// <summary>Every contract name the hook was asked to withdraw, in order, so a test can pin that each went once.</summary>
         public static readonly System.Collections.Generic.List<string> Withdrawn =
             new System.Collections.Generic.List<string>();
 

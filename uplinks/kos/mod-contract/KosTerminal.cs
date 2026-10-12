@@ -36,7 +36,7 @@ namespace Gonogo.KosUplink;
 /// what lets a late/returning viewer see something immediately instead of
 /// waiting out a fresh reveal-delay window for its own forced reseed to
 /// mature. A genuinely
-/// first-ever subscribe to a CPU's terminal (nothing has EVER been recorded
+/// first-ever subscribe to a CPU's terminal (nothing has ever been recorded
 /// for it) still has to wait out that first reseed's own delay window,
 /// there is no way around that; there is nothing earlier to be sticky
 /// about.</para>
@@ -65,13 +65,13 @@ public class KosTerminalFrame
 }
 
 /// <summary>
-/// Args for <c>kos.terminal.open</c>: acquires the single-owner WRITE LEASE on
+/// Args for <c>kos.terminal.open</c>: acquires the single-owner write lease on
 /// a CPU's shared terminal (kOS has one Interpreter/Screen per CPU; every
 /// viewer shares it, so writes must be arbitrated). On success the mod starts
 /// (or attaches) the screen downlink and emits a <see cref="KosTerminalFrame"/>
 /// full repaint. A second <c>open</c> on a CPU already leased by a different
-/// holder is REJECTED with <c>CommandErrorCode.ModeUnavailable</c> (no silent
-/// steal): the caller stays a read-only downlink viewer. Delivered DELAYED
+/// holder is rejected with <c>CommandErrorCode.ModeUnavailable</c> (no silent
+/// steal): the caller stays a read-only downlink viewer. Delivered delayed
 /// (rides gonogo's uplink delay); the CPU-exists guard is re-checked at
 /// delivery on the KSP main thread.
 /// </summary>
@@ -90,7 +90,7 @@ public class KosTerminalOpenArgs
     /// Caller-generated, per-terminal-instance opaque lease token. The mod
     /// records it as the CPU's current write-lease holder; every subsequent
     /// <c>kos.keystroke</c>/<c>kos.terminal.resize</c>/<c>kos.terminal.close</c>
-    /// must present the SAME token or is rejected. This is how the mod tells
+    /// must present the same token or is rejected. This is how the mod tells
     /// lease holders apart without a client identity on the command channel.
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -102,10 +102,10 @@ public class KosTerminalOpenArgs
 /// via kOS's public, frozen-signature
 /// <c>TermWindow.ProcessOneInputChar(ch, whichTelnet: null, forceQueue: true)</c>.
 /// <see cref="Chars"/> may be a single character (char-by-char mode) or a whole
-/// composed line (line-mode collapses N light-time round-trips to one).
+/// composed line (line-mode collapses N signal delay round-trips to one).
 /// Rejected with <c>CommandErrorCode.ModeUnavailable</c> if
 /// <see cref="LeaseToken"/> does not match the CPU's current lease holder.
-/// Delivered DELAYED: the keystroke reaches the craft at <c>UT + uplink</c>
+/// Delivered delayed: the keystroke reaches the craft at <c>UT + uplink</c>
 /// under gonogo's SignalDelay, which is the sole delay authority (kOS's own
 /// input path is immediate, so there is no double-counting).
 /// </summary>
@@ -134,7 +134,7 @@ public class KosKeystrokeArgs
 /// (kOS's NAWS equivalent), via the sanctioned resize input sequence
 /// that reaches <c>ScreenBuffer.SetSize</c>. Rejected with
 /// <c>CommandErrorCode.ModeUnavailable</c> on a lease-token mismatch. Delivered
-/// DELAYED.
+/// delayed.
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN
@@ -165,7 +165,7 @@ public class KosTerminalResizeArgs
 /// <see cref="LeaseToken"/> matches the CPU's current holder (a mismatched
 /// token is a no-op ack, never steals). Once no holder remains the mod stops
 /// polling that CPU's screen (the downlink is subscription-gated regardless).
-/// Delivered DELAYED.
+/// Delivered delayed.
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN

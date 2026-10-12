@@ -10,10 +10,10 @@ using Xunit;
 namespace GonogoKerbalismUplink.Tests
 {
     /// <summary>
-    /// The SERVER half of the ISRU-provider proof: Kerbalism wins the <c>"isru"</c>
+    /// The server half of the ISRU-provider proof: Kerbalism wins the <c>"isru"</c>
     /// election, fills the shared <c>isru.*</c> shapes from its own model, and
     /// carries what those shapes have no field for in its own namespace of the
-    /// payload's extension bag, with the REAL wire writer carrying it.
+    /// payload's extension bag, with the real wire writer carrying it.
     ///
     /// <para><b>Why the real codec.</b> The claim is about the wire, so these go
     /// through <c>WirePayload</c>, which serialises with the same codec the courier
@@ -192,7 +192,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// The committed fixture IS what the real codec produces. This is what makes
+        /// The committed fixture is what the real codec produces. This is what makes
         /// the client-side test non-vacuous: it reads a file this test proves came out
         /// of the server, not a hand-authored approximation of one.
         /// </summary>
@@ -204,7 +204,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// Every SHARED field is filled on a Kerbalism drill frame. This is the claim
+        /// Every shared field is filled on a Kerbalism drill frame. This is the claim
         /// that separates ISRU from science: there, Kerbalism has to leave core fields
         /// null because its data is in a different unit. Here it does not, so a widget
         /// that never imports the accessor still renders a complete row.
@@ -247,7 +247,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// The recipe is scaled by the part's capacity AND the live environment
+        /// The recipe is scaled by the part's capacity and the live environment
         /// product, not left at the raw config ratio: the shared shape promises what
         /// is actually moving. The plant runs at capacity 2 with a 0.5 modifier, so
         /// its rates come out at the config figure exactly once over.
@@ -267,7 +267,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// Life-support processes are NOT filtered out. Kerbalism runs a scrubber and
+        /// Life-support processes are not filtered out. Kerbalism runs a scrubber and
         /// a regolith-electrolysis plant on the same module, so a filter here would be
         /// gonogo asserting a taxonomy the engine does not draw. The deliberate cost is
         /// an overlap with kerbalism.lifesupport, which reports the same parts from the

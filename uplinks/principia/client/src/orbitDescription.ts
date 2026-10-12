@@ -11,7 +11,7 @@ import type { PrincipiaOrbitAnalysis } from "./__generated__/contract.js";
  * the whole reason this Uplink reads the producer's analysis instead of deriving
  * one.</p>
  *
- * <p><b>Read from the band ENDS, never a midpoint.</b> Circular is
+ * <p><b>Read from the band ends, never a midpoint.</b> Circular is
  * "eccentricity never exceeds 0.01 over the window", not "averages under it". An
  * orbit whose eccentricity swings from 0 to 0.4 is not circular, and a midpoint
  * test calls it nearly so.</p>
@@ -23,7 +23,7 @@ import type { PrincipiaOrbitAnalysis } from "./__generated__/contract.js";
  * it, and the crossings' drift is what decides all three.</p>
  *
  * <p><b>Sun-synchronous is said too, and reads different data.</b> It is decided
- * by the LOCAL SOLAR TIME at the nodes holding steady, not by the ground track
+ * by the local solar time at the nodes holding steady, not by the ground track
  * repeating: an orbit can repeat its track without holding its lighting, and hold
  * its lighting without repeating its track. So it joins the other adjectives
  * rather than competing with them, and every one of the four the widget used to
@@ -121,7 +121,7 @@ const SYNCHRONOUS_DRIFT_DEGREES_PER_ROTATION = 0.1;
  * Whether the ground track repeats closely enough to name the orbit after it,
  * following the producer's own rule exactly.
  *
- * <p>The test is the DRIFT of the equatorial crossing bands, not the recurrence
+ * <p>The test is the drift of the equatorial crossing bands, not the recurrence
  * alone. A recurrence can be fitted to almost any closed orbit; what makes one
  * synchronous is that successive passes cross the equator at the same longitude,
  * which is what a band that barely widens means.</p>
@@ -183,14 +183,14 @@ function synchronicityOf(
 }
 
 /**
- * The producer's own sun-synchronicity threshold, per REVOLUTION rather than per
+ * The producer's own sun-synchronicity threshold, per revolution rather than per
  * rotation of the primary. A different quantity from the synchronicity rule
  * above and two orders of magnitude tighter.
  */
 const SUN_SYNCHRONOUS_DRIFT_DEGREES_PER_REVOLUTION = 0.001;
 
 /**
- * Whether the node crossings hold the same LOCAL SOLAR TIME, which is what makes
+ * Whether the node crossings hold the same local solar time, which is what makes
  * an orbit sun-synchronous.
  *
  * <p>Independent of the ground-track recurrence: an orbit can repeat its track

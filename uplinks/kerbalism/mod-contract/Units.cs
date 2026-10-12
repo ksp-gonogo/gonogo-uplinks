@@ -5,7 +5,7 @@ namespace GonogoKerbalismUplink.Contract
     /// own and judged by the same codegen check.
     /// </summary>
     /// <remarks>
-    /// Kerbalism stores science as BYTES on a drive, which core has no reason
+    /// Kerbalism stores science as bytes on a drive, which core has no reason
     /// to know about: core owns the data dimension's base (<c>bit</c>) so an
     /// antenna's bit budget and a drive's byte count stay convertible, and the
     /// rungs belong to whoever models them. Decimal throughout, because

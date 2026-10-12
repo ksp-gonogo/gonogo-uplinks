@@ -29,9 +29,9 @@ export interface StreamFixtureBlock {
    */
   pinnedUt?: number;
   /**
-   * A one-way light time in seconds: each emit is delivered this long after
+   * A one-way signal delay in seconds: each emit is delivered this long after
    * its `validAt`, the view time is the received edge and the craft's present
-   * runs one light time ahead of it. Zero is the same as absent.
+   * runs one signal delay ahead of it. Zero is the same as absent.
    */
   delaySeconds?: number;
   /** Stage the link dropping once the emits have landed: see `stopArriving`. */
@@ -48,7 +48,7 @@ export interface StreamFixtureBlock {
 /** The render harness's own default for a scene naming no `pinnedUt`, so one fixture draws the same instant in both. */
 const DEFAULT_PINNED_UT = 1_000_000;
 
-/** A block's light time, or `undefined` when it has none. */
+/** A block's signal delay, or `undefined` when it has none. */
 function lightTime(block: StreamFixtureBlock): number | undefined {
   const delay = block.delaySeconds;
   return delay === undefined || delay === 0 ? undefined : delay;
@@ -56,7 +56,7 @@ function lightTime(block: StreamFixtureBlock): number | undefined {
 
 /**
  * The clock half of `setupStreamFixture`'s options for a block: pinned at
- * `pinnedUt` when undelayed, live under a light time, because a pinned clock
+ * `pinnedUt` when undelayed, live under a signal delay, because a pinned clock
  * wins outright over the delay and would turn it into a no-op.
  */
 export function streamClockOptions(
@@ -80,7 +80,7 @@ export function resolveStreamBlock(
 }
 
 /**
- * `StubTransport.emit` silently DROPS a sample for a topic nothing has
+ * `StubTransport.emit` silently drops a sample for a topic nothing has
  * subscribed to yet, and a widget subscribes inside React *passive* effects
  * that no single flush is guaranteed to have run. Poll until the subscription
  * lands so the replay is deterministic instead of a race the fixture loses on
@@ -103,7 +103,7 @@ async function waitForSubscription(
 /**
  * Replay a fixture's declared emits, each after its topic is subscribed. The
  * stream must have been built with {@link streamClockOptions} for the same
- * block, or a light time is staged against a pinned clock and shows nothing.
+ * block, or a signal delay is staged against a pinned clock and shows nothing.
  */
 export async function replayStreamBlock(
   stream: StreamFixture,
@@ -165,7 +165,7 @@ export function modePixels(mode: { w: number; h: number }): {
  *
  * The shared jsdom shim is a no-op in all three methods: it exists to stop a
  * mount crashing and never calls its callback, so any widget gating content on
- * a measured box renders that content NEVER under a snapshot harness. The
+ * a measured box renders that content never under a snapshot harness. The
  * reported box is the mode's own pixel size rather than a constant, so the
  * modes stay distinguishable and a size-gated branch is exercised at the size
  * it is gated on.

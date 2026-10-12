@@ -107,12 +107,12 @@ export function useDelayedPlaybackStatus(
  * pieces without moving any of them into the SDK:
  *
  *   1. the SDK/data-source glue `useKerbcastStream`: the raw live `MediaStream`
- *      for the RESOLVED flightId (auto-latch / fallback already applied by the
+ *      for the resolved flightId (auto-latch / fallback already applied by the
  *      feed, so this hook never re-derives it);
  *   2. gonogo's `DelayedPlayoutBuffer` (via `useDelayedPlayout`);
- *   3. the ONE shared `ViewClock` telemetry reads (`useViewClockOptional`),
+ *   3. the one shared `ViewClock` telemetry reads (`useViewClockOptional`),
  *      plus the kerbcast mission-time capture clock (`useKerbcastClock`, SDK
- *      1.4.0) that tells us WHEN each frame was captured.
+ *      1.4.0) that tells us when each frame was captured.
  *
  * Single-authority guarantee: `view` is the same `ViewClock` instance every
  * delay-consistent telemetry surface reads, and the buffer only releases a
@@ -143,7 +143,7 @@ export function useDelayedPlaybackStatus(
  * (see this module's top-of-file doc), so "can't delay" gets its own
  * explicit UI rather than being indistinguishable from "still connecting".
  *
- * MUST be a stable module-scope reference (never redefined per render) and
+ * Must be a stable module-scope reference (never redefined per render) and
  * passed consistently to `CameraFeed`, per the `useStream` rules-of-hooks
  * contract.
  */

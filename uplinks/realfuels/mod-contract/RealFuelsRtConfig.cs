@@ -5,7 +5,7 @@ using Reinforced.Typings.Fluent;
 namespace GonogoRealFuelsUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration, scoped to its three wire types and
+/// This Uplink's own codegen configuration, scoped to its three wire types and
 /// pointed at its own client package's <c>__generated__</c> directory. Same
 /// shape every other relocated contract slice uses.
 ///

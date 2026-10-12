@@ -9,7 +9,7 @@ namespace GonogoPrincipiaUplink
     /// The files this process currently has mapped, which is how the conformance gate
     /// learns which Principia build the game actually loaded.
     ///
-    /// <para>Read from THIS process, deliberately. The question is what the game has
+    /// <para>Read from this process, deliberately. The question is what the game has
     /// open, and a reading taken anywhere else answers a different one: on the rig,
     /// KSP runs inside a pressure-vessel mount namespace, so a shell alongside it sees
     /// a different filesystem and would report different files with no error.</para>
@@ -85,7 +85,7 @@ namespace GonogoPrincipiaUplink
         /// What this process has mapped, or an empty list when it cannot be
         /// established.
         ///
-        /// <para>Empty is NOT "Principia is absent". The conformance gate treats a
+        /// <para>Empty is not "Principia is absent". The conformance gate treats a
         /// missing native build as `NotEstablished` rather than a refusal for exactly
         /// this reason, and because a read taken while the game is still starting
         /// legitimately sees nothing.</para>

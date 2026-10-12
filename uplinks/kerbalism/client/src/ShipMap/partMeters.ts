@@ -44,7 +44,7 @@ type PartMeterEntry = ContributionEntry<"ship-map.part-meters">;
 
 /** Default "low" fraction when the profile declares no `lowThreshold` for a
  *  resource: mirrors the stock game's own convention, never invented to
- *  replace a threshold the profile DOES declare (ecosystem.ts's own rule:
+ *  replace a threshold the profile does declare (ecosystem.ts's own rule:
  *  a widget must not invent a threshold for a resource whose mod ships
  *  one). */
 const DEFAULT_LOW_THRESHOLD = 0.15;
@@ -52,13 +52,13 @@ const DEFAULT_LOW_THRESHOLD = 0.15;
 /** "critical" sits at a fixed fraction of whichever "low" threshold applies
  *  (the profile's own `lowThreshold`, or `DEFAULT_LOW_THRESHOLD`), rather
  *  than a second independently-configured number: Kerbalism profiles only
- *  ever declare ONE per-resource threshold, so critical stays derived, not
+ *  ever declare one per-resource threshold, so critical stays derived, not
  *  another value this contribution would have to invent. */
 const CRITICAL_FRACTION_OF_LOW = 0.33;
 
 /**
- * Status signal for a resource meter, SEPARATE from its fill colour: the fill is
- * the resource's IDENTITY, derived by the renderer via
+ * Status signal for a resource meter, separate from its fill colour: the fill is
+ * the resource's identity, derived by the renderer via
  * `resourceColor(resource)` and never carried on this entry. This returns only
  * the level, which a border tint or a badge draws.
  */

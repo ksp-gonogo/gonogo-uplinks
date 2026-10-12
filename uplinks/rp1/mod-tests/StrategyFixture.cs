@@ -129,7 +129,7 @@ namespace RP0
     {
         /// <summary>
         /// The whole fresh-activation procedure. Records the call rather than
-        /// performing one, and records the deadline it WOULD have minted an alarm
+        /// performing one, and records the deadline it would have minted an alarm
         /// against, which is what the ordering defect corrupts.
         /// </summary>
         public void PerformActivate(bool useCurrency)
@@ -195,7 +195,7 @@ namespace RP0.Programs
 
         /// <summary>
         /// RP-1's arm 8 for a Program, the half that matters to the speed: the
-        /// Confidence threshold is priced at the Program's CURRENT speed, so a
+        /// Confidence threshold is priced at the Program's current speed, so a
         /// speed written after this is asked is judged at the wrong price.
         /// </summary>
         public override bool CanActivate(ref string reason)

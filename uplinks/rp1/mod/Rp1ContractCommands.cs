@@ -107,9 +107,9 @@ namespace GonogoRp1Uplink
         /// The command can run: RP-1's contract tab, its settings node and KSP's
         /// game state all resolved.
         ///
-        /// <para>TYPES ONLY, for the reason
+        /// <para>Types only, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length.
-        /// <see cref="_highLogic"/> IS part of it here, unlike the warp commands:
+        /// <see cref="_highLogic"/> is part of it here, unlike the warp commands:
         /// there the scene was a courtesy that could fail open, and here it is the
         /// only route to the persisted half of the value. A command that could write
         /// the live figure and not the saved one would look like it worked and
@@ -121,7 +121,7 @@ namespace GonogoRp1Uplink
         /// Whether the members this command reaches resolved, as a sentence for a
         /// health fact.
         ///
-        /// <para>Names the WITHDRAWAL separately from everything else, because it is
+        /// <para>Names the withdrawal separately from everything else, because it is
         /// the one whose absence is invisible in the result: without it the payload
         /// still changes and every pending offer silently keeps the old
         /// requirement.</para>
@@ -172,7 +172,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Sets one or both payload requirements, and invalidates the pending offers
-        /// each one affects EXACTLY ONCE.
+        /// each one affects exactly once.
         /// </summary>
         public CommandResult<Dictionary<string, object?>> SetPayload(Rp1ContractPayloadArgs? args)
         {
@@ -277,7 +277,7 @@ namespace GonogoRp1Uplink
         /// its range and on its step.
         /// </summary>
         /// <remarks>
-        /// REFUSED rather than clamped or rounded, both of which would report
+        /// Refused rather than clamped or rounded, both of which would report
         /// success for a requirement the operator did not choose. The step matters
         /// as much as the range: RP-1 rounds its slider to hundreds, so a figure
         /// between steps is not one the game can hold and would drift the moment
@@ -315,7 +315,7 @@ namespace GonogoRp1Uplink
         // ── The two places one value lives ────────────────────────────────────
 
         /// <summary>
-        /// Writes a payload figure to BOTH the live static and the persisted
+        /// Writes a payload figure to both the live static and the persisted
         /// setting, refusing if either will not take it.
         /// </summary>
         /// <remarks>
@@ -354,7 +354,7 @@ namespace GonogoRp1Uplink
         /// <remarks>
         /// Through KSP's NON-GENERIC <c>CustomParams(Type)</c>, matched on its first
         /// parameter's type. The generic <c>CustomParams&lt;T&gt;()</c> beside it
-        /// would need <c>MakeGenericMethod</c> and THROWS when the node is not
+        /// would need <c>MakeGenericMethod</c> and throws when the node is not
         /// registered, where this one returns and lets the command refuse.
         /// </remarks>
         private object? PersistedSettings()
@@ -390,7 +390,7 @@ namespace GonogoRp1Uplink
         /// ContractConfigurator's withdrawal delegate, or absent.
         /// </summary>
         /// <remarks>
-        /// Absent is a REAL and reportable state rather than a fault: RP0.dll only
+        /// Absent is a real and reportable state rather than a fault: RP0.dll only
         /// reads this field, CC_RP0.dll assigns it, and on an install without
         /// ContractConfigurator's RP-0 half it stays null. RP-1's own tab treats that
         /// exactly as it treats success.

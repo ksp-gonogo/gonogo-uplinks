@@ -76,7 +76,7 @@ namespace GonogoRp1Uplink
 
         public Rp1TrainingCatalogueReflection() => _handler = Rp1Types.Find(HandlerTypeName);
 
-        /// <summary>RP-1's crew handler type resolved. Gated on the TYPE, never on an assembly name.</summary>
+        /// <summary>RP-1's crew handler type resolved. Gated on the type, never on an assembly name.</summary>
         public bool IsAvailable => _handler != null;
 
         /// <summary>

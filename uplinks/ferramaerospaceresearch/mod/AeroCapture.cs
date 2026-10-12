@@ -14,7 +14,7 @@ namespace GonogoFerramAerospaceResearchUplink
     /// "FAR has no reading for this vessel" and "the reading is zero" come back as
     /// the same double. This Uplink never calls those helpers: it reads the
     /// underlying struct and re-derives absence here. That covers the null case,
-    /// and it is only half the problem. FAR ALSO writes placeholder values into
+    /// and it is only half the problem. FAR also writes placeholder values into
     /// the struct itself, in three distinct ways, and each needs a different
     /// test:</para>
     ///

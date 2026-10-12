@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import "./index.js";
 
 /**
- * Where the "you are here" mark sits when the altitude behind it was MODELLED
+ * Where the "you are here" mark sits when the altitude behind it was modelled
  * rather than observed.
  *
  * The widget overlays `vessel.flight`'s reckoning onto the observation, and the
@@ -20,7 +20,7 @@ import "./index.js";
  * mark drawn where the craft is and one drawn where it was when the link last
  * delivered.
  *
- * Every case below therefore reads the mark's POSITION rather than snapshotting
+ * Every case below therefore reads the mark's position rather than snapshotting
  * the board. Dropping the overlay leaves a widget that still renders, still
  * draws a mark and still matches a snapshot: it just puts the craft 1400 km
  * lower than it is, which is the substitution the whole reckoning design exists
@@ -40,7 +40,7 @@ const TOPIC = spaceWeatherTopic();
  * A craft climbing out of the periapsis of a strongly eccentric Kerbin orbit,
  * read twenty minutes after its last packet.
  *
- * The orbit is chosen for the SIZE of the gap it opens between the last
+ * The orbit is chosen for the size of the gap it opens between the last
  * observation and the truth: from a 100 km periapsis the craft clears 1500 km
  * inside the window, so the observed and the modelled placements are two
  * visibly different marks rather than two roundings of one number. Twenty
@@ -93,7 +93,7 @@ const WEATHER = {
 };
 
 /**
- * The weather record, presented as CURRENT at the view time.
+ * The weather record, presented as current at the view time.
  *
  * Spelled out rather than left to the fixture's default because this widget
  * withholds the entire board on a stale weather reading, and a board that was
@@ -103,7 +103,7 @@ const WEATHER = {
 const CURRENT = { validAt: VIEW_UT, deliveredAt: VIEW_UT, staleness: 0 };
 
 /**
- * The flight sample, twenty minutes old and PRESENTED as old.
+ * The flight sample, twenty minutes old and presented as old.
  *
  * `staleness` is what hands the reckoner a grade: a model only runs across a
  * gap the store has already called a gap, so a sample presented as current
@@ -152,7 +152,7 @@ function emitClimbingOutOfPeriapsis(): void {
 
 /**
  * The belt diagram's own placement arithmetic, so each expectation below is an
- * ALTITUDE rather than a number lifted out of the implementation: the box is
+ * altitude rather than a number lifted out of the implementation: the box is
  * 100 units across, the body is radius 12 and the magnetopause 48, and an
  * altitude maps linearly across that span up to 8000 km.
  */

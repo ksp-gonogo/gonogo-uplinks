@@ -33,7 +33,7 @@ export interface KosScriptListingResult {
    * error's message, a reply whose listing could not be read, or a listing
    * that named script-shaped entries without saying which of them are files.
    * `null` only once at least one volume has returned a listing we could
-   * READ, even an empty one, and nothing runnable was withheld for want of a
+   * read, even an empty one, and nothing runnable was withheld for want of a
    * kind.
    */
   hint: string | null;
@@ -44,7 +44,7 @@ const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
 /**
  * Live drive listing for the `/`-script picker: dispatches the resurrected
  * `KOS_FILES_SCRIPT` ("list" op) via the surviving `KosDataSource.
- * executeScript` RPC for each of `LISTED_VOLUMES`, merges the FILE (not
+ * executeScript` RPC for each of `LISTED_VOLUMES`, merges the file (not
  * directory) entries, and filters to `*.ks`/`*.ksm`: the only RUNPATH-able
  * kinds. This is the RPC-shaped one-shot case (per-call args,
  * request/response), which is the only kOS read pattern that still exists:
@@ -54,7 +54,7 @@ const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
  * telemetry nor a fixed no-args interval script.
  *
  * Lazy + single-shot: does nothing until `enabled` is true (the terminal
- * only passes `true` once the `/`-picker is actually open AND no static
+ * only passes `true` once the `/`-picker is actually open and no static
  * `scriptPaths` config already supplies a list), and fetches at most once
  * per `(coreId, cpuTag)` pair, reopening the picker within the same
  * session reuses the cached result rather than re-dispatching. Degrades
@@ -176,7 +176,7 @@ export function useKosScriptListing(
 }
 
 /**
- * The entries the reply reported, or NULL when the reply carried no listing
+ * The entries the reply reported, or null when the reply carried no listing
  * we could read: no `listing` field, a `listing` that will not parse, or one
  * that parses to something other than an array.
  *

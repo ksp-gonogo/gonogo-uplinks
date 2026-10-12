@@ -100,7 +100,7 @@ describe("ToolingSection: what a vehicle owes, and what it costs not to pay", ()
   });
 
   /**
-   * The channel's own headline: no sample is NOT "everything is tooled". It
+   * The channel's own headline: no sample is not "everything is tooled". It
    * means no ship on the editor's table, or RP-1's tooling switched off, and in
    * that second case RP-1's own level lookup would have reported a finished
    * vehicle. A section that drew "all tooled" here would state the one thing
@@ -136,7 +136,7 @@ describe("ToolingSection: what a vehicle owes, and what it costs not to pay", ()
    * are grouped at all.
    *
    * <para>A tooling covers every part of its type whose parameters match, so two
-   * parts of one size are ONE purchase. Drawn as two rows each priced at 9,000f
+   * parts of one size are one purchase. Drawn as two rows each priced at 9,000f
    * an operator reads 18,000f and budgets for a vehicle that costs 9,000f to
    * tool. The price appears once, for the purchase, with both parts named under
    * it.</para>
@@ -165,7 +165,7 @@ describe("ToolingSection: what a vehicle owes, and what it costs not to pay", ()
 
   /**
    * The number the decision actually turns on: the surcharge is paid on every
-   * copy of the vehicle, for ever, and the tooling is paid once. It is PER PART
+   * copy of the vehicle, for ever, and the tooling is paid once. It is per part
    * where the price is per purchase, so it is drawn per part.
    */
   it("states the standing surcharge for each untooled part", async () => {
@@ -203,7 +203,7 @@ describe("ToolingSection: what a vehicle owes, and what it costs not to pay", ()
    * RP-1's own deduplicated whole-ship price, drawn on the control rather than
    * under the rows.
    *
-   * <para>It is NOT the sum of the purchases above it: a tooling covers anything
+   * <para>It is not the sum of the purchases above it: a tooling covers anything
    * of its type within four per cent, so paying for one can leave a neighbour of
    * a different size free. Placed at the foot of the column it would read as
    * that column's total and be wrong by however much the fuzzy match saves. It

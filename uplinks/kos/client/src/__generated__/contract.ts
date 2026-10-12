@@ -45,7 +45,7 @@ export interface KosProcessorInfo
 	/**
 	* The CPU part's display title (`kOSProcessor.part.partInfo.title`, e.g.
 	* "Probe Core"): null when the part or its info is unavailable. Lets the
-	* picker label a CPU by what it IS when it carries no name-tag, instead of a
+	* picker label a CPU by what it is when it carries no name-tag, instead of a
 	* bare "CPU <id>".
 	*/
 	partName?: string | null;
@@ -85,7 +85,7 @@ export interface KosComputeStatus
 /**
 * Args for the `kos.run` command, the general-purpose in-process replacement
 * for the standalone telnet proxy's ad-hoc RUNPATH path
-* (`kos-uplink-full-migration.md`). It carries the WHOLE literal command text
+* (`kos-uplink-full-migration.md`). It carries the whole literal command text
 * to type into the CPU's REPL, exactly what the app already builds client-side
 * for the telnet path (a bare `RUNPATH("path", args...).` line, or the
 * multi-line managed- sync wrapper from
@@ -94,7 +94,7 @@ export interface KosComputeStatus
 * exactly like `kos.keystroke` types terminal input, via the same
 * `TermWindow.ProcessOneInputChar` seam.
 *
-* Delivered DELAYED, single-in-flight-per-CPU (spec §3.0): reachability + the
+* Delivered delayed, single-in-flight-per-CPU (spec §3.0): reachability + the
 * `HasBooted`/`IsWaitingForCommand()` idle- prompt guard are re-checked at
 * delivery on the KSP main thread. A second `kos.run` for a CPU that already
 * has one in flight is rejected with `CommandErrorCode.ModeUnavailable`, the
@@ -134,7 +134,7 @@ export interface KosRunArgs
 * `KosRunResult.error` is non-null, a successful `[KOSDATA]` parse carries
 * `KosRunResult.fields` with `KosRunResult.error` null; an explicit
 * script-author `[KOSERROR]` carries `KosRunResult.error` with
-* `KosRunResult.fields` null. Field VALUES keep the exact
+* `KosRunResult.fields` null. Field values keep the exact
 * `KosDataParser.Coerce` shape (bool / double / string) the telnet path
 * already produces: no re-typing on the wire.
 */
@@ -179,7 +179,7 @@ export interface KosRunResult
 * baseline of its own to apply it to). This is what lets a late/returning
 * viewer see something immediately instead of waiting out a fresh reveal-delay
 * window for its own forced reseed to mature. A genuinely first-ever subscribe
-* to a CPU's terminal (nothing has EVER been recorded for it) still has to
+* to a CPU's terminal (nothing has ever been recorded for it) still has to
 * wait out that first reseed's own delay window, there is no way around that;
 * there is nothing earlier to be sticky about.
 *
@@ -203,13 +203,13 @@ export interface KosTerminalFrame
 	fullRepaint: boolean;
 }
 /**
-* Args for `kos.terminal.open`: acquires the single-owner WRITE LEASE on a
+* Args for `kos.terminal.open`: acquires the single-owner write lease on a
 * CPU's shared terminal (kOS has one Interpreter/Screen per CPU; every viewer
 * shares it, so writes must be arbitrated). On success the mod starts (or
 * attaches) the screen downlink and emits a `KosTerminalFrame` full repaint. A
-* second `open` on a CPU already leased by a different holder is REJECTED with
+* second `open` on a CPU already leased by a different holder is rejected with
 * `CommandErrorCode.ModeUnavailable` (no silent steal): the caller stays a
-* read-only downlink viewer. Delivered DELAYED (rides gonogo's uplink delay);
+* read-only downlink viewer. Delivered delayed (rides gonogo's uplink delay);
 * the CPU-exists guard is re-checked at delivery on the KSP main thread.
 */
 export interface KosTerminalOpenArgs
@@ -220,7 +220,7 @@ export interface KosTerminalOpenArgs
 	* Caller-generated, per-terminal-instance opaque lease token. The mod records
 	* it as the CPU's current write-lease holder; every subsequent
 	* `kos.keystroke`/`kos.terminal.resize`/`kos.terminal.close` must present the
-	* SAME token or is rejected. This is how the mod tells lease holders apart
+	* same token or is rejected. This is how the mod tells lease holders apart
 	* without a client identity on the command channel.
 	*/
 	leaseToken: string;
@@ -230,9 +230,9 @@ export interface KosTerminalOpenArgs
 * kOS's public, frozen-signature `TermWindow.ProcessOneInputChar(ch,
 * whichTelnet: null, forceQueue: true)`. `KosKeystrokeArgs.chars` may be a
 * single character (char-by-char mode) or a whole composed line (line-mode
-* collapses N light-time round-trips to one). Rejected with
+* collapses N signal delay round-trips to one). Rejected with
 * `CommandErrorCode.ModeUnavailable` if `KosKeystrokeArgs.leaseToken` does not
-* match the CPU's current lease holder. Delivered DELAYED: the keystroke
+* match the CPU's current lease holder. Delivered delayed: the keystroke
 * reaches the craft at `UT + uplink` under gonogo's SignalDelay, which is the
 * sole delay authority (kOS's own input path is immediate, so there is no
 * double-counting).
@@ -254,7 +254,7 @@ export interface KosKeystrokeArgs
 * (kOS's NAWS equivalent), via the sanctioned resize input sequence that
 * reaches `ScreenBuffer.SetSize`. Rejected with
 * `CommandErrorCode.ModeUnavailable` on a lease-token mismatch. Delivered
-* DELAYED.
+* delayed.
 */
 export interface KosTerminalResizeArgs
 {
@@ -272,7 +272,7 @@ export interface KosTerminalResizeArgs
 * `KosTerminalCloseArgs.leaseToken` matches the CPU's current holder (a
 * mismatched token is a no-op ack, never steals). Once no holder remains the
 * mod stops polling that CPU's screen (the downlink is subscription-gated
-* regardless). Delivered DELAYED.
+* regardless). Delivered delayed.
 */
 export interface KosTerminalCloseArgs
 {

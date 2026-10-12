@@ -1,7 +1,7 @@
 /**
  * djb2 hash of a kerboscript body, base-36. Fast, deterministic,
  * collision-resistant enough for "did the script change since last
- * write" detection. NOT cryptographic: pulling in a real hasher
+ * write" detection. Not cryptographic: pulling in a real hasher
  * would add bundle weight for zero benefit, since the only consumer
  * is the wrapper's `<path>.ver` sidecar comparison.
  *

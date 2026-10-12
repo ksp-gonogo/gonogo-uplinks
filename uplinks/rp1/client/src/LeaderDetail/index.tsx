@@ -54,7 +54,7 @@ type CareerStrategyEntry = NonNullable<
 /**
  * One RP-1 leader, and what appointing or dismissing it costs.
  *
- * <para>The BODY of the Administration Building's Leaders screen, contributed
+ * <para>The body of the Administration Building's Leaders screen, contributed
  * as an augment on `admin-building.screen-body`. The host lists the leader cards
  * above without verbs; this carries them, each with its cost beside it in the
  * currency it costs. Appointing charges nothing on RP-1's shipped leaders, and

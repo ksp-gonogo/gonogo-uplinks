@@ -5,7 +5,7 @@ namespace GonogoRp1Uplink
 {
     /// <summary>
     /// The rate and time-left arithmetic, reproduced from the RP-1 code that
-    /// ADVANCES progress rather than from the helpers that display it.
+    /// advances progress rather than from the helpers that display it.
     /// </summary>
     /// <remarks>
     /// <para>Locked against the shipped RP-1 v4.6.0.0 <c>RP0.dll</c>. Sources, all
@@ -24,7 +24,7 @@ namespace GonogoRp1Uplink
     /// <c>RefreshAllCaches()</c> on a cache miss. Reading a player's save is not
     /// licence to write to it.</para>
     ///
-    /// <para>Three RP-1 defects are FIXED here rather than inherited, each one an
+    /// <para>Three RP-1 defects are fixed here rather than inherited, each one an
     /// absence where RP-1 produces a number that is not one:</para>
     /// <list type="number">
     /// <item><c>GetTimeLeft()</c> returns <c>double.PositiveInfinity</c> at a zero
@@ -32,9 +32,9 @@ namespace GonogoRp1Uplink
     /// is absent.</item>
     /// <item><c>GetFractionComplete()</c> divides by build points with no zero
     /// guard, so a project with none is NaN. Ours is absent.</item>
-    /// <item>The efficiency ramp is nonsense on a RUSHING complex.
-    /// <c>PredictWeightedEfficiency</c> returns a weighted EFFICIENCY normally but
-    /// returns its <c>tdelta</c> argument, a TIME, from its early-out, and rushing
+    /// <item>The efficiency ramp is nonsense on a rushing complex.
+    /// <c>PredictWeightedEfficiency</c> returns a weighted efficiency normally but
+    /// returns its <c>tdelta</c> argument, a time, from its early-out, and rushing
     /// takes that early-out while neither caller guards for it: the estimate
     /// collapses to the efficiency value expressed in seconds. The early-out
     /// means "no skill-up applies over this interval", so ours applies no ramp in
@@ -112,7 +112,7 @@ namespace GonogoRp1Uplink
         /// several run at once. Negative for a reversed operation, because that is
         /// the direction its progress moves.
         ///
-        /// <para>Absent when a BLOCKING operation cannot work out its share:
+        /// <para>Absent when a blocking operation cannot work out its share:
         /// either its own build points or the complex's blocking total was
         /// unreadable. The un-shared rate is not a fallback, it is the rate the
         /// operation would run at if it had the complex to itself, which is the
@@ -177,7 +177,7 @@ namespace GonogoRp1Uplink
         /// runs to 1.5 and buys speed for money above 1, a research node's stops
         /// at 1) and RP-1 could move one without the other.
         ///
-        /// <para>Note what is NOT here. A construction's base rate does not depend
+        /// <para>Note what is not here. A construction's base rate does not depend
         /// on the queue position or on engineers: <c>Formula
         /// .GetConstructionBuildRate</c> ignores its index argument entirely and
         /// reads no crew, so constructions all advance at once while vehicles and
@@ -286,7 +286,7 @@ namespace GonogoRp1Uplink
         /// Every term is nullable, and one null anywhere in the set takes the
         /// whole sequence with it. An operation nobody could read still competes
         /// for the complex; leaving it out, or filling it in with zeros, both
-        /// hand the survivors a bigger share than they have and answer EARLY.
+        /// hand the survivors a bigger share than they have and answer early.
         /// </remarks>
         public struct BlockingOp
         {
@@ -296,7 +296,7 @@ namespace GonogoRp1Uplink
             /// <summary>Work still to do: the distance progress has left to travel, whichever way it runs.</summary>
             public double? Remaining;
 
-            /// <summary>Absolute rate BEFORE the share is applied: base rate times efficiency times rush.</summary>
+            /// <summary>Absolute rate before the share is applied: base rate times efficiency times rush.</summary>
             public double? Rate;
         }
 
@@ -310,14 +310,14 @@ namespace GonogoRp1Uplink
         /// the complex its build points earn it, and as each finishes the
         /// survivors' shares grow. So the honest completion time is a sequence of
         /// intervals, and the single division is not a different-but-valid
-        /// quantity, it is EARLY. An optimistic completion time on a
+        /// quantity, it is early. An optimistic completion time on a
         /// mission-control dashboard is a correctness defect rather than a
         /// precision one.</para>
         ///
         /// <para><b>Why RP-1's own method cannot be called for it, permanently.</b>
         /// Two independent reasons, either sufficient. It reaches
         /// <c>LaunchComplex.Efficiency</c>, whose getter writes to the player's
-        /// save on a cache miss. And it accumulates into three SHARED STATIC
+        /// save on a cache miss. And it accumulates into three shared static
         /// scratch lists on RP-1's own type, so calling it from a sampled capture
         /// would race RP-1's own UI doing the same thing on the same lists.</para>
         ///
@@ -328,7 +328,7 @@ namespace GonogoRp1Uplink
         /// something an operator can act on.</para>
         /// </remarks>
         /// <param name="ops">
-        /// Every blocking, incomplete operation on the complex, with the SUBJECT
+        /// Every blocking, incomplete operation on the complex, with the subject
         /// at index 0. RP-1 adds the subject before its neighbours and stops the
         /// moment the subject is next to finish; index 0 is that rule.
         /// </param>
@@ -426,7 +426,7 @@ namespace GonogoRp1Uplink
         public static bool IsStalled(double? rate) => rate != null && rate.Value == 0.0;
 
         /// <summary>
-        /// The share of a costed project's price that its REMAINING progress will
+        /// The share of a costed project's price that its remaining progress will
         /// still draw, and so what finishing it costs from here.
         ///
         /// <para>RP-1 bills these projects as they proceed
@@ -490,7 +490,7 @@ namespace GonogoRp1Uplink
         /// cost at a complex where rushing changes nothing at all.</para>
         /// </remarks>
         /// <param name="effectiveEngineers">
-        /// RP-1's effective head count for this complex, as it is NOW.
+        /// RP-1's effective head count for this complex, as it is now.
         /// </param>
         /// <param name="engineers">
         /// The complex's actual engineer count, or null when RP-1 would not give

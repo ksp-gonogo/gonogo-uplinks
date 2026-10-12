@@ -5,7 +5,7 @@ using Reinforced.Typings.Fluent;
 namespace GonogoKerbcastUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration: mirrors
+/// This Uplink's own codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
 /// this assembly's three wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way <c>MechJebRtConfig
@@ -14,12 +14,12 @@ namespace GonogoKerbcastUplink;
 ///
 /// <para><b>Both halves the pilot and the Avionics relocation each hit
 /// separately, together for the first time.</b> <see cref="KerbcastCameraEntry"/>
-/// is an outbound READ payload carrying nine <c>[SitrepUnit(Units.Degrees)]</c>
+/// is an outbound read payload carrying nine <c>[SitrepUnit(Units.Degrees)]</c>
 /// properties (field of view + pan yaw/pitch, each with a min/max pair), so it
 /// genuinely retypes to <c>Value&lt;"deg"&gt;</c> below, exactly like
 /// <c>AvionicsStatus</c>'s two <c>Units.Tonnes</c> properties did.
 /// <see cref="KerbcastSetFieldOfViewArgs"/>/<see cref="KerbcastSetPanArgs"/>
-/// are command ARGS (their type names end in <c>"Args"</c>), so
+/// are command args (their type names end in <c>"Args"</c>), so
 /// <c>ApplyUnitValueTypes</c> deliberately skips retyping their own
 /// <c>Units.Degrees</c> properties, same as MechJeb's two types: a widget
 /// builds these and sends them straight to <c>JSON.stringify</c>, there is no
@@ -40,11 +40,11 @@ namespace GonogoKerbcastUplink;
 /// SDK's own generated map has nothing for a type declared outside
 /// <c>Sitrep.Contract</c>. So this Uplink's client package (<c>topics.ts</c>)
 /// calls the SDK's <c>registerTopicUnits</c> at module load, feeding it the
-/// UNIT map this Configure emits below. Both legs are needed:
-/// <c>ApplyUnitValueTypes</c> fixes the codegen-time TYPE, never the
-/// decode-time VALUE. Without this,
+/// unit map this Configure emits below. Both legs are needed:
+/// <c>ApplyUnitValueTypes</c> fixes the codegen-time type, never the
+/// decode-time value. Without this,
 /// fieldOfView/panYaw/panPitch (and their min/max pairs) would arrive as bare
-/// numbers at runtime while the TYPE still says <c>Value&lt;"deg"&gt;</c>.</para>
+/// numbers at runtime while the type still says <c>Value&lt;"deg"&gt;</c>.</para>
 /// </summary>
 public static class KerbcastRtConfig
 {

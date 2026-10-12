@@ -27,7 +27,7 @@ import { DismantleControl, PadRows, RenameControl } from "./Lifecycle.js";
 import { ModifyControl } from "./Modify.js";
 
 /**
- * ONE launch complex, drawn as the thing an operator administers.
+ * One launch complex, drawn as the thing an operator administers.
  *
  * <para><b>The card says whose it is.</b> A complex belongs to a space centre,
  * and RP-1's hierarchy is the fact this widget exists to make legible: the
@@ -37,7 +37,7 @@ import { ModifyControl } from "./Modify.js";
  * prevent is not "which centre" but "what kind of thing am I looking at".</para>
  *
  * <para><b>Staffing and eligibility are different questions and are drawn
- * apart.</b> The crew decides how FAST this complex works, and nobody staffs
+ * apart.</b> The crew decides how fast this complex works, and nobody staffs
  * their way past the envelope: a vehicle over the mass limit, over the size
  * limit, or needing a resource the complex does not handle cannot be built here
  * at any headcount. Reading the two as one is how an operator ends up assigning
@@ -213,11 +213,11 @@ export function ComplexCard({
  * The crew, and the share of the complex's full rate it buys.
  *
  * <para>RP-1 advances work at <c>Engineers / MaxEngineers</c>, so the fraction
- * is not a decoration: it IS the rate. Drawn as a bar because that is the one
+ * is not a decoration: it is the rate. Drawn as a bar because that is the one
  * number on the card an operator changes to make something happen sooner.</para>
  *
  * <para>A complex with nobody assigned is called out rather than left to be
- * inferred from "0 / 60". It builds NOTHING, whatever the career has hired and
+ * inferred from "0 / 60". It builds nothing, whatever the career has hired and
  * whatever is queued on it, and that is the single most consequential state this
  * widget can show.</para>
  */
@@ -287,14 +287,14 @@ type Step = (typeof STEPS)[number];
  * turning to warning tone at zero, and the press itself carries the number it
  * would actually move rather than the step that was picked.</para>
  *
- * <para><b>A step in the hand, a TARGET on the wire.</b> The command carries the
+ * <para><b>A step in the hand, a target on the wire.</b> The command carries the
  * absolute headcount the press works out to, not a delta: an operator commanding
  * from a remote vantage is reading a crew count as it was, and "+10" applied to
  * a count that has since moved lands somewhere nobody chose.</para>
  *
  * <para>No arm-then-confirm, because this spends nothing at the moment it lands:
  * the engineers are already hired and already drawing salary. What it changes is
- * the RATE they draw it at, which the card's own cost line carries.</para>
+ * the rate they draw it at, which the card's own cost line carries.</para>
  */
 function AssignControl({
   complex,
@@ -437,7 +437,7 @@ function AssignControl({
 }
 
 /**
- * What rushing this complex costs and buys, stated BEFORE the press as well as
+ * What rushing this complex costs and buys, stated before the press as well as
  * during it.
  *
  * <para>It used to draw only while a complex was already rushing, which put the
@@ -446,7 +446,7 @@ function AssignControl({
  * The terms are the same either way round, so one line answers both, and it sits
  * with the control rather than at the top of the panel.</para>
  *
- * <para><b>The daily figure is THIS complex's, and not the multiplier applied to
+ * <para><b>The daily figure is this complex's, and not the multiplier applied to
  * its salary.</b> RP-1 multiplies only the part of a crew that is working and
  * leaves the rest at its idle fraction, so a complex with nothing active costs
  * nothing extra to rush however many engineers stand on it. The mod recovers the
@@ -498,8 +498,8 @@ function RushTerms({
  * Who else this crew rating belongs to.
  *
  * <para>Kept, where the renovation and complex-kind lines were cut, because it is
- * a FACT that changes how the number above it is read rather than an explanation
- * of that number: RP-1 rates an efficiency RECORD rather than a complex, so work
+ * a fact that changes how the number above it is read rather than an explanation
+ * of that number: RP-1 rates an efficiency record rather than a complex, so work
  * done next door moves the figure here, and an operator watching it climb while
  * nobody is assigned has been told something untrue.</para>
  *
@@ -605,7 +605,7 @@ function Costs({ complex }: Readonly<{ complex: Rp1ComplexEntry }>) {
  * Rush mode.
  *
  * <para>The control lives here rather than beside the vehicles because RP-1
- * keeps <c>IsRushing</c> on the COMPLEX: every project inside it is rushed
+ * keeps <c>IsRushing</c> on the complex: every project inside it is rushed
  * together, integrations and rollouts and reconditionings alike, so a control
  * shaped like "rush this build" would be a lie about what the game does.</para>
  *

@@ -93,7 +93,7 @@ describe("registerTopicUnits: hydration at decode time", () => {
   it('hydrates the margin into a Value<"dB">, not a bare number', async () => {
     const fixture = setupStreamFixture();
     /**
-     * The hook returns the PAYLOAD rather than the reading: a `Reading` is
+     * The hook returns the payload rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
      * tick and every hydration assertion below would then read `undefined` off
      * the wrapper.

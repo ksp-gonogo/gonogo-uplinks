@@ -32,7 +32,7 @@ namespace Gonogo.KerbalismUplink.DevTools
     /// <c>SubjectData.RetrieveScience(double scienceValue, bool showMessage = false,
     /// ProtoVessel fromVessel = null, File file = null)</c> returns
     /// <c>min(ScienceRemainingToRetrieve, scienceValue)</c> plus whatever its included
-    /// subjects return, adds that to <c>ScienceDB.uncreditedScience</c> ONLY when
+    /// subjects return, adds that to <c>ScienceDB.uncreditedScience</c> only when
     /// <c>preventScienceCrediting</c> is false, and advances <c>RnDSubject.science</c>
     /// either way. Its two real callers are the transmission loop
     /// (<c>RetrieveScience(num5, showMessage: true, v.protoVessel, xmitFile.file)</c>) and
@@ -65,13 +65,13 @@ namespace Gonogo.KerbalismUplink.DevTools
     ///
     /// <para><b>Every sample reports four independent views</b>, because a single view cannot
     /// distinguish "the delay did not engage" from "the reading is of the wrong object".
-    /// KERBALISM says whether the crediting path is the one this tool assumes; DELAY
-    /// enumerates EVERY live <c>CurrencyDelayScenario</c> (not just the first one
+    /// KERBALISM says whether the crediting path is the one this tool assumes; delay
+    /// enumerates every live <c>CurrencyDelayScenario</c> (not just the first one
     /// <c>FindObjectOfType</c> happens to return) with each one's own shadow, ledger identity
-    /// and depth; SINK says which of those instances the static
-    /// <c>DelayedScienceSink</c> binding actually points at; BUS reads the subscriber list
+    /// and depth; sink says which of those instances the static
+    /// <c>DelayedScienceSink</c> binding actually points at; bus reads the subscriber list
     /// off <c>GameEvents.OnScienceChanged</c> and names the objects on it. A frozen shadow
-    /// beside a bus carrying an interceptor the DELAY block never listed is a blind
+    /// beside a bus carrying an interceptor the delay block never listed is a blind
     /// instrument, not a broken feature, and the two want opposite fixes.</para>
     ///
     /// <para><b>Not production behaviour.</b> Lives in the Deck-only GonogoKerbalismDevTools assembly
@@ -775,7 +775,7 @@ namespace Gonogo.KerbalismUplink.DevTools
         /// on <c>SubjectData.RetrieveScience</c>. The patch check goes through
         /// <c>Harmony.GetPatchInfo</c> rather than through our own hook object, so it stays a
         /// different kind of measurement from everything else in this file: it can report a
-        /// patch we did not apply, and can report OUR patch missing even if every Gonogo object
+        /// patch we did not apply, and can report our patch missing even if every Gonogo object
         /// looks healthy.
         /// </summary>
         private static KerbalismView ReadKerbalism()
@@ -880,7 +880,7 @@ namespace Gonogo.KerbalismUplink.DevTools
         }
 
         /// <summary>
-        /// Enumerates EVERY live <c>CurrencyDelayScenario</c> through
+        /// Enumerates every live <c>CurrencyDelayScenario</c> through
         /// <c>Resources.FindObjectsOfTypeAll</c>, which unlike <c>FindObjectOfType</c> returns
         /// all of them and does not skip an inactive one, and reads each instance's own
         /// interceptor, shadow, ledger and aggregator identity. It then reads the static
@@ -1061,7 +1061,7 @@ namespace Gonogo.KerbalismUplink.DevTools
         /// Reads the subscriber list off <c>GameEvents.OnScienceChanged</c> itself. This is the
         /// only reading here that does not start from an object we found some other way, so it
         /// is the one that can contradict the rest: an interceptor on the bus whose hash
-        /// appears against no listed scenario means the DELAY block above is describing a
+        /// appears against no listed scenario means the delay block above is describing a
         /// different object than the one receiving the events.
         /// </summary>
         private static BusView ReadBus()

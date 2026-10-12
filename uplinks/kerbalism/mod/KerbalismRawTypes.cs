@@ -21,7 +21,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// Rule name -> this kerbal's own degeneration multiplier, read from
         /// Kerbalism's own <c>Rule.Variance</c> rather than recomputed. Only
-        /// filled for rules that HAVE a variance (most have none, where the
+        /// filled for rules that have a variance (most have none, where the
         /// factor is exactly 1 and asking would be waste), and an entry missing
         /// for a rule that has one means the read failed, which
         /// <see cref="KerbalismDeathClock"/> treats as not knowing rather than
@@ -48,7 +48,7 @@ namespace Gonogo.KerbalismUplink
         public bool? Broken;
         /// <summary>Host part's KSP flightID. 0 when the part could not be read.</summary>
         public double FlightId;
-        /// <summary>ProcessController.valve_i: which dump-valve combination is active. Null when unread; 0 is the FIRST combination, not an absence.</summary>
+        /// <summary>ProcessController.valve_i: which dump-valve combination is active. Null when unread; 0 is the first combination, not an absence.</summary>
         public int? ValveIndex;
         /// <summary>
         /// Live Modifiers.Evaluate product over the matched profile Process's
@@ -76,7 +76,7 @@ namespace Gonogo.KerbalismUplink
         public bool? Running;
         /// <summary>The live blocking-reason string. Empty when nothing is wrong, which is the normal case.</summary>
         public string Issue = "";
-        /// <summary>0-3 are the stock-equivalent harvest situations, 4 is asteroid/comet. Null when unread; 0 is SURFACE, not an absence.</summary>
+        /// <summary>0-3 are the stock-equivalent harvest situations, 4 is asteroid/comet. Null when unread; 0 is surface, not an absence.</summary>
         public int? Type;
         /// <summary>Static config rate, calibrated against <see cref="AbundanceRate"/>. Not what is actually being extracted.</summary>
         public double Rate;
@@ -105,7 +105,7 @@ namespace Gonogo.KerbalismUplink
         public string Input = "";
         public string Output = "";
         public double Rate;
-        /// <summary>Seconds. The rule fires ONCE PER INTERVAL; 0 means continuous.</summary>
+        /// <summary>Seconds. The rule fires once per interval; 0 means continuous.</summary>
         public double Interval;
         public double Degeneration;
         public double FatalThreshold;
@@ -257,7 +257,7 @@ namespace Gonogo.KerbalismUplink
     /// <summary>
     /// One <c>KERBALISM.ReliabilityInfo</c> entry, joined to the underlying
     /// <c>KERBALISM.Reliability</c> PartModule for the two fields the projection
-    /// does not expose. Every added field is NULLABLE: a value that could not be
+    /// does not expose. Every added field is nullable: a value that could not be
     /// read is null, never a default, because "no service clock" and "service due
     /// now" want opposite renders.
     /// </summary>
@@ -271,7 +271,7 @@ namespace Gonogo.KerbalismUplink
         public bool? Broken;
         /// <summary>Null when the field could not be read. Also decides the repair kit count, so false understates a critical failure's cost.</summary>
         public bool? Critical;
-        /// <summary>ReliabilityInfo.mtbf, already EffectiveMTBF(quality, mtbf). SECONDS, despite every previous field name that carried it.</summary>
+        /// <summary>ReliabilityInfo.mtbf, already EffectiveMTBF(quality, mtbf). Seconds, despite every previous field name that carried it.</summary>
         public double? MtbfSeconds;
         /// <summary>NeedsMaintenance(): Kerbalism's NEEDS-SERVICE state, which is preventive and distinct from its needs-repair (broken and not critical). Null when the call could not be made.</summary>
         public bool? NeedsService;
@@ -291,7 +291,7 @@ namespace Gonogo.KerbalismUplink
     /// <summary>KerbalismReflection.Science's return bundle for one vessel.</summary>
     public sealed class ScienceRaw
     {
-        /// <summary>True when the Kerbalism assembly is loaded AND the science feature is on. False makes the whole capture a no-op.</summary>
+        /// <summary>True when the Kerbalism assembly is loaded and the science feature is on. False makes the whole capture a no-op.</summary>
         public bool Modeled;
         public List<ScienceExperimentRaw> Experiments = new();
         public List<ScienceStoredRaw> Stored = new();
@@ -384,7 +384,7 @@ namespace Gonogo.KerbalismUplink
         public bool? SendFlagged;
         /// <summary>Null when the drive is unlimited (Kerbalism's -1 sentinel), never a negative number.</summary>
         public double? DriveCapacityMB;
-        /// <summary>Sum over the drive's files. Null when ANY file's size could not be read, because a total that quietly omits a file understates how full the drive is.</summary>
+        /// <summary>Sum over the drive's files. Null when any file's size could not be read, because a total that quietly omits a file understates how full the drive is.</summary>
         public double? DriveUsedMB;
         /// <summary>Null when sample slots are unlimited.</summary>
         public int? SampleSlotsTotal;
@@ -398,7 +398,7 @@ namespace Gonogo.KerbalismUplink
         public string PartName = "";
         public double? AnalysisRate;
         public double? EffectiveRate;
-        /// <summary>DISABLED | NO_EC | NO_STORAGE | NO_SAMPLE | NO_RESEARCHER | RUNNING. Empty when it could not be read.</summary>
+        /// <summary>Disabled | NO_EC | NO_STORAGE | NO_SAMPLE | NO_RESEARCHER | running. Empty when it could not be read.</summary>
         public string Status = "";
         /// <summary>Null when the field could not be read, which with an unreadable <see cref="Status"/> leaves "is it processing" unanswerable rather than answered no.</summary>
         public bool? Running;
@@ -411,7 +411,7 @@ namespace Gonogo.KerbalismUplink
         public string PartName = "";
         public string Type = "";
         public string Readout = "";
-        /// <summary>Null when the field could not be read. It defaulted to TRUE, which claimed a sensor was live on the strength of a failed read.</summary>
+        /// <summary>Null when the field could not be read. It defaulted to true, which claimed a sensor was live on the strength of a failed read.</summary>
         public bool? Active;
     }
 }

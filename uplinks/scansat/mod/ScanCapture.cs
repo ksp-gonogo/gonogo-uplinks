@@ -7,7 +7,7 @@ namespace Gonogo.ScansatUplink
     /// and hands to its COURIER-THREAD handle (see
     /// <see cref="Sitrep.Contract.IUplinkHost.AddSampledSource"/> and
     /// <see cref="ScansatUplink"/>'s <c>CaptureOnMain</c>/<c>HandleOnCourier</c>).
-    /// This is deliberately PLAIN, self-contained data, no live KSP/Unity
+    /// This is deliberately plain, self-contained data, no live KSP/Unity
     /// object references (no <c>CelestialBody</c>, no SCANsat handles), so
     /// every KSP-facing read has already happened on the main thread by the
     /// time the Courier-side handle (<see cref="ScanPublications.Compute"/>)
@@ -24,7 +24,7 @@ namespace Gonogo.ScansatUplink
         public string BodyName = "";
 
         /// <summary>
-        /// A per-read SNAPSHOT of the body's SCANdata coverage grid (already
+        /// A per-read snapshot of the body's SCANdata coverage grid (already
         /// copied off the live array on the main thread), or null when SCANsat
         /// has no data for this body yet (never scanned), in which case no
         /// coverage/mask is published.
@@ -32,7 +32,7 @@ namespace Gonogo.ScansatUplink
         public short[,]? Coverage;
 
         /// <summary>
-        /// Per client SCANtype bit -> coverage PERCENTAGE [0,100]
+        /// Per client SCANtype bit -> coverage percentage [0,100]
         /// (<c>SCANUtil.GetCoverage</c>), captured on the main thread. Null iff
         /// <see cref="Coverage"/> is null.
         ///
@@ -45,7 +45,7 @@ namespace Gonogo.ScansatUplink
         public Dictionary<short, double?>? CoveragePercents;
 
         /// <summary>
-        /// True the FIRST time this body is visited: the (expensive, ~64800-
+        /// True the first time this body is visited: the (expensive, ~64800-
         /// point) stock PQS height + BiomeMap grids were built on the main
         /// thread and are carried below for a one-shot keyframe. False on every
         /// later visit (near-static, per spec §2.2) so the grids are neither
@@ -58,7 +58,7 @@ namespace Gonogo.ScansatUplink
         /// elevation grid, or null when the body's PQS controller could not be
         /// reached (see <see cref="ScanGrids.BuildHeights"/> for why no grid
         /// beats a flat one). The biome keyframe beside it still publishes: a
-        /// byte-per-cell index grid CAN spell an unread cell, as 0xFF.
+        /// byte-per-cell index grid can spell an unread cell, as 0xFF.
         /// </summary>
         public ScanGrids.HeightGrid? HeightGrid;
 

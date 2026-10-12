@@ -7,7 +7,7 @@ import type {
 
 /**
  * The facts about a training that every surface reads: what it is called, which
- * of RP-1's two KINDS it is, and how many students it seats.
+ * of RP-1's two kinds it is, and how many students it seats.
  *
  * <para>Shared rather than copied because the seat bounds decide a refusal on
  * each surface and the two refusals have to agree. A naut's row cannot fill a
@@ -22,7 +22,7 @@ type Training = Rp1TrainingTemplateEntry | Rp1TrainingCourseEntry;
 /**
  * RP-1's two kinds of training, in words that say which is which.
  *
- * <para><b>"Mission" is a KIND OF TRAINING and not a mission.</b> RP-1 generates
+ * <para><b>"Mission" is a kind of training and not a mission.</b> RP-1 generates
  * up to two templates per crewed part and names them
  * <c>"Proficiency: &lt;part&gt;"</c> and <c>"Mission: &lt;part&gt;"</c>; the enum
  * behind them is <c>TrainingTemplate.TrainingType</c>, whose two members are
@@ -34,7 +34,7 @@ type Training = Rp1TrainingTemplateEntry | Rp1TrainingCourseEntry;
  *
  * <para>The difference is worth the extra word because the two behave
  * differently in the one way an operator plans around: a proficiency is a
- * permanent qualification on the part, while mission training LAPSES a set
+ * permanent qualification on the part, while mission training lapses a set
  * interval after the course completes and has to be taken again. A kerbal's row
  * says when theirs lapses; this says which kind can.</para>
  */
@@ -67,7 +67,7 @@ export function titleOf(training: Training): string {
  * Whether this training stays true once it is finished, which is the whole
  * difference between RP-1's two kinds and the thing a picker cannot show.
  *
- * <para>Read off the KIND rather than off an expiry on the wire, and that is
+ * <para>Read off the kind rather than off an expiry on the wire, and that is
  * sound rather than a shortcut: every template in the game is generated in code
  * (<c>CrewHandler.AddPartCourses</c>, there is no config-defined path), and
  * <c>GenerateCourseMission</c> is the only one of the two generators that sets

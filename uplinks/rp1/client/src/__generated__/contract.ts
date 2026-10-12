@@ -8,14 +8,14 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * Args for `rp1.build.repeat`: build another copy of a design RP-1 already
 * holds, at the launch complex that holds it.
 *
-* ONE field, and it is an id rather than a name. Under RP-1 a design is built
+* One field, and it is an id rather than a name. Under RP-1 a design is built
 * repeatedly on purpose (that is the career loop: design once, fly the same
 * vehicle many times), so several vehicles of the same name sit in the same
 * complex and a name addresses none of them. The id is RP-1's own
 * `KCTPersistentID`, published on `Rp1BuildItemEntry.id` and
 * `Rp1WarehouseItemEntry.id`.
 *
-* The complex is NOT an argument. RP-1 stores the launch complex on the
+* The complex is not an argument. RP-1 stores the launch complex on the
 * vehicle, and a copy is built where its original was: a client that could
 * name a destination could name one whose limits the vehicle does not meet,
 * and the operator's question is "another one of these", not "another one of
@@ -44,7 +44,7 @@ export interface Rp1RolloutArgs
 	id?: string;
 	/**
 	* Which pad, by the name RP-1 gives it and `rp1.pads[].name` publishes.
-	* **REQUIRED**: the command refuses when it is absent, even when only one pad
+	* **required**: the command refuses when it is absent, even when only one pad
 	* could possibly have been meant.
 	*
 	* Nullable in the type only because every field on this wire is, so that a
@@ -55,12 +55,12 @@ export interface Rp1RolloutArgs
 	* used the single free pad when there was exactly one. That was rejected, and
 	* the reason is worth keeping: choosing a launch site is a decision an
 	* operator makes, and a mod that silently picks when the choice looks obvious
-	* has taken the decision anyway. Requiring it also means the wire RECORDS what
+	* has taken the decision anyway. Requiring it also means the wire records what
 	* was chosen, so a dispatch log says which pad an operator sent a vehicle to
 	* rather than leaving it to be inferred from whichever pad happened to be free
 	* at the time.
 	*
-	* The client is where the convenience belongs: it may PRESELECT the only
+	* The client is where the convenience belongs: it may preselect the only
 	* eligible pad so a one-pad complex is still a single press, but the command
 	* it sends carries the name explicitly. Eligibility is on the wire for it to
 	* do that with, as `rp1.pads[].status` plus `rp1.pads[].hasVesselWaiting` for
@@ -86,13 +86,13 @@ export interface Rp1VehicleArgs
 * out.
 *
 * **Why this is not a per-vehicle command.** RP-1 keeps `IsRushing` as a bool
-* on the LAUNCH COMPLEX, not on a vehicle: rushing is a mode the whole complex
+* on the launch complex, not on a vehicle: rushing is a mode the whole complex
 * is in, every project inside it is rushed together, and the cost is a
 * standing multiplier on engineer salaries rather than a purchase. A command
 * shaped like "rush this build" would be a lie about what the game does, so
 * the complex is the subject and the vehicle is not addressable here at all.
 *
-* A SET rather than a toggle. An operator commanding from a remote vantage is
+* A set rather than a toggle. An operator commanding from a remote vantage is
 * reading a complex's state as it was, and a toggle applied to a state that
 * has since changed does the opposite of what was asked; a set lands on the
 * state that was asked for whenever it arrives.
@@ -114,7 +114,7 @@ export interface Rp1ComplexRushArgs
 * already on the books works at. This command is the second, so it can never
 * grow the headcount and can never take the career's balance down.
 *
-* A SET rather than a delta, for the reason `Rp1ComplexRushArgs` gives: an
+* A set rather than a delta, for the reason `Rp1ComplexRushArgs` gives: an
 * operator commanding from a remote vantage is reading a crew count as it was,
 * and "+5" applied to a count that has since moved lands somewhere nobody
 * chose. A target lands where it was aimed however stale the view was, and
@@ -127,7 +127,7 @@ export interface Rp1PersonnelAssignArgs
 	/**
 	* How many engineers this complex should end up with.
 	*
-	* REQUIRED, and refused when absent: there is no sensible default for a crew
+	* Required, and refused when absent: there is no sensible default for a crew
 	* size. Refused rather than clamped when it is above the complex's own maximum
 	* or above what the centre's pool can supply, because a clamp would report
 	* success for a number the operator did not ask for.
@@ -149,7 +149,7 @@ export interface Rp1PersonnelAssignArgs
 * bounded instead: a fire is refused beyond the heads there are to fire, and a
 * hire is refused beyond what the balance covers.
 *
-* **Engineers are hired into the ACTIVE centre's unassigned pool**, as RP-1's
+* **Engineers are hired into the active centre's unassigned pool**, as RP-1's
 * own window hires them, and fired only from that pool. Naming the centre is
 * required so a view that is out of date about which centre is active is
 * refused rather than acted on at the wrong place. Assigning them to a complex
@@ -158,7 +158,7 @@ export interface Rp1PersonnelAssignArgs
 export interface Rp1PersonnelHeadcountArgs
 {
 	/**
-	* True for researchers, false for engineers. REQUIRED: the two are paid at
+	* True for researchers, false for engineers. Required: the two are paid at
 	* different rates and one is per centre, so there is no default worth
 	* guessing.
 	*/
@@ -185,7 +185,7 @@ export interface Rp1PersonnelHeadcountArgs
 export interface Rp1BuildStartArgs
 {
 	/**
-	* The craft FILE's own name, without its `.craft` extension, as
+	* The craft file's own name, without its `.craft` extension, as
 	* `rp1.buildable[].craftFile` publishes it.
 	*
 	* Not the ship name an operator reads. KSP keeps the ship's name inside the
@@ -199,7 +199,7 @@ export interface Rp1BuildStartArgs
 	* Which editor's folder holds the file, as the KSP ordinal
 	* `rp1.buildable[].facility` publishes.
 	*
-	* **REQUIRED**, and not a hint: the VAB and SPH folders are separate and may
+	* **required**, and not a hint: the VAB and SPH folders are separate and may
 	* each hold a file of the same name. It also decides which kind of complex the
 	* vehicle belongs at, so a substituted default would order a spaceplane
 	* integrated at a launch pad.
@@ -209,15 +209,15 @@ export interface Rp1BuildStartArgs
 	* Which launch complex integrates it, by the GUID `rp1.complexes[].lcId`
 	* publishes.
 	*
-	* **REQUIRED**: the command refuses when it is absent, even when only one
+	* **required**: the command refuses when it is absent, even when only one
 	* complex could possibly have been meant. The same operator ruling that
 	* governs `Rp1RolloutArgs.pad` applies unchanged, and applies harder here: a
 	* complex decides the mass and size envelope, the human rating and the build
 	* rate, so choosing one is the whole of the decision an operator is making.
-	* Requiring it also means the wire RECORDS which complex was chosen rather
+	* Requiring it also means the wire records which complex was chosen rather
 	* than leaving it to be inferred.
 	*
-	* The client is where the convenience belongs: it may PRESELECT the only
+	* The client is where the convenience belongs: it may preselect the only
 	* complex that would take the craft, so a one-complex career is still a single
 	* press, and eligibility is on the wire for it to do that with as
 	* `rp1.buildable[].complexes[].refusals`.
@@ -234,7 +234,7 @@ export interface Rp1BuildStartArgs
 * command spends nothing at the moment it lands, and it never refuses on
 * affordability, because RP-1 itself does not.
 *
-* ONE field, and no target tier. RP-1 models a single step, from the
+* One field, and no target tier. RP-1 models a single step, from the
 * facility's current level to the one above it, and there is no such thing as
 * a two-tier project: a command taking a destination would have to queue
 * several, and the second could not be costed until the first completed.
@@ -250,7 +250,7 @@ export interface Rp1FacilityUpgradeArgs
 	* same thing: KSP's own normaliser decides, so the two forms cannot disagree
 	* about which building was meant.
 	*
-	* A name whose last segment is not one of KSP's own facilities is REFUSED
+	* A name whose last segment is not one of KSP's own facilities is refused
 	* rather than guessed at. RP-1 reads the building type off the clickable model
 	* rather than the id and falls through to the Vehicle Assembly Building for
 	* anything it does not recognise, so guessing here would queue an upgrade
@@ -275,7 +275,7 @@ export interface Rp1FacilityUpgradeArgs
 * question is how fast it drains and when it finishes, and both are on
 * `rp1.constructionRates` for every step this accepts.
 *
-* A SET rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
+* A set rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
 * aimed from a stale view lands where it was aimed.
 */
 export interface Rp1ConstructionRateArgs
@@ -319,7 +319,7 @@ export interface Rp1ConstructionCancelArgs
 * finishes later. What each step pays, earns and finishes is on
 * `rp1.researchRates`.
 *
-* A SET rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
+* A set rather than a delta, for the reason `Rp1ComplexRushArgs` gives: a rate
 * aimed from a stale view lands where it was aimed.
 */
 export interface Rp1ResearchRateArgs
@@ -342,7 +342,7 @@ export interface Rp1ResearchRateArgs
 * work through at a rate, and starting one is a different act with a different
 * shape, so it is a different command.
 *
-* **It spends science, at once.** RP-1 charges the whole cost AT ENQUEUE
+* **It spends science, at once.** RP-1 charges the whole cost at enqueue
 * rather than on completion, which is why the control that sends this has to
 * show the balance beside it. Both figures are already on the wire:
 * `career.status.economy.science` for the balance and
@@ -359,7 +359,7 @@ export interface Rp1TechResearchArgs
 	* addresses nothing reliably. The id is what the tree, the save and RP-1's own
 	* queue all key on.
 	*
-	* REQUIRED, and refused when absent. There is no node a missing id could
+	* Required, and refused when absent. There is no node a missing id could
 	* sensibly mean.
 	*/
 	techId?: string;
@@ -367,7 +367,7 @@ export interface Rp1TechResearchArgs
 /**
 * Args for the two target cancels, which take none.
 *
-* Neither `rp1.hireTarget.cancel` nor `rp1.fundTarget.cancel` identifies WHICH
+* Neither `rp1.hireTarget.cancel` nor `rp1.fundTarget.cancel` identifies which
 * target to withdraw, because RP-1 holds exactly one of each: the hire
 * instruction is a single field whose own `Rp1HireTarget.IsResearch` says
 * which staff it hires, and setting a new one replaces it. A command carrying
@@ -380,7 +380,7 @@ export interface Rp1TargetCancelArgs
 * Args for `rp1.hireTarget.set`: stand up an instruction to keep hiring until
 * the staff reaches a number.
 *
-* The reserve is the OPERATOR's, not RP-1's. It is the balance the instruction
+* The reserve is the operator's, not RP-1's. It is the balance the instruction
 * will not spend below, and it is the whole reason a standing hire order is
 * safe to give: without it the career would buy staff until the money ran out.
 * RP-1 asks for it on the same dialog as the headcount, so a control that
@@ -398,7 +398,7 @@ export interface Rp1HireTargetSetArgs
 	reserveFunds?: number;
 	/**
 	* The launch complex to staff with engineers, by the key
-	* `rp1.complexes[].lcId` carries. ABSENT hires RESEARCHERS, which is how RP-1
+	* `rp1.complexes[].lcId` carries. Absent hires researchers, which is how RP-1
 	* distinguishes the two: it stores no kind field, only whether a complex is
 	* named.
 	*
@@ -413,7 +413,7 @@ export interface Rp1HireTargetSetArgs
 *
 * **There is no course to enrol into.** RP-1's own screen builds a course from
 * a template, collects its students, and only puts it on the roster once it
-* has STARTED, so an enrolled-but-unstarted course never exists to be added
+* has started, so an enrolled-but-unstarted course never exists to be added
 * to. That is why this command names a template and a crew together: it is the
 * whole press.
 */
@@ -422,7 +422,7 @@ export interface Rp1TrainingEnrolArgs
 	/**
 	* The training to run, by the id `rp1.trainingCatalogue[].id` carries.
 	*
-	* REQUIRED. There is no training a missing id could sensibly mean.
+	* Required. There is no training a missing id could sensibly mean.
 	*/
 	templateId?: string;
 	/**
@@ -448,7 +448,7 @@ export interface Rp1TrainingEnrolArgs
 *
 * **Addressed by kerbal, not by course**, which is how RP-1 addresses both:
 * each button is drawn on a selected naut's row. It is also the only
-* unambiguous key we have, since `rp1.training[].id` is the TEMPLATE's id and
+* unambiguous key we have, since `rp1.training[].id` is the template's id and
 * two live courses could share it. A kerbal is on at most one course, which
 * RP-1 keeps true by refusing a grounded kerbal as a student.
 */
@@ -457,7 +457,7 @@ export interface Rp1TrainingLeaveArgs
 	/**
 	* The kerbal whose course this is about.
 	*
-	* REQUIRED. For `cancel` it selects the course and every student on it comes
+	* Required. For `cancel` it selects the course and every student on it comes
 	* off; for `remove` it is the one student who leaves.
 	*/
 	crewName?: string;
@@ -472,7 +472,7 @@ export interface Rp1TrainingLeaveArgs
 * envelope off the wire and sends the same field names back, so the round trip
 * is the same three words in both directions.
 *
-* All three are REQUIRED on both commands that carry this. RP-1 refuses a zero
+* All three are required on both commands that carry this. RP-1 refuses a zero
 * size vector outright ("Please enter a valid size"), and a substituted
 * default on any one axis would build a complex to an envelope nobody chose:
 * the axes price independently, and height prices at twice the rate of the
@@ -515,21 +515,21 @@ export interface Rp1ComplexNewArgs
 	/**
 	* Which space centre builds it, by the key `rp1.centres[].kscName` carries.
 	*
-	* **REQUIRED**, and this is the one place these commands ask for a choice RP-1
+	* **required**, and this is the one place these commands ask for a choice RP-1
 	* does not offer: its window has no centre picker and always builds wherever
 	* the game's own view happens to be. The `Rp1RolloutArgs.pad` ruling is what
 	* settles it anyway: a career under KSCSwitcher has several centres, the
-	* client can preselect when there is only one, and the wire RECORDS which was
+	* client can preselect when there is only one, and the wire records which was
 	* chosen rather than leaving it to be inferred from where the camera was.
 	*/
 	kscName?: string;
 	/**
-	* What to call it. REQUIRED, and refused when it duplicates a complex already
+	* What to call it. Required, and refused when it duplicates a complex already
 	* at that centre, both in RP-1's own words.
 	*/
 	name?: string;
 	/**
-	* The tonnage limit. REQUIRED: RP-1 refuses a zero ("Please enter a valid
+	* The tonnage limit. Required: RP-1 refuses a zero ("Please enter a valid
 	* tonnage limit"), and it is the figure the whole pad price is a curve over.
 	*
 	* It also fixes the complex's renovation envelope for life. RP-1 records the
@@ -539,10 +539,10 @@ export interface Rp1ComplexNewArgs
 	* ever be renovated into.
 	*/
 	massMax?: number;
-	/** The size envelope. REQUIRED, all three axes. */
+	/** The size envelope. Required, all three axes. */
 	size?: Rp1ComplexSizeArgs;
 	/**
-	* Whether it may launch crew. REQUIRED rather than defaulted to false: human
+	* Whether it may launch crew. Required rather than defaulted to false: human
 	* rating multiplies the pad cost by 1.5 and the integration cost by 2, so a
 	* substituted default would halve or double the price of the thing being
 	* bought.
@@ -550,20 +550,20 @@ export interface Rp1ComplexNewArgs
 	humanRated?: boolean;
 	/**
 	* The propellants and other fluids the complex handles, keyed by KSP resource
-	* name, in units. ABSENT means none, which is a complex that can integrate a
+	* name, in units. Absent means none, which is a complex that can integrate a
 	* vehicle and fuel nothing.
 	*
 	* RP-1 keeps this on the complex as `resourcesHandled` and prices each entry
 	* as a tank; the resources RP-1 will accept are the ones its own list offers,
 	* which is `Database.ResourceInfo.LCResourceTypes` filtered to fluids and
 	* minus the ones a complex of this kind ignores. A name outside that set is
-	* REFUSED by name rather than dropped, because a dropped resource is a complex
+	* refused by name rather than dropped, because a dropped resource is a complex
 	* that cannot fuel the vehicle it was built for and says nothing about why.
 	*
-	* Amounts are rounded UP to a whole unit, which is what RP-1's own field does
+	* Amounts are rounded up to a whole unit, which is what RP-1's own field does
 	* (`Math.Ceiling`) before it stores them.
 	*
-	* There is NO separate resources command. RP-1's Resources window edits the
+	* There is no separate resources command. RP-1's Resources window edits the
 	* same pending complex this dialog does and is committed by the same press,
 	* and no RP-1 path changes an operational complex's resources without a
 	* renovation. So resources are a field of building and renovating, not an act
@@ -575,7 +575,7 @@ export interface Rp1ComplexNewArgs
 	* maximum. RP-1 offers this as a toggle on the same dialog and stores the
 	* answer on the construction project as `engineersToReadd`.
 	*
-	* ABSENT means false, and that is a defaulted value rather than a refusal
+	* Absent means false, and that is a defaulted value rather than a refusal
 	* because unlike the priced fields above it changes nothing about what is
 	* bought: it decides only whether a later staffing act happens by itself, and
 	* false is the state an operator gets by not asking.
@@ -586,7 +586,7 @@ export interface Rp1ComplexNewArgs
 * Args for `rp1.complex.modify`: renovate a complex the career already has,
 * into a new envelope.
 *
-* **IT UNASSIGNS EVERY ENGINEER AT THE COMPLEX**, and that is not a side
+* **it unassigns every engineer at the complex**, and that is not a side
 * effect this Uplink chose. RP-1 does `ChangeEngineers(lc, -lc.Engineers)` as
 * the first thing it does, takes the complex out of service for the whole
 * renovation, and pops a dialog saying so in these words: "All engineers at
@@ -596,7 +596,7 @@ export interface Rp1ComplexNewArgs
 * sentence true; without it RP-1's own wording is "Remember to reassign
 * engineers to {name} when it finishes renovation."
 *
-* **YOU PAY TO DOWNGRADE.** A renovation that reduces the complex is not free
+* **you pay to downgrade.** A renovation that reduces the complex is not free
 * and is not a refund: RP-1 charges half the difference in both the pad and
 * the integration halves, and any change at all to the tonnage limit carries a
 * floor of 1,000 funds. So a client must show the price for a shrink exactly
@@ -616,24 +616,24 @@ export interface Rp1ComplexModifyArgs
 	/**
 	* The tonnage limit to renovate to.
 	*
-	* REQUIRED for a pad complex, and REFUSED outside the complex's own renovation
+	* Required for a pad complex, and refused outside the complex's own renovation
 	* envelope in RP-1's words: "Cannot upgrade tonnage above the limit of {n}t" /
 	* "Cannot downgrade tonnage below the limit of {n}t". Both limits are
 	* derivable from `rp1.complexes[].massOrig`, which is on the wire for exactly
 	* this, as `max(3, floor(massOrig x 2))` and `max(1, ceil(massOrig x 0.5))`.
 	*
-	* The career's one HANGAR has no tonnage limit and RP-1 does not draw the
-	* field for it, so this must be ABSENT when the complex is the hangar and is
+	* The career's one hangar has no tonnage limit and RP-1 does not draw the
+	* field for it, so this must be absent when the complex is the hangar and is
 	* refused when present: a hangar keeps whatever `massMax` it has, and a number
 	* here would be silently discarded.
 	*/
 	massMax?: number;
-	/** The size envelope to renovate to. REQUIRED, all three axes, hangar included. */
+	/** The size envelope to renovate to. Required, all three axes, hangar included. */
 	size?: Rp1ComplexSizeArgs;
 	/**
 	* Whether it may launch crew after the renovation.
 	*
-	* REQUIRED for a pad complex, for the pricing reason
+	* Required for a pad complex, for the pricing reason
 	* `Rp1ComplexNewArgs.humanRated` gives. Refused when present for the hangar,
 	* which RP-1 forces to human-rated and does not offer the toggle for.
 	*/
@@ -642,21 +642,21 @@ export interface Rp1ComplexModifyArgs
 	* The resources the complex handles after the renovation, as
 	* `Rp1ComplexNewArgs.resources` describes them.
 	*
-	* A SET rather than a delta, and ABSENT means NONE rather than unchanged. That
+	* A set rather than a delta, and absent means none rather than unchanged. That
 	* is deliberate and it is the same reasoning `Rp1ComplexRushArgs` gives for
 	* being a set: RP-1 prices the renovation off the difference between the
 	* complex's current resources and the whole new set, so a partial instruction
 	* would price against a state the operator did not state. A client that means
 	* "keep these" sends them.
 	*
-	* Removing a resource is CHEAPER than adding one but is not free: RP-1 prices
+	* Removing a resource is cheaper than adding one but is not free: RP-1 prices
 	* a reduction at a tenth of the tank, and the whole resource difference at 0.6
 	* of a fresh tank.
 	*/
 	resources?: { [key:string]: number };
 	/**
 	* Put the unassigned engineers back when the renovation completes, up to the
-	* number that were taken off. ABSENT means false, and false is the case where
+	* number that were taken off. Absent means false, and false is the case where
 	* RP-1 tells the operator to remember to do it themselves.
 	*/
 	assignEngineersOnComplete?: boolean;
@@ -673,14 +673,14 @@ export interface Rp1ComplexRenameArgs
 	/** The complex, by the GUID `rp1.complexes[].lcId` publishes. */
 	lcId?: string;
 	/**
-	* The new name. REQUIRED, and refused when it duplicates another complex at
+	* The new name. Required, and refused when it duplicates another complex at
 	* the same centre.
 	*
-	* That refusal is a DELIBERATE divergence from RP-1, which is worth stating
+	* That refusal is a deliberate divergence from RP-1, which is worth stating
 	* because it is the only one on this command. RP-1's `LaunchComplex.Rename`
 	* validates nothing, so its rename window will happily create the duplicate
 	* name its own build window refuses. Complexes are addressed here by GUID, so
-	* a duplicate costs this Uplink nothing at all; it costs the OPERATOR, who
+	* a duplicate costs this Uplink nothing at all; it costs the operator, who
 	* then reads a roster with two identically named complexes on it and cannot
 	* tell which one a reading belongs to. The wording is RP-1's own, taken from
 	* the build path that does check.
@@ -691,8 +691,8 @@ export interface Rp1ComplexRenameArgs
 * Args for `rp1.complex.dismantle`: demolish a launch complex.
 *
 * **What this actually destroys, since RP-1's own dialog says only "This
-* cannot be undone!" and names nothing.** The complex's EARNED BUILD
-* EFFICIENCY, which is unrecoverable: `LaunchComplex.Delete` removes the
+* cannot be undone!" and names nothing.** The complex's earned build
+* efficiency, which is unrecoverable: `LaunchComplex.Delete` removes the
 * complex from its efficiency group and clears the group outright when it was
 * the last member, so a complex rebuilt to the same specification starts again
 * from RP-1's floor. Both halves of that are already on the wire,
@@ -703,7 +703,7 @@ export interface Rp1ComplexRenameArgs
 *
 * **It cannot destroy a vessel.** RP-1 refuses the dismantle outright while
 * the complex holds anything: its `CanDismantle` requires an empty build list
-* AND an empty warehouse, so by the time this command can succeed there is
+* and an empty warehouse, so by the time this command can succeed there is
 * nothing in either. RP-1's own code has a loop that scraps the warehouse and
 * it is unreachable. Emptying a complex first is `rp1.vehicle.scrap`, which
 * refunds in full.
@@ -723,7 +723,7 @@ export interface Rp1ComplexDismantleArgs
 /**
 * Args for `rp1.pad.new`: add a launch pad to an existing complex.
 *
-* The pad INHERITS the complex's envelope and cannot have one of its own: RP-1
+* The pad inherits the complex's envelope and cannot have one of its own: RP-1
 * builds it at the complex's own tonnage level and its window shows those
 * limits as read-only labels. So this command carries a name and nothing else
 * about the pad.
@@ -737,7 +737,7 @@ export interface Rp1PadNewArgs
 	/** The complex to add it to, by the GUID `rp1.complexes[].lcId` publishes. */
 	lcId?: string;
 	/**
-	* What to call it. REQUIRED, and refused when it duplicates a pad already at
+	* What to call it. Required, and refused when it duplicates a pad already at
 	* this complex, both in RP-1's own words.
 	*/
 	name?: string;
@@ -746,7 +746,7 @@ export interface Rp1PadNewArgs
 * Args for `rp1.pad.rename`: change what one of a complex's pads is called.
 *
 * **Why this exists rather than being left to the game.** RP-1's own pad
-* rename FAILS SILENTLY on a duplicate name: `LCLaunchPad.Rename` returns
+* rename fails silently on a duplicate name: `LCLaunchPad.Rename` returns
 * without doing anything when another pad at the complex already has that
 * name, and the rename window that called it reports nothing at all. The
 * operator presses Save, the window closes, and the pad keeps its old name.
@@ -769,7 +769,7 @@ export interface Rp1PadRenameArgs
 	* command exists to fix, and the id is stable across the rename itself.
 	*/
 	padId?: string;
-	/** The new name. REQUIRED, and refused when another pad at the complex has it. */
+	/** The new name. Required, and refused when another pad at the complex has it. */
 	name?: string;
 }
 /**
@@ -780,7 +780,7 @@ export interface Rp1PadRenameArgs
 * with one pad left the condition short-circuits: the confirmation dialog has
 * already asked "are you sure? This cannot be undone!", the operator presses
 * Yes, the window closes, and the pad is still there with no message anywhere.
-* This command refuses and says so. `LaunchPadCount` counts only OPERATIONAL
+* This command refuses and says so. `LaunchPadCount` counts only operational
 * pads, so a complex with one working pad and one still under construction
 * cannot dismantle either.
 *
@@ -797,7 +797,7 @@ export interface Rp1PadDismantleArgs
 /**
 * Args for `rp1.warp.toComplete`, which takes none.
 *
-* It does not name WHAT to warp to, because it is not a choice: RP-1 holds
+* It does not name what to warp to, because it is not a choice: RP-1 holds
 * exactly one next-thing-to-finish, whichever of the career's projects has the
 * least time left, across every centre. A command carrying an id would imply a
 * roster that does not exist.
@@ -820,10 +820,10 @@ export interface Rp1PadDismantleArgs
 * address: the candidates live across four array Topics, and a dotted path
 * cannot index a list.
 *
-* **INSTANT, and the only `rp1.*` command that is.** Every other command in
+* **instant, and the only `rp1.*` command that is.** Every other command in
 * this Uplink is an order a second command centre can issue, so it crosses the
-* gap like any other order. This one is not an order, it is a CLOCK CHANGE:
-* warp is sim-meta, and light-time fiction does not apply to a ground-side
+* gap like any other order. This one is not an order, it is a clock change:
+* warp is sim-meta, and signal delay fiction does not apply to a ground-side
 * simulation control, which is the same principle core states on
 * `time.setWarpIndex`. Delayed, an operator selecting a warp with a craft
 * thirty light-minutes out would wait thirty minutes for their own clock to
@@ -842,7 +842,7 @@ export interface Rp1WarpArgs
 * Args for `rp1.tooling.toolAll`: buy every tooling the ship on the editor's
 * table is missing, in one purchase.
 *
-* NO ARGUMENTS, and that is RP-1's own shape rather than a simplification.
+* No arguments, and that is RP-1's own shape rather than a simplification.
 * Tool All acts on the ship currently being edited and there is no other ship
 * it could mean; a command carrying a craft id would imply a choice that does
 * not exist.
@@ -854,7 +854,7 @@ export interface Rp1ToolAllArgs
 * Args for `rp1.tooling.refit`: reshape a part to a size whose tooling is
 * already owned.
 *
-* **An EDIT, not a purchase.** It spends nothing and writes nothing to the
+* **An edit, not a purchase.** It spends nothing and writes nothing to the
 * tooling database. It changes the craft on the editor's table so that a part
 * fits tooling the career already has, which is the other way of closing the
 * gap `rp1.tooling` reports: buy the tooling, or move the part to tooling you
@@ -883,7 +883,7 @@ export interface Rp1ToolingRefitArgs
 	/** The length to reshape to. */
 	length?: number;
 	/**
-	* The tank material to switch to, by RP-1's own name for it. ABSENT leaves the
+	* The tank material to switch to, by RP-1's own name for it. Absent leaves the
 	* material alone and reshapes only, which is a resize rather than a refit and
 	* is what RP-1 calls it in that case.
 	*/
@@ -894,20 +894,20 @@ export interface Rp1ToolingRefitArgs
 * satellite contracts require.
 *
 * **Why this is a command and not a slider.** RP-1 draws it as two sliders on
-* a settings tab, and changing either WITHDRAWS the matching pre-generated
+* a settings tab, and changing either withdraws the matching pre-generated
 * contract offers so they regenerate against the new requirement. Its
 * `RenderContractsTab` runs every draw frame and compares the slider's value
-* against the stored setting BEFORE writing it back, so a drag from 400 to
+* against the stored setting before writing it back, so a drag from 400 to
 * 10,000 crosses ninety-six hundred-unit steps and fires the withdrawal at
 * every one of them. Nothing on the tab says so.
 *
 * What that costs is worth stating precisely, because it is less than it
 * sounds and we should not frighten an operator with the wrong thing: the
-* withdrawal reaches PRE-GENERATED OFFERS and never an accepted contract, and
+* withdrawal reaches PRE-GENERATED offers and never an accepted contract, and
 * it takes the first match per name per call. So a drag churns the offer pool
 * rather than cancelling anyone's work. It is waste, not loss.
 *
-* This command sets the figure and fires each withdrawal EXACTLY ONCE, which
+* This command sets the figure and fires each withdrawal exactly once, which
 * is the whole reason it exists.
 */
 export interface Rp1ContractPayloadArgs
@@ -915,12 +915,12 @@ export interface Rp1ContractPayloadArgs
 	/**
 	* The mass a CommSat contract will require, in kilograms.
 	*
-	* ABSENT leaves it alone, which is what makes the two halves independent: an
+	* Absent leaves it alone, which is what makes the two halves independent: an
 	* operator raising the weather requirement should not have to restate the
 	* communications one and risk withdrawing its offers for nothing. At least one
 	* of the two must be present.
 	*
-	* Bounded by RP-1's own `MinPayload` and `MaxPayload`, and REFUSED outside
+	* Bounded by RP-1's own `MinPayload` and `MaxPayload`, and refused outside
 	* them rather than clamped: a clamp would report success for a requirement the
 	* operator did not choose. RP-1's own control rounds to a multiple of 100, so
 	* a figure between steps is refused too, for the same reason.
@@ -942,7 +942,7 @@ export interface Rp1CentreEntry
 	/** The centre's own name, and the join key every other rp1.* payload carries. */
 	kscName?: string | null;
 	/**
-	* What to CALL this centre. `Rp1CentreEntry.kscName` is an id and reads like
+	* What to call this centre. `Rp1CentreEntry.kscName` is an id and reads like
 	* one (`us_cape_canaveral`); this is the name KSCSwitcher's own site config
 	* gives it, localised as RP-1's Budget tab localises it, and the one a surface
 	* should render.
@@ -963,7 +963,7 @@ export interface Rp1CentreEntry
 	/** Operational launch complexes at this centre. */
 	launchComplexCount?: Value<"count"> | null;
 	/**
-	* At least one launch complex BEYOND the hangar is operational, mirroring
+	* At least one launch complex beyond the hangar is operational, mirroring
 	* RP-1's own reading: its loop deliberately skips index 0, which is always the
 	* hangar, so this answers "is there a pad-side complex to work with" rather
 	* than "does this centre exist".
@@ -1020,7 +1020,7 @@ export interface Rp1ComplexEntry
 	lcType?: string | null;
 	isOperational?: boolean | null;
 	/**
-	* Rushing: work goes faster and salaries cost more, set per COMPLEX under
+	* Rushing: work goes faster and salaries cost more, set per complex under
 	* RP-1.
 	*/
 	isRushing?: boolean | null;
@@ -1034,13 +1034,13 @@ export interface Rp1ComplexEntry
 	*/
 	efficiency?: Value<"ratio"> | null;
 	/**
-	* The OTHER complexes whose crew rating is the same record as this one's, by
+	* The other complexes whose crew rating is the same record as this one's, by
 	* their `Rp1ComplexEntry.lcId`, sorted, this complex excluded.
 	*
 	* `Rp1ComplexEntry.efficiency` alone is misleading and this is what fixes it.
 	* RP-1 does not rate a complex, it rates an `LCEfficiency` record and attaches
 	* similar complexes to the same one, so the number here is a figure two or
-	* three complexes SHARE: work done at any of them moves it at all of them, and
+	* three complexes share: work done at any of them moves it at all of them, and
 	* a client that reads it as this complex's own crew will report a rating that
 	* climbed while nobody worked here.
 	*
@@ -1048,7 +1048,7 @@ export interface Rp1ComplexEntry
 	* id on one and a synthetic key would be ours rather than the game's. Null
 	* when RP-1 holds no record: the hangar, which is rated at the ceiling and
 	* shares with nothing, and a pad complex nobody has worked yet, the same miss
-	* that leaves `Rp1ComplexEntry.efficiency` null. EMPTY is the different, real
+	* that leaves `Rp1ComplexEntry.efficiency` null. Empty is the different, real
 	* answer that the record exists and covers this complex alone.
 	*/
 	efficiencySharedWith?: string[] | null;
@@ -1065,26 +1065,26 @@ export interface Rp1ComplexEntry
 	*/
 	humanRated?: boolean | null;
 	/**
-	* How many of this complex's pads are OPERATIONAL, RP-1's own
+	* How many of this complex's pads are operational, RP-1's own
 	* `LaunchPadCount`, and the number the pad-dismantle rule is stated against:
 	* RP-1 will only delete a pad while the complex still has two.
 	*
 	* Not derivable from the `rp1.pads` rows beside it, which is why it is here
-	* rather than left to a client. A pad's `state` tests destroyed FIRST, so a
+	* rather than left to a client. A pad's `state` tests destroyed first, so a
 	* pad that has been wrecked reports `Destroyed` whatever its operational flag
 	* says, and counting rows that are not `Nonoperational` gets the wrong answer
 	* exactly when a launch has just gone badly.
 	*
-	* Zero is a REAL answer and never means absent: a pad complex still under
+	* Zero is a real answer and never means absent: a pad complex still under
 	* construction has pads and none of them operational, which is the state that
 	* makes it unusable.
 	*/
 	launchPadCount?: Value<"count"> | null;
 	/**
-	* The LIGHTEST vehicle this complex will accept, RP-1's `floor(massMax *
+	* The lightest vehicle this complex will accept, RP-1's `floor(massMax *
 	* lcMassMinFraction)`.
 	*
-	* An eligibility floor, and NOT the bottom of the renovation envelope. That is
+	* An eligibility floor, and not the bottom of the renovation envelope. That is
 	* `Rp1ComplexEntry.massOrig`'s business, and confusing the two is the standing
 	* trap of this payload: three tonnage figures, one of which is about vehicles
 	* and two of which are about the complex.
@@ -1093,7 +1093,7 @@ export interface Rp1ComplexEntry
 	/** Upper mass limit, or null for a complex with no limit (the hangar). */
 	massMax?: Value<"t"> | null;
 	/**
-	* The tonnage this complex was ORIGINALLY built at, and the only thing that
+	* The tonnage this complex was originally built at, and the only thing that
 	* bounds renovating it. RP-1 refuses a modify unless the new
 	* `Rp1ComplexEntry.massMax` lands inside `max(3, floor(massOrig * 2))` and
 	* `max(1, ceil(massOrig * 0.5))`, so without this a client cannot compute
@@ -1101,7 +1101,7 @@ export interface Rp1ComplexEntry
 	* to offer is legal.
 	*
 	* **`Rp1ComplexEntry.massMax` is not a substitute for it.** MassMax is the
-	* value the envelope CONTAINS and the value a renovation moves; it equals this
+	* value the envelope contains and the value a renovation moves; it equals this
 	* only on a complex nobody has renovated. `Rp1ComplexEntry.massMin` is a third
 	* quantity again, about which vehicles fit rather than about renovation.
 	*
@@ -1110,7 +1110,7 @@ export interface Rp1ComplexEntry
 	* right.
 	*
 	* Null for the hangar, which RP-1 records at its no-limit sentinel and exempts
-	* from the margin check outright. Null rather than zero ALWAYS: a zero here
+	* from the margin check outright. Null rather than zero always: a zero here
 	* computes an envelope of 3t to 1t, which is a confident wrong answer where
 	* absence is a readable one.
 	*/
@@ -1132,12 +1132,12 @@ export interface Rp1ComplexEntry
 	/**
 	* The resources this complex can load, by RP-1's own resource names, sorted.
 	*
-	* An ELIGIBILITY fact and not a capacity: a vehicle needing a resource absent
+	* An eligibility fact and not a capacity: a vehicle needing a resource absent
 	* from this list cannot be built here at all, however the complex is staffed.
 	* Empty is a real answer for a complex that handles none, and null is RP-1 not
 	* having said.
 	*
-	* The CAPACITIES behind these names are `Rp1ComplexEntry.resourceCapacities`,
+	* The capacities behind these names are `Rp1ComplexEntry.resourceCapacities`,
 	* and a client renovating the complex needs those rather than these.
 	*/
 	resourcesHandled?: string[] | null;
@@ -1146,39 +1146,39 @@ export interface Rp1ComplexEntry
 	* resource name, in units of that resource.
 	*
 	* **Carried because a renovation cannot be commanded without it.**
-	* `Rp1ComplexModifyArgs.Resources` is a SET and absent means NONE, so a client
+	* `Rp1ComplexModifyArgs.Resources` is a set and absent means none, so a client
 	* that renovates the tonnage and says nothing about resources strips every one
 	* of them: RP-1 would then price the removal, strand any vehicle that needed
 	* the fluid, and leave a complex that cannot fuel what it was built for. A
 	* client that means "keep these" has to send them, and it can only do that if
 	* it can read them.
 	*
-	* **The unit IS established, and an earlier note here said otherwise.** RP-1
+	* **The unit is established, and an earlier note here said otherwise.** RP-1
 	* keeps `LCData.resourcesHandled` as a `Dictionary<string, double>` and prices
 	* it through `Formula.ResourceTankCost(name, amount, ...)`, which is linear in
 	* the amount and is the same expression `Rp1LcResourcePrice.padCostPerUnit` is
 	* stated per unit of. So an entry here multiplied by that price is the
 	* resource half of a build, exactly.
 	*
-	* Not SitrepUnitAttribute-tagged, and it cannot be: the unit differs per KEY,
+	* Not SitrepUnitAttribute-tagged, and it cannot be: the unit differs per key,
 	* because a unit of liquid oxygen and a unit of kerosene are different
 	* quantities. A per-resource number is what RP-1 stores and what
 	* `Rp1ComplexNewArgs.Resources` already takes, so the reading matches the
 	* command's own shape.
 	*
-	* Null is RP-1 not having said. EMPTY is the real, different answer that the
+	* Null is RP-1 not having said. Empty is the real, different answer that the
 	* complex handles nothing, which is most early-career pads.
 	*/
 	resourceCapacities?: { [key: string]: number } | null;
 	/**
 	* The identity RP-1 groups complexes by for crew rating: complexes sharing
-	* this key are on ONE efficiency record.
+	* this key are on one efficiency record.
 	*
-	* Efficiency is a MEMBERSHIP, not a relationship. RP-1 rates an `LCEfficiency`
+	* Efficiency is a membership, not a relationship. RP-1 rates an `LCEfficiency`
 	* rather than a complex, and attaches a complex to an existing record only
 	* when its mass limit, size limits, type, human rating and handled resources
-	* are ALL equal, so the complexes carrying one key are an equivalence class.
-	* Group by this rather than by centre: two identical complexes at DIFFERENT
+	* are all equal, so the complexes carrying one key are an equivalence class.
+	* Group by this rather than by centre: two identical complexes at different
 	* space centres share a record, and two complexes at one centre with different
 	* mass limits do not.
 	*
@@ -1186,16 +1186,16 @@ export interface Rp1ComplexEntry
 	* RP-1 tests is over five things at once and getting it exactly right is the
 	* producer's job: a client comparing four of them would be right until two
 	* complexes differed only in the fifth. The amounts it compares are on the
-	* wire as `Rp1ComplexEntry.resourceCapacities`, so a client COULD now
+	* wire as `Rp1ComplexEntry.resourceCapacities`, so a client could now
 	* reconstruct this; it should not, because the key is RP-1's equivalence and
 	* not an arithmetic result.
 	*
 	* It names a group and nothing else: it is not an RP-1 id, it is not stable
 	* across game versions, and it must never be shown to an operator. Null when
-	* the pieces could not be read, which is NOT "belongs to no group": every
+	* the pieces could not be read, which is not "belongs to no group": every
 	* complex RP-1 can rate belongs to exactly one.
 	*
-	* Does not capture the whole model. Complexes that are merely SIMILAR still
+	* Does not capture the whole model. Complexes that are merely similar still
 	* move each other's ratings: `IncreaseEfficiency(..., distribute)` pays every
 	* other record a share scaled by closeness, so a rating can climb where nobody
 	* worked. This key answers who shares a number, never what else moves it.
@@ -1209,7 +1209,7 @@ export interface Rp1ComplexEntry
 	*/
 	salaryPerDay?: Value<"f/day"> | null;
 	/**
-	* What rushing this complex ADDS to its daily crew bill: the difference
+	* What rushing this complex adds to its daily crew bill: the difference
 	* between what the crew draws rushing and what the same crew draws not
 	* rushing, always stated as the increase.
 	*
@@ -1221,7 +1221,7 @@ export interface Rp1ComplexEntry
 	* extra and buys nothing.
 	*
 	* Not `Rp1ComplexEntry.salaryPerDay` times the rush multiplier. RP-1
-	* multiplies only the part of the crew that is WORKING, and leaves the rest at
+	* multiplies only the part of the crew that is working, and leaves the rest at
 	* the idle fraction, so that product overstates the increase at every complex
 	* where the two differ. Null when the split could not be resolved, which is
 	* not zero.
@@ -1235,7 +1235,7 @@ export interface Rp1ComplexEntry
 	*/
 	upkeepPerDay?: Value<"f/day"> | null;
 	/**
-	* What ONE more launch pad at this complex would cost, which is the price
+	* What one more launch pad at this complex would cost, which is the price
 	* `rp1.pad.new` commits the career to.
 	*
 	* A curve over the complex's own tonnage and envelope times RP-1's
@@ -1245,8 +1245,8 @@ export interface Rp1ComplexEntry
 	* reimplementation in TypeScript would agree with the transcription rather
 	* than with RP-1.
 	*
-	* ABSENT for a hangar, which has no pad to add, and whenever RP-1 would not
-	* price one. Absent is NOT free: a control must refuse to quote rather than
+	* Absent for a hangar, which has no pad to add, and whenever RP-1 would not
+	* price one. Absent is not free: a control must refuse to quote rather than
 	* quote zero.
 	*
 	* Note the money does not leave at the press. RP-1 draws a construction down
@@ -1265,10 +1265,10 @@ export interface Rp1BuildItemEntry
 {
 	/**
 	* RP-1's own stable identity for this vehicle (`KCTPersistentID`), and the
-	* ONLY thing a command may address it by.
+	* only thing a command may address it by.
 	*
 	* A name cannot do the job. The repeat-build loop that this Uplink's commands
-	* exist for produces several vehicles of the SAME name at the same complex on
+	* exist for produces several vehicles of the same name at the same complex on
 	* purpose, which is what building another one of a design means, so
 	* `Rp1BuildItemEntry.shipName` plus `Rp1BuildItemEntry.lcId` stops identifying
 	* a row the moment the feature is used once.
@@ -1279,14 +1279,14 @@ export interface Rp1BuildItemEntry
 	*/
 	id?: string | null;
 	/**
-	* RP-1's `shipID`, and the ONLY key that joins this vehicle to the rollout,
+	* RP-1's `shipID`, and the only key that joins this vehicle to the rollout,
 	* rollback or recovery moving it.
 	*
 	* A second id, and it has to be. `Rp1BuildItemEntry.id` is `KCTPersistentID`,
 	* which is what a command addresses; RP-1 stamps an operation's `associatedID`
 	* from `shipID` instead (`ReconRolloutProject.associatedID`, published here as
 	* `Rp1OperationEntry.associatedVesselId`). Without this field on the wire a
-	* client can read that a rollout is happening and cannot say WHICH vehicle it
+	* client can read that a rollout is happening and cannot say which vehicle it
 	* is happening to, which is precisely the fact that decides whether a row
 	* offers Roll Out or Roll Back.
 	*
@@ -1348,7 +1348,7 @@ export interface Rp1WarehouseItemEntry
 	/**
 	* RP-1's `shipID`. See `Rp1BuildItemEntry.shipId` for why a vehicle carries
 	* two ids; this is the list where it matters, because a rollout only ever
-	* moves a FINISHED vehicle and so every rollout on the wire joins to a row
+	* moves a finished vehicle and so every rollout on the wire joins to a row
 	* here.
 	*/
 	shipId?: string | null;
@@ -1358,22 +1358,22 @@ export interface Rp1WarehouseItemEntry
 	*
 	* **Why this is on the wire rather than computed by the client.** Eligibility
 	* has two halves and they live at different levels. The pad half is per-pad
-	* and is State plus `Rp1PadEntry.hasVesselWaiting`. This is the VEHICLE half,
+	* and is State plus `Rp1PadEntry.hasVesselWaiting`. This is the vehicle half,
 	* and it is per-COMPLEX rather than per-pad: the same answer for every pad the
 	* complex owns, because what it measures is the vehicle against the complex's
 	* envelope. Publishing it per (vehicle, pad) pair would be an N-by-M matrix
 	* restating one fact.
 	*
-	* It could ALMOST be derived client-side, and that is the trap. Mass, the
+	* It could almost be derived client-side, and that is the trap. Mass, the
 	* complex's ceiling and floor and its human rating are all already published,
-	* but the vehicle's SIZE is not, so an axis check is impossible there; and a
+	* but the vehicle's size is not, so an axis check is impossible there; and a
 	* client that reproduced the rest would be the third independent copy of
 	* RP-1's envelope rule in this repo, after the launch gate and the command.
 	* Copies of a rule drift, and a client copy would drift where nothing tests
 	* it.
 	*
 	* Null carries the same meaning an unreadable envelope has everywhere else
-	* here: OFFER the control and let the command refuse. The command re-checks at
+	* here: offer the control and let the command refuse. The command re-checks at
 	* the moment of the press against the live object, so the worst case is a
 	* refusal one step later, against the certainty of hiding a control that would
 	* have worked.
@@ -1384,15 +1384,15 @@ export interface Rp1WarehouseItemEntry
 	shipName?: string | null;
 	cost?: Value<"funds"> | null;
 	/**
-	* What moving this vehicle to a pad will cost, RP-1's own price for THIS
+	* What moving this vehicle to a pad will cost, RP-1's own price for this
 	* vehicle at the complex holding it.
 	*
-	* **A total drawn down OVER the rollout, not a charge at the press.** RP-1
+	* **A total drawn down over the rollout, not a charge at the press.** RP-1
 	* bills a rollout the way it bills a construction: nothing leaves the treasury
 	* when the operator commits, and each tick takes the share of the total that
 	* tick's progress earned. A career that cannot cover a tick is not refused, it
 	* advances by the fraction it can afford and carries on, so a shortfall here
-	* SLOWS the move and never blocks it. A client must price this as a rate over
+	* slows the move and never blocks it. A client must price this as a rate over
 	* the move; "cannot afford" is a refusal RP-1 does not make.
 	*
 	* Warehouse only, because only a finished vehicle can be rolled out, and
@@ -1430,13 +1430,13 @@ export interface Rp1PadEntry
 	* The pad is in service, as opposed to still being built.
 	*
 	* **Not derivable from State, which is why it is here.** RP-1's
-	* `LaunchPadState` reports `Destroyed` BEFORE it consults the service flag,
+	* `LaunchPadState` reports `Destroyed` before it consults the service flag,
 	* and a pad can be both destroyed and in service, and that is exactly the pad
 	* awaiting reconditioning after its own launch. So a pad reading "Destroyed"
 	* says nothing about whether it counts as one of the complex's working pads.
 	*
 	* That count is what the pad-dismantle rule turns on: RP-1 will not remove a
-	* pad unless the complex keeps another OPERATIONAL one, and it enforces that
+	* pad unless the complex keeps another operational one, and it enforces that
 	* by silently doing nothing. A client without this field cannot tell whether
 	* `rp1.pad.dismantle` is offerable, which is what it was added for.
 	*
@@ -1449,7 +1449,7 @@ export interface Rp1PadEntry
 	* be rolled out to it.
 	*
 	* **The one condition State cannot express, and the reason this field had to
-	* exist.** That property derives its answer from the OPERATIONS on the pad,
+	* exist.** That property derives its answer from the operations on the pad,
 	* and a vehicle already sent to the launch site has no operation left: it
 	* simply sits there. So a pad in exactly this state reports "Free" and refuses
 	* a rollout, and a client choosing from state alone would offer a pad the mod
@@ -1464,7 +1464,7 @@ export interface Rp1PadEntry
 	hasVesselWaiting?: boolean | null;
 	/**
 	* The vessel already standing on the pad, by name, for a client that wants to
-	* say WHICH craft is in the way. Null whenever `Rp1PadEntry.hasVesselWaiting`
+	* say which craft is in the way. Null whenever `Rp1PadEntry.hasVesselWaiting`
 	* is not true.
 	*/
 	waitingVesselName?: string | null;
@@ -1480,7 +1480,7 @@ export interface Rp1OperationEntry
 	/** The pad this operation is for, matching `rp1.pads[].name`. */
 	launchPadId?: string | null;
 	/**
-	* RP-1's `RolloutReconType` name. SEVEN arms, not the five a KCT-shaped client
+	* RP-1's `RolloutReconType` name. Seven arms, not the five a KCT-shaped client
 	* would map: "Reconditioning", "Rollout", "Rollback", "Recovery", "None",
 	* "AirlaunchMount", "AirlaunchUnmount". A table missing the last two renders
 	* an air-launched programme as unknown.
@@ -1490,7 +1490,7 @@ export interface Rp1OperationEntry
 	totalPoints?: Value<"bp"> | null;
 	/**
 	* Fraction done, counting the right way round for a reversed operation: a
-	* rollback and an air-launch unmount run progress DOWN to zero.
+	* rollback and an air-launch unmount run progress down to zero.
 	*/
 	progressRatio?: Value<"ratio"> | null;
 	/**
@@ -1500,7 +1500,7 @@ export interface Rp1OperationEntry
 	*/
 	rate?: Value<"bp/s"> | null;
 	/**
-	* Seconds to completion, SEQUENCED against the other blocking operations on
+	* Seconds to completion, sequenced against the other blocking operations on
 	* this complex rather than divided out of this one's share: each survivor
 	* speeds up as its neighbours finish, so the share division alone answers
 	* early. Absent when the sequence cannot be computed, never the early figure.
@@ -1509,7 +1509,7 @@ export interface Rp1OperationEntry
 	/** The rate resolved and is zero, as distinct from not yet costed. */
 	stalled?: boolean | null;
 	/**
-	* How many OTHER blocking operations are sharing this complex. They run at
+	* How many other blocking operations are sharing this complex. They run at
 	* once, each taking the fraction of the complex its build points earn it, so a
 	* peer is why this is slower than it looks and is what an operator reads when
 	* `Rp1OperationEntry.timeLeftSeconds` is absent.
@@ -1520,13 +1520,13 @@ export interface Rp1OperationEntry
 	* The part of `Rp1OperationEntry.cost` nothing has been billed for yet: the
 	* share the progress still to be made will draw.
 	*
-	* What FINISHING this move costs from here, and the figure a control that
+	* What finishing this move costs from here, and the figure a control that
 	* resumes one has to quote. RP-1 draws a rollout's price down as the rollout
 	* proceeds rather than taking it at the press, so an operation already half
 	* done has already paid half its price and `Rp1OperationEntry.cost` overstates
 	* what a press commits to by the half gone.
 	*
-	* Counted the same way for a REVERSED operation, which bills nothing while it
+	* Counted the same way for a reversed operation, which bills nothing while it
 	* runs: it is what completing the rollout from here would draw, which is
 	* exactly what an operator turning a rollback round is about to spend. Absent
 	* when RP-1 has not costed the project in build points, which is not zero.
@@ -1536,7 +1536,7 @@ export interface Rp1OperationEntry
 	associatedVesselId?: string | null;
 }
 /**
-* One thing being BUILT at a space centre, as opposed to one vehicle being
+* One thing being built at a space centre, as opposed to one vehicle being
 * integrated inside it. Three RP-1 project kinds share this row shape: a
 * facility upgrade, a launch complex being built or modified, and a pad being
 * added to a complex.
@@ -1546,7 +1546,7 @@ export interface Rp1OperationEntry
 * that moves in months and consumes the funds a Program pays out. An operator
 * reading only the queue sees the fast half of an RP-1 career's calendar.
 *
-* **Construction runs in PARALLEL, and integration does not.** RP-1 zeroes a
+* **Construction runs in parallel, and integration does not.** RP-1 zeroes a
 * vehicle's rate at any queue position but the head, and a research node's
 * likewise, so those two queues advance one item at a time. A construction's
 * rate does not depend on its queue position at all, so every row here is
@@ -1554,7 +1554,7 @@ export interface Rp1OperationEntry
 * is a per-day constant scaled by the career's own modifiers, which is why no
 * engineer count appears on this row.
 *
-* ONE ROW SHAPE DISCRIMINATED BY `Rp1ConstructionEntry.kind`, the same choice
+* One row shape discriminated by `Rp1ConstructionEntry.kind`, the same choice
 * `Rp1ProgramEntry` argues for: the fields only one kind has are absent on the
 * others rather than split across three Topics that would have to be read
 * together to answer "what is being built here".
@@ -1605,7 +1605,7 @@ export interface Rp1ConstructionEntry
 	/** The level it is being taken to. FacilityUpgrade rows only. */
 	targetLevel?: Value<"count"> | null;
 	/**
-	* This is a MODIFICATION of an existing launch complex rather than a new one.
+	* This is a modification of an existing launch complex rather than a new one.
 	* LaunchComplex rows only, and the distinction is what an operator plans
 	* around: a modify takes the complex out of service while it runs.
 	*/
@@ -1624,7 +1624,7 @@ export interface Rp1ConstructionEntry
 	progressRatio?: Value<"ratio"> | null;
 	/**
 	* The operator's own throttle on this construction, 0 to 1.5. Above 1 is
-	* RUSHING, which buys speed at a higher daily cost.
+	* rushing, which buys speed at a higher daily cost.
 	*
 	* The cost multiplier a rate above 1 buys, and the draw per day and finish
 	* date at every rate, are on `rp1.constructionRates`, which reads them on
@@ -1666,7 +1666,7 @@ export interface Rp1ConstructionEntry
 	/** The whole price of the work, quoted when it was queued. */
 	cost?: Value<"funds"> | null;
 	/**
-	* Paid so far. A construction is billed AS IT PROGRESSES rather than up front,
+	* Paid so far. A construction is billed as it progresses rather than up front,
 	* so this and `Rp1ConstructionEntry.cost` together are the only place a
 	* part-paid commitment is visible: cancel at half done and half the money is
 	* gone.
@@ -1691,7 +1691,7 @@ export interface Rp1ConstructionEntry
 * work rate RP-1 offers, and what each facility's next tier would draw and
 * take at the full rate.
 *
-* **A construction is a PROGRESSIVE spend.** Nothing is charged when one is
+* **A construction is a progressive spend.** Nothing is charged when one is
 * queued or its rate is set: RP-1 draws the funds as the work advances, and
 * slows the work when the career cannot meet the draw. So the readout beside a
 * rate control is the draw per day and the finish date, and there is no
@@ -1776,7 +1776,7 @@ export interface Rp1FacilityUpgradeRate
 * Credit per day, and when the node being researched would finish, at every
 * work rate RP-1's slider offers.
 *
-* **Research is a PROGRESSIVE spend.** Setting the rate charges nothing.
+* **Research is a progressive spend.** Setting the rate charges nothing.
 * Researchers draw their salary every day, the idle share of it when stopped,
 * and the rate trades that salary against research speed and Unlock Credit
 * accrual. So the readout beside a rate control is the pay, the credit and the
@@ -1900,22 +1900,22 @@ export interface Rp1Personnel
 	*/
 	researcherSalaryPerHeadPerDay?: Value<"f/day"> | null;
 	/**
-	* What ONE PAID head costs, the same for either role, and the figure that
+	* What one paid head costs, the same for either role, and the figure that
 	* actually leaves the balance. Null when RP-1's settings could not be read.
 	*
-	* **Applicants are hired FREE**, so the paid headcount is `max(0, wanted - `
+	* **Applicants are hired free**, so the paid headcount is `max(0, wanted - `
 	* `Rp1Personnel.applicants` `)` rather than `wanted`. A total taken as
 	* headcount times this overcharges by up to the whole applicant pool, and RP-1
 	* says as much in its own words: its hire button reads "Applicants can be
 	* hired for free!" while any are waiting.
 	*
-	* Hiring is charged UP FRONT and is genuinely refused on affordability, unlike
+	* Hiring is charged up front and is genuinely refused on affordability, unlike
 	* a facility upgrade, so a balance is an honest thing to state beside a hire,
 	* provided it is stated against the applicant-netted total.
 	*/
 	hireCost?: Value<"funds"> | null;
 	/**
-	* What RP-1 QUOTES for one engineer: the same price after its own currency
+	* What RP-1 quotes for one engineer: the same price after its own currency
 	* modifiers, which is the number on its Hire button and the one its auto-hire
 	* scheduler and its `Rp1HireTarget.timeLeft` forecast divide by. Null when the
 	* query could not be asked, which leaves `Rp1Personnel.hireCost` standing
@@ -1941,32 +1941,32 @@ export interface Rp1Personnel
 	* could not be read at all. Lives on the personnel Topic because it is a fact
 	* about staffing rather than about any one complex, even when it names one.
 	*
-	* ONE slot, not one per kind: RP-1 holds a single target and
+	* One slot, not one per kind: RP-1 holds a single target and
 	* `Rp1HireTarget.isResearch` says which kind it hires, so setting a researcher
 	* target replaces an engineer one.
 	*/
 	hireTarget?: Rp1HireTarget | null;
 }
 /**
-* What it costs to BUILD here: the terms a client needs to price a complex the
+* What it costs to build here: the terms a client needs to price a complex the
 * operator is still describing.
 *
 * **Why this exists at all, when a built complex's prices are published on the
 * complex.** A renovation or a new pad is priced against something that
 * already exists, so its figure can be computed where RP-1 lives and sent. A
-* NEW complex is priced against what the operator is typing, and there is no
+* new complex is priced against what the operator is typing, and there is no
 * such thing to hang a figure on. Asking the mod per keystroke is not an
 * option: these commands are delay-aware and a career commanding from a remote
 * vantage would wait minutes for each quote, so a form that could not price
 * until a round trip returned could not price at all.
 *
-* **So the split is by whether the arithmetic needs GAME DATA.** The pad and
+* **So the split is by whether the arithmetic needs game data.** The pad and
 * integration halves of RP-1's price are a closed form over tonnage, envelope
 * and human rating, touching nothing but the numbers the operator entered; a
 * client computes those. The resource half needs a tank definition, a resource
 * definition and a settings multiplier per resource, none of which a client
 * can know, so it is sent. It is one number per resource because RP-1's own
-* expression is LINEAR in the amount: everything else in
+* expression is linear in the amount: everything else in
 * `Formula.ResourceTankCost` is constant per resource, so a client multiplies
 * and is exactly right rather than approximately.
 */
@@ -1975,7 +1975,7 @@ export interface Rp1LcPricing
 	/**
 	* What every pad past the first costs, as a fraction of the pad price.
 	*
-	* Applied ONCE when a pad is added to a complex. A renovation uses the same
+	* Applied once when a pad is added to a complex. A renovation uses the same
 	* figure differently, as `1 + (pads - 1) * mult`, because that one reprices
 	* every pad the complex already has.
 	*
@@ -1988,7 +1988,7 @@ export interface Rp1LcPricing
 	/**
 	* The fluids a complex can be built to handle, and what each costs per unit.
 	*
-	* ABSENT means RP-1 would not say, which a form must refuse to price on rather
+	* Absent means RP-1 would not say, which a form must refuse to price on rather
 	* than treat as an empty list: a complex quoted without its resources is
 	* quoted under its true cost.
 	*/
@@ -2003,10 +2003,10 @@ export interface Rp1LcResourcePrice
 	/** The KSP resource name, which is the key the command takes. */
 	name?: string | null;
 	/**
-	* Funds per unit of capacity, for a PAD complex.
+	* Funds per unit of capacity, for a pad complex.
 	*
 	* RP-1's own expression is linear in the amount, so this is the whole of it
-	* and a client multiplies. ABSENT where a pad complex ignores this resource,
+	* and a client multiplies. Absent where a pad complex ignores this resource,
 	* which is not the same as zero: ignored means the resource cannot be chosen,
 	* where zero would mean it is free.
 	*
@@ -2058,14 +2058,14 @@ export interface Rp1Confidence
 * Programs are RP-1's commitment mechanic and the largest single source of
 * career funding: accepting one draws down a fixed total over a fixed
 * duration, on a curve, against a deadline that costs reputation once it
-* passes. They are a DIFFERENT mechanic from the reputation subsidy core
+* passes. They are a different mechanic from the reputation subsidy core
 * already publishes as `career.status.economy.subsidyPerDay`: the subsidy is a
 * floor that grows with the calendar and is lerped up by reputation, and it
 * arrives whether or not any Program is running. An operator reading only the
 * subsidy sees the smaller half of their income and none of the obligation
 * attached to the larger half.
 *
-* ONE ROW SHAPE FOR EVERY STATE, discriminated by State, rather than one Topic
+* One row shape for every state, discriminated by State, rather than one Topic
 * per state. RP-1's own Administration building shows one list; the fields
 * that only an accepted Program has are absent on the others, which is the
 * same distinction `Rp1WarehouseItemEntry` already draws against a build-queue
@@ -2099,7 +2099,7 @@ export interface Rp1ProgramEntry
 	/** A crewed-spaceflight Program, which is RP-1's `isHSF` flag. */
 	isHumanSpaceflight?: boolean | null;
 	/**
-	* The catalogue duration BEFORE the speed multiplier and before the
+	* The catalogue duration before the speed multiplier and before the
 	* currency-modifier pass RP-1 runs over it. The duration actually in force is
 	* only observable through `Rp1ProgramEntry.deadlineUt`, and only once a
 	* Program has been accepted, because RP-1 computes it by broadcasting a query
@@ -2154,7 +2154,7 @@ export interface Rp1ProgramEntry
 	fundingCurve?: string | null;
 	/**
 	* Confidence this Program costs at `Rp1ProgramEntry.speed`, read from RP-1's
-	* own per-speed table. This is the RAW cost: RP-1's Administration building
+	* own per-speed table. This is the raw cost: RP-1's Administration building
 	* shows it after a currency-modifier pass that a leader can shift, and that
 	* pass broadcasts to the whole save, so it is not run here.
 	*/
@@ -2191,7 +2191,7 @@ export interface Rp1ProgramEntry
 	objectivesMet?: boolean | null;
 	/**
 	* Accepting is possible right now on RP-1's own reading: not already active,
-	* not completed, not disabled, requirements met. It does NOT include the
+	* not completed, not disabled, requirements met. It does not include the
 	* Confidence check, which RP-1 makes with a broadcast query; compare
 	* `Rp1ProgramEntry.confidenceCost` against `rp1.confidence` for that half.
 	*/
@@ -2212,7 +2212,7 @@ export interface Rp1ProgramEntry
 	* The duration actually in force, which is what the deadline, the funding
 	* curve and the payment schedule are all measured against.
 	*
-	* TWO PROVENANCES, and the difference is worth knowing. On an accepted Program
+	* Two provenances, and the difference is worth knowing. On an accepted Program
 	* this is derived exactly from the state RP-1 persists: its own funding tick
 	* leaves `deadlineUT`, `lastPaymentUT` and `fracElapsed` consistent with each
 	* other, so the duration falls out of the three and carries every modifier a
@@ -2407,7 +2407,7 @@ export interface Rp1FundingCurveEntry
 	/**
 	* This is the curve RP-1 falls back to. It matters because the fallback is not
 	* an error path: `ProgramHandlerSettings.FundingCurve` returns it for an empty
-	* name AND for a name it does not hold, so a Program whose
+	* name and for a name it does not hold, so a Program whose
 	* `Rp1ProgramEntry.fundingCurve` is absent is genuinely paid on this curve
 	* rather than on none.
 	*/
@@ -2423,8 +2423,8 @@ export interface Rp1FundingCurveEntry
 * One kerbal's RP-1 schedule: when their career ends, what they are training
 * on now, and what training they are about to lose.
 *
-* The channel is a BARE ARRAY of these entries, one per kerbal RP-1 has any
-* record of, keyed by `Rp1CrewEntry.name`. That is deliberately NOT the whole
+* The channel is a bare array of these entries, one per kerbal RP-1 has any
+* record of, keyed by `Rp1CrewEntry.name`. That is deliberately not the whole
 * roster: RP-1 tracks a retirement date for crew it manages, and a kerbal with
 * no row is a kerbal RP-1 is not scheduling, which is a different answer from
 * one whose dates are all absent.
@@ -2441,7 +2441,7 @@ export interface Rp1CrewEntry
 	*/
 	name?: string | null;
 	/**
-	* Whether RP-1 counts this kerbal as a retiree. The SAME fact the crewStanding
+	* Whether RP-1 counts this kerbal as a retiree. The same fact the crewStanding
 	* capability puts on the stock roster, carried here as well because this
 	* channel is read by a surface that is already looking at RP-1 rows and should
 	* not have to join back to answer "did this schedule complete".
@@ -2450,14 +2450,14 @@ export interface Rp1CrewEntry
 	/**
 	* When this kerbal retires, as universal time. Absent when RP-1 holds no
 	* retirement date for them, which is a real state (a kerbal hired this tick,
-	* or a save where retirement is switched off) and NOT a retirement due now:
+	* or a save where retirement is switched off) and not a retirement due now:
 	* RP-1's own getter answers 0 there, and 0 is a date.
 	*/
 	retiresAtUt?: Value<"ut"> | null;
 	/**
 	* The furthest that date could still be pushed: the current date plus the
 	* extension this kerbal has not yet spent. RP-1 caps the total extension a
-	* career can earn per kerbal, so this is a CEILING rather than a forecast, and
+	* career can earn per kerbal, so this is a ceiling rather than a forecast, and
 	* it is what makes `Rp1CrewEntry.retiresAtUt` actionable: a date three years
 	* out that can be pushed to fifteen is a different planning problem from one
 	* that cannot move.
@@ -2466,7 +2466,7 @@ export interface Rp1CrewEntry
 	/**
 	* Extension already earned and spent against the cap, in seconds. Zero is a
 	* truthful reading (a kerbal who has flown nothing interesting has earned
-	* nothing), so it is NOT folded to absent; absent means RP-1 has no retirement
+	* nothing), so it is not folded to absent; absent means RP-1 has no retirement
 	* record for the kerbal at all.
 	*/
 	retirementExtensionUsedSeconds?: Value<"s"> | null;
@@ -2507,7 +2507,7 @@ export interface Rp1CrewEntry
 	*/
 	trainingFinishesAtUt?: Value<"ut"> | null;
 	/**
-	* When this kerbal's SOONEST mission training lapses, as universal time.
+	* When this kerbal's soonest mission training lapses, as universal time.
 	* Absent when nothing they hold is perishable.
 	*
 	* The soonest rather than the whole list, because that is the one an operator
@@ -2528,7 +2528,7 @@ export interface Rp1CrewEntry
 	trainingExpiryCount?: Value<"count"> | null;
 }
 /**
-* The `rp1.crewProgram` channel payload: the RULES this career's personnel
+* The `rp1.crewProgram` channel payload: the rules this career's personnel
 * schedule runs under, as opposed to any one kerbal's place in it.
 *
 * A wrapper object, not an array: these are career-wide switches and rates.
@@ -2573,20 +2573,20 @@ export interface Rp1CrewProgram
 *
 * **Why this exists beside `spaceCenter.savedShips`.** That channel is the
 * stock craft-folder listing and answers a different question: what could be
-* LAUNCHED. It carries no craft-file address, no notion of a launch complex,
+* launched. It carries no craft-file address, no notion of a launch complex,
 * and stock's own cost rather than the one RP-1 charges. Under RP-1 a craft is
 * not launched from a folder at all: it is integrated at a complex that
 * decides what it may weigh and how large it may be, and a widget offering to
-* start a build has to know which complexes would take it BEFORE the press or
+* start a build has to know which complexes would take it before the press or
 * it is offering a control that can only refuse.
 *
-* **This is a PREVIEW, and the command is the authority.** Everything here is
-* measured from the craft FILE without loading it, because loading one
-* instantiates a part per PART node and a sampled capture must not do that
+* **This is a preview, and the command is the authority.** Everything here is
+* measured from the craft file without loading it, because loading one
+* instantiates a part per part node and a sampled capture must not do that
 * every tick. Two of RP-1's own arms cannot be answered that way: whether the
 * craft is human-rated, which RP-1 derives from part tags, and whether the
-* complex stocks the resources it needs. Both are therefore NOT applied here,
-* and the direction is deliberate: an unanswerable arm PERMITS, so the control
+* complex stocks the resources it needs. Both are therefore not applied here,
+* and the direction is deliberate: an unanswerable arm permits, so the control
 * stays pressable and `rp1.build.start` gives RP-1's own refusal. A dark
 * control with a reason nobody could establish is the dead end this channel
 * exists to remove.
@@ -2594,7 +2594,7 @@ export interface Rp1CrewProgram
 export interface Rp1BuildableCraftEntry
 {
 	/**
-	* The craft FILE's own name, without its extension, and what `rp1.build.start`
+	* The craft file's own name, without its extension, and what `rp1.build.start`
 	* is addressed with. See `Rp1BuildStartArgs.craftFile` for why it is not the
 	* ship name.
 	*/
@@ -2660,7 +2660,7 @@ export interface Rp1BuildableComplex
 	/**
 	* Nothing this preview can see stops the build.
 	*
-	* True is not a promise. It means every arm that COULD be answered from the
+	* True is not a promise. It means every arm that could be answered from the
 	* craft file passed, and the two that could not were not applied; see the type
 	* doc. False is firmer: `Rp1BuildableComplex.refusals` names a reason RP-1
 	* itself would give.
@@ -2686,7 +2686,7 @@ export interface Rp1BuildableComplex
 *
 * **Why the setup costs are here.** The stock entry carries
 * `initialCostFunds`, `initialCostScience` and `initialCostReputation`, and
-* RP-1 NEVER CHARGES THEM: `PerformActivate` spends `ConfigRP0.SetupCosts` and
+* RP-1 never charges them: `PerformActivate` spends `ConfigRP0.SetupCosts` and
 * nothing else. On shipped content both are zero, so a control reading the
 * stock fields as "the price" is right by accident and would go on saying "no
 * cost" the moment a config set one.
@@ -2726,7 +2726,7 @@ export interface Rp1LeaderEntry
 	/** Why `Rp1LeaderEntry.canAppoint` is false, in a sentence. */
 	appointBlockedReason?: string | null;
 	/**
-	* The instant a dismissed leader's re-hire cooldown ends. An INSTANT, so a UT.
+	* The instant a dismissed leader's re-hire cooldown ends. An instant, so a UT.
 	* Absent when the leader was never dismissed or has no cooldown.
 	*/
 	rehireFromUt?: Value<"ut"> | null;
@@ -2739,10 +2739,10 @@ export interface Rp1LeaderEntry
 	/** Confidence RP-1 charges to appoint. */
 	setupConfidence?: Value<"confidence"> | null;
 	/**
-	* The reputation dismissal costs RIGHT NOW, on a serving leader.
+	* The reputation dismissal costs right now, on a serving leader.
 	*
 	* RP-1's own `DeactivateCost()`, the figure dismissal takes. Never funds and
-	* never a refund, and a fraction of CURRENT reputation rather than a fixed
+	* never a refund, and a fraction of current reputation rather than a fixed
 	* figure, so it moves as reputation does: a flat 20% until the leader's least
 	* duration, then falling to zero over the removal penalty window. A client
 	* must show it at the moment of the decision rather than caching it.
@@ -2764,18 +2764,18 @@ export interface Rp1LeaderEntry
 	*/
 	removeOnDeactivate?: boolean | null;
 	/**
-	* How long after dismissal the leader can be hired again. An INTERVAL, so
+	* How long after dismissal the leader can be hired again. An interval, so
 	* seconds rather than a UT. Zero on a leader that is removed for good.
 	*/
 	reactivateCooldown?: Value<"s"> | null;
 	/**
 	* The instant dismissal becomes possible at all, on a serving leader. An
-	* INSTANT, so a UT.
+	* instant, so a UT.
 	*/
 	canRemoveFromUt?: Value<"ut"> | null;
 	/**
 	* The instant dismissal stops costing reputation, on a serving leader. An
-	* INSTANT, so a UT.
+	* instant, so a UT.
 	*/
 	freeToRemoveFromUt?: Value<"ut"> | null;
 }
@@ -2786,7 +2786,7 @@ export interface Rp1LeaderEntry
 * RP-1 runs this as a background project rather than a one-off purchase: it
 * spends funds on new hires as they become affordable, so the operator commits
 * once and the career keeps drawing down against it for as long as it takes.
-* That makes it a thing the operator must be able to SEE, because it spends
+* That makes it a thing the operator must be able to see, because it spends
 * money when nobody is looking.
 *
 * It is silently cleared when the complex it hires for is modified or
@@ -2794,7 +2794,7 @@ export interface Rp1LeaderEntry
 * that survivable: the operator watches it disappear rather than believing in
 * a schedule that no longer exists.
 *
-* NO PROGRESS FRACTION, deliberately. RP-1's own `GetFractionComplete()`
+* No progress fraction, deliberately. RP-1's own `GetFractionComplete()`
 * divides two ints and widens the result afterwards, confirmed at IL as `div`
 * then `conv.r8`, so it reads zero for the whole hire and snaps to one at the
 * end. Reproducing it would import the bug; `Rp1HireTarget.leftToHire` and
@@ -2826,14 +2826,14 @@ export interface Rp1HireTarget
 	lcId?: string | null;
 	/**
 	* RP-1's estimate of how long until the target is met, which is really a
-	* forecast of when the funds will exist. An INTERVAL, so seconds.
+	* forecast of when the funds will exist. An interval, so seconds.
 	*/
 	timeLeft?: Value<"s"> | null;
 }
 /**
 * A standing instruction to stop time warp once the balance reaches a figure.
 *
-* A warp STOP CONDITION rather than a transaction, and it PERSISTS past the
+* A warp stop condition rather than a transaction, and it persists past the
 * warp it stopped: warping again resumes toward the same figure. An operator
 * who does not know it is set reads the next unexplained warp halt as the game
 * misbehaving.
@@ -2855,7 +2855,7 @@ export interface Rp1FundTarget
 	originalFunds?: Value<"funds"> | null;
 	/**
 	* RP-1's estimate of the wait, iterated against the income curve rather than
-	* divided out of it. An INTERVAL, so seconds.
+	* divided out of it. An interval, so seconds.
 	*/
 	timeLeft?: Value<"s"> | null;
 }
@@ -2874,13 +2874,13 @@ export interface Rp1FundTarget
 * student otherwise, because dropping one student below the minimum would
 * strand the rest.
 *
-* NO PER-COURSE COST, and it is not an omission. Training is a per-day upkeep
+* No PER-COURSE cost, and it is not an omission. Training is a per-day upkeep
 * rather than a purchase, and RP-1's own formula needs
-* `TrainingDatabase.FillBools`, which fills and resets SHARED MUTABLE STATIC
+* `TrainingDatabase.FillBools`, which fills and resets shared mutable static
 * arrays: a telemetry read must not move the game's scratch state. The
 * career-wide figure is already published on the economy capability, and
 * `Rp1TrainingCourseEntry.students` with `Rp1TrainingCourseEntry.started` are
-* what drive it, since only a STARTED course is paid for at all.
+* what drive it, since only a started course is paid for at all.
 */
 export interface Rp1TrainingCourseEntry
 {
@@ -2923,25 +2923,25 @@ export interface Rp1TrainingCourseEntry
 	queued?: boolean | null;
 	completed?: boolean | null;
 	/**
-	* When the course itself finishes. An INSTANT, so a UT.
+	* When the course itself finishes. An instant, so a UT.
 	*
-	* There is deliberately NO progress fraction beside it. RP-1's own is sound
+	* There is deliberately no progress fraction beside it. RP-1's own is sound
 	* arithmetic, unlike its hire and R&R fractions, but it already rides
 	* `rp1.crew` per kerbal and a course with no students has no progress to
 	* report, so a copy here would be duplication that also makes this date look
 	* like something a client could integrate toward.
 	*
-	* NOT when the crew can fly: see
+	* Not when the crew can fly: see
 	* `Rp1TrainingCourseEntry.studentsAvailableAtUt`.
 	*/
 	completesAtUt?: Value<"ut"> | null;
 	/**
-	* When the last student becomes available again, which is LATER than
+	* When the last student becomes available again, which is later than
 	* `Rp1TrainingCourseEntry.completesAtUt` and is the date a mission planner
 	* actually needs.
 	*
 	* RP-1 marks each student inactive for **120%** of the course's base time at
-	* the moment it STARTS, so a kerbal stays grounded for roughly a fifth of the
+	* the moment it starts, so a kerbal stays grounded for roughly a fifth of the
 	* course again after it has finished. Read from the students' own inactive
 	* window rather than derived, so it stays right if RP-1 changes the
 	* multiplier.
@@ -2956,13 +2956,13 @@ export interface Rp1TrainingCourseEntry
 /**
 * One training RP-1 could be asked to run: a template, not a course.
 *
-* The ENROLABLE side of `Rp1TrainingCourseEntry`. A course row exists because
+* The enrolable side of `Rp1TrainingCourseEntry`. A course row exists because
 * somebody started it; a template row exists because the install has a crewed
 * part that can be trained on, whether or not anyone ever will. An operator
 * picking a training reads this list; an operator watching one in progress
 * reads the other.
 *
-* **NO AC-LEVEL REQUIREMENT, and it is a refusal rather than an oversight.**
+* **no AC-LEVEL requirement, and it is a refusal rather than an oversight.**
 * RP-1 gates each proficiency training on an Astronaut Complex tier, and the
 * getter that states it, `TrainingTemplate.ACLevelRequirement`, reaches
 * `TrainingDatabase.GetACRequirement`, whose first statement is
@@ -2988,7 +2988,7 @@ export interface Rp1TrainingTemplateEntry
 	/** What the training is on, RP-1's own target string. */
 	target?: string | null;
 	/**
-	* How long the course takes with nobody on it yet. An INTERVAL, so seconds.
+	* How long the course takes with nobody on it yet. An interval, so seconds.
 	*
 	* The persisted field, read directly rather than through `GetBaseTime`. With
 	* an empty student list that method returns this number unchanged, and a fresh
@@ -2997,7 +2997,7 @@ export interface Rp1TrainingTemplateEntry
 	* described on this type. So the field is both the safe read and the right
 	* one.
 	*
-	* It is a FLOOR for a real enrolment, not a quote. RP-1 lengthens a
+	* It is a floor for a real enrolment, not a quote. RP-1 lengthens a
 	* proficiency course by each student's prior proficiency and a mission course
 	* by their stupidity, and the elapsed time then divides by a build rate the
 	* Astronaut Complex tier sets. The course's own `rp1.training[].completesAtUt`
@@ -3032,10 +3032,10 @@ export interface Rp1TrainingTemplateEntry
 /**
 * One tooling RP-1 would charge for on the ship currently in the editor.
 *
-* **What tooling IS, because the row does not read without it.** RP-1 keeps a
+* **What tooling is, because the row does not read without it.** RP-1 keeps a
 * CAREER-GLOBAL database keyed on a tooling type and an ordered tuple of
 * parameters, not on a part. Two parts of different sizes share one tooling
-* whenever their type matches and every parameter is within FOUR PERCENT, so
+* whenever their type matches and every parameter is within four percent, so
 * paying for one part can leave a neighbour free. A row here is therefore a
 * tooling this part needs, not a thing this part owns.
 */
@@ -3070,7 +3070,7 @@ export interface Rp1ToolingEntry
 	* rather than anything derived here.
 	*
 	* **There is no level beside it, and that is an omission with a reason.**
-	* Tooling is genuinely PARTIAL: a diameter can be owned while a length is not.
+	* Tooling is genuinely partial: a diameter can be owned while a length is not.
 	* RP-1 answers the level only when handed the right parameter tuple, which is
 	* the thing above that cannot be read uniformly, and asking with the wrong
 	* tuple returns a confidently wrong level. The economics of a half-owned
@@ -3079,12 +3079,12 @@ export interface Rp1ToolingEntry
 	*/
 	tooled?: boolean | null;
 	/**
-	* What finishing THIS tooling costs now. Lower on a partly-owned tooling,
+	* What finishing this tooling costs now. Lower on a partly-owned tooling,
 	* which is where the missing level shows itself.
 	*/
 	toolingCost?: Value<"funds"> | null;
 	/**
-	* What NOT tooling costs, per build, for ever.
+	* What not tooling costs, per build, for ever.
 	*
 	* This is the number the decision actually turns on and the reason the row
 	* exists. An untooled part carries a surcharge onto the vessel's cost every
@@ -3097,9 +3097,9 @@ export interface Rp1ToolingEntry
 	/** The part's craft id, and what `rp1.tooling.refit` names. */
 	partId?: string | null;
 	/**
-	* How many OTHER parts a refit of this one would take with it.
+	* How many other parts a refit of this one would take with it.
 	*
-	* Carried so it can be said BEFORE the press. RP-1's own refit resizes every
+	* Carried so it can be said before the press. RP-1's own refit resizes every
 	* symmetry counterpart and tells you how many afterwards, in a screen message;
 	* a console can put the number beside the control instead, which is the same
 	* disclosure at the moment it can still change the answer.
@@ -3112,10 +3112,10 @@ export interface Rp1ToolingEntry
 	*/
 	refittable?: boolean | null;
 	/**
-	* The sizes this part could be REFITTED to: owned toolings it can be reshaped
+	* The sizes this part could be refitted to: owned toolings it can be reshaped
 	* onto instead of buying a new one.
 	*
-	* **Why a list and not two numbers.** A refit moves a part TO a size, so it
+	* **Why a list and not two numbers.** A refit moves a part to a size, so it
 	* needs a size to move to, and there is no default one. The career's owned
 	* toolings are the only legal targets, and which of them a given part can take
 	* depends on the tank materials it has unlocked, so the answer is per part
@@ -3126,16 +3126,16 @@ export interface Rp1ToolingEntry
 	* on two parameters, and only when its material picker answers with something
 	* the part can use; all three are applied before a row reaches this list.
 	*
-	* **It is a true SUBSET of what RP-1's window offers, deliberately.** The rows
-	* are the sizes owned for the part's OWN tooling type. RP-1 merges a whole
+	* **It is a true subset of what RP-1's window offers, deliberately.** The rows
+	* are the sizes owned for the part's own tooling type. RP-1 merges a whole
 	* bucket of related types, which also lets it offer a refit onto another
 	* material's tooling, and the bucketing is a ten-branch private over type-name
 	* prefixes inside its GUI. Narrowing loses options; transcribing a GUI private
 	* would risk offering an illegal one.
 	*
-	* NULL where the question does not apply: a part already tooled, a part
+	* Null where the question does not apply: a part already tooled, a part
 	* nothing can reshape (see `Rp1ToolingEntry.refittable`), or a tooling type
-	* RP-1 offers no refit for. EMPTY is the real, different answer that the
+	* RP-1 offers no refit for. Empty is the real, different answer that the
 	* career owns nothing this part could move to.
 	*/
 	refitTargets?: Rp1ToolingRefitTarget[] | null;
@@ -3183,7 +3183,7 @@ export interface Rp1ToolingRefitTarget
 * would report a ship with nothing left to do. The channel says nothing
 * instead.
 *
-* EDITOR ONLY. The whole reading comes off the ship on the editor's table, so
+* Editor only. The whole reading comes off the ship on the editor's table, so
 * there is no sample from anywhere else and none is implied.
 */
 export interface Rp1Tooling
@@ -3191,7 +3191,7 @@ export interface Rp1Tooling
 	/**
 	* RP-1's own price for tooling everything untooled on this ship.
 	*
-	* **NOT the sum of the rows.** Tooling one part can leave another free,
+	* **not the sum of the rows.** Tooling one part can leave another free,
 	* because a tooling matches any part of the same type within four per cent, so
 	* adding the column up overstates. This is RP-1's own deduplicated figure,
 	* taken off the field it caches it in rather than by asking its window to
@@ -3212,11 +3212,11 @@ export interface Rp1Tooling
 }
 /**
 * The `rp1.buildCost` channel: what putting the vehicle on the editor's table
-* into the sky will actually cost, in FUNDS, line by line.
+* into the sky will actually cost, in funds, line by line.
 *
 * **This is deliberately not RP-1's own "Cost Breakdown".** That tab shows
 * `effectiveCost`, which is the input to `Formula.GetVesselBuildPoints` and
-* therefore decides how LONG integration takes. It is a dimensionless
+* therefore decides how long integration takes. It is a dimensionless
 * comparability metric that the producer's own tooltip describes as being for
 * comparing rockets against each other, and it buys nothing. A number that
 * looks like money, is labelled like money and is not money is the one thing
@@ -3224,7 +3224,7 @@ export interface Rp1Tooling
 * effort is a real question and belongs on a channel of its own, named for
 * what it drives.
 *
-* EDITOR ONLY, like `rp1.tooling` beside it: every figure is read off the
+* Editor only, like `rp1.tooling` beside it: every figure is read off the
 * vehicle being designed.
 */
 export interface Rp1BuildCost
@@ -3235,7 +3235,7 @@ export interface Rp1BuildCost
 	* **This already contains `Rp1BuildCost.untooledSurcharge`.** The surcharge
 	* reaches the vessel through `IPartCostModifier`, which the game persists onto
 	* each part as `modCost` and folds into the part cost before anyone here sees
-	* it. So the surcharge below is an OF WHICH, never an addend, and a client
+	* it. So the surcharge below is an of which, never an addend, and a client
 	* that adds the two has charged the operator twice for the same thing.
 	*/
 	vehicleCost?: Value<"funds"> | null;
@@ -3244,7 +3244,7 @@ export interface Rp1BuildCost
 	* parts, and therefore how much of it would go away if the tooling were
 	* bought.
 	*
-	* A SUBSET of the line above, not a line of its own. It is also the number
+	* A subset of the line above, not a line of its own. It is also the number
 	* that makes `Rp1BuildCost.toolingCost` a decision rather than an expense: the
 	* surcharge is paid on every copy of this vehicle ever built, and the tooling
 	* is paid once.
@@ -3259,7 +3259,7 @@ export interface Rp1BuildCost
 	toolingCost?: Value<"funds"> | null;
 	/**
 	* Entry costs for parts on this vehicle the career has not yet paid for.
-	* Distinct from researching the tech: RP-1 charges to unlock the NODE and
+	* Distinct from researching the tech: RP-1 charges to unlock the node and
 	* again to buy the part.
 	*/
 	unlockCost?: Value<"funds"> | null;
@@ -3309,13 +3309,13 @@ export interface Rp1RequiredTechEntry
 	* The node as the career's own tech tree titles it, e.g. "Supersonic Flight".
 	*
 	* KSP's `ResearchAndDevelopment.GetTechnologyTitle`, which is a title
-	* dictionary keyed on node id and consults researched state NOWHERE, so it
+	* dictionary keyed on node id and consults researched state nowhere, so it
 	* answers for an unresearched node. It loads from
 	* `Parameters.Career.TechTreeUrl`, so under RP-1 these are RP-1's own titles
 	* rather than stock's, by construction and not by arrangement.
 	*
-	* **ABSENT rather than the id when the tree has no title.**
-	* `GetTechnologyTitle` answers an unknown id with the EMPTY STRING, and two
+	* **absent rather than the id when the tree has no title.**
+	* `GetTechnologyTitle` answers an unknown id with the empty string, and two
 	* wrong things could be done with that: publish the blank, which renders as a
 	* nameless node, or substitute the id, which makes this field a lie about what
 	* it is. A client already holds `Rp1RequiredTechEntry.id` and can fall back to
@@ -3331,9 +3331,9 @@ export interface Rp1RequiredTechEntry
 	* and needs nothing from RP-1; the editor ship is walked and its parts
 	* gathered under the node each one names.
 	*
-	* **Three states, and the middle one is the one worth the care.** ABSENT means
+	* **Three states, and the middle one is the one worth the care.** absent means
 	* the editor ship could not be read at all, so nothing is claimed about which
-	* parts are waiting. EMPTY means the ship WAS read and nothing on it names
+	* parts are waiting. Empty means the ship was read and nothing on it names
 	* this node, which is a real answer and happens: a node can be required by
 	* something other than a part. A populated list is the parts themselves. An
 	* empty list is therefore never suppressed, because an operator who saw the
@@ -3352,7 +3352,7 @@ export interface Rp1RequiredTechEntry
 */
 export interface Rp1CareerEventEntry
 {
-	/** When it happened. An INSTANT, so a UT. */
+	/** When it happened. An instant, so a UT. */
 	ut?: Value<"ut"> | null;
 	/**
 	* Which of RP-1's six logs this came from: `contract`, `launch`, `failure`,
@@ -3361,7 +3361,7 @@ export interface Rp1CareerEventEntry
 	kind?: string | null;
 	/**
 	* What happened, in RP-1's own words: a contract's display name, a vessel's
-	* name, a tech node, a leader, a facility, or the PART that failed.
+	* name, a tech node, a leader, a facility, or the part that failed.
 	*
 	* Six kinds, six sources, and the last two were added after four of them were
 	* found to have no name at all. A facility construction carries only its
@@ -3391,7 +3391,7 @@ export interface Rp1CareerEventEntry
 	/** What it cost, on a leader appointment. Absent elsewhere. */
 	cost?: Value<"funds"> | null;
 	/**
-	* Whether a leader was HIRED (`true`) or dismissed. Absent on every other
+	* Whether a leader was hired (`true`) or dismissed. Absent on every other
 	* kind.
 	*
 	* Without it the row is a name and a price that read identically either way,
@@ -3414,7 +3414,7 @@ export interface Rp1CareerEventEntry
 *
 * **Only half of RP-1's career log is here, and that is deliberate.** Its
 * `CareerLog` holds two unrelated things: six lists of dated events, and a
-* monthly FINANCIAL LEDGER of about thirty figures per period. The ledger is a
+* monthly financial ledger of about thirty figures per period. The ledger is a
 * balance sheet and travels on `rp1.careerLedger`; putting twelve rows a year
 * of accounts onto an event timeline would make both worse.
 */
@@ -3442,19 +3442,19 @@ export interface Rp1CareerEvents
 * One of the space centre's buildings, as RP-1 knows it: the tier it is at,
 * the tier it can reach, and what the next step costs.
 *
-* **This channel exists because it answers OUTSIDE the space centre and
+* **This channel exists because it answers outside the space centre and
 * `career.status.facilities` does not.** Core reads a tier off the live
 * `UpgradeableFacility` MonoBehaviours, which KSP only puts in the SPACECENTER
 * scene, so every tier and price on that payload is absent from the editor,
 * from flight and from the tracking station. RP-1 does not read them that way.
-* `KCTUtilities.GetFacilityLevel` denormalises the level KSP PERSISTS in the
+* `KCTUtilities.GetFacilityLevel` denormalises the level KSP persists in the
 * save against a tier count RP-1 loads from config, and RP-1's own
 * `MaintenanceHandler.UpdateUpkeep` calls it for every facility in all four
 * scenes to bill the career for them. So on an RP-1 install these three facts
 * are readable wherever the operator is standing, and this channel carries
 * them there.
 *
-* Not a replacement for the stock payload: it carries no tier DESCRIPTIONS,
+* Not a replacement for the stock payload: it carries no tier descriptions,
 * because those come off the live facility and are genuinely scene-bound. What
 * it carries is the tier, the ceiling and the price.
 */
@@ -3501,7 +3501,7 @@ export interface Rp1FacilityEntry
 * mass its fitted avionics support has its controls taken away, in flight, by
 * an input lock. **Nothing stock says this has happened.** The lock is an
 * `InputLockManager` control lock plus a per-frame zeroing of the flight
-* control state, and neither touches the vessel's control LEVEL, so
+* control state, and neither touches the vessel's control level, so
 * `vessel.comms.controlState` reads full control throughout. RP-1's only
 * flight signal is a screen message posted once, for eight seconds, on the
 * transition. This channel is the persistent readout that gap leaves missing.
@@ -3533,7 +3533,7 @@ export interface Rp1Avionics
 	/**
 	* The mass RP-1 weighed against that limit, in tonnes.
 	*
-	* **Not the vessel's total mass.** In the editor and at PRELAUNCH RP-1
+	* **Not the vessel's total mass.** In the editor and at prelaunch RP-1
 	* discounts launch clamps and anything hanging off pad infrastructure, which
 	* are heavy, so this is the smaller figure and it is the one the verdict was
 	* reached on. A readout showing total mass beside this limit would draw NO-GO
@@ -3541,7 +3541,7 @@ export interface Rp1Avionics
 	*/
 	vesselMassTons?: Value<"t"> | null;
 	/**
-	* An interplanetary-rated unit is being held to its near-Earth limit. A SECOND
+	* An interplanetary-rated unit is being held to its near-Earth limit. A second
 	* lock reason alongside the tonnage: RP-1 raises its own reminder for this
 	* one, and a vessel comfortably inside its supported mass can still be limited
 	* by it.
@@ -3577,7 +3577,7 @@ export interface Rp1Simulation
 *
 * **Every figure is RP-1's, at RP-1's horizon.** The tab's Day, Month and Year
 * columns are separate computations rather than one daily figure scaled: the
-* subsidy is AVERAGED over the horizon as reputation decays and the subsidy
+* subsidy is averaged over the horizon as reputation decays and the subsidy
 * curve climbs, the constructions and rollouts are costed against what
 * finishes inside it, and a Program pays on its own curve. A month here is
 * RP-1's thirty days and a year its Julian 365.25.
@@ -3651,7 +3651,7 @@ export interface Rp1Budget
 }
 /**
 * One column of RP-1's Budget tab: every row it draws, at one horizon, as the
-* funds change over that horizon. NEGATIVE is money going out, which is how
+* funds change over that horizon. Negative is money going out, which is how
 * RP-1 signs them and how it prints them (in parentheses).
 *
 * The rows are RP-1's own arithmetic, row for row, with the career's currency
@@ -4159,7 +4159,7 @@ export interface Rp1LedgerPeriodEntry
 * A Program and never a leader: RP-1 makes the two one class family, but their
 * money runs in different currencies and directions, so they are two commands.
 * Accepting charges the Confidence price for the chosen speed in full and then
-* PAYS the career funds on the Program's curve. A leader named here is refused
+* pays the career funds on the Program's curve. A leader named here is refused
 * and pointed at `rp1.leader.appoint`.
 */
 export interface Rp1ProgramAcceptArgs
@@ -4173,7 +4173,7 @@ export interface Rp1ProgramAcceptArgs
 	* The speed to accept at: "Slow", "Normal" or "Fast", as
 	* `rp1.programs[].speedOptions[].speed` names them.
 	*
-	* **REQUIRED**, never defaulted to whatever RP-1 has selected. The speed fixes
+	* **required**, never defaulted to whatever RP-1 has selected. The speed fixes
 	* the Confidence price, the term and so the rate the Program pays at, for the
 	* life of the Program, so it is the decision the operator is making; a
 	* substituted default would spend a price nobody chose.
@@ -4203,7 +4203,7 @@ export interface Rp1LeaderAppointArgs
 	/**
 	* The commitment level, where the strategy has a slider.
 	*
-	* Absent means the strategy's own default. It is a FRACTION rather than a
+	* Absent means the strategy's own default. It is a fraction rather than a
 	* percentage, matching `factor` on the wire, and it scales any up-front cost,
 	* which is why the control that sends it must show the balance beside it.
 	*

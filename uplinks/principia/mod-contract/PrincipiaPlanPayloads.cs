@@ -6,11 +6,11 @@ using Sitrep.Contract;
 namespace GonogoPrincipiaUplink;
 
 /// <summary>
-/// The <c>principia.plan</c> channel: the selected flight plan as the PLUGIN
+/// The <c>principia.plan</c> channel: the selected flight plan as the plugin
 /// answers it, this tick, complete enough to tune a burn against.
 ///
 /// <para><b>This channel used to have a twin, and the twin is gone.</b>
-/// <c>principia.flightPlan</c> mirrored the producer's own planner WINDOW, and
+/// <c>principia.flightPlan</c> mirrored the producer's own planner window, and
 /// the fields it read refresh only while that window renders. So it answered
 /// only when the player happened to have that panel open, which is not a
 /// property a telemetry channel may have, whatever its doc comment says. It was
@@ -20,7 +20,7 @@ namespace GonogoPrincipiaUplink;
 /// <para>Everything it carried is here. The burn shape was already a strict
 /// superset, and its five remaining facts now come from the plugin: the
 /// integration status below, and <see cref="FirstFutureBurnIndex"/>. Its sixth,
-/// a first-error burn index, is NOT here and is not a loss: the window's field
+/// a first-error burn index, is not here and is not a loss: the window's field
 /// held the index of the control the player last edited when an error came back,
 /// cleared on the next render. It described an interaction, not a plan, and the
 /// plan-level fact a client wants is <see cref="AnomalousBurnCount"/>.</para>
@@ -85,21 +85,21 @@ public sealed class PrincipiaPlan
     [SitrepUnit(Units.UniversalTime)]
     public double? ActualFinalTimeUt { get; set; }
 
-    /// <summary>How many burns the integrator flagged. They are the LAST n of
+    /// <summary>How many burns the integrator flagged. They are the last n of
     /// <see cref="Burns"/>, and each carries its own flag so no client repeats
     /// that rule.</summary>
     [SitrepUnit(Units.Count)]
     public int? AnomalousBurnCount { get; set; }
 
     /// <summary>
-    /// Whether the plan integrated: true observed OK, false observed failed,
+    /// Whether the plan integrated: true observed ok, false observed failed,
     /// <b>null when the status could not be read at all</b>.
     ///
     /// <para>The third state is the point. Collapsing an unreadable status into
     /// "integrated" would report health from a failed read, and a plan whose
     /// status we cannot see is a plan we cannot vouch for.</para>
     ///
-    /// <para>The plugin's own answer for the PLAN, asked each tick. Its planner
+    /// <para>The plugin's own answer for the plan, asked each tick. Its planner
     /// window keeps a different thing under a similar name: the status of the
     /// last edit the player made in that panel, which it clears once it has
     /// shown it.</para>
@@ -183,8 +183,8 @@ public sealed class PrincipiaWriteSurface
     /// <summary>True when the operator has armed it, so an edit will actually be
     /// attempted.
     ///
-    /// <para><b>NOT the same as "everything was verified", which is what it used to
-    /// be read as.</b> Arming is allowed on a PARTIAL verification, because the two
+    /// <para><b>not the same as "everything was verified", which is what it used to
+    /// be read as.</b> Arming is allowed on a partial verification, because the two
     /// structs fail independently and the step-limit remedy should survive a burn
     /// probe that could not run. The two flags below say which was established, and
     /// they are on the wire because a gate may legitimately pass on partial
@@ -193,7 +193,7 @@ public sealed class PrincipiaWriteSurface
     public bool? Armed { get; set; }
 
     /// <summary>
-    /// Whether a BURN was actually round-tripped through the plugin and came back
+    /// Whether a burn was actually round-tripped through the plugin and came back
     /// unchanged.
     ///
     /// <para>False beside <see cref="Armed"/> true is a real and reachable state,
@@ -239,7 +239,7 @@ public sealed class PrincipiaWriteSurface
 /// The bounds the flight plan's own integration runs to, as the plugin holds
 /// them.
 ///
-/// <para>The two integrator KINDS travel even though nothing sane changes them,
+/// <para>The two integrator kinds travel even though nothing sane changes them,
 /// because they are the field where a change is unlogged: they are drawn from
 /// disjoint sets over different equations, and handing the plugin the wrong one
 /// aborts the game with no message. Publishing them is what lets a client see
@@ -266,7 +266,7 @@ public sealed class PrincipiaPlanIntegrator
     [SitrepUnit(Units.Enumeration)]
     public double? IntegratorKind { get; set; }
 
-    /// <summary>The generalized integrator kind, from a DIFFERENT set of
+    /// <summary>The generalized integrator kind, from a different set of
     /// values than <see cref="IntegratorKind"/>.</summary>
     [SitrepUnit(Units.Enumeration)]
     public double? GeneralizedIntegratorKind { get; set; }
@@ -290,7 +290,7 @@ public sealed class PrincipiaPlannedBurn
     [SitrepUnit(Units.Count)]
     public int? Index { get; set; }
 
-    /// <summary>Ignition instant. The countdown an operator needs is to THIS,
+    /// <summary>Ignition instant. The countdown an operator needs is to this,
     /// never to a node: a finite burn starts here and the producer anchors its
     /// own countdown the same way.</summary>
     [SitrepUnit(Units.UniversalTime)]
@@ -373,12 +373,12 @@ public sealed class PrincipiaPlannedBurn
 
     /// <summary>
     /// The body the burn's frame is centred on, when its kind has one. The two
-    /// rotating kinds are declined with a PAIR instead and leave this null.
+    /// rotating kinds are declined with a pair instead and leave this null.
     ///
     /// <para>Here rather than joined from
     /// <see cref="PrincipiaSettings.BurnFrames"/>, which carries the same frames
     /// as a bare list: a client holding a burn would have to find its frame in
-    /// that list by POSITION, and the position is not the burn's. A manoeuvre
+    /// that list by position, and the position is not the burn's. A manoeuvre
     /// whose frame cannot be read is dropped from that list rather than held open
     /// in it, which shifts every entry after it, so an index join is silently
     /// wrong exactly when a frame fails to read. Read off the same descriptor
@@ -401,7 +401,7 @@ public sealed class PrincipiaPlannedBurn
     /// <summary>Every body on the primary side, of which <see cref="PrimaryBody"/>
     /// is the first. Carried for the same reason
     /// <see cref="PrincipiaReferenceFrame.PrimaryBodies"/> is: a pulsating frame
-    /// turns about a pair of SETS, and the head alone is a name a reader
+    /// turns about a pair of sets, and the head alone is a name a reader
     /// recognises with the rest of the defining mass missing.</summary>
     [SitrepUnit(Units.Text)]
     public string[]? PrimaryBodies { get; set; }
@@ -466,7 +466,7 @@ public enum PrincipiaWriteOutcome
     Rejected = 1,
 
     /// <summary>The plugin accepted the write. The plan state on the receipt is
-    /// what it looks like AFTER, re-read rather than assumed.</summary>
+    /// what it looks like after, re-read rather than assumed.</summary>
     Written = 2,
 }
 
@@ -536,7 +536,7 @@ public sealed class PrincipiaPlanWriteReceipt
 ///
 /// <para>Arming is not a preference toggle. Every plan write is persisted into
 /// the player's save, can move and delete stock manœuvre nodes on the flying
-/// vessel, can quadruple a THIRD vessel's prediction budget, and re-integrates
+/// vessel, can quadruple a third vessel's prediction budget, and re-integrates
 /// on the game's own thread with one wait that has no timeout. That is the class
 /// of consequence that put frame-setting behind an arm rather than in a settings
 /// panel.</para>
@@ -584,7 +584,7 @@ public enum PrincipiaBurnProfile
 /// <c>principia.plan.burn.insert</c>: tune one burn.
 ///
 /// <para><b>Every field is optional and an omitted field means "leave it".</b>
-/// The burn that reaches the plugin is the burn READ BACK from it with the
+/// The burn that reaches the plugin is the burn read back from it with the
 /// stated fields changed, never one assembled here. The producer's burn struct
 /// is generated from a schema that changed in the release this Uplink is keyed
 /// to; a round trip is layout-agnostic in a way a literal is not.</para>
@@ -678,7 +678,7 @@ public class PrincipiaComposedBurn
 /// centre and transmitted to be instantiated aboard.
 ///
 /// <para><b>Why this exists when per-burn edits already do.</b> Five separate burn
-/// commands are five separate messages, each with its own light-time, each able to
+/// commands are five separate messages, each with its own signal delay, each able to
 /// arrive late, out of order or not at all. A craft that received three of them
 /// would fly a plan no one composed and no one approved. One plan is one message,
 /// applied whole or not at all.</para>
@@ -713,7 +713,7 @@ public class PrincipiaPlanSendArgs
     public double? ComposedAtViewUt { get; set; }
 
     /// <summary>
-    /// The instant the vessel state used for planning was actually TRUE, which is at
+    /// The instant the vessel state used for planning was actually true, which is at
     /// or before <see cref="ComposedAtViewUt"/>. Both are carried because they answer
     /// different questions: one is when the operator decided, the other is how old
     /// their information already was.
@@ -722,8 +722,8 @@ public class PrincipiaPlanSendArgs
     public double? ObservedAtUt { get; set; }
 
     /// <summary>
-    /// The burns, in order. An EMPTY list is a plan with no burns, which is a
-    /// meaningful thing to send (it clears the plan); a NULL list is a malformed
+    /// The burns, in order. An empty list is a plan with no burns, which is a
+    /// meaningful thing to send (it clears the plan); a null list is a malformed
     /// command and is refused, because the two must not be confused.
     /// </summary>
     public PrincipiaComposedBurn[]? Burns { get; set; }

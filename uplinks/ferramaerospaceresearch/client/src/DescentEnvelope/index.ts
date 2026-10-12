@@ -20,7 +20,7 @@ import "../topics.js";
 import { AERO } from "../uplink.js";
 
 /**
- * The aero model's own descent envelope, as a CONTRIBUTED PLOT.
+ * The aero model's own descent envelope, as a contributed plot.
  *
  * A velocity-height instrument: speed across, height above ground up, the
  * ground at the bottom edge. Every statement a full-fidelity aerodynamics model
@@ -31,13 +31,13 @@ import { AERO } from "../uplink.js";
  * It has been three things. It was a React overlay bound to a
  * `landing-status.envelope` augment slot, drawing its own `<svg>` in a
  * coordinate space the host widget handed it. Then it was a set of marks
- * contributed INTO the host widget's plot. It is now a plot of its own,
+ * contributed into the host widget's plot. It is now a plot of its own,
  * contributed to `plots`, because drawing into somebody else's instrument is
  * not something the framework offers: an author contributes a whole plot or
  * nothing.
  *
  * The visible cost of that is honest and worth stating: the model's curve and
- * the back-out curve it disagrees with are on THIS plot now, beside the host
+ * the back-out curve it disagrees with are on this plot now, beside the host
  * widget's own envelope rather than on it, so an operator with FAR installed
  * sees two envelopes. What it buys is that the two models are never silently
  * blended into one picture whose provenance you cannot read, and that nothing
@@ -46,20 +46,20 @@ import { AERO } from "../uplink.js";
  *
  * Two marks, and each answers a question the first-party plot cannot:
  *
- * - **the model's own TERMINAL VELOCITY becomes a second curve**, and the
+ * - **the model's own terminal velocity becomes a second curve**, and the
  *   descent is re-run against it. The first-party curve is a back-out from
  *   measured drag that assumes the drag coefficient holds all the way down,
  *   which is exactly what the transonic drag rise breaks. Where the two curves
  *   separate, the plot's own projection is soft, and the model's settle tick
  *   says at what height the vessel will actually be slow. That is the entry
- *   question, and BALLISTIC COEFFICIENT is the number that sets the answer, so
+ *   question, and ballistic coefficient is the number that sets the answer, so
  *   it is written on the tick rather than parked in a readout.
- * - **a STALL word at the plot's edge** once the wing starts to depart, because
+ * - **a stall word at the plot's edge** once the wing starts to depart, because
  *   that is the one aerodynamic event that changes what the pilot does next and
  *   an operator watching the plot must not have to look elsewhere for it.
  *
- * ANGLE OF ATTACK is deliberately NOT on the plot, and the reasoning is worth
- * keeping: the plot already spends screen DIRECTION on (delta-v, delta-h), which
+ * Angle of attack is deliberately not on the plot, and the reasoning is worth
+ * keeping: the plot already spends screen direction on (delta-v, delta-h), which
  * is exactly what the predicted trace is, so any glyph rotated in the plot's own
  * frame competes with the trace leaving it. Alpha is a badge, where a number in
  * a fixed place is read as a number.
@@ -88,7 +88,7 @@ export interface AeroDescentInputs {
   alpha: number | null;
   /** Wing-area-weighted stalled fraction, 0..1. */
   stall: number | null;
-  /** The model's terminal velocity at the vessel's CURRENT conditions, m/s. */
+  /** The model's terminal velocity at the vessel's current conditions, m/s. */
   modelTerminal: number | null;
   /** Ballistic coefficient, kg/m². */
   ballistic: number | null;
@@ -98,7 +98,7 @@ export interface AeroDescentInputs {
   held: boolean;
   /** True when the model holds no reading at all for this vessel. */
   noReading: boolean;
-  /** The plot's own anchors, so the model's curve rides the SAME density column
+  /** The plot's own anchors, so the model's curve rides the same density column
    *  the host widget's does and the two can only differ where the physics differs. */
   plotTerminal: number | null;
   plotTouchdown: number | null;
@@ -306,7 +306,7 @@ export function aeroDescentLayers(
 }
 
 /**
- * Alpha and stall as BADGES, which is where a number belongs on this widget.
+ * Alpha and stall as badges, which is where a number belongs on this widget.
  *
  * A badge is auto-mounted for every widget by the framework, so this needs
  * nothing added to `landing-status`: the point of moving them here rather than
@@ -349,7 +349,7 @@ export function aeroBadges(
   return badges;
 }
 
-/** The burn datum, derived exactly as the host widget does: the vessel's LOWEST point
+/** The burn datum, derived exactly as the host widget does: the vessel's lowest point
  *  above terrain, falling back to the centre-of-mass radar altitude when
  *  `vessel.surface` is nulled by the capture guard. */
 function heightAboveTerrain(

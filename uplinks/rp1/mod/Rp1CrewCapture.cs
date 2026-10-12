@@ -16,7 +16,7 @@ namespace GonogoRp1Uplink
     public static class Rp1CrewCapture
     {
         /// <summary>
-        /// The crew rows, or NOTHING. Null rather than an empty list when RP-1's
+        /// The crew rows, or nothing. Null rather than an empty list when RP-1's
         /// crew handler is not live: an empty array says "RP-1 is scheduling
         /// nobody", which is a claim about the career, and the channel is declared
         /// <c>absenceIsData</c> so a client is told there is none rather than left
@@ -57,7 +57,7 @@ namespace GonogoRp1Uplink
         /// The career-wide rules, or nothing. Null on the same condition as
         /// <see cref="BuildCrew"/>: without RP-1's handler there are no rules to
         /// report, and a bag of falses would say retirement and R&amp;R are
-        /// switched OFF on a save that has never been told either way.
+        /// switched off on a save that has never been told either way.
         /// </summary>
         /// <summary>
         /// The live courses, course-level. Null when RP-1's crew handler is not

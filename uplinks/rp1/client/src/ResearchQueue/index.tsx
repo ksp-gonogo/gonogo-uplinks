@@ -28,7 +28,7 @@ import {
 } from "./RateControl.js";
 
 /**
- * RP-1's research QUEUE, beside a tech tree that can only show which nodes are
+ * RP-1's research queue, beside a tech tree that can only show which nodes are
  * unlocked.
  *
  * <para>Under RP-1 unlocking a node is not a purchase, it is a commitment:

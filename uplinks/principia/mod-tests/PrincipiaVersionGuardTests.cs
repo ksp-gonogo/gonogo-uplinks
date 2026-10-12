@@ -8,7 +8,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// The detection guard, whose PRIMARY live case is the mod being absent.
+    /// The detection guard, whose primary live case is the mod being absent.
     ///
     /// <para>Every assertion here runs with no Principia installed, which is not a
     /// limitation of the test but the state the rig is actually in. An Uplink for
@@ -76,7 +76,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Contains("GetName()", source);
         }
 
-        /// <summary>The file with every comment line removed, so an assertion about CODE cannot match prose.</summary>
+        /// <summary>The file with every comment line removed, so an assertion about code cannot match prose.</summary>
         private static string CodeOf(string fileName)
         {
             var lines = SourceOf(fileName).Split('\n');
@@ -151,13 +151,13 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Absence on the plan channel must carry NO information, which is what
+        /// Absence on the plan channel must carry no information, which is what
         /// <c>AbsenceIsData</c> false means. Asserted rather than left to the
         /// default: a missing sample is "no session, no plugin or no vessel", and a
         /// channel whose absence was data would license a client to read that
         /// silence as "this vessel has no flight plan", which is the reading that
         /// makes an operator stop looking. The positive observation of no plan is
-        /// <c>planExists: false</c> on a sample that DID arrive.
+        /// <c>planExists: false</c> on a sample that did arrive.
         /// </summary>
         [Fact]
         public void AbsenceOnThePlanChannelIsNotData()
@@ -166,13 +166,13 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The two channels carry OPPOSITE delay roles, and the difference is the
+        /// The two channels carry opposite delay roles, and the difference is the
         /// design rather than an oversight. A flight plan is an observation of a
-        /// craft's future and rides the light-time delay like any other; the
+        /// craft's future and rides the signal delay delay like any other; the
         /// settings are ground-side facts about how the numbers are being
         /// computed, on the operator's own machine. Delaying those would mean someone
         /// adjusting a tolerance could not see the new basis for their readouts until
-        /// light-time had passed.
+        /// signal delay had passed.
         /// </summary>
         [Fact]
         public void ThePlanIsDelayedAndTheSettingsAreNot()
@@ -182,7 +182,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The window mirror is GONE, and this is the assertion that keeps it gone.
+        /// The window mirror is gone, and this is the assertion that keeps it gone.
         ///
         /// <para>It read its fields off the producer's planner window, which refresh
         /// only while that window renders, so the channel answered only when the
@@ -233,7 +233,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The name is asserted as a LITERAL, never through the constant. Every
+        /// The name is asserted as a literal, never through the constant. Every
         /// other case here builds its double with
         /// <c>new FakeAdapterAssembly(PrincipiaVersionGuard.AssemblyName, ...)</c>,
         /// which feeds the subject its own answer: the assertion then holds for

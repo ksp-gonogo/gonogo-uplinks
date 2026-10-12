@@ -10,10 +10,10 @@ using Xunit;
 namespace GonogoKerbalismUplink.Tests
 {
     /// <summary>
-    /// The SERVER half of the science-superset proof: Kerbalism wins the
+    /// The server half of the science-superset proof: Kerbalism wins the
     /// <c>"science"</c> election, fills the shared <c>science.*</c> shapes from its
     /// own model, and carries everything that shape cannot express in its own
-    /// namespace of the payload's extension bag, with the REAL wire writer carrying
+    /// namespace of the payload's extension bag, with the real wire writer carrying
     /// it.
     ///
     /// <para><b>Why the real codec.</b> The claim is about the wire, so these go
@@ -50,7 +50,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// A vessel with one transmissible FILE and one physical SAMPLE of a
+        /// A vessel with one transmissible file and one physical sample of a
         /// different subject, on a drive that is neither empty nor unlimited, plus a
         /// running experiment with an issue and a lab. Enough that every branch the
         /// map takes is exercised and no field can pass by coincidence: the file and
@@ -187,7 +187,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// The committed fixture IS what the real codec produces. This is what makes
+        /// The committed fixture is what the real codec produces. This is what makes
         /// the client-side test non-vacuous: it reads a file this test proves came
         /// out of the server, not a hand-authored approximation of one.
         /// </summary>
@@ -209,7 +209,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// Every value-bearing payload is TAGGED, and tagged the same way. Untagged,
+        /// Every value-bearing payload is tagged, and tagged the same way. Untagged,
         /// a widget would read Kerbalism's linear-per-megabyte numbers as stock's
         /// R&amp;D-curve ones, which is the exact silent-misread the tag exists to
         /// stop.
@@ -226,7 +226,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// The unit-mismatched core fields are NULL on the wire, not filled with a
+        /// The unit-mismatched core fields are null on the wire, not filled with a
         /// megabyte figure wearing a mits label. This is the whole reason the bag
         /// exists on these payloads rather than the numbers being crammed into the
         /// shared fields, so it is asserted as bytes rather than described in a doc
@@ -254,7 +254,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// <c>science.sensors</c> is the one science payload with NO namespace: a
+        /// <c>science.sensors</c> is the one science payload with no namespace: a
         /// live readout maps cleanly between the two models, so the entry is
         /// byte-identical in shape to a stock one and carries no bag at all. Stated
         /// as an assertion because "we added a bag to every payload" would have been
@@ -270,7 +270,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// Nothing to say is said by ABSENCE, at the source: with
+        /// Nothing to say is said by absence, at the source: with
         /// <c>Features.Science</c> off, every read is null, which leaves the channels
         /// unborn and silent. An empty list would instead publish "this vessel has no
         /// science" on a vessel Kerbalism simply is not simulating.
@@ -289,7 +289,7 @@ namespace GonogoKerbalismUplink.Tests
 
         /// <summary>
         /// Kerbalism's four-state machine projected onto stock's two bools, both
-        /// directions of the interesting case: an experiment with an ISSUE is not
+        /// directions of the interesting case: an experiment with an issue is not
         /// "deployed" even though its state says Running, and a depleted-sample
         /// experiment is "inoperable" the way a spent stock experiment is. The
         /// unprojected truth is in the namespace alongside.
@@ -410,7 +410,7 @@ namespace GonogoKerbalismUplink.Tests
 
         /// <summary>
         /// The rollup collapses per-subject the way stock's does, one row per
-        /// DISTINCT subject: two stored blobs of the same subject must not become two
+        /// distinct subject: two stored blobs of the same subject must not become two
         /// rows. Here the two blobs differ by subject, so two rows are correct, and a
         /// third blob repeating the first subject changes nothing but the count.
         /// </summary>

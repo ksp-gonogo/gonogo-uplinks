@@ -12,7 +12,7 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para>The case that decides whether this feature is safe is
     /// <see cref="Refuses_and_charges_nothing_when_the_career_cannot_afford_it"/>.
-    /// RP-1's own <c>KCTUtilities.SpendFunds</c> performs NO affordability test:
+    /// RP-1's own <c>KCTUtilities.SpendFunds</c> performs no affordability test:
     /// its body is an <c>AddFunds</c> of the negative amount, and the test lives
     /// in the popup-driven validator this handler deliberately does not call. So
     /// a handler that only reproduced the visible half of RP-1's Duplicate button
@@ -462,7 +462,7 @@ namespace GonogoRp1Uplink.Tests
         /// <para>The exception is named here rather than left to a
         /// <c>!= delayed</c> count, because the whole risk is a command drifting
         /// into it unnoticed. A warp command changes the operator's own clock and
-        /// is not an order to anything, so light-time does not apply; everything
+        /// is not an order to anything, so signal delay does not apply; everything
         /// else this Uplink serves is an order a second command centre can issue.
         /// A new instant command needs a reason of that kind and a line here.</para>
         /// </summary>

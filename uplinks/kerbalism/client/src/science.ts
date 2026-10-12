@@ -115,8 +115,8 @@ registerProviderExtensionShape(
  * Narrow one payload's extension bag to this Uplink's own typed shape.
  *
  * The cast is the honest edge of the mechanism, not a gap in it: the shape is owned
- * at BOTH ends by this package (the C# `KerbalismScience*Ext` generates the TS type
- * AND the wire keys the map writes), and the golden fixture both sides assert
+ * at both ends by this package (the C# `KerbalismScience*Ext` generates the TS type
+ * and the wire keys the map writes), and the golden fixture both sides assert
  * against is what keeps those two ends in agreement. What is checked here is only
  * what a consumer cannot assume: that a namespace is present and is an object.
  */

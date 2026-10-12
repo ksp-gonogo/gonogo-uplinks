@@ -42,7 +42,7 @@ import "../topics.js";
 import { selectDockingCamera } from "./selectDockingCamera.js";
 
 /**
- * The value of a FACT: something that stays true until an event changes it, and no
+ * The value of a fact: something that stays true until an event changes it, and no
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
  * and must not collapse into it.

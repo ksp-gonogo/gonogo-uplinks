@@ -1,6 +1,6 @@
 import type { TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
 /**
- * Render helper for delayed-command widgets under test. Mounts a REAL
+ * Render helper for delayed-command widgets under test. Mounts a real
  * `TelemetryClient` over an in-memory `StubTransport` inside a
  * `TelemetryProvider`, so `useCommand().send()` dispatches for real and the
  * command envelope lands in `transport.sentCommands` verbatim. No module mocks:
@@ -8,7 +8,7 @@ import type { TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
  * testing-philosophy default for this repo).
  *
  * Returns the `transport` (assert on `sentCommands`) and the `client`; queries
- * go through the global `screen`, so the RTL result is intentionally NOT spread
+ * go through the global `screen`, so the RTL result is intentionally not spread
  * (its inferred type leaks `pretty-format` across the package boundary).
  */
 

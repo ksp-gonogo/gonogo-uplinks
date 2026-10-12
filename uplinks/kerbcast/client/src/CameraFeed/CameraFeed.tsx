@@ -84,7 +84,7 @@ export interface CameraFeedConfig extends Record<string, unknown> {
  * CrewStatus's `crew-status.avatar` augment and eventually a dedicated
  * facecam-wall widget, so they should not also appear in this general
  * part-camera picker, stepper and auto-latch. `camera.kind` defaults to `Part`
- * when the sidecar omits it (older payloads), so this only ever EXCLUDES a
+ * when the sidecar omits it (older payloads), so this only ever excludes a
  * camera the SDK positively reports as a kerbal face; nothing is lost when
  * `kind` is absent.
  */
@@ -101,15 +101,15 @@ export function isPartCamera(camera: CameraState): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Props for `camera-feed.overlay`: an OVERLAY slot, rendered in a
- * layer absolutely positioned OVER the video element. Data-over-video augments
+ * Props for `camera-feed.overlay`: an overlay slot, rendered in a
+ * layer absolutely positioned over the video element. Data-over-video augments
  * (a telemetry HUD painted on the feed at key moments) draw here in the feed's
  * pixel space, so the slot passes the rendered video-container dimensions and
  * the flightID of the camera currently on screen. `width`/`height` are CSS px
  * (0 before the first measure); `flightId` reflects what the SDK actually shows
  * (auto-picks included) via `onDisplayedCameraChange`, not the requested id.
  *
- * NOTE: richer projection (the SDK's internal pan/zoom transform) isn't
+ * Note: richer projection (the SDK's internal pan/zoom transform) isn't
  * readable from this wrapper; exposing it waits on the widget's move into
  * `@ksp-gonogo/kerbcast` (P3), where it can read the SDK feed handle directly.
  */

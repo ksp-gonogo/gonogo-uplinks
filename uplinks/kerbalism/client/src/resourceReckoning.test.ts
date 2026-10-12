@@ -16,7 +16,7 @@ import { BODIES, circular, HOME_RADIUS, period } from "./test/lightFixtures.js";
  * registered reckoner on `vessel.resources`.
  *
  * Every assertion here goes through the real store: the model is asked the way
- * production asks it, through `sampleReading`, so the decline the STORE raises
+ * production asks it, through `sampleReading`, so the decline the store raises
  * for an absent dep is exercised alongside the ones the model raises itself.
  *
  * The interval integrated over is `reckonUt - lifesupport.asOfUt`, never
@@ -239,7 +239,7 @@ describe("when the model refuses", () => {
 });
 
 /**
- * The refusals, read back as REASONS rather than as a status.
+ * The refusals, read back as reasons rather than as a status.
  *
  * A refused read shows `declined` and the reason the model gave, which the
  * store forwards. Four distinct refusals reduce to that one status, so the
@@ -299,7 +299,7 @@ describe("the reason a refusal gives", () => {
 });
 
 /**
- * The crossing, published so a consumer can say WHEN rather than only that the
+ * The crossing, published so a consumer can say when rather than only that the
  * model has stopped.
  *
  * It is an absolute UT and not a countdown, because it is a fact about the

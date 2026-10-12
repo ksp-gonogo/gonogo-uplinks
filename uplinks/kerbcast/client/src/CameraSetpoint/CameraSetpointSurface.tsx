@@ -4,16 +4,16 @@
  * live pan/zoom controls stay in charge. At or above the threshold it takes
  * over: the operator dials an absolute yaw/pitch/fov target on the
  * `CameraSetpointInput`, reviews it against the current framing on the
- * `FramingPreview`, and commits ONE delayed command per axis-group through the
+ * `FramingPreview`, and commits one delayed command per axis-group through the
  * Sitrep command Courier (`kerbcast.setPan` + `kerbcast.setFieldOfView`, both
  * already `Delayed`). Under `no-path` the surface still shows but the commit is
  * gated, consistent with any uplink command under signal loss.
  *
- * It is drawn OVER the picture as TWO absolutely positioned siblings, and
+ * It is drawn over the picture as two absolutely positioned siblings, and
  * neither takes a share of the layout, because the host widget is a video one whose
- * content is the picture. The CLUSTER, in the bottom-right corner, is the
- * control: the wheels and the commit, sized to its own content. The PREVIEW is
- * not in it. It is a free-standing tile at the bottom CENTRE of the picture,
+ * content is the picture. The cluster, in the bottom-right corner, is the
+ * control: the wheels and the commit, sized to its own content. The preview is
+ * not in it. It is a free-standing tile at the bottom centre of the picture,
  * because it is a readout of what the control is about to do rather than part
  * of the control, and because inside the cluster it was the thing that got cut:
  * the cluster is `overflow: hidden` (it has to be, it is `max-width`-clamped to
@@ -21,7 +21,7 @@
  * outside the feed frame was sliced at the cluster's right edge on every
  * picture wide enough to draw it at all.
  *
- * The in-flight readout is NOT in the cluster. Both handles register with the
+ * The in-flight readout is not in the cluster. Both handles register with the
  * host panel's own delay rail, which draws them in the band it
  * already reserves above the picture. An inline `CommandDelay` here would draw
  * the same dispatch a second time, in the one place on the widget where every
@@ -32,8 +32,8 @@
  * one lands on top of the affordance it is replacing instead of somewhere else
  * on the shot. Both of those live controls stand down for as long as this
  * surface is up: the host widget passes `disableManualControls`, because a live pan
- * pad above the delay threshold aims at where the craft is NOW while the
- * picture shows where it was a light-time ago, and two controls for one camera
+ * pad above the delay threshold aims at where the craft is now while the
+ * picture shows where it was a signal delay ago, and two controls for one camera
  * with nothing on screen saying which is which is worse than either alone.
  * Two earlier shapes both failed that: a 220x132 preview box
  * stacked above the tapes (~305x290 CSS px of intrinsic size, larger than the
@@ -114,13 +114,13 @@ const PREVIEW_CLEARANCE_PX = 4;
 const CLUSTER_CHROME_PX = 2 * (2 + 1);
 
 /** The cluster's own box, now that it holds the control and nothing else. It is
- *  a CONSTANT per picture, where it used to grow by a tile, which is what makes
+ *  a constant per picture, where it used to grow by a tile, which is what makes
  *  the question below a clearance rather than a share. */
 const CLUSTER_WIDTH_PX = SETPOINT_INPUT_WIDTH_PX + CLUSTER_CHROME_PX;
 
 /**
  * The preview tile's own size, or `null` when the picture has no room to draw
- * it WHOLE and clear of the cluster.
+ * it whole and clear of the cluster.
  *
  * The question changed with the tile's home. Inside the cluster it was a share
  * one: the tile grew the cluster, so what it cost was how much of the shot the
@@ -128,7 +128,7 @@ const CLUSTER_WIDTH_PX = SETPOINT_INPUT_WIDTH_PX + CLUSTER_CHROME_PX;
  * the tile costs the cluster nothing and the shot almost nothing (64px of a
  * 348px picture), and the only thing it can run into is the cluster itself,
  * which is right-anchored and reaches back past the centre line. So the rule is
- * CLEARANCE: half a tile plus a gap, measured from the centre of the picture,
+ * clearance: half a tile plus a gap, measured from the centre of the picture,
  * has to stop short of the cluster's left edge.
  *
  * That is a stricter test than the area cap it replaces, and deliberately: an
@@ -184,7 +184,7 @@ function previewSize(
  */
 export interface CameraSetpointSurfaceHandle {
   /**
-   * Hold an axis of the DRAFT at `rate` (-1..1 of
+   * Hold an axis of the draft at `rate` (-1..1 of
    * {@link SETPOINT_DEG_PER_SECOND}), or release it with a rate inside the rest
    * band. Nothing is sent to the camera: the wheel turns and the operator
    * commits when they are ready.
@@ -366,13 +366,13 @@ export const CameraSetpointSurface = forwardRef<
  *
  * The pad is `52x52` at `bottom: 10px; right: 10px`, read off the SDK's own
  * `PanControl`, and the same two insets are used here so the staged cluster
- * lands exactly where the live control was. The two sat SIDE BY SIDE for a
+ * lands exactly where the live control was. The two sat side by side for a
  * while, on the reasoning that the live pad was the yardstick for what the
  * delayed cluster cost in picture. That reasoning offered the operator a live
  * pan pad and a live zoom pair that, above the delay threshold, aim at where
- * the craft is now while the picture shows where it was a light-time ago. The
+ * the craft is now while the picture shows where it was a signal delay ago. The
  * host widget passes `disableManualControls` now, so there is no second control to
- * stand beside and no yardstick to read: this IS the aim control, and it takes
+ * stand beside and no yardstick to read: this is the aim control, and it takes
  * the corner the aim control has always been in.
  *
  * No `left`, so an absolutely positioned box shrinks to its own content instead
@@ -380,7 +380,7 @@ export const CameraSetpointSurface = forwardRef<
  * too narrow to hold it, where what gives is how much of the cluster is on
  * screen at once rather than how much of the video is left.
  *
- * It stays ONE BLOCK, and that is the kit's job rather than a trick played on
+ * It stays one block, and that is the kit's job rather than a trick played on
  * it. `CommandGroup wrap={false}` is the real fix for what an inner
  * `width: max-content` track used to buy: that track defeated the wrap by
  * laying the row out against the width it wanted, which made the cluster a
@@ -390,9 +390,9 @@ export const CameraSetpointSurface = forwardRef<
  * the tile until nothing inside it scrolls vertically.
  *
  * `overflow: hidden` rather than `auto`: a block that no longer wraps and is
- * sized to the corner has nothing to scroll TO, and a scroll container here only
+ * sized to the corner has nothing to scroll to, and a scroll container here only
  * ever offered a scrollbar drawn across the shot. It is also why the framing
- * preview is no longer in here. Nothing the CONTROL draws wants to leave this
+ * preview is no longer in here. Nothing the control draws wants to leave this
  * box, so the clip is right for it; the preview's quad wants to leave its own
  * tile by design, so the same clip was wrong for that, and the tile drawn last
  * in the row was the one it landed on.
@@ -414,7 +414,7 @@ const CLUSTER_STYLE: CSSProperties = {
 };
 
 /**
- * The framing preview: bottom CENTRE of the picture, standing on its own.
+ * The framing preview: bottom centre of the picture, standing on its own.
  *
  * The same bottom inset the cluster uses, so the two sit on one line along the
  * foot of the shot rather than at two heights. Centred with `left: 50%` and a
@@ -422,7 +422,7 @@ const CLUSTER_STYLE: CSSProperties = {
  * because an absolutely positioned box with both edges pinned spans the picture
  * and this one has to shrink to the tile.
  *
- * NOTHING CLIPS IT, which is the whole point of the move. The tile's own SVG is
+ * Nothing clips it, which is the whole point of the move. The tile's own SVG is
  * `overflow: visible` and says why: a pan-and-zoom target legitimately lands
  * partly outside the current view, and a quad drawn crossing the feed frame is
  * the honest reading of that. Inside the cluster that spill met the cluster's

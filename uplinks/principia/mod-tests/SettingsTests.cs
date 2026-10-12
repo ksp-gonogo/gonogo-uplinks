@@ -60,7 +60,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Whether a recorder is running is a STATIC field on the producer, and the
+        /// Whether a recorder is running is a static field on the producer, and the
         /// member walk used to bind instance members only, so it resolved to
         /// nothing and answered null. Null is indistinguishable from "not recording"
         /// to anything downstream, so the gate that is supposed to stop us reading
@@ -83,7 +83,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The frame kind travels as the producer's declared VALUE. Its enum is
+        /// The frame kind travels as the producer's declared value. Its enum is
         /// numbered from 6000 and its positions are not its values, so a reading
         /// that converted the position would put a number on the wire that names no
         /// frame at all.
@@ -129,7 +129,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The producer names and describes the target frame with the body the
-        /// TARGET orbits, not with the celestial its own selector is sitting on.
+        /// target orbits, not with the celestial its own selector is sitting on.
         /// Those differ here on purpose: the selector holds Kerbin and the target
         /// orbits the Mun, so a reader that took the selected celestial would name
         /// a frame the player is not in and nothing would say so.
@@ -252,7 +252,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The direction kinds key on the SAME pair as the pulsating kind and in the
+        /// The direction kinds key on the same pair as the pulsating kind and in the
         /// opposite order, which is the producer's own inversion rather than a
         /// symmetry it happens to break: the body it wants held fixed is the one the
         /// selector is on, and the frame it builds names the held body the primary.
@@ -291,7 +291,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The bodies as INDICES, which is what a frame is built from. The names
+        /// The bodies as indices, which is what a frame is built from. The names
         /// beside them are what an operator reads, and a writer given only those
         /// would have to search the body table for one.
         /// </summary>
@@ -381,7 +381,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The prediction bound is the vessel's own, from the plugin, and NOT the
+        /// The prediction bound is the vessel's own, from the plugin, and not the
         /// producer's slider indices. Those sit at constructor defaults resolving to
         /// a plausible tolerance and a plausible step count until its settings
         /// window has repainted, so a reading taken from them hands an operator a
@@ -403,7 +403,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The plan's integrator bound is a DIFFERENT setting from the prediction's
+        /// The plan's integrator bound is a different setting from the prediction's
         /// despite sharing a label in game. Conflated, a plan failure gets explained
         /// by a prediction setting and the operator changes the wrong control, so
         /// the two are given different values here on purpose.
@@ -442,7 +442,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Minus one is a STATE, not a zero: no plan is selected. Coercing it would
+        /// Minus one is a state, not a zero: no plan is selected. Coercing it would
         /// attribute every number on a plan board to slot A.
         /// </summary>
         [Fact]
@@ -585,7 +585,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A suspended reading carries the outage and NOTHING else. A stale
+        /// A suspended reading carries the outage and nothing else. A stale
         /// tolerance beside "we have stopped reading" is the half-true payload the
         /// rule exists to avoid, and the shape is what stops it rather than a
         /// caller's discipline.
@@ -646,7 +646,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// It gates on whether a recorder is ACTUALLY running, not on whether one
+        /// It gates on whether a recorder is actually running, not on whether one
         /// was asked for. The request only takes effect on the next load, so gating
         /// on it would stop us a session early and then fail to stop us at all in
         /// the case that matters.
@@ -758,7 +758,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// <summary>
     /// The producer's main window, by member name.
     ///
-    /// <para>The two prediction indices are present AND at their real constructor
+    /// <para>The two prediction indices are present and at their real constructor
     /// defaults, which resolve to plausible settings. Nothing reads them, and their
     /// being here is what makes that assertable.</para>
     /// </summary>

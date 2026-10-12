@@ -52,19 +52,19 @@ export interface ScanTrackColor
 }
 /**
 * One entry in the `scansat.scanningVessels` channel payload, a single vessel
-* SCANsat is tracking. SCANsat tracks UNLOADED vessels too, so this list is
+* SCANsat is tracking. SCANsat tracks unloaded vessels too, so this list is
 * CROSS-VESSEL by design: a satellite mapping Kerbin and a probe orbiting Mun
-* both appear at once. The channel payload is a BARE ARRAY of these
+* both appear at once. The channel payload is a bare array of these
 * (`ScanningVesselEntry[]`) or `null` (never a wrapper object) so the Topic
 * tag sits on this element type with `IsArray = true`.
 *
 * `ScanningVesselEntry.subLatitude` / `ScanningVesselEntry.subLongitude` are
 * the sub-satellite ground point (SCANsat's `SCANvessel.latitude` /
 * `longitude`); the scanning footprint is a band centred there.
-* `ScanningVesselEntry.groundTrackWidthDeg` is the per-side LATITUDE
+* `ScanningVesselEntry.groundTrackWidthDeg` is the per-side latitude
 * half-width from SCANsat's `getFOV` replication (see
 * `Gonogo.ScansatUplink.GroundTrackFov`);
-* `ScanningVesselEntry.groundTrackLonHalfDeg` is the per-side LONGITUDE
+* `ScanningVesselEntry.groundTrackLonHalfDeg` is the per-side longitude
 * half-width (`widthDeg / cos(|subLat|)`, capped at 120°, matching SCANsat's
 * coverage-paint widening). Both are `null` when the vessel currently has no
 * in-range sensors (nothing to paint).
@@ -89,7 +89,7 @@ export interface ScanningVesselEntry
 * One SCANsat map-scanner part on the active vessel, mirrors SCANsat's public
 * `SCANexperiment` module (`SCAN_PartModules.SCANexperiment`, a `PartModule :
 * IScienceDataContainer`, one instance per map-scanner part). The
-* `scansat.science` channel payload is a BARE ARRAY of these
+* `scansat.science` channel payload is a bare array of these
 * (`ScanScienceEntry[]`) or `null` (never a wrapper object) so the Topic tag
 * sits on this element type with `IsArray = true`.
 *
@@ -98,12 +98,12 @@ export interface ScanningVesselEntry
 * `InstrumentEntry.partId`); `ScanScienceEntry.expId` is the raw R&D
 * experiment id (`experimentType`, one of `SCANsatAltimetryLoRes` /
 * `SCANsatAltimetryHiRes` / `SCANsatBiomeAnomaly` / `SCANsatResources` /
-* `SCANsatVisual`); `ScanScienceEntry.title` is the friendly name (RADAR / SAR
+* `SCANsatVisual`); `ScanScienceEntry.title` is the friendly name (radar / sar
 * / Multispectral / Resources / Visual); `ScanScienceEntry.hasData` is
 * `GetScienceCount() > 0`; `ScanScienceEntry.rerunnable` mirrors
 * `IsRerunnable()`, which SCANsat hard-codes to `true`.
 *
-* `ScanScienceEntry.deployed` and `ScanScienceEntry.inoperable` are ALWAYS
+* `ScanScienceEntry.deployed` and `ScanScienceEntry.inoperable` are always
 * `false`: SCANsat map experiments have no deploy or inoperable lifecycle
 * (there is no persistent deployed flag, and a map experiment can never burn
 * out). These constants are honest, not lossy, there is no SCANsat source for
@@ -125,16 +125,16 @@ export interface ScanScienceEntry
 }
 /**
 * One entry in a `scansat.anomalies.<body>` channel payload, a single SCANsat
-* "anomaly" (an easter-egg surface feature: a monolith, a UFO, etc.) known for
+* "anomaly" (an easter-egg surface feature: a monolith, a ufo, etc.) known for
 * that body. Mirrors SCANsat's public `SCANsat.SCAN_Data.SCANanomaly`
 * (`Name`/`Longitude`/ `Latitude`/`Known`/`Detail`) field-for-field.
 *
 * **Not a `[SitrepTopic]`-tagged root**: unlike
-* `ScanScienceEntry`/`ScanningVesselEntry` (both single STATIC topics),
-* `scansat.anomalies.<body>` is a DYNAMIC per-body namespace, same family as
+* `ScanScienceEntry`/`ScanningVesselEntry` (both single static topics),
+* `scansat.anomalies.<body>` is a dynamic per-body namespace, same family as
 * the coverage/mask/height/biome namespaces (`ScanChannels.AnomaliesPrefix`),
 * which have no `Sitrep.Contract` mirror at all. This type exists purely so
-* codegen gives the array ELEMENT shape a name (documentation +
+* codegen gives the array element shape a name (documentation +
 * drift-detection via the contract-shape baseline): it is never resolved from
 * a `TopicId`; the client subscribes to the runtime-computed sub-topic string
 * directly (`packages/sitrep-client/src/map-topic.ts`'s `SCANSAT_DYNAMIC`).

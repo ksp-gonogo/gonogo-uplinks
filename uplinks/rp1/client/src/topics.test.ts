@@ -105,7 +105,7 @@ describe("decode-time unit hydration", () => {
   it('hydrates the build queue into Value<"bp"> and Value<"bp/s">', async () => {
     const fixture = setupStreamFixture();
     /**
-     * The hook returns the PAYLOAD rather than the reading: a `Reading` is
+     * The hook returns the payload rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
      * tick and every hydration assertion below would then read `undefined` off
      * the wrapper.
@@ -373,12 +373,12 @@ describe("the programs channel", () => {
   });
 
   /**
-   * What the `state` -> `status` rename was FOR, and the only assertion that
+   * What the `state` -> `status` rename was for, and the only assertion that
    * earns it.
    *
    * `state` is a currency member, and a property already on the projected
    * reading wins over a payload field of the same name. So a caller reaching
-   * `programs[0].state` got the READING's state and had no way at all to reach
+   * `programs[0].state` got the reading's state and had no way at all to reach
    * the Program's, which is the one field a catalogue row is chosen by. Both
    * halves are asserted here: the currency still answers at `.state`, and the
    * Program's own answer is now reachable beside it, carrying currency of its

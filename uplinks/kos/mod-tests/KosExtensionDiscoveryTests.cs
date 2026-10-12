@@ -15,7 +15,7 @@ namespace GonogoKosUplink.Tests
     /// <see cref="KosExtension"/> and the whole uplink is inert dead code
     /// in a live game. That scan itself is host-side and proved generically
     /// there (<c>UplinkDiscoveryTests.DiscoversAttributedUplinkWithParameterlessConstructor</c>);
-    /// these assertions pin the two facts about THIS uplink that scan
+    /// these assertions pin the two facts about this uplink that scan
     /// depends on: the attribute and the constructor. Never touches
     /// <see cref="KosExtension.Register"/> or the Unity GameObject path, so
     /// they run headlessly.
@@ -71,7 +71,7 @@ namespace GonogoKosUplink.Tests
         ///
         /// <para>A terminal is a cursor-addressed screen diff computed at
         /// the mod's width, so a delayed resize leaves the mod diffing at the old
-        /// width for a light-time round trip and the client draws those diffs at
+        /// width for a signal delay round trip and the client draws those diffs at
         /// the wrong column until the new width lands. That is a real cost and it
         /// is the lesser one. Instant, a resize would let one console reflow a terminal
         /// another console is reading in real time, and a resize is an order like

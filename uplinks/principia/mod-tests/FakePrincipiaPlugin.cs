@@ -68,7 +68,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// cannot pass by remembering to tell the double what the code under test was
     /// about to do.</para>
     ///
-    /// <para>The recorded call list is what lets a test assert the ORDER rather
+    /// <para>The recorded call list is what lets a test assert the order rather
     /// than merely the result. "The read returned a number" is satisfied by a read
     /// that never checked anything; "HasVessel preceded it, and nothing was called
     /// at all after the vessel went away" is not.</para>
@@ -122,7 +122,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// A vessel already added, for a test that wants to inspect or arrange its
         /// state.
         ///
-        /// <para>Separate from <see cref="Add"/> because <c>Add</c> REPLACES: a test
+        /// <para>Separate from <see cref="Add"/> because <c>Add</c> replaces: a test
         /// reaching for it as a getter silently resets the plan it was about to
         /// assert on, which reads as a bug in the code under test.</para>
         /// </summary>
@@ -187,7 +187,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// What the interchange reads hand back, settable so a mapping test can
         /// supply a struct-shaped stand-in.
         ///
-        /// <para>Defaulted to opaque strings on purpose. A test about call ORDER
+        /// <para>Defaulted to opaque strings on purpose. A test about call order
         /// should not have to describe a payload, and a string is the shape that
         /// makes it obvious the value was never meant to be read: a mapping bug
         /// that reached for a member here would find nothing rather than find a
@@ -198,7 +198,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// An override for the flight plan's own integrator bound.
         ///
-        /// <para>Null by default, so the plan answers with the VESSEL's own struct
+        /// <para>Null by default, so the plan answers with the vessel's own struct
         /// and a write to it is observable in a later read. Set it to an opaque value
         /// when the test is about call order and the payload should be visibly
         /// unread.</para>
@@ -222,7 +222,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>What the vessel accessor answers. An opaque marker by default,
-        /// because most tests here care that the call was MADE and in what order; a
+        /// because most tests here care that the call was made and in what order; a
         /// test of the mapping sets a shaped stand-in instead. Null is the producer's
         /// own answer for a vessel it is not analysing.</summary>
         public object? VesselAnalysis { get; set; } = "orbit-analysis";
@@ -369,7 +369,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A FRESH object every call, as the producer's marshaller hands back.
+        /// A fresh object every call, as the producer's marshaller hands back.
         ///
         /// <para>The copy is what makes the round-trip probe meaningful: a double
         /// returning the same instance would let the probe pass by identity without
@@ -398,7 +398,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// When true, a burn READ BACK after a write comes back with one field
+        /// When true, a burn read back after a write comes back with one field
         /// changed, which is what a struct-layout mismatch on one platform looks like
         /// from the managed side: nothing throws, nothing fails to resolve, and the
         /// value is plausible.
@@ -433,7 +433,7 @@ namespace GonogoPrincipiaUplink.Tests
                 ? (int?)null
                 : Plan("FlightPlanOptimizationDriverInProgress", plugin, vesselGuid).OptimisingBurn;
 
-        /// <summary>Insert accepts an index EQUAL to the count, which appends.</summary>
+        /// <summary>Insert accepts an index equal to the count, which appends.</summary>
         /// <summary>The stand-in burn this fake accepts, which is what a
         /// production read off FlightPlanInsert's signature would find.</summary>
         public Type? BurnType() => typeof(FakeBurn);
@@ -528,7 +528,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// No cap, and no abort on an existing plan: the real one appends and
-        /// selects, which is why refusing that is OUR job. It DOES abort on an end
+        /// selects, which is why refusing that is our job. It does abort on an end
         /// instant before now, as the real one asserts.
         /// </summary>
         public void FlightPlanCreate(
@@ -548,7 +548,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Models the UNDEFINED BEHAVIOUR, not the header comment.
+        /// Models the undefined behaviour, not the header comment.
         ///
         /// <para>Principia's own declaration promises this performs no action unless
         /// a plan exists. Its body contains no such test and erases an iterator one
@@ -582,7 +582,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>The status object the write entry points hand back. Settable so a
-        /// test can make the producer DECLINE a write, which is a different fact from
+        /// test can make the producer decline a write, which is a different fact from
         /// our refusing it.</summary>
         public object? Status { get; set; } = FakeStatus.Ok();
 
@@ -624,7 +624,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// Bounded by the SEGMENT count against a doubled index, exactly as the
+        /// Bounded by the segment count against a doubled index, exactly as the
         /// native one is, and not by the manoeuvre count that bounds its
         /// neighbours.
         /// </summary>

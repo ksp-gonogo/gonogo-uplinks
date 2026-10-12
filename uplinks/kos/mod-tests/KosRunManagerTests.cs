@@ -102,9 +102,9 @@ namespace GonogoKosUplink.Tests
         /// <c>KosRunResult</c>'s own doc states the R7 invariant: exactly one
         /// of Fields/Error is non-null. An error block whose message we never
         /// managed to read (the public ctor takes isError and errorMessage
-        /// independently, and defaults the message to null) published BOTH as
+        /// independently, and defaults the message to null) published both as
         /// null, which the client's `payload.fields ?? {}` then resolved as a
-        /// successful run that returned no fields: a green OK for a script
+        /// successful run that returned no fields: a green ok for a script
         /// that failed.
         /// </summary>
         [Fact]

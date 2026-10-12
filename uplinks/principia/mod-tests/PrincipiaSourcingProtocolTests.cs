@@ -10,7 +10,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// The precondition protocol, driven against a plugin double that faults
     /// wherever the real one aborts.
     ///
-    /// <para>What is under test is the PROTOCOL, not the plugin, and that is the
+    /// <para>What is under test is the protocol, not the plugin, and that is the
     /// point rather than a limitation. None of this can be run against a real
     /// Principia here, and the thing that would break in a real one is the order
     /// the calls are made in, which is exactly what a recording double can hold to
@@ -90,14 +90,14 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The two version strings are DIFFERENT things and folding them into one
+        /// The two version strings are different things and folding them into one
         /// constant is a mistake that fails closed, which reads as caution and is a
         /// permanent outage.
         ///
         /// <para>The managed adapter's assembly file version is
         /// <c>2026.08.12.215</c>; the native plugin's own <c>GetVersion</c> answers
         /// a git description ending in the commit sha. The per-call abort analysis
-        /// was carried out against that COMMIT, so the commit is what the gate
+        /// was carried out against that commit, so the commit is what the gate
         /// pins.</para>
         /// </summary>
         [Fact]
@@ -300,7 +300,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The plotted velocity is bounded by the SEGMENT count against a doubled
+        /// The plotted velocity is bounded by the segment count against a doubled
         /// index, not by the manoeuvre count that bounds every neighbour of it.
         ///
         /// <para>Here the plan claims three burns but holds only three segments,
@@ -411,7 +411,7 @@ namespace GonogoPrincipiaUplink.Tests
         // ---- The instrument itself --------------------------------------------
 
         /// <summary>
-        /// The double must fault where the plugin aborts, so these call it DIRECTLY,
+        /// The double must fault where the plugin aborts, so these call it directly,
         /// around the gates, and prove it does.
         ///
         /// <para>Without this the suite above is worthless in the way that matters:

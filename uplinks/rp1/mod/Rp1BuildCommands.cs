@@ -164,7 +164,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Every type this command needs resolved. Gated on the TYPES, never on
+        /// Every type this command needs resolved. Gated on the types, never on
         /// an assembly name, for the reason <see cref="Rp1Types.Find"/> gives; and
         /// the currency types count, because a handler that could add to a build
         /// list but not price it is one that overdraws a career.
@@ -223,7 +223,7 @@ namespace GonogoRp1Uplink
         /// RP-1 write that would be illegal anywhere else.</para>
         ///
         /// <para>Ordered so that nothing is charged and nothing is appended until
-        /// every refusal has had its chance. The copy is made LAST before the
+        /// every refusal has had its chance. The copy is made last before the
         /// add, because it is the only step with a cost the game keeps if the
         /// next one fails.</para>
         /// </summary>
@@ -402,7 +402,7 @@ namespace GonogoRp1Uplink
         /// RP-1's own reasons for refusing to integrate this vehicle at its
         /// complex, joined into a sentence, or null when it has none.
         ///
-        /// <para>Asked because a copy is built at the ORIGINAL's complex and a
+        /// <para>Asked because a copy is built at the original's complex and a
         /// complex's limits move: a modification changes its mass and size
         /// envelope, so a vehicle it accepted last year is not one it accepts
         /// today. Without this the build starts, the funds go, and the vehicle is
@@ -410,12 +410,12 @@ namespace GonogoRp1Uplink
         /// rules.</para>
         ///
         /// <para>Invoked rather than reproduced, unlike <see cref="Rp1LaunchGate"/>
-        /// which reproduces these rules from fields. That file is a GATE, and a
+        /// which reproduces these rules from fields. That file is a gate, and a
         /// gate must not write to the player's save; this is a command, running on
         /// the main thread at the moment of an operator's press, which is exactly
         /// where RP-1's own button calls it.</para>
         ///
-        /// <para>An unanswerable check PROCEEDS rather than refuses, the opposite
+        /// <para>An unanswerable check proceeds rather than refuses, the opposite
         /// of the price check above, and the asymmetry is deliberate. Refusing on
         /// an unreadable price protects a career from being overdrawn with nothing
         /// to show; refusing on an unreadable envelope would kill the whole

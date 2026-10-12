@@ -16,7 +16,7 @@ import type { ResourceBoundary } from "./resourceReckoning.js";
  *
  * The mod parses, the app derives. `kerbalism.profile` carries the loaded
  * profile's own rules and processes and nothing else, so everything here is a
- * PURE function of two payloads plus the vessel's resource levels. No React, no
+ * pure function of two payloads plus the vessel's resource levels. No React, no
  * hooks, no KSP: a widget calls these, and so does a test.
  *
  * Nothing in this file names a resource. Every name comes from the profile.
@@ -36,7 +36,7 @@ import type { ResourceBoundary } from "./resourceReckoning.js";
 export interface ResourceFacts {
   name: string;
   displayName: string;
-  /** KSP ResourceFlowMode name as a DISPLAY LABEL, or "" when the mod could not
+  /** KSP ResourceFlowMode name as a display label, or "" when the mod could not
    *  read one. {@link pooled} is derived from the ordinal, never from this. */
   flowMode: string;
   /**
@@ -48,16 +48,16 @@ export interface ResourceFacts {
   /**
    * True when the resource pools across the whole vessel, so a per-part meter
    * is bookkeeping rather than a reading. Unknown (`undefined`) when flowMode
-   * is missing, which a consumer must NOT read as "not pooled": the honest
+   * is missing, which a consumer must not read as "not pooled": the honest
    * render is "share of a vessel-wide pool, mode unknown".
    */
   pooled: boolean | undefined;
 }
 
 /**
- * The flow modes that pool across the whole vessel, by ORDINAL.
+ * The flow modes that pool across the whole vessel, by ordinal.
  *
- * Comparing by NAME instead would let a renamed `ResourceFlowMode` member
+ * Comparing by name instead would let a renamed `ResourceFlowMode` member
  * miss the set and produce `false` - a confident "not pooled" - rather than
  * the `undefined` that means "vessel-wide pool, mode unknown". A resource
  * that pools vessel-wide would then be given a per-part meter presented as
@@ -71,7 +71,7 @@ const POOLED_MODES: ReadonlySet<number> = new Set([
 
 /**
  * Whether a resource pools vessel-wide. `undefined` when we cannot tell, which
- * is a THIRD answer and not a soft no: no ordinal arrived, or the ordinal is one
+ * is a third answer and not a soft no: no ordinal arrived, or the ordinal is one
  * this build does not recognise. A mod adding a flow mode lands here, and
  * "unknown" is the honest verdict for it.
  */
@@ -124,8 +124,8 @@ export interface Ledger {
   reportedNet: number | undefined;
   /**
    * reportedNet - derivedNet. The modifier product (pressure, lamps, radiation)
-   * scales each process at runtime and is NOT on the wire, so the terms are
-   * NOMINAL, not actual. This residual is exactly how wrong they are, and a
+   * scales each process at runtime and is not on the wire, so the terms are
+   * nominal, not actual. This residual is exactly how wrong they are, and a
    * widget should surface it rather than hide it: a large residual means the
    * breakdown is not to be trusted, which is a real thing to tell an operator.
    * Undefined when there is no reported net to compare against.
@@ -419,7 +419,7 @@ const DEFAULT_MATERIALITY = 0.05;
  * Why is this vessel short of things, and which shortage is worth acting on.
  *
  * Walks back from each shortage to whichever input is throttling its producers,
- * then CONDENSES: resources that block each other collapse into one finding,
+ * then condenses: resources that block each other collapse into one finding,
  * because reporting them separately sends an operator chasing three symptoms of
  * one cause. Water short because the recycler is short of power, while the
  * electrolyser that would make the power is short of water, is one problem.
@@ -541,7 +541,7 @@ export function diagnose({
 
 /**
  * One resource as a widget row: the live reading, plus the ecosystem facts
- * folded in as METADATA rather than held back for a separate panel.
+ * folded in as metadata rather than held back for a separate panel.
  *
  * This is the shape the whole design turns on. The naive version of a Kerbalism
  * widget is four stacked panels (consumables, loops, deficits, converters); the
@@ -565,7 +565,7 @@ export interface ResourceRow {
    */
   crossing: RowCrossing | null;
   isSupply: boolean;
-  /** See ResourceFacts.pooled: `undefined` is unknown, NOT "not pooled". */
+  /** See ResourceFacts.pooled: `undefined` is unknown, not "not pooled". */
   pooled: boolean | undefined;
   /**
    * True when this resource sits in a closed loop, i.e. something aboard turns
@@ -579,7 +579,7 @@ export interface ResourceRow {
   role: "root" | "downstream" | null;
   /**
    * Display names of the resources this one is waiting on. Empty unless
-   * `role` is "downstream". THIS row's own resource is the subject: a
+   * `role` is "downstream". This row's own resource is the subject: a
    * widget renders these as "<this row's resource> limited by <blockedBy>",
    * never the reverse.
    */
@@ -590,7 +590,7 @@ export interface ResourceRow {
    */
   explains: string[];
   /**
-   * Below KERBALISM'S OWN warning level (`Supply.low_threshold`), not a number
+   * Below KERBALISM'S own warning level (`Supply.low_threshold`), not a number
    * we picked. A widget must not invent a threshold for a resource whose mod
    * ships one: stock warns at 15%, another profile may not, and guessing means
    * the readout disagrees with the game's own alarm. `undefined` when the
@@ -653,7 +653,7 @@ export interface SummaryInput {
 
 export interface Summary {
   /**
-   * Root-cause rows, drawn from BOTH buckets below and repeated there.
+   * Root-cause rows, drawn from both buckets below and repeated there.
    *
    * `supplies` and `other` are each sorted independently, so a root cause that
    * is not itself a Supply would sit buried in the secondary list while the

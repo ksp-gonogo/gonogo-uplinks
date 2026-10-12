@@ -29,8 +29,8 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The full extension bag for one hop (<c>{ "realantennas": { ... } }</c>),
         /// or null when no RA fact reads. Band/tech-level/modulation/encoder/coding
-        /// rate/beamwidth/EC draw come off the FORWARD transmit antenna; required
-        /// Eb/N0 off the forward RECEIVE antenna (its encoder sets the requirement);
+        /// rate/beamwidth/EC draw come off the forward transmit antenna; required
+        /// Eb/N0 off the forward receive antenna (its encoder sets the requirement);
         /// the reverse rate off the link. <paramref name="link"/> is the live
         /// RACommLink.
         /// </summary>

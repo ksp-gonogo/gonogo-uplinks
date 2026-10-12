@@ -11,7 +11,7 @@ namespace GonogoRp1Uplink.Tests
     /// The avionics verdict on its way to the wire.
     ///
     /// <para>There is no arithmetic to test, and that is the change worth
-    /// stating: RP-1 decides, this Uplink asks. What CAN still go wrong is the
+    /// stating: RP-1 decides, this Uplink asks. What can still go wrong is the
     /// two seams either side of the ask, and both are here: the enum coming back
     /// out of a call this assembly cannot type, and the dict going out under key
     /// names nothing but a test connects to the declared payload.</para>
@@ -75,7 +75,7 @@ namespace GonogoRp1Uplink.Tests
         /// Each half of the reading is independently absent-able, so a call that
         /// answered with a level and no masses says so rather than reporting a
         /// vessel of zero tonnes inside a limit of zero tonnes, which compares
-        /// as comfortably GO.
+        /// as comfortably <c>GO</c>.
         /// </summary>
         [Fact]
         public void An_absent_mass_travels_as_absent_and_never_as_zero()
@@ -104,7 +104,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The member NAME is what crosses over, because the value boxes as a type
+        /// The member name is what crosses over, because the value boxes as a type
         /// this assembly cannot name. Fed a bare string here for the same reason:
         /// <c>LevelOf</c> reaches its argument through <c>ToString()</c>, so a
         /// string exercises exactly the path RP-1's boxed enum takes.
@@ -134,7 +134,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// The pin that matters most, stated as a test rather than left to the
-        /// reader: matching by name is what makes a REORDERED <c>LockLevel</c>
+        /// reader: matching by name is what makes a reordered <c>LockLevel</c>
         /// fail loudly on the compatibility guard instead of quietly swapping the
         /// two verdicts at the ends. An ordinal match would read a swapped enum as
         /// a craft under full control.
