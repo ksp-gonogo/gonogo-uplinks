@@ -132,6 +132,22 @@ Three things stop a candidate reaching SpaceDock: the SpaceDock steps' `if:` exc
 
 CKAN indexes from SpaceDock, so there is no CKAN step and no CKAN file in this repository.
 
+## Checking every Uplink against a published release candidate
+
+CI builds from tarballs and a nupkg vendored from one gonogo commit. To ask the
+question an outside author's install asks, dispatch `rc-check.yml`:
+
+```
+gh workflow run rc-check.yml -f version=1.0.0-rc.N
+```
+
+It runs the same per-Uplink task set with every Gonogo dependency swapped for
+exactly that version from npm and nuget.org (`tooling/use-published-packages.mjs`,
+in the runner's checkout only; nothing is committed). With no version it reads
+the `rc` dist-tag of `@ksp-gonogo/sitrep-sdk`. A candidate older than the
+contract this repo is pinned to fails on purpose, for example on
+`registerUplinkTopic` missing from the sdk.
+
 ## Starting a new Uplink
 
 ```bash

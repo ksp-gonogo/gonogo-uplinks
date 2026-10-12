@@ -24,6 +24,10 @@ on:
       bundle: { required: true, type: boolean }
       publish: { required: false, type: boolean, default: false }
       scaffold: { required: false, type: boolean, default: false }
+      # Set by rc-check.yml only: build this Uplink against the PUBLISHED
+      # packages at exactly this version, not the tarballs vendored from a gonogo
+      # sha. Empty on every ordinary run.
+      packages_version: { required: false, type: string, default: "" }
 
 jobs:
   uplink:
@@ -113,6 +117,13 @@ jobs:
             exit 1
           fi
 
+      # Edits this runner's checkout and nothing that is committed. Before the
+      # first restore of either ecosystem, so every later step sees the published
+      # packages. The vendored lockfiles go with the file: pins, hence `npm install`.
+      - name: Use the published packages
+        if: inputs.packages_version != ''
+        run: node tooling/use-published-packages.mjs "${{ inputs.packages_version }}"
+
       - uses: actions/setup-node@v4
         if: inputs.client
         with: { node-version: "24" }
@@ -120,7 +131,12 @@ jobs:
       - name: Install client dependencies
         if: inputs.client
         working-directory: uplinks/${{ inputs.name }}/client
-        run: npm ci --no-audit --no-fund
+        run: |
+          if [ -n "${{ inputs.packages_version }}" ]; then
+            npm install --no-audit --no-fund
+          else
+            npm ci --no-audit --no-fund
+          fi
 
       - name: Typecheck client
         if: inputs.typecheck

@@ -1,0 +1,67 @@
+# Does every Uplink here still build and pass against the PUBLISHED release
+# candidate of the Gonogo packages, as an outside author would install them?
+#
+# ci.yml builds from tarballs and a nupkg vendored from one gonogo commit, which
+# proves this repo against a commit and nothing about what is on npm and
+# nuget.org. This runs the same per-Uplink task set with every Gonogo dependency
+# swapped, in the runner's checkout only (tooling/use-published-packages.mjs),
+# for the version it is given. By hand, never on a push: a candidate older than
+# the contract this repo is pinned to fails here, legitimately.
+#
+#   gh workflow run rc-check.yml -f version=1.0.0-rc.27
+#
+# Without a version it reads the `rc` dist-tag of @ksp-gonogo/sitrep-sdk.
+name: rc-check
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Exact package version, e.g. 1.0.0-rc.27. Empty = the sitrep-sdk `rc` dist-tag."
+        required: false
+        default: ""
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - id: matrix
+        run: node scripts/uplink-matrix.mjs --github >> "$GITHUB_OUTPUT"
+      - id: version
+        env:
+          REQUESTED: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          v="$REQUESTED"
+          if [ -z "$v" ]; then v=$(npm view @ksp-gonogo/sitrep-sdk dist-tags.rc); fi
+          for p in sitrep-sdk ui-kit uplink-tools; do
+            npm view "@ksp-gonogo/$p@$v" version >/dev/null
+          done
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "### Against the published packages at $v" >> "$GITHUB_STEP_SUMMARY"
+
+  uplink:
+    needs: discover
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/_uplink-tasks.yml
+    secrets: inherit
+    with:
+      name: ${{ matrix.name }}
+      id: ${{ matrix.id }}
+      client: ${{ matrix.client }}
+      mod_csproj: ${{ matrix.mod_csproj }}
+      tests_csproj: ${{ matrix.tests_csproj }}
+      codegen_csproj: ${{ matrix.codegen_csproj }}
+      devtools_csproj: ${{ matrix.devtools_csproj }}
+      typecheck: ${{ matrix.typecheck }}
+      test: ${{ matrix.test }}
+      bundle: ${{ matrix.bundle }}
+      packages_version: ${{ needs.discover.outputs.version }}
