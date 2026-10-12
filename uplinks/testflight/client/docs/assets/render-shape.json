@@ -3,12 +3,12 @@
   "engine": "chromium",
   "assets": {
     "engine-failure-mid-ascent--default.png": {
-      "hash": "a5afbe5a73661e22",
+      "hash": "8a288c8e1efc7293",
       "elements": 86,
       "text": "e9437f69"
     },
     "engine-failure-mid-ascent-stopped-arriving--default.png": {
-      "hash": "4ea0b49e216dea74",
+      "hash": "a03f4d8061ec9d49",
       "elements": 84,
       "text": "9a779f98"
     }
