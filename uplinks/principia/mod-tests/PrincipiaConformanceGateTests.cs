@@ -43,7 +43,7 @@ namespace GonogoPrincipiaUplink.Tests
             return string.Concat(sha.ComputeHash(bytes).Select(b => b.ToString("x2")));
         }
 
-        /// <summary>An elf exporting <paramref name="names"/> with a descriptor
+        /// <summary>An ELF exporting <paramref name="names"/> with a descriptor
         /// appended, which is the shape the gate has to read: both facts live in one
         /// file and are read by different code.</summary>
         private static byte[] Build(IEnumerable<string> names, string package) =>

@@ -3,12 +3,12 @@
  * from a `kos.processors` frame on the sitrep stream, the discovery path that
  * replaced the old telnet menu-peek.
  *
- * Nothing internal is mocked: the real `KosCpuDiscovery` component adopts the
- * live `TelemetryClient` into the real `kosSource` (its Uplink executor stands
- * up the standing `kos.processors` subscription) and feeds the real
- * `KosDataSource.onProcessorsChanged` feed into a real `CpuRegistryService`
+ * Nothing internal is mocked: the REAL `KosCpuDiscovery` component adopts the
+ * live `TelemetryClient` into the REAL `kosSource` (its Uplink executor stands
+ * up the standing `kos.processors` subscription) AND feeds the REAL
+ * `KosDataSource.onProcessorsChanged` feed into a REAL `CpuRegistryService`
  * exactly as `MainScreen` does (the two used to be a separate
- * `useKosMainWiring` hook, since merged into this one component). A real
+ * `useKosMainWiring` hook, since merged into this one component). A REAL
  * `TelemetryProvider` supplies the client. Only the wire is faked, via
  * `FakeKosUplink` (a `StubTransport`-backed `kos.processors`/`kos.run`
  * responder: the same fixture the executeScript integration tests use).

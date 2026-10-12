@@ -15,7 +15,7 @@ namespace Gonogo.KosUplink
     /// (<c>KosConfig.activeCpu</c> in the app), not something this mod-side
     /// Uplink can observe; the mod has no notion of which CPU the operator
     /// has picked in the browser. The mod-honest signal this reports instead
-    /// is processor-list emptiness, <c>kos.processors</c>' own captured CPU
+    /// is processor-list EMPTINESS, <c>kos.processors</c>' own captured CPU
     /// count (<see cref="KosExtension.HandleProcessors"/>): whether the
     /// active vessel carries any kOS CPU at all. That is a strictly weaker
     /// claim than "a CPU is selected" (a vessel can have CPUs and still have

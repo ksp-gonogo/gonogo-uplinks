@@ -26,7 +26,7 @@ export interface ScanCoverageGate {
   version: number;
   width: number;
   height: number;
-  /** True when at least one coverage source is registered and a
+  /** True when at least one coverage source is registered AND a
    *  `CoverageMaskCacheProvider` is mounted to actually resolve its masks. False
    *  in either the "no coverage source" case (zero coverage sources
    *  registered) or the "no cache provider" case (sources are registered

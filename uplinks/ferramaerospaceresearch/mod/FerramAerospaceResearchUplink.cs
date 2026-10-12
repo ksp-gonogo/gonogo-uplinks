@@ -11,11 +11,11 @@ namespace GonogoFerramAerospaceResearchUplink
     /// from Ferram Aerospace Research by reflection.
     ///
     /// <para><b>What this adds and what it deliberately does not.</b> The
-    /// atmospheric state is already correct on <c>vessel.flight</c> with FAR
+    /// ATMOSPHERIC state is already correct on <c>vessel.flight</c> with FAR
     /// installed and is not repeated here: FAR's integrator registration replaces
     /// aerodynamic forces and exposed areas, not the atmosphere, and FAR's own
     /// display reads the stock dynamic pressure. What no channel carried is the
-    /// vessel's attitude to that atmosphere and what the attitude is costing it,
+    /// vessel's attitude TO that atmosphere and what the attitude is costing it,
     /// which on an ascent or an entry is the half an operator is actually flying
     /// to.</para>
     ///
@@ -53,10 +53,10 @@ namespace GonogoFerramAerospaceResearchUplink
         /// Fields published per UT second. One capture per tick emits one payload
         /// of fifteen fields, so steady state is fifteen; this is set at five
         /// times that, which is loose enough for a keyframe landing beside a
-        /// change emission and tight enough that a capture running per frame
+        /// change emission and tight enough that a capture running per FRAME
         /// rather than per tick breaches it within the first second.
         ///
-        /// <para>Counting fields rather than payloads is what makes the number
+        /// <para>Counting FIELDS rather than payloads is what makes the number
         /// mean anything: a payload count for a single-vessel channel is one per
         /// tick whatever goes wrong with it, so it could only ever catch a cadence
         /// fault, and it would catch it against a threshold of one.</para>
@@ -193,7 +193,7 @@ namespace GonogoFerramAerospaceResearchUplink
         }
 
         /// <summary>
-        /// Health, and which Ferram. The version caveat on
+        /// Health, and WHICH Ferram. The version caveat on
         /// <see cref="ReadAgainstVersion"/> is why these rows are load-bearing
         /// rather than decorative: every reading hangs off one struct's field
         /// names, so an operator seeing an empty aerodynamic panel needs to be

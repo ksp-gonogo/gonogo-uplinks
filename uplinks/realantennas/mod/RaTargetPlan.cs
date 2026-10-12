@@ -6,7 +6,7 @@ using Sitrep.Contract;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// Everything <c>realantennas.antenna.target</c> decides before it touches
+    /// Everything <c>realantennas.antenna.target</c> decides BEFORE it touches
     /// the game: which mode was asked for, whether the antenna has earned it,
     /// whether the numbers are in range, and what the <c>TARGET</c> node should
     /// therefore contain. KSP-free, so every branch of it is reachable
@@ -14,7 +14,7 @@ namespace Gonogo.RealAntennasUplink
     ///
     /// <para>The node this produces is described as name/value pairs rather than
     /// built here, because a <c>ConfigNode</c> is KSP's. <see cref="RaTargeting"/>
-    /// walks the pairs into one. The values are already in RealAntennas' own
+    /// walks the pairs into one. The VALUES are already in RealAntennas' own
     /// persisted spelling, invariant-culture formatted: a comma decimal
     /// separator would turn a three-component vector into six components and
     /// the target would load somewhere else entirely.</para>
@@ -98,7 +98,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// Whether an antenna of this shape can be aimed, and the refusal when it
+        /// Whether an antenna of this SHAPE can be aimed, and the refusal when it
         /// cannot. Three answers rather than two, because
         /// <c>RaReflection.Steerable</c> has three: a dish proceeds, an omni is
         /// refused as an omni, and an antenna whose shape did not read is refused
@@ -168,15 +168,15 @@ namespace Gonogo.RealAntennasUplink
         /// radius of the resolved body, needed only to lower
         /// <see cref="ModeBodyCenter"/>.
         ///
-        /// <para>Out-of-range angles are refused rather than clamped.
+        /// <para>Out-of-range angles are REFUSED rather than clamped.
         /// RealAntennas' own window clamps them silently, but a window shows the
         /// operator the clamped number back; a command that clamped would report
         /// success for an aim point nobody asked for, minutes after they asked.</para>
         ///
-        /// <para>An absent angle is refused on the same ground, and it is the
+        /// <para>An ABSENT angle is refused on the same ground, and it is the
         /// likelier case: the client's form starts every coordinate box empty and
         /// parses an empty or unreadable one to absent, so an operator who picks
-        /// a mode and presses aim without typing arrives here with nothing.
+        /// a mode and presses AIM without typing arrives here with nothing.
         /// Substituting zero aimed the dish at 0N 0E, or due north on the
         /// horizon, and reported success. <see cref="RealAntennasTargetArgs.Altitude"/>
         /// is the single exception: its default is a stated one.</para>

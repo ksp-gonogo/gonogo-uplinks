@@ -11,7 +11,7 @@ namespace GonogoKosUplink.Tests
 {
     /// <summary>
     /// Headless tests for <see cref="KosExtension.RunOnMainThread"/>: the
-    /// adversarial-review M1 fix (timed-out RUNPATH must be dropped, not run
+    /// adversarial-review M1 fix (timed-out RUNPATH must be DROPPED, not run
     /// late, and the wait handle must never be <c>Set()</c> after disposal).
     /// Uses the real <see cref="MainThreadDispatcher"/> and controls exactly
     /// when its <c>Drain</c> runs relative to the timeout, so the late-drain
@@ -88,13 +88,13 @@ namespace GonogoKosUplink.Tests
         /// a timeout after ~4s and
         /// its kOS side effect (TypeCommand/RUNPATH) never executed.
         ///
-        /// <para>Root cause is a double main-thread marshal. In production the
+        /// <para>Root cause is a DOUBLE main-thread marshal. In production the
         /// <c>ChannelEngine</c> is built <c>executeCommandsOnMainThread:true</c>,
-        /// so it already runs the command handler on the KSP main thread
+        /// so it already runs the command handler ON the KSP main thread
         /// (drained by <c>GonogoAddon.Update -&gt; ChannelEngine.RunPendingCommands</c>).
-        /// <see cref="MainThreadDispatcher.Drain"/> runs on that same Unity main
+        /// <see cref="MainThreadDispatcher.Drain"/> runs on that SAME Unity main
         /// thread (<c>KosMainThreadDispatcherAddon.Update</c>). So by the time a
-        /// kos handler body runs it is already on the dispatcher's drain thread,
+        /// kos handler body runs it is ALREADY on the dispatcher's drain thread,
         /// and every frame since startup has drained the dispatcher, establishing
         /// that thread. The buggy <see cref="KosExtension.RunOnMainThread"/> then
         /// <c>Dispatch</c>es to that same thread and blocks on <c>Done.Wait</c>,
@@ -142,11 +142,11 @@ namespace GonogoKosUplink.Tests
         }
 
         /// <summary>
-        /// The same self-deadlock proven under the full production thread
-        /// topology, pumped exactly as production pumps it: one "Unity main
-        /// thread" drains both the engine's marshalled-command mailbox
+        /// The same self-deadlock proven under the FULL production thread
+        /// topology, pumped exactly as production pumps it: ONE "Unity main
+        /// thread" drains BOTH the engine's marshalled-command mailbox
         /// (== <c>ChannelEngine.RunPendingCommands</c>, from <c>GonogoAddon.Update</c>)
-        /// and the kOS <see cref="MainThreadDispatcher"/>
+        /// AND the kOS <see cref="MainThreadDispatcher"/>
         /// (== <c>KosMainThreadDispatcherAddon.Update</c>). A background "Courier"
         /// thread dispatches the command by marshalling the handler onto that
         /// mailbox and blocking on the result: the shape of

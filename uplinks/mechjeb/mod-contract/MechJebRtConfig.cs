@@ -5,13 +5,13 @@ using Reinforced.Typings.Fluent;
 namespace Gonogo.MechJebUplink;
 
 /// <summary>
-/// This Uplink's own codegen configuration: the per-uplink mechanism the
+/// This Uplink's OWN codegen configuration: the per-uplink mechanism the
 /// uplink-types-out-of-core plan calls for, activated for the first time
 /// here. Mirrors <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly,
 /// scoped to just this assembly's wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> (already public, already documented as
 /// assembly-generic, simply never called this way before this pilot) so a
-/// quantity-bearing property on a Value the client receives gets the same
+/// quantity-bearing property on a Value the client receives gets the SAME
 /// <c>Value&lt;"token"&gt;</c>/<c>Vec3Of&lt;"token"&gt;</c> retyping a
 /// first-party payload gets. No enforcement is lost by living outside
 /// <c>Sitrep.Contract</c>: see <c>ApplyUnitValueTypes</c>'s own doc comment.
@@ -25,17 +25,17 @@ namespace Gonogo.MechJebUplink;
 /// <c>wireTypes</c> array, and the matching codegen.sh stanza.</para>
 ///
 /// <para><b>Neither of this Uplink's two types actually emits a
-/// <c>Value&lt;&gt;</c> today.</b> Both are command args
+/// <c>Value&lt;&gt;</c> today.</b> Both are command ARGS
 /// (<c>MechJebAscentArgs</c>/<c>MechJebNoArgs</c>): inbound-only, client
 /// &gt; mod, and <c>ApplyUnitValueTypes</c> deliberately skips any type whose
 /// name ends <c>Args</c> (see its own doc comment: a widget JSON-stringifies
 /// these straight to the wire, so wrapping would require an unwrap step
 /// nothing performs). <c>MechJebAscentArgs.TargetAltitudeKm</c> still
 /// declares <see cref="Sitrep.Contract.SitrepUnitAttribute"/>, so the
-/// declaration survives relocation and the unit is still discoverable via
-/// <c>EmitUnitMap</c>'s field-&gt;unit table; the retype to a wire type
-/// simply never applied to it, in core or here, unchanged by this move. The
-/// next Uplink to migrate that has an outbound, unit-bearing payload
+/// DECLARATION survives relocation and the unit is still discoverable via
+/// <c>EmitUnitMap</c>'s field-&gt;unit table; the retype to a wire TYPE
+/// simply never applied to it, in core OR here, unchanged by this move. The
+/// next Uplink to migrate that HAS an outbound, unit-bearing payload
 /// (Avionics's <c>AvionicsStatus</c> is next in the plan's sequencing) is the
 /// one that actually exercises the <c>Value&lt;&gt;</c> retype+import path
 /// this file wires up.</para>

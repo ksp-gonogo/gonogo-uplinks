@@ -6,7 +6,7 @@ namespace GonogoRp1Uplink.Tests
 {
     /// <summary>What the production walk assumes about a member it reads by name.</summary>
     /// <remarks>
-    /// These are the readers in <c>Rp1Types</c>, named by what they accept rather
+    /// These are the readers in <c>Rp1Types</c>, named by what they ACCEPT rather
     /// than by which method they are, because that is the thing a rename or a
     /// widening breaks. <c>ReadDouble</c> going through <c>ToDouble</c> accepts
     /// four widths; <c>ReadBool</c> accepts one type and returns absent for
@@ -69,7 +69,7 @@ namespace GonogoRp1Uplink.Tests
     /// The accessibility the production lookup asks for, and a real assertion
     /// rather than a formality. Nearly every method here is public API and a
     /// public-only lookup is what makes an accidental reach into RP-1's internals
-    /// fail loudly; one is deliberately not
+    /// fail loudly; ONE is deliberately not
     /// (<c>PatchKSCFacilityContextMenu.GetTechGate</c>), and a guard that could
     /// only express "public" would have reported success on the single most
     /// fragile pin in the manifest, because a private member simply would not be
@@ -129,7 +129,7 @@ namespace GonogoRp1Uplink.Tests
     /// fixture a self-consistency check and nothing more: rename
     /// <c>confidence</c> on RP-1's side and production stops resolving it while
     /// the fixture goes on carrying the old name, so every test stays green. This
-    /// list exists to be compared against the shipped binary instead, which is
+    /// list exists to be compared against the SHIPPED binary instead, which is
     /// the only comparison a rename can fail.</para>
     ///
     /// <para><b>What it cannot do.</b> It proves the members exist, that they are
@@ -139,7 +139,7 @@ namespace GonogoRp1Uplink.Tests
     /// quantity its name suggests, not that <c>PredictWeightedEfficiency</c>
     /// returns an efficiency rather than the interval it returns on its early-out,
     /// and not that writing a balance back leaves RP-1 in a state it agrees with.
-    /// A member that kept its name and changed its meaning passes this list
+    /// A member that kept its name and changed its MEANING passes this list
     /// completely.</para>
     ///
     /// <para><b>Assemblies.</b> <c>RP0</c> is RP-1's own. <c>ROUtils</c> ships

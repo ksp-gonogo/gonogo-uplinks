@@ -89,9 +89,9 @@ describe("unit hydration at decode time", () => {
 
   /**
    * The half `registerTopicUnits` alone cannot reach. Every unit an operator
-   * reads on the engines channel sits on the nested per-engine rows, which
+   * reads on the engines channel sits on the NESTED per-engine rows, which
    * `wrapTopicPayload` only reaches by resolving the `engines` field's shape to
-   * `RealFuelsEngineEntry` and looking that type up by name. Without the
+   * `RealFuelsEngineEntry` and looking that type up BY NAME. Without the
    * `registerTypeUnits` loop the stability arrives as a bare number while the
    * generated contract still types it Value<"ratio">.
    */

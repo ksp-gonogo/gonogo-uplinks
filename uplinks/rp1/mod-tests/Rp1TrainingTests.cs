@@ -78,7 +78,7 @@ public class Rp1TrainingTests : IDisposable
     // ── The catalogue ───────────────────────────────────────────────────────
 
     /// <summary>
-    /// No RP-1 career at all. The channel must say nothing rather than an empty
+    /// No RP-1 career at all. The channel must say NOTHING rather than an empty
     /// list, because an empty catalogue would claim the install has no crewed part
     /// that can be trained on, which RP-1 never means.
     /// </summary>
@@ -142,7 +142,7 @@ public class Rp1TrainingTests : IDisposable
 
     /// <summary>
     /// A scene with no live handler is re-asked on the very next tick rather than
-    /// held behind the throttle. The window is there because the answer is slow to
+    /// held behind the throttle. The window is there because the ANSWER is slow to
     /// change; "which save is loaded" is not, and it changes the moment one loads.
     /// </summary>
     [Fact]
@@ -182,7 +182,7 @@ public class Rp1TrainingTests : IDisposable
 
     /// <summary>
     /// RP-1 declares <c>AddStudent(string)</c> beside the one this reaches, and
-    /// that overload indexes the roster itself and adds the null it gets back for
+    /// that overload indexes the roster itself and adds the NULL it gets back for
     /// a name nobody holds. Taking it would enrol nobody and report success.
     /// </summary>
     [Fact]
@@ -240,7 +240,7 @@ public class Rp1TrainingTests : IDisposable
 
     /// <summary>
     /// RP-1 4.7's gate takes a defaulted <c>allowInactive</c>, and true is how its
-    /// screen puts a kerbal on leave onto a queued course, so it is asked with
+    /// screen puts a kerbal on leave onto a QUEUED course, so it is asked with
     /// true wherever the queue is there to take the course.
     /// </summary>
     [Fact]
@@ -353,7 +353,7 @@ public class Rp1TrainingTests : IDisposable
     }
 
     /// <summary>
-    /// A kerbal on a queued course who is not on leave passes RP-1's gate: only the
+    /// A kerbal on a queued course who is NOT on leave passes RP-1's gate: only the
     /// students on leave are grounded. RP-1's screen keeps them off a second course
     /// by not drawing them selectable, and this refusal is that.
     /// </summary>
@@ -377,7 +377,7 @@ public class Rp1TrainingTests : IDisposable
     }
 
     /// <summary>
-    /// The gate RP-1 applies in its UI and not in <c>StartCourse</c>, so declining
+    /// The gate RP-1 applies in its UI and NOT in <c>StartCourse</c>, so declining
     /// to ask it would quietly start a course RP-1's own screen refuses to create.
     /// The refusal states the tier the way RP-1 does, one above the index.
     /// </summary>
@@ -411,7 +411,7 @@ public class Rp1TrainingTests : IDisposable
     }
 
     /// <summary>
-    /// Over the maximum, RP-1 refuses by silently not adding, and the gate that
+    /// Over the maximum, RP-1 refuses by SILENTLY not adding, and the gate that
     /// fires first is the student check, whose answer is about the kerbal. Asking
     /// the bound first is what makes the refusal say "this training seats two".
     /// </summary>
@@ -474,7 +474,7 @@ public class Rp1TrainingTests : IDisposable
     /// The guard RP-1's own screen does not need, because a command can arrive at
     /// any moment: CompleteCourse on an already-completed course runs the reward
     /// path a second time and, in the game, spawns a dialog nobody opened. It is
-    /// the course walk that refuses, which is what makes the property structural
+    /// the course WALK that refuses, which is what makes the property structural
     /// rather than a check that could be skipped down some other path.
     /// </summary>
     [Fact]

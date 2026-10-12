@@ -7,7 +7,7 @@ namespace Gonogo.RealAntennasUplink
     /// the targeting commands already use. KSP-free and RealAntennas-free, so its
     /// whole surface is reachable headlessly.
     ///
-    /// <para><b>It is operator intent and therefore outlives everything.</b> A
+    /// <para><b>It is operator INTENT and therefore outlives everything.</b> A
     /// chain has to survive the thing it exists for (a lost link), the thing the
     /// operator does next (a scene change), and the thing they do at the end of a
     /// session (a save and a reload). So this is a process-lifetime register that
@@ -48,7 +48,7 @@ namespace Gonogo.RealAntennasUplink
             antennaId != null && _chains.TryGetValue(antennaId, out var entry) ? entry : null;
 
         /// <summary>
-        /// Replaces the antenna's chain. An empty list clears it, which is the
+        /// Replaces the antenna's chain. An empty list CLEARS it, which is the
         /// only way a walk stops.
         ///
         /// <para>The walk is rewound rather than carried over, because an index
@@ -75,7 +75,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// Restores one chain as the save held it, walk position included. Unlike
-        /// <see cref="Set"/> this does not rewind: a reload mid-outage must not
+        /// <see cref="Set"/> this does NOT rewind: a reload mid-outage must not
         /// send the craft back to a target it has already tried and, worse, off
         /// the one that is currently working.
         /// </summary>

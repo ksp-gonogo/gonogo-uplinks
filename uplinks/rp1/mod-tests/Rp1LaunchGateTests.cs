@@ -125,7 +125,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A vehicle mid-integration is a wait, not a job to start, and the two
+        /// A vehicle mid-integration is a WAIT, not a job to start, and the two
         /// sentences differ so an operator does the right thing about each.
         /// </summary>
         [Fact]
@@ -186,7 +186,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A rollback counts down to zero, which is what
+        /// A rollback counts DOWN to zero, which is what
         /// <c>LCOpsProject.IsComplete</c> does with a reversed operation, so a
         /// rollback at full progress is one that has barely started.
         /// </summary>
@@ -206,7 +206,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A rollout that will not say how far along it is refuses nothing.
+        /// A rollout that will not say how far along it is refuses NOTHING.
         ///
         /// <para>Substituted at zero progress against build points that read
         /// perfectly well, the comparison came out "not finished" and the gate
@@ -237,7 +237,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A rollout belonging to a different vehicle does not launch this one.
+        /// A rollout belonging to a DIFFERENT vehicle does not launch this one.
         /// RP-1 associates the operation by the vehicle's shipID, and matching on
         /// the pad alone would fly whatever happened to be standing there.
         /// </summary>
@@ -327,7 +327,7 @@ namespace GonogoRp1Uplink.Tests
         // ── The complex's own envelope, which is NOT the pad's tier ────────────
 
         /// <summary>
-        /// RP-1 measures a vehicle against its launch complex, not the pad tier
+        /// RP-1 measures a vehicle against its LAUNCH COMPLEX, not the pad tier
         /// stock's own tests read. It does not patch
         /// <c>GameVariables.GetCraftMassLimit</c>, it only calls it, so nothing
         /// else in this mod asks the question this rule asks.
@@ -352,7 +352,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// RP-1's mass floor, which stock has no concept of at all: a complex
+        /// RP-1's mass FLOOR, which stock has no concept of at all: a complex
         /// built for a Saturn V cannot usefully integrate a sounding rocket.
         /// </summary>
         [Fact]
@@ -490,7 +490,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// RP-1 installed and its scenario module not there is a scene that has
-        /// not finished coming up, which is a read that failed. Unknown refuses
+        /// not finished coming up, which is a read that FAILED. Unknown refuses
         /// the dispatch and leaves the control live; a Pass here would fly the
         /// unbuilt vehicle during every scene load.
         /// </summary>

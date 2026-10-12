@@ -12,7 +12,7 @@ using Xunit;
 /// <c>delayInSimulation</c> setting, the zero delay modifier held on an ungated
 /// main-thread source, and the <c>rp1.simulation</c> topic.
 ///
-/// <para>The modifier is driven with nothing subscribed, because that is the
+/// <para>The modifier is driven with NOTHING subscribed, because that is the
 /// session it matters in: an operator flying a simulation from a board with no
 /// RP-1 widget on it still gets the delay switched off.</para>
 /// </summary>

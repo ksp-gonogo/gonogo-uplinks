@@ -3,7 +3,7 @@ using Sitrep.Contract;
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// The kerbcast mandatory healthcheck: as a pure function.
+    /// The kerbcast MANDATORY HEALTHCHECK: as a pure function.
     ///
     /// <para>This is the reason the kerbcast Uplink exists. Before it, the only
     /// "Kerbcast health" surface read the browser's own
@@ -26,11 +26,11 @@ namespace Gonogo.KerbcastUplink
         /// Decides the health state.
         ///
         /// <para>The four degraded cases are deliberately distinct, because
-        /// they send the operator to four different places: an install problem
-        /// (kerbcast isn't there), a scene problem (you're in the VAB, kerbcast's
-        /// capture core only runs in flight), a sidecar problem (kerbcast's
+        /// they send the operator to four different places: an INSTALL problem
+        /// (kerbcast isn't there), a SCENE problem (you're in the VAB, kerbcast's
+        /// capture core only runs in flight), a SIDECAR problem (kerbcast's
         /// video process died and the feed will be black regardless of what's
-        /// on the craft), or a craft problem (you flew something with no camera
+        /// on the craft), or a CRAFT problem (you flew something with no camera
         /// on it). "Black feed" alone can't tell those apart; this can.</para>
         /// </summary>
         /// <param name="unavailableReason">
@@ -40,7 +40,7 @@ namespace Gonogo.KerbcastUplink
         /// <param name="sampledOnce">Whether the main-thread capture has run at least once.</param>
         /// <param name="coreActive">Whether kerbcast's capture core reported itself live at the last sample.</param>
         /// <param name="sidecarAlive">
-        /// The debounced video-sidecar liveness (see <see cref="SidecarDeathDebouncer"/>):
+        /// The DEBOUNCED video-sidecar liveness (see <see cref="SidecarDeathDebouncer"/>):
         /// true unless two consecutive capture ticks have confirmed the sidecar
         /// process dead. Checked after <paramref name="coreActive"/> and before
         /// <paramref name="cameraCount"/>, so a dead sidecar outside a flight

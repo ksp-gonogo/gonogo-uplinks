@@ -8,7 +8,7 @@ namespace Gonogo.KerbcastUplink
     /// per camera.
     ///
     /// <para>Hand-built (rather than serialising the contract POCO) to match how
-    /// every other uplink sources its channels: the contract type is the typing
+    /// every other uplink sources its channels: the contract type is the TYPING
     /// mirror, and <c>JsonWriter</c> walks this value tree to make the actual
     /// bytes. Keys are camelCase to match <c>RtConfig.CamelCaseForProperties</c>,
     /// so this dictionary and the generated TS interface agree field for field.</para>

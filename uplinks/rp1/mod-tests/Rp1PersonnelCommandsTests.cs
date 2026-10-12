@@ -19,13 +19,13 @@ namespace GonogoRp1Uplink.Tests
     /// headcount, which is the number salaries are drawn against.</item>
     /// <item><see cref="Refuses_more_than_the_centre_has_unassigned"/>.
     /// <c>ChangeEngineers</c> clamps nothing at all, so an unchecked target drives
-    /// the centre's unassigned pool negative and every complex's build rate with
+    /// the centre's unassigned pool NEGATIVE and every complex's build rate with
     /// it.</item>
     /// <item><see cref="Refuses_more_than_the_complex_can_hold"/>. The same
     /// hazard from the other end: a complex above its own maximum is a state
     /// RP-1's own window cannot produce.</item>
     /// <item><see cref="Refuses_a_complex_that_is_being_built_or_modified"/>. RP-1
-    /// holds the crew itself for the duration and puts them back by adding, so a
+    /// holds the crew itself for the duration and puts them back by ADDING, so a
     /// crew assigned mid-construction is still there when the re-add lands and
     /// the complex finishes over its maximum.</item>
     /// </list>

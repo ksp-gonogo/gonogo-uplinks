@@ -197,7 +197,7 @@ namespace Gonogo.KerbalismUplink
             return result;
         }
 
-        /// <summary>Per-kerbal rule accumulator values via KERBALISM.DB.Kerbal(name).rules[name].problem.</summary>
+        /// <summary>Per-kerbal rule accumulator VALUES via KERBALISM.DB.Kerbal(name).rules[name].problem.</summary>
         public IEnumerable<KerbalRulesRaw> CrewRules(Vessel v)
         {
             if (v == null || v.GetVesselCrew() == null) yield break;
@@ -225,9 +225,9 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// Per-rule config constants from the loaded KERBALISM.Profile.rules[],
+        /// Per-rule config CONSTANTS from the loaded KERBALISM.Profile.rules[],
         /// degeneration (units/s) + fatal_threshold. Static / vessel-independent
-        /// (resolved fresh each call; the list is small). These are not in the
+        /// (resolved fresh each call; the list is small). These are NOT in the
         /// KerbalData accumulator the dump tool captured; they feed the stage-2
         /// death-clock. Verified against Kerbalism source (not just inferred):
         /// `Profile.rules` is `public static List&lt;Rule&gt;` (Profile/Profile.cs),
@@ -272,7 +272,7 @@ namespace Gonogo.KerbalismUplink
         /// ProcessController PartModules on the vessel (scrubber/recycler/fuel cell).
         /// <c>Resource</c> is the PSEUDO-resource the controller gates on ("_Scrubber"),
         /// which joins onto the profile Process whose modifier list contains it;
-        /// <c>FlightId</c> is the host part, so a ledger row can say where.
+        /// <c>FlightId</c> is the host part, so a ledger row can say WHERE.
         /// </summary>
         public IEnumerable<ProcessRaw> Processes(Vessel v)
         {
@@ -301,7 +301,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// Every Kerbalism <c>Harvester</c> on the vessel: the drill half of ISRU.
         ///
-        /// <para>Matched on the exact type name rather than a substring, unlike
+        /// <para>Matched on the EXACT type name rather than a substring, unlike
         /// <see cref="Processes"/>'s <c>ProcessController</c> match. Stock's own
         /// module is <c>ModuleResourceHarvester</c>, which contains "Harvester", so a
         /// substring match would sweep stock parts into the Kerbalism reader on any
@@ -357,7 +357,7 @@ namespace Gonogo.KerbalismUplink
         /// <c>Profile.processes</c>, <c>Profile.supplies</c>, plus a KSP resource
         /// definition for every resource they mention.
         ///
-        /// <para>This is what lets gonogo carry no list of resource names. Read once
+        /// <para>This is what lets gonogo carry NO list of resource names. Read once
         /// (the caller caches): these are static after load and do not change
         /// within a session.</para>
         /// </summary>
@@ -498,7 +498,7 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>An unread rate lands as 0 rather than absent: the wire shape is a
         /// map of plain doubles with no slot to carry the absence, and these are
-        /// nominal config ratios in the first place. A term that came out wrong is
+        /// NOMINAL config ratios in the first place. A term that came out wrong is
         /// already visible client-side, where the ledger's <c>residual</c> is the
         /// gap between the terms and Kerbalism's own reported net.</para>
         /// </summary>
@@ -650,7 +650,7 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Pairs a module read to its ReliabilityInfo entry. Exact (partId, title)
-        /// first; a unique title is accepted as a fallback because
+        /// first; a UNIQUE title is accepted as a fallback because
         /// <c>ReliabilityInfo</c>'s proto constructor sets <c>partId = 0u</c>
         /// unconditionally, so on an unloaded vessel the exact key can never match
         /// and the service budget would be permanently absent there.
@@ -672,7 +672,7 @@ namespace Gonogo.KerbalismUplink
         /// Walks the vessel's <c>KERBALISM.Reliability</c> PartModules, loaded or
         /// proto, reading only the two persisted fields the projection drops.
         ///
-        /// <para>On the proto path the field name is <c>needMaintenance</c>, not
+        /// <para>On the proto path the field name is <c>needMaintenance</c>, NOT
         /// <c>need_maintenance</c>: Kerbalism's own proto constructor reads the
         /// latter and therefore always loses the explicit inspection flag. Nothing
         /// here reads it today, but the name is recorded so a future read takes
@@ -688,15 +688,15 @@ namespace Gonogo.KerbalismUplink
         /// repair itself.</para>
         ///
         /// <para><b>Why the preference is flipped around the call.</b>
-        /// Kerbalism's own <c>ConsumeRepairKits</c> reads kits only from an
-        /// EVA kerbal's inventory, and only when the active vessel is that
+        /// Kerbalism's own <c>ConsumeRepairKits</c> reads kits ONLY from an
+        /// EVA kerbal's inventory, and only when the active vessel IS that
         /// kerbal. A remote repair never satisfies that, so left alone it
         /// refuses every time kits are required. We take the kits ourselves,
         /// from a location the operator can see, then hold the guard off for
         /// the single synchronous call so Kerbalism does not charge a second
         /// time. The cost is real and the state change stays Kerbalism's.</para>
         ///
-        /// <para><b>The outcome is observed, not predicted.</b> Whether the
+        /// <para><b>The outcome is OBSERVED, not predicted.</b> Whether the
         /// crew member satisfies the (elevated, for a critical failure) spec is
         /// Kerbalism's own <c>CrewSpecs</c> judgement, and re-implementing it
         /// here would be a second authority that can disagree. So the module's
@@ -841,7 +841,7 @@ namespace Gonogo.KerbalismUplink
         /// Make sure the kerbal is holding enough kits, fetching the shortfall
         /// from a part's cargo hold if they are not.
         ///
-        /// <para>The fetch happens here rather than as a second command,
+        /// <para>The fetch happens HERE rather than as a second command,
         /// because a kerbal holding none cannot repair with a locker two metres
         /// away and making the operator move it first would cost another round
         /// trip. Where the kit came from is recorded, since that is what the
@@ -962,7 +962,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// Who Kerbalism will let touch this part, read from its own
+        /// Who Kerbalism will let touch this part, read from its OWN
         /// <c>repair_cs</c> rather than guessed at.
         ///
         /// <para>Elevated by calling Kerbalism's <c>ElevatedForCritical()</c>
@@ -974,15 +974,15 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>Returns null when the spec is disabled, and null reads as "no
         /// requirement" all the way to the wire. That is a statement about the
-        /// trait and not about permission: a disabled spec means Kerbalism lets
-        /// nobody repair the part (see <see cref="RepairIsDisabled"/>, which is
+        /// TRAIT and not about permission: a disabled spec means Kerbalism lets
+        /// NOBODY repair the part (see <see cref="RepairIsDisabled"/>, which is
         /// what actually refuses it), and this used to be doc-commented as
         /// meaning anyone may.</para>
         /// </summary>
         /// <summary>
         /// Whether this module's repair is switched off in its config.
         ///
-        /// <para>An unreadable spec answers false, deliberately: the reflection
+        /// <para>An unreadable spec answers FALSE, deliberately: the reflection
         /// failing must not make every part on the craft unrepairable, which is a
         /// far larger wrong than the one this guards. It fails the way the code
         /// behaved before the guard existed.</para>
@@ -1077,7 +1077,7 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Per-star vantage (<c>VesselData.EnvSunsInfo</c>) plus, for each of those
-        /// stars, the CME slot that actually governs this vessel. Star-agnostic:
+        /// stars, the CME slot that actually governs THIS vessel. Star-agnostic:
         /// one entry per star Kerbalism tracks for this vessel, 1..N uniformly.
         /// StormTime/StormDuration/Dist are only filled when storm_state != 0 (see
         /// <c>Sitrep.Contract.KerbalismStormEntry</c>'s fair-vs-cheating doc
@@ -1087,7 +1087,7 @@ namespace Gonogo.KerbalismUplink
         /// two <c>Storm.Update</c> overloads. In a body's SOI it is the shared
         /// per-body slot, <c>DB.Storm(Storm.StormKey(v.mainBody, star))</c>, and
         /// every vessel there sees that same storm. With no body SOI (solar orbit
-        /// or a barycenter) Kerbalism rolls storms per vessel instead, against
+        /// or a barycenter) Kerbalism rolls storms PER VESSEL instead, against
         /// <c>VesselData.GetStormDataForStar(star)</c> and that vessel's own sun
         /// distance, so an interplanetary craft is its own target and reading the
         /// body slot would report a storm that does not govern it. Each entry
@@ -1278,11 +1278,11 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Fills each crew entry's <see cref="KerbalRulesRaw.RuleVarianceFactors"/>
-        /// for the rules that have a variance, from Kerbalism's own
+        /// for the rules that HAVE a variance, from Kerbalism's own
         /// <c>Rule.Variance</c>. A rule with no variance is skipped: its factor
         /// is exactly 1 for every kerbal, so asking would be waste.
         ///
-        /// <para>An entry is left absent when the read fails rather than being
+        /// <para>An entry is left ABSENT when the read fails rather than being
         /// filled with 1.0, because 1.0 is a real answer and the difference
         /// decides whether the death clock reports a number or admits it cannot
         /// (see <see cref="KerbalismDeathClock"/>).</para>
@@ -1328,7 +1328,7 @@ namespace Gonogo.KerbalismUplink
         /// at.
         ///
         /// <para>Worth reading because it is not small for a background craft:
-        /// Kerbalism steps one unloaded vessel per tick, so a value from a fleet
+        /// Kerbalism steps ONE unloaded vessel per tick, so a value from a fleet
         /// of thirty probes can be thirty ticks old. Null when it cannot be
         /// read, which the caller must carry as ignorance rather than substitute
         /// the read time for.</para>
@@ -1570,7 +1570,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// Every file and sample on one <c>HardDrive</c>, each carrying that drive's
         /// own capacity figures. <c>dataCapacity</c>/<c>sampleCapacity</c> use
-        /// <c>-1</c> for unlimited, which is normalised to null here rather than
+        /// <c>-1</c> for unlimited, which is normalised to null HERE rather than
         /// forwarded: a negative capacity would read in a widget as a real number.
         /// </summary>
         private static void StoredOf(PartModule pm, string partId, string partName, List<ScienceStoredRaw> into)
@@ -1628,7 +1628,7 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// One stored row from a (SubjectData, File|Sample) pair. Everything about
-        /// what the result is comes off the SubjectData (Kerbalism's per-subject
+        /// WHAT the result is comes off the SubjectData (Kerbalism's per-subject
         /// ledger); everything about the stored blob comes off the file/sample.
         /// </summary>
         private static ScienceStoredRaw StoredRow(object? subject, object? blob, string partId, string partName, string kind)
@@ -1710,10 +1710,10 @@ namespace Gonogo.KerbalismUplink
         /// passed null, matching their own defaults. Null on a malformed id or
         /// an absent assembly.
         ///
-        /// <para>The resolver mutates the save for a parseable id it does not
+        /// <para>The resolver MUTATES the save for a parseable id it does not
         /// know: it constructs an unknown-subject entry and registers it
         /// permanently in the science DB. Callers must therefore validate the
-        /// requested subject against the current snapshot before resolving, so
+        /// requested subject against the current snapshot BEFORE resolving, so
         /// an arbitrary wire id can never seed a player's subject DB. The
         /// command provider does exactly that.</para>
         /// </summary>
@@ -1906,7 +1906,7 @@ namespace Gonogo.KerbalismUplink
         private static double? InvokeDoubleMethod(object obj, string name) => AsDouble(InvokeMethod(obj, name));
 
         /// <summary>
-        /// An enum-valued member as its name. Kerbalism's state machines are enums
+        /// An enum-valued member as its NAME. Kerbalism's state machines are enums
         /// (<c>RunningState</c>, <c>ExpStatus</c>, the lab's <c>Status</c>,
         /// <c>ScienceSituation</c>), and the name is the only stable thing about
         /// them: the numeric value shifts whenever a case is inserted, so carrying

@@ -7,7 +7,7 @@ namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
     /// The rule that decides whether a plan composed at a command centre may be
-    /// installed on the craft that received it, a signal delay later.
+    /// installed on the craft that received it, a light-time later.
     /// </summary>
     public class PrincipiaComposedPlanRulesTests
     {

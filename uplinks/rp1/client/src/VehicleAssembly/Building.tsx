@@ -7,8 +7,8 @@ import { VehicleSection } from "./VehicleSection.js";
 /**
  * Every vehicle a launch complex is still integrating.
  *
- * <para>Headed under integration, which is RP-1's own word for what a launch
- * complex does to a craft file. It was build list, and "building" is the word
+ * <para>Headed UNDER INTEGRATION, which is RP-1's own word for what a launch
+ * complex does to a craft file. It was BUILD LIST, and "building" is the word
  * the Space Center's own section uses for the VAB and the pads: an operator
  * reading "Construction: nothing" above a vehicle that was visibly being built
  * had two sections claiming the same word for two different things. Nothing

@@ -24,7 +24,7 @@ namespace GonogoPrincipiaUplink
     /// Where the live plugin handle comes from, re-read on demand rather than
     /// held.
     ///
-    /// <para>The handle is a raw pointer that Principia replaces on deserialise
+    /// <para>The handle is a raw pointer that Principia REPLACES on deserialise
     /// and on a plugin reset, so a cached copy is a dangling pointer with a
     /// perfectly ordinary-looking type. Nothing here ever stores one across a
     /// call, which is why this is an interface with one method rather than a
@@ -75,7 +75,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Nullable rather than fail-closed at the implementation, unlike the
         /// gates below it, because it is not itself a gate: it is the instant a
-        /// reading is stamped with and the instant several guards compare against,
+        /// reading is stamped with AND the instant several guards compare against,
         /// and those two want opposite answers. So the null travels and each caller
         /// resolves it, a reading by surfacing the absence and a write by refusing.
         /// </para>
@@ -102,7 +102,7 @@ namespace GonogoPrincipiaUplink
         /// never a zero: a zero plan count renders as "PLAN 1 OF 0" and a zero
         /// anomalous count says the integrator flagged nothing.
         ///
-        /// <para>The safety gates on this surface are not nullable, deliberately.
+        /// <para>The safety gates on this surface are NOT nullable, deliberately.
         /// <see cref="HasVessel"/>, <see cref="FlightPlanExists"/>,
         /// <see cref="IteratorAtEnd"/> and the two manoeuvre bounds each decide
         /// whether a call that would abort the process gets made, so an unreadable
@@ -152,7 +152,7 @@ namespace GonogoPrincipiaUplink
         object? IteratorGetPlottableElements(object iterator);
 
         /// <summary>
-        /// Whether the write half of this surface bound, and why not when it did
+        /// Whether the WRITE half of this surface bound, and why not when it did
         /// not.
         ///
         /// <para>Separate from binding at all, deliberately. A build whose write
@@ -165,7 +165,7 @@ namespace GonogoPrincipiaUplink
 
         /// <summary>
         /// The manoeuvre index the producer's optimiser is working on, -1 when no
-        /// optimisation is running, and null when the answer could not be read.
+        /// optimisation is running, and NULL when the answer could not be read.
         ///
         /// <para>The third state is load-bearing. A false "no optimisation is
         /// running" is what lets a write through that the optimiser then reverts with
@@ -174,7 +174,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>A read, on the write surface, because it exists only to keep a
         /// write from being silently reverted. Its preconditions are stricter than
-        /// any other plan read's: it needs the plan to have been materialised in
+        /// any other plan read's: it needs the plan to have been MATERIALISED in
         /// this frame, because the native body reaches into the plan's variant with
         /// no deserialisation test.</para>
         /// </summary>
@@ -185,7 +185,7 @@ namespace GonogoPrincipiaUplink
         /// signature of the call that accepts one. Null when that call could not
         /// be bound.
         ///
-        /// <para>The loaded build's type, never a shape written here. That is the
+        /// <para>The LOADED build's type, never a shape written here. That is the
         /// whole reason this is exposed: a burn constructed from it carries
         /// exactly the fields this build has, so a schema that moved between
         /// releases cannot leave a stale field behind. A literal would not fail
@@ -214,7 +214,7 @@ namespace GonogoPrincipiaUplink
         object? FlightPlanSetDesiredFinalTime(IntPtr plugin, string vesselGuid, double finalTime);
 
         /// <summary>
-        /// Writes back a step-parameter struct that came out of
+        /// Writes back a step-parameter struct that came OUT of
         /// <see cref="FlightPlanGetAdaptiveStepParameters"/>. There is deliberately
         /// no overload that takes the five values: two of them are integrator kinds
         /// from disjoint sets, and supplying the wrong one aborts with no message.

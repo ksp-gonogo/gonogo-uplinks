@@ -35,7 +35,7 @@ import {
  * The courses the career is running, and the two ways off one.
  *
  * <para><b>Why a course list at all.</b> Every one of these facts used to be
- * drawn on the roster row of each student, which meant a course two kerbals
+ * drawn on the ROSTER ROW of each student, which meant a course two kerbals
  * share was rendered twice: two copies of its name, its progress and its finish
  * date, and two copies of a cancel button that ends the same single course. The
  * roster row's question is "where is this kerbal", and it answers that in one
@@ -43,10 +43,10 @@ import {
  * rather than about a kerbal, are here.</para>
  *
  * <para>It renders nothing when the career is running no courses, which is most
- * of a career: an empty section titled training courses is a row of chrome
+ * of a career: an empty section titled TRAINING COURSES is a row of chrome
  * saying nothing.</para>
  *
- * <para>The date a course finishes is not the date its crew can fly. RP-1
+ * <para>The date a course FINISHES is not the date its crew can fly. RP-1
  * grounds each student for 120% of the course's length from the moment it
  * starts, so the students come free later, and that is the date a flight gets
  * planned against. Both are drawn because an operator watching a course and an

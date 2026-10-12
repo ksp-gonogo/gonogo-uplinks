@@ -24,7 +24,7 @@ export interface MockKerbcastSession {
   readonly transport: KerbcastTransport;
   /**
    * The ICE servers the last `transport.createPeer(...)` was called with,
-   * lets tests assert the relay's turn creds were threaded through to the
+   * lets tests assert the relay's TURN creds were threaded through to the
    * peer connection. `undefined` until the first connect builds a peer.
    */
   readonly iceServers: RTCIceServer[] | undefined;
@@ -125,14 +125,14 @@ export function createMockKerbcastSession(): MockKerbcastSession {
 
 /**
  * Build a URL-aware `fetch` implementation for kerbcast tests. The data source
- * makes two distinct calls on connect: a get `/ice-config` (turn creds) and
- * the SDK client's post `/offer` (SDP answer + camera flightIds). A single
+ * makes two distinct calls on connect: a GET `/ice-config` (TURN creds) and
+ * the SDK client's POST `/offer` (SDP answer + camera flightIds). A single
  * shared `Response` can't serve both, its body is consumed on the first read,
  * so this returns a *fresh* Response per call, routed by URL.
  *
  * Pass to `vi.spyOn(globalThis, "fetch").mockImplementation(kerbcastFetchImpl(...))`.
  * `iceServers` defaults to `[]` (the no-relay case → SDK STUN fallback);
- * pass servers to exercise the turn path.
+ * pass servers to exercise the TURN path.
  */
 export function kerbcastFetchImpl(opts?: {
   cameras?: number[];

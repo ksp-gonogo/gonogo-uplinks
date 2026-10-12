@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace GonogoPrincipiaUplink
 {
     /// <summary>
-    /// The register of which Principia flight-plan writes this assembly may bind,
+    /// The register of which Principia flight-plan WRITES this assembly may bind,
     /// which it must never bind, and why.
     ///
     /// <para><b>Why this is a second register rather than more entries in
@@ -71,7 +71,7 @@ namespace GonogoPrincipiaUplink
         };
 
         /// <summary>
-        /// The reads this Uplink needs in order to make a write <c>SAFE</c>, which the
+        /// The reads this Uplink needs in order to make a write SAFE, which the
         /// read register refuses for reasons that were right about the readout and
         /// are wrong about the guard.
         ///
@@ -80,20 +80,20 @@ namespace GonogoPrincipiaUplink
         /// that refusal says reinstating it should be a deliberate one-line change
         /// rather than a carved-out exception. This is that change, and the reason
         /// is no longer a readout. A write made while the producer's optimiser is
-        /// running is reverted, wholesale and silently, because the optimiser
+        /// running is REVERTED, wholesale and silently, because the optimiser
         /// publishes a fresh candidate plan and the producer's planner window
         /// swaps it over the live one every frame. Without this call there is no
         /// way to tell an operator that their edit will be discarded, and the
         /// alternative guard, rebuilding the optimiser ourselves, means calling a
-        /// driver constructor that takes a frame and can abort on the optimiser's
+        /// driver constructor that takes a frame and can abort on the OPTIMISER's
         /// thread, hours from our stack.</para>
         ///
         /// <para>Its precondition is stricter than the read register's table
         /// claimed for it, and the correction is load-bearing: the native body
         /// reaches into the plan's variant with no deserialisation test, so on a
         /// plan that is still the lazily-held alternative it throws
-        /// <c>std::bad_variant_access</c> across the native boundary, and on a
-        /// vessel with no plan it aborts. It needs a plan to exist and a
+        /// <c>std::bad_variant_access</c> ACROSS the native boundary, and on a
+        /// vessel with no plan it aborts. It needs a plan to exist AND a
         /// materialising read to have happened in the same frame, which is what
         /// <c>PrincipiaMaterialisedPlanGate</c> is for.</para>
         /// </summary>
@@ -109,7 +109,7 @@ namespace GonogoPrincipiaUplink
         /// <para>Named rather than screened, so the next author reads the hazard
         /// instead of rediscovering it. Every one of these is reachable and none
         /// of them is refused for being dangerous to call: they are refused
-        /// because of what they do after succeeding.</para>
+        /// because of what they do AFTER succeeding.</para>
         /// </summary>
         public static readonly IReadOnlyDictionary<string, string> Refused =
             new Dictionary<string, string>

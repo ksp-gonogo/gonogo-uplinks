@@ -11,12 +11,12 @@ import { RP1 } from "../uplink.js";
  * `UpgradeableFacility` objects, which KSP instantiates in the SPACECENTER scene
  * only, so away from the space centre every tier and price on it is absent. That
  * is not a gap the host widget could close for itself: stock's off-scene fallback,
- * `ProtoUpgradeable.GetLevel()`, returns a normalised level, and its sibling
+ * `ProtoUpgradeable.GetLevel()`, returns a NORMALISED level, and its sibling
  * `GetLevelCount()` answers -1 when the scene has no buildings in it, so there is
  * no tier count to denormalise against. RP-1 has one, out of its own config, and
  * bills the career off it in all four scenes.</para>
  *
- * <para><b>It displaces the host widget's rows rather than joining them.</b>
+ * <para><b>It DISPLACES the host widget's rows rather than joining them.</b>
  * The widget contributes its own reading of the stock channel at priority 0;
  * this one takes the default, so wherever RP-1 answers the grid is RP-1's and
  * there is no second copy of the same nine buildings underneath. Where RP-1 is

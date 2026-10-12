@@ -10,11 +10,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { ShipSystemsComponent } from "./index.js";
 
 /**
- * A resource the profile declares and the craft has no tank for.
+ * A resource the PROFILE declares and the CRAFT has no tank for.
  *
  * `ResourceRow.fraction` is declared `number | null` and says what null means:
  * the vessel carries no tank for that resource. The profile belongs to the
- * install, not to the craft, so a probe flying three of the twelve resources a
+ * INSTALL, not to the craft, so a probe flying three of the twelve resources a
  * profile declares is the ordinary case rather than an edge one. Every meter
  * for a resource with no tank was drawn as a bar sitting at zero, which says
  * the tank is empty rather than that there is no tank, and the pinned "Power"
@@ -24,7 +24,7 @@ import { ShipSystemsComponent } from "./index.js";
  * it (`index.test.tsx`'s "habitat readings that never arrived"); the resource,
  * wear and power meters were left behind by that pass.
  *
- * <b>Its own file, not another describe in `index.test.tsx`.</b> The timeline
+ * <b>Its own FILE, not another describe in `index.test.tsx`.</b> The timeline
  * store outlives one `setupStreamFixture`, so a `vessel.resources` sample an
  * earlier test wrote at that file's pinned UT wins over the partial-tank one
  * emitted here: written as a describe, both assertions below passed against the
@@ -124,7 +124,7 @@ afterEach(() => {
 });
 
 /**
- * One case, one mount, deliberately. The store carries the last sample per
+ * ONE case, one mount, deliberately. The store carries the last sample per
  * topic for the whole file whatever view time a fixture pins, so a second mount
  * here reads the first one's tanks; both meters this is about can be seen on a
  * single craft, so there is nothing to gain from splitting them.

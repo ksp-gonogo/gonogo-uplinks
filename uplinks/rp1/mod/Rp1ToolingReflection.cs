@@ -123,19 +123,19 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// RP-1's tooling manager and its part-module base resolved. Both, because
+        /// RP-1's tooling manager AND its part-module base resolved. Both, because
         /// the reading needs one to know whether tooling is switched on at all and
         /// the other to recognise a tooled part.
         /// </summary>
         public bool IsAvailable => _manager != null && _moduleTooling != null;
 
         /// <summary>
-        /// The editor ship's tooling state, or null when there is nothing to say.
+        /// The editor ship's tooling state, or NULL when there is nothing to say.
         ///
         /// <para>Null covers three different situations and none of them is "every
         /// part is tooled": no editor ship, RP-1's tooling switched off, or the
         /// manager not live. That last matters most. <c>GetToolingLevel</c>
-        /// short-circuits to fully tooled when <c>toolingEnabled</c> is false, so a
+        /// short-circuits to FULLY TOOLED when <c>toolingEnabled</c> is false, so a
         /// reading taken outside a career would report a ship with nothing left to
         /// tool. That is an absence dressed as a yes, and the channel says nothing
         /// instead.</para>
@@ -219,7 +219,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Every tooling module on a part, recognised by assignability to RP-1's
+        /// Every tooling module on a part, recognised by ASSIGNABILITY to RP-1's
         /// own base rather than by a list of subclass names.
         /// </summary>
         /// <remarks>
@@ -304,7 +304,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para><b>What makes a row offerable, read out of
         /// <c>ToolingGUI.DisplayRow</c>.</b> RP-1 draws a Refit press only on a
-        /// leaf of the owned-tooling tree, only for a type whose parameter tuple is
+        /// LEAF of the owned-tooling tree, only for a type whose parameter tuple is
         /// two long, and only when <c>PickRfType</c> answers with a material the
         /// part can actually use: a part that cannot use any material the tooling
         /// covers gets a dark button and a sentence about tech locks. Each of those
@@ -312,16 +312,16 @@ namespace GonogoRp1Uplink
         /// have pressed.</para>
         ///
         /// <para><b>The bound, stated rather than hidden.</b> This merges the
-        /// part's own tooling type and nothing else, so the sizes offered are the
+        /// part's OWN tooling type and nothing else, so the sizes offered are the
         /// ones owned for the material the part already is. RP-1's window merges a
-        /// whole bucket of types, which is what lets it offer a refit onto another
+        /// whole BUCKET of types, which is what lets it offer a refit onto another
         /// material's tooling, and the bucketing is
         /// <c>ToolingGUI.GetGroupingKey</c>: a ten-branch private over tooling-type
         /// name prefixes. Transcribing a GUI private to widen a picker is not a
         /// trade worth making blind, and the narrow answer is a true subset rather
         /// than a wrong one.</para>
         ///
-        /// <para>The parameter count is asked rather than assumed, through RP-1's
+        /// <para>The parameter count is ASKED rather than assumed, through RP-1's
         /// own public <c>Parameters.GetParametersForToolingType</c>. Its rule today
         /// is "three for Avionics-, two for everything else", and a copy of that
         /// would go quietly wrong the day a third family arrives.</para>
@@ -481,7 +481,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para>Absent rather than zero, in the same family as
         /// <see cref="EmptyAsAbsent"/> beside it. Zero is the reading that
-        /// suppresses a count on a screen, so a member nobody could read and a
+        /// SUPPRESSES a count on a screen, so a member nobody could read and a
         /// collection that is genuinely empty are the two answers that must not
         /// look alike: the first leaves a consequence of a command unsaid.</para>
         /// </summary>

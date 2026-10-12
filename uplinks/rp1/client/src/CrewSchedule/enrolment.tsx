@@ -42,8 +42,8 @@ import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
  * A training and the crew to put through it, picked together and sent as one
  * press.
  *
- * <para><b>The only way onto a course, and the only one that ever worked for a
- * multi-seat training.</b> `rp1.training.enrol` names a list of kerbals and RP-1
+ * <para><b>The ONLY way onto a course, and the only one that ever worked for a
+ * multi-seat training.</b> `rp1.training.enrol` names a LIST of kerbals and RP-1
  * refuses the whole command rather than starting a course a seat short, so a
  * training seating more than one has to be filled in a single dispatch. A naut's
  * roster row names one kerbal, so the picker that used to sit on every row could
@@ -51,7 +51,7 @@ import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
  * capsules seats more than one. That row control is gone; this is what
  * replaced it.</para>
  *
- * <para><b>one press, and that is RP-1's own shape rather than a
+ * <para><b>ONE press, and that is RP-1's own shape rather than a
  * simplification.</b> RP-1 builds a course from a template, collects its
  * students and only puts it on the roster once it has started, so there is no
  * enrolled-but-unstarted course to add anybody to and nothing to compose across
@@ -277,12 +277,12 @@ export function TrainingEnrolment() {
  * What crew training draws from the career, per day, beside the control that
  * adds to it.
  *
- * <para><b>A rate, and never a balance.</b> Verified against the shipped RP-1
+ * <para><b>A RATE, and never a balance.</b> Verified against the shipped RP-1
  * assemblies: <c>TrainingCourse.StartCourse</c> charges nothing and checks
  * nothing, and there is no affordability arm anywhere on the enrolment path, so
  * "cannot afford this training" would be a falsehood. What enrolling does is
  * start a per-day drain that runs for the length of the course:
- * <c>MaintenanceHandler.UpdateUpkeep</c> adds a line per started course and
+ * <c>MaintenanceHandler.UpdateUpkeep</c> adds a line per STARTED course and
  * <c>FixedUpdate</c> deducts it every tick with no balance test at all. A
  * shortfall neither slows the training nor refuses it; it takes the career
  * negative. So the honest reading is the rate the career already pays, which is
@@ -363,14 +363,14 @@ function CourseCost({
  *
  * <para><b>A refused kerbal wears their reason, and that is not decoration.</b>
  * The dark-control-with-its-reason-in-the-title pattern relies on a live peer to
- * be dark against: a build refusal reads as dark because "Build at LC-2" sits
+ * be dark AGAINST: a build refusal reads as dark because "Build at LC-2" sits
  * beside it lit. Here every peer is a kerbal's name in the same chip, so dimming
  * alone leaves "cannot be picked" and "not picked yet" looking the same, and the
  * one picture this section exists for is the one where that distinction is the
  * whole reading. Two words on the label carry it; the full sentence stays in the
  * title.</para>
  *
- * <para><b>A refused kerbal who is picked stays pressable</b>, which is where
+ * <para><b>A refused kerbal who is PICKED stays pressable</b>, which is where
  * this does depart from the pattern. Their state can change under a standing
  * pick: a kerbal picked while idle and then grounded elsewhere would otherwise
  * be locked into a crew that cannot be sent and could not be taken back
@@ -482,7 +482,7 @@ function candidatesOf(
  * A kerbal on leave is not turned down: RP-1 4.7 queues the course until they
  * are back, and the command says so itself on an install that cannot. It also
  * turns down one missing the training's own prerequisite, and
- * the Astronaut Complex tier gates the course itself; neither is on the wire, so
+ * the Astronaut Complex tier gates the course itself; NEITHER is on the wire, so
  * both leave the control pressable and let the command refuse in RP-1's own
  * words. That is the same call the build controls make about a condition nobody
  * could evaluate here.</para>
@@ -542,7 +542,7 @@ function trainingNames(
 /**
  * Why this crew cannot be sent on this training, or null.
  *
- * <para>A named kerbal comes first, because that is what all-or-none means: RP-1
+ * <para>A NAMED kerbal comes first, because that is what all-or-none means: RP-1
  * refuses the whole command by the name of the first student it will not take
  * rather than dropping them and starting a seat short, so the name is the whole
  * of the reason and a generic failure would send an operator looking through the

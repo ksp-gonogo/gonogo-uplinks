@@ -83,7 +83,7 @@ async function setup() {
   return { fixture, view };
 }
 
-/** Types into a field by its visible label, which is how an operator finds it. */
+/** Types into a field by its VISIBLE label, which is how an operator finds it. */
 function setField(label: string, value: string) {
   act(() => {
     fireEvent.change(screen.getByLabelText(label), { target: { value } });

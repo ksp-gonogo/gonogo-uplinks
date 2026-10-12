@@ -14,7 +14,7 @@ namespace GonogoRp1Uplink
     /// <c>Vessel.totalMass</c> against a summed avionics limit and got four things
     /// wrong that this mapper cannot get wrong, because it does not compute them:
     /// it collapsed three lock levels into a bool, weighed the wrong mass (RP-1
-    /// zeroes launch clamps at prelaunch), missed that a command part carrying no
+    /// zeroes launch clamps at PRELAUNCH), missed that a command part carrying no
     /// avionics unlocks the vessel outright, and had no representation for the
     /// interplanetary limit at all.</para>
     ///

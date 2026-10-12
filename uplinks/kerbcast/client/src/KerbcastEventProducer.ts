@@ -10,7 +10,7 @@ import { type EventOccurrence, EventTimeline } from "@ksp-gonogo/sitrep-sdk";
 /**
  * The synthetic event-stream topic id the kerbcast Uplink publishes its
  * discrete occurrences under. Not a codegen'd wire topic, the Uplink
- * synthesises it from kerbcast's raw edges. An `event`
+ * SYNTHESISES it from kerbcast's raw edges. An `event`
  * alarm targets `{ kind: "event", topic: KERBCAST_EVENTS_TOPIC, eventKind }`.
  */
 export const KERBCAST_EVENTS_TOPIC = "kerbcast.events";
@@ -58,16 +58,16 @@ export interface KerbcastEdgeSource {
 
 /**
  * Synthesises the reveal-gated `event` primitive from kerbcast's existing
- * discrete edges. This is the first producer of the `event` stream primitive
+ * discrete edges. This is the FIRST producer of the `event` stream primitive
  * (`EventTimeline` in `@ksp-gonogo/sitrep-sdk`); it owns the reveal/delay
  * semantics the kerbcast SDK deliberately doesn't carry.
  *
  * Occurrence timing: each edge is stamped with `client.clock.captureUt`, the
  * KSP UT the current video frame was captured at, i.e. live real-time. The
- * consumer reads `revealed(now)` at the operator's delayed view UT
+ * consumer reads `revealed(now)` at the operator's DELAYED view UT
  * (`getViewUt`), so an occurrence only becomes visible once the view clock
  * catches up past `captureUt`: the signal delay realised by construction, no
- * explicit delay term needed. Meta edges (`signal-lost`) are intentionally not
+ * explicit delay term needed. Meta edges (`signal-lost`) are intentionally NOT
  * connectivity-gated: gating a signal-loss event on connectivity-at-its-own-ut
  * would drop the very event that reports the loss.
  *

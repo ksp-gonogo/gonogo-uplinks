@@ -27,7 +27,7 @@ import { useMemo } from "react";
 import { useScanAnomalies } from "../ScanCoverage/useScanLayers.js";
 
 /**
- * The value of a fact: something that stays true until an event changes it, and no
+ * The value of a FACT: something that stays true until an event changes it, and no
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
  * and must not collapse into it.
@@ -49,7 +49,7 @@ function stillTrue<T, A>(
 }
 
 /**
- * Resolve a body name to its `system.bodies` index, the inverse of
+ * Resolve a body NAME to its `system.bodies` index, the inverse of
  * `vanillaPoiProvider.ts`'s `useBodyNameByIndex`. Needed only here: an
  * anomaly's body is a name (`useScanAnomalies(bodyName)`), but
  * `SetTargetArgs.Position` (`tar.setTargetPosition[bodyIndex,lat,lon]`)

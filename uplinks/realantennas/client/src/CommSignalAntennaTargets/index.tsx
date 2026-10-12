@@ -7,7 +7,7 @@
  * `.targetHome`. Presence-gated on `realantennas.available`, so an install
  * without RealAntennas never sees it.
  *
- * Targeting is per antenna, never per vessel: RealAntennas stores one target per
+ * Targeting is per ANTENNA, never per vessel: RealAntennas stores one target per
  * antenna with no arbitration between them, and the link solver treats two
  * dishes aimed two ways as two candidate links. Hence a card each, rather than
  * one control for the craft.
@@ -52,7 +52,7 @@ import "../topics";
  * Every mode RealAntennas declares, in its own order.
  *
  * Rendered in full rather than filtered down to what an antenna has earned: a
- * mode the tech level has not reached appears disabled and labelled, because a
+ * mode the tech level has not reached appears DISABLED and labelled, because a
  * silently absent option looks like a mode this mod does not support.
  */
 const MODES = [

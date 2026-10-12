@@ -85,7 +85,7 @@ public class Rp1ProgramsReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// A Program whose slot cost will not read publishes no slot cost, and the
+    /// A Program whose slot cost will not read publishes NO slot cost, and the
     /// wire dict carries the absence rather than a nought. It is read beside a
     /// ceiling, and "takes no slots" next to "3 slots allowed" is an offer the
     /// career can always afford.

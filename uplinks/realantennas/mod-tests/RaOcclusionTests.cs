@@ -9,7 +9,7 @@ namespace GonogoRealAntennasUplink.Tests
     ///
     /// <para>This is RA's half of the disagreement with stock CommNet, which
     /// shrinks a body before testing a radio path against it. Core pins stock's
-    /// half below the bare radius; this file pins RA's at it, against the real
+    /// half below the bare radius; this file pins RA's AT it, against the real
     /// declaration the backend hands the election, so between them a predicted
     /// blackout under either install is covered by the project that owns it.</para>
     /// </summary>

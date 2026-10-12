@@ -54,7 +54,7 @@ public class Rp1CareerCostTests : IDisposable
     // ── The funds breakdown ─────────────────────────────────────────────────
 
     /// <summary>
-    /// No vehicle being designed publishes nothing, not a breakdown of zeros. A
+    /// No vehicle being designed publishes NOTHING, not a breakdown of zeros. A
     /// payload of zeros reads as a vehicle that costs nothing to fly.
     /// </summary>
     [Fact]
@@ -92,7 +92,7 @@ public class Rp1CareerCostTests : IDisposable
         (Dictionary<string, object?>)((List<object?>)cost["requiredTechs"]!)[index]!;
 
     /// <summary>
-    /// The node's title travels beside its id, because `earlyRocketry` is an
+    /// The node's TITLE travels beside its id, because `earlyRocketry` is an
     /// identifier and an identifier says neither what the node is called nor what
     /// is waiting for it.
     /// </summary>
@@ -111,7 +111,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// A node the tree has no title for arrives with the title absent, never the
+    /// A node the tree has NO title for arrives with the title ABSENT, never the
     /// id and never a blank.
     ///
     /// <para>GetTechnologyTitle answers an unknown id with the empty string, and
@@ -136,7 +136,7 @@ public class Rp1CareerCostTests : IDisposable
 
     /// <summary>
     /// The parts waiting on a node, gathered from the editor ship under the node
-    /// each one names. This is the half that makes a row an answer rather than a
+    /// each one names. This is the half that makes a row an ANSWER rather than a
     /// name: it is what an operator meant by "what is this tech needed FOR".
     /// </summary>
     [Fact]
@@ -173,7 +173,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// A part mounted several times is one thing waiting.
+    /// A part mounted several times is ONE thing waiting.
     ///
     /// <para>The question the row answers is what is waiting for this node, and a
     /// booster in six-fold symmetry is one part in six places. Six identical
@@ -202,7 +202,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// A node nothing on the ship names arrives with an empty parts list, and the
+    /// A node NOTHING on the ship names arrives with an EMPTY parts list, and the
     /// row is not dropped.
     ///
     /// <para>A node can be required by something other than a part, so empty is a
@@ -228,7 +228,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// No readable ship leaves the parts list absent, which is a different answer
+    /// NO READABLE SHIP leaves the parts list ABSENT, which is a different answer
     /// from the empty one above.
     ///
     /// <para>Outside the editor `EditorLogic.fetch` is null, so nothing is known
@@ -289,7 +289,7 @@ public class Rp1CareerCostTests : IDisposable
     // ── The career log ──────────────────────────────────────────────────────
 
     /// <summary>
-    /// The distinction the channel exists to preserve. A log switched off has no
+    /// The distinction the channel exists to preserve. A log switched OFF has no
     /// history and never will; a log switched on with nothing in it has a history
     /// that is empty so far. Both would be an empty array to a client shown only
     /// the rows, and one of them would have it report a quiet career when the
@@ -376,12 +376,12 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// An event whose time could not be read goes to the end of the timeline with
+    /// An event whose time could not be read goes to the END of the timeline with
     /// its time absent, never to the front.
     ///
     /// <para>Sorted as the epoch it landed before every real event, so the oldest
     /// thing in the career was whichever row RP-1 declined to date. The absent
-    /// time makes the row distinguishable; the position stops the order saying
+    /// time makes the row distinguishable; the position stops the ORDER saying
     /// something the log does not.</para>
     ///
     /// <para>The two undated rows are here to pin the order among themselves:
@@ -418,7 +418,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// A field a kind does not carry is absent rather than zero. A launch has no
+    /// A field a kind does not carry is ABSENT rather than zero. A launch has no
     /// reputation change; publishing 0 would say the flight earned nothing, which
     /// is a claim rather than a gap.
     /// </summary>
@@ -495,7 +495,7 @@ public class Rp1CareerCostTests : IDisposable
     }
 
     /// <summary>
-    /// A facility construction is named by the facility, with its state as the
+    /// A facility construction is named by the FACILITY, with its state as the
     /// detail. Its state alone said something had started without saying what.
     /// </summary>
     [Fact]

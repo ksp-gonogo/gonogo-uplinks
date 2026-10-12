@@ -8,7 +8,7 @@ namespace Gonogo.RealAntennasUplink
     /// headlessly.
     ///
     /// <para><b>The signal is the craft's connectivity and nothing finer.</b>
-    /// Nothing can say whether an entry would close a link without aiming at it,
+    /// Nothing can say whether an entry WOULD close a link without aiming at it,
     /// because the pointing loss a dish takes depends on where it is currently
     /// aimed. So the walk tries an entry and reads the answer off the craft's own
     /// comms link, which on a RealAntennas install is RealAntennas' answer and is
@@ -187,7 +187,7 @@ namespace Gonogo.RealAntennasUplink
         internal static void NoteConnected(Walk walk) => walk.Laps = 0;
 
         /// <summary>
-        /// What to do with one antenna's chain this tick. Pure: it reads the walk
+        /// What to do with one antenna's chain this tick. PURE: it reads the walk
         /// and never writes it, see <see cref="NoteConnected"/>.
         ///
         /// <para><paramref name="connected"/> is the craft's comms link:

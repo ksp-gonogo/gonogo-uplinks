@@ -65,7 +65,7 @@ function mount(plan: PrincipiaPlan | null) {
 }
 
 /**
- * A plan with the write surface armed, because both controls in this block are
+ * A plan with the write surface ARMED, because both controls in this block are
  * frozen without one and the mod refuses either by name. A fixture that left it
  * out would exercise the read-only rendering while reading as the ordinary case.
  */
@@ -100,7 +100,7 @@ function plan(overrides: Partial<PrincipiaPlan> = {}): PrincipiaPlan {
 
 /**
  * The plan's integrator with its step limit unread and the two tolerances
- * intact, which is the shape one failed decode leaves: the mod withholds the
+ * intact, which is the shape ONE failed decode leaves: the mod withholds the
  * field it could not read and the rest of the payload is unaffected.
  *
  * <p>Real `Value`s rather than bare numbers, because this one is typed: the two
@@ -152,10 +152,10 @@ describe("PlanIntegrationBlock", () => {
   });
 
   /**
-   * A step limit that was not read shows the absent token, exactly as position
-   * tol and speed tol in the same block do.
+   * A step limit that was not read shows the absent token, exactly as POSITION
+   * TOL and SPEED TOL in the same block do.
    *
-   * <p>It used to fall back to `MAX_STEPS_OPTIONS[0]`, which is 64: the lowest
+   * <p>It used to fall back to `MAX_STEPS_OPTIONS[0]`, which is 64: the LOWEST
    * member of the set and three orders of magnitude under Principia's own
    * default, presented as the plan's current limit with "Raise this when the
    * plan stops short of its requested end" directly underneath. So the operator
@@ -219,7 +219,7 @@ describe("PlanIntegrationBlock", () => {
   });
 
   /**
-   * "Raise this" needs something to raise from, and the caption above the
+   * "Raise this" needs something to raise FROM, and the caption above the
    * control says exactly that whatever the readout holds.
    */
   it("says there is nothing to raise the step limit from", async () => {
@@ -293,7 +293,7 @@ describe("PlanIntegrationBlock", () => {
    * `IntegratorLayoutVerified` is false, whatever the arm says, and that state
    * is reachable beside `armed: true`: `PrincipiaLayoutProbe.Run` records both
    * verdicts and returns null whatever they were, and `Arm` refuses only when
-   * neither struct survived. The end instant is not gated with it, because
+   * NEITHER struct survived. The end instant is NOT gated with it, because
    * `SetHorizon` writes no step parameters and takes no verdict.
    */
   it("freezes the step limit when the step parameters were never verified", async () => {
@@ -457,7 +457,7 @@ describe("PlanIntegrationBlock", () => {
   /**
    * A step limit the mod answered from its own store is not a step limit.
    *
-   * The request id is composed from the vessel and the chosen count, so an
+   * The request id is composed from the vessel and the CHOSEN count, so an
    * operator who steps to 4096, sends it, steps away and steps back sends the id
    * the first press went under, and `PlanCommands.SetIntegrator` answers it out
    * of `_receipts` before it reaches the plugin. Both resolve, so the control
@@ -493,13 +493,13 @@ describe("PlanIntegrationBlock", () => {
   });
 
   /**
-   * The receipt reader on the other remedy, and not the refusal path.
+   * The RECEIPT READER on the other remedy, and not the refusal path.
    *
    * <p>The other way a receipt can report a write that did not happen: an
    * outcome that is not `Written`, whatever the envelope around it said.
    * `PlanCommands.Settle` answers every non-`Written` outcome with
    * `Success = false`, so this pairing is one the producer never sends, and the
-   * banner asserted here can only fire on the replay arm in production. What an
+   * banner asserted here can only fire on the REPLAY arm in production. What an
    * operator meets on a real refusal is the test below.</p>
    */
   it("reads a non-Written end-instant outcome off the receipt itself, whatever the envelope claimed", async () => {

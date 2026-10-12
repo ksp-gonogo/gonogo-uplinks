@@ -158,7 +158,7 @@ namespace GonogoRp1Uplink
             public double PadCost;
 
             /// <summary>
-            /// The complex's current total price, which RP-1 uses as the prior
+            /// The complex's CURRENT total price, which RP-1 uses as the prior
             /// cost when it turns the new price into a duration. Zero for a new
             /// complex, which has no prior.
             /// </summary>
@@ -181,7 +181,7 @@ namespace GonogoRp1Uplink
         /// <para>The whole of it is the new specification's own three-way cost:
         /// there is nothing to compare against, so the pad, integration and
         /// resource halves simply add up. The one subtlety is that the pad price
-        /// is counted once here and the extra pads a client might want are a
+        /// is counted ONCE here and the extra pads a client might want are a
         /// separate act with a separate price.</para>
         /// </summary>
         /// <returns>Null when RP-1 would not answer, which every caller must refuse on rather than substitute a price for.</returns>
@@ -213,10 +213,10 @@ namespace GonogoRp1Uplink
         /// specification.
         ///
         /// <para>RP-1 prices the two halves of a complex quite differently, and
-        /// the difference is the reason a downgrade is not free. The pad half is
-        /// the difference in pad price, at full rate going up and half rate coming
-        /// down, then scaled by how many pads share the complex. The integration
-        /// half is the difference in integration price plus a charge per metre of
+        /// the difference is the reason a downgrade is not free. The PAD half is
+        /// the difference in pad price, at full rate going up and HALF rate coming
+        /// down, then scaled by how many pads share the complex. The INTEGRATION
+        /// half is the difference in integration price PLUS a charge per metre of
         /// envelope moved on each axis, again halved coming down, and capped at
         /// the new integration price when going up. Resources are the third and
         /// have their own asymmetry inside <c>ResModifyCost</c>.</para>
@@ -357,13 +357,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// What one extra pad costs at a complex already built to this
+        /// What ONE extra pad costs at a complex already built to this
         /// specification.
         ///
         /// <para>The specification's own pad price times RP-1's additional-pad
         /// multiplier, which is the whole of what its New Pad window charges. Note
-        /// this is the multiplier applied once, not the
-        /// <c>1 + (pads - 1) * mult</c> scaling a renovation uses: that one prices
+        /// this is the multiplier applied ONCE, not the
+        /// <c>1 + (pads - 1) * mult</c> scaling a RENOVATION uses: that one prices
         /// rebuilding every pad the complex already has, and this one prices adding
         /// a single new one.</para>
         /// </summary>
@@ -373,7 +373,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The tonnage limits a renovation of this complex is held between,
-        /// derived from what it was built at rather than what it is now.
+        /// derived from what it was BUILT at rather than what it is now.
         ///
         /// <para>Asked of RP-1 rather than computed from <c>massOrig</c>, even
         /// though the arithmetic is two lines and is published on the wire: the
@@ -396,7 +396,7 @@ namespace GonogoRp1Uplink
         public const double DefaultAdditionalPadCostMult = 0.5;
 
         /// <summary>
-        /// RP-1's additional-pad multiplier as actually read, or null when the
+        /// RP-1's additional-pad multiplier as actually READ, or null when the
         /// settings object could not be reached.
         ///
         /// <para>The honest half of the pair below. A price quoted from
@@ -425,9 +425,9 @@ namespace GonogoRp1Uplink
         /// setting existed, and refusing every complex command because a settings
         /// field moved would cost far more than a stale multiplier.</para>
         ///
-        /// <para>This is the arithmetic half: the cost model needs a number, and
+        /// <para>This is the ARITHMETIC half: the cost model needs a number, and
         /// this is the number it uses. What it cannot do is say where that number
-        /// came from, so anything published reads
+        /// came from, so anything PUBLISHED reads
         /// <see cref="ReadAdditionalPadCostMult"/> instead and lets the absence
         /// travel.</para>
         /// </summary>
@@ -482,7 +482,7 @@ namespace GonogoRp1Uplink
         /// of the object it is called on.
         ///
         /// <para>Taken from the instance rather than written down, because
-        /// <c>LCData</c> declares four constructors of which three take a single
+        /// <c>LCData</c> declares FOUR constructors of which three take a single
         /// argument, and a file that hard-codes one of its own type names is a
         /// file that can disagree with the one the rest of the walk resolved.</para>
         /// </summary>
@@ -498,7 +498,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// A specification's three-way price, in one call.
         ///
-        /// <para>Three out parameters, so the invoke goes through a boxed argument
+        /// <para>Three OUT parameters, so the invoke goes through a boxed argument
         /// array that has to be read back rather than trusted: a build whose
         /// GetCostStats took a different arity resolves to nothing and this refuses,
         /// which is the only safe answer when the price cannot be had.</para>
@@ -608,18 +608,18 @@ namespace GonogoRp1Uplink
         /// complex that stored a resource it will never handle looks equipped and
         /// is not.</para>
         ///
-        /// <para>The flag values are RP-1's own and are read as integers rather
+        /// <para>The flag VALUES are RP-1's own and are read as integers rather
         /// than named, because the enum is not a type this assembly has:
         /// Fuel is 1, PadIgnore is 4 and HangarIgnore is 8, which is the same
         /// arithmetic RP-1's own resource list does inline.</para>
         /// </summary>
         /// <returns>Null when RP-1's catalogue could not be read at all, which is a refusal rather than an empty answer.</returns>
         /// <summary>
-        /// What one unit of a resource's capacity adds to a complex's build price.
+        /// What ONE unit of a resource's capacity adds to a complex's build price.
         ///
         /// <para>Asked of RP-1's own <c>Formula.ResourceTankCost</c> with an amount
         /// of one, rather than transcribed. That is exact rather than close, because
-        /// the expression is strictly linear in the amount: the tank utilisation,
+        /// the expression is strictly LINEAR in the amount: the tank utilisation,
         /// the tank cost, the resource's unit cost and the settings multiplier are
         /// all constant per resource, and there is no floor or rounding inside it.
         /// So f(1) is the per-unit price and f(a) is a*f(1).</para>

@@ -6,7 +6,7 @@ using Xunit;
 namespace GonogoMechJebUplink.Tests
 {
     /// <summary>
-    /// The ascent engage has to reach the autopilot the operator selected, and
+    /// The ascent engage has to reach the autopilot the operator SELECTED, and
     /// there are two ways to ask MechJeb for one that differ in which module
     /// comes back.
     ///
@@ -33,7 +33,7 @@ namespace GonogoMechJebUplink.Tests
     /// headless test project cannot compile it (see
     /// <c>GonogoMechJebUplink.Tests.csproj</c>'s Compile list and its
     /// reasoning). The choice between the two lookups is not observable from
-    /// anything this project can link, and it is a choice that silently flies
+    /// anything this project CAN link, and it is a choice that silently flies
     /// the wrong ascent profile rather than failing, so the guard is over the
     /// text. Another Uplink's guard suite already reads its own KSP-linked
     /// source this way, for the same reason: text is the only assertion left
@@ -73,7 +73,7 @@ namespace GonogoMechJebUplink.Tests
         }
 
         /// <summary>
-        /// The version guard has to probe what the controller binds, or a
+        /// The version guard has to probe what the controller BINDS, or a
         /// MechJeb release that renames one of these degrades to a null
         /// dereference at engage time instead of the Uplink going honestly
         /// inert. <c>Ascent</c> is the one that matters most: it is a property

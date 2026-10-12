@@ -46,16 +46,16 @@ namespace GonogoPrincipiaUplink
         /// Read only by the kinds that centre on one body.</summary>
         public int CentreBodyIndex { get; }
 
-        /// <summary>The body a direction frame points at.</summary>
+        /// <summary>The body a direction frame points AT.</summary>
         public int PrimaryBodyIndex { get; }
 
-        /// <summary>The body a direction frame is centred on. Read with
+        /// <summary>The body a direction frame is centred ON. Read with
         /// <see cref="PrimaryBodyIndex"/> and only by that kind.</summary>
         public int SecondaryBodyIndex { get; }
     }
 
     /// <summary>
-    /// Builds the first burn of a plan, which is the one there is no existing
+    /// Builds the FIRST burn of a plan, which is the one there is no existing
     /// burn to copy.
     ///
     /// <para><b>The struct comes from the loaded build, not from a shape written

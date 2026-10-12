@@ -131,7 +131,7 @@ namespace RP0.Programs
         /// <summary>
         /// RP-1 declares this as a
         /// <c>PersistentDictionaryValueTypeKey&lt;string, HermiteCurve&gt;</c>,
-        /// which is a <c>Dictionary&lt;string, HermiteCurve&gt;</c> by
+        /// which IS a <c>Dictionary&lt;string, HermiteCurve&gt;</c> by
         /// inheritance. A plain dictionary stands in because the walk reads it as
         /// a bare <c>IDictionary</c> and never names either type.
         /// </summary>
@@ -229,7 +229,7 @@ namespace ROUtils
         public struct Key
         {
             /// <summary>
-            /// The position of the one key whose <c>inTangent</c> cannot be read,
+            /// The POSITION of the one key whose <c>inTangent</c> cannot be read,
             /// which is the state a value cannot express: the curve enumerated and
             /// then would not say what slope arrives at this key.
             ///

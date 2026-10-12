@@ -172,12 +172,12 @@ namespace GonogoRp1Uplink
         /// Scrap and rush can run: RP-1's space centre and its static helpers
         /// resolved.
         ///
-        /// <para><b>types only, and that is a correction rather than a
+        /// <para><b>TYPES ONLY, and that is a correction rather than a
         /// simplification.</b> An earlier version also required that
-        /// <c>ScrapVessel</c> and <c>ChangeEngineers</c> resolve as methods, and
+        /// <c>ScrapVessel</c> and <c>ChangeEngineers</c> resolve as METHODS, and
         /// on the first rig run with RP-1 installed all four commands were absent
         /// from the manifest with <c>health: 0</c> and no reason anywhere. A
-        /// method-level gate on the manifest cannot say why it fired, because a
+        /// method-level gate on the MANIFEST cannot say why it fired, because a
         /// command that was never declared is indistinguishable from one that was
         /// never written.</para>
         ///
@@ -218,7 +218,7 @@ namespace GonogoRp1Uplink
         /// health fact that names the member is the difference between "nobody
         /// wrote this" and "RP-1 v4.7 renamed ScrapVessel".</para>
         ///
-        /// <para>Reports a throw separately from a miss, because they have
+        /// <para>Reports a THROW separately from a miss, because they have
         /// different causes: a miss is a rename, a throw is a signature this
         /// runtime could not resolve, and the second is invisible to a metadata
         /// check run on a developer's machine.</para>
@@ -252,7 +252,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Records a lookup that came back empty, and one that threw, as
+        /// Records a lookup that came back empty, and one that THREW, as
         /// different things. A throw here must never escape: this runs from
         /// Health, on the Courier thread, and a diagnostic that takes the health
         /// surface down with it is worse than no diagnostic.
@@ -280,12 +280,12 @@ namespace GonogoRp1Uplink
         /// <c>executeCommandsOnMainThread</c> and the writes below are live RP-1
         /// state.</para>
         ///
-        /// <para>Ordered so the operation object is constructed last. It is the
+        /// <para>Ordered so the operation object is CONSTRUCTED last. It is the
         /// only step with a side effect the game would keep if a later one
         /// failed, and RP-1's own row constructs one per frame purely to show a
         /// price, so building it early is safe but pointless.</para>
         ///
-        /// <para>A vehicle already rolling back is rolled out again by reversing
+        /// <para>A vehicle already ROLLING BACK is rolled out again by reversing
         /// that operation rather than by starting a second one, which is what
         /// RP-1's own row does. That is what keeps this command a direction and
         /// not a toggle: it always ends with the vehicle heading for the pad,
@@ -572,7 +572,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Puts a launch complex into rush mode, or takes it out.
         ///
-        /// <para>A set and not a toggle, for the reason
+        /// <para>A SET and not a toggle, for the reason
         /// <see cref="Rp1ComplexRushArgs"/> gives, so re-sending it is harmless
         /// and it lands on the asked-for state however stale the operator's view
         /// was.</para>
@@ -728,7 +728,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The vehicle, the complex holding it, and which of the two lists it was
-        /// in. The list matters: a rollout moves a finished vehicle and a vehicle
+        /// in. The list matters: a rollout moves a FINISHED vehicle and a vehicle
         /// still integrating cannot be moved at all, so the caller needs to be
         /// able to say which of those it found rather than just failing to find.
         /// </summary>
@@ -780,7 +780,7 @@ namespace GonogoRp1Uplink
         /// The operation already moving this vehicle, and what it is, or null.
         ///
         /// <para>Matched on <c>associatedID</c>, which RP-1 stamps from
-        /// <c>shipID</c> and not from the <c>KCTPersistentID</c> a command
+        /// <c>shipID</c> and NOT from the <c>KCTPersistentID</c> a command
         /// addresses. Two different ids on the same vehicle, and using the wrong
         /// one here would find nothing and report every vehicle as free to
         /// move.</para>
@@ -918,7 +918,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// The pad the command named, resolved against the complex's own list.
         ///
-        /// <para>By name and only by name. There is no fall back to "the only
+        /// <para>By name and ONLY by name. There is no fall back to "the only
         /// free one": see <see cref="Rp1RolloutArgs.Pad"/> for the operator
         /// ruling, and note what the alternative costs even when it looks safe.
         /// A complex can gain a pad between the frame the operator read and the
@@ -1010,11 +1010,11 @@ namespace GonogoRp1Uplink
         /// sentence for it, or null.
         ///
         /// <para>The one condition <c>State</c> cannot see. It reports Free for a
-        /// pad with no operation on it, and a vehicle that has already been sent
+        /// pad with no OPERATION on it, and a vehicle that has already been sent
         /// to the launch site sits there in <c>PRELAUNCH</c> with no operation at
         /// all; RP-1 asks this question separately for the same reason.</para>
         ///
-        /// <para>An unanswerable question proceeds. The check is RP-1's own last
+        /// <para>An unanswerable question PROCEEDS. The check is RP-1's own last
         /// guard and it runs again on the launch, so the worst case of a
         /// misresolved member here is a refusal the operator gets one step later,
         /// against the certainty of losing the whole command.</para>
@@ -1046,7 +1046,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// RP-1's own reasons for refusing to put this vehicle on a pad, joined
         /// into a sentence, or null when it has none. Invoked, and unanswerable
-        /// means proceed, for the reasons
+        /// means PROCEED, for the reasons
         /// <see cref="Rp1BuildCommands"/>'s own facility check sets out at
         /// length.
         /// </summary>

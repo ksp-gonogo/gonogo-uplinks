@@ -4,7 +4,7 @@ import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
  * The plotting frame's kinds, by the producer's own enum ordinal, and the label
  * built from one.
  *
- * <para><b>Why this is named on our side.</b> The producer offers four members
+ * <para><b>Why this is named on OUR side.</b> The producer offers four members
  * that would each hand over a formatted frame name, and every one of them
  * reaches its fatal-log helper through a default branch, which aborts the KSP
  * process. So the ordinal travels on the wire and the label is built here. This
@@ -12,7 +12,7 @@ import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
  * frame name reaches for the producer's namer, because it is right there and
  * looks like a getter. See `ReflectedMembers.InvocableMembers` for the rule.</para>
  *
- * <para><b>The keys are the producer's declared enum values, not positions.</b>
+ * <para><b>The keys are the producer's declared enum VALUES, not positions.</b>
  * Its frame enum is explicitly numbered from 6000, and the producer hands the
  * value straight through, so the wire has only ever carried 6000 to 6004. The
  * first version of this table was keyed 0 to 4, in an order that matched neither
@@ -36,7 +36,7 @@ export const FRAME_TYPE = {
 } as const;
 
 /**
- * Each kind's label, and it is the producer's own string rather than a paraphrase
+ * Each kind's label, and it is the producer's OWN string rather than a paraphrase
  * of one. `<centre>` is the frame's centre body, `<primary>` the body the frame
  * rotates about and `<secondary>` the one it is anchored to, which are the same
  * two the producer passes to its own format strings.
@@ -44,7 +44,7 @@ export const FRAME_TYPE = {
  * <para><b>Taken from the installed build's `localization/en-us.cfg`</b>, key by
  * key, so an operator reading a frame name here and the same frame in game is not
  * translating between two vocabularies. That includes the punctuation: the
- * producer separates two bodies with an en dash and joins a body to a word with a
+ * producer separates two BODIES with an en dash and joins a body to a word with a
  * hyphen, and it does the two differently on purpose. Ours were hyphens
  * throughout, which is a different string from the one on the player's screen.</para>
  *
@@ -62,19 +62,19 @@ const FRAME_NAMES: Readonly<Record<number, string>> = {
 };
 
 /**
- * The target frame's name, which sits outside the kind table for the same reason
+ * The target frame's name, which sits OUTSIDE the kind table for the same reason
  * the flag does: the producer keeps the frame kind and the target selection as
  * two independent pieces of state, and while a target frame is selected its name
  * replaces the kind's entirely.
  *
- * Declined with the body the target vessel orbits, not with the celestial the
+ * Declined with the body the TARGET vessel orbits, not with the celestial the
  * selector happens to be sitting on. Those are different bodies, and using the
  * wrong one names a frame the player is not in.
  */
 const TARGET_FRAME_NAME = "Target\u2013<targetPrimary>\u2013Orbit";
 
 /**
- * Each kind's own name, undeclined. A settings row wants the kind ("Body-centred
+ * Each kind's own name, undeclined. A settings row wants the KIND ("Body-centred
  * inertial") beside the declined instance ("Kerbin-Centred Inertial"), because
  * the two answer different questions: which frame am I in, and what sort of
  * frame is that. Keyed the same way {@link FRAME_NAMES} is, off the producer's
@@ -120,7 +120,7 @@ export interface FrameBodies {
    */
   targetPrimary?: string | null;
   /**
-   * Whether the target frame is selected, which overrides the kind: the producer
+   * Whether the target frame is selected, which OVERRIDES the kind: the producer
    * shows its own target-frame name and ignores the frame type entirely, so a
    * caller passing the type alone gets the name of a frame nobody is in.
    */
@@ -130,7 +130,7 @@ export interface FrameBodies {
 /**
  * A frame's human label, or the null display when the ordinal is unknown.
  *
- * An unrecognised ordinal renders as the ordinal rather than as a guess: a frame
+ * An unrecognised ordinal renders AS the ordinal rather than as a guess: a frame
  * kind added in a later build should read as "Frame 6007", obviously incomplete,
  * instead of being rounded to whichever neighbour is closest. A wrong frame name
  * is a wrong claim about what every coordinate on the dashboard means.

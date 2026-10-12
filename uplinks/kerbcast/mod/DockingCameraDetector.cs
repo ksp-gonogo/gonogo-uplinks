@@ -10,7 +10,7 @@ namespace Gonogo.KerbcastUplink
     /// docking concept anywhere on its wire: not in <c>CameraInfo</c>, not in
     /// <c>CameraState</c>, not in its data-channel protocol. Its only nod to
     /// docking is a Hullcam *visual filter mode* called "DockingCam", which is
-    /// a reticle overlay, not a fact about the craft. So today the only way a
+    /// a reticle overlay, not a fact about the craft. So today the ONLY way a
     /// client can guess is to sniff <c>partTitle</c> for the word "Docking" or
     /// match <c>cameraName == "NavCam"</c>, which is exactly what kerbcast's
     /// own client-side labeller resorts to.</para>
@@ -25,12 +25,12 @@ namespace Gonogo.KerbcastUplink
     /// A <c>Part</c> is stock KSP, gonogo references <c>Assembly-CSharp</c>
     /// freely, no licence entanglement: so this uplink simply reads the part's
     /// own <c>ModuleDockingNode</c> and answers from the craft's actual module
-    /// list. Ground truth, not a string guess, and it needs zero changes to
+    /// list. Ground truth, not a string guess, and it needs ZERO changes to
     /// kerbcast.</para>
     ///
     /// <para><b>The definition, stated precisely:</b> a docking camera is a
-    /// camera whose own part carries a <c>ModuleDockingNode</c>. A camera
-    /// merely mounted *near* a port is not reported as a docking camera,
+    /// camera whose OWN part carries a <c>ModuleDockingNode</c>. A camera
+    /// merely mounted *near* a port is NOT reported as a docking camera,
     /// proximity would be a heuristic with a made-up radius, and this contract
     /// does not fabricate confidence it doesn't have. In practice the stock
     /// docking-port cameras (Hullcam's docking-port patch) all satisfy the
@@ -45,7 +45,7 @@ namespace Gonogo.KerbcastUplink
         /// expected to be a stock KSP <see cref="Part"/>; anything else reads
         /// as "could not determine".
         ///
-        /// <para>MAIN-THREAD only: touches live KSP part modules.</para>
+        /// <para>MAIN-THREAD ONLY: touches live KSP part modules.</para>
         /// </summary>
         public static DockingCameraFacts Detect(object? partHandle)
         {

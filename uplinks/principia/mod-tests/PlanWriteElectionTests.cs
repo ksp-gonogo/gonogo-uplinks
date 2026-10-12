@@ -8,7 +8,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// What elects each piece of the write surface, asserted against the production
+    /// What ELECTS each piece of the write surface, asserted against the production
     /// path rather than against a flag a test set.
     ///
     /// <para><b>Why this file exists as a separate kind of check.</b> A sibling
@@ -113,7 +113,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// persisted into the save and moves a stock maneuver node on the vessel, and
         /// arming performs a real write of Principia's own burn as its probe. A
         /// command declared instant would let an operator change a craft's plan with
-        /// no signal delay at all.</para>
+        /// no light-time at all.</para>
         /// </summary>
         [Fact]
         public void EveryPlanWriteRidesTheDelayIncludingTheArm()
@@ -190,7 +190,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The read register still refuses every one of the writes, so the write
+        /// The READ register still refuses every one of the writes, so the write
         /// surface cannot be acquired by adding a name to the read allowlist.
         /// </summary>
         [Fact]
@@ -207,7 +207,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The reflected bind really resolves the producer's own method names, and a
-        /// build missing one fails the write half only.
+        /// build missing one fails the WRITE half only.
         ///
         /// <para>The stand-in below declares the same static names Principia's
         /// forwarder does, so the lookup under test is the real one. Without this,
@@ -276,7 +276,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             internal static int FlightPlanOptimizationDriverInProgress(IntPtr plugin, string guid) => -1;
 
-            /// <summary>Present so the refusal test has something to not bind: the
+            /// <summary>Present so the refusal test has something to NOT bind: the
             /// name resolves on the type and the register refuses it anyway.</summary>
             internal static void FlightPlanSelect(IntPtr plugin, string guid, int index)
             {

@@ -12,12 +12,12 @@ namespace GonogoRp1Uplink.Tests
     /// </summary>
     /// <remarks>
     /// The two halves this pins are the two RP-1 disagrees with itself about: the
-    /// figure it charges (raw settings value, applicants netted off at the till)
-    /// and the figure it quotes on its own Hire button (the same value through
+    /// figure it CHARGES (raw settings value, applicants netted off at the till)
+    /// and the figure it QUOTES on its own Hire button (the same value through
     /// CurrencyUtils.Funds, so leader-modified). Publishing one as the other is
     /// the defect these tests exist to prevent in both directions.
     ///
-    /// <para>The cadence half matters because the quote is a broadcast: each ask
+    /// <para>The cadence half matters because the quote is a BROADCAST: each ask
     /// fires OnCurrencyModifierQuery at every modifier in the save. The gate below
     /// is the only thing between two asks an in-game hour and two every physics
     /// frame.</para>
@@ -29,7 +29,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// A distinct instant per test, and not a decoration. The query's
-        /// PerfBudget is static and its window is in game seconds, so a suite
+        /// PerfBudget is static and its window is in GAME seconds, so a suite
         /// that priced everything at UT zero would pile every test's queries
         /// into one window and have the budget warn about a capture that is
         /// behaving perfectly. Production never sees that, because UT advances.

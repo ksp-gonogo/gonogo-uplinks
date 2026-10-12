@@ -23,13 +23,13 @@ namespace Gonogo.RealAntennasUplink;
 /// <summary>
 /// One antenna of the reported craft, on the <c>realantennas.antennas</c>
 /// channel: what it is, what it can do, and where it is currently pointed.
-/// The channel value is a bare array of these, one entry per antenna, in the
+/// The channel value is a bare ARRAY of these, one entry per antenna, in the
 /// order RealAntennas holds them.
 ///
-/// <para>Delayed, unlike the rest of this Uplink's channels. The others
-/// describe the link as KSC computes it ground-side and are true now; where a
+/// <para>DELAYED, unlike the rest of this Uplink's channels. The others
+/// describe the LINK as KSC computes it ground-side and are true now; where a
 /// dish is pointed is a property of the craft, and the commands that change it
-/// ride the Courier's signal delay delay. A true-now readout beside a delayed
+/// ride the Courier's light-time delay. A true-now readout beside a delayed
 /// command would show the new aim point while the command was still in flight.
 /// </para>
 /// </summary>
@@ -49,7 +49,7 @@ public class RealAntennasAntennaState
     ///
     /// <para>An index alone would not do. Both commands are
     /// <c>Delayed</c>, so a command dispatched against "the second antenna"
-    /// arrives minutes later against whatever is second by then, and a
+    /// arrives minutes later against whatever is second BY THEN, and a
     /// decoupled part between the two moments aims a different dish.</para>
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -70,7 +70,7 @@ public class RealAntennasAntennaState
     /// both commands.
     ///
     /// <para><c>null</c> means the antenna is here and nobody could read its
-    /// shape: not that it is an omni. Collapsing the two badges a dish as an
+    /// shape: NOT that it is an omni. Collapsing the two badges a dish as an
     /// omni and hides its targeting controls on the strength of a read that
     /// never happened. Both commands refuse an unreadable antenna as well, but
     /// they say which of the two refusals it is.</para>
@@ -139,12 +139,12 @@ public class RealAntennasAntennaState
     public double? MinimumDistance { get; set; }
 
     /// <summary>
-    /// The stored kind of the current target: <c>Vessel</c>,
+    /// The STORED kind of the current target: <c>Vessel</c>,
     /// <c>BodyLatLonAlt</c>, <c>AzEl</c> or <c>OrbitRelative</c>. Null when the
     /// antenna holds no target.
     ///
     /// <para><c>BodyCenter</c> never appears here, and the omission is
-    /// deliberate. RealAntennas has five mode names and four target classes:
+    /// deliberate. RealAntennas has five mode NAMES and four target classes:
     /// "body centre" is a way of filling in a <c>BodyLatLonAlt</c>
     /// (lat 0, lon 0, altitude minus the body's radius) and nothing records
     /// that it was chosen that way. Reporting the stored kind is a read;
@@ -164,7 +164,7 @@ public class RealAntennasAntennaState
 
     /// <summary>
     /// The target vessel's id, for a <c>Vessel</c> target. For <c>AzEl</c> and
-    /// <c>OrbitRelative</c> this is the craft the angles are measured from,
+    /// <c>OrbitRelative</c> this is the craft the angles are measured FROM,
     /// which is the antenna's own, not something being aimed at.
     /// </summary>
     [SitrepUnit(Units.Id)]
@@ -204,12 +204,12 @@ public class RealAntennasAntennaState
     public double? TargetForward { get; set; }
 
     /// <summary>
-    /// The mode names <c>realantennas.antenna.target</c> will accept for this
+    /// The mode names <c>realantennas.antenna.target</c> will accept for THIS
     /// antenna: every mode the install declares whose tech level this antenna
     /// has reached.
     ///
     /// <para>It is per-antenna because the gate is per-antenna, and it is on the
-    /// wire because the gate is data. The five levels are config, not code, and
+    /// wire because the gate is DATA. The five levels are config, not code, and
     /// Realism Overhaul moves three of them, so a client that hard-coded the
     /// stock numbers would offer modes this install refuses and hide modes it
     /// allows.</para>
@@ -253,7 +253,7 @@ public class RealAntennasTargetArgs
 
     /// <summary>
     /// The vessel to point at, for <c>Vessel</c>. Ignored by every other mode:
-    /// <c>AzEl</c> and <c>OrbitRelative</c> are measured from the antenna's own
+    /// <c>AzEl</c> and <c>OrbitRelative</c> are measured from the antenna's OWN
     /// craft, which the handler fills in, so a caller cannot aim one craft's
     /// dish by another craft's attitude.
     /// </summary>
@@ -280,7 +280,7 @@ public class RealAntennasTargetArgs
     /// means the surface, altitude 0: the aim point is a three-component vector
     /// with no spelling for a missing component, and a lat/lon with no altitude
     /// is not an ambiguous request. <see cref="Latitude"/> and
-    /// <see cref="Longitude"/> have no such default and are refused when absent,
+    /// <see cref="Longitude"/> have no such default and are REFUSED when absent,
     /// because 0, 0 is a specific place nobody asked for.
     /// </summary>
     [SitrepUnit(Units.Metres)]

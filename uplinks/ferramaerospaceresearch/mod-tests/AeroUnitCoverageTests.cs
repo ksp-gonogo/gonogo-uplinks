@@ -25,7 +25,7 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         /// <summary>
         /// The one type is reached by the sweep, and nothing else is.
         /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> would pass on an
-        /// empty set, which is exactly what a type quietly losing
+        /// EMPTY set, which is exactly what a type quietly losing
         /// <c>[SitrepContract]</c> would leave behind.
         /// </summary>
         [Fact]

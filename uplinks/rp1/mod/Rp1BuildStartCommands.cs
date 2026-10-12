@@ -136,7 +136,7 @@ namespace GonogoRp1Uplink
         /// <para>Static, with no <see cref="CommandRequirement.Needs"/>, which is
         /// the whole reason it is worth declaring: the engine evaluates it with
         /// an empty argument bag, so on an install with no craft catalogue
-        /// elected the control is drawn dark with its reason rather than
+        /// elected the control is drawn DARK WITH ITS REASON rather than
         /// answering a press with a refusal nobody expected.</para>
         /// </summary>
         public const string CraftCatalogue = "craftCatalogue";
@@ -234,7 +234,7 @@ namespace GonogoRp1Uplink
         /// <para>Ordered so that nothing is loaded until a refusal that needs no
         /// craft has had its chance, and nothing is charged until every refusal
         /// has. The load comes after the complex is resolved because it
-        /// instantiates a part per part node, and there is no sense building a
+        /// instantiates a part per PART node, and there is no sense building a
         /// craft to find out its complex is still under construction.</para>
         /// </summary>
         public CommandResult Start(Rp1BuildStartArgs? args)
@@ -452,7 +452,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Why the craft's parts stop it being built, or null when they do not.
+        /// Why the craft's PARTS stop it being built, or null when they do not.
         ///
         /// <para>Four separate arms because the remedies are four different
         /// things and a refusal an operator cannot act on is worse than the gap
@@ -515,14 +515,14 @@ namespace GonogoRp1Uplink
         /// RP-1's own reasons for refusing this vehicle at this complex, joined
         /// into a sentence, or null when it has none.
         ///
-        /// <para>Invoked rather than reproduced, the same choice
+        /// <para>INVOKED rather than reproduced, the same choice
         /// <see cref="Rp1BuildCommands"/> makes and for the same reason: the
         /// getters it calls memoise onto <c>[Persistent]</c> fields, which a
         /// sampled capture must not do and a command running at the moment of a
         /// press may, because that is exactly where RP-1's own button calls
         /// it.</para>
         ///
-        /// <para>An unanswerable check proceeds, the opposite of the price check.
+        /// <para>An unanswerable check PROCEEDS, the opposite of the price check.
         /// Refusing on an unreadable price protects a career from being
         /// overdrawn with nothing to show; refusing on an unreadable envelope
         /// would kill the whole feature the first time RP-1 renames a member, for

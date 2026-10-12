@@ -12,7 +12,7 @@ namespace GonogoRp1Uplink.Tests
     /// stand-in RP-1 object graph.
     ///
     /// <para>Three cases here decide whether the feature is safe, and each of
-    /// them exists because the honest reading of the shipped disassembly is not
+    /// them exists because the honest reading of the shipped disassembly is NOT
     /// the one a KCT-shaped guess would produce:</para>
     /// <list type="bullet">
     /// <item><see cref="Rolls_out_without_spending_anything_up_front"/>. A
@@ -106,7 +106,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// A rollout. The pad defaults to the fixture's first pad here, in the
+        /// A rollout. The pad defaults to the fixture's first pad HERE, in the
         /// test helper, rather than in the command: the command requires it (see
         /// <see cref="Refuses_a_rollout_that_names_no_pad"/>), and a helper
         /// default keeps every case that is not about pad choice readable.

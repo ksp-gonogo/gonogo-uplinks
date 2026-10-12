@@ -22,10 +22,10 @@ namespace Gonogo.ScansatUplink
         /// SCANsat's own LoRes coordinate-snap idiom (`(int)(v * 5.0) / 5`
         /// in the decompiled source, SCANmap.cs 1373/1378). The divisor
         /// is a literal `5` (int), and `(int)(v * 5.0)` is already an
-        /// int, so the whole expression is integer division - it
+        /// int, so the whole expression is INTEGER division - it
         /// truncates a second time, discarding the *5 scaling entirely.
         /// Algebraically this collapses to plain whole-degree
-        /// truncation-toward-zero: `(double)(int)v`. It is not a
+        /// truncation-toward-zero: `(double)(int)v`. It is NOT a
         /// 0.2-degree grid snap (that misreading would require the
         /// divisor to be `5.0`, a float).
         /// </summary>

@@ -33,12 +33,12 @@ const FIXTURE = join(
 );
 
 /**
- * A frame the server actually produced, read off disk.
+ * A frame the SERVER actually produced, read off disk.
  *
  * `IsruExtensionWireTests` (this Uplink's own dotnet tests) asserts that the real
  * `KerbalismIsruMap` serialised through the real `EnvelopeCodec` equals these vectors
  * byte for byte. So these are not hand-authored approximations of wire frames, they
- * are the wire frames, and the two halves of the proof cannot drift without one of
+ * ARE the wire frames, and the two halves of the proof cannot drift without one of
  * them going red.
  */
 function serverFrame<T>(name: string): { topic: string; payload: T } {

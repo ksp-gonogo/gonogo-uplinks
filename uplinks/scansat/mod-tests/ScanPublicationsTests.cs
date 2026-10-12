@@ -8,8 +8,8 @@ namespace GonogoScansatUplink.Tests
     /// <summary>
     /// Exercises the COURIER-SIDE half of the F1 capture-on-main /
     /// handle-on-Courier split (<see cref="ScanPublications.Compute"/>). The
-    /// load-bearing fact this test embodies: it lives in the headless test
-    /// project (net10.0, no SCANsat/KSP DLLs referenced), yet drives the entire
+    /// load-bearing fact this test embodies: it lives in the HEADLESS test
+    /// project (net10.0, NO SCANsat/KSP DLLs referenced), yet drives the ENTIRE
     /// Courier-side path from a hand-built <see cref="ScanCapture"/> payload.
     /// That is only possible because every KSP/SCANsat/stock read now happens
     /// on the main thread in <c>ScansatUplink.CaptureOnMain</c>: the Courier

@@ -10,17 +10,17 @@ using Xunit;
 ///
 /// <para>Kerbalism is reached by reflection, one API method at a time
 /// (<c>KerbalismReflection.Api</c> looks each name up in its own dictionary and
-/// swallows the invoke), so one reading going unanswered while its neighbours
+/// swallows the invoke), so ONE reading going unanswered while its neighbours
 /// answer is the ordinary failure: a Kerbalism version that renamed or dropped
 /// that method. The capture used to substitute, and each substitution was a
 /// claim: zero radiation is "clean", zero poisoning is "breathable", zero
-/// pressure is "the cabin is at vacuum", and a zero net rate is read by
+/// pressure is "the cabin is at vacuum", and a zero net RATE is read by
 /// <see cref="KerbalismDeathClock"/> as a rule in balance, which takes it out of
 /// the deadline entirely.</para>
 ///
 /// <para>The wire can say all of this already: every field these map to is
 /// declared nullable on the Contract, and <c>KerbalismLifeSupport.Rates</c>
-/// declares an absent key as its spelling for "no rate reported", distinct from
+/// declares an absent KEY as its spelling for "no rate reported", distinct from
 /// a present zero. The dishonesty was only ever in the capture.</para>
 /// </summary>
 public class KerbalismAbsenceIsNotZeroTests
@@ -97,7 +97,7 @@ public class KerbalismAbsenceIsNotZeroTests
     }
 
     /// <summary>
-    /// Shielding is a fraction on the client, amount over capacity, so a
+    /// Shielding is a FRACTION on the client, amount over capacity, so a
     /// substituted capacity is a denominator nobody measured and a substituted
     /// amount reads as an unshielded craft.
     /// </summary>
@@ -114,7 +114,7 @@ public class KerbalismAbsenceIsNotZeroTests
     }
 
     /// <summary>
-    /// The rate map's absence is the key, not a null value:
+    /// The rate map's absence is the KEY, not a null value:
     /// <c>KerbalismLifeSupport.Rates</c> declares a present zero to be a real,
     /// measured balance and every emission to be the full map, so a key that
     /// disappears is itself a statement.
@@ -133,7 +133,7 @@ public class KerbalismAbsenceIsNotZeroTests
     /// <summary>
     /// A rule input whose amount could not be read is omitted for the same
     /// reason, and a different one: a zero is not "unknown" to the death clock,
-    /// it is an empty tank.
+    /// it is an EMPTY TANK.
     /// </summary>
     [Fact]
     public void A_rule_input_whose_amount_could_not_be_read_is_omitted()
@@ -269,7 +269,7 @@ public class KerbalismAbsenceIsNotZeroTests
 }
 
 /// <summary>
-/// The same rule on the three mappers that report hardware condition, where the
+/// The same rule on the three mappers that report hardware CONDITION, where the
 /// substitution was a bool rather than a number.
 ///
 /// <para>Every flag here comes off a reflected member that answers null when
@@ -309,7 +309,7 @@ public class KerbalismConditionAbsenceTests
     }
 
     /// <summary>
-    /// NeedsMaintenance() is a method call, so it fails independently of the two
+    /// NeedsMaintenance() is a METHOD call, so it fails independently of the two
     /// fields beside it: an intact part whose service state went unread is still
     /// not a part anyone can call nominal.
     /// </summary>
@@ -325,7 +325,7 @@ public class KerbalismConditionAbsenceTests
     }
 
     /// <summary>
-    /// A tally is a claim about the whole vessel. One unreadable part makes it
+    /// A tally is a claim about the WHOLE vessel. One unreadable part makes it
     /// unanswerable rather than one smaller, because the smaller number is the
     /// one an operator would act on.
     /// </summary>
@@ -344,7 +344,7 @@ public class KerbalismConditionAbsenceTests
     }
 
     /// <summary>
-    /// Not running is a real zero, and stays one. Not knowing whether it runs is
+    /// Not running is a real zero, and stays one. Not KNOWING whether it runs is
     /// not: the shared shape's rate is the drill's output, and zero there is
     /// "this drill is producing nothing", which is a diagnosis.
     /// </summary>

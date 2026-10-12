@@ -11,14 +11,14 @@ namespace Gonogo.RealAntennasUplink.DevTools
 {
     /// <summary>
     /// DEV-ONLY test tooling. Points one antenna on a named vessel at a named place
-    /// and reports whether the link solver actually started honouring it, which is a
+    /// and reports whether the link solver ACTUALLY started honouring it, which is a
     /// different question from whether the property took the value.
     ///
     /// <para><b>The question this exists for.</b> RealAntennas keeps a burst-job
     /// mirror of every antenna. <c>Precompute.DoThings</c> refreshes each antenna's
-    /// pointing direction on every network rebuild, but <c>isTracking</c> is written
+    /// pointing DIRECTION on every network rebuild, but <c>isTracking</c> is written
     /// only by <c>Precompute.GatherAllAntennas</c>, reached from
-    /// <c>Precompute.Initialize</c>. <c>IsTracking</c> is true for a dish with no
+    /// <c>Precompute.Initialize</c>. <c>IsTracking</c> is true for a dish with NO
     /// target and RealAntennas treats that as perfectly aimed at zero pointing loss,
     /// so a null-to-target change that does not reach the mirror leaves the solver
     /// still giving the dish a free pass while the property, the part menu and the
@@ -34,7 +34,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
     /// <para><b>Both refresh calls are separately switchable</b>, because the whole
     /// point is which of them is needed. <c>invalidate</c> calls
     /// <c>RACommNetNetwork.InvalidateCache()</c>; <c>discover</c> calls
-    /// <c>RACommNetVessel.DiscoverAntennas()</c>, which rebuilds the node's antenna
+    /// <c>RACommNetVessel.DiscoverAntennas()</c>, which REBUILDS the node's antenna
     /// list and therefore replaces the object the target was set on. Running the same
     /// request twice with one flag each is what tells them apart.</para>
     ///
@@ -500,7 +500,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         }
 
         /// <summary>
-        /// What the craft's saved state now says, read straight off the snapshot the
+        /// What the craft's SAVED state now says, read straight off the snapshot the
         /// setter writes to. This is the half of the persistence question that does
         /// not need a reload: if the node is not here, nothing will be written out.
         /// </summary>
@@ -589,7 +589,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// <summary>
         /// The network behaviour the scene's CommNet scenario is driving, whatever it
         /// turns out to be. A stock scenario has no <c>Network</c> property, so the
-        /// absence of one is the answer that no replacement backend is installed.
+        /// absence of one IS the answer that no replacement backend is installed.
         /// </summary>
         private static object? NetworkBehind(out string fault)
         {

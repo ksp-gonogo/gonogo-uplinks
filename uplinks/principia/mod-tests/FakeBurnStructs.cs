@@ -1,7 +1,7 @@
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Stand-ins carrying Principia's own field names, shapes and nesting, so the
+    /// Stand-ins carrying Principia's OWN field names, shapes and nesting, so the
     /// reflection walk under test is the real one.
     ///
     /// <para><b>Why these are not mocks.</b> Nothing here implements an interface
@@ -12,7 +12,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// it would fail against the producer.</para>
     ///
     /// <para><b>The value-type nesting is load-bearing.</b> On the producer,
-    /// <c>intensity</c> is a struct field on a class and <c>xyz</c> is a struct
+    /// <c>intensity</c> is a struct FIELD on a class and <c>xyz</c> is a struct
     /// field on that struct. Setting a component means boxing the struct, changing
     /// the box, and writing the box back, and forgetting the write-back leaves the
     /// burn holding its original Dv while every local says otherwise. Modelling
@@ -29,9 +29,9 @@ namespace GonogoPrincipiaUplink.Tests
         public double specific_impulse_in_seconds_g0 = 300.0;
 
         /// <summary>
-        /// Null on a fresh burn, exactly as the producer's is.
+        /// NULL on a fresh burn, exactly as the producer's is.
         ///
-        /// <para>The producer's frame is a class with no initialiser, so a burn
+        /// <para>The producer's frame is a CLASS with no initialiser, so a burn
         /// built rather than read out of the plugin carries nothing here. A fake
         /// that handed one out anyway is a fake kinder than reality, and it hid a
         /// composed burn failing to take a frame until the rig showed it: the
@@ -48,7 +48,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// A burn built from nothing: no frame and no coordinate system, exactly as
         /// the producer's is.
         ///
-        /// <para>The producer's coordinate-system enum starts at one and has no zero
+        /// <para>The producer's coordinate-system enum starts at ONE and has no zero
         /// member, so a fresh burn's is not a member of it at all. A fake that
         /// presets it is kinder than the producer in the one way that matters, and
         /// that kindness hid an out-of-range byte crossing into C++.</para>
@@ -58,7 +58,7 @@ namespace GonogoPrincipiaUplink.Tests
             intensity = new FakeIntensity();
         }
 
-        /// <summary>A burn as it comes out of the plugin, which always carries both a
+        /// <summary>A burn as it comes OUT of the plugin, which always carries both a
         /// frame and a coordinate system: only a burn built from nothing does
         /// not.</summary>
         public static FakeBurn FromPlugin() =>
@@ -113,7 +113,7 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
-    /// A burn's manoeuvring frame. The two index fields are private on the
+    /// A burn's manoeuvring frame. The two index fields are PRIVATE on the
     /// producer, behind array-valued properties whose setters throw on the wrong
     /// size, so they are private here too: anything reading them has to go through
     /// the same non-public field lookup production does.

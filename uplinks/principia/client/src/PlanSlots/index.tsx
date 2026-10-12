@@ -64,17 +64,17 @@ const DEFAULT_PLAN_LENGTH_SECONDS = 3600;
  * <p><b>Why one section rather than four controls.</b> Create, install, copy and
  * delete are not four independent verbs, they are the transitions of one state
  * machine over two fields of the reading. `planExists` decides whether create or
- * delete is the legal one and the plugin refuses the other by name
+ * delete is the legal one and the plugin REFUSES the other by name
  * (`PlanAlreadyExists`, `NoFlightPlan`); `planCount` against Principia's ten
  * decides whether a copy can be made at all. A surface offering all four at once
- * would be a surface that refuses most of its own controls a signal delay after
+ * would be a surface that refuses most of its own controls a light time after
  * they are pressed, which is the thing `writeSurface` exists on the wire to
  * prevent.</p>
  *
  * <p><b>Why installing a composed plan belongs here and not in the composer.</b>
  * A plan arrives on a craft one of three ways: empty, copied, or composed
  * elsewhere and transmitted whole. All three are the same transition, and the
- * mod says so: `principia.plan.send` creates the slot when the craft holds none,
+ * mod says so: `principia.plan.send` CREATES the slot when the craft holds none,
  * rather than refusing and making the operator send a create first from a light
  * time away. So install and create differ only in whether there are burns in the
  * box, and they share the one field neither the composer nor the burn editor
@@ -83,7 +83,7 @@ const DEFAULT_PLAN_LENGTH_SECONDS = 3600;
  * stays where it is rather than growing a second button.</p>
  *
  * <p><b>There is one plan-end field on this panel and it is not always this
- * one.</b> A plan that exists already has an end, and the control that moves it
+ * one.</b> A plan that exists already has an end, and the control that MOVES it
  * belongs beside the shortfall it remedies, which is `PlanIntegrationBlock`. So
  * the field here appears only for a craft with no plan, and once there is one its
  * own end is the end every write reads. Two fields under one name on one panel is
@@ -534,7 +534,7 @@ function ExistingPlan({
 /**
  * The screen's saved plans, and what installing one on this craft would do.
  *
- * <p>Only saved drafts. A draft still being composed is a command-centre object
+ * <p>Only SAVED drafts. A draft still being composed is a command-centre object
  * the operator has not finished with, and offering to transmit one is offering
  * to fly a half-typed trajectory.</p>
  *

@@ -9,21 +9,21 @@ using UnityEngine;
 namespace Gonogo.ScansatUplink
 {
     /// <summary>
-    /// The GonogoScansatUplink reference implementation: the first
+    /// The GonogoScansatUplink reference implementation: the FIRST
     /// separate (non-bundled) Uplink, establishing the packaging pattern
     /// U2-U4 reuse (see <c>.superpowers/sdd/uplink-packaging-pattern.md</c>).
     /// Reads SCANsat's public API in-process (zero Harmony,
     /// scansat-migration-spec.md §4).
     ///
-    /// Scope note (the dynamic-topic gap U1 flagged is closed): U1 wired the
+    /// SCOPE NOTE (the dynamic-topic gap U1 flagged is CLOSED): U1 wired the
     /// version-guard (§3) and the two STATIC-topic channels
     /// (<c>scansat.available</c>, <c>scansat.scanningVessels</c>) only,
     /// because <c>IUplinkHost</c> had no way to register a topic set
     /// parametrized by which body a vessel is orbiting.
     /// <see cref="IUplinkHost.RegisterDynamicNamespace"/> (Minor bump: see
     /// <c>.superpowers/sdd/contract-dynamic-delay-report.md</c>) closed that,
-    /// and <see cref="Sample"/> now publishes, per the active vessel's main
-    /// body, the full set of dynamic channels the client consumes:
+    /// and <see cref="Sample"/> now publishes, per the ACTIVE vessel's main
+    /// body, the FULL set of dynamic channels the client consumes:
     /// <c>scansat.coverage.&lt;body&gt;.&lt;typeBit&gt;</c> (scalar %),
     /// <c>scansat.mask.&lt;body&gt;.&lt;typeBit&gt;</c> (packed
     /// <c>SCANCoverageBitmap</c>) for every client SCANtype
@@ -33,14 +33,14 @@ namespace Gonogo.ScansatUplink
     /// stock BiomeMap §0E), and <c>scansat.anomalies.&lt;body&gt;</c>
     /// (<c>SCANAnomalyEntry[]</c>, SCANsat's own <c>SCANdata.Anomalies</c>:
     /// see <see cref="BuildAnomalies"/>). Sub-topic type components are the
-    /// numeric SCANtype bit (matching the client) for coverage/mask; coverage
-    /// carries the GetCoverage percentage (not the plane), all keyframe-on-
+    /// NUMERIC SCANtype bit (matching the client) for coverage/mask; coverage
+    /// carries the GetCoverage PERCENTAGE (not the plane), all keyframe-on-
     /// change per concrete (body,type); height/biome once per body visit;
     /// anomalies ride the same body-level coverage-hash gate as coverage/mask
     /// (Known/Detail are themselves derived from that grid).
     ///
     /// Known gaps, disclosed not invented away:
-    /// (1) threading, fixed (F1): the KSP/stock reads now run on the Unity
+    /// (1) THREADING, FIXED (F1): the KSP/stock reads now run on the Unity
     ///     main thread via the capture-on-main / handle-on-Courier seam
     ///     (<see cref="IUplinkHost.AddSampledSource"/>): see
     ///     <see cref="CaptureOnMain"/>/<see cref="HandleOnCourier"/> and
@@ -49,10 +49,10 @@ namespace Gonogo.ScansatUplink
     ///     <see cref="BuildScanningVessels"/>, still on the old
     ///     AddChannelSource path: a separate follow-up.)
     /// (2) No live-KSP validation (no launch/scan capture available).
-    /// (3) closed: <c>scansat.anomalies.&lt;body&gt;</c> now publishes from
-    ///     <see cref="BuildAnomalies"/> (the P4c-b pre-deletion build, see
+    /// (3) CLOSED: <c>scansat.anomalies.&lt;body&gt;</c> now publishes from
+    ///     <see cref="BuildAnomalies"/> (the P4c-b pre-deletion BUILD, see
     ///     <c>docs/superpowers/plans/2026-07-11-p4cb-deletion-plan.md</c> §1).
-    ///     The display moved out of core MapView into the client's
+    ///     The DISPLAY moved out of core MapView into the client's
     ///     <c>AnomalyOverlay</c> augment (Uplink invariant #5, "augment don't
     ///     embed"): the mod no longer has any client-side reader of raw
     ///     SCANsat state for this Topic.
@@ -317,7 +317,7 @@ namespace Gonogo.ScansatUplink
         /// <summary>
         /// COURIER-THREAD reseed (see <see cref="IDynamicChannelSource.OnSubscribed"/>):
         /// re-emit the last cached payload for <paramref name="fullTopic"/> at the
-        /// current ut so the reveal gate releases it to the newly-subscribed client.
+        /// CURRENT ut so the reveal gate releases it to the newly-subscribed client.
         /// No main-thread state and no grid rebuild, the cached payload is
         /// re-published as-is. Coalesced per topic within
         /// <see cref="ReseedGraceSeconds"/> so a subscribe burst is one re-emit.
@@ -371,7 +371,7 @@ namespace Gonogo.ScansatUplink
         /// watching (<see cref="ScanChannels.BodyWatched"/>), whichever vessel
         /// is active: scanners on unloaded craft keep scanning, and a map can
         /// show any body. Per body, reads the coverage grid + per-type coverage
-        /// percentages, and (once per body visit) builds the (expensive)
+        /// percentages, and (ONCE per body visit) builds the (expensive)
         /// stock PQS height and BiomeMap grids. The height grid's per-cell
         /// elevation sample branches on <c>SCANUtil.isCovered(..., AltimetryHiRes)</c>
         /// per SCANsat's own <c>SCANmap.terrainElevation</c> tiering rule:
@@ -381,7 +381,7 @@ namespace Gonogo.ScansatUplink
         /// hashing/keyframe/packing/publishing entirely off that data. Returns
         /// null when no body is watched (nothing to sample).
         ///
-        /// <para><b>threading:</b> this is the F1 fix, the SCANsat/stock reads
+        /// <para><b>THREADING:</b> this is the F1 fix, the SCANsat/stock reads
         /// (<c>FlightGlobals.Bodies</c>, <c>SCANUtil.getData</c>/
         /// <c>GetCoverage</c>, <c>pqs.GetSurfaceHeight</c>, <c>BiomeMap.GetAtt</c>)
         /// now run on the Unity main thread, where the rest of the mod reads
@@ -499,7 +499,7 @@ namespace Gonogo.ScansatUplink
         /// thread with the plain <see cref="ScanCapture"/> the capture
         /// produced, applies the coarse-hash + per-(body,type) plane-changed
         /// gates via <see cref="ScanPublications.Compute"/>, and publishes each
-        /// resulting keyframe to its dynamic channel. Touches no KSP/Unity API,
+        /// resulting keyframe to its dynamic channel. Touches NO KSP/Unity API,
         /// all KSP reads already happened in <see cref="CaptureOnMain"/>.
         /// </summary>
         internal void HandleOnCourier(object? captured)
@@ -604,7 +604,7 @@ namespace Gonogo.ScansatUplink
         /// <summary>
         /// COURIER-THREAD handle for the science capture: publishes the shaped
         /// entry list (a bare array or empty) on <see cref="ScienceTopic"/>.
-        /// Touches no KSP/Unity API: every SCANsat read already happened in
+        /// Touches NO KSP/Unity API: every SCANsat read already happened in
         /// <see cref="CaptureScienceOnMain"/>.
         /// </summary>
         internal void HandleScienceOnCourier(object? captured)
@@ -661,10 +661,10 @@ namespace Gonogo.ScansatUplink
         ///
         /// <para>Null when the array could not be read at all, and the caller
         /// publishes no anomalies channel for the tick. It used to return an
-        /// empty list, which the client draws as "None known." for the body: a
+        /// EMPTY list, which the client draws as "None known." for the body: a
         /// definite claim that this body has no anomalies. The two are not the
         /// same answer, and this method only runs once
-        /// <see cref="TryGetBodyCoverage"/> has already proved SCANsat has data
+        /// <see cref="TryGetBodyCoverage"/> has already proved SCANsat HAS data
         /// for the body, so an unreadable array here is a read failure rather
         /// than a never-scanned body.</para>
         ///

@@ -1,13 +1,13 @@
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// The docking facts this uplink derives about one camera's part, the
+    /// The docking facts this uplink DERIVES about one camera's part, the
     /// result shape produced by <see cref="DockingCameraDetector"/>.
     ///
     /// <para>Deliberately in its own KSP-free file: <see cref="DockingCameraDetector"/>
     /// must touch live stock-KSP <c>Part</c>/<c>ModuleDockingNode</c> types and so
     /// cannot compile headless, but this result shape (and every consumer of it,
-    /// like <see cref="KerbcastCameraEntryBuilder"/>) is pure data and is tested
+    /// like <see cref="KerbcastCameraEntryBuilder"/>) is pure data and IS tested
     /// headless. Same selective-Compile split the sibling Uplink test
     /// projects use.</para>
     ///

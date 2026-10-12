@@ -9,12 +9,12 @@ using Xunit;
 namespace GonogoRealAntennasUplink.Tests
 {
     /// <summary>
-    /// The server half of the CommsHop provider-extension proof: RealAntennas fills
-    /// its own namespace of a hop's bag and the real wire writer carries it, riding
+    /// The SERVER half of the CommsHop provider-extension proof: RealAntennas fills
+    /// its own namespace of a hop's bag and the REAL wire writer carries it, riding
     /// the core <c>comms.path</c> channel.
     ///
     /// <para>Goes through <c>WirePayload</c>, which serialises with the same codec
-    /// the courier does, because the claim is about the wire: a namespaced sub-tree
+    /// the courier does, because the claim is about the WIRE: a namespaced sub-tree
     /// core has never heard of survives serialisation, and a hop nobody extended is
     /// byte-for-byte unchanged. The committed fixture
     /// <c>mod/golden-fixtures/commshop-extensions.json</c> is what the client's
@@ -112,7 +112,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// The additive claim as bytes: a hop no provider extended carries exactly
+        /// The additive claim as bytes: a hop no provider extended carries EXACTLY
         /// the core members and nothing else. The <c>extensions</c> key is omitted,
         /// not written as null, so a bare-CommNet subscriber cannot tell the
         /// mechanism landed.

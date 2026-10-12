@@ -57,7 +57,7 @@ namespace GonogoPrincipiaUplink
 
         /// <param name="observation">The last settings reading, which is where the
         /// frame a composed burn is expressed in comes from. A separate seam from
-        /// <paramref name="source"/> because it is a sample rather than a live
+        /// <paramref name="source"/> because it is a SAMPLE rather than a live
         /// object: turning the producer's selector into a frame is the settings
         /// channel's work, and doing it again here would be a second reading that
         /// could disagree with the one on the wire.</param>
@@ -260,7 +260,7 @@ namespace GonogoPrincipiaUplink
             EditBurn(ReplaceBurnCommand, args, insert: false);
 
         /// <summary>
-        /// Adds a burn by copying one that is already in the plan and changing the
+        /// Adds a burn by COPYING one that is already in the plan and changing the
         /// stated fields.
         ///
         /// <para>There is no way to add a burn from nothing here, and that is the
@@ -389,7 +389,7 @@ namespace GonogoPrincipiaUplink
         /// Builds the plan's first burn and inserts it at the head.
         ///
         /// <para><b>Why building one is safe here when copying is the rule
-        /// everywhere else.</b> The rule guards against a stale field set: the burn
+        /// everywhere else.</b> The rule guards against a STALE FIELD SET: the burn
         /// struct is generated from a schema that has moved between releases, so a
         /// shape written down here would resolve, not throw, and write a plausible
         /// wrong burn into somebody's save. A struct constructed from the loaded
@@ -534,7 +534,7 @@ namespace GonogoPrincipiaUplink
         /// A burn for the layout probe to round trip, or null when one cannot be
         /// built.
         ///
-        /// <para>Deliberately the same construction the real write uses, down to the
+        /// <para>Deliberately the SAME construction the real write uses, down to the
         /// frame and the propulsion, because a probe that demonstrated a different
         /// struct than the one that follows it would be demonstrating the wrong
         /// thing. Nothing is refused here with a reason: the probe turns a null into
@@ -927,16 +927,16 @@ namespace GonogoPrincipiaUplink
         /// <para>Checked entirely before anything is written, and one unusable burn
         /// refuses the lot. Principia offers no transaction, so this is
         /// validate-then-write and not a rollback: what it guarantees is that a plan
-        /// failing any check writes nothing, and the receipt re-reads the plan either
+        /// failing any check writes NOTHING, and the receipt re-reads the plan either
         /// way so a partial write cannot be mistaken for a clean one.</para>
         ///
-        /// <para>The head burn is built where the craft holds none, from the type the
+        /// <para>The head burn is BUILT where the craft holds none, from the type the
         /// producer's own entry point declares, and every burn after it is copied
         /// from that head. A craft with no plan at all gets one made for it here
         /// rather than being refused: "install this plan on that craft" is the whole
         /// of what this command means, and requiring the operator to send a separate
-        /// create first would put the two halves a signal delay apart, which is exactly
-        /// what sending a plan as one message exists to avoid.</para>
+        /// create first would put the two halves a light-time apart, which is exactly
+        /// what sending a plan as ONE message exists to avoid.</para>
         /// </summary>
         public CommandResult<Dictionary<string, object?>> SendPlan(PrincipiaPlanSendArgs? args)
         {
@@ -1240,7 +1240,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Records the receipt and turns it into a command result.
         ///
-        /// <para>A refused or rejected write is a command failure with a typed code,
+        /// <para>A refused or rejected write is a command FAILURE with a typed code,
         /// and it still carries the whole receipt: the code is what a client branches
         /// on and the receipt is what it shows. Neither is worth sending without the
         /// other.</para>
@@ -1309,7 +1309,7 @@ namespace GonogoPrincipiaUplink
         /// write, whose root is what a client that knows only the shared vocabulary
         /// reads, or <see cref="CommandErrorCode.WrongState"/> when the plugin itself
         /// declined. There is deliberately no <c>LimitBreach</c> on the plan-slot
-        /// refusal: that type is shaped around a named facility and a plan slot is
+        /// refusal: that type is shaped around a named FACILITY and a plan slot is
         /// not one, so the numbers ride in the sentence instead.
         /// </summary>
         private static RefusalCode Code(PrincipiaWriteResult result) =>

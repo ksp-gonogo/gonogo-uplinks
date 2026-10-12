@@ -40,8 +40,8 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>Delegates the two-for-critical arithmetic to
         /// <see cref="KerbalismReliabilityMap.KitsForRepair"/> rather than
-        /// repeating it, so the number charged here cannot drift from the number
-        /// stated on <c>KerbalismReliabilityPart.RepairCost</c>.</para>
+        /// repeating it, so the number CHARGED here cannot drift from the number
+        /// STATED on <c>KerbalismReliabilityPart.RepairCost</c>.</para>
         /// </summary>
         public static int KitsFor(bool broken, bool critical) =>
             broken ? KerbalismReliabilityMap.KitsForRepair(critical) : 0;
@@ -50,17 +50,17 @@ namespace Gonogo.KerbalismUplink
         /// How many of the kits come out of the kerbal's own inventory, and how
         /// many have to be fetched from a part store.
         ///
-        /// <para><b>Both halves have to be removed by us.</b> The repair invoke is
+        /// <para><b>Both halves have to be REMOVED by us.</b> The repair invoke is
         /// wrapped in a suspension of Kerbalism's <c>requireRepairKits</c>
         /// preference, because its own <c>ConsumeRepairKits</c> reads kits only
-        /// from an EVA kerbal's inventory when the active vessel is that kerbal,
+        /// from an EVA kerbal's inventory when the active vessel IS that kerbal,
         /// which a remote repair never satisfies. With the preference off,
-        /// <c>ConsumeRepairKits</c> returns true immediately and removes nothing,
+        /// <c>ConsumeRepairKits</c> returns true immediately and removes NOTHING,
         /// so anything we do not take ourselves is never charged at all.</para>
         ///
         /// <para>That is what made the common case free: the carried branch
         /// returned "enough, carry on" without removing them, and the store branch
-        /// fetched only the shortfall, leaving whatever the kerbal already held
+        /// fetched only the SHORTFALL, leaving whatever the kerbal already held
         /// uncharged. The outcome reported <c>KitsUsed</c> either way, so the
         /// console said two kits were spent while the inventory kept both.</para>
         /// </summary>
@@ -76,7 +76,7 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Whether the attempt actually cleared what it was asked to clear,
-        /// observed from the module's own flags afterwards rather than predicted.
+        /// OBSERVED from the module's own flags afterwards rather than predicted.
         ///
         /// <para>Kerbalism's crew check gates both halves of <c>Repair()</c> and
         /// returns before either flag moves, so a flag that did not move is a

@@ -123,7 +123,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The refusal for a price that could not be computed. It refuses, and
+        /// The refusal for a price that could not be computed. It REFUSES, and
         /// that direction is the whole point: RP-1's SpendFunds does no
         /// affordability test of its own, so proceeding on an unreadable price is
         /// how a career ends up in negative funds with nothing to show for it.

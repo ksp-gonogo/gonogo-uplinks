@@ -53,7 +53,7 @@ namespace GonogoKerbcastUplink;
 /// reference: kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection
 /// pattern is mandatory; see <c>GonogoKerbcastUplink.csproj</c>'s header).
 /// Every field below is read off kerbcast's <c>KerbcastCameraView</c>, except
-/// the docking fields, which this Uplink derives from the stock KSP
+/// the docking fields, which this Uplink DERIVES from the stock KSP
 /// <c>Part</c> the view carries.</para>
 ///
 /// <para>R7 typed-absence discipline: every field is nullable. A camera whose
@@ -69,8 +69,8 @@ public class KerbcastCameraEntry
 {
     /// <summary>
     /// kerbcast's own camera handle (<c>KerbcastCameraView.FlightId</c>): the
-    /// id every kerbcast command and the WebRTC <c>subscribe</c> take. Note
-    /// this is not reliably a KSP part id: kerbcast synthesises a hash for the
+    /// id every kerbcast command and the WebRTC <c>subscribe</c> take. NOTE
+    /// this is NOT reliably a KSP part id: kerbcast synthesises a hash for the
     /// 2nd+ camera module on a multi-camera part. Use <see cref="PartId"/> when
     /// you want part identity; use this when you want to talk to kerbcast.
     /// </summary>
@@ -86,7 +86,7 @@ public class KerbcastCameraEntry
     public long? PartId { get; set; }
 
     /// <summary>
-    /// kerbcast's camera name. Not unique: Hullcam's docking-port patch names
+    /// kerbcast's camera name. NOT unique: Hullcam's docking-port patch names
     /// every docking-port camera "NavCam", which is precisely why
     /// <see cref="IsDockingCamera"/> is derived from the part's modules rather
     /// than sniffed from this string.
@@ -157,7 +157,7 @@ public class KerbcastCameraEntry
     /// Whether this camera is mounted on a docking port, the operator-facing
     /// question "which of my cameras can I dock with".
     ///
-    /// <para>Derived, not reported by kerbcast: kerbcast has no docking concept
+    /// <para>DERIVED, not reported by kerbcast: kerbcast has no docking concept
     /// on its wire at all. This Uplink reads the stock
     /// <c>ModuleDockingNode</c> off the camera's own <c>Part</c> (the part
     /// handle kerbcast's control facade already carries) and answers from the

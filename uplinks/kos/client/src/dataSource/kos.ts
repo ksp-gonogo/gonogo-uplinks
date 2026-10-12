@@ -37,7 +37,7 @@ interface KosDataSourceOptions {
   callTimeoutMs?: number;
   /**
    * Accepted for source-construction back-compat (existing tests pass it) and
-   * ignored: dispatch rides the `kos.run` Uplink, which needs no post-attach
+   * IGNORED: dispatch rides the `kos.run` Uplink, which needs no post-attach
    * settle delay.
    */
   postAttachDrainDelayMs?: number;
@@ -49,7 +49,7 @@ interface KosDataSourceOptions {
  * `kos.run` Uplink; see `kosUplinkExecutor.ts`), and surfaces CPU
  * discovery off the mod's native `kos.processors` push channel
  * (`onProcessorsChanged`). Registered only via `registerUplinkHandle("kos",
- * kosSource)` (not `registerDataSource`) so it never appears in the
+ * kosSource)` (NOT `registerDataSource`) so it never appears in the
  * generic Data Sources panel; kOS's own health surfaces via the mod-side
  * `ISitrepUplink.Health()` (`KosHealth`) instead. Same SPI-free shape as
  * other first-party Uplinks that carry no subscribable data keys of their
@@ -81,7 +81,7 @@ export class KosDataSource {
 
   /**
    * Adopt the active sitrep `TelemetryClient` for kOS discovery + dispatch.
-   * Establishes the standing `kos.processors` subscription so CPU discovery
+   * Establishes the STANDING `kos.processors` subscription so CPU discovery
    * works whenever a stream is mounted, not only while a `kos.run` dispatch
    * is pending. Idempotent for the same client; driven eagerly by the
    * `KosCpuDiscovery` mount on every client change.
@@ -109,7 +109,7 @@ export class KosDataSource {
   /**
    * Run a script on the named CPU and resolve with its parsed [KOSDATA]
    * object, dispatched over the `kos.run` Uplink (see `kosUplinkExecutor.ts`),
-   * the only transport this method uses. Calls to the same CPU are
+   * the ONLY transport this method uses. Calls to the same CPU are
    * serialised by a per-core FIFO queue; calls to different CPUs run in
    * parallel. Rejects if the CPU's tagname doesn't resolve to a known
    * `coreId`, no `kos.run.<coreId>` result arrives within the call timeout,

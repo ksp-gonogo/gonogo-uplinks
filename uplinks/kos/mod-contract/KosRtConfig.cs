@@ -5,18 +5,18 @@ using Reinforced.Typings.Fluent;
 namespace Gonogo.KosUplink;
 
 /// <summary>
-/// This Uplink's own codegen configuration: mirrors
+/// This Uplink's OWN codegen configuration: mirrors
 /// <c>Sitrep.Contract.RtConfig.Configure</c>'s shape exactly, scoped to just
 /// this assembly's nine wire types, and reuses
 /// <c>RtConfig.ApplyUnitValueTypes</c> the same way every Uplink's own
 /// <c>Configure</c> does. Deliberately names no sibling Uplink: doing so would
-/// trip that Uplink's own frontend uplink-boundary token.
+/// trip THAT Uplink's own frontend uplink-boundary token.
 ///
 /// <para><b>One Topic-tagged root out of nine types.</b> Only
 /// <see cref="KosProcessorInfo"/> carries <c>[SitrepTopic]</c>
 /// (<c>kos.processors</c>, <c>isArray</c>), so <c>EmitTopicMap</c> is wired
 /// below but names exactly one entry. The other eight are not nested shapes
-/// either: they are the payloads of dynamic channels and commands, which by
+/// either: they are the payloads of DYNAMIC channels and commands, which by
 /// construction cannot carry a static <c>[SitrepTopic]</c> name.
 /// <list type="bullet">
 /// <item><see cref="KosTerminalFrame"/> rides
@@ -26,7 +26,7 @@ namespace Gonogo.KosUplink;
 /// <item><see cref="KosComputeStatus"/> rides
 /// <c>kos.compute.&lt;id&gt;.status</c>, the same shape of dynamic name keyed by
 /// compute-topic id instead.</item>
-/// <item>The remaining five are command args
+/// <item>The remaining five are command ARGS
 /// (<c>kos.terminal.open</c>/<c>.resize</c>/<c>.close</c>,
 /// <c>kos.keystroke</c>, <c>kos.run</c>), inbound-only by definition.</item>
 /// </list>
@@ -42,10 +42,10 @@ namespace Gonogo.KosUplink;
 /// plainly, because it is why the retyping this call exists to perform is
 /// nearly invisible here.</para>
 ///
-/// <para><b>Exactly one declared quantity survives to a
+/// <para><b>Exactly ONE declared quantity survives to a
 /// <c>Value&lt;&gt;</c> in this whole slice</b>, and the honest accounting
 /// matters more than the mechanism: <see cref="KosComputeStatus.LastGoodAt"/>
-/// (<c>Units.Seconds</c> -&gt; <c>Value&lt;"s"&gt;</c>). Every other annotated
+/// (<c>Units.Seconds</c> -&gt; <c>Value&lt;"s"&gt;</c>). Every OTHER annotated
 /// property on the three outbound types declares a NON-QUANTITY token, which
 /// <c>ApplyUnitValueTypes</c> leaves bare by design:
 /// <see cref="KosProcessorInfo"/> is six <c>Id</c>/<c>Text</c>/<c>Flag</c>
@@ -58,11 +58,11 @@ namespace Gonogo.KosUplink;
 ///
 /// <para><b>No nested payload types at all.</b> No property on any of the
 /// nine holds another contract shape, so <c>EmitUnitMap</c>'s field -&gt;
-/// nested-type shape half comes out empty here, which the later relocations had
-/// all needed (naming which ones would trip their own frontend
+/// nested-type SHAPE half comes out empty here, which the later relocations had
+/// all needed (naming which ones would trip THEIR own frontend
 /// uplink-boundary token from this file, so the plan doc is the
 /// cross-reference). <see cref="KosRunResult.Fields"/> is the closest thing and is
-/// deliberately not a shape: it is a <c>Dictionary&lt;string, object?&gt;</c>
+/// deliberately NOT a shape: it is a <c>Dictionary&lt;string, object?&gt;</c>
 /// carrying whatever a script printed, which is exactly why it declares no
 /// unit.</para>
 ///
@@ -76,11 +76,11 @@ namespace Gonogo.KosUplink;
 /// SDK's own generated map has nothing for a type declared outside
 /// <c>Sitrep.Contract</c>. So this Uplink's client package (<c>topics.ts</c>)
 /// calls the SDK's
-/// <c>registerTopicUnits</c> and <c>registerTypeUnits</c> at module load, feeding
+/// <c>registerTopicUnits</c> AND <c>registerTypeUnits</c> at module load, feeding
 /// them the maps this Configure emits below. Both halves are wired for the same
 /// reason the loop form was chosen over naming entries: what needs registering
 /// follows from the generated maps, so the next annotated field on this contract
-/// is covered without a new call site. What they carry today is the accounting
+/// is covered without a new call site. What they carry TODAY is the accounting
 /// above, and the Uplink's own <c>topics.test.ts</c> asserts the registry
 /// contents rather than a decode-time hydration this slice cannot yet
 /// demonstrate.</para>

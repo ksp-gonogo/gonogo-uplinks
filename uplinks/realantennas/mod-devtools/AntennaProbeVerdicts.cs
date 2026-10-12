@@ -21,14 +21,14 @@ namespace Gonogo.RealAntennasUplink.DevTools
         /// save, so the boost vanishes silently. A lapsed boost and a boost that never
         /// worked produce the same unroutable craft, which is what made one run
         /// unreadable. Three distinct answers, because the operator does three different
-        /// things with them: holding means the reading stands, lapsed means any reading
-        /// taken across the lapse is suspect, and not watched means the tool is not
+        /// things with them: HOLDING means the reading stands, LAPSED means any reading
+        /// taken across the lapse is suspect, and NOT WATCHED means the tool is not
         /// guarding this craft at all.</para>
         ///
-        /// <para>Not watched is the one worth being careful about. A request that was
+        /// <para>NOT WATCHED is the one worth being careful about. A request that was
         /// refused, or that parsed and changed nothing, applies no standing boost, so
         /// nothing re-asserts it and a revert would go unreported. Reporting that as
-        /// holding would be the tool claiming to guard something it is not, which is the
+        /// HOLDING would be the tool claiming to guard something it is not, which is the
         /// exact shape of instrument this whole probe family exists to refuse.</para>
         /// </summary>
         internal static string BoostState(bool standing, int lapsesThisRequest, int reassertions, double verifyIntervalSeconds)

@@ -12,8 +12,8 @@ namespace GonogoPrincipiaUplink
     /// a separate type from <see cref="ReflectedMembers"/>.</b> That type's whole
     /// argument is about reads: a field read runs no producer code, a property read
     /// runs a getter, and a getter here can reach a fatal log. The write side has
-    /// the same shape and the same asymmetry. Assigning a field runs nothing;
-    /// assigning a property runs a setter, and one of the setters on this very
+    /// the same shape and the same asymmetry. Assigning a FIELD runs nothing;
+    /// assigning a PROPERTY runs a setter, and one of the setters on this very
     /// struct family (<c>PrimaryIndices</c>) throws on a set of the wrong size. So
     /// <see cref="Set"/> resolves fields only and refuses a property outright,
     /// rather than being tolerant about it the way the read side can afford to
@@ -24,7 +24,7 @@ namespace GonogoPrincipiaUplink
     /// in the release this Uplink is keyed to: one field was added and another
     /// removed. A composed burn with a stale field set does not fail to resolve and
     /// does not throw; it writes a plausible wrong burn into the player's save.
-    /// Every burn that reaches the plugin from here came out of the plugin first,
+    /// Every burn that reaches the plugin from here came OUT of the plugin first,
     /// with named fields changed on it. That is layout-agnostic in a way a literal
     /// is not, and it is why <see cref="Mutate"/> takes an existing burn rather
     /// than a description of one.</para>
@@ -64,7 +64,7 @@ namespace GonogoPrincipiaUplink
         /// Fields on the manoeuvre, which is the burn plus everything the plugin
         /// computed from it.
         ///
-        /// <para>This is where the planned profile comes from, and it is why the
+        /// <para>This is where the planned PROFILE comes from, and it is why the
         /// plan is worth reading from the plugin at all rather than from the
         /// producer's window: the window's burn editor carries a Dv magnitude and
         /// three sliders, while the plugin answers with the mass the vessel will
@@ -111,8 +111,8 @@ namespace GonogoPrincipiaUplink
         public const int UnsetCentre = 0;
 
         /// <summary>
-        /// True when the frame's kind is defined by one body it centres on, false
-        /// when it is defined by a pair.
+        /// True when the frame's kind is defined by ONE body it centres on, false
+        /// when it is defined by a PAIR.
         ///
         /// <para>This is the producer's own split, from the switch that turns a
         /// descriptor into a frame: the non-rotating and surface kinds read the
@@ -181,7 +181,7 @@ namespace GonogoPrincipiaUplink
             };
 
         /// <summary>
-        /// Assigns a field, and answers false when there is no such field.
+        /// Assigns a FIELD, and answers false when there is no such field.
         ///
         /// <para>A property of the same name is refused rather than assigned: a
         /// setter is producer code, and this whole layer exists because producer
@@ -255,7 +255,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// The burn's Δv triple, or null when the intensity, the xyz, or any one of
+        /// The burn's Δv triple, or null when the intensity, the xyz, or any ONE of
         /// the three components could not be read.
         ///
         /// <para><b>The component case is the reachable one and it is not a shape
@@ -304,11 +304,11 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// The named member, building one from the field's own declared type when
+        /// The named member, building one from the field's OWN declared type when
         /// the object carries a null there.
         ///
         /// <para><b>Why a burn can carry a null at all.</b> Most of what a burn
-        /// holds is a value type, which a fresh one has zeroed. Its frame is not: it
+        /// holds is a value type, which a fresh one has zeroed. Its FRAME is not: it
         /// is a class, and a burn built rather than read out of the plugin has
         /// nothing in that slot. Reading that null as "this build has no such field"
         /// is the mistake this exists to stop, and it is one only a burn built from
@@ -372,7 +372,7 @@ namespace GonogoPrincipiaUplink
         /// numbers.</para>
         /// </summary>
         /// <summary>
-        /// Names what a burn's three components mean, through the same
+        /// Names what a burn's three components MEAN, through the same
         /// box-and-write-back the Δv takes.
         ///
         /// <para>Separate from <see cref="SetDeltaV"/> because a copied burn must

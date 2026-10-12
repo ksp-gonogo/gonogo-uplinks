@@ -6,7 +6,7 @@ using System.Text;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Builds the smallest byte sequences that are genuinely an elf, a PE and a
+    /// Builds the smallest byte sequences that are genuinely an ELF, a PE and a
     /// Mach-O, so the export reader is driven against real headers rather than a
     /// double of them.
     ///
@@ -144,7 +144,7 @@ namespace GonogoPrincipiaUplink.Tests
             return file;
         }
 
-        /// <summary>An elf with a section table holding no <c>.dynsym</c>.</summary>
+        /// <summary>An ELF with a section table holding no <c>.dynsym</c>.</summary>
         internal static byte[] StrippedElf()
         {
             var file = Elf(new[] { "principia__AdvanceTime" });

@@ -35,7 +35,7 @@ export const RP1_BUILD_START_COMMAND = "rp1.build.start";
 /**
  * The save's saved craft, and the complexes that would integrate each one.
  *
- * <para><b>What was missing.</b> The only build command RP-1 exposed copied a
+ * <para><b>What was missing.</b> The only build command RP-1 exposed COPIED a
  * vehicle the centre already held, so this widget could offer to order a second
  * Atlas and could never order a first one. Every career starts with nothing
  * built, which made that a dead end rather than a gap, and the surface answered
@@ -54,7 +54,7 @@ export const RP1_BUILD_START_COMMAND = "rp1.build.start";
  * conditions cannot be applied and are not: whether the craft is human-rated,
  * which RP-1 derives from part tags, and whether the complex stocks the
  * resources it needs. An unanswerable condition therefore leaves the button
- * pressable and lets the command refuse in RP-1's own words, which is strictly
+ * PRESSABLE and lets the command refuse in RP-1's own words, which is strictly
  * better than a control drawn dark for a reason nobody could establish.</para>
  *
  * <para><b>Contributed rather than drawn by the host widget</b>, through the
@@ -103,7 +103,7 @@ export function BuildableSection() {
  * One saved craft: what it is, and where it could be
  * built.
  *
- * <para>The card is toned by whether any complex would take it, because that is
+ * <para>The card is toned by whether ANY complex would take it, because that is
  * the question it exists to answer. A craft nothing can build is still drawn,
  * with the reason: an operator who saved a craft and cannot find it here would
  * go looking for a fault in the Uplink.</para>
@@ -193,7 +193,7 @@ function CraftCard({
 }
 
 /**
- * Every complex that refused this craft, as a dead button carrying its reason.
+ * Every complex that refused this craft, as a DEAD BUTTON carrying its reason.
  *
  * <para>Drawn even when another complex would take it, because "LC-1 is too
  * small for this" is what tells an operator which complex to modify, and a list
@@ -209,7 +209,7 @@ function CraftCard({
  *
  * <para>The live control, `disabled`, rather than the kit's `Button`. `Button`
  * is a font size larger and uppercase, so the pair drew the complex an operator
- * cannot press louder than the ones they can, which is the hierarchy the other
+ * CANNOT press louder than the ones they can, which is the hierarchy the other
  * way up. One component carries both states and the chrome matches by
  * construction.</para>
  *
@@ -250,7 +250,7 @@ function Refusals({
 }
 
 /**
- * Why the craft's parts stop it being built anywhere, or null when they do not.
+ * Why the craft's PARTS stop it being built anywhere, or null when they do not.
  *
  * <para>Three separate causes with three different remedies, and each is named
  * rather than collapsed into "cannot be built": a part this install does not

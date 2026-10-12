@@ -158,7 +158,7 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
 
   /**
    * The house rule, in the currency this control actually spends. RP-1 charges
-   * `scienceCost` in full at enqueue, so the balance beside the press is the
+   * `scienceCost` in full at ENQUEUE, so the balance beside the press is the
    * science balance; funds are not spent here at all.
    */
   it("shows the science balance and says the charge lands at the press", async () => {
@@ -190,12 +190,12 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
   });
 
   /**
-   * A node RP-1 has not priced sorts after every priced one rather than to the
+   * A node RP-1 has not priced sorts AFTER every priced one rather than to the
    * front of a list headed cheapest-first.
    *
    * <para>Reading an absent cost as zero made it the cheapest thing in the tree
    * and therefore the picker's own default, and the shortfall reading beside it
-   * needs the cost it does not have, so it could not even be badged short: an
+   * needs the cost it does not have, so it could not even be badged SHORT: an
    * unpriced node was pre-selected and looked affordable.</para>
    */
   it("does not open on a node RP-1 has not priced", async () => {
@@ -234,7 +234,7 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
   });
 
   /**
-   * Dark on state rather than on the press: the science comparison is one the
+   * Dark on STATE rather than on the press: the science comparison is one the
    * client can make from the wire, and RP-1's own `CanAfford(Science)` asks it
    * again at the press so a stale view cannot spend anything.
    */

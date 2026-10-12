@@ -4,7 +4,7 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// Kerbalism's <see cref="IIsruBackend"/>: the provider that wins the "isru"
+    /// Kerbalism's <see cref="IIsruBackend"/>: the provider that WINS the "isru"
     /// election when Kerbalism is installed. It has to win outright rather than
     /// augment, because Kerbalism's own patches delete
     /// <c>ModuleResourceHarvester</c> and <c>ModuleResourceConverter</c> outright, so

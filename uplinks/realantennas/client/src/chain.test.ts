@@ -44,7 +44,7 @@ describe("the realantennas.antennaChains channel", () => {
   });
 
   /**
-   * Driven through the real decode path because this is the first nested payload
+   * Driven through the real decode path because this is the first NESTED payload
    * this Uplink publishes: each chain carries its own array of entries, and the
    * hydration has to reach inside it. A client that got bare numbers there would
    * render an aim point with no units rather than fail, which is exactly the
@@ -203,7 +203,7 @@ describe("the realantennas.antenna.targetChain command", () => {
   });
 
   /**
-   * Delayed, and this is the one command in the Uplink whose whole value comes
+   * DELAYED, and this is the one command in the Uplink whose whole value comes
    * from that: the chain rides light-time once and the craft then re-aims itself
    * with no delay at all. A rail that lost its delay would put the operator back
    * to flying the fallback by hand from the ground, which is the thing that

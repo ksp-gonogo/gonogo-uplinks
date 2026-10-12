@@ -3,7 +3,7 @@ using System;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// A pure, headlessly-tested re-derivation of RealAntennas' public link-budget
+    /// A pure, headlessly-tested re-derivation of RealAntennas' PUBLIC link-budget
     /// formulas (comms-uplink-design.md §4.3). RA computes margin/noise transiently
     /// inside its <c>internal</c> Burst <c>Precompute</c> job and stores it nowhere
     /// public on the live graph: so rather than reflect an unstable debug-GUI
@@ -13,11 +13,11 @@ namespace Gonogo.RealAntennasUplink
     /// (<c>Gain</c>/<c>TxPower</c>/<c>SymbolRate</c>/<c>Frequency</c>) read via
     /// reflection.
     ///
-    /// <para>Every constant/formula here is reasoned from RA's public constants and
-    /// documented behaviour (<c>src/RealAntennasProject/Physics.cs</c>), not copied
+    /// <para>Every constant/formula here is reasoned from RA's PUBLIC constants and
+    /// documented behaviour (<c>src/RealAntennasProject/Physics.cs</c>), NOT copied
     /// from RA's internal job code, the arm's-length boundary (§4.2) holds: no RA
     /// source is compiled in, no RA assembly is linked. This is a best-effort
-    /// estimate, explicitly not a bit-for-bit match of RA's negotiated-modulation
+    /// estimate, explicitly NOT a bit-for-bit match of RA's negotiated-modulation
     /// tie-break logic (§4.3: "compute its own best-effort margin rather than match
     /// RA's negotiated rate bit-for-bit").</para>
     /// </summary>
@@ -115,12 +115,12 @@ namespace Gonogo.RealAntennasUplink
         /// <para>Null rather than a number when the budget cannot be closed at
         /// any distance, or when an input makes the question meaningless: a
         /// non-positive frequency or symbol rate, or a non-finite result. Absent
-        /// is the honest answer there and it is not zero, which would assert
+        /// is the honest answer there and it is NOT zero, which would assert
         /// that this pair reaches nowhere on the strength of a failed
         /// read.</para>
         ///
-        /// <para>One direction. RA requires a positive data rate both ways
-        /// before it will carry a link, so a pair's reach is the shorter of its
+        /// <para>ONE DIRECTION. RA requires a positive data rate BOTH ways
+        /// before it will carry a link, so a pair's reach is the SHORTER of its
         /// two directional maxima; this returns one of them and the caller takes
         /// the minimum (see <c>RaReach</c>).</para>
         /// </summary>

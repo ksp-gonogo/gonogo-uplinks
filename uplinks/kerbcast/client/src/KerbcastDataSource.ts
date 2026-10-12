@@ -45,8 +45,8 @@ export interface KerbcastConfig extends Record<string, unknown> {
 /**
  * Station-side broker. A station can't reach the sidecar's address, so instead
  * of the default localhost handshake the data source relays the WebRTC
- * offer→answer through the main screen and sources its turn creds from the
- * host's relay broadcast (not a localhost `/ice-config` fetch). Media still
+ * offer→answer through the main screen and sources its TURN creds from the
+ * host's relay broadcast (NOT a localhost `/ice-config` fetch). Media still
  * flows station↔sidecar directly off the answer's ICE candidates, nothing
  * about the video crosses PeerJS. Built from the station's broker, see
  * {@link attachStationBroker}.
@@ -58,9 +58,9 @@ export interface KerbcastBroker {
     cameras: number[];
     slots?: number;
   }): Promise<{ sdp: string; cameras: number[] }>;
-  /** Current relay turn creds (empty until the host has broadcast some). */
+  /** Current relay TURN creds (empty until the host has broadcast some). */
   iceServers(): RTCIceServer[];
-  /** Notified when the host broadcasts fresh relay turn creds. */
+  /** Notified when the host broadcasts fresh relay TURN creds. */
   onIceServersChange(cb: (servers: RTCIceServer[]) => void): () => void;
 }
 
@@ -114,7 +114,7 @@ function relayBaseUrl(): string {
 }
 
 /**
- * Fetch the relay's turn credentials. Returns `[]` on any failure, a 503
+ * Fetch the relay's TURN credentials. Returns `[]` on any failure, a 503
  * (coturn down), a timeout, or no relay at all, so the caller leaves the SDK
  * on its `stun:stun.l.google.com` default rather than breaking connect.
  */
@@ -215,7 +215,7 @@ export class BrowserRTCTransport implements KerbcastTransport {
   /**
    * `RTCRtpReceiver` for every track this transport has ever delivered via
    * `ontrack`, keyed by the exact `MediaStreamTrack` object reference (the
-   * SDK's own `KerbcastClient` wraps this same track reference into
+   * SDK's own `KerbcastClient` wraps this SAME track reference into
    * `cam.mediaStream` via `new MediaStream([track])`, never cloning it,
    * confirmed against the installed `@ksp-gonogo/kerbcast` dist: so a
    * `WeakMap` keyed by that reference is an exact, leak-free correlation
@@ -383,7 +383,7 @@ export class KerbcastDataSource {
   private cfg: KerbcastConfig;
   private baseTransport: KerbcastTransport | undefined;
   /** The concrete `BrowserRTCTransport` `buildClient()` actually wired up
-   *  (main-screen and station/broker mode both use it; see that method).
+   *  (main-screen AND station/broker mode both use it; see that method).
    *  `undefined` when a test supplied a `baseTransport` that isn't one
    *  (e.g. a mock): `getReceiverForStream` degrades to `undefined` then,
    *  matching "can't attach the encoded transform here" rather than
@@ -501,7 +501,7 @@ export class KerbcastDataSource {
    * `BrowserRTCTransport` populated in `ontrack` (see that class's doc for
    * why this is exact, not fuzzy matching). Returns `undefined` when there
    * is no video track, the current transport isn't a `BrowserRTCTransport`
-   * (a test-injected mock), or the track wasn't delivered by this
+   * (a test-injected mock), or the track wasn't delivered by THIS
    * transport instance (a stale reference from a torn-down connection),
    * every case degrades to "encoded backend unavailable here", never a
    * throw, matching every other backend-selection guard in this pipeline.
@@ -680,7 +680,7 @@ export class KerbcastDataSource {
 
   /**
    * Switch this source into station/brokered mode: route the WebRTC handshake
-   * through the host (no sidecar address needed) and take turn creds from the
+   * through the host (no sidecar address needed) and take TURN creds from the
    * host's relay broadcast instead of a localhost `/ice-config` fetch. Called on
    * a station through {@link attachStationBroker}. Rebuilds the
    * client so the camera hooks rebind to the brokered instance; if a connection
@@ -850,7 +850,7 @@ export class KerbcastDataSource {
   }
 
   /**
-   * Fetch the relay's turn creds and, if any came back, set them on the
+   * Fetch the relay's TURN creds and, if any came back, set them on the
    * client. A no-op (keeps the SDK's STUN default) when the relay is
    * unreachable, so LAN streaming is unaffected. Run on every
    * connect/reconnect because the relay rotates its secret per restart, so a
@@ -862,7 +862,7 @@ export class KerbcastDataSource {
    * reconnect, picks the mutation up), and swapping the instance instead would
    * orphan the camera hooks. `useKerbcastStream` / `useKerbcastCameras` capture
    * `getClient()` once and bind to its events; a rebuilt client would fire
-   * onto a dead instance: a black camera on exactly the turn path this
+   * onto a dead instance: a black camera on exactly the TURN path this
    * targets. `cfg` is private in the SDK, but we own kerbcast and the
    * "threads TURN servers" test drives the real client, so a field rename
    * reddens CI rather than silently regressing.
@@ -1094,7 +1094,7 @@ registerUplinkHandle("kerbcast", kerbcastSource);
 /**
  * Switch `source` into station mode off the broker a station hands this Uplink:
  * the offer relays to the main screen's own kerbcast handle, whose `relay`
- * answers `negotiate`, and turn credentials come from the host's broadcast.
+ * answers `negotiate`, and TURN credentials come from the host's broadcast.
  */
 export function attachStationBroker(
   source: KerbcastDataSource,

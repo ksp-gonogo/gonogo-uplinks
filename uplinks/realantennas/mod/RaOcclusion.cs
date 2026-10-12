@@ -6,7 +6,7 @@ namespace Gonogo.RealAntennasUplink
     /// RealAntennas' declared occlusion geometry: the model
     /// <see cref="RaCommsBackend.OcclusionModel"/> hands back.
     ///
-    /// <para>RA occludes at the body's bare radius. Its own line-of-sight test
+    /// <para>RA occludes at the body's BARE radius. Its own line-of-sight test
     /// (<c>FilterCommNodesByOcclusion.Occluded</c>, a segment-to-sphere distance
     /// check) takes <c>body.Radius</c> straight, and the occluder set it
     /// precomputes (<c>Precompute.SetupOccluders</c>) is built from the same
@@ -15,7 +15,7 @@ namespace Gonogo.RealAntennasUplink
     /// though the difficulty settings still carry them.</para>
     ///
     /// <para>Expressed as a scaled-radius model at 1.0/1.0 rather than as its
-    /// own type: "the bare radius" is radius x 1, and sharing the one rule
+    /// own type: "the bare radius" IS radius x 1, and sharing the one rule
     /// keeps the two backends' declarations directly comparable. Deliberately
     /// KSP-free (and RA-reflection-free) so it can be exercised headlessly.</para>
     /// </summary>

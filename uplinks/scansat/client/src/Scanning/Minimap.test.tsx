@@ -32,7 +32,7 @@ const BODY: BodyDefinition = {
 };
 const LAYER_ID = "scansat-test:biome";
 
-/** Marks the whole of body's mask covered before anything paints, as a source would once its bitmap arrived. */
+/** Marks the whole of BODY's mask covered before anything paints, as a source would once its bitmap arrived. */
 function FullyCovered() {
   const cache = useCoverageMaskCache();
   useState(() => {
@@ -169,7 +169,7 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
    * hasn't resolved yet" open default, then the real composite once
    * `cache.acquire` resolves): Minimap repaints on every one of those, so
    * `calls` accumulates several whole paintTile invocations. Slicing from
-   * the last clearRect isolates just the most recent (settled) one.
+   * the LAST clearRect isolates just the most recent (settled) one.
    */
   function latestPaintTileInvocation(): RecordedCall[] {
     const off = offscreenCalls();

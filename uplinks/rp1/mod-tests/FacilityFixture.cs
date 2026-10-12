@@ -35,11 +35,11 @@ namespace RP0
     /// one-argument <c>Fire</c> lookup pass by arity against the wrong shape.</para>
     ///
     /// <para>Declared beside the facility fixture because that was the first write
-    /// to need it, and kept as one class rather than split per concern because
+    /// to need it, and kept as ONE class rather than split per concern because
     /// RP-1 declares one: two partial halves would let the two disagree about the
     /// bus's shape, which is the drift a stand-in exists to prevent.</para>
     ///
-    /// <para>The two dismantle events start null rather than constructed, on
+    /// <para>The two dismantle events start NULL rather than constructed, on
     /// purpose. RP-1 creates its whole bus in its own start-up, so an Uplink acting
     /// before that runs finds null, and both dismantles have to complete through
     /// it. Call <see cref="CreateLifecycleEvents"/> in a test that wants to observe
@@ -80,7 +80,7 @@ namespace RP0.Harmony
     /// <summary>
     /// The Harmony patch class that owns RP-1's facility tech gate.
     ///
-    /// <para>Present for one member, and that member is <c>private static</c>
+    /// <para>Present for ONE member, and that member is <c>private static</c>
     /// here because it is <c>private static</c> on the shipped assembly. It is
     /// the single non-public thing this Uplink reaches, and the most fragile pin
     /// it has: a patch class is implementation detail rather than API.</para>
@@ -89,7 +89,7 @@ namespace RP0.Harmony
     {
         /// <summary>
         /// The gatings a test arranges, keyed the way RP-1 keys its own dictionary:
-        /// the full facility id, then the target level, to the techID required.
+        /// the full facility id, then the TARGET level, to the techID required.
         /// </summary>
         public static readonly Dictionary<string, Dictionary<int, string>> Gatings =
             new Dictionary<string, Dictionary<int, string>>();
@@ -107,7 +107,7 @@ namespace RP0.Harmony
         public static readonly List<SpaceCenterFacility> LockedFacilities = new List<SpaceCenterFacility>();
 
         /// <summary>
-        /// RP-1's own predicate, and it matches by case-insensitive substring of
+        /// RP-1's own predicate, and it matches by case-insensitive SUBSTRING of
         /// the id rather than by the enum, which is reproduced here because a
         /// stand-in that matched exactly would let a test pass on a walk that
         /// disagreed with RP-1 about a modded site.
@@ -172,10 +172,10 @@ public abstract class UpgradeableObject
 
     public string id = "";
 
-    /// <summary>Protected on the real type; see this file's header.</summary>
+    /// <summary>PROTECTED on the real type; see this file's header.</summary>
     protected UpgradeLevel[] upgradeLevels = new UpgradeLevel[0];
 
-    /// <summary>Protected on the real type, and read through <see cref="FacilityLevel"/>.</summary>
+    /// <summary>PROTECTED on the real type, and read through <see cref="FacilityLevel"/>.</summary>
     protected int facilityLevel;
 
     public UpgradeLevel[] UpgradeLevels
@@ -186,7 +186,7 @@ public abstract class UpgradeableObject
 
     public int FacilityLevel => facilityLevel;
 
-    /// <summary>The top tier's own index, not a count: 2 for a three-tier facility.</summary>
+    /// <summary>The TOP tier's own index, not a count: 2 for a three-tier facility.</summary>
     public int MaxLevel => upgradeLevels.Length - 1;
 
     public void SetLevelForTest(int level) => facilityLevel = level;
@@ -230,7 +230,7 @@ public static class HighLogic
 
     /// <summary>
     /// The scene, compared against the SPACECENTER and TRACKSTATION ordinals. An
-    /// enum here rather than an int, because production reads it through
+    /// ENUM here rather than an int, because production reads it through
     /// <c>Convert.ToInt32</c> and a fixture holding a plain int would skip the
     /// conversion the real member forces.
     /// </summary>
@@ -246,7 +246,7 @@ public static class HighLogic
 }
 
 /// <summary>
-/// KSP's scene enum, at the ordinals KSP assigns, because RP-1 compares against
+/// KSP's scene enum, at the ORDINALS KSP assigns, because RP-1 compares against
 /// the numbers rather than the names and so does this Uplink.
 /// </summary>
 public enum GameScenes
@@ -274,7 +274,7 @@ public class Game
 
 /// <summary>
 /// KSP's roster. Two indexers, as KSP declares them, and that pair is the point:
-/// the string one returns null for a name it does not hold rather than throwing,
+/// the string one returns NULL for a name it does not hold rather than throwing,
 /// and a lookup that matched by arity alone could take the int one and index the
 /// roster by a hash.
 /// </summary>
@@ -316,7 +316,7 @@ public class GameParameters
         new System.Collections.Generic.Dictionary<System.Type, object>();
 
     /// <summary>
-    /// KSP's generic accessor, which throws when the node is not registered.
+    /// KSP's GENERIC accessor, which THROWS when the node is not registered.
     /// </summary>
     /// <remarks>
     /// Present so the overload choice is a real one: production deliberately takes
@@ -337,7 +337,7 @@ public class GameParameters
     }
 
     /// <summary>
-    /// KSP's NON-GENERIC accessor, which returns rather than throwing when the node
+    /// KSP's NON-GENERIC accessor, which RETURNS rather than throwing when the node
     /// is absent. Arity one, matched on its first parameter's type.
     /// </summary>
     public object? CustomParams(System.Type type)
@@ -374,7 +374,7 @@ public class EventData<T>
     public List<T> Fired { get; } = new List<T>();
 
     /// <summary>
-    /// Makes <see cref="Fire"/> throw after recording, which is the case RP-1
+    /// Makes <see cref="Fire"/> throw AFTER recording, which is the case RP-1
     /// itself swallows: a subscriber that throws must not make a completed write
     /// report failure.
     /// </summary>

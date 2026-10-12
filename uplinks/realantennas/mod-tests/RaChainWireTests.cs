@@ -8,12 +8,12 @@ using Xunit;
 namespace GonogoRealAntennasUplink.Tests
 {
     /// <summary>
-    /// The wire shape of <c>realantennas.antennaChains</c>, through the real
+    /// The wire shape of <c>realantennas.antennaChains</c>, through the REAL
     /// codec, via <c>WirePayload</c>, so the bytes are asserted rather
     /// than the builder.
     ///
     /// <para>It matters more here than for this Uplink's flat channels because
-    /// this is the first payload in the slice that nests: each entry carries its
+    /// this is the first payload in the slice that NESTS: each entry carries its
     /// own array of objects. A value with no route through the codec throws at the
     /// wire boundary and the frame is dropped, so a subscribed client receives
     /// "subscribed" and then silence, which for a fallback chain would read as the
@@ -50,7 +50,7 @@ namespace GonogoRealAntennasUplink.Tests
             Meta = new PayloadMeta { Source = "vessel:1" },
         };
 
-        /// <summary>The channel value is a bare array, like the two channels beside it.</summary>
+        /// <summary>The channel value is a bare ARRAY, like the two channels beside it.</summary>
         [Fact]
         public void ChannelValueIsABareArray()
         {
@@ -97,7 +97,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// The three fields that carry three answers each stay null on the wire
+        /// The three fields that carry three answers each stay NULL on the wire
         /// rather than collapsing. A walk that has never started is not a walk on
         /// its first entry, and an unread link is not a lost one: the walk itself
         /// refuses to move on the third answer, so a client must be able to see

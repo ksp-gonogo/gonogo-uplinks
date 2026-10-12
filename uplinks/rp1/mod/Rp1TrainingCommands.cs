@@ -138,7 +138,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// RP-1's crew handler and its course type resolved. Both, because the
+        /// RP-1's crew handler AND its course type resolved. Both, because the
         /// enrolment constructs a course and the two leave paths call methods on
         /// one: a command declared off the handler alone would be offered on an
         /// install where the press could not do anything.
@@ -270,7 +270,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para>RP-1 draws this control when <c>SeatMin</c> is above one, and it
         /// is permitted below that too: cancelling a course nobody else is on
-        /// cannot strand anybody. What is not permitted is the reverse, which is
+        /// cannot strand anybody. What is NOT permitted is the reverse, which is
         /// why <see cref="Remove"/> refuses above the minimum.</para>
         /// </summary>
         public CommandResult Cancel(Rp1TrainingLeaveArgs? args) => Leave(args, whole: true);
@@ -415,7 +415,7 @@ namespace GonogoRp1Uplink
         /// (<c>Students.Contains(student)</c>), so the object that must be handed
         /// back is the one the course is holding.</para>
         ///
-        /// <para><b>A completed course is skipped, and that one line carries both
+        /// <para><b>A COMPLETED course is skipped, and that one line carries both
         /// safety properties this file needs.</b> It is the only route to
         /// <c>CompleteCourse</c>, so a completed course cannot reach it a second
         /// time and re-grant its retirement extension. And <c>CompleteCourse</c>
@@ -548,7 +548,7 @@ namespace GonogoRp1Uplink
         /// and reflection counts a defaulted parameter, so 4.7's two-argument
         /// shape is asked for first and 4.6's one-argument shape after it, which
         /// has no such flag and refuses a kerbal on leave. True is how RP-1's
-        /// screen lets a kerbal on leave onto a queued course, so the caller
+        /// screen lets a kerbal on leave onto a QUEUED course, so the caller
         /// passes it only where the queue is there to take the course.
         /// </remarks>
         public static Func<object, object?>? StudentGate(object course, bool allowInactive = false)
@@ -592,7 +592,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The two seat bounds, as RP-1 states them on its own new-course tab, and
-        /// asked before a single student is added.
+        /// asked BEFORE a single student is added.
         /// </summary>
         /// <remarks>
         /// Both bounds are enforced further down anyway and neither says anything

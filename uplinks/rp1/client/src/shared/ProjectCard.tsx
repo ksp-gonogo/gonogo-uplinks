@@ -6,13 +6,13 @@ import type { ReactNode } from "react";
  * One piece of work RP-1 is doing.
  *
  * <para>RP-1 calls a facility upgrade, a new launch complex, a new pad and a
- * rocket under integration all projects, and to an operator they are the same
+ * rocket under integration all PROJECTS, and to an operator they are the same
  * shape: a named thing with a state, a fraction done, a clock naming its end
  * and a bill. Two widgets draw them, the Space Center's construction section
  * and Vehicle Assembly, and a card that each of them shaped for itself would
  * make one career's work look like two unrelated surfaces.</para>
  *
- * <para>What the card owns is the layout: the accent rule, the vertical
+ * <para>What the card owns is the LAYOUT: the accent rule, the vertical
  * rhythm, the name-and-badge row, the muted detail line, and the bar. What a
  * consumer owns is every word in it, because the words are the whole of what a
  * VAB upgrade and an Atlas do not have in common.</para>
@@ -27,7 +27,7 @@ export interface ProjectCardProps {
   /**
    * How far along, and what a screen reader calls the bar.
    *
-   * <para>A null ratio draws no bar rather than an empty one: a full-width
+   * <para>A null ratio draws NO bar rather than an empty one: a full-width
    * empty track says "no progress made", which is a different claim from "we
    * cannot see the progress", and RP-1 leaves the fraction absent on a project
    * it has not costed yet.</para>

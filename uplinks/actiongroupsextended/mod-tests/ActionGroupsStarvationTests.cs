@@ -5,7 +5,7 @@ using Xunit;
 namespace Gonogo.ActionGroupsExtendedUplink.Tests
 {
     /// <summary>
-    /// The <c>"actionGroups"</c> capability is exclusive, so when this uplink wins
+    /// The <c>"actionGroups"</c> capability is EXCLUSIVE, so when this uplink wins
     /// it the stock backend does not answer underneath. It must therefore answer
     /// under the subscriptions a real session holds, and for this uplink the honest
     /// case is the harshest one: no subscriptions and no ticks at all.

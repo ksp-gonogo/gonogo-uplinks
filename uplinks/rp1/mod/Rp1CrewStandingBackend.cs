@@ -13,7 +13,7 @@ namespace GonogoRp1Uplink
     /// standings keep only stock's vocabulary, so the standing stays stock's
     /// <see cref="CrewStanding.Dead"/> and the reason says "Retired": a widget
     /// that has never heard of RP-1 still reads a kerbal who cannot fly, and
-    /// every surface that shows the reason says why. The retired mark and the
+    /// every surface that shows the reason says why. The RETIRED mark and the
     /// retirement date are this Uplink's own, drawn from <c>rp1.crew</c> into the
     /// Astronaut Complex's crew slots.</para>
     ///

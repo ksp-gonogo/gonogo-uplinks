@@ -68,7 +68,7 @@ public class CommsDataRate
 
 /// <summary>
 /// The <c>comms.linkMargin</c> payload: RealAntennas-ONLY. Re-derived by the
-/// RealAntennas uplink from RA's public static link-budget math, not read off
+/// RealAntennas uplink from RA's public static link-budget math, NOT read off
 /// a live field (comms-uplink-design.md §4.3: margin is computed transiently
 /// inside RA's internal Precompute job and not stored anywhere public).
 /// </summary>
@@ -90,7 +90,7 @@ public class CommsLinkMargin
 /// RealAntennas' namespace of a <c>CommsHop</c>'s provider extension bag: the
 /// per-hop RA facts core's shared <c>CommsHop</c> shape does not (and should
 /// not) declare, carried under the provider id <c>"realantennas"</c> and typed
-/// here rather than in core (see <c>Sitrep.Contract/ProviderExtensions.cs</c>
+/// HERE rather than in core (see <c>Sitrep.Contract/ProviderExtensions.cs</c>
 /// for the mechanism, and a sibling Uplink's reliability extension for the
 /// exemplar).
 ///
@@ -155,22 +155,22 @@ public class RealAntennasHopExt
 
 /// <summary>
 /// One entry of the <c>realantennas.hopRates</c> channel: the RealAntennas
-/// forward band rate for a single hop, keyed by the same node ids
+/// forward band rate for a single hop, keyed by the SAME node ids
 /// <c>comms.path</c> already carries (<c>RaCommsBackend.NodeId(link.a)</c>/
 /// <c>NodeId(link.b)</c>), so a client can join a rate onto the route the core
-/// schedule already renders without this Uplink republishing the topology.
+/// schedule already renders WITHOUT this Uplink republishing the topology.
 ///
 /// <para>RealAntennas' relay graph subclasses stock CommNet's
 /// (<c>RACommNode : CommNet.CommNode</c>, <c>RACommLink : CommNet.CommLink</c>),
 /// so the hop set and its node ids are identical to <c>comms.path</c>'s: this
-/// channel only embellishes each existing hop with its bitrate, it never
-/// re-derives the path. The channel value is a bare array of these entries
+/// channel ONLY embellishes each existing hop with its bitrate, it never
+/// re-derives the path. The channel value is a bare ARRAY of these entries
 /// (one per hop that has a readable rate), self-flattened at the publish
 /// boundary by <c>RaWire.HopRates</c> the same way this Uplink's other channels
 /// flatten, so core's serializer never needs to know the type exists.</para>
 ///
-/// <para>TRUE-NOW like the rest of the comms family: it describes the link as
-/// KSC sees it, computed ground-side. Absent entirely without RealAntennas
+/// <para>TRUE-NOW like the rest of the comms family: it describes the link AS
+/// KSC SEES IT, computed ground-side. Absent entirely without RealAntennas
 /// installed (this Uplink is not even elected), and a hop whose rate cannot be
 /// read this tick simply yields no entry, never a 0 sentinel.</para>
 /// </summary>

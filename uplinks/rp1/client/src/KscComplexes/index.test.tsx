@@ -122,7 +122,7 @@ function withCentre(
 /**
  * One complex's rush line, as flattened text.
  *
- * <para>Found from the complex's name rather than from the line's own lead
+ * <para>Found from the complex's NAME rather than from the line's own lead
  * words, because every operational complex carries one now: a query on the
  * words matches every card in the career and says nothing about which.</para>
  */
@@ -134,7 +134,7 @@ function termsFor(complexName: string): string {
 /**
  * Everything below a complex's crew now sits behind one expander, on the
  * operator's ruling that a complex was "using a lot of space for quite
- * boilerplate information". `Disclosure` unmounts its children when closed, so a
+ * boilerplate information". `Disclosure` UNMOUNTS its children when closed, so a
  * test whose subject is a stat, a pad or the rush control opens it first.
  */
 async function openAllDetail(user: ReturnType<typeof userEvent.setup>) {

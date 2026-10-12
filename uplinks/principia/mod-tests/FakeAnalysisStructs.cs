@@ -30,7 +30,7 @@ namespace GonogoPrincipiaUplink.Tests
         ///
         /// <para>Populated by default because the producer populates it by
         /// default: it computes a closest recurrence during the analysis and its
-        /// null-hypothesis path falls back to that rather than clearing it. A fake
+        /// null-hypothesis path FALLS BACK to that rather than clearing it. A fake
         /// that left this null would agree with the belief this Uplink used to
         /// hold and would let the reader go on ignoring a field that is really
         /// there.</para>
@@ -75,7 +75,7 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
-    /// Local mean solar times at the nodes, each an interval in radians over
+    /// Local mean solar times at the nodes, each an interval in RADIANS over
     /// [0, 2π] with π at noon. An angle, not a duration.
     ///
     /// <para>The defaults sit in a narrow band, which is what a sun-synchronous
@@ -105,7 +105,7 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
-    /// The element set. A class holding <see cref="FakeInterval"/> structs, which is
+    /// The element set. A CLASS holding <see cref="FakeInterval"/> STRUCTS, which is
     /// the producer's own nesting: a reader that only handles class-typed fields
     /// would pass against a flatter fake and read nothing off the real one.
     /// </summary>
@@ -116,7 +116,7 @@ namespace GonogoPrincipiaUplink.Tests
         public double nodal_period = 5390.0;
         public double anomalistic_period = 5410.0;
 
-        /// <summary>Radians per second, which is what the producer carries and not
+        /// <summary>Radians per second, which is what the producer carries and NOT
         /// what an operator reads. A fake holding degrees per day would make the
         /// conversion under test invisible.</summary>
         public double nodal_precession = 1.0e-6;
@@ -127,7 +127,7 @@ namespace GonogoPrincipiaUplink.Tests
         public FakeInterval mean_longitude_of_ascending_nodes = new FakeInterval(0.0, 0.1);
         public FakeInterval mean_argument_of_periapsis = new FakeInterval(1.0, 1.2);
 
-        /// <summary>Distances from the primary's centre, as the producer carries
+        /// <summary>DISTANCES from the primary's centre, as the producer carries
         /// them. The altitude an operator reads is these minus the radius, and a
         /// fake holding altitudes would hide the offset the reader has to
         /// apply.</summary>
@@ -156,7 +156,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// <summary>
     /// One entry of the mean-element series, in the producer's own spelling.
     ///
-    /// <para>The instant is the second field on purpose. A reader that took the
+    /// <para>The instant is the SECOND field on purpose. A reader that took the
     /// first double it found would pass against a struct that led with the time,
     /// and would publish a semi-major axis as an epoch.</para>
     /// </summary>

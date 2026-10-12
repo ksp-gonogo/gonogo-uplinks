@@ -7,14 +7,14 @@ namespace Gonogo.ScansatUplink
     /// <summary>
     /// Pure (SCANsat/KSP-type-free) channel-topic conventions for the
     /// dynamic SCANsat channels: the sub-topic strings and the SCANtype
-    /// set the client actually consumes.
+    /// set the CLIENT actually consumes.
     ///
-    /// <para><b>The sub-topic type component is the numeric SCANtype bit
+    /// <para><b>The sub-topic type component is the NUMERIC SCANtype bit
     /// value, not the enum name.</b> The client subscribes to
     /// <c>scansat.coverage.Kerbin.1</c> / <c>scansat.mask.Kerbin.256</c>
     /// (see <c>client/src/schema.ts</c>'s <c>SCAN_TYPE</c>
     /// map and <c>packages/components/src/{Scanning,MapView}/index.tsx</c>'s
-    /// <c>scansat.coverage.${bodyName}.${scanType}</c>), so the mod must
+    /// <c>scansat.coverage.${bodyName}.${scanType}</c>), so the mod MUST
     /// publish under the same numeric strings: an earlier pass published
     /// <c>.AltimetryLoRes</c> (the name), which no client ever subscribes to.
     /// </para>

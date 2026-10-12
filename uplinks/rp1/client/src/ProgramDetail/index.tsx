@@ -77,7 +77,7 @@ export const RP1_PROGRAM_COMPLETE_COMMAND = "rp1.program.complete";
  * One RP-1 Program in full: what it asks, what it pays, when, and what
  * accepting it costs and closes off.
  *
- * <para>The body of the Administration Building's Programs screen, contributed
+ * <para>The BODY of the Administration Building's Programs screen, contributed
  * as an augment on `admin-building.screen-body`. It was a standalone widget until
  * the building grew screens, which made a second Programs surface out of the
  * one the operator already opens the building for. It carries the RP-1 verbs
@@ -216,7 +216,7 @@ export function ProgramDetail({ screenId }: { screenId: string }) {
 }
 
 /**
- * One career balance: the caption over the figure rather than beside it.
+ * One career balance: the caption OVER the figure rather than beside it.
  *
  * <para>The pair sat on one baseline, which needs the width of both at the
  * readout's 22px display size. At the Administration Building's own five-column
@@ -278,11 +278,11 @@ const CATALOGUE_SCROLL = { maxHeight: "16rem", overflowY: "auto" } as const;
  * hidden. It caps its own height and scrolls instead, which is what the
  * expander's panel was doing for it.</para>
  *
- * <para>It filters, and that is the case the surface actually serves. Stock
+ * <para>It FILTERS, and that is the case the surface actually serves. Stock
  * KSP's Administration screen carries no search because it offers a handful of
  * strategies and a list that short is scanned faster than it is typed at; RP-1
  * publishes tens of Programs into the same list, and RP-1 is what this was
- * built for. The box narrows what is on offer and never what is being read:
+ * built for. The box narrows what is on OFFER and never what is being read:
  * the detail pane keeps whatever was picked even when the filter hides its
  * row, because a filter that silently moved the detail would answer a question
  * about one Program with the readings of another.</para>
@@ -555,10 +555,10 @@ function ChosenProgram({
 /**
  * Accept this Program, at the speed the operator picks here.
  *
- * <para><b>The price is confidence and it is charged in full at the press.</b>
+ * <para><b>The price is CONFIDENCE and it is charged in full at the press.</b>
  * `ProgramHandler.ActivateProgram` calls `Program.Accept()`, where the charge
  * and the deadline both live, so this is an up-front purchase and not a drain
- * like a construction. Funds run the other way entirely: a Program pays the
+ * like a construction. Funds run the other way entirely: a Program PAYS the
  * career. Both balances are drawn at the head of this section for exactly that
  * reason, and the Confidence one is the one this control spends.</para>
  *
@@ -574,7 +574,7 @@ function ChosenProgram({
  * reading of everything but the money: not already active, not completed, not
  * ruled out by a rival, requirements met. The Confidence comparison is the half
  * RP-1 leaves to the client, because it makes that check with a broadcast query,
- * and a speed the career cannot afford is marked short on its row and refuses
+ * and a speed the career cannot afford is marked SHORT on its row and refuses
  * here with the reason on the control. RP-1's own `ProgramStrategy.CanActivate`
  * asks all of it again at the press, at the speed sent, so a stale view cannot
  * spend anything.</para>
@@ -910,7 +910,7 @@ function AcceptWording({
  * The funding curve, drawn.
  *
  * <para>Three outcomes and they are three different facts. A sampled curve
- * draws. A Program whose curve or total could not be read draws nothing and
+ * draws. A Program whose curve or total could not be read draws NOTHING and
  * says which, because a flat line along the bottom of a funds axis is a claim
  * that the Program pays nothing and that is a different Program. A Program with
  * no readable duration draws on the curve's own fraction-of-duration axis and
@@ -1297,7 +1297,7 @@ function isFull(freeSlots: Rp1ProgramSlots["freeSlots"]): boolean {
 }
 
 /**
- * The career cannot afford this speed. Silent unless both halves are present:
+ * The career cannot afford this speed. Silent unless BOTH halves are present:
  * an unknown balance is not a short one and a price we could not read is not
  * free.
  *

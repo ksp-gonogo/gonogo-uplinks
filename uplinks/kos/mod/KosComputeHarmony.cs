@@ -9,22 +9,22 @@ using kOS.Safe.Screen;
 namespace Gonogo.KosUplink
 {
     /// <summary>
-    /// The one Harmony patch this Uplink ships, an OBSERVE-ONLY postfix on
+    /// The ONE Harmony patch this Uplink ships, an OBSERVE-ONLY postfix on
     /// <c>kOS.Safe.Screen.ScreenBuffer.Print(string, bool)</c>.
-    /// Every kerboscript <c>PRINT</c> flows through this one method before it
+    /// Every kerboscript <c>PRINT</c> flows through this one method BEFORE it
     /// is line-wrapped into the grid, so the postfix sees the clean,
     /// un-wrapped, un-ANSI'd source text. That is the whole reason to patch
     /// here rather than read the rendered grid, which would have to be
     /// un-wrapped and un-ANSI'd back again.
     ///
     /// <para>The postfix runs on the KSP main thread (inside <c>PRINT</c>) and
-    /// must not block: it only forwards <c>(screen, text)</c> to
+    /// MUST NOT block: it only forwards <c>(screen, text)</c> to
     /// <see cref="Sink"/>, which the Uplink sets to its own main-thread
     /// resolve+accumulate+publish path. If <see cref="Sink"/> is null (patch
     /// installed but Uplink torn down) or throws, the postfix swallows it,
     /// an observe-only patch must never disturb kOS's own <c>PRINT</c>.</para>
     ///
-    /// <para>Installed manually (not <c>PatchAll</c>) and only when the
+    /// <para>Installed manually (not <c>PatchAll</c>) and ONLY when the
     /// version-guard confirms the <c>Print(string,bool)</c> target exists
     /// (<see cref="KosVersionGuard"/>'s <c>ComputePostfixAvailable</c>);
     /// otherwise compute falls back to the public snapshot-scrape (spec §4.4).</para>

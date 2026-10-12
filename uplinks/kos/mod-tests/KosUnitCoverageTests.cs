@@ -10,7 +10,7 @@ namespace GonogoKosUplink.Tests
     /// The per-Uplink half of the uplink-types-out-of-core plan's Unit guard
     /// (§5b): now that the nine <c>Kos*</c> payload and command-arg types live
     /// in their own assembly (<c>GonogoKosUplink.Contract</c>) instead of
-    /// <c>Sitrep.Contract</c>, nothing forces a future property on this Uplink's
+    /// <c>Sitrep.Contract</c>, nothing FORCES a future property on this Uplink's
     /// own contract types to declare its unit. The sweep itself is
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
@@ -22,20 +22,20 @@ namespace GonogoKosUplink.Tests
     ///
     /// <para><b>What is distinctive about this slice, and it is not the
     /// quantities.</b> Five of the nine are inbound-only command args, and the
-    /// nine types between them declare exactly one property whose token names a
+    /// nine types between them declare exactly ONE property whose token names a
     /// real dimension (<see cref="KosComputeStatus.LastGoodAt"/>,
     /// <c>Units.Seconds</c>). Everything else is <c>Id</c>/<c>Text</c>/
     /// <c>Flag</c>/<c>Count</c>. That makes this the thinnest slice of the six on
-    /// units and the one where the attribute gate does the most work relative to
+    /// units and the one where the ATTRIBUTE gate does the most work relative to
     /// the retyping: a bare <c>string LeaseToken</c> added to one of the terminal
     /// arg types would be invisible to any Value-based check and is caught here.
     /// The <c>Units.Count</c> pair on <see cref="KosTerminalResizeArgs"/> is the
     /// case that shows the two halves are separate: <c>Count</c> is deliberately
-    /// not in <c>RtConfig.NonQuantityUnits</c>, so those two would retype on any
+    /// NOT in <c>RtConfig.NonQuantityUnits</c>, so those two would retype on any
     /// non-args type, and they stay bare purely because of the inbound-only
     /// rule.</para>
     ///
-    /// <para>This test only checks the attribute side (every scalar wire
+    /// <para>This test only checks the ATTRIBUTE side (every scalar wire
     /// property carries <c>[SitrepUnit]</c>); the generated-file/import side is
     /// <c>generated-value-import.test.ts</c> in this Uplink's client package,
     /// and the runtime-registry side is <c>topics.test.ts</c> there.</para>
@@ -50,7 +50,7 @@ namespace GonogoKosUplink.Tests
 
         /// <summary>
         /// All nine are reached by the sweep, and nothing else is.
-        /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes vacuously on
+        /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes VACUOUSLY on
         /// any type the sweep does not reach, and this slice spans three files, so
         /// one of them losing its <c>[SitrepContract]</c> tags wholesale would
         /// leave the remaining green looking untouched.
@@ -66,10 +66,10 @@ namespace GonogoKosUplink.Tests
                 nameof(KosRunArgs), nameof(KosRunResult));
 
         /// <summary>
-        /// The one field in this whole slice that a formatter could get wrong, as
+        /// The one field in this whole slice that a formatter could get WRONG, as
         /// opposed to merely print bare, pinned by name. Everything else here is
         /// an identifier or a flag, where an absent unit costs nothing;
-        /// <see cref="KosComputeStatus.LastGoodAt"/> is an instant on the
+        /// <see cref="KosComputeStatus.LastGoodAt"/> is an INSTANT on the
         /// universal-time clock, and a client that does not know that renders a
         /// timestamp as a raw five-digit number, or worse counts down to it.
         ///
@@ -89,11 +89,11 @@ namespace GonogoKosUplink.Tests
 
         /// <summary>
         /// <see cref="KosRunResult.Fields"/> is the one property in the slice the
-        /// sweep must not demand a unit for, and the reason is worth pinning: it
+        /// sweep must NOT demand a unit for, and the reason is worth pinning: it
         /// is a <c>Dictionary&lt;string, object?&gt;</c> of whatever a kerboscript
         /// printed, so there is no single dimension that could describe its
         /// values. It is the contrast case to a name-keyed map of same-unit
-        /// readings, where the annotation is the thing that makes the numbers
+        /// readings, where the annotation IS the thing that makes the numbers
         /// renderable.
         /// </summary>
         [Fact]

@@ -7,11 +7,11 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Reads the real shipped Principia builds, when this machine has them.
+    /// Reads the REAL shipped Principia builds, when this machine has them.
     ///
     /// <para>Local-only by necessity: the builds are up to 270 MB each and are a
     /// third party's, so they can never be committed and CI can never run this. It
-    /// skips when they are absent rather than failing, the same judgement
+    /// SKIPS when they are absent rather than failing, the same judgement
     /// `PrincipiaDescriptorRealBinaryTests` and
     /// `map-topic.rawFieldResolution.fixture.test.ts` already settled for the same
     /// reason: an earlier version of that test failed loudly on a missing local-only

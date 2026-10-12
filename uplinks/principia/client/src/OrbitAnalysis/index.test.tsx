@@ -34,7 +34,7 @@ function mount() {
 }
 
 /**
- * Emits and waits for the sample to land.
+ * Emits and WAITS for the sample to land.
  *
  * Delivery is asynchronous: the sample reaches the store after the emit
  * returns, so a synchronous assertion reads the pending state and every test
@@ -174,7 +174,7 @@ describe("OrbitAnalysisSection", () => {
   });
 
   /**
-   * Stale is decided against the orbit's own sidereal period rather than a fixed
+   * Stale is decided against the orbit's OWN sidereal period rather than a fixed
    * span, because every band on this section is a mean over one period: an age
    * shorter than that is inside the smearing the numbers already carry. A fixed
    * threshold would call the same fraction of a revolution fresh in low orbit
@@ -249,7 +249,7 @@ describe("OrbitAnalysisSection", () => {
   });
 
   /**
-   * This used to assert the opposite: that the widget named four adjectives it
+   * This used to assert the opposite: that the widget NAMED four adjectives it
    * could not reach, because they were believed to need a ground-track
    * recurrence this Uplink refused to request.
    *
@@ -267,7 +267,7 @@ describe("OrbitAnalysisSection", () => {
 
   /**
    * The ground track, which is the data the synchronicity adjectives are read
-   * from. Showing it lets an operator see why the phrase says what it says
+   * from. Showing it lets an operator see WHY the phrase says what it says
    * rather than taking the adjective on trust.
    */
   it("shows the repeat cycle in turns of the primary, not days", async () => {

@@ -66,9 +66,9 @@ namespace GonogoTestFlightUplink
         ///
         /// <para>Both arguments are null when the property did not bind, the read
         /// threw, or the value was not a bool, and null answers false. This is a
-        /// guard, so it fails closed: a core we cannot confirm is live is not
+        /// GUARD, so it fails CLOSED: a core we cannot confirm is live is not
         /// reported as a reliability model and is not repaired. Written
-        /// <c>== false</c> it failed open precisely when the binder had regressed,
+        /// <c>== false</c> it failed OPEN precisely when the binder had regressed,
         /// putting rated burn times and survival odds for a config the vessel is
         /// not flying on screen as extra rows, and pointing a repair at a core the
         /// operator never named.</para>
@@ -91,7 +91,7 @@ namespace GonogoTestFlightUplink
         /// exploded to go looking for a part id that is sitting right there.</para>
         ///
         /// <para><paramref name="activeFailures"/> is null when the core's failure
-        /// list could not be read at all, which is not the same fact as an empty
+        /// list could not be READ at all, which is not the same fact as an empty
         /// one and must not borrow its answer: counted as zero it told an operator
         /// whose row says <c>failed</c> that no such part exists, while the row and
         /// the button sat beside each other. It refuses as
@@ -108,7 +108,7 @@ namespace GonogoTestFlightUplink
         }
 
         /// <summary>
-        /// Whether the attempt worked, observed from the core's own failure list
+        /// Whether the attempt worked, OBSERVED from the core's own failure list
         /// afterwards rather than from <c>ForceRepair</c>'s return value, which
         /// is <c>0f</c> on every path including the ones that do nothing.
         ///

@@ -35,8 +35,8 @@ export const RP1_HIRE_TARGET_CANCEL_COMMAND = "rp1.hireTarget.cancel";
  * <c>HireStaffProject.IncrementProgress</c> runs every tick and hires
  * <c>min(applicants + (funds - reserve) / perHire, left)</c>, so a career that
  * cannot pay for the whole target hires what it can and comes back for the rest.
- * A short balance slows the instruction; it never refuses it. What the operator
- * needs is therefore the bound on the spend rather than a yes or no, and the
+ * A short balance SLOWS the instruction; it never refuses it. What the operator
+ * needs is therefore the BOUND on the spend rather than a yes or no, and the
  * bound is exact: hiring stops at the reserve, so it can draw at most the
  * balance minus the reserve.</para>
  *
@@ -170,13 +170,13 @@ function StandingTarget({
 /**
  * What the hire costs: the paid headcount, the unit price, and the total.
  *
- * <para><b>Applicants are hired free, so the paid count is not the headcount.</b>
+ * <para><b>Applicants are hired FREE, so the paid count is not the headcount.</b>
  * `KCTUtilities.HireStaff` charges `max(0, count - applicants) * hireCost` and
  * RP-1's own hire button says "Applicants can be hired for free!" while any are
  * waiting. Multiplying the headcount instead overstates the spend by the whole
  * pool, which on a fresh career is twenty heads.</para>
  *
- * <para><b>The total is built from the charge, never from the quote.</b> RP-1
+ * <para><b>The total is built from the CHARGE, never from the quote.</b> RP-1
  * states two prices for a head and takes the unmodified one: `hireCost` is what
  * `HireStaff` multiplies, and `engineerHireQuote` / `researcherHireQuote` are
  * what its own button prints once its leaders have had their say. When they
@@ -253,7 +253,7 @@ export function HireSpend({
  * <para>The first arm has words and is repeated here rather than left to the
  * dispatch: RP-1 refuses a target at or below the count it is measured against,
  * saying so, and a press that could only ever come back refused is a press worth
- * darkening. The second is a silent clamp against a complex's maximum engineers,
+ * darkening. The second is a SILENT clamp against a complex's maximum engineers,
  * so it is disclosed instead of enforced: the command replicates RP-1's clamp,
  * and the honest thing to do about a number the game will quietly change is to
  * say so before the press rather than to alter what the operator typed.</para>

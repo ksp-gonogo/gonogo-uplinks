@@ -44,7 +44,7 @@ namespace GonogoPrincipiaUplink
         public string? ActivePath { get; }
 
         /// <summary>
-        /// Every native build mapped, which is routinely both of them: Principia's
+        /// Every native build mapped, which is routinely BOTH of them: Principia's
         /// loader maps the baseline build first to query CPUID through it, then maps
         /// the FMA build when FMA is present, and its own unload stopped taking
         /// effect in April 2026. Confirmed on a running game, where both carried an
@@ -70,7 +70,7 @@ namespace GonogoPrincipiaUplink
     /// Identifies the Principia native build a process is running, from the paths
     /// that process has mapped.
     ///
-    /// <para><b>Which build is live is a property of the game's process and must be
+    /// <para><b>Which build is live is a property of the GAME's process and must be
     /// read from it.</b> Deriving it instead by asking this machine's CPU whether it
     /// has FMA answers a different question whenever the reader is not the game
     /// host, and answers it in a way that looks like an answer. Nothing here reads

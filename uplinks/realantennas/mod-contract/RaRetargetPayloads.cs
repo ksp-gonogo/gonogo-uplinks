@@ -23,7 +23,7 @@ namespace Gonogo.RealAntennasUplink;
 /// one of its idle dishes on its own to carry a message it holds.
 ///
 /// <para>Addressed to the craft by id, so it reaches any craft, one on rails
-/// included, and it rides that craft's signal delay like any other change to what
+/// included, and it rides that craft's light-time like any other change to what
 /// it does on board. Allowed is the default; a craft the operator opts out of
 /// never has a dish turned automatically, though other craft may still turn
 /// their own dishes toward it. Turning it off while a dish is on loan puts the
@@ -100,7 +100,7 @@ public class RealAntennasLastBorrow
 /// <summary>
 /// One craft's dish turning, an entry of <c>realantennas.retargeting</c>: whether
 /// it may turn a dish on its own, which dish of it is on loan, and how the last
-/// loan ended. The channel value is a bare array with an entry for every craft
+/// loan ended. The channel value is a bare ARRAY with an entry for every craft
 /// that is opted out, has a dish on loan, or has had one.
 ///
 /// <para>As the reported craft's own delay delivers it: the channel is

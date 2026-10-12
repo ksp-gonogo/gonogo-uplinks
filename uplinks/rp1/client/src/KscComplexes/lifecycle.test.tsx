@@ -89,7 +89,7 @@ function withCentre(
  * Demolishing a complex.
  *
  * <para>The three standing efficiency sentences these tests used to assert are
- * gone, and their absence is the assertion now. The operator's ruling: "this is
+ * GONE, and their absence is the assertion now. The operator's ruling: "this is
  * meant to be a mission control, not a storybook. We present facts and
  * instrumentation, not guidance", and a permanent explanation of a button nobody
  * has pressed, repeated under every complex in the career, was guidance.</para>
@@ -256,7 +256,7 @@ describe("dismantling a launch pad", () => {
  * <para>The command has been on the wire since the lifecycle work landed and had
  * no control at all, which is the gap the operator found by asking why they could
  * not add one. What the control has to get right is not the dispatch, which is two
- * fields: it is the price, and what the price means.</para>
+ * fields: it is the PRICE, and what the price means.</para>
  *
  * <para>RP-1 does not take the money at the press. It draws a construction down as
  * it builds, and a career that cannot afford a tick gets a slower build rather than
@@ -502,7 +502,7 @@ describe("renaming", () => {
 /**
  * Building a complex from nothing.
  *
- * <para>The form's job is the price, and the price is the reason its arithmetic
+ * <para>The form's job is the PRICE, and the price is the reason its arithmetic
  * lives in the client at all: a new complex is priced against what the operator is
  * typing, and these commands are delay-aware, so a quote per keystroke would be a
  * round trip a remote vantage waits minutes for. See `lcCost.test.ts`, where the

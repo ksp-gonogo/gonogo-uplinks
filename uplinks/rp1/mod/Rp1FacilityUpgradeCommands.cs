@@ -331,12 +331,12 @@ namespace GonogoRp1Uplink
         /// <c>Quantity = "SPACECENTER"</c>. Two things were wrong with borrowing
         /// it. First, an Uplink cannot verify it: the kind's constant lives in
         /// <c>Gonogo.KSP</c>, which an Uplink may not reference, and a declared
-        /// kind with no evaluator is a startup failure for the whole mod, so
+        /// kind with no evaluator is a startup failure for the WHOLE mod, so
         /// naming somebody else's string is betting every other Uplink on a
         /// spelling nothing here can check. Second, and the reason that turned out
-        /// to matter far more than the first: the scene was a proxy, and asking
+        /// to matter far more than the first: the scene was a PROXY, and asking
         /// the real question is what showed the proxy to be wrong. The condition
-        /// is that something can price a tier, and once that is asked plainly it
+        /// is that SOMETHING can price a tier, and once that is asked plainly it
         /// has two answers rather than one, only one of which needs the space
         /// centre. See this file's header.</para>
         /// </remarks>
@@ -350,11 +350,11 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// What an operator reads when neither price source answers, used by the
-        /// gate and by the handler, so the reason a control is dark and the reason
+        /// gate AND by the handler, so the reason a control is dark and the reason
         /// a press was refused are the same sentence.
         /// </summary>
         /// <remarks>
-        /// It names the condition and not a place, because this is no longer a
+        /// It names the CONDITION and not a place, because this is no longer a
         /// fact about where the operator is standing: RP-1's cost table loads once
         /// with the game database and is then readable from every scene, so an
         /// install that reaches this has something wrong with it rather than an
@@ -406,14 +406,14 @@ namespace GonogoRp1Uplink
         /// The command can run: RP-1's construction model and the KSP types the
         /// procedure reads both resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1PersonnelCommands.IsAvailable"/> gives: a method-level
-        /// gate on the manifest cannot say why it fired, because a command that
+        /// gate on the MANIFEST cannot say why it fired, because a command that
         /// was never declared looks exactly like one nobody wrote. Every method
         /// and constructor lookup happens at the press and refuses with a sentence
         /// naming what was not recognised.</para>
         ///
-        /// <para><see cref="_events"/> is deliberately not in this test. The event
+        /// <para><see cref="_events"/> is deliberately NOT in this test. The event
         /// is a notification to whatever else is watching the queue, and a build
         /// that had renamed it would still enqueue correctly; withholding the
         /// whole command over it would cost an operator a facility upgrade to
@@ -502,7 +502,7 @@ namespace GonogoRp1Uplink
         /// tier be priced with no building in the scene.
         /// </summary>
         /// <remarks>
-        /// Asked of whether any entry has a cost in it, not of whether the
+        /// Asked of whether any entry has a COST in it, not of whether the
         /// dictionary exists: the table is created empty at type load and filled by
         /// a coroutine, so a non-null empty dictionary is the cold-start state and
         /// prices nothing.
@@ -602,7 +602,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Queues the named facility's next tier as an RP-1 construction project.
+        /// Queues the named facility's NEXT tier as an RP-1 construction project.
         ///
         /// <para>One tier, never a target tier, because that is the only move
         /// RP-1 models: <c>ProcessUpgrade</c> builds a project from
@@ -611,7 +611,7 @@ namespace GonogoRp1Uplink
         /// several, and the second could not be costed until the first
         /// completed.</para>
         ///
-        /// <para>Not idempotent in the way the set-shaped commands beside it are,
+        /// <para>NOT idempotent in the way the set-shaped commands beside it are,
         /// and it cannot be: pressing it twice would mean two tiers. The second
         /// press is refused by RP-1's own
         /// <c>AlreadyInProgressByID</c>, which is what makes a stale view
@@ -994,7 +994,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// RP-1's own tech gate, <c>private static</c> on a Harmony patch class.
         ///
-        /// <para>The one non-public member this Uplink reaches, and reached rather
+        /// <para>The ONE non-public member this Uplink reaches, and reached rather
         /// than reproduced because its body is a lookup into a dictionary RP-1
         /// builds from its own <c>KCTBUILDINGTECHS</c> config. Reproducing it
         /// means re-parsing config this Uplink does not own, and drifting from it
@@ -1008,15 +1008,15 @@ namespace GonogoRp1Uplink
         /// worked out here.
         /// </summary>
         /// <remarks>
-        /// <para>The second non-public member on the same patch class, and called
+        /// <para>The second non-public member on the same patch class, and CALLED
         /// rather than reproduced for the same reason the tech gate is: its answer
         /// comes out of <c>Database.LockedFacilities</c>, which RP-1 fills from its
-        /// own config, and it matches by a case-insensitive substring of the
+        /// own config, and it matches by a case-insensitive SUBSTRING of the
         /// facility id rather than by the enum. Both halves of that are RP-1's to
         /// change.</para>
         ///
         /// <para>It takes an <c>UpgradeableFacility</c>, so unlike
-        /// <c>GetFacilityType</c> beside it this one is callable whenever the
+        /// <c>GetFacilityType</c> beside it this one IS callable whenever the
         /// space centre has built one. Where it has not,
         /// <see cref="UpgradedByRp1"/> asks the same question of the same table
         /// off the id, which is the only thing this predicate reads off the
@@ -1065,7 +1065,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Whether RP-1 already holds a construction project for this facility id,
-        /// at any of the career's centres.
+        /// at ANY of the career's centres.
         ///
         /// <para>Null when the check could not be made, which the caller refuses
         /// on: proceeding without it is how a facility ends up with two projects
@@ -1095,7 +1095,7 @@ namespace GonogoRp1Uplink
         /// else on this path answers null or empty. See trap 2 in this file's
         /// header.</para>
         ///
-        /// <para>An empty refs list is the ordinary answer outside the space
+        /// <para>An EMPTY refs list is the ordinary answer outside the space
         /// centre and is not an error, nor any longer a refusal: the caller falls
         /// back to RP-1's own cost table, which answers in every scene. See this
         /// file's header.</para>
@@ -1136,7 +1136,7 @@ namespace GonogoRp1Uplink
         /// What KSP charges for this facility's next tier, which is the figure
         /// <c>ProcessUpgrade</c> puts on the project.
         ///
-        /// <para>The method is called rather than derived from
+        /// <para>The method is CALLED rather than derived from
         /// <c>upgradeLevels</c>, because it applies the career's own
         /// <c>FundsLossMultiplier</c> and answers zero at the top tier, and a copy
         /// of that arithmetic would disagree with the game the first time either
@@ -1214,7 +1214,7 @@ namespace GonogoRp1Uplink
         /// <para>Shared by both price arms so they cannot disagree about the
         /// scaling, which is the one piece of arithmetic the config arm has to
         /// reproduce rather than call: <c>GetUpgradeCost</c> applies the
-        /// multiplier inside itself, and <c>ProcessUpgrade</c> applies the same
+        /// multiplier INSIDE itself, and <c>ProcessUpgrade</c> applies the same
         /// one to the cumulative term beside it. The slider genuinely moves, KSP's
         /// own easy and hard presets setting it to 0.5 and 1.5, so a figure that
         /// is right on a default career and quietly wrong on every other one is
@@ -1254,7 +1254,7 @@ namespace GonogoRp1Uplink
         /// table CustomBarnKit itself writes <c>upgradeLevels[i].levelCost</c>
         /// from, which is what makes the two arms the same numbers.</para>
         ///
-        /// <para>An empty list is null here, not an empty answer: the table is
+        /// <para>An EMPTY list is null here, not an empty answer: the table is
         /// created at type load and filled by a coroutine, so an empty entry is a
         /// cold start and prices nothing.</para>
         /// </remarks>
@@ -1287,7 +1287,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The tier RP-1 says this building stands at, denormalised from the level
-        /// KSP persists in the save.
+        /// KSP persists in the SAVE.
         /// </summary>
         /// <remarks>
         /// <para>Invoked rather than reproduced. Its body is
@@ -1361,7 +1361,7 @@ namespace GonogoRp1Uplink
         /// when there is no live facility to hand RP-1's own predicate.
         /// </summary>
         /// <remarks>
-        /// <para>Reproduced rather than called, and reproduced exactly:
+        /// <para>Reproduced rather than called, and reproduced EXACTLY:
         /// <c>IsUpgradeable</c> walks <c>Database.LockedFacilities</c> and answers
         /// false on the first whose enum name appears anywhere in
         /// <c>facility.id</c>, case-insensitively. The id is the only thing it
@@ -1369,7 +1369,7 @@ namespace GonogoRp1Uplink
         /// starts from the id, so the substitution is the argument and not the
         /// rule.</para>
         ///
-        /// <para>A substring and not an equality, which matters: an id like
+        /// <para>A SUBSTRING and not an equality, which matters: an id like
         /// "SpaceCenter/LaunchPad" contains "LaunchPad", and a KSCSwitcher site's
         /// id contains the building name somewhere other than the last segment.
         /// Matching by equality here would offer a locked building RP-1's own menu

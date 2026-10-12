@@ -9,7 +9,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * for the vessel now and for each coast of its flight plan.
 *
 * **Why this is not derived from the elements the rest of the stream
-* carries.** These are mean elements: a boxcar filter over one sidereal period
+* carries.** These are MEAN elements: a boxcar filter over one sidereal period
 * applied to the equinoctial set, taken from a fixed-step n-body integration
 * in the primary-centred frame, with the primary chosen as the body of
 * smallest osculating period rather than the sphere-of-influence parent.
@@ -54,7 +54,7 @@ export interface PrincipiaAnalysis
 * One coast of the flight plan, and what orbit it puts the craft in.
 *
 * The coast before burn `n` carries index `n`; the last entry is the coast
-* after the final burn and is the orbit the plan ends in, which is the one an
+* after the final burn and is the orbit the plan ENDS in, which is the one an
 * operator is usually asking about.
 */
 export interface PrincipiaCoastAnalysis
@@ -86,7 +86,7 @@ export interface PrincipiaCoastAnalysis
 * **Every element is a band, and flattening one is a fidelity loss.** A mean
 * element over an analysis window is a range with a midpoint, and the width is
 * the number that says whether the orbit is stable. The adjectives the
-* producer builds its orbit description from read the band ends, not the
+* producer builds its orbit description from read the band ENDS, not the
 * midpoint: circular is `eccentricity.max < 0.01`, not a midpoint test.
 *
 * **The ground-track recurrence and the equatorial crossings are here, and
@@ -97,10 +97,10 @@ export interface PrincipiaCoastAnalysis
 * hypothesis is given, deriving the crossings on the way, so the only thing a
 * hypothesis buys is an operator's nominal orbit to compare against.
 *
-* **The solar times of the nodes are here too, as angles.** They were held
+* **The solar times of the nodes are here too, as ANGLES.** They were held
 * back on the grounds that an angle with π at noon is a time of day rather
 * than a duration and this contract has no unit that says so. True, and beside
-* the point: what the reading is for is sun-synchronicity, which is decided by
+* the point: what the reading is FOR is sun-synchronicity, which is decided by
 * how little the band widens. A drift in degrees answers that exactly, the
 * same way the crossings do. Rendering the position as a clock is a separate
 * job needing a unit nothing here has yet.
@@ -115,7 +115,7 @@ export interface PrincipiaOrbitAnalysis
 	*/
 	missionDurationSeconds?: Value<"s"> | null;
 	/**
-	* How far along the next analysis is, from zero to one. Not the age of this
+	* How far along the NEXT analysis is, from zero to one. Not the age of this
 	* one.
 	*/
 	progressOfNextAnalysis?: Value<"ratio"> | null;
@@ -127,7 +127,7 @@ export interface PrincipiaOrbitAnalysis
 	/**
 	* The primary's name, when the game's body table could answer for the index.
 	*
-	* Resolved here rather than at a readout because the index is the producer's,
+	* Resolved here rather than at a readout because the index is the PRODUCER's,
 	* and only the game the producer is running in can turn one into a body. It is
 	* also half the orbit description: "circular Kerbin orbit" needs the body as
 	* much as it needs the eccentricity.
@@ -148,13 +148,13 @@ export interface PrincipiaOrbitAnalysis
 	*/
 	elementsPresent?: boolean | null;
 	/**
-	* The instant the elements are measured from: the start of the span the
+	* The instant the elements are measured FROM: the start of the span the
 	* analysis integrated, on the same clock as every other instant here.
 	*
 	* A coast's analysis is anchored at the coast's own start. The vessel's
 	* current-orbit analysis is anchored wherever the craft's history happened to
 	* have reached when the producer last ran one, which is what makes this the
-	* field that says how old the elements are. Both are the same quantity and a
+	* field that says how OLD the elements are. Both are the same quantity and a
 	* client can treat them alike.
 	*
 	* Null means the epoch could not be established, which is a different
@@ -193,7 +193,7 @@ export interface PrincipiaOrbitAnalysis
 	/** Tilt against the primary's equator, and its variation. */
 	meanInclinationDegrees?: PrincipiaAngleInterval | null;
 	/**
-	* How many turns of the primary the ground track takes to repeat, Capderou's
+	* How many turns of the PRIMARY the ground track takes to repeat, Capderou's
 	* Cᴛₒ.
 	*
 	* Rotations rather than days: the producer counts the primary's own days, and
@@ -227,7 +227,7 @@ export interface PrincipiaOrbitAnalysis
 	* Where the craft crosses the equator northbound, as a band of longitudes over
 	* the analysed span.
 	*
-	* Read the width rather than the position. A band that barely widens is a
+	* Read the WIDTH rather than the position. A band that barely widens is a
 	* track that repeats over the same ground, which is what decides whether an
 	* orbit may be called synchronous at all.
 	*/
@@ -240,7 +240,7 @@ export interface PrincipiaOrbitAnalysis
 	*
 	* An angle rather than a clock reading, which is both what the producer stores
 	* and what the question needs: sun-synchronicity is decided by how little this
-	* band widens, not by where it sits. Rendering it as a time of day is a
+	* band WIDENS, not by where it sits. Rendering it as a time of day is a
 	* client's job and needs a unit this contract does not have.
 	*
 	* Absent unless the producer had a mean sun to measure against, which is the
@@ -293,14 +293,14 @@ export interface PrincipiaOrbitAnalysis
 /**
 * A closed interval in metres.
 *
-* **Why three interval types rather than one.** A unit travels with a type on
+* **Why three interval types rather than one.** A unit travels with a TYPE on
 * this wire, not with the field that holds it, so a single shared interval
 * could carry only one unit for every band that used it. Sharing one would
 * land a semi-major axis and an eccentricity in the same renderer with the
 * same symbol, and a dimensionless number printed in metres is a wrong number
 * rather than an ugly one.
 *
-* Kept as the two ends rather than a midpoint and a half-width, because the
+* Kept as the two ENDS rather than a midpoint and a half-width, because the
 * ends are what the producer's own adjective tests read: a midpoint is a
 * derivation a client can make, and an end is not one it can recover.
 */
@@ -342,7 +342,7 @@ export interface PrincipiaRatioInterval
 * instance names the global plotting frame; another names one burn's
 * manœuvring frame, and the two are routinely different.
 * `PrincipiaReferenceFrame.selector` says which, because reusing the component
-* is right and reusing the label is the bug.
+* is right and reusing the LABEL is the bug.
 *
 * The kind travels as the producer's own enum value rather than as a name,
 * because every member that would format a name reaches a fatal log through a
@@ -378,7 +378,7 @@ export interface PrincipiaReferenceFrame
 	* `PrincipiaReferenceFrame.primaryBody` is the first.
 	*
 	* A rotating frame turns about a pair of bodies; a pulsating one turns about a
-	* pair of sets, and holds the separation of their two mass centres fixed. A
+	* pair of SETS, and holds the separation of their two mass centres fixed. A
 	* Sun-Earth pulsating frame's primary side is Sun, Mercury and Venus, not Sun
 	* alone, because the producer's set builder walks the star's children and
 	* stops at the selected body. Publishing only the head loses two bodies out of
@@ -409,7 +409,7 @@ export interface PrincipiaReferenceFrame
 	targetVesselName?: string | null;
 	/**
 	* The body the target vessel orbits. The producer declines the target frame's
-	* name and its description with this body rather than with the selected
+	* NAME and its description with this body rather than with the selected
 	* celestial, so a console without it cannot call the frame by the name the
 	* game is calling it.
 	*/
@@ -417,7 +417,7 @@ export interface PrincipiaReferenceFrame
 }
 /**
 * The `principia.settings` channel: every setting that changes what another
-* number means, on one surface.
+* number MEANS, on one surface.
 *
 * **Why these are grouped and why they come before the readouts they
 * qualify.** A setting here is not a preference. The plotting frame decides
@@ -432,7 +432,7 @@ export interface PrincipiaReferenceFrame
 * **Where each value comes from decides whether it can be believed.** The
 * per-vessel and per-plan integrator bounds are read from the producer's own
 * plugin, through the precondition protocol, so they are what that vessel's
-* prediction and that plan actually used rather than what a slider was last
+* prediction and that plan ACTUALLY used rather than what a slider was last
 * set to globally. The rest are plain managed fields on the producer's windows
 * and are correct whenever they are read. Nothing here is inferred from a
 * default: a value that could not be read is null, because an invented
@@ -511,13 +511,13 @@ export interface PrincipiaSettings
 	*/
 	targetCelestialBody?: string | null;
 	/**
-	* True when the game is also drawing stock patched conics. The one setting
+	* True when the game is ALSO drawing stock patched conics. The one setting
 	* that tells an operator they are being shown two contradictory futures; the
 	* producer's own label for it ends "do not use for flight planning!".
 	*/
 	displayPatchedConics?: boolean | null;
 	/**
-	* The window the orbit analyser has been asked to analyse over. The analysis
+	* The window the orbit analyser has been ASKED to analyse over. The analysis
 	* payload reports the duration it actually covered, and the two differ while
 	* an analysis is still catching up; this is the request.
 	*/
@@ -558,7 +558,7 @@ export interface PrincipiaSettings
 	*/
 	predictionMaxSteps?: Value<"count"> | null;
 	/**
-	* The flight plan's integration tolerance, which is a different setting from
+	* The FLIGHT PLAN's integration tolerance, which is a different setting from
 	* the prediction's despite sharing a label in game. Conflated, a plan failure
 	* gets explained by a prediction setting and the operator changes the wrong
 	* control.
@@ -593,9 +593,9 @@ export interface PrincipiaSettings
 	optimiserTargetAltitudeMetres?: Value<"m"> | null;
 	/**
 	* The inclination the optimiser is solving for, or null when inclination is
-	* not an objective. Null and zero are different instructions and rendering the
+	* NOT an objective. Null and zero are different instructions and rendering the
 	* first as the second would show an equatorial target that nobody asked for.
-	* The optimised body is not here: it comes from the plotting frame, which is
+	* The optimised BODY is not here: it comes from the plotting frame, which is
 	* the coupling most easily got wrong.
 	*/
 	optimiserTargetInclinationDegrees?: Value<"°"> | null;
@@ -606,8 +606,8 @@ export interface PrincipiaSettings
 	*/
 	historyLengthSeconds?: Value<"s"> | null;
 	/**
-	* True when apsis, node and approach markers are hidden in the frame now
-	* selected. This is the per-frame answer rather than the global one: a
+	* True when apsis, node and approach markers are hidden IN THE FRAME NOW
+	* SELECTED. This is the per-frame answer rather than the global one: a
 	* marker's absence in game reads as "does not exist" when it means "hidden
 	* here", which sends an operator looking for a physics problem that is a view
 	* setting.
@@ -666,13 +666,13 @@ export interface PrincipiaSettings
 	/** The severity above which the log is flushed rather than buffered. */
 	flushThreshold?: Value<"count"> | null;
 	/**
-	* True when the operator has asked for a journal. It takes effect on the next
+	* True when the operator has ASKED for a journal. It takes effect on the next
 	* load, so it is deliberately not the same fact as
 	* `PrincipiaSettings.journaling`.
 	*/
 	recordJournalRequested?: boolean | null;
 	/**
-	* True when a recorder is actually running. This is the state that stops us
+	* True when a recorder is ACTUALLY running. This is the state that stops us
 	* reading, precisely because it is the actual one: gating on the requested
 	* flag instead would stop us a session early and then fail to stop us at all
 	* in the case that matters.
@@ -680,11 +680,11 @@ export interface PrincipiaSettings
 	journaling?: boolean | null;
 }
 /**
-* The `principia.plan` channel: the selected flight plan as the plugin answers
+* The `principia.plan` channel: the selected flight plan as the PLUGIN answers
 * it, this tick, complete enough to tune a burn against.
 *
 * **This channel used to have a twin, and the twin is gone.**
-* `principia.flightPlan` mirrored the producer's own planner window, and the
+* `principia.flightPlan` mirrored the producer's own planner WINDOW, and the
 * fields it read refresh only while that window renders. So it answered only
 * when the player happened to have that panel open, which is not a property a
 * telemetry channel may have, whatever its doc comment says. It was deleted
@@ -694,7 +694,7 @@ export interface PrincipiaSettings
 * Everything it carried is here. The burn shape was already a strict superset,
 * and its five remaining facts now come from the plugin: the integration
 * status below, and `PrincipiaPlan.firstFutureBurnIndex`. Its sixth, a
-* first-error burn index, is not here and is not a loss: the window's field
+* first-error burn index, is NOT here and is not a loss: the window's field
 * held the index of the control the player last edited when an error came
 * back, cleared on the next render. It described an interaction, not a plan,
 * and the plan-level fact a client wants is
@@ -743,20 +743,20 @@ export interface PrincipiaPlan
 	*/
 	actualFinalTimeUt?: Value<"ut"> | null;
 	/**
-	* How many burns the integrator flagged. They are the last n of
+	* How many burns the integrator flagged. They are the LAST n of
 	* `PrincipiaPlan.burns`, and each carries its own flag so no client repeats
 	* that rule.
 	*/
 	anomalousBurnCount?: Value<"count"> | null;
 	/**
-	* Whether the plan integrated: true observed ok, false observed failed, **null
+	* Whether the plan integrated: true observed OK, false observed failed, **null
 	* when the status could not be read at all**.
 	*
 	* The third state is the point. Collapsing an unreadable status into
 	* "integrated" would report health from a failed read, and a plan whose status
 	* we cannot see is a plan we cannot vouch for.
 	*
-	* The plugin's own answer for the plan, asked each tick. Its planner window
+	* The plugin's own answer for the PLAN, asked each tick. Its planner window
 	* keeps a different thing under a similar name: the status of the last edit
 	* the player made in that panel, which it clears once it has shown it.
 	*/
@@ -826,8 +826,8 @@ export interface PrincipiaWriteSurface
 	/**
 	* True when the operator has armed it, so an edit will actually be attempted.
 	*
-	* **not the same as "everything was verified", which is what it used to be
-	* read as.** Arming is allowed on a partial verification, because the two
+	* **NOT the same as "everything was verified", which is what it used to be
+	* read as.** Arming is allowed on a PARTIAL verification, because the two
 	* structs fail independently and the step-limit remedy should survive a burn
 	* probe that could not run. The two flags below say which was established, and
 	* they are on the wire because a gate may legitimately pass on partial
@@ -835,7 +835,7 @@ export interface PrincipiaWriteSurface
 	*/
 	armed?: boolean | null;
 	/**
-	* Whether a burn was actually round-tripped through the plugin and came back
+	* Whether a BURN was actually round-tripped through the plugin and came back
 	* unchanged.
 	*
 	* False beside `PrincipiaWriteSurface.armed` true is a real and reachable
@@ -875,7 +875,7 @@ export interface PrincipiaWriteSurface
 * The bounds the flight plan's own integration runs to, as the plugin holds
 * them.
 *
-* The two integrator kinds travel even though nothing sane changes them,
+* The two integrator KINDS travel even though nothing sane changes them,
 * because they are the field where a change is unlogged: they are drawn from
 * disjoint sets over different equations, and handing the plugin the wrong one
 * aborts the game with no message. Publishing them is what lets a client see
@@ -892,7 +892,7 @@ export interface PrincipiaPlanIntegrator
 	/** The integrator kind, as the producer's own enum value. */
 	integratorKind?: number | null;
 	/**
-	* The generalized integrator kind, from a different set of values than
+	* The generalized integrator kind, from a DIFFERENT set of values than
 	* `PrincipiaPlanIntegrator.integratorKind`.
 	*/
 	generalizedIntegratorKind?: number | null;
@@ -911,7 +911,7 @@ export interface PrincipiaPlannedBurn
 	/** Position in the plan, from zero. */
 	index?: Value<"count"> | null;
 	/**
-	* Ignition instant. The countdown an operator needs is to this, never to a
+	* Ignition instant. The countdown an operator needs is to THIS, never to a
 	* node: a finite burn starts here and the producer anchors its own countdown
 	* the same way.
 	*/
@@ -973,11 +973,11 @@ export interface PrincipiaPlannedBurn
 	frameType?: number | null;
 	/**
 	* The body the burn's frame is centred on, when its kind has one. The two
-	* rotating kinds are declined with a pair instead and leave this null.
+	* rotating kinds are declined with a PAIR instead and leave this null.
 	*
 	* Here rather than joined from `PrincipiaSettings.burnFrames`, which carries
 	* the same frames as a bare list: a client holding a burn would have to find
-	* its frame in that list by position, and the position is not the burn's. A
+	* its frame in that list by POSITION, and the position is not the burn's. A
 	* manoeuvre whose frame cannot be read is dropped from that list rather than
 	* held open in it, which shifts every entry after it, so an index join is
 	* silently wrong exactly when a frame fails to read. Read off the same
@@ -996,7 +996,7 @@ export interface PrincipiaPlannedBurn
 	* Every body on the primary side, of which `PrincipiaPlannedBurn.primaryBody`
 	* is the first. Carried for the same reason
 	* `PrincipiaReferenceFrame.primaryBodies` is: a pulsating frame turns about a
-	* pair of sets, and the head alone is a name a reader recognises with the rest
+	* pair of SETS, and the head alone is a name a reader recognises with the rest
 	* of the defining mass missing.
 	*/
 	primaryBodies?: string[] | null;
@@ -1055,7 +1055,7 @@ export enum PrincipiaWriteOutcome {
 	Rejected = 1,
 	/**
 	* The plugin accepted the write. The plan state on the receipt is what it
-	* looks like after, re-read rather than assumed.
+	* looks like AFTER, re-read rather than assumed.
 	*/
 	Written = 2
 }
@@ -1119,7 +1119,7 @@ export interface PrincipiaPlanWriteReceipt
 *
 * Arming is not a preference toggle. Every plan write is persisted into the
 * player's save, can move and delete stock manœuvre nodes on the flying
-* vessel, can quadruple a third vessel's prediction budget, and re-integrates
+* vessel, can quadruple a THIRD vessel's prediction budget, and re-integrates
 * on the game's own thread with one wait that has no timeout. That is the
 * class of consequence that put frame-setting behind an arm rather than in a
 * settings panel.
@@ -1152,7 +1152,7 @@ export enum PrincipiaBurnProfile {
 * tune one burn.
 *
 * **Every field is optional and an omitted field means "leave it".** The burn
-* that reaches the plugin is the burn read back from it with the stated fields
+* that reaches the plugin is the burn READ BACK from it with the stated fields
 * changed, never one assembled here. The producer's burn struct is generated
 * from a schema that changed in the release this Uplink is keyed to; a round
 * trip is layout-agnostic in a way a literal is not.
@@ -1236,15 +1236,15 @@ export interface PrincipiaPlanSendArgs
 	*/
 	composedAtViewUt?: number;
 	/**
-	* The instant the vessel state used for planning was actually true, which is
+	* The instant the vessel state used for planning was actually TRUE, which is
 	* at or before `PrincipiaPlanSendArgs.composedAtViewUt`. Both are carried
 	* because they answer different questions: one is when the operator decided,
 	* the other is how old their information already was.
 	*/
 	observedAtUt?: number;
 	/**
-	* The burns, in order. An empty list is a plan with no burns, which is a
-	* meaningful thing to send (it clears the plan); a null list is a malformed
+	* The burns, in order. An EMPTY list is a plan with no burns, which is a
+	* meaningful thing to send (it clears the plan); a NULL list is a malformed
 	* command and is refused, because the two must not be confused.
 	*/
 	burns?: PrincipiaComposedBurn[];

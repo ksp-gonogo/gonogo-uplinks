@@ -10,7 +10,7 @@ namespace GonogoPrincipiaUplink.Tests
     public class PrincipiaDescriptorReaderTests
     {
         /// <summary>
-        /// A minimal but real `FileDescriptorProto` prefix: field 1 (name) carrying
+        /// A minimal but REAL `FileDescriptorProto` prefix: field 1 (name) carrying
         /// the file name, then field 2 (package). Built rather than pasted so the
         /// length prefixes cannot drift out of step with the payloads.
         /// </summary>

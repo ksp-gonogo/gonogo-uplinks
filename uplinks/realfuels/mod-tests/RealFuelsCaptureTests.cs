@@ -51,7 +51,7 @@ public class RealFuelsCaptureTests
     }
 
     /// <summary>
-    /// The game-wide switch is asked first, mirroring
+    /// The game-wide switch is asked FIRST, mirroring
     /// <c>ModuleEnginesRF.GetUllageIgnition</c>: with ignition limits off, a
     /// budget of two is a limit nothing is enforcing, and reporting "2 left"
     /// would be a restriction the operator does not actually have.
@@ -142,7 +142,7 @@ public class RealFuelsCaptureTests
     }
 
     /// <summary>
-    /// RealFuels' BoiloffMassRate is an accumulated mass over the physics
+    /// RealFuels' BoiloffMassRate is an accumulated MASS over the physics
     /// interval, not a rate: 0.5 kg lost over 20 ms is 25 kg/s.
     /// </summary>
     [Fact]
@@ -287,7 +287,7 @@ public class RealFuelsCaptureTests
     /// <summary>
     /// The finiteness policy covers every double the mapper publishes, not just
     /// the boiloff rate: a NaN stability would clear no band and draw
-    /// very unstable, and a NaN residual would render as a quantity.
+    /// VERY UNSTABLE, and a NaN residual would render as a quantity.
     /// </summary>
     [Fact]
     public void A_non_finite_engine_reading_never_reaches_the_wire()

@@ -124,7 +124,7 @@ namespace GonogoRp1Uplink
         /// Whether the game is in a scene RP-1's warp controller ticks in.
         /// </summary>
         /// <remarks>
-        /// The scene is the thing here, unlike the facility gate beside it, and
+        /// The scene IS the thing here, unlike the facility gate beside it, and
         /// that is not a lapse: RP-1's own <c>FixedUpdate</c> compares
         /// <c>HighLogic.LoadedScene</c> against exactly these three, so the scene is
         /// the condition rather than a proxy for one.
@@ -164,15 +164,15 @@ namespace GonogoRp1Uplink
         /// The command can run: RP-1's space centre, its warp controller and its
         /// static helpers resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length: a
-        /// method-level gate on the manifest cannot say why it fired, because a
+        /// method-level gate on the MANIFEST cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
         /// The method lookups happen at the press and refuse with a sentence
         /// naming what was not recognised.</para>
         ///
-        /// <para><see cref="_highLogic"/> is deliberately not part of this: it
-        /// answers which scene the game is in, and an install where KSP's own
+        /// <para><see cref="_highLogic"/> is deliberately NOT part of this: it
+        /// answers which SCENE the game is in, and an install where KSP's own
         /// HighLogic could not be found has problems a withheld warp command would
         /// not help with. The scene gate below fails open for the same reason.</para>
         /// </summary>
@@ -221,7 +221,7 @@ namespace GonogoRp1Uplink
         /// warp rate and then never step it down, overshooting the thing it was
         /// aimed at, which is worse than not warping.</para>
         ///
-        /// <para>Fails open when KSP's own scene cannot be read: a gate that cannot
+        /// <para>FAILS OPEN when KSP's own scene cannot be read: a gate that cannot
         /// answer must not withhold a command RP-1 would have accepted, and the
         /// handler asks again at the press.</para>
         /// </summary>
@@ -330,7 +330,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Hands a target to RP-1's warp controller.
         ///
-        /// <para>A throw here is reported as a warp that may have started, not as a
+        /// <para>A THROW here is reported as a warp that may have started, not as a
         /// plain refusal. <c>Create</c> attaches its controller to a fresh
         /// GameObject before it does anything else, so a failure part-way can leave
         /// the game warping under a controller this Uplink cannot see, and an

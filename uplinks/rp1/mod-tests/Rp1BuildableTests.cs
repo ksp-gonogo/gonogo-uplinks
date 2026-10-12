@@ -7,14 +7,14 @@ namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
     /// The buildable preview: every saved craft measured against every complex,
-    /// which is the half of this feature a widget needs before the press.
+    /// which is the half of this feature a widget needs BEFORE the press.
     ///
-    /// <para>The cases that matter most are the two about uncertainty, not the
+    /// <para>The cases that matter most are the two about UNCERTAINTY, not the
     /// two about limits. This preview is measured from a craft file rather than
     /// from a loaded craft, so some of RP-1's own conditions cannot be answered
     /// at all, and a preview that refused on those would draw a control dark for
     /// a reason nobody could establish. That is the same dead end the whole
-    /// feature exists to remove, so an unanswerable arm permits here and the
+    /// feature exists to remove, so an unanswerable arm PERMITS here and the
     /// command asks RP-1 itself. The opposite of the direction the command takes
     /// on money, and deliberately: only one of the two spends anything.</para>
     /// </summary>

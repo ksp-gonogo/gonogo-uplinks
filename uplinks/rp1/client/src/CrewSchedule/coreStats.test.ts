@@ -102,7 +102,7 @@ describe("crewCoreStats", () => {
   });
 
   /**
-   * The setting is honoured, not reported: RP-1 stops checking mission training
+   * The setting is HONOURED, not reported: RP-1 stops checking mission training
    * entirely, so a count there is a figure about a mechanic nobody is running.
    * Absent, not zero.
    */
@@ -121,7 +121,7 @@ describe("crewCoreStats", () => {
 
   /**
    * An unread roster is not a career with nothing lapsing. An empty crew array
-   * is that career and answers zero; an absent one has no answer to give.
+   * IS that career and answers zero; an absent one has no answer to give.
    */
   it("draws no lapse cell at all while the roster is unread", () => {
     const stats = crewCoreStats(PROGRAM, undefined);

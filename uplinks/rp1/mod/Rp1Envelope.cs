@@ -110,7 +110,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Why this complex is the wrong kind for a craft from this editor, or
+        /// Why this complex is the wrong KIND for a craft from this editor, or
         /// null when it is the right one.
         ///
         /// <para>Separate from <see cref="Refusals"/> because it is not part of

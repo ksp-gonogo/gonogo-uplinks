@@ -98,7 +98,7 @@ namespace GonogoRp1Uplink
         /// The reported vessel, as the opaque handle
         /// <see cref="ActiveVesselQuery.ReportedVessel"/> returns. Core's answer
         /// rather than KSP's, deliberately: on EVA, KSP's active vessel is the
-        /// kerbal, and reporting the Kerbal's mass against the ship's avionics is
+        /// kerbal, and reporting the KERBAL's mass against the ship's avionics is
         /// a reading about the wrong craft.
         /// </param>
         public Rp1AvionicsRaw? Read(object? vessel)
@@ -175,13 +175,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// RP-1's <c>LockLevel</c> as this Uplink's mirror of it, matched by member
-        /// name, and <c>null</c> for anything else.
+        /// RP-1's <c>LockLevel</c> as this Uplink's mirror of it, matched by MEMBER
+        /// NAME, and <c>null</c> for anything else.
         /// </summary>
         /// <remarks>
         /// <para>The value arrives boxed as RP-1's own enum type, which this
         /// assembly cannot name, so it is read through <c>ToString()</c>. By name
-        /// rather than by ordinal deliberately: an ordinal match reads a reordered
+        /// rather than by ordinal deliberately: an ordinal match reads a REORDERED
         /// enum as a different level, and the two levels that would swap are
         /// <c>Locked</c> and <c>Unlocked</c>. A go/no-go that can invert silently
         /// is worse than one that goes absent, and the three names are pinned

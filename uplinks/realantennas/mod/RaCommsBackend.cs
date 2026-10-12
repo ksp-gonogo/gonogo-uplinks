@@ -9,13 +9,13 @@ namespace Gonogo.RealAntennasUplink
     /// The RealAntennas <see cref="ICommsBackend"/>: the higher-priority
     /// backend elected for the exclusive <c>"comms"</c> capability when RA is
     /// loaded (comms-uplink-design.md §2.2). Connectivity/strength/control-state
-    /// and hop geometry come from the same stock CommNet graph CommNet uses
+    /// and hop GEOMETRY come from the SAME stock CommNet graph CommNet uses
     /// (§4.3: <c>RACommLink : CommNet.CommLink</c>, <c>RACommNode : CommNet.CommNode</c>,
     /// so <c>precisePosition</c>/<c>ControlPath</c> are stock reads under either
-    /// backend): no RA reflection is needed for those. The one RA-specific
+    /// backend): NO RA reflection is needed for those. The one RA-specific
     /// enrichment here is the per-hop <c>Extensions["realantennas"]</c> bag (band,
     /// tech level, modulation, reverse rate, ...), read via
-    /// <see cref="RaReflection"/> off the live RACommLink. The forward band rate is
+    /// <see cref="RaReflection"/> off the live RACommLink. The FORWARD band rate is
     /// no longer set on the hop: it rides this Uplink's own
     /// <c>realantennas.hopRates</c> channel instead, keyed by the same
     /// <see cref="NodeId"/>s these hops carry.
@@ -103,12 +103,12 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The three live readings off the link.
         ///
-        /// <para>All three are stock reads even here, and deliberately so:
+        /// <para>All three are STOCK reads even here, and deliberately so:
         /// <c>RACommNetVessel</c> sets <c>IsConnected</c> from RA's own gates
         /// (canComm, an explicit electric-charge <c>powered</c> flag, occlusion,
-        /// and a positive data rate both ways) and <c>FindClosestWhere</c>'s
+        /// and a positive data rate BOTH ways) and <c>FindClosestWhere</c>'s
         /// <c>minRelayTL</c>, and it overrides neither <c>GetControlLevel</c> nor
-        /// <c>UpdateControlState</c>. So the determination differs wildly and the
+        /// <c>UpdateControlState</c>. So the DETERMINATION differs wildly and the
         /// reported value is the same stock accessor, which is exactly the case
         /// for reading it through the shared half rather than reimplementing
         /// it.</para>
@@ -133,7 +133,7 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The control path as KSP-free link views. Stock reads throughout,
         /// because <c>RACommLink : CommNet.CommLink</c> and
-        /// <c>RACommNode : CommNet.CommNode</c>: the objects RA solves over are
+        /// <c>RACommNode : CommNet.CommNode</c>: the objects RA solves over ARE
         /// stock's, so <c>ControlPath</c> and <c>precisePosition</c> need no RA
         /// reflection at all. Any vessel's path, loaded or not, since CommNet
         /// solves every vessel's route, not only the scoped one's.
@@ -162,7 +162,7 @@ namespace Gonogo.RealAntennasUplink
         /// The one genuinely RA-specific thing on a hop: the per-hop extras
         /// (band, tech level, modulation, encoder, required Eb/N0, beamwidth, EC
         /// draw, reverse rate) under this provider's own namespace, typed
-        /// client-side by <c>RealAntennasHopExt</c>. The forward band rate is
+        /// client-side by <c>RealAntennasHopExt</c>. The FORWARD band rate is
         /// deliberately absent: it rides this Uplink's own
         /// <c>realantennas.hopRates</c> channel, keyed by the same
         /// <see cref="NodeId"/>s these hops carry.
@@ -442,7 +442,7 @@ namespace Gonogo.RealAntennasUplink
         public override ICommsDegradeModel DegradeModel() => RaDegrade.From(LinkState());
 
         /// <summary>
-        /// A node's unique join key, matching CommNetBackend.NodeId (that
+        /// A node's UNIQUE join key, matching CommNetBackend.NodeId (that
         /// backend's own doc comment carries the full rationale): the owning
         /// vessel's persistent id for a vessel node, since two craft can share
         /// a name and merging them into one node loses a link; the station's

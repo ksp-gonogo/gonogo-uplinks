@@ -14,7 +14,7 @@ using Xunit;
 /// reflection test can and cannot prove. The short of it: these pin that the walk
 /// reads the members it claims to, at the accessibilities RP-1 declares them at,
 /// and that RP-1's three "no record" sentinels (0.0 from a failed TryGetValue on
-/// either retirement dictionary, -1.0 from an unrated build rate) become absent
+/// either retirement dictionary, -1.0 from an unrated build rate) become ABSENT
 /// rather than dates and rates.</para>
 /// </summary>
 [Collection("rp0-static-graph")]
@@ -60,7 +60,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// The sentinel that matters most on this channel. RP-1's GetRetireTime is a
+    /// THE sentinel that matters most on this channel. RP-1's GetRetireTime is a
     /// TryGetValue that returns 0.0 on a miss, so a kerbal RP-1 holds no
     /// retirement date for is indistinguishable from one retiring at UT zero if
     /// the getter is trusted. A kerbal whose retirement date is unknown is not a
@@ -81,7 +81,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// Zero extension earned is a truthful reading and stays zero: a kerbal who
+    /// Zero extension EARNED is a truthful reading and stays zero: a kerbal who
     /// has flown nothing interesting has pushed their date back by nothing. Only
     /// the absence of a retirement record at all makes it absent.
     /// </summary>
@@ -97,20 +97,20 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// An extension table nobody could finish reading leaves the ceiling absent,
+    /// An extension table nobody could finish reading leaves the ceiling ABSENT,
     /// never spent-nothing.
     ///
-    /// <para>The figure is subtracted from the career cap, so a substituted zero
+    /// <para>The figure is SUBTRACTED from the career cap, so a substituted zero
     /// hands the whole cap back. Jebediah below has spent 300000000 of the
     /// 473040000 cap, and trusting the walk that never reached him dates his
     /// ceiling at 473240000 rather than 173240000: nine and a half Julian years
     /// of headroom he does not have, on the one figure a career is planned
     /// around.</para>
     ///
-    /// <para>Bill's entry was collected before the walk broke, and his ceiling
+    /// <para>Bill's entry WAS collected before the walk broke, and his ceiling
     /// goes absent too. Deliberately: a truncated walk cannot tell a kerbal who
     /// is missing from the partial table from one it simply never reached, so the
-    /// table is untrustworthy as a whole rather than per row. The retirement date
+    /// table is untrustworthy as a whole rather than per row. The retirement DATE
     /// is read from a different table and still arrives for both, which is what
     /// keeps this to the ceiling: the card goes on saying when they retire and
     /// only stops claiming how much further it can be pushed.</para>
@@ -252,7 +252,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     /// <summary>
     /// RP-1 4.7's queue: a course parked until its crew are back from leave is a
     /// course the kerbal is committed to, so it is read as the enrolled and
-    /// unstarted course it is. The student's inactive window is their leave,
+    /// unstarted course it is. The student's inactive window is their LEAVE,
     /// which ends where the course begins, so it is not published as the date the
     /// crew are free.
     /// </summary>
@@ -288,7 +288,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// The soonest lapse, plus a count, because that is the one an operator acts
+    /// The SOONEST lapse, plus a count, because that is the one an operator acts
     /// on: mission training expiring is what turns a qualified crew into an
     /// unqualified one while the vehicle is still being integrated.
     /// </summary>
@@ -341,7 +341,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// A row appears for every kerbal RP-1 has any record of, and the order is
+    /// A row appears for every kerbal RP-1 has ANY record of, and the order is
     /// stable: a channel whose change-gate compares payloads must not report a
     /// change because a dictionary walk came back in a different order.
     /// </summary>
@@ -389,7 +389,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     /// <summary>
     /// No handler means no retirees, and that is not a guess: a save RP-1 does not
     /// manage has no retirees by construction. It is also the case that decides
-    /// whether a stock install is affected by any of this, so it is asserted
+    /// whether a STOCK install is affected by any of this, so it is asserted
     /// rather than assumed.
     /// </summary>
     [Fact]
@@ -404,7 +404,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     /// <summary>
     /// RP-1 wrote stock's Dead into the roster status, and the backend leaves that
     /// standing to stock while saying why: unavailable, "Retired", for that name
-    /// and nothing for anybody else, leaving core's map to answer for the rest of
+    /// and NOTHING for anybody else, leaving core's map to answer for the rest of
     /// the roster.
     /// </summary>
     [Fact]
@@ -445,7 +445,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// A kerbal on a started course cannot fly until the course's own ETA, and
+    /// A kerbal on a STARTED course cannot fly until the course's own ETA, and
     /// says so in RP-1's words.
     /// </summary>
     /// <remarks>
@@ -473,7 +473,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// Enrolment is not training. A course RP-1 has not started makes no progress
+    /// Enrolment is not training. A course RP-1 has not STARTED makes no progress
     /// and has no finish date, so the kerbal keeps whatever standing stock gives
     /// them and this backend says nothing.
     /// </summary>
@@ -529,7 +529,7 @@ public class Rp1CrewReflectionTests : System.IDisposable
     }
 
     /// <summary>
-    /// R&amp;R is not this backend's answer. RP-1's post-flight rest sets KSP's own
+    /// R&amp;R is NOT this backend's answer. RP-1's post-flight rest sets KSP's own
     /// <c>ProtoCrewMember.inactive</c>, which core reads into
     /// <see cref="CrewStanding.Resting"/>, so this backend declines it.
     /// </summary>
@@ -629,7 +629,7 @@ public class Rp1CrewMathTests
     }
 
     /// <summary>
-    /// An unreadable cap leaves the ceiling absent rather than equal to the date:
+    /// An unreadable cap leaves the ceiling ABSENT rather than equal to the date:
     /// a ceiling nobody could read is not a ceiling at today's date.
     /// </summary>
     [Fact]

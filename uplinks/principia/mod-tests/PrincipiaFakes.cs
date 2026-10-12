@@ -35,7 +35,7 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
-    /// The plugin's status: two public fields and its own health predicate, as on
+    /// The plugin's status: two public FIELDS and its own health predicate, as on
     /// the real one.
     ///
     /// <para>Fields matter. <c>error</c> and <c>message</c> are plain fields on the
@@ -57,7 +57,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>The status a write that landed comes back with.</summary>
         public static FakeStatus Ok() => new FakeStatus();
 
-        /// <summary>The status a write the producer declined comes back with: its
+        /// <summary>The status a write the producer DECLINED comes back with: its
         /// own code and its own words, which name conditions we do not model.</summary>
         public static FakeStatus Declined(int code, string text) =>
             new FakeStatus { error = code, message = text, isOk = false };

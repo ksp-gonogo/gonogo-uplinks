@@ -5,7 +5,7 @@ import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
 
 /**
- * The simulation badge in the screen header, or `null` for none.
+ * The SIMULATION badge in the screen header, or `null` for none.
  *
  * A simulation flies a vessel that was never built, from a save RP-1 restores
  * when it ends, and every widget on the board draws it exactly as it would a

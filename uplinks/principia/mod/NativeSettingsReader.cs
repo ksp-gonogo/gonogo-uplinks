@@ -5,7 +5,7 @@ namespace GonogoPrincipiaUplink
     /// protocol and nowhere else.
     ///
     /// <para><b>Why these do not come off the producer's windows like the rest.</b>
-    /// Its settings UI keeps the prediction tolerance and step count as indices
+    /// Its settings UI keeps the prediction tolerance and step count as INDICES
     /// into two static tables, and it recomputes both on every repaint from the
     /// plugin's per-vessel parameters. Unrepainted they sit at their constructor
     /// defaults, which resolve to a plausible tolerance and a plausible step count
@@ -14,7 +14,7 @@ namespace GonogoPrincipiaUplink
     /// value: a wrong yardstick.</para>
     ///
     /// <para>Reading the plugin's own per-vessel struct answers the question the
-    /// slider was only ever a picture of: what this vessel's prediction actually
+    /// slider was only ever a picture of: what this vessel's prediction ACTUALLY
     /// integrated to. It also removes the need for a render patch, and it works
     /// from the first tick rather than from the first time the operator happened
     /// to open a window.</para>

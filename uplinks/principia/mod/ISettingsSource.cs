@@ -18,8 +18,8 @@ namespace GonogoPrincipiaUplink
         /// The body's radius in metres, or null when the index names none.
         ///
         /// <para>Needed because the producer's orbit analysis reports apsis
-        /// distances from the primary's centre, while every apsis an operator reads
-        /// is an altitude. The offset is the radius, the producer applies it in its
+        /// DISTANCES from the primary's centre, while every apsis an operator reads
+        /// is an ALTITUDE. The offset is the radius, the producer applies it in its
         /// own formatter, and a distance published under an altitude's name is
         /// wrong by a planet.</para>
         /// </summary>
@@ -88,7 +88,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Read here rather than stated by whoever is planning, because it is
         /// a fact about the craft and the craft is where it is true. A command
-        /// centre's figure for it is a signal delay old by the time a plan lands, and
+        /// centre's figure for it is a light-time old by the time a plan lands, and
         /// a plan built on a mass the craft no longer has is a plan the craft cannot
         /// fly.</para>
         /// </summary>

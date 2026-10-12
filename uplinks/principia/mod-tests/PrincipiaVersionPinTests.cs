@@ -11,17 +11,17 @@ namespace GonogoPrincipiaUplink.Tests
     ///
     /// <para><b>They are deliberately three constants, not one, and this does not
     /// collapse them.</b> The read gate asks "were these READS analysed for abort
-    /// safety", the write gate asks "were these writes analysed, and is the struct
+    /// safety", the write gate asks "were these WRITES analysed, and is the struct
     /// layout the one they were analysed with", and the supported set answers
     /// "whose interface have we derived at all". The first two are allowed to
     /// diverge, and <see cref="PrincipiaWriteAuthority"/>'s own summary explains
-    /// why sharing one constant would let a decision to keep reading across a
+    /// why sharing one constant would let a decision to keep READING across a
     /// version bump silently carry the writes along with it. So no equality
     /// between those two is asserted here.</para>
     ///
     /// <para>What is not optional is the relation to the supported set. A build
     /// whose calls were analysed for abort safety, or whose burn struct was read
-    /// off, is a build whose interface was derived: the analysis is done against
+    /// off, is a build whose interface was derived: the analysis is done AGAINST
     /// the derived layouts. A pin naming a release absent from
     /// <see cref="PrincipiaSupportedSet"/> is therefore a pin claiming an analysis
     /// that has no subject, and it fails closed in the worst way, by binding and

@@ -11,11 +11,11 @@ namespace Gonogo.KerbalismUplink
     /// <see cref="KerbalismReliabilityMap"/>/<see cref="KerbalismReflection"/>.
     ///
     /// <para><b>The placement rule this file implements, once, so it is not
-    /// re-argued per field.</b> A field goes in the shared core payload only if
+    /// re-argued per field.</b> A field goes in the SHARED core payload only if
     /// every science model can fill it and it means the same thing in each. It goes
     /// in <c>extensions["kerbalism"]</c> if it is Kerbalism's own concept, or
     /// Kerbalism's richer version of something core carries lossily. And a core
-    /// field whose unit or model does not match Kerbalism's is left null rather than
+    /// field whose UNIT or MODEL does not match Kerbalism's is left NULL rather than
     /// filled with a number that would be read wrong: a field's unit is
     /// compile-time-baked in core and cannot vary by elected provider, so the only
     /// honest options were absence or a lie.</para>
@@ -309,7 +309,7 @@ namespace Gonogo.KerbalismUplink
         /// Whether the lab is working, off its two independent witnesses: the
         /// status word and the module's own running flag.
         ///
-        /// <para>Either one saying yes is enough. Null when neither could be
+        /// <para>Either one saying yes is enough. Null when NEITHER could be
         /// read, because false here is "the lab is idle", and the backlog moving
         /// or not is what an operator opens this channel to find out.</para>
         /// </summary>
@@ -321,7 +321,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// <c>science.experimentBreakdown</c>: one entry per distinct subject, with
+        /// <c>science.experimentBreakdown</c>: one entry per DISTINCT subject, with
         /// data summed across the stored blobs for it, exactly stock's contract.
         /// Kerbalism's per-subject ledger is far richer than the two fields core
         /// carries, so those two are the lossy view and the ledger rides the bag.

@@ -149,14 +149,14 @@ namespace GonogoRp1Uplink
         /// The commands can run: RP-1's space centre, its complex and its pad
         /// types resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length: a
-        /// method-level gate on the manifest cannot say why it fired, because a
+        /// method-level gate on the MANIFEST cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
         /// The method lookups happen at the press and refuse with a sentence
         /// naming what was not recognised.</para>
         ///
-        /// <para><see cref="_events"/> is deliberately not part of this. RP-1's
+        /// <para><see cref="_events"/> is deliberately NOT part of this. RP-1's
         /// event bus is how its own UI hears about a dismantle, and firing it is
         /// the last thing either dismantle does; an install whose event class
         /// moved should still be able to demolish a complex, with RP-1's window
@@ -713,7 +713,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Removes every pad, last first, which is the order RP-1 uses and is not
+        /// Removes every pad, LAST FIRST, which is the order RP-1 uses and is not
         /// arbitrary: <c>LCLaunchPad.Delete</c> shifts the launch-site index of
         /// every vessel that pointed past the removed pad, and walking forward
         /// would shift the same indices repeatedly.
@@ -830,7 +830,7 @@ namespace GonogoRp1Uplink
         ///
         /// <para>Read through <c>SpaceCenterManagement.LCToEfficiency</c> rather
         /// than off the complex, for the reason the read side gives: RP-1's own
-        /// <c>EfficiencySource</c> property creates a record on a cache miss, and a
+        /// <c>EfficiencySource</c> property CREATES a record on a cache miss, and a
         /// command must not author state in the course of describing what it is
         /// about to destroy.</para>
         ///
@@ -911,7 +911,7 @@ namespace GonogoRp1Uplink
             }
         }
 
-        /// <summary>Whether a craft is standing on the pad in prelaunch, and its name if so.</summary>
+        /// <summary>Whether a craft is standing on the pad in PRELAUNCH, and its name if so.</summary>
         private static bool PadHasVesselWaiting(object pad, out string? vesselName)
         {
             vesselName = null;

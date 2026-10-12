@@ -137,7 +137,7 @@ function formatRate(perSecond: number): string {
  * downstream shortage that isn't itself draining fast still reads as at
  * least a warning, because it is genuinely blocked. Beyond those and the
  * profile's own low-threshold flag, only a resource that is actually
- * draining low earns a tone: a steady tank is quiet whatever its level
+ * DRAINING low earns a tone: a steady tank is quiet whatever its level
  * (an empty waste container rendering alarm-red was this function's own
  * defect: empty waste is good).
  */
@@ -368,7 +368,7 @@ function toProcessRow(p: KerbalismProcessEntry, index: number): ProcessRow {
   };
 }
 
-/** A broken process is critical and an unread one is a warning; running and
+/** A BROKEN process is critical and an UNREAD one is a warning; running and
  *  idle are both ordinary operating states and render as decorative grey chips
  *  (severity omitted), so a healthy process list adds no colour at all. */
 function processSeverity(state: ProcessRunState): Severity | undefined {
@@ -491,7 +491,7 @@ function ShipSystemsComponent(
 }
 
 /**
- * The single header pill. A halted greenhouse folds in here (as Degraded)
+ * The single header pill. A halted greenhouse folds in HERE (as Degraded)
  * rather than raising a second "System halted" pill beside this one:
  * operator feedback called the two-pill header a colour pile-up, and a
  * recoverable subsystem halt is exactly what the Degraded rung means. The
@@ -854,7 +854,7 @@ function SectionHead({
 /**
  * One resource row: a `Meter` on its own full-width line (never squeezed
  * against the disclosure trigger, the narrow-width overlap operators hit),
- * an optional "X limited by Y" footnote naming this row's resource as the
+ * an optional "X limited by Y" footnote naming THIS row's resource as the
  * subject and its blocker as the object (never the reverse: a root cause's
  * own row carries no footnote, since nothing blocks it, `diagnose` says so
  * via an empty `blockedBy`), and an accessible `variant="inline"` accordion
@@ -939,7 +939,7 @@ function ResourceLedgerRow({
 /**
  * "<subject> is being limited by <blockers>", the resource in shortage named
  * first because that is what an operator is trying to fix, followed by a
- * prediction of how long that resource (never the blocker) has left. Shared
+ * prediction of how long THAT resource (never the blocker) has left. Shared
  * by the per-row footnote and the panel-level "Limiting factors" banner so
  * the two never drift into different phrasings for the same diagnosis.
  */

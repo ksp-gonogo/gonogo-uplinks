@@ -20,7 +20,7 @@ import { buildKosWrapper } from "./kosWrapper.js";
  * real client machinery; only the wire is stubbed.
  *
  * `kos.processors` is a plain push channel: nothing delivers it until
- * something subscribes (there is no proactive auto-subscribe). The
+ * SOMETHING subscribes (there is no proactive auto-subscribe). The
  * executor's own `run()` is what subscribes, lazily, on first call, so a
  * cold `run()` against a client that has never seen kos.processors data
  * always rejects with "no known CPU" (this is exactly the "reject

@@ -89,7 +89,7 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         /// <summary>
-        /// A field the entry's mode does not read comes back absent, not zero. A
+        /// A field the entry's mode does not read comes back ABSENT, not zero. A
         /// zero latitude is a specific place nobody asked for, and the plan
         /// refuses an absent one rather than aiming at it.
         /// </summary>

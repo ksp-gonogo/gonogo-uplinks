@@ -38,7 +38,7 @@ namespace GonogoRp1Uplink
     /// withheld for exactly as long as the science it was derived from is.
     ///
     /// <para><b>What it does not do.</b> It does not re-derive RP-1's price and it
-    /// enqueues nothing for the reveal. The award is observed either side of RP-1
+    /// enqueues nothing for the reveal. The award is OBSERVED either side of RP-1
     /// banking it and the pre-award reading is put back, so the numbers are exact
     /// whatever RP-1's curve says. At reveal, <c>RevealApplier</c> calls
     /// <c>AddScience(base, TransactionReasons.None)</c>, RP-1 accepts reason 0, and
@@ -49,7 +49,7 @@ namespace GonogoRp1Uplink
     /// <para><b>Only an increase is ever taken away.</b> A confidence spend
     /// landing between the observation and the withhold is a real withdrawal, and
     /// putting a pre-spend reading back would hand it to the player. So each
-    /// quantity is restored only where the live value sits above what was
+    /// quantity is restored only where the live value sits ABOVE what was
     /// observed.</para>
     ///
     /// <para><b>The event is fired.</b> RP-1's own confidence readout is a text
@@ -101,7 +101,7 @@ namespace GonogoRp1Uplink
         /// How many times a withhold could not be carried out, and what the last one
         /// said. Surfaced as health facts by <see cref="Rp1ScUplink"/> rather than
         /// left to a log nobody reads: every one of these is a science credit whose
-        /// derived confidence is still credited, which is the leak, and a fix whose
+        /// derived confidence is STILL credited, which is the leak, and a fix whose
         /// only failure signal is a swallowed exception is a fix that reports itself
         /// working.
         /// </summary>

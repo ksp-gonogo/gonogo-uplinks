@@ -30,7 +30,7 @@ namespace RP0
     }
 
     /// <summary>
-    /// The base every tooling module derives from. Abstract, as the producer's is,
+    /// The base every tooling module derives from. ABSTRACT, as the producer's is,
     /// so the assignability check is exercised against a subclass rather than
     /// against the base itself.
     /// </summary>
@@ -56,7 +56,7 @@ namespace RP0
         public float GetToolingCost() => Cost;
 
         /// <summary>Every module the batch was asked to buy, in order, so a test can
-        /// assert which parts were tooled rather than only that something was.</summary>
+        /// assert WHICH parts were tooled rather than only that something was.</summary>
         public static readonly List<ModuleTooling> Purchased = new List<ModuleTooling>();
 
         /// <summary>Set to make the batch throw, to pin what an operator is told.</summary>
@@ -143,7 +143,7 @@ public class PartInfo
 }
 
 /// <summary>
-/// KSP's editor. A static <c>fetch</c> that is null outside the editor, which is
+/// KSP's editor. A static <c>fetch</c> that is NULL outside the editor, which is
 /// the state the reading has to answer "no ship" for rather than "nothing to tool".
 /// </summary>
 public class EditorLogic

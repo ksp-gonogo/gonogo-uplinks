@@ -7,12 +7,12 @@ using System.Reflection;
 namespace Gonogo.ActionGroupsExtendedUplink
 {
     /// <summary>
-    /// The arm's-length reflection surface onto Action Groups Extended (AGX).
-    /// No
+    /// The arm's-length REFLECTION surface onto Action Groups Extended (AGX).
+    /// NO
     /// compile-time reference to AGExt's assembly exists anywhere in this
     /// project: every AGExt member is reached by runtime reflection against
     /// the loaded <c>AGExt</c> assembly, so the GPL3 boundary is never
-    /// crossed: we use the running mod's public API, we don't incorporate
+    /// crossed: we USE the running mod's public API, we don't INCORPORATE
     /// its code.
     ///
     /// <para>Surface (source-verified against <c>linuxgurugamer/AGExt</c>
@@ -20,7 +20,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
     /// <c>AGExtExternal</c>, all members <c>public static</c>): the
     /// active-vessel variants only: <c>AGXListOfAssignedGroups()</c>,
     /// <c>AGXGroupState(int)</c>, <c>AGXActivateGroup(int, bool)</c>, plus
-    /// the optional <c>AGXInstalled()</c> capability check. Deliberately not
+    /// the optional <c>AGXInstalled()</c> capability check. Deliberately NOT
     /// the <c>*DelayCheck</c> variants (gonogo owns its own delay authority)
     /// nor the <c>AGX2Vsl*</c>/<c>AGXAllActions</c> forms (would need a
     /// flightID or would force reflecting the <c>AGXAction</c> type across
@@ -30,10 +30,10 @@ namespace Gonogo.ActionGroupsExtendedUplink
     /// whose surface moved) degrades to <c>null</c>/typed-false rather than
     /// throwing.</para>
     ///
-    /// <para><b>Runtime binding is unverified pending live validation</b>,
+    /// <para><b>Runtime binding is UNVERIFIED pending live validation</b>,
     /// no <c>AGExt.dll</c> is on the reference path in CI/dev today, so this
     /// surface is verified from AGExt's GPL3 source but the actual shipped
-    /// assembly's name/method binding is assumed until the Deck
+    /// assembly's name/method binding is ASSUMED until the Deck
     /// live-validation task runs (same posture as
     /// <c>GonogoRealAntennasUplink.RaReflection</c>).</para>
     /// </summary>
@@ -71,7 +71,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
 
         /// <summary>
         /// Probe for the loaded AGExt assembly and resolve its external
-        /// static surface. Always returns a non-null instance, when AGExt
+        /// static surface. ALWAYS returns a non-null instance, when AGExt
         /// is not installed/loaded (or any part of the probe throws), the
         /// returned instance simply reports <see cref="IsAvailable"/> false
         /// and every read/write member fail-softs to null/false, so the
@@ -138,15 +138,15 @@ namespace Gonogo.ActionGroupsExtendedUplink
         /// the way the rest of this Uplink's logic already does; the live
         /// binding itself stays Deck-validated.
         ///
-        /// <para>An unreadable key still declines the whole tick. A
+        /// <para>An unreadable KEY still declines the whole tick. A
         /// <c>continue</c> there dropped that group and published the rest as a
         /// complete list, so the operator could not tell "AGX reports eight
         /// groups" from "AGX reports ten and we read eight", and a group the
-        /// vessel has was not on screen to command. Without an index there is no
+        /// vessel HAS was not on screen to command. Without an index there is no
         /// identity to report the group under either, so there is nothing finer
         /// than the tick left to decline.</para>
         ///
-        /// <para>An unreadable state is reported per group instead, as a null
+        /// <para>An unreadable STATE is reported per group instead, as a null
         /// <see cref="AgxGroup.State"/>. AGExt answers for each group through its
         /// own surface, so one can fail while the rest read, and withholding the
         /// tick took nine groups off the screen in order to describe the tenth.
@@ -171,7 +171,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
 
         /// <summary>
         /// One group's state, or null when AGExt did not answer with a bool or
-        /// the read threw. The throw is caught here rather than by
+        /// the read threw. The throw is caught HERE rather than by
         /// <see cref="AssignedGroups"/>'s outer catch, so one group's failure
         /// costs that group's state and not the whole vessel's list.
         /// </summary>

@@ -12,7 +12,7 @@ namespace GonogoRp1Uplink.Tests
     /// The two stock career purchases RP-1 re-models as queued projects.
     ///
     /// <para>The case that matters is the registration one. Both commands ship as
-    /// live buttons gated on career mode and the stock facility caps, and RP-1
+    /// live buttons gated on career mode and the STOCK facility caps, and RP-1
     /// guards its own equivalents at its UI layer only: its Harmony patch on
     /// KSCFacilityContextMenu, with nothing at all on
     /// <c>UpgradeableFacility.SetLevel</c>. So a press upgraded the facility
@@ -126,7 +126,7 @@ namespace GonogoRp1Uplink.Tests
         /// Under a managed career the upgrade is refused, and the refusal says
         /// what RP-1 makes of the act and which command starts the same job. A
         /// bare refusal would be a worse bug than the write it prevents, and a
-        /// refusal naming a building rather than the command is the drift this
+        /// refusal naming a BUILDING rather than the command is the drift this
         /// pins: it sent an operator into the game for something on their own
         /// board for as long as rp1.facility.upgrade went unnamed.
         /// </summary>

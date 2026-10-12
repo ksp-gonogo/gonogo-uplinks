@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// A shipped assembly read as metadata rather than loaded, so the shape of
+    /// A shipped assembly read as METADATA rather than loaded, so the shape of
     /// RP-1's object graph can be checked on a machine that has the mod installed
     /// without having KSP, Unity or any of RP-1's own dependencies resolvable.
     /// </summary>
@@ -20,7 +20,7 @@ namespace GonogoRp1Uplink.Tests
     /// asking a loaded <c>FieldInfo</c> for its <c>FieldType</c> throws the moment
     /// the answer lives in an assembly that is not there. Metadata has no such
     /// dependency: every type in a signature is either a definition in this file
-    /// or a reference named in this file, and a name is all a shape check needs.
+    /// or a reference NAMED in this file, and a name is all a shape check needs.
     ///
     /// <para><see cref="System.Reflection.Metadata"/> ships in the shared
     /// framework, so this needs no package reference and cannot fail to restore
@@ -38,13 +38,13 @@ namespace GonogoRp1Uplink.Tests
         /// <summary>Where the file was read from, so a report names the binary it checked.</summary>
         public string Path { get; }
 
-        /// <summary>The assembly's own name and version, which is not the RP-1 release version.</summary>
+        /// <summary>The assembly's own name and version, which is NOT the RP-1 release version.</summary>
         public string Identity { get; }
 
         /// <summary>
         /// The file's SHA-256, first sixteen characters. RP-1 stamps its release
         /// version nowhere the metadata carries, so the digest is the only thing
-        /// that says exactly which build a green run was green against.
+        /// that says exactly WHICH build a green run was green against.
         /// </summary>
         public string Digest { get; }
 
@@ -149,14 +149,14 @@ namespace GonogoRp1Uplink.Tests
         /// Whether a type's base handle is one the walk can step onto.
         /// </summary>
         /// <remarks>
-        /// <para>The <c>IsNil</c> half is load-bearing and was missing. An interface
+        /// <para>The <c>IsNil</c> half is load-bearing and was missing. An INTERFACE
         /// has no base type at all, and a nil <c>TypeDefinitionHandle</c> still
         /// reports its <c>Kind</c> as <c>TypeDefinition</c> while pointing at row
         /// zero, which does not exist. So the Kind check alone let the walk step onto
         /// row zero and <c>GetMethodRange</c> threw <c>BadImageFormatException:
         /// Read out of bounds</c>.</para>
         /// <para>It never fired before because every type this manifest pinned was a
-        /// class, whose base is <c>System.Object</c> and therefore a
+        /// CLASS, whose base is <c>System.Object</c> and therefore a
         /// <c>TypeReference</c> that the Kind check already rejected. The first
         /// interface pinned (<c>ISpaceCenterProject.GetItemName</c>, which is where
         /// every warp target's name comes from) crashed the whole check rather than
@@ -209,7 +209,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The names of a type's own fields carrying the named attribute, in
+        /// The names of a type's OWN fields carrying the named attribute, in
         /// declaration order.
         /// </summary>
         /// <remarks>
@@ -218,7 +218,7 @@ namespace GonogoRp1Uplink.Tests
         /// <c>ConfigNode.LoadObjectFromConfig</c> to parse, and that method is
         /// driven by <c>[Persistent]</c>. A key the command forgets is not an
         /// error at load time, it silently leaves the field at its default, so
-        /// the only check that can see it is one that asks the shipped assembly
+        /// the only check that can see it is one that asks the SHIPPED assembly
         /// which fields carry the attribute.
         ///
         /// <para>Own fields only, not the base chain: <c>ResearchProject</c>

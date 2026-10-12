@@ -26,7 +26,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Every intended name was found. False whenever anything was missing and
+        /// Every intended name was found. False whenever anything was missing AND
         /// whenever nothing could be checked, so this can be read on its own.
         /// </summary>
         public bool Complete { get; }

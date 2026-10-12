@@ -150,7 +150,7 @@ function mount() {
  * that emits a pad in the same breath as the gate emits it into a tree that has
  * not asked for it yet and then reads "this complex has no pads".</para>
  *
- * <para>Waited on the subscription rather than on anything drawn: the sections
+ * <para>Waited on the SUBSCRIPTION rather than on anything drawn: the sections
  * draw nothing at all until their lists arrive, so there is no mark on screen
  * that says the subscription is open, and a wait on the panel title passes a
  * beat too early.</para>

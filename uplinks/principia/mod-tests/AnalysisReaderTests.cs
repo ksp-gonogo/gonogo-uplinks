@@ -13,7 +13,7 @@ namespace GonogoPrincipiaUplink.Tests
     ///
     /// <para>Two things are worth being explicit about, because both are the
     /// reason this reading was left unbuilt for so long. The reading must never
-    /// request an analysis, and the calls below prove it by their absence from the
+    /// REQUEST an analysis, and the calls below prove it by their absence from the
     /// recorded call list. And the units the producer carries are not the units an
     /// operator reads: radians, radians per second, and distances from a planet's
     /// centre. Every one of those conversions is asserted, because each of them
@@ -209,7 +209,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The vessel's own analysis is dateable, which this Uplink spent its whole
+        /// The vessel's own analysis IS dateable, which this Uplink spent its whole
         /// life asserting it was not.
         ///
         /// <para>Nothing on the analysis struct carries an instant, and that was
@@ -232,7 +232,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The first sample and not the last, and the series is never walked. It
+        /// The FIRST sample and not the last, and the series is never walked. It
         /// comes out of an adaptive-step integrator, so its length is whatever the
         /// orbit's regularity made it, and this read happens once a tick on the main
         /// thread for the vessel and again for every coast. Two calls per analysis
@@ -327,7 +327,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// A plan with n burns has n + 1 coasts: one before each burn and one after
-        /// the last. The last is the orbit the plan ends in, which is the one an
+        /// the last. The last is the orbit the plan ENDS in, which is the one an
         /// operator is usually asking about, and dropping it would lose exactly
         /// that.
         /// </summary>
@@ -416,7 +416,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// separate comments: that withholding the recurrence hypothesis "forfeits
         /// the recurrence and the equatorial crossings". It does not. The producer
         /// fits a closest recurrence during the analysis, and its null-hypothesis
-        /// path falls back to that one rather than clearing it, deriving the
+        /// path falls BACK to that one rather than clearing it, deriving the
         /// crossings on the way. Verified in the producer's own source at the tag
         /// matching the installed build.</para>
         /// </summary>
@@ -439,7 +439,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>
         /// The equatorial crossings arrive on the same call, in degrees.
         ///
-        /// <para>They are the second half of what the recurrence is for: the
+        /// <para>They are the second half of what the recurrence is FOR: the
         /// producer's own three synchronicity adjectives are decided by how far
         /// the crossing longitudes drift, and none of them can be said from the
         /// recurrence alone.</para>
@@ -521,7 +521,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// An analysis whose recurrence the producer could not fit publishes
+        /// An analysis whose recurrence the producer could NOT fit publishes
         /// silence, not a zero. A craft on an escape trajectory has no repeating
         /// ground track, and a 0-day cycle would read as a real, wrong answer.
         /// </summary>

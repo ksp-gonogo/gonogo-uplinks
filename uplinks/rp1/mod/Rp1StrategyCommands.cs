@@ -79,7 +79,7 @@ namespace GonogoRp1Uplink
         /// The command can run: RP-1's space centre and its three strategy types
         /// resolved.
         ///
-        /// <para>Types only, for the reason
+        /// <para>TYPES ONLY, for the reason
         /// <see cref="Rp1PersonnelCommands.IsAvailable"/> spells out: a
         /// method-level gate on the manifest cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
@@ -104,12 +104,12 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Accept the named Program at the named speed.
         ///
-        /// <para>Not a set. Accepting is a one-way act that spends Confidence and
+        /// <para>NOT a set. Accepting is a one-way act that spends Confidence and
         /// starts a term, so a repeat is refused rather than treated as already
         /// satisfied, unlike <c>rp1.personnel.assign</c>.</para>
         ///
         /// <para>The speed is written with RP-1's own <c>Program.SetSpeed</c>, the
-        /// call its Administration Building's speed buttons make, before the gate
+        /// call its Administration Building's speed buttons make, BEFORE the gate
         /// is asked: <c>ProgramStrategy.CanActivate</c> prices Confidence at the
         /// Program's current speed, so asking first would judge the wrong price.
         /// It is put back on any refusal, because the speed is persisted.</para>
@@ -224,7 +224,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Appoint the named leader.
         ///
-        /// <para>Not a set, for the reason <see cref="Accept"/> gives: a repeat is
+        /// <para>NOT a set, for the reason <see cref="Accept"/> gives: a repeat is
         /// refused rather than treated as already satisfied.</para>
         /// </summary>
         public CommandResult Appoint(Rp1LeaderAppointArgs? args)
@@ -443,7 +443,7 @@ namespace GonogoRp1Uplink
         /// <remarks>
         /// Null when it cannot be read, which skips the arm rather than refusing:
         /// the ceiling is a ceiling, and the strategy's own default factor is
-        /// already inside it. A commitment above it is refused by arm 8 or by the
+        /// already inside it. A commitment ABOVE it is refused by arm 8 or by the
         /// game at the next opportunity.
         /// </remarks>
         private static double? CommitCeiling()
@@ -478,11 +478,11 @@ namespace GonogoRp1Uplink
         /// The commitment itself, in the order the in-screen path performs it.
         /// </summary>
         /// <remarks>
-        /// <para><b>The program half runs first.</b> In-screen, ActivateProgram
+        /// <para><b>The program half runs FIRST.</b> In-screen, ActivateProgram
         /// runs inside Register(), which is step 2 of PerformActivate, before its
         /// alarm block. That block mints a KAC alarm from
         /// <c>programStrategy.Program.deadlineUT</c>, and Accept() assigns
-        /// deadlineUT on the instance it returns rather than on the template. So
+        /// deadlineUT on the instance it RETURNS rather than on the template. So
         /// performing PerformActivate first leaves the template in place and the
         /// alarm is created at UT 0, silently, with nothing thrown.</para>
         ///

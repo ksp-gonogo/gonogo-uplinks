@@ -73,7 +73,7 @@ import {
 // Confidence price reached a test as a dash.
 import "./units.js";
 
-/** RP-1 is installed and managing this save. Its value must match `Rp1ScUplink.AvailableTopic`. */
+/** RP-1 is installed AND managing this save. Its value must match `Rp1ScUplink.AvailableTopic`. */
 export const RP1_AVAILABLE_TOPIC = "rp1.available";
 
 /** The space centres themselves, one row each. */
@@ -90,9 +90,9 @@ export const RP1_WAREHOUSE_TOPIC = "rp1.warehouse";
 
 /**
  * Every saved craft file, and what each launch complex would make of it: the
- * only way a widget can offer to start a build rather than repeat one.
+ * only way a widget can offer to START a build rather than repeat one.
  *
- * A preview. Its verdicts are measured from the craft file without loading it,
+ * A PREVIEW. Its verdicts are measured from the craft file without loading it,
  * so two of RP-1's own conditions (human rating and stocked resources) are not
  * applied and an eligible complex is "nothing visible stops this" rather than a
  * promise. `rp1.build.start` asks RP-1 itself and is the authority.
@@ -106,7 +106,7 @@ export const RP1_PADS_TOPIC = "rp1.pads";
 export const RP1_OPERATIONS_TOPIC = "rp1.operations";
 
 /**
- * What is being built at a space centre, as opposed to integrated inside it:
+ * What is being BUILT at a space centre, as opposed to integrated inside it:
  * facility upgrades, launch complexes and pads, one row shape discriminated by
  * `kind`. The half of the schedule that moves in months.
  */
@@ -116,7 +116,7 @@ export const RP1_CONSTRUCTIONS_TOPIC = "rp1.constructions";
  * The space centre's buildings themselves: the tier each stands at, the tier it
  * can reach, and what the next step costs.
  *
- * The one channel here that answers away from the space centre.
+ * The one channel here that answers AWAY from the space centre.
  * `career.status.facilities` reads the live `UpgradeableFacility` objects, which
  * KSP only puts in the SPACECENTER scene, so every tier and price on it is absent
  * in the editor, in flight and at the tracking station. RP-1 does not read them
@@ -124,7 +124,7 @@ export const RP1_CONSTRUCTIONS_TOPIC = "rp1.constructions";
  * count it loads from config, and its own upkeep pass does exactly that in all
  * four scenes.
  *
- * It carries no tier descriptions. Those come off the live facility and have no
+ * It carries no tier DESCRIPTIONS. Those come off the live facility and have no
  * config mirror, so they stay on `career.status` where only the space centre can
  * read them.
  */
@@ -143,7 +143,7 @@ export const RP1_PERSONNEL_TOPIC = "rp1.personnel";
 export const RP1_RUSH_TERMS_TOPIC = "rp1.rushTerms";
 
 /**
- * What building a complex costs, for a form pricing one that does not exist yet.
+ * What BUILDING a complex costs, for a form pricing one that does not exist yet.
  *
  * Carries the half of RP-1's price a client cannot compute: one funds-per-unit
  * figure per offerable resource, which is exact rather than approximate because
@@ -167,7 +167,7 @@ export const RP1_PROGRAMS_TOPIC = "rp1.programs";
 export const RP1_PROGRAM_SLOTS_TOPIC = "rp1.programSlots";
 
 /**
- * RP-1's whole funding-curve table, which is what turns a Program's curve name
+ * RP-1's whole funding-curve table, which is what turns a Program's curve NAME
  * into a shape. A career-wide catalogue of twelve Hermite curves rather than a
  * per-Program field: thirty-seven Programs share them, and repeating twelve
  * keys on every row would be the same table thirty-seven times.
@@ -184,7 +184,7 @@ export const RP1_PROGRAM_FUNDING_CURVES_TOPIC = "rp1.programFundingCurves";
  * name. Absent rather than empty when RP-1's CrewHandler is not live, because an
  * empty list would say RP-1 is scheduling nobody.
  *
- * Deliberately carries no standing: whether a kerbal is retired rides the stock
+ * Deliberately carries no standing: whether a kerbal is RETIRED rides the stock
  * roster's own `standing` field through the crewStanding capability, so a widget
  * that has never heard of RP-1 does not report a retiree as a fatality.
  */
@@ -194,8 +194,8 @@ export const RP1_CREW_TOPIC = "rp1.crew";
 export const RP1_CREW_PROGRAM_TOPIC = "rp1.crewProgram";
 
 /**
- * The balance a warp is running toward, and how far off it is. A warp stop
- * condition rather than a transaction, and it persists past the warp it stopped,
+ * The balance a warp is running toward, and how far off it is. A warp STOP
+ * CONDITION rather than a transaction, and it persists past the warp it stopped,
  * so an operator who cannot see it reads the next unexplained halt as the game
  * misbehaving. `active: false` is a real answer meaning none is set; the whole
  * payload is absent when RP-1's space centre could not be read.
@@ -231,13 +231,13 @@ export const RP1_TRAINING_CATALOGUE_TOPIC = "rp1.trainingCatalogue";
  * What tooling the vehicle on the editor's table needs, and what it costs not to
  * have it.
  *
- * The only channel on this Uplink whose subject is the ship being designed rather
+ * The only channel on this Uplink whose subject is the ship being DESIGNED rather
  * than the space centre, so it answers nothing from anywhere else.
  *
  * Two money numbers, and they are different questions. `toolAllCost` is RP-1's own
- * deduplicated price for tooling the whole vehicle and is not the sum of the rows:
+ * deduplicated price for tooling the whole vehicle and is NOT the sum of the rows:
  * a tooling covers anything of its type within four per cent, so paying for one
- * part can leave a neighbour free. Each row's `untooledSurcharge` is what not
+ * part can leave a neighbour free. Each row's `untooledSurcharge` is what NOT
  * tooling costs, per build, for ever, which is the number the decision turns on.
  *
  * Absence is a real answer and is not "everything is tooled": no ship in the
@@ -247,16 +247,16 @@ export const RP1_TRAINING_CATALOGUE_TOPIC = "rp1.trainingCatalogue";
 export const RP1_TOOLING_TOPIC = "rp1.tooling";
 
 /**
- * What putting the vehicle on the editor's table into the sky will cost, in funds,
+ * What putting the vehicle on the editor's table into the sky will cost, in FUNDS,
  * line by line.
  *
  * Deliberately not RP-1's own "Cost Breakdown" tab. That one shows `effectiveCost`,
- * which is the input to its build-points formula and so decides how long
+ * which is the input to its build-points formula and so decides how LONG
  * integration takes; it is a comparability metric and it buys nothing. A number
  * that looks like money and is not money does not travel here whatever the producer
  * calls it.
  *
- * `untooledSurcharge` is an of which of `vehicleCost`, never an addend: the
+ * `untooledSurcharge` is an OF WHICH of `vehicleCost`, never an addend: the
  * surcharge reaches the vessel through the game's own part-cost modifier and is
  * already inside it. Adding the two charges the operator twice.
  */
@@ -265,7 +265,7 @@ export const RP1_BUILD_COST_TOPIC = "rp1.buildCost";
 /**
  * RP-1's own record of what has happened in this career, as a timeline.
  *
- * Only the event half of its career log. The other half is a monthly financial
+ * Only the EVENT half of its career log. The other half is a monthly financial
  * ledger of about thirty figures a period, which is a balance sheet rather than a
  * timeline and belongs on a budget surface.
  *
@@ -278,7 +278,7 @@ export const RP1_CAREER_EVENTS_TOPIC = "rp1.careerEvents";
 /**
  * Whether RP-1 will let the vessel be steered, and the two masses it decided on.
  *
- * The only channel on this Uplink whose subject is a craft rather than the space
+ * The only channel on this Uplink whose subject is a CRAFT rather than the space
  * centre, and so the only one that is delay-gated.
  *
  * It is here because nothing stock carries it. RP-1 takes control away with an
