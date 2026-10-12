@@ -9,7 +9,7 @@
     "caption": "AFTER: roll authority survives the tonnage check, in a caution tone and its own words",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
-    "paints": ["ATTITUDE", "Roll only"]
+    "paints": ["NAVBALL", "Roll only"]
   },
   "_stream": {
     "pinnedUt": 1000000,

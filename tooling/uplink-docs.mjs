@@ -81,10 +81,9 @@ const mode = args.includes("--gate")
 const RENDER_DEBT = new Map([
   [
     "rp1",
-    "scene paints written against an older host: the Navball's panel title is " +
-      "now \"NAVBALL\" where its fixtures expect \"ATTITUDE\", and the crew " +
-      "enrolment scene expects \"resting\". Each scene is reported one per run, " +
-      "so the full set is not yet known",
+    "the crew-enrolment-blocked scene expects \"resting\", but a kerbal on leave " +
+      "is no longer refused, so its refusal story is stale and needs a new " +
+      "refused kerbal rather than a new word",
   ],
 ]);
 

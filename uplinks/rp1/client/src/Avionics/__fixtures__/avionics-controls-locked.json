@@ -10,7 +10,7 @@
     "caption": "AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so",
     "modes": ["default"],
     "size": { "w": 8, "h": 11 },
-    "paints": ["ATTITUDE", "No control"]
+    "paints": ["NAVBALL", "No control"]
   },
   "_stream": {
     "pinnedUt": 1000000,
