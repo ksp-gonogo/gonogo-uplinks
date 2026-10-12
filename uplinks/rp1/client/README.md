@@ -59,6 +59,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds, `upkeep` funds, `upkeepBeforeModifiers` funds, `upkeepModifiers` funds |
 | `Rp1BuildableComplex` | `eligible` flag, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `refusals` text |
 | `Rp1BuildingUpkeepEntry` | `facility` enum, `upkeep` Rp1BudgetHorizons |
+| `Rp1BuildQuote` | `affordable` flag, `balance` funds, `price` funds |
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |
 | `Rp1ComplexUpkeepEntry` | `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `operational` flag, `upkeep` Rp1BudgetHorizons |
@@ -87,6 +88,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `rp1.build.quote` | `Rp1BuildQuoteArgs` | `CommandResultOf<Rp1BuildQuote>` |
 | `rp1.build.repeat` | `Rp1BuildRepeatArgs` | `CommandResult` |
 | `rp1.build.start` | `Rp1BuildStartArgs` | `CommandResult` |
 | `rp1.complex.dismantle` | `Rp1ComplexDismantleArgs` | `CommandResultOf<Record<string, unknown>>` |
@@ -124,6 +126,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 
 | Args | Fields |
 | --- | --- |
+| `Rp1BuildQuoteArgs` | `craftFile` id, `facility` enum, `lcId` id |
 | `Rp1BuildRepeatArgs` | `id` id |
 | `Rp1BuildStartArgs` | `craftFile` id, `facility` enum, `lcId` id |
 | `Rp1ComplexDismantleArgs` | `lcId` id |

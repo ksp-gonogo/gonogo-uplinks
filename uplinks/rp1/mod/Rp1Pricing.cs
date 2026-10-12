@@ -123,6 +123,35 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// What a vehicle purchase of a fixed probe amount costs once leaders and
+        /// strategies have had their say, or null when RP-1 would not answer.
+        ///
+        /// <para>Not a price for anything: it is a reading of the career's
+        /// purchase modifiers, which changes exactly when a vehicle's charge does
+        /// for a reason that is not the craft. A quote keeps its price against
+        /// this, so a leader appointed since makes the next quote ask RP-1 again.
+        /// It is one query, the same cost as pricing, and is only asked when an
+        /// operator asks for a quote.</para>
+        /// </summary>
+        public double? ModifierProbe()
+        {
+            const double probeFunds = 1000.0;
+            try
+            {
+                var runQuery = Rp1Types.StaticMethod(_currencyQuery!, "RunQuery", 4);
+                var reason = Enum.Parse(_transactionReasons!, VesselPurchaseReason);
+                var funds = Enum.Parse(_currency!, FundsCurrency);
+                var query = runQuery?.Invoke(null, new object[] { reason, -probeFunds, 0.0, 0.0 });
+                var getTotal = query?.GetType().GetMethod("GetTotal", new[] { _currency!, typeof(bool) });
+                return getTotal == null ? null : Rp1Types.ToDouble(getTotal.Invoke(query, new object[] { funds, true }));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// The refusal for a price that could not be computed. It refuses, and
         /// that direction is the whole point: RP-1's SpendFunds does no
         /// affordability test of its own, so proceeding on an unreadable price is

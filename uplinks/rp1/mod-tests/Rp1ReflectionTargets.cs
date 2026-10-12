@@ -280,7 +280,7 @@ namespace GonogoRp1Uplink.Tests
             // parameters a tooling of a given type is keyed on. Both are read for
             // the refit targets: RP-1 offers a refit only onto a size the career
             // already owns, and only for a two-parameter type.
-            new Rp1TypeTarget(Rp0, "RP0.ToolingDatabase", "Rp1ToolingReflection"),
+            new Rp1TypeTarget(Rp0, "RP0.ToolingDatabase", "Rp1ToolingReflection, Rp1BuildStartCommands"),
             new Rp1TypeTarget(Rp0, "RP0.Tooling.Parameters", "Rp1ToolingReflection"),
             // The career's own history. Resolved by name because its handler is a
             // ScenarioModule and a save RP-1 does not manage has none.
@@ -1445,6 +1445,9 @@ namespace GonogoRp1Uplink.Tests
             // real and reloads the database from a node to undo them.
             Add("RP0.SpaceCenterManagement", "EditorToolingCosts", Rp1Reader.Numeric, Tooling + ", " + ToolingWrites, @static: true);
             Add("RP0.ToolingManager", "Instance", Rp1Reader.Presence, Tooling, @static: true);
+            // Moves whenever a tooling is bought or the database is reloaded, so a
+            // quote's cached price is dropped the moment tooling changes.
+            Add("RP0.ToolingDatabase", "Generation", Rp1Reader.Numeric, Start, @static: true);
             // False outside a career, where RP-1's own level lookup answers "tooled"
             // for everything. Read so the channel can say NOTHING rather than
             // publish a vehicle with no work left on it.

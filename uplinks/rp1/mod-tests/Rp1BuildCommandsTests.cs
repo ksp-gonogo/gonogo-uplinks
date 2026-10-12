@@ -366,6 +366,7 @@ namespace GonogoRp1Uplink.Tests
                 {
                     Rp1BuildCommands.RepeatCommand,
                     Rp1BuildStartCommands.StartCommand,
+                    Rp1BuildStartCommands.QuoteCommand,
                     Rp1VehicleCommands.RolloutCommand,
                     Rp1VehicleCommands.RollbackCommand,
                     Rp1VehicleCommands.ScrapCommand,
@@ -441,6 +442,11 @@ namespace GonogoRp1Uplink.Tests
             Assert.Equal(
                 new[] { Rp1BuildCommands.GateKind, Rp1BuildStartCommands.GateKind },
                 start.Requires.Select(r => r.Kind).ToArray());
+
+            var quote = declarations.Single(d => d.Command == Rp1BuildStartCommands.QuoteCommand);
+            Assert.Equal(
+                new[] { Rp1BuildCommands.GateKind, Rp1BuildStartCommands.GateKind },
+                quote.Requires.Select(r => r.Kind).ToArray());
 
             var upgrade = declarations.Single(d => d.Command == Rp1FacilityUpgradeCommands.UpgradeCommand);
             Assert.Equal(

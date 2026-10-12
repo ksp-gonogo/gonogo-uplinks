@@ -2,8 +2,10 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Badge,
   Cluster,
   CommandButton,
   NULL_DISPLAY,
@@ -13,9 +15,12 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
+import { useEffect, useRef, useState } from "react";
+import type { Value } from "@ksp-gonogo/sitrep-sdk";
 import type {
   Rp1BuildableComplex,
   Rp1BuildableCraftEntry,
+  Rp1BuildQuote,
 } from "../__generated__/contract.js";
 import { current } from "../shared/current.js";
 import { ProjectCard, ProjectCardList } from "../shared/ProjectCard.js";
@@ -31,6 +36,12 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  * `Rp1BuildStartCommands.StartCommand`.
  */
 export const RP1_BUILD_START_COMMAND = "rp1.build.start";
+
+/**
+ * Ask what starting a build would charge, without starting it. Must match
+ * `Rp1BuildStartCommands.QuoteCommand`.
+ */
+export const RP1_BUILD_QUOTE_COMMAND = "rp1.build.quote";
 
 /**
  * The save's saved craft, and the complexes that would integrate each one.
@@ -64,6 +75,7 @@ export const RP1_BUILD_START_COMMAND = "rp1.build.start";
 export function BuildableSection() {
   const available = current(useTelemetry("rp1.available"));
   const buildable = current(useTelemetry("rp1.buildable"));
+  const funds = current(useTelemetry("career.status"))?.balances?.funds;
 
   // Unconditional and above the early returns on purpose: a hook after one
   // would change count on the first frame RP-1 answers.
@@ -91,7 +103,12 @@ export function BuildableSection() {
       ) : (
         <ProjectCardList>
           {buildable.map((craft) => (
-            <CraftCard craft={craft} handle={start} key={cardKey(craft)} />
+            <CraftCard
+              craft={craft}
+              funds={funds}
+              handle={start}
+              key={cardKey(craft)}
+            />
           ))}
         </ProjectCardList>
       )}
@@ -110,9 +127,11 @@ export function BuildableSection() {
  */
 function CraftCard({
   craft,
+  funds,
   handle,
 }: Readonly<{
   craft: Rp1BuildableCraftEntry;
+  funds: Value<"funds"> | null | undefined;
   handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const name = craft.shipName ?? craft.craftFile ?? NULL_DISPLAY;
@@ -154,13 +173,16 @@ function CraftCard({
         </Text>
       ) : (
         <Stack gap="related-dense">
-          {/* RP-1 takes the whole price in funds at the press, from the
-              loaded parts through a currency query leaders and strategies
-              move, so no figure exists before it. It refuses when the career
-              cannot cover it, and the balance is in the widget header. */}
-          <Text size="xs" level="muted">
-            Priced by RP-1 when started, charged up front in funds
-          </Text>
+          {eligible.map((complex) => (
+            <BuildQuote
+              complex={complex}
+              craft={craft}
+              file={file}
+              funds={funds}
+              key={`${cardKey(craft)}:${complex.lcId ?? complexLabel(complex)}:${craft.mass}:${craft.partCount}`}
+              named={eligible.length > 1}
+            />
+          ))}
           <Cluster gap="related-dense" justify="start" wrap>
             {eligible.map((complex) => (
               <CommandButton
@@ -189,6 +211,126 @@ function CraftCard({
         </Stack>
       )}
     </ProjectCard>
+  );
+}
+
+/** A quote with its figures as funds, ready to draw and to compare with the balance. */
+interface QuotedFigures {
+  readonly affordable: boolean;
+  readonly balance: Value<"funds"> | null;
+  readonly price: Value<"funds">;
+}
+
+/**
+ * The quote's figures as funds. An Uplink's own command replies reach the
+ * client without their units, so the two amounts arrive as bare numbers and are
+ * given theirs here; a reply that already carries them passes through.
+ */
+function quotedFigures(
+  quote: Readonly<Rp1BuildQuote> | null | undefined,
+): QuotedFigures | null {
+  if (quote == null) {
+    return null;
+  }
+  return {
+    affordable: quote.affordable,
+    balance: asFunds(quote.balance),
+    price: asFunds(quote.price),
+  };
+}
+
+function asFunds(amount: Value<"funds"> | number): Value<"funds">;
+function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"funds"> | null;
+function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"funds"> | null {
+  if (amount === null || amount === undefined) {
+    return null;
+  }
+  return typeof amount === "number" ? value("funds", amount) : amount;
+}
+
+/**
+ * What RP-1 will charge to start this craft at one complex, beside the control
+ * that starts it.
+ *
+ * <para>RP-1 takes a vehicle's whole price in funds at the press and refuses
+ * when the career cannot cover it, so a price and a verdict against the
+ * balance are both honest here. The price is RP-1's own, asked once when the
+ * card is drawn and again only when the craft's measured figures change, which
+ * is when its file was saved over: a quote loads the craft's parts in the game,
+ * so it is never asked on a timer. Until it arrives, or when RP-1 will not
+ * quote, the card says that RP-1 prices the build when it is started.</para>
+ *
+ * <para>The verdict compares the quoted price with the balance as it is now
+ * and not as it was when the quote was given, so it follows the career's
+ * funds without asking again.</para>
+ */
+function BuildQuote({
+  complex,
+  craft,
+  file,
+  funds,
+  named,
+}: Readonly<{
+  complex: Rp1BuildableComplex;
+  craft: Rp1BuildableCraftEntry;
+  file: string;
+  funds: Value<"funds"> | null | undefined;
+  named: boolean;
+}>) {
+  const quote = useCommand(RP1_BUILD_QUOTE_COMMAND, {
+    rail: false,
+    vantage: "meta",
+  });
+  const send = useRef(quote.send);
+  send.current = quote.send;
+  const [answer, setAnswer] = useState<QuotedFigures | null>(null);
+  const facility = craft.facility;
+  const lcId = complex.lcId;
+
+  useEffect(() => {
+    let live = true;
+    send
+      .current({
+        craftFile: file,
+        facility: facility ?? undefined,
+        lcId: lcId ?? undefined,
+      })
+      .then((reply) => {
+        if (live) {
+          setAnswer(quotedFigures(reply.payload));
+        }
+      })
+      .catch(() => {
+        // The game would not price it. The plain fact below stays.
+      });
+    return () => {
+      live = false;
+    };
+  }, [file, facility, lcId]);
+
+  const where = named ? ` at ${complex.name ?? complexLabel(complex)}` : "";
+  if (answer === null) {
+    return (
+      <Text size="xs" level="muted">
+        Priced by RP-1 when started, charged up front in funds
+      </Text>
+    );
+  }
+
+  const balance = funds ?? answer.balance;
+  const affordable =
+    balance == null
+      ? answer.affordable
+      : balance.valueOf() >= answer.price.valueOf();
+
+  return (
+    <Cluster gap="related-dense" justify="start" wrap>
+      <Text size="xs" level="muted">
+        Costs <Unit value={answer.price} decimals={0} />
+        {where}, charged up front
+      </Text>
+      {affordable ? null : <Badge tone="nogo">Cannot afford</Badge>}
+    </Cluster>
   );
 }
 

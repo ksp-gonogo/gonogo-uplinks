@@ -225,6 +225,32 @@ export interface Rp1BuildStartArgs
 	lcId?: string;
 }
 /**
+* Args for `rp1.build.quote`: what RP-1 would charge to start this craft at
+* this complex, asked without starting anything.
+*
+* The same three fields `Rp1BuildStartArgs` carries, because the quote is for
+* exactly the build those arguments would start. See that type for why each is
+* required.
+*/
+export interface Rp1BuildQuoteArgs
+{
+	/**
+	* The craft file's own name, without its extension, as
+	* `rp1.buildable[].craftFile` publishes it.
+	*/
+	craftFile?: string;
+	/**
+	* Which editor's folder holds the file, as the KSP ordinal
+	* `rp1.buildable[].facility` publishes. Required.
+	*/
+	facility?: number;
+	/**
+	* Which launch complex would integrate it, by the GUID `rp1.complexes[].lcId`
+	* publishes. Required.
+	*/
+	lcId?: string;
+}
+/**
 * Args for `rp1.facility.upgrade`: queue a space-centre facility's next tier
 * as an RP-1 construction project.
 *
@@ -2567,6 +2593,29 @@ export interface Rp1CrewProgram
 	coursesStarted?: Value<"count"> | null;
 	/** Kerbals enrolled on a course. The crew a mission cannot draw on today. */
 	crewInTraining?: Value<"count"> | null;
+}
+/**
+* What RP-1 would charge to start one saved craft at one launch complex, and
+* whether the career's funds cover it.
+*
+* The reply to `rp1.build.quote`. Shown beside the Start build control of a
+* vehicle build, which RP-1 charges in full, in funds, when it is started. The
+* figure is RP-1's own price for the loaded craft after leaders and strategies
+* have moved it, the same one `rp1.build.start` charges. The press is still
+* RP-1's decision: a balance that moves between the quote and the press can
+* change the answer.
+*/
+export interface Rp1BuildQuote
+{
+	/** What starting the build would charge. */
+	price: Value<"funds">;
+	/**
+	* The career's funds when the quote was given. Null when RP-1's balance could
+	* not be read, which leaves `Rp1BuildQuote.affordable` false.
+	*/
+	balance?: Value<"funds"> | null;
+	/** Whether `Rp1BuildQuote.balance` covers `Rp1BuildQuote.price`. */
+	affordable: boolean;
 }
 /**
 * One saved craft file, and what each launch complex would make of it.

@@ -30,6 +30,15 @@ namespace RP0
     }
 
     /// <summary>
+    /// RP-1's tooling database, of which only the generation counter is read: it
+    /// moves whenever a tooling is bought or the database is reloaded.
+    /// </summary>
+    public static class ToolingDatabase
+    {
+        public static int Generation { get; set; }
+    }
+
+    /// <summary>
     /// The base every tooling module derives from. Abstract, as the producer's is,
     /// so the assignability check is exercised against a subclass rather than
     /// against the base itself.

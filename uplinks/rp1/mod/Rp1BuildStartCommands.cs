@@ -122,6 +122,9 @@ namespace GonogoRp1Uplink
         /// <summary>Start integrating a design RP-1 has never held. Must match the client's constant.</summary>
         public const string StartCommand = "rp1.build.start";
 
+        /// <summary>Ask what <c>rp1.build.start</c> would charge, without starting. Must match the client's constant.</summary>
+        public const string QuoteCommand = "rp1.build.quote";
+
         /// <summary>
         /// The gate kind this command adds to the one every other build command
         /// declares. Its own kind rather than a quantity on <c>rp1.build</c>,
@@ -144,6 +147,7 @@ namespace GonogoRp1Uplink
         private const string ScmTypeName = "RP0.SpaceCenterManagement";
         private const string VesselProjectTypeName = "RP0.VesselProject";
         private const string UtilitiesTypeName = "RP0.KCTUtilities";
+        private const string ToolingDatabaseTypeName = "RP0.ToolingDatabase";
 
         /// <summary>
         /// The launch site RP-1 stamps on a rocket, and the one its own
@@ -171,6 +175,8 @@ namespace GonogoRp1Uplink
         private readonly Type? _scm;
         private readonly Type? _vesselProject;
         private readonly Type? _utilities;
+        private readonly Type? _toolingDatabase;
+        private readonly Rp1QuoteCache _quotes = new Rp1QuoteCache();
         private readonly Rp1Pricing _pricing = new Rp1Pricing();
 
         /// <summary>
@@ -187,6 +193,7 @@ namespace GonogoRp1Uplink
             _scm = Rp1Types.Find(ScmTypeName);
             _vesselProject = Rp1Types.Find(VesselProjectTypeName);
             _utilities = Rp1Types.Find(UtilitiesTypeName);
+            _toolingDatabase = Rp1Types.Find(ToolingDatabaseTypeName);
         }
 
         /// <summary>
@@ -239,7 +246,186 @@ namespace GonogoRp1Uplink
         /// </summary>
         public CommandResult Start(Rp1BuildStartArgs? args)
         {
-            var file = args?.CraftFile;
+            var refusal = ResolveTarget(args?.CraftFile, args?.LcId, out var target);
+            if (refusal != null)
+            {
+                return refusal;
+            }
+
+            refusal = OpenCraft(target!, args!.Facility, out var load);
+            if (refusal != null)
+            {
+                return refusal;
+            }
+
+            try
+            {
+                return Integrate(load!, target!.Complex, target.ComplexName, args.Facility);
+            }
+            finally
+            {
+                // Whatever happened, the parts go back. A refusal that returned
+                // without releasing would leave a craft standing at the world
+                // origin, once per press, and a press an operator repeats after a
+                // refusal is exactly the one that repeats the leak.
+                Release(target!.Catalogue, load!.Ship!);
+            }
+        }
+
+        /// <summary>
+        /// What RP-1 would charge to start the craft file named by
+        /// <see cref="Rp1BuildQuoteArgs.CraftFile"/> at the complex named by
+        /// <see cref="Rp1BuildQuoteArgs.LcId"/>, and whether the career's funds
+        /// cover it. Starts nothing and charges nothing.
+        ///
+        /// <para>Every refusal the press makes before it charges is made here, in
+        /// the same order and by the same code, so a craft the press would refuse
+        /// is refused by the quote in the same words. The price is
+        /// <see cref="Rp1Pricing.Price"/>, the one the press charges.</para>
+        ///
+        /// <para>Loading a craft instantiates a part per PART node, so a price is
+        /// kept in <see cref="Rp1QuoteCache"/> against the build and the career's
+        /// state, and a repeat quote of the same build loads nothing. Only a
+        /// price is kept: the balance is read fresh each time, so a cached quote
+        /// still says whether the career can afford it now. A refusal is never
+        /// kept, because the thing that caused it is the thing an operator fixes
+        /// next.</para>
+        /// </summary>
+        public CommandResult<Rp1BuildQuote> Quote(Rp1BuildQuoteArgs? args)
+        {
+            var refusal = ResolveTarget(args?.CraftFile, args?.LcId, out var target);
+            if (refusal != null)
+            {
+                return Refused(refusal);
+            }
+
+            var stamp = CareerStamp();
+            var key = KeyFor(target!, args!.Facility);
+            if (key != null && stamp != null && _quotes.TryGet(key, stamp, out var cached))
+            {
+                return Quoted(cached);
+            }
+
+            refusal = OpenCraft(target!, args.Facility, out var load);
+            if (refusal != null)
+            {
+                return Refused(refusal);
+            }
+
+            try
+            {
+                var failure = Prepare(load!, target!.Complex, target.ComplexName, args.Facility, out var vessel);
+                if (failure != null)
+                {
+                    return Refused(failure);
+                }
+
+                var price = _pricing.Price(vessel!, out _, out var priceFailure);
+                if (priceFailure != null)
+                {
+                    return Refused(priceFailure);
+                }
+
+                var modified = load!.Measured?.Modified;
+                if (stamp != null && modified != null)
+                {
+                    _quotes.Put(
+                        Rp1QuoteCache.KeyOf(target.File, args.Facility, modified.Value, target.LcId),
+                        stamp,
+                        price);
+                }
+
+                return Quoted(price);
+            }
+            finally
+            {
+                Release(target!.Catalogue, load!.Ship!);
+            }
+        }
+
+        private static CommandResult<Rp1BuildQuote> Refused(CommandResult refusal) =>
+            CommandResult<Rp1BuildQuote>.Fail(refusal.ErrorCode!, refusal.Detail);
+
+        private static CommandResult<Rp1BuildQuote> Quoted(double price)
+        {
+            var balance = Rp1Pricing.FundsBalance();
+            return CommandResult<Rp1BuildQuote>.Ok(new Rp1BuildQuote
+            {
+                Price = price,
+                Balance = balance,
+                Affordable = balance != null && balance.Value >= price,
+            });
+        }
+
+        /// <summary>
+        /// Everything the price depends on besides the craft and the complex: the
+        /// tooling database's generation, which moves whenever a tooling is bought
+        /// or the database is reloaded, and what a vehicle purchase costs once
+        /// leaders and strategies have had their say, read as the charge for a
+        /// fixed probe amount. Null when either could not be read, which stops a
+        /// price being kept rather than keeping one nothing can invalidate.
+        /// </summary>
+        private string? CareerStamp()
+        {
+            var tooling = _toolingDatabase == null
+                ? null
+                : Rp1Types.ToDouble(Rp1Types.StaticValue(_toolingDatabase, "Generation"));
+            var probe = _pricing.ModifierProbe();
+            if (tooling == null || probe == null)
+            {
+                return null;
+            }
+
+            return tooling.Value.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+                + "|" + probe.Value.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// The cache key for the build, or null when the catalogue has no record of
+        /// the file's write time: nothing then says the file is unchanged, so no
+        /// price is kept.
+        /// </summary>
+        private static string? KeyFor(Target target, KspEditorFacility? facility)
+        {
+            ICraftCatalogue catalogue = target.Catalogue;
+            IReadOnlyList<CraftFileRecord> listing;
+            try
+            {
+                listing = catalogue.Craft();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            foreach (var record in listing)
+            {
+                if (record.File == target.File && record.Facility == facility && record.Modified != null)
+                {
+                    return Rp1QuoteCache.KeyOf(target.File, facility, record.Modified.Value, target.LcId);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>What a build is aimed at once every refusal that needs no craft has passed.</summary>
+        private sealed class Target
+        {
+            public ICraftCatalogue Catalogue = null!;
+            public object Complex = null!;
+            public string ComplexName = "";
+            public string File = "";
+            public string LcId = "";
+        }
+
+        /// <summary>
+        /// The refusals that need no craft: arguments, RP-1's model, the catalogue
+        /// and the complex. Null when the build can go on to open the file.
+        /// </summary>
+        private CommandResult? ResolveTarget(string? file, string? lcId, out Target? target)
+        {
+            target = null;
             if (string.IsNullOrWhiteSpace(file))
             {
                 return CommandResult.Fail(
@@ -247,7 +433,7 @@ namespace GonogoRp1Uplink
                     "the command named no craft file, and the save holds several");
             }
 
-            if (string.IsNullOrWhiteSpace(args?.LcId))
+            if (string.IsNullOrWhiteSpace(lcId))
             {
                 return CommandResult.Fail(
                     CommandErrorCode.NotFound,
@@ -282,7 +468,7 @@ namespace GonogoRp1Uplink
                     "this install cannot open the save's craft files, so nothing was started");
             }
 
-            if (!TryFindComplex(scm, args!.LcId!, out var complex))
+            if (!TryFindComplex(scm, lcId!, out var complex))
             {
                 return CommandResult.Fail(
                     CommandErrorCode.NotFound,
@@ -297,10 +483,28 @@ namespace GonogoRp1Uplink
                     complexName + " is being built or renovated, so it cannot start a vehicle yet");
             }
 
-            CraftLoad load;
+            target = new Target
+            {
+                Catalogue = catalogue,
+                Complex = complex,
+                ComplexName = complexName,
+                File = file!,
+                LcId = lcId!,
+            };
+            return null;
+        }
+
+        /// <summary>
+        /// Opens the craft file into live parts. The caller owns the result and
+        /// gives it back through <see cref="Release"/>.
+        /// </summary>
+        private static CommandResult? OpenCraft(Target target, KspEditorFacility? facility, out CraftLoad? load)
+        {
+            load = null;
+            CraftLoad opened;
             try
             {
-                load = catalogue.Load(file, args.Facility);
+                opened = target.Catalogue.Load(target.File, facility);
             }
             catch (Exception ex)
             {
@@ -310,25 +514,15 @@ namespace GonogoRp1Uplink
                     + Rp1Types.ExceptionReason(ex));
             }
 
-            if (load == null || load.Ship == null)
+            if (opened == null || opened.Ship == null)
             {
                 return CommandResult.Fail(
                     CommandErrorCode.NotFound,
-                    load?.Failure ?? "the craft file could not be opened");
+                    opened?.Failure ?? "the craft file could not be opened");
             }
 
-            try
-            {
-                return Integrate(load, complex, complexName, args.Facility);
-            }
-            finally
-            {
-                // Whatever happened, the parts go back. A refusal that returned
-                // without releasing would leave a craft standing at the world
-                // origin, once per press, and a press an operator repeats after a
-                // refusal is exactly the one that repeats the leak.
-                Release(catalogue, load.Ship);
-            }
+            load = opened;
+            return null;
         }
 
         /// <summary>
@@ -338,76 +532,13 @@ namespace GonogoRp1Uplink
         private CommandResult Integrate(
             CraftLoad load, object complex, string complexName, KspEditorFacility? facility)
         {
-            // The FILE's own editor, not the argument's. The argument decided
-            // which folder was opened; RP-1's constructor reads shipFacility off
-            // the craft itself to decide whether this is a VAB or an SPH project,
-            // so the check that the complex is the right kind has to ask the same
-            // thing it will. The argument stands in only when the file did not
-            // say.
-            var spaceplane = (load.Measured?.Facility ?? facility) == KspEditorFacility.SPH;
-            var kindRefusal = Rp1Envelope.WrongComplexKind(
-                spaceplane, Rp1Types.ReadEnumName(complex, "LCType"));
-            if (kindRefusal != null)
+            var failure = Prepare(load, complex, complexName, facility, out var vessel);
+            if (failure != null)
             {
-                return CommandResult.Fail(
-                    Rp1ErrorCodes.NotReady,
-                    complexName + " will not integrate this craft: " + kindRefusal);
+                return failure;
             }
 
-            var partsRefusal = PartRefusal(load);
-            if (partsRefusal != null)
-            {
-                return CommandResult.Fail(Rp1ErrorCodes.NotReady, partsRefusal);
-            }
-
-            object vessel;
-            try
-            {
-                var constructor = Rp1Types.Constructor(_vesselProject!, 4);
-                if (constructor == null)
-                {
-                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
-                        "this RP-1 build has no craft-measuring step this Uplink recognises");
-                }
-                vessel = constructor.Invoke(new object?[]
-                {
-                    load.Ship,
-                    spaceplane ? RunwayLaunchSite : PadLaunchSite,
-                    NoFlag,
-                    true,
-                })!;
-            }
-            catch (Exception ex)
-            {
-                return CommandResult.Fail(
-                    CommandErrorCode.ModeUnavailable,
-                    "RP-1 could not measure this craft: " + Rp1Types.ExceptionReason(ex));
-            }
-
-            // Before anything asks what the complex thinks of it, because the
-            // vehicle is born bound to whichever complex happened to be active
-            // and every question below is about the one that was chosen. The same
-            // assignment RP-1's own overrideLC argument makes.
-            if (!Rp1Types.WriteMember(vessel, "LCID", Rp1Types.Member(complex, "ID")))
-            {
-                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
-                    "this RP-1 build has no way to bind a vehicle to a chosen complex, "
-                    + "so nothing was started");
-            }
-
-            // Asked a second time on the vehicle RP-1 measured, because the
-            // client's own answer came off a craft file and could not know
-            // whether the craft is human-rated or what resources it needs. This
-            // one is RP-1's and is the one that decides.
-            var failedChecks = FacilityRefusals(vessel);
-            if (failedChecks != null)
-            {
-                return CommandResult.Fail(
-                    Rp1ErrorCodes.NotReady,
-                    "RP-1 will not integrate this craft at " + complexName + ": " + failedChecks);
-            }
-
-            var price = _pricing.Price(vessel, out var affordable, out var priceFailure);
+            var price = _pricing.Price(vessel!, out var affordable, out var priceFailure);
             if (priceFailure != null)
             {
                 return priceFailure;
@@ -434,7 +565,7 @@ namespace GonogoRp1Uplink
                     return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
                         "this RP-1 build has no build-list add this Uplink recognises");
                 }
-                add.Invoke(null, new object[] { vessel, true });
+                add.Invoke(null, new object[] { vessel!, true });
             }
             catch (Exception ex)
             {
@@ -449,6 +580,90 @@ namespace GonogoRp1Uplink
             }
 
             return CommandResult.Ok();
+        }
+
+        /// <summary>
+        /// Every refusal the press makes before it asks for a price, ending with
+        /// RP-1's own measurement of the loaded craft bound to the chosen
+        /// complex. Null on success, with that measurement in
+        /// <paramref name="vessel"/>. Shared by the press and the quote, so a craft
+        /// the one refuses the other refuses in the same words.
+        /// </summary>
+        private CommandResult? Prepare(
+            CraftLoad load, object complex, string complexName, KspEditorFacility? facility, out object? vessel)
+        {
+            vessel = null;
+            // The FILE's own editor, not the argument's. The argument decided
+            // which folder was opened; RP-1's constructor reads shipFacility off
+            // the craft itself to decide whether this is a VAB or an SPH project,
+            // so the check that the complex is the right kind has to ask the same
+            // thing it will. The argument stands in only when the file did not
+            // say.
+            var spaceplane = (load.Measured?.Facility ?? facility) == KspEditorFacility.SPH;
+            var kindRefusal = Rp1Envelope.WrongComplexKind(
+                spaceplane, Rp1Types.ReadEnumName(complex, "LCType"));
+            if (kindRefusal != null)
+            {
+                return CommandResult.Fail(
+                    Rp1ErrorCodes.NotReady,
+                    complexName + " will not integrate this craft: " + kindRefusal);
+            }
+
+            var partsRefusal = PartRefusal(load);
+            if (partsRefusal != null)
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.NotReady, partsRefusal);
+            }
+
+            object built;
+            try
+            {
+                var constructor = Rp1Types.Constructor(_vesselProject!, 4);
+                if (constructor == null)
+                {
+                    return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
+                        "this RP-1 build has no craft-measuring step this Uplink recognises");
+                }
+                built = constructor.Invoke(new object?[]
+                {
+                    load.Ship,
+                    spaceplane ? RunwayLaunchSite : PadLaunchSite,
+                    NoFlag,
+                    true,
+                })!;
+            }
+            catch (Exception ex)
+            {
+                return CommandResult.Fail(
+                    CommandErrorCode.ModeUnavailable,
+                    "RP-1 could not measure this craft: " + Rp1Types.ExceptionReason(ex));
+            }
+
+            // Before anything asks what the complex thinks of it, because the
+            // vehicle is born bound to whichever complex happened to be active
+            // and every question below is about the one that was chosen. The same
+            // assignment RP-1's own overrideLC argument makes.
+            if (!Rp1Types.WriteMember(built, "LCID", Rp1Types.Member(complex, "ID")))
+            {
+                return CommandResult.Fail(Rp1ErrorCodes.BuildUnrecognised,
+                    "this RP-1 build has no way to bind a vehicle to a chosen complex, "
+                    + "so nothing was started");
+            }
+
+            // Asked a second time on the vehicle RP-1 measured, because the
+            // client's own answer came off a craft file and could not know
+            // whether the craft is human-rated or what resources it needs. This
+            // one is RP-1's and is the one that decides.
+            var failedChecks = FacilityRefusals(built);
+            if (failedChecks != null)
+            {
+                return CommandResult.Fail(
+                    Rp1ErrorCodes.NotReady,
+                    "RP-1 will not integrate this craft at " + complexName + ": " + failedChecks);
+            }
+
+            vessel = built;
+            return null;
         }
 
         /// <summary>

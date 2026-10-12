@@ -12,7 +12,10 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { RP1_BUILD_START_COMMAND } from "./Buildable.js";
+import {
+  RP1_BUILD_QUOTE_COMMAND,
+  RP1_BUILD_START_COMMAND,
+} from "./Buildable.js";
 import { VehicleAssembly } from "./index.js";
 
 const CAREER = {
@@ -91,9 +94,26 @@ async function rp1IsPresent(fixture: ReturnType<typeof setupStreamFixture>) {
   });
 }
 
-/** A career with one saved craft and one complex that would take it. */
-async function withOneSavedCraft(overrides: Record<string, unknown> = {}) {
+/** What RP-1 quotes for the craft above: 40,000 funds, against the career's 289,848. */
+const QUOTE = { affordable: true, balance: 289_848, price: 40_000 };
+
+/**
+ * A career with one saved craft and one complex that would take it, whose
+ * quote RP-1 answers with `quote` unless the test says otherwise. `null` makes
+ * RP-1 refuse the quote, which is what a craft RP-1 will not price looks like.
+ */
+async function withOneSavedCraft(
+  overrides: Record<string, unknown> = {},
+  quote: Record<string, unknown> | null = QUOTE,
+) {
   const mounted = mount();
+  mounted.fixture.transport.setCommandHandler((command) =>
+    command === RP1_BUILD_QUOTE_COMMAND
+      ? quote === null
+        ? { errorCode: "unreadable", success: false }
+        : { payload: quote, success: true }
+      : { success: true },
+  );
   await rp1IsPresent(mounted.fixture);
   act(() => {
     mounted.fixture.emit("career.status", CAREER);
@@ -122,24 +142,122 @@ describe("starting a build from a saved craft", () => {
     ).toBeInTheDocument();
   });
 
-  it("says beside the control that RP-1 prices the build when it is started, up front", async () => {
+  it("says RP-1 prices the build when it is started until a quote arrives", async () => {
     /*
-     * RP-1 charges a vehicle's whole price in funds at the press and prices it
-     * from the loaded parts through a currency query, so nothing before the
-     * press can quote it. The card says that instead of showing nothing.
+     * RP-1 charges a vehicle's whole price in funds at the press, so before a
+     * quote lands the card says that instead of showing nothing.
      */
-    await withOneSavedCraft();
+    const mounted = mount();
+    mounted.fixture.transport.holdCommands();
+    await rp1IsPresent(mounted.fixture);
+    act(() => {
+      mounted.fixture.emit("career.status", CAREER);
+      mounted.fixture.emit("rp1.complexes", COMPLEXES);
+      mounted.fixture.emit("rp1.warehouse", []);
+      mounted.fixture.emit("rp1.buildQueue", []);
+      mounted.fixture.emit("rp1.buildable", [craft()]);
+    });
 
     expect(
       await screen.findByText(/Priced by RP-1 when started, charged up front/i),
     ).toBeInTheDocument();
   });
 
-  it("does not claim a price for a craft that cannot be built", async () => {
-    await withOneSavedCraft({ missingParts: ["fooPart"] });
+  it("shows RP-1's own price beside Start build once it is quoted", async () => {
+    await withOneSavedCraft();
+
+    const price = await screen.findByText(/Costs/);
+    expect(price).toHaveTextContent("40,000");
+    expect(
+      screen.queryByText(/Priced by RP-1 when started/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("asks for the quote with the craft, the editor and the complex, from the space program", async () => {
+    const { fixture } = await withOneSavedCraft();
+
+    await screen.findByText(/Costs/);
+    const sent = fixture.transport.sentCommands.filter(
+      (c) => c.command === RP1_BUILD_QUOTE_COMMAND,
+    );
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.args).toEqual({
+      craftFile: "Atlas LV-3B",
+      facility: 1,
+      lcId: "lc-1",
+    });
+    expect(sent[0]?.vantage).toBe("meta");
+  });
+
+  it("asks once for a craft however often the listing is re-sent", async () => {
+    const { fixture } = await withOneSavedCraft();
+    await screen.findByText(/Costs/);
+
+    act(() => {
+      fixture.emit("rp1.buildable", [craft()]);
+      fixture.emit("rp1.buildable", [craft()]);
+    });
+    await act(async () => {});
+
+    expect(
+      fixture.transport.sentCommands.filter(
+        (c) => c.command === RP1_BUILD_QUOTE_COMMAND,
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("asks again when the craft file was saved over", async () => {
+    const { fixture } = await withOneSavedCraft();
+    await screen.findByText(/Costs/);
+
+    act(() => {
+      fixture.emit("rp1.buildable", [craft({ mass: 150, partCount: 51 })]);
+    });
+
+    await waitFor(() => {
+      expect(
+        fixture.transport.sentCommands.filter(
+          (c) => c.command === RP1_BUILD_QUOTE_COMMAND,
+        ),
+      ).toHaveLength(2);
+    });
+  });
+
+  it("says the career cannot afford it once its funds fall short, since RP-1 refuses up front", async () => {
+    const { fixture } = await withOneSavedCraft();
+    await screen.findByText(/Costs/);
+    expect(screen.queryByText(/Cannot afford/)).not.toBeInTheDocument();
+
+    act(() => {
+      fixture.emit("career.status", {
+        balances: { funds: 1_000, reputation: 40, science: 12 },
+      });
+    });
+
+    expect(await screen.findByText(/Cannot afford/)).toBeInTheDocument();
+  });
+
+  it("keeps the plain fact when RP-1 will not quote the craft", async () => {
+    await withOneSavedCraft({}, null);
+    await act(async () => {});
+
+    expect(
+      await screen.findByText(/Priced by RP-1 when started, charged up front/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Costs/)).not.toBeInTheDocument();
+  });
+
+  it("asks no quote for a craft that cannot be built", async () => {
+    const { fixture } = await withOneSavedCraft({ missingParts: ["fooPart"] });
 
     await screen.findByText(/Cannot be built/i);
-    expect(screen.queryByText(/Priced by RP-1/i)).not.toBeInTheDocument();
+    await act(async () => {});
+
+    expect(
+      fixture.transport.sentCommands.filter(
+        (c) => c.command === RP1_BUILD_QUOTE_COMMAND,
+      ),
+    ).toHaveLength(0);
   });
 
   it("dispatches the craft file, the editor and the complex that was pressed", async () => {
@@ -175,9 +293,10 @@ describe("starting a build from a saved craft", () => {
     });
   });
 
-  it("quotes no price on the card or the confirm, since RP-1 settles its own charge at the press", async () => {
+  it("keeps the quoted price on screen while the confirm is armed", async () => {
     await withOneSavedCraft();
     const user = userEvent.setup();
+    await screen.findByText(/Costs/);
 
     await user.click(
       await screen.findByRole("button", {
@@ -187,7 +306,7 @@ describe("starting a build from a saved craft", () => {
 
     const text = visibleText(document.body);
     expect(text).toContain("289,848");
-    expect(text).not.toMatch(/Spend|~/);
+    expect(text).toContain("40,000");
   });
 
   it("draws no control and gives the reason when no complex would take the craft", async () => {

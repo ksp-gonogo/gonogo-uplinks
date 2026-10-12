@@ -294,6 +294,34 @@ public class Rp1BuildStartArgs
 }
 
 /// <summary>
+/// Args for <c>rp1.build.quote</c>: what RP-1 would charge to start this craft
+/// at this complex, asked without starting anything.
+///
+/// <para>The same three fields <see cref="Rp1BuildStartArgs"/> carries, because
+/// the quote is for exactly the build those arguments would start. See that
+/// type for why each is required.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.build.quote", Payload = typeof(Rp1BuildQuote))]
+public class Rp1BuildQuoteArgs
+{
+    /// <summary>The craft file's own name, without its extension, as <c>rp1.buildable[].craftFile</c> publishes it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? CraftFile { get; set; }
+
+    /// <summary>Which editor's folder holds the file, as the KSP ordinal <c>rp1.buildable[].facility</c> publishes. Required.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public KspEditorFacility? Facility { get; set; }
+
+    /// <summary>Which launch complex would integrate it, by the GUID <c>rp1.complexes[].lcId</c> publishes. Required.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? LcId { get; set; }
+}
+
+/// <summary>
 /// Which Program to accept and at what speed, for <c>rp1.program.accept</c>.
 /// </summary>
 /// <remarks>

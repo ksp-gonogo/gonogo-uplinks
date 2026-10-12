@@ -2332,6 +2332,39 @@ public sealed class Rp1CrewProgram
 }
 
 /// <summary>
+/// What RP-1 would charge to start one saved craft at one launch complex, and
+/// whether the career's funds cover it.
+///
+/// <para>The reply to <c>rp1.build.quote</c>. Shown beside the Start build
+/// control of a vehicle build, which RP-1 charges in full, in funds, when it is
+/// started. The figure is RP-1's own price for the loaded craft after leaders
+/// and strategies have moved it, the same one <c>rp1.build.start</c> charges.
+/// The press is still RP-1's decision: a balance that moves between the quote
+/// and the press can change the answer.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1BuildQuote
+{
+    /// <summary>What starting the build would charge.</summary>
+    [SitrepUnit(Units.Funds)]
+    public double Price { get; set; }
+
+    /// <summary>
+    /// The career's funds when the quote was given. Null when RP-1's balance
+    /// could not be read, which leaves <see cref="Affordable"/> false.
+    /// </summary>
+    [SitrepUnit(Units.Funds)]
+    public double? Balance { get; set; }
+
+    /// <summary>Whether <see cref="Balance"/> covers <see cref="Price"/>.</summary>
+    [SitrepUnit(Units.Flag)]
+    public bool Affordable { get; set; }
+}
+
+/// <summary>
 /// One saved craft file, and what each launch complex would make of it.
 ///
 /// <para><b>Why this exists beside <c>spaceCenter.savedShips</c>.</b> That

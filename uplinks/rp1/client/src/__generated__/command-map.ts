@@ -46,6 +46,8 @@
 // declared and handled without a tag would be dispatchable and absent here.
 
 import type {
+  Rp1BuildQuote,
+  Rp1BuildQuoteArgs,
   Rp1BuildRepeatArgs,
   Rp1BuildStartArgs,
   Rp1ComplexDismantleArgs,
@@ -83,6 +85,7 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 
 export interface GeneratedCommandArgsMap {
+  "rp1.build.quote": Rp1BuildQuoteArgs;
   "rp1.build.repeat": Rp1BuildRepeatArgs;
   "rp1.build.start": Rp1BuildStartArgs;
   "rp1.complex.dismantle": Rp1ComplexDismantleArgs;
@@ -120,6 +123,7 @@ export interface GeneratedCommandArgsMap {
 }
 
 export interface GeneratedCommandReplyMap {
+  "rp1.build.quote": CommandResultOf<Rp1BuildQuote>;
   "rp1.build.repeat": CommandResult;
   "rp1.build.start": CommandResult;
   "rp1.complex.dismantle": CommandResultOf<Record<string, unknown>>;
@@ -167,6 +171,7 @@ export interface GeneratedCommandReplyMap {
  * its declared shape, unit hydration first among them, reads this.
  */
 export const GENERATED_COMMAND_REPLY_TYPES = {
+  "rp1.build.quote": "CommandResultOf<Rp1BuildQuote>",
   "rp1.build.repeat": "CommandResult",
   "rp1.build.start": "CommandResult",
   "rp1.complex.dismantle": "CommandResultOf<Record<string, unknown>>",
@@ -242,6 +247,7 @@ export interface GeneratedCommandRail {
  * an in-flight queue entry would be a fiction about the operator's own order.
  */
 export const GENERATED_COMMAND_RAIL = {
+  "rp1.build.quote": { replies: true, delayed: true },
   "rp1.build.repeat": { replies: true, delayed: true },
   "rp1.build.start": { replies: true, delayed: true },
   "rp1.complex.dismantle": { replies: true, delayed: true },
@@ -279,6 +285,7 @@ export const GENERATED_COMMAND_RAIL = {
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
+  "rp1.build.quote",
   "rp1.build.repeat",
   "rp1.build.start",
   "rp1.complex.dismantle",

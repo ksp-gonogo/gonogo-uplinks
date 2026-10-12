@@ -162,6 +162,16 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     timeLeftSeconds: "s",
     totalPoints: "bp",
   },
+  "Rp1BuildQuote": {
+    affordable: "flag",
+    balance: "funds",
+    price: "funds",
+  },
+  "Rp1BuildQuoteArgs": {
+    craftFile: "id",
+    facility: "enum",
+    lcId: "id",
+  },
   "Rp1BuildRepeatArgs": {
     id: "id",
   },
@@ -1323,6 +1333,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "Rp1BuildItemEntry": {
     projectType: null,
+  },
+  "Rp1BuildQuoteArgs": {
+    facility: "KspEditorFacility",
   },
   "Rp1BuildStartArgs": {
     facility: "KspEditorFacility",

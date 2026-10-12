@@ -106,6 +106,8 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1PersonnelAssignArgs),
                 nameof(Rp1PersonnelHeadcountArgs),
                 nameof(Rp1BuildStartArgs),
+                nameof(Rp1BuildQuoteArgs),
+                nameof(Rp1BuildQuote),
                 nameof(Rp1FacilityUpgradeArgs),
                 nameof(Rp1TechResearchArgs),
                 nameof(Rp1ProgramAcceptArgs),

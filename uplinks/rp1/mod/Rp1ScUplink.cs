@@ -848,6 +848,16 @@ namespace GonogoRp1Uplink
                         Rp1BuildStartCommands.Requirement(),
                     },
                 });
+                commands.Add(new CommandDeclaration
+                {
+                    Command = Rp1BuildStartCommands.QuoteCommand,
+                    Subject = BuildQueueTopic,
+                    Requires = new[]
+                    {
+                        Rp1BuildCommands.Requirements()[0],
+                        Rp1BuildStartCommands.Requirement(),
+                    },
+                });
             }
             if (moveModelResolved)
             {
@@ -1220,6 +1230,8 @@ namespace GonogoRp1Uplink
                     host.AddGateEvaluator(_start);
                     host.AddCommandHandler<Rp1BuildStartArgs, CommandResult>(
                         Rp1BuildStartCommands.StartCommand, _start.Start);
+                    host.AddCommandHandler<Rp1BuildQuoteArgs, CommandResult<Rp1BuildQuote>>(
+                        Rp1BuildStartCommands.QuoteCommand, _start.Quote);
                 }
             });
             Register(() =>
