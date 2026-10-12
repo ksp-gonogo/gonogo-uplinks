@@ -25,6 +25,6 @@
   },
   "csharpNamespace": "GonogoTestFlightUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/testflight/1.0.0-rc.1/testflight.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/testflight/0.0.1/testflight.client.js"
   }
 }

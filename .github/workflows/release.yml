@@ -8,40 +8,11 @@
 #
 # The mod zip goes on the tag's GitHub release, and only after the client is on
 # the branch, so a DLL is never downloadable before the bundle it fetches.
-#
-# Three rules keep a release from reaching players by accident:
-#
-#   - A tag whose version ends in `-rc.<n>` is a candidate: its GitHub release
-#     is marked a prerelease, always
-#   - Any other tag is a full release, which is the operator's to make. It is
-#     refused unless the repository variable ALLOW_FULL_RELEASE is "true", and
-#     only the operator sets that
-#   - A full release goes on to SpaceDock, which forwards it to CKAN, and it
-#     fails before anything is published if it cannot (no listing id, no
-#     login). A candidate never goes: the SpaceDock steps are skipped for any tag with a
-#     prerelease suffix, tooling/spacedock-release.mjs refuses one again
-#     inside the step, and tooling/release-safety.test.mjs fails CI if a
-#     SpaceDock step could run for one
-#
-# A manual dispatch with `tag` is a dry run, always: it resolves the tag against
-# the dispatched tree, runs the whole build, and copies the client into a
-# scratch folder to print what a real run would publish, and says which
-# SpaceDock listing and file a full release would upload, without logging in or
-# sending anything to it. It pushes
-# nothing, purges nothing and creates no GitHub release.
 name: release
 
 on:
   push:
     tags: ["*-v*"]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: >-
-          The release tag to rehearse, <uplink id>-v<version>. Dry run: builds
-          and shows what would be published, and publishes nothing.
-        type: string
-        required: true
 
 jobs:
   resolve:
@@ -51,75 +22,21 @@ jobs:
       id: ${{ steps.tag.outputs.id }}
       url: ${{ steps.tag.outputs.url }}
       leg: ${{ steps.tag.outputs.leg }}
-      tag: ${{ steps.which.outputs.tag }}
-      prerelease: ${{ steps.which.outputs.prerelease }}
-      dry: ${{ steps.which.outputs.dry }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       # A release is baked from the tree its tag names, so a tag on an unmerged
-      # branch would ship code main never reviewed. A dry run builds the tree it
-      # was dispatched on, which has to be main for the same reason.
+      # branch would ship code main never reviewed.
       - name: The tag is on main
-        env:
-          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
-            if [ "$GITHUB_REF" != refs/heads/main ]; then
-              echo "::error::A dry run rehearses what main would release, and this was dispatched on $GITHUB_REF"
-              exit 1
-            fi
-          elif ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "::error::$TAG points at $GITHUB_SHA, which is not on main"
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME points at $GITHUB_SHA, which is not on main"
             exit 1
           fi
-
-      # `-rc.<n>` marks a candidate. Anything else is a full release, which the
-      # operator alone allows by setting ALLOW_FULL_RELEASE. A dry run never
-      # publishes, so it may rehearse either.
-      - name: Candidate or full release
-        id: which
-        env:
-          TAG: ${{ inputs.tag || github.ref_name }}
-          ALLOW_FULL_RELEASE: ${{ vars.ALLOW_FULL_RELEASE }}
-        run: |
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then dry=true; else dry=false; fi
-          echo "dry=$dry" >> "$GITHUB_OUTPUT"
-          if [[ "$TAG" =~ -rc\.[0-9]+$ ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            echo "$TAG is a release candidate: its GitHub release will be a prerelease."
-          else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            if [ "$dry" = false ] && [ "$ALLOW_FULL_RELEASE" != true ]; then
-              echo "::error::$TAG is a full release, and a full release is the operator's to make. Nothing was published. A candidate is <uplink id>-v<version>-rc.<n>, such as ${TAG%%-v*}-v0.1.0-rc.1."
-              exit 1
-            fi
-          fi
-
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
       - id: tag
-        env:
-          TAG: ${{ inputs.tag || github.ref_name }}
-        run: node tooling/resolve-release-tag.mjs "$TAG" --github >> "$GITHUB_OUTPUT"
-
-      # A full release is uploaded to SpaceDock, so it fails here, before the
-      # build and before anything is published, when it cannot be: no listing id
-      # in the Uplink's uplink.json (an id is never guessed), or, outside a dry
-      # run, no SpaceDock login. A dry run sends nothing, so it only checks the id.
-      - name: A full release can reach SpaceDock
-        if: steps.which.outputs.prerelease != 'true'
-        env:
-          NAME: ${{ steps.tag.outputs.name }}
-          LOGIN: ${{ secrets.SPACEDOCK_USERNAME != '' && secrets.SPACEDOCK_PASSWORD != '' }}
-        run: |
-          set -euo pipefail
-          node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json"
-          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ "$LOGIN" != true ]; then
-            echo "::error::The SpaceDock login (secrets SPACEDOCK_USERNAME and SPACEDOCK_PASSWORD) is not visible to this repository, and a full release is uploaded to SpaceDock. Nothing was published."
-            exit 1
-          fi
+        run: node tooling/resolve-release-tag.mjs "$GITHUB_REF_NAME" --github >> "$GITHUB_OUTPUT"
 
   build:
     needs: resolve
@@ -152,14 +69,8 @@ jobs:
     env:
       NAME: ${{ needs.resolve.outputs.name }}
       URL: ${{ needs.resolve.outputs.url }}
-      TAG: ${{ needs.resolve.outputs.tag }}
-      ID: ${{ needs.resolve.outputs.id }}
-      PRERELEASE: ${{ needs.resolve.outputs.prerelease }}
     steps:
-      # Full history, for the changelog SpaceDock shows: the commits that touched
-      # this Uplink since its previous stable tag.
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
 
@@ -168,119 +79,55 @@ jobs:
           name: uplink-${{ needs.resolve.outputs.id }}
           path: artifacts
 
-      # Checks out the releases branch (a new one when there is none), copies the
-      # bundle and its sidecar to the path client.url names, refuses a version
-      # already published with different bytes, pushes, reads the push back from
-      # the remote, and asks jsDelivr to drop its cached copy of both URLs. A
-      # failed purge only delays the file, so it warns.
-      - name: Publish the client
-        if: needs.resolve.outputs.dry != 'true'
-        run: >-
-          node tooling/uplink-tools.mjs "$NAME" publish
-          --from "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}"
-          --push --purge --tag "$TAG"
-
-      # The same command into a scratch folder that is a checkout of the branch
-      # the URL names, with no --push and no --purge.
-      - name: Dry run, what would be published
-        if: needs.resolve.outputs.dry == 'true'
+      - name: Check out the releases branch
         run: |
           set -euo pipefail
-          scratch="$RUNNER_TEMP/releases-dry"
-          git init -q -b releases "$scratch"
-          node tooling/uplink-tools.mjs "$NAME" publish \
-            --from "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}" \
-            --to "$scratch" --tag "$TAG"
-          echo "Would publish, on the releases branch:"
-          (cd "$scratch" && find . -type f -not -path './.git/*' -exec sha256sum {} +)
-          echo "Would create the GitHub release $TAG as a $([ "$PRERELEASE" = true ] && echo prerelease || echo 'full release') with:"
-          ls artifacts/*.zip
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin releases > /dev/null; then
+            git fetch --no-tags origin releases:releases
+            git worktree add .releases releases
+          else
+            git worktree add --orphan -b releases .releases
+          fi
+
+      # Refuses a checkout of any ref other than the one the URL names, and a
+      # version already published with different bytes.
+      - name: Publish the client into the releases branch
+        run: node tooling/publish-release.mjs "$NAME" --to .releases --base https://cdn.jsdelivr.net
+
+      # A push can report success without the remote moving, so the landing is
+      # read back from the remote rather than taken from the exit code.
+      - name: Commit and push the releases branch
+        working-directory: .releases
+        run: |
+          set -euo pipefail
+          git add -A
+          if git diff --cached --quiet; then
+            echo "$GITHUB_REF_NAME is already on releases, byte for byte."
+            exit 0
+          fi
+          git commit -q -m "release: $GITHUB_REF_NAME"
+          git push origin releases
+          local=$(git rev-parse HEAD)
+          remote=$(git ls-remote origin refs/heads/releases | cut -f1)
+          if [ "$local" != "$remote" ]; then
+            echo "::error::pushed $local but origin/releases is $remote"
+            exit 1
+          fi
+
+      # jsDelivr caches a branch's head for twelve hours, so the new path can
+      # 404 until then. A failed purge only delays the file, so it warns.
+      - name: Purge the new URLs from jsDelivr
+        run: |
+          for u in "$URL" "${URL%/*}/gonogo-uplink.json"; do
+            curl -fsS -o /dev/null "https://purge.jsdelivr.net/${u#https://cdn.jsdelivr.net/}" \
+              || echo "::warning::purging $u failed; jsDelivr serves it once its branch cache lapses"
+          done
 
       - name: Attach the mod to the tag's GitHub release
-        if: needs.resolve.outputs.dry != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" artifacts/*.zip \
-            --verify-tag --title "$TAG" --notes "Client: $URL" \
-            $([ "$PRERELEASE" = true ] && echo --prerelease)
-
-      # SpaceDock, and through it CKAN, for a full release only. The listing id
-      # is `spacedock.modId` in the Uplink's own uplink.json, and `resolve`
-      # already failed the run if it, or the login, is missing. A version the
-      # listing already holds is not uploaded twice.
-      - name: Decide whether SpaceDock gets this release
-        id: sd
-        if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true'
-        run: |
-          set -euo pipefail
-          if ! node tooling/spacedock-release.mjs eligible "$TAG"; then
-            echo "::error::$TAG is not a full release, and only a full release is ever uploaded to SpaceDock"
-            exit 1
-          fi
-          VERSION="$(node tooling/spacedock-release.mjs version "$TAG")"
-          MOD_ID="$(node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json")"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "mod_id=${MOD_ID}" >> "$GITHUB_OUTPUT"
-          # Public read, no login: the listing names every version it holds.
-          curl -fsS "https://spacedock.info/api/mod/${MOD_ID}" -o sd-listing.json
-          if [ "$(node tooling/spacedock-release.mjs holds sd-listing.json "$VERSION")" = "held" ]; then
-            echo "upload=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::SpaceDock mod ${MOD_ID} already holds ${VERSION}; not uploading it again"
-            echo "### SpaceDock already holds $ID $VERSION; nothing was uploaded" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "upload=true" >> "$GITHUB_OUTPUT"
-          fi
-          rm -f sd-listing.json
-
-      - name: Write the SpaceDock changelog
-        if: steps.sd.outputs.upload == 'true'
-        run: |
-          set -eu
-          PREVIOUS="$(git tag --sort=-creatordate --merged "${TAG}^" \
-            | grep -E "^${ID}-v[0-9]+\.[0-9]+\.[0-9]+$" | head -1 || true)"
-          node tooling/spacedock-release.mjs changelog "$PREVIOUS" "uplinks/$NAME" > sd-changelog.md
-          cat sd-changelog.md
-
-      # The game version is the one every Gonogo mod zip declares.
-      - name: Publish to SpaceDock
-        if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true' && steps.sd.outputs.upload == 'true'
-        env:
-          SPACEDOCK_USERNAME: ${{ secrets.SPACEDOCK_USERNAME }}
-          SPACEDOCK_PASSWORD: ${{ secrets.SPACEDOCK_PASSWORD }}
-          SPACEDOCK_MOD_ID: ${{ steps.sd.outputs.mod_id }}
-          VERSION: ${{ steps.sd.outputs.version }}
-          GAME_VERSION: "1.12.5"
-        run: |
-          set -euo pipefail
-          ZIP="$(ls artifacts/*.zip | head -1)"
-          login="$(curl -sS -F username="$SPACEDOCK_USERNAME" -F password="$SPACEDOCK_PASSWORD" -c ./sd-cookies https://spacedock.info/api/login)"
-          if printf '%s' "$login" | grep -q '"error"[[:space:]]*:[[:space:]]*true'; then
-            echo "::error::SpaceDock login failed: $login"; exit 1
-          fi
-          resp="$(curl -sS -b ./sd-cookies \
-            -F version="$VERSION" \
-            -F "changelog=<sd-changelog.md" \
-            -F game-version="$GAME_VERSION" \
-            -F notify-followers=yes \
-            -F zipball=@"$ZIP" \
-            "https://spacedock.info/api/mod/${SPACEDOCK_MOD_ID}/update")"
-          if printf '%s' "$resp" | grep -q '"error"[[:space:]]*:[[:space:]]*true'; then
-            echo "::error::SpaceDock upload failed: $resp"; exit 1
-          fi
-          rm -f ./sd-cookies sd-changelog.md
-          echo "SpaceDock mod ${SPACEDOCK_MOD_ID} ($ID) updated to ${VERSION} (KSP ${GAME_VERSION})"
-          echo "### SpaceDock updated: $ID ${VERSION} (KSP ${GAME_VERSION})" >> "$GITHUB_STEP_SUMMARY"
-
-      # No login and no request to SpaceDock: only the listing and the file.
-      - name: Dry run, what SpaceDock would get
-        if: needs.resolve.outputs.dry == 'true'
-        run: |
-          set -euo pipefail
-          if ! node tooling/spacedock-release.mjs eligible "$TAG"; then
-            echo "$TAG is a prerelease: it is never uploaded to SpaceDock, so CKAN never sees it."
-            exit 0
-          fi
-          VERSION="$(node tooling/spacedock-release.mjs version "$TAG")"
-          MOD_ID="$(node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json")"
-          echo "Would upload $(ls artifacts/*.zip | head -1) to SpaceDock mod $MOD_ID as version $VERSION."
+          gh release create "$GITHUB_REF_NAME" artifacts/*.zip \
+            --verify-tag --title "$GITHUB_REF_NAME" --notes "Client: $URL"
