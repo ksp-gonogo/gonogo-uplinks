@@ -52,6 +52,7 @@ namespace Gonogo.RealAntennasUplink
         private readonly RaTargeting _targeting;
         private readonly RaChainRegister _register;
         private readonly RaRetargetRegister? _retargets;
+        private readonly RaChainTrace _trace = new RaChainTrace();
 
         internal RaChains(RaReflection ra, RaTargeting targeting, RaChainRegister register, RaRetargetRegister? retargets = null)
         {
@@ -264,6 +265,12 @@ namespace Gonogo.RealAntennasUplink
 
             var decision = RaChainPolicy.Decide(
                 entry.Walk, entry.Steps.Count, connected, nowUt, RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate()));
+            var line = _trace.Note(keptUnder, vessel.loaded, connected, decision.Move, decision.Step);
+            if (line != null)
+            {
+                UnityEngine.Debug.Log(line);
+            }
+
             if (decision.Move != RaChainPolicy.Move.Apply || Blocker(antenna) != null)
             {
                 return;

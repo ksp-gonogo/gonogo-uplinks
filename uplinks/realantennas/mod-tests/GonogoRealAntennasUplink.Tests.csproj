@@ -69,6 +69,7 @@
          plan: the walk acts on its own, so nothing else is going to notice it
          getting a decision wrong. -->
     <Compile Include="..\mod\RaChainPolicy.cs" />
+    <Compile Include="..\mod\RaChainTrace.cs" />
     <Compile Include="..\mod\RaChainRegister.cs" />
     <Compile Include="..\mod\RaChainKey.cs" />
     <!-- The home-command claimant's choice of station. It is handed the space
