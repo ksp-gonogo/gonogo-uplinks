@@ -256,7 +256,7 @@ export function useDelayedPlayout(
     }
 
     const lease = sharedDelayedStreams.acquire(raw, (ctx) =>
-      buildDelayedPipeline(raw, view, maxBufferedFrames, ctx),
+      buildOrReportUnavailable(raw, view, maxBufferedFrames, ctx),
     );
     leaseRef.current = lease;
     // Contribute THIS consumer's live capture clock. The build reads whichever
@@ -289,6 +289,46 @@ export function useDelayedPlayout(
   }, [resetEpoch]);
 
   return result;
+}
+
+/**
+ * `buildDelayedPipeline`, with a build that throws or rejects reported as the
+ * camera being "unavailable" instead of escaping.
+ *
+ * The shared cache answers a build that fails by dropping the entry and
+ * publishing nothing, so a lease on it reads `undefined` for good, which
+ * `useDelayedPlayout` shows as "connecting". A camera whose pipeline cannot be
+ * built then looks as if it were still on its way, for ever. The SDK's lease
+ * has no way to say a build failed, so the failure is turned into a result here,
+ * where it is known.
+ */
+function buildOrReportUnavailable(
+  raw: MediaStream,
+  view: DelayClockLike,
+  maxBufferedFrames: number | undefined,
+  ctx: DelayedStreamBuildContext<CaptureContribution>,
+):
+  | BuiltDelayedStream<DelayedPlayoutResult>
+  | Promise<BuiltDelayedStream<DelayedPlayoutResult>> {
+  const unavailable = (err: unknown): BuiltDelayedStream<DelayedPlayoutResult> => {
+    logger
+      .tag("kerbcast:frame-delay")
+      .warn("frame pipeline could not be built", { err });
+    return {
+      result: {
+        kind: "unavailable",
+        reason: `the frame-delay pipeline failed to build: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      },
+    };
+  };
+  try {
+    const built = buildDelayedPipeline(raw, view, maxBufferedFrames, ctx);
+    return built instanceof Promise ? built.catch(unavailable) : built;
+  } catch (err) {
+    return unavailable(err);
+  }
 }
 
 /**

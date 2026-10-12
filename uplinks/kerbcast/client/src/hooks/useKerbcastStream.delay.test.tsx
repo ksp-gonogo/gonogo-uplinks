@@ -511,6 +511,45 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     ).toBe(generator);
   });
 
+  it("reports unavailable, not connecting, when building the pipeline throws; a dead camera must not read as still connecting for ever", () => {
+    installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    const clock = manualClock(0);
+    registerUplinkHandle("kerbcast", {
+      id: "kerbcast",
+      getClient: () => ({ camera: () => cam }),
+      subscribeCamera: () => {},
+      unsubscribeCamera: () => {},
+      getReceiverForStream: () => {
+        throw new Error("receiver lookup refused");
+      },
+    });
+
+    let latest: DelayedPlayoutResult | "unset" = "unset";
+    render(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => 100}
+        onResult={(r) => {
+          latest = r;
+        }}
+      />,
+    );
+
+    act(() => {
+      cam.emit(fakeVideoStream(track));
+    });
+
+    expect(latest).toMatchObject({ kind: "unavailable" });
+    expect(
+      (latest as unknown as DelayedPlayoutResult & { kind: "unavailable" })
+        .reason,
+    ).toContain("receiver lookup refused");
+  });
+
   it("switching cameras disposes the OLD pipeline (reader cancelled, writer closed) before building a fresh one for the new track, no leaked pipeline, no cross-camera bleed", () => {
     const { FakeProcessor, FakeGenerator } = installFakeWebCodecs();
     const trackA = fakeControllableVideoTrack();
