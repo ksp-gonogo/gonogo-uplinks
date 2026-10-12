@@ -19,7 +19,7 @@ namespace Gonogo.KosUplink
     /// source via the observe-only <c>ScreenBuffer.Print</c> Harmony postfix
     /// (<see cref="KosComputeHarmony"/>, spec §4(b)) and the version guard
     /// (<see cref="KosVersionGuard"/>, spec §7). P2-P4 (files / terminal /
-    /// widgets) are NOT started.
+    /// widgets) are not started.
     ///
     /// <para><b>Every kOS call runs on the KSP main thread</b> (spec §2): CPU
     /// enumeration and the <c>kos.run</c> injection route through
@@ -41,7 +41,7 @@ namespace Gonogo.KosUplink
     /// <c>kOSProcessor</c>/<c>ScreenBuffer</c> reads, the real Harmony/GameObject
     /// wiring) lives in the other half of this <c>partial class</c>,
     /// <see cref="KosExtension"/> in <c>KosExtension.Ksp.cs</c>, which the test
-    /// project deliberately does NOT compile, a headless build has no
+    /// project deliberately does not compile, a headless build has no
     /// kOS.dll/UnityEngine.dll reference assemblies to link against. The two
     /// halves meet at <see cref="InstallProductionDefaults"/>, a partial
     /// method: implemented (real kOS/Unity wiring) in the production
@@ -119,7 +119,7 @@ namespace Gonogo.KosUplink
         ///
         /// <para>Null means this instance has no clock seam at all (a headless
         /// test that wired compute without one), and a compute publish is then
-        /// SKIPPED rather than stamped. kos.compute.* is Delayed, so its stamp
+        /// skipped rather than stamped. kos.compute.* is Delayed, so its stamp
         /// is the UT the reveal gate and the keyframe cadence both index on: a
         /// fabricated one froze the emitter's keyframe clock and made the
         /// channel reveal as if it were TrueNow, which is why the processor
@@ -333,7 +333,7 @@ namespace Gonogo.KosUplink
         /// headlessly.
         ///
         /// <para><paramref name="nowUt"/> is the clock the publishes are
-        /// stamped with, and is REQUIRED rather than defaulted: passing null
+        /// stamped with, and is required rather than defaulted: passing null
         /// exercises the no-clock case, where a compute publish is skipped
         /// rather than dated from a substitute, and a defaulted parameter made
         /// a re-wire (this is called twice in one test, to flip the
@@ -401,7 +401,7 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>
-        /// The MANDATORY healthcheck (see <see cref="ISitrepUplink.Health"/>):
+        /// The mandatory healthcheck (see <see cref="ISitrepUplink.Health"/>):
         /// polled on the Courier thread every <c>system.uplinks</c> sample, so
         /// it only ever reads cached volatile state written above by the
         /// main-thread-fed processor capture. Never touches kOS/Unity
@@ -431,7 +431,7 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// The <see cref="KosComputeHarmony.Sink"/>: runs on the KSP main
-        /// thread synchronously inside kOS's <c>PRINT</c>, on EVERY kerboscript
+        /// thread synchronously inside kOS's <c>PRINT</c>, on every kerboscript
         /// <c>PRINT</c> fragment, so it must be as close to free as possible on
         /// the common path. It:
         /// <list type="number">
@@ -439,20 +439,20 @@ namespace Gonogo.KosUplink
         /// subscriber exists (adversarial-review I1), no accumulation, no CPU
         /// reverse-map, no allocation;</item>
         /// <item>otherwise accumulates the fragment keyed by the
-        /// <c>ScreenBuffer</c> reference already in hand (NOT by a resolved CPU
+        /// <c>ScreenBuffer</c> reference already in hand (not by a resolved CPU
         /// id: so <c>kOSProcessor.AllInstances()</c> is never walked per
         /// fragment);</item>
-        /// <item>resolves the owning CPU's <c>KOSCoreId</c> exactly ONCE, only
+        /// <item>resolves the owning CPU's <c>KOSCoreId</c> exactly once, only
         /// when at least one <c>[KOSDATA]</c>/<c>[KOSERROR]</c> block has
         /// completed and is about to publish (spec §4.2), stamps it onto the
         /// completed blocks, and (for each block) either hands it to
         /// <see cref="_runManager"/> (a <c>kos.run</c> is armed for that CPU:
-        /// the block IS that call's correlated result, not a compute sample)
+        /// the block is that call's correlated result, not a compute sample)
         /// or publishes each field to
         /// <c>kos.compute.&lt;topic&gt;.&lt;field&gt;</c> (the centralised-feed
         /// path, which nothing subscribes to any more).</item>
         /// </list>
-        /// Must be cheap and non-blocking (it is inside PRINT). Entirely
+        /// Must be cheap and non-blocking (it is inside print). Entirely
         /// KSP-free: <paramref name="screen"/> is an opaque <see cref="object"/>
         /// handle, never touched as a real kOS type here.
         /// </summary>
@@ -536,14 +536,14 @@ namespace Gonogo.KosUplink
         ///
         /// <para><b>Timeout is drop-not-run</b> (adversarial-review M1, mirroring
         /// the engine's F2/F3 fix): the naive <c>using var done</c> form had two
-        /// faults when the dispatcher drained the action AFTER the 5s wait
+        /// faults when the dispatcher drained the action after the 5s wait
         /// expired: (1) the deferred action's <c>Set()</c> hit an already-
         /// disposed handle (a spurious <see cref="ObjectDisposedException"/>),
-        /// and (2) the kOS <c>RUNPATH</c> mutation STILL executed, seconds after
+        /// and (2) the kOS <c>RUNPATH</c> mutation still executed, seconds after
         /// the client was told the command timed out, so a
         /// client retry double-fired the script. Here the waiter marks the job
-        /// <see cref="MainThreadJob.Abandoned"/> on timeout and does NOT dispose
-        /// the handle; the dispatcher then DROPS an abandoned job (never runs
+        /// <see cref="MainThreadJob.Abandoned"/> on timeout and does not dispose
+        /// the handle; the dispatcher then drops an abandoned job (never runs
         /// <paramref name="work"/>) and disposes the handle itself. Exactly one
         /// side disposes, and no <c>Set()</c> ever lands on a disposed handle.</para>
         /// </summary>

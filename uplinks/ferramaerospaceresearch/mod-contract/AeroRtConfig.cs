@@ -5,7 +5,7 @@ using Reinforced.Typings.Fluent;
 namespace GonogoFerramAerospaceResearchUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration, scoped to its own contract slice and
+/// This Uplink's own codegen configuration, scoped to its own contract slice and
 /// writing into its own client, never into sitrep-sdk.
 ///
 /// <para>One wire type, and it is dense in declared quantities: twelve of
@@ -13,7 +13,7 @@ namespace GonogoFerramAerospaceResearchUplink;
 /// the whole generated interface retypes to <c>Value&lt;&gt;</c>. Two of those
 /// tokens are this Uplink's own (<c>kg/m²</c> and <c>W/kg</c>, declared in
 /// <see cref="Contract.Units"/>); the catalog check judges this assembly against
-/// core's tokens PLUS that class, so a typo in either still stops the
+/// core's tokens plus that class, so a typo in either still stops the
 /// build.</para>
 /// </summary>
 public static class AeroRtConfig

@@ -7,19 +7,19 @@ using Xunit;
 namespace GonogoRp1Uplink.Tests
 {
     /// <summary>
-    /// Rollout ELIGIBILITY as it reaches the client: the two halves of "may this
+    /// Rollout eligibility as it reaches the client: the two halves of "may this
     /// vehicle go to that pad", published so an operator can be offered a real
     /// choice instead of a control that can only be refused.
     ///
     /// <para>The two halves live at different levels on purpose and the tests
-    /// follow that split. The PAD half is per-pad
-    /// (<c>rp1.pads[].state</c> plus <c>hasVesselWaiting</c>); the VEHICLE half is
+    /// follow that split. The pad half is per-pad
+    /// (<c>rp1.pads[].state</c> plus <c>hasVesselWaiting</c>); the vehicle half is
     /// per-complex and identical for every pad the complex owns
     /// (<c>rp1.warehouse[].rolloutRefusals</c>).</para>
     ///
     /// <para><b>The case that earns this file its place is
     /// <see cref="The_capture_and_the_launch_gate_agree_about_the_envelope"/>.</b>
-    /// The envelope rule is now reproduced from fields TWICE in this assembly,
+    /// The envelope rule is now reproduced from fields twice in this assembly,
     /// once in the launch gate and once in the capture, because
     /// <c>MeetsFacilityRequirements</c> memoises onto <c>[Persistent]</c> fields
     /// and so cannot be invoked from a sampled read. Two copies of a rule drift.

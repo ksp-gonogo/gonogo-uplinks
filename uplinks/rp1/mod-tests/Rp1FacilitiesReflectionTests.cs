@@ -8,10 +8,10 @@ using Xunit;
 /// <summary>
 /// The facility reading, against the stand-in RP-1 graph in <c>Rp0Fixture.cs</c>.
 ///
-/// <para>These are about SHAPE, the same as every other reflection suite here:
+/// <para>These are about shape, the same as every other reflection suite here:
 /// that the walk reads the members it says it does, does RP-1's arithmetic where
 /// it claims to, and answers absent rather than a default where it cannot. They
-/// say nothing about the values a running RP-1 holds. What DOES check this
+/// say nothing about the values a running RP-1 holds. What does check this
 /// reading against a running game is a rig observation, listed as such: the whole
 /// claim it rests on is that a tier read this way answers outside the space
 /// centre, and no headless test can see a scene.</para>

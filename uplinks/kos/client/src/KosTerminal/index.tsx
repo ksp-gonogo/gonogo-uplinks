@@ -86,7 +86,7 @@ interface KosTerminalConfig {
   /**
    * Line-mode composition. When on, the client composes a line locally with
    * instant echo and sends it as a single `kos.keystroke` command on Enter,
-   * instead of one command per character. Under light-time delay a whole line
+   * instead of one command per character. Under signal delay delay a whole line
    * is one uplink round-trip instead of N. A per-terminal-instance toggle.
    */
   lineMode?: boolean;
@@ -172,18 +172,18 @@ const EMPTY_COMPOSITION: LineComposition = { text: "", cursor: 0 };
 
 /**
  * Reduces one input character into the in-progress line-mode composition,
- * a PURE transform that never touches the terminal. The composition is
+ * a pure transform that never touches the terminal. The composition is
  * rendered in a dedicated input bar (see `CompositionBar` in the component),
- * NOT echoed into the shared xterm screen: the terminal shows only the
+ * not echoed into the shared xterm screen: the terminal shows only the
  * server-authoritative screen, so an absolutely-positioned server frame can
  * never merge into, or wipe, the operator's in-progress typing.
  *
  * On Enter the whole line (+ `\r`) is flushed through `sendChars` as one
- * message (one uplink round-trip per line under light-time delay, not per
+ * message (one uplink round-trip per line under signal delay delay, not per
  * char); kOS's own echo of that line lands in the terminal a round trip later
- * as the sole persisted copy. Typed characters INSERT at the cursor (not
+ * as the sole persisted copy. Typed characters insert at the cursor (not
  * always the tail) and the cursor advances past them; backspace deletes the
- * character BEFORE the cursor. Other C0 control chars are ignored. Pasted /
+ * character before the cursor. Other C0 control chars are ignored. Pasted /
  * multi-char input is processed char-by-char. Cursor movement itself
  * (Left/Right/Home/End/Delete) is handled by the component's `onData`
  * handler directly via `moveCursor`/`cursorToStart`/`cursorToEnd`/
@@ -194,7 +194,7 @@ const EMPTY_COMPOSITION: LineComposition = { text: "", cursor: 0 };
  * comms path, `sendChars` would no-op at the dispatch layer anyway (the
  * `sendKeystrokeRef` guard), but by then the line had already been cleared
  * and pushed to history: the command visibly "vanished" even though it was
- * never sent. Refusing Enter HERE, at input-acceptance, before either of
+ * never sent. Refusing Enter here, at input-acceptance, before either of
  * those side effects, is what actually keeps the typed command in the box.
  * Regular typing/backspace still edits the composition while blocked, so the
  * operator can keep composing for when the path returns.
@@ -241,7 +241,7 @@ function reduceLineModeInput(
 /**
  * Left/Right arrow: moves the cursor by `delta`, clamped to stay within the
  * composed text (never negative, never past `text.length`). A no-op returns
- * the SAME object (not a fresh clone) so callers can skip a state update.
+ * the same object (not a fresh clone) so callers can skip a state update.
  */
 function moveCursor(comp: LineComposition, delta: number): LineComposition {
   const cursor = Math.max(0, Math.min(comp.text.length, comp.cursor + delta));
@@ -261,7 +261,7 @@ function cursorToEnd(comp: LineComposition): LineComposition {
 }
 
 /**
- * Delete (forward-delete): removes the character AT the cursor (the one
+ * Delete (forward-delete): removes the character at the cursor (the one
  * immediately after it), leaving the cursor position unchanged. A no-op at
  * the end of the line, where there is nothing to delete forward.
  */
@@ -340,9 +340,9 @@ function recallNewer(
  * (Ctrl+L to toggle, or the composer's own affordance)
  * routes the eventual send through a COPYPATH-then-RUNPATH pair against a
  * local (`1:`) copy instead of running the script where it lives, for
- * scripts run REPEATEDLY, so the archive round-trip is only paid once. A
+ * scripts run repeatedly, so the archive round-trip is only paid once. A
  * second Enter in "args" builds and sends the whole command through the
- * SAME `sendKeystrokeRef`/line-history path an ordinary typed line uses,
+ * same `sendKeystrokeRef`/line-history path an ordinary typed line uses,
  * see `buildRunCommand` and the `term.onData` callsite.
  */
 export type ScriptComposerState =
@@ -364,7 +364,7 @@ function scriptPathOption(path: string): ComboboxOption {
 
 /**
  * Filters + groups `scriptPaths` against `query` and flattens back to
- * render/navigation order, in ONE place, both the pure `onData` reducer
+ * render/navigation order, in one place, both the pure `onData` reducer
  * below (for activeIndex bounds + Enter's selection) and the render site's
  * `ComboboxListbox` props call this, so the highlighted option always
  * matches what Enter would actually pick.
@@ -390,14 +390,14 @@ function scriptBasename(path: string): string {
 /**
  * Builds the command line kOS will execute, from a confirmed script path
  * and raw whitespace-separated argument tokens. Each token is inserted
- * VERBATIM as a kerboscript literal (e.g. `5`, `true`, `"abc"`), the
+ * verbatim as a kerboscript literal (e.g. `5`, `true`, `"abc"`), the
  * composer does no quoting or type inference, matching the goal spec's
  * `RUNPATH("<path>"[, arg1, arg2])` shape.
  *
  * `copyLocal` (the "copy local & run" toggle) prefixes a
  * `COPYPATH("<path>", "<local>").` statement ahead of the RUNPATH, targeting
  * the script's basename on the CPU's local (`1:`) drive, both statements
- * on ONE line, still a single `kos.keystroke` round trip under light-time
+ * on one line, still a single `kos.keystroke` round trip under signal delay
  * delay, so a script run repeatedly only pays the archive round-trip once
  * (subsequent runs execute the already-local copy). Trailing `.` terminates
  * each kerboscript statement; trailing `\r` is the wire Enter byte,
@@ -424,7 +424,7 @@ type ScriptComposerAction =
 
 /**
  * Reduces one raw `onData` payload into the `/`-script composer's next
- * action: a PURE state machine mirroring `reduceLineModeChar`'s shape:
+ * action: a pure state machine mirroring `reduceLineModeChar`'s shape:
  * whole-token escape sequences (arrows/Enter/Escape/backspace) are matched
  * before any per-character fallthrough, exactly like the ordinary line-mode
  * handling this composer intercepts ahead of (see the `term.onData`

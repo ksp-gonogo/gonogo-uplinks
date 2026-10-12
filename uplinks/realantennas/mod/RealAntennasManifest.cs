@@ -15,7 +15,7 @@ namespace Gonogo.RealAntennasUplink
         public const string LinkMarginTopic = "comms.linkMargin";
 
         /// <summary>
-        /// The per-hop forward-rate annotation channel: a bare ARRAY of
+        /// The per-hop forward-rate annotation channel: a bare array of
         /// <see cref="RealAntennasHopRate"/>, one per hop that has a readable rate,
         /// keyed by the same node ids <c>comms.path</c> carries. RA's relay graph
         /// subclasses stock CommNet's, so this only embellishes each existing hop
@@ -33,7 +33,7 @@ namespace Gonogo.RealAntennasUplink
         public const string AvailableTopic = "realantennas.available";
 
         /// <summary>
-        /// The per-antenna targeting channel: a bare ARRAY of
+        /// The per-antenna targeting channel: a bare array of
         /// <see cref="RealAntennasAntennaState"/>, one entry per antenna on the
         /// scoped craft, carrying what each antenna is, what modes its tech level
         /// has earned, and where it is currently pointed.
@@ -43,29 +43,29 @@ namespace Gonogo.RealAntennasUplink
         /// solver considers every compatible antenna pair, so two dishes aimed
         /// two ways are two candidate links rather than a conflict to resolve.</para>
         ///
-        /// <para>DELAYED: this describes the craft, and the two commands that
+        /// <para>Delayed: this describes the craft, and the two commands that
         /// write to it are delayed too.</para>
         /// </summary>
         public const string AntennasTopic = "realantennas.antennas";
 
         /// <summary>
-        /// The per-antenna fallback-chain channel: a bare ARRAY of
+        /// The per-antenna fallback-chain channel: a bare array of
         /// <see cref="RealAntennasAntennaChain"/>, one entry per antenna of the
         /// scoped craft that is holding a chain, carrying the list, which entry is
         /// in place, and why.
         ///
-        /// <para>DELAYED, like the antenna channel beside it and for the same
+        /// <para>Delayed, like the antenna channel beside it and for the same
         /// reason: this is state held on the craft, and the walk that changes it
         /// happens there rather than here.</para>
         ///
         /// <para>Scoped to the reported craft even though the walk covers every
         /// craft in the game, because a delayed channel is delayed by the reported
-        /// vessel's own light-time and cannot carry another craft's state at the
+        /// vessel's own signal delay and cannot carry another craft's state at the
         /// right age.</para>
         ///
         /// <para><b>Two segments, not three, and that is not a style choice.</b>
         /// The SDK splits a dotted read at the longest topic id it knows
-        /// STATICALLY, and it deliberately does not consult the registry an
+        /// statically, and it deliberately does not consult the registry an
         /// Uplink self-registers into, because a split that changed answer when a
         /// bundle loaded would resolve one subscription differently from the
         /// next. So a three-segment Uplink topic resolves to its first two
@@ -73,12 +73,12 @@ namespace Gonogo.RealAntennasUplink
         /// segment first, and was read as a field of a two-segment channel
         /// nothing publishes, so both the read and the subscription came back
         /// empty forever. Every channel here is two segments for that reason;
-        /// the COMMANDS beside them are free to be three, and are.</para>
+        /// the commands beside them are free to be three, and are.</para>
         /// </summary>
         public const string ChainsTopic = "realantennas.antennaChains";
 
         /// <summary>
-        /// The state of dish turning for every craft that has any: a bare ARRAY of
+        /// The state of dish turning for every craft that has any: a bare array of
         /// <see cref="RealAntennasVesselRetargeting"/>, one entry per craft that is
         /// opted out, has a dish on loan, or has had one. Two segments, as every
         /// channel here is (see <see cref="ChainsTopic"/>).
@@ -96,7 +96,7 @@ namespace Gonogo.RealAntennasUplink
         public const string TargetCommand = "realantennas.antenna.target";
 
         /// <summary>
-        /// Point one antenna at the home BODY'S CENTRE, RealAntennas' own default
+        /// Point one antenna at the home body's centre, RealAntennas' own default
         /// aim point. See <c>RaTargeting.TargetHome</c> for what that does
         /// and does not mean. Args: <see cref="RealAntennasAntennaArgs"/>.
         /// </summary>
@@ -108,7 +108,7 @@ namespace Gonogo.RealAntennasUplink
         /// <see cref="RealAntennasTargetChainArgs"/>.
         ///
         /// <para>Delayed like the two single-target commands, and that is the
-        /// whole point of it: the chain rides light-time ONCE, and the craft then
+        /// whole point of it: the chain rides signal delay once, and the craft then
         /// walks it with no delay at all. A ground-side evaluator watching
         /// connectivity and sending a fresh target could not act at the moment it
         /// was needed, because its command would have nowhere to arrive.</para>
@@ -131,7 +131,7 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// A reading of the active craft or of its link: a command centre learns
-        /// it one light-time after it was so. The link's margin, quality, rate
+        /// it one signal delay after it was so. The link's margin, quality, rate
         /// and per-hop rates are readings of the far end of the link as much as
         /// the antennas are, so every one of them waits for the light.
         /// </summary>

@@ -14,7 +14,7 @@ namespace Gonogo.KerbcastUplink
     public static class KerbcastAimOutcome
     {
         /// <summary>
-        /// False is kerbcast's OWN refusal, and it refuses when the camera id
+        /// False is kerbcast's own refusal, and it refuses when the camera id
         /// does not resolve, so <c>NotFound</c> is honest for it.
         ///
         /// <para>Null is the call never having been made (it threw), which is a

@@ -74,7 +74,7 @@ namespace GonogoPrincipiaUplink
     }
 
     /// <summary>
-    /// A flight plan that has been MATERIALISED in this frame, which is a stronger
+    /// A flight plan that has been materialised in this frame, which is a stronger
     /// fact than existing.
     ///
     /// <para>A plan loaded from a save is held as a serialised message until
@@ -234,7 +234,7 @@ namespace GonogoPrincipiaUplink
     /// <para><b>The gate reads the bound itself rather than accepting one.</b> The
     /// read side's rule is that a caller never holds an index, which works because a
     /// reader is iterating. A writer cannot work that way: the operator names the
-    /// burn. So the bound is captured HERE, inside the same call that uses it, which
+    /// burn. So the bound is captured here, inside the same call that uses it, which
     /// is the strongest form available: an index that was valid last tick and is not
     /// valid now is refused rather than passed to a call that aborts on it.</para>
     ///
@@ -268,7 +268,7 @@ namespace GonogoPrincipiaUplink
         /// dispatch simply give up.</summary>
         public const int RequiredIntegratorKind = 1;
 
-        /// <summary>The two kinds the GENERALIZED equation accepts, a disjoint set
+        /// <summary>The two kinds the generalized equation accepts, a disjoint set
         /// from <see cref="RequiredIntegratorKind"/>. Swapping the two fields is the
         /// single most likely mistake in a hand-written struct and the least
         /// diagnosable.</summary>
@@ -394,7 +394,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Deletes the selected plan, having asked ONE MORE TIME whether it exists.
+        /// Deletes the selected plan, having asked one more time whether it exists.
         ///
         /// <para><b>This re-check is the whole guard, and the producer's own header
         /// comment is what makes it necessary.</b> That comment promises the call
@@ -480,7 +480,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Turns the producer's status object into a result.
         ///
-        /// <para>A null status is a write that REPORTED nothing rather than a write
+        /// <para>A null status is a write that reported nothing rather than a write
         /// that failed: three of the eight entry points return void, and the honest
         /// answer for those is "we called it, go and look", which is why the receipt
         /// carries a fresh reading of the plan.</para>
@@ -505,7 +505,7 @@ namespace GonogoPrincipiaUplink
     }
 
     /// <summary>
-    /// Creating a plan, which is the one write that needs a vessel and NOT a plan.
+    /// Creating a plan, which is the one write that needs a vessel and not a plan.
     ///
     /// <para>Separate from <see cref="PrincipiaPlanWriteGate"/> because its
     /// precondition is the negation of that type's: creating appends and selects a

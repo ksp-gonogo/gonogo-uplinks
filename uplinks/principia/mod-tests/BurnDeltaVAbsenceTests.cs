@@ -50,7 +50,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// The triple is unreadable, not partly readable. The two components that
-        /// DID resolve are withheld with the third deliberately: a Dv of
+        /// did resolve are withheld with the third deliberately: a Dv of
         /// (120, 0, -30) is a burn nobody planned, and publishing two thirds of a
         /// vector while still calling it the vector is the same claim in a quieter
         /// voice.

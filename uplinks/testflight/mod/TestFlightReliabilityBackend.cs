@@ -27,7 +27,7 @@ namespace GonogoTestFlightUplink
         /// capability rather than from KSP.
         ///
         /// <para>During an EVA KSP's own active vessel is the kerbal, while
-        /// <c>vessel.parts</c> lists the CRAFT's parts, so a part id the operator
+        /// <c>vessel.parts</c> lists the craft's parts, so a part id the operator
         /// can see would resolve against a kerbal who has one part and come back
         /// unrepairable. Going outside to fix a failed
         /// engine is the whole reason the verb exists.</para>
@@ -40,7 +40,7 @@ namespace GonogoTestFlightUplink
 
         /// <summary>
         /// A partially-bound binder stays <c>Modeled</c>: if part conditions are
-        /// readable then reliability IS being modelled and reported, and missing
+        /// readable then reliability is being modelled and reported, and missing
         /// rated-time reads only mean the budgets are absent. Absent is not the
         /// same as unreadable, and the difference is exactly which of the two is
         /// true. <c>Indeterminate</c> is reserved for the case where not even a

@@ -44,7 +44,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// so it is a call and belongs on the same footing as an explicit one.
     ///
     /// <para>Note what the other doubles could not have caught: they declare
-    /// <c>frame_type</c> and <c>target_frame_selected</c> as FIELDS, while the
+    /// <c>frame_type</c> and <c>target_frame_selected</c> as fields, while the
     /// producer is free to carry either as a property. A fixture that only ever
     /// presents the safe shape cannot fail on the dangerous one, so the double here
     /// exists to present a property specifically.</para>
@@ -92,7 +92,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// A STATIC member is still bound. The walk used to ask for instance members
+        /// A static member is still bound. The walk used to ask for instance members
         /// only, so every static setting on the producer resolved to no member and
         /// answered null, which a tolerant reader then reported as "could not be
         /// read" rather than as "was never looked for".

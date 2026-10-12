@@ -15,9 +15,9 @@ import type { KerbcastCameraEntry } from "../__generated__/contract.js";
  *   2. `null`/absent: unknown; might be one, ranks above a known-negative
  *   3. `false`    : known not a docking camera; last resort, never excluded
  *
- * Rank 3 is still eligible on purpose: showing SOME feed beats showing none,
+ * Rank 3 is still eligible on purpose: showing some feed beats showing none,
  * so a known-negative camera is used rather than nothing. `isDockingCamera`
- * sharpens the CHOICE; it never narrows the pool.
+ * sharpens the choice; it never narrows the pool.
  *
  * An explicit `override` (the widget's saved `cameraFlightId`) always wins when
  * that camera is still present, so a pinned camera keeps working. A stale
@@ -25,9 +25,9 @@ import type { KerbcastCameraEntry } from "../__generated__/contract.js";
  * ranking rather than blanking the HUD.
  *
  * Returns the kerbcast `flightId` to stream, or `null` when there is nothing to
- * show. `cameraId` IS the kerbcast flightId: `KerbcastCameraEntryBuilder.Build`
+ * show. `cameraId` is the kerbcast flightId: `KerbcastCameraEntryBuilder.Build`
  * maps `["cameraId"] = view.FlightId`. That identity is what lets this augment
- * select on Uplink CONTROL facts and stream over kerbcast's own WebRTC media
+ * select on Uplink control facts and stream over kerbcast's own WebRTC media
  * path without a second identifier space.
  */
 export function selectDockingCamera(

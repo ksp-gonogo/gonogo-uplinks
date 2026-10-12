@@ -22,7 +22,7 @@ describe("orbitDescription", () => {
   });
 
   /**
-   * The producer tests the band END, not a midpoint. An orbit whose
+   * The producer tests the band end, not a midpoint. An orbit whose
    * eccentricity swings from 0 to 0.4 averages under the circular threshold and
    * is nothing like circular, so a midpoint test would print the opposite of
    * what the numbers say.
@@ -109,7 +109,7 @@ describe("orbitDescription", () => {
 
 /**
  * The three synchronicity adjectives, which this file used to declare
- * unreachable. They are decided by the DRIFT of the equatorial crossing bands,
+ * unreachable. They are decided by the drift of the equatorial crossing bands,
  * following the producer's own rule: a track whose crossings barely move is one
  * that repeats.
  */
@@ -144,7 +144,7 @@ describe("orbitDescription synchronicity", () => {
   });
 
   /**
-   * Stationary REPLACES the shape words rather than joining them. The producer
+   * Stationary replaces the shape words rather than joining them. The producer
    * says "stationary over Kerbin"; "circular equatorial stationary Kerbin
    * orbit" states the same fact three times.
    */
@@ -192,7 +192,7 @@ describe("orbitDescription synchronicity", () => {
   });
 
   /**
-   * Zero drift means the analysis caught ONE pass, and one pass cannot show
+   * Zero drift means the analysis caught one pass, and one pass cannot show
    * that anything repeats. Reading it as perfect synchronicity would call every
    * briefly-analysed orbit stationary: the most confident way to be wrong.
    */
@@ -227,7 +227,7 @@ describe("orbitDescription synchronicity", () => {
 });
 
 /**
- * Sun-synchronous reads DIFFERENT data from the other three: the local solar
+ * Sun-synchronous reads different data from the other three: the local solar
  * time at the nodes holding steady, not the ground track repeating. An orbit can
  * repeat its track without holding its lighting and vice versa, so it joins the
  * other adjectives rather than competing with them.

@@ -25,7 +25,7 @@ using System.Reflection;
 // fields off the binary rather than trusting this file's copy of them.
 namespace RP0
 {
-    /// <summary>RP-1's era table entry: the years that decide a node's research RATE.</summary>
+    /// <summary>RP-1's era table entry: the years that decide a node's research rate.</summary>
     public class TechPeriod
     {
         public string id = "";
@@ -79,11 +79,11 @@ namespace RP0
 /// KSP's own persistence marker. Global-namespaced because that is where KSP
 /// declares it, and named without the <c>Attribute</c> suffix because that is
 /// how KSP declares it: the compatibility check looks the type up in RP0.dll's
-/// metadata BY NAME, and a stand-in called <c>PersistentAttribute</c> would put
+/// metadata by name, and a stand-in called <c>PersistentAttribute</c> would put
 /// this file and the shipped binary a suffix apart.
 ///
 /// <para>Present at all because <c>ConfigNode.LoadObjectFromConfig</c> is driven
-/// by it: which fields carry it IS the checklist this route stands on.</para>
+/// by it: which fields carry it is the checklist this route stands on.</para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false)]
 public sealed class Persistent : Attribute
@@ -243,7 +243,7 @@ public class AvailablePart
 
 /// <summary>
 /// KSP's per-node player state. The constructor is stock's, key for key: id,
-/// state, cost and a repeated part, with a FRESH parts list every time, which is
+/// state, cost and a repeated part, with a fresh parts list every time, which is
 /// why a project loaded from a node is detached from the live one.
 /// </summary>
 public class ProtoTechNode
@@ -280,7 +280,7 @@ public class ProtoTechNode
 }
 
 /// <summary>
-/// KSP's tech tree asset. Its techs carry the CONFIG DEFAULT state, which is the
+/// KSP's tech tree asset. Its techs carry the config default state, which is the
 /// whole reason production sources a node's state from
 /// <see cref="ResearchAndDevelopment.GetTechnologyState"/> instead: this
 /// fixture's tree deliberately holds a state that disagrees with the live one, so
@@ -430,8 +430,8 @@ public class GameVariables
 }
 
 /// <summary>
-/// KSP's facility-level scenario module, with BOTH arity-one overloads, which is
-/// the point of it: the walk has to pick the string one by TYPE, because an arity
+/// KSP's facility-level scenario module, with both arity-one overloads, which is
+/// the point of it: the walk has to pick the string one by type, because an arity
 /// match would take whichever reflection listed first and an enum-bound lookup
 /// throws on the string production hands it. That failure has no rename behind it
 /// and nothing for the compatibility manifest to see, so the only place it can be
@@ -444,10 +444,10 @@ public class GameVariables
 /// </summary>
 public class ScenarioUpgradeableFacilities
 {
-    /// <summary>Normalised level, keyed by the facility's enum member NAME.</summary>
+    /// <summary>Normalised level, keyed by the facility's enum member name.</summary>
     public static readonly Dictionary<string, float> Levels = new Dictionary<string, float>();
 
-    /// <summary>How many times the ENUM overload was reached, which should be never.</summary>
+    /// <summary>How many times the enum overload was reached, which should be never.</summary>
     public static int EnumOverloadCalls;
 
     public static void Reset()
@@ -466,14 +466,14 @@ public class ScenarioUpgradeableFacilities
     /// <summary>
     /// One facility's persisted record. The facility command reads
     /// <c>facilityRefs</c> off this, and the real
-    /// <c>GetFacilityReferencesById</c> is a BARE INDEXER that throws on a
+    /// <c>GetFacilityReferencesById</c> is a bare indexer that throws on a
     /// missing key while its sibling sanitises the id first, which is why the
     /// command guards it.
     /// </summary>
     public class ProtoUpgradeable
     {
         /// <summary>
-        /// EMPTY outside the space centre, and that is the ordinary case rather
+        /// Empty outside the space centre, and that is the ordinary case rather
         /// than a fault: the list is filled by the facility MonoBehaviours, which
         /// exist in that scene only, while the dictionary around it is rebuilt
         /// from the save in every scene.

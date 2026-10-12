@@ -7,7 +7,7 @@ using Xunit;
 
 /// <summary>
 /// The reflection walk, against the stand-in RP-1 graph in <c>Rp0Fixture.cs</c>.
-/// These tests are about SHAPE: that the walk reads the members it says it does,
+/// These tests are about shape: that the walk reads the members it says it does,
 /// derives what the arithmetic says, and degrades to absence rather than to a
 /// default. They say nothing about the values a running RP-1 would hold, because
 /// there is no RP-1 install to observe.
@@ -145,7 +145,7 @@ public class Rp1ScReflectionTests : IDisposable
     /// absent, never the ratio of 1.0 that reads as a crew at the top of RP-1's
     /// scale.
     ///
-    /// <para>It is the hangar's ONLY source of the figure: every other complex is
+    /// <para>It is the hangar's only source of the figure: every other complex is
     /// looked up, so the substitution put "100% efficiency" on every hangar in
     /// the career and on no other row, which is the reading an operator would
     /// never think to question.</para>
@@ -162,10 +162,10 @@ public class Rp1ScReflectionTests : IDisposable
 
     /// <summary>
     /// The same unreadable ceiling declines the ramp rather than ramping against
-    /// a limit nobody measured, so the un-ramped estimate stands and errs LONG.
+    /// a limit nobody measured, so the un-ramped estimate stands and errs long.
     ///
     /// <para>Unlike the crew ceiling beside it, the substitution here was not a
-    /// no-op: 1.0 sits ABOVE this crew's 0.5, so the ramp ran and published a
+    /// no-op: 1.0 sits above this crew's 0.5, so the ramp ran and published a
     /// materially shorter clock off a scale the save never stated.</para>
     /// </summary>
     [Fact]
@@ -236,7 +236,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// A rush setting nobody could read makes a RUSHING complex's rate absent,
+    /// A rush setting nobody could read makes a rushing complex's rate absent,
     /// never a rate worked out at a multiplier of 1.0.
     ///
     /// <para>RP-1 ships 1.5. Standing 1.0 in publishes a rushing complex working
@@ -261,7 +261,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// The same unreadable setting leaves a complex that is NOT rushing alone. It
+    /// The same unreadable setting leaves a complex that is not rushing alone. It
     /// runs at 1.0 whatever RP-1 charges for rushing, so there is no gap there to
     /// propagate and refusing the rate would hide a figure the save does state.
     /// </summary>
@@ -978,7 +978,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// The balance is ABSENT rather than zero when the module is live and its
+    /// The balance is absent rather than zero when the module is live and its
     /// field will not read. This is the one case the two tests above cannot
     /// reach between them: the instance probe says RP-1 is here, so a
     /// substituted zero arrives looking exactly like the spent career the test
@@ -1000,8 +1000,8 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// An unreadable centre roster leaves the idle count ABSENT. Substituted, it
-    /// went NEGATIVE: the complexes' crews still read, so the subtraction ran
+    /// An unreadable centre roster leaves the idle count absent. Substituted, it
+    /// went negative: the complexes' crews still read, so the subtraction ran
     /// zero minus a real assignment and published "0 hired, 12 assigned, -12
     /// idle" on a fully staffed centre.
     /// </summary>
@@ -1128,7 +1128,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// A centre's upkeep is absent unless EVERY complex answered. Summed over
+    /// A centre's upkeep is absent unless every complex answered. Summed over
     /// the ones that did, it is a plausible bill in the right units that an
     /// operator cannot tell from a correct one.
     /// </summary>
@@ -1168,7 +1168,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// Research and applicant head counts are ABSENT rather than zero. A career
+    /// Research and applicant head counts are absent rather than zero. A career
     /// with nobody in research genuinely sits at 0, so the substitution arrives
     /// looking exactly like a reading, and it is the figure the hire control
     /// counts a target up from.
@@ -1186,12 +1186,12 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// The crew CEILING, absent rather than zero. It sits directly beside the
+    /// The crew ceiling, absent rather than zero. It sits directly beside the
     /// crew count and is read off the same object, so leaving it substituted was
     /// the adjacent-reads-treated-differently shape: a complex staffed past a
     /// cap of nobody, and a hire control darkened on a complex with room in it.
     ///
-    /// <para>The ETA is asserted as UNCHANGED on purpose. The ramp needs the cap
+    /// <para>The ETA is asserted as unchanged on purpose. The ramp needs the cap
     /// and now declines without it, but a substituted cap of zero already
     /// no-opped the ramp inside <c>RampedTimeLeft</c>, so the two agree on the
     /// clock and the published field is the whole of the difference. Asserting a
@@ -1258,11 +1258,11 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// A blocking move whose build points will not read stays IN the set and
+    /// A blocking move whose build points will not read stays in the set and
     /// takes every ETA on the complex with it. Substituted, its points and its
     /// progress both came out at zero, which satisfied the completeness test and
     /// dropped it from the set outright: the survivors then divided a complex
-    /// they did not have to themselves and every ETA answered EARLY.
+    /// they did not have to themselves and every ETA answered early.
     /// </summary>
     [Fact]
     public void An_unreadable_blocking_move_leaves_its_peers_without_an_early_ETA()
@@ -1300,7 +1300,7 @@ public class Rp1ScReflectionTests : IDisposable
     /// <summary>
     /// The blocking total is absent, never a sum short by one unreadable
     /// operation, and the vehicles behind it get no rate. Zero is the value that
-    /// CLEARS integration, so a total that quietly omits a blocking rollout does
+    /// clears integration, so a total that quietly omits a blocking rollout does
     /// not read as a gap: it reads as a clear pad, and every vehicle on it
     /// publishes a confident full-speed rate.
     /// </summary>
@@ -1372,7 +1372,7 @@ public class Rp1ScReflectionTests : IDisposable
     /// <summary>
     /// One unreadable axis takes the whole efficiency group key, which is what
     /// this reading already promises. A substituted zero does not degrade the
-    /// key, it makes a FALSE one: the axis collapses onto every other complex
+    /// key, it makes a false one: the axis collapses onto every other complex
     /// whose axis went unread, so two complexes RP-1 rates separately publish
     /// the same group and read as sharing a crew rating.
     /// </summary>
@@ -1385,7 +1385,7 @@ public class Rp1ScReflectionTests : IDisposable
     }
 
     /// <summary>
-    /// And an unreadable resource CAPACITY, on the same terms: RP-1 compares
+    /// And an unreadable resource capacity, on the same terms: RP-1 compares
     /// names and amounts, so "=0" is a capacity rather than a stand-in, and two
     /// complexes carrying different amounts of the same propellant would publish
     /// one group.

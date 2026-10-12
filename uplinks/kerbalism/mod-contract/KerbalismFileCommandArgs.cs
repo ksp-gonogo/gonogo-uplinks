@@ -43,7 +43,7 @@ namespace GonogoKerbalismUplink;
 /// Args shared by the two reversible flag commands, <c>kerbalism.file.send</c>
 /// and <c>kerbalism.sample.analyze</c>: the stored result addressed by its
 /// stock subject id (see this file's header comment), plus the desired end
-/// state. <see cref="Flag"/> is the state to SET, not "toggle from whatever it
+/// state. <see cref="Flag"/> is the state to set, not "toggle from whatever it
 /// is now", so a duplicate or reordered dispatch is a no-op rather than an
 /// undo.
 /// </summary>

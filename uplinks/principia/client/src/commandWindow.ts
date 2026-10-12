@@ -4,13 +4,13 @@ import { type Value, value } from "@ksp-gonogo/sitrep-sdk";
  * When a command stops being able to reach the thing it is about.
  *
  * <p><b>The deadline is not the instant it targets.</b> A press leaves at the
- * operator's VIEW instant, and the view instant trails reality by one one-way
- * light time, because that is how long the reading on screen took to arrive.
- * The command then spends a second one-way light time in flight. So a command
+ * operator's view instant, and the view instant trails reality by one one-way
+ * signal delay, because that is how long the reading on screen took to arrive.
+ * The command then spends a second one-way signal delay in flight. So a command
  * composed against what is on screen lands two one-way delays later, and the
  * last view instant it can leave from is `target - 2 * oneWay`.</p>
  *
- * <p>At a thirty-light-minute vantage that is a full HOUR before the countdown
+ * <p>At a thirty-light-minute vantage that is a full hour before the countdown
  * on the row reaches zero, and for that hour every control reads as live, the
  * press is accepted, and the write arrives after the moment has passed. The
  * operator believes they acted.</p>
@@ -21,7 +21,7 @@ import { type Value, value } from "@ksp-gonogo/sitrep-sdk";
  * relying on them for.</p>
  */
 export interface CommandWindow {
-  /** One-way light time to this vessel, in seconds. */
+  /** One-way signal delay to this vessel, in seconds. */
   oneWaySeconds: number;
   /** The last view instant a command can leave from. */
   deadlineUt: number;
@@ -32,12 +32,12 @@ export interface CommandWindow {
 }
 
 /**
- * Null at a vantage with no delay, where the deadline IS the target instant and
+ * Null at a vantage with no delay, where the deadline is the target instant and
  * the countdown already on the row says so. A second countdown reading the same
  * number would be furniture, and a widget that showed one would train the
  * operator to ignore it at the vantages where the two differ by an hour.
  *
- * <p>Measured against the instant the command WOULD WRITE rather than the one
+ * <p>Measured against the instant the command would write rather than the one
  * currently aboard: an operator who pushes a burn further out reopens the
  * window, and one who drags it into the past shuts it. That is the same
  * comparison the mod makes on arrival, so the prediction here and the refusal
@@ -60,10 +60,10 @@ export const COMPOSING_MARGIN_SECONDS = 600;
  * The instant to seed a burn at: after `previousUt` when there is one, and past
  * the round trip either way.
  *
- * <p><b>The bar is ARRIVAL, not the view.</b> The mod refuses any burn igniting
+ * <p><b>The bar is arrival, not the view.</b> The mod refuses any burn igniting
  * at or before the instant the plan lands, and a plan composed here lands two
- * one-way light times after the view instant it was composed at. Seeding a burn
- * at the instant the state was OBSERVED, which is what a composer with no window
+ * one-way signal delays after the view instant it was composed at. Seeding a burn
+ * at the instant the state was observed, which is what a composer with no window
  * arithmetic reaches for, puts every burn behind that bar the moment it is
  * created: the plan is offered, sent, and refused whole, and nothing on the way
  * says so.</p>

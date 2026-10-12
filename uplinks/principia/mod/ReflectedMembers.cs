@@ -6,10 +6,10 @@ namespace GonogoPrincipiaUplink
 {
     /// <summary>
     /// Reads members off a third-party object by name, with the cache and the
-    /// tolerance every reader here needs, and with the ONE rule that keeps this
+    /// tolerance every reader here needs, and with the one rule that keeps this
     /// safe enforced rather than documented.
     ///
-    /// <para><b>The rule: a field read is safe, a CALL is safe only if its body
+    /// <para><b>The rule: a field read is safe, a call is safe only if its body
     /// has been read.</b> The looser version, "managed and parameterless is safe,
     /// the native ABI is the danger", was measured and is false.
     /// <c>ReferenceFrameSelector</c> holds no native handle at all and three of its
@@ -35,10 +35,10 @@ namespace GonogoPrincipiaUplink
         /// <c>Vector3d.magnitude</c>. No plugin call, no throw.</item>
         /// <item><c>ok</c> on the integrator's status struct: the integrator's own
         /// definition of a healthy status, preferred over assuming that error code
-        /// zero means OK.</item>
+        /// zero means ok.</item>
         /// </list>
         ///
-        /// <para>Notable REFUSALS, all reachable and all innocuous-looking:
+        /// <para>Notable refusals, all reachable and all innocuous-looking:
         /// <c>FrameParameters</c>, <c>Name</c>, <c>NavballName</c> and
         /// <c>Abbreviation</c> on the frame selector (each reaches
         /// <c>Log.Fatal</c>), and <c>time_base</c> on the burn editor (a property,
@@ -48,10 +48,10 @@ namespace GonogoPrincipiaUplink
         public static readonly string[] InvocableMembers = { "Δv", "ok" };
 
         /// <summary>
-        /// Every PROPERTY this assembly is allowed to read, each one having had its
+        /// Every property this assembly is allowed to read, each one having had its
         /// decompiled getter read.
         ///
-        /// <para>A property read is a CALL. <see cref="Value"/> resolves a name to
+        /// <para>A property read is a call. <see cref="Value"/> resolves a name to
         /// whichever member carries it, so <c>ReadDouble(editor, "time_base")</c> is
         /// a getter invocation that looks exactly like a field read at the call
         /// site, and <c>time_base</c> is the member this class's own summary names
@@ -78,7 +78,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para><c>predicted_vessel</c> is the one that is not obviously
         /// harmless and it is cleared deliberately. Its getter invokes a delegate
-        /// into the producer's addon, which asks the PLUGIN whether the vessel is
+        /// into the producer's addon, which asks the plugin whether the vessel is
         /// one it knows. That is a native call, made outside our own frame
         /// protocol, and it is safe for one specific reason: the call is
         /// <c>HasVessel</c>, the single guid-tolerant entry point on the whole
@@ -86,7 +86,7 @@ namespace GonogoPrincipiaUplink
         /// it. Nothing else on this list crosses that boundary, and nothing new
         /// should join it without the same paragraph.</para>
         ///
-        /// <para><b>Swept 2026-08-23, and the list is now known COMPLETE for the
+        /// <para><b>Swept 2026-08-23, and the list is now known complete for the
         /// settings path.</b> Every name <c>SettingsReflection</c> and
         /// <c>PrincipiaSettingsSource</c> read (45 of them) was resolved against the
         /// type that really declares it, in the shipped
@@ -100,7 +100,7 @@ namespace GonogoPrincipiaUplink
         /// rather than trusted: <c>bodyName</c> is <c>public string bodyName</c> on
         /// <c>CelestialBody</c> and <c>id</c> is <c>public Guid id</c> on
         /// <c>Vessel</c>, both plain fields. Note that both names also exist as
-        /// PROPERTIES elsewhere in KSP (<c>id</c> on four other types), so a
+        /// properties elsewhere in KSP (<c>id</c> on four other types), so a
         /// name-only check would have got this wrong in both directions.</para>
         /// </summary>
         public static readonly string[] ReadableProperties =
@@ -124,8 +124,8 @@ namespace GonogoPrincipiaUplink
         };
 
         /// <summary>
-        /// Properties read in production BEFORE this guard existed, whose getters
-        /// have NOT been read.
+        /// Properties read in production before this guard existed, whose getters
+        /// have not been read.
         ///
         /// <para>Shrink-only. Each name moves to <see cref="ReadableProperties"/>
         /// once its decompiled getter has been read, or out of the codebase if the
@@ -136,7 +136,7 @@ namespace GonogoPrincipiaUplink
         /// because a list that claims an audit it did not do is the failure this
         /// whole class exists to prevent.</para>
         ///
-        /// <para><b>It is now EMPTY, and the settings work is what emptied it.</b>
+        /// <para><b>It is now empty, and the settings work is what emptied it.</b>
         /// Eleven of the fifteen names had their getters read and moved to
         /// <see cref="ReadableProperties"/>. The other four never belonged here at
         /// all: <c>bodyName</c>, <c>id</c>, <c>error</c> and <c>message</c> are
@@ -147,7 +147,7 @@ namespace GonogoPrincipiaUplink
         public static readonly string[] UnauditedProperties = new string[0];
 
         /// <summary>
-        /// Instance AND static, and the static half is a bug fix rather than
+        /// Instance and static, and the static half is a bug fix rather than
         /// breadth for its own sake.
         ///
         /// <para>Several of the producer's settings are static: whether a journal
@@ -160,7 +160,7 @@ namespace GonogoPrincipiaUplink
         /// nothing failed because a tolerant reader cannot tell a missing member
         /// from a missing value.</para>
         ///
-        /// <para>Static widens no permission: a static FIELD read still cannot run
+        /// <para>Static widens no permission: a static field read still cannot run
         /// producer code, and a static property still has to be on
         /// <see cref="ReadableProperties"/> like any other.</para>
         /// </summary>
@@ -178,7 +178,7 @@ namespace GonogoPrincipiaUplink
         /// observation. A getter that throws is the integrator's business.</para>
         ///
         /// <para>Tolerant is not the same as permissive. A field read cannot run
-        /// producer code and is always allowed; a PROPERTY read runs a getter and so
+        /// producer code and is always allowed; a property read runs a getter and so
         /// goes through <see cref="ReadableProperties"/> on the same terms as
         /// <see cref="Invoke"/>. The catch below does not cover the case that
         /// matters: <c>Log.Fatal</c> aborts the process rather than throwing, so
@@ -276,7 +276,7 @@ namespace GonogoPrincipiaUplink
         /// enumeration. The obvious version, a cast to the non-generic
         /// <c>System.Collections.ICollection</c>, compiles and silently answers null
         /// for the exact types this is aimed at: <c>HashSet&lt;T&gt;</c> implements
-        /// <c>ICollection&lt;T&gt;</c> and <c>IReadOnlyCollection&lt;T&gt;</c> and NOT
+        /// <c>ICollection&lt;T&gt;</c> and <c>IReadOnlyCollection&lt;T&gt;</c> and not
         /// the legacy interface. Both of the producer's fields here are
         /// <c>HashSet</c>s, so that version would have reported "unknown" in
         /// production for a value it could read perfectly well, and a fixture is the

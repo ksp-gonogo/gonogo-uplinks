@@ -13,9 +13,9 @@ namespace GonogoPrincipiaUplink
     /// One body this Uplink will sum when it bounds a craft's osculating elements:
     /// where to ask the displaced solver for it, and what the force model calls it.
     ///
-    /// <para>Two keys because two different tables are being joined. The INDEX is
+    /// <para>Two keys because two different tables are being joined. The index is
     /// the propagation seam's vocabulary, and the only way to ask where a body is
-    /// without carrying a second copy of two-body motion. The NAME is the gravity
+    /// without carrying a second copy of two-body motion. The name is the gravity
     /// model's, which is configuration the producer ships and is keyed on nothing
     /// else. A body the model does not name is dropped from the sum rather than
     /// guessed at.</para>
@@ -37,7 +37,7 @@ namespace GonogoPrincipiaUplink
     /// How far the published conic has drifted from the path the craft actually
     /// flies, integrated rather than estimated.
     ///
-    /// <para><b>The DIFFERENCE of the two curves is the thing integrated, and that
+    /// <para><b>The difference of the two curves is the thing integrated, and that
     /// is what makes the answer readable at all.</b> Integrate the perturbed path and
     /// the conic separately and subtract, and what comes out is a hundred metres of
     /// signal on top of a million metres of orbit: an integrator good to a part in ten
@@ -188,7 +188,7 @@ namespace GonogoPrincipiaUplink
         /// <para>Scanned rather than solved, because the departure is not monotonic:
         /// a tide pulling the craft outward now pulls it back half a revolution
         /// later, and the offset it built can come back. What a bound needs is the
-        /// FIRST instant the tolerance is reached, and a solver that assumed one
+        /// first instant the tolerance is reached, and a solver that assumed one
         /// crossing would happily name a later one.</para>
         /// </summary>
         public double? FirstCrossingSeconds(double window, double tolerance, int steps)
@@ -388,7 +388,7 @@ namespace GonogoPrincipiaUplink
             /// <summary>
             /// What bends the two curves apart at this instant: the primary's own
             /// gravity gradient across the offset, plus every perturber's pull on the
-            /// craft LESS its pull on the primary, because the frame is centred on the
+            /// craft less its pull on the primary, because the frame is centred on the
             /// primary and is therefore accelerating. Dropping that second half is the
             /// classic error, and it leaves a term that does not vanish as the
             /// perturber recedes.
@@ -454,10 +454,10 @@ namespace GonogoPrincipiaUplink
     /// <summary>
     /// How long this Uplink will vouch for a craft's published osculating elements.
     ///
-    /// <para><b>The bound is a LOCAL property and this is what makes it one.</b>
+    /// <para><b>The bound is a local property and this is what makes it one.</b>
     /// Under n-body physics the elements on the wire are the conic tangent to the
     /// path at the sample instant, and they part company with the path at a rate set
-    /// by the perturbing acceleration where that craft actually is, and by which WAY
+    /// by the perturbing acceleration where that craft actually is, and by which way
     /// that acceleration points relative to the craft's own motion. Nothing outside
     /// the force model can compute either, which is why the answer belongs here
     /// rather than in core.</para>

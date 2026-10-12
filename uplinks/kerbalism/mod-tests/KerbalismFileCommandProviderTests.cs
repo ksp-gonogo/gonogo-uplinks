@@ -11,7 +11,7 @@ namespace GonogoKerbalismUplink.Tests
     /// <see cref="IKerbalismFileActuator"/> method with the right subject id)
     /// and every fail-soft case (unknown subject, subject present but the
     /// wrong kind for the verb, Kerbalism not modelling science), all of which
-    /// must short-circuit BEFORE the actuator is ever called. Entirely
+    /// must short-circuit before the actuator is ever called. Entirely
     /// KSP-free: the "captured drive" is a plain <see cref="ScienceRaw"/>
     /// fixture, the same shape <see cref="ScienceExtensionWireTests"/> already
     /// builds for the read side.

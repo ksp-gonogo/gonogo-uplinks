@@ -38,7 +38,7 @@ export interface ShipSystems {
   lifeSupport: KerbalismLifeSupport | undefined;
   crew: number;
   /**
-   * How current the RESOURCE LEVELS this summary was derived from actually are.
+   * How current the resource levels this summary was derived from actually are.
    *
    * Its own provenance rather than a nested `Reading`, for the reason the dep
    * form's doc gives: a `Reading` is one Topic's currency, and a summary that

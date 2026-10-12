@@ -11,7 +11,7 @@ namespace Gonogo.KosUplink
     /// downlink frame.
     ///
     /// <para>Mirrors <c>KosProcessorInfoBuilder</c>'s same self-flattening
-    /// producer pattern: the contract POCO is the TYPING mirror;
+    /// producer pattern: the contract POCO is the typing mirror;
     /// <c>JsonWriter</c> walks this dictionary directly: no hand-written
     /// <c>AppendKosTerminalFrame</c> case needed any more. Also lets
     /// <c>ChannelDeclaration.IsKeyframe</c> (wired in <c>KosExtension.Ksp.cs</c>)

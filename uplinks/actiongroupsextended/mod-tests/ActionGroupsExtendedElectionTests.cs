@@ -5,7 +5,7 @@ using Xunit;
 namespace Gonogo.ActionGroupsExtendedUplink.Tests
 {
     /// <summary>
-    /// The actionGroups backend election from the PROVIDER's side: AGX absent ⇒
+    /// The actionGroups backend election from the provider's side: AGX absent ⇒
     /// stock vanilla; AGX present ⇒ AGX wins; the elected instance is queryable as
     /// an <see cref="IActionGroupsBackend"/>; and the inert path leaves stock in
     /// place and says so.
@@ -14,11 +14,11 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
     /// <see cref="RecordingUplinkHost"/>, both reached through
     /// <c>Sitrep.Contract</c> alone, because that is the whole of what this
     /// Uplink's author can install. The cases that needed core's
-    /// <c>ChannelEngine</c> and its two-pass discovery were about CORE's ordering
+    /// <c>ChannelEngine</c> and its two-pass discovery were about core's ordering
     /// guarantee rather than about AGX, and they were already driving a
     /// hand-written double of this uplink rather than the uplink: they live in
     /// <c>Sitrep.Host.Tests.ActionGroupsElectionTests</c> now, where the engine may
-    /// be named. What is left is driven by the REAL
+    /// be named. What is left is driven by the real
     /// <see cref="ActionGroupsExtendedUplink.Register"/>.</para>
     /// </summary>
     public class ActionGroupsExtendedElectionTests
@@ -40,7 +40,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         }
 
         /// <summary>
-        /// A host with the capability declared and the REAL uplink registered into
+        /// A host with the capability declared and the real uplink registered into
         /// it against an AGX that is either there or not, resolved.
         /// </summary>
         private static RecordingUplinkHost Registered(bool agxPresent)
@@ -71,7 +71,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         }
 
         /// <summary>
-        /// The capability is exclusive, so AGX winning it means stock is NOT also
+        /// The capability is exclusive, so AGX winning it means stock is not also
         /// answering underneath: two active instances would make
         /// <c>Kernel.Query</c> throw rather than pick, which is a failure the
         /// election exists to prevent rather than to report.
@@ -95,7 +95,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
 
         /// <summary>
         /// When AGX's probe reports unavailable, the uplink declares itself
-        /// unavailable and registers NO provider, so stock stays elected. The
+        /// unavailable and registers no provider, so stock stays elected. The
         /// absence has to be visible: an uplink that went quietly inert and left
         /// stock answering looks identical to a correct stock install, which is
         /// exactly the state a player who installed AGX would never think to
@@ -117,7 +117,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         /// <summary>
         /// <see cref="ActionGroupsExtendedUplink.Health"/> reports the same absence
         /// the availability does, from the cached Register-time probe rather than a
-        /// second one: this uplink probes for a loaded ASSEMBLY, and re-probing per
+        /// second one: this uplink probes for a loaded assembly, and re-probing per
         /// health poll would answer a question about the AppDomain on whatever
         /// thread the poll arrived on.
         /// </summary>
@@ -134,7 +134,7 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         }
 
         /// <summary>
-        /// Registering the provider is the WHOLE of what this uplink does to the
+        /// Registering the provider is the whole of what this uplink does to the
         /// host: it declares no channel, sources no topic, handles no command and
         /// takes no capture, because <c>vessel.control</c> is the vessel uplink's
         /// and AGX changes only which backend answers it. Every other seam on

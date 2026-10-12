@@ -78,7 +78,7 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         private readonly KerbalismScienceHook _scienceHook = new();
 
-        /// <summary>The same reads, for every OTHER craft: see <see cref="KerbalismFleetChannels"/>.</summary>
+        /// <summary>The same reads, for every other craft: see <see cref="KerbalismFleetChannels"/>.</summary>
         private readonly KerbalismFleetChannels _fleet;
 
         private IChannelPublisher? _spaceWeather;
@@ -146,9 +146,9 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// The five File Manager commands and the repair: every one actuates
-        /// Kerbalism state ON the vessel (flag a file, delete it, flag/dump a
+        /// Kerbalism state on the vessel (flag a file, delete it, flag/dump a
         /// sample, move a sample to another drive, repair a part), so all ride
-        /// the same light-time delay every other vessel actuation does. Declared
+        /// the same signal delay delay every other vessel actuation does. Declared
         /// on their args types in this Uplink's contract slice, see
         /// SitrepCommandAttribute.Delay.
         /// </summary>
@@ -310,13 +310,13 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Register Kerbalism as the "isru" provider, above the stock vanilla backend
-        /// so it WINS when Kerbalism is installed. Same registering-is-the-gate rule
+        /// so it wins when Kerbalism is installed. Same registering-is-the-gate rule
         /// as science below, and the same two-pass guarantee: the capability is
         /// owned and declared by IsruCoreUplink (bundled core) in the pre-Register
         /// pass, so it exists here regardless of assembly-scan order.
         ///
         /// <para>Unlike science, this provider needs no capture source of its own:
-        /// IsruCoreUplink calls the elected backend from ITS main-thread capture, so
+        /// IsruCoreUplink calls the elected backend from its main-thread capture, so
         /// the reads are already on the right thread and the factory can simply
         /// construct rather than hand back a fed instance.</para>
         /// </summary>
@@ -352,7 +352,7 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>The verbs here read that snapshot on the Courier thread, so it
         /// has to be true whether or not anything is watching a science channel.
-        /// That is why the capture feeding it is registered UNGATED: the gated
+        /// That is why the capture feeding it is registered ungated: the gated
         /// overload would skip it in an unwatched session, leaving the pre-filter
         /// empty and every verb refusing with ModeUnavailable, which asserts
         /// Kerbalism is not modelling science about an install that is.</para>
@@ -378,16 +378,16 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Register Kerbalism as the "science" provider, above the stock vanilla
-        /// backend so it WINS when Kerbalism is installed. Same
+        /// backend so it wins when Kerbalism is installed. Same
         /// registering-is-the-gate rule as isru above, and the same two-pass
         /// guarantee: the capability is owned and declared by ScienceCoreUplink
         /// (bundled core) in the pre-Register pass, so it exists here regardless of
         /// assembly-scan order.
         ///
-        /// <para>Unlike isru, this provider is STATEFUL: its reads run on the
+        /// <para>Unlike isru, this provider is stateful: its reads run on the
         /// Courier thread and Kerbalism's science lives in PartModules that must be
         /// read on the main thread, so it is fed by its own capture-on-main source
-        /// below and the SAME instance has to be both fed and elected. Hence one
+        /// below and the same instance has to be both fed and elected. Hence one
         /// instance closed over by the factory, rather than a factory that
         /// constructs.</para>
         ///
@@ -472,7 +472,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// MAIN-THREAD capture: read live Kerbalism into a plain bundle (no KSP
         /// handles cross threads). No snapshot means no capture: every reading in
-        /// the bundle is published AT the snapshot's UT, and a substituted zero
+        /// the bundle is published at the snapshot's UT, and a substituted zero
         /// stamps the whole thing at the epoch, which dates a live reading to
         /// before the save began.
         /// </summary>
@@ -480,14 +480,14 @@ namespace Gonogo.KerbalismUplink
             snapshot == null ? null : CaptureVessel(ScopedVessel(), snapshot.Ut);
 
         /// <summary>
-        /// MAIN-THREAD capture of ONE craft, active or not. Every read here
+        /// MAIN-THREAD capture of one craft, active or not. Every read here
         /// answers for an unloaded vessel as well as a loaded one: Kerbalism's
         /// resource cache walks proto part snapshots when the parts are gone,
         /// its habitat info has an unloaded mode of its own, and the per-kerbal
         /// rule accumulators are advanced by the vessel's own background turn.
         ///
         /// <para>The one exception is the process list, which lives on the part
-        /// modules KSP discards on unload, so it is left NULL rather than empty
+        /// modules KSP discards on unload, so it is left null rather than empty
         /// for a background craft: see <c>KerbalismLifeSupport.Processes</c> for
         /// why the difference is load-bearing.</para>
         ///
@@ -549,7 +549,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>
         /// Joins each captured process instance onto its profile Process definition
         /// by the pseudo-resource token (entry.Resource), then evaluates Kerbalism's
-        /// live modifier product over that definition's modifiers MINUS the join
+        /// live modifier product over that definition's modifiers minus the join
         /// token itself (already accounted for via Capacity; see
         /// KerbalismProcessEntry.EnvModifier's doc comment for why it must be
         /// excluded). Mutates each ProcessRaw in place.
@@ -581,7 +581,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// Live modifier product per rule name, over each rule's FULL modifier
+        /// Live modifier product per rule name, over each rule's full modifier
         /// list (rules have no pseudo-resource join token to exclude, unlike
         /// processes). See KerbalismLifeSupport.RuleEnvModifiers' doc comment for
         /// why this rides the live lifesupport capture rather than the static
@@ -652,7 +652,7 @@ namespace Gonogo.KerbalismUplink
             /// <summary>The loaded profile's rule definitions, carried so the deadline can be derived off-thread.</summary>
             public List<RuleDefRaw> Rules = new();
 
-            /// <summary>Units held of each rule INPUT resource: the death clock's first stage.</summary>
+            /// <summary>Units held of each rule input resource: the death clock's first stage.</summary>
             public IReadOnlyDictionary<string, double> RuleInputAmounts = new Dictionary<string, double>();
 
             /// <summary>

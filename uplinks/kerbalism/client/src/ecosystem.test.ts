@@ -163,7 +163,7 @@ describe("resourceFacts", () => {
   });
 
   /**
-   * The defect. The verdict compared KSP's `ResourceFlowMode` NAME against a
+   * The defect. The verdict compared KSP's `ResourceFlowMode` name against a
    * two-entry set, so a renamed member produced `false` - a confident "not
    * pooled" - and `false` is the one answer this field's own doc rules out. A
    * resource that pools across the whole vessel would then be given a per-part
@@ -190,7 +190,7 @@ describe("resourceFacts", () => {
   });
 
   /**
-   * An ordinal KSP does not declare - a mod adding a flow mode - is UNKNOWN, not
+   * An ordinal KSP does not declare - a mod adding a flow mode - is unknown, not
    * "not pooled". Same rule as a missing ordinal, and for the same reason: we
    * cannot say the resource is per-part.
    */

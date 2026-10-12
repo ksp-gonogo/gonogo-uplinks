@@ -27,7 +27,7 @@ namespace GonogoRp1Uplink
         public const string LaunchComplexTypeName = "RP0.LaunchComplex";
 
         /// <summary>
-        /// The launch complex with this id, at ANY of the career's centres.
+        /// The launch complex with this id, at any of the career's centres.
         ///
         /// <para>Every centre rather than the active one: RP-1 runs several under
         /// KSCSwitcher, a client lists all of them, and a command addressed to a
@@ -53,15 +53,15 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// <c>KCTUtilities.ChangeEngineers(LaunchComplex, int)</c>, resolved by
-        /// first-parameter TYPE.
+        /// first-parameter type.
         ///
-        /// <para>The one call that makes an engineer change TAKE. It adds the
+        /// <para>The one call that makes an engineer change take. It adds the
         /// delta, fires <c>SCMEvents.OnPersonnelChange</c>, reschedules
         /// maintenance and recalculates the complex's build rates, and the last of
         /// those is why a rush setting written without it would not reach the
         /// rates until something else invalidated the cache.</para>
         ///
-        /// <para>It CLAMPS NOTHING. RP-1's own window works out the legal delta
+        /// <para>It clamps nothing. RP-1's own window works out the legal delta
         /// before calling, so every caller here has to do the same: this will
         /// happily take a complex past its maximum or a centre's pool below
         /// zero.</para>

@@ -164,7 +164,7 @@ async function present(
 }
 
 /**
- * One kerbal's control, found by a name PREFIX rather than the whole name: a
+ * One kerbal's control, found by a name prefix rather than the whole name: a
  * refused kerbal wears their reason on the label, so the accessible name is the
  * name plus two words and an exact match would find only the pickable ones.
  */
@@ -184,7 +184,7 @@ async function pick(
 
 describe("filling a multi-seat training", () => {
   /**
-   * The command names a template and a LIST of kerbals, and RP-1 refuses the
+   * The command names a template and a list of kerbals, and RP-1 refuses the
    * whole thing rather than starting a seat short, so a two-seat training has to
    * leave here in one dispatch carrying both names.
    */
@@ -313,7 +313,7 @@ describe("filling a multi-seat training", () => {
 
 describe("the shape of the training picker", () => {
   /**
-   * RP-1's own Astronaut Complex offers a training by drawing EVERY template it
+   * RP-1's own Astronaut Complex offers a training by drawing every template it
    * will list as its own button, all of them on screen at once, and a press
    * selects one (`TrainingGUI.RenderCourseSelector`, a scroll view of
    * `GUILayout.Button` per `TrainingTemplate`). A collapsed dropdown is a
@@ -421,7 +421,7 @@ describe("the seat bounds", () => {
   });
 
   /**
-   * The refusal and the press are ONE control, so the one an operator cannot
+   * The refusal and the press are one control, so the one an operator cannot
    * press is never drawn louder than the one they can: the kit's `Button`, which
    * used to carry the refusal, is a font size larger and uppercase where
    * `CommandButton size="sm"` is neither.
@@ -429,7 +429,7 @@ describe("the seat bounds", () => {
    * `data-command-phase` is what a call site reverting to a plain disabled
    * `Button` would lose, so it is what this asserts.
    *
-   * The accessible NAME is pinned either side of the refusal too, because
+   * The accessible name is pinned either side of the refusal too, because
    * merging the two controls is where it would quietly move: the live one names
    * the act and its student count, and the refused one keeps its visible word
    * with the reason in `title`, which is what each announced when they were two
@@ -606,7 +606,7 @@ describe("who RP-1 would refuse", () => {
   /**
    * All-or-none is the whole reason the name matters: RP-1 refuses the command
    * by the name of the first student it will not take, so a pick that has gone
-   * stale has to say WHO rather than that something is wrong.
+   * stale has to say who rather than that something is wrong.
    */
   it("names a picked kerbal who has since become ineligible", async () => {
     const user = userEvent.setup();
@@ -637,7 +637,7 @@ describe("who RP-1 would refuse", () => {
   });
 
   /**
-   * The one place a refusal is NOT a dark control: a kerbal picked while idle
+   * The one place a refusal is not a dark control: a kerbal picked while idle
    * and then grounded elsewhere would otherwise be locked into a crew that
    * cannot be sent and cannot be taken back out.
    */
@@ -727,7 +727,7 @@ describe("what it declines to draw", () => {
   });
 
   /**
-   * The crew roster is the HOST widget's channel and the Astronaut Complex says
+   * The crew roster is the host widget's channel and the Astronaut Complex says
    * so above this already, so a second line here would repeat it.
    */
   it("renders nothing while the crew roster is unread", async () => {
@@ -769,7 +769,7 @@ describe("the reading order", () => {
 
 describe("the way onto a course, in the order an operator meets it", () => {
   /**
-   * The picker BEFORE the press, which is the whole of the operator's question.
+   * The picker before the press, which is the whole of the operator's question.
    *
    * <para>The send control used to sit on the same line as the training picker,
    * above both the bounds and the names, so the reading order was: choose a
@@ -789,7 +789,7 @@ describe("the way onto a course, in the order an operator meets it", () => {
   });
 
   /**
-   * A refused control states its reason where it can be READ.
+   * A refused control states its reason where it can be read.
    *
    * <para>The reason rode `title` alone, which is a hover: on the one picture
    * this section exists for, a dark Enrol sat under a picker with nothing on
@@ -811,7 +811,7 @@ describe("the way onto a course, in the order an operator meets it", () => {
    * <para>Enrolling charges nothing at the press and RP-1 never refuses one on
    * affordability, so there is no balance to draw and "cannot afford" would be a
    * falsehood. What it does do is start a per-day drain that runs for the length
-   * of the course, so the RATE is the reading, and it is RP-1's own
+   * of the course, so the rate is the reading, and it is RP-1's own
    * Astronauts-tab row rather than one derived here.</para>
    */
   it("shows what training draws per day when RP-1 reports it", async () => {

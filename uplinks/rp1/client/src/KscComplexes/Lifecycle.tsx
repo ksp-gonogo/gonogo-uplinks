@@ -34,7 +34,7 @@ export const RP1_PAD_RENAME_COMMAND = "rp1.pad.rename";
 /**
  * Demolishing a launch complex.
  *
- * <para><b>The warning is ON THE PRESS, not on the card.</b> It used to be three
+ * <para><b>The warning is on the press, not on the card.</b> It used to be three
  * sentences standing permanently under every complex, explaining what an
  * efficiency record is and what happens to it. The operator's ruling: "this is
  * meant to be a mission control, not a storybook. We present facts and
@@ -97,7 +97,7 @@ export function DismantleControl({
  * reason rather than live and silently inert, and the command refuses in words if
  * it is sent anyway.</para>
  *
- * <para>The count that matters is the OPERATIONAL one, which is why
+ * <para>The count that matters is the operational one, which is why
  * <c>isOperational</c> is on the wire: a pad still under construction does not
  * count toward the one a complex must keep, and cannot itself be dismantled
  * because there is nothing built to remove.</para>
@@ -164,18 +164,18 @@ export function PadDismantleControl({
  * total rather than paying it. Read in IL because it decides what the control may
  * claim.</para>
  *
- * <para>And a career that cannot afford a tick is NOT refused. RP-1 spends
+ * <para>And a career that cannot afford a tick is not refused. RP-1 spends
  * whatever fraction it can afford, advances the build by that same fraction,
  * stops timewarp with a screen message and carries on: no cancel, no refund,
  * nothing on the pad's own row to say it is crawling. So a shortfall is worth
- * saying BEFORE the press, and worth saying as a slower build rather than as a
+ * saying before the press, and worth saying as a slower build rather than as a
  * refusal, because a control that said "cannot afford" would be describing a
  * refusal RP-1 does not make.</para>
  *
  * <para>The balance itself is not drawn here. It is already in this widget's
  * body: the host widget draws career funds beside its pad line, and the repo
  * rule is per-widget. What the host widget cannot say is whether the balance
- * covers THIS quote, which is the half that belongs next to the press.</para>
+ * covers this quote, which is the half that belongs next to the press.</para>
  *
  * <para>Absent price is not a free pad. `newPadCost` is absent for a hangar,
  * which has no pad, and whenever RP-1 would not price one; both draw no control
@@ -279,7 +279,7 @@ export function RenameControl({
   label: string;
   /**
    * Open from the start, for a caller that owns the trigger. A pad row's editor
-   * REPLACES the row, so the row has to know it is renaming; a complex has no such
+   * replaces the row, so the row has to know it is renaming; a complex has no such
    * constraint and lets this control own both halves.
    */
   open?: boolean;

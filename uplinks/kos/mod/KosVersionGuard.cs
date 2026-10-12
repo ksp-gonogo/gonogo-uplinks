@@ -15,8 +15,8 @@ namespace Gonogo.KosUplink
     /// every failure mode degrades to <see cref="IsAvailable"/> = false with a
     /// <see cref="Reason"/>, per the fail-soft contract
     /// (<c>IUplinkHost.SetAvailability</c>). <see cref="ComputePostfixAvailable"/>
-    /// is a SEPARATE, non-fatal axis: the <c>ScreenBuffer.Print(string,bool)</c>
-    /// postfix target being absent does NOT make the Uplink unavailable, it
+    /// is a separate, non-fatal axis: the <c>ScreenBuffer.Print(string,bool)</c>
+    /// postfix target being absent does not make the Uplink unavailable, it
     /// only means compute falls back to the public snapshot-scrape (spec §4.4).
     /// </summary>
     public readonly struct KosGuardResult
@@ -89,7 +89,7 @@ namespace Gonogo.KosUplink
         /// Returns null when the version clears the pin, otherwise the
         /// <see cref="KosGuardResult.Fail"/> the caller should return.
         ///
-        /// <para>A NULL <paramref name="asmVersion"/> is a failure, not a
+        /// <para>A null <paramref name="asmVersion"/> is a failure, not a
         /// pass. <c>AssemblyName.Version</c> is nullable, so null means the
         /// loaded kOS.dll carries no version we can read, and the whole point
         /// of a version pin is to refuse an unknown kOS rather than bind
@@ -171,7 +171,7 @@ namespace Gonogo.KosUplink
         /// <c>ProcessOneInputChar</c> overload with exactly four parameters
         /// shaped <c>(char, *, bool, bool)</c>: the pinned 4-arg overload
         /// (spec §7). The second parameter's type (<c>TelnetSingletonServer</c>)
-        /// is matched by POSITION only, so the check needs no kOS type present.
+        /// is matched by position only, so the check needs no kOS type present.
         /// </summary>
         public static bool HasFourArgProcessOneInputChar(Type termWindow)
         {

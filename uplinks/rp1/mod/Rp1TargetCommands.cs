@@ -87,7 +87,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Stand up a hire instruction, replicating RP-1's own dialog arms.
         ///
-        /// <para>The first arm is the one with words: the target must EXCEED the
+        /// <para>The first arm is the one with words: the target must exceed the
         /// current count, and RP-1 says so rather than silently clamping. The
         /// second clamps a too-large target down to the complex's maximum
         /// engineers, which RP-1 does silently, so this does too.</para>

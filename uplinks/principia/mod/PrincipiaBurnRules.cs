@@ -115,16 +115,16 @@ namespace GonogoPrincipiaUplink
         /// the plugin, and the vessel is under thrust while its plan changes
         /// underneath it.</para>
         ///
-        /// <para>A burn wholly in the PAST is allowed. It cannot be re-flown and
+        /// <para>A burn wholly in the past is allowed. It cannot be re-flown and
         /// editing it is how an operator tidies a plan; the producer's own window
         /// allows it too, with a warning.</para>
         ///
-        /// <para><b>An instant that would not read REFUSES.</b> Null used to mean "no
+        /// <para><b>An instant that would not read refuses.</b> Null used to mean "no
         /// refusal" here, which is the same word this method uses for "nothing was
         /// wrong", so an unreadable ignition or cutoff read as a burn known to be
-        /// idle. A REMOVE then came back <c>Written</c> and the operator's own console
+        /// idle. A remove then came back <c>Written</c> and the operator's own console
         /// confirmed it had deleted a burn that may have been under thrust. The two
-        /// instants ARE the guard: without both of them there is no window to test, so
+        /// instants are the guard: without both of them there is no window to test, so
         /// the honest answer is that the guard could not answer.</para>
         /// </summary>
         public static PrincipiaWriteResult? RejectExecuting(
@@ -156,31 +156,31 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Why an ignition instant this write ASKED FOR must not be written, or null.
+        /// Why an ignition instant this write asked for must not be written, or null.
         ///
         /// <para><b>The requested instant, tested against the instant the write
         /// arrived at.</b> Every other check in this file is about the burn as the
         /// plugin handed it over; this one is about what the operator asked for, and
         /// it is the only one that can catch a request that was correct when it was
         /// composed. Under signal delay the plan on the operator's screen left the
-        /// game one light time ago and the edit spends another getting back, so at a
+        /// game one signal delay ago and the edit spends another getting back, so at a
         /// thirty-light-minute vantage an instant an hour ahead on screen arrives
         /// already spent, with nothing done wrong at either end.</para>
         ///
         /// <para><b>Nothing else in the chain tests it.</b> The finiteness check does
         /// not look at a clock. <see cref="RejectExecuting"/> tests the burn's
-        /// CURRENT ignition, and correctly permits one wholly in the past, because
+        /// current ignition, and correctly permits one wholly in the past, because
         /// its question is whether the craft is under thrust. A declared precondition
         /// runs at dispatch, before the courier is involved, which is the wrong end
         /// of the delay entirely: the only place the arrival instant exists is
         /// here.</para>
         ///
-        /// <para><b>What is not established.</b> What the plugin actually DOES with a
+        /// <para><b>What is not established.</b> What the plugin actually does with a
         /// manoeuvre whose ignition is behind the current time but still inside the
         /// plan's own interval was not determined: it may integrate it, refuse it, or
         /// produce an arc from a state the craft was never in. So this refusal is not
         /// justified by a consequence anyone has observed. It is justified by what
-        /// the write MEANS: a burn asked to start at an instant that has gone is a
+        /// the write means: a burn asked to start at an instant that has gone is a
         /// manoeuvre the craft did not fly, so the plan it produces is a
         /// counterfactual whatever the integrator makes of it, and a receipt reading
         /// Written for one is the misreport worth refusing.</para>
@@ -212,7 +212,7 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// Applies an operator's edit to a burn that came OUT of the plugin,
+        /// Applies an operator's edit to a burn that came out of the plugin,
         /// returning the refusal when it cannot.
         ///
         /// <para>Every omitted field on the request leaves the plugin's own value

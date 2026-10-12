@@ -57,7 +57,7 @@ public class Rp1TargetsTests : IDisposable
 
     /// <summary>
     /// The project objects always exist, so a readable career with nothing
-    /// scheduled reports INACTIVE rather than absent. This is the reading that
+    /// scheduled reports inactive rather than absent. This is the reading that
     /// makes RP-1's silent clear survivable: the operator watches a target go.
     /// </summary>
     [Fact]
@@ -90,7 +90,7 @@ public class Rp1TargetsTests : IDisposable
     // ── The hire target ─────────────────────────────────────────────────────
 
     /// <summary>
-    /// The headcount is DERIVED from the two public readings rather than taken
+    /// The headcount is derived from the two public readings rather than taken
     /// from the private field behind them, so it cannot disagree with the other
     /// two numbers on the same row.
     /// </summary>
@@ -191,7 +191,7 @@ public class Rp1TargetsTests : IDisposable
     // ── The bug that must not be imported ───────────────────────────────────
 
     /// <summary>
-    /// NO PROGRESS FRACTION on the wire, for either target.
+    /// No progress fraction on the wire, for either target.
     ///
     /// <para>RP-1's <c>HireStaffProject.GetFractionComplete()</c> divides two
     /// ints and widens afterwards, confirmed at IL as <c>div</c> then

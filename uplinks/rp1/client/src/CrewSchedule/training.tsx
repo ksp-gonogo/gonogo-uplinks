@@ -28,7 +28,7 @@ export interface CourseControlsProps {
 }
 
 /**
- * RP-1's two ways off a course, drawn on the COURSE rather than on the nauts.
+ * RP-1's two ways off a course, drawn on the course rather than on the nauts.
  *
  * <para>They are different acts and their subjects are different too, which is
  * why they sit here: cancelling ends the course and takes every student on it

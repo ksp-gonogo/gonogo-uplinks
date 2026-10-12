@@ -8,7 +8,7 @@ using Gonogo.KerbalismUplink;
 using Xunit;
 
 /// <summary>
-/// The POCO-to-wire PARITY gate for the Kerbalism value tree: every property
+/// The POCO-to-wire parity gate for the Kerbalism value tree: every property
 /// declared on a <c>GonogoKerbalismUplink.Contract</c> payload type must be a
 /// key that <see cref="KerbalismCapture"/> actually emits. A field declared and
 /// never mapped reaches the generated TS SDK (produced from the C# shape) and
@@ -20,7 +20,7 @@ using Xunit;
 /// before Publish, so no serializer reflects them and nothing else checks the
 /// two shapes still agree. <c>KerbalismCaptureTests</c> is the behavioural
 /// suite next door: it asserts particular values are mapped correctly, never
-/// that the property SET is complete, which is the gap this closes.</para>
+/// that the property set is complete, which is the gap this closes.</para>
 ///
 /// <para>The core-side siblings, covering the same bug class for the other
 /// payload families, are
@@ -29,7 +29,7 @@ using Xunit;
 /// <c>BreakingGroundContractShapeTests</c> (the science and deployed families)
 /// and <c>VesselViewProviderTests</c> (<c>vessel.*</c>).</para>
 ///
-/// <para><b>Polarity: everything IN by default.</b> The required set is not a
+/// <para><b>Polarity: everything in by default.</b> The required set is not a
 /// list, it is the transitive closure of the five <c>[SitrepTopic]</c> payload
 /// roots over their own property types. A new nested shape hung off any payload
 /// enrols itself, and must then either be located in a built tree below or be
@@ -42,7 +42,7 @@ using Xunit;
 public class KerbalismWireParityTests
 {
     /// <summary>
-    /// Payload types that are reachable from a Topic root but have NO emitted
+    /// Payload types that are reachable from a Topic root but have no emitted
     /// instance anywhere in the capture, with the reason. Same polarity and same
     /// rule as <c>Sitrep.Core.Tests.WirePayloadCoverageTests</c>'s
     /// <c>FlattenedByProducer</c>: in by default, every exclusion argued for in
@@ -194,7 +194,7 @@ public class KerbalismWireParityTests
     }
 
     /// <summary>
-    /// Pins the one allowlisted omission to the ONE reason it is allowed for. If
+    /// Pins the one allowlisted omission to the one reason it is allowed for. If
     /// the greenhouse capture lands, <c>greenhouses</c> starts being emitted and
     /// this fails, which is the prompt to delete both entries rather than leave a
     /// stale excuse behind.

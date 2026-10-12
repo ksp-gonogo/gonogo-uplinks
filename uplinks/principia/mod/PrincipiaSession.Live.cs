@@ -35,7 +35,7 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// Reads the plugin handle off Principia's addon on every single access.
         ///
-        /// <para>The addon instance is cached; the HANDLE never is. Principia
+        /// <para>The addon instance is cached; the handle never is. Principia
         /// replaces the pointer on deserialise and on a plugin reset, so a cached
         /// copy would be a dangling pointer that still looks like a perfectly
         /// ordinary <c>IntPtr</c>, and the first call made through it would take

@@ -55,12 +55,12 @@ export const RP1_PERSONNEL_ASSIGN_COMMAND = "rp1.personnel.assign";
  * has one, and an operator who cannot tell them apart cannot act on any of them:
  *
  * <list type="bullet">
- * <item>the FACILITIES are one set per career, drawn by the host widget above
+ * <item>the facilities are one set per career, drawn by the host widget above
  * this section: one VAB, one R&amp;D, one Mission Control, whatever the career
  * owns;</item>
- * <item>a SPACE CENTRE is a place, with its own pool of hired engineers. A
+ * <item>a space centre is a place, with its own pool of hired engineers. A
  * career has one until KSCSwitcher gives it more;</item>
- * <item>a LAUNCH COMPLEX is one of several AT a centre, with its own crew, its
+ * <item>a launch complex is one of several at a centre, with its own crew, its
  * own build envelope, its own efficiency and its own rush mode.</item>
  * </list>
  *
@@ -69,7 +69,7 @@ export const RP1_PERSONNEL_ASSIGN_COMMAND = "rp1.personnel.assign";
  *
  * <para><b>Staffing is the fact it exists to make visible.</b> RP-1 advances a
  * complex's work at <c>Engineers / MaxEngineers</c>: a complex with nobody
- * assigned builds NOTHING however many engineers the career has hired, and an
+ * assigned builds nothing however many engineers the career has hired, and an
  * engineer assigned to nothing draws salary for no work. Neither is visible
  * anywhere else on the dashboard, and both are changed from here.</para>
  *
@@ -80,7 +80,7 @@ export const RP1_PERSONNEL_ASSIGN_COMMAND = "rp1.personnel.assign";
  * surface explains how the mod works.</para>
  *
  * <para><b>The payroll used to be a widget of its own</b> and is a section here
- * now, on the operator's ruling: staffing a complex IS complex management, and a
+ * now, on the operator's ruling: staffing a complex is complex management, and a
  * standalone payroll panel left the hiring totals in one place and the
  * assignments that spend them in another. Its scenes came with it.</para>
  *
@@ -228,13 +228,13 @@ export function KscComplexes() {
  * The career-wide payroll: who is on the books, and what they draw.
  *
  * <para>The top rung, and the only one of the three that is not per-centre.
- * These are the counts an operator plans HIRING against, which is a different
+ * These are the counts an operator plans hiring against, which is a different
  * act from assignment: assignment moves staff already on the books, and hiring
  * commits the career to buying more. The two controls that do the buying,
  * `HireTargetControl` over time and `HireFireControl` now, are drawn directly
  * under these counts, and each carries the balance it spends against.</para>
  *
- * <para>What the idle engineers cost is NOT here: the pool belongs to a centre
+ * <para>What the idle engineers cost is not here: the pool belongs to a centre
  * rather than to the career, so it is drawn on the centre holding it. A total
  * here as well would be the same figure twice on a one-centre career.</para>
  *

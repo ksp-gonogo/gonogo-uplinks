@@ -7,9 +7,9 @@ namespace Gonogo.KerbcastUplink
     /// <para>kerbcast auto-restarts the video sidecar process on its own (up
     /// to 5 attempts, roughly 5 seconds apart), during which
     /// <c>SidecarAlive</c> reads false transiently for the length of one
-    /// capture tick. A single false tick must NOT degrade
+    /// capture tick. A single false tick must not degrade
     /// <c>Sitrep.Contract.ISitrepUplink.Health</c>, that would flap the
-    /// health state on every routine restart; only TWO CONSECUTIVE false
+    /// health state on every routine restart; only two consecutive false
     /// ticks confirm the sidecar is actually down rather than mid-restart.</para>
     ///
     /// <para>Recovery is immediate, deliberately not itself debounced: the
@@ -33,7 +33,7 @@ namespace Gonogo.KerbcastUplink
         private int _deadStreak;
 
         /// <summary>
-        /// True once two CONSECUTIVE <see cref="Observe"/> calls have reported
+        /// True once two consecutive <see cref="Observe"/> calls have reported
         /// not-alive. False otherwise, including after exactly one.
         /// </summary>
         public bool ConfirmedDead { get; private set; }
@@ -43,7 +43,7 @@ namespace Gonogo.KerbcastUplink
         /// per capture tick, in tick order; the debounce logic is stateful
         /// and order-dependent.
         ///
-        /// <para>A NULL reading is kerbcast declining to say (the read threw
+        /// <para>A null reading is kerbcast declining to say (the read threw
         /// or was not a bool), and it is evidence in neither direction: it
         /// neither advances the streak nor clears a verdict. Only a positive
         /// "alive" clears one, and only two consecutive reads that actually

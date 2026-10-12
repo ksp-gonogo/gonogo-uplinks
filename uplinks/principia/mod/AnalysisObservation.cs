@@ -69,7 +69,7 @@ namespace GonogoPrincipiaUplink
         public bool? ElementsPresent;
 
         /// <summary>
-        /// How many turns of the PRIMARY the ground track takes to repeat,
+        /// How many turns of the primary the ground track takes to repeat,
         /// Capderou's Cᴛₒ.
         ///
         /// <para>Rotations rather than days, and the distinction is not pedantry:
@@ -115,7 +115,7 @@ namespace GonogoPrincipiaUplink
         /// Where the craft crosses the equator going north, as a band of
         /// longitudes over the analysed span.
         ///
-        /// <para>The WIDTH is the interesting part rather than the position: a
+        /// <para>The width is the interesting part rather than the position: a
         /// band that barely widens is a track that repeats, which is what decides
         /// whether the orbit can be called synchronous.</para>
         /// </summary>
@@ -130,7 +130,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>An angle rather than a clock reading, which is what the producer
         /// stores and what the question needs: sun-synchronicity is decided by how
-        /// little this band WIDENS, not by where it sits. Absent unless the
+        /// little this band widens, not by where it sits. Absent unless the
         /// producer had a mean sun to measure against.</para>
         /// </summary>
         public IntervalObservation? AscendingNodeSolarTimeDegrees;

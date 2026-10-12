@@ -14,7 +14,7 @@ namespace GonogoKosUplink.Tests
     /// thread, (2) a throwing action never stops (or drops) the actions
     /// behind it, and (3) draining an empty queue is a safe no-op.
     ///
-    /// Deliberately does NOT touch <c>KosExtension</c> or
+    /// Deliberately does not touch <c>KosExtension</c> or
     /// <c>KosMainThreadDispatcherAddon</c>: both create a real Unity
     /// <c>GameObject</c>, which throws outside a live KSP/Unity process.
     /// <see cref="MainThreadDispatcher"/> itself has zero UnityEngine

@@ -16,7 +16,7 @@ namespace GonogoRp1Uplink.Tests
     /// <list type="bullet">
     /// <item><see cref="Refuses_a_pad_dismantle_that_would_leave_the_complex_without_one"/>
     /// and <see cref="Refuses_a_pad_rename_to_a_name_already_in_use"/>. RP-1 answers
-    /// BOTH of these by doing nothing and saying nothing: its confirmation dialog
+    /// both of these by doing nothing and saying nothing: its confirmation dialog
     /// closes, the state is unchanged, and no message is posted anywhere. A
     /// confirmation that does nothing is worse than a refusal, because the operator
     /// believes it worked, and converting the two is most of the value in this
@@ -30,7 +30,7 @@ namespace GonogoRp1Uplink.Tests
     /// <item><see cref="Refuses_a_dismantle_of_a_complex_holding_a_finished_vehicle"/>.
     /// The finding this whole task turned on and had backwards: RP-1's own gate
     /// requires an empty warehouse, so its warehouse-scrapping loop is unreachable.
-    /// This asserts the refusal and that NOTHING was scrapped.</item>
+    /// This asserts the refusal and that nothing was scrapped.</item>
     /// <item><see cref="Removes_a_complexs_pads_last_first"/>. Not fussiness:
     /// <c>LCLaunchPad.Delete</c> decrements the launch-site index of every vessel
     /// pointing past the removed pad, so a forward walk shifts the same indices
@@ -219,7 +219,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The two figures a dismantle REPORTS, absent rather than nought when the
+        /// The two figures a dismantle reports, absent rather than nought when the
         /// complex would not say. Substituted, a dismantle that removed two pads
         /// and freed fourteen engineers answered that it had done neither, and the
         /// only place either number exists after the delete is this payload.
@@ -240,7 +240,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The last guard before the delete, in the ONE state it exists for: RP-1's
+        /// The last guard before the delete, in the one state it exists for: RP-1's
         /// own bool says the complex is free while its warehouse holds a vehicle.
         /// The refusal names what it counted and stays silent about what it could
         /// not; substituted, it announced "0 vehicles being integrated" about a

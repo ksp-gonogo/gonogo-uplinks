@@ -21,7 +21,7 @@ namespace GonogoRp1Uplink.Tests
     /// fix, one level up.</para>
     ///
     /// <para>The sweep is deliberately blunt: every single-word string literal in
-    /// a reflection STATEMENT has to be accounted for, either as a manifest target,
+    /// a reflection statement has to be accounted for, either as a manifest target,
     /// as a member RP-1 does not own, or as a literal that is not a member name at
     /// all. Blunt because a check tuned to the call shapes that exist today would
     /// quietly stop seeing a call written a new way, and an unaccounted literal is
@@ -81,7 +81,7 @@ namespace GonogoRp1Uplink.Tests
 
         /// <summary>
         /// Every production file in the Uplink that could reach RP-1 by string,
-        /// so a file ADDED to the Uplink and not to
+        /// so a file added to the Uplink and not to
         /// <see cref="ReflectionSources"/> fails here rather than going unwatched.
         ///
         /// <para>Written because that is exactly what happened: the list above was
@@ -89,7 +89,7 @@ namespace GonogoRp1Uplink.Tests
         /// added with four handlers' worth of reflection in it. The sweep went on
         /// reporting success, because a check cannot see a file it was never told
         /// to open. The list of files to scan is itself a thing that can drift,
-        /// and only a DIFFERENT kind of check catches that.</para>
+        /// and only a different kind of check catches that.</para>
         /// </summary>
         private const string ReflectionMarker = "Rp1Types.";
 
@@ -99,7 +99,7 @@ namespace GonogoRp1Uplink.Tests
         /// this sweep is a type the manifest has to know about.
         /// </summary>
         /// <remarks>
-        /// <para><c>NonPublicStaticMethod</c> is listed EXPLICITLY rather than
+        /// <para><c>NonPublicStaticMethod</c> is listed explicitly rather than
         /// left to <c>StaticMethod</c> to cover, and that is not redundancy. The
         /// alternation is anchored on <c>\b</c>, and there is no word boundary
         /// inside <c>NonPublicStaticMethod</c>, so a lookup written that way was
@@ -107,7 +107,7 @@ namespace GonogoRp1Uplink.Tests
         /// is the most fragile pin the Uplink has, and it would have been the one
         /// name the coverage check could not see.</para>
         ///
-        /// <para>The SAME trap had claimed three more shapes, found while adding
+        /// <para>The same trap had claimed three more shapes, found while adding
         /// the launch-complex lifecycle commands. Every name here is followed by
         /// <c>\s*\(</c>, so <c>InstanceMethod</c> does not match
         /// <c>InstanceMethodOn(</c> and <c>StaticMethod</c> does not match
@@ -120,7 +120,7 @@ namespace GonogoRp1Uplink.Tests
         /// and happened to be in the manifest anyway.</para>
         ///
         /// <para>The lesson is the one this file's own remark already stated and
-        /// then fell for twice more: a suffix added to a helper's NAME silently
+        /// then fell for twice more: a suffix added to a helper's name silently
         /// removes every call to it from this sweep, and the sweep reports success.
         /// A new lookup helper on <see cref="Rp1Types"/> has to be added here in
         /// the same commit.</para>
@@ -331,7 +331,7 @@ namespace GonogoRp1Uplink.Tests
         }
 
         /// <summary>
-        /// The Uplink's own source directory, found by a FILE that identifies it
+        /// The Uplink's own source directory, found by a file that identifies it
         /// rather than by the directory's name.
         /// </summary>
         /// <remarks>

@@ -5,7 +5,7 @@ using Xunit;
 namespace GonogoPrincipiaUplink.Tests
 {
     /// <summary>
-    /// Building the FIRST burn of a plan, which is the one with no existing burn
+    /// Building the first burn of a plan, which is the one with no existing burn
     /// to copy.
     ///
     /// <para>The struct is constructed from a type the caller supplies, and in
@@ -137,7 +137,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The built burn names what its three components MEAN.
+        /// The built burn names what its three components mean.
         ///
         /// <para>The producer's enum starts at one and has no zero member, so a burn
         /// built from nothing carries a value that is not a member of it at all.

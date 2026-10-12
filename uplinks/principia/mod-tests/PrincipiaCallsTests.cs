@@ -76,7 +76,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Throws<PrincipiaRefusedCallException>(() => PrincipiaCalls.RequireAllowed(name));
 
         /// <summary>
-        /// The verb screen matches WORDS, and this is the case that decides it.
+        /// The verb screen matches words, and this is the case that decides it.
         ///
         /// <para>A substring screen refuses <c>FlightPlanSelected</c>, a cleared
         /// read the ten-slot plan model needs, for containing <c>Select</c>, which
@@ -154,7 +154,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// about its own method applies here: an enumeration that cannot certify
         /// its completeness reports the same "all clear" as an empty one.</para>
         ///
-        /// <para>The port carries the WRITE half too, so the cleared set is the
+        /// <para>The port carries the write half too, so the cleared set is the
         /// union of the two registers. Keeping them as two lists and one union is
         /// the point: the read register refuses anything with a write verb, which is
         /// what stops a write being acquired by adding a name to the read list.</para>
@@ -199,7 +199,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The binder refuses BEFORE it looks at the type, so the refusal holds in
+        /// The binder refuses before it looks at the type, so the refusal holds in
         /// a process with no Principia in it. A guard that only fires once the mod
         /// is installed is a guard that never fires in a test.
         /// </summary>

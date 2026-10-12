@@ -6,14 +6,14 @@ using Xunit;
 namespace Gonogo.RealAntennasUplink.Tests.Routing
 {
     /// <summary>
-    /// <see cref="RaRouting"/> against the REAL CommNet types, with the network
+    /// <see cref="RaRouting"/> against the real CommNet types, with the network
     /// shaped the way RealAntennas shapes it: <c>FindClosestWhere</c> overridden
     /// (RA's only routing override) and <c>FindPath</c> left inherited from stock
     /// (which RA never touches).
     ///
-    /// <para>What is under test is WHICH router is entered. Reaching stock's is
+    /// <para>What is under test is which router is entered. Reaching stock's is
     /// not a near miss, it is the whole defect: stock's walk has no notion of
-    /// RA's minimum relay tech level, so it happily quotes a light-time over a
+    /// RA's minimum relay tech level, so it happily quotes a signal delay over a
     /// relay the game refuses to carry traffic through.</para>
     /// </summary>
     public class RaRoutingTests

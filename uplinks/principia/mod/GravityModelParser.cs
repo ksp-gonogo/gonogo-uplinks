@@ -12,7 +12,7 @@ namespace GonogoPrincipiaUplink
     ///
     /// <para>A dictionary rather than the game's own node type deliberately. The
     /// node is a <c>GameDatabase</c> read and belongs on the far side of the
-    /// game boundary; the DECISIONS about what a value means, which of them are
+    /// game boundary; the decisions about what a value means, which of them are
     /// required, and what an unparseable one does are all here, where a test can
     /// drive them against a real shipped file's spellings.</para>
     /// </summary>
@@ -71,7 +71,7 @@ namespace GonogoPrincipiaUplink
         ///
         /// <para>Here rather than at the read site, because the read site needs the
         /// game to compile and so no test can check the two agree. A bare number is
-        /// REFUSED by the parse: the game states its GM in metres cubed and a reader
+        /// refused by the parse: the game states its GM in metres cubed and a reader
         /// that omitted the unit would have the body dropped, every perturbation
         /// would vanish, and the curve would look like a clean two-body conic with
         /// nothing on it wrong in a way a diagram can show.</para>
@@ -122,7 +122,7 @@ namespace GonogoPrincipiaUplink
         /// there would be wrong. What the producer does in that case is not "give up",
         /// it is build a model per body out of the game's own gravitational
         /// parameters and integrate that, treating every body as a point mass. So
-        /// the game's bodies are not a substitute for the model here, they ARE the
+        /// the game's bodies are not a substitute for the model here, they are the
         /// model, and reading them is the only way to integrate against the physics
         /// actually running. That is a claim only an Uplink that knows the producer
         /// may make, which is why it is not a vanilla on the capability: core
@@ -170,7 +170,7 @@ namespace GonogoPrincipiaUplink
         /// <para>The shipped model writes <c>km^3/s^2</c>, and a reader that drops
         /// the unit gets a GM a billion times too small: every perturbation
         /// vanishes, the curve looks like a clean two-body conic, and nothing on
-        /// it is wrong in a way anyone can see. So the unit is REQUIRED and an
+        /// it is wrong in a way anyone can see. So the unit is required and an
         /// unrecognised one drops the body, rather than being assumed away.</para>
         /// </summary>
         private static readonly Dictionary<string, double> GravitationalParameterUnits =

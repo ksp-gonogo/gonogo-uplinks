@@ -13,7 +13,7 @@ namespace Gonogo.KerbalismUplink
     /// <para><b>The vessel comes from core's <c>activeVessel</c> capability
     /// rather than from KSP directly.</b> Those stopped being the same answer
     /// when core began reporting the craft an EVA kerbal stepped out of. The
-    /// parts listing an operator picks a part id off is the CRAFT's; KSP's own
+    /// parts listing an operator picks a part id off is the craft's; KSP's own
     /// answer is the kerbal, which has one part, so every id resolved against
     /// the wrong vehicle and came back <c>no-such-part</c>. Going outside to fix
     /// a failed part is exactly when a repair is wanted, so the path was dead in
@@ -51,8 +51,8 @@ namespace Gonogo.KerbalismUplink
         /// Three gates, in order, and none of them collapses into another.
         ///
         /// <para>The <c>mtbfFailures</c> gate is load-bearing and is not optional.
-        /// With <c>Features.Reliability</c> ON and
-        /// <c>PreferencesReliability.Instance.mtbfFailures</c> OFF the entire
+        /// With <c>Features.Reliability</c> on and
+        /// <c>PreferencesReliability.Instance.mtbfFailures</c> off the entire
         /// wear-and-break path is skipped (Kerbalism's own <c>Reliability</c>
         /// FixedUpdate guards on it): the failure deadline is never rolled, nothing
         /// wears, nothing ever breaks by MTBF, and every part reads clean. Without
@@ -69,7 +69,7 @@ namespace Gonogo.KerbalismUplink
                 _k.Features(), _k.ReliabilityPreferences());
 
         /// <summary>
-        /// MAIN-THREAD read of both payloads from ONE reflection walk, so the
+        /// MAIN-THREAD read of both payloads from one reflection walk, so the
         /// summary's tallies and the parts listing describe the same instant.
         /// Null when Kerbalism is definitely not modelling failures, which is the
         /// publish gate: the topics then say nothing rather than "all nominal".

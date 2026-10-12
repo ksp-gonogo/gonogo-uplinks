@@ -25,7 +25,7 @@ namespace GonogoRp1Uplink
         /// RP-1's own deduplicated total for tooling everything untooled on this
         /// ship, off the field it caches it in.
         ///
-        /// <para>NOT the sum of <see cref="Rp1ToolingPartRaw.ToolingCost"/> across
+        /// <para>Not the sum of <see cref="Rp1ToolingPartRaw.ToolingCost"/> across
         /// the parts below, and the difference is the point: tooling one part can
         /// leave another free, so the sum overstates. Both travel because they
         /// answer different questions.</para>
@@ -35,7 +35,7 @@ namespace GonogoRp1Uplink
         public List<Rp1ToolingPartRaw> Parts = new List<Rp1ToolingPartRaw>();
 
         /// <summary>
-        /// The funds breakdown for the same vehicle, read on the SAME walk.
+        /// The funds breakdown for the same vehicle, read on the same walk.
         ///
         /// <para>Together rather than on a capture of its own because the untooled
         /// surcharge on it is the sum of the rows above: two walks could disagree
@@ -67,7 +67,7 @@ namespace GonogoRp1Uplink
         public string? PartId;
 
         /// <summary>
-        /// How many OTHER parts a refit of this one would silently take with it.
+        /// How many other parts a refit of this one would silently take with it.
         /// RP-1 reports this after the fact; carried here so it can be said first.
         /// </summary>
         public int? SymmetryCounterparts;
@@ -76,7 +76,7 @@ namespace GonogoRp1Uplink
         public bool? Refittable;
 
         /// <summary>
-        /// The sizes this part could be refitted TO, already filtered to ones it
+        /// The sizes this part could be refitted to, already filtered to ones it
         /// can use. Empty when the career owns none it could move to; null when
         /// the question does not apply, which is a tooled part, a part nothing can
         /// reshape, or a tooling type RP-1 offers no refit for.

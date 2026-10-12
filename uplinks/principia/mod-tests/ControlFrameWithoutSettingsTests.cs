@@ -9,11 +9,11 @@ namespace GonogoPrincipiaUplink.Tests
     /// subscribed.
     ///
     /// <para><b>Measured on the rig, not imagined.</b> A probe subscribing
-    /// <c>system.frame</c> by itself saw ZERO frames in 45 seconds; the same
+    /// <c>system.frame</c> by itself saw zero frames in 45 seconds; the same
     /// probe with <c>principia.settings</c> added saw 28 in 30. The frame is
     /// derived from the settings observation, a subscription-gated sampled source
     /// only runs while something under its own prefixes has a subscriber, and this
-    /// uplink holds the controlFrame capability EXCLUSIVELY, so answering null does
+    /// uplink holds the controlFrame capability exclusively, so answering null does
     /// not fall through to stock's vanilla. The channel simply never emitted: no
     /// exception, no log line.</para>
     ///
@@ -23,7 +23,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// boards would have been quoted as if it were a length.</para>
     ///
     /// <para><b>These drive ticks rather than reading the registration.</b> The
-    /// first guard here asserted only that SOMETHING unconditional was registered.
+    /// first guard here asserted only that something unconditional was registered.
     /// That shape cannot see a refresher which is registered and then never
     /// refreshes: one that throws on every tick is caught by the engine's fail-soft
     /// and takes the uplink quietly Unavailable, and the assertion stays green

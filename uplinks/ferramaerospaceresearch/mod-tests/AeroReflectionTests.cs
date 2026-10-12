@@ -120,10 +120,10 @@ namespace GonogoFerramAerospaceResearchUplink.Tests
         }
 
         /// <summary>
-        /// The qualifier is ABSENT when it cannot be confirmed, and false only
+        /// The qualifier is absent when it cannot be confirmed, and false only
         /// when FAR itself says so. This used to read false either way, argued
-        /// as the cautious direction, and it is not one: false is drawn as MODEL
-        /// STALE and dashes every mark on the descent envelope, so a vessel
+        /// as the cautious direction, and it is not one: false is drawn as model
+        /// stale and dashes every mark on the descent envelope, so a vessel
         /// whose module list could not be walked had a verdict published about
         /// FAR's internals that nothing had read. Both widgets ask
         /// <c>aeroModelValid === false</c> for exactly this reason.

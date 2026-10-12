@@ -162,7 +162,7 @@ public class KerbalismIsruConverterExtension
     /// <summary>
     /// Active dump-valve index: which outputs vent overboard rather than being
     /// captured. Live per-part state that changes what the shared shape's outputs
-    /// actually MEAN for this instance, which is why it belongs next to them.
+    /// actually mean for this instance, which is why it belongs next to them.
     /// </summary>
     [SitrepUnit(Units.Count)]
     public int? ValveIndex { get; set; }

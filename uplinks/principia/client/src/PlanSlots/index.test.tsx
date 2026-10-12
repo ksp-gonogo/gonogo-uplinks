@@ -27,7 +27,7 @@ import { PlanSlots } from "./index.js";
 /**
  * A plan write's answer as the mod actually sends it: a `CommandResult` whose
  * `payload` is the receipt. See `JsonWriter.AppendCommandResult`, and the
- * sibling helper in `BurnEditor`'s suite for what scripting it FLAT used to
+ * sibling helper in `BurnEditor`'s suite for what scripting it flat used to
  * hide.
  */
 function planWriteReply(receipt: Record<string, unknown>) {
@@ -162,7 +162,7 @@ function plan(overrides: Record<string, unknown> = {}) {
 }
 
 /**
- * A saved draft for the plan's own vessel, which is what INSTALL offers.
+ * A saved draft for the plan's own vessel, which is what install offers.
  *
  * Returns the draft, because the id and the revision are what the install's
  * request id is composed from and a test that hard-codes `draft-1@1` is
@@ -414,7 +414,7 @@ describe("PlanSlots", () => {
   });
 
   /**
-   * The RECEIPT READER, not the refusal path. See the sibling in `BurnEditor`
+   * The receipt reader, not the refusal path. See the sibling in `BurnEditor`
    * for the whole reasoning; the short version is that
    * `PlanCommands.Settle` answers every non-`Written` outcome with
    * `Success = false`, so the pairing scripted here is one the producer never
@@ -601,7 +601,7 @@ describe("PlanSlots", () => {
 
   /**
    * Principia asserts on a plan that ends before it starts and takes the game
-   * down rather than answering an error, so the bar is ARRIVAL: an end
+   * down rather than answering an error, so the bar is arrival: an end
    * comfortably ahead at the view instant can be behind by the time the create
    * lands.
    */
@@ -634,7 +634,7 @@ describe("PlanSlots", () => {
    * The whole create, end to end.
    *
    * <p>The end instant is the panel's seeded one: two one-way light times past
-   * the view instant, plus the default plan length. It is asserted as a NUMBER
+   * the view instant, plus the default plan length. It is asserted as a number
    * because `PrincipiaPlanSlotArgs.finalTimeUt` is a plain double on the
    * receiving side, and it is in the request id because a create followed by a
    * delete followed by a create asking for the same end is genuinely the same
@@ -815,13 +815,13 @@ describe("PlanSlots", () => {
    * receipt read back off the reply.
    *
    * <p><b>The burns carry plain numbers, and that is the assertion.</b>
-   * `PrincipiaComposedBurn` is a payload carried INSIDE an args record rather
+   * `PrincipiaComposedBurn` is a payload carried inside an args record rather
    * than an args record itself, so codegen's "an Args type is a wire-WRITE"
    * exemption does not reach it and its instants and components are generated as
    * `Value`s. A draft holds them that way too, because a draft is read and
    * rendered. But `ChannelEngine.BindCommandArgs` binds each to a plain
    * <c>double</c> and rejects an object bag outright: "Cannot bind wire value of
-   * type Dictionary to numeric Double", thrown from INSIDE the handler, which
+   * type Dictionary to numeric Double", thrown from inside the handler, which
    * loses the whole plan rather than one field.</p>
    */
   it("sends the composed plan as the numbers the mod binds, not as unit values", async () => {
@@ -914,8 +914,8 @@ describe("PlanSlots", () => {
   });
 
   /**
-   * An arm is not a burn verdict, and INSTALL needs the verdict WHEN THE SLOT
-   * ALREADY HOLDS BURNS.
+   * An arm is not a burn verdict, and install needs the verdict when the slot
+   * already holds burns.
    *
    * `PlanCommands.SendPlan` gates on `gate.ManoeuvreCount() > 0 &&
    * !BurnLayoutVerified` and says why it does not gate on it otherwise: a plan
@@ -988,7 +988,7 @@ describe("PlanSlots", () => {
   });
 
   /**
-   * The mod refuses the WHOLE plan when any burn has ignited by arrival, rather
+   * The mod refuses the whole plan when any burn has ignited by arrival, rather
    * than installing the ones still ahead, so the deadline is worth reading before
    * the press.
    */

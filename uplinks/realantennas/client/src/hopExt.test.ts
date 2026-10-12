@@ -17,7 +17,7 @@ const FIXTURE = join(MOD_ROOT, "golden-fixtures", "commshop-extensions.json");
 const COMMS_PATH_TOPIC = "comms.path";
 
 /**
- * The frame the SERVER actually produced, read off disk. `CommsHopExtensionWireTests`
+ * The frame the server actually produced, read off disk. `CommsHopExtensionWireTests`
  * (this Uplink's dotnet tests) asserts the real codec equals this file byte for
  * byte, so it is the wire frame, not a hand-authored approximation, and the two
  * halves cannot drift without one going red.
@@ -75,7 +75,7 @@ describe("realantennas' namespace of CommsHop's provider extension bag", () => {
     const frame = serverFrame();
     const fixture = setupStreamFixture();
     /**
-     * The hook returns the PAYLOAD rather than the reading: a `Reading` is
+     * The hook returns the payload rather than the reading: a `Reading` is
      * always defined, so a `waitFor` on the reading itself passes on the first
      * tick and every hydration assertion below would then read `undefined` off
      * the wrapper.

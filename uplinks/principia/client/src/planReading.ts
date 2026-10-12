@@ -2,7 +2,7 @@ import type { HeldGrade, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import type { PrincipiaPlan } from "./__generated__/contract.js";
 
 /**
- * What a `principia.plan` reading means to a surface that WRITES to the plan.
+ * What a `principia.plan` reading means to a surface that writes to the plan.
  *
  * <p>Shared rather than decided per widget. Two write surfaces read the same
  * channel and both have to answer the same two questions, which reading arms
@@ -30,15 +30,15 @@ export type PlanWriteView =
  * different facts, and so is a plan we last heard about hours ago.
  *
  * A held plan is still handed back, because an operator who can see how old it
- * is can act on it. What is refused is WRITING against one: a burn index, a burn
+ * is can act on it. What is refused is writing against one: a burn index, a burn
  * count and a plan slot all come off a reading, and a write bounded against a
  * reading from an hour ago is the exact mistake the producer's own protocol is
  * built to prevent.
  *
  * `reading.value` and never `reckoned`, on whichever arm it arrives: a modelled
- * plan is a guess at a burn LIST, and an index written back has to be one the
+ * plan is a guess at a burn list, and an index written back has to be one the
  * producer actually reported holding a burn. Reckoning rides its own
- * discriminant, so a LIVE plan can carry a model too, and this declines that one
+ * discriminant, so a live plan can carry a model too, and this declines that one
  * for the same reason.
  */
 export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
@@ -69,7 +69,7 @@ export function planView(reading: TopicReading<PrincipiaPlan>): PlanWriteView {
 }
 
 /**
- * What a held reading has lost contact WITH, as something to go and check.
+ * What a held reading has lost contact with, as something to go and check.
  *
  * The grades ask for different next moves: one channel's keyframes drying up is
  * a producer that stopped publishing, a down transport is the whole link, and a

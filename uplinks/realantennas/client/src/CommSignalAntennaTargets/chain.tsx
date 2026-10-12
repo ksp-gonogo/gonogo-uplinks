@@ -2,7 +2,7 @@
  * The fallback-chain half of an antenna card: what the craft is holding, and the
  * controls that give it a new list.
  *
- * A chain is an ORDERED list of targets the craft tries when it has no link,
+ * A chain is an ordered list of targets the craft tries when it has no link,
  * walked on the craft rather than from here. That is not an implementation
  * detail worth hiding: the whole reason a chain exists is that the moment a
  * fallback is needed is the moment no command can arrive, so the operator's one
@@ -152,7 +152,7 @@ function metres(quantity: Quantityish) {
 }
 
 /**
- * Pairs each entry with its POSITION, which is the whole of its identity: an
+ * Pairs each entry with its position, which is the whole of its identity: an
  * entry carries no id and does not need one, because where it sits in the list
  * is what says when the craft tries it. Two identical entries at different
  * positions are two different fallbacks, and the craft addresses the one it is

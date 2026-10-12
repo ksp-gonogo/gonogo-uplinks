@@ -14,13 +14,13 @@ namespace Gonogo.KerbalismUplink
 
     /// <summary>
     /// Presence-gated Harmony postfix on KERBALISM.SubjectData.RetrieveScience - the single choke
-    /// point Kerbalism routes ALL of its own science crediting through (incremental transmission,
+    /// point Kerbalism routes all of its own science crediting through (incremental transmission,
     /// vessel recovery, and lab-produced files alike). Kerbalism's own crediting bypasses the stock
     /// TransactionReasons path entirely (a pooled, vessel-less AddScience(None) buffer flush), so
     /// the stock currency interceptor cannot see it - this hook is the only way Kerbalism science
     /// gets delayed at all. Each retrieved increment is handed to
     /// <see cref="IDelayedScienceSink.RecordDelayedScienceIncrement"/> as plain (vesselId, amount,
-    /// ut, origin) values; the currency-delay core owns the aggregator, ledger, and light-time.
+    /// ut, origin) values; the currency-delay core owns the aggregator, ledger, and signal delay.
     ///
     /// Absent Kerbalism, <see cref="TryAttach"/> never finds the type, stays permanently
     /// unattached, and nothing else behaves differently.
@@ -45,7 +45,7 @@ namespace Gonogo.KerbalismUplink
         /// the host at <see cref="TryAttach"/>.
         ///
         /// <para><b>Why the Kernel and not the sink itself.</b> TryAttach runs inside this Uplink's
-        /// <c>Register</c>, and <c>ChannelEngine.ResolveCapabilities()</c> runs only after EVERY
+        /// <c>Register</c>, and <c>ChannelEngine.ResolveCapabilities()</c> runs only after every
         /// uplink has registered: that ordering is what lets an Uplink register a provider for a
         /// capability core declared. So the capability descriptor exists at attach time but has no
         /// active instance yet, and resolving here would always return nothing. The rest of the

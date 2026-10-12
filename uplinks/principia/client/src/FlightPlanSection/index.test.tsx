@@ -34,7 +34,7 @@ function mount(pinnedUt = VIEW_UT) {
 }
 
 /**
- * A plan read AT the pinned view instant, which is the fresh case.
+ * A plan read at the pinned view instant, which is the fresh case.
  *
  * `validAt` is stated rather than defaulted: the transport's own default is 0,
  * so an emit with no meta lands 10,000 seconds behind a clock pinned at
@@ -95,7 +95,7 @@ function plan(overrides: Record<string, unknown> = {}) {
 describe("FlightPlanSection: a reading, dated", () => {
   /**
    * The one that matters most. With no sample at all the widget must say there
-   * is no READING, never that there is no plan. An operator told "no flight
+   * is no reading, never that there is no plan. An operator told "no flight
    * plan" for a vessel that has one stops looking, and that is the failure that
    * kills a mission.
    */
@@ -122,9 +122,9 @@ describe("FlightPlanSection: a reading, dated", () => {
   });
 
   /**
-   * Asserts the NUMBERS, not just the row label and the badge.
+   * Asserts the numbers, not just the row label and the badge.
    *
-   * The first version of this checked `#1` and `NEXT` and passed while BOTH
+   * The first version of this checked `#1` and `NEXT` and passed while both
    * quantity columns rendered a null dash: the nested burn type's units were
    * never registered, so Δv and duration arrived bare and `<Unit>` had nothing
    * to format. A render is what showed the empty columns. A test that names a
@@ -149,7 +149,7 @@ describe("FlightPlanSection: a reading, dated", () => {
   /**
    * Both indices have to be readable before they can agree. Written because the
    * first version compared the two funnelled magnitudes and a payload missing
-   * BOTH would have `null === null` mark every row NEXT: a confident wrong
+   * both would have `null === null` mark every row next: a confident wrong
    * answer on every line, from a field going missing.
    */
   it("marks no burn as next when the index cannot be read", async () => {
@@ -168,10 +168,10 @@ describe("FlightPlanSection: a reading, dated", () => {
   });
 
   /**
-   * The headline behaviour. A plan observed in the past is SHOWN, dated, rather
+   * The headline behaviour. A plan observed in the past is shown, dated, rather
    * than withheld: an operator who can see the plan is six hours old can act on
    * it, where one shown nothing concludes there is nothing. And the ignition
-   * countdown is measured from the VIEW instant, so a burn four minutes after a
+   * countdown is measured from the view instant, so a burn four minutes after a
    * six-hour-old snapshot reads as long past rather than as imminent.
    */
   it("falls back to the sample instant when the plan does not state its own", async () => {
@@ -198,7 +198,7 @@ describe("FlightPlanSection: a reading, dated", () => {
    */
   /**
    * The payload's own instant is what is shown, not the sample's, and they are
-   * made to DISAGREE here on purpose. A render fixture that set only the payload
+   * made to disagree here on purpose. A render fixture that set only the payload
    * field produced a byte-identical image to the fresh one, which is how the two
    * were found to be different facts: the sample UT is transport metadata and the
    * payload field is the producer's claim about when it looked.
@@ -290,11 +290,11 @@ describe("FlightPlanSection: a reading, dated", () => {
   /**
    * Three states, three sentences. A failed integration names the burn, because
    * "the plan failed" and "burn 2 failed" ask different things of an operator,
-   * and an UNKNOWN status is its own row rather than being rounded to either
+   * and an unknown status is its own row rather than being rounded to either
    * answer.
    */
   /**
-   * The badge names NO burn, and that is the fix rather than a regression.
+   * The badge names no burn, and that is the fix rather than a regression.
    *
    * It used to read "INTEGRATION FAILED AT BURN 2", off a first-error index that
    * came from the producer's planner window. That field held the index of the

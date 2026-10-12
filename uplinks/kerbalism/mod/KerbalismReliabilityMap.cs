@@ -8,7 +8,7 @@ namespace Gonogo.KerbalismUplink
     /// <c>kerbalism.reliability</c> and <c>kerbalism.reliabilityParts</c>
     /// payloads. KSP-free so it is headless-testable.
     ///
-    /// <para>What Kerbalism can honestly fill, and nothing else. It has NO per-part
+    /// <para>What Kerbalism can honestly fill, and nothing else. It has no per-part
     /// probability: the only probabilities in the assembly are the save-wide
     /// difficulty settings criticalChance / safeModeChance, consulted once at the
     /// instant a break resolves. So the per-part contribution is a Condition plus
@@ -79,8 +79,8 @@ namespace Gonogo.KerbalismUplink
         /// one. Read off its <c>Repair()</c> path.
         ///
         /// <para>Here rather than at either call site because there are now two:
-        /// <see cref="RepairCostOf"/>, which STATES the cost on the wire, and
-        /// <c>KerbalismReflection.AttemptRepair</c>, which CHARGES it. Two copies
+        /// <see cref="RepairCostOf"/>, which states the cost on the wire, and
+        /// <c>KerbalismReflection.AttemptRepair</c>, which charges it. Two copies
         /// of <c>critical ? 2 : 1</c> is how the number a console shows comes to
         /// disagree with the number a repair takes.</para>
         /// </summary>
@@ -90,7 +90,7 @@ namespace Gonogo.KerbalismUplink
         /// What repairing this part consumes, for <c>KerbalismReliabilityPart.RepairCost</c>.
         ///
         /// <para>Null means nothing is consumed, which the contract distinguishes
-        /// from a cost of zero. Three cases reach it: the part is not BROKEN (a
+        /// from a cost of zero. Three cases reach it: the part is not broken (a
         /// service-due part is cleared by the same <c>Repair()</c> and costs no
         /// kits), kits are switched off in the install's reliability preferences,
         /// or that preference could not be read at all.</para>
@@ -164,7 +164,7 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// The coverage decision as a PURE function of the two things it reads, so
+        /// The coverage decision as a pure function of the two things it reads, so
         /// it can be tested without standing up reflection into a live Kerbalism.
         /// </summary>
         public static string ComputeCoverage(
@@ -230,9 +230,9 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>Omitted entirely when either input is missing, and a
         /// <c>service-due</c> row then renders with no number, which is correct:
-        /// <c>NeedsMaintenance()</c> has TWO independent sources (an explicit wear
+        /// <c>NeedsMaintenance()</c> has two independent sources (an explicit wear
         /// flag an EVA inspection sets, and this time-based clock) and they are
-        /// unrelated. A part inspected today and found 40% worn is service-due NOW
+        /// unrelated. A part inspected today and found 40% worn is service-due now
         /// with its maintenance clock far in the future.</para>
         /// </summary>
         private static List<KerbalismReliabilityBudget>? ServiceBudget(ReliabilityPartRaw p, double ut)

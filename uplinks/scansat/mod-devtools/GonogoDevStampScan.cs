@@ -12,13 +12,13 @@ namespace Gonogo.ScansatUplink.DevTools
     /// <summary>
     /// DEV-ONLY test tooling. In flight, polls a request file
     /// (<c>PluginData/scanstamp-request.cfg</c>, next to this assembly) and, on a
-    /// new request, STAMPS full SCANsat coverage onto a body for the requested
+    /// new request, stamps full SCANsat coverage onto a body for the requested
     /// scan types - i.e. marks the whole planet as already scanned. This gives
     /// terrain-render / coverage-gate tests a deterministic, reproducible scan
     /// fixture without having to actually fly a scanner over a body (which no
     /// save currently has).
     ///
-    /// It calls SCANsat's OWN write path via reflection (no compile-time SCANsat
+    /// It calls SCANsat's own write path via reflection (no compile-time SCANsat
     /// reference, so this dev assembly stays SCANsat-version-agnostic and still
     /// builds if SCANsat is absent):
     ///   SCANsat.SCANUtil.getData(string bodyName)  -> SCANdata          (public)
@@ -27,12 +27,12 @@ namespace Gonogo.ScansatUplink.DevTools
     /// fillMap is SCANsat's own loop over the full 360x180 grid, so the result is
     /// genuine SCANdata identical to a fully-scanned body, not a hand-forged blob.
     ///
-    /// <b>NOT</b> production behaviour. Lives in the Deck-only GonogoScansatDevTools
+    /// <b>not</b> production behaviour. Lives in the Deck-only GonogoScansatDevTools
     /// assembly and is never shipped. With no request file (the production
     /// default), this addon does nothing at all.
     ///
     /// <c>once: false</c> re-instantiates this every time the flight scene loads;
-    /// <see cref="DevRequestLedger"/> applies a request once across scene reloads AND
+    /// <see cref="DevRequestLedger"/> applies a request once across scene reloads and
     /// restarts, and refuses one written before the running session started.
     /// </summary>
     [KSPAddon(KSPAddon.Startup.Flight, once: false)]

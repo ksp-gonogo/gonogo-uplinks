@@ -90,7 +90,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// <c>StrategyRP0.PerformActivate(bool useCurrency)</c>.
         ///
-        /// <para>The ENTIRE fresh-activation procedure for a leader: it sets
+        /// <para>The entire fresh-activation procedure for a leader: it sets
         /// <c>isActive</c>, calls <c>Register()</c>, stamps <c>dateActivated</c>
         /// and <c>ActivatedStrategies</c>, charges <c>SetupCosts</c>, recalculates
         /// build rates, fires <c>OnLeaderChange</c>, writes the career log and
@@ -105,7 +105,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// <c>ProgramHandler.ActivateProgram(Program p)</c>, resolved by
-        /// first-parameter TYPE because a same-named
+        /// first-parameter type because a same-named
         /// <c>ActivateProgram(string, Program.Speed)</c> overload sits beside it
         /// and a lookup by arity alone could pick either.
         ///
@@ -206,7 +206,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Whether this strategy is the subclass whose activation is split.
         ///
-        /// <para>Asserted POSITIVELY by the caller rather than inferred from a
+        /// <para>Asserted positively by the caller rather than inferred from a
         /// department name: a leader is defined negatively in RP-1 terms (any
         /// strategy whose department is not Programs), and a negative definition
         /// is the wrong thing to bet a currency charge on.</para>
@@ -215,7 +215,7 @@ namespace GonogoRp1Uplink
             strategy != null && programStrategy != null && programStrategy.IsInstanceOfType(strategy);
 
         /// <summary>
-        /// The <c>Program</c> this strategy carries, which is the TEMPLATE before
+        /// The <c>Program</c> this strategy carries, which is the template before
         /// acceptance and the accepted copy afterwards.
         ///
         /// <para>The distinction is failure 2 in the header: the template's

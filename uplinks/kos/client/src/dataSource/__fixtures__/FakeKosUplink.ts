@@ -3,7 +3,7 @@
  * counterpart to `MockKosTelnet.ts`. `KosDataSource.executeScript` no
  * longer talks to telnet at all (see `kosUplinkExecutor.ts`); this fixture
  * lets `executeScript`/CPU-discovery integration coverage keep exercising
- * the REAL dispatch → correlate → resolve pipeline, just over a real
+ * the real dispatch → correlate → resolve pipeline, just over a real
  * `StubTransport` + `TelemetryClient` instead of a fake WebSocket telnet
  * session.
  *
@@ -18,10 +18,10 @@
  *   - `kos.processors`: publishes the coreId/tag list `setCpus()` is given.
  *     Subscribed eagerly on construction (a dummy listener) so it stays
  *     flowing: `KosUplinkExecutor`'s own lazy subscribe then replays the
- *     current list SYNCHRONOUSLY instead of racing an empty cache, this
+ *     current list synchronously instead of racing an empty cache, this
  *     mirrors the real app, where something (e.g. the KosProcessors widget)
  *     already has `kos.processors` flowing before a user triggers a script.
- *   - `kos.run` command dispatch, parses the LAST non-blank line of the
+ *   - `kos.run` command dispatch, parses the last non-blank line of the
  *     dispatched command text (works for both the bare `RUNPATH(...)` form
  *     and the multi-line managed-wrapper form, which always ends with the
  *     same RUNPATH line) via the same regex/arg-splitter `MockKosTelnet`
@@ -30,7 +30,7 @@
  *     an explicit `[KOSERROR]...[/KOSERROR]` wins over `[KOSDATA]` if both are
  *     present; otherwise `parseKosData` produces `fields`.
  *
- * What it deliberately does NOT handle:
+ * What it deliberately does not handle:
  *   - kOS's raw REPL error-dump format (`At interpreter`, `Message:`,
  *     `VERBOSE DESCRIPTION`, ...), that parsing (`kosComputeSession.ts`'s
  *     `parseKosError`) is telnet-REPL-text-specific, and since executeScript

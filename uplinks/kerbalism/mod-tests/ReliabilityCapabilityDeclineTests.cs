@@ -30,7 +30,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// The gate that is easy to miss: with the feature ON and mtbfFailures OFF,
+        /// The gate that is easy to miss: with the feature on and mtbfFailures off,
         /// Kerbalism's own Reliability FixedUpdate skips the whole wear-and-break
         /// path, so nothing ever fails and every part reads clean. Publishing there
         /// would tell the operator the craft is watched and fine.
@@ -56,7 +56,7 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// STILL SERVES when it cannot tell which way its own switch is set.
+        /// Still serves when it cannot tell which way its own switch is set.
         /// Serving and admitting the uncertainty is honest; going quiet would
         /// launder a "do not know" into a clean "nothing here".
         /// </summary>

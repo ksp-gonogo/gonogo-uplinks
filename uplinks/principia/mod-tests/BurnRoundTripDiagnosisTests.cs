@@ -47,7 +47,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The whole point: WHICH field, and both values. A refusal that says only
+        /// The whole point: which field, and both values. A refusal that says only
         /// "what came back is not what went in" cannot be acted on and cannot tell a
         /// layout fault from a normalisation.
         /// </summary>
@@ -149,7 +149,7 @@ namespace GonogoPrincipiaUplink.Tests
 
         /// <summary>
         /// And the complement, which is what makes the test above non-vacuous: a
-        /// plan that DID round-trip a burn reports both verdicts proven. Without the
+        /// plan that did round-trip a burn reports both verdicts proven. Without the
         /// pair, a surface that hard-coded false would pass.
         /// </summary>
         [Fact]

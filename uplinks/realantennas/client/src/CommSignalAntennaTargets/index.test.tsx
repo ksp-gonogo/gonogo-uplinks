@@ -124,7 +124,7 @@ describe("the antenna targeting section", () => {
 
   /**
    * An omni cannot hold a target at all, so it gets the row and no controls.
-   * Showing it a disabled AIM would suggest the capability exists and is
+   * Showing it a disabled aim would suggest the capability exists and is
    * momentarily unavailable.
    */
   it("gives an omni antenna no targeting controls", async () => {
@@ -176,7 +176,7 @@ describe("the antenna targeting section", () => {
   });
 
   /**
-   * The gate is CONFIG, not code: Realism Overhaul moves three of the five
+   * The gate is config, not code: Realism Overhaul moves three of the five
    * levels, so the same antenna offers a different set on a different install.
    * The card reads what the mod published rather than a table of its own.
    */
@@ -295,7 +295,7 @@ describe("an antenna whose flags could not be read", () => {
 
   /**
    * No controls, because the mod refuses both commands for this antenna too, so
-   * a live AIM would be a press that provably goes nowhere. What it must not do
+   * a live aim would be a press that provably goes nowhere. What it must not do
    * is hide them silently: that is the omni's presentation, and it reads as a
    * settled fact about the hardware.
    */

@@ -93,7 +93,7 @@ namespace GonogoRp1Uplink
     public sealed class Rp1HirePrices
     {
         /// <summary>
-        /// What a PAID head actually costs, unmodified, both roles. Null when
+        /// What a paid head actually costs, unmodified, both roles. Null when
         /// RP-1's settings could not be read.
         /// </summary>
         public double? Charge;
@@ -132,7 +132,7 @@ namespace GonogoRp1Uplink
         private const double RepriceIntervalUt = 3600.0;
 
         /// <summary>
-        /// The BROADCASTS, not the captures, because the broadcast is the cost:
+        /// The broadcasts, not the captures, because the broadcast is the cost:
         /// each query fires OnCurrencyModifierQuery at every modifier in the save.
         /// Steady state is two per in-game hour, so anything near this threshold
         /// means the change-gate stopped gating rather than that a career got
@@ -169,7 +169,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Whether the CHARGE can be read. The quotes have their own condition and
+        /// Whether the charge can be read. The quotes have their own condition and
         /// their own null, because the charge is the figure that leaves the balance
         /// and it needs no query at all.
         /// </summary>
@@ -220,7 +220,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// The UT test is deliberately two-sided. A revert or a reload moves UT
-        /// BACKWARDS, and a forward-only difference would then stop firing for as
+        /// backwards, and a forward-only difference would then stop firing for as
         /// long as the clock sat behind the point it had already reached, which is
         /// the whole of a rehearsal.
         /// </remarks>
@@ -238,7 +238,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// A fold over the names of the ACTIVE strategies, which is the set of
+        /// A fold over the names of the active strategies, which is the set of
         /// modifiers that will answer the next query.
         /// </summary>
         /// <remarks>
@@ -287,7 +287,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// What RP-1 QUOTES for one head of this role. Null when the query cannot
+        /// What RP-1 quotes for one head of this role. Null when the query cannot
         /// be asked, which costs the quote and leaves the charge standing: a charge
         /// republished under a quote's name is the substitution this file's header
         /// forbids.

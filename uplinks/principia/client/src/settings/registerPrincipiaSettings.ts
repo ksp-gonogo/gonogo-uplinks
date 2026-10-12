@@ -84,7 +84,7 @@ function frame(payload: unknown): PrincipiaReferenceFrame | undefined {
 }
 
 /**
- * A list of body names as one line, or `undefined` for an absent OR empty list.
+ * A list of body names as one line, or `undefined` for an absent or empty list.
  *
  * An empty list is rendered as absence deliberately: "no bodies" and "the mod
  * did not say which bodies" are indistinguishable from outside this payload,
@@ -99,7 +99,7 @@ function bodyList(names: string[] | null | undefined): string | undefined {
  * Each burn's frame as one line, in plan order, or `undefined` for a plan with
  * no burns.
  *
- * The frames are NAMED rather than counted because the fact an operator needs is
+ * The frames are named rather than counted because the fact an operator needs is
  * which frame a given burn's delta-v is quoted in, and a count of three says
  * nothing about that. An absent list and an empty one both read as absence, the
  * same rule {@link bodyList} follows.
@@ -180,7 +180,7 @@ function ordinalOf(
 /**
  * One row, typed at its own {@link SettingType} and handed back as the union.
  *
- * The rows are a LIST rather than thirty-seven bare `registerSetting` calls so
+ * The rows are a list rather than thirty-seven bare `registerSetting` calls so
  * that a test can put a payload through a `select` without standing up the
  * app's settings surface, which an Uplink may not import. The generic is what
  * `registerSetting` itself has: declaring `type: "number"` and then selecting a

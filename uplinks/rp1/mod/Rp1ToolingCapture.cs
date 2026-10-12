@@ -9,7 +9,7 @@ namespace GonogoRp1Uplink
     public static class Rp1ToolingCapture
     {
         /// <summary>
-        /// The tooling reading, or NOTHING.
+        /// The tooling reading, or nothing.
         ///
         /// <para>Null rather than an empty payload when there is no editor ship or
         /// RP-1's tooling is switched off. The second is the case that earns the
@@ -62,7 +62,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The refit rows, or NOTHING. Null carries through rather than becoming an
+        /// The refit rows, or nothing. Null carries through rather than becoming an
         /// empty list, because the two say different things: null is a part the
         /// question does not apply to, empty is a part the career owns nowhere to
         /// move.

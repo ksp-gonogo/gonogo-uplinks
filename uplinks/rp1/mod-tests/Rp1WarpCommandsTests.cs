@@ -11,7 +11,7 @@ namespace GonogoRp1Uplink.Tests
     /// <para>The case that decides whether this surface is safe is
     /// <see cref="Refuses_a_warp_to_complete_when_nothing_is_in_progress"/>, and it
     /// is not a validation nicety. RP-1's own <c>Create</c> takes the next thing to
-    /// finish, then logs its name with NO null check, and
+    /// finish, then logs its name with no null check, and
     /// <c>GetNextThingToFinish</c> returns null both when there is no active space
     /// centre and when nothing anywhere is in progress. RP-1 never reaches it
     /// because its button is drawn inside a branch that already has a project (the

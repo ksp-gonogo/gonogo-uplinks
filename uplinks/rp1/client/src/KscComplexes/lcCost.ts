@@ -5,18 +5,18 @@ import type { Rp1LcPricing } from "../__generated__/contract.js";
  * What RP-1 would charge to build a complex to a given specification.
  *
  * <para><b>Why this arithmetic is here and not on the wire.</b> Every other price
- * this Uplink shows is computed where RP-1 lives, because it is a price OF
+ * this Uplink shows is computed where RP-1 lives, because it is a price of
  * something that already exists and so has somewhere to be attached. A new
  * complex is priced against what the operator is still typing. Asking the mod per
  * keystroke is not available: these commands are delay-aware, and a career
  * commanding from a remote vantage would wait minutes for each quote, so a form
  * that could not price until a round trip returned could not price at all.</para>
  *
- * <para><b>The split is by whether the arithmetic needs GAME DATA.</b> What is
+ * <para><b>The split is by whether the arithmetic needs game data.</b> What is
  * below touches none: it is a closed form over the tonnage, the envelope and the
  * human rating the operator entered, transcribed from `LCData.GetCostStats` in the
  * shipped RP0.dll and pinned by tests against the same cases the C#
- * `Rp1LcCostModel` is pinned to. The resource term is NOT transcribed, because its
+ * `Rp1LcCostModel` is pinned to. The resource term is not transcribed, because its
  * factors come from a RealFuels tank definition, a KSP resource definition and an
  * RP-1 settings dictionary; those arrive per resource on `rp1.lcPricing` as a
  * funds-per-unit figure, which is exact rather than approximate because RP-1's own
@@ -74,7 +74,7 @@ export function quoteNewComplex(
  * The pad and integration halves of a specification, which is RP-1's own
  * `GetCostStats` minus the resource term.
  *
- * <para>Apart from `quoteNewComplex` because a renovation needs it TWICE, for
+ * <para>Apart from `quoteNewComplex` because a renovation needs it twice, for
  * the specification the complex stands at and the one it is being renovated to,
  * and the resource term is not a function of either alone.</para>
  */
@@ -115,14 +115,14 @@ const MASS_CHANGE_COST_FLOOR = 1000;
 /** A complex as it stands, which a renovation is priced as a difference from. */
 export interface LcCurrent extends LcSpec {
   /**
-   * The tonnage the complex was ORIGINALLY built at, which a renovation carries
-   * through unchanged. It fixes the legal envelope AND it is the curve the
+   * The tonnage the complex was originally built at, which a renovation carries
+   * through unchanged. It fixes the legal envelope and it is the curve the
    * per-metre integration charge is lerped over, so a renovation priced against
    * the new limit instead would misprice every axis.
    */
   massOrig: number;
   /**
-   * How many of the complex's pads are OPERATIONAL. Every one of them is rebuilt
+   * How many of the complex's pads are operational. Every one of them is rebuilt
    * by a renovation, so the pad half is scaled once for each beyond the first.
    */
   launchPadCount: number;
@@ -148,16 +148,16 @@ export interface LcModifyQuote {
  * shrinking a complex is most likely to get wrong.</para>
  *
  * <para><b>Three clauses a transcription drops.</b> Any movement of the tonnage
- * limit at all carries a floor of 1,000 funds, on the PAD half only rather than
+ * limit at all carries a floor of 1,000 funds, on the pad half only rather than
  * on the total. The integration half's per-metre rate is a curve over
  * `massOrig`, so a complex originally built big pays more per metre of envelope
  * than a small one whatever it is renovated into. And a growth is capped at what
  * the finished specification would have cost outright, because rebuilding cannot
  * cost more than building.</para>
  *
- * <para><b>It REFUSES a change of resources rather than pricing one.</b> RP-1
+ * <para><b>It refuses a change of resources rather than pricing one.</b> RP-1
  * charges the resource difference at 0.6 of a fresh tank and a reduction at a
- * tenth, off factors that arrive per resource on `rp1.lcPricing` for a PAD only
+ * tenth, off factors that arrive per resource on `rp1.lcPricing` for a pad only
  * (see `quoteResources`). Rather than quote a renovation under its true cost,
  * this answers only for a renovation that keeps the complex's fluids as they
  * are, which is what the control that calls it offers.</para>

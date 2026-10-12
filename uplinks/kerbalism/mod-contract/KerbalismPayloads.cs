@@ -49,7 +49,7 @@ namespace GonogoKerbalismUplink;
 /// rather than a vessel-attributed sample. Binding it to a vessel id would
 /// encode the wrong subject and have to be unpicked.
 /// Distinct from <see cref="KerbalismFeatures"/>/<see cref="KerbalismProfile"/>,
-/// which are install-wide facts with no subject to name at all; this one HAS a
+/// which are install-wide facts with no subject to name at all; this one has a
 /// subject, and it is the Sun.</para>
 /// </summary>
 [SitrepContract]
@@ -110,7 +110,7 @@ public class KerbalismSpaceWeather
     /// <summary>
     /// Global CME transit speed, <c>PreferencesRadiation.Instance.StormEjectionSpeed</c>
     /// (a fraction of c; stock default 0.33c &#x2248; 99,000 km/s, read live in case a
-    /// save overrides it). ONE value shared by every storm on every body/star pair,
+    /// save overrides it). One value shared by every storm on every body/star pair,
     /// never per-storm (confirmed against Kerbalism source: <c>Storm.Time_to_impact</c>
     /// reads the same global preference for every call).
     /// </summary>
@@ -150,7 +150,7 @@ public enum KerbalismStormTargetKind
 {
     /// <summary>
     /// The shared per-(body, star) slot, <c>DB.Storm(Storm.StormKey(body,
-    /// star))</c>. Every vessel in that body's SOI sees the SAME storm, so the
+    /// star))</c>. Every vessel in that body's SOI sees the same storm, so the
     /// target is the body and the storm is correlated across its traffic.
     /// </summary>
     Body = 0,
@@ -159,7 +159,7 @@ public enum KerbalismStormTargetKind
     /// <c>VesselData.GetStormDataForStar(star)</c> / <c>stormDataByStar</c>.
     /// Kerbalism rolls this per-vessel for a craft with no body SOI (solar
     /// orbit or a barycenter), against that vessel's own sun distance, so the
-    /// vessel IS the target and no other craft shares the storm.
+    /// vessel is the target and no other craft shares the storm.
     /// </summary>
     Vessel = 1,
 }
@@ -177,7 +177,7 @@ public enum KerbalismStormTargetKind
 /// <para><b>FAIR-vs-CHEATING boundary.</b> <see cref="StormState"/> mirrors
 /// <c>StormData.storm_state</c> (0 none / 1 inbound-in-transit / 2 in
 /// progress-arrived) and is always read. <see cref="StormTime"/>,
-/// <see cref="StormDuration"/> and <see cref="Dist"/> are populated ONLY when
+/// <see cref="StormDuration"/> and <see cref="Dist"/> are populated only when
 /// <see cref="StormState"/> is nonzero: <c>Storm.CreateStorm</c> sets
 /// <c>storm_time</c>/<c>storm_duration</c> and flips <c>storm_state</c> from 0
 /// to 1 atomically, in the same call, on a successful roll, so reading all
@@ -186,8 +186,8 @@ public enum KerbalismStormTargetKind
 /// side too (<c>StormData.Reset()</c> zeroes them), so null is the honest
 /// value, not a withheld one.</para>
 ///
-/// <para><c>StormData.storm_generation</c> (the UT of the NEXT roll attempt,
-/// win or lose) is NEVER read or shipped anywhere in this contract, by design.
+/// <para><c>StormData.storm_generation</c> (the UT of the next roll attempt,
+/// win or lose) is never read or shipped anywhere in this contract, by design.
 /// Unlike <c>storm_time</c>/<c>storm_state</c> it is always populated whether
 /// or not a storm currently exists, so reading it would expose the RNG's
 /// schedule for an event that may never happen: information no in-universe
@@ -205,7 +205,7 @@ public class KerbalismStormEntry
     public string? Star { get; set; }
     /// <summary>
     /// Whether this slot is the shared per-body one or the vessel's own private
-    /// one. Always populated (it describes which slot was READ, not the storm's
+    /// one. Always populated (it describes which slot was read, not the storm's
     /// state, so it is outside the fair-vs-cheating boundary below and carries
     /// even when <see cref="StormState"/> is 0).
     /// </summary>
@@ -233,7 +233,7 @@ public class KerbalismStormEntry
     /// Live sun-to-body distance (<c>Vector3d.Distance(body.position,
     /// star.position)</c>, the identical geometry <c>Storm.Update</c> itself
     /// computes). Kerbalism does not persist the roll-time distance on
-    /// <c>StormData</c>, so this is the CURRENT distance, not necessarily the
+    /// <c>StormData</c>, so this is the current distance, not necessarily the
     /// exact one the roll used; the two diverge only by however far the body
     /// has moved in its orbit since the roll, negligible at interplanetary
     /// scale. Null when <see cref="StormState"/> is 0.
@@ -289,7 +289,7 @@ public class KerbalismProcessEntry
 {
     /// <summary>
     /// The PSEUDO-RESOURCE this controller gates on ("_Scrubber",
-    /// "_WaterRecycler", ...), not a real resource. It is the JOIN KEY onto
+    /// "_WaterRecycler", ...), not a real resource. It is the join key onto
     /// <see cref="KerbalismProcessDef.Modifiers"/>: the profile Process whose
     /// modifier list contains this token is the one this controller runs.
     /// Confirmed against a captured fixture and the stock profile config.
@@ -299,7 +299,7 @@ public class KerbalismProcessEntry
     [SitrepUnit(Units.Text)]
     public string? Title { get; set; }
     /// <summary>
-    /// Process capacity of the hosting part. Kerbalism scales EVERY rate in the
+    /// Process capacity of the hosting part. Kerbalism scales every rate in the
     /// matched <see cref="KerbalismProcessDef"/> by this, so
     /// <c>profileRate * capacity</c> is this instance's contribution and the
     /// unit the per-source ledger is built from.
@@ -313,10 +313,10 @@ public class KerbalismProcessEntry
     /// <summary>
     /// Host part, as KSP's <c>Part.flightID</c>: matches <c>ShipMapPart.flightId</c>
     /// exactly, so a ledger row joins straight onto a part in the ship diagram.
-    /// flightID and NOT the part name: the dev dump records its <c>_part</c> as
+    /// flightID and not the part name: the dev dump records its <c>_part</c> as
     /// a part name ("mk1pod.v2") for readability, which would collapse a vessel
     /// carrying two identical pods into one row. Without this field the ledger
-    /// can say WHAT is consuming but never WHERE.
+    /// can say what is consuming but never where.
     /// </summary>
     [SitrepUnit(Units.Id)]
     public double? FlightId { get; set; }
@@ -332,7 +332,7 @@ public class KerbalismProcessEntry
     /// The live modifier product k, Kerbalism's own
     /// <c>Modifiers.Evaluate(vessel, vesselData, vesselResources, modifiers)</c>,
     /// evaluated over the matched <see cref="KerbalismProcessDef.Modifiers"/>
-    /// list MINUS the capacity join token (<see cref="Resource"/> itself,
+    /// list minus the capacity join token (<see cref="Resource"/> itself,
     /// already accounted for via <see cref="Capacity"/>, so including it here
     /// too would double-count it). Multiply into the nominal per-capacity rate
     /// (<c>KerbalismProcessDef</c> input/output * <see cref="Capacity"/>) for
@@ -369,12 +369,12 @@ public class KerbalismProcessEntry
 public class KerbalismResourceDef
 {
     /// <summary>
-    /// KSP <c>ResourceFlowMode</c> as its enum NAME (<c>ALL_VESSEL</c>,
+    /// KSP <c>ResourceFlowMode</c> as its enum name (<c>ALL_VESSEL</c>,
     /// <c>ALL_VESSEL_BALANCE</c>, <c>STAGE_PRIORITY_FLOW</c>,
     /// <c>STACK_PRIORITY_SEARCH</c>, <c>NO_FLOW</c>). An open string rather than a
     /// closed enum: an unrecognised mode must degrade, not break the payload.
     ///
-    /// <para>Why it matters: for a POOLED mode the per-part split is bookkeeping
+    /// <para>Why it matters: for a pooled mode the per-part split is bookkeeping
     /// and the vessel drains one pool, so a per-tank meter is at best decorative
     /// and at worst misleading. A consumer cannot know that without this field,
     /// which is why per-part resource meters depend on it.</para>
@@ -383,13 +383,13 @@ public class KerbalismResourceDef
     public string? FlowMode { get; set; }
 
     /// <summary>
-    /// <see cref="FlowMode"/>'s KSP ORDINAL, typed to
+    /// <see cref="FlowMode"/>'s KSP ordinal, typed to
     /// <c>Sitrep.Contract.KspResourceFlowMode</c>. The enum is stock KSP's, not
     /// Kerbalism's, which is why the mirror lives in the core contract.
     ///
     /// <para>The pooled/not-pooled verdict is derived from this ordinal, never
     /// from the name. Comparing the name against a set of known spellings fails
-    /// in the ONE way this field's own doc rules out: an unrecognised name
+    /// in the one way this field's own doc rules out: an unrecognised name
     /// yields <c>false</c>, a confident "not pooled", rather than the
     /// <c>undefined</c> that means "vessel-wide pool, mode unknown". A resource
     /// that pools across the whole vessel then gets a per-part meter presented
@@ -435,7 +435,7 @@ public class KerbalismRuleDef
     [SitrepUnit(Units.Text)]
     public string? Output { get; set; }
     /// <summary>
-    /// CANONICAL. Consumption per kerbal per SECOND, already divided by
+    /// Canonical. Consumption per kerbal per second, already divided by
     /// <see cref="Interval"/>. Use this one.
     ///
     /// <para>Carried pre-divided, rather than leaving each consumer to do it,
@@ -443,12 +443,12 @@ public class KerbalismRuleDef
     /// <c>drinking</c> has <c>interval = 5400</c> and <c>eating</c> has
     /// <c>interval = 10800</c>, so reading their raw <c>rate</c> as per-second
     /// overstates them by 5,400x and 10,800x. <c>breathing</c> has no interval
-    /// and genuinely IS per second, which is why the mistake survives the one
+    /// and genuinely is per second, which is why the mistake survives the one
     /// resource anybody sanity-checks first.</para>
     /// </summary>
     [SitrepUnit(Units.ResourceUnitsPerSecond)]
     public double? RatePerSecond { get; set; }
-    /// <summary>Raw <c>Profile.rules[].rate</c>, for fidelity. NOT a per-second figure unless <see cref="Interval"/> is 0.</summary>
+    /// <summary>Raw <c>Profile.rules[].rate</c>, for fidelity. Not a per-second figure unless <see cref="Interval"/> is 0.</summary>
     [SitrepUnit(Units.ResourceUnits)]
     public double? Rate { get; set; }
     /// <summary>
@@ -471,7 +471,7 @@ public class KerbalismRuleDef
 
 /// <summary>
 /// One <c>Profile.processes[]</c> entry: a vessel converter. Every rate below is
-/// PER UNIT OF PROCESS CAPACITY; multiply by a hosting
+/// per unit of process capacity; multiply by a hosting
 /// <see cref="KerbalismProcessEntry.Capacity"/> for that instance's real contribution.
 /// </summary>
 [SitrepContract]
@@ -489,14 +489,14 @@ public class KerbalismProcessDef
     [SitrepUnit(Units.ResourceUnitsPerSecond)]
     public Dictionary<string, double>? Outputs { get; set; }
     /// <summary>
-    /// The Process's own modifier tokens. REQUIRED: this list contains the
+    /// The Process's own modifier tokens. Required: this list contains the
     /// pseudo-resource (e.g. "_Scrubber") that joins to
     /// <see cref="KerbalismProcessEntry.Resource"/>, which is how a part's
     /// controller is matched to the recipe it runs.
     ///
-    /// <para>Tokens are shipped RAW and unparsed on purpose. Kerbalism's
+    /// <para>Tokens are shipped raw and unparsed on purpose. Kerbalism's
     /// <c>Modifiers.cs</c> recognises 14 keywords and its default case treats any
-    /// UNKNOWN token as a resource-amount lookup (with an <c>inv:</c> prefix
+    /// unknown token as a resource-amount lookup (with an <c>inv:</c> prefix
     /// inverting it), so there is no closed set to model. Parsing them here would
     /// mean freezing a keyword list we would then have to chase, or shipping a
     /// half-interpretation the app cannot reason about. Raw tokens let a consumer
@@ -532,7 +532,7 @@ public class KerbalismProfile
     /// Every resource this profile touches: the union of all rule and process
     /// inputs/outputs plus every declared Supply, keyed by KSP resource name.
     ///
-    /// <para>THE authoritative list. gonogo must never carry one of its own: the
+    /// <para>The authoritative list. gonogo must never carry one of its own: the
     /// same enumeration drives which names the life-support capture asks
     /// Kerbalism for a rate about, so the two can never drift.</para>
     /// </summary>
@@ -548,7 +548,7 @@ public class KerbalismProfile
 /// itself carries exactly three fields, <c>Natural</c>, <c>Artificial</c>, <c>Issue</c>,
 /// there is no growth fraction or harvest countdown anywhere in the module; Food
 /// is produced continuously via a ResourceRecipe, not a discrete harvest event.
-/// <c>Natural</c>/<c>Artificial</c> are NOT meaningfully summed: the lighting gate is
+/// <c>Natural</c>/<c>Artificial</c> are not meaningfully summed: the lighting gate is
 /// <c>natural + artificial &gt;= light_tolerance</c>, so the lamp only ever needs to cover
 /// the shortfall, not double the total, present both, never a combined figure.
 /// </summary>
@@ -605,17 +605,17 @@ public class KerbalismLifeSupport
     /// Signed net rate per resource, units/s, keyed by KSP resource name
     /// (Kerbalism's <c>ResourceAverageRate</c>). Negative = draining.
     ///
-    /// <para><b>Amounts and capacities are deliberately NOT here.</b>
+    /// <para><b>Amounts and capacities are deliberately not here.</b>
     /// <c>vessel.resources</c> already carries them for every resource on the
     /// vessel, and <c>ShipMapPart.resources</c> carries them per part. The rate
     /// is the one number the generic path cannot derive, so it is the only one
     /// this channel adds.</para>
     ///
     /// <para><b>Three-way absence</b>, identical to <c>vessel.resources</c>'s
-    /// convention: a key ABSENT means Kerbalism reports no rate for that
+    /// convention: a key absent means Kerbalism reports no rate for that
     /// resource; a key present with 0 is a real, measured zero (in balance); the
     /// whole channel absent means no vessel, or Kerbalism not installed. Every
-    /// emission is the FULL map, never a delta, so a key disappearing is itself
+    /// emission is the full map, never a delta, so a key disappearing is itself
     /// a real statement.</para>
     ///
     /// <para>Which resources appear is enumerated from the loaded profile
@@ -630,15 +630,15 @@ public class KerbalismLifeSupport
 
     /// <summary>
     /// The per-part process list, with a THREE-WAY absence that a consumer must
-    /// respect: a populated list is what is running, an EMPTY list means the
-    /// craft was read and carries no processes, and NULL means the list could
+    /// respect: a populated list is what is running, an empty list means the
+    /// craft was read and carries no processes, and null means the list could
     /// not be read at all for this craft this tick.
     ///
     /// <para>Null happens for a background craft: KSP discards a vessel's
     /// <c>Part</c> objects when it unloads, and every process fact here (which
     /// part, its title, whether it is broken, its dump valve) lives on the part
     /// module. Kerbalism keeps simulating the craft's processes from a
-    /// pseudo-resource, so the SUPPLIES and rates alongside this field are real
+    /// pseudo-resource, so the supplies and rates alongside this field are real
     /// while the per-part detail is simply unavailable. Rendering null as "no
     /// processes running" would turn a gap in our reading into a false
     /// statement about the craft, which is why it is not an empty list.</para>
@@ -651,7 +651,7 @@ public class KerbalismLifeSupport
     /// own <c>Modifiers.Evaluate</c>, over the rule's full modifier list, no
     /// capacity-token exclusion since a rule has no pseudo-resource join key).
     ///
-    /// <para>Rides THIS live/delayed channel rather than living directly on
+    /// <para>Rides this live/delayed channel rather than living directly on
     /// <see cref="KerbalismRuleDef"/> because <c>kerbalism.profile</c> is a
     /// pull-style channel whose mapper is declared KSP-free and runs off the
     /// main thread (<c>IUplinkHost.AddChannelSource</c>), while a live
@@ -668,7 +668,7 @@ public class KerbalismLifeSupport
     public Dictionary<string, double>? RuleEnvModifiers { get; set; }
     /// <summary>
     /// Active Greenhouse parts on the vessel, if any (most vessels carry none,
-    /// an empty/absent list is the normal case, not an error). NOT YET POPULATED
+    /// an empty/absent list is the normal case, not an error). Not yet populated
     /// by <c>GonogoKerbalismUplink</c>'s capture pipeline as of this field's
     /// addition, reflecting Kerbalism's <c>Greenhouses(Vessel)</c> API into the
     /// wire capture is separate mod-side work. This field defines the honest
@@ -678,10 +678,10 @@ public class KerbalismLifeSupport
     public List<KerbalismGreenhouseEntry>? Greenhouses { get; set; }
 
     /// <summary>
-    /// The UT these values were last RECOMPUTED at by Kerbalism, which is not
+    /// The UT these values were last recomputed at by Kerbalism, which is not
     /// the UT they were read at and can be a long way behind it.
     ///
-    /// <para>Kerbalism steps exactly ONE unloaded vessel per physics tick, the
+    /// <para>Kerbalism steps exactly one unloaded vessel per physics tick, the
     /// one that has waited longest, catching it up with the whole interval it
     /// waited. So a background craft's life support is integrated correctly and
     /// refreshed rarely: with N unloaded craft, every N ticks. That staleness is
@@ -748,40 +748,40 @@ public class KerbalismCrewEntry
     public string? Trait { get; set; }
     public List<KerbalismCrewRule>? Rules { get; set; }
     /// <summary>
-    /// The UT at which the soonest FATAL rule kills this kerbal, derived in two
+    /// The UT at which the soonest fatal rule kills this kerbal, derived in two
     /// stages:
     /// how long the rule's input resource lasts at its current net rate, since a
     /// rule only degenerates once its input is gone, then how long the
     /// accumulator takes to climb from where it is to the fatal threshold.
     ///
-    /// <para>Computed mod-side because stage one needs resource AMOUNTS, which
+    /// <para>Computed mod-side because stage one needs resource amounts, which
     /// only <c>vessel.resources</c> carries and only for the active craft: a
     /// client holding a background craft's crew channel has the degeneration
     /// rate and no way to know when degeneration starts. Breakdown rules
     /// (stress) are excluded, because Kerbalism resets their accumulator at the
     /// threshold rather than killing anyone.</para>
     ///
-    /// <para>NULL means not derivable, and is deliberately not a large number: a
+    /// <para>Null means not derivable, and is deliberately not a large number: a
     /// craft whose deadline cannot be computed and a craft with years of
     /// supplies must not render the same, and a sentinel is indistinguishable
     /// from a real answer to anything doing arithmetic on it. Null is also the
     /// answer when nothing is closing in at all, a craft in balance on its
     /// consumables has no deadline rather than an enormous one.</para>
     ///
-    /// <para><b>An INSTANT, not a remaining duration, and that is the whole
+    /// <para><b>An instant, not a remaining duration, and that is the whole
     /// reason for the name.</b> The deadline is derived from a reading taken at
     /// <see cref="AsOfUt"/>, which for a background craft can be N ticks behind
     /// the read time, so a "seconds remaining" figure is only true measured from
     /// that stamp and a consumer rendering it raw is off by however long ago the
     /// stamp was. That is the same defect as an absolute UT reaching a countdown,
     /// and it had the same cause: <c>"s"</c> said nothing about what the duration
-    /// was measured FROM.</para>
+    /// was measured from.</para>
     ///
     /// <para>Emitting <c>AsOfUt + remaining</c> instead loses nothing (the same
     /// information, and <see cref="AsOfUt"/> is still published beside it as
     /// provenance) and makes the arithmetic unskippable: the field is a
     /// <c>Value&lt;"ut"&gt;</c>, <c>&lt;Countdown&gt;</c> refuses one outright,
-    /// and a consumer has to subtract the frame's view time. It is NOT restamped
+    /// and a consumer has to subtract the frame's view time. It is not restamped
     /// to now: nothing is advanced, the instant is exactly the one the
     /// stamped-at reading implied.</para>
     ///
@@ -789,7 +789,7 @@ public class KerbalismCrewEntry
     /// compute deadlines at all".</b> Both are null here, and they are not the
     /// same news: the second is a missing capability wearing the first's
     /// reassuring blank. The distinguishing fact is on <c>kerbalism.profile</c>,
-    /// which carries the loaded profile's rules: if NO rule has
+    /// which carries the loaded profile's rules: if no rule has
     /// <c>degeneration &gt; 0</c> with <c>breakdown</c> false, no fatal rule
     /// exists and no deadline can ever be computed on this install, whatever the
     /// craft is doing. A profile that defines processes and no life-support rules
@@ -801,7 +801,7 @@ public class KerbalismCrewEntry
     public double? DeathClockUt { get; set; }
 
     /// <summary>
-    /// The UT this kerbal's rule accumulators were last ADVANCED at, which for
+    /// The UT this kerbal's rule accumulators were last advanced at, which for
     /// a kerbal aboard a background craft can be well behind the read time: the
     /// accumulators move on their vessel's Kerbalism turn, and unloaded craft
     /// take those turns one per tick, in rotation. Same meaning and same

@@ -7,7 +7,7 @@ namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
     /// Turns another craft's idle dish to a peer and puts it back: the game-touching
-    /// half of a dish turn. MAIN THREAD ONLY, as every write to an antenna is.
+    /// half of a dish turn. Main thread only, as every write to an antenna is.
     ///
     /// <para><b>Any craft, loaded or on rails.</b> The dish is found by the craft's
     /// id and the part's persistent id and ordinal (see <see cref="RaDishIds"/>),
@@ -116,7 +116,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
-        /// MAIN THREAD, every tick: puts back any dish borrowed longer than a turn
+        /// Main thread, every tick: puts back any dish borrowed longer than a turn
         /// lasts. A loan survives a quit, a rewind or a network event that was lost,
         /// and this is what stops any of them leaving a dish on a borrowed aim.
         /// </summary>

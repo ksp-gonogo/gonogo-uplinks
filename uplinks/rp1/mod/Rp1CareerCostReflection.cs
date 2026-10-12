@@ -119,7 +119,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// RP-1's career event log, or null when its handler is not live.
         ///
-        /// <para>Null is "could not be read", which is a THIRD state beside logging
+        /// <para>Null is "could not be read", which is a third state beside logging
         /// switched off and logging on with nothing recorded. All three would look
         /// like an empty list to a client that only got the rows.</para>
         /// </summary>
@@ -154,13 +154,13 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The timeline oldest first, with every event RP-1 would not date placed
-        /// AFTER the dated ones.
+        /// after the dated ones.
         ///
-        /// <para>Sorting an unreadable time as the epoch put the row at the FRONT,
+        /// <para>Sorting an unreadable time as the epoch put the row at the front,
         /// where it read as the oldest thing that had ever happened in the career.
         /// Its time travels absent either way, so the row was already
         /// distinguishable to anyone who looked; what the position did was make a
-        /// claim about WHEN to anyone who only read the order. Last rather than
+        /// claim about when to anyone who only read the order. Last rather than
         /// first because a career log is read downwards from its beginning, so the
         /// undated tail is the one place that displaces nothing.</para>
         ///
@@ -190,7 +190,7 @@ namespace GonogoRp1Uplink
         /// One of RP-1's event lists, flattened onto the shared row.
         /// </summary>
         /// <remarks>
-        /// Every kind is read by the SAME member names it happens to carry, and a
+        /// Every kind is read by the same member names it happens to carry, and a
         /// member a kind does not have simply reads absent. That is why a launch
         /// row has no reputation change and a contract row has no part: the absence
         /// is the producer's shape rather than a decision taken here.
@@ -232,13 +232,13 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// <para>The last two entries exist because the first five covered four of
-        /// RP-1's six event classes and NEITHER of the other two. A
+        /// RP-1's six event classes and neither of the other two. A
         /// <c>FacilityConstructionEvent</c> carries only <c>Facility</c>,
         /// <c>State</c> and <c>FacilityID</c>; a <c>FailureEvent</c> carries only
         /// <c>VesselUID</c>, <c>LaunchID</c>, <c>Part</c> and <c>Type</c>. Both
         /// produced a row with no name at all, and a log row nothing can be called
         /// is not a log row.</para>
-        /// <para>A failure is named by the PART that failed, which is also why the
+        /// <para>A failure is named by the part that failed, which is also why the
         /// part is not published separately: one fact under two names invites a
         /// reader to look for a difference that is not there.</para>
         /// </remarks>
@@ -252,7 +252,7 @@ namespace GonogoRp1Uplink
             ?? EmptyAsAbsent(Rp1Types.ReadString(e, "Part"));
 
         /// <summary>
-        /// The kind's own sub-type, as the producer's own enum NAME rather than its
+        /// The kind's own sub-type, as the producer's own enum name rather than its
         /// ordinal. A failure's is a plain string already.
         /// </summary>
         /// <remarks>
@@ -260,7 +260,7 @@ namespace GonogoRp1Uplink
         /// one: the only class carrying a <c>Facility</c> also carries a
         /// <c>State</c>, which matches first, so the fallback could not be reached
         /// on any input. It read as a facility row being covered while that row was
-        /// in fact losing the one word saying WHAT was built.
+        /// in fact losing the one word saying what was built.
         /// </remarks>
         private static string? Detail(object e) =>
             Rp1Types.ReadEnumName(e, "Type")
@@ -328,13 +328,13 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// The node as the career's tech tree titles it, or ABSENT.
+        /// The node as the career's tech tree titles it, or absent.
         ///
         /// <para><b>Absent rather than the id, and that is the difference from
         /// <c>Rp1ResearchCommands.Title</c>, which substitutes the id
         /// deliberately.</b> That one is authoring a node's persisted
         /// <c>techName</c>, where a blank is what had to be avoided and the id is a
-        /// serviceable stand-in. This is publishing a field CALLED title beside the
+        /// serviceable stand-in. This is publishing a field called title beside the
         /// id itself: substituting one for the other would make the field a lie
         /// about what it holds, and would tell a client a tree has a title it does
         /// not have. The client already holds the id.</para>
@@ -358,7 +358,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Every part on the editor's table gathered under the tech node it names,
-        /// or NULL when there is no readable ship.
+        /// or null when there is no readable ship.
         ///
         /// <para>KSP's <c>AvailablePart.TechRequired</c> is the whole of the link
         /// and it is stock, so this needs nothing from RP-1. A part naming no node

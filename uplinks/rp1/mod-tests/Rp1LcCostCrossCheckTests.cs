@@ -15,14 +15,14 @@ namespace GonogoRp1Uplink.Tests
     ///
     /// <para><b>Why a transcription exists at all.</b> Every other price this
     /// Uplink shows is computed here, beside RP-1, because it prices something that
-    /// already exists. A NEW complex is priced against what the operator is still
+    /// already exists. A new complex is priced against what the operator is still
     /// typing, and these commands are delay-aware, so a quote per keystroke would
     /// be a round trip a remote vantage waits minutes for. The client therefore
     /// carries the closed-form halves itself.</para>
     ///
     /// <para><b>What this test is for.</b> A transcription drifts silently: it goes
     /// on agreeing with itself long after it has stopped agreeing with RP-1. So the
-    /// cases below are computed by the SHIPPED <c>LCData.GetCostStats</c> and
+    /// cases below are computed by the shipped <c>LCData.GetCostStats</c> and
     /// written to a file the client's own test reads. If RP-1 changes, this fails
     /// and the file is regenerated; if the client drifts, the client's test fails
     /// against the same file. Neither side can move alone.</para>
@@ -31,21 +31,21 @@ namespace GonogoRp1Uplink.Tests
     /// rather than committing it blind: a changed figure means RP-1 now charges
     /// something different, which is a finding rather than a chore.</para>
     ///
-    /// <para>The resource term is deliberately NOT here. Its factors come from a
+    /// <para>The resource term is deliberately not here. Its factors come from a
     /// RealFuels tank definition and a KSP resource library that no test harness
     /// stands up, and the client does not transcribe it either: it arrives per
     /// resource on <c>rp1.lcPricing</c>.</para>
     ///
-    /// <para><b>WHAT THIS FILE'S NAME OVERSTATES, and it matters for reading a
+    /// <para><b>what this file's name overstates, and it matters for reading a
     /// green run.</b> <c>using RP0</c> resolves to the STAND-IN types declared in
     /// <c>ComplexLifecycleFixture.cs</c>, not to the shipped assembly: this
     /// project takes no reference to RP0.dll and could not, since the type is a
     /// ScenarioModule over half a dozen Unity assemblies. The stand-in's own
     /// header says its <c>GetCostStats</c> and <c>ResModifyCost</c> are
     /// "reproduced from the shipped source", so what these cases pin is the
-    /// CLIENT transcription against the C# one, and two copies of a reading agree
+    /// client transcription against the C# one, and two copies of a reading agree
     /// with each other for ever. RP-1's own binary is held only by
-    /// <c>Rp1InstalledCompatibilityTests</c>, which checks SHAPE and never value,
+    /// <c>Rp1InstalledCompatibilityTests</c>, which checks shape and never value,
     /// so a retune of RP-1's prices passes everything here. That gap is real and
     /// unclosed; closing it needs a figure read off a running game.</para>
     /// </summary>
@@ -64,7 +64,7 @@ namespace GonogoRp1Uplink.Tests
         /// the Uplink used to sit in.
         /// </summary>
         /// <remarks>
-        /// This test writes a file the CLIENT's suite reads, so it has to find the
+        /// This test writes a file the client's suite reads, so it has to find the
         /// client from the mod side, and a path spelled out of the old monorepo
         /// layout is one nothing in the compiler checks. Anchored on the
         /// <c>client/src/KscComplexes/__testdata__</c> directory itself, which is
@@ -116,8 +116,8 @@ namespace GonogoRp1Uplink.Tests
         /// which reprices every pad the complex already has; a shrink, which is
         /// charged at half in both halves and is the case an operator most expects
         /// a refund for; a tonnage nudge small enough that the 1,000-fund floor is
-        /// what applies; an envelope change at a FIXED tonnage, where the floor
-        /// must NOT apply; a growth big enough for the "rebuilding cannot cost
+        /// what applies; an envelope change at a fixed tonnage, where the floor
+        /// must not apply; a growth big enough for the "rebuilding cannot cost
         /// more than building" cap to bite; and a hangar, which has no pad half
         /// and a flat metre rate.</para>
         /// </summary>

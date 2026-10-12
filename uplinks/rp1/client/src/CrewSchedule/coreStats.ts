@@ -14,7 +14,7 @@ import "../topics.js";
  * What RP-1 considers as core about the Astronaut Complex as funds, the hire
  * price and the roster cap.
  *
- * <para>Those three are the whole of what STOCK has to say about a complex, and
+ * <para>Those three are the whole of what stock has to say about a complex, and
  * they are the whole of what the host widget's own strip carries. Under RP-1 the
  * complex is a scheduling problem: the number an operator wants first is how
  * much of the roster is unavailable because it is mid-course, and the second is
@@ -29,7 +29,7 @@ import "../topics.js";
  * markup into a slot beside them, which is how a strip ends up reading as two
  * widgets sharing a line.</para>
  *
- * <para><b>The settings are HONOURED, not reported.</b> A save with mission
+ * <para><b>The settings are honoured, not reported.</b> A save with mission
  * training switched off has no perishable training at all: RP-1 stops checking
  * it, so a lapse count there is a number about a mechanic nobody is running.
  * The cell is absent rather than reading zero.</para>

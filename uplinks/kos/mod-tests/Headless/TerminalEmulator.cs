@@ -6,7 +6,7 @@ using System.Globalization;
 namespace GonogoKosUplink.Tests.Headless
 {
     /// <summary>
-    /// A deliberately minimal xterm/VT applier: the CLIENT side of the terminal
+    /// A deliberately minimal xterm/VT applier: the client side of the terminal
     /// downlink, standing in for the browser's xterm.js. It applies the exact
     /// same xterm-ready chunks the mod's <see cref="ScreenDiffMapper"/> emits
     /// (cursor-absolute <c>ESC[r;cH</c> moves, <c>ESC[2J</c> clear, <c>ESC[S</c>/

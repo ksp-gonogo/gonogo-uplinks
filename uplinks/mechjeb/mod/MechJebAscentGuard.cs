@@ -10,7 +10,7 @@ namespace Gonogo.MechJebUplink
     /// anything writes it into MechJeb2.
     ///
     /// <para><b>Why this exists: the dangerous number on this Uplink travels
-    /// INBOUND.</b> Every other Uplink's absence hazard is a failed read
+    /// inbound.</b> Every other Uplink's absence hazard is a failed read
     /// published as a confident telemetry fact; this one is command-only, so
     /// there is no readout to flatten. What reaches
     /// <c>MechJebModuleAscentSettings.DesiredOrbitAltitude</c> instead is a

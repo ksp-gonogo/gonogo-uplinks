@@ -211,7 +211,7 @@ namespace GonogoPrincipiaUplink
             };
 
         /// <summary>
-        /// Read-shaped calls whose native bodies have NOT been read, listed so that
+        /// Read-shaped calls whose native bodies have not been read, listed so that
         /// reaching for one fails with the truth rather than with a generic "not on
         /// the list".
         ///
@@ -240,7 +240,7 @@ namespace GonogoPrincipiaUplink
         public static readonly string[] UnanalysedFamilies = { "Planetarium", "Graph" };
 
         /// <summary>
-        /// Words that make a call a write, matched as WHOLE WORDS of the
+        /// Words that make a call a write, matched as whole words of the
         /// PascalCase name rather than as substrings.
         ///
         /// <para>The substring version is what a first draft reaches for and it is
@@ -249,7 +249,7 @@ namespace GonogoPrincipiaUplink
         /// model needs, while <c>FlightPlanSelect</c> is the write we are actually
         /// screening for. Splitting the name into words separates them, because
         /// <c>Selected</c> is a different word from <c>Select</c>. A prefix match
-        /// is no use either: none of these writes STARTS with its verb, they are
+        /// is no use either: none of these writes starts with its verb, they are
         /// all <c>FlightPlanCreate</c>, <c>FlightPlanRebase</c> and so on.</para>
         /// </summary>
         public static readonly string[] WriteVerbs =

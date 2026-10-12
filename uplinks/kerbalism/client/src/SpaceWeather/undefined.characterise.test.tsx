@@ -12,16 +12,16 @@ import { beforeEach, describe, expect, it } from "vitest";
 import "./index.js";
 
 /**
- * What SpaceWeather DOES today when its telemetry reads are `undefined`,
+ * What SpaceWeather does today when its telemetry reads are `undefined`,
  * recorded before `useTelemetry` becomes a `Reading`.
  *
  * `useSpaceWeather` has no absence gate at all. Every one of its reads is
  * coerced at the point of use:
  *  - `magnitudeOr(t?.radiationRadPerSecond, 0)` and
- *    `magnitudeOr(flight?.altitudeAsl, 0)`: absent becomes ZERO
+ *    `magnitudeOr(flight?.altitudeAsl, 0)`: absent becomes zero
  *  - `t?.innerBelt ?? false`, `outerBelt`, `magnetosphere`, `blackout`: absent
- *    becomes FALSE
- *  - `magnitudeOr(t?.shieldingCapacity, 1)`: absent becomes ONE
+ *    becomes false
+ *  - `magnitudeOr(t?.shieldingCapacity, 1)`: absent becomes one
  *  - `t?.stormInProgress ? ... : t?.stormIncoming ? ... : "none"`: absent falls
  *    through to "no storm"
  *
@@ -36,7 +36,7 @@ import "./index.js";
  * withheld when the weather record cannot be judged, and the belt diagram's
  * "you are here" dot is withheld when nothing can place it.
  *
- * The cases about a FIELD missing from a delivered record went the same way
+ * The cases about a field missing from a delivered record went the same way
  * later, and separately: a `Reading` says how current the record is and says
  * nothing about which fields the subject filled in, so per-field absence needed
  * its own pass. The dose rate, the shielding pair and the storm flags now say so
@@ -285,10 +285,10 @@ describe("SpaceWeather: what undefined means today", () => {
   /**
    * The CME tracker's own version of the same coercion, one level down.
    *
-   * `stormState` is 0/1/2 and ZERO IS THE ALL-CLEAR, so every reader here
+   * `stormState` is 0/1/2 and zero is the ALL-CLEAR, so every reader here
    * filters state-0 slots out. `magnitudeOf(...) ?? 0` (and the mod-side
    * `Convert.ToInt32(... ?? 0)` feeding it) therefore did not merely mislabel an
-   * unread slot, it DELETED it: the card vanished, the star's ring stayed calm,
+   * unread slot, it deleted it: the card vanished, the star's ring stayed calm,
    * and the board read exactly as it does when Kerbalism has positively said
    * there is no CME on that slot.
    */

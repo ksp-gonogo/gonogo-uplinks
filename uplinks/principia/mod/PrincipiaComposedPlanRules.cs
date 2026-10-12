@@ -14,16 +14,16 @@ namespace GonogoPrincipiaUplink
     /// five applied around the gap, producing a trajectory nobody composed and nobody
     /// approved.</para>
     ///
-    /// <para><b>Checked against ARRIVAL, not composition.</b> The instant that matters
+    /// <para><b>Checked against arrival, not composition.</b> The instant that matters
     /// is when the plan reached the craft, because that is when the ignitions have to
     /// still be ahead. A plan composed while every burn was comfortably in the future
-    /// can arrive a light-time later with its first burn already past, and the sender
+    /// can arrive a signal delay later with its first burn already past, and the sender
     /// cannot know that: from a distant vantage, the news that the moment passed is
     /// itself still in transit.</para>
     ///
     /// <para>Principia offers no transaction, so this is validate-then-write rather
     /// than a rollback. The guarantee is that a plan which fails any check writes
-    /// NOTHING, not that a failure mid-write can be undone.</para>
+    /// nothing, not that a failure mid-write can be undone.</para>
     /// </summary>
     public static class PrincipiaComposedPlanRules
     {

@@ -177,17 +177,17 @@ namespace GonogoRp1Uplink
         /// specification and its construction project all resolved, plus Unity's
         /// vector, which is the type a specification's envelope is.
         ///
-        /// <para>TYPES ONLY, for the reason
+        /// <para>Types only, for the reason
         /// <see cref="Rp1VehicleCommands.IsAvailable"/> spells out at length: a
-        /// method-level gate on the MANIFEST cannot say why it fired, because a
+        /// method-level gate on the manifest cannot say why it fired, because a
         /// command that was never declared looks exactly like one nobody wrote.
         /// The method lookups happen at the press and refuse with a sentence
         /// naming what was not recognised.</para>
         ///
-        /// <para><see cref="_events"/> is deliberately NOT part of this, and
+        /// <para><see cref="_events"/> is deliberately not part of this, and
         /// <see cref="_database"/> is not either: the first is how RP-1's own UI
         /// hears about a queued project and is fired last, and the second supplies
-        /// a price MULTIPLIER that falls back to RP-1's shipped default. Neither
+        /// a price multiplier that falls back to RP-1's shipped default. Neither
         /// should cost an install its ability to build a complex.</para>
         /// </summary>
         public bool IsAvailable =>
@@ -198,7 +198,7 @@ namespace GonogoRp1Uplink
             && _vector3 != null;
 
         /// <summary>
-        /// Adding a pad needs one type the complex commands do not, and does NOT
+        /// Adding a pad needs one type the complex commands do not, and does not
         /// need the specification type at all: a pad inherits its complex's
         /// envelope rather than carrying one.
         ///
@@ -272,7 +272,7 @@ namespace GonogoRp1Uplink
         /// <summary>
         /// Queues a new launch complex at a named space centre.
         ///
-        /// <para>Always a PAD, for the reason this file's header gives. Spends
+        /// <para>Always a pad, for the reason this file's header gives. Spends
         /// nothing when it lands.</para>
         /// </summary>
         public CommandResult<Dictionary<string, object?>> NewComplex(Rp1ComplexNewArgs? args)
@@ -929,9 +929,9 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Whether this save is a career, which decides whether a construction is
-        /// QUEUED or applied at once.
+        /// queued or applied at once.
         ///
-        /// <para>REFUSED rather than assumed when RP-1's own test will not resolve.
+        /// <para>Refused rather than assumed when RP-1's own test will not resolve.
         /// <c>enabledForSave</c> is true for sandbox and science-sandbox as well as
         /// career, so guessing "career" would queue a funded project on a save with
         /// no funding to draw against and leave it stalled forever with nothing
@@ -1369,7 +1369,7 @@ namespace GonogoRp1Uplink
         /// binds to for that list.
         /// </summary>
         /// <param name="observable">
-        /// The list is a <c>PersistentObservableList</c> whose <c>Add</c> SHADOWS
+        /// The list is a <c>PersistentObservableList</c> whose <c>Add</c> shadows
         /// <c>List&lt;T&gt;.Add</c> and fires the events RP-1's UI listens on. True
         /// for <c>LCConstructions</c> and <c>PadConstructions</c>, false for
         /// <c>LaunchComplexes</c> and <c>LaunchPads</c>, which are plain
@@ -1421,7 +1421,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Turns a price into a build duration by RP-1's own curve, which is
-        /// INVOKED rather than reimplemented: it is the one piece of the
+        /// invoked rather than reimplemented: it is the one piece of the
         /// construction arithmetic that has a reusable entry point.
         /// </summary>
         private static bool SetBp(object project, double cost, double oldCost)
@@ -1442,7 +1442,7 @@ namespace GonogoRp1Uplink
             }
         }
 
-        /// <summary>Writes an RP-1 enum member by NAME, since this assembly has no such type.</summary>
+        /// <summary>Writes an RP-1 enum member by name, since this assembly has no such type.</summary>
         private bool WriteLcType(object spec, string member)
         {
             var field = _lcData?.GetField("lcType", BindingFlags.Public | BindingFlags.Instance);

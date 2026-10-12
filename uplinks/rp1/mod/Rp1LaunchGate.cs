@@ -229,7 +229,7 @@ namespace GonogoRp1Uplink
         private static long Mix(long hash, long value) => unchecked(hash * 31 + value);
 
         /// <summary>
-        /// RP-1 is installed, decided on the TYPE resolving for the reason
+        /// RP-1 is installed, decided on the type resolving for the reason
         /// <see cref="Rp1ScReflection"/>'s own probe gives. False means the
         /// requirements are never contributed at all, so <c>ksp.launch</c> keeps
         /// exactly the requirements core declares and the stock launch path is
@@ -247,7 +247,7 @@ namespace GonogoRp1Uplink
         /// </summary>
         /// <remarks>
         /// Every one names <c>shipName</c> in <see cref="CommandRequirement.Needs"/>.
-        /// These are properties of a VEHICLE, so the engine abstains for the
+        /// These are properties of a vehicle, so the engine abstains for the
         /// addressability sample rather than reaching an evaluator that would have
         /// to invent a subject. Abstain leaves the control live, which is the
         /// honest advance answer: core's own launch requirements are still
@@ -524,7 +524,7 @@ namespace GonogoRp1Uplink
         /// The named vehicle in RP-1's model, or null when no complex holds one.
         ///
         /// <para>The build list is searched as well as the warehouse, so a
-        /// vehicle mid-integration is a WAIT rather than a vehicle nobody ever
+        /// vehicle mid-integration is a wait rather than a vehicle nobody ever
         /// built. A warehouse hit always wins: RP-1 lets the same design be
         /// queued again while a finished copy stands ready.</para>
         /// </summary>
@@ -734,7 +734,7 @@ namespace GonogoRp1Uplink
             }
 
             /// <summary>
-            /// RP-1's unlimited sentinel as the ABSENCE of a limit. It stores
+            /// RP-1's unlimited sentinel as the absence of a limit. It stores
             /// <c>float.MaxValue</c> on a complex with no ceiling, and 3.4e38
             /// beside a craft mass is not "unlimited", it is a bug that reads as a
             /// units error.

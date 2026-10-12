@@ -10,16 +10,16 @@ namespace Gonogo.KosUplink
     /// <summary>
     /// The main-thread dispatch spine every kOS touch must route through.
     /// kOS mutates all terminal/screen/volume state
-    /// on the KSP/Unity main thread and does so WITHOUT locking (e.g.
+    /// on the KSP/Unity main thread and does so without locking (e.g.
     /// <c>CharInputQueue</c> is a plain unlocked <c>Queue&lt;char&gt;</c>).
     /// The Sitrep SDK pump (the WebSocket read/write loop) is
-    /// a BACKGROUND thread. Calling any kOS member directly from that
+    /// a background thread. Calling any kOS member directly from that
     /// thread races the VM and Unity: intermittent, load-dependent
     /// <c>NullReferenceException</c>s, "Collection was modified", and
     /// Unity main-thread asserts that will not reproduce under a light
     /// test.
     ///
-    /// The rule this class exists to enforce: background code NEVER
+    /// The rule this class exists to enforce: background code never
     /// touches a kOS member directly. It only <see cref="Dispatch"/>es an
     /// <see cref="Action"/>; something on the KSP main thread (in
     /// production, <see cref="KosMainThreadDispatcherAddon.Update"/>)
@@ -29,7 +29,7 @@ namespace Gonogo.KosUplink
     /// handoff) is a <c>Dispatcher.Dispatch(() =&gt; ...)</c> through this
     /// class: no exceptions.
     ///
-    /// Deliberately has ZERO UnityEngine dependency so it is fully
+    /// Deliberately has zero UnityEngine dependency so it is fully
     /// unit-testable outside the KSP/Unity process: see
     /// GonogoKosUplink.Tests/MainThreadDispatcherTests.cs. The Unity-touching
     /// half (the addon that calls <see cref="Drain"/> from
@@ -69,8 +69,8 @@ namespace Gonogo.KosUplink
         /// <summary>
         /// Schedules <paramref name="action"/> to run on the next
         /// <see cref="Drain"/>, FIFO relative to every other currently- or
-        /// previously-enqueued action. Safe to call from ANY thread, this
-        /// is the ONLY thread-safe entry point background code (the
+        /// previously-enqueued action. Safe to call from any thread, this
+        /// is the only thread-safe entry point background code (the
         /// Sitrep pump) may use to reach a kOS call.
         /// </summary>
         public void Dispatch(Action action)
@@ -85,7 +85,7 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// Runs every action queued as of entry, in FIFO order, on the
-        /// CALLING thread: this MUST be the KSP main thread (production:
+        /// calling thread: this must be the KSP main thread (production:
         /// called from <see cref="KosMainThreadDispatcherAddon.Update"/>).
         /// Each action runs in its own try/catch so one throwing action
         /// can never stall or drop the actions behind it, the failure is
@@ -135,11 +135,11 @@ namespace Gonogo.KosUplink
         public int PendingCount => _queue.Count;
 
         /// <summary>
-        /// True iff the calling thread IS the thread that drains this
+        /// True iff the calling thread is the thread that drains this
         /// dispatcher (recorded on the most recent <see cref="Drain"/>). The
         /// reentrancy signal that lets a main-thread-marshalling caller
         /// (<see cref="KosExtension.RunOnMainThread"/>) run inline rather than
-        /// <see cref="Dispatch"/>-and-block when it is already ON the main
+        /// <see cref="Dispatch"/>-and-block when it is already on the main
         /// thread: the production reality once the <c>ChannelEngine</c> has
         /// marshalled a command handler onto the main-thread pump. False until
         /// the first <see cref="Drain"/> (nothing has claimed the thread yet).

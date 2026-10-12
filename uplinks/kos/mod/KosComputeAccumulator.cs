@@ -18,7 +18,7 @@ namespace Gonogo.KosUplink
         /// The emitting CPU's <c>KOSCoreId</c>. The accumulator itself does not
         /// know it: it keys buffers by the <c>ScreenBuffer</c> reference rather
         /// than the resolved CPU id, so no <c>AllInstances()</c> reverse-map
-        /// runs per <c>PRINT</c> fragment. The owning CPU is resolved ONCE and stamped
+        /// runs per <c>PRINT</c> fragment. The owning CPU is resolved once and stamped
         /// here by <c>KosExtension.OnPrint</c> at the moment the block completes
         /// and is about to publish. <c>-1</c> until stamped.
         /// </summary>
@@ -40,7 +40,7 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// The <c>[KOSERROR]</c> body, trimmed. Null when
-        /// <see cref="IsError"/> is false, and NEVER null or blank when it is
+        /// <see cref="IsError"/> is false, and never null or blank when it is
         /// true: see the constructor for why the message has to survive.
         /// </summary>
         public string? ErrorMessage { get; }
@@ -64,7 +64,7 @@ namespace Gonogo.KosUplink
         /// <see cref="Sitrep.Contract.KosRunResult"/>, whose contract is that
         /// exactly one of Fields/Error is non-null, and both ended up null.
         /// The client resolves a Fields-less non-error result as an empty
-        /// SUCCESS, so a failed script drew a green OK. An error therefore
+        /// success, so a failed script drew a green ok. An error therefore
         /// always keeps a readable message here, falling back to
         /// <see cref="UnstatedErrorMessage"/>, and a non-error block never
         /// carries one.
@@ -94,7 +94,7 @@ namespace Gonogo.KosUplink
     /// spec §4(b)) into completed <c>[KOSDATA]</c> blocks. A single <c>PRINT</c>
     /// need not contain a whole block, kerboscript can build one up across
     /// several prints, and the postfix sees each fragment, so the marker pair
-    /// is only actionable once BOTH ends have arrived. This class holds the
+    /// is only actionable once both ends have arrived. This class holds the
     /// partial text per CPU until a closing <c>[/KOSDATA]</c> completes a
     /// block, emits it, and drops the consumed prefix.
     ///
@@ -105,12 +105,12 @@ namespace Gonogo.KosUplink
     /// <c>PerfBudget</c> on the emit fanout (spec's compute budget) covers the
     /// downstream rate; this bound covers the upstream buffer.</para>
     ///
-    /// <para>NOT thread-safe by itself: every call happens inside the
+    /// <para>Not thread-safe by itself: every call happens inside the
     /// <c>ScreenBuffer.Print</c> postfix, i.e. already on the KSP main thread
     /// (spec §2). The dispatcher/pump boundary is elsewhere.</para>
     ///
     /// <para>Buffers are keyed by the <b>emitting screen reference</b> (the
-    /// postfix's <c>ScreenBuffer __instance</c>), NOT the CPU's
+    /// postfix's <c>ScreenBuffer __instance</c>), not the CPU's
     /// <c>KOSCoreId</c>. Keying by the object already in hand means no
     /// <c>kOSProcessor.AllInstances()</c> reverse-map runs per <c>PRINT</c>
     /// fragment (adversarial-review I1): the CPU id is resolved once, later,
@@ -141,7 +141,7 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// Appends one <c>PRINT</c> fragment for <paramref name="coreId"/> and
-        /// returns every <c>[KOSDATA]</c> block that is NOW complete (usually
+        /// returns every <c>[KOSDATA]</c> block that is now complete (usually
         /// zero or one; more if several closed in this fragment). Consumed
         /// text up to the end of the last complete block is dropped from the
         /// buffer; any trailing partial (an opened-but-unclosed block) is

@@ -89,7 +89,7 @@ function analysisView(reading: TopicReading<PrincipiaAnalysis>): AnalysisView {
  * window shuts. So the age leads the numbers rather than sitting somewhere it
  * can be skipped.</p>
  *
- * <p>The line between current and stale is the orbit's OWN sidereal period, and
+ * <p>The line between current and stale is the orbit's own sidereal period, and
  * it is derived rather than picked. Every band below is a mean over one period,
  * so an age shorter than one period is inside the smearing the elements already
  * carry and cannot be told from zero by the elements themselves. Past it, the
@@ -169,7 +169,7 @@ function AgeLine({
  * A crossing band that barely widens is a track that repeats over the same
  * ground, and a solar-time band that barely widens is an orbit holding its
  * lighting: both are what the adjectives in the phrase above are read from, so
- * showing them lets an operator see WHY the phrase says what it says.</p>
+ * showing them lets an operator see why the phrase says what it says.</p>
  */
 function GroundTrackRows({
   orbit,
@@ -498,7 +498,7 @@ function PeriodRow({
  *
  * <p>Absent rather than a dash, deliberately, and this is the one row where that
  * is right. The others answer a question the operator asked; these three are
- * warnings, and a permanent COLLISION row with nothing in it teaches an eye to skip the line
+ * warnings, and a permanent collision row with nothing in it teaches an eye to skip the line
  * that will one day carry a countdown.</p>
  */
 function HazardRow({
@@ -535,7 +535,7 @@ function HazardRow({
  *
  * <p><b>What the stock widget beside it cannot say.</b> Every element above it
  * is a two-body osculating element: true at this instant and untrue a
- * revolution later on an oblate body. These are MEAN elements over an analysed
+ * revolution later on an oblate body. These are mean elements over an analysed
  * span, each a range whose width is how much the orbit wanders, and the node
  * drift is the secular rate that makes the three periods differ. Nothing outside
  * the producer computes them, which is why this reads its analysis rather than

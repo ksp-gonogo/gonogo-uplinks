@@ -167,7 +167,7 @@ const RAD_PER_SEC_TO_RAD_PER_HOUR = 3600;
  * was always here, and on its own it does not make a gap read as a gap: with
  * the point simply absent the stroke joins its neighbours and draws a straight
  * line through a span the arm measured nothing in, which the operator cannot
- * tell from data. `breaks` names the point that RESUMES after each drop, which
+ * tell from data. `breaks` names the point that resumes after each drop, which
  * is what cuts the stroke and the area fill under it.
  *
  * Exported for direct unit testing.

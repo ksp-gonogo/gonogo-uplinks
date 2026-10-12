@@ -1,12 +1,12 @@
 import { CameraKind, type CameraState } from "@ksp-gonogo/kerbcast";
 
 /**
- * Find the live kerbal face camera for a crew member, by NAME.
+ * Find the live kerbal face camera for a crew member, by name.
  *
  * kerbcast keys a `kind: Kerbal` camera on `cameraName`, which is the kerbal's
  * stable identity: `kerbalPersistentId` looked stable
  * but actually changes seat<->EVA (KSP mints a fresh `persistentID` on EVA),
- * so it is the WRONG key. `cameraName` (the kerbal's full name, e.g.
+ * so it is the wrong key. `cameraName` (the kerbal's full name, e.g.
  * "Jebediah Kerman") stays constant across seat/EVA transitions and is
  * unique in the roster: and it is also the only identity CrewStatus's
  * `vessel.crew` roster carries (no kerbal id crosses the Sitrep contract),

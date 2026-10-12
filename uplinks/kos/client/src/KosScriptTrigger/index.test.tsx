@@ -1,8 +1,8 @@
 /**
- * Integration proof for the kOS Script Trigger widget: the REAL component,
- * the REAL `useStream("kos.processors")` CPU read, and the REAL
+ * Integration proof for the kOS Script Trigger widget: the real component,
+ * the real `useStream("kos.processors")` CPU read, and the real
  * `kosSource.executeScript` dispatch → correlate → resolve pipeline, over a
- * REAL `TelemetryProvider`. Nothing internal is mocked: only the wire is
+ * real `TelemetryProvider`. Nothing internal is mocked: only the wire is
  * faked, via `FakeKosUplink` (the same `StubTransport`-backed responder the
  * executeScript / CPU-discovery integration tests use).
  */

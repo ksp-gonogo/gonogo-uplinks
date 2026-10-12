@@ -8,7 +8,7 @@ namespace GonogoMechJebUplink.Tests
     /// The per-Uplink half of the uplink-types-out-of-core plan's Unit guard
     /// (§5b): now that <see cref="MechJebAscentArgs"/>/<see cref="MechJebNoArgs"/>
     /// live in their own assembly (<c>GonogoMechJebUplink.Contract</c>) instead
-    /// of <c>Sitrep.Contract</c>, nothing FORCES a future property on this
+    /// of <c>Sitrep.Contract</c>, nothing forces a future property on this
     /// Uplink's own contract types to declare its unit.
     ///
     /// <para><b>The sweep is shared now.</b> This file used to hold its own copy
@@ -31,8 +31,8 @@ namespace GonogoMechJebUplink.Tests
     /// zero-pending starting point, and adding a baseline mechanism nothing
     /// uses yet would be needless ceremony.</para>
     ///
-    /// <para><b>What this pilot does NOT exercise.</b> Both of this
-    /// assembly's types are command ARGS (inbound-only), which
+    /// <para><b>What this pilot does not exercise.</b> Both of this
+    /// assembly's types are command args (inbound-only), which
     /// <c>RtConfig.ApplyUnitValueTypes</c> deliberately never retypes to
     /// <c>Value&lt;&gt;</c>/<c>Vec3Of&lt;&gt;</c> (see its own doc comment): a
     /// widget JSON-stringifies these straight to the wire, and there is no
@@ -55,7 +55,7 @@ namespace GonogoMechJebUplink.Tests
         /// Both types are reached by the sweep, and nothing else is. Cheap here,
         /// where the set is two flat DTOs, and the reason it is still worth
         /// asserting is that <see cref="EveryScalarWirePropertyDeclaresAUnit"/>
-        /// passes VACUOUSLY on a type that quietly loses
+        /// passes vacuously on a type that quietly loses
         /// <c>[SitrepContract]</c>.
         /// </summary>
         [Fact]

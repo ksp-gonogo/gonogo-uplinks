@@ -5,7 +5,7 @@ using Reinforced.Typings.Fluent;
 namespace GonogoPrincipiaUplink;
 
 /// <summary>
-/// This Uplink's OWN codegen configuration, the same shape every sibling
+/// This Uplink's own codegen configuration, the same shape every sibling
 /// Uplink's <c>*RtConfig.Configure</c> has, scoped to this assembly's types.
 ///
 /// <para>Every wire type goes in the <c>ExportAsInterfaces</c> set, not just the

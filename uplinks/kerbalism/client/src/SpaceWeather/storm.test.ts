@@ -17,7 +17,7 @@ import { deriveStorm } from "./index.js";
  * second, and a transit bar pinned at its start. Both are claims the save never
  * made, and both are asserted absent below.
  *
- * The two fields that do NOT depend on the clock stay readable in the same
+ * The two fields that do not depend on the clock stay readable in the same
  * frame, which is the point of taking them separately: a missing clock costs
  * the operator the ETA and the progress, not the whole card.
  */

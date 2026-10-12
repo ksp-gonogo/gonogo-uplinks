@@ -36,7 +36,7 @@ interface DriveEntries {
 }
 
 /**
- * The value of a FACT: something that stays true until an event changes it, and no
+ * The value of a fact: something that stays true until an event changes it, and no
  * event can reach us down a link that is not delivering. `whenConfirmedNothing` is
  * what an `absent` tombstone means here, which is a different answer from `pending`
  * and must not collapse into it.
@@ -53,7 +53,7 @@ function stillTrue<T, A>(
 
 /**
  * Joins Kerbalism's drive rows against one Aboard subject. Aboard groups by
- * SUBJECT; the drive itself is per FILE/SAMPLE, so a subject with both still
+ * subject; the drive itself is per FILE/SAMPLE, so a subject with both still
  * shows as two `science.experiments` entries sharing the same `subjectId`,
  * distinguished by `kind`.
  */
@@ -124,7 +124,7 @@ const UNREAD_FLAG_TITLE =
 /**
  * A reversible flag's three states, and the desired next state to send.
  *
- * `!flag` reads an UNREAD `bool?` as false, so a file whose send flag failed to
+ * `!flag` reads an unread `bool?` as false, so a file whose send flag failed to
  * read got a button labelled "Send" that dispatched `flag: true`: if the file
  * was in fact already queued, the press re-affirmed the queue instead of
  * cancelling it. Both flags come off reflection that returns null on failure

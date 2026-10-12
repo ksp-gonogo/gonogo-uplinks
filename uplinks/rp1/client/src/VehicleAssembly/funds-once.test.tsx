@@ -15,7 +15,7 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  * The funds rule, in the one place this widget meets it.
  *
  * <para>The repo rule is that a spend control is never visible without a
- * balance visible in the same WIDGET. Every control in this one spends or
+ * balance visible in the same widget. Every control in this one spends or
  * refunds: a rollout is billed as the vehicle moves, a scrap pays the vehicle
  * back, and a repeat buys another. None of the sections carrying those controls
  * draws a balance, because a widget that printed the same number under three
@@ -24,7 +24,7 @@ import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
  *
  * <para>So the whole rule rests on the host widget, and no section's own tests
  * can see it break. That is what this file holds, and it is asked of a section
- * that is NOT one of the widget's own: an outside Uplink adding a spend
+ * that is not one of the widget's own: an outside Uplink adding a spend
  * control to this slot is covered by the same one balance, and a check that
  * only ever saw the built-in two would not say so.</para>
  */
@@ -108,7 +108,7 @@ describe("VehicleAssembly draws the balance wherever a section can spend", () =>
   /**
    * The second balance, and the reason funds alone is not the whole rule here.
    *
-   * <para>RP-1 keeps a prepaid allowance its money model spends BEFORE funds on
+   * <para>RP-1 keeps a prepaid allowance its money model spends before funds on
    * the purchases it covers, and tooling a vehicle is one of them. So a funds
    * balance of 500,000f beside a price of 12,500f is not the affordability
    * answer: part of that price may already be paid. Its own contract says a

@@ -20,7 +20,7 @@ namespace GonogoPrincipiaUplink
     /// been delivered, which is what the producer's own
     /// <c>TimeToHalfDeltaVSeconds</c> measures from ignition. Reporting ignition
     /// as the instant would make every countdown fire early by half a burn, and
-    /// would do it invisibly, because ignition IS an instant and reads as a
+    /// would do it invisibly, because ignition is an instant and reads as a
     /// plausible one. Ignition and cutoff still travel in their own fields, so
     /// nothing is lost by not putting one of them in this slot.</para>
     ///
@@ -50,8 +50,8 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// The observed plan as generalised nodes.
         ///
-        /// <para>Null ONLY when nothing has been observed. A craft that was read
-        /// and holds no flight plan answers with an EMPTY list, because this
+        /// <para>Null only when nothing has been observed. A craft that was read
+        /// and holds no flight plan answers with an empty list, because this
         /// planner can make one for it and simply has not: null on that seam is
         /// reserved for "this craft cannot hold a plan at all", which is how an
         /// un-upgraded Tracking Station reaches a client, and it is what decides

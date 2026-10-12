@@ -18,10 +18,10 @@ namespace GonogoRp1Uplink
     /// one mod, two Uplinks, two versions. Its channel is
     /// <see cref="AvionicsTopic"/>. The argument for keeping the two apart was
     /// fault isolation, and it is weaker than it reads: a capture that throws is
-    /// now RETRIED rather than permanently disabled (see
+    /// now retried rather than permanently disabled (see
     /// <c>ChannelEngine.RetrySampledSourceAfterCaptureThrow</c>), so the way a
     /// build-queue fault could still take the avionics verdict dark is a throw in
-    /// a HANDLE, which on this Uplink is pure dictionary building on
+    /// a handle, which on this Uplink is pure dictionary building on
     /// already-captured data.</para>
     ///
     /// <para>Every channel but two is <see cref="ChannelDeclaration.HeldAtHome"/>.
@@ -185,7 +185,7 @@ namespace GonogoRp1Uplink
         /// cadence an operator visits the Astronaut Complex rather than the cadence
         /// a launch complex is watched.
         ///
-        /// <para>It is ALSO the reader behind the crew-standing backend below, and
+        /// <para>It is also the reader behind the crew-standing backend below, and
         /// that half is not sampled at all: it is asked one name at a time by
         /// core's own space-centre capture. That is deliberate, and the whole
         /// reason the reader is shared rather than duplicated: the retiree set both
@@ -194,7 +194,7 @@ namespace GonogoRp1Uplink
         private readonly Rp1CrewReflection _crew = new Rp1CrewReflection();
 
         /// <summary>
-        /// The trainings RP-1 could be ASKED to run, on its own reader again. It
+        /// The trainings RP-1 could be asked to run, on its own reader again. It
         /// comes off the same handler as the courses and is still separate,
         /// because the two lists have nothing in common but their owner: the
         /// courses are the handful somebody started and move every tick, the
@@ -206,7 +206,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// What tooling the vehicle on the editor's table needs, on its own reader
-        /// because it reads a different SCENE from everything else here. Every other
+        /// because it reads a different scene from everything else here. Every other
         /// channel on this Uplink is space-centre state; this one is the ship being
         /// designed, and it answers nothing at all from anywhere else.
         /// </summary>
@@ -222,7 +222,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// RP-1's control locker, on its own reader because it is the only thing
-        /// here that reads a VESSEL. Everything else on this Uplink is space-centre
+        /// here that reads a vessel. Everything else on this Uplink is space-centre
         /// or editor state; this asks whether the craft an operator is flying can
         /// be steered, and it shares no object with any of them.
         /// </summary>
@@ -355,7 +355,7 @@ namespace GonogoRp1Uplink
         /// The launch-complex acts that take effect at once and cost nothing:
         /// rename a complex, demolish one, rename or demolish one of its pads.
         ///
-        /// <para>Its own class, and kept apart from the three that BUILD, because
+        /// <para>Its own class, and kept apart from the three that build, because
         /// those queue a construction project and need a price RP-1 computes
         /// nowhere reusable. These four write RP-1's own state directly and there
         /// is no figure to get wrong, so the half of the surface with no
@@ -365,7 +365,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The launch-complex acts that go on RP-1's construction queue and carry a
-        /// PRICE: build a complex, renovate one, add a pad.
+        /// price: build a complex, renovate one, add a pad.
         ///
         /// <para>Apart from <see cref="_complexLifecycle"/> because the price is the
         /// whole difference. Those four write RP-1's own state and take effect at
@@ -384,7 +384,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// The payload mass RP-1's repeating satellite contracts require. Its own
-        /// class because it is the only write here that changes a SETTING rather
+        /// class because it is the only write here that changes a setting rather
         /// than career state, and the only one whose act invalidates contract
         /// offers as a side effect.
         /// </summary>
@@ -419,12 +419,12 @@ namespace GonogoRp1Uplink
         /// class for the reason every write here has one, and because it is the
         /// only one that constructs an RP-1 project and then hands it to RP-1's own
         /// roster: the whole enrolment is a sequence RP-1 performs in a screen, and
-        /// getting its ORDER wrong grounds kerbals against a course nothing holds.
+        /// getting its order wrong grounds kerbals against a course nothing holds.
         /// </summary>
         private readonly Rp1TrainingCommands _trainingWrites = new Rp1TrainingCommands();
 
         /// <summary>
-        /// Tooling: a purchase and an EDIT, which is why they share a class and not
+        /// Tooling: a purchase and an edit, which is why they share a class and not
         /// a shape. Its own reader again, and the only writes on this Uplink whose
         /// subject is the ship on the editor's table rather than the space centre.
         /// </summary>
@@ -450,7 +450,7 @@ namespace GonogoRp1Uplink
         private readonly Rp1ResearchGate _researchGate;
         /// The command that starts a design the space centre has never held, from
         /// one of the save's own craft files. Its own reader for the reason the two
-        /// above are, and it holds a LAZY route to core's craft catalogue rather
+        /// above are, and it holds a lazy route to core's craft catalogue rather
         /// than the catalogue itself: providers register during registration and
         /// the Kernel elects afterwards, so anything resolved in a constructor
         /// would be null for the life of the game.
@@ -567,7 +567,7 @@ namespace GonogoRp1Uplink
 
         /// <summary>
         /// Assigned from a constructor rather than a field initialiser because
-        /// the command list is CONDITIONAL on RP-1's build model resolving, and a
+        /// the command list is conditional on RP-1's build model resolving, and a
         /// field initialiser may not read another instance field.
         ///
         /// <para>Conditional because a declared requirement whose evaluator never
@@ -797,7 +797,7 @@ namespace GonogoRp1Uplink
         /// needs none of the three. Declaring them all off one flag would
         /// withdraw every command for a rename that broke one.</para>
         ///
-        /// <para>Nearly all of them declare the SAME requirement, which is why
+        /// <para>Nearly all of them declare the same requirement, which is why
         /// there is one gate evaluator between them: the only condition
         /// evaluable before the press is that RP-1 is managing the save, and each
         /// command's own conditions are about a complex or a vehicle nobody has
@@ -1012,7 +1012,7 @@ namespace GonogoRp1Uplink
         /// <para>It no longer states a delay disposition, and that is the fix for
         /// a defect this factory created: it baked <c>Delayed = false</c> into
         /// every RP-1 command at once, on the reading that construction and
-        /// research are ground-side facts. They are ORDERS. None of them changes
+        /// research are ground-side facts. They are orders. None of them changes
         /// the scene, and a second command centre can issue any of them, so they
         /// cross the gap like any other order. The value is declared on each
         /// command's args type in this Uplink's contract slice now, which is the
@@ -1850,7 +1850,7 @@ namespace GonogoRp1Uplink
         /// quote and it stamped the absence at 0: a reading older than the start
         /// of the game, which on a Delayed HeldAtHome channel is also older than
         /// every edge and so goes straight past the signal delay. Withholding the
-        /// publish instead is not the alternative it looks like: these are SAMPLED
+        /// publish instead is not the alternative it looks like: these are sampled
         /// sources, and <c>ChannelEngine.ProcessPublish</c> has no
         /// <c>AbsenceIsData</c> birth gate, so the explicit publish below is the
         /// only thing that ever puts their absence on the wire.
@@ -1911,7 +1911,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// MAIN-THREAD capture: the enrolable trainings, or NULL when the last
+        /// MAIN-THREAD capture: the enrolable trainings, or null when the last
         /// reading still stands.
         /// </summary>
         /// <remarks>
@@ -2257,7 +2257,7 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
-        /// Health, and WHICH RP-1. The version caveat at the top of
+        /// Health, and which RP-1. The version caveat at the top of
         /// <see cref="Rp1ScReflection"/> is why these facts are load-bearing
         /// rather than decorative: RP-1 ships roughly monthly, this Uplink is
         /// locked against one build's disassembly, and an operator reporting "the
