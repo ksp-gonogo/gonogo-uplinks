@@ -238,8 +238,8 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
         public void SetCentreDelay(string fromCentreId, string toCentreId, double oneWaySeconds) =>
             throw NotExpected("SetCentreDelay");
 
-        public void SetHomeCommandDelay(string centreId, double oneWaySeconds) =>
-            throw NotExpected("SetHomeCommandDelay");
+        public void SetHomeCommandDelays(IReadOnlyDictionary<string, double> oneWaySecondsByCentre) =>
+            throw NotExpected("SetHomeCommandDelays");
 
         public void SetActiveVesselDelays(IReadOnlyDictionary<string, double> oneWaySecondsByCentre) =>
             throw NotExpected("SetActiveVesselDelays");
