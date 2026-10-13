@@ -2,8 +2,8 @@
  * KerbcastAvatarAugment: the crew-status.avatar filler.
  *
  * Exercises the real component against a real `KerbcastDataSource`, with
- * only the WebRTC transport faked by the SDK's canonical `MockSidecar` (per
- * CLAUDE.md's testing philosophy: mock at the boundary, not the module).
+ * only the WebRTC transport faked by the SDK's canonical `MockSidecar` (mock
+ * at the boundary, not the module).
  */
 
 import { CameraKind, CrewLocation } from "@ksp-gonogo/kerbcast";

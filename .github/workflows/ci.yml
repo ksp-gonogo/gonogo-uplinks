@@ -46,6 +46,9 @@ jobs:
       # A question about the SET, and a null one compiles and loads in game with
       # the client never fetched. Plants a violation and fails as BLIND if unseen.
       - run: node tooling/check-client-source.mjs
+      # Is any assistant working-notes or tool-config file tracked. The
+      # repo is public. Plants a violation and fails as BLIND if unseen.
+      - run: node tooling/check-private-notes.mjs
       - run: node --test "tooling/*.test.mjs"
 
   uplink:

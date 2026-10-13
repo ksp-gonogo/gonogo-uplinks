@@ -38,7 +38,7 @@ describe("Scanning: augment slots (spec §4)", () => {
   // Rendered trees, tracked so afterEach unmounts them inside the test's own
   // scope. RTL auto-cleanup runs after this file's afterEach, so it cannot be
   // relied on to unmount first, and a live tree torn down later re-renders
-  // outside act() (the documented anti-pattern in CLAUDE.md).
+  // outside act(), which is always a test bug.
   const renderedTrees: Array<() => void> = [];
 
   beforeEach(() => {

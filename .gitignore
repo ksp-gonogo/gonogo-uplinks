@@ -48,3 +48,10 @@ uplinks/*/mod/Provenance.g.cs
 # specifiers resolve the way that client's own source does, and deleted again
 # when the sweep ends. Ignored so a crashed run cannot leave one committable.
 .minsize-probe.*.tsx
+
+# Private working notes and tool config, kept out of the public tree.
+/CLAUDE.md
+/AGENTS.md
+/GEMINI.md
+/.mcp.json
+/.claude/

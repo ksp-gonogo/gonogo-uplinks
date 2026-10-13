@@ -84,8 +84,7 @@ const TEST_INSTANCE_ID = "camera-feed-test";
 // Sources created during a test are torn down in afterEach AFTER the widget is
 // unmounted, so the CameraFeed is already gone when disconnect() fires.
 // Disconnecting a live source while the widget is still mounted triggers
-// useKerbcastStream state updates outside act(): the documented anti-pattern in
-// CLAUDE.md.
+// useKerbcastStream state updates outside act(), which is always a test bug.
 const createdSources: Array<{ disconnect: () => void }> = [];
 
 // Rendered trees, tracked so afterEach can unmount them BEFORE disconnecting
