@@ -9,7 +9,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 
 type Orbit = TopicPayload<"vessel.orbit">;
-type Bodies = TopicPayload<"system.bodies">;
+type Bodies = TopicPayload<"trackingStation.bodies">;
 
 /** Samples taken across one revolution to find the first crossing. */
 const SAMPLES_PER_REVOLUTION = 720;

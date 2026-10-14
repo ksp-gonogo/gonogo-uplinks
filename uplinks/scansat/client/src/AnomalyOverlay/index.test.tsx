@@ -166,10 +166,10 @@ describe("scansat:anomalies map POI provider", () => {
     renderedTrees.push(unmount);
 
     act(() => {
-      client.subscribe("system.bodies", () => {});
+      client.subscribe("trackingStation.bodies", () => {});
     });
     await act(async () => {
-      transport.emit("system.bodies", {
+      transport.emit("trackingStation.bodies", {
         bodies: [
           { index: 1, name: "Kerbin" },
           { index: 2, name: "Mun" },
@@ -189,7 +189,7 @@ describe("scansat:anomalies map POI provider", () => {
 
     // Wait specifically for the action to appear, a bare length-1 check on
     // `result.current` would already be satisfied by the anomaly landing
-    // before `system.bodies` resolves (actions start empty until the body
+    // before `trackingStation.bodies` resolves (actions start empty until the body
     // index is known), which would grab a stale snapshot.
     await waitFor(() => expect(result.current?.[0]?.actions).toHaveLength(1));
 

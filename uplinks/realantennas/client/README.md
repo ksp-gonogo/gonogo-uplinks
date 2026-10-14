@@ -10,7 +10,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | Uplink id | `realantennas` |
 | Version | `1.0.0-rc.1` |
 | Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 43.0, extension API 6.0.0 |
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -54,7 +54,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | --- | --- | --- | --- | --- | --- |
 | `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.dataRate`, `comms.path` | only while `realantennas` | 0 |  |
 | `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path` | only while `realantennas` | 3 |  |
-| `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `system.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
+| `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `trackingStation.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
 
 ![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](docs/assets/ra-link-budget-closes--default.png)
 

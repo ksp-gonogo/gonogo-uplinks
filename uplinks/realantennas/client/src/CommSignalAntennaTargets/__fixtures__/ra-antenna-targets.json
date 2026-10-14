@@ -22,7 +22,7 @@
         "payload": { "source": 1, "oneWaySeconds": 0.0004 }
       },
       {
-        "topic": "system.bodies",
+        "topic": "trackingStation.bodies",
         "payload": {
           "bodies": [
             { "name": "Kerbin", "index": 1 },

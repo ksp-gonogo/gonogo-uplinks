@@ -106,7 +106,7 @@ namespace GonogoPrincipiaUplink.Tests
 
     /// <summary>
     /// The stock system as the rig gave it on 2026-09-05, off the running game's own
-    /// <c>system.bodies</c> frame: each body's conic about its primary, and the
+    /// <c>trackingStation.bodies</c> frame: each body's conic about its primary, and the
     /// gravitational parameters the producer's gravity model names them with.
     ///
     /// <para>Nothing here is invented geometry, and nothing here is rounded. It is

@@ -9,7 +9,7 @@
         "navigation"
       ],
       "channels": [
-        "system.bodies"
+        "trackingStation.bodies"
       ],
       "optionalChannels": [
         "vessel.orbit",

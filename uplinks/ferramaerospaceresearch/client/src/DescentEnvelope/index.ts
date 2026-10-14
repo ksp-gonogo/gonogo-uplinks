@@ -381,7 +381,7 @@ function heightAboveTerrain(
  */
 function surfaceGravityOf(
   identity: TopicPayload<"vessel.identity"> | null | undefined,
-  bodies: TopicPayload<"system.bodies"> | null | undefined,
+  bodies: TopicPayload<"trackingStation.bodies"> | null | undefined,
 ) {
   const index = identity?.parentBodyIndex;
   if (index == null || !bodies) return null;
@@ -407,7 +407,7 @@ AERO.registerContribution({
     "vessel.flight",
     "vessel.surface",
     "vessel.identity",
-    "system.bodies",
+    "trackingStation.bodies",
   ],
   compute: (topics) => {
     const reading = topics["aero.state"];
@@ -433,7 +433,7 @@ AERO.registerContribution({
       speed: flight?.surfaceSpeed?.magnitude ?? null,
       surfaceGravity: surfaceGravityOf(
         lastValue(topics["vessel.identity"]),
-        lastValue(topics["system.bodies"]),
+        lastValue(topics["trackingStation.bodies"]),
       ),
     };
     const layers = aeroDescentLayers(inputs);

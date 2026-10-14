@@ -5,7 +5,7 @@ using Sitrep.Contract;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// Where KSP's space centre stands: the index into system.bodies of the body it
+    /// Where KSP's space centre stands: the index into trackingStation.bodies of the body it
     /// sits on, and its body-fixed position there in degrees.
     /// </summary>
     public readonly struct SpaceCentreFix

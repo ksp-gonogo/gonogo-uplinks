@@ -20,7 +20,7 @@ import { ScanningComponent } from "./index.js";
 
 // Every channel this widget reads rides the native TelemetryClient stream, so every emit here goes over `transport`.
 
-/** `system.bodies` fixture carrying just the one body the tests need. */
+/** `trackingStation.bodies` fixture carrying just the one body the tests need. */
 const SYSTEM_BODIES = { bodies: [{ index: 1, name: "Kerbin" }] };
 /** `vessel.identity` fixture: active vessel orbiting/landed at Kerbin (index 1). */
 const VESSEL_IDENTITY_AT_KERBIN = { parentBodyIndex: 1 };
@@ -99,7 +99,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -122,7 +122,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -149,7 +149,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -179,7 +179,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -212,7 +212,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -234,7 +234,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);
@@ -276,7 +276,7 @@ describe("ScanningComponent", () => {
     renderScanning(<ScanningComponent config={{}} id="scanning" />);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
       transport.emit("vessel.surface", { biome: "Highlands" });
     });

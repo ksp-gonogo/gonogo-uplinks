@@ -10,7 +10,7 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | Uplink id | `scansat` |
 | Version | `1.0.0-rc.1` |
 | Wraps | SCANsat 20.4 (ckan) |
-| Built against | contract 43.0, extension API 6.0.0 |
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,7 +40,7 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 | | |
 | --- | --- |
 | Widget id | `scanning` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `system.bodies`, `vessel.surface`, `vessel.flight` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `trackingStation.bodies`, `vessel.surface`, `vessel.flight` |
 | Slots of its own | `scanning.sections` |
 | Default size, in grid units | 6 × 10 |
 | Smallest size, in grid units | 3 × 4 |

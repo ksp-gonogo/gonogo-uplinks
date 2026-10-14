@@ -136,7 +136,7 @@ function mount(): WidgetTree {
 
 function emitClimbingOutOfPeriapsis(): void {
   act(() => {
-    stream.emit("system.bodies", BODIES);
+    stream.emit("trackingStation.bodies", BODIES);
     stream.emit("vessel.orbit", ORBIT, { quality: 0 });
     stream.emit(TOPIC, WEATHER, CURRENT);
     stream.emit(
@@ -221,7 +221,7 @@ describe("SpaceWeather places the vessel from the carried altitude", () => {
     // the diagram has to say it placed nobody.
     const tree = mount();
     act(() => {
-      stream.emit("system.bodies", BODIES);
+      stream.emit("trackingStation.bodies", BODIES);
       stream.emit(TOPIC, WEATHER, CURRENT);
       stream.emit(
         "vessel.flight",

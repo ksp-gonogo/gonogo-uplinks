@@ -19,7 +19,7 @@
         "payload": true
       },
       {
-        "topic": "system.bodies",
+        "topic": "trackingStation.bodies",
         "payload": {
           "bodies": [
             {

@@ -30,7 +30,7 @@ registerComponent<LibrationPointsConfig>({
   minSize: { w: 4, h: 7 },
   component: LibrationPointsComponent,
   configComponent: LibrationPointsConfigForm,
-  channels: ["system.bodies"],
+  channels: ["trackingStation.bodies"],
   optionalChannels: ["vessel.orbit", "vessel.identity"],
   defaultConfig: { pair: AUTO_PAIR },
   actions: librationPointsActions,

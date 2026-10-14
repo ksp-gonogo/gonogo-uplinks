@@ -249,7 +249,7 @@ describe("surface gravity", () => {
       heightFromTerrain: value("m", PLOT.altitude),
     }),
     "vessel.identity": observed({ parentBodyIndex: 1 }),
-    "system.bodies": observed({
+    "trackingStation.bodies": observed({
       bodies: [
         {
           index: 1,

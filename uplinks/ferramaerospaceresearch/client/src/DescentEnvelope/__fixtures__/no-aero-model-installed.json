@@ -14,7 +14,7 @@
     "pinnedUt": 1000000,
     "emits": [
       {
-        "topic": "system.bodies",
+        "topic": "trackingStation.bodies",
         "payload": {
           "bodies": [
             {

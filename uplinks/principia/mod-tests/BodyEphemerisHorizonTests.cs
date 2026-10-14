@@ -441,7 +441,7 @@ namespace GonogoPrincipiaUplink.Tests
         /// the installs where planning matters most.</para>
         ///
         /// <para>This pins <c>CanPropagate</c>'s vessel-only bound, which
-        /// <c>system.bodies.statesAt</c> relies on: a later change extending the
+        /// <c>trackingStation.bodies.statesAt</c> relies on: a later change extending the
         /// horizon to bodies fails here rather than silently emptying a porkchop.
         /// The <c>BodySpanSeconds</c> assertion is the control: it proves this
         /// provider does bound things, so the unbounded answer below is a decision

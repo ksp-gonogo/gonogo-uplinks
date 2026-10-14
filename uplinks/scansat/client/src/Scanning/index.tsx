@@ -144,7 +144,7 @@ function stillTrue<T, A>(
 
 /**
  * Resolve the active vessel's current body name. `vessel.identity` only
- * carries the stable `system.bodies` index (`parentBodyIndex`), the same
+ * carries the stable `trackingStation.bodies` index (`parentBodyIndex`), the same
  * index/name split `AnomalyOverlay/index.tsx`'s `useBodyIndexByName` and
  * `packages/components/src/GroundTrack/vanillaPoiProvider.ts`'s
  * `useBodyNameByIndex` resolve elsewhere; this is the single-body variant of
@@ -154,7 +154,7 @@ function stillTrue<T, A>(
 function useActiveVesselBodyName(): string | undefined {
   // Both facts: a vessel's parent body and the body catalogue change by event.
   const identity = stillTrue(useTelemetry("vessel.identity"), undefined);
-  const systemBodies = stillTrue(useTelemetry("system.bodies"), undefined);
+  const systemBodies = stillTrue(useTelemetry("trackingStation.bodies"), undefined);
   return useMemo(() => {
     const index = identity?.parentBodyIndex;
     if (index == null) return undefined;
@@ -433,7 +433,7 @@ registerComponent<ScanningConfig>({
     "scansat.available",
     "scansat.scanningVessels",
     "vessel.identity",
-    "system.bodies",
+    "trackingStation.bodies",
     "vessel.surface",
     // The minimap's own read, and it was missing: the app carries
     // `vessel.flight` by default so the widget worked, while the declaration a

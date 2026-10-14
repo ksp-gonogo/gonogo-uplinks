@@ -429,7 +429,7 @@ function CommSignalAntennaTargets() {
   const antennasReading = useTelemetry("realantennas.antennas");
   const chainsReading = useTelemetry("realantennas.antennaChains");
   const retargetingReading = useTelemetry("realantennas.retargeting");
-  const bodiesReading = useTelemetry("system.bodies");
+  const bodiesReading = useTelemetry("trackingStation.bodies");
   const vesselsReading = useTelemetry("trackingStation.catalog");
 
   const antennas =
@@ -503,7 +503,7 @@ registerAugment({
     "realantennas.antennas",
     "realantennas.antennaChains",
     "realantennas.retargeting",
-    "system.bodies",
+    "trackingStation.bodies",
     "trackingStation.catalog",
   ],
   component: CommSignalAntennaTargets,

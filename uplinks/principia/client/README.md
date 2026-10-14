@@ -10,7 +10,7 @@ Principia's n-body flight on the dashboard: how far each trajectory holds, the f
 | Uplink id | `principia` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 43.0, extension API 6.0.0 |
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -68,7 +68,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | | |
 | --- | --- |
 | Widget id | `libration-points` |
-| Reads | `system.bodies` |
+| Reads | `trackingStation.bodies` |
 | Also reads, if the mod publishes them | `vessel.orbit`, `vessel.identity` |
 | Actions an input can be bound to | Cycle Pair (`cyclePair`): Step to the next body pair, with Auto in the cycle |
 | Default size, in grid units | 6 × 10 |

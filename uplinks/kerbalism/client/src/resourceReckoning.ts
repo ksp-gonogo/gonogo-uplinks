@@ -126,7 +126,7 @@ export const RESOURCE_RATE_HORIZON_SECONDS = 1200;
 
 type Resources = TopicPayload<"vessel.resources">;
 type Orbit = TopicPayload<"vessel.orbit">;
-type Bodies = TopicPayload<"system.bodies">;
+type Bodies = TopicPayload<"trackingStation.bodies">;
 type LifeSupport = TopicPayload<"kerbalism.lifesupport">;
 type Profile = TopicPayload<"kerbalism.profile">;
 
@@ -645,7 +645,7 @@ KERBALISM.registerReckoner("vessel.resources", {
     KERBALISM_LIFESUPPORT_TOPIC,
     { reading: KERBALISM_PROFILE_TOPIC },
     { reading: "vessel.orbit" },
-    { reading: "system.bodies" },
+    { reading: "trackingStation.bodies" },
   ],
   reckon: (point, [lifeSupportPoint, profile, orbit, bodies], { reckonUt }) =>
     reckonResourceLevels(

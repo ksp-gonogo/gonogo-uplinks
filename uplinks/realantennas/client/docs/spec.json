@@ -554,7 +554,7 @@
         "realantennas.antennas",
         "realantennas.antennaChains",
         "realantennas.retargeting",
-        "system.bodies",
+        "trackingStation.bodies",
         "trackingStation.catalog"
       ],
       "requires": "realantennas",

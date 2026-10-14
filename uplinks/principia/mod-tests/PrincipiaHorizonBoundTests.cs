@@ -12,7 +12,7 @@ namespace GonogoPrincipiaUplink.Tests
     /// against the geometry real craft in a live save actually presented.
     ///
     /// <para><b>Every element below was measured on the rig on 2026-09-05</b>, off the
-    /// running game's own <c>system.bodies</c> and <c>system.vessels</c> frames: each
+    /// running game's own <c>trackingStation.bodies</c> and <c>trackingStation.catalog</c> frames: each
     /// craft's conic about its primary and each perturber's conic in the same frame.
     /// Nothing here is invented geometry, and the conic evaluator at the bottom is
     /// checked against the game's own published trajectory arc rather than assumed:

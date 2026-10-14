@@ -319,7 +319,7 @@ describe("AltimetryBase: ground-track.base slot", () => {
       expect(transport.isSubscribed("scansat.height.Kerbin")).toBe(true),
     );
     act(() => {
-      transport.emit("system.bodies", {
+      transport.emit("trackingStation.bodies", {
         bodies: [{ index: 1, name: "Kerbin", hasOcean: true }],
       });
       transport.emit("scansat.height.Kerbin", kerbinSpanFixture(), {

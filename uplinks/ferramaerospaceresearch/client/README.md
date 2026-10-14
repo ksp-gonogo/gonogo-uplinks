@@ -10,7 +10,7 @@ Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of 
 | Uplink id | `aero` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 43.0, extension API 6.0.0 |
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,7 +40,7 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
-| `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `system.bodies` | only while `aero` |
+| `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `trackingStation.bodies` | only while `aero` |
 | `aero:descent-envelope-badges` | `landing-status.badges` | `aero.state` | only while `aero` |
 
 ![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](docs/assets/winged-entry-high-alpha--default.png)

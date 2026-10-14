@@ -146,7 +146,7 @@
         "vessel.flight",
         "vessel.surface",
         "vessel.identity",
-        "system.bodies"
+        "trackingStation.bodies"
       ],
       "requires": "aero",
       "settings": []

@@ -49,7 +49,7 @@ function stillTrue<T, A>(
 }
 
 /**
- * Resolve a body name to its `system.bodies` index, the inverse of
+ * Resolve a body name to its `trackingStation.bodies` index, the inverse of
  * `vanillaPoiProvider.ts`'s `useBodyNameByIndex`. Needed only here: an
  * anomaly's body is a name (`useScanAnomalies(bodyName)`), but
  * `SetTargetArgs.Position` (`tar.setTargetPosition[bodyIndex,lat,lon]`)
@@ -57,7 +57,7 @@ function stillTrue<T, A>(
  */
 function useBodyIndexByName(): Map<string, number> {
   // The solar system is the least volatile fact on the wire.
-  const systemBodies = stillTrue(useTelemetry("system.bodies"), undefined);
+  const systemBodies = stillTrue(useTelemetry("trackingStation.bodies"), undefined);
   return useMemo(() => {
     const map = new Map<string, number>();
     for (const body of systemBodies?.bodies ?? []) {
@@ -108,7 +108,7 @@ registerMapPoiProvider({
             meta: { known: a.known, detail: a.detail },
             // Only dispatchable once the body index has resolved; never hand
             // a malformed Position SetTarget to the queue while
-            // `system.bodies` is still loading. The coordinate half of this
+            // `trackingStation.bodies` is still loading. The coordinate half of this
             // guard moved up to the marker itself: an anomaly we cannot place
             // is no longer drawn, so it cannot be reached here. Rides
             // `useCommand("vessel.target.set")` (a Position-kind SetTarget);

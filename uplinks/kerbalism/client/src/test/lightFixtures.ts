@@ -2,7 +2,7 @@ import type { TopicPayload } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 
 export type Orbit = TopicPayload<"vessel.orbit">;
-type Bodies = TopicPayload<"system.bodies">;
+type Bodies = TopicPayload<"trackingStation.bodies">;
 
 export const HOME_MU = 3.5316e12;
 export const HOME_RADIUS = 600_000;

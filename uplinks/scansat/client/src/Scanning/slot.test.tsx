@@ -58,7 +58,7 @@ describe("Scanning: augment slots (spec §4)", () => {
   // Drive the widget to the present-SCANsat layout, where both the `badges`
   // header slot and the `sections` coverage slot render. Resolves once the
   // body name has landed: the TelemetryProvider commits transport frames on
-  // a rAF, so `vessel.identity`/`system.bodies` resolve a tick after the
+  // a rAF, so `vessel.identity`/`trackingStation.bodies` resolve a tick after the
   // synchronous act() below, not within it.
   async function renderPresent() {
     const result = render(
@@ -77,7 +77,7 @@ describe("Scanning: augment slots (spec §4)", () => {
     renderedTrees.push(result.unmount);
     act(() => {
       transport.emit("scansat.available", true);
-      transport.emit("system.bodies", SYSTEM_BODIES);
+      transport.emit("trackingStation.bodies", SYSTEM_BODIES);
       transport.emit("vessel.identity", VESSEL_IDENTITY_AT_KERBIN);
     });
     await screen.findByText(/Coverage: Kerbin/);

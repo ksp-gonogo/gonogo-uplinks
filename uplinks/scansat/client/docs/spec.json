@@ -265,7 +265,7 @@
         "scansat.available",
         "scansat.scanningVessels",
         "vessel.identity",
-        "system.bodies",
+        "trackingStation.bodies",
         "vessel.surface",
         "vessel.flight"
       ],
