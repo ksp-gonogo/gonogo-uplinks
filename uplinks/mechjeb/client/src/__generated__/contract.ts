@@ -7,8 +7,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 /**
 * Args for the `mechjeb.engageAscentAutopilot` command: the target orbit
 * altitude MechJeb's ascent autopilot flies to
-* (`MechJebModuleAscentSettings.DesiredOrbitAltitude`, see
-* `local_docs/design/mechjeb-decompile-lock.md`). Client-authored, in
+* (`MechJebModuleAscentSettings.DesiredOrbitAltitude`). Client-authored, in
 * kilometres: the pre-existing MechJeb widget (predating this Uplink) already
 * builds this wire key from its `altitudeKm` input, so the field name and unit
 * are carried forward rather than invented fresh. The mod converts to metres

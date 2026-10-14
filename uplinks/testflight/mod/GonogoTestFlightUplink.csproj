@@ -22,7 +22,7 @@
 
   <!-- KspManaged: root for the portable KSP/Unity reference DLLs. Defaults to
        the repo's local dev copy so a plain `dotnet build` with no /p: override
-       keeps working; a fresh worktree (gitignored local_docs absent) passes
+       keeps working; a checkout without it passes
        /p:KspManaged=<the KSP reference-assembly directory>. -->
   <PropertyGroup>
   </PropertyGroup>

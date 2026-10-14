@@ -294,7 +294,7 @@ export function CameraFeed({
     useLatestValue<TopicPayload<"comms.delay">>("comms.delay")?.oneWaySeconds;
   const degradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Delayed camera control (#35): live vs. staged vs. no-path off the same
+  // Delayed camera control: live vs. staged vs. no-path off the same
   // one-way delay the dashboard header shows. Derived here rather than at the render site
   // because the serial-input handlers below route on it, and a widget reading
   // the mode in two places is a widget that can disagree with itself about
@@ -410,7 +410,7 @@ export function CameraFeed({
   const unavailableReason =
     playoutStatus.kind === "unavailable" ? playoutStatus.reason : null;
 
-  // ---- Delayed camera control gate (#35) ----
+  // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
   // this camera's own pan/zoom envelopes and seed the dialled target from the
   // current aim rather than hardcoding bounds. Called unconditionally (rules of
@@ -468,7 +468,7 @@ export function CameraFeed({
   // delay itself is the dashboard header's, not a chip here.
   const qualityBadge = describeSignalQuality(commConnected, signalStrength);
 
-  // Delayed camera control (#35). `currentMode` (derived above, where the
+  // Delayed camera control. `currentMode` (derived above, where the
   // serial-input handlers also read it) maps null → "no-path" (never coerce to
   // 0), <= 1s → "live", > 1s → "staged". Below threshold the surface renders
   // nothing and the SDK's own live controls stay in charge; above it the
@@ -767,7 +767,7 @@ const FEED_BADGES_STYLE: CSSProperties = {
 };
 
 /**
- * The layer the delayed-aim controls (#35) are drawn on, covering the picture.
+ * The layer the delayed-aim controls are drawn on, covering the picture.
  *
  * z-index 4 is the load-bearing number, and it is measured against the SDK
  * rather than chosen: kerbcast's own zoom and pan controls sit in the same
