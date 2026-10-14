@@ -195,7 +195,7 @@ describe("drawFootprints: pure geometry", () => {
     expect(fills(ctx).map(([x, , w]) => [x, w])).toEqual([[0, 900]]);
   });
 
-  // The gotcha this task exists to fix: the old MapView-internal
+  // The gotcha this task exists to fix: the old GroundTrack-internal
   // `drawScanningFootprints` pre-divided its stroke width by camera zoom
   // (`Math.max(0.75, 1 / camZoom)`) because it drew onto a canvas that ALSO
   // had a zoom-scaling `ctx.setTransform(...)` applied by the caller, the
@@ -242,8 +242,8 @@ function renderSlot(ui: ReactElement) {
 }
 
 function overlayProps(
-  overrides: Partial<SlotProps<"map-view.overlay">> = {},
-): SlotProps<"map-view.overlay"> {
+  overrides: Partial<SlotProps<"ground-track.overlay">> = {},
+): SlotProps<"ground-track.overlay"> {
   return {
     width: 600,
     height: 300,
@@ -260,7 +260,7 @@ function overlayProps(
   };
 }
 
-describe("FootprintOverlay: map-view.overlay slot", () => {
+describe("FootprintOverlay: ground-track.overlay slot", () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
   // No `DataSource`: the overlay's only read is the vessel list, which rides the stream.
@@ -282,7 +282,7 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
     const { container } = renderSlot(
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
-          <AugmentSlot name="map-view.overlay" props={overlayProps()} />
+          <AugmentSlot name="ground-track.overlay" props={overlayProps()} />
         </WithScansatAvailability>
       </TelemetryProvider>,
     );
@@ -298,7 +298,7 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
     // transport to feed the vessel list on either, which is the condition under
     // test rather than a gap in it.
     const { container } = renderSlot(
-      <AugmentSlot name="map-view.overlay" props={overlayProps()} />,
+      <AugmentSlot name="ground-track.overlay" props={overlayProps()} />,
     );
 
     expect(container.querySelector("canvas")).toBeNull();
@@ -328,7 +328,7 @@ describe("FootprintOverlay: map-view.overlay slot", () => {
     const { container } = renderSlot(
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
-          <AugmentSlot name="map-view.overlay" props={overlayProps()} />
+          <AugmentSlot name="ground-track.overlay" props={overlayProps()} />
         </WithScansatAvailability>
       </TelemetryProvider>,
     );

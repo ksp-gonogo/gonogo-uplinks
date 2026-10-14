@@ -22,7 +22,6 @@ import {
   Text,
   Unit,
   WidgetScopeProvider,
-  WidgetSections,
 } from "@ksp-gonogo/ui-kit";
 import { useMemo } from "react";
 import {
@@ -45,7 +44,7 @@ import { MinimapForActiveVessel } from "./Minimap.js";
 // coverage list. The flagship future filler is another scanning mod
 // contributing its OWN scan-type coverage row alongside SCANsat's altimetry/
 // biome/anomaly rows. NOTE: SCANsat's own
-// custom map LAYERS route to `map-view.overlay`, NOT here, this slot is for
+// custom map LAYERS route to `ground-track.overlay`, NOT here, this slot is for
 // extra COVERAGE ROWS only.
 //
 // It carries the widget's current body focus as slot props so an augment scopes
@@ -147,7 +146,7 @@ function stillTrue<T, A>(
  * Resolve the active vessel's current body name. `vessel.identity` only
  * carries the stable `system.bodies` index (`parentBodyIndex`), the same
  * index/name split `AnomalyOverlay/index.tsx`'s `useBodyIndexByName` and
- * `packages/components/src/MapView/vanillaPoiProvider.ts`'s
+ * `packages/components/src/GroundTrack/vanillaPoiProvider.ts`'s
  * `useBodyNameByIndex` resolve elsewhere; this is the single-body variant of
  * that lookup (the widget only ever needs the active vessel's own body, not
  * a full index->name table).
@@ -209,10 +208,6 @@ function ScanningComponent({
     <WidgetScopeProvider widget="scanning" scope={scope}>
       <Panel
         panelTitle="Scanning"
-        /* The widget places the augment slot itself, inside the coverage
-           section below, so Panel must not also mount it at the end of the
-           body. Nothing to do with the `sections` prop above it. */
-        panelSections={false}
         sections={[
           biome ? (
             <Section key="biome">
@@ -238,12 +233,6 @@ function ScanningComponent({
             ) : (
               <EmptyState>No active body.</EmptyState>
             )}
-            {/* Augment coverage rows: e.g. a resource-scanning Uplink
-              contributing its own scan-type coverage alongside SCANsat's.
-              Placed rather than left to `Panel`'s end-of-body default because
-              these belong IN the coverage list, above the scanning-vessel
-              section that follows. */}
-            <WidgetSections />
           </Section>,
 
           <Section key="vessels" title="Scanning vessels">
@@ -457,7 +446,7 @@ registerComponent<ScanningConfig>({
   // Augment slot. `sections`: extra coverage rows appended to the
   // per-scan-type coverage list (a resource-scanning Uplink's own coverage is
   // the canonical filler). Renders nothing until an Uplink registers. Custom
-  // map LAYERS go to map-view.overlay.
+  // map LAYERS go to ground-track.overlay.
   augmentSlots: ["scanning.sections"],
   pushable: true,
   owner: SCANSAT,

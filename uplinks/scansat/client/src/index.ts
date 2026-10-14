@@ -20,28 +20,28 @@
 //     a SCANsat scanner never appears in.
 //   - `AnomalyOverlay/index.ts` → registerMapPoiProvider({ id:
 //     "scansat:anomalies", requires: "scansat", ... }) so discovered
-//     anomalies render through @ksp-gonogo/components's MapView's shared
+//     anomalies render through @ksp-gonogo/components's Ground Track's shared
 //     `MapPoiLayer`, gaining the uniform "Set as Target" action in place of
-//     a bespoke bearing/distance panel behind its own `map-view.overlay`
+//     a bespoke bearing/distance panel behind its own `ground-track.overlay`
 //     augment.
 //   - `FootprintOverlay` → registerAugment({ id: "scansat-footprint-overlay",
-//     ... }) so it fills the same `map-view.overlay` slot with scanning-
+//     ... }) so it fills the same `ground-track.overlay` slot with scanning-
 //     vessel ground-track footprints. This is the only source of scanning
-//     footprints; MapView draws none itself.
+//     footprints; GroundTrack draws none itself.
 //   - `CoveragePanel` → registerAugment({ id: "scansat-coverage-panel", ... })
-//     so it fills the `map-view.sections` slot with the per-scan-type
-//     coverage readout. MapView carries no coverage panel of its own.
+//     so it fills the `ground-track.sections` slot with the per-scan-type
+//     coverage readout. GroundTrack carries no coverage panel of its own.
 //   - `TerrainBase/AltimetryBase` + `TerrainBase/BiomeBase` →
 //     registerAugment({ id: "scansat:altimetry" | "scansat:biome",
-//     augments: "map-view.base", ... }): two mutually-exclusive providers
-//     for the `map-view.base` REPLACE slot, each painting its own standalone
+//     augments: "ground-track.base", ... }): two mutually-exclusive providers
+//     for the `ground-track.base` REPLACE slot, each painting its own standalone
 //     colormap surface (altimetry or biome) modulated per-tile by the coverage
-//     paint-gate. MapView paints no colormap surface itself.
+//     paint-gate. GroundTrack paints no colormap surface itself.
 //   - `ScanCoverage/coverageSources` → registerCoverageSource(...) once per
-//     scan type ("scansat:AltimetryLoRes" etc.) so MapView's coverage
+//     scan type ("scansat:AltimetryLoRes" etc.) so Ground Track's coverage
 //     paint-gate knows this Uplink contributes coverage
 //   - `ScanCoverage/CoverageSyncOverlay` → registerAugment({ augments:
-//     "map-view.overlay", ... }): draws nothing, and fills the masks for the
+//     "ground-track.overlay", ... }): draws nothing, and fills the masks for the
 //     body the map shows. The Minimap fills its own body's the same way
 //
 // To wire it into the app: `import "@ksp-gonogo/gonogo-scansat-uplink";` during app bootstrap
@@ -49,12 +49,12 @@
 //
 // The scan schema/decode/sync logic (`schema.ts`, `ScanCoverage/*`) is this
 // Uplink's own canonical copy. `packages/core` and `packages/data` still carry
-// a duplicate for `packages/components`'s MapView, which has not migrated off
-// it yet; that duplicate goes when MapView's augment migration lands.
+// a duplicate for `packages/components`'s GroundTrack, which has not migrated off
+// it yet; that duplicate goes when Ground Track's augment migration lands.
 //
 // The Minimap here (`Scanning/Minimap.tsx`) has its own mod-local coverage gate
 // (`ScanCoverage/useScanCoverageGate.ts`) and paints through
-// `TerrainBase/paintTile.ts`, the same as BiomeBase, so it borrows no MapView
+// `TerrainBase/paintTile.ts`, the same as BiomeBase, so it borrows no GroundTrack
 // canvas hook from @ksp-gonogo/components at all.
 
 import { registerScanCoverageSources } from "./ScanCoverage/coverageSources.js";

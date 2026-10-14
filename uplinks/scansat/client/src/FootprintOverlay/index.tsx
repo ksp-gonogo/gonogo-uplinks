@@ -1,11 +1,11 @@
-// SCANsat scanning-vessel footprint overlay for MapView.
+// SCANsat scanning-vessel footprint overlay for GroundTrack.
 //
-// Fills MapView's `map-view.overlay` slot with each tracked vessel's ground-
-// track rectangle. It lives here rather than in core MapView so that MapView
+// Fills Ground Track's `ground-track.overlay` slot with each tracked vessel's ground-
+// track rectangle. It lives here rather than in core GroundTrack so that GroundTrack
 // reads no `scansat.scanningVessels` and does no SCANsat-shaped geometry of its
 // own: augment, do not embed.
 //
-// `map-view.overlay` is an OVERLAY slot: MapView passes down `project()`,
+// `ground-track.overlay` is an OVERLAY slot: GroundTrack passes down `project()`,
 // the exact per-body-offset + camera chain the base map itself draws with,
 // so this augment lands its rectangles on the same pixels without
 // re-deriving that maths.
@@ -26,7 +26,7 @@
 //
 // Presence-gated on `requires: "scansat"`: renders only while
 // `scansat.available` is live, so an install without SCANsat never mounts
-// it: zero impact on MapView for non-SCANsat users.
+// it: zero impact on GroundTrack for non-SCANsat users.
 
 import type { SlotProps } from "@ksp-gonogo/sitrep-sdk";
 import { registerAugment, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
@@ -53,7 +53,7 @@ const HELD_DASH = [4, 3];
  * the map repeats.
  *
  * `held` draws each footprint as a dashed outline with no fill, the way
- * MapView draws its own held vessel marker: the list is what was last really
+ * GroundTrack draws its own held vessel marker: the list is what was last really
  * seen, and a solid swath would read as a satellite scanning there now.
  */
 export function drawFootprints(
@@ -144,7 +144,7 @@ export function drawFootprints(
   }
 }
 
-function FootprintOverlay(ctx: SlotProps<"map-view.overlay">) {
+function FootprintOverlay(ctx: SlotProps<"ground-track.overlay">) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const vessels = useScanningVessels();
   const held = useTelemetry("scansat.scanningVessels").state === "held";
@@ -195,7 +195,7 @@ function FootprintOverlay(ctx: SlotProps<"map-view.overlay">) {
 
 registerAugment({
   id: "scansat-footprint-overlay",
-  augments: "map-view.overlay",
+  augments: "ground-track.overlay",
   requires: "scansat",
   component: FootprintOverlay,
   owner: SCANSAT,

@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "scansat:biome",
-    "hostWidget": "map-view",
+    "hostWidget": "ground-track",
     "modes": [
       "default"
     ],

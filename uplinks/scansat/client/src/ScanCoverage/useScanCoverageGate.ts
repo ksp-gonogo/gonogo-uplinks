@@ -1,6 +1,6 @@
 // Mod-local coverage-gate hook. A near-verbatim copy of
-// packages/components/src/MapView/useCoverageGate.ts's hook, ported here so
-// widgets that live outside MapView's `map-view.base` slot tree (currently
+// packages/components/src/GroundTrack/useCoverageGate.ts's hook, ported here so
+// widgets that live outside Ground Track's `ground-track.base` slot tree (currently
 // only Minimap.tsx) can compute the same per-tile reveal composite without
 // importing @ksp-gonogo/components, whose scan-canvas internals go once every
 // consumer has its own copy.
@@ -59,7 +59,7 @@ export function compositeScanCoverage(
 // Stable-reference snapshot cache: getCoverageSources() allocates fresh
 // every call, which would infinite-loop useSyncExternalStore directly.
 // Refreshed via an unconditional module-load subscription (mirrors the
-// MapView original) so a reveal source registering before any hook instance
+// GroundTrack original) so a reveal source registering before any hook instance
 // is mounted is never missed.
 let cachedSources: CoverageSourceDefinition[] = getCoverageSources();
 onCoverageSourcesChange(() => {

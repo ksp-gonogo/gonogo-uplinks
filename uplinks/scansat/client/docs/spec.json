@@ -292,7 +292,7 @@
   "augments": [
     {
       "id": "scansat-coverage-panel",
-      "augments": "map-view.sections",
+      "augments": "ground-track.sections",
       "channels": [],
       "requires": "scansat",
       "suppressesVanillaBase": false,
@@ -300,7 +300,7 @@
     },
     {
       "id": "scansat-coverage-sync",
-      "augments": "map-view.overlay",
+      "augments": "ground-track.overlay",
       "channels": [],
       "requires": "scansat",
       "suppressesVanillaBase": false,
@@ -308,7 +308,7 @@
     },
     {
       "id": "scansat-footprint-overlay",
-      "augments": "map-view.overlay",
+      "augments": "ground-track.overlay",
       "channels": [],
       "requires": "scansat",
       "suppressesVanillaBase": false,
@@ -316,7 +316,7 @@
     },
     {
       "id": "scansat:altimetry",
-      "augments": "map-view.base",
+      "augments": "ground-track.base",
       "channels": [],
       "requires": "scansat",
       "suppressesVanillaBase": true,
@@ -331,7 +331,7 @@
     },
     {
       "id": "scansat:biome",
-      "augments": "map-view.base",
+      "augments": "ground-track.base",
       "channels": [],
       "requires": "scansat",
       "priority": 10,

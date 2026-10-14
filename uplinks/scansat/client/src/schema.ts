@@ -5,8 +5,8 @@
  * hooks, and by `Scanning`/`AnomalyOverlay`/`Minimap` here.
  *
  * `packages/core/src/schemas/scansat.ts` still holds a duplicate copy, for
- * `packages/components`'s MapView, which has not yet migrated off it. That copy
- * goes when MapView's augment migration lands.
+ * `packages/components`'s GroundTrack, which has not yet migrated off it. That copy
+ * goes when Ground Track's augment migration lands.
  */
 
 /**
@@ -154,7 +154,7 @@ export interface SCANScanningVessel {
   /**
    * The vessel's sub-point. Optional and nullable to match the generated
    * `ScanningVesselEntry`, which is the authority on the wire shape: a
-   * vessel we cannot place is not a vessel at 0°N 0°E, and both the MapView
+   * vessel we cannot place is not a vessel at 0°N 0°E, and both the GroundTrack
    * footprint and the minimap skip one rather than draw there.
    */
   subLatitude?: Value<"°"> | null;

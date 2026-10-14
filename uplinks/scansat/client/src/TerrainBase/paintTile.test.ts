@@ -134,7 +134,7 @@ describe("paintTile: fixed paint-resolution semantics", () => {
   // Pins the resolution choice this task had to settle explicitly (see the
   // module header comment in paintTile.ts and preflight-T6-T9.md's T8c
   // section): the canvas MUST be a fixed internal resolution, independent
-  // of MapView's live viewport size, or every resize/zoom tick would force
+  // of Ground Track's live viewport size, or every resize/zoom tick would force
   // a full repaint of the whole scan grid.
   it("paints at the fixed BASE_LAYER_CANVAS_W x H resolution by default, regardless of any 'viewport size'", () => {
     const { ctx, calls } = makeFakeCtx();

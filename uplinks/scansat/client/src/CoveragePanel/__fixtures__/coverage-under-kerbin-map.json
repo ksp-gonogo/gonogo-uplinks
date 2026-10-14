@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "scansat-coverage-panel",
-    "hostWidget": "map-view",
+    "hostWidget": "ground-track",
     "modes": [
       "default"
     ],

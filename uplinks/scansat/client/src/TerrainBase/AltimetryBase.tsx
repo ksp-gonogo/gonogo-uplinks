@@ -1,20 +1,20 @@
-// SCANsat altimetry base-layer provider for MapView.
+// SCANsat altimetry base-layer provider for GroundTrack.
 //
-// Fills MapView's `map-view.base` STACKABLE slot
+// Fills Ground Track's `ground-track.base` STACKABLE slot
 // with a standalone colourised elevation surface: SCANsat's own
-// "Altimetry" map mode. Headless: renders no JSX, hands MapView a canvas
+// "Altimetry" map mode. Headless: renders no JSX, hands GroundTrack a canvas
 // via `ctx.onLayer` whenever this layer's own per-instance `show` setting
 // (`ctx.augmentSettings[ALTIMETRY_LAYER_ID]?.show`, default true) is on.
 //
-// Draws ALONGSIDE `BiomeBase`: both register on `map-view.base` with
-// distinct ids, and MapView composites every active layer's canvas rather
+// Draws ALONGSIDE `BiomeBase`: both register on `ground-track.base` with
+// distinct ids, and GroundTrack composites every active layer's canvas rather
 // than picking one. This layer sits at the BOTTOM of the stack (the base
 // terrain colouring biome draws translucently on top of; see BiomeBase's
 // own header comment) and declares `suppressesVanillaBase: true`: while
 // either SCANsat base layer's Domain is LIVE (this mod is actually running
 // in KSP: registering this augment alone is NOT enough, see
 // `suppressesVanillaBase`'s own doc comment in packages/core/src/
-// augments.ts), MapView's stock body texture never paints, full stop
+// augments.ts), Ground Track's stock body texture never paints, full stop
 // (spec: "don't like it, don't have the Uplink", meaning the Domain is
 // live, not merely that this client package is bundled).
 //
@@ -97,7 +97,7 @@ function fraction(metres: number, lo: number, hi: number): number {
 // needs a `layerOpacity` under 1 so this layer still shows through it.
 const ALTIMETRY_LAYER_OPACITY = 1;
 
-function AltimetryBase(ctx: SlotProps<"map-view.base">) {
+function AltimetryBase(ctx: SlotProps<"ground-track.base">) {
   const body = ctx.bodyId ? getBody(ctx.bodyId) : undefined;
   const heightGrid = useScanHeightGrid(body?.name);
   // The body catalogue is a fact, so a held reading still says whether the body has an ocean.
@@ -107,7 +107,7 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
       ? factsReading.value
       : undefined;
   const hasOcean = bodyNamed(facts, body?.name)?.hasOcean === true;
-  // Per-layer toggle (spec: SCANsat layers default ON; `map-view.actions`
+  // Per-layer toggle (spec: SCANsat layers default ON; `ground-track.actions`
   // and the settings-panel checkbox both read/write this SAME value).
   const show = ctx.augmentSettings?.[ALTIMETRY_LAYER_ID]?.show !== false;
 
@@ -148,7 +148,7 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
     ctx.onLayer(ALTIMETRY_LAYER_ID, canvas, Date.now());
 
     // Drop this layer's canvas immediately on unmount (e.g. the Domain
-    // goes unavailable) rather than leaving it orphaned in MapView's
+    // goes unavailable) rather than leaving it orphaned in Ground Track's
     // per-id canvas store forever: with a single-pick slot a stale entry
     // was harmless (the next selection just overwrote it); in the
     // stackable model nothing else would ever clear it.
@@ -160,7 +160,7 @@ function AltimetryBase(ctx: SlotProps<"map-view.base">) {
 
 registerAugment({
   id: ALTIMETRY_LAYER_ID,
-  augments: "map-view.base",
+  augments: "ground-track.base",
   requires: "scansat",
   component: AltimetryBase,
   suppressesVanillaBase: true,

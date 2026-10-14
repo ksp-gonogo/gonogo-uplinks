@@ -10,7 +10,7 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | Uplink id | `scansat` |
 | Version | `1.0.0-rc.1` |
 | Wraps | SCANsat 20.4 (ckan) |
-| Built against | contract 41.1, extension API 6.0.0 |
+| Built against | contract 41.3, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,10 +40,10 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 | | |
 | --- | --- |
 | Widget id | `scanning` |
-| Reads, as flat keys | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `system.bodies`, `vessel.surface`, `vessel.flight` |
-| Slots | `scanning.sections` |
-| Default size | 6 × 10 |
-| Smallest size | 3 × 4 |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `system.bodies`, `vessel.surface`, `vessel.flight` |
+| Slots of its own | `scanning.sections` |
+| Default size, in grid units | 6 × 10 |
+| Smallest size, in grid units | 3 × 4 |
 | Scenes | 2 |
 
 ![Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies](docs/assets/kerbin-partial-scan--default.png)
@@ -52,11 +52,11 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `scansat:biome` | `map-view.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (1) |
-| `scansat-footprint-overlay` | `map-view.overlay` | – | only while `scansat` | 1 |  |
-| `scansat-coverage-panel` | `map-view.sections` | – | only while `scansat` | 1 |  |
-| `scansat:altimetry` | `map-view.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (1) |
-| `scansat-coverage-sync` | `map-view.overlay` | – | only while `scansat` | 0 |  |
+| `scansat:biome` | `ground-track.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (1) |
+| `scansat-footprint-overlay` | `ground-track.overlay` | – | only while `scansat` | 1 |  |
+| `scansat-coverage-panel` | `ground-track.sections` | – | only while `scansat` | 1 |  |
+| `scansat:altimetry` | `ground-track.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (1) |
+| `scansat-coverage-sync` | `ground-track.overlay` | – | only while `scansat` | 0 |  |
 
 ![Map View over Kerbin painted with SCANsat's biome colormap, each biome in KSP's own colour, under one satellite's footprint](docs/assets/biome-base-kerbin--default.png)
 

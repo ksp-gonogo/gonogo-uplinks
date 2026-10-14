@@ -1,12 +1,12 @@
-// SCANsat per-scan-type coverage readout for MapView.
+// SCANsat per-scan-type coverage readout for GroundTrack.
 //
-// Fills MapView's `map-view.sections` slot with the compact below-map
-// coverage panel. It lives here rather than in core MapView so that MapView
+// Fills Ground Track's `ground-track.sections` slot with the compact below-map
+// coverage panel. It lives here rather than in core GroundTrack so that GroundTrack
 // reads neither `scansat.coverage.<body>.<type>` nor `scansat.scanningVessels`
 // itself: augment, do not embed. The rows are sourced from this Uplink's own
 // scan schema (`../schema`) rather than the shared core copy.
 //
-// `map-view.sections` is a below-content panel slot: MapView passes down
+// `ground-track.sections` is a below-content panel slot: GroundTrack passes down
 // only the mapped body name (plus per-namespace augment settings, unused
 // here): this augment reads its own `scansat.coverage.<body>.<type>` and
 // `scansat.scanningVessels` Topics directly, through `useStream` and
@@ -14,7 +14,7 @@
 //
 // Presence-gated on `requires: "scansat"`: renders only while
 // `scansat.available` is live, so an install without SCANsat never mounts
-// it: zero impact on MapView for non-SCANsat users.
+// it: zero impact on GroundTrack for non-SCANsat users.
 
 import { registerAugment, useStream, value } from "@ksp-gonogo/sitrep-sdk";
 import { NULL_DISPLAY, Unit, useWidgetScope } from "@ksp-gonogo/ui-kit";
@@ -42,9 +42,9 @@ const COVERAGE_TYPES: { type: SCANType; label: string }[] = [
 function CoveragePanel() {
   const scanningVessels = useScanningVessels();
   // The mapped body comes from the host widget's published SCOPE, not from slot
-  // props: `map-view.sections` is the framework's universal segment now, and a
+  // props: `ground-track.sections` is the framework's universal segment now, and a
   // universal segment carries no props.
-  const bodyName = useWidgetScope("map-view")?.bodyName;
+  const bodyName = useWidgetScope("ground-track")?.bodyName;
 
   // Aggregate per-type range state across every scanning vessel on this
   // body: a type is "best" if any sensor is bestRange, "scanning" if any
@@ -224,7 +224,7 @@ const CHIP: CSSProperties = {
 
 registerAugment({
   id: "scansat-coverage-panel",
-  augments: "map-view.sections",
+  augments: "ground-track.sections",
   requires: "scansat",
   component: CoveragePanel,
   owner: SCANSAT,

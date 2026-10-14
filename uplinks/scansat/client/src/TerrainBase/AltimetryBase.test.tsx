@@ -83,8 +83,8 @@ function fullyUncoveredGate() {
 }
 
 function baseLayerProps(
-  overrides: Partial<SlotProps<"map-view.base">> = {},
-): SlotProps<"map-view.base"> {
+  overrides: Partial<SlotProps<"ground-track.base">> = {},
+): SlotProps<"ground-track.base"> {
   return {
     bodyId: "Kerbin",
     width: 900,
@@ -104,7 +104,7 @@ function renderSlot(ui: ReactElement) {
   return result;
 }
 
-describe("AltimetryBase: map-view.base slot", () => {
+describe("AltimetryBase: ground-track.base slot", () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
   // Shared across every getContext("2d") call in a test (mirrors a real
   // canvas: repeated getContext calls on the same element return the same
@@ -147,13 +147,13 @@ describe("AltimetryBase: map-view.base slot", () => {
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
-  function mountWithAvailability(props: SlotProps<"map-view.base">) {
+  function mountWithAvailability(props: SlotProps<"ground-track.base">) {
     const transport = new StubTransport();
     const client = createTestTelemetryClient(transport);
     renderSlot(
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
-          <AugmentSlot name="map-view.base" props={props} />
+          <AugmentSlot name="ground-track.base" props={props} />
         </WithScansatAvailability>
       </TelemetryProvider>,
     );

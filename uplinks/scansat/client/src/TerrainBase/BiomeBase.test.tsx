@@ -74,8 +74,8 @@ function fullyUncoveredGate() {
 }
 
 function baseLayerProps(
-  overrides: Partial<SlotProps<"map-view.base">> = {},
-): SlotProps<"map-view.base"> {
+  overrides: Partial<SlotProps<"ground-track.base">> = {},
+): SlotProps<"ground-track.base"> {
   return {
     bodyId: "Kerbin",
     width: 900,
@@ -101,7 +101,7 @@ describe("packedColourToComponents", () => {
   });
 });
 
-describe("BiomeBase: map-view.base slot", () => {
+describe("BiomeBase: ground-track.base slot", () => {
   let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
   // Shared across every getContext("2d") call in a test; see
   // AltimetryBase.test.tsx's identical setup for why a fresh object literal
@@ -144,13 +144,13 @@ describe("BiomeBase: map-view.base slot", () => {
     HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 
-  function mountWithAvailability(props: SlotProps<"map-view.base">) {
+  function mountWithAvailability(props: SlotProps<"ground-track.base">) {
     const transport = new StubTransport();
     const client = createTestTelemetryClient(transport);
     renderSlot(
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
-          <AugmentSlot name="map-view.base" props={props} />
+          <AugmentSlot name="ground-track.base" props={props} />
         </WithScansatAvailability>
       </TelemetryProvider>,
     );

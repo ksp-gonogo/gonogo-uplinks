@@ -1,21 +1,21 @@
-// Shared tile→pixel-rect paint loop for the `map-view.base` colormap augments,
+// Shared tile→pixel-rect paint loop for the `ground-track.base` colormap augments,
 // AltimetryBase and BiomeBase.
 //
 // Ported near-verbatim from the per-cell block-fill loop in
-// packages/components/src/MapView/useScanLayerCanvas.ts's
+// packages/components/src/GroundTrack/useScanLayerCanvas.ts's
 // `paintBiomeCanvas`/`paintHeightCanvas`: the loop itself is generic body-
 // texture geometry rather than anything SCANsat-specific, and only the
 // per-cell colour lookup differs between altimetry and biome. Each tile's
 // alpha is modulated by the coverage paint-gate rather than baked in as a
 // fixed ramp opacity, following the settled "no fog layer" model
-// (packages/components/src/MapView/useCoverageGate.ts's own header): covered
+// (packages/components/src/GroundTrack/useCoverageGate.ts's own header): covered
 // tiles paint at up to full opacity, uncovered tiles paint nothing.
 //
 // PAINT-RESOLUTION SEMANTICS
 //
 // `MapBaseLayerContext.width`/`height` (threaded onto `SlotProps<
-// "map-view.base">`) are MapView's LIVE viewport/container pixel size,
-// `containerSize.w`/`h` in packages/components/src/MapView/index.tsx,
+// "ground-track.base">`) are Ground Track's LIVE viewport/container pixel size,
+// `containerSize.w`/`h` in packages/components/src/GroundTrack/index.tsx,
 // which changes on every resize and zoom tick. They are NOT a paint
 // resolution and MUST NOT be used to size the canvas this module paints
 // into: doing so would repaint the full 720×360-cell scan grid (the
@@ -31,12 +31,12 @@
 //   2. `DEFAULT_MASK_WIDTH`/`HEIGHT` (2048×1024) in
 //      the sdk's CoverageMaskCache: the resolution the coverage
 //      gate's own composite `Uint8Array` is built at.
-// MapView's own composite step already scales whatever canvas an augment
+// Ground Track's own composite step already scales whatever canvas an augment
 // hands back to `WORLD_W`×`WORLD_H` via `ctx.drawImage(canvas, 0, 0,
-// WORLD_W, WORLD_H)` (see index.tsx's `map-view.base composite` comment),
+// WORLD_W, WORLD_H)` (see index.tsx's `ground-track.base composite` comment),
 // exactly the same scale-on-composite treatment the old fixed-resolution
 // `useBiomeCanvas`/`useHeightCanvas` canvases already got. So a fixed
-// paint resolution here needs no special-casing on MapView's side, and
+// paint resolution here needs no special-casing on Ground Track's side, and
 // `ctx.width`/`ctx.height` are correctly left unused for canvas sizing.
 export const BASE_LAYER_CANVAS_W = 2048;
 export const BASE_LAYER_CANVAS_H = 1024;
@@ -44,9 +44,9 @@ export const BASE_LAYER_CANVAS_H = 1024;
 /**
  * Structural subset of `useCoverageGate`'s `CoverageGate` this module
  * needs. Not imported from `@ksp-gonogo/components` directly, that type
- * isn't part of the package's public barrel (by design: it's MapView-
- * internal plumbing threaded onto `SlotProps<"map-view.base">`, not a
- * general-purpose export). `SlotProps<"map-view.base">["coverageGate"]`
+ * isn't part of the package's public barrel (by design: it's GroundTrack-
+ * internal plumbing threaded onto `SlotProps<"ground-track.base">`, not a
+ * general-purpose export). `SlotProps<"ground-track.base">["coverageGate"]`
  * satisfies this shape structurally at the augment call site.
  */
 export interface CoverageGateLike {

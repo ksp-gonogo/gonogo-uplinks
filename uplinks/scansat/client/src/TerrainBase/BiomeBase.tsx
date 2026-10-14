@@ -1,13 +1,13 @@
-// SCANsat biome base-layer provider for MapView.
+// SCANsat biome base-layer provider for GroundTrack.
 //
-// Fills MapView's `map-view.base` STACKABLE slot
+// Fills Ground Track's `ground-track.base` STACKABLE slot
 // with a standalone coloured biome-map surface: SCANsat's own "Biome"
-// map mode. Headless: renders no JSX, hands MapView a canvas via
+// map mode. Headless: renders no JSX, hands GroundTrack a canvas via
 // `ctx.onLayer` whenever this layer's own per-instance `show` setting
 // (`ctx.augmentSettings[BIOME_LAYER_ID]?.show`, default true) is on.
 //
-// Draws ALONGSIDE `AltimetryBase` (both register on `map-view.base` with
-// distinct ids; MapView composites every active layer rather than picking
+// Draws ALONGSIDE `AltimetryBase` (both register on `ground-track.base` with
+// distinct ids; GroundTrack composites every active layer rather than picking
 // one), and specifically ON TOP of it, confirmed against SCANsat itself:
 // its biome map draws translucent OVER the base terrain map, not the
 // reverse. This layer therefore paints at a `layerOpacity` under 1
@@ -47,10 +47,10 @@ export function packedColourToComponents(packed: number): string {
 // enough that biome boundaries stay legible on their own.
 export const BIOME_LAYER_OPACITY = 0.6;
 
-function BiomeBase(ctx: SlotProps<"map-view.base">) {
+function BiomeBase(ctx: SlotProps<"ground-track.base">) {
   const body = ctx.bodyId ? getBody(ctx.bodyId) : undefined;
   const biomeGrid = useScanBiomeGrid(body?.name);
-  // Per-layer toggle (spec: SCANsat layers default ON; `map-view.actions`
+  // Per-layer toggle (spec: SCANsat layers default ON; `ground-track.actions`
   // and the settings-panel checkbox both read/write this SAME value).
   const show = ctx.augmentSettings?.[BIOME_LAYER_ID]?.show !== false;
 
@@ -103,7 +103,7 @@ registerAugment({
   // shared "scansat" Uplink group; see orderBaseLayers.ts: within a
   // group, ascending priority draws later (on top).
   priority: 10,
-  augments: "map-view.base",
+  augments: "ground-track.base",
   requires: "scansat",
   component: BiomeBase,
   suppressesVanillaBase: true,

@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "scansat:altimetry",
-    "hostWidget": "map-view",
+    "hostWidget": "ground-track",
     "modes": [
       "default"
     ],

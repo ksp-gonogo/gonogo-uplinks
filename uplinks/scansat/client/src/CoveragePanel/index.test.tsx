@@ -68,8 +68,8 @@ function vessel(over: Partial<SCANScanningVessel>): SCANScanningVessel {
   };
 }
 
-// `map-view.sections` is the framework's universal segment and carries no
-// props: the mapped body reaches the augment through MapView's published SCOPE,
+// `ground-track.sections` is the framework's universal segment and carries no
+// props: the mapped body reaches the augment through Ground Track's published SCOPE,
 // so a test stands that up the way the real host widget does.
 function MappedBody({
   bodyName = "Kerbin" as string | undefined,
@@ -79,7 +79,7 @@ function MappedBody({
   children: ReactElement;
 }) {
   return (
-    <WidgetScopeProvider widget="map-view" scope={{ bodyName }}>
+    <WidgetScopeProvider widget="ground-track" scope={{ bodyName }}>
       {children}
     </WidgetScopeProvider>
   );
@@ -95,7 +95,7 @@ function renderSlot(ui: ReactElement) {
   return result;
 }
 
-describe("CoveragePanel: map-view.sections slot", () => {
+describe("CoveragePanel: ground-track.sections slot", () => {
   beforeEach(() => {
     clearRegistry();
   });
@@ -113,7 +113,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,
@@ -132,7 +132,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
     // with no SCANsat mod present: scansat.available never arrives.
     renderSlot(
       <MappedBody>
-        <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+        <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
       </MappedBody>,
     );
 
@@ -149,7 +149,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,
@@ -201,7 +201,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,
@@ -239,7 +239,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,
@@ -277,7 +277,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody bodyName={undefined}>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,
@@ -300,7 +300,7 @@ describe("CoveragePanel: map-view.sections slot", () => {
       <TelemetryProvider client={client}>
         <WithScansatAvailability>
           <MappedBody>
-            <AugmentSlot name="map-view.sections" props={NO_PROPS} />
+            <AugmentSlot name="ground-track.sections" props={NO_PROPS} />
           </MappedBody>
         </WithScansatAvailability>
       </TelemetryProvider>,

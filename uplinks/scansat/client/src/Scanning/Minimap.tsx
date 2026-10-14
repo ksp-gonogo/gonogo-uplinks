@@ -31,7 +31,7 @@ import {
 /**
  * Live "camera view" of the active vessel's sub-point. Paints its own
  * coverage-gated biome surface (the same `paintTile` technique T8c's
- * `BiomeBase` map-view.base augment uses) into an offscreen canvas, then
+ * `BiomeBase` ground-track.base augment uses) into an offscreen canvas, then
  * draws a windowed crop of it plus the vessel crosshair and any anomalies
  * that fall inside the window. There is no separate dark fog-overlay
  * canvas composited on top: per the settled "no fog layer" model
@@ -40,7 +40,7 @@ import {
  * canvas's own dark background fill show through. The base pixels come
  * straight from `scan.biomeGrid[body]`; coverage comes from whichever
  * reveal sources this Uplink has registered (`useScanCoverageSync.ts`) via
- * the same coverage-mask cache MapView's own base layer reads.
+ * the same coverage-mask cache Ground Track's own base layer reads.
  */
 export interface MinimapProps {
   body: BodyDefinition;
@@ -63,13 +63,13 @@ export function Minimap({
   vesselLat,
   vesselLon,
 }: Readonly<MinimapProps>) {
-  // The minimap paints from the same masks MapView does, and can be on a dashboard with no MapView to fill them.
+  // The minimap paints from the same masks GroundTrack does, and can be on a dashboard with no GroundTrack to fill them.
   useScanCoverageSync(body);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   // Offscreen surface the coverage-gated biome colourmap is painted onto,
   // same fixed-resolution technique as TerrainBase/BiomeBase.tsx's
-  // map-view.base augment, just owned locally rather than handed to
-  // MapView via ctx.onLayer. Lazily created and reused across repaints so
+  // ground-track.base augment, just owned locally rather than handed to
+  // GroundTrack via ctx.onLayer. Lazily created and reused across repaints so
   // painting doesn't churn a fresh canvas element every render.
   const paintCanvasRef = useRef<HTMLCanvasElement | null>(null);
   // The minimap is square; its edge tracks the container width, capped so it
@@ -329,7 +329,7 @@ function drawScannerFootprint(
   const halfLon = magnitudeOf(v.groundTrackLonHalfDeg);
   if (halfLat == null || halfLat <= 0) return;
   if (halfLon == null || halfLon <= 0) return;
-  // Same rule as the MapView footprint: no sub-point, no rectangle. A
+  // Same rule as the GroundTrack footprint: no sub-point, no rectangle. A
   // defaulted 0°N 0°E painted a swath the vessel was nowhere near.
   const subLat = magnitudeOf(v.subLatitude);
   const subLon = magnitudeOf(v.subLongitude);

@@ -6,7 +6,7 @@ import { SCAN_TYPE, type SCANType } from "../schema.js";
  * `"scansat:<Name>"` coverage-source layerId (the `<uplinkId>:<name>`
  * convention every Uplink's coverage sources follow) and composite weight.
  * Higher-resolution scans within a channel (HiRes vs LoRes) get a brighter
- * weight so MapView's paint gate reveals more for a HiRes-covered tile than a
+ * weight so Ground Track's paint gate reveals more for a HiRes-covered tile than a
  * LoRes-only one.
  *
  * Visual (LoRes/HiRes) and Anomaly are deliberately excluded:
@@ -44,7 +44,7 @@ export const COVERAGE_SCAN_TYPES: readonly {
 ];
 
 /**
- * Register every scan type as a coverage source, so MapView's paint gate knows
+ * Register every scan type as a coverage source, so Ground Track's paint gate knows
  * this Uplink contributes coverage. Called once, from this package's index,
  * rather than at import: a module that only wants the hook must not change
  * what the map paints.

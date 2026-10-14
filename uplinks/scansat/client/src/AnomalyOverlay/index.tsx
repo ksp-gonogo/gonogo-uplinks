@@ -2,11 +2,11 @@
 //
 // Registers into the generic `registerMapPoiProvider` registry
 // (`@ksp-gonogo/core`'s `mapPoi.ts`) so discovered anomalies render through
-// MapView's shared `MapPoiLayer` (packages/components/src/MapView/
+// Ground Track's shared `MapPoiLayer` (packages/components/src/GroundTrack/
 // MapPoiLayer.tsx) exactly like every other POI kind (KSC, launch sites,
 // contract targets): one hover/action surface, no per-kind bolt-on UI.
 //
-// A POI provider rather than a `map-view.overlay` augment owning its own
+// A POI provider rather than a `ground-track.overlay` augment owning its own
 // markers, so every anomaly carries a "Set as Target" action for free. There is
 // deliberately no ranked-by-distance panel here: a nearby-POI panel belongs in
 // the generic layer if it is wanted at all, never per POI kind.

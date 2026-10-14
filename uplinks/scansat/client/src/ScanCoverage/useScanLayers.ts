@@ -108,7 +108,7 @@ export function useScanAnomalies(
 
 /**
  * Live list of vessels SCANsat is tracking (loaded or unloaded). Used
- * by the Scanning widget: MapView consumes a flat anomaly list and a
+ * by the Scanning widget: GroundTrack consumes a flat anomaly list and a
  * single-body coverage mask, but the Scanning widget surfaces the per-
  * vessel scanner + footprint detail.
  *
