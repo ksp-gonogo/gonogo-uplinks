@@ -32,9 +32,9 @@
         }
       },
       {
-        "topic": "system.vessels",
+        "topic": "trackingStation.catalog",
         "payload": {
-          "vessels": [
+          "entries": [
             {
               "vesselId": "8b6a5d4c-1111-2222-3333-444455556666",
               "name": "Duna Relay 1",

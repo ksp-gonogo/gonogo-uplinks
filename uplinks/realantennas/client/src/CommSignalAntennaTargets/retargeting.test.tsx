@@ -62,8 +62,8 @@ async function mount(entries: ReturnType<typeof entry>[] = []) {
   // The antennas come last: the section appears with them, so everything it reads must already be there.
   act(() => {
     stream.emit("realantennas.retargeting", entries);
-    stream.emit("system.vessels", {
-      vessels: [
+    stream.emit("trackingStation.catalog", {
+      entries: [
         { vesselId: VESSEL, name: "Mun Relay 2" },
         { vesselId: OTHER, name: "Duna Relay" },
       ],

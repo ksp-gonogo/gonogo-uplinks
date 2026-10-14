@@ -13,16 +13,11 @@
 // A DYNAMIC namespace is registered at RUNTIME through
 // `IUplinkHost.RegisterDynamicNamespace` and materialises its topics per
 // subject, so no [SitrepTopic]-tagged type exists for reflection to find and
-// nothing about it appears below: `silence.<guid>.*`,
-// `currency.<guid>.<currency>`, `vessel.partActions.<flightId>`, and each
+// nothing about it appears below: `currency.<guid>.<currency>`,
+// `vessel.partActions.<flightId>`, and each
 // Uplink's own. So a per-subject topic missing from this file may still be
-// published: `fleet.<guid>.orbit` is. To enumerate the dynamic half, grep
+// published: `trackingStation.vessel.<guid>.link` is. To enumerate the dynamic half, grep
 // the mod for `RegisterDynamicNamespace` instead.
-//
-// THE PREFIX IS NOT THE TEST, and `fleet.` is the case that proves it.
-// `fleet.silence` is statically declared and IS below; `fleet.<guid>.<field>`
-// is dynamic and is not. Reading either half as evidence about the other
-// goes wrong in both directions.
 
 import type {
   KerbcastCameraEntry,

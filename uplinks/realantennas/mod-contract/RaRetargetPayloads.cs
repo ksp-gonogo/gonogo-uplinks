@@ -36,7 +36,7 @@ namespace Gonogo.RealAntennasUplink;
 [SitrepCommand("realantennas.vessel.setAutoRetarget")]
 public class RealAntennasSetAutoRetargetArgs
 {
-    /// <summary>The craft, by its id as <c>system.vessels</c> gives it (the guid, without the <c>vessel:</c> prefix).</summary>
+    /// <summary>The craft, by its id as <c>trackingStation.catalog</c> gives it (the guid, without the <c>vessel:</c> prefix).</summary>
     [SitrepUnit(Units.Id)]
     public string Vessel { get; set; } = "";
 
@@ -114,7 +114,7 @@ public class RealAntennasLastBorrow
 [SitrepTopic("realantennas.retargeting", isArray: true)]
 public class RealAntennasVesselRetargeting
 {
-    /// <summary>The craft, by its id as <c>system.vessels</c> gives it.</summary>
+    /// <summary>The craft, by its id as <c>trackingStation.catalog</c> gives it.</summary>
     [SitrepUnit(Units.Id)]
     public string VesselId { get; set; } = "";
 

@@ -253,7 +253,7 @@ describe("LibrationPoints: the craft's path", () => {
     const svg = await svgOf(view);
     expect(svg.querySelectorAll("[data-libration-point]")).toHaveLength(5);
     expect(svg.querySelector('[data-libration-path="arc"]')).toBeNull();
-    expect(view.container.textContent).toContain("NO DATA");
+    expect(view.container.textContent).toContain("CANNOT MODEL");
     await act(async () => {});
   });
 });

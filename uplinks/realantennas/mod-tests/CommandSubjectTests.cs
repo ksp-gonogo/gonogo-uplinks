@@ -25,8 +25,8 @@ namespace GonogoRealAntennasUplink.Tests
         [Fact]
         public void Every_delayed_command_names_a_Subject_that_resolves()
         {
-            // "fleet." is the per-craft namespace core registers; setAutoRetarget is addressed into it.
-            Assert.Empty(CommandSubjectAssertion.Violations(RealAntennasManifest.Build(), typeof(RealAntennasTargetArgs).Assembly, new[] { "fleet." }));
+            // "trackingStation.vessel." is the per-craft namespace core registers; setAutoRetarget is addressed into it.
+            Assert.Empty(CommandSubjectAssertion.Violations(RealAntennasManifest.Build(), typeof(RealAntennasTargetArgs).Assembly, new[] { "trackingStation.vessel." }));
         }
 
         [Fact]

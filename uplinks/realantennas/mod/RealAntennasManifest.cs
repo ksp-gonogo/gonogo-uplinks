@@ -190,9 +190,9 @@ namespace Gonogo.RealAntennasUplink
                 // Its Subject is the chain channel, for the same reason.
                 new CommandDeclaration { Command = TargetChainCommand, Subject = ChainsTopic },
                 // Delayed to the craft it names, not to the reported one: the Subject
-                // is that craft's own node, which the "fleet." namespace core registers
-                // resolves for any craft, one on rails included.
-                new CommandDeclaration { Command = SetAutoRetargetCommand, Subject = "fleet.{args.Vessel}.retargeting" },
+                // is that craft's own node, which the "trackingStation.vessel." namespace
+                // core registers resolves for any craft, one on rails included.
+                new CommandDeclaration { Command = SetAutoRetargetCommand, Subject = "trackingStation.vessel.{args.Vessel}.retargeting" },
             },
         };
     }

@@ -42,9 +42,9 @@
         }
       },
       {
-        "topic": "system.vessels",
+        "topic": "trackingStation.catalog",
         "payload": {
-          "vessels": [
+          "entries": [
             {
               "vesselId": "v-titan",
               "name": "Titan II GLV",

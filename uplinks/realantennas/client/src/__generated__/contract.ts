@@ -359,8 +359,8 @@ export interface RealAntennasHopRate
 export interface RealAntennasSetAutoRetargetArgs
 {
 	/**
-	* The craft, by its id as `system.vessels` gives it (the guid, without the
-	* `vessel:` prefix).
+	* The craft, by its id as `trackingStation.catalog` gives it (the guid,
+	* without the `vessel:` prefix).
 	*/
 	vessel: string;
 	/**
@@ -423,7 +423,7 @@ export interface RealAntennasLastBorrow
 */
 export interface RealAntennasVesselRetargeting
 {
-	/** The craft, by its id as `system.vessels` gives it. */
+	/** The craft, by its id as `trackingStation.catalog` gives it. */
 	vesselId: string;
 	/** Whether the craft may turn an idle dish on its own. */
 	allowed: boolean;

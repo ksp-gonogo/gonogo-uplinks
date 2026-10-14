@@ -430,7 +430,7 @@ function CommSignalAntennaTargets() {
   const chainsReading = useTelemetry("realantennas.antennaChains");
   const retargetingReading = useTelemetry("realantennas.retargeting");
   const bodiesReading = useTelemetry("system.bodies");
-  const vesselsReading = useTelemetry("system.vessels");
+  const vesselsReading = useTelemetry("trackingStation.catalog");
 
   const antennas =
     antennasReading.state === "observed" ? antennasReading.value : undefined;
@@ -455,7 +455,7 @@ function CommSignalAntennaTargets() {
       : [];
   const vessels =
     vesselsReading.state === "observed"
-      ? vesselsReading.value.vessels.map((v) => ({
+      ? vesselsReading.value.entries.map((v) => ({
           id: v.vesselId,
           name: v.name || v.vesselId,
         }))
@@ -504,7 +504,7 @@ registerAugment({
     "realantennas.antennaChains",
     "realantennas.retargeting",
     "system.bodies",
-    "system.vessels",
+    "trackingStation.catalog",
   ],
   component: CommSignalAntennaTargets,
   owner: REALANTENNAS,

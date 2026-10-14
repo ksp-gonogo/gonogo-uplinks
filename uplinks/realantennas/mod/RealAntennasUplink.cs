@@ -203,7 +203,7 @@ namespace Gonogo.RealAntennasUplink
         {
             if (args == null || !Guid.TryParse(args.Vessel, out var guid))
             {
-                return CommandResult.Fail(CommandErrorCode.Range, "A craft is named by its id, as system.vessels gives it.");
+                return CommandResult.Fail(CommandErrorCode.Range, "A craft is named by its id, as trackingStation.catalog gives it.");
             }
             var id = guid.ToString();
             var known = false;

@@ -289,7 +289,7 @@ namespace Gonogo.KosUplink
         ///
         /// <para>Null routes the topic to the active craft, which is where every
         /// kOS topic sat before this existed. The alternative, handing back the
-        /// coreId itself, would mint <c>fleet.&lt;coreId&gt;</c>: a node no
+        /// coreId itself, would mint <c>trackingStation.vessel.&lt;coreId&gt;</c>: a node no
         /// delay is ever written for, which is a quieter wrong answer than the
         /// one being fixed.</para>
         /// </summary>
