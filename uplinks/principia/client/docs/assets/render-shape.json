@@ -3,17 +3,17 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "f8fae373afbef49a",
+      "hash": "b949784647e3a691",
       "elements": 315,
       "text": "bb12c779"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "385af1e05a7b54bf",
+      "hash": "7fdeaaac3fb1f4ea",
       "elements": 265,
       "text": "9b07dc4b"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "2d7ab6364f1a51fd",
+      "hash": "f2076aacbf95ee7c",
       "elements": 190,
       "text": "99be9999"
     },
@@ -33,47 +33,47 @@
       "text": "a7f133ae"
     },
     "composer-composing--default.png": {
-      "hash": "ca19d2afc814a57f",
+      "hash": "e7c82486d6d2d9e6",
       "elements": 147,
       "text": "fb0c46a3"
     },
     "composer-delayed-vantage--default.png": {
-      "hash": "1d8991348c86c86e",
+      "hash": "f5bdeefe1f5c284d",
       "elements": 63,
       "text": "664d0a4b"
     },
     "composer-ready-to-upload--default.png": {
-      "hash": "4a957a0ea355d953",
+      "hash": "34b0dd1d74004ebb",
       "elements": 60,
       "text": "2ce0994e"
     },
     "composer-upload-armed--default.png": {
-      "hash": "2eba993e5206f3cf",
+      "hash": "555dc3365ae85b99",
       "elements": 60,
       "text": "f50765cc"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "2a45a53dbddbecf6",
+      "hash": "9bf1eeee2fbe6bb6",
       "elements": 194,
       "text": "6b16f5d3"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "79404ac3493cd7b7",
+      "hash": "f8c8f99a66af6867",
       "elements": 199,
       "text": "4ebd02d1"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "adc8957476526e0b",
+      "hash": "78f05e30713dd82c",
       "elements": 195,
       "text": "48502c53"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "5650c09150945ec1",
+      "hash": "1485b9f2b7aa2b51",
       "elements": 195,
       "text": "825af4a4"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "a196539871ebea3b",
+      "hash": "715d75cdaf052cdf",
       "elements": 142,
       "text": "8d0bc864"
     },
@@ -83,7 +83,7 @@
       "text": "8f33ffde"
     },
     "jogwheel-rate-mode--default.gif": {
-      "hash": "ea6a63475723102c",
+      "hash": "3419d8d9265325cb",
       "elements": 102,
       "text": "5b2073a1"
     },
@@ -313,29 +313,29 @@
       "text": "5fc08eed"
     },
     "mun-l2-path-withheld--default.png": {
-      "hash": "d879493d35677b3a",
-      "elements": 85,
-      "text": "f5c186c2"
+      "hash": "78caf0ed9cd90420",
+      "elements": 84,
+      "text": "75ec6507"
     },
     "mun-l2-path-withheld--landscape-18x5.png": {
-      "hash": "17dab5944919e3d8",
-      "elements": 85,
-      "text": "f5c186c2"
+      "hash": "21bd722631e3064a",
+      "elements": 84,
+      "text": "75ec6507"
     },
     "mun-l2-path-withheld--min.png": {
-      "hash": "0b092ca752603cd7",
-      "elements": 85,
-      "text": "f5c186c2"
+      "hash": "7013fc42f3ef8096",
+      "elements": 84,
+      "text": "75ec6507"
     },
     "mun-l2-path-withheld--mobile-9x8.png": {
-      "hash": "d879493d35677b3a",
-      "elements": 85,
-      "text": "f5c186c2"
+      "hash": "78caf0ed9cd90420",
+      "elements": 84,
+      "text": "75ec6507"
     },
     "mun-l2-path-withheld--portrait-5x18.png": {
-      "hash": "8b64c9f790402eb2",
-      "elements": 85,
-      "text": "f5c186c2"
+      "hash": "eb14e2a83646fdd3",
+      "elements": 84,
+      "text": "75ec6507"
     },
     "mun-l2-path-withheld-stopped-arriving--default.png": {
       "hash": "ce5167fe0de0609d",
@@ -388,17 +388,17 @@
       "text": "67e79a4e"
     },
     "plan-slots-armed--default.png": {
-      "hash": "101b2df6d00c4888",
+      "hash": "733b15755d47c1af",
       "elements": 170,
       "text": "ae962754"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "9951c9d98caf8795",
+      "hash": "427d6b32bd50e32e",
       "elements": 130,
       "text": "9b035d85"
     },
     "plan-slots-shut--default.png": {
-      "hash": "b5d07948cb232937",
+      "hash": "601ba19ae7894799",
       "elements": 159,
       "text": "476efbbc"
     }
