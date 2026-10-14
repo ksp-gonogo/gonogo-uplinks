@@ -1019,7 +1019,8 @@
       "actions": [
         {
           "id": "cyclePair",
-          "label": "Cycle Pair"
+          "label": "Cycle Pair",
+          "description": "Step to the next body pair, with Auto in the cycle."
         }
       ],
       "augmentSlots": [],

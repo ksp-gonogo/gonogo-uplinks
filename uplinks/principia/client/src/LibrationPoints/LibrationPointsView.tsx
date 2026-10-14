@@ -26,6 +26,7 @@ import {
   useOrbitTrajectory,
 } from "@ksp-gonogo/sitrep-sdk/frames";
 import {
+  DeclinedEmptyState,
   derivedMarking,
   ephemerisFigureOf,
   FieldLabel,
@@ -34,7 +35,6 @@ import {
   Section,
   Select,
   Text,
-  TrajectoryWithheldNote,
 } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
@@ -281,7 +281,7 @@ export function LibrationPointsComponent({
           </Text>
           {/* Beside the caption, not over the picture: only the craft's curve is refused. */}
           {drawn && trajectoryWithheld && (
-            <TrajectoryWithheldNote withheld={trajectoryWithheld} compact />
+            <DeclinedEmptyState declined={trajectoryWithheld.declined} />
           )}
         </Section>,
         <Section key="view" fill>

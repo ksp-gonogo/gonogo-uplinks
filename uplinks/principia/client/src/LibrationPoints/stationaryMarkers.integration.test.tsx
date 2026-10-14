@@ -247,13 +247,13 @@ describe("LibrationPoints: the markers hold still", () => {
 });
 
 describe("LibrationPoints: the craft's path", () => {
-  it("still places the five points when the path itself is withheld, and says why", async () => {
+  it("still places the five points when the path itself is withheld, and marks the path declined", async () => {
     // A producer that stated no shape: the five points belong to the pair and stay.
     const { view } = mount({ pair: "Mun" }, 0, 9_000_000, true);
     const svg = await svgOf(view);
     expect(svg.querySelectorAll("[data-libration-point]")).toHaveLength(5);
     expect(svg.querySelector('[data-libration-path="arc"]')).toBeNull();
-    expect(view.container.textContent).toMatch(/shape|state/i);
+    expect(view.container.textContent).toContain("NO DATA");
     await act(async () => {});
   });
 });
