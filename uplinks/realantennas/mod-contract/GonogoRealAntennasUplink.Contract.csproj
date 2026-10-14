@@ -1,10 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
     GonogoRealAntennasUplink's OWN contract slice: the RA-only wire payload
-    types that used to sit inside mod/Sitrep.Contract/Comms.cs, relocated here per
-    the operator mandate that NO uplink-specific wire type may live in core, even
-    for an in-monorepo Uplink (see
-    local_docs/design/2026-08-10-uplink-types-out-of-core-plan.md). Seventh and
+    types that used to sit inside mod/Sitrep.Contract/Comms.cs, relocated here because
+    no uplink-specific wire type may live in core, even for an in-monorepo
+    Uplink. Seventh and
     LAST step of that plan, and the only one the plan sequenced separately,
     because it is a PARTIAL extract from a shared-shape file rather than a
     whole-file move.

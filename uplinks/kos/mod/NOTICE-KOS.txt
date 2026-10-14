@@ -1,7 +1,7 @@
 GonogoKosUplink compile-time links kOS (kOS.dll / kOS.Safe.dll) and, from P1
 onward, Harmony (0Harmony.dll) for one observe-only ScreenBuffer.Print
 postfix. It reads kOS's public API in-process, no arm's-length reflection,
-no loopback telnet. See local_docs/telemetry-mod/kos-migration-spec.md §8.
+no loopback telnet.
 
 kOS is distributed under the GNU General Public License v3.0. Because
 GonogoKosUplink direct-links kOS, GonogoKosUplink is itself GPL-3.0-only.

@@ -36,7 +36,7 @@ namespace Gonogo.KerbalismUplink.DevTools
     /// stale request whose stamp was lost or never written.</para>
     ///
     /// <para>A stamp rather than consuming the request, because the request file is the
-    /// operator's, written over SSH or through syncthing: deleting or rewriting it takes
+    /// operator's, written by hand or synced from another machine: deleting or rewriting it takes
     /// their input away and races the sync. Running the same request again stays a
     /// deliberate act: bump the id.</para>
     ///

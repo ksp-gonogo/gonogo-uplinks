@@ -49,11 +49,12 @@ namespace GonogoPrincipiaUplink.Tests
             var installRoot = FindInstallRoot();
             if (installRoot == null)
             {
-                // Silent on a machine without the mirror, and that is a real cost
+                // Silent on a machine without an install, and that is a real cost
                 // rather than a free pass: this test cannot tell "no install here"
                 // from "the reader broke". It is accepted because the alternative
                 // was tried elsewhere in this repo and reddened CI permanently, and
                 // because the synthetic suite beside it runs everywhere.
+                Console.WriteLine("Skipped: set KSP_ROOT to a KSP install that has Principia in GameData.");
                 return;
             }
 
@@ -102,7 +103,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             if (read.Count == 0)
             {
-                // The mirror is here but Principia is not installed in it.
+                // The install is here but Principia is not installed in it.
                 return;
             }
             // Without this the test passes by reading ONE build, and agreement
@@ -114,22 +115,14 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The local mirror of the rig's KSP install. Walks up from the test binary
-        /// to the workspace root rather than assuming a working directory.
+        /// The KSP install holding the shipped Principia builds, named by the
+        /// <c>KSP_ROOT</c> environment variable. Null when it is unset or names no
+        /// directory, which makes the test return without asserting anything.
         /// </summary>
         private static string? FindInstallRoot()
         {
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
-            {
-                var candidate = Path.Combine(dir.FullName, "local_docs", "syncthing", "kspdata");
-                if (Directory.Exists(candidate))
-                {
-                    return candidate;
-                }
-                dir = dir.Parent;
-            }
-            return null;
+            var root = Environment.GetEnvironmentVariable("KSP_ROOT");
+            return !string.IsNullOrEmpty(root) && Directory.Exists(root) ? root : null;
         }
     }
 }

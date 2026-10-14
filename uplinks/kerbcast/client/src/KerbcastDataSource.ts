@@ -79,8 +79,7 @@ const RECONNECT_MAX_MS = 30_000;
 // simultaneous on-screen feeds, not a steady-state cost: an idle slot is one
 // parked RTCP-drain task and an unbound RTP sender in the sidecar, nothing
 // rendered or encoded. Was 6, which a six-Kerbal crew bar alone exhausted
-// before the camera widget or the docking-cam augment got a slot (gonogo
-// tracker #112). The sidecar has no pool cap of its own — it builds exactly
+// before the camera widget or the docking-cam augment got a slot. The sidecar has no pool cap of its own: it builds exactly
 // as many transceivers as this number asks for — so this is sized well above
 // any plausible crew-bar + camera-tile + docking-cam combination rather than
 // tuned tightly, since the idle headroom costs next to nothing. Only a new

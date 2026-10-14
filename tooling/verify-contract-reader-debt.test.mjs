@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The gonogo half of Saga #727 (gonogo/packages/core/src/contract-reader-coverage.scan.ts)
+ * The gonogo contract-reader coverage scan (gonogo/packages/core/src/contract-reader-coverage.scan.ts)
  * cannot see this repo: it scans `packages/*` and `mod/*\/client` inside gonogo
  * only, so a contract field or command that ONLY an Uplink here reads is
  * invisible to it and would otherwise sit in gonogo's debt list forever as

@@ -6,9 +6,8 @@
  *
  * `uplink-tools render` encodes a motion scene one way: GIF. That is the right
  * asset for the generated Uplink page, which is markdown rendered by GitHub, and
- * it is the wrong asset for showing a change to a person. The operator's
- * finding, 2026-09-11: a GIF pasted into the Claude app does not animate, so a
- * film of a held stick arrives as a still of one arbitrary frame and reads as if
+ * it is the wrong asset for showing a change to a person. A GIF pasted into
+ * a chat app often does not animate, so a film of a held stick arrives as a still of one arbitrary frame and reads as if
  * nothing moves.
  *
  * The encoder lives in `@ksp-gonogo/ui-kit`, which arrives here as a vendored,

@@ -8,8 +8,7 @@ namespace Gonogo.MechJebUplink;
 /// <summary>
 /// Args for the <c>mechjeb.engageAscentAutopilot</c> command: the target
 /// orbit altitude MechJeb's ascent autopilot flies to
-/// (<c>MechJebModuleAscentSettings.DesiredOrbitAltitude</c>, see
-/// <c>local_docs/design/mechjeb-decompile-lock.md</c>). Client-authored, in
+/// (<c>MechJebModuleAscentSettings.DesiredOrbitAltitude</c>). Client-authored, in
 /// kilometres: the pre-existing MechJeb widget (predating this Uplink)
 /// already builds this wire key from its <c>altitudeKm</c> input, so the
 /// field name and unit are carried forward rather than invented fresh. The
