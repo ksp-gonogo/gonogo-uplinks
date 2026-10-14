@@ -1,13 +1,13 @@
-// kerbcast docking-camera augment for Targeting.
+// kerbcast docking-camera augment for Rendezvous.
 //
-// Fills Targeting's `targeting.camera` slot with a live video backdrop behind
+// Fills Rendezvous's `rendezvous.camera` slot with a live video backdrop behind
 // the docking reticle. This is the filler that widget's augment-slot doc block
-// was written for, and the only one: Targeting ships no built-in backdrop, so
+// was written for, and the only one: Rendezvous ships no built-in backdrop, so
 // without this augment the HUD composes with no video layer at all.
 //
 // Why an augment and not a standalone CameraFeed instance: the backdrop has to
 // draw in the HUD's own reticle space and share its lifecycle. The slot passes
-// `TargetingHudContext` for exactly that, and `requires: "kerbcast"`
+// `RendezvousHudContext` for exactly that, and `requires: "kerbcast"`
 // means an install without the kerbcast mod composes the HUD without any video
 // layer at all: rather than the core client shipping a camera path it can
 // never light up.
@@ -66,7 +66,7 @@ function stillTrue<T, A>(
 export function DockingCameraAugment({
   cameraFlightId,
   reportPictureAspect,
-}: SlotProps<"targeting.camera">) {
+}: SlotProps<"rendezvous.camera">) {
   // A camera roster is a fact: cameras are fitted by an event, not by a frame.
   const cameras = stillTrue(useTelemetry("kerbcast.cameras"), undefined);
   const flightId = selectDockingCamera(cameras, cameraFlightId);
@@ -190,7 +190,7 @@ function DockingCameraVideo({
 
 registerAugment({
   id: "kerbcast-docking-camera",
-  augments: "targeting.camera",
+  augments: "rendezvous.camera",
   requires: "kerbcast",
   channels: ["kerbcast.cameras"],
   component: DockingCameraAugment,

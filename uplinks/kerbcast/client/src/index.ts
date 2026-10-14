@@ -26,8 +26,8 @@
 //   - `CameraFeed` component → registerComponent({ id: "camera-feed", ... })
 //     so it's placeable from the dashboard widget picker.
 //   - `DockingCameraAugment` → registerAugment({ id: "kerbcast-docking-camera",
-//     ... }) filling @ksp-gonogo/components's Targeting widget's
-//     `targeting.camera` slot with the close-range docking-camera
+//     ... }) filling @ksp-gonogo/components's Rendezvous widget's
+//     `rendezvous.camera` slot with the close-range docking-camera
 //     backdrop. This REPLACED that widget's built-in `HudCamera`, which had
 //     kerbcast wired directly into the core client, the thing this package's
 //     move exists to end.

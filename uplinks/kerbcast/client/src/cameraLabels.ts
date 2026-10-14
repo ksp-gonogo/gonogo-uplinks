@@ -1,5 +1,5 @@
 // Re-exports from the shared @ksp-gonogo/kerbcast-react package, where the
-// implementation lives. gonogo consumers (CameraFeed picker, Targeting docking
+// implementation lives. gonogo consumers (CameraFeed picker, Rendezvous docking
 // HUD) import from this module.
 //
 // The shared buildCameraLabeler joins with " - " (hyphen-space, never an

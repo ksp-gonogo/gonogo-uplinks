@@ -66,13 +66,13 @@ function renderSlot(stream: StreamFixture) {
     <stream.Provider>
       <DomainAvailabilityProvider>
         <KerbcastAvailabilityFeeder />
-        <AugmentSlot name="targeting.camera" props={HUD_CONTEXT} />
+        <AugmentSlot name="rendezvous.camera" props={HUD_CONTEXT} />
       </DomainAvailabilityProvider>
     </stream.Provider>,
   );
 }
 
-describe("kerbcast docking-camera augment: targeting.camera slot", () => {
+describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
   beforeEach(() => {
     clearRegistry();
     clearUplinkHandles();
@@ -129,7 +129,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
 
   it("stays absent with no TelemetryProvider at all (no stream mounted)", () => {
     const { container } = render(
-      <AugmentSlot name="targeting.camera" props={HUD_CONTEXT} />,
+      <AugmentSlot name="rendezvous.camera" props={HUD_CONTEXT} />,
     );
     expect(container.querySelector("video")).toBeNull();
   });
@@ -227,7 +227,7 @@ describe("kerbcast docking-camera augment: targeting.camera slot", () => {
           <DomainAvailabilityProvider>
             <KerbcastAvailabilityFeeder />
             <AugmentSlot
-              name="targeting.camera"
+              name="rendezvous.camera"
               props={{
                 ...HUD_CONTEXT,
                 reportPictureAspect: (aspect) => reported.push(aspect),

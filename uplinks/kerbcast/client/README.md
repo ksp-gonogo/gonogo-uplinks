@@ -10,7 +10,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | Uplink id | `kerbcast` |
 | Version | `1.0.0-rc.1` |
 | Wraps | kerbcast 1.8.1 (ckan) |
-| Built against | contract 41.1, extension API 6.0.0 |
+| Built against | contract 41.3, extension API 6.0.0 |
 
 ## Wire
 
@@ -40,11 +40,11 @@ A live view from a camera on the active craft. Pick which camera to watch, step 
 | | |
 | --- | --- |
 | Widget id | `camera-feed` |
-| Reads, as flat keys | `vessel.comms`, `comms.link`, `comms.delay` |
-| Actions to bind | Next camera (`nextCamera`), Previous camera (`prevCamera`), Zoom in (`zoomIn`), Zoom out (`zoomOut`), Pan yaw axis (`panYaw`), Pan pitch axis (`panPitch`) |
-| Slots | `camera-feed.overlay` |
-| Default size | 9 × 8 |
-| Smallest size | 7 × 6 |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `vessel.comms`, `comms.link`, `comms.delay` |
+| Actions an input can be bound to | Next camera (`nextCamera`): Switch to the next available camera, persisting the choice to the widget config (wraps round at the end of the list); Previous camera (`prevCamera`): Switch to the previous available camera (wraps round); Zoom in (`zoomIn`): Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit; Zoom out (`zoomOut`): Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit; Pan yaw axis (`panYaw`): Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit; Pan pitch axis (`panPitch`): Analog pitch rate, -1..1. Positive = up. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged pitch wheel at up to 30 degrees per second, clamped to the camera's pitch envelope, and sends nothing until the commit. A camera with no pitch envelope does not move either way |
+| Slots of its own | `camera-feed.overlay` |
+| Default size, in grid units | 9 × 8 |
+| Smallest size, in grid units | 7 × 6 |
 | Scenes | 3 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](docs/assets/camera-feed-fixed--default.png)
@@ -54,7 +54,7 @@ A live view from a camera on the active craft. Pick which camera to watch, step 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `kerbcast-crew-avatar` | `crew-status.avatar` | – | only while `kerbcast` | 0 |  |
-| `kerbcast-docking-camera` | `targeting.camera` | `kerbcast.cameras` | only while `kerbcast` | 1 |  |
+| `kerbcast-docking-camera` | `rendezvous.camera` | `kerbcast.cameras` | only while `kerbcast` | 1 |  |
 
-![Targeting's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](docs/assets/docking-camera-behind-reticle--default.png)
+![Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](docs/assets/docking-camera-behind-reticle--default.png)
 

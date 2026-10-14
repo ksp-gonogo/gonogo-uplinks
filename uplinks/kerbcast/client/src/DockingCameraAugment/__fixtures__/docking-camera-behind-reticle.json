@@ -1,10 +1,10 @@
 {
   "_scene": {
     "augment": "kerbcast-docking-camera",
-    "hostWidget": "targeting",
+    "hostWidget": "rendezvous",
     "hero": true,
     "modes": ["default"],
-    "caption": "Targeting's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle",
+    "caption": "Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle",
     "paints": ["DOCKING"]
   },
   "_stream": {

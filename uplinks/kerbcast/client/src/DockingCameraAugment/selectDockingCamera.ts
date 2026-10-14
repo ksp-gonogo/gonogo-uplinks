@@ -1,7 +1,7 @@
 import type { KerbcastCameraEntry } from "../__generated__/contract.js";
 
 /**
- * Picks the camera that should back Targeting's docking HUD, from the
+ * Picks the camera that should back Rendezvous's docking HUD, from the
  * `kerbcast.cameras` inventory the Uplink publishes.
  *
  * `isDockingCamera` is `bool?` on the wire (`DockingCameraFacts.cs`), and the
