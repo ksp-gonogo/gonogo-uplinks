@@ -1393,11 +1393,26 @@ describe("CameraFeed: CommNet degrade", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Signal quality badge: always-on header chrome, distinct from the
+// Signal quality badge: a panel header badge, distinct from the
 // CommNet-degrade effect above (that drives the SDK's video degradation; this
-// is purely a readout). The signal delay has no badge here, the dashboard
-// header carries it.
+// is purely a readout). Nothing is drawn over the picture. The signal delay
+// has no badge here, the dashboard header carries it.
 // ---------------------------------------------------------------------------
+
+/** The panel header's text, where the signal badge is drawn. */
+function headerText(): string {
+  return (
+    document.querySelector("[data-panel-header]")?.textContent ?? ""
+  ).replace(/\s+/g, " ");
+}
+
+/** The text of the framed picture, which no status badge may draw over. */
+function frameText(): string {
+  return (
+    document.querySelector("[data-panel-body] [data-section-full]")
+      ?.textContent ?? ""
+  ).replace(/\s+/g, " ");
+}
 
 describe("CameraFeed: signal quality badge", () => {
   it("draws no signal delay badge: the dashboard header carries the delay", async () => {
@@ -1435,8 +1450,9 @@ describe("CameraFeed: signal quality badge", () => {
     // whole reading. The accessible name is the SPOKEN form, which is the
     // point of routing it through speakQuantity: a screen reader announcing
     // "72 percent" beats one announcing "72 percent-sign".
-    await waitFor(() => expect(visibleText()).toContain("72 %"));
-    expect(screen.getByLabelText("Signal quality: 72 percent")).toBeTruthy();
+    await waitFor(() => expect(headerText()).toContain("SIGNAL 72 %"));
+    expect(frameText()).toMatch(/starboard cam/i);
+    expect(frameText()).not.toContain("72 %");
   });
 
   it("shows a clear no-signal state when comm.connected is false", async () => {
@@ -1449,8 +1465,9 @@ describe("CameraFeed: signal quality badge", () => {
       emitComms(stream, { signalStrength: 0.72, connected: false });
     });
 
-    expect(await screen.findByText("NO SIGNAL")).toBeTruthy();
-    expect(screen.getByLabelText("Signal quality: no signal")).toBeTruthy();
+    await waitFor(() => expect(headerText()).toContain("NO SIGNAL"));
+    expect(frameText()).toMatch(/starboard cam/i);
+    expect(frameText()).not.toContain("NO SIGNAL");
     // The stale strength percentage is not shown alongside a lost link.
     expect(visibleText()).not.toContain("72 %");
   });

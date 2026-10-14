@@ -26,17 +26,16 @@ import {
   Badge,
   FramedDisplay,
   Panel,
+  type PanelBadge,
   Section,
-  type Severity,
   speakQuantity,
-  Unit,
   useElementSize,
   usePrefersReducedMotion,
+  writeQuantity,
 } from "@ksp-gonogo/ui-kit";
 import {
   type CSSProperties,
   type FocusEvent as ReactFocusEvent,
-  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -463,9 +462,7 @@ export function CameraFeed({
     width: feedSize.width,
     height: feedSize.height,
   };
-  // Always-on status chip, intrinsic to a delayed downlink feed (not a
-  // cross-mod augment): every camera feed shows it, unobtrusively. The signal
-  // delay itself is the dashboard header's, not a chip here.
+  // The signal delay is the dashboard header's, not a badge here.
   const qualityBadge = describeSignalQuality(commConnected, signalStrength);
 
   // Delayed camera control. `currentMode` (derived above, where the
@@ -533,6 +530,7 @@ export function CameraFeed({
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <Panel
         panelTitle="Camera Feed"
+        panelBadges={qualityBadge ? [qualityBadge] : undefined}
         sections={
           <Section full fill>
             <div ref={stageRef} style={FEED_STAGE_STYLE}>
@@ -586,16 +584,6 @@ export function CameraFeed({
                       props={overlayContext}
                     />
                   </div>
-                  <div style={FEED_BADGES_STYLE}>
-                    {qualityBadge && (
-                      <Badge
-                        tone={qualityBadge.tone}
-                        aria-label={qualityBadge.ariaLabel}
-                      >
-                        {qualityBadge.label}
-                      </Badge>
-                    )}
-                  </div>
                   {showSetpointSurface && (
                     <div
                       // A stable targeting hook for the layer that carries the
@@ -648,25 +636,17 @@ export function CameraFeed({
   );
 }
 
-interface StatusBadgeInfo {
-  label: ReactNode;
-  ariaLabel: string;
-}
-
-interface QualityBadgeInfo extends StatusBadgeInfo {
-  tone: Severity;
-}
-
-// Signal-quality badge: craft-side CommNet strength, 0..1 -> percentage.
-// `connected === false` always wins (a lost link has no meaningful strength
-// percentage, even if a stale value is still cached). Hidden only when
-// neither key has ever arrived, the same "no CommNet data" guard the
-// degrade effect above uses, so the badge appears as soon as there's
-// anything to say.
+/*
+ * Signal quality: craft-side CommNet strength as a percentage, as a header
+ * badge so nothing is drawn over the picture. `connected === false` always
+ * wins, since a lost link has no meaningful strength even while a stale value
+ * is still cached. Absent only when neither key has ever arrived, the same
+ * "no CommNet data" guard the degrade effect above uses.
+ */
 function describeSignalQuality(
   connected: boolean | undefined,
   signalStrength: Value<"ratio"> | undefined,
-): QualityBadgeInfo | null {
+): PanelBadge | null {
   if (connected === undefined && signalStrength === undefined) return null;
   // NO SIGNAL when the link is down OR the strength has decayed to
   // effectively zero: a 0% link carries nothing, so it reads as no signal
@@ -677,27 +657,22 @@ function describeSignalQuality(
     strength !== undefined && Number.isFinite(strength) && strength <= 1e-6;
   if (connected === false || zeroSignal) {
     return {
+      id: "signal-quality",
       label: "NO SIGNAL",
       tone: "nogo",
-      ariaLabel: "Signal quality: no signal",
+      title: "Signal quality: no signal",
     };
   }
   if (strength === undefined || !Number.isFinite(strength)) {
     return null;
   }
-  // The value already carries `ratio` as its unit, so <Unit> does the *100 and
-  // writes the symbol. Doing both by hand here is how a badge ends up as the
-  // one readout in the app writing "72%" where every other percentage writes
-  // "72 %".
   const clamped = value("ratio", Math.max(0, Math.min(1, strength)));
   const pct = Math.round(clamped.magnitude * 100);
-  const tone: Severity = pct >= 66 ? "go" : pct >= 33 ? "warn" : "nogo";
   return {
-    label: <Unit value={clamped} />,
-    tone,
-    // An attribute cannot hold a node, so the spoken form is the escape:
-    // "72 percent" rather than the "72 %" a sighted reader sees.
-    ariaLabel: `Signal quality: ${speakQuantity(clamped)}`,
+    id: "signal-quality",
+    label: `SIGNAL ${writeQuantity(clamped)}`,
+    tone: pct >= 66 ? "go" : pct >= 33 ? "warn" : "nogo",
+    title: `Signal quality: ${speakQuantity(clamped)}`,
   };
 }
 
@@ -755,16 +730,6 @@ const FEED_OVERLAY_STYLE: CSSProperties = {
 // the controls: they are a reading, and a reading an operator has to wave a
 // mouse at to get is not a reading. Above the SDK's own top gradient (which
 // takes z-index 2) so the darkening under its title never dims them.
-const FEED_BADGES_STYLE: CSSProperties = {
-  position: "absolute",
-  top: 0,
-  right: 0,
-  zIndex: 3,
-  display: "flex",
-  gap: "var(--gap-chips)",
-  padding: "var(--offset-corner)",
-  pointerEvents: "none",
-};
 
 /**
  * The layer the delayed-aim controls are drawn on, covering the picture.
