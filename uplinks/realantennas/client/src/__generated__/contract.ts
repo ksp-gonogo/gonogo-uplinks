@@ -228,12 +228,23 @@ export interface CommsDataRate
 	meta: PayloadMeta;
 }
 /**
-* The `comms.linkMargin` payload: RealAntennas-ONLY. Re-derived by the
-* RealAntennas uplink from RA's public static link-budget math, not read off a
-* live field (comms-uplink-design.md §4.3: margin is computed transiently
-* inside RA's internal Precompute job and not stored anywhere public). Carries
-* the margin, whether it closes the link, and the margin normalised to a 0..1
-* quality, so all three are published together or not at all.
+* The `comms.linkMargin` payload, RealAntennas only: how many decibels of
+* received power the active craft's first link could lose before RealAntennas
+* stops carrying it, so it is 0 or more, to within rounding, while the link is
+* up and a figure near 0 says the link is close to failing. Useful for showing
+* the operator how near the link is to dropping when `comms.signal` still
+* reads full strength.
+*
+* The margin is for the pair of antennas the link runs on, at the slowest
+* symbol rate both can run, with the pointing loss of each towards the other
+* as RealAntennas applies it. A link that has stepped down to a slower rate
+* than its antennas' top rate still reads a margin of 0 or more: the rate it
+* has stepped down to is on `comms.dataRate`. It is worked out from
+* RealAntennas' link-budget formulas, not read off a field the game keeps, and
+* takes no account of noise from a body behind the far end.
+*
+* Carries the margin, whether the link closes, and the margin normalised to a
+* 0..1 quality, published together or not at all.
 */
 export interface CommsLinkMargin
 {
@@ -253,6 +264,15 @@ export interface CommsLinkMargin
 * declare, carried under the provider id `"realantennas"` and typed here
 * rather than in core (see `Sitrep.Contract/ProviderExtensions.cs` for the
 * mechanism, and a sibling Uplink's reliability extension for the exemplar).
+*
+* On a RealAntennas install the hop's `strength` on `comms.path` is the
+* strength of the best antenna pairing between the two ends at the distance
+* the hop crosses, as if both ends were pointed at each other and with no
+* noise from a body behind the far end, and the facts in this bag are the ones
+* of that pairing. It is a planned figure for the pair, not what the game
+* currently gives the link: a dish aimed away from the far end, or sky noise,
+* lowers `comms.signal` and leaves the hop's strength where it was.
+* `comms.linkMargin` is the figure that follows the aim.
 *
 * It rides `comms.path`, which is already the TrueNow geometry SignalDelay
 * consumes, so every field here is TrueNow like the rest of the comms family:

@@ -112,6 +112,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
         {
             public string Label = "";
             public double SinceApplySeconds;
+            public double UniversalTime;
             public string Target = "(unread)";
             public string IsTracking = "(unread)";
             public string CanTarget = "(unread)";
@@ -141,6 +142,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
             public string InvalidateCache = "(not attempted)";
             public string SaveGame = "(not attempted)";
             public string SnapshotTargetNode = "(unread)";
+            public string AppliedAtUt = "(not applied)";
             public double SettleSeconds;
             public float StartRealtime;
             public float NextSampleRealtime;
@@ -264,6 +266,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
             watch.Before = ReadLayers(antenna, vessel, "before", 0.0);
 
             ApplyTarget(watch, request, antenna);
+            watch.AppliedAtUt = FormatUt(Planetarium.GetUniversalTime());
 
             if (request.Discover) watch.DiscoverAntennas = Discover(vessel);
             if (request.Invalidate) watch.InvalidateCache = Invalidate();
@@ -326,7 +329,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
 
         private Layers ReadLayers(object antenna, Vessel vessel, string label, double since)
         {
-            var layers = new Layers { Label = label, SinceApplySeconds = since };
+            var layers = new Layers { Label = label, SinceApplySeconds = since, UniversalTime = Planetarium.GetUniversalTime() };
             var target = ReadObject(antenna, "Target");
             layers.Target = target == null ? "null" : target.ToString();
             layers.IsTracking = Read(antenna, "IsTracking");
@@ -747,6 +750,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
                 sb.AppendLine("  invalidateCache = " + watch.InvalidateCache);
                 sb.AppendLine("  saveGame = " + watch.SaveGame);
                 sb.AppendLine("  snapshotTarget = " + watch.SnapshotTargetNode);
+                sb.AppendLine("  appliedAtUt = " + watch.AppliedAtUt);
                 AppendLayers(sb, watch.Before);
                 foreach (var layers in watch.After) AppendLayers(sb, layers);
                 sb.AppendLine("}");
@@ -758,6 +762,8 @@ namespace Gonogo.RealAntennasUplink.DevTools
             }
         }
 
+        private static string FormatUt(double ut) => ut.ToString("F3", CultureInfo.InvariantCulture);
+
         private static void AppendLayers(StringBuilder sb, Layers layers)
         {
             sb.AppendLine("  SAMPLE");
@@ -765,6 +771,7 @@ namespace Gonogo.RealAntennasUplink.DevTools
             sb.AppendLine("    label = " + layers.Label);
             sb.AppendLine("    sinceApplySeconds = "
                 + layers.SinceApplySeconds.ToString("F1", CultureInfo.InvariantCulture));
+            sb.AppendLine("    ut = " + FormatUt(layers.UniversalTime));
             sb.AppendLine("    target = " + layers.Target);
             sb.AppendLine("    isTracking = " + layers.IsTracking);
             sb.AppendLine("    canTarget = " + layers.CanTarget);

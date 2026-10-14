@@ -50,8 +50,8 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// Received power in dBm: RA's <c>Physics.ReceivedPower</c> minus the
-        /// pointing-loss terms (a best-effort estimate that assumes on-target
-        /// antennas): <c>txPower + txGain - pathLoss + rxGain</c>. All powers/gains
+        /// pointing-loss terms (an estimate that assumes on-target antennas):
+        /// <c>txPower + txGain - pathLoss + rxGain</c>. All powers/gains
         /// in dBm/dBi.
         /// </summary>
         public static double ReceivedPowerDbm(
@@ -92,6 +92,26 @@ namespace Gonogo.RealAntennasUplink
             double n0 = NoiseSpectralDensityDbm(noiseTempKelvin);
             double noiseFloor = n0 + 10.0 * Math.Log10(symbolRateHz);
             return receivedPowerDbm - noiseFloor - requiredEbN0Db;
+        }
+
+        /// <summary>
+        /// The link's margin at the slowest symbol rate both antennas can run, in
+        /// dB: how much received power the link could lose before RealAntennas
+        /// stops carrying it. It is zero exactly where the link stops closing,
+        /// so it is non-negative for a link that is up. Null when the two
+        /// antennas state no symbol rate in common.
+        /// </summary>
+        public static double? MarginAtSlowestRateDb(
+            double receivedPowerDbm,
+            double noiseTempKelvin,
+            double? txMaxSymbolRateHz,
+            double? txMinSymbolRateHz,
+            double? rxMaxSymbolRateHz,
+            double? rxMinSymbolRateHz,
+            double requiredEbN0Db)
+        {
+            var slowest = RaRateLadder.SlowestCommonSymbolRate(txMaxSymbolRateHz, txMinSymbolRateHz, rxMaxSymbolRateHz, rxMinSymbolRateHz);
+            return slowest == null ? (double?)null : LinkMarginDb(receivedPowerDbm, noiseTempKelvin, slowest.Value, requiredEbN0Db);
         }
 
         /// <summary>Whether a margin closes the link (≥ 0 dB).</summary>

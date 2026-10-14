@@ -100,6 +100,34 @@ namespace Gonogo.RealAntennasUplink.Tests
         }
 
         [Fact]
+        public void MarginAtSlowestRate_IsPositiveForALinkThatStepsDownBelowItsTopRate()
+        {
+            // Too weak for the top symbol rate, strong enough for the slowest one.
+            double top = RaLinkBudget.LinkMarginDb(-130.0, 200.0, 1.0e6, 2.5);
+            double? slowest = RaLinkBudget.MarginAtSlowestRateDb(-130.0, 200.0, 1.0e6, 1.0e3, 1.0e6, 1.0e3, 2.5);
+
+            Assert.True(top < 0);
+            Assert.NotNull(slowest);
+            Assert.True(slowest.Value > 0);
+            Assert.Equal(RaLinkBudget.LinkMarginDb(-130.0, 200.0, 1.0e3, 2.5), slowest.Value, 9);
+        }
+
+        [Fact]
+        public void MarginAtSlowestRate_UsesTheFasterOfTheTwoSlowestRates()
+        {
+            double? margin = RaLinkBudget.MarginAtSlowestRateDb(-100.0, 200.0, 1.0e6, 1.0e3, 1.0e6, 4.0e3, 2.5);
+
+            Assert.Equal(RaLinkBudget.LinkMarginDb(-100.0, 200.0, 4.0e3, 2.5), margin!.Value, 9);
+        }
+
+        [Fact]
+        public void MarginAtSlowestRate_IsAbsentWhenTheAntennasShareNoRate()
+        {
+            Assert.Null(RaLinkBudget.MarginAtSlowestRateDb(-100.0, 200.0, 1.0e3, 1.0e3, 1.0e6, 1.0e5, 2.5));
+            Assert.Null(RaLinkBudget.MarginAtSlowestRateDb(-100.0, 200.0, null, null, 1.0e6, 1.0e5, 2.5));
+        }
+
+        [Fact]
         public void LinkMargin_NonPositiveSymbolRate_CannotClose()
         {
             double margin = RaLinkBudget.LinkMarginDb(-90, 200, 0, 2.5);

@@ -488,21 +488,26 @@ namespace Gonogo.RealAntennasUplink
                 double? freq = _ra.Frequency(tx);
                 double? symbolRate = _ra.SymbolRate(tx);
 
-                // RA's own per-link numbers, replacing the hardcoded estimates:
-                // the receiver noise temperature off the RX antenna's AMWTemp, and
-                // the required Eb/N0 off its RequiredCI
-                // (= Encoder.RequiredEbN0). Both fail soft to the constants when a
-                // read returns null, so a moved RA surface degrades the margin's
-                // FIDELITY rather than breaking it. The re-derivation is still
-                // best-effort (it does not reproduce RA's negotiated-modulation
-                // tie-break), and the absolute margin wants live-RA confirmation
-                // before the fallbacks are removed.
+                // The receiver's noise temperature comes off its own AMWTemp and the
+                // required Eb/N0 off the encoder the pair talks through, the lower tech
+                // level of the two. Both fall back to constants when a read returns
+                // null, which costs the margin fidelity rather than breaking it.
                 if (txPower != null && txGain != null && rxGain != null && freq != null && symbolRate != null)
                 {
                     double noiseTempKelvin = _ra.NoiseTemperatureKelvin(rx) ?? DefaultReceiverNoiseTempKelvin;
-                    double requiredEbN0Db = _ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db;
-                    double pr = RaLinkBudget.ReceivedPowerDbm(txPower.Value, txGain.Value, rxGain.Value, distance, freq.Value);
-                    double margin = RaLinkBudget.LinkMarginDb(pr, noiseTempKelvin, symbolRate.Value, requiredEbN0Db);
+                    var txLevel = _ra.EncoderTechLevel(tx);
+                    var rxLevel = _ra.EncoderTechLevel(rx);
+                    var encoderEnd = txLevel != null && rxLevel != null && rxLevel.Value < txLevel.Value ? rx : tx;
+                    double requiredEbN0Db = _ra.EncoderRequiredEbN0Db(encoderEnd) ?? _ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db;
+
+                    // RealAntennas' own received power carries each end's pointing loss
+                    // towards the other; the geometry-only estimate does not, and is only
+                    // the fallback for an install that does not expose the calculation.
+                    double pr = _ra.ReceivedPowerDbm(tx, rx, distance, freq.Value)
+                        ?? RaLinkBudget.ReceivedPowerDbm(txPower.Value, txGain.Value, rxGain.Value, distance, freq.Value);
+                    double margin = RaLinkBudget.MarginAtSlowestRateDb(
+                            pr, noiseTempKelvin, symbolRate, _ra.MinSymbolRate(tx), _ra.SymbolRate(rx), _ra.MinSymbolRate(rx), requiredEbN0Db)
+                        ?? double.NaN;
 
                     // Typed absence over a non-finite sentinel: LinkMarginDb
                     // returns double.NegativeInfinity for a non-positive symbol

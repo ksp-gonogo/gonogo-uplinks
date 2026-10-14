@@ -51,6 +51,7 @@ namespace Gonogo.RealAntennasUplink
         private readonly PropertyInfo? _txPower;
         private readonly PropertyInfo? _frequency;
         private readonly PropertyInfo? _symbolRate;
+        private readonly MethodInfo? _receivedPower;
 
         private RaReflection(Assembly raAssembly)
         {
@@ -68,6 +69,14 @@ namespace Gonogo.RealAntennasUplink
             _txPower = realAntenna?.GetProperty("TxPower", BindingFlags.Public | BindingFlags.Instance);
             _frequency = realAntenna?.GetProperty("Frequency", BindingFlags.Public | BindingFlags.Instance);
             _symbolRate = realAntenna?.GetProperty("SymbolRate", BindingFlags.Public | BindingFlags.Instance);
+            _receivedPower = realAntenna == null
+                ? null
+                : SafeGetType("RealAntennas.Physics")?.GetMethod(
+                    "ReceivedPower",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { realAntenna, realAntenna, typeof(float), typeof(float) },
+                    null);
         }
 
         /// <summary>The forward-link transmit antenna of a RACommLink, or null.</summary>
@@ -87,6 +96,34 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>Antenna symbol rate (Hz), or null.</summary>
         public double? SymbolRate(object antenna) => ReadDouble(_symbolRate, antenna);
+
+        /// <summary>
+        /// The power arriving at <paramref name="rx"/> from <paramref name="tx"/> over
+        /// <paramref name="distanceMeters"/>, in dBm, as RealAntennas works it out:
+        /// both antennas' gains and the pointing loss of each towards the other,
+        /// from where each is aimed now. Null when RealAntennas does not expose the
+        /// calculation or the call throws.
+        /// </summary>
+        public double? ReceivedPowerDbm(object tx, object rx, double distanceMeters, double frequencyHz)
+        {
+            if (_receivedPower == null)
+            {
+                return null;
+            }
+            try
+            {
+                return _receivedPower.Invoke(null, new object[] { tx, rx, (float)distanceMeters, (float)frequencyHz }) switch
+                {
+                    float f => f,
+                    double d => d,
+                    _ => (double?)null,
+                };
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
 
         /// <summary>The forward-link reverse transmit antenna of a RACommLink, or null.</summary>
         public object? ReverseTxAntenna(object commLink) => ReadObject(_revAntennaTx, commLink);
