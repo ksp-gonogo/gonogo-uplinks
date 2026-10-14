@@ -12,12 +12,13 @@ namespace Gonogo.RealAntennasUplink
         private readonly Dictionary<string, string> _last = new Dictionary<string, string>();
 
         /// <summary>The line to log for this tick, or null when nothing changed since the last one for this chain.</summary>
-        public string? Note(string chainKey, bool loaded, bool? connected, RaChainPolicy.Move move, int step)
+        public string? Note(string chainKey, bool loaded, bool? connected, RaChainPolicy.Move move, int step, bool blocked = false)
         {
             var state = (loaded ? "loaded" : "unloaded")
                 + ", " + (connected == null ? "link unreadable" : connected.Value ? "linked" : "no link")
                 + ", " + move.ToString().ToLowerInvariant()
-                + (move == RaChainPolicy.Move.Apply ? " entry " + (step + 1).ToString() : "");
+                + (move == RaChainPolicy.Move.Apply ? " entry " + (step + 1).ToString() : "")
+                + (blocked ? " (antenna cannot be aimed, held)" : "");
             if (_last.TryGetValue(chainKey, out var previous) && previous == state)
             {
                 return null;

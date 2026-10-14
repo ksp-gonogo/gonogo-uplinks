@@ -255,6 +255,20 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>
+        /// One tick of the walk for one antenna: clears the lap tally when the
+        /// craft has a link, then decides. Every outcome, including a hold on a
+        /// connected craft, comes back as a decision so the caller can trace it.
+        /// </summary>
+        internal static Decision Advance(Walk walk, int stepCount, bool? connected, double nowUt, double settleSeconds)
+        {
+            if (connected == true)
+            {
+                NoteConnected(walk);
+            }
+            return Decide(walk, stepCount, connected, nowUt, settleSeconds);
+        }
+
+        /// <summary>
         /// The entry after the active one: the first entry when the walk has not
         /// started, and the first again after the last, wrapping.
         /// </summary>

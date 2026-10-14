@@ -38,5 +38,28 @@ namespace GonogoRealAntennasUplink.Tests
 
             Assert.NotNull(trace.Note("2/0", true, true, RaChainPolicy.Move.Hold, 0));
         }
+
+        [Fact]
+        public void AHeldChainOnAConnectedCraftLeavesATraceEntry()
+        {
+            var trace = new RaChainTrace();
+            var walk = new RaChainPolicy.Walk { Laps = 2 };
+
+            var decision = RaChainPolicy.Advance(walk, 3, true, 100.0, 30.0);
+            var line = trace.Note("1/0", true, true, decision.Move, decision.Step);
+
+            Assert.Equal(0, walk.Laps);
+            Assert.NotNull(line);
+            Assert.Contains("linked", line);
+            Assert.Contains("hold", line);
+        }
+
+        [Fact]
+        public void AnApplyTheAntennaCannotCarryOutSaysItWasHeld()
+        {
+            var line = new RaChainTrace().Note("1/0", true, false, RaChainPolicy.Move.Apply, 0, true)!;
+
+            Assert.Contains("cannot be aimed", line);
+        }
     }
 }

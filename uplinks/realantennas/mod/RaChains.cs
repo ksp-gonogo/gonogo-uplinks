@@ -257,21 +257,16 @@ namespace Gonogo.RealAntennasUplink
             }
 
             var connected = Connected(vessel);
-            if (connected == true)
-            {
-                RaChainPolicy.NoteConnected(entry.Walk);
-                return;
-            }
-
-            var decision = RaChainPolicy.Decide(
+            var decision = RaChainPolicy.Advance(
                 entry.Walk, entry.Steps.Count, connected, nowUt, RaChainPolicy.SettleInForce(entry.SettleSeconds, WarpRate()));
-            var line = _trace.Note(keptUnder, vessel.loaded, connected, decision.Move, decision.Step);
+            var blocker = decision.Move == RaChainPolicy.Move.Apply ? Blocker(antenna) : null;
+            var line = _trace.Note(keptUnder, vessel.loaded, connected, decision.Move, decision.Step, blocker != null);
             if (line != null)
             {
                 UnityEngine.Debug.Log(line);
             }
 
-            if (decision.Move != RaChainPolicy.Move.Apply || Blocker(antenna) != null)
+            if (decision.Move != RaChainPolicy.Move.Apply || blocker != null)
             {
                 return;
             }
