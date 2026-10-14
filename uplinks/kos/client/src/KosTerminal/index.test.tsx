@@ -528,7 +528,10 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Send" })).toBeDisabled(),
+      expect(screen.getByRole("button", { name: "Send" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      ),
     );
     expect(sentCommands(fixture.commands, "kos.keystroke")).toHaveLength(0);
     // Still in the box, ready for when the path returns.
