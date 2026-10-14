@@ -78,7 +78,7 @@ export const RP1_PROGRAM_COMPLETE_COMMAND = "rp1.program.complete";
  * accepting it costs and closes off.
  *
  * <para>The body of the Administration Building's Programs screen, contributed
- * as an augment on `admin-building.screen-body`. It was a standalone widget until
+ * as an augment on `administration-building.screen-body`. It was a standalone widget until
  * the building grew screens, which made a second Programs surface out of the
  * one the operator already opens the building for. It carries the RP-1 verbs
  * itself, Accept and Complete, because the host card's Deactivate would strand
@@ -1316,7 +1316,7 @@ function outOfReach(
 
 registerAugment({
   id: "rp1-program-detail",
-  augments: "admin-building.screen-body",
+  augments: "administration-building.screen-body",
   component: ProgramDetail,
   channels: [
     "rp1.available",

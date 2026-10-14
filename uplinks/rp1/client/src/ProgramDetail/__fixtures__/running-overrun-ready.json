@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-program-detail",
-    "hostWidget": "admin-building",
+    "hostWidget": "administration-building",
     "caption": "The running Program past its deadline with its objectives met and unclaimed: ready to complete, losing reputation by the year until it is, with both Program slots committed",
     "paints": [
       "PROGRAM DETAIL",

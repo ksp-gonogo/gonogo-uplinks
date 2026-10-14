@@ -2,7 +2,7 @@
   "_scene": {
     "hero": true,
     "augment": "rp1-start-research",
-    "hostWidget": "tech-tree",
+    "hostWidget": "research-and-development",
     "size": {
       "w": 12,
       "h": 16

@@ -178,7 +178,7 @@ describe("ResearchQueue", () => {
   it("registers itself into the tech tree's universal sections segment", () => {
     // The seam needed no first-party change: Panel mounts
     // `${componentId}.sections` for every widget.
-    const augments = getAugmentsForSlot("tech-tree.sections");
+    const augments = getAugmentsForSlot("research-and-development.sections");
     expect(augments.map((a) => a.id)).toContain("rp1-research-queue");
   });
 });

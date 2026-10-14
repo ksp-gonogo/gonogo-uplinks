@@ -5,7 +5,7 @@
   "_scene": {
     "hero": true,
     "augment": "rp1-leader-detail",
-    "hostWidget": "admin-building",
+    "hostWidget": "administration-building",
     "size": {
       "w": 8,
       "h": 14

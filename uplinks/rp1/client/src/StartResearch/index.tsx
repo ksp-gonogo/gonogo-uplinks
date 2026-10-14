@@ -278,7 +278,7 @@ function SpendWording({
 
 registerAugment({
   id: "rp1-start-research",
-  augments: "tech-tree.sections",
+  augments: "research-and-development.sections",
   component: StartResearch,
   channels: [
     "rp1.available",

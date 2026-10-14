@@ -937,7 +937,7 @@ function namesById<T extends object>(
 
 registerAugment({
   id: "rp1-finances",
-  augments: "admin-building.screen-body",
+  augments: "administration-building.screen-body",
   component: Finances,
   channels: [
     "rp1.available",

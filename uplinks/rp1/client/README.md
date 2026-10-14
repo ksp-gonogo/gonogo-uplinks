@@ -10,7 +10,7 @@ Brings RP-1's career layer to the dashboard: Programs with their objectives, dea
 | Uplink id | `rp1` |
 | Version | `1.0.0-rc.1` |
 | Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 41.1, extension API 6.0.0 |
+| Built against | contract 41.3, extension API 6.0.0 |
 
 ## Wire
 
@@ -166,10 +166,10 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | | |
 | --- | --- |
 | Widget id | `rp1-vehicle-assembly` |
-| Reads, as flat keys | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget` |
-| Slots | `rp1-vehicle-assembly.sections` |
-| Default size | 7 × 16 |
-| Smallest size | 4 × 6 |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget` |
+| Slots of its own | `rp1-vehicle-assembly.sections` |
+| Default size, in grid units | 7 × 16 |
+| Smallest size, in grid units | 4 × 6 |
 | Scenes | 10 |
 
 ![Four craft across two launch complexes: one flying-ready and one still integrating at each, the key line at the top saying what LC-1 and LC-2 are and where they stand, and every card naming its complex and the staffing that sets its rate](docs/assets/assembly-two-complexes--default.png)
@@ -184,14 +184,14 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1-training-enrolment` | `astronaut-complex.tab` | `rp1.available`, `rp1.trainingCatalogue`, `rp1.crew`, `rp1.training`, `spaceCenter.crewRoster`, `rp1.budgetBreakdown` |  | 3 |  |
 | `rp1-contract-payload` | `contract-manager.sections` | – |  | 1 |  |
 | `rp1-facility-upgrades` | `space-center-status.sections` | `rp1.available`, `career.status`, `career.facilities`, `rp1.constructions`, `rp1.facilities`, `rp1.constructionRates` | only while `rp1` | 3 |  |
-| `rp1-finances` | `admin-building.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
-| `rp1-leader-detail` | `admin-building.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
+| `rp1-finances` | `administration-building.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
+| `rp1-leader-detail` | `administration-building.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
 | `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
-| `rp1-program-detail` | `admin-building.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
-| `rp1-research-queue` | `tech-tree.sections` | – |  | 2 |  |
-| `rp1-start-research` | `tech-tree.sections` | `rp1.available`, `career.status`, `rp1.research` | only while `rp1` | 2 |  |
+| `rp1-program-detail` | `administration-building.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
+| `rp1-research-queue` | `research-and-development.sections` | – |  | 2 |  |
+| `rp1-start-research` | `research-and-development.sections` | `rp1.available`, `career.status`, `rp1.research` | only while `rp1` | 2 |  |
 | `rp1-vehicle-assembly-build-cost` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-vehicle-assembly-building` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-vehicle-assembly-buildable` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
@@ -244,7 +244,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
-| `rp1:programs-screen` | `admin-building.screens` | – | only while `rp1` |
+| `rp1:programs-screen` | `administration-building.screens` | – | only while `rp1` |
 | `rp1:crew-core-stats` | `astronaut-complex.readouts` | `rp1.crew`, `rp1.crewProgram`, `rp1.budgetBreakdown`, `settings.rp1` | only while `rp1` |
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |

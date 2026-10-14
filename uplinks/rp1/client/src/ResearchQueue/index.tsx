@@ -165,7 +165,7 @@ const LIST_STYLE = { listStyle: "none", margin: 0, padding: 0 } as const;
 
 registerAugment({
   id: "rp1-research-queue",
-  augments: "tech-tree.sections",
+  augments: "research-and-development.sections",
   component: ResearchQueue,
   owner: RP1,
 });

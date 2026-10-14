@@ -4,7 +4,7 @@
   },
   "_scene": {
     "augment": "rp1-program-detail",
-    "hostWidget": "admin-building",
+    "hostWidget": "administration-building",
     "caption": "A running Program part paid, on a strongly back-loaded curve: the chart is why the total alone cannot be planned against, almost none of this money arrives before the fourth year",
     "paints": [
       "PROGRAM DETAIL",

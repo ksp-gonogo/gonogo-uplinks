@@ -3165,7 +3165,7 @@
     },
     {
       "id": "rp1-finances",
-      "augments": "admin-building.screen-body",
+      "augments": "administration-building.screen-body",
       "channels": [
         "rp1.available",
         "rp1.budget",
@@ -3203,7 +3203,7 @@
     },
     {
       "id": "rp1-leader-detail",
-      "augments": "admin-building.screen-body",
+      "augments": "administration-building.screen-body",
       "channels": [
         "rp1.available",
         "rp1.leaders",
@@ -3215,7 +3215,7 @@
     },
     {
       "id": "rp1-program-detail",
-      "augments": "admin-building.screen-body",
+      "augments": "administration-building.screen-body",
       "channels": [
         "rp1.available",
         "rp1.programs",
@@ -3230,14 +3230,14 @@
     },
     {
       "id": "rp1-research-queue",
-      "augments": "tech-tree.sections",
+      "augments": "research-and-development.sections",
       "channels": [],
       "suppressesVanillaBase": false,
       "settings": []
     },
     {
       "id": "rp1-start-research",
-      "augments": "tech-tree.sections",
+      "augments": "research-and-development.sections",
       "channels": [
         "rp1.available",
         "career.status",
@@ -3348,7 +3348,7 @@
     },
     {
       "id": "rp1:programs-screen",
-      "contributes": "admin-building.screens",
+      "contributes": "administration-building.screens",
       "deps": [],
       "requires": "rp1",
       "settings": []
