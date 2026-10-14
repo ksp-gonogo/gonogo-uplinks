@@ -1,7 +1,6 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Cluster,
-  Fill,
   GraphNotice,
   LineGraph,
   type LineGraphSeries,
@@ -336,7 +335,7 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
     // text (not a Stack of badges) since it is still the one bit of this
     // section that changes without the operator watching for it.
     <Stack>
-      <Fill style={{ height: 96 }}>
+      <div style={GRAPH_FRAME}>
         <LineGraph
           series={series}
           variant="sparkline"
@@ -358,7 +357,7 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
             Collecting radiation history...
           </GraphNotice>
         )}
-      </Fill>
+      </div>
       <Cluster justify="between" style={{ marginTop: "var(--gap-caption)" }}>
         {/* Identity tones at rest (grey/info-blue, matching the traces),
             escalation only over the threshold. */}
@@ -383,3 +382,6 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
     </Stack>
   );
 }
+
+/** The graph's box: the overlay notice positions against it. */
+const GRAPH_FRAME = { position: "relative", height: 96 } as const;

@@ -10,7 +10,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 41.1, extension API 6.0.0 |
+| Built against | contract 41.3, extension API 6.0.0 |
 
 ## Wire
 
@@ -74,10 +74,10 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | --- | --- |
 | Widget id | `ship-systems` |
 | Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew` |
-| Slots | `ship-systems.life-support` |
+| Slots of its own | `ship-systems.life-support` |
 | Needs | a vessel in flight |
-| Default size | 9 × 15 |
-| Smallest size | 4 × 5 |
+| Default size, in grid units | 9 × 15 |
+| Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |
 
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](docs/assets/ec-shortage-limits-water--default.png)
@@ -90,10 +90,10 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | --- | --- |
 | Widget id | `space-weather` |
 | Reads | `kerbalism.spaceweather` |
-| Also reads, if published | `vessel.flight` |
+| Also reads, if the mod publishes them | `vessel.flight` |
 | Needs | a vessel in flight |
-| Default size | 8 × 11 |
-| Smallest size | 3 × 4 |
+| Default size, in grid units | 8 × 11 |
+| Smallest size, in grid units | 3 × 4 |
 | Scenes | 8 |
 
 ![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](docs/assets/nominal--default.png)

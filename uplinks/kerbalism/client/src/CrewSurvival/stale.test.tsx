@@ -2,12 +2,12 @@ import { render, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   ContributionsProvider,
   WidgetMetaContext,
-  WidgetMeters,
 } from "@ksp-gonogo/ui-kit";
 import { visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { observedMargin } from "../test/observedMargin.js";
 import { KerbalismPresent } from "../test/kerbalismPresent.js";
+import { RowMeters } from "../test/rowMeters.js";
 import {
   flushProviderFrame,
   replayStreamBlock,
@@ -77,7 +77,8 @@ async function rowBadgeTree(
 
 /**
  * One kerbal's meter stack over a scene, mounted the way CrewStatus mounts it:
- * the widget identity, the contribution aggregation and ui-kit's `WidgetMeters`.
+ * the widget identity, the contribution aggregation and the meters
+ * contributed for one kerbal.
  */
 async function meterTree(
   fixture: Record<string, unknown>,
@@ -96,7 +97,7 @@ async function meterTree(
       >
         <KerbalismPresent>
           <ContributionsProvider>
-            <WidgetMeters row={row} />
+            <RowMeters row={row} />
           </ContributionsProvider>
         </KerbalismPresent>
       </WidgetMetaContext.Provider>

@@ -106,9 +106,8 @@ export function survivalMeters(
         // A caller's label replaces the kit's `<Unit>`, and with it the mark
         // saying the figure is held, so a reading goes without one.
         ...(reading === undefined ? { valueLabel: pct(rule.fraction) } : {}),
-        // The roster row this meter belongs beside. CrewStatus mounts one
-        // `<WidgetMeters row={name}>` per kerbal, so each entry lands under the
-        // kerbal it is about.
+        // The roster row this meter belongs beside: CrewStatus draws each
+        // kerbal's meters under that kerbal, filtered on this name.
         row: kerbal.name,
       });
     }

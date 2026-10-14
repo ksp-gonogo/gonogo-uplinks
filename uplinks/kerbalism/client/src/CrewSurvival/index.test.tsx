@@ -8,11 +8,11 @@ import {
 import {
   ContributionsProvider,
   WidgetMetaContext,
-  WidgetMeters,
 } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { KerbalismPresent } from "../test/kerbalismPresent.js";
+import { RowMeters } from "../test/rowMeters.js";
 // Importing the real module runs its module-load registerAugment(...) and,
 // through `./meters`, the `crew-status.meters` registerContribution(...).
 import { CrewSurvivalBadgeAugment } from "./index.js";
@@ -37,8 +37,8 @@ function newFixture() {
 
 /**
  * One roster row, wired the way CrewStatus wires it: the dashboard's widget
- * identity, the contribution aggregation, and ui-kit's `WidgetMeters` reading
- * the universal `crew-status.meters` segment for this kerbal.
+ * identity, the contribution aggregation, and the meters contributed
+ * to the universal `crew-status.meters` segment for this kerbal.
  *
  * The survival meters used to be a React augment this file rendered directly.
  * They are data now, so a test that only called the compute function would
@@ -52,7 +52,7 @@ function CrewRow({ crewName }: { crewName: string }) {
     >
       <KerbalismPresent>
         <ContributionsProvider>
-          <WidgetMeters row={crewName} />
+          <RowMeters row={crewName} />
         </ContributionsProvider>
       </KerbalismPresent>
     </WidgetMetaContext.Provider>
