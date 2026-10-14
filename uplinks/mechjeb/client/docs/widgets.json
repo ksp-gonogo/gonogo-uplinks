@@ -20,15 +20,18 @@
       "actions": [
         {
           "id": "engage-ascent",
-          "label": "Engage ascent autopilot"
+          "label": "Engage ascent autopilot",
+          "description": "Commands the ascent autopilot to fly to the set target altitude."
         },
         {
           "id": "execute-node",
-          "label": "Execute next node"
+          "label": "Execute next node",
+          "description": "Commands execution of the next maneuver node."
         },
         {
           "id": "land-at-target",
-          "label": "Land at target"
+          "label": "Land at target",
+          "description": "Commands an autopilot landing at the selected target."
         }
       ],
       "augmentSlots": [],

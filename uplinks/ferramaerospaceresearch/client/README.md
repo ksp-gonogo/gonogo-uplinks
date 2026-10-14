@@ -10,7 +10,7 @@ Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of 
 | Uplink id | `aero` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 41.1, extension API 6.0.0 |
+| Built against | contract 41.3, extension API 6.0.0 |
 
 ## Wire
 
@@ -30,8 +30,8 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 | Widget id | `aerodynamics` |
 | Reads | `aero.state` |
 | Needs | a vessel in flight |
-| Default size | 4 × 7 |
-| Smallest size | 4 × 5 |
+| Default size, in grid units | 4 × 7 |
+| Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |
 
 ![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
