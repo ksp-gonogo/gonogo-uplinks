@@ -16,7 +16,7 @@ namespace GonogoPrincipiaUplink.Tests
     public class PrincipiaBinaryDiscoveryTests
     {
         private const string Root =
-            "/games/Kerbal Space Program/GameData";
+            "/home/deck/.local/share/Steam/steamapps/common/Kerbal Space Program/GameData";
 
         private const string Baseline = Root + "/Principia/Linux/x64/principia.so";
         private const string Fma = Root + "/Principia/Linux/x64_AVX_FMA/principia.so";

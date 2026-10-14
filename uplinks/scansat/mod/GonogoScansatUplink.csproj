@@ -10,7 +10,7 @@
   <PropertyGroup>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <!-- net48, not net472 like Gonogo.KSP: the live SCANsat.dll/SCANsat.Unity.dll
-         copy under SCANsat/Plugins in the KspGameData root is
+         copy under local_docs/syncthing/kspdata/GameData/SCANsat/Plugins/ is
          itself built against .NETFramework 4.8 (MSB3274/3275 otherwise) -
          KSP's Mono runtime loads either target fine at runtime. -->
     <TargetFramework>net48</TargetFramework>
@@ -32,6 +32,10 @@
        /p:KspGameData=... pointing at a checked-out ksp-managed reference-
        assembly repo instead (see kerbcam's Plugin.csproj for the precedent
        this mirrors). -->
+  <PropertyGroup>
+    <KspGameData Condition="'$(KspGameData)' == ''">$(MSBuildThisFileDirectory)..\..\local_docs\syncthing\kspdata\GameData</KspGameData>
+  </PropertyGroup>
+
   <!-- KSP / Unity reference assemblies - same portable copy + Private="false"
        pattern as Gonogo.KSP.csproj: never copied to output, satisfied by
        KSP's own GameData/../KSP_Data/Managed at runtime. -->
@@ -53,8 +57,8 @@
   <!-- SCANsat is a THIRD-PARTY mod the user installs separately - direct-link
        reference only (Private="false"), never bundled/copied into this
        Uplink's own output. Provided by the user's live SCANsat install at
-       runtime; this build resolves it from SCANsat/Plugins under the
-       KspGameData root. -->
+       runtime; see local_docs/syncthing/kspdata/GameData/SCANsat/Plugins/
+       for the copy this repo builds against. -->
   <ItemGroup>
     <Reference Include="SCANsat" Private="false">
       <HintPath>$(KspGameData)\SCANsat\Plugins\SCANsat.dll</HintPath>

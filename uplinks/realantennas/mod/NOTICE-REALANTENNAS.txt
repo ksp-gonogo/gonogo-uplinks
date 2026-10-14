@@ -2,7 +2,7 @@ GonogoRealAntennasUplink integrates with RealAntennas
 (https://github.com/kerbalnet/RealAntennas) entirely at ARM'S LENGTH: it reads
 RealAntennas' runtime state through its PUBLIC API by reflection ONLY, and
 re-derives link-budget figures from RealAntennas' PUBLIC static formulas and
-constants. It does NOT
+constants (see local_docs/telemetry-mod/comms-uplink-design.md §4). It does NOT
 link the RealAntennas assembly at build time, does NOT derive from RealAntennas
 types, and bundles NO RealAntennas source or assets.
 

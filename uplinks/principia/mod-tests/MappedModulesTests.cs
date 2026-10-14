@@ -11,7 +11,7 @@ namespace GonogoPrincipiaUplink.Tests
     public class MappedModulesTests
     {
         private const string KspRoot =
-            "/games/Kerbal Space Program";
+            "/home/deck/.local/share/Steam/steamapps/common/Kerbal Space Program";
 
         private const string RealMaps =
             "00400000-00401000 r-xp 00000000 103:08 2868960                           " + KspRoot + "/KSP.x86_64\n"

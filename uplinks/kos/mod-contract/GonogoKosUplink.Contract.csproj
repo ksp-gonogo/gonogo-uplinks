@@ -2,9 +2,9 @@
   <!--
     GonogoKosUplink's OWN contract slice: the nine wire payload/command-arg
     types that used to live in mod/Sitrep.Contract/KosCommands.cs, KosRun.cs and
-    KosTerminal.cs, relocated here because no
-    uplink-specific wire type may live in core, even for an in-monorepo Uplink.
-    Sixth
+    KosTerminal.cs, relocated here per the operator mandate that NO
+    uplink-specific wire type may live in core, even for an in-monorepo Uplink
+    (see local_docs/design/2026-08-10-uplink-types-out-of-core-plan.md). Sixth
     and last Uplink through the types-out-of-core mechanism, and the one the plan
     sequenced LAST for a reason: three files rather than one, three separate
     channel families in one slice (kos.processors discovery, the per-CPU

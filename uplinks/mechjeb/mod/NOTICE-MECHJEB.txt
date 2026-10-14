@@ -1,7 +1,8 @@
 GonogoMechJebUplink compile-time links MechJeb2 (MechJeb2.dll). It reads and
 writes MechJeb2's public API in-process; reflection is used ONLY for the
 version-guard's presence/shape probe (MechJebVersionGuard.cs), never to
-invoke MechJeb2.
+invoke MechJeb2. See local_docs/design/mechjeb-uplink-sketch.md and
+local_docs/design/mechjeb-decompile-lock.md.
 
 MechJeb2 is distributed under the GNU General Public License v3.0. Because
 GonogoMechJebUplink direct-links MechJeb2, GonogoMechJebUplink is itself

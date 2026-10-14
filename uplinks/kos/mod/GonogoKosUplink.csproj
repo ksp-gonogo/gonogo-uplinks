@@ -1,9 +1,11 @@
 <!--
   GonogoKosUplink: the kOS bridge extension for gonogo/Sitrep (mod/GonogoKosUplink).
 
-  This assembly compile-time links kOS (GPLv3) and, from P1 onward, 0Harmony for one
-  observe-only patch. The link is deliberate: no arm's-length reflection,
-  no loopback telnet.
+  This assembly compile-time links kOS (GPLv3, cloned for reference at
+  local_docs/reference/kos/) and, from P1 onward, 0Harmony for one
+  observe-only patch. Per local_docs/telemetry-mod/kos-migration-spec.md
+  §8 the link is deliberate, no arm's-length reflection, no loopback
+  telnet.
 
   gonogo overall is MIT (see LICENSING.md). GonogoKosUplink is THE exception:
   linking GPLv3 kOS makes this assembly GPL-3.0-only. It is a dependency
@@ -18,7 +20,8 @@
   Packaging: GonogoKosUplink is a SEPARATE, optional deployable extension (its
   own GameData/GonogoKosUplink folder + its own CKAN/SpaceDock listing via
   GonogoKosUplink.netkan, GPLv3-linkage documented in NOTICE-KOS.txt): build +
-  deploy through the reference-set build script. It must not bundle
+  deploy with `build gonogokosuplink` (build_gonogokosuplink in
+  scripts/gonogo_claude_tools.sh). It must not bundle
   core Gonogo's or kOS's or Harmony's assemblies; every Reference/
   ProjectReference below that isn't unique to this extension is
   Private="false" for exactly that reason (see each ItemGroup's comment).
@@ -28,7 +31,7 @@
   <PropertyGroup>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <!-- net48, not net472: the live kOS.dll / kOS.Safe.dll we link
-         (kOS/Plugins under the KspGameData root) are built
+         (local_docs/syncthing/kspdata/GameData/kOS/Plugins/) are built
          against .NETFramework 4.8 (MSB3274/3275 otherwise): KSP's Mono
          runtime loads either target fine. Mirrors GonogoScansatUplink. -->
     <TargetFramework>net48</TargetFramework>
@@ -123,7 +126,8 @@
        Gonogo's assembly, already in GameData/Gonogo/Plugins, and a bundled
        copy here would shadow it. This one is ours and nothing else
        ships it, so it must be copied into this extension's own deploy set,
-       making GonogoKosUplink a TWO-DLL deployable. -->
+       making GonogoKosUplink a TWO-DLL deployable (see build_gonogokosuplink in
+       scripts/gonogo_claude_tools.sh). -->
   <ItemGroup>
     <ProjectReference Include="..\mod-contract\GonogoKosUplink.Contract.csproj" />
   </ItemGroup>

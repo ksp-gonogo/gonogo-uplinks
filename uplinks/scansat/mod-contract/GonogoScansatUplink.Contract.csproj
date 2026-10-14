@@ -2,9 +2,10 @@
   <!--
     GonogoScansatUplink's OWN contract slice: the wire payload types
     (ScanningVesselEntry, ScanSensorEntry, ScanTrackColor, ScanScienceEntry,
-    ScanAnomalyEntry) that used to live in Sitrep.Contract, relocated here because
-    no uplink-specific wire type may live in core, even for an in-monorepo
-    Uplink. Fourth
+    ScanAnomalyEntry) that used to live in Sitrep.Contract, relocated here per
+    the operator mandate that NO uplink-specific wire type may live in core,
+    even for an in-monorepo Uplink (see
+    local_docs/design/2026-08-10-uplink-types-out-of-core-plan.md). Fourth
     Uplink through the types-out-of-core mechanism, after the MechJeb pilot,
     the Avionics relocation, and the Kerbcast relocation, and the largest so
     far: five types, two [SitrepTopic]-tagged roots (scansat.scanningVessels

@@ -1580,7 +1580,7 @@ describe("CameraFeed: augment slots (spec §4)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Delayed aim controls, drawn OVER the picture.
+// Delayed aim controls (#35), drawn OVER the picture.
 //
 // The widget is media-first: the video is the content and everything else is a
 // layer on top of it that stays out of the way until the operator reaches for

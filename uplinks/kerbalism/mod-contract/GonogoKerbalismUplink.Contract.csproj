@@ -2,8 +2,9 @@
   <!--
     GonogoKerbalismUplink's OWN contract slice: the fifteen wire payload types
     that used to live in mod/Sitrep.Contract/KerbalismPayloads.cs, relocated
-    here because no uplink-specific wire type may live in core, even for an
-    in-monorepo Uplink. Fifth Uplink
+    here per the operator mandate that NO uplink-specific wire type may live in
+    core, even for an in-monorepo Uplink (see
+    local_docs/design/2026-08-10-uplink-types-out-of-core-plan.md). Fifth Uplink
     through the types-out-of-core mechanism, and the largest by every measure:
     fifteen types against the previous high of five, FIVE [SitrepTopic]-tagged
     roots (kerbalism.spaceweather / .profile / .lifesupport / .crew /

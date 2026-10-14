@@ -49,12 +49,11 @@ namespace GonogoPrincipiaUplink.Tests
             var installRoot = FindInstallRoot();
             if (installRoot == null)
             {
-                // Silent on a machine without an install, and that is a real cost
+                // Silent on a machine without the mirror, and that is a real cost
                 // rather than a free pass: this test cannot tell "no install here"
                 // from "the reader broke". It is accepted because the alternative
                 // was tried elsewhere in this repo and reddened CI permanently, and
                 // because the synthetic suite beside it runs everywhere.
-                Console.WriteLine("Skipped: set KSP_ROOT to a KSP install that has Principia in GameData.");
                 return;
             }
 
@@ -77,7 +76,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             if (found.Count == 0)
             {
-                // Principia is not installed in an otherwise-present install.
+                // Principia is not installed in an otherwise-present mirror.
                 return;
             }
             // Without this the test passes by reading ONE build, and cross-build
@@ -131,14 +130,22 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
-        /// The KSP install holding the shipped Principia builds, named by the
-        /// <c>KSP_ROOT</c> environment variable. Null when it is unset or names no
-        /// directory, which makes the test return without asserting anything.
+        /// The local mirror of the rig's KSP install. Walks up from the test binary
+        /// to the workspace root rather than assuming a working directory.
         /// </summary>
         private static string? FindInstallRoot()
         {
-            var root = Environment.GetEnvironmentVariable("KSP_ROOT");
-            return !string.IsNullOrEmpty(root) && Directory.Exists(root) ? root : null;
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "local_docs", "syncthing", "kspdata");
+                if (Directory.Exists(candidate))
+                {
+                    return candidate;
+                }
+                dir = dir.Parent;
+            }
+            return null;
         }
     }
 }
