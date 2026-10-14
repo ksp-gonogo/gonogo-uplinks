@@ -93,13 +93,10 @@ namespace Gonogo.RealAntennasUplink
 
         public UplinkManifest Manifest { get; } = RealAntennasManifest.Build();
 
-        /// <summary>Mandatory health self-report (see <see cref="ISitrepUplink.Health"/>):
-        /// Unavailable when the RealAntennas assembly is absent (the uplink went inert at
-        /// Register: <see cref="_ra"/> stays null/unavailable), else Healthy.</summary>
+        /// <summary>Mandatory health self-report (see <see cref="ISitrepUplink.Health"/>), as
+        /// <see cref="RaHealth.Of"/> answers it for the RealAntennas this Uplink found at Register.</summary>
         public UplinkHealth Health() =>
-            _ra != null && _ra.IsAvailable
-                ? UplinkHealth.Healthy
-                : new UplinkHealth(UplinkHealthState.Unavailable, "RealAntennas assembly not loaded");
+            RaHealth.Of(_ra != null && _ra.IsAvailable, _ra?.HasReceivedPower ?? false);
 
         public void Register(IUplinkHost host)
         {
@@ -519,19 +516,7 @@ namespace Gonogo.RealAntennasUplink
                     // has no double.IsFinite, hence the explicit NaN/Infinity test.
                     if (!double.IsNaN(margin) && !double.IsInfinity(margin))
                     {
-                        var meta = new PayloadMeta { Source = capture.Source };
-                        capture.LinkMargin = new CommsLinkMargin
-                        {
-                            DecibelMargin = margin,
-                            Quality = RaLinkBudget.NormaliseQuality(margin),
-                            // We only reach this branch when CommNet reports the
-                            // link connected, so the link DOES close, the
-                            // authoritative state wins over the geometry-only
-                            // margin sign (which can disagree, e.g. a marginal but
-                            // negotiated link).
-                            ClosesLink = true,
-                            Meta = meta,
-                        };
+                        capture.LinkMargin = RaLinkBudget.ConnectedLinkMargin(margin, capture.Source);
                     }
                 }
             }

@@ -230,10 +230,11 @@ export interface CommsDataRate
 /**
 * The `comms.linkMargin` payload, RealAntennas only: how many decibels of
 * received power the active craft's first link could lose before RealAntennas
-* stops carrying it, so it is 0 or more, to within rounding, while the link is
-* up and a figure near 0 says the link is close to failing. Useful for showing
-* the operator how near the link is to dropping when `comms.signal` still
-* reads full strength.
+* stops carrying it. It is never below 0 while the link is up, and a figure
+* near 0 says the link is close to failing: when a dish has turned away from
+* the far end since RealAntennas last worked the link out, the figure reads 0
+* until RealAntennas drops the link. Useful for showing the operator how near
+* the link is to dropping when `comms.signal` still reads full strength.
 *
 * The margin is for the pair of antennas the link runs on, at the slowest
 * symbol rate both can run, with the pointing loss of each towards the other

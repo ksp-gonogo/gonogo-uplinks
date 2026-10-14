@@ -1,4 +1,5 @@
 using System;
+using Sitrep.Contract;
 
 namespace Gonogo.RealAntennasUplink
 {
@@ -116,6 +117,26 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>Whether a margin closes the link (≥ 0 dB).</summary>
         public static bool ClosesLink(double marginDb) => marginDb >= 0.0;
+
+        /// <summary>
+        /// The <c>comms.linkMargin</c> payload for a link RealAntennas reports
+        /// connected. RealAntennas is the authority on whether the link closes, so
+        /// <see cref="CommsLinkMargin.ClosesLink"/> is true and the margin is
+        /// floored at 0: between RealAntennas' recomputes a dish turned away from
+        /// the far end can put <paramref name="marginDb"/> below 0, and the link
+        /// then reads as at its edge until RealAntennas drops it.
+        /// </summary>
+        public static CommsLinkMargin ConnectedLinkMargin(double marginDb, string source)
+        {
+            double floored = Math.Max(0.0, marginDb);
+            return new CommsLinkMargin
+            {
+                DecibelMargin = floored,
+                Quality = NormaliseQuality(floored),
+                ClosesLink = true,
+                Meta = new PayloadMeta { Source = source },
+            };
+        }
 
         /// <summary>
         /// The separation, metres, at which this budget's margin reaches exactly

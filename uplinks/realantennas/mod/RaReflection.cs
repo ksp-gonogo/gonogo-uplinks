@@ -79,6 +79,12 @@ namespace Gonogo.RealAntennasUplink
                     null);
         }
 
+        /// <summary>
+        /// Whether RealAntennas' <c>Physics.ReceivedPower(RealAntenna, RealAntenna, float, float)</c>
+        /// was found, so <see cref="ReceivedPowerDbm"/> can answer.
+        /// </summary>
+        public bool HasReceivedPower => _receivedPower != null;
+
         /// <summary>The forward-link transmit antenna of a RACommLink, or null.</summary>
         public object? ForwardTxAntenna(object commLink) => ReadObject(_fwdAntennaTx, commLink);
 

@@ -168,6 +168,25 @@ namespace Gonogo.RealAntennasUplink.Tests
         }
 
         [Fact]
+        public void ConnectedLinkMargin_FloorsANegativeMarginAndStillCloses()
+        {
+            var margin = RaLinkBudget.ConnectedLinkMargin(-3.2, "vessel:test");
+
+            Assert.True(margin.ClosesLink);
+            Assert.Equal(0.0, margin.DecibelMargin);
+            Assert.Equal(RaLinkBudget.NormaliseQuality(0.0), margin.Quality);
+        }
+
+        [Fact]
+        public void ConnectedLinkMargin_KeepsAPositiveMargin()
+        {
+            var margin = RaLinkBudget.ConnectedLinkMargin(7.5, "vessel:test");
+
+            Assert.True(margin.ClosesLink);
+            Assert.Equal(7.5, margin.DecibelMargin);
+        }
+
+        [Fact]
         public void DownLinkQuality_IsZero()
         {
             Assert.Equal(0.0, RaLinkDown.LinkMargin("vessel:test").Quality);

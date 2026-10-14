@@ -30,6 +30,7 @@
     <Compile Include="..\mod\RaLinkStrength.cs" />
     <Compile Include="..\mod\RaPlannedAntennaData.cs" />
     <Compile Include="..\mod\RaLinkDown.cs" />
+    <Compile Include="..\mod\RaHealth.cs" />
     <Compile Include="..\mod\RaWire.cs" />
     <!-- RaLinkDirection is the pure, KSP-free up/down resolver for the RA link's
          forward/reverse rates; RaLinkDirectionTests exercises both orientations. -->
