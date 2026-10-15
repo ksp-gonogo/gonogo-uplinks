@@ -83,6 +83,14 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>The body whose surface the antenna's station stands on, for a ground station, whose receiver sees through that body's atmosphere.</summary>
         public int? GroundBodyIndex;
+
+        /// <summary>This antenna as it would be with its dish turned to look at whatever it is paired with.</summary>
+        internal RaPlannedAntenna AimedAtAnyPeer()
+        {
+            var turned = (RaPlannedAntenna)MemberwiseClone();
+            turned.Aim = RaAimKind.Untargeted;
+            return turned;
+        }
     }
 
     /// <summary>

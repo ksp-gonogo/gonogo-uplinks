@@ -23,19 +23,23 @@ namespace Gonogo.RealAntennasUplink
         private readonly Func<string, IReadOnlyList<RaPlannedAntenna>?> _antennasOf;
         private readonly Func<string, bool> _allowed;
         private readonly Func<RaPlannedAntenna, string> _aimLabel;
+        private readonly IReadOnlyList<RaOccluder> _occluders;
 
         /// <param name="nodeId">The craft this model answers for, as <c>"vessel:&lt;guid&gt;"</c>.</param>
         /// <param name="antennas">The craft's antennas as captured.</param>
         /// <param name="antennasOf">Any node's captured antennas by id, or null for a node the capture did not see.</param>
         /// <param name="allowed">Whether a node may turn a dish on its own, read when asked so an opt-out takes effect at once.</param>
         /// <param name="aimLabel">What an antenna's aim is called, in words.</param>
+        /// <param name="occluders">The bodies whose warm discs add noise to a dish that sees them; none adds no body noise.</param>
         public RaRetargetModel(
             string nodeId,
             IReadOnlyList<RaPlannedAntenna> antennas,
             Func<string, IReadOnlyList<RaPlannedAntenna>?> antennasOf,
             Func<string, bool> allowed,
-            Func<RaPlannedAntenna, string>? aimLabel = null)
+            Func<RaPlannedAntenna, string>? aimLabel = null,
+            IReadOnlyList<RaOccluder>? occluders = null)
         {
+            _occluders = occluders ?? new RaOccluder[0];
             _nodeId = nodeId ?? throw new ArgumentNullException(nameof(nodeId));
             _antennas = antennas ?? throw new ArgumentNullException(nameof(antennas));
             _antennasOf = antennasOf ?? throw new ArgumentNullException(nameof(antennasOf));
@@ -82,7 +86,10 @@ namespace Gonogo.RealAntennasUplink
                 var angleB = RaContactLinkModel.OffAxis(b, peer, dish, ut, positions);
                 var margin = Math.Min(
                     Math.Min(mine.BeamwidthRadians.Value, RaContactLinkModel.Cliff(b, angleB)),
-                    RaContactLinkModel.RangeMargin(mine, b, (peer - dish).Magnitude(), 0.0, RaContactLinkModel.LossDb(b, angleB)));
+                    RaContactLinkModel.RangeMargin(
+                        mine, b, (peer - dish).Magnitude(), 0.0, RaContactLinkModel.LossDb(b, angleB),
+                        RaContactLinkModel.ExtraNoiseKelvin(mine.AimedAtAnyPeer(), dish, peer, ut, positions, _occluders),
+                        RaContactLinkModel.ExtraNoiseKelvin(b, peer, dish, ut, positions, _occluders)));
                 if (margin > best)
                 {
                     best = margin;

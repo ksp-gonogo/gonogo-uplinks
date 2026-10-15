@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Gonogo.RealAntennasUplink;
@@ -42,6 +43,39 @@ namespace GonogoRealAntennasUplink.Tests
         };
 
         private static RaPlannedAntenna Omni() => new RaPlannedAntenna { Steerable = false, Band = "S" };
+
+        private sealed class BodyBehindPeer : IContactPositions
+        {
+            public Sitrep.Contract.Vector3d? NodeAt(string nodeId, double ut) => nodeId == "node" ? Here : nodeId == "peer" ? Peer : (Sitrep.Contract.Vector3d?)null;
+
+            public Sitrep.Contract.Vector3d BodyAt(int bodyIndex, double ut) => new Sitrep.Contract.Vector3d(4_000_000, 0, 0);
+        }
+
+        [Fact]
+        public void ABodyBehindThePeerRaisesTheNoiseOfTheDishAimedAtIt()
+        {
+            // Power chosen so the pair reaches 5 percent beyond the peer, inside the beam's own margin.
+            var power = 30.0 + (20.0 * Math.Log10(1_050_000.0 / RaLinkBudget.MaxRangeMeters(30.0, 30.0, 0.0, 2.2e9, 200.0, 1000.0, 2.5)!.Value));
+            var dish = new RaPlannedAntenna
+            {
+                DishId = "node#1/0", Steerable = true, BeamwidthRadians = 0.1, Band = "S", Aim = RaAimKind.BodyCentre, AimBodyIndex = 3,
+                GainDbi = 30.0, TxPowerDbm = power, FrequencyHz = 2.2e9, SymbolRateHz = 1000.0, NoiseTemperatureKelvin = 200.0,
+            };
+            var peer = new RaPlannedAntenna
+            {
+                Steerable = false, Band = "S", GainDbi = 0.0, TxPowerDbm = power, FrequencyHz = 2.2e9, SymbolRateHz = 1000.0, NoiseTemperatureKelvin = 200.0,
+            };
+            var hot = new[] { new RaOccluder { BodyIndex = 0, RadiusMeters = 100_000.0, TemperatureKelvin = 5000.0 } };
+            IReadOnlyList<RaPlannedAntenna>? PeersAntennas(string id) => id == "peer" ? new[] { peer } : null;
+
+            var quiet = new RaRetargetModel("node", new[] { dish }, PeersAntennas, _ => true);
+            var noisy = new RaRetargetModel("node", new[] { dish }, PeersAntennas, _ => true, occluders: hot);
+
+            var without = quiet.MarginIfAimedAt("node#1/0", "peer", 0.0, Here, Peer, new BodyBehindPeer());
+            var with = noisy.MarginIfAimedAt("node#1/0", "peer", 0.0, Here, Peer, new BodyBehindPeer());
+
+            Assert.True(with < without);
+        }
 
         [Fact]
         public void ADishIdIsTheNodeThePartAndTheOrdinalAndParsesBack()

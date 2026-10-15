@@ -416,7 +416,8 @@ namespace Gonogo.RealAntennasUplink
                 nodeId,
                 planned,
                 id => _rosterAntennas.TryGetValue(id, out var antennas) ? antennas : null,
-                id => AutoRetargetAllowed(id));
+                id => AutoRetargetAllowed(id),
+                occluders: Occluders());
         }
 
         public bool AutoRetargetAllowed(string nodeId) =>
