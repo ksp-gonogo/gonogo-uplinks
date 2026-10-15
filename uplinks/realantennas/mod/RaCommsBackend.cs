@@ -233,7 +233,33 @@ namespace Gonogo.RealAntennasUplink
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaContactLinkModel(
-                    fromAntennas, toAntennas, _ra.MinRelayTechLevel() ?? 0, fromNode?.isHome == true, toNode?.isHome == true);
+                    fromAntennas, toAntennas, _ra.MinRelayTechLevel() ?? 0, fromNode?.isHome == true, toNode?.isHome == true, Occluders());
+        }
+
+        /// <summary>Every body, with the temperature RealAntennas gives it, for the noise a dish picks up from one in its beam.</summary>
+        private List<RaOccluder> Occluders()
+        {
+            var occluders = new List<RaOccluder>();
+            var bodies = FlightGlobals.Bodies;
+            if (bodies == null)
+            {
+                return occluders;
+            }
+            for (var i = 0; i < bodies.Count; i++)
+            {
+                var temperature = bodies[i] == null ? null : _ra.BodyBaseTemperature(bodies[i]);
+                if (temperature != null)
+                {
+                    occluders.Add(new RaOccluder
+                    {
+                        BodyIndex = i,
+                        RadiusMeters = bodies[i].Radius,
+                        TemperatureKelvin = temperature.Value,
+                        IsStar = bodies[i].isStar,
+                    });
+                }
+            }
+            return occluders;
         }
 
         /// <summary>
@@ -315,6 +341,11 @@ namespace Gonogo.RealAntennasUplink
                     one.DishId = RaDishIds.Of(nodeId, part.Value.Part, part.Value.Ordinal);
                 }
                 Aim(_ra.Target(antenna), one);
+                if (node.isHome)
+                {
+                    var home = FlightGlobals.GetHomeBody();
+                    one.GroundBodyIndex = home == null ? (int?)null : FlightGlobals.Bodies?.IndexOf(home);
+                }
                 planned.Add(one);
             }
             if (nodeId != null)

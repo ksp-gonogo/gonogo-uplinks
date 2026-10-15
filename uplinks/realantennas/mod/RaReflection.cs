@@ -97,6 +97,29 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>Antenna transmit power (dBm), or null.</summary>
         public double? TxPower(object antenna) => ReadDouble(_txPower, antenna);
 
+        /// <summary>
+        /// A body's base temperature in kelvin as RealAntennas reads it
+        /// (<c>Physics.BodyBaseTemperature</c>), or null when the call is not found
+        /// or throws.
+        /// </summary>
+        public double? BodyBaseTemperature(object body)
+        {
+            try
+            {
+                var method = SafeGetType("RealAntennas.Physics")?.GetMethod("BodyBaseTemperature", BindingFlags.Public | BindingFlags.Static);
+                return method?.Invoke(null, new[] { body }) switch
+                {
+                    float f => f,
+                    double d => d,
+                    _ => (double?)null,
+                };
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         /// <summary>Antenna centre frequency (Hz), or null.</summary>
         public double? Frequency(object antenna) => ReadDouble(_frequency, antenna);
 

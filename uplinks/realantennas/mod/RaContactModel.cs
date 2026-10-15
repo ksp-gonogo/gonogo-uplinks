@@ -80,6 +80,9 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>The body aimed at, when <see cref="Aim"/> is <see cref="RaAimKind.BodyCentre"/>.</summary>
         public int? AimBodyIndex;
+
+        /// <summary>The body whose surface the antenna's station stands on, for a ground station, whose receiver sees through that body's atmosphere.</summary>
+        public int? GroundBodyIndex;
     }
 
     /// <summary>
@@ -103,6 +106,7 @@ namespace Gonogo.RealAntennasUplink
         private readonly int _minRelayTechLevel;
         private readonly bool _fromIsHome;
         private readonly bool _toIsHome;
+        private readonly IReadOnlyList<RaOccluder> _occluders;
 
         /// <param name="minRelayTechLevel">
         /// RealAntennas' relay gate: a craft carries another's traffic only through an
@@ -110,13 +114,16 @@ namespace Gonogo.RealAntennasUplink
         /// </param>
         /// <param name="fromIsHome">A ground station is a destination and is never gated.</param>
         /// <param name="toIsHome">As <paramref name="fromIsHome"/>, for the other end.</param>
+        /// <param name="occluders">The bodies whose warm discs add noise to a dish that sees them; none adds no body noise.</param>
         public RaContactLinkModel(
             IReadOnlyList<RaPlannedAntenna> from,
             IReadOnlyList<RaPlannedAntenna> to,
             int minRelayTechLevel = 0,
             bool fromIsHome = false,
-            bool toIsHome = false)
+            bool toIsHome = false,
+            IReadOnlyList<RaOccluder>? occluders = null)
         {
+            _occluders = occluders ?? new RaOccluder[0];
             _from = from ?? throw new ArgumentNullException(nameof(from));
             _to = to ?? throw new ArgumentNullException(nameof(to));
             _minRelayTechLevel = minRelayTechLevel;
@@ -169,7 +176,10 @@ namespace Gonogo.RealAntennasUplink
                     }
                     var margin = Math.Min(
                         Math.Min(Cliff(a, angleA), Cliff(b, angleB)),
-                        RangeMargin(a, b, (to - from).Magnitude(), LossDb(a, angleA), LossDb(b, angleB)));
+                        RangeMargin(
+                            a, b, (to - from).Magnitude(), LossDb(a, angleA), LossDb(b, angleB),
+                            ExtraNoiseKelvin(a, from, to, ut, positions, _occluders),
+                            ExtraNoiseKelvin(b, to, from, ut, positions, _occluders)));
                     if (margin > best)
                     {
                         best = margin;
@@ -233,13 +243,6 @@ namespace Gonogo.RealAntennasUplink
         public static double Cliff(RaPlannedAntenna antenna, double? offAxis) =>
             offAxis == null ? double.PositiveInfinity : antenna.BeamwidthRadians!.Value - offAxis.Value;
 
-        // RA's pointing-loss curve (Physics.PointingLoss): off-axis angle over beamwidth against dB, linear between points.
-        private static readonly double[,] LossCurve =
-        {
-            { 0.0, 0.0 }, { 0.14, 0.25 }, { 0.2, 0.5 }, { 0.29, 1.0 }, { 0.41, 2.0 }, { 0.5, 3.0 }, { 0.57, 4.0 },
-            { 0.61, 4.5 }, { 0.64, 5.0 }, { 0.7, 6.0 }, { 0.76, 7.0 }, { 0.81, 8.0 }, { 0.86, 9.0 }, { 1.0, 10.0 },
-        };
-
         /// <summary>
         /// The pointing loss inside the beam, in dB, from RealAntennas' own curve:
         /// 3 dB at half the beamwidth and 10 dB at the beam's edge. Beyond the
@@ -251,20 +254,8 @@ namespace Gonogo.RealAntennasUplink
             {
                 return 0.0;
             }
-            var ratio = offAxis.Value / antenna.BeamwidthRadians!.Value;
-            if (ratio >= 1.0)
-            {
-                return LossCurve[LossCurve.GetLength(0) - 1, 1];
-            }
-            for (var i = 1; i < LossCurve.GetLength(0); i++)
-            {
-                if (ratio < LossCurve[i, 0])
-                {
-                    var t = (ratio - LossCurve[i - 1, 0]) / (LossCurve[i, 0] - LossCurve[i - 1, 0]);
-                    return LossCurve[i - 1, 1] + t * (LossCurve[i, 1] - LossCurve[i - 1, 1]);
-                }
-            }
-            return 0.0;
+            var width = antenna.BeamwidthRadians!.Value;
+            return RaLinkBudget.PointingLossDb(Math.Min(offAxis.Value, width), width);
         }
 
         /// <summary>
@@ -272,10 +263,12 @@ namespace Gonogo.RealAntennasUplink
         /// two directions as RA requires both. Unbounded when the budget cannot be
         /// solved, which applies no range term, as <see cref="RaReach"/> does.
         /// </summary>
-        public static double RangeMargin(RaPlannedAntenna a, RaPlannedAntenna b, double separation, double lossA = 0.0, double lossB = 0.0)
+        public static double RangeMargin(
+            RaPlannedAntenna a, RaPlannedAntenna b, double separation, double lossA = 0.0, double lossB = 0.0,
+            double extraNoiseA = 0.0, double extraNoiseB = 0.0)
         {
-            var forward = Reach(a, b, lossA + lossB);
-            var reverse = Reach(b, a, lossA + lossB);
+            var forward = Reach(a, b, lossA + lossB, extraNoiseB);
+            var reverse = Reach(b, a, lossA + lossB, extraNoiseA);
             if (forward == null || reverse == null || !(Math.Min(forward.Value, reverse.Value) > 0.0))
             {
                 return double.PositiveInfinity;
@@ -284,7 +277,7 @@ namespace Gonogo.RealAntennasUplink
             return (reach - separation) / reach;
         }
 
-        private static double? Reach(RaPlannedAntenna tx, RaPlannedAntenna rx, double pointingLossDb)
+        private static double? Reach(RaPlannedAntenna tx, RaPlannedAntenna rx, double pointingLossDb, double extraNoiseKelvin)
         {
             if (tx.TxPowerDbm == null || tx.GainDbi == null || tx.FrequencyHz == null || tx.SymbolRateHz == null || rx.GainDbi == null)
             {
@@ -303,7 +296,7 @@ namespace Gonogo.RealAntennasUplink
                 tx.GainDbi.Value - pointingLossDb,
                 rx.GainDbi.Value,
                 tx.FrequencyHz.Value,
-                rx.NoiseTemperatureKelvin ?? DefaultReceiverNoiseTempKelvin,
+                (rx.NoiseTemperatureKelvin ?? DefaultReceiverNoiseTempKelvin) + extraNoiseKelvin,
                 slowest.Value,
                 MatchedEbN0Db(tx, rx));
         }
@@ -318,6 +311,59 @@ namespace Gonogo.RealAntennasUplink
         {
             var encoder = tx.EncoderTechLevel != null && rx.EncoderTechLevel != null && rx.EncoderTechLevel.Value < tx.EncoderTechLevel.Value ? rx : tx;
             return encoder.EncoderRequiredEbN0Db ?? rx.RequiredEbN0Db ?? DefaultRequiredEbN0Db;
+        }
+
+        /// <summary>
+        /// The noise, in kelvin, a receiving antenna at <paramref name="self"/> adds
+        /// to its own and the cosmic background's while hearing the antenna at
+        /// <paramref name="peer"/>: the warm disc of every body in its beam, and
+        /// the atmosphere over a ground station. A dish with no target tracks its
+        /// peer; one with a target looks along it. An omni sees no body.
+        /// </summary>
+        public static double ExtraNoiseKelvin(
+            RaPlannedAntenna antenna,
+            Sitrep.Contract.Vector3d self,
+            Sitrep.Contract.Vector3d peer,
+            double ut,
+            IContactPositions positions,
+            IReadOnlyList<RaOccluder> occluders)
+        {
+            if (antenna.FrequencyHz == null)
+            {
+                return 0.0;
+            }
+            var frequency = antenna.FrequencyHz.Value;
+            var total = 0.0;
+            if (antenna.GroundBodyIndex != null)
+            {
+                var ground = positions.BodyAt(antenna.GroundBodyIndex.Value, ut);
+                var elevation = Math.Max(0.0, 90.0 - RaSkyNoise.AngleDegrees(self - ground, peer - self));
+                total += RaSkyNoise.AtmosphereNoiseTempKelvin(elevation, frequency);
+            }
+            if (antenna.GainDbi == null || antenna.GainDbi.Value <= RaSkyNoise.OmniGainDbi || antenna.BeamwidthRadians == null)
+            {
+                return total;
+            }
+            Sitrep.Contract.Vector3d? aim = antenna.Aim == RaAimKind.Untargeted
+                ? peer
+                : antenna.Aim == RaAimKind.Vessel && antenna.AimNodeId != null
+                    ? positions.NodeAt(antenna.AimNodeId, ut)
+                    : antenna.Aim == RaAimKind.BodyCentre && antenna.AimBodyIndex != null
+                        ? positions.BodyAt(antenna.AimBodyIndex.Value, ut)
+                        : (Sitrep.Contract.Vector3d?)null;
+            if (aim == null)
+            {
+                return total;
+            }
+            var beamwidthDegrees = antenna.BeamwidthRadians.Value * (180.0 / Math.PI);
+            foreach (var body in occluders)
+            {
+                var centre = positions.BodyAt(body.BodyIndex, ut);
+                var temperature = body.IsStar ? RaSkyNoise.StarRadioTempKelvin(body.TemperatureKelvin, frequency) : body.TemperatureKelvin;
+                total += RaSkyNoise.BodyNoiseTempKelvin(
+                    self, antenna.GainDbi.Value, aim.Value - self, centre, body.RadiusMeters, temperature, beamwidthDegrees);
+            }
+            return total;
         }
 
         private static double AngleBetween(Sitrep.Contract.Vector3d u, Sitrep.Contract.Vector3d v)

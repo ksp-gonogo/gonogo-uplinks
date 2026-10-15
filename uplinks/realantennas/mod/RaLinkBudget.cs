@@ -192,6 +192,37 @@ namespace Gonogo.RealAntennasUplink
             return distance;
         }
 
+        // RA's pointing-loss curve (Physics.PointingLoss): off-axis angle over beamwidth against dB, linear between points.
+        private static readonly double[,] PointingCurve =
+        {
+            { 0.0, 0.0 }, { 0.14, 0.25 }, { 0.2, 0.5 }, { 0.29, 1.0 }, { 0.41, 2.0 }, { 0.5, 3.0 }, { 0.57, 4.0 },
+            { 0.61, 4.5 }, { 0.64, 5.0 }, { 0.7, 6.0 }, { 0.76, 7.0 }, { 0.81, 8.0 }, { 0.86, 9.0 }, { 1.0, 10.0 },
+        };
+
+        /// <summary>
+        /// RealAntennas' pointing loss in dB for a beam seeing the far end
+        /// <paramref name="angle"/> off its axis, in the same unit as
+        /// <paramref name="beamwidth"/>: 3 dB at half the beamwidth, 10 dB at the
+        /// edge, and 200 dB beyond it, where the link is lost.
+        /// </summary>
+        public static double PointingLossDb(double angle, double beamwidth)
+        {
+            var ratio = angle / beamwidth;
+            if (ratio > 1.0)
+            {
+                return 200.0;
+            }
+            for (var i = 1; i < PointingCurve.GetLength(0); i++)
+            {
+                if (ratio < PointingCurve[i, 0])
+                {
+                    var t = (ratio - PointingCurve[i - 1, 0]) / (PointingCurve[i, 0] - PointingCurve[i - 1, 0]);
+                    return PointingCurve[i - 1, 1] + (t * (PointingCurve[i, 1] - PointingCurve[i - 1, 1]));
+                }
+            }
+            return PointingCurve[PointingCurve.GetLength(0) - 1, 1];
+        }
+
         /// <summary>
         /// Normalise a link margin (dB) to a 0..1 quality for
         /// <see cref="CommsLinkMargin.Quality"/>. Maps a <paramref name="fullScaleDb"/>-wide
