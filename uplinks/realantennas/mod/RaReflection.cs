@@ -175,12 +175,36 @@ namespace Gonogo.RealAntennasUplink
         public double? RequiredEbN0Db(object antenna) => ReadDoubleMember(antenna, "RequiredCI");
 
         /// <summary>
-        /// The receiver's antenna microwave (system) noise temperature in kelvin:
-        /// <c>RealAntenna.AMWTemp</c>, the per-antenna, tech-level-driven figure
-        /// (TL0 ~27000 K, TL9 ~200 K). Replaces the flat hardcoded 200 K. Null when
-        /// unreadable.
+        /// The receiver's own noise temperature in kelvin as RealAntennas takes it
+        /// when it solves a link (<c>Physics.AntennaMicrowaveTemp</c>): the tech
+        /// level's receiver noise for a craft, the antenna's <c>AMWTemp</c> for a
+        /// ground station. Falls back to <c>RealAntenna.AMWTemp</c> where that call
+        /// is not found or throws; null when neither reads.
         /// </summary>
-        public double? NoiseTemperatureKelvin(object antenna) => ReadDoubleMember(antenna, "AMWTemp");
+        public double? NoiseTemperatureKelvin(object antenna)
+        {
+            try
+            {
+                var realAntenna = SafeGetType("RealAntennas.RealAntenna");
+                var method = realAntenna == null
+                    ? null
+                    : SafeGetType("RealAntennas.Physics")?.GetMethod(
+                        "AntennaMicrowaveTemp", BindingFlags.Public | BindingFlags.Static, null, new[] { realAntenna }, null);
+                var read = method?.Invoke(null, new[] { antenna });
+                if (read is float f)
+                {
+                    return f;
+                }
+                if (read is double d)
+                {
+                    return d;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return ReadDoubleMember(antenna, "AMWTemp");
+        }
 
         // ── The RA-only per-hop extras, read for the CommsHop extension bag ───────
 
