@@ -141,7 +141,8 @@ namespace GonogoRealAntennasUplink.Tests
         public void PointingLossShortensTheReachInsideTheBeam()
         {
             Assert.Equal(3.0, RaContactLinkModel.LossDb(Dish(RaAimKind.Vessel, "vessel:peer"), 0.05), 9);
-            Assert.Equal(12.0, RaContactLinkModel.LossDb(Dish(RaAimKind.Vessel, "vessel:peer"), 0.1), 9);
+            Assert.Equal(10.0, RaContactLinkModel.LossDb(Dish(RaAimKind.Vessel, "vessel:peer"), 0.1), 9);
+            Assert.Equal(1.0, RaContactLinkModel.LossDb(Dish(RaAimKind.Vessel, "vessel:peer"), 0.029), 9);
             Assert.Equal(0.0, RaContactLinkModel.LossDb(Omni(), null));
 
             var radio = new RaPlannedAntenna { TxPowerDbm = 30.0, GainDbi = 20.0, FrequencyHz = 2.2e9, SymbolRateHz = 1000.0 };

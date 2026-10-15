@@ -54,19 +54,19 @@ namespace Gonogo.RealAntennasUplink.Tests
         public void NoiseSpectralDensity_MatchesBoltzmannFormula()
         {
             double t = 290.0;
-            double expected = RaLinkBudget.BoltzmannDbm + 10.0 * Math.Log10(t);
+            double expected = RaLinkBudget.BoltzmannDbm + 10.0 * Math.Log10(t + RaLinkBudget.CmbTemperatureKelvin);
 
             Assert.Equal(expected, RaLinkBudget.NoiseSpectralDensityDbm(t), 9);
         }
 
         [Fact]
-        public void NoiseSpectralDensity_ClampsBelowCmbFloor_NoNegativeInfinity()
+        public void NoiseSpectralDensity_AtZeroLeavesTheSkyBackground_NoNegativeInfinity()
         {
             double result = RaLinkBudget.NoiseSpectralDensityDbm(0.0);
-            double atFloor = RaLinkBudget.NoiseSpectralDensityDbm(RaLinkBudget.CmbTemperatureKelvin);
+            double background = RaLinkBudget.BoltzmannDbm + 10.0 * Math.Log10(RaLinkBudget.CmbTemperatureKelvin);
 
             Assert.False(double.IsInfinity(result));
-            Assert.Equal(atFloor, result, 9);
+            Assert.Equal(background, result, 9);
         }
 
         [Fact]

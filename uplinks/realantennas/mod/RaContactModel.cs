@@ -233,10 +233,17 @@ namespace Gonogo.RealAntennasUplink
         public static double Cliff(RaPlannedAntenna antenna, double? offAxis) =>
             offAxis == null ? double.PositiveInfinity : antenna.BeamwidthRadians!.Value - offAxis.Value;
 
+        // RA's pointing-loss curve (Physics.PointingLoss): off-axis angle over beamwidth against dB, linear between points.
+        private static readonly double[,] LossCurve =
+        {
+            { 0.0, 0.0 }, { 0.14, 0.25 }, { 0.2, 0.5 }, { 0.29, 1.0 }, { 0.41, 2.0 }, { 0.5, 3.0 }, { 0.57, 4.0 },
+            { 0.61, 4.5 }, { 0.64, 5.0 }, { 0.7, 6.0 }, { 0.76, 7.0 }, { 0.81, 8.0 }, { 0.86, 9.0 }, { 1.0, 10.0 },
+        };
+
         /// <summary>
-        /// The pointing loss inside the beam, in dB: twelve times the square of the
-        /// off-axis angle over the beamwidth, which is 3 dB at half the beamwidth and
-        /// about 10 dB at all of it, the two cones RA draws.
+        /// The pointing loss inside the beam, in dB, from RealAntennas' own curve:
+        /// 3 dB at half the beamwidth and 10 dB at the beam's edge. Beyond the
+        /// edge RA loses the link outright, which <see cref="Cliff"/> carries.
         /// </summary>
         public static double LossDb(RaPlannedAntenna antenna, double? offAxis)
         {
@@ -245,7 +252,19 @@ namespace Gonogo.RealAntennasUplink
                 return 0.0;
             }
             var ratio = offAxis.Value / antenna.BeamwidthRadians!.Value;
-            return 12.0 * ratio * ratio;
+            if (ratio >= 1.0)
+            {
+                return LossCurve[LossCurve.GetLength(0) - 1, 1];
+            }
+            for (var i = 1; i < LossCurve.GetLength(0); i++)
+            {
+                if (ratio < LossCurve[i, 0])
+                {
+                    var t = (ratio - LossCurve[i - 1, 0]) / (LossCurve[i, 0] - LossCurve[i - 1, 0]);
+                    return LossCurve[i - 1, 1] + t * (LossCurve[i, 1] - LossCurve[i - 1, 1]);
+                }
+            }
+            return 0.0;
         }
 
         /// <summary>

@@ -64,12 +64,13 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// Noise spectral density N0 in dBm/Hz: RA's
         /// <c>Physics.NoiseSpectralDensity(noiseTemp)</c>:
-        /// <c>boltzmann_dBm + 10*log10(noiseTemp)</c>. A noise temp at/below 0 K is
-        /// clamped to the CMB floor rather than producing -∞.
+        /// <c>boltzmann_dBm + 10*log10(noiseTemp)</c>, where RA's temperature is the
+        /// receiver's own plus the 2.725 K sky background. A receiver temperature
+        /// at/below 0 K leaves the background alone rather than producing -∞.
         /// </summary>
         public static double NoiseSpectralDensityDbm(double noiseTempKelvin)
         {
-            double t = noiseTempKelvin > CmbTemperatureKelvin ? noiseTempKelvin : CmbTemperatureKelvin;
+            double t = (noiseTempKelvin > 0.0 ? noiseTempKelvin : 0.0) + CmbTemperatureKelvin;
             return BoltzmannDbm + 10.0 * Math.Log10(t);
         }
 
