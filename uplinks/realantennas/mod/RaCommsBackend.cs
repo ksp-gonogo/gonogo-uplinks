@@ -219,32 +219,33 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>
         /// The pair's link as RA would close it, from every antenna's figures and
-        /// aim as they stand now. Null when either end has no antennas RA can read,
-        /// or a dish is aimed somewhere the plan cannot place (a point on a surface,
-        /// an azimuth and elevation, an orbit-relative direction): the pair then
-        /// stays on line of sight and <see cref="ReachModel"/>, as before.
+        /// aim as they stand now, with RealAntennas' relay gate. Null when either end
+        /// has no antennas RA can read. A dish aimed somewhere the plan cannot place
+        /// (a point on a surface, an azimuth and elevation, an orbit-relative
+        /// direction) takes no part in a pairing.
         /// </summary>
         public IContactLinkModel? LinkModel(CommsNodeHandle? from, CommsNodeHandle? to, double ut)
         {
-            var fromAntennas = Planned(from?.As<CommNode>(), ut);
-            var toAntennas = Planned(to?.As<CommNode>(), ut);
+            var fromNode = from?.As<CommNode>();
+            var toNode = to?.As<CommNode>();
+            var fromAntennas = Planned(fromNode, ut);
+            var toAntennas = Planned(toNode, ut);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
-                : new RaContactLinkModel(fromAntennas, toAntennas);
+                : new RaContactLinkModel(
+                    fromAntennas, toAntennas, _ra.MinRelayTechLevel() ?? 0, fromNode?.isHome == true, toNode?.isHome == true);
         }
 
         /// <summary>
         /// What a link between two nodes is worth at a separation, from both
         /// ends' antennas as they stand now: RealAntennas' own rate-ladder
         /// strength (<see cref="RaLinkWorth"/>). Null when either end has no
-        /// antenna to read. Where an antenna points does not matter here, so
-        /// an aim the plan cannot place does not withhold the strength as it
-        /// withholds the <see cref="LinkModel"/>.
+        /// antenna to read. Where an antenna points does not matter here.
         /// </summary>
         public IContactLinkStrength? LinkStrength(CommsNodeHandle? from, CommsNodeHandle? to, double ut)
         {
-            var fromAntennas = Planned(from?.As<CommNode>(), ut, placeAims: false);
-            var toAntennas = Planned(to?.As<CommNode>(), ut, placeAims: false);
+            var fromAntennas = Planned(from?.As<CommNode>(), ut);
+            var toAntennas = Planned(to?.As<CommNode>(), ut);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaLinkStrength(fromAntennas, toAntennas);
@@ -256,7 +257,7 @@ namespace Gonogo.RealAntennasUplink
         public IContactLinkStrength? RestoreLinkStrength(string modelId, IReadOnlyDictionary<string, object?> data) =>
             modelId == RaLinkStrength.Model ? RaLinkStrength.From(data) : null;
 
-        private List<RaPlannedAntenna>? Planned(CommNode? commNode, double ut, bool placeAims = true)
+        private List<RaPlannedAntenna>? Planned(CommNode? commNode, double ut)
         {
             if (commNode == null)
             {
@@ -267,20 +268,16 @@ namespace Gonogo.RealAntennasUplink
                 _plannedAt.Clear();
                 _plannedUt = ut;
             }
-            // The two flavours differ only in whether an aim the plan cannot place withholds the list.
-            if (placeAims && _plannedAt.TryGetValue(commNode, out var cached))
+            if (_plannedAt.TryGetValue(commNode, out var cached))
             {
                 return cached;
             }
-            var read = ReadPlanned(commNode, placeAims);
-            if (placeAims)
-            {
-                _plannedAt[commNode] = read;
-            }
+            var read = ReadPlanned(commNode);
+            _plannedAt[commNode] = read;
             return read;
         }
 
-        private List<RaPlannedAntenna>? ReadPlanned(CommNode node, bool placeAims)
+        private List<RaPlannedAntenna>? ReadPlanned(CommNode node)
         {
             var planned = new List<RaPlannedAntenna>();
             var index = 0;
@@ -317,10 +314,7 @@ namespace Gonogo.RealAntennasUplink
                 {
                     one.DishId = RaDishIds.Of(nodeId, part.Value.Part, part.Value.Ordinal);
                 }
-                if (!Aim(_ra.Target(antenna), one) && placeAims)
-                {
-                    return null;
-                }
+                Aim(_ra.Target(antenna), one);
                 planned.Add(one);
             }
             if (nodeId != null)
@@ -334,24 +328,25 @@ namespace Gonogo.RealAntennasUplink
             return planned;
         }
 
-        /// <summary>Fills in where <paramref name="antenna"/> points. False for an aim the plan cannot place.</summary>
-        private bool Aim(object? target, RaPlannedAntenna antenna)
+        /// <summary>Fills in where <paramref name="antenna"/> points, <see cref="RaAimKind.Unplaced"/> for an aim the plan cannot place.</summary>
+        private void Aim(object? target, RaPlannedAntenna antenna)
         {
+            antenna.Aim = RaAimKind.Unplaced;
             if (target == null || !antenna.Steerable)
             {
                 antenna.Aim = RaAimKind.Untargeted;
-                return true;
+                return;
             }
             switch (_ra.TargetKind(target))
             {
                 case "Vessel":
                     if (!Guid.TryParse(_ra.TargetVesselId(target), out var guid))
                     {
-                        return false;
+                        return;
                     }
                     antenna.Aim = RaAimKind.Vessel;
                     antenna.AimNodeId = "vessel:" + guid;
-                    return true;
+                    return;
                 case "BodyLatLonAlt":
                     var name = _ra.TargetBodyName(target);
                     var body = FlightGlobals.Bodies?.Find(b => b != null && b.bodyName == name);
@@ -359,13 +354,13 @@ namespace Gonogo.RealAntennasUplink
                     // RA stores a body-centre aim as the point one radius below the surface.
                     if (body == null || altitude == null || Math.Abs(altitude.Value + body.Radius) > 1.0)
                     {
-                        return false;
+                        return;
                     }
                     antenna.Aim = RaAimKind.BodyCentre;
                     antenna.AimBodyIndex = FlightGlobals.Bodies!.IndexOf(body);
-                    return true;
+                    return;
                 default:
-                    return false;
+                    return;
             }
         }
 

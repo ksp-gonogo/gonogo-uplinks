@@ -15,6 +15,9 @@ namespace Gonogo.RealAntennasUplink
 
         /// <summary>A body's centre, which is where RA's default home target points.</summary>
         BodyCentre,
+
+        /// <summary>A target the plan cannot place: a surface point, an azimuth and elevation, an orbit-relative direction.</summary>
+        Unplaced,
     }
 
     /// <summary>
@@ -97,11 +100,28 @@ namespace Gonogo.RealAntennasUplink
 
         private readonly IReadOnlyList<RaPlannedAntenna> _from;
         private readonly IReadOnlyList<RaPlannedAntenna> _to;
+        private readonly int _minRelayTechLevel;
+        private readonly bool _fromIsHome;
+        private readonly bool _toIsHome;
 
-        public RaContactLinkModel(IReadOnlyList<RaPlannedAntenna> from, IReadOnlyList<RaPlannedAntenna> to)
+        /// <param name="minRelayTechLevel">
+        /// RealAntennas' relay gate: a craft carries another's traffic only through an
+        /// antenna of at least this tech level. Zero applies no gate.
+        /// </param>
+        /// <param name="fromIsHome">A ground station is a destination and is never gated.</param>
+        /// <param name="toIsHome">As <paramref name="fromIsHome"/>, for the other end.</param>
+        public RaContactLinkModel(
+            IReadOnlyList<RaPlannedAntenna> from,
+            IReadOnlyList<RaPlannedAntenna> to,
+            int minRelayTechLevel = 0,
+            bool fromIsHome = false,
+            bool toIsHome = false)
         {
             _from = from ?? throw new ArgumentNullException(nameof(from));
             _to = to ?? throw new ArgumentNullException(nameof(to));
+            _minRelayTechLevel = minRelayTechLevel;
+            _fromIsHome = fromIsHome;
+            _toIsHome = toIsHome;
         }
 
         public double MarginAt(double ut, Sitrep.Contract.Vector3d from, Sitrep.Contract.Vector3d to, IContactPositions positions)
@@ -137,12 +157,16 @@ namespace Gonogo.RealAntennasUplink
             {
                 foreach (var b in _to)
                 {
-                    if (!Compatible(a, b))
+                    if (!Compatible(a, b) || !ClearsRelayGate(a, b))
                     {
                         continue;
                     }
                     var angleA = OffAxis(a, from, to, ut, positions);
                     var angleB = OffAxis(b, to, from, ut, positions);
+                    if (Unplaceable(a, angleA) || Unplaceable(b, angleB))
+                    {
+                        continue;
+                    }
                     var margin = Math.Min(
                         Math.Min(Cliff(a, angleA), Cliff(b, angleB)),
                         RangeMargin(a, b, (to - from).Magnitude(), LossDb(a, angleA), LossDb(b, angleB)));
@@ -157,6 +181,30 @@ namespace Gonogo.RealAntennasUplink
             return best;
         }
 
+        /// <summary>
+        /// RealAntennas admits a craft to a route only through a receiving antenna at or
+        /// above the relay minimum, unless the craft is the destination. A pairing
+        /// between two craft therefore carries traffic when either end's antenna clears
+        /// it, toward that end; a ground station end is the destination and passes. An
+        /// antenna whose tech level will not read is not gated.
+        /// </summary>
+        private bool ClearsRelayGate(RaPlannedAntenna a, RaPlannedAntenna b)
+        {
+            if (_minRelayTechLevel <= 0 || _fromIsHome || _toIsHome || a.TechLevel == null || b.TechLevel == null)
+            {
+                return true;
+            }
+            return Math.Max(a.TechLevel.Value, b.TechLevel.Value) >= _minRelayTechLevel;
+        }
+
+        /// <summary>
+        /// A dish that points at something yet has no angle to its peer, because the aim
+        /// cannot be placed or the craft aimed at is not in the plan. It cannot be shown
+        /// to see the peer, so it does not pair.
+        /// </summary>
+        private static bool Unplaceable(RaPlannedAntenna antenna, double? offAxis) =>
+            offAxis == null && antenna.Steerable && antenna.Aim != RaAimKind.Untargeted && antenna.BeamwidthRadians != null;
+
         /// <summary>Two antennas pair unless both name a band and the bands differ.</summary>
         public static bool Compatible(RaPlannedAntenna a, RaPlannedAntenna b) =>
             a.Band == null || b.Band == null || string.Equals(a.Band, b.Band, StringComparison.Ordinal);
@@ -165,7 +213,7 @@ namespace Gonogo.RealAntennasUplink
         /// How far off its aim the dish at <paramref name="self"/> sees
         /// <paramref name="peer"/>, in radians, or null for an omni or an untargeted
         /// antenna, which take no pointing loss in any direction, and for a dish whose
-        /// aim cannot be placed, so it never fabricates a miss.
+        /// aim cannot be placed, which <see cref="Best"/> then refuses to pair.
         /// </summary>
         public static double? OffAxis(RaPlannedAntenna antenna, Sitrep.Contract.Vector3d self, Sitrep.Contract.Vector3d peer, double ut, IContactPositions positions)
         {

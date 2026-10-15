@@ -359,6 +359,24 @@ namespace Gonogo.RealAntennasUplink
         public double? TargetForward(object? target) => ReadDoubleMember(target, "forward");
 
         /// <summary>
+        /// The lowest antenna tech level RealAntennas lets carry another craft's
+        /// traffic (<c>RACommNetScenario.minRelayTL</c>), or null when it will not read.
+        /// </summary>
+        public int? MinRelayTechLevel()
+        {
+            try
+            {
+                return SafeGetType("RealAntennas.RACommNetScenario")
+                    ?.GetField("minRelayTL", BindingFlags.Public | BindingFlags.Static)
+                    ?.GetValue(null) as int?;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// The install's target-mode table as mode name to required tech level,
         /// off <c>TargetModeInfo.All</c>. Empty when RealAntennas has not loaded
         /// it yet or the surface has moved, which

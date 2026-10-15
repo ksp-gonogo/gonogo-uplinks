@@ -55,6 +55,53 @@ namespace GonogoRealAntennasUplink.Tests
         }
 
         [Fact]
+        public void ADishWhoseAimCannotBePlacedNeverPairsLikeAnOmni()
+        {
+            Assert.Equal(RaContactLinkModel.NoPairing, Margin(Dish(RaAimKind.Unplaced), Omni()));
+            Assert.Equal(RaContactLinkModel.NoPairing, Margin(Omni(), Dish(RaAimKind.Unplaced)));
+            Assert.Equal(RaContactLinkModel.NoPairing, Margin(Dish(RaAimKind.Vessel, "vessel:absent"), Omni()));
+        }
+
+        [Fact]
+        public void ACraftWhoseOnlyDishPointsAwayFromItsRelayHasNoRoute()
+        {
+            var away = new RaContactLinkModel(new[] { Dish(RaAimKind.BodyCentre, body: 0) }, new[] { Omni() });
+            var aimed = new RaContactLinkModel(new[] { Dish(RaAimKind.Vessel, "vessel:peer") }, new[] { Omni() });
+            Assert.True(away.MarginAt(0.0, Here, Peer, new Positions()) < 0.0);
+            Assert.True(aimed.MarginAt(0.0, Here, Peer, new Positions()) > 0.0);
+        }
+
+        private static RaPlannedAntenna Tier(int techLevel) => new RaPlannedAntenna { Steerable = false, Band = "S", TechLevel = techLevel };
+
+        [Fact]
+        public void TwoCraftWhoseAntennasAreBelowTheRelayMinimumCarryNothingForEachOther()
+        {
+            var model = new RaContactLinkModel(new[] { Tier(1) }, new[] { Tier(1) }, minRelayTechLevel: 2);
+            Assert.Equal(RaContactLinkModel.NoPairing, model.MarginAt(0.0, Here, Peer, new Positions()));
+        }
+
+        [Fact]
+        public void OneEndClearingTheRelayMinimumLetsThePairCarryTrafficTowardThatEnd()
+        {
+            var model = new RaContactLinkModel(new[] { Tier(1) }, new[] { Tier(2) }, minRelayTechLevel: 2);
+            Assert.True(model.MarginAt(0.0, Here, Peer, new Positions()) > 0.0);
+        }
+
+        [Fact]
+        public void AHomeEndIsADestinationAndNeedsNoRelayTechLevel()
+        {
+            var model = new RaContactLinkModel(new[] { Tier(1) }, new[] { Tier(1) }, minRelayTechLevel: 2, toIsHome: true);
+            Assert.True(model.MarginAt(0.0, Here, Peer, new Positions()) > 0.0);
+        }
+
+        [Fact]
+        public void AnAntennaWithNoReadableTechLevelIsNeverGated()
+        {
+            var model = new RaContactLinkModel(new[] { Omni() }, new[] { Omni() }, minRelayTechLevel: 5);
+            Assert.True(model.MarginAt(0.0, Here, Peer, new Positions()) > 0.0);
+        }
+
+        [Fact]
         public void AnUntargetedGroundStationSeesEveryDirection()
         {
             Assert.True(Margin(Omni(), Dish(RaAimKind.Untargeted)) > 0.0);
