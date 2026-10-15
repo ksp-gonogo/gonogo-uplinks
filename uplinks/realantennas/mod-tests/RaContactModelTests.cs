@@ -150,6 +150,32 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.True(RaContactLinkModel.RangeMargin(radio, radio, reach * 0.9, 3.0, 3.0) < 0.0);
         }
 
+        /// <summary>
+        /// A level-6 omni against a level-9 dish talk through the level-6 encoder,
+        /// 4.5 dB where the dish's own is 1 dB, so the direction into the dish
+        /// reaches 3.5 dB less far than the dish's own encoder alone would say.
+        /// </summary>
+        [Fact]
+        public void APairTalksThroughTheLowerLevelEncoderOfTheTwo()
+        {
+            var omni = new RaPlannedAntenna
+            {
+                Band = "S", TxPowerDbm = 30.0, GainDbi = 0.0, FrequencyHz = 2.2e9, SymbolRateHz = 1000.0, MinSymbolRateHz = 1.0,
+                NoiseTemperatureKelvin = 200.0, RequiredEbN0Db = 4.5, EncoderTechLevel = 6, EncoderRequiredEbN0Db = 4.5,
+            };
+            var dish = new RaPlannedAntenna
+            {
+                Band = "S", TxPowerDbm = 60.0, GainDbi = 30.0, FrequencyHz = 2.2e9, SymbolRateHz = 1000.0, MinSymbolRateHz = 1.0,
+                NoiseTemperatureKelvin = 200.0, RequiredEbN0Db = 1.0, EncoderTechLevel = 8, EncoderRequiredEbN0Db = 1.0,
+            };
+            var ownEncoderReach = RaLinkBudget.MaxRangeMeters(30.0, 0.0, 30.0, 2.2e9, 200.0, 1.0, 1.0)!.Value;
+            var matchedReach = ownEncoderReach * Math.Pow(10.0, -3.5 / 20.0);
+            var between = (ownEncoderReach + matchedReach) / 2.0;
+
+            Assert.True(RaContactLinkModel.RangeMargin(omni, dish, between) < 0.0);
+            Assert.True(RaContactLinkModel.RangeMargin(omni, dish, matchedReach * 0.99) > 0.0);
+        }
+
         [Fact]
         public void TheModelKeepsTheLinkModelContract()
         {

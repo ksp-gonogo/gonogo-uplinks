@@ -137,6 +137,10 @@ namespace Gonogo.RealAntennasUplink
                     {
                         continue;
                     }
+                    // The pair talks through the lower-level encoder of the two.
+                    var txLevel = ra.EncoderTechLevel(tx);
+                    var rxLevel = ra.EncoderTechLevel(rx);
+                    var encoderEnd = txLevel != null && rxLevel != null && rxLevel.Value < txLevel.Value ? rx : tx;
                     var range = RaLinkBudget.MaxRangeMeters(
                         txPower.Value,
                         txGain.Value,
@@ -144,7 +148,7 @@ namespace Gonogo.RealAntennasUplink
                         frequency.Value,
                         ra.NoiseTemperatureKelvin(rx) ?? DefaultReceiverNoiseTempKelvin,
                         slowest.Value,
-                        ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db);
+                        ra.EncoderRequiredEbN0Db(encoderEnd) ?? ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db);
 
                     if (range != null && (best == null || range.Value > best.Value))
                     {

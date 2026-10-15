@@ -286,7 +286,19 @@ namespace Gonogo.RealAntennasUplink
                 tx.FrequencyHz.Value,
                 rx.NoiseTemperatureKelvin ?? DefaultReceiverNoiseTempKelvin,
                 slowest.Value,
-                rx.RequiredEbN0Db ?? DefaultRequiredEbN0Db);
+                MatchedEbN0Db(tx, rx));
+        }
+
+        /// <summary>
+        /// The energy per bit over noise density a pair needs, in decibels: that of
+        /// the lower-level encoder of the two, as RealAntennas' matched encoder is,
+        /// not the receiver's own. Where either level is not known the transmitter's
+        /// encoder is taken, then the receiver's own figure, then the default.
+        /// </summary>
+        internal static double MatchedEbN0Db(RaPlannedAntenna tx, RaPlannedAntenna rx)
+        {
+            var encoder = tx.EncoderTechLevel != null && rx.EncoderTechLevel != null && rx.EncoderTechLevel.Value < tx.EncoderTechLevel.Value ? rx : tx;
+            return encoder.EncoderRequiredEbN0Db ?? rx.RequiredEbN0Db ?? DefaultRequiredEbN0Db;
         }
 
         private static double AngleBetween(Sitrep.Contract.Vector3d u, Sitrep.Contract.Vector3d v)
