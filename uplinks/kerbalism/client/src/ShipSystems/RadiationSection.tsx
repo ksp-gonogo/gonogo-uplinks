@@ -1,9 +1,8 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
+  type ChartSeries,
   Cluster,
-  GraphNotice,
-  LineGraph,
-  type LineGraphSeries,
+  Graph,
   magnitudeOf,
   Stack,
   Text,
@@ -41,9 +40,8 @@ import { HIGH_RADIATION_RAD_PER_HOUR } from "../CrewSurvival/summary.js";
 // dose). The paired readouts below the graph escalate in step so colour
 // never carries the reading alone.
 //
-// Renders as a SPARKLINE (`LineGraph`'s `variant="sparkline"`), not an
-// engineering chart: operator feedback on the first pass called the plain
-// `LineGraph` too technical for what is meant to be a glance-read trend.
+// Renders as a SPARKLINE (`Graph`'s `density="compact"`), not an
+// engineering chart: the full chart is too technical for a glance-read trend.
 // Area-shaded lines, no gridlines, still the same two series plus the
 // safe-threshold marker. This is also the widget's LEAD section now
 // (rendered first in `index.tsx`'s body), the attractive visual earns the
@@ -65,8 +63,8 @@ import { HIGH_RADIATION_RAD_PER_HOUR } from "../CrewSurvival/summary.js";
 // low-emphasis text under the graph instead (see `locationLabel` below).
 //
 // The 0.5 rad/h boundary draws as a FIXED ~24px tick at the frame's left
-// edge with the "0.5" level beside it (`LineGraph`'s
-// `thresholdStyle="marker"`), an axis annotation rather than a rule: a
+// edge with the "0.5" level beside it (a `marker` threshold on a compact
+// `Graph`), an axis annotation rather than a rule: a
 // full-width dashed line made the boundary the loudest thing in the frame,
 // and the earlier centred marker stretched with the viewBox so its length
 // changed with every widget width. The muted warning amber carries "this is
@@ -174,7 +172,7 @@ const RAD_PER_SEC_TO_RAD_PER_HOUR = 3600;
 export function toRadPerHourSeries(
   history: readonly RadiationSample[],
   pick: (s: RadiationSample) => number | null,
-): { points: LineGraphSeries["points"]; breaks: number[] } {
+): { points: { x: number; y: number }[]; breaks: number[] } {
   const points: { x: number; y: number }[] = [];
   const breaks: number[] = [];
   let dropped = false;
@@ -194,6 +192,18 @@ export function toRadPerHourSeries(
     points.push({ x: s.ut, y: radPerSec * RAD_PER_SEC_TO_RAD_PER_HOUR });
   }
   return { points, breaks };
+}
+
+/** One trace as the graph reads it: x in UT, y back in rad/s, the unit the threshold and the ladder speak. */
+function chartData(trace: {
+  points: { x: number; y: number }[];
+  breaks: number[];
+}): ChartSeries["data"] {
+  return {
+    x: trace.points.map((p) => p.x),
+    y: trace.points.map((p) => p.y / RAD_PER_SEC_TO_RAD_PER_HOUR),
+    breaks: trace.breaks,
+  };
 }
 
 /**
@@ -299,22 +309,30 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
   const shielded = toRadPerHourSeries(history, (s) => s.shieldedRadPerSec);
   const ambientPoints = ambient.points;
   const shieldedPoints = shielded.points;
-  const series: LineGraphSeries[] = [
+  const series: ChartSeries[] = [
     {
       id: "ambient",
       label: "Ambient",
+      axis: "primary",
       color: ambientHigh ? "var(--color-warn-mark)" : "var(--color-text-muted)",
-      points: ambientPoints,
-      breaks: ambient.breaks,
+      data: chartData(ambient),
     },
     {
       id: "shielded",
       label: "Shielded",
+      axis: "primary",
       color: shieldedHigh ? "var(--color-nogo-mark)" : "var(--color-info-mark)",
-      points: shieldedPoints,
-      breaks: shielded.breaks,
+      data: chartData(shielded),
     },
   ];
+  const allPoints = [...ambientPoints, ...shieldedPoints];
+  const xDomain: [number, number] =
+    allPoints.length === 0
+      ? [0, 1]
+      : [
+          Math.min(...allPoints.map((p) => p.x)),
+          Math.max(...allPoints.map((p) => p.x)),
+        ];
 
   // Stable frame: 0 up to a stepped nice ceiling, never below twice the
   // threshold so the 0.5 marker always has an honest place mid-frame.
@@ -335,29 +353,29 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
     // text (not a Stack of badges) since it is still the one bit of this
     // section that changes without the operator watching for it.
     <Stack>
-      <div style={GRAPH_FRAME}>
-        <LineGraph
-          series={series}
-          variant="sparkline"
-          yDomain={[0, yMax]}
-          thresholds={[
-            {
-              id: "safe",
-              label: "Safe threshold",
-              value: HIGH_RADIATION_RAD_PER_HOUR,
-              valueText: String(HIGH_RADIATION_RAD_PER_HOUR),
-            },
-          ]}
-          thresholdStyle="marker"
-          height={96}
-          aria-label="Radiation dose rate trend: ambient versus shielded, last 10 minutes"
-        />
-        {!hasTrend && (
-          <GraphNotice placement="overlay">
-            Collecting radiation history...
-          </GraphNotice>
-        )}
-      </div>
+      <Graph
+        chrome="bare"
+        density="compact"
+        hideXAxis
+        series={series}
+        xDomain={xDomain}
+        yDomainPrimary={[0, yMax / RAD_PER_SEC_TO_RAD_PER_HOUR]}
+        yUnit="rad/s"
+        thresholds={[
+          {
+            id: "safe",
+            label: "Safe threshold",
+            kind: "marker",
+            value: value(
+              "rad/s",
+              HIGH_RADIATION_RAD_PER_HOUR / RAD_PER_SEC_TO_RAD_PER_HOUR,
+            ),
+          },
+        ]}
+        notice={hasTrend ? undefined : "Collecting radiation history..."}
+        height={96}
+        aria-label="Radiation dose rate trend: ambient versus shielded, last 10 minutes"
+      />
       <Cluster justify="between" style={{ marginTop: "var(--gap-caption)" }}>
         {/* Identity tones at rest (grey/info-blue, matching the traces),
             escalation only over the threshold. */}
@@ -382,6 +400,3 @@ export function RadiationSection({ weather, utNow }: RadiationSectionProps) {
     </Stack>
   );
 }
-
-/** The graph's box: the overlay notice positions against it. */
-const GRAPH_FRAME = { position: "relative", height: 96 } as const;

@@ -19,6 +19,6 @@ export {
 } from "./topics.js";
 
 import "./uplink.js";
-// FleetRoster's per-vessel `fleet-roster.updates` slot: TestFlight's failed and
+// VesselCatalog's per-vessel `vessel-catalog.updates` slot: TestFlight's failed and
 // wearing engines on the active craft's row, with TestFlight's own repair.
 import "./Reliability/index.js";
