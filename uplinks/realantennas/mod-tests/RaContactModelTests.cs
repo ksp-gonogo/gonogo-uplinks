@@ -207,6 +207,65 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.True(RaContactLinkModel.RangeMargin(stepsDown, stepsDown, atFullRate * 33.0) < 0.0);
         }
 
+        private sealed class AroundKerbin : IContactPositions
+        {
+            public Sitrep.Contract.Vector3d? NodeAt(string nodeId, double ut) => null;
+
+            public Sitrep.Contract.Vector3d BodyAt(int bodyIndex, double ut) => new Sitrep.Contract.Vector3d(0, 0, 0);
+        }
+
+        /// <summary>
+        /// One L band antenna at tech level 9, from RealAntennas' own tables: a
+        /// 31.5 kHz channel stepping down 21 halvings, the Turbo 1/2 encoder at
+        /// 1 dB, a 200 K receiver, 30 dBm out. A one metre dish at the level's
+        /// 0.68 reflector efficiency has 22.92 dBi and a 16.37 degree beam.
+        /// </summary>
+        private static RaPlannedAntenna LBand(bool dish, RaAimKind aim) => new RaPlannedAntenna
+        {
+            Steerable = dish,
+            BeamwidthRadians = dish ? 16.37 * Math.PI / 180.0 : (double?)null,
+            Band = "L",
+            TxPowerDbm = 30.0,
+            GainDbi = dish ? 22.92 : 1.5,
+            FrequencyHz = 1.62e9,
+            SymbolRateHz = 31500.0,
+            MinSymbolRateHz = 31500.0 / Math.Pow(2.0, 21),
+            NoiseTemperatureKelvin = 200.0,
+            RequiredEbN0Db = 1.0,
+            ModulationBits = 5,
+            TechLevel = 9,
+            EncoderTechLevel = 8,
+            CodingRate = 0.5,
+            EncoderRequiredEbN0Db = 1.0,
+            Aim = aim,
+            AimBodyIndex = aim == RaAimKind.BodyCentre ? 1 : (int?)null,
+        };
+
+        /// <summary>
+        /// A craft in solar orbit 240.6 Gm out, with an omni and a dish, against a
+        /// craft landed on Kerbin with two omnis and a dish aimed at Kerbin's
+        /// centre. RealAntennas makes no link: only the two dishes together could
+        /// close that far, and the landed one points into the ground. Were it
+        /// turned to the craft, the pair would close on the last two rungs of the
+        /// rate ladder, the 0.0150 bps and strength 1/13 the pair's hop states.
+        /// </summary>
+        [Fact]
+        public void ALandedDishAimedAtItsOwnBodysCentreGivesADistantCraftNoLink()
+        {
+            var surface = new Sitrep.Contract.Vector3d(0, 600_840, 0);
+            var craft = surface + new Sitrep.Contract.Vector3d(240.6e9 * 0.7071, 240.6e9 * 0.7071, 0);
+            var inSpace = new[] { LBand(false, RaAimKind.Untargeted), LBand(true, RaAimKind.BodyCentre) };
+            var landed = new[] { LBand(true, RaAimKind.BodyCentre), LBand(false, RaAimKind.Untargeted), LBand(false, RaAimKind.Untargeted) };
+
+            Assert.True(new RaContactLinkModel(inSpace, landed).MarginAt(0.0, craft, surface, new AroundKerbin()) < 0.0);
+
+            var turned = new[] { LBand(true, RaAimKind.Untargeted), LBand(false, RaAimKind.Untargeted), LBand(false, RaAimKind.Untargeted) };
+            Assert.True(new RaContactLinkModel(inSpace, turned).MarginAt(0.0, craft, surface, new AroundKerbin()) > 0.0);
+            var worth = RaLinkWorth.At(landed, inSpace, 240.6e9);
+            Assert.Equal(1.0 / 13.0, worth.Strength, 9);
+            Assert.Equal(31500.0 / Math.Pow(2.0, 21), worth.Reverse.BitsPerSecond, 6);
+        }
+
         [Fact]
         public void ThePairsSlowestRateIsTheFasterOfTheTwoAntennasSlowest()
         {
