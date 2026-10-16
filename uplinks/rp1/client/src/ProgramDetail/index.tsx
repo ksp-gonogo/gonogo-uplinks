@@ -12,9 +12,9 @@ import {
   EmptyState,
   ExpandableText,
   FilterRegion,
+  Graph,
   GraphNotice,
   Grid,
-  LineGraph,
   Meter,
   MissionDate,
   magnitudeOf,
@@ -958,7 +958,8 @@ function FundingCurveChart({
         </GraphNotice>
       ) : (
         <Stack gap="caption">
-          <LineGraph
+          <Graph
+            chrome="bare"
             height={140}
             aria-label={
               perYear
@@ -969,16 +970,27 @@ function FundingCurveChart({
               {
                 id: "funding",
                 label: perYear ? "Funding per year" : "Cumulative funding",
+                axis: "primary",
                 color: "var(--color-go-text)",
-                points: sample.points.map((p) => ({
-                  x: p.x,
-                  y: perYear ? (p.fundsPerYear ?? 0) : p.funds,
-                })),
+                data: {
+                  x: sample.points.map((p) => p.x),
+                  y: sample.points.map((p) =>
+                    perYear ? (p.fundsPerYear ?? 0) : p.funds,
+                  ),
+                },
               },
             ]}
-            // The deadline, as a rule across the chart. Everything right of
-            // where the curve crosses it is money RP-1 pays for running over,
-            // which is the single thing an operator reads this chart for.
+            xKind="value"
+            xDomain={[sample.points[0]?.x ?? 0, sample.end]}
+            xTickFormat={termTick}
+            xReadFormat={termTick}
+            xAxisLabel={sample.axis === "years" ? "years" : "fraction of term"}
+            yUnit="funds"
+            yAxisLabel={perYear ? "funds per year" : "funds"}
+            // The paid-so-far figure, as a rule across the chart. Everything
+            // right of where the curve crosses it is money RP-1 pays for
+            // running over, which is the single thing an operator reads this
+            // chart for.
             /*
              * The paid-so-far rule is a CUMULATIVE total, so it belongs only on
              * the cumulative chart: drawn against a rate axis it would be a
@@ -988,7 +1000,14 @@ function FundingCurveChart({
             thresholds={
               perYear || paidOut === null
                 ? []
-                : [{ id: "paid", label: "Paid out", value: paidOut }]
+                : [
+                    {
+                      id: "paid",
+                      kind: "marker",
+                      label: "Paid out",
+                      value: value("funds", paidOut),
+                    },
+                  ]
             }
           />
           {/* Axis labels as HTML beside the drawing rather than text inside the
@@ -1024,13 +1043,18 @@ function FundingCurveChart({
           </Cluster>
           {!perYear && paidOut !== null && (
             <Text size="xs" level="muted">
-              Dashed rule: <Unit value={program.fundsPaidOut} /> paid so far
+              Rule: <Unit value={program.fundsPaidOut} /> paid so far
             </Text>
           )}
         </Stack>
       )}
     </Section>
   );
+}
+
+/** A position on the funding curve's x axis, which counts years (or fractions of the term), not clock time. */
+function termTick(x: number): string {
+  return String(Number(x.toFixed(2)));
 }
 
 /** RP-1's own Funding Summary: what each nominal year pays. */
