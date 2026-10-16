@@ -73,7 +73,7 @@ function RepairEngine({ partId, title }: { partId: string; title: string }) {
 export function TestFlightReliabilityUpdates({
   vesselId,
   compact,
-}: SlotProps<"fleet-roster.updates">) {
+}: SlotProps<"vessel-catalog.updates">) {
   const identity = stillTrue(useTelemetry("vessel.identity"));
   const summary = stillTrue(useTelemetry("testflight.reliability"));
   const partsReading = useTelemetry("testflight.reliabilityParts");
@@ -126,7 +126,7 @@ export function TestFlightReliabilityUpdates({
 
 registerAugment({
   id: "testflight-reliability-updates",
-  augments: "fleet-roster.updates",
+  augments: "vessel-catalog.updates",
   component: TestFlightReliabilityUpdates,
   requires: "testflight",
   owner: TESTFLIGHT,
