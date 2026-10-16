@@ -55,6 +55,7 @@
          out), so the elected instance itself is testable here rather than only its
          mapper. -->
     <Compile Include="..\mod\KerbalismScienceBackend.cs" />
+    <Compile Include="..\mod\KerbalismScienceRouting.cs" />
     <!-- File Manager command validation: resolves a subject against the same
          plain ScienceRaw snapshot the science backend above stashes, never
          touches live Kerbalism (the actuator it delegates to is the seam;

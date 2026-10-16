@@ -33,11 +33,13 @@ namespace Gonogo.KerbalismUplink
         private const string ApiTypeName = "KERBALISM.API";
         private const string PreventScienceCreditingFieldName = "preventScienceCrediting";
         private const string OriginDescription = "Kerbalism";
+        private const string RecoveryTypeName = "VesselRecovery";
+        private const string RecoveryMethodName = "OnVesselRecovered";
 
         // A retrieved increment with no attributable vessel: no case observed live, but not ruled
-        // out for a third-party Kerbalism-integrated mod. Fed through with zero light-time rather
-        // than dropped, since preventScienceCrediting means WE are now the only thing that can ever
-        // credit it.
+        // out for a third-party Kerbalism-integrated mod. Fed through under this id rather than
+        // dropped, since preventScienceCrediting means WE are now the only thing that can ever
+        // credit it. The sink finds no live vessel for it, so it waits like any unroutable credit.
         private const string UnattributedVesselId = "kerbalism-unattributed";
 
         /// <summary>
@@ -95,7 +97,10 @@ namespace Gonogo.KerbalismUplink
 
                 var postfix = new HarmonyMethod(typeof(KerbalismScienceHook)
                     .GetMethod(nameof(RetrieveSciencePostfix), BindingFlags.Static | BindingFlags.NonPublic));
-                new Harmony(HarmonyId).Patch(target, postfix: postfix);
+                var harmony = new Harmony(HarmonyId);
+                harmony.Patch(target, postfix: postfix);
+
+                PatchRecoveryScope(harmony);
 
                 SetPreventScienceCrediting(true);
 
@@ -108,6 +113,37 @@ namespace Gonogo.KerbalismUplink
                 return false;
             }
         }
+
+        /*
+         * Kerbalism credits recovered science from its own prefix on stock
+         * VesselRecovery.OnVesselRecovered, which runs before the craft is removed. Bracketing that
+         * stock method tells the postfix the retrieval is a recovery. The prefix runs first so the
+         * flag is set before Kerbalism's prefix retrieves anything, and the finalizer clears it
+         * whether or not the recovery threw.
+         */
+        private static void PatchRecoveryScope(Harmony harmony)
+        {
+            var target = AccessTools.Method(typeof(VesselRecovery), RecoveryMethodName);
+            if (target == null)
+            {
+                Debug.LogWarning("[Gonogo] KerbalismScienceHook: " + RecoveryTypeName + "." + RecoveryMethodName
+                    + " not found - recovered science will be treated as a transmission");
+                return;
+            }
+
+            var prefix = new HarmonyMethod(typeof(KerbalismScienceHook)
+                .GetMethod(nameof(RecoveryPrefix), BindingFlags.Static | BindingFlags.NonPublic))
+            {
+                priority = Priority.First,
+            };
+            var finalizer = new HarmonyMethod(typeof(KerbalismScienceHook)
+                .GetMethod(nameof(RecoveryFinalizer), BindingFlags.Static | BindingFlags.NonPublic));
+            harmony.Patch(target, prefix: prefix, finalizer: finalizer);
+        }
+
+        private static void RecoveryPrefix() => KerbalismScienceRouting.BeginRecovery();
+
+        private static void RecoveryFinalizer() => KerbalismScienceRouting.EndRecovery();
 
         // Harmony injects __result (the method's RETURNED retrieved amount - the input scienceValue
         // argument is a tiny per-tick fraction, not the true credited figure) and matches fromVessel
@@ -126,8 +162,8 @@ namespace Gonogo.KerbalismUplink
             }
 
             var vesselId = fromVessel != null ? fromVessel.vesselID.ToString() : UnattributedVesselId;
-            sink.RecordDelayedScienceIncrement(
-                vesselId, __result, Planetarium.GetUniversalTime(), OriginDescription);
+            KerbalismScienceRouting.Route(
+                sink, vesselId, __result, Planetarium.GetUniversalTime(), OriginDescription);
         }
 
         /// <summary>
