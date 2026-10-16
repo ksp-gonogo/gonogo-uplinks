@@ -23,7 +23,7 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend, ILinkStrengthRestorer
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend, ILinkStrengthRestorer, ILinkModelRestorer
     {
         public const string Id = "realantennas";
 
@@ -282,6 +282,9 @@ namespace Gonogo.RealAntennasUplink
 
         public IContactLinkStrength? RestoreLinkStrength(string modelId, IReadOnlyDictionary<string, object?> data) =>
             modelId == RaLinkStrength.Model ? RaLinkStrength.From(data) : null;
+
+        public IContactLinkModel? RestoreLinkModel(string modelId, IReadOnlyDictionary<string, object?> data) =>
+            modelId == RaContactLinkModel.Model ? RaContactLinkModel.From(data) : null;
 
         private List<RaPlannedAntenna>? Planned(CommNode? commNode, double ut)
         {

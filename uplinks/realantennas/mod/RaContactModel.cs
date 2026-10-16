@@ -104,7 +104,7 @@ namespace Gonogo.RealAntennasUplink
     /// happens; for the loaded one, a step its chain takes after losing contact is
     /// not foreseen here.</para>
     /// </summary>
-    public sealed class RaContactLinkModel : IAttributedContactLinkModel
+    public sealed class RaContactLinkModel : IAttributedContactLinkModel, IPersistableContactLinkModel
     {
         /// <summary>The margin of a pair with no pairing that can close at all.</summary>
         public const double NoPairing = -1.0;
@@ -137,6 +137,66 @@ namespace Gonogo.RealAntennasUplink
             _minRelayTechLevel = minRelayTechLevel;
             _fromIsHome = fromIsHome;
             _toIsHome = toIsHome;
+        }
+
+        /// <summary>Names the layout <see cref="Describe"/> writes, so a later layout is told from this one.</summary>
+        public const string Model = "realantennas.contactLink.v1";
+
+        public string ModelId => Model;
+
+        public Dictionary<string, object?> Describe()
+        {
+            var occluders = new List<object?>(_occluders.Count);
+            foreach (var body in _occluders)
+            {
+                occluders.Add(new Dictionary<string, object?>
+                {
+                    ["bodyIndex"] = (double)body.BodyIndex,
+                    ["radiusMeters"] = body.RadiusMeters,
+                    ["temperatureKelvin"] = body.TemperatureKelvin,
+                    ["isStar"] = body.IsStar,
+                });
+            }
+            return new Dictionary<string, object?>
+            {
+                ["from"] = RaPlannedAntennaData.Of(_from),
+                ["to"] = RaPlannedAntennaData.Of(_to),
+                ["minRelayTechLevel"] = (double)_minRelayTechLevel,
+                ["fromIsHome"] = _fromIsHome,
+                ["toIsHome"] = _toIsHome,
+                ["occluders"] = occluders,
+            };
+        }
+
+        /// <summary>The model <see cref="Describe"/> described, or null for data this build did not write.</summary>
+        public static RaContactLinkModel? From(IReadOnlyDictionary<string, object?> data)
+        {
+            data.TryGetValue("from", out var from);
+            data.TryGetValue("to", out var to);
+            var fromAntennas = RaPlannedAntennaData.From(from);
+            var toAntennas = RaPlannedAntennaData.From(to);
+            if (fromAntennas == null || toAntennas == null
+                || !(data.TryGetValue("minRelayTechLevel", out var minRelay) && minRelay is double minRelayTechLevel)
+                || !(data.TryGetValue("fromIsHome", out var fromHome) && fromHome is bool fromIsHome)
+                || !(data.TryGetValue("toIsHome", out var toHome) && toHome is bool toIsHome)
+                || !(data.TryGetValue("occluders", out var listed) && listed is List<object?> items))
+            {
+                return null;
+            }
+            var occluders = new List<RaOccluder>(items.Count);
+            foreach (var item in items)
+            {
+                if (!(item is Dictionary<string, object?> body)
+                    || !(body.TryGetValue("bodyIndex", out var index) && index is double bodyIndex)
+                    || !(body.TryGetValue("radiusMeters", out var radius) && radius is double radiusMeters)
+                    || !(body.TryGetValue("temperatureKelvin", out var temperature) && temperature is double temperatureKelvin)
+                    || !(body.TryGetValue("isStar", out var star) && star is bool isStar))
+                {
+                    return null;
+                }
+                occluders.Add(new RaOccluder { BodyIndex = (int)bodyIndex, RadiusMeters = radiusMeters, TemperatureKelvin = temperatureKelvin, IsStar = isStar });
+            }
+            return new RaContactLinkModel(fromAntennas, toAntennas, (int)minRelayTechLevel, fromIsHome, toIsHome, occluders);
         }
 
         public double MarginAt(double ut, Sitrep.Contract.Vector3d from, Sitrep.Contract.Vector3d to, IContactPositions positions)

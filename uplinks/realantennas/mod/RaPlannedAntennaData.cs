@@ -45,6 +45,7 @@ namespace Gonogo.RealAntennasUplink
             ["aimLabel"] = a.AimLabel,
             ["aimNodeId"] = a.AimNodeId,
             ["aimBodyIndex"] = Number(a.AimBodyIndex),
+            ["groundBodyIndex"] = Number(a.GroundBodyIndex),
         };
 
         /// <summary>The antennas a save kept, or null when what it kept is not a list of antennas this build wrote.</summary>
@@ -86,6 +87,7 @@ namespace Gonogo.RealAntennasUplink
                     AimLabel = Text(map, "aimLabel"),
                     AimNodeId = Text(map, "aimNodeId"),
                     AimBodyIndex = Whole(map, "aimBodyIndex"),
+                    GroundBodyIndex = Whole(map, "groundBodyIndex"),
                 });
             }
             return antennas;
