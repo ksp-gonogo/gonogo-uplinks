@@ -5,7 +5,7 @@
   },
   "_scene": {
     "augment": "testflight-reliability-updates",
-    "hostWidget": "vessel-catalog",
+    "hostWidget": "fleet-roster",
     "caption": "A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier",
     "modes": [
       "default"

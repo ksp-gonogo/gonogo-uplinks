@@ -5,7 +5,7 @@
   },
   "_scene": {
     "augment": "testflight-reliability-updates",
-    "hostWidget": "vessel-catalog",
+    "hostWidget": "fleet-roster",
     "caption": "The same engines once the link drops: held, and no repair offered",
     "modes": [
       "default"

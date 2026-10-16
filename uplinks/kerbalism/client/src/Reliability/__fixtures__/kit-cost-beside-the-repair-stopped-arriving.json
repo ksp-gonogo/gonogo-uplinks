@@ -5,7 +5,7 @@
   },
   "_scene": {
     "augment": "kerbalism-reliability-updates",
-    "hostWidget": "vessel-catalog",
+    "hostWidget": "fleet-roster",
     "caption": "The same failures once the link drops: held, and no repair offered",
     "modes": [
       "default"

@@ -9,7 +9,7 @@ import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
-// CME / solar-activity overlay: a `tracking-station.entities` contribution off
+// CME / solar-activity overlay: a `system-view.entities` contribution off
 // `kerbalism.spaceweather`, the same shape-contribution seam the built-in
 // vessel-orbit and CommNet-graph entries ride (`SystemView/
 // vesselOrbitsContribution.ts`). One yellow `travelling-pulse` per active
@@ -72,7 +72,7 @@ import { KERBALISM } from "../uplink.js";
 // known states without changing hue.
 // ---------------------------------------------------------------------------
 
-type CmeEntity = ContributionEntry<"tracking-station.entities">;
+type CmeEntity = ContributionEntry<"system-view.entities">;
 /** `SystemEntityMeta` isn't part of the sdk's public surface (only the entry
  *  type is); derived here so the meta literal below still type-checks. */
 type CmeEntityMeta = NonNullable<CmeEntity["meta"]>;
@@ -239,7 +239,7 @@ function computeStormEntity(
 
 KERBALISM.registerContribution({
   id: "system-view-cme",
-  contributes: "tracking-station.entities",
+  contributes: "system-view.entities",
   deps: ["kerbalism.spaceweather"],
   requires: "kerbalism",
   compute: (topics) =>
