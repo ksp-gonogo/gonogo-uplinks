@@ -19,6 +19,10 @@ namespace GonogoMechJebUplink.Tests
     /// </summary>
     internal sealed class NullUplinkHost : IUplinkHost
     {
+        public void Log(UplinkLogLevel level, string tag, string message)
+        {
+        }
+
 
         public void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread) { }
         public IDisposable RegisterDelayModifier(double factor, string reason) => throw NotExpected();

@@ -33,6 +33,10 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
     /// </summary>
     internal sealed class RecordingUplinkHost : IUplinkHost
     {
+        public void Log(UplinkLogLevel level, string tag, string message)
+        {
+        }
+
         private string[] _subscribedTopics = Array.Empty<string>();
 
         /// <summary>
