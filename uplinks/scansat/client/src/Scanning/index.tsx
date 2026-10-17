@@ -426,7 +426,7 @@ registerComponent<ScanningConfig>({
     "discovery state.",
   tags: ["scan", "fleet"],
   defaultSize: { w: 6, h: 10 },
-  minSize: { w: 3, h: 4 },
+  minSize: { w: 4, h: 4 },
   component: ScanningComponent,
   openConfigOnAdd: false,
   dataRequirements: [

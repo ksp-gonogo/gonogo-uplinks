@@ -48,7 +48,7 @@ Engage MechJeb's ascent autopilot, execute the next node, or land at the target.
 | Actions an input can be bound to | Engage ascent autopilot (`engage-ascent`): Commands the ascent autopilot to fly to the set target altitude; Execute next node (`execute-node`): Commands execution of the next maneuver node; Land at target (`land-at-target`): Commands an autopilot landing at the selected target |
 | Needs | a vessel in flight |
 | Default size, in grid units | 5 × 7 |
-| Smallest size, in grid units | 3 × 5 |
+| Smallest size, in grid units | 4 × 5 |
 | Scenes | 3 |
 
 ![Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle](client/docs/assets/ascent-command-in-flight--default.png)

@@ -51,7 +51,7 @@ SCANsat status: per-scan-type coverage of the current body, the list of vessels 
 | Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `trackingStation.bodies`, `vessel.surface`, `vessel.flight` |
 | Slots of its own | `scanning.sections` |
 | Default size, in grid units | 6 × 10 |
-| Smallest size, in grid units | 3 × 4 |
+| Smallest size, in grid units | 4 × 4 |
 | Scenes | 2 |
 
 ![Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies](client/docs/assets/kerbin-partial-scan--default.png)
