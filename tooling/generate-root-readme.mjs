@@ -41,9 +41,9 @@ const rows = legs.map((leg) => {
   );
   // Link the Uplink's OWN README when it has one, the directory otherwise, so a
   // row never points at a page that does not exist.
-  const readme = join(ROOT, "uplinks", leg.name, "client", "README.md");
+  const readme = join(ROOT, "uplinks", leg.name, "README.md");
   const href = existsSync(readme)
-    ? `uplinks/${leg.name}/client/README.md`
+    ? `uplinks/${leg.name}/README.md`
     : `uplinks/${leg.name}/`;
   const wraps = declared.mod
     ? `${declared.mod.name} ${declared.mod.builtAgainst} (${declared.mod.tier})`
