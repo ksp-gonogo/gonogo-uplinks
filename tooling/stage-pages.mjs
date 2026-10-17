@@ -56,7 +56,7 @@ const SHAPE_RECORD_FILE = "render-shape.json";
  */
 const DETERMINISTIC = [
   "README.md",
-  "uplinks/*/client/README.md",
+  "uplinks/*/README.md",
   "uplinks/*/client/gonogo-uplink.json",
   `uplinks/*/client/docs/assets/${SHAPE_RECORD_FILE}`,
 ];
