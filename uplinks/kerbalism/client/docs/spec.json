@@ -1084,7 +1084,7 @@
     },
     {
       "id": "kerbalism-reliability-updates",
-      "augments": "vessel-catalog.updates",
+      "augments": "fleet-roster.updates",
       "channels": [],
       "requires": "kerbalism",
       "suppressesVanillaBase": false,
@@ -1193,7 +1193,7 @@
     },
     {
       "id": "kerbalism:system-view-cme",
-      "contributes": "tracking-station.entities",
+      "contributes": "system-view.entities",
       "deps": [
         "kerbalism.spaceweather"
       ],

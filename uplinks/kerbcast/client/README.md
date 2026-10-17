@@ -10,15 +10,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | Uplink id | `kerbcast` |
 | Version | `1.0.0-rc.1` |
 | Wraps | kerbcast 1.8.1 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the Kerbcast Uplink with CKAN: search for `GonogoKerbcastUplink`, tick it and apply. CKAN also installs Gonogo itself and kerbcast.
-
-Without CKAN, download `GonogoKerbcastUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoKerbcastUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -55,7 +47,7 @@ A live view from a camera on the active craft. Pick which camera to watch, step 
 | Smallest size, in grid units | 7 × 6 |
 | Scenes | 3 |
 
-![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](client/docs/assets/camera-feed-fixed--default.png)
+![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](docs/assets/camera-feed-fixed--default.png)
 
 ## Augments
 
@@ -64,5 +56,5 @@ A live view from a camera on the active craft. Pick which camera to watch, step 
 | `kerbcast-crew-avatar` | `crew-status.avatar` | – | only while `kerbcast` | 0 |  |
 | `kerbcast-docking-camera` | `rendezvous.camera` | `kerbcast.cameras` | only while `kerbcast` | 1 |  |
 
-![Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](client/docs/assets/docking-camera-behind-reticle--default.png)
+![Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](docs/assets/docking-camera-behind-reticle--default.png)
 

@@ -10,15 +10,7 @@ Reports per-engine RealFuels limits: ignitions remaining, ullage stability and p
 | Uplink id | `realfuels` |
 | Version | `1.0.0-rc.1` |
 | Wraps | RealFuels 15.15.0 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the RealFuels Uplink with CKAN: search for `GonogoRealFuelsUplink`, tick it and apply. CKAN also installs Gonogo itself and RealFuels.
-
-Without CKAN, download `GonogoRealFuelsUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoRealFuelsUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realfuels-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -38,5 +30,5 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realfuels-v
 | --- | --- | --- | --- | --- | --- |
 | `realfuels-fuel-status-section` | `fuel-status.sections` | `realfuels.engines`, `realfuels.boiloff` | only while `realfuels` | 3 |  |
 
-![A restartable upper stage with two lights left, its propellant settling in the risky band after a coast](client/docs/assets/finite-ignition-budget--default.png)
+![A restartable upper stage with two lights left, its propellant settling in the risky band after a coast](docs/assets/finite-ignition-budget--default.png)
 

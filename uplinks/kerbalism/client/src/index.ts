@@ -140,7 +140,7 @@ import "./CrewSurvival/summary.js";
 import "./SpaceWeather/index.js";
 import "./SpaceWeather/badge.js";
 // The CME / solar-activity overlay: a contribution to SystemView's
-// `tracking-station.entities` slot off the same `kerbalism.spaceweather` Topic,
+// `system-view.entities` slot off the same `kerbalism.spaceweather` Topic,
 // one faint blob per active storm. SystemView itself stays in
 // @ksp-gonogo/components and has no idea Kerbalism exists.
 import "./SystemViewCme/contribution.js";
@@ -161,7 +161,7 @@ import "./ResourceOps/processFilters.js";
 // picture only Kerbalism has. ScienceData itself stays in
 // @ksp-gonogo/components; only this augment lives here.
 import "./ScienceFileManager/index.js";
-// VesselCatalog's per-vessel `vessel-catalog.updates` slot: Kerbalism's failed and
+// FleetRoster's per-vessel `fleet-roster.updates` slot: Kerbalism's failed and
 // service-due parts on the active craft's row, with the repair and its kit cost.
 import "./Reliability/index.js";
 

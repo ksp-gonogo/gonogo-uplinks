@@ -445,7 +445,7 @@ AERO.registerContribution({
     // nothing rather than standing up a rival corridor beside the real one.
     return [
       {
-        subject: "descent-profile",
+        subject: "descent-envelope",
         layers,
         held: drawnFrom([
           reading,

@@ -6,6 +6,6 @@ installed for any of it to appear; without it the Uplink loads and reports
 nothing.
 
 It adds no widget of its own. The engines worth a look ride onto the active
-craft's Vessel Catalog row, and a failed engine carries TestFlight's own repair.
+craft's Fleet Roster row, and a failed engine carries TestFlight's own repair.
 That repair takes no crew, no item and no time, so it is one confirmed press with
 no cost beside it.

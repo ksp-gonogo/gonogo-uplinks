@@ -10,15 +10,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the Kerbalism Uplink with CKAN: search for `GonogoKerbalismUplink`, tick it and apply. CKAN also installs Gonogo itself and Kerbalism.
-
-Without CKAN, download `GonogoKerbalismUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoKerbalismUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -88,7 +80,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |
 
-![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](client/docs/assets/ec-shortage-limits-water--default.png)
+![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](docs/assets/ec-shortage-limits-water--default.png)
 
 ### Space Weather
 
@@ -104,7 +96,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | Smallest size, in grid units | 3 × 4 |
 | Scenes | 8 |
 
-![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](client/docs/assets/nominal--default.png)
+![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](docs/assets/nominal--default.png)
 
 ## Augments
 
@@ -114,13 +106,13 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
-| `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
+| `kerbalism-reliability-updates` | `fleet-roster.updates` | – | only while `kerbalism` | 2 |  |
 
-![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
+![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](docs/assets/greenhouse-halted-in-the-dark--default.png)
 
-![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
+![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](docs/assets/file-and-sample-on-one-subject--default.png)
 
-![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
+![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](docs/assets/kit-cost-beside-the-repair--default.png)
 
 ## Contributions
 
@@ -132,18 +124,18 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:crew-survival-band-badge` | `crew-status.badges` | `processor:kerbalism:crew-rule-readings`, `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:crew-survival-row-tone` | `crew-status.row-tone` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:space-weather-badge` | `space-weather.badges` | `kerbalism.spaceweather` | only while `kerbalism` |
-| `kerbalism:system-view-cme` | `tracking-station.entities` | `kerbalism.spaceweather` | only while `kerbalism` |
+| `kerbalism:system-view-cme` | `system-view.entities` | `kerbalism.spaceweather` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meta` | `ship-map.part-meta` | `kerbalism.lifesupport` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
 
-![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](client/docs/assets/radiation-dose-critical--default.png)
+![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](docs/assets/radiation-dose-critical--default.png)
 
-![A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it](client/docs/assets/dose-band-reaching-critical--default.png)
+![A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it](docs/assets/dose-band-reaching-critical--default.png)
 
-![Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border](client/docs/assets/supply-tank-meters--default.png)
+![Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border](docs/assets/supply-tank-meters--default.png)
 
-![One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters](client/docs/assets/a-filter-term-per-process--default.png)
+![One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters](docs/assets/a-filter-term-per-process--default.png)
 
 ## Models
 

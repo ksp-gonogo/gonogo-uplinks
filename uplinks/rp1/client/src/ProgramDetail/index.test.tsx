@@ -9,7 +9,6 @@ import {
 import { DelayRailProvider } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
-  installFixedSizeResizeObserver,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
@@ -17,8 +16,6 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { ProgramDetail } from "./index.js";
-
-installFixedSizeResizeObserver({ width: 320, height: 140 });
 
 const YEAR = 31_557_600;
 
@@ -423,16 +420,15 @@ describe("ProgramDetail", () => {
     const { fixture, view } = mount();
     await feed(fixture);
 
-    const chart = await screen.findByRole("group", {
+    const chart = await screen.findByRole("img", {
       name: /Funding per year over the duration of X-Plane Research/,
     });
-    // The stroke has to be a real path over real points. A chart that
+    // The stroke has to be a real polyline over real points. A chart that
     // rendered its frame and no line looks identical to one with no data.
-    const stroke = [...chart.querySelectorAll("path")].find(
-      (p) => p.getAttribute("stroke") === "var(--color-go-text)",
-    );
-    expect(stroke).toBeDefined();
-    expect((stroke?.getAttribute("d") ?? "").length).toBeGreaterThan(20);
+    expect(chart.querySelector("polyline")).not.toBeNull();
+    expect(
+      (chart.querySelector("polyline")?.getAttribute("points") ?? "").length,
+    ).toBeGreaterThan(20);
     await expectNoA11yViolations(view.container);
   });
 
@@ -453,7 +449,7 @@ describe("ProgramDetail", () => {
       ).toBeInTheDocument();
     });
     expect(
-      screen.queryByRole("group", { name: /Cumulative funding/ }),
+      screen.queryByRole("img", { name: /Cumulative funding/ }),
     ).toBeNull();
   });
 

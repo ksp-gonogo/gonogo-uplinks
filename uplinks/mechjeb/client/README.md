@@ -10,15 +10,7 @@ Flies the vessel from the console: engage MechJeb's ascent autopilot, execute th
 | Uplink id | `mechjeb` |
 | Version | `1.0.0-rc.1` |
 | Wraps | MechJeb2 2.15.3.0 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the MechJeb Uplink with CKAN: search for `GonogoMechJebUplink`, tick it and apply. CKAN also installs Gonogo itself and MechJeb2.
-
-Without CKAN, download `GonogoMechJebUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoMechJebUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=mechjeb-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -51,5 +43,5 @@ Engage MechJeb's ascent autopilot, execute the next node, or land at the target.
 | Smallest size, in grid units | 3 × 5 |
 | Scenes | 3 |
 
-![Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle](client/docs/assets/ascent-command-in-flight--default.png)
+![Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle](docs/assets/ascent-command-in-flight--default.png)
 

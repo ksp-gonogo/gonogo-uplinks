@@ -6,10 +6,7 @@ import {
   setupStreamFixture,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
-import {
-  expectNoA11yViolations,
-  installFixedSizeResizeObserver,
-} from "@ksp-gonogo/ui-kit/testing";
+import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { useEffect, useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -21,8 +18,6 @@ import {
   RadiationSection,
   toRadPerHourSeries,
 } from "./RadiationSection.js";
-
-installFixedSizeResizeObserver({ width: 320, height: 96 });
 
 // ---------------------------------------------------------------------------
 // pushRadiationSample: pure buffer management, no React involved.
@@ -53,7 +48,7 @@ function colourRule(el: HTMLElement): string {
 /**
  * The unmeasured-arm hole. `toRadPerHourSeries` drops a sample the picked arm
  * did not measure, and its own comment claimed "a gap in the trace reads as a
- * gap": it did not, because nothing set the series' `breaks` and the stroke
+ * gap": it did not, because nothing set `LineGraph.breaks` and the stroke
  * joined straight across the drop. A line an operator cannot tell from data is
  * the one thing this graph must not draw, which is why the field exists.
  */
@@ -221,7 +216,7 @@ describe("RadiationSection", () => {
     expect(screen.getByText("Shielded", { exact: false })).toBeInTheDocument();
   });
 
-  it("renders the graph as a sparkline with the threshold as its only line", () => {
+  it("renders the graph as a sparkline with no in-frame lines at all", () => {
     const { container } = render(
       <RadiationSection
         weather={{
@@ -232,12 +227,12 @@ describe("RadiationSection", () => {
         utNow={10}
       />,
     );
-    // No quarter gridlines (sparkline): the one line in the frame is the
-    // safe-threshold tick.
-    expect(container.querySelectorAll("line")).toHaveLength(1);
+    // No quarter gridlines (sparkline) and no SVG threshold rule either:
+    // the safe threshold renders as a fixed HTML tick outside the viewBox.
+    expect(container.querySelectorAll("line")).toHaveLength(0);
   });
 
-  it("marks the safe threshold as a short tick labelled with its own level", () => {
+  it("marks the safe threshold as a fixed tick labelled with its own level", () => {
     const { container } = render(
       <RadiationSection
         weather={{
@@ -250,16 +245,16 @@ describe("RadiationSection", () => {
         utNow={10}
       />,
     );
-    const marker = container.querySelector('[data-threshold-kind="marker"]');
-    expect(marker).not.toBeNull();
-    // The level reads beside the tick, an axis annotation rather than a
-    // rule across the frame.
-    expect(container.querySelector("svg")?.textContent).toContain(
-      "0.500 rad/h",
+    const marker = container.querySelector<HTMLElement>(
+      '[data-threshold-marker="safe"]',
     );
+    expect(marker).not.toBeNull();
+    // The "0.5" level reads beside the tick, an axis annotation rather
+    // than a rule across the frame.
+    expect(marker?.textContent).toBe("0.5");
     // The domain is clamped to [0, 2*threshold] on a quiet reading, so the
     // marker sits mid-frame, not crawling with the data extent.
-    expect(marker?.getAttribute("y1")).toBe("48");
+    expect(marker?.style.top).toBe("50%");
   });
 
   it("wears identity hues at rest and escalates only above the threshold", () => {

@@ -44,7 +44,7 @@ function stillTrue<T>(reading: TopicReading<T>): T | undefined {
 export function KerbalismReliabilityUpdates({
   vesselId,
   compact,
-}: SlotProps<"vessel-catalog.updates">) {
+}: SlotProps<"fleet-roster.updates">) {
   const identity = stillTrue(useTelemetry("vessel.identity"));
   const summary = stillTrue(useTelemetry("kerbalism.reliability"));
   const partsReading = useTelemetry("kerbalism.reliabilityParts");
@@ -108,7 +108,7 @@ export function KerbalismReliabilityUpdates({
 
 registerAugment({
   id: "kerbalism-reliability-updates",
-  augments: "vessel-catalog.updates",
+  augments: "fleet-roster.updates",
   component: KerbalismReliabilityUpdates,
   requires: "kerbalism",
   owner: KERBALISM,

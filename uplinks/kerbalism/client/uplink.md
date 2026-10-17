@@ -7,5 +7,5 @@ it the Uplink loads and reports nothing.
 Most of what it adds is not a widget of its own. Radiation and survival ride
 into the base Crew Status widget, part meters and wear ride into Ship Map, and
 the CME warning rides into System View, and failed or service-due parts ride
-onto the active craft's Vessel Catalog row with the repair and the kits it takes,
+onto the active craft's Fleet Roster row with the repair and the kits it takes,
 so a Kerbalism fact sits beside the stock fact it qualifies.

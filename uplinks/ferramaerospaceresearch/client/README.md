@@ -10,15 +10,7 @@ Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of 
 | Uplink id | `aero` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the Aerodynamics Uplink with CKAN: search for `GonogoFerramAerospaceResearchUplink`, tick it and apply. CKAN also installs Gonogo itself and Ferram Aerospace Research.
-
-Without CKAN, download `GonogoFerramAerospaceResearchUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoFerramAerospaceResearchUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=aero-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -42,7 +34,7 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 | Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |
 
-![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](client/docs/assets/winged-subsonic-climb--default.png)
+![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](docs/assets/winged-subsonic-climb--default.png)
 
 ## Contributions
 
@@ -51,7 +43,7 @@ Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Fe
 | `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `trackingStation.bodies` | only while `aero` |
 | `aero:descent-envelope-badges` | `landing-status.badges` | `aero.state` | only while `aero` |
 
-![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](client/docs/assets/winged-entry-high-alpha--default.png)
+![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](docs/assets/winged-entry-high-alpha--default.png)
 
-![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](client/docs/assets/entry-badges--default.png)
+![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](docs/assets/entry-badges--default.png)
 

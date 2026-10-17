@@ -10,15 +10,7 @@ TestFlight engine reliability on the fleet roster: failed engines, rated burn ne
 | Uplink id | `testflight` |
 | Version | `1.0.0-rc.1` |
 | Wraps | TestFlight 2.12.0.0 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the TestFlight Uplink with CKAN: search for `GonogoTestFlightUplink`, tick it and apply. CKAN also installs Gonogo itself and TestFlight.
-
-Without CKAN, download `GonogoTestFlightUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoTestFlightUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -46,9 +38,9 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `testflight-reliability-updates` | `vessel-catalog.updates` | – | only while `testflight` | 2 |  |
+| `testflight-reliability-updates` | `fleet-roster.updates` | – | only while `testflight` | 2 |  |
 
-![A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier](client/docs/assets/engine-failure-mid-ascent--default.png)
+![A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier](docs/assets/engine-failure-mid-ascent--default.png)
 
 ## Error codes
 

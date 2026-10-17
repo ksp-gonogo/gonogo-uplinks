@@ -10,15 +10,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | Uplink id | `realantennas` |
 | Version | `1.0.0-rc.1` |
 | Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the RealAntennas Uplink with CKAN: search for `GonogoRealAntennasUplink`, tick it and apply. CKAN also installs Gonogo itself and RealAntennas.
-
-Without CKAN, download `GonogoRealAntennasUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoRealAntennasUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -64,9 +56,9 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path` | only while `realantennas` | 3 |  |
 | `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `trackingStation.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
 
-![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](client/docs/assets/ra-link-budget-closes--default.png)
+![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](docs/assets/ra-link-budget-closes--default.png)
 
-![A card per antenna: what each is aimed at, the modes its tech level has earned, and the controls to move it](client/docs/assets/ra-antenna-targets--default.png)
+![A card per antenna: what each is aimed at, the modes its tech level has earned, and the controls to move it](docs/assets/ra-antenna-targets--default.png)
 
 ## Contributions
 
@@ -74,5 +66,5 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | --- | --- | --- | --- |
 | `realantennas:comm-signal-hop-rates` | `comm-signal.hop-rates` | `realantennas.hopRates` | only while `realantennas` |
 
-![Per-hop bitrates joined onto CommSignal's route, with the slow middle leg flagged as the bottleneck](client/docs/assets/ra-hop-rates-bottleneck--default.png)
+![Per-hop bitrates joined onto CommSignal's route, with the slow middle leg flagged as the bottleneck](docs/assets/ra-hop-rates-bottleneck--default.png)
 

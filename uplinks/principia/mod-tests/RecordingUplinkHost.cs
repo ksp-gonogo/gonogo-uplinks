@@ -17,10 +17,6 @@ namespace GonogoPrincipiaUplink.Tests
     /// </summary>
     internal sealed class RecordingUplinkHost : IUplinkHost
     {
-        public void Log(UplinkLogLevel level, string tag, string message)
-        {
-        }
-
         public List<string> HandlersRegistered { get; } = new List<string>();
 
         public List<string> PublishersTaken { get; } = new List<string>();

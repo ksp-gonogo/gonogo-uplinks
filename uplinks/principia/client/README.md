@@ -10,15 +10,7 @@ Principia's n-body flight on the dashboard: how far each trajectory holds, the f
 | Uplink id | `principia` |
 | Version | `1.0.0-rc.1` |
 | Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the Principia Uplink with CKAN: search for `GonogoPrincipiaUplink`, tick it and apply. CKAN also installs Gonogo itself and Principia.
-
-Without CKAN, download `GonogoPrincipiaUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoPrincipiaUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=principia-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -83,7 +75,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | Smallest size, in grid units | 4 × 7 |
 | Scenes | 11 |
 
-![A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies](client/docs/assets/mun-l1-holding-station--default.png)
+![A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies](docs/assets/mun-l1-holding-station--default.png)
 
 ## Augments
 
@@ -96,17 +88,17 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | `principia-burn-editor` | `maneuver-planner.sections` | – |  | 3 |  |
 | `principia-plan-composer` | `maneuver-planner.sections` | – |  | 5 |  |
 
-![A plan mid-mission: one burn behind, one imminent, one a day out](client/docs/assets/flight-plan-healthy--default.png)
+![A plan mid-mission: one burn behind, one imminent, one a day out](docs/assets/flight-plan-healthy--default.png)
 
-![An armed slot, one of three, mid-mission with a burn already running: copy and delete are the transitions available and create is not offered at all](client/docs/assets/plan-slots-armed--default.png)
+![An armed slot, one of three, mid-mission with a burn already running: copy and delete are the transitions available and create is not offered at all](docs/assets/plan-slots-armed--default.png)
 
-![A near-circular polar orbit as Principia's own analyser sees it: mean elements as bands, three periods that differ, and the node drift that makes them differ](client/docs/assets/orbit-analysis-live--default.png)
+![A near-circular polar orbit as Principia's own analyser sees it: mean elements as bands, three periods that differ, and the node drift that makes them differ](docs/assets/orbit-analysis-live--default.png)
 
-![What each stretch of the plan leaves the craft flying: a parking orbit, a transfer the integrator could not analyse, and the capture the plan ends in](client/docs/assets/coast-analysis-plan--default.png)
+![What each stretch of the plan leaves the craft flying: a parking orbit, a transfer the integrator could not analyse, and the capture the plan ends in](docs/assets/coast-analysis-plan--default.png)
 
-![Writes armed at a ten-light-minute vantage with the second burn picked: the profile Principia will fly, the deadline an edit has to beat, and the three delta-v components live for editing](client/docs/assets/burn-editor-armed-mid-tune--default.png)
+![Writes armed at a ten-light-minute vantage with the second burn picked: the profile Principia will fly, the deadline an edit has to beat, and the three delta-v components live for editing](docs/assets/burn-editor-armed-mid-tune--default.png)
 
-![A plan being composed, driven through the composer's own buttons: two burns seeded at instants the craft can still act on](client/docs/assets/composer-composing--default.png)
+![A plan being composed, driven through the composer's own buttons: two burns seeded at instants the craft can still act on](docs/assets/composer-composing--default.png)
 
 ## Error codes
 

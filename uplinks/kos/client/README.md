@@ -10,15 +10,7 @@ Puts a kOS CPU's real terminal on the dashboard, streamed in process with no pro
 | Uplink id | `kos` |
 | Version | `1.0.0-rc.1` |
 | Wraps | kOS 1.6.0.1 (ckan) |
-| Built against | contract 44.11, extension API 6.0.0 |
-
-## Install
-
-Install the kOS Uplink with CKAN: search for `GonogoKosUplink`, tick it and apply. CKAN also installs Gonogo itself and kOS.
-
-Without CKAN, download `GonogoKosUplink.zip` from the releases page, unpack it into your Kerbal Space Program folder so that it lands in `GameData/GonogoKosUplink`, and install Gonogo the same way.
-
-Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
+| Built against | contract 44.0, extension API 6.0.0 |
 
 ## Wire
 
@@ -64,7 +56,7 @@ Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the 
 | Smallest size, in grid units | 6 × 7 |
 | Scenes | 2 |
 
-![Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing](client/docs/assets/two-cpus-idle--default.png)
+![Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing](docs/assets/two-cpus-idle--default.png)
 
 ### kOS Terminal
 
@@ -78,7 +70,7 @@ The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it 
 | Smallest size, in grid units | 8 × 6 |
 | Scenes | 4 |
 
-![A script running: kOS redraws the screen in chunks and the terminal repaints as they land](client/docs/assets/boot-then-run--default.gif)
+![A script running: kOS redraws the screen in chunks and the terminal repaints as they land](docs/assets/boot-then-run--default.gif)
 
 ## Error codes
 
