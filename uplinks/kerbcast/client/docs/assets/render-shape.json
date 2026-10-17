@@ -3,42 +3,42 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "3ba68684c58514e6",
+      "hash": "25571e9f987b08bc",
       "elements": 47,
       "text": "de169916"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "962db71b79586c1f",
+      "hash": "0b7d04abab48e039",
       "elements": 47,
       "text": "de169916"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "3ba68684c58514e6",
+      "hash": "25571e9f987b08bc",
       "elements": 47,
       "text": "de169916"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "38e1f0b2d18ad1cb",
+      "hash": "67ca51fa79ac7b6b",
       "elements": 74,
       "text": "77896017"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "7de28ea954e1366b",
+      "hash": "8e217e62506606f5",
       "elements": 74,
       "text": "77896017"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "38e1f0b2d18ad1cb",
+      "hash": "67ca51fa79ac7b6b",
       "elements": 74,
       "text": "77896017"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "ad9e1ce5653c7aaf",
+      "hash": "c1ddb943cdb1b29a",
       "elements": 74,
       "text": "2dc9c080"
     },
     "docking-camera-behind-reticle--default.png": {
-      "hash": "d3b7f340ebe938f5",
+      "hash": "2cad44c45c535b41",
       "elements": 66,
       "text": "24a4fc0f"
     }
