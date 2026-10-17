@@ -168,6 +168,15 @@ jobs:
           name: uplink-${{ needs.resolve.outputs.id }}
           path: artifacts
 
+      # `publish` checks the bundle against the hash baked into the plugin's
+      # sources, and this job starts from a bare checkout where the generated
+      # file is not. Baking it again from the downloaded bundle gives the same
+      # hash the build job baked into the zip.
+      - name: Restore the baked hash the publish check reads
+        run: >-
+          node tooling/uplink-tools.mjs "$NAME" bake
+          --bundle "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}/${{ needs.resolve.outputs.id }}.client.js"
+
       # Checks out the releases branch (a new one when there is none), copies the
       # bundle and its sidecar to the path client.url names, refuses a version
       # already published with different bytes, pushes, reads the push back from
