@@ -151,7 +151,7 @@
   "augments": [
     {
       "id": "testflight-reliability-updates",
-      "augments": "fleet-roster.updates",
+      "augments": "vessel-catalog.updates",
       "channels": [],
       "requires": "testflight",
       "suppressesVanillaBase": false,
