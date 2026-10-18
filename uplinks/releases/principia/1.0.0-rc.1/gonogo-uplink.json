@@ -1,0 +1,19 @@
+{
+  "id": "principia",
+  "name": "Principia",
+  "description": "Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "Principia",
+    "builtAgainst": "2026081218-Levi-Civita"
+  },
+  "version": "1.0.0-rc.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 44,
+  "contractMinor": 11,
+  "bundleUrl": "principia/principia.client.js",
+  "integrity": "sha256-9ed86c3a79af71f88845d9a698225281f2113358317c8addc7e58c18ccba4b58",
+  "sdkVersion": "0.0.1"
+}
