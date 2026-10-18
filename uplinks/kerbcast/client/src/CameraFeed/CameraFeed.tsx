@@ -52,6 +52,7 @@ import {
   type CameraSetpointSurfaceHandle,
 } from "../CameraSetpoint/CameraSetpointSurface.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
+import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { feedAspect, frameBox } from "./frameShape.js";
 import { useStreamAspect } from "./useStreamAspect.js";
@@ -415,6 +416,7 @@ export function CameraFeed({
   // current aim rather than hardcoding bounds. Called unconditionally (rules of
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
+  const sidecarNote = useSidecarNote();
 
   // ---- Frame shape ----
   // The box the frame is fitted INTO, measured so the frame itself can be given
@@ -557,6 +559,7 @@ export function CameraFeed({
                     }
                     onDisplayedCameraChange={setEffectiveFlightId}
                     showDebugInfo={showDebugInfo}
+                    emptyMessage={sidecarNote ?? undefined}
                     enableFullscreen
                     enablePictureInPicture
                     // The SDK's own pan pad and zoom pair stand down for as

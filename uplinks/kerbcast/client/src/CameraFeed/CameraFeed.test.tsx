@@ -728,6 +728,23 @@ describe("CameraFeed: empty state and status", () => {
     expect(screen.getByText(/start a vessel with hullcam parts/i)).toBeTruthy();
   });
 
+  it("says the sidecar is unreachable, not that the craft has no cameras, when /offer cannot be posted", async () => {
+    const sidecar = new MockSidecar();
+    const ds = new KerbcastDataSource({ port: 8088 }, sidecar.createTransport());
+    registerUplinkHandle("kerbcast", ds);
+    createdSources.push(ds);
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Failed"));
+
+    renderFeed({ flightId: null });
+    await act(async () => {
+      await ds.relayOffer({ sdp: "offer", cameras: [] }).catch(() => {});
+    });
+
+    expect(screen.getByText(/sidecar at .*:8088 is unreachable/i)).toBeTruthy();
+    expect(screen.getByText(/BindAddress/)).toBeTruthy();
+    expect(screen.queryByText(/start a vessel with hullcam parts/i)).toBeNull();
+  });
+
   it("renders the empty state gracefully when the source is disconnected", async () => {
     // A kerbcast source that never connects (status stays disconnected): build
     // the transport but never call connect()/open(). The widget shows the same

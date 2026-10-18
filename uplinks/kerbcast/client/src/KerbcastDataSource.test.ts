@@ -19,6 +19,7 @@ import {
   KerbcastDataSource,
   kerbcastSource,
   SLOT_COUNT,
+  sidecarUnreachableMessage,
 } from "./KerbcastDataSource.js";
 import {
   createMockKerbcastSession,
@@ -81,6 +82,50 @@ describe("KerbcastDataSource", () => {
     );
     fetchSpy.mockRestore();
     ds.disconnect();
+  });
+});
+
+describe("KerbcastDataSource: sidecar reachability", () => {
+  const OFFER = { sdp: "offer", cameras: [] as number[] };
+
+  it("names the sidecar address once when /offer fails at the network level, however often it retries", async () => {
+    setSetting(GAME_HOST_KEY, "192.168.5.5");
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("Failed"));
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const ds = makeTracked();
+    const changes = vi.fn();
+    ds.onSidecarReachabilityChange(changes);
+
+    expect(ds.getSidecarReachability()).toBe("unknown");
+    expect(ds.readinessNote()).toBeNull();
+
+    for (let i = 0; i < 3; i++) {
+      await expect(ds.relayOffer(OFFER)).rejects.toThrow();
+    }
+
+    expect(ds.getSidecarReachability()).toBe("unreachable");
+    expect(ds.readinessNote()).toBe(sidecarUnreachableMessage("192.168.5.5", 8088));
+    expect(ds.readinessNote()).toMatch(/192\.168\.5\.5:8088.*BindAddress/);
+    expect(changes).toHaveBeenCalledTimes(1);
+    expect(
+      warn.mock.calls.filter((call) => /unreachable/.test(String(call[0]))),
+    ).toHaveLength(1);
+  });
+
+  it("clears the note once the sidecar answers, even with a refusal status", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValueOnce(new TypeError("Failed"))
+      .mockResolvedValue(new Response("busy", { status: 503 }));
+    const ds = makeTracked();
+
+    await expect(ds.relayOffer(OFFER)).rejects.toThrow();
+    expect(ds.getSidecarReachability()).toBe("unreachable");
+
+    await expect(ds.relayOffer(OFFER)).rejects.toThrow(/returned 503/);
+    expect(ds.getSidecarReachability()).toBe("reachable");
+    expect(ds.readinessNote()).toBeNull();
+    fetchSpy.mockRestore();
   });
 });
 

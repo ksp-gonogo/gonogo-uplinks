@@ -1179,7 +1179,7 @@
       "deps": [
         "processor:kerbalism:ship-systems"
       ],
-      "requires": "flight",
+      "requires": "kerbalism",
       "settings": []
     },
     {

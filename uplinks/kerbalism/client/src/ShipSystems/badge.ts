@@ -54,7 +54,7 @@ KERBALISM.registerContribution({
   id: "ship-systems-badge",
   contributes: "ship-systems.badges",
   deps: [SHIP_SYSTEMS],
-  requires: "flight",
+  requires: "kerbalism",
   /*
    * The processor answers with currency, so its answer is unwrapped here. Both
    * value-bearing arms: a badge drawn from a held summary is still the last

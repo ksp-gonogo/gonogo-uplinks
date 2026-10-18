@@ -126,7 +126,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
-| `kerbalism:ship-systems-badge` | `ship-systems.badges` | `processor:kerbalism:ship-systems` | only while `flight` |
+| `kerbalism:ship-systems-badge` | `ship-systems.badges` | `processor:kerbalism:ship-systems` | only while `kerbalism` |
 | `kerbalism:crew-survival-meters` | `crew-status.meters` | `processor:kerbalism:crew-survival`, `processor:kerbalism:crew-rule-readings` | only while `kerbalism` |
 | `kerbalism:crew-survival-badge` | `crew-status.badges` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:crew-survival-band-badge` | `crew-status.badges` | `processor:kerbalism:crew-rule-readings`, `processor:kerbalism:crew-survival` | only while `kerbalism` |

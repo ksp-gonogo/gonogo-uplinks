@@ -368,6 +368,9 @@ export class KeepaliveTransport implements KerbcastTransport {
 // KerbcastDataSource
 // ---------------------------------------------------------------------------
 
+/** Whether the browser's last POST to the sidecar's `/offer` got any answer. */
+export type SidecarReachability = "unknown" | "reachable" | "unreachable";
+
 export class KerbcastDataSource {
   id = "kerbcast";
   name = "Kerbcast";
@@ -425,6 +428,8 @@ export class KerbcastDataSource {
   private broker: KerbcastBroker | undefined;
   private brokerIceUnsub: (() => void) | undefined;
   private statusListeners = new Set<(status: DataSourceStatus) => void>();
+  private sidecarReachability: SidecarReachability = "unknown";
+  private reachabilityListeners = new Set<() => void>();
   // flightId -> refcount of widgets currently displaying that camera. Drives
   // the dynamic slot subscription: 0->1 binds a slot, 1->0 frees it. Passed as
   // the initial set on (re)connect so a reconnect re-binds whatever's on screen
@@ -652,15 +657,65 @@ export class KerbcastDataSource {
     cameras: number[];
     slots?: number;
   }): Promise<{ sdp: string; cameras: number[] }> {
-    const res = await fetch(`http://${getGameHost()}:${this.cfg.port}/offer`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(offer),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`http://${getGameHost()}:${this.cfg.port}/offer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(offer),
+      });
+    } catch (err) {
+      this.setSidecarReachability("unreachable");
+      throw err;
+    }
+    this.setSidecarReachability("reachable");
     if (!res.ok) {
       throw new Error(`kerbcast /offer returned ${res.status}`);
     }
     return (await res.json()) as { sdp: string; cameras: number[] };
+  }
+
+  /**
+   * Whether the sidecar answered the last `/offer` this screen posted. Stays
+   * `"unknown"` until the first attempt, and on a station, whose offers go
+   * through the main screen.
+   */
+  getSidecarReachability(): SidecarReachability {
+    return this.sidecarReachability;
+  }
+
+  /** Subscribe to changes of {@link getSidecarReachability}; returns the unsubscribe. */
+  onSidecarReachabilityChange(cb: () => void): () => void {
+    this.reachabilityListeners.add(cb);
+    return () => this.reachabilityListeners.delete(cb);
+  }
+
+  /**
+   * The sentence naming an unreachable sidecar, or null while it is not. An
+   * unreachable sidecar on a remote KSP machine is almost always a bind
+   * address left at its loopback default.
+   */
+  readinessNote(): string | null {
+    return this.sidecarReachability === "unreachable"
+      ? sidecarUnreachableMessage(getGameHost(), this.cfg.port)
+      : null;
+  }
+
+  /** Subscribe to changes of {@link readinessNote}; returns the unsubscribe. */
+  onReadinessNoteChange(cb: () => void): () => void {
+    return this.onSidecarReachabilityChange(cb);
+  }
+
+  private setSidecarReachability(next: SidecarReachability): void {
+    const prev = this.sidecarReachability;
+    if (prev === next) return;
+    this.sidecarReachability = next;
+    if (next === "unreachable") {
+      logger.warn(sidecarUnreachableMessage(getGameHost(), this.cfg.port));
+    } else if (prev === "unreachable") {
+      logger.info("kerbcast sidecar reachable again");
+    }
+    for (const cb of this.reachabilityListeners) cb();
   }
 
   /**
@@ -1066,6 +1121,14 @@ export class KerbcastDataSource {
       this.scheduleReconnect();
     }
   }
+}
+
+/** The operator-facing sentence for a sidecar the browser cannot reach. */
+export function sidecarUnreachableMessage(host: string, port: number): string {
+  return (
+    `The kerbcast sidecar at ${host}:${port} is unreachable. If KSP runs on ` +
+    "another machine, kerbcast's BindAddress must allow this machine."
+  );
 }
 
 function mapStatus(s: KerbcastConnectionState): DataSourceStatus {
