@@ -3,7 +3,7 @@
   "uplink": {
     "id": "kerbcast",
     "name": "Kerbcast",
-    "version": "1.0.0-rc.1",
+    "version": "1.0.0-rc.2",
     "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
     "wraps": {
       "name": "kerbcast",
