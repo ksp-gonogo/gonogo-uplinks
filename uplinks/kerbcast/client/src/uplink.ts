@@ -12,7 +12,7 @@ import { defineUplinkClient } from "@ksp-gonogo/sitrep-sdk";
 import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
 // TODO(version): build-inject this from gonogo-uplink.json.
-const UPLINK_VERSION = "1.0.0-rc.2";
+const UPLINK_VERSION = "1.0.0-rc.3";
 
 export const KERBCAST = defineUplinkClient({
   id: "kerbcast",
