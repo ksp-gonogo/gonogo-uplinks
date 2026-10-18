@@ -611,6 +611,9 @@ export class KerbcastDataSource {
   subscribeCamera(flightId: number): void {
     const count = this.desiredSubs.get(flightId) ?? 0;
     this.desiredSubs.set(flightId, count + 1);
+    logger
+      .tag("kerbcast:subscriptions")
+      .debug("subscribe", { flightId, holders: count + 1, status: this.status });
     if (this.status === "connected") {
       if (count === 0) this.requestSlot(flightId);
       return;
@@ -628,6 +631,9 @@ export class KerbcastDataSource {
   unsubscribeCamera(flightId: number): void {
     const count = this.desiredSubs.get(flightId) ?? 0;
     if (count === 0) return;
+    logger
+      .tag("kerbcast:subscriptions")
+      .debug("unsubscribe", { flightId, holders: count - 1, status: this.status });
     if (count > 1) {
       this.desiredSubs.set(flightId, count - 1);
       return;
@@ -855,6 +861,13 @@ export class KerbcastDataSource {
     (client as unknown as { __kcInstanceId?: number }).__kcInstanceId =
       instanceId;
     logger.tag("kerbcast:clock").debug("built KerbcastClient", { instanceId });
+    const reportDisplaySize = client.reportDisplaySize.bind(client);
+    client.reportDisplaySize = (flightId, width, height) => {
+      logger
+        .tag("kerbcast:subscriptions")
+        .debug("report-display-size", { flightId, width, height });
+      return reportDisplaySize(flightId, width, height);
+    };
     this.clientUnsubs.push(
       client.on("state-change", (s) => {
         // The slot pool belongs to the peer, so a lost peer takes every

@@ -20,7 +20,7 @@ import {
   useDomainAvailabilityStore,
 } from "@ksp-gonogo/ui-kit";
 import { useEffect } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 // Importing the real module runs its module-load `registerAugment(...)` once,
 // the same way the app picks this augment up via the package's bare
 // `import "./DockingCameraAugment/index.js"`. So this suite exercises the ACTUAL
@@ -187,6 +187,64 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
     });
 
     await waitFor(() => expect(ensureConnectedCalls).toBeGreaterThan(0));
+  });
+
+  it("reports the backdrop's own display size for the camera, so the sidecar does not hold it at the background rate", async () => {
+    const reports: Array<[number, number, number]> = [];
+    const sizes = { width: 560, height: 320 };
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(private readonly cb: ResizeObserverCallback) {}
+        observe() {
+          this.cb(
+            [{ contentRect: sizes } as ResizeObserverEntry],
+            this as unknown as ResizeObserver,
+          );
+        }
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    registerUplinkHandle("kerbcast", {
+      id: "kerbcast",
+      name: "Kerbcast",
+      ensureConnected: () => {},
+      subscribeCamera: () => {},
+      unsubscribeCamera: () => {},
+      getClient: () => ({
+        clock: { captureUt: null, epoch: 0, warpRate: 1 },
+        on: () => () => {},
+        camera: () => ({ mediaStream: null, on: () => () => {} }),
+        reportDisplaySize: (flightId: number, w: number, h: number) => {
+          reports.push([flightId, w, h]);
+          return Promise.resolve();
+        },
+      }),
+    });
+
+    const stream = setupStreamFixture();
+    renderSlot(stream);
+    act(() => {
+      stream.emit("kerbcast.available", true, {
+        quality: Quality.Loaded,
+        source: "kerbcast",
+      });
+    });
+    await waitFor(() =>
+      expect(stream.transport.isSubscribed("kerbcast.cameras")).toBe(true),
+    );
+    act(() => {
+      stream.emit(
+        "kerbcast.cameras",
+        [{ cameraId: 7, isDockingCamera: true }],
+        { quality: Quality.Loaded, source: "kerbcast" },
+      );
+    });
+
+    // Reported with no stream yet: the box exists before the video does.
+    await waitFor(() => expect(reports).toEqual([[7, 560, 320]]));
+    vi.unstubAllGlobals();
   });
 
   it("tells the HUD the picture's aspect once the video knows its size, and withdraws it on unmount", async () => {

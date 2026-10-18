@@ -620,6 +620,7 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
         flightId={7}
         clock={clock}
         captureUt={() => 500}
+        resetEpoch={0}
         onResult={() => {}}
       />,
     );
@@ -657,6 +658,58 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     // rebuild.
     expect(proc?.cancelled).toBe(false);
     expect(gen?.closed).toBe(false);
+    expect(FakeProcessor.instances).toHaveLength(1);
+  });
+
+  it("a second consumer mounting on the same camera, or the same epoch again, never flushes the shared pipeline's buffer", async () => {
+    const { FakeProcessor } = installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const rawStream = fakeVideoStream(track);
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    const clock = manualClock(Number.NEGATIVE_INFINITY);
+
+    const { rerender } = render(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => 500}
+        resetEpoch={3}
+        onResult={() => {}}
+      />,
+    );
+    act(() => {
+      cam.emit(rawStream);
+    });
+    expect(FakeProcessor.instances).toHaveLength(1);
+
+    const heldFrame = fakeFrame("held");
+    track.push(heldFrame);
+    await waitFor(() => {
+      expect(heldFrame.closeCount).toBe(0);
+    });
+
+    // Same epoch rendered again, and a second consumer of the camera mounting.
+    rerender(
+      <>
+        <StreamProbe
+          flightId={7}
+          clock={clock}
+          captureUt={() => 500}
+          resetEpoch={3}
+          onResult={() => {}}
+        />
+        <StreamProbe
+          flightId={7}
+          clock={clock}
+          captureUt={() => 500}
+          resetEpoch={3}
+          onResult={() => {}}
+        />
+      </>,
+    );
+
+    expect(heldFrame.closeCount).toBe(0);
     expect(FakeProcessor.instances).toHaveLength(1);
   });
 

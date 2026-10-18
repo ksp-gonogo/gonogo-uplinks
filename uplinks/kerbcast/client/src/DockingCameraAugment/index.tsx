@@ -21,6 +21,7 @@
 import {
   KerbcastProvider,
   type KerbcastSubscriptions,
+  useReportDisplaySize,
 } from "@ksp-gonogo/kerbcast-react";
 import type { SlotProps, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -135,6 +136,11 @@ function DockingCameraVideo({
   // live.
   const stream = useDelayedKerbcastStream(flightId);
   const videoRef = useRef<HTMLVideoElement>(null);
+  // The backdrop's own box, mounted whether or not there is a picture yet: the
+  // size report observes the element once, when the camera is chosen, and a
+  // video that only appears with the stream would never be seen by it.
+  const boxRef = useRef<HTMLDivElement>(null);
+  useReportDisplaySize(flightId, boxRef);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -165,26 +171,32 @@ function DockingCameraVideo({
     };
   }, [stream, reportPictureAspect]);
 
-  if (!stream) return null;
   // Absolutely positioned over the HudPanel (AugmentSlot renders a bare
-  // fragment, so this <video> is a direct HudPanel child, exactly where the
+  // fragment, so this box is a direct HudPanel child, exactly where the
   // built-in HudCamera's HudVideo sat), under the Viewport's tinted reticle
   // layer. Structural inline style: no bespoke CSS, so nothing in ui-kit.
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      muted
-      playsInline
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        opacity: 0.55,
-      }}
-    />
+    <div
+      ref={boxRef}
+      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+    >
+      {stream && (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.55,
+          }}
+        />
+      )}
+    </div>
   );
 }
 

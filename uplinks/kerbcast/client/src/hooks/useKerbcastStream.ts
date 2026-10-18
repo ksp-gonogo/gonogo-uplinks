@@ -281,10 +281,17 @@ export function useDelayedPlayout(
   // Timeline-reset: flush the shared buffer (drop stale pre-reset frames)
   // WITHOUT tearing down the pipeline: the track keeps flowing. Shared, so a
   // reset flushes for every consumer of this camera, which is correct: they
-  // ride one buffer off one clock epoch.
+  // ride one buffer off one clock epoch. Only a change from an epoch this
+  // consumer has already seen is a reset: a consumer mounting, or the delay
+  // being switched on, reads the current epoch without having crossed one, and
+  // a flush then would drop the frames of a stream another consumer is
+  // watching, leaving its decoder without references until the next keyframe.
   const resetEpoch = delay?.resetEpoch;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `resetEpoch` is the intentional trigger-only dependency, the effect body doesn't read it, it just needs to re-fire flush() on every bump.
+  const seenEpochRef = useRef(resetEpoch);
   useEffect(() => {
+    const seen = seenEpochRef.current;
+    seenEpochRef.current = resetEpoch;
+    if (seen === undefined || seen === resetEpoch) return;
     leaseRef.current?.flush();
   }, [resetEpoch]);
 
