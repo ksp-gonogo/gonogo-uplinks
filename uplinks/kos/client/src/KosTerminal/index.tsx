@@ -39,7 +39,14 @@ import {
   useModalSaveBar,
 } from "@ksp-gonogo/ui-kit";
 import { Terminal } from "@xterm/xterm";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 // Named, not default: `styled-components@6` ships no `exports` map, so under
 // nodenext the default import binds to the CJS namespace and `styled.div` is a
 // type error. The named export binds in both modes.
@@ -54,6 +61,7 @@ import type {
 } from "../__generated__/contract.js";
 import { KOS } from "../uplink.js";
 import { useKosScriptListing } from "./useKosScriptListing.js";
+import { useTerminalLease } from "./useTerminalLease.js";
 import "@xterm/xterm/css/xterm.css";
 
 /**
@@ -892,6 +900,35 @@ function KosTerminalScreen({
   const { send: sendClose } = closeCmd;
   const { send: sendResize } = resizeCmd;
 
+  /*
+   * The lease on the CPU's terminal. The widget's FIXED terminal size is
+   * imposed on the CPU screen once the lease is held (the telnet NAWS-once
+   * pattern): no dynamic fit-to-pixels. See KOS_TERM_*.
+   */
+  const lease = useTerminalLease({
+    readOnly,
+    streamHeld: screenHeld,
+    sendOpen: useCallback(
+      () => sendOpen({ coreId, leaseToken } satisfies KosTerminalOpenArgs),
+      [sendOpen, coreId, leaseToken],
+    ),
+    sendResize: useCallback(
+      () =>
+        sendResize({
+          coreId,
+          leaseToken,
+          cols: KOS_TERM_COLS,
+          rows: KOS_TERM_ROWS,
+        } satisfies KosTerminalResizeArgs),
+      [sendResize, coreId, leaseToken],
+    ),
+    sendClose: useCallback(
+      () =>
+        sendClose({ coreId, leaseToken } satisfies KosTerminalCloseArgs),
+      [sendClose, coreId, leaseToken],
+    ),
+  });
+
   // `label` is only ever non-empty for a line-mode Enter (the composed line
   // IS the label, see `reduceLineModeInput`'s callsite below); char-mode
   // keystrokes stay label-less. Purely cosmetic on the wire, it plays no
@@ -910,10 +947,10 @@ function KosTerminalScreen({
   );
   sendKeystrokeRef.current = (chars: string, label?: string) => {
     if (readOnly || noPath) return;
-    void sendKeystroke(
+    sendKeystroke(
       { coreId, leaseToken, chars } satisfies KosKeystrokeArgs,
       label ? { label, topic: terminalTopic } : undefined,
-    ).catch(() => {});
+    ).then(lease.onKeystrokeAccepted, lease.onKeystrokeRefused);
   };
 
   // Downlink: write each terminal frame straight into xterm. Frames are already
@@ -926,28 +963,6 @@ function KosTerminalScreen({
   useStreamEvent<KosTerminalFrame>(`kos.terminal.${coreId}`, (frame) => {
     termRef.current?.write(frame.chunk);
   });
-
-  // Lease lifecycle: acquire on attach, release on detach.
-  useEffect(() => {
-    if (readOnly) return;
-    void sendOpen({ coreId, leaseToken } satisfies KosTerminalOpenArgs).catch(
-      () => {},
-    );
-    // Impose the widget's FIXED terminal size on the CPU screen once (the
-    // telnet NAWS-once pattern): no dynamic fit-to-pixels. See KOS_TERM_*.
-    void sendResize({
-      coreId,
-      leaseToken,
-      cols: KOS_TERM_COLS,
-      rows: KOS_TERM_ROWS,
-    } satisfies KosTerminalResizeArgs).catch(() => {});
-    return () => {
-      void sendClose({
-        coreId,
-        leaseToken,
-      } satisfies KosTerminalCloseArgs).catch(() => {});
-    };
-  }, [coreId, readOnly, leaseToken, sendOpen, sendClose, sendResize]);
 
   // xterm setup: deferred until the container has real layout so the first
   // render lands at a sensible size.
@@ -1439,6 +1454,11 @@ function KosTerminalScreen({
             No path: commands are not being sent
           </NoPathBadge>
         )}
+        {!readOnly && lease.notice && (
+          <LeaseNotice role="status" $kind={lease.notice.kind}>
+            {lease.notice.text}
+          </LeaseNotice>
+        )}
         {screenHeld && (
           <HeldCorner role="status">
             <Badge tone="caution">HELD</Badge>
@@ -1702,6 +1722,34 @@ const NoPathBadge = styled.div`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+`;
+
+/**
+ * The lease and keystroke refusals, pinned bottom-left where the delay strip
+ * and the Change CPU button leave room. A wait for the CPU reads as caution; a
+ * refusal that will not clear by itself reads as no-go.
+ */
+const LeaseNotice = styled.div<{
+  $kind: "waiting" | "refused" | "keystroke";
+}>`
+  position: absolute;
+  bottom: var(--inset-log);
+  left: var(--inset-log);
+  z-index: 1;
+  max-width: 70%;
+  padding: var(--inset-chip);
+  font-family: monospace;
+  font-size: var(--font-size-caption);
+  font-weight: bold;
+  color: ${({ $kind }) =>
+    $kind === "waiting"
+      ? "var(--color-caution-on-status)"
+      : "var(--color-nogo-on-status)"};
+  background: ${({ $kind }) =>
+    $kind === "waiting"
+      ? "var(--color-caution-status)"
+      : "var(--color-nogo-status)"};
+  border-radius: var(--radius-regular);
 `;
 
 /** Pinned top-right, the corner the no-path badge and the delay reading leave free. */

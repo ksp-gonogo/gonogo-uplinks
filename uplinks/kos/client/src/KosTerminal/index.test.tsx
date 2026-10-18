@@ -2051,3 +2051,124 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
     await expectNoA11yViolations(container);
   });
 });
+
+describe("KosTerminal: the terminal lease and its refusals", () => {
+  const HELD = {
+    success: false,
+    errorCode: "notClearToProceed",
+    reason: "kos.terminalHeld",
+  } as const;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearRegistry();
+  });
+  afterEach(() => {
+    clearRegistry();
+  });
+
+  function mount(
+    answer: (command: string, nth: number) => Record<string, unknown>,
+  ) {
+    const fixture = terminalFixture();
+    const seen = new Map<string, number>();
+    fixture.transport.setCommandHandler((command, args) => {
+      fixture.commands.push({ command, args });
+      const nth = (seen.get(command) ?? 0) + 1;
+      seen.set(command, nth);
+      return { success: true, ...answer(command, nth) };
+    });
+    render(
+      <fixture.Provider>
+        <KosTerminalComponent id="kos-terminal" config={{}} />
+      </fixture.Provider>,
+    );
+    act(() => fixture.emit("kos.processors", ONE_CPU));
+    return fixture;
+  }
+
+  it("retries an open refused while the scene loads until the lease is held, then sizes the screen", async () => {
+    const fixture = mount((command, nth) =>
+      command === "kos.terminal.open" && nth < 3
+        ? { success: false, errorCode: "wrongState" }
+        : {},
+    );
+
+    await waitFor(() =>
+      expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(
+        2,
+      ),
+    );
+    expect(sentCommands(fixture.commands, "kos.terminal.resize")).toHaveLength(
+      0,
+    );
+
+    await waitFor(
+      () =>
+        expect(
+          sentCommands(fixture.commands, "kos.terminal.resize"),
+        ).toHaveLength(1),
+      { timeout: 4000 },
+    );
+    expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(3);
+    await act(async () => {});
+  });
+
+  it("shows another screen's hold in player words and does not ask again", async () => {
+    const fixture = mount((command) =>
+      command === "kos.terminal.open" ? HELD : {},
+    );
+
+    expect(
+      await screen.findByText("Another screen is using this CPU's terminal"),
+    ).toBeTruthy();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1600));
+    });
+    expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(1);
+    expect(sentCommands(fixture.commands, "kos.terminal.resize")).toHaveLength(
+      0,
+    );
+  });
+
+  it("shows a refused keystroke on the screen", async () => {
+    mount((command) =>
+      command === "kos.keystroke"
+        ? {
+            success: false,
+            errorCode: "notClearToProceed",
+            reason: "kos.cpuBusy",
+          }
+        : {},
+    );
+    await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
+
+    act(() => getOnData()("x\r"));
+
+    expect(
+      await screen.findByText("The CPU is busy and not at its prompt"),
+    ).toBeTruthy();
+    await act(async () => {});
+  });
+
+  it("asks for the lease again when a keystroke finds it gone", async () => {
+    const fixture = mount((command) =>
+      command === "kos.keystroke" ? HELD : {},
+    );
+    await waitFor(() =>
+      expect(
+        sentCommands(fixture.commands, "kos.terminal.resize"),
+      ).toHaveLength(1),
+    );
+    await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
+
+    act(() => getOnData()("x\r"));
+
+    await waitFor(() =>
+      expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(
+        2,
+      ),
+    );
+    await act(async () => {});
+  });
+});
