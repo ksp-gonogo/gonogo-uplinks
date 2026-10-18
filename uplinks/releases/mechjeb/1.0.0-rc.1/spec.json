@@ -1,0 +1,111 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "mechjeb",
+    "name": "MechJeb",
+    "version": "1.0.0-rc.1",
+    "description": "Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the next node, or land at the selected target, over the delayed command path.",
+    "wraps": {
+      "name": "MechJeb2",
+      "builtAgainst": "2.15.3.0",
+      "tier": "ckan"
+    }
+  },
+  "topics": [],
+  "nestedPayloads": [],
+  "otherPayloads": [],
+  "commands": [
+    {
+      "id": "mechjeb.engageAscentAutopilot",
+      "args": "MechJebAscentArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "mechjeb.executeNextNode",
+      "args": "MechJebNoArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "mechjeb.landAtTarget",
+      "args": "MechJebNoArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "MechJebAscentArgs",
+      "fields": [
+        {
+          "name": "targetAltitudeKm",
+          "unit": "km"
+        }
+      ]
+    },
+    {
+      "name": "MechJebNoArgs",
+      "fields": []
+    }
+  ],
+  "widgets": [
+    {
+      "id": "mechjeb",
+      "name": "MechJeb",
+      "description": "Engage MechJeb's ascent autopilot, execute the next node, or land at the target. Shows the one-way light time each command costs and which commands are still in flight.",
+      "tags": [
+        "control"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "comms.delay"
+      ],
+      "fields": [],
+      "actions": [
+        {
+          "id": "engage-ascent",
+          "label": "Engage ascent autopilot",
+          "description": "Commands the ascent autopilot to fly to the set target altitude."
+        },
+        {
+          "id": "execute-node",
+          "label": "Execute next node",
+          "description": "Commands execution of the next maneuver node."
+        },
+        {
+          "id": "land-at-target",
+          "label": "Land at target",
+          "description": "Commands an autopilot landing at the selected target."
+        }
+      ],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 5,
+        "h": 7
+      },
+      "minSize": {
+        "w": 4,
+        "h": 5
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}
