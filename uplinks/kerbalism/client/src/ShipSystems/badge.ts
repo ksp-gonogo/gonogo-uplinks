@@ -1,5 +1,5 @@
 import type { Reading } from "@ksp-gonogo/sitrep-sdk";
-import type { BadgeEntry } from "@ksp-gonogo/ui-kit";
+import { type BadgeEntry, heldGradeOf } from "@ksp-gonogo/ui-kit";
 import { SHIP_SYSTEMS, type ShipSystems } from "../processor.js";
 import { KERBALISM } from "../uplink.js";
 
@@ -23,7 +23,10 @@ function statusBadges(
   held?: Reading<unknown>,
 ): BadgeEntry[] | null {
   if (!ship) return null;
-  const marked = held === undefined ? {} : { held };
+  // The grade, not the reading: a reading is a new object on every sample, so
+  // carrying it would make every tick look like a changed badge.
+  const grade = heldGradeOf(held);
+  const marked = grade === undefined ? {} : { held: grade };
   const { causes, supplies } = ship.summary;
   const rootCause = causes[0];
   if (rootCause !== undefined) {

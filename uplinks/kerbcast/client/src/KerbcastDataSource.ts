@@ -881,20 +881,6 @@ export class KerbcastDataSource {
         KERBCAST_CAMERAS_BUDGET.record();
         this.retryNotThereYet();
       }),
-      client.on("settings-change", (payload) => {
-        // Diagnostic: is THIS connected instance receiving + applying the
-        // ~1Hz capture clock? Pairs with the `CameraFeed`/consumer-side
-        // `kerbcast:clock` logs (same `instanceId`) to localise a null
-        // `useKerbcastClock().captureUt` to either "clock never reaches the
-        // connected client" or "a different client instance is read".
-        logger
-          .tag("kerbcast:clock")
-          .debug("settings-change on connected client", {
-            instanceId,
-            payloadCaptureUt: payload.captureUt ?? null,
-            clockCaptureUt: client.clock.captureUt,
-          });
-      }),
     );
     // Synthesise `event`-primitive occurrences from this client's discrete
     // edges. Its own listeners live/die with the client instance (detached in

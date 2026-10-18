@@ -1,6 +1,6 @@
 import { useKerbcastClock } from "@ksp-gonogo/kerbcast-react";
 import type { DelayClockLike } from "@ksp-gonogo/sitrep-sdk";
-import { logger, useViewClockOptional } from "@ksp-gonogo/sitrep-sdk";
+import { useViewClockOptional } from "@ksp-gonogo/sitrep-sdk";
 import {
   type CaptureClockSample,
   interpolateCaptureUt,
@@ -169,21 +169,7 @@ export function useDelayedKerbcastStream(
   });
   useEffect(() => {
     sampleRef.current = { ut: captureUt, warpRate, atMs: performance.now() };
-    // Diagnostic: does the consumer's `useKerbcastClock` actually yield a
-    // `captureUt`? Null here while the connected client logs advancing
-    // `captureUt` would mean the path is starved downstream of the SDK client.
-    // NOTE: this proves the CLOCK reaches the consumer, it does NOT by itself
-    // prove a given frame was held/released correctly; that's `frameDelay.ts`'s
-    // real per-frame pipeline (`useDelayedPlayout`), which this hook composes
-    // below. `confirmedEdgeUt` is the only ViewClock method `ViewClockView`
-    // exposes.
-    logger.tag("kerbcast:clock").debug("consumer clock sample", {
-      captureUt,
-      warpRate,
-      hasView: view !== undefined,
-      edgeUt: view?.confirmedEdgeUt() ?? null,
-    });
-  }, [captureUt, warpRate, view]);
+  }, [captureUt, warpRate]);
 
   // `interpolateCaptureUt` returns null when the latched sample has no UT,
   // which is a real answer and is passed through as one: the pipeline holds
