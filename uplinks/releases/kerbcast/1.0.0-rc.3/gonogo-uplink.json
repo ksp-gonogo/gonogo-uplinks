@@ -1,0 +1,19 @@
+{
+  "id": "kerbcast",
+  "name": "Kerbcast",
+  "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "kerbcast",
+    "builtAgainst": "1.8.1"
+  },
+  "version": "1.0.0-rc.3",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 44,
+  "contractMinor": 13,
+  "bundleUrl": "kerbcast/kerbcast.client.js",
+  "integrity": "sha256-6a4d5fa0b45b01453d49996b04fa0138052baef9b8ecf1879f455c2b59b9f651",
+  "sdkVersion": "0.0.1"
+}
