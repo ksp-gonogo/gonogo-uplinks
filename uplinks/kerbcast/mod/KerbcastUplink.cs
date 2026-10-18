@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using GonogoKerbcastUplink;
 using Sitrep.Contract;
@@ -45,7 +46,7 @@ namespace Gonogo.KerbcastUplink
     /// Compile surface is <c>Sitrep.Contract</c>, stock KSP and Kerbcast.</para>
     /// </summary>
     [SitrepUplink("kerbcast")]
-    public sealed class KerbcastUplink : ISitrepUplink, IModSettingsSource, IModSettingsWriter
+    public sealed class KerbcastUplink : ISitrepUplink, IUplinkSettingsDeclarer, IModSettingsSource, IModSettingsWriter
     {
         public const string AvailableTopic = KerbcastManifest.AvailableTopic;
         public const string CamerasTopic = KerbcastManifest.CamerasTopic;
@@ -83,6 +84,25 @@ namespace Gonogo.KerbcastUplink
                 () => _kerbcast?.ReadThrottle(),
                 on => _kerbcast != null && _kerbcast.WriteThrottle(on));
         }
+
+        /// <summary>Declares the setting that has Kerbcast follow Gonogo's address, when Kerbcast is installed to follow it.</summary>
+        public void DeclareSettings(IUplinkSettings settings)
+        {
+            if (!KerbcastBinding.IsKerbcastLoaded())
+            {
+                return;
+            }
+
+            new KerbcastFollowGonogoSetting(
+                new KerbcastBindAddress(KerbcastSettingsPath(false), KerbcastSettingsPath(true)),
+                message => UnityEngine.Debug.LogWarning("[Gonogo.KerbcastUplink] " + message)).Declare(settings);
+        }
+
+        /// <summary>Kerbcast's shipped settings, or the player's override beside them that its updates leave alone.</summary>
+        private static string KerbcastSettingsPath(bool playerOverride) =>
+            playerOverride
+                ? Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "Kerbcast", "PluginData", "settings.cfg")
+                : Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "Kerbcast", "settings.cfg");
 
         public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
 
