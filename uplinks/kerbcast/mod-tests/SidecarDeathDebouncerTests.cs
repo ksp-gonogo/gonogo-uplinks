@@ -122,4 +122,20 @@ public class SidecarDeathDebouncerTests
         debouncer.Observe(true);
         Assert.False(debouncer.ConfirmedDead);
     }
+
+    [Fact]
+    public void ResetForgetsTheStreakAndTheVerdict()
+    {
+        var debouncer = new SidecarDeathDebouncer();
+
+        debouncer.Observe(false);
+        debouncer.Observe(false);
+        Assert.True(debouncer.ConfirmedDead);
+
+        debouncer.Reset();
+        Assert.False(debouncer.ConfirmedDead);
+
+        debouncer.Observe(false);
+        Assert.False(debouncer.ConfirmedDead);
+    }
 }

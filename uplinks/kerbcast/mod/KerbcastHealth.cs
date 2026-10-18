@@ -15,7 +15,7 @@ namespace Gonogo.KerbcastUplink
     /// This is that healthcheck.</para>
     ///
     /// <para>Extracted from <see cref="KerbcastUplink"/> as a pure function over
-    /// five inputs so it can be exercised headless: the live uplink only ever
+    /// its inputs so it can be exercised headless: the live uplink only ever
     /// touches KSP, and a state machine that decides what an operator is told
     /// when their camera feed is black deserves tests, not a live-only code
     /// path.</para>
@@ -25,48 +25,57 @@ namespace Gonogo.KerbcastUplink
         /// <summary>
         /// Decides the health state.
         ///
-        /// <para>The four degraded cases are deliberately distinct, because
-        /// they send the operator to four different places: an install problem
-        /// (kerbcast isn't there), a scene problem (you're in the VAB, kerbcast's
-        /// capture core only runs in flight), a sidecar problem (kerbcast's
+        /// <para>Outside a flight scene the Uplink is idle: kerbcast's capture
+        /// core only runs in flight, so a stopped core or an absent sidecar is
+        /// the normal state in the Space Centre, the VAB and the tracking
+        /// station and reads Healthy. In a flight the cases are distinct,
+        /// because they send the operator to different places: kerbcast
+        /// refused to start (an install or graphics problem, Unavailable since
+        /// no camera feed will carry anything), a sidecar problem (kerbcast's
         /// video process died and the feed will be black regardless of what's
         /// on the craft), or a craft problem (you flew something with no camera
-        /// on it). "Black feed" alone can't tell those apart; this can.</para>
+        /// on it).</para>
         /// </summary>
         /// <param name="unavailableReason">
         /// Non-null when the uplink went inert at registration (kerbcast absent,
         /// or its reflection surface moved). Wins over everything else.
         /// </param>
-        /// <param name="sampledOnce">Whether the main-thread capture has run at least once.</param>
+        /// <param name="inFlight">Whether the loaded scene is a flight scene at the last sample.</param>
         /// <param name="coreActive">Whether kerbcast's capture core reported itself live at the last sample.</param>
+        /// <param name="coreMissingSettled">
+        /// True once the capture core has stayed down for the whole settle window
+        /// of the current flight scene (see <see cref="FlightCoreWatch"/>), so the
+        /// brief gap while the scene loads is not read as a refusal.
+        /// </param>
         /// <param name="sidecarAlive">
         /// The debounced video-sidecar liveness (see <see cref="SidecarDeathDebouncer"/>):
-        /// true unless two consecutive capture ticks have confirmed the sidecar
-        /// process dead. Checked after <paramref name="coreActive"/> and before
-        /// <paramref name="cameraCount"/>, so a dead sidecar outside a flight
-        /// scene stays masked by the scene-problem branch above it, sidecar
-        /// absence there is expected, not a fault.
+        /// true unless two consecutive in-flight capture ticks have confirmed the
+        /// sidecar process dead.
         /// </param>
         /// <param name="cameraCount">Cameras seen on the active vessel at the last sample.</param>
         public static UplinkHealth Evaluate(
-            string? unavailableReason, bool sampledOnce, bool coreActive, bool sidecarAlive, int cameraCount)
+            string? unavailableReason, bool inFlight, bool coreActive, bool coreMissingSettled,
+            bool sidecarAlive, int cameraCount)
         {
             if (unavailableReason != null)
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, unavailableReason);
             }
-            if (!sampledOnce)
+            if (!inFlight)
             {
-                // Registered fine, but nothing has been observed yet. Not
-                // Healthy (we'd be claiming a camera count we don't have) and
-                // not Unavailable (kerbcast is right there).
-                return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kerbcast installed; waiting for the first sample");
+                return new UplinkHealth(UplinkHealthState.Healthy,
+                    "idle until a flight; video starts in flight");
             }
             if (!coreActive)
             {
+                if (coreMissingSettled)
+                {
+                    return new UplinkHealth(UplinkHealthState.Unavailable,
+                        "kerbcast is not running in this flight; it may have refused to start (see its \"cannot start\" line in KSP.log)");
+                }
+                // The flight scene is still loading: nothing to claim yet.
                 return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kerbcast installed, but its capture core is not running (no flight scene)");
+                    "kerbcast is starting with the flight scene");
             }
             if (!sidecarAlive)
             {

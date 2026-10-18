@@ -36,6 +36,7 @@
        above precisely so it could be tested. -->
   <ItemGroup>
     <Compile Include="..\mod\KerbcastHealth.cs" />
+    <Compile Include="..\mod\FlightCoreWatch.cs" />
     <Compile Include="..\mod\KerbcastCameraEntryBuilder.cs" />
     <Compile Include="..\mod\IKerbcastApi.cs" />
     <Compile Include="..\mod\DockingCameraFacts.cs" />

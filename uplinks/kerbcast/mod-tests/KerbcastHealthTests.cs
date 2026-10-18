@@ -10,124 +10,92 @@ namespace GonogoKerbcastUplink.Tests;
 ///
 /// <para>These assert the distinctions, not just the enum: an operator looking
 /// at a black camera feed must be able to tell "kerbcast isn't installed" from
-/// "you're in the VAB" from "the sidecar died" from "your craft has no camera
+/// "idle outside a flight" from "the sidecar died" from "your craft has no camera
 /// on it", because those are four different fixes.</para>
 /// </summary>
 public class KerbcastHealthTests
 {
+    private static UplinkHealth Eval(
+        string? reason = null, bool inFlight = true, bool coreActive = true, bool settled = false,
+        bool sidecarAlive = true, int cameras = 2) =>
+        KerbcastHealth.Evaluate(reason, inFlight, coreActive, settled, sidecarAlive, cameras);
+
     [Fact]
     public void ReportsUnavailableWithTheRegistrationReason_WhenKerbcastIsAbsent()
     {
-        var health = KerbcastHealth.Evaluate(
-            unavailableReason: "kerbcast mod not installed (Kerbcast assembly not loaded)",
-            sampledOnce: false, coreActive: false, sidecarAlive: true, cameraCount: 0);
+        var health = Eval("kerbcast mod not installed", inFlight: false, coreActive: false);
 
         Assert.Equal(UplinkHealthState.Unavailable, health.State);
-        Assert.Equal("kerbcast mod not installed (Kerbcast assembly not loaded)", health.Detail);
+        Assert.Equal("kerbcast mod not installed", health.Detail);
     }
 
     [Fact]
     public void UnavailableReasonWins_EvenIfLaterStateLooksHealthy()
     {
-        // An uplink that went inert at registration never samples, but guard the
-        // ordering explicitly: a stale-looking healthy count must never mask a
-        // hard unavailability.
-        var health = KerbcastHealth.Evaluate(
-            unavailableReason: "unsupported kerbcast version",
-            sampledOnce: true, coreActive: true, sidecarAlive: true, cameraCount: 4);
+        var health = Eval("unsupported kerbcast version", cameras: 4);
 
         Assert.Equal(UplinkHealthState.Unavailable, health.State);
-        Assert.Equal("unsupported kerbcast version", health.Detail);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void IsHealthyAndIdle_OutsideAFlight_WhateverTheCoreAndSidecarSay(bool coreActive, bool sidecarAlive)
+    {
+        var health = Eval(inFlight: false, coreActive: coreActive, settled: true,
+            sidecarAlive: sidecarAlive, cameras: 0);
+
+        Assert.Equal(UplinkHealthState.Healthy, health.State);
+        Assert.Contains("idle until a flight", health.Detail);
     }
 
     [Fact]
-    public void ReportsDegraded_BeforeTheFirstSample()
+    public void IsUnavailable_InAFlight_WhenTheCoreStaysDownPastTheSettleWindow()
     {
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: false, coreActive: false, sidecarAlive: true, cameraCount: -1);
+        var health = Eval(coreActive: false, settled: true);
 
-        // Not Healthy: we would be claiming a camera count we have not observed.
-        // Not Unavailable: kerbcast registered fine.
+        Assert.Equal(UplinkHealthState.Unavailable, health.State);
+        Assert.Contains("KSP.log", health.Detail);
+    }
+
+    [Fact]
+    public void IsNotAFault_WhileTheFlightSceneIsStillLoading()
+    {
+        var health = Eval(coreActive: false, settled: false);
+
         Assert.Equal(UplinkHealthState.Degraded, health.State);
-        Assert.Contains("waiting for the first sample", health.Detail);
+        Assert.Contains("starting", health.Detail);
     }
 
     [Fact]
-    public void ReportsDegradedSceneProblem_WhenKerbcastsCoreIsNotRunning()
+    public void ReportsDegradedSidecarProblem_InAFlight_WhenTheSidecarIsConfirmedDead()
     {
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: false, sidecarAlive: true, cameraCount: 0);
-
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
-        Assert.Contains("capture core is not running", health.Detail);
-    }
-
-    [Fact]
-    public void ReportsDegradedSidecarProblem_WhenRunningButTheSidecarIsConfirmedDead()
-    {
-        // A camera count that would otherwise read Healthy (3): the sidecar
-        // branch must win over it, because a dead sidecar means a black feed
-        // regardless of what's on the craft.
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: true, sidecarAlive: false, cameraCount: 3);
+        var health = Eval(sidecarAlive: false, cameras: 3);
 
         Assert.Equal(UplinkHealthState.Degraded, health.State);
         Assert.Contains("sidecar", health.Detail);
     }
 
     [Fact]
-    public void SidecarDeadIsBenign_OutOfFlight_MaskedByTheSceneCheckAbove()
+    public void ReportsDegradedCraftProblem_InAFlight_WhenNoCamerasOnTheVessel()
     {
-        // coreActive:false already means "no flight scene"; a simultaneously
-        // false sidecarAlive here must NOT change the reported reason to the
-        // sidecar one. The scene-problem branch runs first and wins, exactly
-        // the ordering KerbcastHealth.Evaluate's doc describes: sidecar
-        // absence out of flight is expected, not a fault.
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: false, sidecarAlive: false, cameraCount: 0);
-
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
-        Assert.Contains("capture core is not running", health.Detail);
-        Assert.DoesNotContain("sidecar", health.Detail);
-    }
-
-    [Fact]
-    public void ReportsDegradedCraftProblem_WhenRunningButNoCamerasOnTheVessel()
-    {
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: true, sidecarAlive: true, cameraCount: 0);
+        var health = Eval(cameras: 0);
 
         Assert.Equal(UplinkHealthState.Degraded, health.State);
         Assert.Contains("no camera parts", health.Detail);
     }
 
     [Fact]
-    public void TheFourDegradedCasesAreDistinguishable()
+    public void TreatsAnUnsetCameraCountAsDegraded_NotHealthy()
     {
-        // The whole point: same state, four different answers to "why".
-        var noScene = KerbcastHealth.Evaluate(null, true, coreActive: false, sidecarAlive: true, cameraCount: 0);
-        var noSidecar = KerbcastHealth.Evaluate(null, true, coreActive: true, sidecarAlive: false, cameraCount: 3);
-        var noCameras = KerbcastHealth.Evaluate(null, true, coreActive: true, sidecarAlive: true, cameraCount: 0);
-        var noSample = KerbcastHealth.Evaluate(null, sampledOnce: false, coreActive: false, sidecarAlive: true, cameraCount: 0);
-
-        Assert.Equal(UplinkHealthState.Degraded, noScene.State);
-        Assert.Equal(UplinkHealthState.Degraded, noSidecar.State);
-        Assert.Equal(UplinkHealthState.Degraded, noCameras.State);
-        Assert.Equal(UplinkHealthState.Degraded, noSample.State);
-
-        Assert.NotEqual(noScene.Detail, noSidecar.Detail);
-        Assert.NotEqual(noScene.Detail, noCameras.Detail);
-        Assert.NotEqual(noScene.Detail, noSample.Detail);
-        Assert.NotEqual(noSidecar.Detail, noCameras.Detail);
-        Assert.NotEqual(noSidecar.Detail, noSample.Detail);
-        Assert.NotEqual(noCameras.Detail, noSample.Detail);
+        Assert.Equal(UplinkHealthState.Degraded, Eval(cameras: -1).State);
     }
 
     [Fact]
-    public void ReportsHealthyWithTheCameraCount_WhenRunningWithCameras()
+    public void ReportsHealthyWithTheCameraCount_InAFlightWithCameras()
     {
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: true, sidecarAlive: true, cameraCount: 3);
+        var health = Eval(cameras: 3);
 
         Assert.Equal(UplinkHealthState.Healthy, health.State);
         Assert.Equal("3 cameras", health.Detail);
@@ -136,21 +104,40 @@ public class KerbcastHealthTests
     [Fact]
     public void SingularisesTheOneCameraCase()
     {
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: true, sidecarAlive: true, cameraCount: 1);
+        Assert.Equal("1 camera", Eval(cameras: 1).Detail);
+    }
+}
 
-        Assert.Equal(UplinkHealthState.Healthy, health.State);
-        Assert.Equal("1 camera", health.Detail);
+public class FlightCoreWatchTests
+{
+    [Fact]
+    public void SettlesOnlyAfterTheWindowWithTheCoreDown()
+    {
+        var watch = new FlightCoreWatch();
+        watch.Observe(true, false, 100);
+        Assert.False(watch.Settled);
+        watch.Observe(true, false, 100 + FlightCoreWatch.SettleSeconds - 0.1);
+        Assert.False(watch.Settled);
+        watch.Observe(true, false, 100 + FlightCoreWatch.SettleSeconds);
+        Assert.True(watch.Settled);
     }
 
     [Fact]
-    public void TreatsAnUnsetCameraCountAsDegraded_NotHealthy()
+    public void RestartsTheWindow_WhenTheCoreComesUpOrTheSceneIsLeft()
     {
-        // -1 is the "never written" sentinel on the uplink's field. It must not
-        // fall through to Healthy.
-        var health = KerbcastHealth.Evaluate(
-            null, sampledOnce: true, coreActive: true, sidecarAlive: true, cameraCount: -1);
+        var watch = new FlightCoreWatch();
+        watch.Observe(true, false, 0);
+        watch.Observe(true, false, 50);
+        Assert.True(watch.Settled);
 
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
+        watch.Observe(false, false, 51);
+        Assert.False(watch.Settled);
+        watch.Observe(true, false, 52);
+        watch.Observe(true, false, 53);
+        Assert.False(watch.Settled);
+
+        watch.Observe(true, true, 54);
+        watch.Observe(true, false, 55);
+        Assert.False(watch.Settled);
     }
 }

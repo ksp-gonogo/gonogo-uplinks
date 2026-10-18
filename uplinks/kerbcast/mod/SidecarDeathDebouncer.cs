@@ -39,6 +39,18 @@ namespace Gonogo.KerbcastUplink
         public bool ConfirmedDead { get; private set; }
 
         /// <summary>
+        /// Forgets the streak and any verdict. The uplink calls it on every tick
+        /// that is not an active flight, where the sidecar is legitimately absent
+        /// (before the first flight of a session it has not been created yet), so
+        /// a flight starts from "not known dead" instead of inheriting those reads.
+        /// </summary>
+        public void Reset()
+        {
+            _deadStreak = 0;
+            ConfirmedDead = false;
+        }
+
+        /// <summary>
         /// Feed one tick's raw <c>SidecarAlive()</c> reading. Call this once
         /// per capture tick, in tick order; the debounce logic is stateful
         /// and order-dependent.

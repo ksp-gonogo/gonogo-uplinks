@@ -72,7 +72,9 @@ namespace Gonogo.KerbcastUplink
         // Courier-thread-readable output. See SidecarDeathDebouncer's own doc.
         private volatile bool _sidecarConfirmedDead;
         private readonly SidecarDeathDebouncer _sidecarDebouncer = new SidecarDeathDebouncer();
-        private volatile bool _sampledOnce;
+        private volatile bool _inFlight;
+        private volatile bool _coreMissingSettled;
+        private readonly FlightCoreWatch _coreWatch = new FlightCoreWatch();
         private int _cameraCount = -1;
 
         public UplinkManifest Manifest { get; } = KerbcastManifest.Build();
@@ -192,15 +194,24 @@ namespace Gonogo.KerbcastUplink
 
             var coreActive = kerbcast.IsActive();
             _coreActive = coreActive;
-            _sampledOnce = true;
 
-            // Sampled every tick regardless of scene, same as _coreActive
-            // above: the debounce streak needs an unbroken tick sequence to
-            // count "consecutive" correctly. It is Health()'s branch ORDER
-            // (the !coreActive check runs before the sidecar check) that
-            // keeps a dead-sidecar-out-of-flight reading benign, not gating
-            // the capture here.
-            _sidecarDebouncer.Observe(kerbcast.SidecarAlive());
+            // Read here on the main thread; Health() only sees the cached flags.
+            var inFlight = HighLogic.LoadedSceneIsFlight;
+            _inFlight = inFlight;
+            _coreWatch.Observe(inFlight, coreActive, UnityEngine.Time.realtimeSinceStartup);
+            _coreMissingSettled = _coreWatch.Settled;
+
+            // Only an active flight says anything about the sidecar: outside one
+            // it is legitimately absent, and a streak of those reads must not
+            // carry into the next flight.
+            if (inFlight && coreActive)
+            {
+                _sidecarDebouncer.Observe(kerbcast.SidecarAlive());
+            }
+            else
+            {
+                _sidecarDebouncer.Reset();
+            }
             _sidecarConfirmedDead = _sidecarDebouncer.ConfirmedDead;
 
             var vessel = FlightGlobals.ActiveVessel;
@@ -247,15 +258,16 @@ namespace Gonogo.KerbcastUplink
         /// kerbcast directly.
         ///
         /// <para>The states are meaningfully different, which is the point:
-        /// "not installed" is an install problem, "core not running" is a
-        /// scene problem (you're in the VAB), "sidecar not alive" is a
+        /// "not installed" is an install problem, "idle" is the normal state
+        /// outside a flight, "core not running" in a flight means kerbcast
+        /// refused to start, "sidecar not alive" is a
         /// process problem (the video sidecar died: see
         /// <see cref="SidecarDeathDebouncer"/>), and "no cameras" is a craft
         /// problem (you didn't put a camera on it). An operator staring at a
-        /// black feed can tell those four apart at a glance.</para>
+        /// black feed can tell those apart at a glance.</para>
         /// </summary>
         public UplinkHealth Health() => KerbcastHealth.Evaluate(
-            _unavailableReason, _sampledOnce, _coreActive, !_sidecarConfirmedDead, Volatile.Read(ref _cameraCount));
+            _unavailableReason, _inFlight, _coreActive, _coreMissingSettled, !_sidecarConfirmedDead, Volatile.Read(ref _cameraCount));
 
         /// <summary>
         /// MAIN-THREAD command: zoom a camera. Runs on the actuator thread the
