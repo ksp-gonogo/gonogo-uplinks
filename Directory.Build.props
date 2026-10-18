@@ -14,6 +14,12 @@
   <PropertyGroup>
     <GonogoContractVersion>1.0.0-pin.ge9eb502232a6</GonogoContractVersion>
   </PropertyGroup>
+  <!-- The version every Uplink's manifest reports. A release sets it from the
+       tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->
+  <PropertyGroup>
+    <GonogoUplinkVersion>$(GONOGO_UPLINK_VERSION)</GonogoUplinkVersion>
+    <GonogoUplinkVersion Condition="'$(GonogoUplinkVersion)' == ''">0.0.0-dev</GonogoUplinkVersion>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(KspManaged)' == ''">
     <KspManaged>$(MSBuildThisFileDirectory)vendor\ksp-managed</KspManaged>
   </PropertyGroup>

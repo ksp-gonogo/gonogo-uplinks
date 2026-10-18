@@ -50,6 +50,7 @@ jobs:
       name: ${{ steps.tag.outputs.name }}
       id: ${{ steps.tag.outputs.id }}
       url: ${{ steps.tag.outputs.url }}
+      version: ${{ steps.tag.outputs.version }}
       leg: ${{ steps.tag.outputs.leg }}
       tag: ${{ steps.which.outputs.tag }}
       prerelease: ${{ steps.which.outputs.prerelease }}
@@ -138,6 +139,7 @@ jobs:
       test: ${{ fromJson(needs.resolve.outputs.leg).test }}
       bundle: ${{ fromJson(needs.resolve.outputs.leg).bundle }}
       publish: true
+      version: ${{ needs.resolve.outputs.version }}
 
   publish:
     needs: [resolve, build]

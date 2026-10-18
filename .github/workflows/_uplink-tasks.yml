@@ -28,10 +28,15 @@ on:
       # packages at exactly this version, not the tarballs vendored from a gonogo
       # sha. Empty on every ordinary run.
       packages_version: { required: false, type: string, default: "" }
+      # The release's version, from its tag. Every manifest reports it. Empty on
+      # a build that is not a release, which reports 0.0.0-dev.
+      version: { required: false, type: string, default: "" }
 
 jobs:
   uplink:
     runs-on: ubuntu-latest
+    env:
+      GONOGO_UPLINK_VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v4
 

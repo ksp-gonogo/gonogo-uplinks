@@ -32,7 +32,7 @@ namespace GonogoTestFlightUplink
             Manifest = new UplinkManifest
             {
                 Id = "testflight",
-                Version = "1.0.0",
+                Version = UplinkBuildVersion.Value,
                 // Null when the generated const is empty so the loader degrades to the
                 // two-way check; a real sha256-... once the release build bakes it.
                 Name = Provenance.Name,

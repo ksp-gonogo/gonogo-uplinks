@@ -145,7 +145,7 @@ namespace Gonogo.MechJebUplink
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
             Id = "mechjeb",
-            Version = "0.1.0",
+            Version = UplinkBuildVersion.Value,
             // Null when the generated const is empty so the loader degrades to
             // the two-way check. It is a real sha256-...: baked from the bundle
             // the app's own build emits (packages/app/scripts/bake-uplink-hash.ts

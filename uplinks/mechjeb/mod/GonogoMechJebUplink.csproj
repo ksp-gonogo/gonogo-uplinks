@@ -40,8 +40,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>GonogoMechJebUplink</AssemblyName>
     <RootNamespace>Gonogo.MechJebUplink</RootNamespace>
-    <AssemblyVersion>0.1.0</AssemblyVersion>
-    <FileVersion>0.1.0</FileVersion>
 
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

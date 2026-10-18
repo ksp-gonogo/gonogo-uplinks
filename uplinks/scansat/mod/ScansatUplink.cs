@@ -138,7 +138,7 @@ namespace Gonogo.ScansatUplink
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
             Id = "scansat",
-            Version = "1.0.0",
+            Version = UplinkBuildVersion.Value,
             // Null when the generated const is empty (dev / never-released) so the loader
             // degrades to the two-way check; a real sha256-… once the release build bakes it
             // (mod/scripts/bake-client-hash.mjs → ExpectedClientHash.g.cs).

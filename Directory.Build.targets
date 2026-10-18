@@ -23,4 +23,25 @@
       <Compile Include="@(GonogoBaked)" Condition="Exists('%(FullPath)')" />
     </ItemGroup>
   </Target>
+
+  <!-- UplinkBuildVersion.Value is the one place an Uplink's manifest takes its
+       version from. It is generated beside the assembly, in the Uplink's own
+       namespace, so the plugin and a test project that compiles its sources
+       each get a copy. -->
+  <Target Name="GenerateUplinkBuildVersion"
+          BeforeTargets="CoreCompile"
+          Condition="Exists('$(GonogoUplinkDir)\uplink.json')">
+    <PropertyGroup>
+      <GonogoUplinkNamespace>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(GonogoUplinkDir)\uplink.json')), '"csharpNamespace"\s*:\s*"([^"]+)"').Groups[1].Value)</GonogoUplinkNamespace>
+      <GonogoUplinkVersionFile>$(IntermediateOutputPath)UplinkBuildVersion.g.cs</GonogoUplinkVersionFile>
+    </PropertyGroup>
+    <WriteLinesToFile Condition="'$(GonogoUplinkNamespace)' != ''"
+                      File="$(GonogoUplinkVersionFile)"
+                      Lines="namespace $(GonogoUplinkNamespace) { internal static class UplinkBuildVersion { public const string Value = &quot;$(GonogoUplinkVersion)&quot;%3B } }"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ItemGroup Condition="'$(GonogoUplinkNamespace)' != ''">
+      <Compile Include="$(GonogoUplinkVersionFile)" />
+    </ItemGroup>
+  </Target>
 </Project>

@@ -58,7 +58,7 @@ namespace Gonogo.ActionGroupsExtendedUplink
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
             Id = "actionGroupsExtended",
-            Version = "1.0.0",
+            Version = UplinkBuildVersion.Value,
         };
 
         /// <summary>
