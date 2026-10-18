@@ -86,7 +86,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Needs | a vessel in flight |
 | Default size, in grid units | 9 × 15 |
 | Smallest size, in grid units | 4 × 5 |
-| Scenes | 4 |
+| Scenes | 5 |
 
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](client/docs/assets/ec-shortage-limits-water--default.png)
 

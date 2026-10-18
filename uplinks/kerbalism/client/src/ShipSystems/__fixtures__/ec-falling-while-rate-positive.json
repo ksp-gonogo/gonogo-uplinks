@@ -1,0 +1,629 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. Electric Charge falls from 52.2 to 47.4 over two minutes while the rate Kerbalism reports for it is positive. The countdown has to follow the level, not the rate."
+  },
+  "_scene": {
+    "widget": "ship-systems",
+    "caption": "Electric Charge falling while the reported rate is positive: the row says empty in, never full in",
+    "modes": [
+      "default"
+    ],
+    "steps": [
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 10
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 52.2,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 30
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 51.4,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 50
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 50.6,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 70
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 49.8,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 90
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 49.0,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 110
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 48.2,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      },
+      {
+        "emit": {
+          "topic": "kerbalism.lifesupport",
+          "payload": {
+            "rates": {
+              "ElectricCharge": 0.05
+            },
+            "habitat": {
+              "pressure": 0.9,
+              "poisoning": 0.05,
+              "comfort": 0.6,
+              "livingSpace": 0.7
+            },
+            "processes": [
+              {
+                "resource": "_WaterRecycler",
+                "title": "Water Recycler",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              },
+              {
+                "resource": "_Scrubber",
+                "title": "CO2 Scrubber",
+                "capacity": 1,
+                "running": true,
+                "broken": false
+              }
+            ],
+            "greenhouses": [],
+            "asOfKerbalismUt": 130
+          }
+        }
+      },
+      {
+        "emit": {
+          "topic": "vessel.resources",
+          "payload": {
+            "resources": {
+              "Water": {
+                "current": 50,
+                "max": 500,
+                "active": true
+              },
+              "ElectricCharge": {
+                "current": 47.4,
+                "max": 55,
+                "active": true
+              },
+              "Oxygen": {
+                "current": 380,
+                "max": 400,
+                "active": true
+              },
+              "WasteWater": {
+                "current": 10,
+                "max": 200,
+                "active": true
+              },
+              "_NonRegenScrubber": {
+                "current": 30,
+                "max": 100,
+                "active": true
+              }
+            },
+            "meta": {
+              "source": "vessel:1",
+              "quality": 1
+            }
+          }
+        },
+        "advanceUt": 20
+      }
+    ],
+    "motion": {
+      "fps": 2,
+      "pingPong": false
+    },
+    "unchangedWhenHeld": "the figures it draws are the ledger's levels and the countdown, which the scene's motion is about; the held twin is covered by the stale-ledger tests"
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      {
+        "topic": "kerbalism.profile",
+        "payload": {
+          "name": "Default",
+          "resources": {
+            "Water": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Water",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "ElectricCharge": {
+              "flowMode": "ALL_VESSEL_BALANCE",
+              "flowModeOrdinal": 4,
+              "displayName": "Electric Charge",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "Oxygen": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Oxygen",
+              "isSupply": true
+            },
+            "WasteWater": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Waste Water",
+              "isSupply": false
+            },
+            "_NonRegenScrubber": {
+              "flowMode": "",
+              "displayName": "Scrubber Cartridge",
+              "isSupply": false
+            }
+          },
+          "rules": [
+            {
+              "name": "drinking",
+              "input": "Water",
+              "output": "WasteWater",
+              "ratePerSecond": 1e-05
+            }
+          ],
+          "processes": [
+            {
+              "name": "Water Recycler",
+              "modifiers": [
+                "_WaterRecycler"
+              ],
+              "inputs": {
+                "WasteWater": 0.0002,
+                "ElectricCharge": 0.01
+              },
+              "outputs": {
+                "Water": 0.00018
+              }
+            },
+            {
+              "name": "CO2 Scrubber",
+              "modifiers": [
+                "_Scrubber"
+              ],
+              "inputs": {
+                "_NonRegenScrubber": 2e-05
+              },
+              "outputs": {}
+            }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": {
+          "count": 2,
+          "capacity": 4,
+          "crew": [
+            {
+              "name": "Jebediah Kerman",
+              "trait": "Pilot"
+            },
+            {
+              "name": "Bill Kerman",
+              "trait": "Engineer"
+            }
+          ],
+          "meta": {
+            "source": "vessel:1",
+            "quality": 1
+          }
+        }
+      }
+    ]
+  }
+}

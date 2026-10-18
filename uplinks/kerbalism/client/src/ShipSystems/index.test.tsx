@@ -11,6 +11,7 @@ import { NULL_DISPLAY, resourceColor } from "@ksp-gonogo/ui-kit";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerComponent(...).
+import { flushProviderFrame } from "../test/widgetDomSnapshot.js";
 import { fmtAmt, ShipSystemsComponent } from "./index.js";
 
 const CARRIED = [
@@ -293,6 +294,72 @@ describe("ShipSystemsComponent", () => {
 
     const oxygenCaption = await screen.findByText(/380 \/ 400/);
     expect(oxygenCaption.textContent).toMatch(/full in .*, modelled/);
+  });
+
+  describe("a countdown that disagrees with the level's own movement", () => {
+    const LEVELS = [52.2, 51.4, 50.6, 49.8, 49.0, 48.2, 47.4];
+
+    async function observe(levels: readonly number[], electricChargeRate: number) {
+      const fixture = setupStreamFixture({ pinnedUt: 10 + levels.length * 20 });
+      primeSubscriptions(fixture);
+      renderWidget(fixture);
+      act(() => {
+        fixture.emit("kerbalism.profile", PROFILE);
+        fixture.emit("vessel.crew", CREW);
+      });
+      for (const [i, current] of levels.entries()) {
+        act(() => {
+          fixture.emit(
+            "kerbalism.lifesupport",
+            {
+              ...LIFE_SUPPORT,
+              asOfKerbalismUt: 10 + i * 20,
+              rates: { ElectricCharge: electricChargeRate },
+            },
+            { validAt: 10 + i * 20 },
+          );
+          fixture.emit(
+            "vessel.resources",
+            {
+              ...RESOURCES,
+              resources: {
+                ...RESOURCES.resources,
+                ElectricCharge: { current, max: 55, active: true },
+              },
+            },
+            { validAt: 10 + i * 20 },
+          );
+        });
+        await flushProviderFrame();
+      }
+      const captions = await screen.findAllByText(/^\d.* \/ 55/);
+      return captions[captions.length - 1];
+    }
+
+    it("says empty for a falling level when Kerbalism's rate is positive", async () => {
+      const caption = await observe(LEVELS, 0.05);
+      expect(caption.textContent).toMatch(/empty in \d+min/);
+      expect(caption.textContent).not.toMatch(/full in/);
+    });
+
+    it("says full for a rising level when Kerbalism's rate is negative", async () => {
+      const caption = await observe([40, 40.8, 41.6, 42.4, 43.2, 44], -0.05);
+      expect(caption.textContent).toMatch(/full in/);
+      expect(caption.textContent).not.toMatch(/empty in/);
+    });
+
+    it("says neither for a steady level", async () => {
+      const caption = await observe([50, 50, 50, 50, 50, 50], 0.05);
+      expect(caption.textContent).not.toMatch(/full in|empty in/);
+    });
+
+    it("says neither for a level jittering around a constant", async () => {
+      const caption = await observe(
+        [50.03, 49.97, 50.05, 49.95, 50.02, 49.98],
+        -0.05,
+      );
+      expect(caption.textContent).not.toMatch(/full in|empty in/);
+    });
   });
 
   it("expands a resource row to reveal its rate ledger", async () => {

@@ -13,6 +13,7 @@ import type {
   KerbalismProfile,
 } from "./__generated__/contract.js";
 import { type RowCrossing, type Summary, summarise } from "./ecosystem.js";
+import { LevelHistory, reconcileCrossing } from "./levelTrend.js";
 import { resourceBoundaryCrossings } from "./resourceReckoning.js";
 import { KERBALISM } from "./uplink.js";
 
@@ -77,6 +78,18 @@ export interface LevelsProvenance {
   asOfUt: Value<"ut"> | undefined;
 }
 
+/*
+ * The levels seen at recent observations, which the crossings are checked
+ * against. A processor is handed the newest payloads only, so the history
+ * sits beside it; an observation seen twice is recorded once.
+ */
+const levelHistory = new LevelHistory();
+
+/** Clears the observed levels, for a test that needs a fresh vessel. */
+export function resetLevelHistory(): void {
+  levelHistory.reset();
+}
+
 /**
  * `kerbalism:ship-systems`. The owner-stamped Processor handle. Import it to
  * consume the derivation, never re-declare it: a second registration under the
@@ -130,6 +143,23 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
         boundary: c.boundary,
         atUt: c.atUt.magnitude,
       };
+    }
+    if (observedAtUt !== undefined) {
+      levelHistory.record(observedAtUt.magnitude, stored);
+      for (const [name, level] of Object.entries(stored)) {
+        if (lifeSupport?.rates?.[name] === undefined) continue;
+        const reconciled = reconcileCrossing(
+          crossings[name] ?? null,
+          levelHistory.trend(name, capacity[name] ?? 0),
+          {
+            current: level,
+            capacity: capacity[name] ?? 0,
+            ut: observedAtUt.magnitude,
+          },
+        );
+        if (reconciled === null) delete crossings[name];
+        else crossings[name] = reconciled;
+      }
     }
     const figures = deriveReading(
       resourcesReading,
