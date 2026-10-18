@@ -83,27 +83,29 @@ afterEach(() => {
 });
 
 describe("KerbcastAvatarAugment: embedded-facecam kill-switch gate", () => {
-  it("renders nothing when the switch is OFF, the subscribing child never mounts", () => {
+  it("shows the initial when the switch is OFF, the subscribing child never mounts", () => {
     const { container } = render(
       <Wrapper embedded={false}>
         <KerbcastAvatarAugment crewName="Jebediah Kerman" crewIndex={0} />
       </Wrapper>,
     );
     expect(container.querySelector("button")).toBeNull();
+    expect(screen.getByTestId("crew-avatar-placeholder").textContent).toBe("J");
   });
 
-  it("renders nothing when ON but no kerbcast handle is registered", () => {
+  it("shows the initial when ON but no kerbcast handle is registered", () => {
     const { container } = render(
       <Wrapper embedded>
         <KerbcastAvatarAugment crewName="Jebediah Kerman" crewIndex={0} />
       </Wrapper>,
     );
     expect(container.querySelector("button")).toBeNull();
+    expect(screen.getByTestId("crew-avatar-placeholder").textContent).toBe("J");
   });
 });
 
 describe("KerbcastAvatarAugment: kerbal correlation", () => {
-  it("renders nothing when the kerbal has no matching camera (not seated)", async () => {
+  it("shows the initial when the kerbal has no matching camera (not seated)", async () => {
     const { sidecar } = await connectedDataSource();
     sidecar.setCameras([
       { flightId: 1, kind: CameraKind.Kerbal, cameraName: "Bill Kerman" },
@@ -116,9 +118,10 @@ describe("KerbcastAvatarAugment: kerbal correlation", () => {
     );
 
     // Give the cameras-change subscription a tick to settle, then confirm
-    // nothing rendered for the unmatched kerbal.
+    // only the placeholder rendered for the unmatched kerbal.
     await Promise.resolve();
     expect(container.querySelector("button")).toBeNull();
+    expect(screen.getByTestId("crew-avatar-placeholder").textContent).toBe("J");
   });
 
   it("renders the live face with an IVA badge for a seated kerbal camera", async () => {

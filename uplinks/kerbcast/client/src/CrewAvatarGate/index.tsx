@@ -37,17 +37,17 @@ import { selectKerbalCamera } from "./selectKerbalCamera.js";
  * `selectKerbalCamera` correlates CrewStatus's name-keyed roster row
  * against kerbcast's `kind: Kerbal` cameras by `cameraName` (see that
  * module's doc: name is the only identity stable across seat<->EVA and the
- * only one both sides carry). When no camera matches, kerbcast absent, this
- * kerbal not seated, embedded facecams off: the augment renders nothing,
- * and CrewStatus itself renders no leading avatar cell at all for that row
- * (no decorative fallback dot; see `avatarAugmentPresent` in
- * `CrewStatus/index.tsx`).
+ * only one both sides carry). When no camera matches (outside the flight
+ * scene, kerbcast core not running, this kerbal not seated, embedded facecams
+ * off) the augment fills the same cell with the kerbal's initial, so the
+ * roster row keeps its size. That is an unavailable face, never an error, and
+ * the live face replaces it as soon as a camera appears.
  */
 export function KerbcastAvatarAugment({
   crewName,
 }: SlotProps<"crew-status.avatar">) {
   const [embedded] = useSetting<boolean>("kerbcast.embeddedFacecams", true);
-  if (!embedded) return null;
+  if (!embedded) return <InitialPlaceholder crewName={crewName} />;
   return <FacecamAvatar crewName={crewName} />;
 }
 
@@ -79,7 +79,9 @@ function FacecamAvatar({ crewName }: { crewName: string }) {
     [ds],
   );
 
-  if (!camera || !client || !subscriptions) return null;
+  if (!camera || !client || !subscriptions) {
+    return <InitialPlaceholder crewName={crewName} />;
+  }
   return (
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <FacecamAvatarFeed
@@ -88,6 +90,20 @@ function FacecamAvatar({ crewName }: { crewName: string }) {
         crewLocation={camera.crewLocation}
       />
     </KerbcastProvider>
+  );
+}
+
+/** The kerbal's first letter in the avatar's space, drawn while no face is available. Decorative: the roster row already names the kerbal. */
+function InitialPlaceholder({ crewName }: { crewName: string }) {
+  const initial = Array.from(crewName.trim())[0]?.toUpperCase() ?? "?";
+  return (
+    <div
+      data-testid="crew-avatar-placeholder"
+      aria-hidden="true"
+      style={PLACEHOLDER_STYLE}
+    >
+      {initial}
+    </div>
   );
 }
 
@@ -186,6 +202,19 @@ const AVATAR_BUTTON_STYLE: CSSProperties = {
   padding: 0,
   borderRadius: "var(--radius-md)",
   overflow: "hidden",
+};
+
+const PLACEHOLDER_STYLE: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  height: "100%",
+  background: "var(--color-surface-raised)",
+  color: "var(--color-text-muted)",
+  fontSize: "var(--font-size-figure)",
+  lineHeight: "var(--line-height-flush)",
+  userSelect: "none",
 };
 
 const SPOTLIGHT_BODY_STYLE: CSSProperties = {
