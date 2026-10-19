@@ -281,7 +281,8 @@ export function CameraFeed({
   // freeze, so its own `.connected` field would stick at last-known through
   // a blackout instead of firing "NO SIGNAL". `comms.link` escapes that
   // freeze, so it's the edge that actually reflects a live disconnect.
-  const commConnected = observedValue(useTelemetry("comms.link"))?.connected;
+  const commConnected =
+    observedValue(useTelemetry("comms.link"))?.connected ?? undefined;
   // One-way light-time delay for THIS downlink (the footage left the craft
   // this long ago): NOT round-trip. Round-trip doubling only applies to
   // interactive command/response paths (e.g. the kOS terminal), which this

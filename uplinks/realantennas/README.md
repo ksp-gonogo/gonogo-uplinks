@@ -10,7 +10,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | Uplink id | `realantennas` |
 | Version | `1.0.0-rc.2` |
 | Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 44.13, extension API 6.0.0 |
+| Built against | contract 45.0, extension API 6.0.0 |
 
 ## Install
 
