@@ -111,8 +111,8 @@ namespace GonogoTestFlightUplink
         private void HandleOnCourier(object? captured)
         {
             if (captured is not ReliabilitySample sample) return;
-            _reliability?.Publish(sample.Capture.Summary, sample.Ut);
-            _reliabilityParts?.Publish(sample.Capture.Parts, sample.Ut);
+            _reliability?.Publish(TestFlightReliabilityMap.SummaryToWire(sample.Capture.Summary), sample.Ut);
+            _reliabilityParts?.Publish(TestFlightReliabilityMap.PartsToWire(sample.Capture.Parts), sample.Ut);
         }
 
         public UplinkHealth Health()

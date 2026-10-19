@@ -292,8 +292,8 @@ namespace Gonogo.KerbalismUplink
         private void HandleReliabilityOnCourier(object? captured)
         {
             if (captured is not ReliabilitySample sample) return;
-            _reliability?.Publish(sample.Capture.Summary, sample.Ut);
-            _reliabilityParts?.Publish(sample.Capture.Parts, sample.Ut);
+            _reliability?.Publish(KerbalismCapture.BuildReliabilitySummary(sample.Capture.Summary), sample.Ut);
+            _reliabilityParts?.Publish(KerbalismCapture.BuildReliabilityParts(sample.Capture.Parts), sample.Ut);
         }
 
         private sealed class ReliabilitySample

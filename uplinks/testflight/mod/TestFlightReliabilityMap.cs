@@ -24,6 +24,60 @@ namespace GonogoTestFlightUplink
             UnboundMembers = binding?.Unbound,
         };
 
+        /// <summary>
+        /// The summary as the wire writes it (Topic "testflight.reliability"): the
+        /// host's serializer has no case for an Uplink's own type, so the payload
+        /// is a dictionary keyed by the camelCase property names.
+        /// </summary>
+        public static Dictionary<string, object?> SummaryToWire(TestFlightReliabilitySummary s) =>
+            new()
+            {
+                ["coverage"] = s.Coverage,
+                ["boundMembers"] = s.BoundMembers == null ? null : new List<object>(s.BoundMembers),
+                ["unboundMembers"] = s.UnboundMembers == null ? null : new List<object>(s.UnboundMembers),
+            };
+
+        /// <summary>
+        /// The parts as the wire writes the list (Topic "testflight.reliabilityParts").
+        /// A null budget list stays null: it means "no clock", never an empty list.
+        /// </summary>
+        public static List<object> PartsToWire(IEnumerable<TestFlightReliabilityPart> parts)
+        {
+            var list = new List<object>();
+            foreach (var p in parts)
+            {
+                List<object>? budgets = null;
+                if (p.Budgets != null)
+                {
+                    budgets = new List<object>();
+                    foreach (var b in p.Budgets)
+                        budgets.Add(new Dictionary<string, object?>
+                        {
+                            ["id"] = b.Id,
+                            ["label"] = b.Label,
+                            ["kind"] = b.Kind,
+                            ["consumed"] = b.Consumed,
+                            ["usedSeconds"] = b.UsedSeconds,
+                            ["limitSeconds"] = b.LimitSeconds,
+                        });
+                }
+
+                list.Add(new Dictionary<string, object?>
+                {
+                    ["partId"] = p.PartId,
+                    ["title"] = p.Title,
+                    ["configuration"] = p.Configuration,
+                    ["condition"] = p.Condition,
+                    ["conditionDetail"] = p.ConditionDetail,
+                    ["survival"] = p.Survival,
+                    ["survivalHorizonSeconds"] = p.SurvivalHorizonSeconds,
+                    ["budgets"] = budgets,
+                    ["flightData"] = p.FlightData,
+                });
+            }
+            return list;
+        }
+
         public static List<TestFlightReliabilityPart> Parts(IEnumerable<EngineReliabilityRaw> engines)
         {
             var list = new List<TestFlightReliabilityPart>();

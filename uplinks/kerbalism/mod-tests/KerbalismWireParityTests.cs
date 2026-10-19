@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Gonogo.KerbalismUplink;
+using Sitrep.Contract.TestSupport;
 using Xunit;
 
 /// <summary>
@@ -30,7 +31,7 @@ using Xunit;
 /// and <c>VesselViewProviderTests</c> (<c>vessel.*</c>).</para>
 ///
 /// <para><b>Polarity: everything in by default.</b> The required set is not a
-/// list, it is the transitive closure of the five <c>[SitrepTopic]</c> payload
+/// list, it is the transitive closure of the seven <c>[SitrepTopic]</c> payload
 /// roots over their own property types. A new nested shape hung off any payload
 /// enrols itself, and must then either be located in a built tree below or be
 /// given a documented reason in <see cref="NoWireInstance"/>. That is also why
@@ -115,6 +116,22 @@ public class KerbalismWireParityTests
 
         var profile = KerbalismCapture.BuildProfile(Profile());
 
+        var reliabilitySummary = KerbalismCapture.BuildReliabilitySummary(new GonogoKerbalismUplink.KerbalismReliabilitySummary());
+        var reliabilityParts = KerbalismCapture.BuildReliabilityParts(new[]
+        {
+            new GonogoKerbalismUplink.KerbalismReliabilityPart
+            {
+                RepairCost = new List<GonogoKerbalismUplink.KerbalismRepairCostItem>
+                {
+                    new GonogoKerbalismUplink.KerbalismRepairCostItem { Name = "evaRepairKit", Quantity = 1 },
+                },
+                Budgets = new List<GonogoKerbalismUplink.KerbalismReliabilityBudget>
+                {
+                    new GonogoKerbalismUplink.KerbalismReliabilityBudget(),
+                },
+            },
+        });
+
         var crewEntry = Entry(crew, 0);
         var contract = typeof(GonogoKerbalismUplink.KerbalismLifeSupport).Assembly;
 
@@ -139,7 +156,35 @@ public class KerbalismWireParityTests
             [T("KerbalismResourceDef")] = Dict(profile["resources"]).Values.First(),
             [T("KerbalismRuleDef")] = Entry(profile["rules"], 0),
             [T("KerbalismProcessDef")] = Entry(profile["processes"], 0),
+
+            [T("KerbalismReliabilitySummary")] = reliabilitySummary,
+            [T("KerbalismReliabilityPart")] = Entry(reliabilityParts, 0),
+            [T("KerbalismReliabilityBudget")] = Entry(Dict(Entry(reliabilityParts, 0))["budgets"], 0),
+            [T("KerbalismRepairCostItem")] = Entry(Dict(Entry(reliabilityParts, 0))["repairCost"], 0),
         };
+    }
+
+    [Fact]
+    public void TheReliabilityPayloadsWriteThroughTheRealSerializer()
+    {
+        var summary = WirePayload.Of(KerbalismCapture.BuildReliabilitySummary(
+            new GonogoKerbalismUplink.KerbalismReliabilitySummary { Coverage = "modeled", BrokenPartCount = 2 }));
+        Assert.Equal("modeled", summary.GetProperty("coverage").GetString());
+        Assert.Equal(2, summary.GetProperty("brokenPartCount").GetInt32());
+
+        var parts = WirePayload.Of(KerbalismCapture.BuildReliabilityParts(new[]
+        {
+            new GonogoKerbalismUplink.KerbalismReliabilityPart
+            {
+                PartId = "1:0",
+                RepairCost = new List<GonogoKerbalismUplink.KerbalismRepairCostItem>
+                {
+                    new GonogoKerbalismUplink.KerbalismRepairCostItem { Name = "evaRepairKit", Quantity = 2 },
+                },
+            },
+        }));
+        Assert.Equal("1:0", parts[0].GetProperty("partId").GetString());
+        Assert.Equal(2, parts[0].GetProperty("repairCost")[0].GetProperty("quantity").GetInt32());
     }
 
     [Fact]
@@ -224,6 +269,7 @@ public class KerbalismWireParityTests
         {
             "KerbalismSpaceWeather", "KerbalismLifeSupport", "KerbalismCrewEntry",
             "KerbalismFeatures", "KerbalismProfile",
+            "KerbalismReliabilitySummary", "KerbalismReliabilityPart",
         }.Select(n => contract.GetType("GonogoKerbalismUplink." + n, throwOnError: true)!);
 
         var seen = new HashSet<Type>();

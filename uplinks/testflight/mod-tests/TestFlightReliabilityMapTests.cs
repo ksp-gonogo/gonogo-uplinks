@@ -1,5 +1,8 @@
 using GonogoTestFlightUplink;
+using System.Collections.Generic;
+using System.Linq;
 using Sitrep.Contract;
+using Sitrep.Contract.TestSupport;
 using Xunit;
 
 public class TestFlightReliabilityMapTests
@@ -207,5 +210,44 @@ public class TestFlightReliabilityMapTests
     public void A_part_states_no_repair_cost_because_testflight_charges_none()
     {
         Assert.Null(typeof(TestFlightReliabilityPart).GetProperty("RepairCost"));
+    }
+
+    private static TestFlightReliabilityPart FilledPart() => new()
+    {
+        PartId = "1", Title = "Engine", Configuration = "Mk1", Condition = "nominal", ConditionDetail = "ok",
+        Survival = 0.9, SurvivalHorizonSeconds = 60, FlightData = 1.5,
+        Budgets = new List<TestFlightReliabilityBudget> { new() { Id = "ignition", Label = "ignitions" } },
+    };
+
+    private static string CamelCase(string name) => char.ToLowerInvariant(name[0]) + name.Substring(1);
+
+    [Fact]
+    public void Every_summary_and_part_property_is_a_key_on_the_wire_form()
+    {
+        var summary = TestFlightReliabilityMap.SummaryToWire(new TestFlightReliabilitySummary());
+        var part = (IDictionary<string, object?>)TestFlightReliabilityMap.PartsToWire(new[] { FilledPart() })[0];
+        var budget = (IDictionary<string, object?>)((List<object>)part["budgets"]!)[0];
+
+        foreach (var (type, wire) in new (System.Type, IDictionary<string, object?>)[]
+        {
+            (typeof(TestFlightReliabilitySummary), summary),
+            (typeof(TestFlightReliabilityPart), part),
+            (typeof(TestFlightReliabilityBudget), budget),
+        })
+        {
+            var missing = type.GetProperties().Select(p => CamelCase(p.Name)).Where(k => !wire.ContainsKey(k)).ToList();
+            Assert.True(missing.Count == 0, type.Name + " keys not emitted: " + string.Join(", ", missing));
+        }
+    }
+
+    [Fact]
+    public void The_wire_forms_write_through_the_real_serializer()
+    {
+        var summary = WirePayload.Of(TestFlightReliabilityMap.SummaryToWire(TestFlightReliabilityMap.Summary(ReliabilityCoverage.Modeled)));
+        Assert.Equal(ReliabilityCoverage.Modeled, summary.GetProperty("coverage").GetString());
+
+        var parts = WirePayload.Of(TestFlightReliabilityMap.PartsToWire(new[] { FilledPart() }));
+        Assert.Equal("nominal", parts[0].GetProperty("condition").GetString());
+        Assert.Equal("ignition", parts[0].GetProperty("budgets")[0].GetProperty("id").GetString());
     }
 }

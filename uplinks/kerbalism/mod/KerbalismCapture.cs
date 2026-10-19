@@ -267,6 +267,79 @@ namespace Gonogo.KerbalismUplink
             };
         }
 
+        /// <summary>
+        /// The vessel-level reliability picture as the wire writes it (Topic
+        /// "kerbalism.reliability"). An unread figure stays null and rides as null.
+        /// </summary>
+        public static Dictionary<string, object?> BuildReliabilitySummary(GonogoKerbalismUplink.KerbalismReliabilitySummary s) =>
+            new Dictionary<string, object?>
+            {
+                ["coverage"] = s.Coverage,
+                ["worstMtbfSeconds"] = s.WorstMtbfSeconds,
+                ["brokenPartCount"] = s.BrokenPartCount,
+                ["serviceDuePartCount"] = s.ServiceDuePartCount,
+                ["criticalChance"] = s.CriticalChance,
+                ["safeModeChance"] = s.SafeModeChance,
+                ["requireRepairKits"] = s.RequireRepairKits,
+                ["incentiveRedundancy"] = s.IncentiveRedundancy,
+            };
+
+        /// <summary>
+        /// One entry per reliability module as the wire writes the list (Topic
+        /// "kerbalism.reliabilityParts"). A null repair cost or budget list stays
+        /// null: it means "none consumed" and "no clock", never an empty list.
+        /// </summary>
+        public static List<object> BuildReliabilityParts(IEnumerable<GonogoKerbalismUplink.KerbalismReliabilityPart> parts)
+        {
+            var list = new List<object>();
+            foreach (var p in parts)
+            {
+                List<object>? cost = null;
+                if (p.RepairCost != null)
+                {
+                    cost = new List<object>();
+                    foreach (var c in p.RepairCost)
+                        cost.Add(new Dictionary<string, object?>
+                        {
+                            ["name"] = c.Name,
+                            ["quantity"] = c.Quantity,
+                        });
+                }
+
+                List<object>? budgets = null;
+                if (p.Budgets != null)
+                {
+                    budgets = new List<object>();
+                    foreach (var b in p.Budgets)
+                        budgets.Add(new Dictionary<string, object?>
+                        {
+                            ["id"] = b.Id,
+                            ["label"] = b.Label,
+                            ["kind"] = b.Kind,
+                            ["consumed"] = b.Consumed,
+                            ["usedSeconds"] = b.UsedSeconds,
+                            ["limitSeconds"] = b.LimitSeconds,
+                        });
+                }
+
+                list.Add(new Dictionary<string, object?>
+                {
+                    ["partId"] = p.PartId,
+                    ["title"] = p.Title,
+                    ["condition"] = p.Condition,
+                    ["conditionDetail"] = p.ConditionDetail,
+                    ["repairTrait"] = p.RepairTrait,
+                    ["repairLevel"] = p.RepairLevel,
+                    ["repairCost"] = cost,
+                    ["budgets"] = budgets,
+                    ["redundancyGroup"] = p.RedundancyGroup,
+                    ["mtbfSeconds"] = p.MtbfSeconds,
+                    ["quality"] = p.Quality,
+                });
+            }
+            return list;
+        }
+
         private static Dictionary<string, object?> Cast(Dictionary<string, double> src)
         {
             var outMap = new Dictionary<string, object?>(StringComparer.Ordinal);
