@@ -3,402 +3,402 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "b949784647e3a691",
+      "hash": "aea272f7a05d6546",
       "elements": 315,
       "text": "bb12c779"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "7fdeaaac3fb1f4ea",
+      "hash": "4e88e2c009fc3714",
       "elements": 265,
       "text": "9b07dc4b"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "f2076aacbf95ee7c",
+      "hash": "a82b36bddba95609",
       "elements": 190,
       "text": "99be9999"
     },
     "coast-analysis-expanded--default.png": {
-      "hash": "66a1bd85a10b0acc",
+      "hash": "81f25fa95a57dfca",
       "elements": 167,
       "text": "79fa12ae"
     },
     "coast-analysis-no-plan--default.png": {
-      "hash": "19f7a2e29eca2d3d",
+      "hash": "7ea845c7d3706cb9",
       "elements": 40,
       "text": "95f6da0c"
     },
     "coast-analysis-plan--default.png": {
-      "hash": "f221dc311c01e778",
+      "hash": "fa17d5de7a99ae2c",
       "elements": 65,
       "text": "a7f133ae"
     },
     "composer-composing--default.png": {
-      "hash": "e7c82486d6d2d9e6",
+      "hash": "de69acf232ed741a",
       "elements": 147,
       "text": "fb0c46a3"
     },
     "composer-delayed-vantage--default.png": {
-      "hash": "f5bdeefe1f5c284d",
+      "hash": "57913284f14313b2",
       "elements": 63,
       "text": "664d0a4b"
     },
     "composer-ready-to-upload--default.png": {
-      "hash": "34b0dd1d74004ebb",
+      "hash": "da860816e16d2c95",
       "elements": 60,
       "text": "2ce0994e"
     },
     "composer-upload-armed--default.png": {
-      "hash": "555dc3365ae85b99",
+      "hash": "17e2d52e7a0c5bd4",
       "elements": 60,
       "text": "f50765cc"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "9bf1eeee2fbe6bb6",
+      "hash": "becf836363977baf",
       "elements": 194,
       "text": "6b16f5d3"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "f8c8f99a66af6867",
+      "hash": "6a583b1403e3f61d",
       "elements": 199,
       "text": "4ebd02d1"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "78f05e30713dd82c",
+      "hash": "079e53efe90cf694",
       "elements": 195,
       "text": "48502c53"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "1485b9f2b7aa2b51",
+      "hash": "66cb3e90f3d655c7",
       "elements": 195,
       "text": "825af4a4"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "715d75cdaf052cdf",
+      "hash": "f1618bcbc65e3e97",
       "elements": 142,
       "text": "8d0bc864"
     },
     "flight-plan-unobserved--default.png": {
-      "hash": "a72aef7e7d6a3c09",
+      "hash": "9d0c8b1679c42069",
       "elements": 42,
       "text": "8f33ffde"
     },
     "jogwheel-rate-mode--default.gif": {
-      "hash": "3419d8d9265325cb",
+      "hash": "db06a17980251c8d",
       "elements": 102,
       "text": "5b2073a1"
     },
     "kerbin-mun-integrated-arc--default.png": {
-      "hash": "b4dc43b2b03ee502",
+      "hash": "f2d49815597c9680",
       "elements": 97,
       "text": "4a7b7ae0"
     },
     "kerbin-mun-integrated-arc--landscape-18x5.png": {
-      "hash": "c232ad4fd2902929",
+      "hash": "b39d549f99cf7400",
       "elements": 97,
       "text": "4a7b7ae0"
     },
     "kerbin-mun-integrated-arc--min.png": {
-      "hash": "cd5b9e2a0bb85696",
+      "hash": "91be064068f38b47",
       "elements": 97,
       "text": "4a7b7ae0"
     },
     "kerbin-mun-integrated-arc--mobile-9x8.png": {
-      "hash": "b4dc43b2b03ee502",
+      "hash": "f2d49815597c9680",
       "elements": 97,
       "text": "4a7b7ae0"
     },
     "kerbin-mun-integrated-arc--portrait-5x18.png": {
-      "hash": "178fb6150d1edb6b",
+      "hash": "ab58a8cc9cfe090d",
       "elements": 97,
       "text": "4a7b7ae0"
     },
     "kerbin-mun-no-craft--default.png": {
-      "hash": "25061dadcf732c76",
+      "hash": "d1353be50afca6ab",
       "elements": 70,
       "text": "7e0c9fb7"
     },
     "kerbin-mun-no-craft--landscape-18x5.png": {
-      "hash": "ff4edc5fee80169c",
+      "hash": "1afbcbbd1386d739",
       "elements": 70,
       "text": "7e0c9fb7"
     },
     "kerbin-mun-no-craft--min.png": {
-      "hash": "25061dadcf732c76",
+      "hash": "d1353be50afca6ab",
       "elements": 70,
       "text": "7e0c9fb7"
     },
     "kerbin-mun-no-craft--mobile-9x8.png": {
-      "hash": "25061dadcf732c76",
+      "hash": "d1353be50afca6ab",
       "elements": 70,
       "text": "7e0c9fb7"
     },
     "kerbin-mun-no-craft--portrait-5x18.png": {
-      "hash": "e6d8158e5a82d39f",
+      "hash": "1ac20267c4ddee37",
       "elements": 70,
       "text": "7e0c9fb7"
     },
     "kerbol-orbits-nothing--default.png": {
-      "hash": "d92f0260a9b15b0c",
+      "hash": "25614897b213e456",
       "elements": 27,
       "text": "1f1c6e88"
     },
     "kerbol-orbits-nothing--landscape-18x5.png": {
-      "hash": "bb8c018a08e55f53",
+      "hash": "39ba0b91fb56bf16",
       "elements": 27,
       "text": "1f1c6e88"
     },
     "kerbol-orbits-nothing--min.png": {
-      "hash": "bb8c018a08e55f53",
+      "hash": "39ba0b91fb56bf16",
       "elements": 27,
       "text": "1f1c6e88"
     },
     "kerbol-orbits-nothing--mobile-9x8.png": {
-      "hash": "d92f0260a9b15b0c",
+      "hash": "25614897b213e456",
       "elements": 27,
       "text": "1f1c6e88"
     },
     "kerbol-orbits-nothing--portrait-5x18.png": {
-      "hash": "d92f0260a9b15b0c",
+      "hash": "25614897b213e456",
       "elements": 27,
       "text": "1f1c6e88"
     },
     "low-kerbin-orbit--default.png": {
-      "hash": "feba83467c62f82a",
+      "hash": "46ad42ac8dcaf316",
       "elements": 84,
       "text": "268641d4"
     },
     "low-kerbin-orbit--landscape-18x5.png": {
-      "hash": "6812bf7222fa0628",
+      "hash": "0d73fe88deea6c9f",
       "elements": 84,
       "text": "268641d4"
     },
     "low-kerbin-orbit--min.png": {
-      "hash": "f973fbdb6866cec0",
+      "hash": "c811107c05ad1eb2",
       "elements": 84,
       "text": "268641d4"
     },
     "low-kerbin-orbit--mobile-9x8.png": {
-      "hash": "feba83467c62f82a",
+      "hash": "46ad42ac8dcaf316",
       "elements": 84,
       "text": "268641d4"
     },
     "low-kerbin-orbit--portrait-5x18.png": {
-      "hash": "0c19fd917e2d99d1",
+      "hash": "d0ff390bdb771951",
       "elements": 84,
       "text": "268641d4"
     },
     "low-kerbin-orbit-mun-control-frame--default.png": {
-      "hash": "fd6a9aa331968f65",
+      "hash": "e9be63d840d8bda8",
       "elements": 84,
       "text": "bbcfdd0f"
     },
     "low-kerbin-orbit-mun-control-frame--landscape-18x5.png": {
-      "hash": "44b9e7b519469a66",
+      "hash": "720fba7f1ee4ed48",
       "elements": 84,
       "text": "bbcfdd0f"
     },
     "low-kerbin-orbit-mun-control-frame--min.png": {
-      "hash": "1232d6c7c1a6853b",
+      "hash": "f7ac3e7634028f0b",
       "elements": 84,
       "text": "bbcfdd0f"
     },
     "low-kerbin-orbit-mun-control-frame--mobile-9x8.png": {
-      "hash": "fd6a9aa331968f65",
+      "hash": "e9be63d840d8bda8",
       "elements": 84,
       "text": "bbcfdd0f"
     },
     "low-kerbin-orbit-mun-control-frame--portrait-5x18.png": {
-      "hash": "3b134672b7031f83",
+      "hash": "d48513d03bbbd930",
       "elements": 84,
       "text": "bbcfdd0f"
     },
     "minmus-l4-trojan--default.png": {
-      "hash": "0fc0bd2538d45a2c",
+      "hash": "e8573c9aedac1a84",
       "elements": 84,
       "text": "10f811db"
     },
     "minmus-l4-trojan--landscape-18x5.png": {
-      "hash": "23ae69a6b8efdc5f",
+      "hash": "7d78d4318aeb9597",
       "elements": 84,
       "text": "10f811db"
     },
     "minmus-l4-trojan--min.png": {
-      "hash": "b95a960d87a11997",
+      "hash": "562a7c151ac7b601",
       "elements": 84,
       "text": "10f811db"
     },
     "minmus-l4-trojan--mobile-9x8.png": {
-      "hash": "0fc0bd2538d45a2c",
+      "hash": "e8573c9aedac1a84",
       "elements": 84,
       "text": "10f811db"
     },
     "minmus-l4-trojan--portrait-5x18.png": {
-      "hash": "9df2942131945e9e",
+      "hash": "a2eb413f2f9c8588",
       "elements": 84,
       "text": "10f811db"
     },
     "mun-l1-holding-station--default.png": {
-      "hash": "e7275945a3955dd9",
+      "hash": "965d825294b599c8",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--landscape-18x5.png": {
-      "hash": "dab364b9efe9761d",
+      "hash": "e100bb048421c4a3",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--min.png": {
-      "hash": "0b4abb052f2a8d4d",
+      "hash": "df24dcd76fc6b354",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--mobile-9x8.png": {
-      "hash": "e7275945a3955dd9",
+      "hash": "965d825294b599c8",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--portrait-5x18.png": {
-      "hash": "58de473ae79bd7f8",
+      "hash": "0f2fded443428c11",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l2-drifting--default.png": {
-      "hash": "01d7a15dd672778c",
+      "hash": "5513b9df78663417",
       "elements": 84,
       "text": "9a6666c2"
     },
     "mun-l2-drifting--landscape-18x5.png": {
-      "hash": "1b058b69ff1ade6a",
+      "hash": "c4248930a42be9f7",
       "elements": 84,
       "text": "9a6666c2"
     },
     "mun-l2-drifting--min.png": {
-      "hash": "45bd7f8802d7464c",
+      "hash": "783fd0e189b648fc",
       "elements": 84,
       "text": "9a6666c2"
     },
     "mun-l2-drifting--mobile-9x8.png": {
-      "hash": "01d7a15dd672778c",
+      "hash": "5513b9df78663417",
       "elements": 84,
       "text": "9a6666c2"
     },
     "mun-l2-drifting--portrait-5x18.png": {
-      "hash": "a56b81325818b1a9",
+      "hash": "1b126444d9272939",
       "elements": 84,
       "text": "9a6666c2"
     },
     "mun-l2-drifting-stopped-arriving--default.png": {
-      "hash": "7a0d70eebe1b774e",
+      "hash": "27e9fc2ff151aa76",
       "elements": 85,
       "text": "5fc08eed"
     },
     "mun-l2-drifting-stopped-arriving--landscape-18x5.png": {
-      "hash": "26c277c78c0ec139",
+      "hash": "9fc01f0362ea20e1",
       "elements": 85,
       "text": "5fc08eed"
     },
     "mun-l2-drifting-stopped-arriving--min.png": {
-      "hash": "26e11c05f8d04bc3",
+      "hash": "c537e2c74cfd505d",
       "elements": 85,
       "text": "5fc08eed"
     },
     "mun-l2-drifting-stopped-arriving--mobile-9x8.png": {
-      "hash": "7a0d70eebe1b774e",
+      "hash": "27e9fc2ff151aa76",
       "elements": 85,
       "text": "5fc08eed"
     },
     "mun-l2-drifting-stopped-arriving--portrait-5x18.png": {
-      "hash": "bd1755ec39ee01bd",
+      "hash": "f63b333bc2a217b8",
       "elements": 85,
       "text": "5fc08eed"
     },
     "mun-l2-path-withheld--default.png": {
-      "hash": "1eb6623027eb7830",
+      "hash": "07fdf9c16f681329",
       "elements": 84,
       "text": "55a97130"
     },
     "mun-l2-path-withheld--landscape-18x5.png": {
-      "hash": "fd99611e1262cb2b",
+      "hash": "7b88ff737ceff8a9",
       "elements": 84,
       "text": "55a97130"
     },
     "mun-l2-path-withheld--min.png": {
-      "hash": "88391121cbfa46a4",
+      "hash": "a8a86eac48c16b20",
       "elements": 84,
       "text": "55a97130"
     },
     "mun-l2-path-withheld--mobile-9x8.png": {
-      "hash": "1eb6623027eb7830",
+      "hash": "07fdf9c16f681329",
       "elements": 84,
       "text": "55a97130"
     },
     "mun-l2-path-withheld--portrait-5x18.png": {
-      "hash": "e462653d8b6ad851",
+      "hash": "9a2343c3195c1c8c",
       "elements": 84,
       "text": "55a97130"
     },
     "mun-l2-path-withheld-stopped-arriving--default.png": {
-      "hash": "ce5167fe0de0609d",
+      "hash": "7515e437dd329963",
       "elements": 70,
       "text": "bf126dad"
     },
     "mun-l2-path-withheld-stopped-arriving--landscape-18x5.png": {
-      "hash": "9528e6d240d3a59d",
+      "hash": "5795f90d0549338f",
       "elements": 70,
       "text": "bf126dad"
     },
     "mun-l2-path-withheld-stopped-arriving--min.png": {
-      "hash": "ce5167fe0de0609d",
+      "hash": "7515e437dd329963",
       "elements": 70,
       "text": "bf126dad"
     },
     "mun-l2-path-withheld-stopped-arriving--mobile-9x8.png": {
-      "hash": "ce5167fe0de0609d",
+      "hash": "7515e437dd329963",
       "elements": 70,
       "text": "bf126dad"
     },
     "mun-l2-path-withheld-stopped-arriving--portrait-5x18.png": {
-      "hash": "6d614bdbd7a58a74",
+      "hash": "11ee040831c2b69a",
       "elements": 70,
       "text": "bf126dad"
     },
     "orbit-analysis-decaying--default.png": {
-      "hash": "7124770512628383",
+      "hash": "69e43c61e7bc8081",
       "elements": 183,
       "text": "d3916197"
     },
     "orbit-analysis-live--default.png": {
-      "hash": "494df44cce681ddd",
+      "hash": "38348fd324e01ba6",
       "elements": 168,
       "text": "f85077c6"
     },
     "orbit-analysis-no-elements--default.png": {
-      "hash": "44e84c164a757a7a",
+      "hash": "fac62a200a8de89a",
       "elements": 22,
       "text": "503ddb46"
     },
     "orbit-analysis-not-analysing--default.png": {
-      "hash": "c14d0a363a31f8ec",
+      "hash": "71be4b9f0a3a9bcd",
       "elements": 20,
       "text": "87a8217b"
     },
     "orbit-analysis-unobserved--default.png": {
-      "hash": "f3d0bc414305650f",
+      "hash": "db474e62f8a7802c",
       "elements": 19,
       "text": "67e79a4e"
     },
     "plan-slots-armed--default.png": {
-      "hash": "733b15755d47c1af",
+      "hash": "2bd8e56caabe19ce",
       "elements": 170,
       "text": "ae962754"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "427d6b32bd50e32e",
+      "hash": "67599bf90d588732",
       "elements": 130,
       "text": "9b035d85"
     },
     "plan-slots-shut--default.png": {
-      "hash": "601ba19ae7894799",
+      "hash": "65b3fbbdaf3498c5",
       "elements": 159,
       "text": "476efbbc"
     }
