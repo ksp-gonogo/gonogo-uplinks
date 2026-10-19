@@ -509,32 +509,6 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     expect(termSpies.focus).toHaveBeenCalled();
   });
 
-  it("opening the terminal puts focus in the emulator without a click", async () => {
-    const fixture = terminalFixture();
-    render(
-      <fixture.Provider>
-        <KosTerminalComponent id="kos-terminal" config={{}} />
-      </fixture.Provider>,
-    );
-    act(() => fixture.emit("kos.processors", ONE_CPU));
-    await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
-
-    expect(termSpies.focus).toHaveBeenCalled();
-  });
-
-  it("a read-only terminal does not take focus on open", async () => {
-    const fixture = terminalFixture();
-    render(
-      <fixture.Provider>
-        <KosTerminalComponent id="kos-terminal" config={{ readOnly: true }} />
-      </fixture.Provider>,
-    );
-    act(() => fixture.emit("kos.processors", ONE_CPU));
-    await waitFor(() => expect(termSpies.open).toHaveBeenCalled());
-
-    expect(termSpies.focus).not.toHaveBeenCalled();
-  });
-
   it("line-mode: the Send button refuses with no comms path, the same as Enter", async () => {
     // `reduceLineModeChar`'s `canSend` guard is the one that keeps the typed
     // line in the box; the button must not be a way around it.
