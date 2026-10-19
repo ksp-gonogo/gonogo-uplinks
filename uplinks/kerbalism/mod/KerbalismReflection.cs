@@ -1488,8 +1488,10 @@ namespace Gonogo.KerbalismUplink
                 PartId = partId,
                 PartName = partName,
                 ExperimentId = MemberString(pm, "experiment_id") ?? "",
-                // Kerbalism's own display title when it has one, else the part's.
-                Title = MemberString(pm, "ExperimentTitle") ?? MemberString(pm, "experiment_title") ?? partName,
+                Title = KerbalismScienceMap.ExperimentTitle(
+                    Member(pm, "ExpInfo") is { } expInfo ? MemberString(expInfo, "Title") : null,
+                    MemberString(pm, "ExperimentTitle"),
+                    MemberString(pm, "experiment_title")),
                 Issue = MemberString(pm, "issue") ?? "",
                 // The simulated state is `State`, the derived display state `Status`
                 // (Modules/Experiment.cs's two-layer RunningState -> ExpStatus).

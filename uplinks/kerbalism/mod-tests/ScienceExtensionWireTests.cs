@@ -356,6 +356,50 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
+        /// Several experiments on one part each keep their own title, and one whose
+        /// title cannot be read is null on the wire, never the part's title, so a
+        /// client falls back to the experiment id instead of listing seven copies of
+        /// the part name.
+        /// </summary>
+        [Fact]
+        public void ExperimentsOnOnePartKeepTheirOwnTitleAndAnUnreadOneIsNull()
+        {
+            var raw = new ScienceRaw
+            {
+                Modeled = true,
+                Experiments =
+                {
+                    new ScienceExperimentRaw
+                    {
+                        PartId = "9", PartName = "Probodobodyne Stayputnik",
+                        ExperimentId = "temperatureScan",
+                        Title = KerbalismScienceMap.ExperimentTitle(null, "", "Temperature Scan"),
+                    },
+                    new ScienceExperimentRaw
+                    {
+                        PartId = "9", PartName = "Probodobodyne Stayputnik",
+                        ExperimentId = "seismicScan",
+                        Title = KerbalismScienceMap.ExperimentTitle("Seismic Scan", null),
+                    },
+                    new ScienceExperimentRaw
+                    {
+                        PartId = "9", PartName = "Probodobodyne Stayputnik",
+                        ExperimentId = "geigerCounter",
+                        Title = KerbalismScienceMap.ExperimentTitle(null, " "),
+                    },
+                },
+            };
+
+            var rows = KerbalismScienceMap.Instruments(raw)!;
+
+            Assert.Equal("Temperature Scan", rows[0].Title);
+            Assert.Equal("Seismic Scan", rows[1].Title);
+            Assert.Null(rows[2].Title);
+            Assert.All(rows, row => Assert.Null(row.Rerunnable));
+            Assert.All(rows, row => Assert.Null(row.Resettable));
+        }
+
+        /// <summary>
         /// The build that actually ships in KerbalismModularScience keeps no scanning
         /// flag on the scanner module, so <c>scanning</c> arrives null. A false
         /// <c>deployed</c> would then report every healthy scanner on the vessel as

@@ -379,6 +379,20 @@ namespace Gonogo.KerbalismUplink
         /// path: an absent string is null on this wire, never "". A widget checking
         /// truthiness would otherwise see a present-but-blank field.
         /// </summary>
+        /// <summary>
+        /// The experiment's own display title: the first candidate that is not blank,
+        /// in the order given, or empty when none is. Never the part's title, which
+        /// is the same string for every experiment a part carries.
+        /// </summary>
+        public static string ExperimentTitle(params string?[] candidates)
+        {
+            foreach (var candidate in candidates)
+            {
+                if (!string.IsNullOrWhiteSpace(candidate)) return candidate!;
+            }
+            return "";
+        }
+
         private static string? Text(string? value) => string.IsNullOrEmpty(value) ? null : value;
 
         private static bool Same(string? a, string b) =>

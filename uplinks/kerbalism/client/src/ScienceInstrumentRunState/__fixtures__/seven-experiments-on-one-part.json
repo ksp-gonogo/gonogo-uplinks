@@ -1,0 +1,262 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "A Kerbalism career vessel's science.instruments frame as captured from a live save, with the Stayputnik's seven experiments each carrying their own title where Kerbalism names one and none where it does not, and its seismic scan set running. Rerunnable and resettable are null on every entry, as Kerbalism sends them."
+  },
+  "_scene": {
+    "augment": "kerbalism-science-instrument-run-state",
+    "hostWidget": "experiments",
+    "caption": "Seven experiments on one Stayputnik, each with its run state and none called one-shot",
+    "modes": [
+      "default"
+    ],
+    "size": {
+      "w": 6,
+      "h": 12
+    },
+    "paints": [
+      "Seismic Scan",
+      "RUNNING",
+      "STOPPED"
+    ],
+    "hero": true
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.available",
+        "payload": true
+      },
+      {
+        "topic": "science.instruments",
+        "payload": [
+          {
+            "partId": "1692146492",
+            "partName": "Mystery Goo™ Containment Unit",
+            "experimentId": "mysteryGoo",
+            "title": "Mystery Goo™ Containment Unit",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.669266770670827,
+                "prodFactor": 1,
+                "remainingSampleMass": 0.02163988768132091
+              }
+            }
+          },
+          {
+            "partId": "4186790752",
+            "partName": "PresMat Barometer",
+            "experimentId": "barometerScan",
+            "title": "PresMat Barometer",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00382096069868996,
+                "prodFactor": 1,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "3559422175",
+            "partName": "Geiger Counter",
+            "experimentId": "geigerCounter",
+            "title": "Geiger Counter",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00100603621730382,
+                "prodFactor": 1,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "temperatureScan",
+            "title": "Temperature Scan",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00326086956521739,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "seismicScan",
+            "title": "Seismic Scan",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Running",
+                "expStatus": "Running",
+                "dataRateMBps": 0.000630421625983458,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "geigerCounter",
+            "title": null,
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00100603621730382,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "kerbalism_TELEMETRY",
+            "title": null,
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.025,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "kerbalism_LITE",
+            "title": null,
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.025,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "kerbalism_MITE",
+            "title": null,
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00431788079470199,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          },
+          {
+            "partId": "1475388156",
+            "partName": "Probodobodyne Stayputnik",
+            "experimentId": "kerbalism_SITE",
+            "title": null,
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": null,
+            "resettable": null,
+            "dataIsCollectable": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "runningState": "Stopped",
+                "expStatus": "Stopped",
+                "dataRateMBps": 0.00340192043895748,
+                "prodFactor": 0,
+                "remainingSampleMass": null
+              }
+            }
+          }
+        ]
+      },
+      {
+        "topic": "science.experiments",
+        "payload": []
+      }
+    ]
+  }
+}

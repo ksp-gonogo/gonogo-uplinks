@@ -114,11 +114,14 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
+| `kerbalism-science-instrument-run-state` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
+
+![Seven experiments on one Stayputnik, each with its run state and none called one-shot](client/docs/assets/seven-experiments-on-one-part--default.png)
 
 ![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
 

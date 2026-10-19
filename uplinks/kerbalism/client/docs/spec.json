@@ -1091,6 +1091,14 @@
       "settings": []
     },
     {
+      "id": "kerbalism-science-instrument-run-state",
+      "augments": "experiments.instrument",
+      "channels": [],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
       "id": "life-support-greenhouse",
       "augments": "ship-systems.life-support",
       "channels": [],
