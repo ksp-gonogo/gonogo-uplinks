@@ -33,33 +33,30 @@ public class KosHealthTests
     }
 
     [Fact]
-    public void ReportsDegraded_BeforeTheFirstSample()
+    public void ReadsIdleNotDegraded_BeforeTheFirstSample()
     {
         var health = KosHealth.Evaluate(null, sampledOnce: false, cpuCount: -1);
 
-        // Not Healthy: we would be claiming a CPU count we have not
-        // observed. Not Unavailable: kOS registered fine.
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
-        Assert.Contains("waiting for the first processor sample", health.Detail);
+        Assert.Equal(UplinkHealthState.Healthy, health.State);
+        Assert.Contains("idle", health.Detail);
     }
 
     [Fact]
-    public void ReportsDegraded_WhenNoCpuOnTheActiveVessel()
+    public void ReadsIdleNotDegraded_WhenNoCpuOnTheActiveVessel()
     {
         var health = KosHealth.Evaluate(null, sampledOnce: true, cpuCount: 0);
 
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
-        Assert.Contains("no kOS CPU on active vessel", health.Detail);
+        Assert.Equal(UplinkHealthState.Healthy, health.State);
+        Assert.Equal("idle, no kOS CPU on the active vessel", health.Detail);
     }
 
     [Fact]
-    public void TreatsAnUnsetCpuCountAsDegraded_NotHealthy()
+    public void TreatsAnUnsetCpuCountAsIdle_NotACpuCount()
     {
-        // -1 is the "never written" sentinel on the uplink's field. It must
-        // not fall through to Healthy.
         var health = KosHealth.Evaluate(null, sampledOnce: true, cpuCount: -1);
 
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
+        Assert.Equal(UplinkHealthState.Healthy, health.State);
+        Assert.Contains("idle", health.Detail);
     }
 
     [Fact]

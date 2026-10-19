@@ -41,18 +41,12 @@ namespace Gonogo.KosUplink
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, unavailableReason);
             }
-            if (!sampledOnce)
+            if (!sampledOnce || cpuCount <= 0)
             {
-                // Registered fine, but nothing has been observed yet. Not
-                // Healthy (we'd be claiming a CPU count we don't have) and
-                // not Unavailable (kOS is right there).
-                return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kOS installed; waiting for the first processor sample");
-            }
-            if (cpuCount <= 0)
-            {
-                return new UplinkHealth(UplinkHealthState.Degraded,
-                    "no kOS CPU on active vessel");
+                // Nothing to run a script on is the normal state outside a
+                // flight, and on a vessel without a kOS CPU. Not a fault.
+                return new UplinkHealth(UplinkHealthState.Healthy,
+                    "idle, no kOS CPU on the active vessel");
             }
             return new UplinkHealth(UplinkHealthState.Healthy,
                 cpuCount == 1 ? "1 CPU" : cpuCount + " CPUs");
