@@ -25,6 +25,8 @@ vi.mock("@xterm/xterm", async () => {
     await vi.importActual<typeof import("@xterm/headless")>("@xterm/headless");
   class TestTerminal extends headless.Terminal {
     dataHandler?: (data: string) => void;
+    // The headless terminal has no DOM textarea to focus; the component calls this on open.
+    focus() {}
     // biome-ignore lint/suspicious/noExplicitAny: mirroring xterm's option bag
     constructor(options?: any) {
       // Respect the component's chosen cols/rows (its fixed size), only

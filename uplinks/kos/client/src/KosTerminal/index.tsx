@@ -1009,6 +1009,10 @@ function KosTerminalScreen({
       term.open(container);
       termRef.current = term;
 
+      // xterm only hears keys while its own textarea holds focus, so an
+      // editable terminal takes it on open rather than waiting for a click.
+      if (!readOnly) term.focus();
+
       if (readOnly) {
         term.writeln("\x1b[2m[read-only]\x1b[0m");
       }
