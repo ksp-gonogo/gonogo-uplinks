@@ -500,6 +500,38 @@ describe("CameraFeed: camera selection", () => {
       expect(screen.getByRole("status", { name: "Signal lost" })).toBeTruthy();
     });
 
+    it("collapses the other lost cameras into one section that selects them", async () => {
+      await buildConnectedSource(MIXED);
+      renderStatefulFeed({ flightId: 43 });
+
+      fireEvent.click(screen.getByRole("button", { name: /2 signal lost/i }));
+      const lost = screen
+        .getAllByRole("menuitem")
+        .map((item) => item.textContent);
+      expect(lost).toEqual([
+        "Booster Cam 1 (Kerbal X)",
+        "Booster Cam 2 (Kerbal X)",
+      ]);
+
+      fireEvent.click(
+        screen.getByRole("menuitem", { name: /booster cam 2/i }),
+      );
+
+      expect(screen.getByRole("status", { name: "Signal lost" })).toBeTruthy();
+      expect(
+        screen.getByRole("heading", { name: "Booster Cam 2" }),
+      ).toBeTruthy();
+      // The picked one is now the held camera, so only the other stays folded.
+      expect(screen.getByRole("button", { name: /1 signal lost/i })).toBeTruthy();
+    });
+
+    it("shows no lost section when every camera is live", async () => {
+      await buildConnectedSource([MIXED[1], MIXED[2]]);
+      renderFeed({ flightId: 43 });
+
+      expect(screen.queryByRole("button", { name: /signal lost/i })).toBeNull();
+    });
+
     it("still lists lost cameras when no camera is live", async () => {
       await buildConnectedSource([MIXED[0], MIXED[3]]);
       renderFeed({ flightId: null });

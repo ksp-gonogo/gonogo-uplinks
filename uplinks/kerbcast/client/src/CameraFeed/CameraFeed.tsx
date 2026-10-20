@@ -54,6 +54,7 @@ import {
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
   selectableFlightIds,
   withPickerOrder,
@@ -550,6 +551,19 @@ export function CameraFeed({
       <Panel
         panelTitle="Camera Feed"
         panelBadges={qualityBadge ? [qualityBadge] : undefined}
+        panelAside={
+          <LostCameraMenu
+            cameras={cameras.filter(
+              (c) => isPartCamera(c) && !pickerIds.has(c.flightId),
+            )}
+            onSelect={(nextFlightId) =>
+              onConfigChange?.({
+                flightId: nextFlightId,
+                showDebugInfo: config?.showDebugInfo ?? false,
+              })
+            }
+          />
+        }
         sections={
           <Section full fill>
             <div ref={stageRef} style={FEED_STAGE_STYLE}>
