@@ -122,6 +122,12 @@ jobs:
             exit 1
           fi
 
+      # The version uplink.json says the mod was built against is the version of
+      # the mod assembly in the reference set, and of the npm client the Uplink
+      # depends on, because the internal .ckan asks CKAN for exactly that.
+      - name: builtAgainst is the version this Uplink builds against
+        run: node tooling/check-built-against.mjs "${{ inputs.name }}"
+
       # Edits this runner's checkout and nothing that is committed. Before the
       # first restore of either ecosystem, so every later step sees the published
       # packages. The vendored lockfiles go with the file: pins, hence `npm install`.
@@ -221,6 +227,7 @@ jobs:
       - name: Build the release pair
         if: inputs.publish
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" release --out "$GITHUB_WORKSPACE/artifacts"
+
 
       # Rig-only tools that reach their mod by reflection. Nothing packages them,
       # so this build is the only thing that notices when one stops compiling.
