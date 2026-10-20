@@ -435,6 +435,8 @@ namespace Gonogo.KerbalismUplink
              * is true whether or not anyone happens to be watching.
              */
             host.AddSampledSource(CaptureScienceOnMain, HandleScienceOnCourier);
+
+            _science.UseRunActuator(new KerbalismRunActuator(_k, host.Kernel));
         }
 
         /// <summary>

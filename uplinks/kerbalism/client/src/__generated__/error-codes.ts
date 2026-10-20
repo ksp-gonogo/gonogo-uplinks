@@ -18,6 +18,12 @@ export const KerbalismErrorCodes = {
    */
   ContinuousScience: "kerbalism.continuousScience",
   /**
+   * Kerbalism left the experiment as it was: it is broken, its animation is
+   * still moving, the same experiment is running elsewhere on the craft, or its
+   * fairing is still on.
+   */
+  ExperimentNotSwitched: "kerbalism.experimentNotSwitched",
+  /**
    * Kerbalism is not modelling science on this vessel, so there is no file or
    * sample to act on.
    */
@@ -76,6 +82,14 @@ export const KERBALISM_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
     origin: null,
     sentence: "Kerbalism runs and transmits experiments on its own",
     meaning: "Kerbalism runs and transmits experiments continuously on its own, so a one-shot deploy or transmit has nothing to act on.",
+  },
+  {
+    id: "kerbalism.experimentNotSwitched",
+    kind: "refusal",
+    refines: "modeUnavailable",
+    origin: null,
+    sentence: "Kerbalism would not switch the experiment just now",
+    meaning: "Kerbalism left the experiment as it was: it is broken, its animation is still moving, the same experiment is running elsewhere on the craft, or its fairing is still on.",
   },
   {
     id: "kerbalism.scienceNotModelled",

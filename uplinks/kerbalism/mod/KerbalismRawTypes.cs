@@ -414,4 +414,26 @@ namespace Gonogo.KerbalismUplink
         /// <summary>Null when the field could not be read. It defaulted to true, which claimed a sensor was live on the strength of a failed read.</summary>
         public bool? Active;
     }
+
+    /// <summary>What a live attempt to switch a Kerbalism module on or off did.</summary>
+    public enum RunSwitchOutcome
+    {
+        /// <summary>The part, module or Kerbalism type could not be found.</summary>
+        NotFound,
+        /// <summary>Kerbalism refuses to switch an experiment on a craft with no live control source.</summary>
+        NotControllable,
+        /// <summary>The module was left as it was, with no state change and no animation under way.</summary>
+        NotSwitched,
+        /// <summary>The module changed, or is changing: its animation is under way and will set the state when it ends.</summary>
+        Switched,
+        /// <summary>The module was already in the requested state and nothing was called.</summary>
+        AlreadyThere,
+    }
+
+    /// <summary>The outcome of one live switch, and whether the module is switched on once it settles.</summary>
+    public sealed class RunSwitchRaw
+    {
+        public RunSwitchOutcome Outcome;
+        public bool Running;
+    }
 }

@@ -15,6 +15,13 @@ public static class KerbalismErrorCodes
     public static readonly RefusalCode ContinuousScience =
         CommandErrorCode.ModeUnavailable.Refine("kerbalism.continuousScience", "Kerbalism runs and transmits experiments on its own");
 
+    /// <summary>
+    /// Kerbalism left the experiment as it was: it is broken, its animation is still moving,
+    /// the same experiment is running elsewhere on the craft, or its fairing is still on.
+    /// </summary>
+    public static readonly RefusalCode ExperimentNotSwitched =
+        CommandErrorCode.ModeUnavailable.Refine("kerbalism.experimentNotSwitched", "Kerbalism would not switch the experiment just now");
+
     /// <summary>Kerbalism is not modelling science on this vessel, so there is no file or sample to act on.</summary>
     public static readonly RefusalCode ScienceNotModelled =
         CommandErrorCode.ModeUnavailable.Refine("kerbalism.scienceNotModelled", "Kerbalism is not modelling science here");

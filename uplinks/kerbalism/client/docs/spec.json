@@ -1091,14 +1091,6 @@
       "settings": []
     },
     {
-      "id": "kerbalism-science-instrument-run-state",
-      "augments": "experiments.instrument",
-      "channels": [],
-      "requires": "kerbalism",
-      "suppressesVanillaBase": false,
-      "settings": []
-    },
-    {
       "id": "life-support-greenhouse",
       "augments": "ship-systems.life-support",
       "channels": [],
@@ -1246,6 +1238,12 @@
       "refines": "notClearToProceed",
       "sentence": "the crew cannot get out to it yet",
       "meaning": "The kerbal cannot get out to the part: the hatch is inside a fairing, which clears once it is jettisoned."
+    },
+    {
+      "id": "kerbalism.experimentNotSwitched",
+      "refines": "modeUnavailable",
+      "sentence": "Kerbalism would not switch the experiment just now",
+      "meaning": "Kerbalism left the experiment as it was: it is broken, its animation is still moving, the same experiment is running elsewhere on the craft, or its fairing is still on."
     },
     {
       "id": "kerbalism.noDriveSpace",

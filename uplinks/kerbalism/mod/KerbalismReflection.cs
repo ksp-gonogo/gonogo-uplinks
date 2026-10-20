@@ -58,6 +58,12 @@ namespace Gonogo.KerbalismUplink
         private readonly MethodInfo? _driveRecordSample;
         private readonly MethodInfo? _driveSampleCapacityAvailable;
 
+        // ── run switching (science start and stop commands) ─────────────────
+        private readonly MethodInfo? _scansatFindScanner;
+        private readonly MethodInfo? _scansatStartScan;
+        private readonly MethodInfo? _scansatStopScan;
+        private readonly MethodInfo? _scansatIsScanning;
+
         public bool IsAvailable => _asm != null && _apiType != null;
 
         public KerbalismReflection()
@@ -159,6 +165,15 @@ namespace Gonogo.KerbalismUplink
             _driveAnalyze = _driveType?.GetMethod("Analyze", BindingFlags.Public | BindingFlags.Instance);
             _driveRecordSample = _driveType?.GetMethod("Record_sample", BindingFlags.Public | BindingFlags.Instance);
             _driveSampleCapacityAvailable = _driveType?.GetMethod("SampleCapacityAvailable", BindingFlags.Public | BindingFlags.Instance);
+
+            // Kerbalism's own SCANsat bridge: the scanner module has no switch of
+            // its own, it drives SCANsat's startScan and stopScan through these.
+            var scansat = FindType("KERBALISM.SCANsat") ?? FindType("Kerbalism.SCANsat");
+            const BindingFlags publicStatic = BindingFlags.Public | BindingFlags.Static;
+            _scansatFindScanner = scansat?.GetMethod("FindScanner", publicStatic, null, new[] { typeof(Part), typeof(string), typeof(int) }, null);
+            _scansatStartScan = scansat?.GetMethod("StartScan", publicStatic, null, new[] { typeof(PartModule) }, null);
+            _scansatStopScan = scansat?.GetMethod("StopScan", publicStatic, null, new[] { typeof(PartModule) }, null);
+            _scansatIsScanning = scansat?.GetMethod("IsScanning", publicStatic, null, new[] { typeof(PartModule) }, null);
         }
 
         /// <summary>Invoke a public static (Vessel)->double API method (Radiation, Pressure, Comfort, ...).</summary>
@@ -1852,6 +1867,173 @@ namespace Gonogo.KerbalismUplink
         /// <summary>A KERBALISM.Features.* flag, false when absent (see <see cref="Features"/>).</summary>
         private bool Modeled(string feature) =>
             Features().TryGetValue(feature, out var on) && on;
+
+        // ── run switching ───────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Switch one Kerbalism <c>Experiment</c>, or the SCANsat scanner a
+        /// <c>KerbalismScansat</c> module fronts, on or off. Main thread only.
+        ///
+        /// <para>An experiment is switched by its own <c>Toggle()</c>, the call
+        /// behind its part-menu button and its Start and Stop actions. Toggle
+        /// returns quietly without changing anything when the craft is not
+        /// controllable, the experiment is broken, its deploy animation is moving,
+        /// the same experiment already runs elsewhere on the craft or a fairing is
+        /// still on. The first three are checked here so the answer can name them,
+        /// and the rest show as a state that did not change with no animation
+        /// under way. A deploy or retract animation sets the state when it ends, so
+        /// a state that has not changed yet but has an animation under way counts
+        /// as switched.</para>
+        ///
+        /// <para>A scanner is switched through Kerbalism's SCANsat bridge
+        /// (<c>SCANsat.StartScan</c> and <c>StopScan</c>, which call SCANsat's own
+        /// <c>startScan</c> and <c>stopScan</c>). Kerbalism's scanner module has
+        /// no toggle of its own.</para>
+        /// </summary>
+        public RunSwitchRaw SwitchExperiment(Vessel v, string partId, string experimentId, bool run)
+        {
+            var part = FindPart(v, partId);
+            if (part?.Modules == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+
+            foreach (PartModule pm in part.Modules)
+            {
+                if (pm == null) continue;
+                var moduleName = pm.GetType().Name;
+                if (string.Equals(moduleName, "Experiment", StringComparison.Ordinal)
+                    && string.Equals(MemberString(pm, "experiment_id"), experimentId, StringComparison.Ordinal))
+                {
+                    return SwitchExperimentModule(v, pm, run);
+                }
+                if (string.Equals(moduleName, "KerbalismScansat", StringComparison.Ordinal)
+                    && string.Equals(MemberString(pm, "experimentType"), experimentId, StringComparison.Ordinal))
+                {
+                    return SwitchScanner(part, pm, run);
+                }
+            }
+            return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+        }
+
+        private static RunSwitchRaw SwitchExperimentModule(Vessel v, PartModule pm, bool run)
+        {
+            var state = MemberEnumName(pm, "State") ?? MemberEnumName(pm, "RunningState") ?? "";
+            if (state.Length == 0) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+            if (string.Equals(state, "Broken", StringComparison.Ordinal))
+            {
+                return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched, Running = false };
+            }
+
+            var before = ExperimentIsOn(state);
+            if (before == run) return new RunSwitchRaw { Outcome = RunSwitchOutcome.AlreadyThere, Running = before };
+
+            if (!v.IsControllable) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotControllable, Running = before };
+            if (DeployIsMoving(pm)) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched, Running = before };
+
+            var toggle = pm.GetType().GetMethod("Toggle", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(bool) }, null);
+            if (toggle == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+            try { toggle.Invoke(pm, new object[] { false }); }
+            catch { return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched, Running = before }; }
+
+            var after = ExperimentIsOn(MemberEnumName(pm, "State") ?? MemberEnumName(pm, "RunningState") ?? "");
+            if (after != before) return new RunSwitchRaw { Outcome = RunSwitchOutcome.Switched, Running = after };
+
+            // The state is set when an animation ends, so a move that has only
+            // started leaves it where it was. The loop animation keeps playing
+            // while an experiment runs, so it counts only for a stop.
+            var moving = DeployIsMoving(pm) || (!run && AnimatorPlaying(pm, "loopAnimator"));
+            return moving
+                ? new RunSwitchRaw { Outcome = RunSwitchOutcome.Switched, Running = run }
+                : new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched, Running = before };
+        }
+
+        private RunSwitchRaw SwitchScanner(Part part, PartModule pm, bool run)
+        {
+            if (_scansatFindScanner == null || _scansatStartScan == null || _scansatStopScan == null || _scansatIsScanning == null)
+            {
+                return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+            }
+
+            try
+            {
+                var sensorType = Convert.ToInt32(Member(pm, "sensorType") ?? 0, CultureInfo.InvariantCulture);
+                var scanner = _scansatFindScanner.Invoke(null, new object[] { part, MemberString(pm, "experimentType") ?? "", sensorType }) as PartModule;
+                if (scanner == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+
+                var before = _scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? false;
+                if (before == run) return new RunSwitchRaw { Outcome = RunSwitchOutcome.AlreadyThere, Running = before };
+
+                (run ? _scansatStartScan : _scansatStopScan).Invoke(null, new object[] { scanner });
+                var after = _scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? before;
+                return new RunSwitchRaw
+                {
+                    Outcome = after == run ? RunSwitchOutcome.Switched : RunSwitchOutcome.NotSwitched,
+                    Running = after,
+                };
+            }
+            catch
+            {
+                return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched };
+            }
+        }
+
+        /// <summary>
+        /// Switch the <c>Laboratory</c> on the part on or off with its own
+        /// <c>Toggle()</c>, which flips the persisted <c>running</c> flag. Main
+        /// thread only.
+        /// </summary>
+        public RunSwitchRaw SwitchLab(Vessel v, string partId, bool run)
+        {
+            var part = FindPart(v, partId);
+            if (part?.Modules == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+
+            foreach (PartModule pm in part.Modules)
+            {
+                if (pm == null || !string.Equals(pm.GetType().Name, "Laboratory", StringComparison.Ordinal)) continue;
+
+                var before = MemberBool(pm, "running");
+                if (before == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+                if (before == run) return new RunSwitchRaw { Outcome = RunSwitchOutcome.AlreadyThere, Running = run };
+
+                InvokeMethod(pm, "Toggle");
+                var after = MemberBool(pm, "running") ?? before.Value;
+                return new RunSwitchRaw
+                {
+                    Outcome = after == run ? RunSwitchOutcome.Switched : RunSwitchOutcome.NotSwitched,
+                    Running = after,
+                };
+            }
+            return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
+        }
+
+        private static Part? FindPart(Vessel v, string partId)
+        {
+            if (v?.parts == null) return null;
+            foreach (var part in v.parts)
+            {
+                if (part != null && string.Equals(part.flightID.ToString(CultureInfo.InvariantCulture), partId, StringComparison.Ordinal))
+                {
+                    return part;
+                }
+            }
+            return null;
+        }
+
+        private static bool ExperimentIsOn(string state) =>
+            string.Equals(state, "Running", StringComparison.Ordinal) || string.Equals(state, "Forced", StringComparison.Ordinal);
+
+        /// <summary>Whether the experiment's deploy or retract animation, or its animation group's, is mid-move.</summary>
+        private static bool DeployIsMoving(PartModule pm)
+        {
+            if (AnimatorPlaying(pm, "deployAnimator")) return true;
+            var group = Member(pm, "AnimationGroup");
+            var animation = group == null ? null : Member(group, "DeployAnimation");
+            return animation != null && MemberBool(animation, "isPlaying") == true;
+        }
+
+        private static bool AnimatorPlaying(PartModule pm, string field)
+        {
+            var animator = HiddenMember(pm, field);
+            return animator != null && InvokeBoolMethod(animator, "Playing") == true;
+        }
 
         // ── member readers (field-or-property, fail-soft) ──────────────────────
 

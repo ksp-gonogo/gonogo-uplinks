@@ -35,24 +35,30 @@ namespace Gonogo.KerbalismUplink
     /// the channel unborn and silent rather than publishing an empty list (see
     /// <see cref="IScienceBackend"/>).</para>
     /// </summary>
-    public sealed class KerbalismScienceBackend : IScienceBackend
+    public sealed class KerbalismScienceBackend : IScienceBackend, IScienceRunBackend
     {
         /// <summary>
-        /// The latest main-thread capture. Courier-thread-only: written by the
-        /// Uplink's handle-on-Courier half, read by the channel mappers, both on
-        /// that one thread.
+        /// The latest main-thread capture. Written by the Uplink's handle-on-Courier
+        /// half and read by the channel mappers on that thread, and by the command
+        /// handlers on the main thread; a whole-reference swap, so a reader sees
+        /// one capture or the next.
         /// </summary>
-        private ScienceRaw _latest = new ScienceRaw();
+        private volatile ScienceRaw _latest = new ScienceRaw();
+
+        private IKerbalismRunActuator? _runActuator;
 
         public string ProviderId => KerbalismScienceMap.ProviderId;
 
         /// <summary>Hand the tick's main-thread capture over. Called from the Courier thread.</summary>
         public void Stash(ScienceRaw raw) => _latest = raw;
 
+        /// <summary>Supply the live module seam the start and stop commands act through.</summary>
+        public void UseRunActuator(IKerbalismRunActuator actuator) => _runActuator = actuator;
+
         /// <summary>
         /// The latest capture, for the File Manager command handlers'
         /// KSP-free pre-filter (<see cref="KerbalismFileCommandProvider"/>).
-        /// Same Courier-thread-only data as every read method below.
+        /// The same capture every read method below serves.
         ///
         /// <para>Refreshed every tick, because the capture that stashes it is
         /// registered ungated. The channel mappers above would be fine either way,
@@ -72,14 +78,9 @@ namespace Gonogo.KerbalismUplink
         ///
         /// <para>The cost is real and is accepted here: the capture walks every
         /// drive and science module on the vessel, once per tick, whether or not
-        /// anything is watching. The cheaper correct shape is to read the drive
-        /// live at command time on the main thread, which is what this comment
-        /// used to recommend instead of ungating. It is still the better end
-        /// state, and it is not a small change: command handlers run on the
-        /// Courier thread and the host exposes no seam for one to run work on the
-        /// main thread and wait, so it needs a contract addition and an
-        /// asynchronous command path. Until that exists, a per-tick walk is the
-        /// price of a command surface that does not lie about the install.</para>
+        /// anything is watching. Commands do read the live module at the moment
+        /// they run, on the main thread, but resolving which module a command
+        /// means from this capture keeps that step KSP-free and cheap.</para>
         /// </summary>
         public ScienceRaw Latest => _latest;
 
@@ -120,5 +121,78 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public CommandResult TransmitExperiment(ExperimentActionArgs args) =>
             CommandResult.Fail(KerbalismErrorCodes.ContinuousScience);
+
+        /// <summary>
+        /// Switch an experiment or SCANsat scanner on (<c>science.experiment.start</c>).
+        /// Idempotent: an instrument already on answers with no change.
+        /// </summary>
+        public CommandResult StartExperiment(ExperimentActionArgs args) => SwitchExperiment(args, true);
+
+        /// <summary>Switch an experiment or SCANsat scanner off (<c>science.experiment.stop</c>).</summary>
+        public CommandResult StopExperiment(ExperimentActionArgs args) => SwitchExperiment(args, false);
+
+        /// <summary>Switch the part's laboratory on (<c>science.lab.start</c>).</summary>
+        public CommandResult StartLab(ExperimentActionArgs args) => SwitchLab(args, true);
+
+        /// <summary>Switch the part's laboratory off (<c>science.lab.stop</c>).</summary>
+        public CommandResult StopLab(ExperimentActionArgs args) => SwitchLab(args, false);
+
+        private CommandResult SwitchExperiment(ExperimentActionArgs args, bool run)
+        {
+            if (string.IsNullOrEmpty(args.PartId)) return CommandResult.Fail(CommandErrorCode.NotFound);
+            var capture = _latest;
+            if (!capture.Modeled) return CommandResult.Fail(KerbalismErrorCodes.ScienceNotModelled);
+
+            var experimentId = ResolveExperiment(capture, args.PartId, args.ExperimentId);
+            if (experimentId == null) return CommandResult.Fail(CommandErrorCode.NotFound);
+
+            var actuator = _runActuator;
+            if (actuator == null) return CommandResult.Fail(KerbalismErrorCodes.ScienceNotModelled);
+            return actuator.SetExperimentRunning(args.PartId, experimentId, run);
+        }
+
+        private CommandResult SwitchLab(ExperimentActionArgs args, bool run)
+        {
+            if (string.IsNullOrEmpty(args.PartId)) return CommandResult.Fail(CommandErrorCode.NotFound);
+            var capture = _latest;
+            if (!capture.Modeled) return CommandResult.Fail(KerbalismErrorCodes.ScienceNotModelled);
+
+            var found = false;
+            foreach (var lab in capture.Labs)
+            {
+                if (lab.PartId == args.PartId) { found = true; break; }
+            }
+            if (!found) return CommandResult.Fail(CommandErrorCode.NotFound);
+
+            var actuator = _runActuator;
+            if (actuator == null) return CommandResult.Fail(KerbalismErrorCodes.ScienceNotModelled);
+            return actuator.SetLabRunning(args.PartId, run);
+        }
+
+        /// <summary>
+        /// The id of the experiment or scanner a command means: the one named when
+        /// the part carries it, the part's only one when none is named, and null
+        /// when the part carries none or several and none is named.
+        /// </summary>
+        private static string? ResolveExperiment(ScienceRaw capture, string partId, string? experimentId)
+        {
+            string? only = null;
+            var count = 0;
+            foreach (var e in capture.Experiments)
+            {
+                if (e.PartId != partId) continue;
+                if (!string.IsNullOrEmpty(experimentId) && e.ExperimentId == experimentId) return e.ExperimentId;
+                only = e.ExperimentId;
+                count++;
+            }
+            foreach (var s in capture.Scanners)
+            {
+                if (s.PartId != partId) continue;
+                if (!string.IsNullOrEmpty(experimentId) && s.ExperimentId == experimentId) return s.ExperimentId;
+                only = s.ExperimentId;
+                count++;
+            }
+            return string.IsNullOrEmpty(experimentId) && count == 1 ? only : null;
+        }
     }
 }

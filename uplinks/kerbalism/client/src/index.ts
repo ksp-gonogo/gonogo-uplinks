@@ -161,9 +161,6 @@ import "./ResourceOps/processFilters.js";
 // picture only Kerbalism has. ScienceData itself stays in
 // @ksp-gonogo/components; only this augment lives here.
 import "./ScienceFileManager/index.js";
-// Experiments' per-instrument `experiments.instrument` slot: a Kerbalism
-// experiment's run state, which stands in for the one-shot flag it does not have.
-import "./ScienceInstrumentRunState/index.js";
 // VesselCatalog's per-vessel `vessel-catalog.updates` slot: Kerbalism's failed and
 // service-due parts on the active craft's row, with the repair and its kit cost.
 import "./Reliability/index.js";

@@ -126,12 +126,14 @@ namespace Gonogo.KerbalismUplink
         /// per SCANsat map scanner, regardless of whether either currently holds
         /// data, which is stock's contract for this channel too.
         ///
-        /// <para>The projection worth naming: Kerbalism's four-state machine folds
-        /// onto stock's two bools. <c>deployed</c> is "actually producing" (Running
-        /// or Forced with no issue), <c>inoperable</c> is Broken or a depleted
-        /// sample. Both are honest as far as they go, and the state and its reason
-        /// ride the bag for a reader that wants the truth rather than the
-        /// projection.</para>
+        /// <para>Every row is <c>continuous</c> and leaves <c>deployed</c> null: a
+        /// Kerbalism instrument is switched on and off rather than deployed once.
+        /// <c>running</c> is switched on (Running, Forced, Waiting or Issue),
+        /// <c>producing</c> is generating now (Running or Forced), and
+        /// <c>runIssue</c> is Kerbalism's own issue text. A Running experiment
+        /// whose subject is complete reads Waiting: on, and producing nothing.
+        /// <c>inoperable</c> is Broken or a depleted sample, and the state and its
+        /// reason ride the bag.</para>
         ///
         /// <para>The scanners are here because Kerbalism's SCANsat patch deletes the
         /// part's <c>SCANexperiment</c> module and fits <c>KerbalismScansat</c> in its
@@ -147,8 +149,7 @@ namespace Gonogo.KerbalismUplink
             {
                 var depleted = e.TakesSample && e.RemainingSampleMass.HasValue && e.RemainingSampleMass.Value <= 0;
                 var broken = Same(e.RunningState, "Broken") || Same(e.ExpStatus, "Broken");
-                var producing = (Same(e.ExpStatus, "Running") || Same(e.ExpStatus, "Forced"))
-                    && string.IsNullOrEmpty(e.Issue);
+                var running = ExperimentRunning(e);
 
                 list.Add(new InstrumentEntry
                 {
@@ -156,7 +157,13 @@ namespace Gonogo.KerbalismUplink
                     PartName = e.PartName,
                     ExperimentId = Text(e.ExperimentId),
                     Title = Text(e.Title),
-                    Deployed = producing,
+                    Deployed = null,
+                    Continuous = true,
+                    Running = running,
+                    Producing = running == false
+                        ? false
+                        : e.ExpStatus.Length == 0 ? (bool?)null : Same(e.ExpStatus, "Running") || Same(e.ExpStatus, "Forced"),
+                    RunIssue = running == true ? Text(e.Issue) : null,
                     Inoperable = broken || depleted,
                     // NULL, not false: repeat-running falls out of Kerbalism's state
                     // machine rather than being a cfg flag, so there is no fact here
@@ -190,10 +197,11 @@ namespace Gonogo.KerbalismUplink
                 // Older Kerbalism builds keep no scanning flag, and a false there
                 // would report every healthy scanner as stopped, so an unknown stays
                 // unknown unless the vessel-level cut-out settles it.
-                bool? producing;
-                if (s.Scanning.HasValue) producing = s.Scanning.Value && string.IsNullOrEmpty(s.Issue);
-                else if (s.PowerDisabled == true) producing = false;
-                else producing = null;
+                bool? scanning;
+                if (s.Scanning.HasValue) scanning = s.Scanning.Value;
+                else if (s.PowerDisabled == true) scanning = false;
+                else scanning = null;
+                var producing = scanning == true ? string.IsNullOrEmpty(s.Issue) : scanning;
 
                 list.Add(new InstrumentEntry
                 {
@@ -204,7 +212,11 @@ namespace Gonogo.KerbalismUplink
                     // SCANexperiment and never carries SCANsat's friendly name, and
                     // inventing one here would put a second vocabulary on the wire.
                     Title = null,
-                    Deployed = producing,
+                    Deployed = null,
+                    Continuous = true,
+                    Running = scanning,
+                    Producing = producing,
+                    RunIssue = scanning == true ? Text(s.Issue) : null,
                     // A map scanner is never spent and Kerbalism gives it no broken
                     // state, so there is a fact here and it is false.
                     Inoperable = false,
@@ -290,6 +302,11 @@ namespace Gonogo.KerbalismUplink
                     IsOperational = l.Status.Length == 0
                         ? (bool?)null
                         : !Same(l.Status, "DISABLED"),
+                    Running = LabRunning(l),
+                    Producing = LabRunning(l) == false ? false : l.Status.Length == 0 ? (bool?)null : Same(l.Status, "RUNNING"),
+                    RunIssue = LabRunning(l) == true && l.Status.Length > 0 && !Same(l.Status, "RUNNING")
+                        ? LabIssue(l.Status)
+                        : null,
                     ValueModel = ValueModel,
                     Extensions = new Dictionary<string, object?>
                     {
@@ -303,6 +320,39 @@ namespace Gonogo.KerbalismUplink
                 });
             }
             return list;
+        }
+
+        /// <summary>
+        /// Whether an experiment is switched on, off the derived status when it
+        /// was read and the simulated state when it was not. A Broken one is off.
+        /// Null when neither could be read.
+        /// </summary>
+        private static bool? ExperimentRunning(ScienceExperimentRaw e)
+        {
+            var state = e.ExpStatus.Length > 0 ? e.ExpStatus : e.RunningState;
+            if (state.Length == 0) return null;
+            return Same(state, "Running") || Same(state, "Forced") || Same(state, "Waiting") || Same(state, "Issue");
+        }
+
+        /// <summary>
+        /// Whether the lab is switched on: its own flag when that was read,
+        /// otherwise the status word, where anything but DISABLED means on.
+        /// </summary>
+        private static bool? LabRunning(ScienceLabRaw l)
+        {
+            if (l.Running.HasValue) return l.Running;
+            if (l.Status.Length == 0) return null;
+            return !Same(l.Status, "DISABLED");
+        }
+
+        /// <summary>Kerbalism's lab status word as the sentence it would say, for the states that mean it is on and idle.</summary>
+        private static string LabIssue(string status)
+        {
+            if (Same(status, "NO_EC")) return "no electric charge";
+            if (Same(status, "NO_STORAGE")) return "no storage space";
+            if (Same(status, "NO_SAMPLE")) return "no sample to analyse";
+            if (Same(status, "NO_RESEARCHER")) return "no researcher aboard";
+            return status;
         }
 
         /// <summary>

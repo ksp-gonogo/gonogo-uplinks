@@ -10,7 +10,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `1.0.0-rc.3` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 45.0, extension API 6.0.0 |
+| Built against | contract 45.1, extension API 6.0.0 |
 
 ## Install
 
@@ -114,14 +114,11 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
-| `kerbalism-science-instrument-run-state` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
-
-![Seven experiments on one Stayputnik, each with its run state and none called one-shot](client/docs/assets/seven-experiments-on-one-part--default.png)
 
 ![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
 
@@ -163,6 +160,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
 | `kerbalism.continuousScience` | `modeUnavailable` | Kerbalism runs and transmits experiments on its own | Kerbalism runs and transmits experiments continuously on its own, so a one-shot deploy or transmit has nothing to act on. |
+| `kerbalism.experimentNotSwitched` | `modeUnavailable` | Kerbalism would not switch the experiment just now | Kerbalism left the experiment as it was: it is broken, its animation is still moving, the same experiment is running elsewhere on the craft, or its fairing is still on. |
 | `kerbalism.scienceNotModelled` | `modeUnavailable` | Kerbalism is not modelling science here | Kerbalism is not modelling science on this vessel, so there is no file or sample to act on. |
 | `kerbalism.noDriveSpace` | `limitReached` | no drive beside a lab has room for the whole sample | No drive beside a lab, other than the one holding it, has room for the whole sample. |
 | `kerbalism.driveRefused` | `modeUnavailable` | the Kerbalism drive did not make the change | A Kerbalism drive was asked to change a file or sample and reported that it had not. |

@@ -17,7 +17,7 @@ namespace GonogoKerbalismUplink.Tests
         {
             var codes = ErrorCodeCatalog.Of(typeof(KerbalismErrorCodes));
 
-            Assert.Equal(10, codes.Count);
+            Assert.Equal(11, codes.Count);
             Assert.All(codes, code =>
             {
                 Assert.False(code.IsRoot, code.Id);

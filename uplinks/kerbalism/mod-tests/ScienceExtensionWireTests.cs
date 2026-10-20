@@ -288,23 +288,24 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
-        /// Kerbalism's four-state machine projected onto stock's two bools, both
-        /// directions of the interesting case: an experiment with an issue is not
-        /// "deployed" even though its state says Running, and a depleted-sample
-        /// experiment is "inoperable" the way a spent stock experiment is. The
-        /// unprojected truth is in the namespace alongside.
+        /// Kerbalism's state machine projected onto the shared run fields, both
+        /// directions of the interesting case: an experiment with an issue is running
+        /// and not producing, and a depleted-sample experiment is "inoperable" the
+        /// way a spent stock experiment is. The unprojected truth is in the
+        /// namespace alongside.
         /// </summary>
         [Fact]
-        public void TheStateMachineProjectsOntoStocksTwoBoolsAndKeepsTheTruthInTheBag()
+        public void TheStateMachineProjectsOntoTheRunFieldsAndKeepsTheTruthInTheBag()
         {
             var json = Write("science.instruments", KerbalismScienceMap.Instruments(Raw()));
 
-            // Entry 1: Running but blocked -> not producing, and the reason survives.
-            Assert.Contains("\"deployed\":false", json);
+            // Entry 1: switched on but blocked -> running, not producing, and the
+            // reason survives as both Kerbalism's own text and the shared runIssue.
+            Assert.Contains("\"continuous\":true,\"running\":true,\"producing\":false,\"runIssue\":\"no storage\"", json);
             Assert.Contains("\"issue\":\"no storage\"", json);
             Assert.Contains("\"expStatus\":\"Issue\"", json);
             // Entry 2: running cleanly, but its finite sample is spent.
-            Assert.Contains("\"deployed\":true", json);
+            Assert.Contains("\"continuous\":true,\"running\":true,\"producing\":true,\"runIssue\":null", json);
             Assert.Contains("\"inoperable\":true", json);
             Assert.Contains("\"remainingSampleMass\":0", json);
             // Kerbalism results never sit in the instrument, so nothing is
@@ -335,20 +336,24 @@ namespace GonogoKerbalismUplink.Tests
 
         /// <summary>
         /// A scanner is never spent, so <c>inoperable</c> is a known false rather
-        /// than the null an unanswerable question gets, and <c>deployed</c> follows
-        /// scanning-with-nothing-in-the-way. Asserted through the parsed payload
+        /// than the null an unanswerable question gets, and <c>running</c> follows
+        /// whether SCANsat is sweeping. Asserted through the parsed payload
         /// because both scanners' rows share a substring shape and a
         /// <c>Contains</c> could pass on the wrong one.
         /// </summary>
         [Fact]
-        public void AStoppedScannerIsNotDeployedAndNeitherScannerIsInoperable()
+        public void AStoppedScannerIsNotRunningAndNeitherScannerIsInoperable()
         {
             var rows = KerbalismScienceMap.Instruments(Raw())!;
             var scanning = Row(rows, "500");
             var stopped = Row(rows, "501");
 
-            Assert.Equal(true, scanning.Deployed);
-            Assert.Equal(false, stopped.Deployed);
+            Assert.Equal(true, scanning.Running);
+            Assert.Equal(true, scanning.Producing);
+            Assert.Equal(false, stopped.Running);
+            Assert.Equal(false, stopped.Producing);
+            Assert.Null(scanning.Deployed);
+            Assert.Null(stopped.Deployed);
             Assert.Equal(false, scanning.Inoperable);
             Assert.Equal(false, stopped.Inoperable);
             // No SCANsat vocabulary is invented for a name Kerbalism does not carry.
@@ -402,7 +407,7 @@ namespace GonogoKerbalismUplink.Tests
         /// <summary>
         /// The build that actually ships in KerbalismModularScience keeps no scanning
         /// flag on the scanner module, so <c>scanning</c> arrives null. A false
-        /// <c>deployed</c> would then report every healthy scanner on the vessel as
+        /// <c>running</c> would then report every healthy scanner on the vessel as
         /// stopped, which is worse than saying nothing: unknown stays unknown, and
         /// only the vessel-level EC cut-out can settle it.
         /// </summary>
@@ -432,9 +437,10 @@ namespace GonogoKerbalismUplink.Tests
             };
             var rows = KerbalismScienceMap.Instruments(raw)!;
 
-            Assert.Null(Row(rows, "600").Deployed);
+            Assert.Null(Row(rows, "600").Running);
+            Assert.Null(Row(rows, "600").Producing);
             // Cut for power IS an answer, even without a scanning flag.
-            Assert.Equal(false, Row(rows, "601").Deployed);
+            Assert.Equal(false, Row(rows, "601").Running);
             // Coverage still comes through: it is persisted on both generations.
             Assert.Equal(12.0, Ext(Row(rows, "600"))["bodyCoveragePercent"]);
         }
