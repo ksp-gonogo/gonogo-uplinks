@@ -291,7 +291,7 @@ describe("LibrationPoints: the craft's offset", () => {
 describe("LibrationPoints: the pair control has an action", () => {
   function press(): void {
     act(() => {
-      dispatchAction("lp", "cyclePair", { kind: "button", value: true });
+      dispatchAction("lp", "cycle-pair", { kind: "button", value: true });
     });
   }
 
@@ -320,7 +320,7 @@ describe("LibrationPoints: the pair control has an action", () => {
     const { view } = mount({ pair: "Kerbin" }, 0);
     await svgOf(view);
     act(() => {
-      dispatchAction("lp", "cyclePair", { kind: "button", value: false });
+      dispatchAction("lp", "cycle-pair", { kind: "button", value: false });
     });
     expect(
       (view.container.querySelector("select") as HTMLSelectElement).value,

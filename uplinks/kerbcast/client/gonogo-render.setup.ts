@@ -131,9 +131,9 @@ function holdThenReleaseStick(): void {
   document
     .querySelector<HTMLElement>('[role="slider"][aria-label="Yaw"]')
     ?.focus();
-  dispatchAction(PROBE_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+  dispatchAction(PROBE_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
   stickReleaseTimer = setTimeout(() => {
-    dispatchAction(PROBE_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+    dispatchAction(PROBE_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 0 });
   }, STICK_HOLD_MS);
 }
 

@@ -1056,6 +1056,7 @@ function SpaceWeatherComponent({
    * value-bearing arms are read. Written out rather than taken from a hook
    * because the hook the app uses for this is app-side.
    */
+  // gonogo:reads trackingStation.bodies
   const factsReading = useProcessor(CELESTIAL_FACTS);
   const facts =
     factsReading?.state === "observed" || factsReading?.state === "held"

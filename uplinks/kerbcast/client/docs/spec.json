@@ -181,32 +181,32 @@
       "fields": [],
       "actions": [
         {
-          "id": "nextCamera",
+          "id": "next-camera",
           "label": "Next camera",
           "description": "Switch to the next available camera, persisting the choice to the widget config (wraps round at the end of the list)."
         },
         {
-          "id": "prevCamera",
+          "id": "prev-camera",
           "label": "Previous camera",
           "description": "Switch to the previous available camera (wraps round)."
         },
         {
-          "id": "zoomIn",
+          "id": "zoom-in",
           "label": "Zoom in",
           "description": "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit."
         },
         {
-          "id": "zoomOut",
+          "id": "zoom-out",
           "label": "Zoom out",
           "description": "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit."
         },
         {
-          "id": "panYaw",
+          "id": "pan-yaw",
           "label": "Pan yaw axis",
           "description": "Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit."
         },
         {
-          "id": "panPitch",
+          "id": "pan-pitch",
           "label": "Pan pitch axis",
           "description": "Analog pitch rate, -1..1. Positive = up. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged pitch wheel at up to 30 degrees per second, clamped to the camera's pitch envelope, and sends nothing until the commit. A camera with no pitch envelope does not move either way."
         }

@@ -23,7 +23,7 @@
       "fields": [],
       "actions": [
         {
-          "id": "cyclePair",
+          "id": "cycle-pair",
           "label": "Cycle Pair",
           "description": "Step to the next body pair, with Auto in the cycle."
         }

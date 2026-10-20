@@ -17,7 +17,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
-import { FakeKosUplink } from "../dataSource/__fixtures__/FakeKosUplink.js";
+import { FakeKosUplink } from "../test/FakeKosUplink.js";
 import { kosSource } from "../dataSource/kos.js";
 import { KosScriptTriggerComponent } from "./index.js";
 

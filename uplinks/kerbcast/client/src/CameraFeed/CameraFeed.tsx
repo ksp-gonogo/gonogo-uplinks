@@ -142,41 +142,41 @@ declare module "@ksp-gonogo/sitrep-sdk" {
 /** Component actions exposed to the serial-input platform. */
 export const cameraFeedActions = [
   {
-    id: "nextCamera",
+    id: "next-camera",
     label: "Next camera",
     accepts: ["button"],
     description:
       "Switch to the next available camera, persisting the choice to the widget config (wraps round at the end of the list).",
   },
   {
-    id: "prevCamera",
+    id: "prev-camera",
     label: "Previous camera",
     accepts: ["button"],
     description: "Switch to the previous available camera (wraps round).",
   },
   {
-    id: "zoomIn",
+    id: "zoom-in",
     label: "Zoom in",
     accepts: ["button"],
     description:
       "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
-    id: "zoomOut",
+    id: "zoom-out",
     label: "Zoom out",
     accepts: ["button"],
     description:
       "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
-    id: "panYaw",
+    id: "pan-yaw",
     label: "Pan yaw axis",
     accepts: ["analog"],
     description:
       "Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit.",
   },
   {
-    id: "panPitch",
+    id: "pan-pitch",
     label: "Pan pitch axis",
     accepts: ["analog"],
     description:
@@ -320,15 +320,15 @@ export function CameraFeed({
   // other side, so nothing moves again until the operator moves the input.
   const staged = controlMode !== "live";
   useActionInput<CameraFeedActions>({
-    nextCamera: (payload) => {
+    "next-camera": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return;
       feedRef.current?.stepCamera(1);
     },
-    prevCamera: (payload) => {
+    "prev-camera": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return;
       feedRef.current?.stepCamera(-1);
     },
-    zoomIn: (payload) => {
+    "zoom-in": (payload) => {
       if (payload.kind !== "button") return;
       // A press zooms IN, which is FoV going DOWN, so the draft's fov rate is
       // the negative of the live zoom rate rather than the same number.
@@ -336,19 +336,19 @@ export function CameraFeed({
       if (staged) setpointRef.current?.setAxisRate("fov", held ? -1 : 0);
       else feedRef.current?.setZoomRate(held ? 1 : 0);
     },
-    zoomOut: (payload) => {
+    "zoom-out": (payload) => {
       if (payload.kind !== "button") return;
       const held = payload.value === true;
       if (staged) setpointRef.current?.setAxisRate("fov", held ? 1 : 0);
       else feedRef.current?.setZoomRate(held ? -1 : 0);
     },
-    panYaw: (payload) => {
+    "pan-yaw": (payload) => {
       if (payload.kind !== "analog") return;
       const rate = payload.value as number;
       if (staged) setpointRef.current?.setAxisRate("yaw", rate);
       else feedRef.current?.setPanAxis("yaw", rate);
     },
-    panPitch: (payload) => {
+    "pan-pitch": (payload) => {
       if (payload.kind !== "analog") return;
       const rate = payload.value as number;
       // No pitch guard on the staged branch: a camera that cannot pitch reports

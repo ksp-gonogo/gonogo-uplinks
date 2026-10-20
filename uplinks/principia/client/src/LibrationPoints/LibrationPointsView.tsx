@@ -82,6 +82,7 @@ export function LibrationPointsComponent({
   config,
   id,
 }: Readonly<ComponentProps<LibrationPointsConfig>>) {
+  // gonogo:reads trackingStation.bodies
   const catalogue = useProcessor(CELESTIAL_FACTS);
   const poses = useSystemInstant();
   const facts =
@@ -120,7 +121,7 @@ export function LibrationPointsComponent({
   const chosenIsMissing = chosen !== AUTO_PAIR && chosenIndex === null;
 
   useActionInput<LibrationPointsActions>({
-    cyclePair: (payload) => {
+    "cycle-pair": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return undefined;
       const order = [
         AUTO_PAIR,

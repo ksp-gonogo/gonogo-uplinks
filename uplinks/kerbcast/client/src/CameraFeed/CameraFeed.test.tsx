@@ -11,7 +11,7 @@ import {
  *  - the "SIGNAL LOST" overlay + zoom / pan / resize / CommNet feedback
  *    controls (carried over from the original kerbcast smoke);
  *  - the camera-selection layer (picker, Next/Previous buttons, the
- *    `nextCamera` / `prevCamera` serial-input actions, status indicator
+ *    `next-camera` / `prev-camera` serial-input actions, status indicator
  *    and empty state) that mirrors the OCISLY `CameraFeed`.
  *
  * Everything drives the real `KerbcastDataSource` + real `useKerbcastCameras`
@@ -565,7 +565,7 @@ describe("CameraFeed: camera selection", () => {
     expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
   });
 
-  it("nextCamera / prevCamera serial actions switch cameras", async () => {
+  it("next-camera / prev-camera serial actions switch cameras", async () => {
     await buildConnectedSource(TWO_CAMERAS);
 
     renderStatefulFeed({ flightId: 42 });
@@ -573,7 +573,7 @@ describe("CameraFeed: camera selection", () => {
     // Fire the serial-input action straight through the dispatcher, the same
     // path InputDispatcher uses for a mapped hardware button.
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "nextCamera", {
+      dispatchAction(TEST_INSTANCE_ID, "next-camera", {
         kind: "button",
         value: true,
       });
@@ -581,7 +581,7 @@ describe("CameraFeed: camera selection", () => {
     expect(screen.getByRole("heading", { name: "Nose Cam" })).toBeTruthy();
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "prevCamera", {
+      dispatchAction(TEST_INSTANCE_ID, "prev-camera", {
         kind: "button",
         value: true,
       });
@@ -595,7 +595,7 @@ describe("CameraFeed: camera selection", () => {
     renderStatefulFeed({ flightId: 42 });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "nextCamera", {
+      dispatchAction(TEST_INSTANCE_ID, "next-camera", {
         kind: "button",
         value: false,
       });
@@ -784,7 +784,7 @@ describe("CameraFeed: empty state and status", () => {
 const LIVE_DELAY_S = 0.2;
 
 describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
-  it("zoomIn serial action holds a +1 zoom rate, releases to 0", async () => {
+  it("zoom-in serial action holds a +1 zoom rate, releases to 0", async () => {
     const { sidecar } = await buildConnectedSource();
 
     await act(async () => {
@@ -799,7 +799,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
 
     // Press: +rate = zoom in (FoV decreases). The plugin integrates per frame.
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomIn", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", {
         kind: "button",
         value: true,
       });
@@ -811,7 +811,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
 
     // Release: stop zooming.
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomIn", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", {
         kind: "button",
         value: false,
       });
@@ -819,7 +819,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     expect(sidecar.lastCommand("set-zoom-rate")?.content.rate).toBe(0);
   });
 
-  it("zoomOut serial action holds a -1 zoom rate, releases to 0", async () => {
+  it("zoom-out serial action holds a -1 zoom rate, releases to 0", async () => {
     const { sidecar } = await buildConnectedSource();
 
     await act(async () => {
@@ -833,7 +833,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomOut", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-out", {
         kind: "button",
         value: true,
       });
@@ -844,7 +844,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomOut", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-out", {
         kind: "button",
         value: false,
       });
@@ -863,7 +863,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomIn", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", {
         kind: "button",
         value: true,
       });
@@ -872,7 +872,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     expect(sidecar.lastCommand("set-zoom-rate")).toBeUndefined();
   });
 
-  it("panYaw serial action sends a set-pan-rate on the yaw axis", async () => {
+  it("pan-yaw serial action sends a set-pan-rate on the yaw axis", async () => {
     const { sidecar } = await buildConnectedSource();
 
     // Enable pan with a non-zero pitch range so supportsPitch is true and the
@@ -894,7 +894,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", {
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", {
         kind: "analog",
         value: 0.5,
       });
@@ -907,7 +907,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
   });
 
-  it("panPitch serial action sends a set-pan-rate on the pitch axis", async () => {
+  it("pan-pitch serial action sends a set-pan-rate on the pitch axis", async () => {
     const { sidecar } = await buildConnectedSource();
 
     await act(async () => {
@@ -927,7 +927,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "panPitch", {
+      dispatchAction(TEST_INSTANCE_ID, "pan-pitch", {
         kind: "analog",
         value: 0.5,
       });
@@ -951,7 +951,7 @@ describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
     });
 
     await act(async () => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
     });
 
     expect(sidecar.lastCommand("set-pan-rate")).toBeUndefined();
@@ -1011,7 +1011,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     expect(wheelValue(/yaw/i)).toBe(STEERABLE.panYaw);
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
     });
     await heldFor(600);
     const moved = wheelValue(/yaw/i);
@@ -1025,12 +1025,12 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     await stagedFeed();
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: -1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: -1 });
     });
     await heldFor(600);
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 0 });
     });
     const atRelease = wheelValue(/yaw/i);
     await heldFor(3000);
@@ -1042,7 +1042,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     const { sidecar } = await stagedFeed();
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
     });
     await heldFor(2000);
 
@@ -1058,7 +1058,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     const before = wheelValue(/field of view/i);
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomIn", { kind: "button", value: true });
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", { kind: "button", value: true });
     });
     await heldFor(600);
 
@@ -1071,7 +1071,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     const before = wheelValue(/field of view/i);
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "zoomOut", {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-out", {
         kind: "button",
         value: true,
       });
@@ -1086,8 +1086,8 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     await stagedFeed();
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
-      dispatchAction(TEST_INSTANCE_ID, "panPitch", {
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-pitch", {
         kind: "analog",
         value: 1,
       });
@@ -1099,7 +1099,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     expect(pitchHeld).toBeGreaterThan(STEERABLE.panPitch as number);
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 0 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 0 });
     });
     await heldFor(600);
 
@@ -1119,7 +1119,7 @@ describe("CameraFeed -- serial-action dispatch, staged link", () => {
     await screen.findByRole("slider", { name: /yaw/i });
 
     act(() => {
-      dispatchAction(TEST_INSTANCE_ID, "panYaw", { kind: "analog", value: 1 });
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 1 });
     });
     await heldFor(600);
 

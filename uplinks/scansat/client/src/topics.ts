@@ -98,9 +98,11 @@ export const SCANSAT_DYNAMIC_PREFIXES = [
   "scansat.anomalies.",
 ] as const;
 
-for (const prefix of SCANSAT_DYNAMIC_PREFIXES) {
-  registerDynamicTopicPrefix(prefix);
-}
+registerDynamicTopicPrefix("scansat.coverage.");
+registerDynamicTopicPrefix("scansat.mask.");
+registerDynamicTopicPrefix("scansat.height.");
+registerDynamicTopicPrefix("scansat.biome.");
+registerDynamicTopicPrefix("scansat.anomalies.");
 
 // The runtime half. ScanningVesselEntry/ScanScienceEntry live in THIS Uplink's
 // contract slice, so the SDK's own generated unit map knows nothing about them

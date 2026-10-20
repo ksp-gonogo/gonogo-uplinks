@@ -36,6 +36,7 @@
 import {
   type TopicPayload,
   registerUplinkTopic,
+  registerDynamicTopicPrefix,
   registerCollectionTopic,
   registerEnumMembers,
   registerTopicUnits,
@@ -69,6 +70,9 @@ declare module "@ksp-gonogo/sitrep-sdk" {
 }
 
 registerUplinkTopic(KOS_PROCESSORS_TOPIC);
+
+// One terminal channel per CPU; matches `KosChannels.TerminalPrefix` in the mod.
+registerDynamicTopicPrefix("kos.terminal.");
 
 // The unit map below describes one CPU, not the list, so a field path under
 // `kos.processors` names no value of the Topic's own.

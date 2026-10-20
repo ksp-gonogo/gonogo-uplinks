@@ -14,7 +14,7 @@ export const AUTO_PAIR = "auto";
 
 export const librationPointsActions = [
   {
-    id: "cyclePair",
+    id: "cycle-pair",
     label: "Cycle Pair",
     accepts: ["button"],
     description: "Step to the next body pair, with Auto in the cycle.",

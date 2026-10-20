@@ -78,7 +78,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | Widget id | `libration-points` |
 | Reads | `trackingStation.bodies` |
 | Also reads, if the mod publishes them | `vessel.orbit`, `vessel.identity` |
-| Actions an input can be bound to | Cycle Pair (`cyclePair`): Step to the next body pair, with Auto in the cycle |
+| Actions an input can be bound to | Cycle Pair (`cycle-pair`): Step to the next body pair, with Auto in the cycle |
 | Default size, in grid units | 6 × 10 |
 | Smallest size, in grid units | 4 × 7 |
 | Scenes | 11 |
