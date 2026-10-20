@@ -28,7 +28,7 @@ namespace Gonogo.KerbalismUplink
         private const string CrewTopic = "kerbalism.crew";
         private const string ProfileTopic = "kerbalism.profile";
         private const string ReliabilityTopic = "kerbalism.reliability";
-        private const string ReliabilityPartsTopic = KerbalismCommandCatalog.ReliabilityPartsTopic;
+        private const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
 
         private readonly KerbalismReflection _k = new();
 
