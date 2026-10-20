@@ -228,6 +228,11 @@ jobs:
         if: inputs.publish
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" release --out "$GITHUB_WORKSPACE/artifacts"
 
+      # CKAN reads this file out of the SpaceDock archive and adds its `depends`
+      # to the listing, so the mod version an Uplink needs travels with the zip.
+      - name: Write the internal .ckan into the mod zip
+        if: inputs.publish && inputs.mod_csproj != ''
+        run: node tooling/internal-ckan.mjs "${{ inputs.name }}" --zip "$(ls "$GITHUB_WORKSPACE"/artifacts/*.zip | head -1)"
 
       # Rig-only tools that reach their mod by reflection. Nothing packages them,
       # so this build is the only thing that notices when one stops compiling.
