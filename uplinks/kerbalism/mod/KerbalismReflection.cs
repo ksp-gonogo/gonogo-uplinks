@@ -20,80 +20,59 @@ namespace Gonogo.KerbalismUplink
     /// </summary>
     public sealed class KerbalismReflection
     {
-        private Assembly? _asm;
-        private Type? _apiType;
-        private Type? _featuresType;
-        private Type? _dbType;
-        private Type? _profileType;
-        private Type? _reliabilityInfoType;
-        private Type? _stormType;
-        private Type? _modifiersType;
-        private Type? _prefsRadiationType;
-        private Type? _prefsReliabilityType;
-        private Type? _resourceCacheType;
-        private Type? _ruleType;
-        private MethodInfo? _ruleVariance;
-        private MethodInfo? _dbKerbal;
-        private MethodInfo? _buildReliabilityList;
-        private MethodInfo? _dbStorm;
-        private MethodInfo? _stormKeyMethod;
-        private MethodInfo? _isInterplanetaryBody;
-        private MethodInfo? _dbKerbalismData;
-        private MethodInfo? _getStormDataForStar;
-        private MethodInfo? _resourceCacheGet;
-        private MethodInfo? _modifiersEvaluate;
-        private PropertyInfo? _prefsRadiationInstanceProp;
-        private PropertyInfo? _stormEjectionSpeedProp;
+        private readonly Assembly? _asm;
+        private readonly Type? _apiType;
+        private readonly Type? _featuresType;
+        private readonly Type? _dbType;
+        private readonly Type? _profileType;
+        private readonly Type? _reliabilityInfoType;
+        private readonly Type? _stormType;
+        private readonly Type? _modifiersType;
+        private readonly Type? _prefsRadiationType;
+        private readonly Type? _prefsReliabilityType;
+        private readonly Type? _resourceCacheType;
+        private readonly Type? _ruleType;
+        private readonly MethodInfo? _ruleVariance;
+        private readonly MethodInfo? _dbKerbal;
+        private readonly MethodInfo? _buildReliabilityList;
+        private readonly MethodInfo? _dbStorm;
+        private readonly MethodInfo? _stormKeyMethod;
+        private readonly MethodInfo? _isInterplanetaryBody;
+        private readonly MethodInfo? _dbKerbalismData;
+        private readonly MethodInfo? _getStormDataForStar;
+        private readonly MethodInfo? _resourceCacheGet;
+        private readonly MethodInfo? _modifiersEvaluate;
+        private readonly PropertyInfo? _prefsRadiationInstanceProp;
+        private readonly PropertyInfo? _stormEjectionSpeedProp;
         private readonly Dictionary<string, MethodInfo> _apiVessel = new();
         private readonly Dictionary<string, MethodInfo> _apiVesselString = new();
 
         // ── drive actuation (File Manager commands) ─────────────────────────
-        private Type? _driveType;
-        private Type? _scienceDbType;
-        private MethodInfo? _getSubjectDataFromStockId;
-        private MethodInfo? _driveSend;
-        private MethodInfo? _driveDeleteFile;
-        private MethodInfo? _driveDeleteSample;
-        private MethodInfo? _driveAnalyze;
-        private MethodInfo? _driveRecordSample;
-        private MethodInfo? _driveSampleCapacityAvailable;
+        private readonly Type? _driveType;
+        private readonly Type? _scienceDbType;
+        private readonly MethodInfo? _getSubjectDataFromStockId;
+        private readonly MethodInfo? _driveSend;
+        private readonly MethodInfo? _driveDeleteFile;
+        private readonly MethodInfo? _driveDeleteSample;
+        private readonly MethodInfo? _driveAnalyze;
+        private readonly MethodInfo? _driveRecordSample;
+        private readonly MethodInfo? _driveSampleCapacityAvailable;
 
         // ── run switching (science start and stop commands) ─────────────────
-        private MethodInfo? _scansatFindScanner;
-        private MethodInfo? _scansatStartScan;
-        private MethodInfo? _scansatStopScan;
-        private MethodInfo? _scansatIsScanning;
+        private readonly MethodInfo? _scansatFindScanner;
+        private readonly MethodInfo? _scansatStartScan;
+        private readonly MethodInfo? _scansatStopScan;
+        private readonly MethodInfo? _scansatIsScanning;
 
-        private readonly KerbalismAssemblyLocator _locator = new(() => AppDomain.CurrentDomain.GetAssemblies());
+        public bool IsAvailable => _asm != null && _apiType != null;
 
-        /// <summary>
-        /// True once Kerbalism's assembly is loaded and its API type resolved. Asks
-        /// again on each call until it is, because a bootstrap-loaded Kerbalism
-        /// appears after the plugin is constructed; a moved or missing Kerbalism
-        /// stays false.
-        /// </summary>
-        public bool IsAvailable
+        public KerbalismReflection()
         {
-            get
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (_asm == null)
-                {
-                    var found = _locator.Probe();
-                    if (found != null)
-                    {
-                        try { Bind(found); } catch { _asm = null; }
-                    }
-                }
-                return _asm != null && _apiType != null;
+                var n = a.GetName().Name;
+                if (string.Equals(n, "Kerbalism", StringComparison.OrdinalIgnoreCase)) { _asm = a; break; }
             }
-        }
-
-        /// <summary>Caches every reflection handle against the found assembly.</summary>
-        private void Bind(Assembly asm)
-        {
-            _asm = asm;
-            _apiVessel.Clear();
-            _apiVesselString.Clear();
 
             _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
             _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");

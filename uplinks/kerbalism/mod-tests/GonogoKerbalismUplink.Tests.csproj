@@ -32,8 +32,6 @@
        GonogoScansatUplink.Tests / GonogoRealAntennasUplink.Tests use). -->
   <ItemGroup>
     <Compile Include="..\mod\KerbalismRawTypes.cs" />
-    <!-- Pure assembly probe, so late bootstrap loading is checkable without Unity types. -->
-    <Compile Include="..\mod\KerbalismAssemblyLocator.cs" />
     <Compile Include="..\mod\KerbalismCapture.cs" />
     <!-- The per-craft subscription gate for the kerbalism.vessel.<guid> fleet
          namespace: KSP-free on purpose, because reading every craft in the save
