@@ -9,7 +9,7 @@ Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto 
 | --- | --- |
 | Uplink id | `scansat` |
 | Version | `1.0.0-rc.2` |
-| Wraps | SCANsat 20.4 (ckan) |
+| Wraps | SCANsat 21.1 (ckan) |
 | Built against | contract 45.1, extension API 6.0.0 |
 
 ## Install

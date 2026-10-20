@@ -10,7 +10,7 @@
     "name": "SCANsat",
     "tier": "ckan",
     "ckan": "SCANsat",
-    "builtAgainst": "20.4",
+    "builtAgainst": "21.1",
     "assembly": "SCANsat/Plugins/SCANsat.dll"
   },
   "codegen": {
