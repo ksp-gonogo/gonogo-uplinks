@@ -10,7 +10,7 @@
     "name": "kerbcast",
     "tier": "ckan",
     "ckan": "Kerbcast",
-    "builtAgainst": "1.10.2"
+    "builtAgainst": "1.10.3"
   },
   "codegen": {
     "assembly": "GonogoKerbcastUplink.Contract",

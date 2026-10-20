@@ -76,6 +76,7 @@ namespace Gonogo.KerbcastUplink
         private volatile bool _coreMissingSettled;
         private readonly FlightCoreWatch _coreWatch = new FlightCoreWatch();
         private int _cameraCount = -1;
+        private volatile KerbcastReach _reach = KerbcastReach.Unknown;
 
         public UplinkManifest Manifest { get; } = KerbcastManifest.Build();
 
@@ -194,6 +195,7 @@ namespace Gonogo.KerbcastUplink
 
             var coreActive = kerbcast.IsActive();
             _coreActive = coreActive;
+            _reach = kerbcast.Reach();
 
             // Read here on the main thread; Health() only sees the cached flags.
             var inFlight = HighLogic.LoadedSceneIsFlight;
@@ -267,7 +269,7 @@ namespace Gonogo.KerbcastUplink
         /// black feed can tell those apart at a glance.</para>
         /// </summary>
         public UplinkHealth Health() => KerbcastHealth.Evaluate(
-            _unavailableReason, _inFlight, _coreActive, _coreMissingSettled, !_sidecarConfirmedDead, Volatile.Read(ref _cameraCount));
+            _unavailableReason, _inFlight, _coreActive, _coreMissingSettled, !_sidecarConfirmedDead, Volatile.Read(ref _cameraCount), _reach);
 
         /// <summary>
         /// MAIN-THREAD command: zoom a camera. Runs on the actuator thread the
