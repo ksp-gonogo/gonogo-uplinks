@@ -164,44 +164,10 @@ jobs:
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm run typecheck
 
-      # Loadability is asked SEPARATELY from the tests, and in a bare node
-      # process, because a green test run is not evidence of it: every client
-      # sets `server.deps.inline` (it must, or ui-kit's bundle kills every test
-      # file in setup), and inlining makes Vite perform the extension search Node
-      # refuses to. A dependency no Node process can import passes vitest with
-      # inlining on, which is how six weeks of an unimportable sdk went unnoticed.
-      - name: Published dependencies load
-        if: inputs.client
-        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only loadable
-
       - name: Test client
         if: inputs.test
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm test
-
-      # A `minSize` is the smallest tile the app will ever let an operator drag
-      # a widget to, so it is a promise, and `check --only minsize` holds every
-      # widget to it in a real browser.
-      #
-      # The browser is the CLIENT's own playwright, for the reason the docs step
-      # below gives: run from the repo root, npx finds none and fetches the
-      # newest release, whose chromium revision is not the one the client's
-      # locked playwright launches.
-      - name: Widgets fit the minSize they declare
-        if: inputs.client
-        run: |
-          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
-          node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only minsize
-
-      # The mode a client does not check is the one that fails silently:
-      # `declare module` bindings resolve under bundler and not under nodenext, so
-      # a Topic declaration merge vanishes and takes its keys with it. Zero
-      # errors, red or green. There is no debt list. The published `check` command
-      # proves its own compiler sees a planted fault first, and cannot see an
-      # unresolvable side-effect import (docs/building.md).
-      - name: Typecheck client under nodenext
-        if: inputs.typecheck
-        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only nodenext
 
       # Codegen is verified rather than run: the generated TypeScript is
       # committed, so a slice whose C# moved without regenerating fails here
@@ -220,6 +186,33 @@ jobs:
         run: |
           node tooling/uplink-tools.mjs "${{ inputs.name }}" bake
           dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo
+
+      # Every check group of `uplink-tools check`, with no `--only`, so a group
+      # added to the tool runs here without this file changing. It covers what the
+      # single-group steps used to: published dependencies importable in a bare node
+      # process (a green test run is no evidence of that, since every client inlines
+      # ui-kit and Vite then does the extension search Node refuses to), the
+      # nodenext typecheck (`declare module` bindings resolve under bundler and not
+      # under nodenext, so a Topic merge vanishes silently), every widget fitting
+      # the `minSize` it declares in a real browser, and the parent mod's version
+      # being declared.
+      #
+      # `bake/stale` compares the baked hash against the client as it builds now, so
+      # the hash-less bake above is not what it accepts: the client is bundled and
+      # that bundle baked first. A release build bakes its own afterwards.
+      #
+      # The browser is the CLIENT's own playwright, for the reason the docs step
+      # below gives. `minsize` measures pixels and only answers honestly on Linux.
+      - name: Full uplink-tools check
+        run: |
+          if [ "${{ inputs.client }}" = "true" ]; then
+            (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
+            if [ -n "${{ inputs.mod_csproj }}" ]; then
+              node tooling/uplink-tools.mjs "${{ inputs.name }}" bundle --out "$RUNNER_TEMP/check-bundle"
+              node tooling/uplink-tools.mjs "${{ inputs.name }}" bake --bundle "$(ls "$RUNNER_TEMP"/check-bundle/*/*.client.js | head -1)"
+            fi
+          fi
+          node tooling/uplink-tools.mjs "${{ inputs.name }}" check
 
       # A release DLL vouches for its client by carrying the bundle's sha256, so
       # the bundle is built and hashed before the DLL compiles, and packaged from
@@ -253,12 +246,6 @@ jobs:
       - name: Scaffold proof
         if: inputs.scaffold
         run: scripts/scaffold-proof.sh "${{ inputs.name }}"
-
-      # The parent mod's version, read from THIS Uplink's own uplink.json: a "mod"
-      # block that names no version or an unknown tier is a claim with nothing
-      # to verify.
-      - name: Parent mod version is declared
-        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" check --only manifest
 
       - name: Bundle client
         if: inputs.bundle && !inputs.publish

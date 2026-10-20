@@ -11,8 +11,7 @@ import {
   type StationBroker,
   setSetting,
 } from "@ksp-gonogo/sitrep-sdk";
-import { watchStationBrokers } from "@ksp-gonogo/sitrep-sdk/registry";
-import { act } from "@ksp-gonogo/sitrep-sdk/testing";
+import { act, watchStationBrokers } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   attachStationBroker,

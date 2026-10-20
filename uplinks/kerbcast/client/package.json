@@ -29,13 +29,13 @@
   "dependencies": {
     "@ksp-gonogo/kerbcast": "^1.10.2",
     "@ksp-gonogo/kerbcast-react": "^1.10.2",
-    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-d9a108c44267.tgz",
+    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-d418bc6a3c1b.tgz",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-69d7a320eba0.tgz",
-    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-4b03d9495590.tgz",
+    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-b6090252aed2.tgz",
+    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-1d9d05f8ae4e.tgz",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/jest-axe": "^3.5.9",
