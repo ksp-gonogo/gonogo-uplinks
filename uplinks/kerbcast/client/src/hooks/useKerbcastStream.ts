@@ -15,6 +15,7 @@ import {
   type SnapshottableDelayClock,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import { useEffect, useRef, useState } from "react";
+import { frameDelayStatsLogger } from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
@@ -405,6 +406,7 @@ function buildDelayedPipeline(
         view: view as unknown as SnapshottableDelayClock,
         getCaptureSample,
         onError: onPipelineError,
+        onStats: frameDelayStatsLogger(),
       });
       if (encodedHandle) {
         // No new track: the delay happens in place on `raw`'s existing track,
@@ -479,6 +481,7 @@ function buildDelayedPipeline(
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
       maxBufferedFrames,
+      onStats: frameDelayStatsLogger(),
       onError: (err) => {
         workerErrorReason = String(err);
         onPipelineError(err);

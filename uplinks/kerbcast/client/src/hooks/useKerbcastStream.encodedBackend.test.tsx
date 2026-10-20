@@ -26,6 +26,7 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
 import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
@@ -177,6 +178,51 @@ describe("useDelayedPlayout, Backend 0: encoded transform on the receiver", () =
       kind: "delayed";
     };
     expect(delayed.stream).toBe(rawStream);
+  });
+
+  it("asks the worker for frame totals only while the stats flag is on", async () => {
+    class FakeRTCRtpScriptTransform {
+      static instances: FakeRTCRtpScriptTransform[] = [];
+      constructor(
+        public worker: unknown,
+        public options: { statsIntervalMs?: number },
+      ) {
+        FakeRTCRtpScriptTransform.instances.push(this);
+      }
+    }
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("RTCRtpScriptTransform", FakeRTCRtpScriptTransform);
+    registerFakeKerbcastSourceWithReceiver(() => ({ transform: null }));
+
+    const attach = async (flag: boolean) => {
+      if (flag) localStorage.setItem(FRAME_DELAY_STATS_KEY, "1");
+      else localStorage.removeItem(FRAME_DELAY_STATS_KEY);
+      const rawStream = {
+        getVideoTracks: () => [{}],
+      } as unknown as MediaStream;
+      let latest: DelayedPlayoutResult | "unset" = "unset";
+      const { unmount } = render(
+        <StreamProbe
+          raw={rawStream}
+          clock={manualClock()}
+          onResult={(r) => {
+            latest = r;
+          }}
+        />,
+      );
+      await waitFor(() => {
+        expect(latest).toMatchObject({ kind: "delayed" });
+      });
+      unmount();
+    };
+
+    await attach(false);
+    await attach(true);
+
+    const [off, on] = FakeRTCRtpScriptTransform.instances;
+    expect(off?.options.statsIntervalMs).toBeUndefined();
+    expect(on?.options.statsIntervalMs).toBeGreaterThan(0);
+    localStorage.clear();
   });
 
   it("falls through (never throws) when RTCRtpScriptTransform's constructor throws", async () => {
