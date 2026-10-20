@@ -14,7 +14,9 @@
  * The mod's CKAN identifier comes from uplink.json (`mod.ckan`), and the version
  * from the client's gonogo-uplink.json when the Uplink has one, otherwise from
  * uplink.json. An Uplink whose mod is not on CKAN (`tier: "manual"`) depends on
- * GonogoCore alone.
+ * GonogoCore alone. Any other mod the code needs at runtime, such as the
+ * Harmony library an Uplink's assembly references, is listed in uplink.json as
+ * `ckanDepends`, entries in CKAN's own relationship form.
  *
  * GonogoCore carries no version: the Uplinks build against a pinned gonogo
  * commit (vendor/gonogo-ref), which is not a GonogoCore release, and a
@@ -53,7 +55,7 @@ export function internalCkan({ uplink, manifest }) {
     }
     depends.push({ name: mod.ckan, min_version: builtAgainst });
   }
-  depends.push({ name: "GonogoCore" });
+  depends.push(...(uplink.ckanDepends ?? []), { name: "GonogoCore" });
   return { depends };
 }
 

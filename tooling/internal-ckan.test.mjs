@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { uplinkNames } from "./check-built-against.mjs";
 import {
@@ -11,6 +12,8 @@ import {
   readFromZip,
   readUplink,
 } from "./internal-ckan.mjs";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** A release zip holding just the Uplink's GameData folder. */
 function releaseZip(gamedata, extra = []) {
@@ -32,10 +35,9 @@ test("an Uplink depends on its mod at builtAgainst, and on GonogoCore", () => {
   });
 });
 
-test("an Uplink whose mod is not on CKAN depends on GonogoCore alone", () => {
-  assert.deepEqual(internalCkan(readUplink("principia")), {
-    depends: [{ name: "GonogoCore" }],
-  });
+test("an Uplink whose mod is not on CKAN names no mod in its depends", () => {
+  const names = internalCkan(readUplink("principia")).depends.map((dep) => dep.name);
+  assert.ok(!names.includes("Principia"));
 });
 
 test("every Uplink names its mod's CKAN identifier and a version, or is manual", () => {
@@ -64,4 +66,23 @@ test("a zip that already holds a .ckan, or another Uplink's zip, is refused", ()
     /more than one/,
   );
   assert.throws(() => addToZip(releaseZip("GonogoKosUplink"), facts), /not this Uplink's release zip/);
+});
+
+test("an Uplink lists Harmony2 exactly when its mod project references 0Harmony", () => {
+  for (const name of uplinkNames()) {
+    const dir = join(ROOT, "uplinks", name, "mod");
+    const references = readdirSync(dir)
+      .filter((file) => file.endsWith(".csproj"))
+      .some((file) => /<Reference Include="0Harmony"/.test(readFileSync(join(dir, file), "utf8")));
+    const { uplink } = readUplink(name);
+    const listed = (uplink.ckanDepends ?? []).some((dep) => dep.name === "Harmony2");
+    assert.equal(listed, references, `${name}: ckanDepends and the 0Harmony reference disagree`);
+  }
+});
+
+test("ckanDepends reach the generated file, ahead of GonogoCore", () => {
+  assert.deepEqual(internalCkan(readUplink("principia")).depends, [
+    { name: "Harmony2" },
+    { name: "GonogoCore" },
+  ]);
 });

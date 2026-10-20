@@ -11,6 +11,7 @@
     "tier": "manual",
     "builtAgainst": "2026081218-Levi-Civita"
   },
+  "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {
     "assembly": "GonogoPrincipiaUplink.Contract",
     "configurationMethod": "GonogoPrincipiaUplink.PrincipiaRtConfig.Configure",

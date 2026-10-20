@@ -13,6 +13,7 @@
     "builtAgainst": "1.6.0.1",
     "assembly": "kOS/Plugins/kOS.dll"
   },
+  "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {
     "assembly": "GonogoKosUplink.Contract",
     "configurationMethod": "Gonogo.KosUplink.KosRtConfig.Configure",
