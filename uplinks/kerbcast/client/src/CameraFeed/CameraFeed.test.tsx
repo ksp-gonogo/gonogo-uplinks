@@ -435,6 +435,84 @@ describe("CameraFeed: camera selection", () => {
     ]);
   });
 
+  describe("picker order with destroyed cameras", () => {
+    const MIXED = [
+      makeCamera({
+        flightId: 41,
+        cameraName: "Booster Cam 1",
+        vesselName: "Kerbal X",
+        lifecycle: "destroyed",
+      }),
+      makeCamera({
+        flightId: 42,
+        cameraName: "Probe Nose",
+        vesselName: "Wave Probe",
+      }),
+      makeCamera({
+        flightId: 43,
+        cameraName: "Starboard Cam",
+        vesselName: "Kerbal X",
+      }),
+      makeCamera({
+        flightId: 44,
+        cameraName: "Booster Cam 2",
+        vesselName: "Kerbal X",
+        lifecycle: "destroyed",
+      }),
+      makeCamera({
+        flightId: 45,
+        cameraName: "Probe Aft",
+        vesselName: "Wave Probe",
+      }),
+    ];
+
+    function menuLabels(): Array<string | null> {
+      return screen
+        .getAllByRole("menuitemradio")
+        .map((item) => item.textContent);
+    }
+
+    it("lists live cameras grouped by craft and leaves unselected lost ones out", async () => {
+      await buildConnectedSource(MIXED);
+      renderFeed({ flightId: 43 });
+
+      fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
+
+      expect(menuLabels()).toEqual([
+        "Starboard Cam (Kerbal X)",
+        "Probe Nose (Wave Probe)",
+        "Probe Aft (Wave Probe)",
+      ]);
+    });
+
+    it("keeps a selected lost camera at the end under SIGNAL LOST", async () => {
+      await buildConnectedSource(MIXED);
+      renderFeed({ flightId: 41 });
+
+      fireEvent.click(screen.getByRole("button", { name: /booster cam 1/i }));
+
+      expect(menuLabels()).toEqual([
+        "Starboard Cam (Kerbal X)",
+        "Probe Nose (Wave Probe)",
+        "Probe Aft (Wave Probe)",
+        "Booster Cam 1 (Kerbal X) - signal lost",
+      ]);
+      expect(screen.getByRole("status", { name: "Signal lost" })).toBeTruthy();
+    });
+
+    it("still lists lost cameras when no camera is live", async () => {
+      await buildConnectedSource([MIXED[0], MIXED[3]]);
+      renderFeed({ flightId: null });
+
+      fireEvent.click(screen.getByRole("button", { name: /booster cam 1/i }));
+
+      expect(menuLabels()).toEqual([
+        "Booster Cam 1 (Kerbal X) - signal lost",
+        "Booster Cam 2 (Kerbal X) - signal lost",
+      ]);
+    });
+  });
+
   it("disambiguates same-named cameras (e.g. docking ports) by part title", async () => {
     // Hullcam names every docking-port camera "NavCam", colliding with the
     // dedicated NavCam. The colliding pair gets its part title appended; the

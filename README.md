@@ -10,7 +10,7 @@ built and released on its own, and loaded by the app at runtime.
 | [ActionGroupsExtended](uplinks/actiongroupsextended/) | `actionGroupsExtended` | Action Groups Extended 2.4.1.4 (ckan) |
 | [Aerodynamics](uplinks/ferramaerospaceresearch/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) |
 | [Kerbalism](uplinks/kerbalism/README.md) | `kerbalism` | Kerbalism 3.32 (ckan) |
-| [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.8.1 (ckan) |
+| [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.10.2 (ckan) |
 | [kOS](uplinks/kos/README.md) | `kos` | kOS 1.6.0.1 (ckan) |
 | [MechJeb](uplinks/mechjeb/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) |
 | [Principia](uplinks/principia/README.md) | `principia` | Principia 2026081218-Levi-Civita (manual) |

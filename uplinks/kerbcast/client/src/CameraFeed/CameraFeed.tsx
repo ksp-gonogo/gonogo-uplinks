@@ -54,6 +54,10 @@ import {
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import {
+  selectableFlightIds,
+  withPickerOrder,
+} from "./cameraPicker.js";
 import { feedAspect, frameBox } from "./frameShape.js";
 import { useStreamAspect } from "./useStreamAspect.js";
 import {
@@ -191,7 +195,11 @@ export function CameraFeed({
   onConfigChange,
 }: Readonly<ComponentProps<CameraFeedConfig>>) {
   const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
-  const client = ds?.getClient();
+  const dsClient = ds?.getClient();
+  const client = useMemo(
+    () => (dsClient ? withPickerOrder(dsClient) : undefined),
+    [dsClient],
+  );
 
   // Ensure the sidecar connection is open before we render.
   useEffect(() => {
@@ -418,6 +426,14 @@ export function CameraFeed({
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
+  const pickerIds = useMemo(
+    () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
+    [cameras, requested, effectiveFlightId],
+  );
+  const pickerFilter = useCallback(
+    (camera: CameraState) => isPartCamera(camera) && pickerIds.has(camera.flightId),
+    [pickerIds],
+  );
 
   // ---- Frame shape ----
   // The box the frame is fitted INTO, measured so the frame itself can be given
@@ -551,7 +567,7 @@ export function CameraFeed({
                     ref={feedRef}
                     useStream={useDelayedKerbcastStream}
                     flightId={requested}
-                    cameraFilter={isPartCamera}
+                    cameraFilter={pickerFilter}
                     onSelectCamera={(nextFlightId) =>
                       onConfigChange?.({
                         flightId: nextFlightId,
