@@ -21,7 +21,7 @@
 
   Packaging: GonogoMechJebUplink is a SEPARATE, optional deployable extension
   (its own GameData/GonogoMechJebUplink folder + its own CKAN/SpaceDock
-  listing via GonogoMechJebUplink.netkan, GPLv3-linkage documented in
+  listing, GPLv3-linkage documented in
   NOTICE-MECHJEB.txt). It must not bundle core Gonogo's or MechJeb2's
   assemblies; every Reference/ProjectReference below that isn't unique to this
   extension is Private="false" for exactly that reason (see each ItemGroup's
