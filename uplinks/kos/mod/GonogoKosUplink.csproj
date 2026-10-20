@@ -16,8 +16,8 @@
   and at the repository root as LICENSE-GPL-3.0.txt.
 
   Packaging: GonogoKosUplink is a SEPARATE, optional deployable extension (its
-  own GameData/GonogoKosUplink folder + its own CKAN/SpaceDock listing via
-  GonogoKosUplink.netkan, GPLv3-linkage documented in NOTICE-KOS.txt): build +
+  own GameData/GonogoKosUplink folder + its own CKAN/SpaceDock listing,
+  GPLv3-linkage documented in NOTICE-KOS.txt): build +
   deploy through the reference-set build script. It must not bundle
   core Gonogo's or kOS's or Harmony's assemblies; every Reference/
   ProjectReference below that isn't unique to this extension is
