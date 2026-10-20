@@ -27,9 +27,6 @@ namespace Gonogo.KerbcastUplink
         /// </summary>
         bool? SidecarAlive();
 
-        /// <summary>Where kerbcast's camera feeds listen, or <see cref="KerbcastReach.Unknown"/> when nobody could ask.</summary>
-        KerbcastReach Reach();
-
         /// <summary>kerbcast's camera views for one vessel (a stock KSP <c>Vessel</c>), or empty.</summary>
         IReadOnlyList<KerbcastView> CamerasFor(object? vessel);
 

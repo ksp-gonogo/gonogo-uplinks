@@ -62,18 +62,6 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
-        public KerbcastReach Reach()
-        {
-            try
-            {
-                return ReachCore();
-            }
-            catch (Exception)
-            {
-                return KerbcastReach.Unknown;
-            }
-        }
-
         public IReadOnlyList<KerbcastView> CamerasFor(object? vessel)
         {
             if (vessel is not Vessel stock)
@@ -165,10 +153,6 @@ namespace Gonogo.KerbcastUplink
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool SidecarAliveCore() => KerbcastControl.SidecarAlive;
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static KerbcastReach ReachCore() =>
-            new KerbcastReach(KerbcastControl.BindAddress, KerbcastControl.Port, KerbcastControl.BindIsLoopback);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static IReadOnlyList<KerbcastView> CamerasForCore(Vessel vessel)

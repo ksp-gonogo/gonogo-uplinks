@@ -53,12 +53,10 @@ namespace Gonogo.KerbcastUplink
         /// sidecar process dead.
         /// </param>
         /// <param name="cameraCount">Cameras seen on the active vessel at the last sample.</param>
-        /// <param name="reach">Where the camera feeds listen, reported as facts beside the state; null for none.</param>
         public static UplinkHealth Evaluate(
             string? unavailableReason, bool inFlight, bool coreActive, bool coreMissingSettled,
-            bool sidecarAlive, int cameraCount, KerbcastReach? reach = null)
+            bool sidecarAlive, int cameraCount)
         {
-            var facts = reach?.Facts();
             if (unavailableReason != null)
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, unavailableReason);
@@ -66,31 +64,31 @@ namespace Gonogo.KerbcastUplink
             if (!inFlight)
             {
                 return new UplinkHealth(UplinkHealthState.Healthy,
-                    "idle until a flight; video starts in flight", facts);
+                    "idle until a flight; video starts in flight");
             }
             if (!coreActive)
             {
                 if (coreMissingSettled)
                 {
                     return new UplinkHealth(UplinkHealthState.Unavailable,
-                        "kerbcast is not running in this flight; it may have refused to start (see its \"cannot start\" line in KSP.log)", facts);
+                        "kerbcast is not running in this flight; it may have refused to start (see its \"cannot start\" line in KSP.log)");
                 }
                 // The flight scene is still loading: nothing to claim yet.
                 return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kerbcast is starting with the flight scene", facts);
+                    "kerbcast is starting with the flight scene");
             }
             if (!sidecarAlive)
             {
                 return new UplinkHealth(UplinkHealthState.Degraded,
-                    "video sidecar not alive; feeds will be black", facts);
+                    "video sidecar not alive; feeds will be black");
             }
             if (cameraCount <= 0)
             {
                 return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kerbcast running, but the active vessel carries no camera parts", facts);
+                    "kerbcast running, but the active vessel carries no camera parts");
             }
             return new UplinkHealth(UplinkHealthState.Healthy,
-                cameraCount == 1 ? "1 camera" : cameraCount + " cameras", facts);
+                cameraCount == 1 ? "1 camera" : cameraCount + " cameras");
         }
     }
 }

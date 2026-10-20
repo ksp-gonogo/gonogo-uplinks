@@ -16,10 +16,6 @@ public sealed class FakeKerbcastApi : IKerbcastApi
     public (uint FlightId, float Fov)? LastFov;
     public (uint FlightId, float Yaw, float Pitch)? LastPan;
 
-    public KerbcastReach ReachResult = KerbcastReach.Unknown;
-
-    public KerbcastReach Reach() => ReachResult;
-
     public bool IsActive() => Active;
 
     public bool? SidecarAlive() => Sidecar;
