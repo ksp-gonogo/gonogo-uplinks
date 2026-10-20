@@ -13,9 +13,10 @@ namespace Gonogo.KerbalismUplink
     /// compile-time link, presence-safe). Presence-gated (kerbalism.available),
     /// mandatory Health(), delay-gated per Topic (presence/features TrueNow, the
     /// vessel telemetry Delayed). Also declares the five File Manager commands
-    /// (<see cref="KerbalismFileCommandProvider"/>) and <c>kerbalism.repair</c>,
-    /// presence-gated at the manifest itself so they never appear at all on a
-    /// vanilla install.
+    /// (<see cref="KerbalismFileCommandProvider"/>) and <c>kerbalism.repair</c>.
+    /// Commands and providers are registered whether or not Kerbalism has
+    /// loaded, since the host takes both once, before a late-loading Kerbalism
+    /// may exist; each answers per call from the live presence probe.
     /// </summary>
     [SitrepUplink("kerbalism")]
     public sealed class KerbalismUplink : ISitrepUplink, IModSettingsSource
@@ -27,24 +28,7 @@ namespace Gonogo.KerbalismUplink
         private const string CrewTopic = "kerbalism.crew";
         private const string ProfileTopic = "kerbalism.profile";
         private const string ReliabilityTopic = "kerbalism.reliability";
-        private const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
-
-        /// <summary>
-        /// Repair or service one part with one named kerbal, in a single command:
-        /// the crew check, the kit fetch and the repair are resolved aboard, since
-        /// each as its own command would cost a round trip.
-        /// </summary>
-        private const string RepairCommand = "kerbalism.repair";
-
-        /// <summary>
-        /// The <c>science.experiments</c> channel topic every File Manager
-        /// command's Subject resolves its node through: each command acts on a
-        /// file/sample aboard the craft, the same craft that channel reads.
-        /// Declared as a literal rather than referencing
-        /// <c>Sitrep.Host.ScienceViewProvider.ExperimentsTopic</c>, which this
-        /// Uplink cannot reference under the isolation rule.
-        /// </summary>
-        private const string ScienceExperimentsSubject = "science.experiments";
+        private const string ReliabilityPartsTopic = KerbalismCommandCatalog.ReliabilityPartsTopic;
 
         private readonly KerbalismReflection _k = new();
 
@@ -131,43 +115,10 @@ namespace Gonogo.KerbalismUplink
                     Delayed(ReliabilityTopic, SampleKind.Discrete),
                     Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
                 },
-                // Presence-gated at construction, unlike the channels above:
-                // _k.IsAvailable is a cheap, session-stable reflection probe
-                // (the same one the isru/science provider registrations below
-                // gate on), so when Kerbalism is absent these commands are not
-                // merely unhandled, they never appear in the manifest at all. A
-                // client has no reason to ever learn "kerbalism.file.send exists"
-                // on a vanilla install, the same registering-is-the-gate rule
-                // Register() already applies to the provider registrations.
-                Commands = _k.IsAvailable ? KerbalismCommands() : Array.Empty<CommandDeclaration>(),
+                Commands = KerbalismCommandCatalog.All(),
                 ErrorCodes = ErrorCodeCatalog.Of(typeof(KerbalismErrorCodes)),
             };
         }
-
-        /// <summary>
-        /// The five File Manager commands and the repair: every one actuates
-        /// Kerbalism state on the vessel (flag a file, delete it, flag/dump a
-        /// sample, move a sample to another drive, repair a part), so all ride
-        /// the same signal delay delay every other vessel actuation does. Declared
-        /// on their args types in this Uplink's contract slice, see
-        /// SitrepCommandAttribute.Delay.
-        /// </summary>
-        private static List<CommandDeclaration> KerbalismCommands() => new()
-        {
-            Command(KerbalismFileCommandProvider.SendCommand, ScienceExperimentsSubject),
-            Command(KerbalismFileCommandProvider.DeleteCommand, ScienceExperimentsSubject),
-            Command(KerbalismFileCommandProvider.AnalyzeCommand, ScienceExperimentsSubject),
-            Command(KerbalismFileCommandProvider.DumpCommand, ScienceExperimentsSubject),
-            Command(KerbalismFileCommandProvider.MoveToLabCommand, ScienceExperimentsSubject),
-            // Acts on a part the parts listing named, on the same craft it reads.
-            Command(RepairCommand, ReliabilityPartsTopic),
-        };
-
-        private static CommandDeclaration Command(string command, string subject) => new()
-        {
-            Command = command,
-            Subject = subject,
-        };
 
         private static ChannelDeclaration TrueNow(string topic, SampleKind kind) => new()
         {
@@ -238,27 +189,43 @@ namespace Gonogo.KerbalismUplink
                 LifeSupportTopic,
                 CrewTopic);
 
-            if (_k.IsAvailable)
-            {
-                RegisterScience(host);
-                RegisterIsru(host);
-                RegisterFileManagerCommands(host, _fileActuator);
-                RegisterReliability(host);
+            RegisterScience(host);
+            RegisterIsru(host);
+            RegisterFileManagerCommands(host, _fileActuator);
+            RegisterReliability(host);
+        }
 
-                // Attach the currency-delay science hook. Kerbalism credits science through a
-                // pooled, vessel-less buffer the stock currency interceptor can't see, so this
-                // presence-gated Harmony postfix is the only way that science gets delayed. The
-                // hook forwards to whatever the "delayedScience" capability elects, resolved
-                // through the Kernel handed in here; if the core scenario isn't active the forward
-                // is a silent no-op.
-                try
-                {
-                    _scienceHook.TryAttach(host.Kernel);
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine("[KerbalismUplink] could not attach currency-delay science hook: " + ex.Message);
-                }
+        private const int ScienceHookAttempts = 5;
+        private const long ScienceHookRetryMs = 2000;
+        private static readonly System.Diagnostics.Stopwatch ScienceHookClock = System.Diagnostics.Stopwatch.StartNew();
+        private int _scienceHookAttempts;
+        private long _nextScienceHookMs;
+
+        /// <summary>
+        /// Attaches the currency-delay science hook once Kerbalism is found, which
+        /// may be well after <see cref="Register"/>. Kerbalism credits science
+        /// through a pooled, vessel-less buffer the stock currency interceptor can't
+        /// see, so this presence-gated Harmony postfix is the only way that science
+        /// gets delayed. The hook forwards to whatever the "delayedScience"
+        /// capability elects, resolved through the Kernel; if the core scenario
+        /// isn't active the forward is a silent no-op. Called from the main-thread
+        /// capture, retried a few times on a short interval, then left alone.
+        /// </summary>
+        private void AttachScienceHookWhenAvailable()
+        {
+            if (_kernel == null || _scienceHook.Attached || _scienceHookAttempts >= ScienceHookAttempts) return;
+            if (!_k.IsAvailable) return;
+            var now = ScienceHookClock.ElapsedMilliseconds;
+            if (now < _nextScienceHookMs) return;
+            _nextScienceHookMs = now + ScienceHookRetryMs;
+            _scienceHookAttempts++;
+            try
+            {
+                _scienceHook.TryAttach(_kernel);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("[KerbalismUplink] could not attach currency-delay science hook: " + ex.Message);
             }
         }
 
@@ -284,7 +251,7 @@ namespace Gonogo.KerbalismUplink
                 ReliabilityTopic,
                 ReliabilityPartsTopic);
             host.AddCommandHandler<KerbalismRepairPartArgs, CommandResult<KerbalismRepairOutcome>>(
-                RepairCommand,
+                KerbalismCommandCatalog.RepairCommand,
                 args => reliability.Repair(args?.PartId ?? "", args?.CrewName ?? ""));
         }
 
@@ -310,8 +277,9 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Register Kerbalism as the "isru" provider, above the stock vanilla backend
-        /// so it wins when Kerbalism is installed. Same registering-is-the-gate rule
-        /// as science below, and the same two-pass guarantee: the capability is
+        /// so it wins when Kerbalism is installed. Registered unconditionally and
+        /// answered through <see cref="KerbalismProviders"/>, the same as science
+        /// below, with the same two-pass guarantee: the capability is
         /// owned and declared by IsruCoreUplink (bundled core) in the pre-Register
         /// pass, so it exists here regardless of assembly-scan order.
         ///
@@ -324,16 +292,7 @@ namespace Gonogo.KerbalismUplink
         {
             try
             {
-                host.Kernel.RegisterProvider(new ProviderRegistration
-                {
-                    Capability = "isru",
-                    Id = KerbalismIsruMap.ProviderId,
-                    // Above the stock vanilla backend: Kerbalism's patches delete the
-                    // stock harvester and converter modules, so losing this election
-                    // would mean an empty ISRU dashboard, not a degraded one.
-                    Priority = 1.0,
-                    Factory = _ => new KerbalismIsruBackend(_k, host.Kernel),
-                });
+                KerbalismProviders.RegisterIsru(host.Kernel, () => _k.IsAvailable, new KerbalismIsruBackend(_k, host.Kernel));
             }
             catch (Exception ex)
             {
@@ -346,9 +305,10 @@ namespace Gonogo.KerbalismUplink
         /// KSP-free handlers, each closed over <see cref="_fileActuator"/> (the
         /// live Drive) and the science backend's latest capture (the
         /// pre-filter snapshot; see <see cref="KerbalismScienceBackend.Latest"/>).
-        /// Called only inside the <c>if (_k.IsAvailable)</c> guard in
-        /// <see cref="Register"/>, after <see cref="RegisterScience"/> has
-        /// already wired the capture that feeds that snapshot.
+        /// Called from <see cref="Register"/> after <see cref="RegisterScience"/>
+        /// has already wired the capture that feeds that snapshot. Registered
+        /// whether or not Kerbalism has loaded: until it has, the snapshot is
+        /// empty and every verb refuses with ScienceNotModelled.
         ///
         /// <para>The verbs here read that snapshot on the Courier thread, so it
         /// has to be true whether or not anything is watching a science channel.
@@ -378,9 +338,9 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// Register Kerbalism as the "science" provider, above the stock vanilla
-        /// backend so it wins when Kerbalism is installed. Same
-        /// registering-is-the-gate rule as isru above, and the same two-pass
-        /// guarantee: the capability is owned and declared by ScienceCoreUplink
+        /// backend so it wins when Kerbalism is installed. Registered
+        /// unconditionally and answered through <see cref="KerbalismProviders"/>,
+        /// the same as isru above, with the same two-pass guarantee: the capability is owned and declared by ScienceCoreUplink
         /// (bundled core) in the pre-Register pass, so it exists here regardless of
         /// assembly-scan order.
         ///
@@ -400,17 +360,7 @@ namespace Gonogo.KerbalismUplink
         {
             try
             {
-                host.Kernel.RegisterProvider(new ProviderRegistration
-                {
-                    Capability = "science",
-                    Id = KerbalismScienceMap.ProviderId,
-                    // Above the stock vanilla backend: on a Kerbalism install the
-                    // stock walk finds nothing (results live on Kerbalism's drives,
-                    // not in ModuleScienceExperiment), so losing this election would
-                    // mean an empty science dashboard, not a degraded one.
-                    Priority = 1.0,
-                    Factory = _ => _science,
-                });
+                KerbalismProviders.RegisterScience(host.Kernel, () => _k.IsAvailable, _science);
             }
             catch (Exception ex)
             {
@@ -460,6 +410,7 @@ namespace Gonogo.KerbalismUplink
         /// <summary>MAIN-THREAD capture: read live Kerbalism science into a plain bundle (no KSP handles cross threads).</summary>
         private object? CaptureScienceOnMain(KspSnapshot? snapshot)
         {
+            AttachScienceHookWhenAvailable();
             var v = ScopedVessel();
             if (v == null || !_k.IsAvailable) return null;
             return _k.Science(v);

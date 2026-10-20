@@ -8,9 +8,9 @@ namespace Gonogo.KerbalismUplink
     /// Kerbalism's <see cref="IScienceBackend"/>: the provider that wins the
     /// <c>"science"</c> capability election when Kerbalism is installed, so the
     /// existing <c>science.*</c> topics carry Kerbalism's model instead of a stock
-    /// walk that would report an empty vessel. Registered at
-    /// <see cref="KerbalismUplink"/>'s Register, only when the reflection probe
-    /// confirms the mod is loaded: registering is the gate.
+    /// walk that would report an empty vessel. Elected through
+    /// <see cref="KerbalismProviders"/>, which hands reads to the stock backend
+    /// until the reflection probe finds the mod.
     ///
     /// <para><b>Why it wins outright rather than augmenting.</b> Kerbalism does not
     /// add to stock science, it replaces it: results live on its own drives, not in

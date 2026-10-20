@@ -64,6 +64,7 @@ namespace Gonogo.KerbalismUplink
         private MethodInfo? _scansatStopScan;
         private MethodInfo? _scansatIsScanning;
 
+        private readonly object _bindLock = new();
         private readonly KerbalismAssemblyLocator _locator = new(() => AppDomain.CurrentDomain.GetAssemblies());
 
         /// <summary>
@@ -78,10 +79,18 @@ namespace Gonogo.KerbalismUplink
             {
                 if (_asm == null)
                 {
-                    var found = _locator.Probe();
-                    if (found != null)
+                    // Asked from the main thread and the Courier thread alike, and
+                    // Bind rewrites shared handle caches.
+                    lock (_bindLock)
                     {
-                        try { Bind(found); } catch { _asm = null; }
+                        if (_asm == null)
+                        {
+                            var found = _locator.Probe();
+                            if (found != null)
+                            {
+                                try { Bind(found); } catch { _asm = null; }
+                            }
+                        }
                     }
                 }
                 return _asm != null && _apiType != null;
