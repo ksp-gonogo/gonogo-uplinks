@@ -7,7 +7,7 @@
  * The version appears in uplink.json and in the client's generated
  * gonogo-uplink.json, and the two must agree. Beyond that it is compared with
  * the source the Uplink actually builds against: the version floor of the mod's
- * npm client dependency (Kerbcast), or the ProductVersion of the mod assembly
+ * npm client dependency (Kerbcast), or the version of the mod assembly
  * named by `mod.assembly` under vendor/gamedata. The assembly check fails when
  * the assembly is not there, because a check that skips reports success it did
  * not earn, so run it where the reference set is resolved.
@@ -28,21 +28,44 @@ export function normalise(version) {
   return parts.join(".");
 }
 
-/** The ProductVersion string resource of a .NET assembly, without its `+commit` suffix. */
-export function productVersion(buffer) {
-  const key = Buffer.from("ProductVersion\0", "utf16le");
-  const at = buffer.indexOf(key);
-  if (at === -1) return undefined;
-  let start = at + key.length;
-  while (buffer[start] === 0 && buffer[start + 1] === 0) start += 2;
-  let end = start;
-  while (end + 1 < buffer.length && !(buffer[end] === 0 && buffer[end + 1] === 0)) end += 2;
-  return buffer.subarray(start, end).toString("utf16le").split("+")[0];
+/**
+ * The version a .NET assembly reports, read from its FileVersion string
+ * resource, else its ProductVersion, without any `+commit` suffix. A
+ * ProductVersion can be free text, so only a value that starts with a digit
+ * counts.
+ */
+export function assemblyVersion(buffer) {
+  for (const name of ["FileVersion", "ProductVersion"]) {
+    const key = Buffer.from(`${name}\0`, "utf16le");
+    for (let at = buffer.indexOf(key); at !== -1; at = buffer.indexOf(key, at + 1)) {
+      let start = at + key.length;
+      while (buffer[start] === 0 && buffer[start + 1] === 0) start += 2;
+      let end = start;
+      while (end + 1 < buffer.length && !(buffer[end] === 0 && buffer[end + 1] === 0)) end += 2;
+      const value = buffer.subarray(start, end).toString("utf16le").split("+")[0];
+      if (/^\d+(\.\d+)*$/.test(value)) return value;
+    }
+  }
+  return undefined;
 }
 
 /** The lowest version a semver range such as `^1.10.2` accepts. */
 export function rangeFloor(range) {
   return /(\d+(?:\.\d+)*)/.exec(range)?.[1];
+}
+
+/** Whether the Uplink's mod project references the assembly at compile time; one that reaches the mod by reflection has none in the reference set. */
+function compilesAgainst(dir, assembly) {
+  const file = assembly.split("/").at(-1);
+  const modDir = join(dir, "mod");
+  if (!existsSync(modDir)) return false;
+  return readdirSync(modDir)
+    .filter((entry) => entry.endsWith(".csproj"))
+    .some((entry) =>
+      readFileSync(join(modDir, entry), "utf8")
+        .match(/<HintPath>[^<]*<\/HintPath>/g)
+        ?.some((hint) => hint.endsWith(`${file}</HintPath>`)),
+    );
 }
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
@@ -79,10 +102,10 @@ export function problemsFor(name, root = ROOT, { requireAssembly = false } = {})
   if (uplink.mod?.assembly) {
     const dll = join(root, "vendor", "gamedata", uplink.mod.assembly);
     if (!existsSync(dll)) {
-      if (requireAssembly) problems.push(`${name}: ${dll} is not in the reference set`);
+      if (requireAssembly && compilesAgainst(dir, uplink.mod.assembly)) problems.push(`${name}: ${dll} is not in the reference set`);
     } else {
-      const built = productVersion(readFileSync(dll));
-      if (!built) problems.push(`${name}: ${uplink.mod.assembly} carries no ProductVersion`);
+      const built = assemblyVersion(readFileSync(dll));
+      if (!built) problems.push(`${name}: ${uplink.mod.assembly} carries no version`);
       else if (normalise(built) !== normalise(claimed)) {
         problems.push(
           `${name}: ${uplink.mod.assembly} in the reference set is ${built}, builtAgainst is ${claimed}`,

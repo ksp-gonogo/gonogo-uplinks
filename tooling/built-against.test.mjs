@@ -6,7 +6,7 @@ import { test } from "node:test";
 import {
   normalise,
   problemsFor,
-  productVersion,
+  assemblyVersion,
   rangeFloor,
   uplinkNames,
 } from "./check-built-against.mjs";
@@ -58,12 +58,14 @@ test("a manifest that disagrees with uplink.json is reported", () => {
 test("a mod assembly whose version moved is reported, and a missing one only when required", () => {
   const root = mkdtempSync(join(tmpdir(), "built-against-"));
   const dir = join(root, "uplinks", "x");
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(join(dir, "mod"), { recursive: true });
   writeFileSync(
     join(dir, "uplink.json"),
     JSON.stringify({ mod: { builtAgainst: "20.4", assembly: "M/M.dll" } }),
   );
   assert.deepEqual(problemsFor("x", root), []);
+  assert.deepEqual(problemsFor("x", root, { requireAssembly: true }), []);
+  writeFileSync(join(dir, "mod", "X.csproj"), '<HintPath>$(KspGameData)\\M\\M.dll</HintPath>');
   assert.equal(problemsFor("x", root, { requireAssembly: true }).length, 1);
   mkdirSync(join(root, "vendor", "gamedata", "M"), { recursive: true });
   writeFileSync(
@@ -81,7 +83,7 @@ test("version helpers", () => {
   assert.notEqual(normalise("20.4"), normalise("21.1"));
   assert.equal(rangeFloor("^1.10.2"), "1.10.2");
   assert.equal(
-    productVersion(Buffer.from("ProductVersion\0\x001.6.0.1+d43\0\0", "utf16le")),
+    assemblyVersion(Buffer.from("ProductVersion\0\x001.6.0.1+d43\0\0", "utf16le")),
     "1.6.0.1",
   );
 });
