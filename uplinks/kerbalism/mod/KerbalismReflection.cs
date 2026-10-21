@@ -1927,7 +1927,10 @@ namespace Gonogo.KerbalismUplink
         /// <para>A scanner is switched through Kerbalism's SCANsat bridge
         /// (<c>SCANsat.StartScan</c> and <c>StopScan</c>, which call SCANsat's own
         /// <c>startScan</c> and <c>stopScan</c>). Kerbalism's scanner module has
-        /// no toggle of its own.</para>
+        /// no toggle of its own. The SCANsat module is found with the bridge's
+        /// <c>FindScanner</c> where the build has one and by walking the part's
+        /// modules where it does not, and a build with no start or stop refuses
+        /// with its reason.</para>
         /// </summary>
         public RunSwitchRaw SwitchExperiment(Vessel v, string partId, string experimentId, bool run)
         {
@@ -1986,32 +1989,37 @@ namespace Gonogo.KerbalismUplink
 
         private RunSwitchRaw SwitchScanner(Part part, PartModule pm, bool run)
         {
-            if (H._scansatFindScanner == null || H._scansatStartScan == null || H._scansatStopScan == null || H._scansatIsScanning == null)
+            var wantedSensor = Convert.ToInt32(Member(pm, "sensorType") ?? 0, CultureInfo.InvariantCulture);
+            var experimentType = MemberString(pm, "experimentType") ?? "";
+
+            object? Locate()
             {
-                return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
-            }
-
-            try
-            {
-                var sensorType = Convert.ToInt32(Member(pm, "sensorType") ?? 0, CultureInfo.InvariantCulture);
-                var scanner = H._scansatFindScanner.Invoke(null, new object[] { part, MemberString(pm, "experimentType") ?? "", sensorType }) as PartModule;
-                if (scanner == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
-
-                var before = H._scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? false;
-                if (before == run) return new RunSwitchRaw { Outcome = RunSwitchOutcome.AlreadyThere, Running = before };
-
-                (run ? H._scansatStartScan : H._scansatStopScan).Invoke(null, new object[] { scanner });
-                var after = H._scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? before;
-                return new RunSwitchRaw
+                if (H._scansatFindScanner != null)
                 {
-                    Outcome = after == run ? RunSwitchOutcome.Switched : RunSwitchOutcome.NotSwitched,
-                    Running = after,
-                };
+                    try
+                    {
+                        if (H._scansatFindScanner.Invoke(null, new object[] { part, experimentType, wantedSensor }) is PartModule found) return found;
+                    }
+                    catch { }
+                }
+                var modules = new List<PartModule>();
+                foreach (PartModule m in part.Modules) if (m != null) modules.Add(m);
+                return KerbalismScannerSwitch.Choose(
+                    modules,
+                    m => m.moduleName,
+                    m => Member(m, "sensorType") is { } v ? Convert.ToInt32(v, CultureInfo.InvariantCulture) : (int?)null,
+                    wantedSensor);
             }
-            catch
+
+            bool? IsScanning(object scanner)
             {
-                return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotSwitched };
+                if (H._scansatIsScanning != null) return H._scansatIsScanning.Invoke(null, new[] { scanner }) as bool?;
+                return MemberBool(scanner, "scanning");
             }
+
+            Action<object>? Bridge(MethodInfo? method) => method == null ? null : scanner => method.Invoke(null, new[] { scanner });
+
+            return KerbalismScannerSwitch.Run(Locate, Bridge(H._scansatStartScan), Bridge(H._scansatStopScan), IsScanning, run);
         }
 
         /// <summary>

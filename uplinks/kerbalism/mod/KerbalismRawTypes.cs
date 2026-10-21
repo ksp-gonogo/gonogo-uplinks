@@ -428,6 +428,8 @@ namespace Gonogo.KerbalismUplink
         Switched,
         /// <summary>The module was already in the requested state and nothing was called.</summary>
         AlreadyThere,
+        /// <summary>The module is there but this Kerbalism build cannot switch it; <see cref="RunSwitchRaw.Reason"/> says why.</summary>
+        Unavailable,
     }
 
     /// <summary>The outcome of one live switch, and whether the module is switched on once it settles.</summary>
@@ -435,5 +437,7 @@ namespace Gonogo.KerbalismUplink
     {
         public RunSwitchOutcome Outcome;
         public bool Running;
+        /// <summary>Why the switch was refused, for <see cref="RunSwitchOutcome.Unavailable"/>.</summary>
+        public string? Reason;
     }
 }

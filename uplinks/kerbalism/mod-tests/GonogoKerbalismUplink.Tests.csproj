@@ -74,6 +74,9 @@
          reason: the live module switch is the KSP-touching half. -->
     <Compile Include="..\mod\IKerbalismRunActuator.cs" />
     <Compile Include="..\mod\KerbalismRunAnswer.cs" />
+    <!-- The scanner start and stop decision over delegates, so each Kerbalism
+         API shape is checkable without the live SCANsat bridge. -->
+    <Compile Include="..\mod\KerbalismScannerSwitch.cs" />
     <!-- moveToLab's destination-picking decision, pulled out of the live
          KerbalismFileActuator so it is unit-testable without a vessel; see
          that type's own doc comment. -->

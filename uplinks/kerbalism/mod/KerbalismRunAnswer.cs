@@ -29,6 +29,8 @@ namespace Gonogo.KerbalismUplink
                     return CommandResult<RunStateChange>.Ok(new RunStateChange { Changed = false, Running = raw.Running });
                 case RunSwitchOutcome.NotControllable:
                     return CommandResult.Fail(CommandErrorCode.CapabilityMismatch, NoControlSource);
+                case RunSwitchOutcome.Unavailable:
+                    return CommandResult.Fail(CommandErrorCode.CapabilityMismatch, raw.Reason ?? "Kerbalism cannot switch this module");
                 case RunSwitchOutcome.NotSwitched:
                     return CommandResult.Fail(KerbalismErrorCodes.ExperimentNotSwitched);
                 default:
