@@ -314,6 +314,44 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         /// <summary>
+        /// An instrument holds data when one of the vessel's drives stores a file or
+        /// sample of its experiment, because Kerbalism keeps results on drives and
+        /// never in the module. An experiment with nothing stored reports false, a
+        /// known absence, and a map scanner follows the same rule through the
+        /// coverage file it writes.
+        /// </summary>
+        [Fact]
+        public void AnInstrumentHoldsDataWhenADriveStoresItsExperiment()
+        {
+            var raw = new ScienceRaw
+            {
+                Modeled = true,
+                Experiments =
+                {
+                    new ScienceExperimentRaw { PartId = "1", PartName = "Geiger Counter", ExperimentId = "radiationScan" },
+                    new ScienceExperimentRaw { PartId = "2", PartName = "Thermometer", ExperimentId = "temperatureScan" },
+                },
+                Scanners =
+                {
+                    new ScienceScannerRaw { PartId = "3", PartName = "SAR Altimetry Sensor", ExperimentId = "SCANsatAltimetryHiRes" },
+                    new ScienceScannerRaw { PartId = "4", PartName = "Multispectral Sensor", ExperimentId = "SCANsatBiomeAnomaly" },
+                },
+                Stored =
+                {
+                    new ScienceStoredRaw { PartId = "200", ExperimentId = "radiationScan", Kind = "file" },
+                    new ScienceStoredRaw { PartId = "200", ExperimentId = "SCANsatAltimetryHiRes", Kind = "file" },
+                },
+            };
+
+            var rows = KerbalismScienceMap.Instruments(raw)!;
+
+            Assert.Equal(true, Row(rows, "1").HoldsData);
+            Assert.Equal(false, Row(rows, "2").HoldsData);
+            Assert.Equal(true, Row(rows, "3").HoldsData);
+            Assert.Equal(false, Row(rows, "4").HoldsData);
+        }
+
+        /// <summary>
         /// A SCANsat map scanner reaches <c>science.instruments</c>, because with
         /// Kerbalism installed nothing else reports it: Kerbalism's support patch
         /// deletes the part's <c>SCANexperiment</c> module and fits its own, so a

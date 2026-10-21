@@ -37,7 +37,8 @@
             "inoperable": false,
             "rerunnable": true,
             "resettable": true,
-            "dataIsCollectable": false
+            "dataIsCollectable": false,
+            "holdsData": false
           }
         ]
       },

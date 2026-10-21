@@ -145,6 +145,9 @@ namespace Gonogo.KerbalismUplink
         {
             if (!raw.Modeled) return null;
             var list = new List<InstrumentEntry>();
+            var stored = new HashSet<string>(System.StringComparer.Ordinal);
+            foreach (var row in raw.Stored) stored.Add(row.ExperimentId);
+
             foreach (var e in raw.Experiments)
             {
                 var depleted = e.TakesSample && e.RemainingSampleMass.HasValue && e.RemainingSampleMass.Value <= 0;
@@ -174,6 +177,7 @@ namespace Gonogo.KerbalismUplink
                     // Results live on drives, never in the module, so there is never
                     // anything to collect FROM the instrument.
                     DataIsCollectable = false,
+                    HoldsData = stored.Contains(e.ExperimentId),
                     Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
@@ -225,6 +229,7 @@ namespace Gonogo.KerbalismUplink
                     Rerunnable = null,
                     Resettable = null,
                     DataIsCollectable = false,
+                    HoldsData = stored.Contains(s.ExperimentId),
                     Extensions = new Dictionary<string, object?>
                     {
                         [ProviderId] = new Dictionary<string, object?>
