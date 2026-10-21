@@ -20,191 +20,200 @@ namespace Gonogo.KerbalismUplink
     /// </summary>
     public sealed class KerbalismReflection
     {
-        private Assembly? _asm;
-        private Type? _apiType;
-        private Type? _featuresType;
-        private Type? _dbType;
-        private Type? _profileType;
-        private Type? _reliabilityInfoType;
-        private Type? _stormType;
-        private Type? _modifiersType;
-        private Type? _prefsRadiationType;
-        private Type? _prefsReliabilityType;
-        private Type? _resourceCacheType;
-        private Type? _ruleType;
-        private MethodInfo? _ruleVariance;
-        private MethodInfo? _dbKerbal;
-        private MethodInfo? _buildReliabilityList;
-        private MethodInfo? _dbStorm;
-        private MethodInfo? _stormKeyMethod;
-        private MethodInfo? _isInterplanetaryBody;
-        private MethodInfo? _dbKerbalismData;
-        private MethodInfo? _getStormDataForStar;
-        private MethodInfo? _resourceCacheGet;
-        private MethodInfo? _modifiersEvaluate;
-        private PropertyInfo? _prefsRadiationInstanceProp;
-        private PropertyInfo? _stormEjectionSpeedProp;
-        private readonly Dictionary<string, MethodInfo> _apiVessel = new();
-        private readonly Dictionary<string, MethodInfo> _apiVesselString = new();
+        /// <summary>
+        /// Every reflection handle, built together against one Kerbalism assembly
+        /// and never changed afterwards, so it can be published as a whole.
+        /// </summary>
+        internal sealed class Handles
+        {
+            internal static readonly Handles Empty = new();
 
-        // ── drive actuation (File Manager commands) ─────────────────────────
-        private Type? _driveType;
-        private Type? _scienceDbType;
-        private MethodInfo? _getSubjectDataFromStockId;
-        private MethodInfo? _driveSend;
-        private MethodInfo? _driveDeleteFile;
-        private MethodInfo? _driveDeleteSample;
-        private MethodInfo? _driveAnalyze;
-        private MethodInfo? _driveRecordSample;
-        private MethodInfo? _driveSampleCapacityAvailable;
+            internal Assembly? _asm;
+            internal Type? _apiType;
+            internal Type? _featuresType;
+            internal Type? _dbType;
+            internal Type? _profileType;
+            internal Type? _reliabilityInfoType;
+            internal Type? _stormType;
+            internal Type? _modifiersType;
+            internal Type? _prefsRadiationType;
+            internal Type? _prefsReliabilityType;
+            internal Type? _resourceCacheType;
+            internal Type? _ruleType;
+            internal MethodInfo? _ruleVariance;
+            internal MethodInfo? _dbKerbal;
+            internal MethodInfo? _buildReliabilityList;
+            internal MethodInfo? _dbStorm;
+            internal MethodInfo? _stormKeyMethod;
+            internal MethodInfo? _isInterplanetaryBody;
+            internal MethodInfo? _dbKerbalismData;
+            internal MethodInfo? _getStormDataForStar;
+            internal MethodInfo? _resourceCacheGet;
+            internal MethodInfo? _modifiersEvaluate;
+            internal PropertyInfo? _prefsRadiationInstanceProp;
+            internal PropertyInfo? _stormEjectionSpeedProp;
+            internal readonly Dictionary<string, MethodInfo> _apiVessel = new();
+            internal readonly Dictionary<string, MethodInfo> _apiVesselString = new();
 
-        // ── run switching (science start and stop commands) ─────────────────
-        private MethodInfo? _scansatFindScanner;
-        private MethodInfo? _scansatStartScan;
-        private MethodInfo? _scansatStopScan;
-        private MethodInfo? _scansatIsScanning;
+            // ── drive actuation (File Manager commands) ─────────────────────────
+            internal Type? _driveType;
+            internal Type? _scienceDbType;
+            internal MethodInfo? _getSubjectDataFromStockId;
+            internal MethodInfo? _driveSend;
+            internal MethodInfo? _driveDeleteFile;
+            internal MethodInfo? _driveDeleteSample;
+            internal MethodInfo? _driveAnalyze;
+            internal MethodInfo? _driveRecordSample;
+            internal MethodInfo? _driveSampleCapacityAvailable;
 
-        private readonly object _bindLock = new();
-        private readonly KerbalismAssemblyLocator _locator = new(() => AppDomain.CurrentDomain.GetAssemblies());
+            // ── run switching (science start and stop commands) ─────────────────
+            internal MethodInfo? _scansatFindScanner;
+            internal MethodInfo? _scansatStartScan;
+            internal MethodInfo? _scansatStopScan;
+            internal MethodInfo? _scansatIsScanning;
+
+            private Handles() { }
+
+            /// <summary>Caches every reflection handle against the found assembly.</summary>
+            internal Handles(Assembly asm)
+            {
+                _asm = asm;
+
+                _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
+                _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");
+                _dbType = FindType("KERBALISM.DB") ?? FindType("Kerbalism.DB");
+                _profileType = FindType("KERBALISM.Profile") ?? FindType("Kerbalism.Profile");
+                _reliabilityInfoType = FindType("KERBALISM.ReliabilityInfo") ?? FindType("Kerbalism.ReliabilityInfo");
+                _stormType = FindType("KERBALISM.Storm") ?? FindType("Kerbalism.Storm");
+                _modifiersType = FindType("KERBALISM.Modifiers") ?? FindType("Kerbalism.Modifiers");
+                _prefsRadiationType = FindType("KERBALISM.PreferencesRadiation") ?? FindType("Kerbalism.PreferencesRadiation");
+                _prefsReliabilityType = FindType("KERBALISM.PreferencesReliability") ?? FindType("Kerbalism.PreferencesReliability");
+                _resourceCacheType = FindType("KERBALISM.ResourceCache") ?? FindType("Kerbalism.ResourceCache");
+                _ruleType = FindType("KERBALISM.Rule") ?? FindType("Kerbalism.Rule");
+                // Rule.Variance(name, crewMember, variance) is private static. Asked
+                // rather than reimplemented because it hashes a string built from the
+                // kerbal's courage and stupidity FORMATTED, so a reimplementation
+                // would have to match Kerbalism's number formatting to land on the
+                // same multiplier, and would silently disagree if it did not.
+                _ruleVariance = _ruleType?.GetMethod(
+                    "Variance", BindingFlags.NonPublic | BindingFlags.Static, null,
+                    new[] { typeof(string), typeof(ProtoCrewMember), typeof(double) }, null);
+
+                _dbKerbal = _dbType?.GetMethod("Kerbal", BindingFlags.Public | BindingFlags.Static);
+                _buildReliabilityList = _reliabilityInfoType?.GetMethod("BuildList", BindingFlags.Public | BindingFlags.Static);
+                _dbStorm = _dbType?.GetMethod("Storm", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+                _stormKeyMethod = _stormType?.GetMethod(
+                    "StormKey", BindingFlags.Public | BindingFlags.Static, null,
+                    new[] { typeof(CelestialBody), typeof(CelestialBody) }, null);
+                // Kerbalism's own "does this vessel count as interplanetary" test, the
+                // guard on its Storm.Update(Vessel) overload (a sun or a barycenter as
+                // mainBody). Looked up NonPublic too since it is an internal helper;
+                // Solar falls back to a star-membership test when it moves or goes.
+                _isInterplanetaryBody = _stormType?.GetMethod(
+                    "IsInterplanetaryBody",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null,
+                    new[] { typeof(CelestialBody) }, null);
+                _dbKerbalismData = _dbType?.GetMethod(
+                    "KerbalismData", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Vessel) }, null);
+                // VesselData is reached only as DB.KerbalismData's return type: the
+                // uplink never names it, so this is where the per-vessel storm slot
+                // accessor (Kerbalism's own interplanetary path) comes from.
+                _getStormDataForStar = _dbKerbalismData?.ReturnType.GetMethod(
+                    "GetStormDataForStar",
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null,
+                    new[] { typeof(CelestialBody) }, null);
+                _resourceCacheGet = _resourceCacheType?.GetMethod(
+                    "Get", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Vessel) }, null);
+                _prefsRadiationInstanceProp = _prefsRadiationType?.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
+                _stormEjectionSpeedProp = _prefsRadiationType?.GetProperty("StormEjectionSpeed", BindingFlags.Public | BindingFlags.Instance);
+
+                if (_modifiersType != null)
+                {
+                    // Two overloads named Evaluate exist (the live-vessel one and the
+                    // VAB/SPH planner one over EnvironmentAnalyzer/VesselAnalyzer); pick
+                    // the one whose first parameter is Vessel and whose last is
+                    // List<string>, which uniquely identifies the live-vessel overload.
+                    foreach (var m in _modifiersType.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    {
+                        if (m.Name != "Evaluate") continue;
+                        var ps = m.GetParameters();
+                        if (ps.Length == 4 && ps[0].ParameterType == typeof(Vessel) && ps[3].ParameterType == typeof(List<string>))
+                        {
+                            _modifiersEvaluate = m;
+                            break;
+                        }
+                    }
+                }
+
+                if (_apiType != null)
+                {
+                    foreach (var m in _apiType.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    {
+                        var ps = m.GetParameters();
+                        if (ps.Length == 1 && ps[0].ParameterType == typeof(Vessel))
+                            _apiVessel[m.Name] = m;
+                        else if (ps.Length == 2 && ps[0].ParameterType == typeof(Vessel) && ps[1].ParameterType == typeof(string))
+                            _apiVesselString[m.Name] = m;
+                    }
+                }
+
+                // Drive actuation: every method below has exactly one overload in
+                // Kerbalism's Drive/ScienceDB (ground-truthed against
+                // src/Kerbalism/Science/Drive.cs and ScienceDB.cs), so a plain
+                // name lookup is unambiguous, unlike Modifiers.Evaluate above.
+                _driveType = FindType("KERBALISM.Drive") ?? FindType("Kerbalism.Drive");
+                _scienceDbType = FindType("KERBALISM.ScienceDB") ?? FindType("Kerbalism.ScienceDB");
+                _getSubjectDataFromStockId = _scienceDbType?.GetMethod("GetSubjectDataFromStockId", BindingFlags.Public | BindingFlags.Static);
+                _driveSend = _driveType?.GetMethod("Send", BindingFlags.Public | BindingFlags.Instance);
+                _driveDeleteFile = _driveType?.GetMethod("Delete_file", BindingFlags.Public | BindingFlags.Instance);
+                _driveDeleteSample = _driveType?.GetMethod("Delete_sample", BindingFlags.Public | BindingFlags.Instance);
+                _driveAnalyze = _driveType?.GetMethod("Analyze", BindingFlags.Public | BindingFlags.Instance);
+                _driveRecordSample = _driveType?.GetMethod("Record_sample", BindingFlags.Public | BindingFlags.Instance);
+                _driveSampleCapacityAvailable = _driveType?.GetMethod("SampleCapacityAvailable", BindingFlags.Public | BindingFlags.Instance);
+
+                // Kerbalism's own SCANsat bridge: the scanner module has no switch of
+                // its own, it drives SCANsat's startScan and stopScan through these.
+                var scansat = FindType("KERBALISM.SCANsat") ?? FindType("Kerbalism.SCANsat");
+                const BindingFlags publicStatic = BindingFlags.Public | BindingFlags.Static;
+                _scansatFindScanner = scansat?.GetMethod("FindScanner", publicStatic, null, new[] { typeof(Part), typeof(string), typeof(int) }, null);
+                _scansatStartScan = scansat?.GetMethod("StartScan", publicStatic, null, new[] { typeof(PartModule) }, null);
+                _scansatStopScan = scansat?.GetMethod("StopScan", publicStatic, null, new[] { typeof(PartModule) }, null);
+                _scansatIsScanning = scansat?.GetMethod("IsScanning", publicStatic, null, new[] { typeof(PartModule) }, null);
+            }
+
+            internal Type? FindType(string fullName)
+            {
+                if (_asm != null) { try { var t = _asm.GetType(fullName); if (t != null) return t; } catch { } }
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    try { var t = a.GetType(fullName); if (t != null) return t; } catch { }
+                }
+                return null;
+            }
+        }
+
+        private readonly KerbalismBindGate<Handles> _gate;
+
+        private Handles H => _gate.Peek ?? Handles.Empty;
+
+        public KerbalismReflection()
+            : this(new KerbalismAssemblyLocator(() => AppDomain.CurrentDomain.GetAssemblies()))
+        {
+        }
+
+        internal KerbalismReflection(KerbalismAssemblyLocator locator)
+        {
+            _gate = new KerbalismBindGate<Handles>(locator, asm => new Handles(asm));
+        }
 
         /// <summary>
         /// True once Kerbalism's assembly is loaded and its API type resolved. Asks
         /// again on each call until it is, because a bootstrap-loaded Kerbalism
         /// appears after the plugin is constructed; a moved or missing Kerbalism
-        /// stays false.
+        /// stays false. Asked from the main thread and the Courier thread alike:
+        /// the handles are published whole, so a true answer means every handle is bound.
         /// </summary>
-        public bool IsAvailable
-        {
-            get
-            {
-                if (_asm == null)
-                {
-                    // Asked from the main thread and the Courier thread alike, and
-                    // Bind rewrites shared handle caches.
-                    lock (_bindLock)
-                    {
-                        if (_asm == null)
-                        {
-                            var found = _locator.Probe();
-                            if (found != null)
-                            {
-                                try { Bind(found); } catch { _asm = null; }
-                            }
-                        }
-                    }
-                }
-                return _asm != null && _apiType != null;
-            }
-        }
-
-        /// <summary>Caches every reflection handle against the found assembly.</summary>
-        private void Bind(Assembly asm)
-        {
-            _asm = asm;
-            _apiVessel.Clear();
-            _apiVesselString.Clear();
-
-            _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
-            _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");
-            _dbType = FindType("KERBALISM.DB") ?? FindType("Kerbalism.DB");
-            _profileType = FindType("KERBALISM.Profile") ?? FindType("Kerbalism.Profile");
-            _reliabilityInfoType = FindType("KERBALISM.ReliabilityInfo") ?? FindType("Kerbalism.ReliabilityInfo");
-            _stormType = FindType("KERBALISM.Storm") ?? FindType("Kerbalism.Storm");
-            _modifiersType = FindType("KERBALISM.Modifiers") ?? FindType("Kerbalism.Modifiers");
-            _prefsRadiationType = FindType("KERBALISM.PreferencesRadiation") ?? FindType("Kerbalism.PreferencesRadiation");
-            _prefsReliabilityType = FindType("KERBALISM.PreferencesReliability") ?? FindType("Kerbalism.PreferencesReliability");
-            _resourceCacheType = FindType("KERBALISM.ResourceCache") ?? FindType("Kerbalism.ResourceCache");
-            _ruleType = FindType("KERBALISM.Rule") ?? FindType("Kerbalism.Rule");
-            // Rule.Variance(name, crewMember, variance) is private static. Asked
-            // rather than reimplemented because it hashes a string built from the
-            // kerbal's courage and stupidity FORMATTED, so a reimplementation
-            // would have to match Kerbalism's number formatting to land on the
-            // same multiplier, and would silently disagree if it did not.
-            _ruleVariance = _ruleType?.GetMethod(
-                "Variance", BindingFlags.NonPublic | BindingFlags.Static, null,
-                new[] { typeof(string), typeof(ProtoCrewMember), typeof(double) }, null);
-
-            _dbKerbal = _dbType?.GetMethod("Kerbal", BindingFlags.Public | BindingFlags.Static);
-            _buildReliabilityList = _reliabilityInfoType?.GetMethod("BuildList", BindingFlags.Public | BindingFlags.Static);
-            _dbStorm = _dbType?.GetMethod("Storm", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
-            _stormKeyMethod = _stormType?.GetMethod(
-                "StormKey", BindingFlags.Public | BindingFlags.Static, null,
-                new[] { typeof(CelestialBody), typeof(CelestialBody) }, null);
-            // Kerbalism's own "does this vessel count as interplanetary" test, the
-            // guard on its Storm.Update(Vessel) overload (a sun or a barycenter as
-            // mainBody). Looked up NonPublic too since it is an internal helper;
-            // Solar falls back to a star-membership test when it moves or goes.
-            _isInterplanetaryBody = _stormType?.GetMethod(
-                "IsInterplanetaryBody",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null,
-                new[] { typeof(CelestialBody) }, null);
-            _dbKerbalismData = _dbType?.GetMethod(
-                "KerbalismData", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Vessel) }, null);
-            // VesselData is reached only as DB.KerbalismData's return type: the
-            // uplink never names it, so this is where the per-vessel storm slot
-            // accessor (Kerbalism's own interplanetary path) comes from.
-            _getStormDataForStar = _dbKerbalismData?.ReturnType.GetMethod(
-                "GetStormDataForStar",
-                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null,
-                new[] { typeof(CelestialBody) }, null);
-            _resourceCacheGet = _resourceCacheType?.GetMethod(
-                "Get", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(Vessel) }, null);
-            _prefsRadiationInstanceProp = _prefsRadiationType?.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static);
-            _stormEjectionSpeedProp = _prefsRadiationType?.GetProperty("StormEjectionSpeed", BindingFlags.Public | BindingFlags.Instance);
-
-            if (_modifiersType != null)
-            {
-                // Two overloads named Evaluate exist (the live-vessel one and the
-                // VAB/SPH planner one over EnvironmentAnalyzer/VesselAnalyzer); pick
-                // the one whose first parameter is Vessel and whose last is
-                // List<string>, which uniquely identifies the live-vessel overload.
-                foreach (var m in _modifiersType.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                {
-                    if (m.Name != "Evaluate") continue;
-                    var ps = m.GetParameters();
-                    if (ps.Length == 4 && ps[0].ParameterType == typeof(Vessel) && ps[3].ParameterType == typeof(List<string>))
-                    {
-                        _modifiersEvaluate = m;
-                        break;
-                    }
-                }
-            }
-
-            if (_apiType != null)
-            {
-                foreach (var m in _apiType.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                {
-                    var ps = m.GetParameters();
-                    if (ps.Length == 1 && ps[0].ParameterType == typeof(Vessel))
-                        _apiVessel[m.Name] = m;
-                    else if (ps.Length == 2 && ps[0].ParameterType == typeof(Vessel) && ps[1].ParameterType == typeof(string))
-                        _apiVesselString[m.Name] = m;
-                }
-            }
-
-            // Drive actuation: every method below has exactly one overload in
-            // Kerbalism's Drive/ScienceDB (ground-truthed against
-            // src/Kerbalism/Science/Drive.cs and ScienceDB.cs), so a plain
-            // name lookup is unambiguous, unlike Modifiers.Evaluate above.
-            _driveType = FindType("KERBALISM.Drive") ?? FindType("Kerbalism.Drive");
-            _scienceDbType = FindType("KERBALISM.ScienceDB") ?? FindType("Kerbalism.ScienceDB");
-            _getSubjectDataFromStockId = _scienceDbType?.GetMethod("GetSubjectDataFromStockId", BindingFlags.Public | BindingFlags.Static);
-            _driveSend = _driveType?.GetMethod("Send", BindingFlags.Public | BindingFlags.Instance);
-            _driveDeleteFile = _driveType?.GetMethod("Delete_file", BindingFlags.Public | BindingFlags.Instance);
-            _driveDeleteSample = _driveType?.GetMethod("Delete_sample", BindingFlags.Public | BindingFlags.Instance);
-            _driveAnalyze = _driveType?.GetMethod("Analyze", BindingFlags.Public | BindingFlags.Instance);
-            _driveRecordSample = _driveType?.GetMethod("Record_sample", BindingFlags.Public | BindingFlags.Instance);
-            _driveSampleCapacityAvailable = _driveType?.GetMethod("SampleCapacityAvailable", BindingFlags.Public | BindingFlags.Instance);
-
-            // Kerbalism's own SCANsat bridge: the scanner module has no switch of
-            // its own, it drives SCANsat's startScan and stopScan through these.
-            var scansat = FindType("KERBALISM.SCANsat") ?? FindType("Kerbalism.SCANsat");
-            const BindingFlags publicStatic = BindingFlags.Public | BindingFlags.Static;
-            _scansatFindScanner = scansat?.GetMethod("FindScanner", publicStatic, null, new[] { typeof(Part), typeof(string), typeof(int) }, null);
-            _scansatStartScan = scansat?.GetMethod("StartScan", publicStatic, null, new[] { typeof(PartModule) }, null);
-            _scansatStopScan = scansat?.GetMethod("StopScan", publicStatic, null, new[] { typeof(PartModule) }, null);
-            _scansatIsScanning = scansat?.GetMethod("IsScanning", publicStatic, null, new[] { typeof(PartModule) }, null);
-        }
+        public bool IsAvailable => _gate.Resolve()?._apiType != null;
 
         /// <summary>Invoke a public static (Vessel)->double API method (Radiation, Pressure, Comfort, ...).</summary>
         public double? Api(string method, Vessel v) => AsDouble(InvokeVessel(method, v));
@@ -218,13 +227,13 @@ namespace Gonogo.KerbalismUplink
 
         private object? InvokeVessel(string method, Vessel v)
         {
-            if (v == null || !_apiVessel.TryGetValue(method, out var m)) return null;
+            if (v == null || !H._apiVessel.TryGetValue(method, out var m)) return null;
             try { return m.Invoke(null, new object[] { v }); } catch { return null; }
         }
 
         private object? InvokeVesselString(string method, Vessel v, string resource)
         {
-            if (v == null || !_apiVesselString.TryGetValue(method, out var m)) return null;
+            if (v == null || !H._apiVesselString.TryGetValue(method, out var m)) return null;
             try { return m.Invoke(null, new object[] { v, resource }); } catch { return null; }
         }
 
@@ -232,8 +241,8 @@ namespace Gonogo.KerbalismUplink
         public IReadOnlyDictionary<string, bool> Features()
         {
             var result = new Dictionary<string, bool>();
-            if (_featuresType == null) return result;
-            foreach (var f in _featuresType.GetFields(BindingFlags.Public | BindingFlags.Static))
+            if (H._featuresType == null) return result;
+            foreach (var f in H._featuresType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (f.FieldType != typeof(bool)) continue;
                 // The ?? is unreachable and substitutes for nothing: the line above admits only bool fields, and a bool always boxes to a value. It exists to satisfy the unbox cast.
@@ -250,7 +259,7 @@ namespace Gonogo.KerbalismUplink
             {
                 var rules = new Dictionary<string, double>();
                 object? kd = null;
-                try { kd = _dbKerbal?.Invoke(null, new object[] { c.name }); } catch { }
+                try { kd = H._dbKerbal?.Invoke(null, new object[] { c.name }); } catch { }
                 if (kd != null)
                 {
                     var rulesField = kd.GetType().GetField("rules",
@@ -288,7 +297,7 @@ namespace Gonogo.KerbalismUplink
         public IReadOnlyDictionary<string, RuleConstants> RuleConstants()
         {
             var result = new Dictionary<string, RuleConstants>();
-            var rulesField = _profileType?.GetField("rules", BindingFlags.Public | BindingFlags.Static);
+            var rulesField = H._profileType?.GetField("rules", BindingFlags.Public | BindingFlags.Static);
             if (rulesField?.GetValue(null) is IEnumerable rules)
             {
                 foreach (var rule in rules)
@@ -409,7 +418,7 @@ namespace Gonogo.KerbalismUplink
         public ProfileRaw Profile()
         {
             var profile = new ProfileRaw();
-            if (_profileType == null) return profile;
+            if (H._profileType == null) return profile;
 
             foreach (var rule in StaticList("rules"))
             {
@@ -491,7 +500,7 @@ namespace Gonogo.KerbalismUplink
 
         private IEnumerable<object> StaticList(string fieldName)
         {
-            var field = _profileType?.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
+            var field = H._profileType?.GetField(fieldName, BindingFlags.Public | BindingFlags.Static);
             object? value = null;
             try { value = field?.GetValue(null); } catch { }
             if (value is not IEnumerable items) yield break;
@@ -602,12 +611,12 @@ namespace Gonogo.KerbalismUplink
         public ReliabilityPreferencesRaw ReliabilityPreferences()
         {
             var prefs = new ReliabilityPreferencesRaw();
-            if (_prefsReliabilityType == null) return prefs;
+            if (H._prefsReliabilityType == null) return prefs;
 
             object? instance = null;
             try
             {
-                instance = _prefsReliabilityType
+                instance = H._prefsReliabilityType
                     .GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)
                     ?.GetValue(null);
             }
@@ -616,7 +625,7 @@ namespace Gonogo.KerbalismUplink
             {
                 try
                 {
-                    instance = _prefsReliabilityType
+                    instance = H._prefsReliabilityType
                         .GetField("Instance", BindingFlags.Public | BindingFlags.Static)
                         ?.GetValue(null);
                 }
@@ -649,12 +658,12 @@ namespace Gonogo.KerbalismUplink
         public ReliabilityRaw Reliability(Vessel v)
         {
             var raw = new ReliabilityRaw { Ut = Planetarium.GetUniversalTime() };
-            if (v == null || _buildReliabilityList == null) return raw;
+            if (v == null || H._buildReliabilityList == null) return raw;
 
             var modules = ReliabilityModules(v);
 
             object? list = null;
-            try { list = _buildReliabilityList.Invoke(null, new object[] { v }); } catch { }
+            try { list = H._buildReliabilityList.Invoke(null, new object[] { v }); } catch { }
             if (list is not IEnumerable entries) return raw;
 
             foreach (var e in entries)
@@ -980,21 +989,21 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         private Action? SuspendRepairKitRequirement()
         {
-            if (_prefsReliabilityType == null) return null;
+            if (H._prefsReliabilityType == null) return null;
             object? instance = null;
             try
             {
-                instance = _prefsReliabilityType
+                instance = H._prefsReliabilityType
                     .GetProperty("Instance", BindingFlags.Public | BindingFlags.Static)
                     ?.GetValue(null)
-                    ?? _prefsReliabilityType
+                    ?? H._prefsReliabilityType
                         .GetField("Instance", BindingFlags.Public | BindingFlags.Static)
                         ?.GetValue(null);
             }
             catch { }
             if (instance == null) return null;
 
-            var field = _prefsReliabilityType.GetField("requireRepairKits");
+            var field = H._prefsReliabilityType.GetField("requireRepairKits");
             if (field == null) return null;
 
             try
@@ -1141,10 +1150,10 @@ namespace Gonogo.KerbalismUplink
         public SolarRaw Solar(Vessel v)
         {
             var raw = new SolarRaw();
-            if (v == null || _dbKerbalismData == null) return raw;
+            if (v == null || H._dbKerbalismData == null) return raw;
 
             object? vd = null;
-            try { vd = _dbKerbalismData.Invoke(null, new object[] { v }); } catch { }
+            try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { }
             if (vd == null) return raw;
 
             if (Member(vd, "EnvSunsInfo") is not IEnumerable sunsInfo) return raw;
@@ -1237,11 +1246,11 @@ namespace Gonogo.KerbalismUplink
         private bool IsInterplanetary(CelestialBody? mainBody, List<KeyValuePair<object, CelestialBody>> stars)
         {
             if (mainBody == null) return false;
-            if (_isInterplanetaryBody != null)
+            if (H._isInterplanetaryBody != null)
             {
                 try
                 {
-                    if (_isInterplanetaryBody.Invoke(null, new object[] { mainBody }) is bool b) return b;
+                    if (H._isInterplanetaryBody.Invoke(null, new object[] { mainBody }) is bool b) return b;
                 }
                 catch { }
             }
@@ -1253,13 +1262,13 @@ namespace Gonogo.KerbalismUplink
         /// <summary>The shared per-(body, star) slot, <c>DB.Storm(Storm.StormKey(body, star))</c>.</summary>
         private object? BodyStorm(CelestialBody? mainBody, CelestialBody star)
         {
-            if (mainBody == null || _stormKeyMethod == null || _dbStorm == null) return null;
+            if (mainBody == null || H._stormKeyMethod == null || H._dbStorm == null) return null;
 
             string? key = null;
-            try { key = _stormKeyMethod.Invoke(null, new object[] { mainBody, star }) as string; } catch { }
+            try { key = H._stormKeyMethod.Invoke(null, new object[] { mainBody, star }) as string; } catch { }
             if (string.IsNullOrEmpty(key)) return null;
 
-            try { return _dbStorm.Invoke(null, new object[] { key! }); } catch { return null; }
+            try { return H._dbStorm.Invoke(null, new object[] { key! }); } catch { return null; }
         }
 
         /// <summary>
@@ -1270,11 +1279,11 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         private object? PerVesselStorm(object vd, CelestialBody star)
         {
-            if (_getStormDataForStar != null)
+            if (H._getStormDataForStar != null)
             {
                 try
                 {
-                    var byMethod = _getStormDataForStar.Invoke(vd, new object[] { star });
+                    var byMethod = H._getStormDataForStar.Invoke(vd, new object[] { star });
                     if (byMethod != null) return byMethod;
                 }
                 catch { }
@@ -1298,11 +1307,11 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public double? StormEjectionSpeed()
         {
-            if (_prefsRadiationInstanceProp == null || _stormEjectionSpeedProp == null) return null;
+            if (H._prefsRadiationInstanceProp == null || H._stormEjectionSpeedProp == null) return null;
             try
             {
-                var instance = _prefsRadiationInstanceProp.GetValue(null);
-                return instance == null ? null : AsDouble(_stormEjectionSpeedProp.GetValue(instance));
+                var instance = H._prefsRadiationInstanceProp.GetValue(null);
+                return instance == null ? null : AsDouble(H._stormEjectionSpeedProp.GetValue(instance));
             }
             catch { return null; }
         }
@@ -1334,7 +1343,7 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public void FillRuleVarianceFactors(Vessel v, IEnumerable<RuleDefRaw> rules, List<KerbalRulesRaw> crew)
         {
-            if (v == null || rules == null || crew == null || crew.Count == 0 || _ruleVariance == null) return;
+            if (v == null || rules == null || crew == null || crew.Count == 0 || H._ruleVariance == null) return;
 
             var varying = new List<RuleDefRaw>();
             foreach (var rule in rules)
@@ -1358,7 +1367,7 @@ namespace Gonogo.KerbalismUplink
                 foreach (var rule in varying)
                 {
                     object? factor;
-                    try { factor = _ruleVariance.Invoke(null, new object[] { rule.Name, member, rule.Variance }); }
+                    try { factor = H._ruleVariance.Invoke(null, new object[] { rule.Name, member, rule.Variance }); }
                     catch { continue; }
                     if (AsDouble(factor) is double d) entry.RuleVarianceFactors[rule.Name] = d;
                 }
@@ -1380,9 +1389,9 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public double? SecondsSinceLastEvaluation(Vessel v)
         {
-            if (v == null || _dbKerbalismData == null) return null;
+            if (v == null || H._dbKerbalismData == null) return null;
             object? vd;
-            try { vd = _dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
+            try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
             return vd == null ? null : AsDouble(HiddenMember(vd, "secSinceLastEval"));
         }
 
@@ -1396,19 +1405,19 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public bool? IsSimulated(Vessel v)
         {
-            if (v == null || _dbKerbalismData == null) return null;
+            if (v == null || H._dbKerbalismData == null) return null;
             object? vd;
-            try { vd = _dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
+            try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
             return vd == null ? null : MemberBool(vd, "IsSimulated");
         }
 
         public ModifierContext? BeginModifierContext(Vessel v)
         {
-            if (v == null || _dbKerbalismData == null || _resourceCacheGet == null) return null;
+            if (v == null || H._dbKerbalismData == null || H._resourceCacheGet == null) return null;
             try
             {
-                var vd = _dbKerbalismData.Invoke(null, new object[] { v });
-                var resources = _resourceCacheGet.Invoke(null, new object[] { v });
+                var vd = H._dbKerbalismData.Invoke(null, new object[] { v });
+                var resources = H._resourceCacheGet.Invoke(null, new object[] { v });
                 if (vd == null || resources == null) return null;
                 return new ModifierContext { Vd = vd, Resources = resources };
             }
@@ -1423,9 +1432,9 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public double? EvaluateModifiers(ModifierContext? ctx, Vessel v, List<string> modifiers)
         {
-            if (v == null || ctx?.Vd == null || ctx.Resources == null || _modifiersEvaluate == null) return null;
+            if (v == null || ctx?.Vd == null || ctx.Resources == null || H._modifiersEvaluate == null) return null;
             if (modifiers == null || modifiers.Count == 0) return 1.0;
-            try { return AsDouble(_modifiersEvaluate.Invoke(null, new object[] { v, ctx.Vd, ctx.Resources, modifiers })); }
+            try { return AsDouble(H._modifiersEvaluate.Invoke(null, new object[] { v, ctx.Vd, ctx.Resources, modifiers })); }
             catch { return null; }
         }
 
@@ -1598,10 +1607,10 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         private HashSet<uint>? AutoStoppedScannerIds(Vessel v)
         {
-            if (_dbKerbalismData == null) return null;
+            if (H._dbKerbalismData == null) return null;
             try
             {
-                var vd = _dbKerbalismData.Invoke(null, new object[] { v });
+                var vd = H._dbKerbalismData.Invoke(null, new object[] { v });
                 if (vd == null) return null;
                 if (!(Member(vd, "scansat_id") is IEnumerable ids)) return null;
                 var set = new HashSet<uint>();
@@ -1766,8 +1775,8 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public object? ResolveSubjectData(string stockSubjectId)
         {
-            if (_getSubjectDataFromStockId == null || string.IsNullOrEmpty(stockSubjectId)) return null;
-            try { return _getSubjectDataFromStockId.Invoke(null, new object?[] { stockSubjectId, null, null }); }
+            if (H._getSubjectDataFromStockId == null || string.IsNullOrEmpty(stockSubjectId)) return null;
+            try { return H._getSubjectDataFromStockId.Invoke(null, new object?[] { stockSubjectId, null, null }); }
             catch { return null; }
         }
 
@@ -1845,24 +1854,24 @@ namespace Gonogo.KerbalismUplink
         /// <summary>Set (or clear) a file's queued-for-transmission flag: <c>Drive.Send(string subjectId, bool)</c>.</summary>
         public bool DriveSend(object drive, string internalSubjectId, bool flag)
         {
-            if (_driveSend == null) return false;
-            try { _driveSend.Invoke(drive, new object[] { internalSubjectId, flag }); return true; }
+            if (H._driveSend == null) return false;
+            try { H._driveSend.Invoke(drive, new object[] { internalSubjectId, flag }); return true; }
             catch { return false; }
         }
 
         /// <summary>Delete a stored file outright: <c>Drive.Delete_file(SubjectData, double)</c>. An amount of 0.0 deletes the whole file (Drive.cs's own "delete everything" sentinel).</summary>
         public bool DriveDeleteFile(object drive, object subjectData)
         {
-            if (_driveDeleteFile == null) return false;
-            try { _driveDeleteFile.Invoke(drive, new object[] { subjectData, 0.0 }); return true; }
+            if (H._driveDeleteFile == null) return false;
+            try { H._driveDeleteFile.Invoke(drive, new object[] { subjectData, 0.0 }); return true; }
             catch { return false; }
         }
 
         /// <summary>Set (or clear) a sample's lab-analysis flag: <c>Drive.Analyze(SubjectData, bool)</c>.</summary>
         public bool DriveAnalyze(object drive, object subjectData, bool flag)
         {
-            if (_driveAnalyze == null) return false;
-            try { _driveAnalyze.Invoke(drive, new object[] { subjectData, flag }); return true; }
+            if (H._driveAnalyze == null) return false;
+            try { H._driveAnalyze.Invoke(drive, new object[] { subjectData, flag }); return true; }
             catch { return false; }
         }
 
@@ -1873,24 +1882,24 @@ namespace Gonogo.KerbalismUplink
         /// </summary>
         public bool DriveDeleteSample(object drive, object subjectData, double amount = 0.0)
         {
-            if (_driveDeleteSample == null) return false;
-            try { _driveDeleteSample.Invoke(drive, new object[] { subjectData, amount }); return true; }
+            if (H._driveDeleteSample == null) return false;
+            try { H._driveDeleteSample.Invoke(drive, new object[] { subjectData, amount }); return true; }
             catch { return false; }
         }
 
         /// <summary>How much sample capacity a drive has free for this subject: <c>Drive.SampleCapacityAvailable(SubjectData)</c>. Null on reflection failure, not to be confused with a genuine zero.</summary>
         public double? DriveSampleCapacityAvailable(object drive, object subjectData)
         {
-            if (_driveSampleCapacityAvailable == null) return null;
-            try { return AsDouble(_driveSampleCapacityAvailable.Invoke(drive, new object[] { subjectData })); }
+            if (H._driveSampleCapacityAvailable == null) return null;
+            try { return AsDouble(H._driveSampleCapacityAvailable.Invoke(drive, new object[] { subjectData })); }
             catch { return null; }
         }
 
         /// <summary>Record a sample onto a drive, creating or topping up the existing one: <c>Drive.Record_sample(SubjectData, double, double, bool)</c>. False when the drive has no room.</summary>
         public bool DriveRecordSample(object drive, object subjectData, double amount, double mass, bool useStockCrediting)
         {
-            if (_driveRecordSample == null) return false;
-            try { return (bool)(_driveRecordSample.Invoke(drive, new object[] { subjectData, amount, mass, useStockCrediting }) ?? false); }
+            if (H._driveRecordSample == null) return false;
+            try { return (bool)(H._driveRecordSample.Invoke(drive, new object[] { subjectData, amount, mass, useStockCrediting }) ?? false); }
             catch { return false; }
         }
 
@@ -1977,7 +1986,7 @@ namespace Gonogo.KerbalismUplink
 
         private RunSwitchRaw SwitchScanner(Part part, PartModule pm, bool run)
         {
-            if (_scansatFindScanner == null || _scansatStartScan == null || _scansatStopScan == null || _scansatIsScanning == null)
+            if (H._scansatFindScanner == null || H._scansatStartScan == null || H._scansatStopScan == null || H._scansatIsScanning == null)
             {
                 return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
             }
@@ -1985,14 +1994,14 @@ namespace Gonogo.KerbalismUplink
             try
             {
                 var sensorType = Convert.ToInt32(Member(pm, "sensorType") ?? 0, CultureInfo.InvariantCulture);
-                var scanner = _scansatFindScanner.Invoke(null, new object[] { part, MemberString(pm, "experimentType") ?? "", sensorType }) as PartModule;
+                var scanner = H._scansatFindScanner.Invoke(null, new object[] { part, MemberString(pm, "experimentType") ?? "", sensorType }) as PartModule;
                 if (scanner == null) return new RunSwitchRaw { Outcome = RunSwitchOutcome.NotFound };
 
-                var before = _scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? false;
+                var before = H._scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? false;
                 if (before == run) return new RunSwitchRaw { Outcome = RunSwitchOutcome.AlreadyThere, Running = before };
 
-                (run ? _scansatStartScan : _scansatStopScan).Invoke(null, new object[] { scanner });
-                var after = _scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? before;
+                (run ? H._scansatStartScan : H._scansatStopScan).Invoke(null, new object[] { scanner });
+                var after = H._scansatIsScanning.Invoke(null, new object[] { scanner }) as bool? ?? before;
                 return new RunSwitchRaw
                 {
                     Outcome = after == run ? RunSwitchOutcome.Switched : RunSwitchOutcome.NotSwitched,
@@ -2136,15 +2145,7 @@ namespace Gonogo.KerbalismUplink
             return t.IsEnum ? raw.ToString() : null;
         }
 
-        private Type? FindType(string fullName)
-        {
-            if (_asm != null) { try { var t = _asm.GetType(fullName); if (t != null) return t; } catch { } }
-            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try { var t = a.GetType(fullName); if (t != null) return t; } catch { }
-            }
-            return null;
-        }
+        private Type? FindType(string fullName) => H.FindType(fullName);
 
         private static double? AsDouble(object? o)
         {

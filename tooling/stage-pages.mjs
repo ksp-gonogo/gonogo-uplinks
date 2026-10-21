@@ -5,7 +5,8 @@
  * A generated page has two halves and they want opposite rules.
  *
  * **Deterministic, derived from the registrations.** The README prose, the
- * manifest, and `render-shape.json`. These are staged BY BYTES, unconditionally.
+ * manifest, `render-shape.json` and the list of rendered pictures. These are
+ * staged BY BYTES, unconditionally.
  * `render-shape.json` is not an asset at all despite sitting in the asset
  * directory: it is the record `docs --check` compares a fresh render against, so
  * discarding a change to it leaves the checker failing on a page the generator
@@ -47,6 +48,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 /** The shape record, committed beside the assets it describes. */
 const SHAPE_RECORD_FILE = "render-shape.json";
 
+/** The list of pictures the last run wrote, committed beside them. */
+const RENDERED_FILES_RECORD = ".uplink-tools-renders.json";
+
 /**
  * Everything the commit-back carries, as git pathspecs.
  *
@@ -59,6 +63,7 @@ const DETERMINISTIC = [
   "uplinks/*/README.md",
   "uplinks/*/client/gonogo-uplink.json",
   `uplinks/*/client/docs/assets/${SHAPE_RECORD_FILE}`,
+  `uplinks/*/client/docs/assets/${RENDERED_FILES_RECORD}`,
 ];
 const ASSETS = "uplinks/*/client/docs/assets/*";
 
@@ -176,7 +181,7 @@ const discarded = [];
 for (const { code, path } of changed(ASSETS)) {
   const file = posix.basename(path);
   // Staged by bytes above, along with the rest of the deterministic half.
-  if (file === SHAPE_RECORD_FILE) continue;
+  if (file === SHAPE_RECORD_FILE || file === RENDERED_FILES_RECORD) continue;
 
   const { was, now } = shapesFor(posix.dirname(path));
   if (assetVerdict(code, was.get(file), now.get(file)) === "stage") {

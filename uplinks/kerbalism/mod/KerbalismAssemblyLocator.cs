@@ -34,6 +34,13 @@ namespace Gonogo.KerbalismUplink
         public Assembly? Found { get; private set; }
 
         /// <summary>
+        /// Forgets a found assembly whose handles could not be bound, so the next
+        /// probe scans again, held to the retry interval that began at the scan
+        /// that found it.
+        /// </summary>
+        public void Forget() => Found = null;
+
+        /// <summary>
         /// Looks for the assembly if it has not been found yet, at most once per
         /// retry interval so a caller on a hot path pays for one scan every few
         /// seconds while Kerbalism is absent. A source that throws counts as not found.
