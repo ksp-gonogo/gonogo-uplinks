@@ -9,7 +9,7 @@ import {
   Card,
   Cluster,
   CommandButton,
-  HeldBadge,
+  heldWord,
   Stack,
   Text,
   worstSeverity,
@@ -101,7 +101,7 @@ export function TestFlightReliabilityUpdates({
         <Badge tone={severity}>
           {`${rows.length} ${atRisk ? "at risk" : "to watch"}`}
         </Badge>
-        {held && <HeldBadge grade={held} subject="TestFlight reliability" />}
+        {held && <Badge tone="caution">{heldWord(held)}</Badge>}
       </Cluster>
       {!compact &&
         rows.map(({ part, row }, index) => (

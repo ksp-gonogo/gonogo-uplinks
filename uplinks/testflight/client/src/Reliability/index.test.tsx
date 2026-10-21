@@ -147,7 +147,9 @@ describe("TestFlightReliabilityUpdates", () => {
     expect(screen.getByRole("button", { name: /Repair/ })).toBeInTheDocument();
     act(() => stopArriving(fixture));
 
-    await screen.findByText(/offline/i);
+    expect(await screen.findByText(/offline/i)).toHaveTextContent(
+      /^offline$/i,
+    );
     expect(screen.getByText("Loss of Thrust")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Repair/ })).toBeNull();
   });

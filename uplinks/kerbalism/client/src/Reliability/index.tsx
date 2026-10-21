@@ -4,7 +4,7 @@ import {
   Badge,
   Card,
   Cluster,
-  HeldBadge,
+  heldWord,
   magnitudeOf,
   Stack,
   Text,
@@ -76,7 +76,7 @@ export function KerbalismReliabilityUpdates({
         <Badge tone={severity}>
           {`${rows.length} ${atRisk ? "at risk" : "to watch"}`}
         </Badge>
-        {held && <HeldBadge grade={held} subject="Kerbalism reliability" />}
+        {held && <Badge tone="caution">{heldWord(held)}</Badge>}
       </Cluster>
       {!compact &&
         rows.map(({ part, row }, index) => (

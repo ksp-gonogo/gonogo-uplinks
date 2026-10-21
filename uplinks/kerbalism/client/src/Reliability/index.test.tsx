@@ -187,7 +187,9 @@ describe("KerbalismReliabilityUpdates", () => {
     expect(screen.getByRole("button", { name: "Repair" })).toBeInTheDocument();
     act(() => stopArriving(fixture));
 
-    await screen.findByText(/offline/i);
+    expect(await screen.findByText(/offline/i)).toHaveTextContent(
+      /^offline$/i,
+    );
     expect(screen.getByText("Reaction Wheel")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Repair" })).toBeNull();
     expect(screen.queryByText(/^Costs /)).toBeNull();
