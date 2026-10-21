@@ -32,11 +32,21 @@ namespace Gonogo.RealAntennasUplink
     {
         /// <summary>
         /// Ordered hop geometry, or null when RA will not route between the two
-        /// nodes. Fail-soft: a torn-down node mid-solve is "no route" rather
-        /// than an exception, which is the same graceful meaning and keeps a
-        /// telemetry read from taking the uplink down.
+        /// nodes, with the directions each hop carries read from its link's
+        /// forward and reverse data rates through <paramref name="rates"/>.
+        /// Fail-soft: a torn-down node mid-solve is "no route" rather than an
+        /// exception, which is the same graceful meaning and keeps a telemetry
+        /// read from taking the uplink down.
         /// </summary>
-        internal static IReadOnlyList<CommsRouteHop>? Between(CommNode? start, CommNode? end)
+        /// <param name="rates">
+        /// A link's (forward, reverse) data rate in bits per second, forward
+        /// being the link's stored a to b direction. A rate it cannot read is
+        /// null and counts as carried; with no reader every hop carries both.
+        /// </param>
+        internal static IReadOnlyList<CommsRouteHop>? Between(
+            CommNode? start,
+            CommNode? end,
+            Func<CommLink, (double? Forward, double? Reverse)>? rates = null)
         {
             try
             {
@@ -57,18 +67,46 @@ namespace Gonogo.RealAntennasUplink
                     return null;
                 }
 
-                var hops = new List<CommsRouteHop>();
+                var links = new List<CommLink>();
                 foreach (var link in path)
                 {
-                    if (link?.a == null || link.b == null)
+                    if (link?.a != null && link.b != null)
                     {
-                        continue;
+                        links.Add(link);
+                    }
+                }
+                if (links.Count > 0 && !Touches(links[0], start))
+                {
+                    links.Reverse();
+                }
+
+                var hops = new List<CommsRouteHop>();
+                var near = start;
+                foreach (var link in links)
+                {
+                    var carries = CommsDirection.Both;
+                    CommNode far;
+                    if (ReferenceEquals(link.a, near))
+                    {
+                        far = link.b;
+                        carries = Carried(link, rates, nearIsA: true);
+                    }
+                    else if (ReferenceEquals(link.b, near))
+                    {
+                        far = link.a;
+                        carries = Carried(link, rates, nearIsA: false);
+                    }
+                    else
+                    {
+                        far = link.b;
                     }
                     hops.Add(new CommsRouteHop(
                         (link.a.precisePosition - link.b.precisePosition).magnitude,
                         link.b.isHome || link.a.isHome,
-                        CommsNodeHandle.Of(link.a),
-                        CommsNodeHandle.Of(link.b)));
+                        CommsNodeHandle.Of(near),
+                        CommsNodeHandle.Of(far),
+                        carries));
+                    near = far;
                 }
                 return hops;
             }
@@ -76,6 +114,25 @@ namespace Gonogo.RealAntennasUplink
             {
                 return null;
             }
+        }
+
+        private static bool Touches(CommLink link, CommNode node) =>
+            ReferenceEquals(link.a, node) || ReferenceEquals(link.b, node);
+
+        private static CommsDirection Carried(
+            CommLink link,
+            Func<CommLink, (double? Forward, double? Reverse)>? rates,
+            bool nearIsA)
+        {
+            if (rates == null)
+            {
+                return CommsDirection.Both;
+            }
+            var (forward, reverse) = rates(link);
+            var nearToFar = nearIsA ? forward : reverse;
+            var farToNear = nearIsA ? reverse : forward;
+            return (nearToFar is > 0 or null ? CommsDirection.Forward : CommsDirection.None)
+                | (farToNear is > 0 or null ? CommsDirection.Reverse : CommsDirection.None);
         }
     }
 }

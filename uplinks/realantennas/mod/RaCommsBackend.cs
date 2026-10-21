@@ -207,7 +207,10 @@ namespace Gonogo.RealAntennasUplink
         /// wrong).
         /// </summary>
         public override IReadOnlyList<CommsRouteHop>? RouteBetween(CommsNodeHandle? from, CommsNodeHandle? to)
-            => RaRouting.Between(from?.As<CommNode>(), to?.As<CommNode>());
+            => RaRouting.Between(
+                from?.As<CommNode>(),
+                to?.As<CommNode>(),
+                link => (_ra.ForwardDataRate(link), _ra.ReverseDataRate(link)));
 
         /// <summary>
         /// RA's own reach rule between two nodes (see <see cref="RaReach"/> for

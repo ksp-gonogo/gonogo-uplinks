@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommNet;
+using Sitrep.Contract;
 using Xunit;
 
 namespace Gonogo.RealAntennasUplink.Tests.Routing
@@ -29,6 +31,12 @@ namespace Gonogo.RealAntennasUplink.Tests.Routing
 
             internal int RaSolves { get; private set; }
 
+            /// <summary>Lists the path's links last to first, as a solver that walks from the far end would.</summary>
+            internal bool ListReversed { get; set; }
+
+            /// <summary>Stores each link with its a and b swapped against the way the route runs.</summary>
+            internal bool SwapEnds { get; set; }
+
             public override bool FindPath(CommNode start, CommPath path, CommNode end)
             {
                 StockSolves++;
@@ -47,9 +55,20 @@ namespace Gonogo.RealAntennasUplink.Tests.Routing
                 {
                     return null;
                 }
+                var links = new List<CommLink>();
                 for (var i = 0; i + 1 < chain.Length; i++)
                 {
-                    path?.Add(new CommLink { a = chain[i], b = chain[i + 1] });
+                    links.Add(SwapEnds
+                        ? new CommLink { a = chain[i + 1], b = chain[i] }
+                        : new CommLink { a = chain[i], b = chain[i + 1] });
+                }
+                if (ListReversed)
+                {
+                    links.Reverse();
+                }
+                foreach (var link in links)
+                {
+                    path?.Add(link);
                 }
                 return chain[chain.Length - 1];
             }
@@ -133,6 +152,120 @@ namespace Gonogo.RealAntennasUplink.Tests.Routing
 
             Assert.Null(RaRouting.Between(Sitrep.Contract.CommsNodeHandle.Of("not-a-node")!.As<CommNode>(), node));
             Assert.Null(RaRouting.Between(node, Sitrep.Contract.CommsNodeHandle.Of(42)!.As<CommNode>()));
+        }
+
+        /// <summary>The directions every hop carries, which is what a route carries.</summary>
+        private static CommsDirection RouteCarries(IReadOnlyList<CommsRouteHop> hops) =>
+            hops.Aggregate(CommsDirection.Both, (carried, hop) => carried & hop.Carries);
+
+        private static (RaShapedNetwork Net, CommNode Origin, CommNode Relay, CommNode Target) Chain(
+            bool listReversed = false,
+            bool swapEnds = false)
+        {
+            CommNode? origin = null;
+            CommNode? relay = null;
+            CommNode? target = null;
+            var net = new RaShapedNetwork((_, __) => new[] { origin!, relay!, target! })
+            {
+                ListReversed = listReversed,
+                SwapEnds = swapEnds,
+            };
+            origin = NodeAt(net, 0.0);
+            relay = NodeAt(net, 300.0, 400.0);
+            target = NodeAt(net, 1000.0, isHome: true);
+            return (net, origin, relay, target);
+        }
+
+        /// <summary>Rates keyed by the link's stored a node, so a test names a link by what it joins.</summary>
+        private static Func<CommLink, (double?, double?)> Rates(
+            Dictionary<CommNode, (double?, double?)> byA) => link => byA[link.a];
+
+        [Fact]
+        public void AHopWithNoForwardRate_CarriesReverse_AndSoDoesTheRoute()
+        {
+            var (_, origin, relay, target) = Chain();
+
+            var hops = RaRouting.Between(origin, target, Rates(new()
+            {
+                [origin] = (0.0, 5.0),
+                [relay] = (7.0, 7.0),
+            }));
+
+            Assert.Equal(CommsDirection.Reverse, hops![0].Carries);
+            Assert.Equal(CommsDirection.Both, hops[1].Carries);
+            Assert.Equal(CommsDirection.Reverse, RouteCarries(hops));
+        }
+
+        [Fact]
+        public void TheSameLinkWalkedFromTheOtherEnd_SwapsWhichDirectionIsCarried()
+        {
+            var (_, origin, relay, target) = Chain(swapEnds: true);
+
+            // Each link's a is the node nearer the target, so its forward rate runs back toward the origin
+            var hops = RaRouting.Between(origin, target, Rates(new()
+            {
+                [relay] = (0.0, 5.0),
+                [target] = (7.0, 7.0),
+            }));
+
+            Assert.Equal(CommsDirection.Forward, hops![0].Carries);
+            Assert.Equal(CommsDirection.Both, hops[1].Carries);
+            Assert.Equal(CommsDirection.Forward, RouteCarries(hops));
+        }
+
+        [Fact]
+        public void ARateThatCannotBeRead_CountsAsCarried()
+        {
+            var (_, origin, relay, target) = Chain();
+
+            var hops = RaRouting.Between(origin, target, Rates(new()
+            {
+                [origin] = (null, null),
+                [relay] = (null, 0.0),
+            }));
+
+            Assert.Equal(CommsDirection.Both, hops![0].Carries);
+            Assert.Equal(CommsDirection.Forward, hops[1].Carries);
+        }
+
+        [Fact]
+        public void NoRateReader_MeansEveryHopCarriesBoth()
+        {
+            var (_, origin, _, target) = Chain();
+
+            var hops = RaRouting.Between(origin, target);
+
+            Assert.All(hops!, hop => Assert.Equal(CommsDirection.Both, hop.Carries));
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void OrientationHolds_WhicheverOrderThePathListsItsLinksAndWhicheverEndIsStoredAsA(
+            bool listReversed,
+            bool swapEnds)
+        {
+            var (_, origin, relay, target) = Chain(listReversed, swapEnds);
+            var stored = swapEnds ? (first: relay, second: target) : (first: origin, second: relay);
+            // The origin-relay link is blocked origin to relay; the relay-target link is blocked target to relay
+            var rates = new Dictionary<CommNode, (double?, double?)>
+            {
+                [stored.first] = swapEnds ? (5.0, 0.0) : (0.0, 5.0),
+                [stored.second] = swapEnds ? (0.0, 5.0) : (5.0, 0.0),
+            };
+
+            var hops = RaRouting.Between(origin, target, Rates(rates));
+
+            Assert.Equal(2, hops!.Count);
+            Assert.Equal(CommsDirection.Reverse, hops[0].Carries);
+            Assert.Equal(CommsDirection.Forward, hops[1].Carries);
+            Assert.Equal(CommsDirection.None, RouteCarries(hops));
+            Assert.Same(origin, hops[0].FromHandle!.As<CommNode>());
+            Assert.Same(relay, hops[0].ToHandle!.As<CommNode>());
+            Assert.Same(relay, hops[1].FromHandle!.As<CommNode>());
+            Assert.Same(target, hops[1].ToHandle!.As<CommNode>());
         }
     }
 }
