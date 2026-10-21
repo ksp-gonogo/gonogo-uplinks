@@ -8,7 +8,7 @@
       "text": "a0774835"
     },
     "cpu-picker-untagged--default.png": {
-      "hash": "ee72afd63a3e54e9",
+      "hash": "5064a57e6dac2303",
       "elements": 34,
       "text": "54cb2e54"
     },
@@ -18,27 +18,27 @@
       "text": "12f1d671"
     },
     "lander-cpu-attached-stopped-arriving--default.png": {
-      "hash": "5704b8c122f73559",
+      "hash": "23c16bd4545faefa",
       "elements": 69,
       "text": "141acd90"
     },
     "two-cpus-idle--default.png": {
-      "hash": "43d168d5e17c6214",
+      "hash": "160e4e06869b013f",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle--min.png": {
-      "hash": "43d168d5e17c6214",
+      "hash": "160e4e06869b013f",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle-stopped-arriving--default.png": {
-      "hash": "43d168d5e17c6214",
+      "hash": "160e4e06869b013f",
       "elements": 36,
       "text": "db7edf95"
     },
     "two-cpus-idle-stopped-arriving--min.png": {
-      "hash": "43d168d5e17c6214",
+      "hash": "160e4e06869b013f",
       "elements": 36,
       "text": "db7edf95"
     }
