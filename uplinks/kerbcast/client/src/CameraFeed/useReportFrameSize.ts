@@ -22,6 +22,7 @@ export function useReportFrameSize(
   flightId: number | null,
   stage: RefObject<HTMLElement | null>,
 ): void {
+  // gonogo:reads none
   const displaySizes = useKerbcastDisplaySizes();
   const instanceId = useId();
   const [el, setEl] = useState<HTMLElement | null>(null);
