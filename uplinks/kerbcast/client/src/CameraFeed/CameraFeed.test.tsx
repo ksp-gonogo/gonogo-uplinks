@@ -417,6 +417,62 @@ describe("CameraFeed: camera selection", () => {
     ]);
   });
 
+  it("lists a launchpad command camera by its name beside the part cameras", async () => {
+    await buildConnectedSource([
+      ...TWO_CAMERAS,
+      makeCamera({
+        flightId: 90,
+        kind: "command",
+        cameraName: "Launchpad camera",
+        vesselName: "Kerbal X",
+        commandCentre: {
+          stationId: "ground:LaunchPad",
+          nodeName: "LaunchPad",
+          displayName: "Launchpad",
+          body: "Kerbin",
+          latitude: -0.0972,
+          longitude: -74.5577,
+          altitude: 75,
+          targetPersistentId: 0,
+        },
+      }),
+    ]);
+
+    renderFeed({ flightId: null });
+
+    fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
+    const labels = screen
+      .getAllByRole("menuitemradio")
+      .map((item) => item.textContent);
+    expect(labels).toEqual([
+      "Starboard Cam (Kerbal X)",
+      "Nose Cam (Kerbal X)",
+      "Tail Cam (Kerbal X)",
+      "Launchpad camera (Kerbal X)",
+    ]);
+  });
+
+  it("lists a camera of a kind it does not know, since kinds are open-ended", async () => {
+    await buildConnectedSource([
+      ...TWO_CAMERAS,
+      makeCamera({
+        flightId: 91,
+        kind: "orbital-relay",
+        cameraName: "Some other camera",
+        vesselName: "Kerbal X",
+      }),
+    ]);
+
+    renderFeed({ flightId: null });
+
+    fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
+    expect(
+      screen
+        .getAllByRole("menuitemradio")
+        .map((item) => item.textContent),
+    ).toContain("Some other camera (Kerbal X)");
+  });
+
   it("lists every available camera in the menu", async () => {
     await buildConnectedSource(TWO_CAMERAS);
 
