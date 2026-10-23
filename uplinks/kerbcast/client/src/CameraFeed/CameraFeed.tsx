@@ -36,6 +36,7 @@ import {
 import {
   type CSSProperties,
   type FocusEvent as ReactFocusEvent,
+  type RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -59,12 +60,12 @@ import {
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
-import { feedAspect, frameBox } from "./frameShape.js";
-import { useStreamAspect } from "./useStreamAspect.js";
+import { frameBox } from "./frameShape.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
 } from "./useDelayedKerbcastStream.js";
+import { useReportFrameSize } from "./useReportFrameSize.js";
 
 export interface CameraFeedConfig extends Record<string, unknown> {
   /**
@@ -248,9 +249,7 @@ export function CameraFeed({
   // stream is ready). ResizeObserver is stubbed in tests (installDomStubs).
   const [feedSize, setFeedSize] = useState({ width: 0, height: 0 });
   const overlayObserverRef = useRef<ResizeObserver | null>(null);
-  const [overlayWrap, setOverlayWrap] = useState<HTMLDivElement | null>(null);
   const attachOverlayWrap = useCallback((el: HTMLDivElement | null) => {
-    setOverlayWrap(el);
     overlayObserverRef.current?.disconnect();
     overlayObserverRef.current = null;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -438,7 +437,7 @@ export function CameraFeed({
 
   // ---- Frame shape ----
   // The box the frame is fitted INTO, measured so the frame itself can be given
-  // the CAMERA's shape rather than the tile's (see `frameShape.ts`). Seeded 16:9
+  // a fixed 16:9 rather than the tile's shape (see `frameShape.ts`). Seeded 16:9
   // rather than empty: jsdom's ResizeObserver stub never fires, and a zero seed
   // there would give the frame no size at all, which is the one thing the SDK's
   // `Stage` cannot survive.
@@ -446,8 +445,6 @@ export function CameraFeed({
     w: 320,
     h: 180,
   });
-
-  const streamAspect = useStreamAspect(overlayWrap);
 
   // ---- Control reveal ----
   // The delayed-aim controls are drawn over the picture and are hidden until
@@ -525,10 +522,7 @@ export function CameraFeed({
   };
   const steerable =
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
-  // The frame takes the shape of the stream being played, fitted into whatever
-  // the tile left it. The camera's configured size stands in until the first
-  // frame has dimensions.
-  const frame = frameBox(stageBox, streamAspect ?? feedAspect(activeCamera));
+  const frame = frameBox(stageBox);
   const showSetpointSurface =
     controlMode !== "live" &&
     effectiveFlightId !== null &&
@@ -611,6 +605,14 @@ export function CameraFeed({
                     // pan/zoom methods going no-op is a stand-down of a path
                     // nothing was taking.
                     disableManualControls={showSetpointSurface}
+                    // The SDK would report its own measured box, which sits
+                    // inside the frame; the request comes from the stage's
+                    // layout instead (`FrameSizeReport` below).
+                    renderSize="none"
+                  />
+                  <FrameSizeReport
+                    flightId={effectiveFlightId}
+                    stage={stageRef}
                   />
                   <div style={FEED_OVERLAY_STYLE}>
                     <AugmentSlot
@@ -668,6 +670,21 @@ export function CameraFeed({
       />
     </KerbcastProvider>
   );
+}
+
+/**
+ * Reports the frame's render size to the sidecar. A component of its own because
+ * the report needs the `KerbcastProvider` this widget renders.
+ */
+function FrameSizeReport({
+  flightId,
+  stage,
+}: Readonly<{
+  flightId: number | null;
+  stage: RefObject<HTMLDivElement | null>;
+}>) {
+  useReportFrameSize(flightId, stage);
+  return null;
 }
 
 /*

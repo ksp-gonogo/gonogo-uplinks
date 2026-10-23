@@ -1926,3 +1926,205 @@ describe("CameraFeed: delayed aim controls", () => {
     expect(aimLayer().style.opacity).toBe("1");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Frame shape and the render size asked of the sidecar, in a tile shaped like a
+// half-width phone cell: narrow and tall.
+// ---------------------------------------------------------------------------
+
+describe("CameraFeed: frame shape in a narrow, tall tile", () => {
+  const PHONE_HALF_TILE = { width: 170, height: 400 };
+  let tile = PHONE_HALF_TILE;
+  const observers: Array<{
+    callback: ResizeObserverCallback;
+    targets: Element[];
+  }> = [];
+
+  /**
+   * What a layout engine would give each observed element: an element sized in
+   * px by its own style (the frame) has that size, anything inside it fills it,
+   * and anything else is the tile.
+   */
+  function boxOf(el: Element): { width: number; height: number } {
+    for (let at: Element | null = el; at; at = at.parentElement) {
+      const style = (at as HTMLElement).style;
+      if (style?.width.endsWith("px") && style.height.endsWith("px")) {
+        return {
+          width: Number.parseFloat(style.width),
+          height: Number.parseFloat(style.height),
+        };
+      }
+    }
+    return tile;
+  }
+
+  function layout() {
+    for (const observer of observers) {
+      const entries = observer.targets.map((target) => {
+        const { width, height } = boxOf(target);
+        return {
+          target,
+          contentRect: { width, height } as DOMRectReadOnly,
+        } as ResizeObserverEntry;
+      });
+      if (entries.length > 0) {
+        observer.callback(entries, {} as ResizeObserver);
+      }
+    }
+  }
+
+  async function settle() {
+    await act(async () => {
+      layout();
+      await new Promise((resolve) => setTimeout(resolve, 260));
+    });
+  }
+
+  beforeEach(() => {
+    tile = PHONE_HALF_TILE;
+    observers.length = 0;
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        private readonly entry: {
+          callback: ResizeObserverCallback;
+          targets: Element[];
+        };
+        constructor(callback: ResizeObserverCallback) {
+          this.entry = { callback, targets: [] };
+          observers.push(this.entry);
+        }
+        // A real observer reports every new target once, before the next paint.
+        observe(target: Element) {
+          this.entry.targets.push(target);
+          const { callback } = this.entry;
+          queueMicrotask(() => {
+            const { width, height } = boxOf(target);
+            callback(
+              [
+                {
+                  target,
+                  contentRect: { width, height } as DOMRectReadOnly,
+                } as ResizeObserverEntry,
+              ],
+              this as unknown as ResizeObserver,
+            );
+          });
+        }
+        unobserve() {}
+        disconnect() {
+          this.entry.targets.length = 0;
+        }
+      },
+    );
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function frameOf(video: HTMLVideoElement): HTMLElement {
+    for (let at = video.parentElement; at; at = at.parentElement) {
+      if (at.style.width.endsWith("px")) return at;
+    }
+    throw new Error("no sized frame around the video");
+  }
+
+  function sizeReports(sidecar: MockSidecar) {
+    return sidecar.commands
+      .filter((c) => c.type === "report-display-size")
+      .map((c) => (c as { content: { width: number; height: number } }).content);
+  }
+
+  /** Mounts the feed in the tile and waits for its first request. */
+  async function mountFeed() {
+    const { sidecar } = await buildConnectedSource();
+    const { container } = renderFeed({ flightId: 42 });
+    await screen.findByRole("button", { name: /starboard cam/i });
+    await settle();
+    await settle();
+    const video = container.querySelector("video");
+    if (!video) throw new Error("no video element");
+    return { sidecar, video };
+  }
+
+  /**
+   * The stream changes size the two ways it can be seen: the `<video>`'s own
+   * frame dimensions, and the size the sidecar says it is rendering.
+   */
+  async function streamBecomes(
+    sidecar: MockSidecar,
+    video: HTMLVideoElement,
+    width: number,
+    height: number,
+  ) {
+    Object.defineProperty(video, "videoWidth", {
+      value: width,
+      configurable: true,
+    });
+    Object.defineProperty(video, "videoHeight", {
+      value: height,
+      configurable: true,
+    });
+    await act(async () => {
+      sidecar.updateCamera(42, { renderWidth: width, renderHeight: height });
+      video.dispatchEvent(new Event("loadedmetadata"));
+      video.dispatchEvent(new Event("resize"));
+    });
+    await settle();
+  }
+
+  it("letterboxes a 16:9 frame from the tile's width and asks for one 16:9 size", async () => {
+    const { sidecar, video } = await mountFeed();
+    expect(frameOf(video).style.width).toBe("170px");
+    expect(frameOf(video).style.height).toBe("95px");
+    expect(sizeReports(sidecar)).toEqual([
+      { flightId: 42, width: 176, height: 100 },
+    ]);
+  });
+
+  it("sends no request when the stream comes back smaller, larger or another shape", async () => {
+    const { sidecar, video } = await mountFeed();
+    const before = sizeReports(sidecar).length;
+
+    for (const [w, h] of [
+      [96, 54],
+      [1920, 1080],
+      [160, 120],
+      [176, 400],
+    ] as const) {
+      await streamBecomes(sidecar, video, w, h);
+      expect(frameOf(video).style.width).toBe("170px");
+      expect(frameOf(video).style.height).toBe("95px");
+    }
+
+    expect(sizeReports(sidecar).length - before).toBe(0);
+  });
+
+  it("sends nothing at all while the tile holds still and the stream flips between two sizes", async () => {
+    const { sidecar, video } = await mountFeed();
+    const before = sizeReports(sidecar);
+
+    for (let i = 0; i < 6; i++) {
+      await streamBecomes(sidecar, video, ...(i % 2 ? [176, 128] : [176, 96]) as [number, number]);
+    }
+
+    expect(sizeReports(sidecar)).toEqual(before);
+  });
+
+  it("sends exactly one request, sized from the tile, for a resize dragged across several sizes", async () => {
+    const { sidecar } = await mountFeed();
+    const before = sizeReports(sidecar).length;
+
+    for (const width of [240, 280, 320]) {
+      tile = { width, height: 400 };
+      await act(async () => layout());
+    }
+    await settle();
+    await settle();
+
+    expect(sizeReports(sidecar).slice(before)).toEqual([
+      { flightId: 42, width: 320, height: 180 },
+    ]);
+  });
+});
