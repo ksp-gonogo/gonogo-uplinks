@@ -284,6 +284,30 @@ namespace Gonogo.RealAntennasUplink
             return antennas;
         }
 
+        /// <summary>
+        /// Whether the vessel carrying this node's antennas holds any electric
+        /// charge now. Null when nothing says: a node with no loaded vessel behind
+        /// its antennas (a ground station, an unloaded craft) or a read that threw.
+        /// </summary>
+        public bool? NodeHasCharge(object? node)
+        {
+            try
+            {
+                foreach (var antenna in NodeAntennas(node))
+                {
+                    if (ReadPublicMember(Parent(antenna), "part") is Part part && part.vessel != null)
+                    {
+                        part.vessel.GetConnectedResourceTotals(PartResourceLibrary.ElectricityHashcode, out var amount, out _);
+                        return amount > 1e-6;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
         // ── Antenna TARGETING: the read half ─────────────────────────────────────
         //
         // Every member below is public on RealAntennas' own types, so this stays

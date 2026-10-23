@@ -50,6 +50,25 @@ namespace Gonogo.RealAntennasUplink
 
         public const string ModelName = "RealAntennas (link budget closes in dB)";
 
+        public const string UnpoweredModelId = "realantennas-unpowered";
+
+        public const string UnpoweredModelName = "RealAntennas (no electric charge aboard)";
+
+        /// <summary>
+        /// <paramref name="reach"/>, or no reach at all when either end holds no
+        /// electric charge: a craft that cannot power its antennas carries no
+        /// link whatever the budget says, so a plan must not promise it a window.
+        /// An end whose charge could not be read (null) is never taken as empty.
+        /// </summary>
+        internal static ICommsReachModel WithPower(ICommsReachModel reach, bool? fromHasCharge, bool? toHasCharge) =>
+            AnEndIsUnpowered(fromHasCharge, toHasCharge)
+                ? new MaxRangeReachModel(UnpoweredModelId, UnpoweredModelName, 0.0, CommsNoReachReasons.Unpowered)
+                : reach;
+
+        /// <summary>Whether either end is known to hold no electric charge; an end whose charge is unknown is not.</summary>
+        internal static bool AnEndIsUnpowered(bool? fromHasCharge, bool? toHasCharge) =>
+            fromHasCharge == false || toHasCharge == false;
+
         /// <summary>
         /// The reach model for a pair of nodes, or
         /// <see cref="CommsReachModels.Unknown"/> when RA will not say: an
@@ -71,6 +90,20 @@ namespace Gonogo.RealAntennasUplink
                 return CommsReachModels.Unknown;
             }
 
+            try
+            {
+                var fromCharge = ra.NodeHasCharge(from);
+                var toCharge = ra.NodeHasCharge(to);
+                return WithPower(BudgetReach(ra, from, to), fromCharge, toCharge);
+            }
+            catch (Exception)
+            {
+                return CommsReachModels.Unknown;
+            }
+        }
+
+        private static ICommsReachModel BudgetReach(RaReflection ra, CommNode? from, CommNode? to)
+        {
             try
             {
                 var fromAntennas = ra.NodeAntennas(from);

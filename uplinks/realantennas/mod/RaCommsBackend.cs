@@ -231,6 +231,11 @@ namespace Gonogo.RealAntennasUplink
         {
             var fromNode = from?.As<CommNode>();
             var toNode = to?.As<CommNode>();
+            // The plan leaves the pair to the reach rule, which says no reach and why, rather than model a link nothing powers.
+            if (RaReach.AnEndIsUnpowered(_ra.NodeHasCharge(fromNode), _ra.NodeHasCharge(toNode)))
+            {
+                return null;
+            }
             var fromAntennas = Planned(fromNode, ut);
             var toAntennas = Planned(toNode, ut);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
