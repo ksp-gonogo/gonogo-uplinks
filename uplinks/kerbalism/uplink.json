@@ -26,6 +26,6 @@
   },
   "csharpNamespace": "Gonogo.KerbalismUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/kerbalism/1.0.0-rc.3/kerbalism.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/kerbalism/1.0.0-rc.4/kerbalism.client.js"
   }
 }
