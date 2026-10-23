@@ -13,7 +13,7 @@ import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
  * write a manifest whose declared version disagrees with the package's, so the
  * two cannot drift without something saying so.
  */
-const UPLINK_VERSION = "1.0.0-rc.2";
+const UPLINK_VERSION = "1.0.0-rc.3";
 
 export const SCANSAT = defineUplinkClient({
   id: "scansat",
