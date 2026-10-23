@@ -12,7 +12,7 @@
     "paints": [
       "SCAN RADAR Altimetry Sensor",
       "SCAN Multispectral Sensor",
-      "OFFLINE"
+      "SCANsatAltimetryLoRes"
     ],
     "size": {
       "w": 10,

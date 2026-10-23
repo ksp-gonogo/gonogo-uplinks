@@ -3,47 +3,47 @@
   "engine": "chromium",
   "assets": {
     "altimetry-base-kerbin--default.png": {
-      "hash": "5eb922d63df736a3",
+      "hash": "0c15cfeb71fbc2a0",
       "elements": 71,
       "text": "b5057333"
     },
     "biome-base-kerbin--default.png": {
-      "hash": "5eb922d63df736a3",
+      "hash": "0c15cfeb71fbc2a0",
       "elements": 71,
       "text": "b5057333"
     },
     "coverage-under-kerbin-map--default.png": {
-      "hash": "55f2eabbee3800bc",
+      "hash": "f209cc856bcdea24",
       "elements": 86,
       "text": "ba7b4e37"
     },
     "kerbin-partial-scan--default.png": {
-      "hash": "f5c80993503270dc",
+      "hash": "bf86ad0235156984",
       "elements": 146,
       "text": "6ee75d6d"
     },
     "kerbin-partial-scan--min.png": {
-      "hash": "f5c80993503270dc",
+      "hash": "bf86ad0235156984",
       "elements": 146,
       "text": "6ee75d6d"
     },
     "scanners-beside-stock--default.png": {
-      "hash": "909a65ad6f27133c",
-      "elements": 58,
+      "hash": "54c6ea42ea7764c5",
+      "elements": 56,
       "text": "cf22059f"
     },
     "scanners-beside-stock-stopped-arriving--default.png": {
-      "hash": "72f262d26f46bd11",
+      "hash": "23b6471cf9e8bd98",
       "elements": 61,
-      "text": "d138e130"
+      "text": "cf22059f"
     },
     "scansat-absent--default.png": {
-      "hash": "57f170dced804e88",
+      "hash": "8366f9d6ab333dfc",
       "elements": 16,
       "text": "6fca3a7f"
     },
     "two-footprints-over-kerbin--default.png": {
-      "hash": "5eb922d63df736a3",
+      "hash": "0c15cfeb71fbc2a0",
       "elements": 71,
       "text": "b5057333"
     }
