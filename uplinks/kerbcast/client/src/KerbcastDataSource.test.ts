@@ -18,7 +18,9 @@ import {
   BrowserRTCTransport,
   KerbcastDataSource,
   kerbcastSource,
-  SLOT_COUNT,
+  MAX_SLOTS,
+  MIN_SLOTS,
+  slotPoolFor,
   sidecarUnreachableMessage,
 } from "./KerbcastDataSource.js";
 import {
@@ -608,8 +610,131 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
       slots?: number;
       cameras?: number[];
     };
-    expect(body.slots).toBe(SLOT_COUNT);
+    expect(body.slots).toBe(slotPoolFor(1));
     expect(body.cameras).toEqual([42]);
+
+    ds.disconnect();
+  });
+});
+
+describe("KerbcastDataSource: the slot pool is sized to what is mounted", () => {
+  function offerBodies(): Array<{ slots?: number; cameras?: number[] }> {
+    return vi
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([url]) => String(url).includes("/offer"))
+      .map(
+        ([, init]) =>
+          JSON.parse(String(init?.body ?? "{}")) as {
+            slots?: number;
+            cameras?: number[];
+          },
+      );
+  }
+
+  function mockFetch(): void {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+      Promise.resolve(
+        String(input).includes("/ice-config")
+          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+          : MockSidecar.makeOfferResponse([]),
+      ),
+    );
+    vi.mocked(globalThis.fetch).mockClear();
+  }
+
+  async function connected(flightIds: number[]) {
+    const sidecar = new MockSidecar();
+    flightIds.forEach((flightId) => {
+      sidecar.addCamera({ flightId });
+    });
+    mockFetch();
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    return { ds, sidecar };
+  }
+
+  it("negotiates only the minimum pool when nothing is mounted", async () => {
+    const { ds } = await connected([42]);
+
+    expect(offerBodies().map((b) => b.slots)).toEqual([MIN_SLOTS]);
+    expect(MIN_SLOTS).toBeLessThan(MAX_SLOTS);
+
+    ds.disconnect();
+  });
+
+  it("sizes the pool to the mounted cameras and a little headroom", () => {
+    expect(slotPoolFor(0)).toBe(MIN_SLOTS);
+    expect(slotPoolFor(MIN_SLOTS)).toBeGreaterThan(MIN_SLOTS);
+    expect(slotPoolFor(MIN_SLOTS + 3)).toBeGreaterThan(MIN_SLOTS + 3);
+    expect(slotPoolFor(1_000)).toBe(MAX_SLOTS);
+  });
+
+  it("renegotiates a larger pool when more cameras are mounted than it holds", async () => {
+    const ids = Array.from({ length: MIN_SLOTS + 2 }, (_, i) => 100 + i);
+    const { ds, sidecar } = await connected(ids);
+    expect(offerBodies()).toHaveLength(1);
+
+    for (const id of ids) ds.subscribeCamera(id);
+    await vi.waitFor(() => expect(offerBodies()).toHaveLength(2));
+
+    const grown = offerBodies()[1];
+    expect(grown.slots).toBe(slotPoolFor(ids.length));
+    expect(grown.slots).toBeGreaterThanOrEqual(ids.length);
+    expect(grown.cameras).toEqual(ids);
+    expect(sidecar.commands.some((c) => c.type === "subscribe" && c.content.flightId === ids[MIN_SLOTS])).toBe(false);
+
+    ds.disconnect();
+  });
+
+  it("renegotiates once for cameras mounted together", async () => {
+    const ids = Array.from({ length: MIN_SLOTS + 4 }, (_, i) => 200 + i);
+    const { ds } = await connected(ids);
+
+    for (const id of ids) ds.subscribeCamera(id);
+    await vi.waitFor(() => expect(offerBodies()).toHaveLength(2));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(offerBodies()).toHaveLength(2);
+
+    ds.disconnect();
+  });
+
+  it("does not renegotiate while the mounted cameras fit the pool", async () => {
+    const { ds } = await connected([301, 302]);
+
+    ds.subscribeCamera(301);
+    ds.subscribeCamera(302);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(offerBodies()).toHaveLength(1);
+
+    ds.disconnect();
+  });
+
+  it("never asks for more than the ceiling, and leaves the rest to the sidecar's refusal", async () => {
+    const ids = Array.from({ length: MAX_SLOTS + 3 }, (_, i) => 400 + i);
+    const { ds } = await connected(ids);
+
+    for (const id of ids) ds.subscribeCamera(id);
+    await vi.waitFor(() => expect(offerBodies()).toHaveLength(2));
+
+    expect(offerBodies()[1].slots).toBe(MAX_SLOTS);
+
+    ds.disconnect();
+  });
+
+  it("a reconnect sizes the pool from what is mounted then, not from what it once was", async () => {
+    const ids = Array.from({ length: MIN_SLOTS + 2 }, (_, i) => 500 + i);
+    const { ds } = await connected(ids);
+    for (const id of ids) ds.subscribeCamera(id);
+    await vi.waitFor(() => expect(offerBodies()).toHaveLength(2));
+    for (const id of ids) ds.unsubscribeCamera(id);
+
+    await ds.connect();
+
+    expect(offerBodies().at(-1)?.slots).toBe(MIN_SLOTS);
 
     ds.disconnect();
   });
