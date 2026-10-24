@@ -57,14 +57,6 @@ import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
-  latestCommandKnowledge,
-  useCommandKnowledgeVersion,
-} from "./commandKnowledge.js";
-import {
-  buildTargetBracketOverlay,
-  describeKnowledgeBadge,
-} from "./targetBracketOverlay.js";
-import {
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
@@ -283,26 +275,6 @@ export function CameraFeed({
   // degrade always targets the feed on screen (auto-picks included).
   const [effectiveFlightId, setEffectiveFlightId] = useState<number | null>(
     requested,
-  );
-
-  // The overlay is the bracket's own, so the player's brackets toggle hides it
-  // with them. The header badge repeats a held or modelled target outside the
-  // picture for that case.
-  const knowledgeVersion = useCommandKnowledgeVersion();
-  const bracketOverlay = useMemo(
-    () =>
-      effectiveFlightId === null
-        ? undefined
-        : buildTargetBracketOverlay(effectiveFlightId),
-    [effectiveFlightId],
-  );
-  const knowledgeBadge = useMemo(
-    () =>
-      effectiveFlightId === null
-        ? null
-        : describeKnowledgeBadge(latestCommandKnowledge(effectiveFlightId)),
-    // biome-ignore lint/correctness/useExhaustiveDependencies: the store is read through its version
-    [effectiveFlightId, knowledgeVersion],
   );
 
   // Native topic reads: the canonical field paths, not a two-arg shim.
@@ -572,13 +544,7 @@ export function CameraFeed({
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <Panel
         panelTitle="Camera Feed"
-        panelBadges={
-          qualityBadge || knowledgeBadge
-            ? [qualityBadge, knowledgeBadge].filter(
-                (b): b is PanelBadge => b !== null,
-              )
-            : undefined
-        }
+        panelBadges={qualityBadge ? [qualityBadge] : undefined}
         panelAside={
           <LostCameraMenu
             cameras={cameras.filter(
@@ -639,7 +605,6 @@ export function CameraFeed({
                     // pan/zoom methods going no-op is a stand-down of a path
                     // nothing was taking.
                     disableManualControls={showSetpointSurface}
-                    targetBracketOverlay={bracketOverlay}
                     // The SDK would report its own measured box, which sits
                     // inside the frame; the request comes from the stage's
                     // layout instead (`FrameSizeReport` below).

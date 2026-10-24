@@ -72,41 +72,20 @@ const PING_WATCHDOG_MS = 15_000;
 const RECONNECT_BASE_MS = 2_000;
 const RECONNECT_MAX_MS = 30_000;
 
-// The slot pool is the set of recv-only video transceivers offered to the
-// sidecar on each connection. Each camera shown on screen (a camera tile, a
-// crew bar avatar, the docking-camera augment) binds one free slot at runtime
-// through subscribeCamera().
-//
-// An unbound slot is not free over a TURN relay: every transceiver is offered
-// as its own media line, and the relay allocates ports for the ones the
-// connection negotiates whether or not a camera is ever bound to them. A pool
-// of 32 starved a remote station of relay ports. So the pool is sized to the
-// cameras mounted when the connection is made plus a little headroom, and
-// when a camera is mounted that does not fit it the connection is made again
-// with a larger one (see growPool). The sidecar has no pool cap of its own: it
-// builds exactly as many transceivers as the offer asks for.
-//
-// The SDK has no way to add transceivers to a live peer, so growing the pool
-// is a reconnect: every feed drops and re-binds from the initial set. Cameras
-// mounted together grow it once. MAX_SLOTS bounds it, and a camera past that
-// is left to the sidecar's own "no free slot" refusal.
-
-/** Slots negotiated when nothing, or little, is mounted. */
-export const MIN_SLOTS = 4;
-
-/** Slots kept free beyond the cameras mounted, so one more camera needs no reconnect. */
-const SLOT_HEADROOM = 2;
-
-/** The most slots ever negotiated. */
-export const MAX_SLOTS = 32;
-
-/** How long cameras mounted one after another are gathered before the pool grows. */
-const POOL_GROWTH_DEBOUNCE_MS = 50;
-
-/** The pool to negotiate for `mounted` cameras. */
-export function slotPoolFor(mounted: number): number {
-  return Math.min(MAX_SLOTS, Math.max(MIN_SLOTS, mounted + SLOT_HEADROOM));
-}
+// Dynamic slot-pool size negotiated up front. Each displayed camera widget
+// binds a free slot at runtime via subscribeCamera(); the spare slots let the
+// operator switch cameras with no renegotiation. The Deck only renders/encodes
+// the cameras actually bound to a slot, so the pool size is a cap on
+// simultaneous on-screen feeds, not a steady-state cost: an idle slot is one
+// parked RTCP-drain task and an unbound RTP sender in the sidecar, nothing
+// rendered or encoded. Was 6, which a six-Kerbal crew bar alone exhausted
+// before the camera widget or the docking-cam augment got a slot. The sidecar has no pool cap of its own: it builds exactly
+// as many transceivers as this number asks for — so this is sized well above
+// any plausible crew-bar + camera-tile + docking-cam combination rather than
+// tuned tightly, since the idle headroom costs next to nothing. Only a new
+// peer connection (connect() or a reconnect) picks up a change here; a
+// session already connected keeps the pool it negotiated at its own connect.
+export const SLOT_COUNT = 32;
 
 /**
  * The wording of a refusal from a sidecar older than 1.10.0, which sent no
@@ -478,10 +457,6 @@ export class KerbcastDataSource {
   // without a client-side round-trip (the sidecar pushes the SlotMaps on Hello).
   private desiredSubs = new Map<number, number>();
 
-  /** Slots offered on the current connection. */
-  private poolSlots = MIN_SLOTS;
-  private poolGrowth: ReturnType<typeof setTimeout> | null = null;
-
   /**
    * `subscribe`s sent and not yet answered, in send order. The sidecar answers
    * each one in turn with a `slot-map` or an `error`, and its "no free slot"
@@ -613,10 +588,9 @@ export class KerbcastDataSource {
     // until a failed attempt has flipped `turnEscalated` (see the field comment).
     if (!this.broker && this.turnEscalated) await this.applyRelayIce();
     this.awaitingSlot = [];
-    this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
       await this.client.connect([...this.desiredSubs.keys()], {
-        slots: this.poolSlots,
+        slots: SLOT_COUNT,
       });
     } catch (err) {
       this.turnEscalated = true;
@@ -662,13 +636,7 @@ export class KerbcastDataSource {
       .tag("kerbcast:subscriptions")
       .debug("subscribe", { flightId, holders: count + 1, status: this.status });
     if (this.status === "connected") {
-      if (count === 0) {
-        if (this.desiredSubs.size > this.poolSlots && this.poolSlots < MAX_SLOTS) {
-          this.growPool();
-        } else {
-          this.requestSlot(flightId);
-        }
-      }
+      if (count === 0) this.requestSlot(flightId);
       return;
     }
     // Not connected. A brokered station source isn't eager-connected anywhere,
@@ -997,22 +965,6 @@ export class KerbcastDataSource {
     this.clientUnsubs = [];
   }
 
-  /**
-   * Make the connection again with a pool sized to the cameras now mounted,
-   * once cameras mounted together have been gathered. The camera that did not
-   * fit is bound by the new connection's initial set, never by a subscribe the
-   * sidecar would refuse.
-   */
-  private growPool(): void {
-    if (this.poolGrowth !== null) return;
-    this.poolGrowth = setTimeout(() => {
-      this.poolGrowth = null;
-      if (!this.reconnectEnabled || this.status !== "connected") return;
-      if (this.desiredSubs.size <= this.poolSlots) return;
-      void this.attemptReconnect();
-    }, POOL_GROWTH_DEBOUNCE_MS);
-  }
-
   /** Ask the connected sidecar to bind `flightId` into a free slot. */
   private requestSlot(flightId: number): void {
     // Queued before the send because the answer can arrive before the send's
@@ -1141,10 +1093,6 @@ export class KerbcastDataSource {
   }
 
   private clearTimers(): void {
-    if (this.poolGrowth !== null) {
-      clearTimeout(this.poolGrowth);
-      this.poolGrowth = null;
-    }
     if (this.pingWatchdog !== null) {
       clearTimeout(this.pingWatchdog);
       this.pingWatchdog = null;
@@ -1189,10 +1137,9 @@ export class KerbcastDataSource {
   private async attemptReconnect(): Promise<void> {
     if (!this.broker && this.turnEscalated) await this.applyRelayIce();
     this.awaitingSlot = [];
-    this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
       await this.client.connect([...this.desiredSubs.keys()], {
-        slots: this.poolSlots,
+        slots: SLOT_COUNT,
       });
     } catch {
       this.turnEscalated = true;
