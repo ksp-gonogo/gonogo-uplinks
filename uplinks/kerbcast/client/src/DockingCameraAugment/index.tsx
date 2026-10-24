@@ -94,8 +94,8 @@ export function DockingCameraAugment({
   // exactly the provider `CameraFeed` mounts for its own feed. Mounting our own,
   // fed the SAME `ds.getClient()` client, is what lets this backdrop and a
   // `CameraFeed` on the same camera share ONE delayed pipeline: the shared cache
-  // in `useDelayedPlayout` keys on the raw `MediaStream`, and both providers
-  // resolve the identical stream object off the one data source. Kept in the
+  // in `useDelayedPlayout` keys on the camera, and both providers resolve the
+  // identical camera handle and stream object off the one data source. Kept in the
   // inner `DockingCameraVideo` so the OUTER component (which subscribes to the
   // control channel above) never depends on the provider, a no-kerbcast HUD
   // still composes.

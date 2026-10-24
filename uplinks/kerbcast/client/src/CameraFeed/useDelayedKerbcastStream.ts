@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
+  useEncodedDelayTarget,
   useKerbcastStream,
 } from "../hooks/useKerbcastStream.js";
 
@@ -42,9 +43,9 @@ export { interpolateCaptureUt } from "@ksp-gonogo/sitrep-sdk/media";
 // CameraFeed and the docking-HUD backdrop) share one status entry. That is
 // now CORRECT rather than a lossy compromise: as of the per-camera sharing in
 // `useDelayedPlayout` (2026-07-17) those two consumers ARE one delayed
-// pipeline: `sharedDelayedStreams` keys the pipeline by the raw `MediaStream`
-// identity, so one `MediaStreamTrackProcessor` / `RTCRtpScriptTransform` per
-// track feeds every consumer, and they necessarily see the same delayed
+// pipeline: `sharedDelayedStreams` keys the pipeline by the camera, so one
+// `MediaStreamTrackProcessor` / `RTCRtpScriptTransform` per camera feeds every
+// consumer, and they necessarily see the same delayed
 // output and thus the same status. Delay is a property of the camera, not the
 // viewer.
 // ---------------------------------------------------------------------------
@@ -106,9 +107,11 @@ export function useDelayedPlaybackStatus(
  * `useStream` seam. It composes three already-tested
  * pieces without moving any of them into the SDK:
  *
- *   1. the SDK/data-source glue `useKerbcastStream`: the raw live `MediaStream`
- *      for the resolved flightId (auto-latch / fallback already applied by the
- *      feed, so this hook never re-derives it);
+ *   1. the SDK/data-source glue `useKerbcastStream`: the live `MediaStream`
+ *      shown for the resolved flightId (auto-latch / fallback already applied
+ *      by the feed, so this hook never re-derives it), with
+ *      `useEncodedDelayTarget` for the receiver of the WebRTC track kerbcast's
+ *      noise canvas draws it from, where the delay is attached when it can be;
  *   2. gonogo's `DelayedPlayoutBuffer` (via `useDelayedPlayout`);
  *   3. the one shared `ViewClock` telemetry reads (`useViewClockOptional`),
  *      plus the kerbcast mission-time capture clock (`useKerbcastClock`, SDK
@@ -151,6 +154,7 @@ export function useDelayedKerbcastStream(
   flightId: number | null,
 ): MediaStream | null {
   const raw = useKerbcastStream(flightId);
+  const encodedTarget = useEncodedDelayTarget(flightId);
   // The facade's `useViewClockOptional` is typed `unknown` (opaque; see its
   // own doc: the concrete ViewClock stays app-internal). Narrow to
   // the structural `DelayClockLike` contract this module actually drives,
@@ -192,6 +196,7 @@ export function useDelayedKerbcastStream(
           captureUt: liveCaptureUt,
           getCaptureSample,
           resetEpoch: epoch,
+          encodedTarget,
         }
       : undefined,
   );

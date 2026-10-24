@@ -16,6 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   attachStationBroker,
   BrowserRTCTransport,
+  KeepaliveTransport,
   KerbcastDataSource,
   kerbcastSource,
   MAX_SLOTS,
@@ -984,6 +985,13 @@ describe("KerbcastDataSource: the station broker it registers", () => {
 // when it fails, so a relay's allocations are not held for a peer that is gone.
 // ---------------------------------------------------------------------------
 
+/** A receiver class with the `transform` property a browser with script transforms has. */
+class ScriptCapableReceiver {
+  get transform(): unknown {
+    return null;
+  }
+}
+
 describe("BrowserRTCTransport: relay allocations", () => {
   class FakePeerConnection {
     static instances: FakePeerConnection[] = [];
@@ -1083,6 +1091,40 @@ describe("BrowserRTCTransport: relay allocations", () => {
     );
   });
 
+  it("gives every receiver a passthrough transform from creation when encoded transforms are on", () => {
+    class FakeScriptTransform {}
+    vi.stubGlobal("RTCRtpScriptTransform", FakeScriptTransform);
+    vi.stubGlobal("RTCRtpReceiver", ScriptCapableReceiver);
+    vi.stubGlobal("Worker", class {});
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:passthrough");
+    const receivers: Array<{ transform: unknown }> = [];
+    vi.spyOn(FakePeerConnection.prototype, "addTransceiver").mockImplementation(
+      () => {
+        const receiver = { transform: null };
+        receivers.push(receiver);
+        return { receiver } as unknown as void;
+      },
+    );
+
+    const transport = new BrowserRTCTransport();
+    expect(transport.encodedTransformPath({ encodedTransforms: true })).toBe(
+      "script",
+    );
+    const peer = transport.createPeer([], { encodedTransforms: true });
+    peer.addRecvOnlyTransceiver();
+
+    expect(receivers[0]?.transform).toBeInstanceOf(FakeScriptTransform);
+    expect(peer.setReceiverTransform).toBeTypeOf("function");
+  });
+
+  it("builds its client with encoded transforms on, so a camera's delay can go before decode", () => {
+    vi.stubGlobal("RTCRtpScriptTransform", class {});
+    vi.stubGlobal("RTCRtpReceiver", ScriptCapableReceiver);
+    const ds = makeTracked({ port: 1 });
+
+    expect(ds.getClient().encodedTransformPath).toBe("script");
+  });
+
   it("closes the peer when the host refuses a station's offer", async () => {
     const ds = makeTracked({ port: 1 });
     ds.attachBroker({
@@ -1124,5 +1166,35 @@ describe("KerbcastDataSource: browser without an H.264 decoder", () => {
   it("stays quiet when H.264 is listed, in any letter case", () => {
     vi.stubGlobal("RTCRtpReceiver", receiverWith(["video/VP8", "video/h264"]));
     expect(makeTracked().readinessNote()).toBeNull();
+  });
+});
+
+describe("KeepaliveTransport: encoded transforms", () => {
+  it("passes the peer options, the install path and receiver transforms through to the transport it wraps", () => {
+    const created: unknown[] = [];
+    const installed: Array<[string, unknown]> = [];
+    const inner = {
+      encodedTransformPath: (opts: { encodedTransforms?: boolean }) =>
+        opts.encodedTransforms ? ("script" as const) : null,
+      createPeer: (_servers: RTCIceServer[], opts?: unknown) => {
+        created.push(opts);
+        return {
+          setReceiverTransform: (mid: string, t: unknown) => {
+            installed.push([mid, t]);
+          },
+        } as unknown as ReturnType<KerbcastTransport["createPeer"]>;
+      },
+    };
+    const keepalive = new KeepaliveTransport(inner, () => {});
+
+    expect(keepalive.encodedTransformPath({ encodedTransforms: true })).toBe(
+      "script",
+    );
+    const peer = keepalive.createPeer([], { encodedTransforms: true });
+    const transform = {};
+    peer.setReceiverTransform?.("3", transform as RTCRtpScriptTransform);
+
+    expect(created).toEqual([{ encodedTransforms: true }]);
+    expect(installed).toEqual([["3", transform]]);
   });
 });

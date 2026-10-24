@@ -41,6 +41,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
+  type EncodedDelayTarget,
   useDelayedPlayout,
   useKerbcastStream,
 } from "./useKerbcastStream.js";
@@ -236,12 +237,14 @@ function StreamProbe({
   clock,
   captureUt,
   resetEpoch,
+  encodedTarget,
   onResult,
 }: {
   flightId: number | null;
   clock: DelayClockLike;
   captureUt: () => number | null;
   resetEpoch?: number;
+  encodedTarget?: EncodedDelayTarget;
   onResult: (r: DelayedPlayoutResult) => void;
 }): null {
   const raw = useKerbcastStream(flightId);
@@ -249,6 +252,7 @@ function StreamProbe({
     view: clock,
     captureUt,
     resetEpoch,
+    encodedTarget,
   });
   onResult(result);
   return null;
@@ -516,16 +520,14 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     const track = fakeControllableVideoTrack();
     const cam = fakeCameraHandle(null);
     registerFakeKerbcastSource(cam);
-    const clock = manualClock(0);
-    registerUplinkHandle("kerbcast", {
-      id: "kerbcast",
-      getClient: () => ({ camera: () => cam }),
-      subscribeCamera: () => {},
-      unsubscribeCamera: () => {},
-      getReceiverForStream: () => {
+    vi.stubGlobal("RTCRtpScriptTransform", class {});
+    const clock = { ...manualClock(0), snapshot: () => ({}) };
+    const refusing: EncodedDelayTarget = {
+      key: {},
+      attach: () => {
         throw new Error("receiver lookup refused");
       },
-    });
+    };
 
     let latest: DelayedPlayoutResult | "unset" = "unset";
     render(
@@ -533,6 +535,7 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
         flightId={7}
         clock={clock}
         captureUt={() => 100}
+        encodedTarget={refusing}
         onResult={(r) => {
           latest = r;
         }}

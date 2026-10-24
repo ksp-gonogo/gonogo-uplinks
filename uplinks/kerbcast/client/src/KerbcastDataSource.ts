@@ -1,11 +1,14 @@
 import {
+  BrowserKerbcastTransport,
   type CameraState,
   type ClientMessage,
+  type EncodedTransformPath,
   ErrorCode,
   KerbcastClient,
   type KerbcastConnectionState,
   type KerbcastDataChannel,
   type KerbcastPeer,
+  type KerbcastPeerOptions,
   type KerbcastTransport,
 } from "@ksp-gonogo/kerbcast";
 import type {
@@ -185,79 +188,17 @@ function persistConfig(cfg: KerbcastConfig): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// BrowserRTCTransport: mirrors the SDK's private BrowserKerbcastTransport.
-// Copied from @ksp-gonogo/kerbcast/dist/client.js so KeepaliveTransport can
-// wrap it without depending on the SDK's unexported class.
-// ---------------------------------------------------------------------------
-
-function mapRTCState(state: RTCPeerConnectionState): KerbcastConnectionState {
-  switch (state) {
-    case "new":
-    case "connecting":
-      return "connecting";
-    case "connected":
-      return "connected";
-    case "failed":
-      return "failed";
-    case "disconnected":
-    case "closed":
-      return "disconnected";
-  }
-}
-
-function wrapRTCDataChannel(dc: RTCDataChannel): KerbcastDataChannel {
-  let onOpen: (() => void) | null = null;
-  let onMessage: ((raw: string) => void) | null = null;
-  let onClose: (() => void) | null = null;
-  dc.onopen = () => onOpen?.();
-  dc.onclose = () => onClose?.();
-  dc.onmessage = (ev) => {
-    if (typeof ev.data === "string") onMessage?.(ev.data);
-  };
-  return {
-    send: (s) => {
-      dc.send(s);
-    },
-    onOpen: (h) => {
-      onOpen = h;
-    },
-    onMessage: (h) => {
-      onMessage = h;
-    },
-    onClose: (h) => {
-      onClose = h;
-    },
-  };
-}
-
+/**
+ * The browser WebRTC transport: Kerbcast's own `BrowserKerbcastTransport`,
+ * which installs encoded transforms on its receivers, with two additions. A
+ * peer whose connection fails is closed, since a failed peer never recovers and
+ * keeps its relay allocations until it is closed, and the most recent peer can
+ * be closed on demand through {@link releaseCurrentPeer}.
+ */
 export class BrowserRTCTransport implements KerbcastTransport {
-  /**
-   * `RTCRtpReceiver` for every track this transport has ever delivered via
-   * `ontrack`, keyed by the exact `MediaStreamTrack` object reference (the
-   * SDK's own `KerbcastClient` wraps this same track reference into
-   * `cam.mediaStream` via `new MediaStream([track])`, never cloning it,
-   * confirmed against the installed `@ksp-gonogo/kerbcast` dist: so a
-   * `WeakMap` keyed by that reference is an exact, leak-free correlation
-   * from a `MediaStream` handed to a widget back to the `RTCRtpReceiver`
-   * needed to attach `receiver.transform = new RTCRtpScriptTransform(...)`.
-   * `WeakMap` rather than a `Map`: entries fall out on their own once a
-   * track is GC'd (camera switch / teardown), no manual eviction needed.
-   */
-  private readonly receiversByTrack = new WeakMap<
-    MediaStreamTrack,
-    RTCRtpReceiver
-  >();
-
-  /** Look up the `RTCRtpReceiver` for a track this transport delivered.
-   *  `undefined` for a track from anywhere else (a different transport
-   *  instance, a test fixture, or a track this transport never saw). */
-  getReceiverForTrack(track: MediaStreamTrack): RTCRtpReceiver | undefined {
-    return this.receiversByTrack.get(track);
-  }
-
+  private readonly inner = new BrowserKerbcastTransport();
   /** The peer connection most recently created, for {@link releaseCurrentPeer}. */
-  private current: RTCPeerConnection | null = null;
+  private current: KerbcastPeer | null = null;
 
   /**
    * Close the most recent peer connection. A peer that gathered candidates for
@@ -269,67 +210,22 @@ export class BrowserRTCTransport implements KerbcastTransport {
     this.current = null;
   }
 
-  createPeer(iceServers: RTCIceServer[]): KerbcastPeer {
-    // max-bundle puts every media line and the data channel on one transport.
-    // The default policy gathers a transport per media line in the first offer,
-    // and over a TURN relay each one is a separate allocation, so a pool of
-    // slots asked the relay for one allocation per slot.
-    const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
-    this.current = pc;
-    let trackIdx = 0;
-    let onTrack:
-      | ((track: MediaStreamTrack, idx: number, mid: string) => void)
-      | null = null;
+  encodedTransformPath(opts: KerbcastPeerOptions): EncodedTransformPath | null {
+    return this.inner.encodedTransformPath(opts);
+  }
+
+  createPeer(iceServers: RTCIceServer[], opts?: KerbcastPeerOptions): KerbcastPeer {
+    const peer = this.inner.createPeer(iceServers, opts);
+    this.current = peer;
     let onStateChange: ((state: KerbcastConnectionState) => void) | null = null;
-    pc.ontrack = (ev) => {
-      this.receiversByTrack.set(ev.track, ev.receiver);
-      // mid is the stable transceiver id the sidecar keys SlotMap on (set by
-      // the time ontrack fires, post-answer); the SDK routes dynamic-mode
-      // tracks by it.
-      onTrack?.(ev.track, trackIdx++, ev.transceiver.mid ?? "");
-    };
-    pc.onconnectionstatechange = () => {
-      onStateChange?.(mapRTCState(pc.connectionState));
-      // A failed peer never recovers, and keeps its relay allocations until it
-      // is closed.
-      if (pc.connectionState === "failed") pc.close();
-    };
+    peer.onStateChange((state) => {
+      onStateChange?.(state);
+      if (state === "failed") peer.close();
+    });
     return {
-      addRecvOnlyTransceiver: () => {
-        pc.addTransceiver("video", { direction: "recvonly" });
-      },
-      createDataChannel: (label) =>
-        wrapRTCDataChannel(pc.createDataChannel(label)),
-      onTrack: (h) => {
-        onTrack = h;
-      },
+      ...peer,
       onStateChange: (h) => {
         onStateChange = h;
-      },
-      createOffer: async () => {
-        const offer = await pc.createOffer();
-        return offer.sdp ?? "";
-      },
-      setLocalDescription: async (sdp) => {
-        await pc.setLocalDescription({ type: "offer", sdp });
-      },
-      setRemoteAnswer: async (sdp) => {
-        await pc.setRemoteDescription({ type: "answer", sdp });
-      },
-      waitForIceComplete: () =>
-        new Promise<void>((resolve) => {
-          if (pc.iceGatheringState === "complete") return resolve();
-          const check = () => {
-            if (pc.iceGatheringState === "complete") {
-              pc.removeEventListener("icegatheringstatechange", check);
-              resolve();
-            }
-          };
-          pc.addEventListener("icegatheringstatechange", check);
-        }),
-      localSdp: () => pc.localDescription?.sdp ?? "",
-      close: () => {
-        pc.close();
       },
     };
   }
@@ -355,8 +251,15 @@ export class KeepaliveTransport implements KerbcastTransport {
     }) => void,
   ) {}
 
-  createPeer(iceServers: RTCIceServer[]): KerbcastPeer {
-    const peer = this.inner.createPeer(iceServers);
+  encodedTransformPath(opts: KerbcastPeerOptions): EncodedTransformPath | null {
+    return this.inner.encodedTransformPath?.(opts) ?? null;
+  }
+
+  createPeer(
+    iceServers: RTCIceServer[],
+    opts?: KerbcastPeerOptions,
+  ): KerbcastPeer {
+    const peer = this.inner.createPeer(iceServers, opts);
     const wrapChannel = (ch: KerbcastDataChannel): KerbcastDataChannel => {
       let sdkHandler: ((raw: string) => void) | null = null;
 
@@ -402,6 +305,9 @@ export class KeepaliveTransport implements KerbcastTransport {
       waitForIceComplete: async () => peer.waitForIceComplete(),
       localSdp: () => peer.localSdp(),
       close: () => peer.close(),
+      setReceiverTransform:
+        peer.setReceiverTransform &&
+        ((mid, transform) => peer.setReceiverTransform?.(mid, transform)),
     };
   }
 }
@@ -426,12 +332,7 @@ export class KerbcastDataSource {
 
   private cfg: KerbcastConfig;
   private baseTransport: KerbcastTransport | undefined;
-  /** The concrete `BrowserRTCTransport` `buildClient()` actually wired up
-   *  (main-screen and station/broker mode both use it; see that method).
-   *  `undefined` when a test supplied a `baseTransport` that isn't one
-   *  (e.g. a mock): `getReceiverForStream` degrades to `undefined` then,
-   *  matching "can't attach the encoded transform here" rather than
-   *  throwing. Encoded-transform video-delay work, 2026-07-16. */
+  /** The `BrowserRTCTransport` `buildClient()` wired up, `undefined` when a test supplied another transport. */
   private rtcTransport: BrowserRTCTransport | undefined;
   private client: KerbcastClient;
   private clientUnsubs: Array<() => void> = [];
@@ -541,25 +442,6 @@ export class KerbcastDataSource {
     now: number | null | undefined,
   ): readonly EventOccurrence<KerbcastEventKind>[] {
     return this.eventProducer.revealed(now);
-  }
-
-  /**
-   * The `RTCRtpReceiver` behind a camera's `MediaStream`: the encoded
-   * transform's attach point (`receiver.transform = new
-   * RTCRtpScriptTransform(...)`, `encodedFrameDelay.ts`). Correlates via
-   * the stream's first video track's object identity against the registry
-   * `BrowserRTCTransport` populated in `ontrack` (see that class's doc for
-   * why this is exact, not fuzzy matching). Returns `undefined` when there
-   * is no video track, the current transport isn't a `BrowserRTCTransport`
-   * (a test-injected mock), or the track wasn't delivered by this
-   * transport instance (a stale reference from a torn-down connection),
-   * every case degrades to "encoded backend unavailable here", never a
-   * throw, matching every other backend-selection guard in this pipeline.
-   */
-  getReceiverForStream(stream: MediaStream): RTCRtpReceiver | undefined {
-    const track = stream.getVideoTracks()[0];
-    if (!track) return undefined;
-    return this.rtcTransport?.getReceiverForTrack(track);
   }
 
   /**
@@ -901,6 +783,10 @@ export class KerbcastDataSource {
         // Pass the relay's TURN servers when we have them; `undefined` lets
         // the SDK apply its STUN-only default (LAN / no relay).
         iceServers: this.iceServers.length > 0 ? this.iceServers : undefined,
+        // Lets a camera's video delay be installed on its receiver, ahead of
+        // decode and the static canvas (`useEncodedDelayTarget`). Fixed for a
+        // peer's life, so it is on from the start.
+        encodedTransforms: true,
         // Brokered (station) mode routes the offer→answer through the host;
         // main mode POSTs the sidecar's /offer, the same request the SDK's
         // built-in negotiation makes. Both are taken over here because the
