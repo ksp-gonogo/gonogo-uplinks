@@ -166,7 +166,7 @@ namespace Gonogo.KerbalismUplink
                     Producing = running == false
                         ? false
                         : e.ExpStatus.Length == 0 ? (bool?)null : Same(e.ExpStatus, "Running") || Same(e.ExpStatus, "Forced"),
-                    RunIssue = running == true ? Text(e.Issue) : null,
+                    RunIssue = running == true ? Text(e.Issue) ?? WaitingReason(e) : null,
                     Inoperable = broken || depleted,
                     // NULL, not false: repeat-running falls out of Kerbalism's state
                     // machine rather than being a cfg flag, so there is no fact here
@@ -189,6 +189,9 @@ namespace Gonogo.KerbalismUplink
                             ["dataRateMBps"] = e.DataRate,
                             ["prodFactor"] = e.ProdFactor,
                             ["remainingSampleMass"] = e.RemainingSampleMass,
+                            ["waitingReason"] = WaitingReason(e),
+                            ["progressFraction"] = e.ProgressFraction,
+                            ["secondsToComplete"] = e.SecondsToComplete,
                         },
                     },
                 });
@@ -446,6 +449,37 @@ namespace Gonogo.KerbalismUplink
                 if (!string.IsNullOrWhiteSpace(candidate)) return candidate!;
             }
             return "";
+        }
+
+        /// <summary>
+        /// Seconds a run needs to finish the current subject: Kerbalism's own
+        /// <c>RunningCountdown</c>, (1 - collected) x DataSize / data rate, stretched
+        /// by the production factor when that is positive. A subject whose collected
+        /// share could not be read has no countdown rather than a full-length one.
+        /// </summary>
+        public static double? SecondsToComplete(bool subjectKnown, double? percentCollected, double? dataSize, double? dataRate, double? prodFactor)
+        {
+            if (!dataSize.HasValue || !dataRate.HasValue || dataRate.Value <= 0) return null;
+            if (subjectKnown && !percentCollected.HasValue) return null;
+            var left = subjectKnown ? System.Math.Max(1.0 - percentCollected!.Value, 0.0) : 1.0;
+            var factor = prodFactor.HasValue && prodFactor.Value > 0 ? prodFactor.Value : 1.0;
+            var seconds = left * (dataSize.Value / dataRate.Value) / factor;
+            return double.IsNaN(seconds) || double.IsInfinity(seconds) ? (double?)null : seconds;
+        }
+
+        /// <summary>
+        /// Why a switched-on experiment is Waiting, which Kerbalism derives from the
+        /// subject alone (no subject, or nothing left to collect) and never writes
+        /// into <c>issue</c>. Null for any other state, or when the subject could not
+        /// be read.
+        /// </summary>
+        public static string? WaitingReason(ScienceExperimentRaw e)
+        {
+            if (!Same(e.ExpStatus, "Waiting")) return null;
+            if (e.SubjectKnown == false) return "No science defined for this situation";
+            if (e.SubjectKnown == true && e.ScienceRemainingToCollect.HasValue && e.ScienceRemainingToCollect.Value <= 0)
+                return "All science here is collected";
+            return null;
         }
 
         private static string? Text(string? value) => string.IsNullOrEmpty(value) ? null : value;

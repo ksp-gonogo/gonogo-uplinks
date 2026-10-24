@@ -277,9 +277,12 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     kind: "id",
     powerDisabled: "flag",
     prodFactor: "ratio",
+    progressFraction: "ratio",
     remainingSampleMass: "t",
     runningState: "id",
     scanning: "flag",
+    secondsToComplete: "s",
+    waitingReason: "text",
   },
   "KerbalismScienceLabExt": {
     analysisRateMBps: "MB/s",

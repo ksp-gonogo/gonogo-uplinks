@@ -237,9 +237,12 @@
       "kind": "id",
       "powerDisabled": "flag",
       "prodFactor": "ratio",
+      "progressFraction": "ratio",
       "remainingSampleMass": "t",
       "runningState": "id",
-      "scanning": "flag"
+      "scanning": "flag",
+      "secondsToComplete": "s",
+      "waitingReason": "text"
     },
     "KerbalismScienceLabExt": {
       "analysisRateMBps": "MB/s",

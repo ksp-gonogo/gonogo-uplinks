@@ -240,6 +240,31 @@ public class KerbalismScienceInstrumentExt
     public double? RemainingSampleMass { get; set; }
 
     /// <summary>
+    /// Why a switched-on experiment is <c>Waiting</c>: <c>No science defined for
+    /// this situation</c> or <c>All science here is collected</c>. Kerbalism derives
+    /// Waiting from the subject alone and never writes it to <see cref="Issue"/>.
+    /// Null in any other state, and when the subject could not be read.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? WaitingReason { get; set; }
+
+    /// <summary>
+    /// How much of the current situation's science this vessel has collected,
+    /// 0..1 (Kerbalism's <c>PercentCollectedTotal</c> for the experiment's subject,
+    /// across every run, not only this one). Null with no subject.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? ProgressFraction { get; set; }
+
+    /// <summary>
+    /// Seconds a run needs to collect the rest of the current subject at the
+    /// current production factor, the figure Kerbalism's own context menu counts
+    /// down. Null when the data rate or subject could not be read.
+    /// </summary>
+    [SitrepUnit(Units.Seconds)]
+    public double? SecondsToComplete { get; set; }
+
+    /// <summary>
     /// Scanner only. Whether SCANsat is sweeping right now. A scanner produces data
     /// as a side effect of coverage growing, so this is the closest thing it has to
     /// an experiment's Running state. Null on older Kerbalism builds, which keep no

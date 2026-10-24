@@ -1537,8 +1537,22 @@ namespace Gonogo.KerbalismUplink
             // this same read, so an unread module comes out not-depleted whichever
             // way the substitution goes.
             var sampleAmount = MemberDouble(pm, "sample_amount") ?? 0;
+            var dataRate = MemberDouble(pm, "data_rate");
+            var prodFactor = MemberDouble(pm, "prodFactor");
+            // Experiment.Subject is null while the vessel's situation has no subject
+            // yet, which Kerbalism's own status reads as Waiting, the same as a subject
+            // with nothing left to collect.
+            var subject = Member(pm, "Subject");
+            var subjectKnown = subject != null;
+            var percentCollected = subject != null ? MemberDouble(subject, "PercentCollectedTotal") : null;
+            var remaining = subject != null ? MemberDouble(subject, "ScienceRemainingToCollect") : null;
+            var dataSize = Member(pm, "ExpInfo") is { } info ? MemberDouble(info, "DataSize") : null;
             return new ScienceExperimentRaw
             {
+                SubjectKnown = subjectKnown,
+                ProgressFraction = percentCollected,
+                ScienceRemainingToCollect = remaining,
+                SecondsToComplete = KerbalismScienceMap.SecondsToComplete(subjectKnown, percentCollected, dataSize, dataRate, prodFactor),
                 PartId = partId,
                 PartName = partName,
                 ExperimentId = MemberString(pm, "experiment_id") ?? "",
@@ -1551,8 +1565,8 @@ namespace Gonogo.KerbalismUplink
                 // (Modules/Experiment.cs's two-layer RunningState -> ExpStatus).
                 RunningState = MemberEnumName(pm, "State") ?? MemberEnumName(pm, "RunningState") ?? "",
                 ExpStatus = MemberEnumName(pm, "Status") ?? MemberEnumName(pm, "ExpStatus") ?? "",
-                DataRate = MemberDouble(pm, "data_rate"),
-                ProdFactor = MemberDouble(pm, "prodFactor"),
+                DataRate = dataRate,
+                ProdFactor = prodFactor,
                 TakesSample = sampleAmount > 0,
                 // Only meaningful for a finite-sample experiment: for a
                 // sample-less one the field is a zero that would read as
