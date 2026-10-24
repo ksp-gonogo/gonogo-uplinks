@@ -106,6 +106,10 @@ bakes them first (`Directory.Build.targets`), with no hash.
 
 ## Releasing: candidates, full releases, SpaceDock and CKAN
 
+All work lands on `staging`, the integration branch, and `ci.yml` runs on it. `main` is what a player installs and it moves only at a release, by fast-forward to a release commit made on `staging`; nothing is committed to `main` by hand. A pull request targets `staging`. Candidates are built from the head of `staging`. A release is made on `staging` first, which settles the versions and the README's "built against" lines and runs the checks, and `main` moves to that commit only after they pass.
+
+An Uplink's changelog and version come from its own commits. `node tooling/uplink-commits.mjs <uplink id> --out commits.json` lists the commits of one Uplink since its last full release (those scoped to it, such as `feat(kerbcast): ...`, and those that touched its directory without a scope of another Uplink), drops release commits and reverts with what they undid, and `uplink-tools version --bump auto --commits commits.json` reads the bump from them and writes the Uplink's `CHANGELOG.md` section.
+
 A release is a tag, `<uplink id>-v<version>`, on a commit on main. `release.yml` builds that Uplink, publishes its client to the `releases` branch and attaches the plugin zip to a GitHub release.
 
 - **A candidate** has a version ending `-rc.<n>`, such as `kos-v1.0.0-rc.1`. Its GitHub release is a prerelease, and nothing is uploaded to SpaceDock, so nothing reaches CKAN. Candidates are `1.0.0-rc.N`, the version the full release will be.
@@ -225,10 +229,10 @@ Three things check it, and each asks something the others cannot:
   record: the example Uplink had a `docs:check` script and no page, so its leg was
   asking whether a page it did not have had drifted, and reported green
 - `--check --only <name>`, per leg: is that page CURRENT. Needs chromium
-- `.github/workflows/uplink-docs.yml`, on a push to `main`: regenerates the pages
-  and commits the result back, so `main` heals itself
+- `.github/workflows/uplink-docs.yml`, on a push to `staging`: regenerates the pages
+  and commits the result back, so `staging` heals itself
 
-The last one does not replace the second. A workflow that silently fixes `main`
+The last one does not replace the second. A workflow that silently fixes `staging`
 means nobody ever sees a generator that has quietly stopped emitting a section:
 the page would keep being "current" against a generator that no longer produces
 it, and every run would agree.

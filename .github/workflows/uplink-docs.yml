@@ -1,6 +1,6 @@
 name: uplink pages
 
-# Regenerate every Uplink's page on a push to main and commit the result back.
+# Regenerate every Uplink's page on a push to staging and commit the result back.
 #
 # The pages are DERIVED: from each Uplink's registrations, its generated contract
 # slice, its fixtures, and the one `uplink.md` its author writes. Nothing about
@@ -13,10 +13,11 @@ name: uplink pages
 #
 # `ci.yml`'s per-leg "Docs are current" step fails a pull request whose page has
 # moved, and it is not made redundant by this. A workflow that silently fixes
-# main means nobody ever sees a generator that has quietly stopped emitting a
+# staging means nobody ever sees a generator that has quietly stopped emitting a
 # section: the page would keep being "current" against a generator that no longer
 # produces the wire table, and every run would agree. The PR check is where a
-# person looks; this keeps main from carrying a page it could have fixed itself.
+# person looks; this keeps staging from carrying a page it could have fixed
+# itself. It never runs on main, which only a release moves.
 #
 # ## Why this cannot loop
 #
@@ -32,7 +33,7 @@ name: uplink pages
 
 on:
   push:
-    branches: [main]
+    branches: [staging]
   # By hand, for any ref: useful after a generator change lands on a branch, and
   # necessary because a GITHUB_TOKEN push gives no run of its own.
   workflow_dispatch:

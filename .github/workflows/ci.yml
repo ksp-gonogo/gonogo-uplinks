@@ -1,8 +1,11 @@
 name: ci
 
+# `staging` is where all work lands and `main` moves only at a release, so both
+# run in full. A pull request targets `staging`: nothing reaches `main` but a
+# release.
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
+  push: { branches: [main, staging] }
+  pull_request: { branches: [staging] }
 
 jobs:
   # Discovery is its own job so a broken walk fails HERE with a message, rather
