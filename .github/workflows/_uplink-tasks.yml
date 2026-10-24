@@ -31,6 +31,14 @@ on:
       # The release's version, from its tag. Every manifest reports it. Empty on
       # a build that is not a release, which reports 0.0.0-dev.
       version: { required: false, type: string, default: "" }
+      # The commit to build. Empty is the ref the caller was triggered on.
+      ref: { required: false, type: string, default: "" }
+      # Set by prepare-release.yml only: the arguments of `uplink-tools release
+      # prepare`. A leg given them moves the Uplink to its next version, proves
+      # the release builds with the command's own checks, and uploads the commit
+      # it made as a patch. It runs none of the other task steps, because
+      # `release prepare` runs those checks itself, and it pushes nothing.
+      prepare_args: { required: false, type: string, default: "" }
 
 jobs:
   uplink:
@@ -39,6 +47,10 @@ jobs:
       GONOGO_UPLINK_VERSION: ${{ inputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          # A release's commit list reads the Uplink's history since its last tag.
+          fetch-depth: ${{ inputs.prepare_args != '' && '0' || '1' }}
 
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: "10.0.x" }
@@ -159,13 +171,44 @@ jobs:
         if: inputs.packages_version != '' && inputs.client
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" page
 
+      # The one thing a prepare leg does that no other leg does. `release
+      # prepare` is the author's command: it moves the version, runs codegen
+      # --check, check, the client's tests, docs --check and a full release into a
+      # scratch folder, and only then makes the commit. The commits it reads are
+      # this Uplink's own, picked out of the shared history by
+      # tooling/uplink-commits.mjs.
+      #
+      # It makes the commit in this runner's checkout and nothing leaves it: the
+      # commit goes up as a patch, and the run that applies the patches is the
+      # only one that pushes.
+      - name: Install the browser the checks render in
+        if: inputs.prepare_args != '' && inputs.client
+        working-directory: uplinks/${{ inputs.name }}/client
+        run: npm exec --no -- playwright install --with-deps chromium
+
+      - name: Prepare the release
+        if: inputs.prepare_args != ''
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          node tooling/uplink-commits.mjs "${{ inputs.id }}" --out "$RUNNER_TEMP/commits.json"
+          cat "$RUNNER_TEMP/commits.json"
+          node tooling/uplink-tools.mjs "${{ inputs.name }}" release prepare ${{ inputs.prepare_args }} --commits "$RUNNER_TEMP/commits.json"
+          mkdir -p artifacts
+          git format-patch -1 --stdout > "artifacts/prepare-${{ inputs.id }}.patch"
+          node -e '
+            const pkg = require("./uplinks/${{ inputs.name }}/client/package.json");
+            require("fs").writeFileSync("artifacts/prepare-${{ inputs.id }}.json", JSON.stringify({ id: "${{ inputs.id }}", version: pkg.version }));
+          '
+
       - name: Typecheck client
-        if: inputs.typecheck
+        if: inputs.typecheck && inputs.prepare_args == ''
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm run typecheck
 
       - name: Test client
-        if: inputs.test
+        if: inputs.test && inputs.prepare_args == ''
         working-directory: uplinks/${{ inputs.name }}/client
         run: npm test
 
@@ -175,14 +218,14 @@ jobs:
       # sends. `codegen --check` generates into a scratch directory and compares,
       # against the contract package the slice itself restored.
       - name: Codegen is current
-        if: inputs.codegen_csproj != ''
+        if: inputs.codegen_csproj != '' && inputs.prepare_args == ''
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" codegen --check
 
       # ClientSource.g.cs and ExpectedClientHash.g.cs are gitignored and a mod
       # that reads them does not compile without them, so they are baked first,
       # in the release shape with no hash: the bundle is not built until later.
       - name: Build mod
-        if: inputs.mod_csproj != '' && !inputs.publish
+        if: inputs.mod_csproj != '' && !inputs.publish && inputs.prepare_args == ''
         run: |
           node tooling/uplink-tools.mjs "${{ inputs.name }}" bake
           dotnet build "${{ inputs.mod_csproj }}" -c Release --nologo
@@ -204,6 +247,7 @@ jobs:
       # The browser is the CLIENT's own playwright, for the reason the docs step
       # below gives. `minsize` measures pixels and only answers honestly on Linux.
       - name: Full uplink-tools check
+        if: inputs.prepare_args == ''
         run: |
           if [ "${{ inputs.client }}" = "true" ]; then
             (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
@@ -230,11 +274,11 @@ jobs:
       # Rig-only tools that reach their mod by reflection. Nothing packages them,
       # so this build is the only thing that notices when one stops compiling.
       - name: Build dev tools
-        if: inputs.devtools_csproj != '' && !inputs.publish
+        if: inputs.devtools_csproj != '' && !inputs.publish && inputs.prepare_args == ''
         run: dotnet build "${{ inputs.devtools_csproj }}" -c Release --nologo
 
       - name: Test mod
-        if: inputs.tests_csproj != ''
+        if: inputs.tests_csproj != '' && inputs.prepare_args == ''
         run: |
           dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo
 
@@ -244,15 +288,15 @@ jobs:
       # proves the scaffold and the pinned toolchain rather than any one Uplink,
       # and it deletes what it made.
       - name: Scaffold proof
-        if: inputs.scaffold
+        if: inputs.scaffold && inputs.prepare_args == ''
         run: scripts/scaffold-proof.sh "${{ inputs.name }}"
 
       - name: Bundle client
-        if: inputs.bundle && !inputs.publish
+        if: inputs.bundle && !inputs.publish && inputs.prepare_args == ''
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" bundle --out "$GITHUB_WORKSPACE/artifacts"
 
       - name: Package mod
-        if: inputs.mod_csproj != '' && !inputs.publish
+        if: inputs.mod_csproj != '' && !inputs.publish && inputs.prepare_args == ''
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" package --out "$GITHUB_WORKSPACE/artifacts"
 
       # Gated on `client` and nothing else. It used to be gated on a `docs_check`
@@ -278,7 +322,7 @@ jobs:
       # check here would leave main red after the heal until the next push.
       - name: Docs are current
         id: docs
-        if: inputs.client
+        if: inputs.client && inputs.prepare_args == ''
         continue-on-error: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
@@ -290,7 +334,7 @@ jobs:
       # the docs check may have nothing to render with, and that must not bury
       # the failure that actually happened.
       - name: Keep the renders of a failed docs check
-        if: (failure() || steps.docs.outcome == 'failure') && inputs.client
+        if: (failure() || steps.docs.outcome == 'failure') && inputs.client && inputs.prepare_args == ''
         continue-on-error: true
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- uplink-tools render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")

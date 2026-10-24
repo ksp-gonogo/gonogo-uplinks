@@ -23,8 +23,13 @@
 #     inside the step, and tooling/release-safety.test.mjs fails CI if a
 #     SpaceDock step could run for one
 #
-# A manual dispatch with `tag` is a dry run, always: it resolves the tag against
-# the dispatched tree, runs the whole build, and copies the client into a
+# A tag pushed with the job's own token starts no workflow, so `prepare-release.yml`
+# starts this one by dispatching it on the tag's own ref: that is a real release,
+# exactly as a pushed tag is, and the same checks run. Running it again on the
+# same tag finishes a release whose publishing step failed.
+#
+# A manual dispatch on a BRANCH with `tag` is a dry run, always: it resolves the
+# tag against the dispatched tree, runs the whole build, and copies the client into a
 # scratch folder to print what a real run would publish, and says which
 # SpaceDock listing and file a full release would upload, without logging in or
 # sending anything to it. It pushes
@@ -38,10 +43,11 @@ on:
     inputs:
       tag:
         description: >-
-          The release tag to rehearse, <uplink id>-v<version>. Dry run: builds
-          and shows what would be published, and publishes nothing.
+          Dispatched on main, the release tag to rehearse, <uplink id>-v<version>.
+          Dry run: builds and shows what would be published, and publishes
+          nothing. Dispatched on a tag, leave it empty: that publishes the tag.
         type: string
-        required: true
+        required: false
 
 jobs:
   resolve:
@@ -65,9 +71,17 @@ jobs:
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+          if [[ "$GITHUB_REF" == refs/tags/* && -n "${{ inputs.tag }}" && "${{ inputs.tag }}" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::This was dispatched on the tag $GITHUB_REF_NAME and asked for ${{ inputs.tag }}. A tag is published from its own ref."
+            exit 1
+          fi
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then
             if [ "$GITHUB_REF" != refs/heads/main ]; then
               echo "::error::A dry run rehearses what main would release, and this was dispatched on $GITHUB_REF"
+              exit 1
+            fi
+            if [ -z "${{ inputs.tag }}" ]; then
+              echo "::error::A dry run needs the tag to rehearse"
               exit 1
             fi
           elif ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
@@ -85,7 +99,7 @@ jobs:
           ALLOW_FULL_RELEASE: ${{ vars.ALLOW_FULL_RELEASE }}
         run: |
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then dry=true; else dry=false; fi
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then dry=true; else dry=false; fi
           echo "dry=$dry" >> "$GITHUB_OUTPUT"
           if [[ "$TAG" =~ -rc\.[0-9]+$ ]]; then
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
@@ -114,10 +128,11 @@ jobs:
         env:
           NAME: ${{ steps.tag.outputs.name }}
           LOGIN: ${{ secrets.SPACEDOCK_USERNAME != '' && secrets.SPACEDOCK_PASSWORD != '' }}
+          DRY: ${{ steps.which.outputs.dry }}
         run: |
           set -euo pipefail
           node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json"
-          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ "$LOGIN" != true ]; then
+          if [ "$DRY" != true ] && [ "$LOGIN" != true ]; then
             echo "::error::The SpaceDock login (secrets SPACEDOCK_USERNAME and SPACEDOCK_PASSWORD) is not visible to this repository, and a full release is uploaded to SpaceDock. Nothing was published."
             exit 1
           fi

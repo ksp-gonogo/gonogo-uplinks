@@ -1,0 +1,261 @@
+# Cuts a release of one or more Uplinks, from `staging`.
+#
+#   gh workflow run prepare-release.yml --ref staging -f uplinks=kerbcast [-f full=true] [-f dry_run=true]
+#
+# All work lands on `staging` and `main` moves only here. A release starts on
+# staging and is settled there before `main` is touched:
+#
+#   1. plan: refuses any ref but staging, refuses when main cannot fast-forward to
+#      it, refuses a full release unless the operator has set ALLOW_FULL_RELEASE,
+#      and works out which Uplinks to release
+#   2. prepare: one leg per Uplink runs `uplink-tools release prepare` on the
+#      staging head: the version is read from that Uplink's own commits and moved
+#      everywhere it is written, the page and the README's version and "built
+#      against" lines are regenerated, and the same checks a release is held to
+#      run, ending in a full release build into a scratch folder. A leg pushes
+#      nothing and uploads the commit it made as a patch. Every leg runs, so one
+#      failure is reported beside the others, and any failure stops the release
+#   3. assemble: applies every patch and makes ONE release commit on staging
+#   4. ci: the whole of ci.yml on that commit. A push made with the job's own
+#      token starts no run, so it is called from here
+#   5. release: only when ci is green, main fast-forwards to the commit, the tags
+#      go with it in one atomic push, and release.yml is dispatched on each tag
+#
+# Nothing reaches main except through step 5, and a tag exists only after every
+# check has passed on the commit it names. `dry_run` runs steps 1 to 3 and prints
+# the commit and the tags, and pushes nothing.
+#
+# If release.yml fails after its tag exists, run it again on that tag:
+#   gh workflow run release.yml --ref <tag>
+name: prepare-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      uplinks:
+        description: Uplink ids, comma separated, or all
+        type: string
+        default: all
+      bump:
+        description: >-
+          The version each Uplink moves to. auto reads it from the Uplink's own
+          commits; rc is its next candidate
+        type: choice
+        options: [auto, rc, patch, minor, major]
+        default: auto
+      version:
+        description: >-
+          One exact version for every chosen Uplink, instead of bump. A
+          candidate is 1.0.0-rc.5
+        type: string
+        default: ""
+      full:
+        description: >-
+          A full release, not a candidate. Refused unless the operator has set
+          ALLOW_FULL_RELEASE
+        type: boolean
+        default: false
+      dry_run:
+        description: Run the preparation and show the commit and tags. Pushes nothing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Two runs would each prepare from the same head and one push would be rejected
+# after its legs had paid for the build.
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      args: ${{ steps.plan.outputs.args }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Only staging is released from
+        run: |
+          if [ "$GITHUB_REF" != refs/heads/staging ]; then
+            echo "::error::A release starts on staging, and this was dispatched on $GITHUB_REF. Run it with --ref staging."
+            exit 1
+          fi
+
+      - name: main can fast-forward to staging
+        run: |
+          if ! git merge-base --is-ancestor origin/main HEAD; then
+            echo "::error::main has commits staging does not, so main cannot fast-forward to a release made on staging. Merge main into staging first."
+            exit 1
+          fi
+
+      # The operator's switch, read before anything is planned or built. A
+      # candidate needs none.
+      - name: A full release is the operator's
+        if: inputs.full
+        env:
+          ALLOW_FULL_RELEASE: ${{ vars.ALLOW_FULL_RELEASE }}
+        run: |
+          if [ "$ALLOW_FULL_RELEASE" != true ]; then
+            echo "::error::A full release is the operator's to make, and ALLOW_FULL_RELEASE is not true. Nothing was prepared."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+
+      - id: plan
+        env:
+          UPLINKS: ${{ inputs.uplinks }}
+          BUMP: ${{ inputs.bump }}
+          VERSION: ${{ inputs.version }}
+          FULL: ${{ inputs.full }}
+        run: >-
+          node tooling/release-plan.mjs plan
+          --uplinks "$UPLINKS" --bump "$BUMP" --version "$VERSION" --full "$FULL"
+          --github >> "$GITHUB_OUTPUT"
+
+  prepare:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    uses: ./.github/workflows/_uplink-tasks.yml
+    secrets: inherit
+    with:
+      ref: ${{ github.sha }}
+      name: ${{ matrix.name }}
+      id: ${{ matrix.id }}
+      client: ${{ matrix.client }}
+      mod_csproj: ${{ matrix.mod_csproj }}
+      tests_csproj: ${{ matrix.tests_csproj }}
+      codegen_csproj: ${{ matrix.codegen_csproj }}
+      devtools_csproj: ${{ matrix.devtools_csproj }}
+      typecheck: ${{ matrix.typecheck }}
+      test: ${{ matrix.test }}
+      bundle: ${{ matrix.bundle }}
+      prepare_args: ${{ needs.plan.outputs.args }}
+
+  assemble:
+    needs: [plan, prepare]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+      tags: ${{ steps.commit.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: uplink-*
+          path: ${{ runner.temp }}/legs
+          merge-multiple: true
+
+      # One commit for the whole set: the patches cover separate Uplink
+      # directories, so they apply in id order without touching each other, and
+      # the root README is generated once from what they leave.
+      - id: commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          legs="$RUNNER_TEMP/legs"
+          base="$(git rev-parse HEAD)"
+          for patch in $(ls "$legs"/prepare-*.patch | sort); do
+            git am --3way "$patch"
+          done
+          git reset --soft "$base"
+          node -e '
+            const fs = require("fs");
+            const dir = process.argv[1];
+            const released = fs.readdirSync(dir).filter((f) => /^prepare-.*\.json$/.test(f))
+              .map((f) => JSON.parse(fs.readFileSync(dir + "/" + f, "utf8")))
+              .sort((a, b) => a.id.localeCompare(b.id));
+            fs.writeFileSync(process.env.RUNNER_TEMP + "/released.json", JSON.stringify(released));
+          ' "$legs"
+          node tooling/generate-root-readme.mjs
+          git add -A
+          git commit -q -m "$(node tooling/release-plan.mjs subject < "$RUNNER_TEMP/released.json")"
+          tags="$(node -e 'console.log(JSON.stringify(JSON.parse(require("fs").readFileSync(process.env.RUNNER_TEMP + "/released.json", "utf8")).map((r) => r.id + "-v" + r.version)))')"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          {
+            echo "### $(git log -1 --format=%s)"
+            echo
+            echo "Tags: $tags"
+            echo
+            echo '```'
+            git show --stat --format= HEAD
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # A fast-forward only: when staging has moved since the legs started, the
+      # push is rejected and nothing is released. Run it again.
+      - name: Put the release commit on staging
+        if: inputs.dry_run == false
+        run: git push origin HEAD:refs/heads/staging
+
+  ci:
+    needs: [plan, assemble]
+    if: inputs.dry_run == false
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+    with:
+      ref: ${{ needs.assemble.outputs.sha }}
+
+  release:
+    needs: [assemble, ci]
+    if: inputs.dry_run == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.assemble.outputs.sha }}
+          fetch-depth: 0
+
+      # main moves to the release commit and the tags go with it, in one push
+      # that either lands whole or not at all.
+      - name: main moves to the release commit
+        env:
+          TAGS: ${{ needs.assemble.outputs.tags }}
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor origin/main "$sha"; then
+            echo "::error::main is no longer an ancestor of the release commit, so it cannot fast-forward. Nothing was pushed."
+            exit 1
+          fi
+          refs=()
+          for tag in $(echo "$TAGS" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0, "utf8")).sort().join(" "))'); do
+            git tag "$tag" "$sha"
+            refs+=("refs/tags/$tag")
+          done
+          git push --atomic origin "$sha:refs/heads/main" "${refs[@]}"
+
+      # A push made with this job's token starts no workflow, so each tag's
+      # release is started on the tag's own ref. release.yml serialises the
+      # publishing.
+      - name: Start each release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAGS: ${{ needs.assemble.outputs.tags }}
+        run: |
+          set -euo pipefail
+          for tag in $(echo "$TAGS" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0, "utf8")).sort().join(" "))'); do
+            gh workflow run release.yml --ref "$tag"
+            echo "started release.yml on $tag"
+          done

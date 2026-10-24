@@ -6,6 +6,15 @@ name: ci
 on:
   push: { branches: [main, staging] }
   pull_request: { branches: [staging] }
+  # `prepare-release.yml` runs the whole of this on the release commit before
+  # `main` moves to it, because a push made with the job's own token starts no
+  # run of its own.
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to check.
+        required: true
+        type: string
 
 jobs:
   # Discovery is its own job so a broken walk fails HERE with a message, rather
@@ -19,6 +28,7 @@ jobs:
       matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.ref }}" }
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
       - id: matrix
@@ -65,6 +75,7 @@ jobs:
     # reference-set checkout would 404 on a repository that is plainly there.
     secrets: inherit
     with:
+      ref: ${{ inputs.ref }}
       name: ${{ matrix.name }}
       id: ${{ matrix.id }}
       client: ${{ matrix.client }}
