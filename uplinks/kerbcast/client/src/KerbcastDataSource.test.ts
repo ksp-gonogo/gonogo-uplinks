@@ -15,6 +15,7 @@ import { act, watchStationBrokers } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   attachStationBroker,
+  BrowserRTCTransport,
   KerbcastDataSource,
   kerbcastSource,
   SLOT_COUNT,
@@ -849,5 +850,123 @@ describe("KerbcastDataSource: the station broker it registers", () => {
       (ds.getClient() as unknown as { cfg: { iceServers?: RTCIceServer[] } })
         .cfg.iceServers,
     ).toEqual([TURN]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The browser peer connection: one transport for every media line, and closed
+// when it fails, so a relay's allocations are not held for a peer that is gone.
+// ---------------------------------------------------------------------------
+
+describe("BrowserRTCTransport: relay allocations", () => {
+  class FakePeerConnection {
+    static instances: FakePeerConnection[] = [];
+    readonly config: RTCConfiguration;
+    closed = false;
+    connectionState: RTCPeerConnectionState = "new";
+    iceGatheringState: RTCIceGatheringState = "complete";
+    localDescription = { sdp: "v=0" };
+    onconnectionstatechange: (() => void) | null = null;
+    ontrack: unknown = null;
+
+    constructor(config: RTCConfiguration) {
+      this.config = config;
+      FakePeerConnection.instances.push(this);
+    }
+
+    addTransceiver(): void {}
+    createDataChannel(): object {
+      return { send: () => {}, close: () => {} };
+    }
+    async createOffer(): Promise<{ sdp: string }> {
+      return { sdp: "v=0" };
+    }
+    async setLocalDescription(): Promise<void> {}
+    async setRemoteDescription(): Promise<void> {}
+    addEventListener(): void {}
+    removeEventListener(): void {}
+    close(): void {
+      this.closed = true;
+    }
+  }
+
+  beforeEach(() => {
+    FakePeerConnection.instances = [];
+    vi.stubGlobal("RTCPeerConnection", FakePeerConnection);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("creates every peer with the max-bundle policy and the given ICE servers", () => {
+    const servers = [{ urls: "turn:relay.example:3478" }];
+
+    new BrowserRTCTransport().createPeer(servers);
+
+    expect(FakePeerConnection.instances).toHaveLength(1);
+    expect(FakePeerConnection.instances[0].config).toEqual({
+      iceServers: servers,
+      bundlePolicy: "max-bundle",
+    });
+  });
+
+  it("closes a peer whose connection state goes failed", () => {
+    const peer = new BrowserRTCTransport().createPeer([]);
+    const states: string[] = [];
+    peer.onStateChange((s) => states.push(s));
+    const pc = FakePeerConnection.instances[0];
+
+    pc.connectionState = "connected";
+    pc.onconnectionstatechange?.();
+    expect(pc.closed).toBe(false);
+
+    pc.connectionState = "failed";
+    pc.onconnectionstatechange?.();
+
+    expect(states).toEqual(["connected", "failed"]);
+    expect(pc.closed).toBe(true);
+  });
+
+  it("does not close a peer that is merely disconnected", () => {
+    new BrowserRTCTransport().createPeer([]);
+    const pc = FakePeerConnection.instances[0];
+
+    pc.connectionState = "disconnected";
+    pc.onconnectionstatechange?.();
+
+    expect(pc.closed).toBe(false);
+  });
+
+  it("closes the peer when the sidecar refuses the offer", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+      Promise.resolve(
+        String(input).includes("/ice-config")
+          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+          : new Response("unavailable", { status: 503 }),
+      ),
+    );
+    const ds = makeTracked({ port: 1 });
+
+    await expect(ds.connect()).rejects.toThrow();
+
+    expect(FakePeerConnection.instances.length).toBeGreaterThan(0);
+    expect(FakePeerConnection.instances[0].closed).toBe(true);
+    expect(FakePeerConnection.instances[0].config.bundlePolicy).toBe(
+      "max-bundle",
+    );
+  });
+
+  it("closes the peer when the host refuses a station's offer", async () => {
+    const ds = makeTracked({ port: 1 });
+    ds.attachBroker({
+      iceServers: () => [],
+      onIceServersChange: () => () => {},
+      negotiate: () => Promise.reject(new Error("host unreachable")),
+    });
+
+    await expect(ds.connect()).rejects.toThrow(/host unreachable/);
+
+    expect(FakePeerConnection.instances[0].closed).toBe(true);
   });
 });

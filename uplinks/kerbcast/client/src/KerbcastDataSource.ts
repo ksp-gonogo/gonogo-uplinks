@@ -235,8 +235,26 @@ export class BrowserRTCTransport implements KerbcastTransport {
     return this.receiversByTrack.get(track);
   }
 
+  /** The peer connection most recently created, for {@link releaseCurrentPeer}. */
+  private current: RTCPeerConnection | null = null;
+
+  /**
+   * Close the most recent peer connection. A peer that gathered candidates for
+   * an offer that was then refused is otherwise held open, with its relay
+   * allocations, until the next connect closes it.
+   */
+  releaseCurrentPeer(): void {
+    this.current?.close();
+    this.current = null;
+  }
+
   createPeer(iceServers: RTCIceServer[]): KerbcastPeer {
-    const pc = new RTCPeerConnection({ iceServers });
+    // max-bundle puts every media line and the data channel on one transport.
+    // The default policy gathers a transport per media line in the first offer,
+    // and over a TURN relay each one is a separate allocation, so a pool of
+    // slots asked the relay for one allocation per slot.
+    const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
+    this.current = pc;
     let trackIdx = 0;
     let onTrack:
       | ((track: MediaStreamTrack, idx: number, mid: string) => void)
@@ -251,6 +269,9 @@ export class BrowserRTCTransport implements KerbcastTransport {
     };
     pc.onconnectionstatechange = () => {
       onStateChange?.(mapRTCState(pc.connectionState));
+      // A failed peer never recovers, and keeps its relay allocations until it
+      // is closed.
+      if (pc.connectionState === "failed") pc.close();
     };
     return {
       addRecvOnlyTransceiver: () => {
@@ -836,6 +857,7 @@ export class KerbcastDataSource {
     // Capture the broker locally so the negotiate closure is stable across a
     // later rebuild and doesn't re-read `this.broker` after a teardown.
     const broker = this.broker;
+    const rtcTransport = this.rtcTransport;
     const client = new KerbcastClient(
       {
         host: getGameHost(),
@@ -849,10 +871,14 @@ export class KerbcastDataSource {
         // answer's `cameras` is the only place the sidecar reports which of the
         // initial cameras it bound, and the SDK drops it in dynamic mode.
         negotiate: async (offer) => {
-          const answer = broker
-            ? await broker.negotiate(offer)
-            : await this.relayOffer(offer);
-          return answer;
+          try {
+            return broker
+              ? await broker.negotiate(offer)
+              : await this.relayOffer(offer);
+          } catch (err) {
+            rtcTransport?.releaseCurrentPeer();
+            throw err;
+          }
         },
       },
       keepaliveTransport,
