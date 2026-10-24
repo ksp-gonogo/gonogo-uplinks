@@ -61,6 +61,10 @@ import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { KerbcastDataSource } from "../KerbcastDataSource.js";
 import {
+  clearCommandKnowledge,
+  publishCommandKnowledge,
+} from "./commandKnowledge.js";
+import {
   CameraFeed,
   type CameraFeedConfig,
   type CameraOverlayContext,
@@ -2126,5 +2130,71 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
     expect(sizeReports(sidecar).slice(before)).toEqual([
       { flightId: 42, width: 320, height: 180 },
     ]);
+  });
+});
+
+describe("CameraFeed: command centre knowledge on the target brackets", () => {
+  afterEach(() => clearCommandKnowledge());
+
+  async function commandFeed(blank?: string) {
+    const { sidecar } = await buildConnectedSource([
+      makeCamera({ flightId: 42, kind: "command", renderWidth: 640, renderHeight: 360 }),
+    ]);
+    await act(async () => {
+      sidecar.updateCamera(42, {
+        commandTrack: {
+          ut: 1000,
+          hasFix: true,
+          rangeM: 11_508_000,
+          occluded: false,
+          occluder: "",
+          sunlit: true,
+          bracketHalfPx: 40,
+          frameHeightPx: 360,
+          framingFits: true,
+          blank,
+          events: [],
+        },
+      } as never);
+    });
+  }
+
+  it("colours the brackets of a modelled target and badges it in the header", async () => {
+    publishCommandKnowledge(42, {
+      ut: 900,
+      network: "modelled",
+      lastKnownUt: 748,
+      uncertaintyM: 1200,
+    });
+    await commandFeed();
+    renderFeed({ flightId: 42 });
+    await waitFor(() =>
+      expect(
+        document.querySelector<SVGPathElement>('[data-corner="topLeft"]')
+          ?.style.stroke,
+      ).toContain("--color-modelled-mark"),
+    );
+    expect(
+      document.querySelector<SVGPathElement>('[data-corner="bottomRight"]')
+        ?.style.stroke,
+    ).toContain("--color-modelled-mark");
+    expect(screen.getByText(/MODELLED 4min 12s/)).toBeTruthy();
+    expect(screen.getByText("MODELLED", { exact: true })).toBeTruthy();
+  });
+
+  it("draws no corner over a blanked feed and keeps the readout", async () => {
+    publishCommandKnowledge(42, {
+      ut: 900,
+      network: "held",
+      lastKnownUt: 748,
+      uncertaintyM: 9000,
+    });
+    await commandFeed("Position too uncertain");
+    renderFeed({ flightId: 42 });
+    await waitFor(() =>
+      expect(screen.getByText(/HELD 4min 12s/)).toBeTruthy(),
+    );
+    expect(screen.getByText("Position too uncertain")).toBeTruthy();
+    expect(document.querySelector("[data-corner]")).toBeNull();
   });
 });
