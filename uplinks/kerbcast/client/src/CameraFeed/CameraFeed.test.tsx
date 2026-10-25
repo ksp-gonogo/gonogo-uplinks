@@ -473,6 +473,27 @@ describe("CameraFeed: camera selection", () => {
     ).toContain("Some other camera (Kerbal X)");
   });
 
+  it("lists a ground-station camera from the sidecar registry beside the part cameras", async () => {
+    await buildConnectedSource([
+      ...TWO_CAMERAS,
+      makeCamera({
+        flightId: 92,
+        kind: "groundStation",
+        cameraName: "Tracking Station",
+        vesselName: "Kerbal X",
+      }),
+    ]);
+
+    renderFeed({ flightId: null });
+
+    fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
+    expect(
+      screen
+        .getAllByRole("menuitemradio")
+        .map((item) => item.textContent),
+    ).toContain("Tracking Station (Kerbal X)");
+  });
+
   it("lists every available camera in the menu", async () => {
     await buildConnectedSource(TWO_CAMERAS);
 
