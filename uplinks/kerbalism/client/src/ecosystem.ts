@@ -404,8 +404,6 @@ export interface DiagnosisInput {
   lifeSupport: KerbalismLifeSupport | undefined;
   /** Current amount per resource name, from `vessel.resources`. */
   stored: Record<string, number>;
-  /** Current capacity per resource name, from `vessel.resources`. */
-  capacity?: Record<string, number>;
   /**
    * A producer must be able to cover at least this share of a resource's gap
    * before it is allowed to implicate its own inputs. Without it, everything is
@@ -430,7 +428,6 @@ export function diagnose({
   profile,
   lifeSupport,
   stored,
-  capacity = {},
   materiality = DEFAULT_MATERIALITY,
 }: DiagnosisInput): DiagnosisGroup[] {
   const net: Record<string, number> = {};
@@ -441,21 +438,7 @@ export function diagnose({
     const perSecond = magnitudeOf(rate);
     if (perSecond !== null) net[name] = perSecond;
   }
-  /*
-   * Draining is not short: a full tank used at its normal rate is nominal. A
-   * resource is short once it is empty or under the profile's own low
-   * threshold, and a resource with no threshold declared only when empty.
-   */
-  const isShort = (name: string): boolean => {
-    if (net[name] >= 0) return false;
-    const amount = stored[name] ?? 0;
-    if (amount <= 0) return true;
-    const low = profile?.resources?.[name]?.lowThreshold;
-    const cap = capacity[name] ?? 0;
-    if (low === undefined || cap <= 0) return false;
-    return amount / cap < magnitudeOr(low, Number.NaN);
-  };
-  const short = new Set(Object.keys(net).filter(isShort));
+  const short = new Set(Object.keys(net).filter((r) => net[r] < 0));
   const byModifier = processesByModifier(profile);
 
   // R -> X when a fitted producer of R is throttled by a starved X.
@@ -707,7 +690,7 @@ export function summarise({
   crossings,
 }: SummaryInput): Summary {
   const facts = resourceFacts(profile);
-  const groups = diagnose({ profile, lifeSupport, stored, capacity });
+  const groups = diagnose({ profile, lifeSupport, stored });
   const loops = closedLoops(profile);
 
   const roleOf = new Map<string, DiagnosisGroup>();

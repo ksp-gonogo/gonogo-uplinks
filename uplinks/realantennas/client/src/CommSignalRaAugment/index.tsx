@@ -35,17 +35,6 @@ function primaryHop(
   return hops && hops.length > 0 ? hops[0] : undefined;
 }
 
-/**
- * Whether the craft's link is reported down. The route, rates and antenna facts
- * a down link still has on the wire describe the last link and not a current
- * one, so neither augment draws them. Only a current report counts: a held one
- * from before a gap says nothing of now.
- */
-function useLinkDown(): boolean {
-  const link = useTelemetry("comms.link");
-  return link.state === "observed" && link.value.connected === false;
-}
-
 /** Field-label lettering, the same treatment CommSignal's own detail rows use. */
 const LABEL_STYLE = {
   letterSpacing: "0.1em",
@@ -62,14 +51,13 @@ function CommSignalRaBadges() {
   // carries these values forward, so a held read has nothing to offer here.
   const dataRate = useTelemetry("comms.dataRate");
   const path = useTelemetry("comms.path");
-  const linkDown = useLinkDown();
   const ext = readRealAntennasHopExt(
     primaryHop(path.state === "observed" ? path.value.hops : undefined),
   );
   const down =
     dataRate.state === "observed" ? dataRate.value.downBitsPerSec : undefined;
 
-  if (linkDown || (down === undefined && !ext?.band)) return null;
+  if (down === undefined && !ext?.band) return null;
 
   return (
     // `sm` (not `xs`): the band pill and the rate value are two distinct
@@ -95,7 +83,6 @@ function CommSignalRaSection() {
   // Current observations only, for the reason given on the badges above.
   const marginReading = useTelemetry("comms.linkMargin");
   const path = useTelemetry("comms.path");
-  const linkDown = useLinkDown();
   const margin =
     marginReading.state === "observed" ? marginReading.value : undefined;
   const ext = readRealAntennasHopExt(
@@ -105,15 +92,14 @@ function CommSignalRaSection() {
   const hasMargin = margin?.decibelMargin !== undefined;
   const hasExt =
     ext !== undefined &&
-    (!!ext.band ||
-      ext.techLevel != null ||
+    (ext.techLevel != null ||
       ext.modulationBits != null ||
       !!ext.encoder ||
       ext.requiredEbN0 != null ||
       ext.beamwidth != null ||
       ext.reverseBitsPerSec != null);
 
-  if (linkDown || (!hasMargin && !hasExt)) return null;
+  if (!hasMargin && !hasExt) return null;
 
   return (
     // Labelled "LINK BUDGET", not "RealAntennas": the operator gets the link
@@ -142,14 +128,6 @@ function CommSignalRaSection() {
             </Text>
           </>
         ) : null}
-        {ext?.band ? (
-          <>
-            <Text size="xs" level="muted" style={LABEL_STYLE}>
-              Band
-            </Text>
-            <Text size="sm">{ext.band}-band</Text>
-          </>
-        ) : null}
         {ext?.encoder ? (
           <>
             <Text size="xs" level="muted" style={LABEL_STYLE}>
@@ -164,8 +142,7 @@ function CommSignalRaSection() {
               Modulation
             </Text>
             <Text size="sm">
-              {ext.modulationBits.magnitude} bit
-              {ext.modulationBits.magnitude === 1 ? "" : "s"} per symbol
+              <Unit value={ext.modulationBits} />
             </Text>
           </>
         ) : null}
@@ -213,7 +190,7 @@ registerAugment({
   id: "realantennas-comm-signal-badge",
   augments: "comm-signal.badges",
   requires: "realantennas",
-  channels: ["comms.dataRate", "comms.path", "comms.link"],
+  channels: ["comms.dataRate", "comms.path"],
   component: CommSignalRaBadges,
   owner: REALANTENNAS,
 });
@@ -222,7 +199,7 @@ registerAugment({
   id: "realantennas-comm-signal-section",
   augments: "comm-signal.sections",
   requires: "realantennas",
-  channels: ["comms.linkMargin", "comms.path", "comms.link"],
+  channels: ["comms.linkMargin", "comms.path"],
   component: CommSignalRaSection,
   owner: REALANTENNAS,
 });

@@ -32,8 +32,12 @@ describe("useKerbcastCameras", () => {
     sidecar.addCamera({ flightId: 42, cameraName: "Starboard Cam" });
     const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
     registerUplinkHandle("kerbcast", ds);
-    vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-      Promise.resolve(MockSidecar.makeOfferResponse([42])),
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+      Promise.resolve(
+        String(input).includes("/ice-config")
+          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+          : MockSidecar.makeOfferResponse([42]),
+      ),
     );
     await ds.connect();
     sidecar.open();

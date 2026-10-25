@@ -879,10 +879,6 @@
           "unit": "ratio"
         },
         {
-          "name": "progressFraction",
-          "unit": "ratio"
-        },
-        {
           "name": "remainingSampleMass",
           "unit": "t"
         },
@@ -893,14 +889,6 @@
         {
           "name": "scanning",
           "unit": "flag"
-        },
-        {
-          "name": "secondsToComplete",
-          "unit": "s"
-        },
-        {
-          "name": "waitingReason",
-          "unit": "text"
         }
       ]
     },
@@ -1089,14 +1077,6 @@
     {
       "id": "crew-status-survival-badge",
       "augments": "crew-status.row-badges",
-      "channels": [],
-      "requires": "kerbalism",
-      "suppressesVanillaBase": false,
-      "settings": []
-    },
-    {
-      "id": "experiments-instrument-progress",
-      "augments": "experiments.instrument",
       "channels": [],
       "requires": "kerbalism",
       "suppressesVanillaBase": false,

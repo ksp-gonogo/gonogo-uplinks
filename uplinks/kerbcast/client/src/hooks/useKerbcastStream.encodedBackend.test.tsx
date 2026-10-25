@@ -1,9 +1,9 @@
 /**
  * Backend 0: encoded transform on the receiver. Proves the wiring is real: when
- * the caller gives an encoded target and `RTCRtpScriptTransform` exists, this
- * backend is tried first and, on success, surfaces `raw` itself (unchanged) as
- * the delayed stream, no new track, the delay happens in place upstream of
- * decode.
+ * `KerbcastDataSource.getReceiverForStream` resolves a receiver and
+ * `RTCRtpScriptTransform` exists, this backend is tried first and, on
+ * success, surfaces `raw` itself (unchanged) as the delayed stream, no new
+ * track, the delay happens in place upstream of decode.
  *
  * Deliberately A separate file from `useKerbcastStream.delay.test.tsx`:
  * `kerbcastDelayWorkerClient.ts` caches its shared `Worker` in module-level
@@ -25,15 +25,11 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import type { EncodedFrameDelayHandle } from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
 import {
   type DelayedPlayoutResult,
-  type EncodedDelayTarget,
   useDelayedPlayout,
-  useEncodedDelayTarget,
-  useKerbcastStream,
 } from "./useKerbcastStream.js";
 
 // Testing Library auto-cleans the DOM after every test, no manual
@@ -77,6 +73,17 @@ function manualClock(initialEdge = Number.NEGATIVE_INFINITY): DelayClockLike & {
   };
 }
 
+/** A fake `KerbcastDataSource` implementing `getReceiverForStream`: the
+ *  encoded-transform backend's attach point. `receiverFor` maps any `raw`
+ *  stream to whatever fake `RTCRtpReceiver` stand-in the test wants Backend
+ *  0 to resolve (or `undefined`, to prove it's skipped cleanly). */
+function registerFakeKerbcastSourceWithReceiver(
+  receiverFor: (stream: unknown) => unknown,
+) {
+  const fake = { id: "kerbcast", getReceiverForStream: receiverFor };
+  registerUplinkHandle("kerbcast", fake);
+}
+
 /**
  * Minimal fake `Worker`: `getSharedWorker()` is shared, module-level
  * state (`kerbcastDelayWorkerClient.ts`), so stubbing `Worker` to make
@@ -93,10 +100,8 @@ function manualClock(initialEdge = Number.NEGATIVE_INFINITY): DelayClockLike & {
  * Backend 2.
  */
 class FakeWorker {
-  static posted: Array<{ type?: string; pipelineId?: string }> = [];
   onmessage: ((ev: MessageEvent) => void) | null = null;
   postMessage(msg: { type?: string; pipelineId?: string }) {
-    FakeWorker.posted.push(msg);
     if (msg?.type === "createPipeline") {
       queueMicrotask(() => {
         this.onmessage?.({
@@ -111,85 +116,47 @@ class FakeWorker {
   }
 }
 
-function TargetedStreamProbe({
-  shown,
-  target,
+function StreamProbe({
+  raw,
   clock,
   onResult,
 }: {
-  shown: MediaStream | null;
-  target: EncodedDelayTarget | null;
+  raw: MediaStream | null;
   clock: DelayClockLike;
   onResult: (r: DelayedPlayoutResult) => void;
 }): null {
-  const result = useDelayedPlayout(shown, {
+  const result = useDelayedPlayout(raw, {
     view: clock,
     captureUt: () => 10,
-    encodedTarget: target,
   });
   onResult(result);
   return null;
 }
 
-/** A camera shown through kerbcast's noise canvas: `shown` is the canvas, and the delay is wanted on the WebRTC track behind it. */
-function CameraProbe({
-  flightId,
-  clock,
-  onResult,
-}: {
-  flightId: number;
-  clock: DelayClockLike;
-  onResult: (r: DelayedPlayoutResult) => void;
-}): null {
-  const shown = useKerbcastStream(flightId);
-  const target = useEncodedDelayTarget(flightId);
-  const result = useDelayedPlayout(shown, {
-    view: clock,
-    captureUt: () => 10,
-    encodedTarget: target,
-  });
-  onResult(result);
-  return null;
-}
-
-function stubTransforms() {
-  class FakeRTCRtpScriptTransform {
-    static instances: FakeRTCRtpScriptTransform[] = [];
-    constructor(
-      public worker: unknown,
-      public options: unknown,
-    ) {
-      FakeRTCRtpScriptTransform.instances.push(this);
+describe("useDelayedPlayout, Backend 0: encoded transform on the receiver", () => {
+  it("attaches directly to the resolved receiver and surfaces the SAME raw stream (no new track) when the platform supports RTCRtpScriptTransform", async () => {
+    class FakeRTCRtpScriptTransform {
+      static instances: FakeRTCRtpScriptTransform[] = [];
+      constructor(
+        public worker: unknown,
+        public options: unknown,
+      ) {
+        FakeRTCRtpScriptTransform.instances.push(this);
+      }
     }
-  }
-  vi.stubGlobal("Worker", FakeWorker);
-  vi.stubGlobal("RTCRtpScriptTransform", FakeRTCRtpScriptTransform);
-  return FakeRTCRtpScriptTransform;
-}
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("RTCRtpScriptTransform", FakeRTCRtpScriptTransform);
 
-const fakeStream = () =>
-  ({ getVideoTracks: () => [{}] }) as unknown as MediaStream;
-const fakeReceiver = () =>
-  ({ transform: null }) as unknown as RTCRtpReceiver & { transform: unknown };
-const targetOn = (receiver: RTCRtpReceiver & { transform: unknown }) => ({
-  key: {},
-  receiver,
-  attach: (install: (r: RTCRtpReceiver) => EncodedFrameDelayHandle | null) =>
-    install(receiver),
-});
-
-describe("useDelayedPlayout with an encoded target behind the shown stream", () => {
-  it("attaches the transform to the target's receiver and surfaces the shown stream unchanged", async () => {
-    const Transform = stubTransforms();
-    const shown = fakeStream();
-    const receiver = fakeReceiver();
+    const fakeReceiver = { transform: null as unknown };
+    const rawStream = { getVideoTracks: () => [{}] } as unknown as MediaStream;
+    registerFakeKerbcastSourceWithReceiver(() => fakeReceiver);
+    const clock = manualClock();
 
     let latest: DelayedPlayoutResult | "unset" = "unset";
     render(
-      <TargetedStreamProbe
-        shown={shown}
-        target={targetOn(receiver)}
-        clock={manualClock()}
+      <StreamProbe
+        raw={rawStream}
+        clock={clock}
         onResult={(r) => {
           latest = r;
         }}
@@ -199,21 +166,44 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
     await waitFor(() => {
       expect(latest).toMatchObject({ kind: "delayed" });
     });
-    expect(Transform.instances).toHaveLength(1);
-    expect(receiver.transform).toBe(Transform.instances[0]);
-    expect((latest as unknown as { stream: MediaStream }).stream).toBe(shown);
+    // The transform was actually constructed and assigned onto the real
+    // receiver object: this is the "wired, not just unit-tested in
+    // isolation" proof: attachEncodedWorkerFrameDelay reached the platform
+    // API, not a mock of itself.
+    expect(FakeRTCRtpScriptTransform.instances).toHaveLength(1);
+    expect(fakeReceiver.transform).toBe(FakeRTCRtpScriptTransform.instances[0]);
+    // No new stream: the SAME raw reference, unlike backends 1/2 which
+    // always produce a fresh generator-backed stream.
+    const delayed = latest as unknown as DelayedPlayoutResult & {
+      kind: "delayed";
+    };
+    expect(delayed.stream).toBe(rawStream);
   });
 
   it("asks the worker for frame totals only while the stats flag is on", async () => {
-    const Transform = stubTransforms();
+    class FakeRTCRtpScriptTransform {
+      static instances: FakeRTCRtpScriptTransform[] = [];
+      constructor(
+        public worker: unknown,
+        public options: { statsIntervalMs?: number },
+      ) {
+        FakeRTCRtpScriptTransform.instances.push(this);
+      }
+    }
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("RTCRtpScriptTransform", FakeRTCRtpScriptTransform);
+    registerFakeKerbcastSourceWithReceiver(() => ({ transform: null }));
+
     const attach = async (flag: boolean) => {
       if (flag) localStorage.setItem(FRAME_DELAY_STATS_KEY, "1");
       else localStorage.removeItem(FRAME_DELAY_STATS_KEY);
+      const rawStream = {
+        getVideoTracks: () => [{}],
+      } as unknown as MediaStream;
       let latest: DelayedPlayoutResult | "unset" = "unset";
       const { unmount } = render(
-        <TargetedStreamProbe
-          shown={fakeStream()}
-          target={targetOn(fakeReceiver())}
+        <StreamProbe
+          raw={rawStream}
           clock={manualClock()}
           onResult={(r) => {
             latest = r;
@@ -229,15 +219,13 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
     await attach(false);
     await attach(true);
 
-    const [off, on] = Transform.instances as unknown as Array<{
-      options: { statsIntervalMs?: number };
-    }>;
+    const [off, on] = FakeRTCRtpScriptTransform.instances;
     expect(off?.options.statsIntervalMs).toBeUndefined();
     expect(on?.options.statsIntervalMs).toBeGreaterThan(0);
     localStorage.clear();
   });
 
-  it("falls through to the next backend, never throwing, when the transform cannot be built", async () => {
+  it("falls through (never throws) when RTCRtpScriptTransform's constructor throws", async () => {
     class ThrowingTransform {
       constructor() {
         throw new Error("receiver already has a transform");
@@ -246,13 +234,17 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
     vi.stubGlobal("Worker", FakeWorker);
     vi.stubGlobal("RTCRtpScriptTransform", ThrowingTransform);
 
+    const fakeReceiver = { transform: null as unknown };
+    const rawStream = { getVideoTracks: () => [{}] } as unknown as MediaStream;
+    registerFakeKerbcastSourceWithReceiver(() => fakeReceiver);
+    const clock = manualClock();
+
     let latest: DelayedPlayoutResult | "unset" = "unset";
     expect(() => {
       render(
-        <TargetedStreamProbe
-          shown={fakeStream()}
-          target={targetOn(fakeReceiver())}
-          clock={manualClock()}
+        <StreamProbe
+          raw={rawStream}
+          clock={clock}
           onResult={(r) => {
             latest = r;
           }}
@@ -260,236 +252,34 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
       );
     }).not.toThrow();
 
-    // No WebCodecs here either, so every backend is out.
+    // Backend 1 (no WebCodecs stubbed here) can't build either, so this
+    // lands on "unavailable", the point under test is narrower: a
+    // THROWING encoded-transform attach must degrade to "try the next
+    // backend", never an unhandled exception or a stuck "connecting".
     await waitFor(() => {
       expect(latest).toMatchObject({ kind: "unavailable" });
     });
   });
 
-  it("does not try the encoded transform without a target", async () => {
-    const Transform = stubTransforms();
+  it("does not attempt backend 0 when getReceiverForStream resolves nothing (falls through silently, same as every other backend's null case)", async () => {
+    class FakeRTCRtpScriptTransform {
+      static instances: FakeRTCRtpScriptTransform[] = [];
+      constructor() {
+        FakeRTCRtpScriptTransform.instances.push(this);
+      }
+    }
+    vi.stubGlobal("Worker", FakeWorker);
+    vi.stubGlobal("RTCRtpScriptTransform", FakeRTCRtpScriptTransform);
 
-    let latest: DelayedPlayoutResult | "unset" = "unset";
-    render(
-      <TargetedStreamProbe
-        shown={fakeStream()}
-        target={null}
-        clock={manualClock()}
-        onResult={(r) => {
-          latest = r;
-        }}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(latest).toMatchObject({ kind: "unavailable" });
-    });
-    expect(Transform.instances).toHaveLength(0);
-  });
-
-  it("moves the delay to the new receiver when the target changes behind the same canvas", async () => {
-    const Transform = stubTransforms();
-    const canvas = fakeStream();
-    const first = targetOn(fakeReceiver());
-    const second = targetOn(fakeReceiver());
+    const rawStream = { getVideoTracks: () => [{}] } as unknown as MediaStream;
+    registerFakeKerbcastSourceWithReceiver(() => undefined);
     const clock = manualClock();
 
     let latest: DelayedPlayoutResult | "unset" = "unset";
-    const onResult = (r: DelayedPlayoutResult) => {
-      latest = r;
-    };
-    const { rerender } = render(
-      <TargetedStreamProbe
-        shown={canvas}
-        target={first}
-        clock={clock}
-        onResult={onResult}
-      />,
-    );
-    await waitFor(() => {
-      expect(first.receiver.transform).not.toBeNull();
-    });
-
-    rerender(
-      <TargetedStreamProbe
-        shown={canvas}
-        target={second}
-        clock={clock}
-        onResult={onResult}
-      />,
-    );
-    await waitFor(() => {
-      expect(second.receiver.transform).toBe(Transform.instances[1]);
-    });
-    expect(first.receiver.transform).toBeNull();
-    expect((latest as unknown as { stream: MediaStream }).stream).toBe(canvas);
-  });
-
-  it("keeps one attachment while the canvas behind it is replaced, and shows the new canvas", async () => {
-    const Transform = stubTransforms();
-    const target = targetOn(fakeReceiver());
-    const clock = manualClock();
-    const before = fakeStream();
-    const after = fakeStream();
-
-    let latest: DelayedPlayoutResult | "unset" = "unset";
-    const onResult = (r: DelayedPlayoutResult) => {
-      latest = r;
-    };
-    const { rerender } = render(
-      <TargetedStreamProbe
-        shown={before}
-        target={target}
-        clock={clock}
-        onResult={onResult}
-      />,
-    );
-    await waitFor(() => {
-      expect(latest).toMatchObject({ kind: "delayed" });
-    });
-    rerender(
-      <TargetedStreamProbe
-        shown={after}
-        target={target}
-        clock={clock}
-        onResult={onResult}
-      />,
-    );
-    expect((latest as unknown as { stream: MediaStream }).stream).toBe(after);
-    expect(Transform.instances).toHaveLength(1);
-  });
-
-  it("is connecting while the target is known and nothing is shown yet", async () => {
-    stubTransforms();
-
-    let latest: DelayedPlayoutResult | "unset" = "unset";
     render(
-      <TargetedStreamProbe
-        shown={null}
-        target={targetOn(fakeReceiver())}
-        clock={manualClock()}
-        onResult={(r) => {
-          latest = r;
-        }}
-      />,
-    );
-    await waitFor(() => {
-      expect(latest).toEqual({ kind: "connecting" });
-    });
-  });
-});
-
-
-describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => {
-  type Factory = (ctx: { flightId: number; path: string }) => unknown;
-
-  /** A Kerbcast client whose camera shows `canvas` and records what it is told to install. */
-  function registerKerbcast(opts: {
-    canvas: MediaStream;
-    path: "script" | "streams" | null;
-  }) {
-    const installs: Array<Factory | null> = [];
-    const cam = {
-      mediaStream: opts.canvas,
-      on: () => () => {},
-      setEncodedTransform: (factory: Factory | null) => {
-        installs.push(factory);
-      },
-    };
-    const client = { encodedTransformPath: opts.path, camera: () => cam };
-    registerUplinkHandle("kerbcast", {
-      id: "kerbcast",
-      getClient: () => client,
-      subscribeCamera: () => {},
-      unsubscribeCamera: () => {},
-    });
-    return { installs };
-  }
-
-  it("with static on, hands Kerbcast the delay for the camera's receiver and shows the canvas", async () => {
-    const Transform = stubTransforms();
-    const canvas = fakeStream();
-    const { installs } = registerKerbcast({ canvas, path: "script" });
-
-    let latest: DelayedPlayoutResult | "unset" = "unset";
-    render(
-      <CameraProbe
-        flightId={7}
-        clock={manualClock()}
-        onResult={(r) => {
-          latest = r;
-        }}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(latest).toMatchObject({ kind: "delayed" });
-    });
-    expect((latest as unknown as { stream: MediaStream }).stream).toBe(canvas);
-    expect(installs).toHaveLength(1);
-    const installed = installs[0]?.({ flightId: 7, path: "script" });
-    expect(installed).toBeInstanceOf(Transform);
-    expect(installed).toBe(Transform.instances[0]);
-  });
-
-  it("makes a fresh transform for each receiver the camera lands on, retiring the previous pipeline", async () => {
-    const Transform = stubTransforms();
-    FakeWorker.posted = [];
-    const { installs } = registerKerbcast({
-      canvas: fakeStream(),
-      path: "script",
-    });
-
-    render(<CameraProbe flightId={7} clock={manualClock()} onResult={() => {}} />);
-    await waitFor(() => {
-      expect(installs).toHaveLength(1);
-    });
-    const factory = installs[0];
-    const first = factory?.({ flightId: 7, path: "script" });
-    const second = factory?.({ flightId: 7, path: "script" });
-
-    expect(second).toBeInstanceOf(Transform);
-    expect(second).not.toBe(first);
-    const [firstOptions] = Transform.instances.map(
-      (t) => (t as unknown as { options: { pipelineId: string } }).options,
-    );
-    expect(FakeWorker.posted).toContainEqual({
-      type: "dispose",
-      pipelineId: firstOptions?.pipelineId,
-    });
-  });
-
-  it("detaches from Kerbcast when the last consumer goes", async () => {
-    stubTransforms();
-    const { installs } = registerKerbcast({
-      canvas: fakeStream(),
-      path: "script",
-    });
-
-    const { unmount } = render(
-      <CameraProbe flightId={7} clock={manualClock()} onResult={() => {}} />,
-    );
-    await waitFor(() => {
-      expect(installs).toHaveLength(1);
-    });
-    unmount();
-
-    expect(installs).toHaveLength(2);
-    expect(installs[1]).toBeNull();
-  });
-
-  it.each([
-    "streams",
-    null,
-  ] as const)("leaves the delay to the shown stream where Kerbcast's install path is %s", async (path) => {
-    const Transform = stubTransforms();
-    const { installs } = registerKerbcast({ canvas: fakeStream(), path });
-
-    let latest: DelayedPlayoutResult | "unset" = "unset";
-    render(
-      <CameraProbe
-        flightId={7}
-        clock={manualClock()}
+      <StreamProbe
+        raw={rawStream}
+        clock={clock}
         onResult={(r) => {
           latest = r;
         }}
@@ -499,7 +289,32 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     await waitFor(() => {
       expect(latest).toMatchObject({ kind: "unavailable" });
     });
-    expect(installs).toHaveLength(0);
-    expect(Transform.instances).toHaveLength(0);
+    expect(FakeRTCRtpScriptTransform.instances).toHaveLength(0);
+  });
+
+  it("skips backend 0 (but doesn't throw) when the data source has no getReceiverForStream at all, matches the existing decoded-backend fakes' shape", async () => {
+    vi.stubGlobal("Worker", FakeWorker);
+    // RTCRtpScriptTransform deliberately left unstubbed/absent too.
+    const fake = { id: "kerbcast" }; // no getReceiverForStream, like the pre-existing test fakes
+    registerUplinkHandle("kerbcast", fake);
+    const rawStream = { getVideoTracks: () => [{}] } as unknown as MediaStream;
+    const clock = manualClock();
+
+    let latest: DelayedPlayoutResult | "unset" = "unset";
+    expect(() => {
+      render(
+        <StreamProbe
+          raw={rawStream}
+          clock={clock}
+          onResult={(r) => {
+            latest = r;
+          }}
+        />,
+      );
+    }).not.toThrow();
+
+    await waitFor(() => {
+      expect(latest).toMatchObject({ kind: "unavailable" });
+    });
   });
 });

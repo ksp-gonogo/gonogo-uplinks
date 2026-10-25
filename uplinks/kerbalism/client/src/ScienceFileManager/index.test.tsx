@@ -154,23 +154,6 @@ describe("ScienceDataAboardRowAugment", () => {
     expect(sendToggle).toHaveTextContent("Queued");
   });
 
-  it("names each figure and the drive that stores the file", async () => {
-    const fixture = newFixture();
-    renderAugment(fixture);
-    act(() => {
-      fixture.emit("science.experiments", [FILE_ENTRY]);
-    });
-    await screen.findByLabelText("Kerbalism file manager");
-    const text = visibleText();
-    expect(text).toMatch(/File\s*12\.5\s*MB/);
-    // 12.5 MB at 1.6 science per MB
-    expect(text).toMatch(/Worth\s*20\.0/);
-    expect(text).toMatch(/Sending at/);
-    expect(text).toMatch(/Stored in Hard Drive/);
-    expect(text).toMatch(/files\s*90(\.0+)?\s*MB used of\s*512(\.0+)?\s*MB/);
-    expect(text).toMatch(/sample slots\s*1 used of\s*2/);
-  });
-
   it("marks the drive's figures and transmitting state held once the link drops", async () => {
     const fixture = newFixture();
     const { container } = renderAugment(fixture);

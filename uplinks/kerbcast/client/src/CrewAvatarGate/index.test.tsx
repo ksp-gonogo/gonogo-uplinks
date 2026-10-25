@@ -64,8 +64,12 @@ async function connectedDataSource(): Promise<{
   const sidecar = new MockSidecar();
   const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
   registerUplinkHandle("kerbcast", ds);
-  vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-    Promise.resolve(MockSidecar.makeOfferResponse([])),
+  vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+    Promise.resolve(
+      String(input).includes("/ice-config")
+        ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+        : MockSidecar.makeOfferResponse([]),
+    ),
   );
   await ds.connect();
   sidecar.open();

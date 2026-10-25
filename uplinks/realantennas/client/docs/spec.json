@@ -566,8 +566,7 @@
       "augments": "comm-signal.badges",
       "channels": [
         "comms.dataRate",
-        "comms.path",
-        "comms.link"
+        "comms.path"
       ],
       "requires": "realantennas",
       "suppressesVanillaBase": false,
@@ -578,8 +577,7 @@
       "augments": "comm-signal.sections",
       "channels": [
         "comms.linkMargin",
-        "comms.path",
-        "comms.link"
+        "comms.path"
       ],
       "requires": "realantennas",
       "suppressesVanillaBase": false,

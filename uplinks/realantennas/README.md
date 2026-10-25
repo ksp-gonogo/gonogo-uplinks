@@ -10,7 +10,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | Uplink id | `realantennas` |
 | Version | `1.0.0-rc.3` |
 | Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 49.4, extension API 6.0.0 |
+| Built against | contract 46.4, extension API 6.0.0 |
 
 ## Install
 
@@ -60,8 +60,8 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.dataRate`, `comms.path`, `comms.link` | only while `realantennas` | 0 |  |
-| `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path`, `comms.link` | only while `realantennas` | 3 |  |
+| `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.dataRate`, `comms.path` | only while `realantennas` | 0 |  |
+| `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path` | only while `realantennas` | 3 |  |
 | `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `trackingStation.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
 
 ![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](client/docs/assets/ra-link-budget-closes--default.png)

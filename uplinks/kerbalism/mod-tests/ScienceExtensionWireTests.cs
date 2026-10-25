@@ -69,7 +69,6 @@ namespace GonogoKerbalismUplink.Tests
                     Issue = "no storage", RunningState = "Running", ExpStatus = "Issue",
                     DataRate = 0.002, ProdFactor = 0.5,
                     TakesSample = false, RemainingSampleMass = null,
-                    SubjectKnown = true, ProgressFraction = 0.25, ScienceRemainingToCollect = 3.0, SecondsToComplete = 600,
                 },
                 new ScienceExperimentRaw
                 {

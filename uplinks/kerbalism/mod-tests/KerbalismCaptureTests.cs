@@ -518,21 +518,6 @@ public class KerbalismReliabilityMapTests
         Assert.Equal("busted", parts[0].ConditionDetail);
     }
 
-    [Fact]
-    public void Parts_carry_the_title_without_Unity_rich_text_markup()
-    {
-        var parts = KerbalismReliabilityMap.Parts(
-            Captured(new ReliabilityPartRaw
-            {
-                PartId = "7",
-                Title = "Mk1 Command Pod (UNPRESSURIZED)<color=#CCCCCC> Reaction Wheel</color>",
-            }),
-            ReliabilityCoverage.Modeled,
-            Prefs.RequireRepairKits);
-
-        Assert.Equal("Mk1 Command Pod (UNPRESSURIZED) Reaction Wheel", parts[0].Title);
-    }
-
     /// <summary>
     /// The state Kerbalism calls "needs service": preventive, not yet broken. The
     /// old shape carried it in a field named NeedsRepair, so the roster printed the

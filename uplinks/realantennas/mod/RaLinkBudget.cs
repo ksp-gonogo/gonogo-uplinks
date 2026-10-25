@@ -24,13 +24,6 @@ namespace Gonogo.RealAntennasUplink
     /// </summary>
     public static class RaLinkBudget
     {
-        /// <summary>
-        /// Electric charge units per second for a transmit draw RealAntennas
-        /// reports in milliwatts (<c>RealAntenna.PowerDrawLinear</c>), the factor
-        /// its own antenna module charges by.
-        /// </summary>
-        public static double EcPerSecondFromMilliwatts(double milliwatts) => milliwatts * 1e-6;
-
         /// <summary>Speed of light RA uses (<c>Physics.c</c>), m/s.</summary>
         public const double SpeedOfLight = 2.998e8;
 

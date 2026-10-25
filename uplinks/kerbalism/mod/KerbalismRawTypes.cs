@@ -341,14 +341,6 @@ namespace Gonogo.KerbalismUplink
         public double? DataRate;
         public double? ProdFactor;
         public double? RemainingSampleMass;
-        /// <summary>Whether Kerbalism has a science subject for the vessel's current situation. False reads as "no science defined here"; null when the module could not be read.</summary>
-        public bool? SubjectKnown;
-        /// <summary>Fraction of the current subject's science already collected, 0..1, from Kerbalism's <c>PercentCollectedTotal</c>. Null with no subject.</summary>
-        public double? ProgressFraction;
-        /// <summary>Science still collectable from the current subject (<c>ScienceRemainingToCollect</c>). 0 is what makes Kerbalism call a switched-on experiment Waiting.</summary>
-        public double? ScienceRemainingToCollect;
-        /// <summary>Seconds a run needs to collect the rest of the subject at the current production factor, as Kerbalism's own countdown computes it.</summary>
-        public double? SecondsToComplete;
         /// <summary>Whether the module takes a finite sample at all (drives whether RemainingSampleMass means anything).</summary>
         public bool TakesSample;
     }

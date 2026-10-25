@@ -255,11 +255,18 @@ export default defineRenderSetup({
     // the widget never finds, and the render is of the no-cameras state.
     registerUplinkHandle("kerbcast", source);
 
-    // The connect handshake: the `/offer` answer names the camera so the
-    // client opens a track for the one it is about to learn about.
+    // The connect handshake. `/ice-config` answers with no relay, and the
+    // `/offer` answer names the camera so the client opens a track for the one
+    // it is about to learn about.
     realFetch = globalThis.fetch;
-    globalThis.fetch = (async () =>
-      MockSidecar.makeOfferResponse([camera.flightId])) as typeof fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      if (String(input).includes("/ice-config")) {
+        return new Response(JSON.stringify({ iceServers: [] }), {
+          status: 200,
+        });
+      }
+      return MockSidecar.makeOfferResponse([camera.flightId]);
+    }) as typeof fetch;
 
     // The track follows the subscription rather than the registration order:
     // the client binds a camera to a slot mid, and that is the mid its media

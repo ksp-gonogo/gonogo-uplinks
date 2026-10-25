@@ -277,12 +277,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     kind: "id",
     powerDisabled: "flag",
     prodFactor: "ratio",
-    progressFraction: "ratio",
     remainingSampleMass: "t",
     runningState: "id",
     scanning: "flag",
-    secondsToComplete: "s",
-    waitingReason: "text",
   },
   "KerbalismScienceLabExt": {
     analysisRateMBps: "MB/s",
@@ -558,10 +555,9 @@ export const GENERATED_ENUM_MEMBERS: Readonly<Record<string, Readonly<Record<num
 
 /**
  * The value tags this contract declares, registered by its client under its
- * own id: `topics` holds each value's declared sample kind, entry key and
- * display name by Topic and path (`*` crosses a list or dictionary), `names`
- * each Topic's display name, and `reckonable` every value a declared model
- * carries forward, with the inputs it needs.
+ * own id: `topics` holds each value's declared sample kind and entry key by
+ * Topic and path (`*` crosses a list or dictionary), and `reckonable` every
+ * value a declared model carries forward, with the inputs it needs.
  */
 export const GENERATED_CONTRACT_TAGS = {
   topics: {
@@ -569,8 +565,6 @@ export const GENERATED_CONTRACT_TAGS = {
       "*.name": { entryKey: true },
       "*.rules.*.name": { entryKey: true },
     },
-  },
-  names: {
   },
   reckonable: [
     { topic: "kerbalism.crew", field: "*.rules.*.problem", basis: "rate-integration", inputs: [ { topic: "", path: "fatalThreshold" } ] },

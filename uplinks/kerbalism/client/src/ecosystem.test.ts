@@ -327,14 +327,11 @@ describe("diagnose", () => {
     Hydrogen: 0,
     WasteWater: 188,
   };
-  // Water and Electric Charge sit under the profile's 15% low threshold.
-  const CAPACITY = { Water: 2000, ElectricCharge: 2000 };
 
   const groups = diagnose({
     profile: PROFILE,
     lifeSupport: RUNNING,
     stored: STORED,
-    capacity: CAPACITY,
   });
 
   it("condenses mutually-blocking resources into ONE finding", () => {
@@ -371,7 +368,6 @@ describe("diagnose", () => {
       profile: PROFILE,
       lifeSupport: tiny,
       stored: STORED,
-      capacity: CAPACITY,
     }).find((g) => g.cycle);
     // No cycle survives at all, which is stronger than "the cycle no longer
     // names Water" and is what the filter actually produces. The previous form,
@@ -389,47 +385,6 @@ describe("diagnose", () => {
         stored: STORED,
       }),
     ).toEqual([]);
-  });
-});
-
-describe("a draining supply that is not running out", () => {
-  const DRAINING = {
-    rates: { Water: rate(-0.000054), ElectricCharge: rate(-0.1856) },
-    processes: [],
-  } as KerbalismLifeSupport;
-
-  it("is no cause while its tank is above the profile's low threshold", () => {
-    const summary = summarise({
-      profile: PROFILE,
-      lifeSupport: DRAINING,
-      stored: { Water: 400, ElectricCharge: 106 },
-      capacity: { Water: 400, ElectricCharge: 140 },
-      crew: 1,
-    });
-    expect(summary.causes).toEqual([]);
-    expect(summary.supplies.every((r) => r.role === null)).toBe(true);
-  });
-
-  it("is a cause once its tank is below the profile's low threshold", () => {
-    const summary = summarise({
-      profile: PROFILE,
-      lifeSupport: DRAINING,
-      stored: { Water: 20, ElectricCharge: 106 },
-      capacity: { Water: 400, ElectricCharge: 140 },
-      crew: 1,
-    });
-    expect(summary.causes.map((r) => r.name)).toEqual(["Water"]);
-  });
-
-  it("is a cause when its tank is empty even with no threshold declared", () => {
-    const summary = summarise({
-      profile: PROFILE,
-      lifeSupport: { rates: { Oxygen: rate(-0.001) }, processes: [] } as KerbalismLifeSupport,
-      stored: { Oxygen: 0 },
-      capacity: { Oxygen: 2000 },
-      crew: 1,
-    });
-    expect(summary.causes.map((r) => r.name)).toEqual(["Oxygen"]);
   });
 });
 

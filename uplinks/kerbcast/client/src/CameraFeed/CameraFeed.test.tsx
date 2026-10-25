@@ -262,14 +262,20 @@ function toInit(c: CameraStateLike): MockCameraInit {
   };
 }
 
-// A fetch impl for the connect handshake: the SDK client's POST `/offer`
+// Build a URL-aware fetch impl for the connect handshake: GET `/ice-config`
+// (TURN creds) → empty server list (no relay); the SDK client's POST `/offer`
 // → an SDP answer carrying the given flightIds, so the client opens a track for
 // every camera it's about to learn about. `makeOfferResponse` is called per
 // invocation because a `Response` body is single-use.
 function kerbcastFetch(
   cameras: number[],
 ): (input: RequestInfo | URL) => Promise<Response> {
-  return async () => MockSidecar.makeOfferResponse(cameras);
+  return async (input) => {
+    if (String(input).includes("/ice-config")) {
+      return new Response(JSON.stringify({ iceServers: [] }), { status: 200 });
+    }
+    return MockSidecar.makeOfferResponse(cameras);
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -465,27 +471,6 @@ describe("CameraFeed: camera selection", () => {
         .getAllByRole("menuitemradio")
         .map((item) => item.textContent),
     ).toContain("Some other camera (Kerbal X)");
-  });
-
-  it("lists a ground-station camera from the sidecar registry beside the part cameras", async () => {
-    await buildConnectedSource([
-      ...TWO_CAMERAS,
-      makeCamera({
-        flightId: 92,
-        kind: "groundStation",
-        cameraName: "Tracking Station",
-        vesselName: "Kerbal X",
-      }),
-    ]);
-
-    renderFeed({ flightId: null });
-
-    fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
-    expect(
-      screen
-        .getAllByRole("menuitemradio")
-        .map((item) => item.textContent),
-    ).toContain("Tracking Station (Kerbal X)");
   });
 
   it("lists every available camera in the menu", async () => {
@@ -1694,8 +1679,12 @@ describe("CameraFeed: station (brokered) mode", () => {
     }
     const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
     // Brokered: the offer→answer round-trips through the (faked) host instead
-    // of a localhost POST.
-    ds.attachBroker({ negotiate: (offer) => sidecar.negotiate(offer) });
+    // of a localhost POST; TURN would come from the relay broadcast (none here).
+    ds.attachBroker({
+      negotiate: (offer) => sidecar.negotiate(offer),
+      iceServers: () => [],
+      onIceServersChange: () => () => {},
+    });
     registerUplinkHandle("kerbcast", ds);
 
     await act(async () => {
@@ -2136,38 +2125,6 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
 
     expect(sizeReports(sidecar).slice(before)).toEqual([
       { flightId: 42, width: 320, height: 180 },
-    ]);
-  });
-
-  it("asks once for the fullscreen size on entering fullscreen and once for the tile's on leaving", async () => {
-    const { sidecar, video } = await mountFeed();
-    const before = sizeReports(sidecar).length;
-    const wrap = frameOf(video).parentElement as HTMLElement;
-    wrap.getBoundingClientRect = () =>
-      ({ width: 1200, height: 675 }) as DOMRect;
-    const setFullscreen = (el: Element | null) =>
-      Object.defineProperty(document, "fullscreenElement", {
-        value: el,
-        configurable: true,
-      });
-
-    setFullscreen(wrap);
-    await act(async () => {
-      document.dispatchEvent(new Event("fullscreenchange"));
-    });
-    await settle();
-    expect(sizeReports(sidecar).slice(before)).toEqual([
-      { flightId: 42, width: 1200, height: 676 },
-    ]);
-
-    setFullscreen(null);
-    await act(async () => {
-      document.dispatchEvent(new Event("fullscreenchange"));
-    });
-    await settle();
-    expect(sizeReports(sidecar).slice(before)).toEqual([
-      { flightId: 42, width: 1200, height: 676 },
-      { flightId: 42, width: 176, height: 100 },
     ]);
   });
 });

@@ -1,4 +1,3 @@
-import type { KerbcastCameraHandle } from "@ksp-gonogo/kerbcast";
 import {
   type DelayClockLike,
   getUplinkHandle,
@@ -11,13 +10,11 @@ import {
   createFrameDelayStream,
   createWorkerFrameDelayStream,
   type DelayedStreamBuildContext,
-  type EncodedFrameDelayHandle,
-  type FrameStampFeed,
   isFrameDelaySupported,
   SharedDelayedStreams,
   type SnapshottableDelayClock,
 } from "@ksp-gonogo/sitrep-sdk/media";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { frameDelayStatsLogger } from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
@@ -46,12 +43,11 @@ interface CaptureContribution {
 }
 
 /**
- * One delayed pipeline per camera, shared app-wide. Keyed by the camera's
- * encoded delay target where there is one, and otherwise by the shown
- * `MediaStream` object identity: every consumer of one kerbcast camera gets the
- * same camera handle and the same `cam.mediaStream` reference (the data source
- * refcounts the camera), so two widgets on one camera share a single pipeline
- * and the same delayed output. A `MediaStreamTrack` admits only one `MediaStreamTrackProcessor`
+ * One delayed pipeline per camera track, shared app-wide. Keyed by the raw
+ * `MediaStream` object identity: every consumer of one kerbcast camera gets
+ * the same `cam.mediaStream` reference (the data source refcounts the camera),
+ * so two widgets on one camera share a single processor and the same delayed
+ * output. A `MediaStreamTrack` admits only one `MediaStreamTrackProcessor`
  * (and an `RTCRtpReceiver` only one `RTCRtpScriptTransform`); delaying once at
  * the source is what makes a second viewer possible at all, and it halves the
  * decode cost. See `SharedDelayedStreams`.
@@ -108,110 +104,6 @@ export function useKerbcastStream(flightId: number | null): MediaStream | null {
 }
 
 /**
- * Puts the encoded video delay on one receiver and returns its handle, or
- * `null` when it cannot be attached there.
- */
-export type InstallEncodedDelay = (
-  receiver: RTCRtpReceiver,
-) => EncodedFrameDelayHandle | null;
-
-/**
- * Where the encoded video delay attaches for one camera. `attach` puts the
- * delay on the camera's receiver through `install`, and the handle it returns
- * removes it. `key` identifies the attachment: every consumer of the camera
- * shares one delayed pipeline under it. Taken by {@link useDelayedPlayout} as
- * `encodedTarget`.
- */
-export interface EncodedDelayTarget {
-  key: object;
-  attach(install: InstallEncodedDelay): EncodedFrameDelayHandle | null;
-}
-
-/**
- * The encoded delay target for one kerbcast camera: Kerbcast installs the delay
- * on whichever receiver the camera is on, ahead of decode and the static
- * canvas, and moves it when the camera is rebound. `null` where Kerbcast cannot
- * install a script transform, in which case the delay runs on the shown stream
- * instead. Useful for delaying the camera's video before it is decoded. Used by
- * the camera feed.
- */
-export function useEncodedDelayTarget(
-  flightId: number | null,
-): EncodedDelayTarget | null {
-  const client =
-    flightId === null
-      ? undefined
-      : getUplinkHandle<KerbcastDataSource>("kerbcast")?.getClient();
-  const scriptPath = client?.encodedTransformPath === "script";
-  return useMemo(() => {
-    if (flightId === null || !client || !scriptPath) return null;
-    const cam = client.camera(flightId);
-    return { key: cam, attach: (install) => attachThroughKerbcast(cam, install) };
-  }, [client, flightId, scriptPath]);
-}
-
-/**
- * Hands Kerbcast a factory that makes one delay transform per receiver the
- * camera lands on, each with its own pipeline, the previous one disposed. The
- * first is made at once, so a delay that cannot be installed here is known
- * before Kerbcast is told to use it.
- */
-function attachThroughKerbcast(
-  cam: KerbcastCameraHandle,
-  install: InstallEncodedDelay,
-): EncodedFrameDelayHandle | null {
-  const make = (): { handle: EncodedFrameDelayHandle; transform: unknown } | null => {
-    /* attachEncodedWorkerFrameDelay sets the transform it builds on the
-       receiver it is given, and clears it on dispose; Kerbcast does the
-       installing here, so it is given a stand-in to set it on. */
-    const standIn = { transform: null as unknown };
-    const handle = install(standIn as unknown as RTCRtpReceiver);
-    if (!handle) return null;
-    if (!standIn.transform) {
-      handle.dispose();
-      return null;
-    }
-    return { handle, transform: standIn.transform };
-  };
-
-  let current = make();
-  if (!current) return null;
-  let firstUnused = true;
-  try {
-    cam.setEncodedTransform(() => {
-      if (firstUnused && current) {
-        firstUnused = false;
-        return current.transform as RTCRtpScriptTransform;
-      }
-      current?.handle.dispose();
-      current = make();
-      if (!current) {
-        throw new Error(
-          "the video delay could not be installed on this camera's receiver",
-        );
-      }
-      return current.transform as RTCRtpScriptTransform;
-    });
-  } catch (err) {
-    logger
-      .tag("kerbcast:frame-delay")
-      .warn("Kerbcast refused the video delay transform", { err });
-    current.handle.dispose();
-    return null;
-  }
-  return {
-    dispose() {
-      cam.setEncodedTransform(null);
-      current?.handle.dispose();
-      current = null;
-    },
-    flush() {
-      current?.handle.flush();
-    },
-  };
-}
-
-/**
  * Opt-in delayed playout for a raw kerbcast `MediaStream`. Omit this argument
  * entirely for LAN passthrough; see `DelayedPlayoutResult`'s `"raw"` kind, the
  * one retained live-video path.
@@ -251,27 +143,12 @@ export interface KerbcastStreamDelayOptions {
    *  test that only exercises the main-thread path), the worker backend
    *  simply won't be attempted without it. */
   getCaptureSample?(): CaptureClockSample;
-  /** The camera's per-frame capture stamps. When set, every backend dates each
-   *  frame from the stamp matching its RTP timestamp, and the capture clock
-   *  (`captureUt`, `getCaptureSample`) is not used: it runs ahead of a game
-   *  that is slower than wall time and snaps back at each sample. A frame
-   *  whose stamp was lost is dated from its neighbours, and a new capture epoch
-   *  empties the buffer. */
-  frameStamps?: FrameStampFeed;
   /** Bumped (any change) to flush the buffer on a timeline reset, pass the
    *  session's epoch/reset counter. Omit if the caller doesn't model resets. */
   resetEpoch?: number;
   /** Frame-count cap forwarded to the pipeline: see `frameDelay.ts`'s
    *  module docstring for the default and rationale. */
   maxBufferedFrames?: number;
-  /**
-   * Where the encoded delay attaches when the shown stream is drawn from
-   * another track, as kerbcast's noise canvas is (see
-   * {@link useEncodedDelayTarget}). Where the encoded transform is supported,
-   * the delay is put there and the shown stream is surfaced as it is, already
-   * delayed.
-   */
-  encodedTarget?: EncodedDelayTarget | null;
 }
 
 /**
@@ -301,17 +178,6 @@ export type DelayedPlayoutResult =
 const RAW_NULL: DelayedPlayoutResult = { kind: "raw", stream: null };
 const CONNECTING: DelayedPlayoutResult = { kind: "connecting" };
 
-/** Results whose delay runs on a receiver, so whatever stream is drawn from that receiver's track is the delayed output. */
-const delayedAtReceiver = new WeakSet<DelayedPlayoutResult>();
-
-/** Whether backend 0 can run here: the platform has `RTCRtpScriptTransform` and the clock can be copied into the worker. */
-function encodedDelaySupported(view: DelayClockLike): boolean {
-  return (
-    typeof RTCRtpScriptTransform !== "undefined" &&
-    typeof (view as { snapshot?: unknown }).snapshot === "function"
-  );
-}
-
 /**
  * Route a raw `MediaStream` through the real per-frame delay pipeline,
  * sharing the app's telemetry delay clock. Without `delay`
@@ -321,16 +187,17 @@ function encodedDelaySupported(view: DelayClockLike): boolean {
  * With `delay`, three backends are tried in order:
  *
  *  0. **Encoded transform on the receiver** (`attachEncodedWorkerFrameDelay`),
- *     tried first when `delay.encodedTarget` is given and
- *     `RTCRtpScriptTransform` exists. Empirically confirmed cross-browser
- *     correct on Chromium, Firefox and WebKit, and the only backend that can
- *     reach Firefox at all. Delays in place (no new track): on success the
- *     result's `stream` is `raw` itself, unchanged, the delay happens
- *     transparently upstream of decode.
+ *     tried first when `getUplinkHandle("kerbcast")` can resolve an
+ *     `RTCRtpReceiver` for `raw` (via `KerbcastDataSource.getReceiverForStream`)
+ *     and `RTCRtpScriptTransform` exists. Empirically confirmed cross-browser
+ *     correct on Chromium, Firefox and WebKit, and the only
+ *     backend that can reach Firefox at all. Delays in place (no new track):
+ *     on success the result's `stream` is `raw` itself, unchanged, the delay
+ *     happens transparently upstream of decode.
  *  1. **Main-thread Breakout Box** (`isFrameDelaySupported()` /
  *     `createFrameDelayStream`): Chrome, tried when (0) can't attach (no
- *     target, as when Kerbcast has no script transform path, or the browser
- *     lacks `RTCRtpScriptTransform`).
+ *     receiver resolvable: e.g. a test fixture, or a future non-`BrowserRTCTransport`
+ *     transport: or the browser lacks `RTCRtpScriptTransform`).
  *  2. **Worker-hosted Breakout Box** (`createWorkerFrameDelayStream`):
  *     tried only when (0) and (1) are both unavailable. Safari and WebKit
  *     support this, which is what puts it behind (1) rather than ahead.
@@ -361,23 +228,6 @@ export function useDelayedPlayout(
   captureUtRef.current = delay?.captureUt;
   const getCaptureSampleRef = useRef(delay?.getCaptureSample);
   getCaptureSampleRef.current = delay?.getCaptureSample;
-  const rawRef = useRef(raw);
-  rawRef.current = raw;
-
-  /*
-   * A canvas track has no receiver, so delaying the stream it shows would hold
-   * decoded frames from the canvas, and a capture source starves while its
-   * frames are held. Delaying the WebRTC track the canvas draws from holds
-   * encoded frames instead. The pipeline is then keyed by that source: the
-   * canvas stream stays the same object when the track behind it changes.
-   */
-  const target = delay?.encodedTarget ?? null;
-  const atTarget =
-    target !== null && view !== undefined && encodedDelaySupported(view);
-  const key = atTarget ? target.key : raw;
-  const targetRef = useRef(target);
-  targetRef.current = atTarget ? target : null;
-  const frameStamps = delay?.frameStamps;
 
   // Attach to (or, as the first consumer, start) the SHARED per-camera
   // pipeline whenever the raw stream reference or the clock instance changes.
@@ -391,32 +241,23 @@ export function useDelayedPlayout(
       setResult(raw === null ? RAW_NULL : { kind: "raw", stream: raw });
       return;
     }
-    const shown = rawRef.current;
-    if (!key || !shown) {
+    if (!raw) {
       setResult(CONNECTING);
       return;
     }
-    if (!captureUtRef.current && !frameStamps) {
+    if (!captureUtRef.current) {
       // Delay was structurally requested (a `view` was passed) but the
       // caller has no capture clock yet, mirrors `useDelayedKerbcastStream`'s
       // own "no capture clock yet -> passthrough" case (old kerbcast
       // plugin/sidecar, or before the first ~1Hz sample): there is nothing
       // to stamp frames with, so this is the retained-live-path case, not
       // an "unavailable" failure.
-      setResult({ kind: "raw", stream: shown });
+      setResult({ kind: "raw", stream: raw });
       return;
     }
 
-    const attachAt = targetRef.current?.attach;
-    const lease = sharedDelayedStreams.acquire(key, (ctx) =>
-      buildOrReportUnavailable(
-        shown,
-        view,
-        maxBufferedFrames,
-        frameStamps,
-        ctx,
-        attachAt,
-      ),
+    const lease = sharedDelayedStreams.acquire(raw, (ctx) =>
+      buildOrReportUnavailable(raw, view, maxBufferedFrames, ctx),
     );
     leaseRef.current = lease;
     // Contribute THIS consumer's live capture clock. The build reads whichever
@@ -436,7 +277,7 @@ export function useDelayedPlayout(
       lease.release();
       leaseRef.current = null;
     };
-  }, [key, raw === null, view, maxBufferedFrames, frameStamps]);
+  }, [raw, view, maxBufferedFrames]);
 
   // Timeline-reset: flush the shared buffer (drop stale pre-reset frames)
   // WITHOUT tearing down the pipeline: the track keeps flowing. Shared, so a
@@ -455,10 +296,7 @@ export function useDelayedPlayout(
     leaseRef.current?.flush();
   }, [resetEpoch]);
 
-  return useMemo(() => {
-    if (!atTarget || !delayedAtReceiver.has(result)) return result;
-    return raw ? { kind: "delayed", stream: raw } : CONNECTING;
-  }, [atTarget, result, raw]);
+  return result;
 }
 
 /**
@@ -476,9 +314,7 @@ function buildOrReportUnavailable(
   raw: MediaStream,
   view: DelayClockLike,
   maxBufferedFrames: number | undefined,
-  frameStamps: FrameStampFeed | undefined,
   ctx: DelayedStreamBuildContext<CaptureContribution>,
-  attachAt: EncodedDelayTarget["attach"] | undefined,
 ):
   | BuiltDelayedStream<DelayedPlayoutResult>
   | Promise<BuiltDelayedStream<DelayedPlayoutResult>> {
@@ -496,14 +332,7 @@ function buildOrReportUnavailable(
     };
   };
   try {
-    const built = buildDelayedPipeline(
-      raw,
-      view,
-      maxBufferedFrames,
-      frameStamps,
-      ctx,
-      attachAt,
-    );
+    const built = buildDelayedPipeline(raw, view, maxBufferedFrames, ctx);
     return built instanceof Promise ? built.catch(unavailable) : built;
   } catch (err) {
     return unavailable(err);
@@ -533,9 +362,7 @@ function buildDelayedPipeline(
   raw: MediaStream,
   view: DelayClockLike,
   maxBufferedFrames: number | undefined,
-  frameStamps: FrameStampFeed | undefined,
   ctx: DelayedStreamBuildContext<CaptureContribution>,
-  attachAt: EncodedDelayTarget["attach"] | undefined,
 ):
   | BuiltDelayedStream<DelayedPlayoutResult>
   | Promise<BuiltDelayedStream<DelayedPlayoutResult>> {
@@ -561,33 +388,40 @@ function buildDelayedPipeline(
   const getCaptureSample = () =>
     ctx.contribution()?.getCaptureSample() ?? NEUTRAL_CAPTURE_SAMPLE;
 
-  // Backend 0: encoded transform on the caller's target. See
-  // `useDelayedPlayout`'s module doc. One transform per receiver: sharing at
-  // the source is what keeps that invariant.
-  const install: InstallEncodedDelay = (receiver) =>
-    attachEncodedWorkerFrameDelay(receiver, {
-      view: view as unknown as SnapshottableDelayClock,
-      getCaptureSample,
-      frameStamps,
-      onError: onPipelineError,
-      onStats: frameDelayStatsLogger(),
-    });
-  if (attachAt && encodedDelaySupported(view)) {
-    const encodedHandle = attachAt(install);
-    if (encodedHandle) {
-      // No new track: the delay happens in place on the receiver's existing
-      // track, upstream of decode, so `raw` is surfaced unchanged.
-      const result: DelayedPlayoutResult = { kind: "delayed", stream: raw };
-      delayedAtReceiver.add(result);
-      return {
-        result,
-        dispose: encodedHandle.dispose,
-        flush: encodedHandle.flush,
-      };
+  // Backend 0: encoded transform, attached directly to the RTCRtpReceiver
+  // behind `raw`: see `useDelayedPlayout`'s module doc. `getReceiverForStream`
+  // is called optionally (`?.`) because a data source under test may not
+  // implement it at all (a fake registered via `registerUplinkHandle` in a unit
+  // test, matching the "unknown methods degrade to undefined, never throw"
+  // convention this module already follows elsewhere). One transform per
+  // receiver: sharing at the source is what keeps that invariant.
+  const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
+  const receiver = ds?.getReceiverForStream?.(raw);
+  if (receiver && typeof RTCRtpScriptTransform !== "undefined") {
+    const encodedCapableView = view as DelayClockLike & {
+      snapshot?(): unknown;
+    };
+    if (typeof encodedCapableView.snapshot === "function") {
+      const encodedHandle = attachEncodedWorkerFrameDelay(receiver, {
+        view: view as unknown as SnapshottableDelayClock,
+        getCaptureSample,
+        onError: onPipelineError,
+        onStats: frameDelayStatsLogger(),
+      });
+      if (encodedHandle) {
+        // No new track: the delay happens in place on `raw`'s existing track,
+        // upstream of decode: surface `raw` itself, unchanged.
+        return {
+          result: { kind: "delayed", stream: raw },
+          dispose: encodedHandle.dispose,
+          flush: encodedHandle.flush,
+        };
+      }
+      // Falls through to backend 1/2 below: never a hard failure on its own
+      // (a receiver resolving but the platform's RTCRtpScriptTransform
+      // constructor still throwing is exactly the "try the next backend" case,
+      // same as backends 1/2's own null-return handling).
     }
-    // Falls through to backend 1/2 below: never a hard failure on its own
-    // (a target whose transform cannot be built is exactly the "try the next
-    // backend" case, same as backends 1/2's own null-return handling).
   }
 
   // Backend 1: Chrome's main-thread Breakout Box, tried when backend 0
@@ -597,9 +431,7 @@ function buildDelayedPipeline(
     const pipeline = createFrameDelayStream(raw, {
       view,
       captureUt,
-      frameStamps,
       maxBufferedFrames,
-      onStats: frameDelayStatsLogger(),
       onError: (err) => {
         onErrorReason = String(err);
         onPipelineError(err);
@@ -648,7 +480,6 @@ function buildDelayedPipeline(
       // existing; only the worker backend needs it).
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
-      frameStamps,
       maxBufferedFrames,
       onStats: frameDelayStatsLogger(),
       onError: (err) => {

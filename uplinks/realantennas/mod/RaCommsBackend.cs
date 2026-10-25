@@ -173,9 +173,7 @@ namespace Gonogo.RealAntennasUplink
         /// capture that produced the view.</para>
         /// </summary>
         protected override Dictionary<string, object?>? HopExtensions(CommsLinkView link)
-            => link.Handle is CommLink raLink
-                ? RaHopExtensions.ForHop(_ra, raLink, ReferenceEquals(raLink.a, link.A.Handle?.As<CommNode>()))
-                : null;
+            => link.Handle is CommLink raLink ? RaHopExtensions.ForHop(_ra, raLink) : null;
 
         /// <summary>
         /// Stock's <c>Vessel.ControlLevel</c> in the contract's vocabulary; the
@@ -345,7 +343,7 @@ namespace Gonogo.RealAntennasUplink
                     EncoderTechLevel = _ra.EncoderTechLevel(antenna),
                     CodingRate = _ra.CodingRate(antenna),
                     EncoderRequiredEbN0Db = _ra.EncoderRequiredEbN0Db(antenna),
-                    PowerDrawEc = _ra.PowerDrawEcPerSecond(antenna),
+                    PowerDrawEc = _ra.PowerDrawLinear(antenna),
                     AimLabel = _ra.Target(antenna)?.ToString(),
                 };
                 var part = parts?[planned.Count];

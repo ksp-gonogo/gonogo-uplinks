@@ -242,9 +242,8 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       );
     });
 
-    // Reported with no stream yet: the box exists before the video does. The
-    // size is the 16:9 picture that fits the 560 by 320 box.
-    await waitFor(() => expect(reports).toEqual([[7, 560, 316]]));
+    // Reported with no stream yet: the box exists before the video does.
+    await waitFor(() => expect(reports).toEqual([[7, 560, 320]]));
     vi.unstubAllGlobals();
   });
 
@@ -261,7 +260,6 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
         clock: { captureUt: null, epoch: 0, warpRate: 1 },
         on: () => () => {},
         camera: () => ({ mediaStream: picture, on: () => () => {} }),
-        reportDisplaySize: () => Promise.resolve(),
       }),
     });
     const width = Object.getOwnPropertyDescriptor(

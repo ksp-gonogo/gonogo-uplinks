@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using GonogoKerbalismUplink;
 
 namespace Gonogo.KerbalismUplink
@@ -124,16 +123,6 @@ namespace Gonogo.KerbalismUplink
             };
         }
 
-        private static readonly Regex RichTextTag = new Regex(
-            @"</?(color|b|i|size|material|quad)\b[^>]*>",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-        /// <summary>
-        /// Kerbalism builds a part title with Unity rich text around the module name
-        /// (<c>&lt;color=#CCCCCC&gt;</c>), which a client would print as literal text.
-        /// </summary>
-        private static string PlainTitle(string title) => RichTextTag.Replace(title ?? "", "");
-
         public static List<KerbalismReliabilityPart> Parts(
             ReliabilityRaw raw,
             string coverage,
@@ -157,7 +146,7 @@ namespace Gonogo.KerbalismUplink
                 list.Add(new KerbalismReliabilityPart
                 {
                     PartId = p.PartId + ":" + n,
-                    Title = PlainTitle(p.Title),
+                    Title = p.Title,
                     Condition = ConditionOf(p),
                     ConditionDetail = ConditionDetailOf(p),
                     RepairTrait = string.IsNullOrEmpty(p.RepairTrait) ? null : p.RepairTrait,

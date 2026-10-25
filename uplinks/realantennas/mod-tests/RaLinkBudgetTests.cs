@@ -14,15 +14,6 @@ namespace Gonogo.RealAntennasUplink.Tests
     public class RaLinkBudgetTests
     {
         [Fact]
-        public void TransmitDraw_IsReportedInElectricChargeUnitsPerSecond()
-        {
-            // RealAntennas' PowerDrawLinear is in milliwatts, and its own antenna
-            // module charges PowerDrawLinear * 1e-6 units of electric charge a second.
-            // An omni at tech level 0 reads 18018 mW, which is 0.018 units a second.
-            Assert.Equal(0.018018, RaLinkBudget.EcPerSecondFromMilliwatts(18018.02), 6);
-        }
-
-        [Fact]
         public void PathLoss_MatchesFreeSpaceFormula()
         {
             // 20*log10(d*f) + path_loss_constant.

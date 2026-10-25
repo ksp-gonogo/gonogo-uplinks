@@ -1105,17 +1105,10 @@ function SpaceWeatherComponent({
   /* The placeholder, not "0.000 rad/h": the readout sits under a live caption
      saying "habitat dose rate", and a number there is the one an operator acts
      on. RadiationSection in ShipSystems reads the same field the same way. */
-  /* Below a thousandth of a rad/h the fixed decimals would print 0.000 for a
-     real dose, so that range goes through the unit readout, which switches to
-     scientific notation. */
   const doseText =
-    d.radiationRadPerHour === null ? (
-      NULL_DISPLAY
-    ) : d.radiationRadPerHour < 0.001 ? (
-      <Unit value={value("rad/h", d.radiationRadPerHour)} decimals={3} />
-    ) : (
-      `${d.radiationRadPerHour.toFixed(d.radiationRadPerHour < 1 ? 3 : 2)} rad/h`
-    );
+    d.radiationRadPerHour === null
+      ? NULL_DISPLAY
+      : `${d.radiationRadPerHour.toFixed(d.radiationRadPerHour < 1 ? 3 : 2)} rad/h`;
   /* Null, never 0, when either half is unreported: the meter draws absence
      rather than an empty tank, and a bar assembled from one number we have and
      one we do not is a verdict about a habitat (see useSpaceWeather's header).

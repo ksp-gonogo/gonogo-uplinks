@@ -39,8 +39,12 @@ async function connectedSource(
   flightIds.forEach((flightId) => {
     sidecar.addCamera({ flightId });
   });
-  vi.spyOn(globalThis, "fetch").mockImplementation(() =>
-    Promise.resolve(MockSidecar.makeOfferResponse([])),
+  vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+    Promise.resolve(
+      String(input).includes("/ice-config")
+        ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+        : MockSidecar.makeOfferResponse([]),
+    ),
   );
   const ds = new KerbcastDataSource(
     { host: "h", port: 1 },
