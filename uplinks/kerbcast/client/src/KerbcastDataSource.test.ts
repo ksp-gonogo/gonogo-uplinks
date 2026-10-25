@@ -21,6 +21,7 @@ import {
   MAX_SLOTS,
   MIN_SLOTS,
   slotPoolFor,
+  NO_H264_MESSAGE,
   sidecarUnreachableMessage,
 } from "./KerbcastDataSource.js";
 import {
@@ -1093,5 +1094,35 @@ describe("BrowserRTCTransport: relay allocations", () => {
     await expect(ds.connect()).rejects.toThrow(/host unreachable/);
 
     expect(FakePeerConnection.instances[0].closed).toBe(true);
+  });
+});
+
+describe("KerbcastDataSource: browser without an H.264 decoder", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const receiverWith = (mimeTypes: string[]) => ({
+    getCapabilities: () => ({
+      codecs: mimeTypes.map((mimeType) => ({ mimeType, clockRate: 90000 })),
+    }),
+  });
+
+  it("says plainly that the browser cannot play the camera video and does not connect", async () => {
+    vi.stubGlobal("RTCRtpReceiver", receiverWith(["video/VP8", "video/VP9"]));
+    const ds = makeTracked();
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    fetchSpy.mockClear();
+
+    await ds.connect();
+
+    expect(ds.readinessNote()).toBe(NO_H264_MESSAGE);
+    expect(fetchSpy.mock.calls.map((c) => String(c[0]))).toEqual([]);
+    fetchSpy.mockRestore();
+  });
+
+  it("stays quiet when H.264 is listed, in any letter case", () => {
+    vi.stubGlobal("RTCRtpReceiver", receiverWith(["video/VP8", "video/h264"]));
+    expect(makeTracked().readinessNote()).toBeNull();
   });
 });
