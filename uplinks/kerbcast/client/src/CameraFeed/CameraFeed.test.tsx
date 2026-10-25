@@ -2127,4 +2127,36 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
       { flightId: 42, width: 320, height: 180 },
     ]);
   });
+
+  it("asks once for the fullscreen size on entering fullscreen and once for the tile's on leaving", async () => {
+    const { sidecar, video } = await mountFeed();
+    const before = sizeReports(sidecar).length;
+    const wrap = frameOf(video).parentElement as HTMLElement;
+    wrap.getBoundingClientRect = () =>
+      ({ width: 1200, height: 675 }) as DOMRect;
+    const setFullscreen = (el: Element | null) =>
+      Object.defineProperty(document, "fullscreenElement", {
+        value: el,
+        configurable: true,
+      });
+
+    setFullscreen(wrap);
+    await act(async () => {
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+    await settle();
+    expect(sizeReports(sidecar).slice(before)).toEqual([
+      { flightId: 42, width: 1200, height: 676 },
+    ]);
+
+    setFullscreen(null);
+    await act(async () => {
+      document.dispatchEvent(new Event("fullscreenchange"));
+    });
+    await settle();
+    expect(sizeReports(sidecar).slice(before)).toEqual([
+      { flightId: 42, width: 1200, height: 676 },
+      { flightId: 42, width: 176, height: 100 },
+    ]);
+  });
 });
