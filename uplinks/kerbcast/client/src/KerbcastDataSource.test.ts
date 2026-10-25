@@ -133,14 +133,9 @@ describe("KerbcastDataSource: sidecar reachability", () => {
   });
 });
 
-describe("KerbcastDataSource: relay TURN / ice-config (TURN-on-demand)", () => {
+describe("KerbcastDataSource: ICE servers", () => {
   const STUN_DEFAULT: RTCIceServer = {
     urls: "stun:stun.l.google.com:19302",
-  };
-  const TURN: RTCIceServer = {
-    urls: ["turn:relay.example:3478?transport=udp"],
-    username: "u",
-    credential: "c",
   };
 
   beforeEach(() => {
@@ -150,89 +145,25 @@ describe("KerbcastDataSource: relay TURN / ice-config (TURN-on-demand)", () => {
     vi.useRealTimers();
   });
 
-  it("starts STUN-only on the main screen: no /ice-config fetch up front", async () => {
-    // The main→sidecar leg is LAN, so the first attempt must NOT fetch the
-    // relay's TURN creds; gathering a relay candidate it never uses is exactly
-    // the per-feed coturn port burn TURN-on-demand removes.
-    vi.spyOn(globalThis, "fetch").mockImplementation(
-      kerbcastFetchImpl({ iceServers: [TURN] }),
-    );
-
-    const session = createMockKerbcastSession();
-    const ds = makeTracked({ port: 1 }, session.transport);
-    await ds.connect();
-
-    expect(session.iceServers).toEqual([STUN_DEFAULT]);
-    const fetchSpy = vi.mocked(globalThis.fetch);
-    expect(
-      fetchSpy.mock.calls.some(([url]) => String(url).includes("/ice-config")),
-    ).toBe(false);
-
-    ds.disconnect();
-  });
-
-  it("escalates to the relay's TURN servers after a failed connection", async () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation(
-      kerbcastFetchImpl({ iceServers: [TURN] }),
-    );
-
-    const session = createMockKerbcastSession();
-    const ds = makeTracked({ port: 1 }, session.transport);
-    await ds.connect();
-    expect(session.iceServers).toEqual([STUN_DEFAULT]); // STUN-only first
-
-    // ICE couldn't traverse → fail. The reconnect (backoff ~2s) now pulls TURN.
-    session.setState("failed");
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_001);
-    });
-
-    expect(session.iceServers).toEqual([TURN]);
-
-    ds.disconnect();
-  });
-
-  it("does not swap the client instance when escalating to TURN", async () => {
-    // The camera hooks capture getClient() once and bind to its events, so the
-    // escalation must mutate the existing client in place, a swap would leave
-    // them bound to a dead instance (black camera on exactly the TURN path).
-    vi.spyOn(globalThis, "fetch").mockImplementation(
-      kerbcastFetchImpl({ iceServers: [TURN] }),
-    );
-
+  it("stays on the SDK's STUN default across a failed connection, on the same client, and asks no relay for servers", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(kerbcastFetchImpl());
     const session = createMockKerbcastSession();
     const ds = makeTracked({ port: 1 }, session.transport);
     const clientBefore = ds.getClient();
     await ds.connect();
+    expect(session.iceServers).toEqual([STUN_DEFAULT]);
 
     session.setState("failed");
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2_001);
     });
 
+    expect(session.iceServers).toEqual([STUN_DEFAULT]);
     expect(ds.getClient()).toBe(clientBefore);
-    expect(session.iceServers).toEqual([TURN]);
-
-    ds.disconnect();
-  });
-
-  it("stays on the SDK STUN default when the relay has no TURN, even after a failure", async () => {
-    // Empty iceServers stands in for a 503 / unreachable relay, escalation must
-    // not break the reconnect, leaving the client on its STUN default.
-    vi.spyOn(globalThis, "fetch").mockImplementation(kerbcastFetchImpl());
-
-    const session = createMockKerbcastSession();
-    const ds = makeTracked({ port: 1 }, session.transport);
-    await ds.connect();
-    expect(session.iceServers).toEqual([STUN_DEFAULT]);
-
-    session.setState("failed");
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(2_001);
-    });
-
-    expect(session.iceServers).toEqual([STUN_DEFAULT]);
-
+    const fetchSpy = vi.mocked(globalThis.fetch);
+    expect(
+      fetchSpy.mock.calls.some(([url]) => String(url).includes("/ice-config")),
+    ).toBe(false);
     ds.disconnect();
   });
 });
@@ -361,11 +292,7 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
 describe("KerbcastDataSource: dynamic slot subscription", () => {
   function mockFetch(): void {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
-      Promise.resolve(
-        String(input).includes("/ice-config")
-          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
-          : MockSidecar.makeOfferResponse([]),
-      ),
+      Promise.resolve(MockSidecar.makeOfferResponse([])),
     );
   }
 
@@ -635,11 +562,7 @@ describe("KerbcastDataSource: the slot pool is sized to what is mounted", () => 
 
   function mockFetch(): void {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
-      Promise.resolve(
-        String(input).includes("/ice-config")
-          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
-          : MockSidecar.makeOfferResponse([]),
-      ),
+      Promise.resolve(MockSidecar.makeOfferResponse([])),
     );
     vi.mocked(globalThis.fetch).mockClear();
   }
@@ -838,23 +761,11 @@ describe("KerbcastDataSource module: registerUplinkHandle('kerbcast', ...) regis
 });
 
 // ---------------------------------------------------------------------------
-// Brokered (station) mode: the station relays the handshake through the host
-// and takes TURN creds from the broadcast, never touching localhost.
+// Brokered (station) mode: the station relays the handshake through the host,
+// never touching localhost.
 // ---------------------------------------------------------------------------
 
 describe("KerbcastDataSource: brokered (station) mode", () => {
-  const TURN: RTCIceServer = {
-    urls: ["turn:relay.example:3478"],
-    username: "u",
-    credential: "c",
-  };
-
-  function cfgIce(ds: KerbcastDataSource): RTCIceServer[] | undefined {
-    return (
-      ds.getClient() as unknown as { cfg: { iceServers?: RTCIceServer[] } }
-    ).cfg.iceServers;
-  }
-
   it("routes the handshake through the broker and skips the localhost fetch", async () => {
     const sidecar = new MockSidecar();
     sidecar.addCamera({ flightId: 42 });
@@ -868,47 +779,15 @@ describe("KerbcastDataSource: brokered (station) mode", () => {
       sidecar.negotiate(offer),
     );
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    ds.attachBroker({
-      negotiate,
-      iceServers: () => [TURN],
-      onIceServersChange: () => () => {},
-    });
+    ds.attachBroker({ negotiate });
 
     await ds.connect();
 
-    // Neither /ice-config nor /offer was fetched, the broker handled signaling.
+    // No /offer was fetched, the broker handled signaling.
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(negotiate).toHaveBeenCalledTimes(1);
-    // The client was built with the broker-supplied TURN creds.
-    expect(cfgIce(ds)).toEqual([TURN]);
 
     ds.disconnect();
-  });
-
-  it("applies rotated relay creds from the broadcast in place (no client swap)", async () => {
-    const sidecar = new MockSidecar();
-    let fireIceChange: ((servers: RTCIceServer[]) => void) | undefined;
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      MockSidecar.makeOfferResponse([]),
-    );
-
-    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    ds.attachBroker({
-      negotiate: (offer) => sidecar.negotiate(offer),
-      iceServers: () => [],
-      onIceServersChange: (cb) => {
-        fireIceChange = cb;
-        return () => {};
-      },
-    });
-
-    const clientBefore = ds.getClient();
-    // Host broadcasts TURN creds after the station is already brokered.
-    fireIceChange?.([TURN]);
-
-    // Mutated in place so the camera hooks stay bound to the same client.
-    expect(ds.getClient()).toBe(clientBefore);
-    expect(cfgIce(ds)).toEqual([TURN]);
   });
 
   it("stays idle until a camera is wanted, then lazily connects via the broker", async () => {
@@ -921,11 +800,7 @@ describe("KerbcastDataSource: brokered (station) mode", () => {
     );
 
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    ds.attachBroker({
-      negotiate,
-      iceServers: () => [],
-      onIceServersChange: () => () => {},
-    });
+    ds.attachBroker({ negotiate });
 
     // Brokered but no camera wanted yet → no connection, no negotiate.
     expect(ds.status).toBe("disconnected");
@@ -949,8 +824,7 @@ describe("KerbcastDataSource: the station broker it registers", () => {
     expect(seen).toContain("kerbcast");
   });
 
-  it("relays the handshake through the station's relay and reads its ICE servers", async () => {
-    const TURN: RTCIceServer = { urls: ["turn:relay.example:3478"] };
+  it("relays the handshake through the station's relay", async () => {
     const sidecar = new MockSidecar();
     sidecar.addCamera({ flightId: 42 });
     const fetchSpy = vi
@@ -962,10 +836,8 @@ describe("KerbcastDataSource: the station broker it registers", () => {
       expect(method).toBe("negotiate");
       return sidecar.negotiate(args as { sdp: string; cameras: number[] });
     });
-    const broker: StationBroker = {
-      relay,
-      iceServers: { current: () => [TURN], onChange: () => () => {} },
-    };
+    // Typed loosely: an older SDK's StationBroker still names iceServers, which this Uplink no longer reads.
+    const broker = { relay } as unknown as StationBroker;
     const ds = makeTracked({ port: 1 }, sidecar.createTransport());
     attachStationBroker(ds, broker);
 
@@ -973,16 +845,54 @@ describe("KerbcastDataSource: the station broker it registers", () => {
 
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(relay).toHaveBeenCalledTimes(1);
-    expect(
-      (ds.getClient() as unknown as { cfg: { iceServers?: RTCIceServer[] } })
-        .cfg.iceServers,
-    ).toEqual([TURN]);
+  });
+});
+
+describe("KerbcastDataSource: a station's offer on the main screen", () => {
+  const OFFER = { sdp: "v=station-offer", cameras: [42], slots: 2 };
+
+  it("goes to the sidecar as it is for a station on this network", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ sdp: "v=sidecar", cameras: [42] })),
+      );
+    const ds = makeTracked();
+    await expect(
+      ds.relay("negotiate", OFFER, { station: "station-a" }),
+    ).resolves.toEqual({ sdp: "v=sidecar", cameras: [42] });
+    expect(JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body))).toEqual(OFFER);
+    fetchSpy.mockRestore();
+  });
+
+  it("is bridged for a station on the relay's endpoint: the endpoint's offer goes to the sidecar and the station gets the endpoint's answer", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(JSON.stringify({ sdp: "v=sidecar", cameras: [42] })),
+      );
+    const bridgeMedia = vi.fn(
+      async (offer: string, upstream: (o: string) => Promise<string>) => {
+        expect(offer).toBe("v=station-offer");
+        expect(await upstream("v=endpoint-offer")).toBe("v=sidecar");
+        return "v=endpoint-answer";
+      },
+    );
+    const ds = makeTracked();
+    await expect(
+      ds.relay("negotiate", OFFER, { station: "station-a", bridgeMedia }),
+    ).resolves.toEqual({ sdp: "v=endpoint-answer", cameras: [42] });
+    expect(JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body))).toEqual({
+      ...OFFER,
+      sdp: "v=endpoint-offer",
+    });
+    fetchSpy.mockRestore();
   });
 });
 
 // ---------------------------------------------------------------------------
 // The browser peer connection: one transport for every media line, and closed
-// when it fails, so a relay's allocations are not held for a peer that is gone.
+// when it fails, so nothing holds a path for a peer that is gone.
 // ---------------------------------------------------------------------------
 
 /** A receiver class with the `transform` property a browser with script transforms has. */
@@ -992,7 +902,7 @@ class ScriptCapableReceiver {
   }
 }
 
-describe("BrowserRTCTransport: relay allocations", () => {
+describe("BrowserRTCTransport: its peer connection", () => {
   class FakePeerConnection {
     static instances: FakePeerConnection[] = [];
     readonly config: RTCConfiguration;
@@ -1034,7 +944,7 @@ describe("BrowserRTCTransport: relay allocations", () => {
   });
 
   it("creates every peer with the max-bundle policy and the given ICE servers", () => {
-    const servers = [{ urls: "turn:relay.example:3478" }];
+    const servers = [{ urls: "stun:stun.example:19302" }];
 
     new BrowserRTCTransport().createPeer(servers);
 
@@ -1075,9 +985,7 @@ describe("BrowserRTCTransport: relay allocations", () => {
   it("closes the peer when the sidecar refuses the offer", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
       Promise.resolve(
-        String(input).includes("/ice-config")
-          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
-          : new Response("unavailable", { status: 503 }),
+        new Response("unavailable", { status: 503 }),
       ),
     );
     const ds = makeTracked({ port: 1 });
@@ -1128,8 +1036,6 @@ describe("BrowserRTCTransport: relay allocations", () => {
   it("closes the peer when the host refuses a station's offer", async () => {
     const ds = makeTracked({ port: 1 });
     ds.attachBroker({
-      iceServers: () => [],
-      onIceServersChange: () => () => {},
       negotiate: () => Promise.reject(new Error("host unreachable")),
     });
 

@@ -49,11 +49,11 @@ export interface KerbcastConfig extends Record<string, unknown> {
 /**
  * Station-side broker. A station can't reach the sidecar's address, so instead
  * of the default localhost handshake the data source relays the WebRTC
- * offer→answer through the main screen and sources its turn creds from the
- * host's relay broadcast (not a localhost `/ice-config` fetch). Media still
- * flows station↔sidecar directly off the answer's ICE candidates, nothing
- * about the video crosses PeerJS. Built from the station's broker, see
- * {@link attachStationBroker}.
+ * offer→answer through the main screen. The answer is the sidecar's own for a
+ * station on the main screen's network, whose media then flows to the sidecar
+ * directly, and the relay endpoint's for a station that joined through it,
+ * whose media the endpoint carries on to the sidecar. Built from the station's
+ * broker, see {@link attachStationBroker}.
  */
 export interface KerbcastBroker {
   /** Relay one offer to the sidecar via the host; resolve with the answer. */
@@ -62,10 +62,6 @@ export interface KerbcastBroker {
     cameras: number[];
     slots?: number;
   }): Promise<{ sdp: string; cameras: number[] }>;
-  /** Current relay turn creds (empty until the host has broadcast some). */
-  iceServers(): RTCIceServer[];
-  /** Notified when the host broadcasts fresh relay turn creds. */
-  onIceServersChange(cb: (servers: RTCIceServer[]) => void): () => void;
 }
 
 const DEFAULT_CONFIG: KerbcastConfig = { port: 8088 };
@@ -81,10 +77,9 @@ const RECONNECT_MAX_MS = 30_000;
 // crew bar avatar, the docking-camera augment) binds one free slot at runtime
 // through subscribeCamera().
 //
-// An unbound slot is not free over a TURN relay: every transceiver is offered
-// as its own media line, and the relay allocates ports for the ones the
-// connection negotiates whether or not a camera is ever bound to them. A pool
-// of 32 starved a remote station of relay ports. So the pool is sized to the
+// An unbound slot is not free: every transceiver is offered as its own media
+// line, which the sidecar answers and, for a station on another network, the
+// relay's endpoint carries on both of its sides. So the pool is sized to the
 // cameras mounted when the connection is made plus a little headroom, and
 // when a camera is mounted that does not fit it the connection is made again
 // with a larger one (see growPool). The sidecar has no pool cap of its own: it
@@ -122,41 +117,19 @@ const NO_FREE_SLOT = /^no free slot/;
 /** Why the sidecar declined to bind a camera into a slot. */
 export type KerbcastRefusal = ErrorCode;
 
-// The kerbcast WebRTC stream needs the same TURN relay the PeerJS host uses
-// for non-LAN delivery. The gonogo relay bundles coturn and serves the
-// rotated creds at `/ice-config` (see packages/relay). We fetch them here and
-// hand them to the SDK client; with no relay reachable we fall back to the
-// SDK's STUN-only default so kerbcast-on-LAN keeps working untouched. Mirrors
-// the host's app/peer/iceServers.ts (kerbcast can't import across that package
-// boundary, so the small fetch is duplicated rather than shared).
-const RELAY_DEFAULT_URL = "http://localhost:3002";
-const ICE_FETCH_TIMEOUT_MS = 4_000;
-
-function relayBaseUrl(): string {
-  const env = (import.meta as unknown as { env?: Record<string, string> }).env;
-  return (env?.VITE_RELAY_URL ?? RELAY_DEFAULT_URL).replace(/\/$/, "");
-}
-
 /**
- * Fetch the relay's turn credentials. Returns `[]` on any failure, a 503
- * (coturn down), a timeout, or no relay at all, so the caller leaves the SDK
- * on its `stun:stun.l.google.com` default rather than breaking connect.
+ * Who made a relayed call to this Uplink's handle on the main screen, as the
+ * app passes it: the station, and on a station that joined through the relay's
+ * endpoint, a bridge that carries the station's camera connection on to the
+ * sidecar. Spelled here so the Uplink builds against an SDK that does not name
+ * it yet.
  */
-async function fetchRelayIceServers(): Promise<RTCIceServer[]> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ICE_FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(`${relayBaseUrl()}/ice-config`, {
-      signal: controller.signal,
-    });
-    if (!res.ok) return [];
-    const body = (await res.json()) as { iceServers?: RTCIceServer[] };
-    return Array.isArray(body.iceServers) ? body.iceServers : [];
-  } catch {
-    return [];
-  } finally {
-    clearTimeout(timer);
-  }
+interface RelayCaller {
+  station: string;
+  bridgeMedia?(
+    offer: string,
+    upstream: (offer: string) => Promise<string>,
+  ): Promise<string>;
 }
 
 const KERBCAST_CAMERAS_BUDGET = createPerfBudget({
@@ -342,35 +315,12 @@ export class KerbcastDataSource {
    * `kerbcast:clock` diagnostic can tell whether the instance that receives
    * `settings-state` (this data source's connected client) is the same one
    * `CameraFeed`'s provider holds and `useKerbcastClock` reads. A mismatch
-   * means a reconnect/TURN rebuild orphaned the clock onto a dead instance.
+   * means a reconnect rebuild orphaned the clock onto a dead instance.
    */
   private static clientInstanceSeq = 0;
-  // TURN creds: on the main screen, fetched from the relay's /ice-config; on a
-  // brokered station, pushed in from the host's relay broadcast. Empty until
-  // resolved (SDK then uses its STUN-only default).
-  private iceServers: RTCIceServer[] = [];
-  // TURN-on-demand, main-screen path only. The main→sidecar leg is LAN (Steam
-  // Deck ↔ MacBook, same WiFi), so it connects on host/STUN candidates and
-  // never needs a relay, yet fetching /ice-config up front made every camera
-  // connection *gather* a TURN relay candidate it then discarded, burning a
-  // coturn relay port per feed. So we stay STUN-only until a connection attempt
-  // has actually failed, then pull the relay's TURN creds and let the reconnect
-  // pick them up (see connect / attemptReconnect / the "failed" state handler).
-  // Worst case is one failed STUN attempt before we fall back to today's
-  // always-TURN behaviour; the common LAN case never allocates a relay port.
-  //
-  // The asymmetry with the data channel's TURN-on-demand (which escalates on a
-  // short timer) is deliberate, not an oversight: that path spans the internet,
-  // so fast escalation earns its keep; this path is LAN, where a STUN-only
-  // attempt should *succeed*, and waiting for a genuine failure avoids tearing
-  // down a slow-but-valid local connect. The remote-camera case rides the
-  // broker/station path (attachBroker), which takes TURN from the host
-  // broadcast and is untouched by this flag.
-  private turnEscalated = false;
-  // Set on a station via attachBroker(); switches connect() off the localhost
-  // /offer + /ice-config path and onto the host-relayed handshake.
+  // Set on a station via attachBroker(); switches connect() off the sidecar's
+  // /offer and onto the host-relayed handshake.
   private broker: KerbcastBroker | undefined;
-  private brokerIceUnsub: (() => void) | undefined;
   private statusListeners = new Set<(status: DataSourceStatus) => void>();
   private sidecarReachability: SidecarReachability = "unknown";
   private reachabilityListeners = new Set<() => void>();
@@ -526,11 +476,6 @@ export class KerbcastDataSource {
     // The sidecar sends H.264 only, so an offer from a browser that cannot
     // decode it fails at the sidecar with an opaque 500.
     if (!browserCanPlayH264()) return;
-    // Brokered (station) mode gets its TURN creds from the host's relay
-    // broadcast via attachBroker(); the localhost /ice-config fetch would hit the
-    // station's own loopback, so skip it. On the main screen we stay STUN-only
-    // until a failed attempt has flipped `turnEscalated` (see the field comment).
-    if (!this.broker && this.turnEscalated) await this.applyRelayIce();
     this.awaitingSlot = [];
     this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
@@ -538,7 +483,6 @@ export class KerbcastDataSource {
         slots: this.poolSlots,
       });
     } catch (err) {
-      this.turnEscalated = true;
       this.scheduleReconnect();
       throw err;
     }
@@ -700,21 +644,33 @@ export class KerbcastDataSource {
   /**
    * Host-side dispatch entry point for station peer-relayed calls (see
    * PeerHostService.handleUplinkRelay / PeerClientDataSource.relay). The
-   * only method today is `negotiate`, delegating to relayOffer().
+   * only method today is `negotiate`. A station that joined through the
+   * relay's endpoint cannot reach the sidecar, so its offer is bridged: the
+   * endpoint's own offer goes to the sidecar, and the station is answered by
+   * the endpoint. Any other station's offer goes to the sidecar as it is.
    */
-  async relay(method: string, args: unknown): Promise<unknown> {
-    if (method === "negotiate") {
-      return this.relayOffer(
-        args as { sdp: string; cameras: number[]; slots?: number },
-      );
+  async relay(
+    method: string,
+    args: unknown,
+    caller?: RelayCaller,
+  ): Promise<unknown> {
+    if (method !== "negotiate") {
+      throw new Error(`kerbcast relay handle: unknown method "${method}"`);
     }
-    throw new Error(`kerbcast relay handle: unknown method "${method}"`);
+    const offer = args as { sdp: string; cameras: number[]; slots?: number };
+    if (!caller?.bridgeMedia) return this.relayOffer(offer);
+    let cameras: number[] = [];
+    const sdp = await caller.bridgeMedia(offer.sdp, async (upstream) => {
+      const answer = await this.relayOffer({ ...offer, sdp: upstream });
+      cameras = answer.cameras;
+      return answer.sdp;
+    });
+    return { sdp, cameras };
   }
 
   /**
    * Switch this source into station/brokered mode: route the WebRTC handshake
-   * through the host (no sidecar address needed) and take turn creds from the
-   * host's relay broadcast instead of a localhost `/ice-config` fetch. Called on
+   * through the host (no sidecar address needed). Called on
    * a station through {@link attachStationBroker}. Rebuilds the
    * client so the camera hooks rebind to the brokered instance; if a connection
    * was already live it reconnects through the broker.
@@ -724,17 +680,6 @@ export class KerbcastDataSource {
    */
   attachBroker(broker: KerbcastBroker): void {
     this.broker = broker;
-    this.iceServers = broker.iceServers();
-    this.brokerIceUnsub?.();
-    this.brokerIceUnsub = broker.onIceServersChange((servers) => {
-      // Mutate the live client's cfg in place (same reasoning as applyRelayIce)
-      // so the next connect/reconnect picks up rotated creds without orphaning
-      // the camera hooks bound to this client instance.
-      this.iceServers = servers;
-      (
-        this.client as unknown as { cfg: { iceServers?: RTCIceServer[] } }
-      ).cfg.iceServers = servers.length > 0 ? servers : undefined;
-    });
     const wasEnabled = this.reconnectEnabled;
     this.teardownClient();
     this.client = this.buildClient();
@@ -750,7 +695,6 @@ export class KerbcastDataSource {
 
   disconnect(): void {
     this.reconnectEnabled = false;
-    this.turnEscalated = false;
     this.clearTimers();
     this.client.disconnect();
     this.forgetSlotState();
@@ -778,9 +722,6 @@ export class KerbcastDataSource {
     const wasEnabled = this.reconnectEnabled;
     this.cfg = next;
     this.reconnectEnabled = false;
-    // A host/port change is a fresh start, re-probe STUN-only against the new
-    // sidecar rather than carrying a stale escalation across the reconfigure.
-    this.turnEscalated = false;
     this.teardownClient();
     this.client = this.buildClient();
     if (wasEnabled) void this.connect().catch(() => {});
@@ -814,9 +755,6 @@ export class KerbcastDataSource {
       {
         host: getGameHost(),
         port: this.cfg.port,
-        // Pass the relay's TURN servers when we have them; `undefined` lets
-        // the SDK apply its STUN-only default (LAN / no relay).
-        iceServers: this.iceServers.length > 0 ? this.iceServers : undefined,
         // Lets a camera's video delay be installed on its receiver, ahead of
         // decode and the static canvas (`useEncodedDelayTarget`). Fixed for a
         // peer's life, so it is on from the start.
@@ -866,9 +804,6 @@ export class KerbcastDataSource {
           }
           this.startWatchdog();
         } else if (s === "failed" && this.reconnectEnabled) {
-          // A STUN-only attempt that reached ICE "failed" couldn't traverse,
-          // escalate so the reconnect fetches the relay's TURN creds.
-          this.turnEscalated = true;
           this.scheduleReconnect();
         }
       }),
@@ -882,33 +817,6 @@ export class KerbcastDataSource {
     // teardownClient), so a rebuild re-attaches cleanly onto the new client.
     this.eventProducer.attach(client);
     return client;
-  }
-
-  /**
-   * Fetch the relay's turn creds and, if any came back, set them on the
-   * client. A no-op (keeps the SDK's STUN default) when the relay is
-   * unreachable, so LAN streaming is unaffected. Run on every
-   * connect/reconnect because the relay rotates its secret per restart, so a
-   * reconnect after a relay bounce needs the fresh credentials.
-   *
-   * Crucially this sets the creds on the *existing* client rather than
-   * rebuilding it: `KerbcastClient.connect()` re-reads `cfg.iceServers` every
-   * time it creates a peer (so the connect that immediately follows, and each
-   * reconnect, picks the mutation up), and swapping the instance instead would
-   * orphan the camera hooks. `useKerbcastStream` / `useKerbcastCameras` capture
-   * `getClient()` once and bind to its events; a rebuilt client would fire
-   * onto a dead instance: a black camera on exactly the turn path this
-   * targets. `cfg` is private in the SDK, but we own kerbcast and the
-   * "threads TURN servers" test drives the real client, so a field rename
-   * reddens CI rather than silently regressing.
-   */
-  private async applyRelayIce(): Promise<void> {
-    const ice = await fetchRelayIceServers();
-    if (ice.length === 0) return;
-    this.iceServers = ice;
-    (
-      this.client as unknown as { cfg: { iceServers?: RTCIceServer[] } }
-    ).cfg.iceServers = ice;
   }
 
   private teardownClient(): void {
@@ -1135,7 +1043,6 @@ export class KerbcastDataSource {
   }
 
   private async attemptReconnect(): Promise<void> {
-    if (!this.broker && this.turnEscalated) await this.applyRelayIce();
     this.awaitingSlot = [];
     this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
@@ -1143,7 +1050,6 @@ export class KerbcastDataSource {
         slots: this.poolSlots,
       });
     } catch {
-      this.turnEscalated = true;
       this.scheduleReconnect();
     }
   }
@@ -1201,7 +1107,7 @@ registerUplinkHandle("kerbcast", kerbcastSource);
 /**
  * Switch `source` into station mode off the broker a station hands this Uplink:
  * the offer relays to the main screen's own kerbcast handle, whose `relay`
- * answers `negotiate`, and turn credentials come from the host's broadcast.
+ * answers `negotiate`.
  */
 export function attachStationBroker(
   source: KerbcastDataSource,
@@ -1213,8 +1119,6 @@ export function attachStationBroker(
         sdp: string;
         cameras: number[];
       }>,
-    iceServers: () => broker.iceServers.current(),
-    onIceServersChange: (cb) => broker.iceServers.onChange(cb),
   });
 }
 

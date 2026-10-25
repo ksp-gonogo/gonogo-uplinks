@@ -262,20 +262,14 @@ function toInit(c: CameraStateLike): MockCameraInit {
   };
 }
 
-// Build a URL-aware fetch impl for the connect handshake: GET `/ice-config`
-// (TURN creds) → empty server list (no relay); the SDK client's POST `/offer`
+// A fetch impl for the connect handshake: the SDK client's POST `/offer`
 // → an SDP answer carrying the given flightIds, so the client opens a track for
 // every camera it's about to learn about. `makeOfferResponse` is called per
 // invocation because a `Response` body is single-use.
 function kerbcastFetch(
   cameras: number[],
 ): (input: RequestInfo | URL) => Promise<Response> {
-  return async (input) => {
-    if (String(input).includes("/ice-config")) {
-      return new Response(JSON.stringify({ iceServers: [] }), { status: 200 });
-    }
-    return MockSidecar.makeOfferResponse(cameras);
-  };
+  return async () => MockSidecar.makeOfferResponse(cameras);
 }
 
 // ---------------------------------------------------------------------------
@@ -1700,12 +1694,8 @@ describe("CameraFeed: station (brokered) mode", () => {
     }
     const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
     // Brokered: the offer→answer round-trips through the (faked) host instead
-    // of a localhost POST; TURN would come from the relay broadcast (none here).
-    ds.attachBroker({
-      negotiate: (offer) => sidecar.negotiate(offer),
-      iceServers: () => [],
-      onIceServersChange: () => () => {},
-    });
+    // of a localhost POST.
+    ds.attachBroker({ negotiate: (offer) => sidecar.negotiate(offer) });
     registerUplinkHandle("kerbcast", ds);
 
     await act(async () => {

@@ -20,10 +20,11 @@ function KerbcastMainConnect({ children }: { children: ReactNode }) {
 }
 
 /**
- * <p>The connect is MAIN-ONLY: a station receives camera media re-streamed
- * through the host's peer connection and must not open its own. `screen` never
- * changes for a mounted tree, so branching on it here is a stable choice of
- * component rather than a conditional hook.</p>
+ * <p>The eager connect is MAIN-ONLY: a station connects lazily through its
+ * station broker once a camera is mounted, negotiating through the main screen
+ * (see hooks/useKerbcastStream.ts). `screen` never changes for a mounted tree,
+ * so branching on it here is a stable choice of component rather than a
+ * conditional hook.</p>
  */
 function KerbcastRootProvider({
   screen,
