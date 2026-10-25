@@ -58,7 +58,7 @@ namespace Gonogo.RealAntennasUplink
             var encoder = tx != null ? ra.EncoderName(tx) : null;
             var codingRate = tx != null ? ra.CodingRate(tx) : null;
             var beamwidth = tx != null ? ra.Beamwidth(tx) : null;
-            var powerDrawEc = tx != null ? ra.PowerDrawLinear(tx) : null;
+            var powerDrawEc = tx != null ? ra.PowerDrawEcPerSecond(tx) : null;
             var requiredEbN0 = rx != null ? ra.RequiredEbN0Db(rx) : null;
 
             // Nothing read at all: leave the bag off so the hop is the bare shared
