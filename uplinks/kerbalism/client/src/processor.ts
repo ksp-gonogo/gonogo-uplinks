@@ -176,6 +176,7 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
         stored,
         capacity,
         crew: crewCount,
+        levelsRead: resources !== undefined,
         crossings,
       }),
       profile,

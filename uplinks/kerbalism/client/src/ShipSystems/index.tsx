@@ -588,6 +588,8 @@ function ShipSystemsBody({
     radiationTooHigh(g, ambientRadiationRadPerSecond),
   );
   const status = overallStatus(ship, utNow, anyGreenhouseHalted);
+  const levelsRead =
+    ship.levels.state === "observed" || ship.levels.state === "held";
 
   // Every resource this render pass shows a Card for, supplies and other
   // alike: one colour map covers both sections so the same resource always
@@ -602,9 +604,12 @@ function ShipSystemsBody({
     <Panel
       panelTitle="Ship Systems"
       panelAside={
-        <Badge role="status" aria-live="polite" tone={status.tone}>
-          {held ? `${status.label} · held` : status.label}
-        </Badge>
+        // No status without a level to judge: a "Nominal" over absent levels is a reading nobody took.
+        levelsRead && (
+          <Badge role="status" aria-live="polite" tone={status.tone}>
+            {held ? `${status.label} · held` : status.label}
+          </Badge>
+        )
       }
       panelFooter={
         // The power footer, PINNED below the scroller by the Panel itself

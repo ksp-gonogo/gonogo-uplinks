@@ -664,6 +664,12 @@ export interface SummaryInput {
   /** Current capacity per resource name, from `vessel.resources`. */
   capacity: Record<string, number>;
   crew: number;
+  /**
+   * Whether `stored` and `capacity` come from a resource reading at all. False
+   * when no levels were ever read, in which case no resource is diagnosed:
+   * absent levels are not empty tanks. Defaults to true.
+   */
+  levelsRead?: boolean;
   /** The model's crossings keyed by resource name; a resource without one has no time. */
   crossings?: Readonly<Record<string, RowCrossing>>;
 }
@@ -704,10 +710,13 @@ export function summarise({
   stored,
   capacity,
   crew,
+  levelsRead = true,
   crossings,
 }: SummaryInput): Summary {
   const facts = resourceFacts(profile);
-  const groups = diagnose({ profile, lifeSupport, stored, capacity });
+  const groups = levelsRead
+    ? diagnose({ profile, lifeSupport, stored, capacity })
+    : [];
   const loops = closedLoops(profile);
 
   const roleOf = new Map<string, DiagnosisGroup>();
