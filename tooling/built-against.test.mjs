@@ -81,6 +81,7 @@ test("a mod assembly whose version moved is reported, and a missing one only whe
 test("version helpers", () => {
   assert.equal(normalise("15.15.0"), normalise("v15.15.0.0"));
   assert.notEqual(normalise("20.4"), normalise("21.1"));
+  assert.equal(rangeFloor("1.11.0-rc.10"), "1.11.0-rc.10");
   assert.equal(rangeFloor("^1.10.2"), "1.10.2");
   assert.equal(
     assemblyVersion(Buffer.from("ProductVersion\0\x001.6.0.1+d43\0\0", "utf16le")),

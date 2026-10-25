@@ -6,7 +6,7 @@
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {
     "name": "kerbcast",
-    "builtAgainst": "1.10.3"
+    "builtAgainst": "1.11.0-rc.10"
   },
   "version": "1.0.0-rc.4",
   "minAppVersion": "0.0.0",

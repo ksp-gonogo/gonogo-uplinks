@@ -49,9 +49,9 @@ export function assemblyVersion(buffer) {
   return undefined;
 }
 
-/** The lowest version a semver range such as `^1.10.2` accepts. */
+/** The lowest version a semver range such as `^1.10.2` accepts, keeping a prerelease tag such as `1.11.0-rc.10`. */
 export function rangeFloor(range) {
-  return /(\d+(?:\.\d+)*)/.exec(range)?.[1];
+  return /(\d+(?:\.\d+)*(?:-[0-9A-Za-z.-]+)?)/.exec(range)?.[1];
 }
 
 /** Whether the Uplink's mod project references the assembly at compile time; one that reaches the mod by reflection has none in the reference set. */
