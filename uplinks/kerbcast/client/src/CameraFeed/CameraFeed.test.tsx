@@ -1669,6 +1669,25 @@ describe("CameraFeed: signal quality badge", () => {
     // The stale strength percentage is not shown alongside a lost link.
     expect(visibleText()).not.toContain("72 %");
   });
+
+  it("drops the signal badge when the camera goes and the feed has nothing to show", async () => {
+    const { sidecar } = await buildConnectedSource();
+
+    const stream = setupStreamFixture();
+    renderFeedWithComms({ flightId: null }, stream);
+
+    act(() => {
+      emitComms(stream, { signalStrength: 1.0, connected: true });
+    });
+    await waitFor(() => expect(headerText()).toContain("SIGNAL 100 %"));
+
+    act(() => {
+      sidecar.setCameras([]);
+    });
+
+    await waitFor(() => expect(frameText()).toContain("No camera feeds"));
+    expect(headerText()).not.toContain("SIGNAL");
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -479,8 +479,13 @@ export function CameraFeed({
     width: feedSize.width,
     height: feedSize.height,
   };
-  // The signal delay is the dashboard header's, not a badge here.
-  const qualityBadge = describeSignalQuality(commConnected, signalStrength);
+  // The signal delay is the dashboard header's, not a badge here. The badge
+  // describes the downlink of the feed on screen, so with no camera to show
+  // (the feed reads "No camera feeds") there is no signal to report.
+  const qualityBadge =
+    effectiveFlightId === null
+      ? null
+      : describeSignalQuality(commConnected, signalStrength);
 
   // Delayed camera control. `currentMode` (derived above, where the
   // serial-input handlers also read it) maps null → "no-path" (never coerce to
