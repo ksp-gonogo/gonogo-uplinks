@@ -111,14 +111,14 @@ const WIDGETS: WidgetRenderConfig[] = [
     modes: [
       // minSize 4×5: tightest placement the widget allows.
       { name: "min-4x5", w: 4, h: 5 },
-      // defaultSize 9×15: the common operator view.
-      { name: "default-9x15", w: 9, h: 15 },
+      // defaultSize 12×24: the common operator view.
+      { name: "default-12x24", w: 12, h: 24 },
       // Generous size: every section (root cause, ledger, wear, habitat,
       // processes, greenhouse augment) reads with room to spare.
       { name: "wide-12x18", w: 12, h: 18 },
       // Healthy-vessel review shot: nominal fixture only, no shortage banner,
       // panelAside status chip reads "Nominal".
-      { name: "nominal-9x15", w: 9, h: 15, forFixtures: ["nominal"] },
+      { name: "nominal-12x24", w: 12, h: 24, forFixtures: ["nominal"] },
       // Root-cause banner review shot: shortage fixture only, generous height
       // so the banner and every section below it is visible uncropped.
       {
