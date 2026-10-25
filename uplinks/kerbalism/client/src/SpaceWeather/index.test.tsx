@@ -107,6 +107,14 @@ describe("SpaceWeatherComponent", () => {
     expect(screen.getByText("No storm activity")).toBeInTheDocument();
   });
 
+  it("never reads a real sub-milli-rad dose as 0.000 rad/h", async () => {
+    mount();
+    emit({ ...NOMINAL, radiationRadPerHour: 4.04e-4 });
+    await waitFor(() => expect(visibleText()).toContain("habitat dose rate"));
+    expect(visibleText()).not.toContain("0.000 rad/h");
+    expect(visibleText()).toMatch(/4\.04\d*\s*(×10⁻⁴|e-4|E-4)\s*rad\/h|0\.404\s*mrad\/h/);
+  });
+
   it("flags the inner belt with a storm-in-progress status and lit belt tag", async () => {
     mount();
     emit(INNER_BELT);
