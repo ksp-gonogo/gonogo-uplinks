@@ -345,7 +345,7 @@ namespace Gonogo.RealAntennasUplink
                     EncoderTechLevel = _ra.EncoderTechLevel(antenna),
                     CodingRate = _ra.CodingRate(antenna),
                     EncoderRequiredEbN0Db = _ra.EncoderRequiredEbN0Db(antenna),
-                    PowerDrawEc = _ra.PowerDrawLinear(antenna),
+                    PowerDrawEc = _ra.PowerDrawEcPerSecond(antenna),
                     AimLabel = _ra.Target(antenna)?.ToString(),
                 };
                 var part = parts?[planned.Count];
