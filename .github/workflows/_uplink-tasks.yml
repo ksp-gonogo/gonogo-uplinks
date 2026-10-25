@@ -52,8 +52,7 @@ jobs:
           # A release's commit list reads the Uplink's history since its last tag.
           fetch-depth: ${{ inputs.prepare_args != '' && '0' || '1' }}
 
-      - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: "10.0.x" }
+      - uses: ./.github/actions/setup-dotnet-direct
 
       # The reference set an Uplink compiles against that is NOT ours: KSP's own
       # managed assemblies and the GameData of the mod this Uplink wraps. Neither
