@@ -173,7 +173,9 @@ namespace Gonogo.RealAntennasUplink
         /// capture that produced the view.</para>
         /// </summary>
         protected override Dictionary<string, object?>? HopExtensions(CommsLinkView link)
-            => link.Handle is CommLink raLink ? RaHopExtensions.ForHop(_ra, raLink) : null;
+            => link.Handle is CommLink raLink
+                ? RaHopExtensions.ForHop(_ra, raLink, ReferenceEquals(raLink.a, link.A.Handle?.As<CommNode>()))
+                : null;
 
         /// <summary>
         /// Stock's <c>Vessel.ControlLevel</c> in the contract's vocabulary; the
