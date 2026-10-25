@@ -56,6 +56,15 @@ function emitLink(
 }
 
 describe("the link budget section", () => {
+  it("names the band and says what the modulation count counts", async () => {
+    const stream = mount();
+    emitLink(stream, true);
+
+    await screen.findByLabelText("Link budget detail");
+    expect(screen.getByText("L-band")).toBeTruthy();
+    expect(screen.getByText("4 bits per symbol")).toBeTruthy();
+  });
+
   it("draws nothing of the last link once the link is down", async () => {
     const stream = mount();
     emitLink(stream, true);

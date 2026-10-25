@@ -105,7 +105,8 @@ function CommSignalRaSection() {
   const hasMargin = margin?.decibelMargin !== undefined;
   const hasExt =
     ext !== undefined &&
-    (ext.techLevel != null ||
+    (!!ext.band ||
+      ext.techLevel != null ||
       ext.modulationBits != null ||
       !!ext.encoder ||
       ext.requiredEbN0 != null ||
@@ -141,6 +142,14 @@ function CommSignalRaSection() {
             </Text>
           </>
         ) : null}
+        {ext?.band ? (
+          <>
+            <Text size="xs" level="muted" style={LABEL_STYLE}>
+              Band
+            </Text>
+            <Text size="sm">{ext.band}-band</Text>
+          </>
+        ) : null}
         {ext?.encoder ? (
           <>
             <Text size="xs" level="muted" style={LABEL_STYLE}>
@@ -155,7 +164,8 @@ function CommSignalRaSection() {
               Modulation
             </Text>
             <Text size="sm">
-              <Unit value={ext.modulationBits} />
+              {ext.modulationBits.magnitude} bit
+              {ext.modulationBits.magnitude === 1 ? "" : "s"} per symbol
             </Text>
           </>
         ) : null}
