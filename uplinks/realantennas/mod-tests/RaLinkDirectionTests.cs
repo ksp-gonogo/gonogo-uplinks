@@ -32,5 +32,27 @@ namespace GonogoRealAntennasUplink.Tests
             Assert.Equal(9600, down);
             Assert.Equal(262000, up);
         }
+
+        [Fact]
+        public void AHopRunningAlongTheStoredDirectionReadsTheForwardEnds()
+        {
+            var ends = RaLinkDirection.ForHop(fromIsForwardEnd: true, "fwdTx", "fwdRx", "revTx", "revRx", 3900, 31500);
+
+            Assert.Equal("fwdTx", ends.Transmit);
+            Assert.Equal("fwdRx", ends.Receive);
+            Assert.Equal(31500, ends.OppositeBitsPerSec);
+        }
+
+        [Fact]
+        public void AHopRunningAgainstTheStoredDirectionReadsTheReverseEnds()
+        {
+            // The hop starts at the link's b node, so its transmitter is the reverse
+            // transmitter and the rate the other way is the stored forward one.
+            var ends = RaLinkDirection.ForHop(fromIsForwardEnd: false, "fwdTx", "fwdRx", "revTx", "revRx", 3900, 31500);
+
+            Assert.Equal("revTx", ends.Transmit);
+            Assert.Equal("revRx", ends.Receive);
+            Assert.Equal(3900, ends.OppositeBitsPerSec);
+        }
     }
 }

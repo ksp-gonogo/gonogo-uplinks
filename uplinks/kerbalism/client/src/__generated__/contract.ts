@@ -1089,6 +1089,26 @@ export interface KerbalismScienceInstrumentExt
 	*/
 	remainingSampleMass?: Value<"t"> | null;
 	/**
+	* Why a switched-on experiment is `Waiting`: `No science defined for this
+	* situation` or `All science here is collected`. Kerbalism derives Waiting
+	* from the subject alone and never writes it to
+	* `KerbalismScienceInstrumentExt.issue`. Null in any other state, and when the
+	* subject could not be read.
+	*/
+	waitingReason?: string | null;
+	/**
+	* How much of the current situation's science this vessel has collected, 0..1
+	* (Kerbalism's `PercentCollectedTotal` for the experiment's subject, across
+	* every run, not only this one). Null with no subject.
+	*/
+	progressFraction?: Value<"ratio"> | null;
+	/**
+	* Seconds a run needs to collect the rest of the current subject at the
+	* current production factor, the figure Kerbalism's own context menu counts
+	* down. Null when the data rate or subject could not be read.
+	*/
+	secondsToComplete?: Value<"s"> | null;
+	/**
 	* Scanner only. Whether SCANsat is sweeping right now. A scanner produces data
 	* as a side effect of coverage growing, so this is the closest thing it has to
 	* an experiment's Running state. Null on older Kerbalism builds, which keep no

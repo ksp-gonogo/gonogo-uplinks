@@ -29,20 +29,28 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>
         /// The full extension bag for one hop (<c>{ "realantennas": { ... } }</c>),
         /// or null when no RA fact reads. Band/tech-level/modulation/encoder/coding
-        /// rate/beamwidth/EC draw come off the forward transmit antenna; required
-        /// Eb/N0 off the forward receive antenna (its encoder sets the requirement);
-        /// the reverse rate off the link. <paramref name="link"/> is the live
-        /// RACommLink.
+        /// rate/beamwidth/EC draw come off the hop's transmit antenna; required
+        /// Eb/N0 off the receive antenna (its encoder sets the requirement); the
+        /// rate the other way off the link. "Forward" means along the hop, from its
+        /// near end to its far end: RealAntennas stores a link a to b by node index,
+        /// so <paramref name="fromIsForwardEnd"/> says whether the hop's near end is
+        /// the link's a node. <paramref name="link"/> is the live RACommLink.
         /// </summary>
-        public static Dictionary<string, object?>? ForHop(RaReflection ra, object? link)
+        public static Dictionary<string, object?>? ForHop(RaReflection ra, object? link, bool fromIsForwardEnd)
         {
             if (link == null)
             {
                 return null;
             }
 
-            var tx = ra.ForwardTxAntenna(link);
-            var rx = ra.ForwardRxAntenna(link);
+            var (tx, rx, reverseBitsPerSec) = RaLinkDirection.ForHop(
+                fromIsForwardEnd,
+                ra.ForwardTxAntenna(link),
+                ra.ForwardRxAntenna(link),
+                ra.ReverseTxAntenna(link),
+                ra.ReverseRxAntenna(link),
+                ra.ForwardDataRate(link),
+                ra.ReverseDataRate(link));
 
             var band = tx != null ? ra.BandName(tx) : null;
             var techLevel = tx != null ? ra.TechLevel(tx) : null;
@@ -50,9 +58,8 @@ namespace Gonogo.RealAntennasUplink
             var encoder = tx != null ? ra.EncoderName(tx) : null;
             var codingRate = tx != null ? ra.CodingRate(tx) : null;
             var beamwidth = tx != null ? ra.Beamwidth(tx) : null;
-            var powerDrawEc = tx != null ? ra.PowerDrawLinear(tx) : null;
+            var powerDrawEc = tx != null ? ra.PowerDrawEcPerSecond(tx) : null;
             var requiredEbN0 = rx != null ? ra.RequiredEbN0Db(rx) : null;
-            var reverseBitsPerSec = ra.ReverseDataRate(link);
 
             // Nothing read at all: leave the bag off so the hop is the bare shared
             // shape (the vanilla CommNet posture), rather than an empty namespace a

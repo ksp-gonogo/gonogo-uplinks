@@ -10,7 +10,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | Uplink id | `kerbalism` |
 | Version | `1.0.0-rc.4` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 46.4, extension API 6.0.0 |
+| Built against | contract 49.4, extension API 6.0.0 |
 
 ## Install
 
@@ -50,7 +50,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismRuleDef` | `breakdown` flag, `degeneration` units/s, `fatalThreshold` units, `input` text, `interval` s, `modifiers` text, `name` text, `output` text, `rate` units, `ratePerSecond` units/s |
 | `KerbalismScienceBreakdownExt` | `percentCollectedTotal` ratio, `scienceCollectedInFlight` science, `scienceRemainingTotal` science, `timesCompleted` count |
 | `KerbalismScienceExperimentExt` | `analyze` flag, `dataSizeMB` MB, `kind` id, `sampleMass` t, `sampleSlotsTotal` count, `sampleSlotsUsed` count, `sciencePerMB` science/MB, `sendFlagged` flag, `storageCapacityMB` MB, `storageUsedMB` MB, `transmitRateMBps` MB/s, `transmitting` flag |
-| `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag |
+| `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `progressFraction` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag, `secondsToComplete` s, `waitingReason` text |
 | `KerbalismScienceLabExt` | `analysisRateMBps` MB/s, `effectiveRateMBps` MB/s, `status` id |
 | `KerbalismStarInfo` | `direction.x` 1, `direction.y` 1, `direction.z` 1, `distance` m, `star` text |
 | `KerbalismStormEntry` | `dist` m, `star` text, `stormDuration` s, `stormState` count, `stormTime` ut, `targetKind` enum, `targetName` text |
@@ -114,6 +114,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
+| `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 0 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)

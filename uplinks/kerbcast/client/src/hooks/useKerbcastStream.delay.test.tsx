@@ -38,9 +38,11 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import type { FrameStampFeed } from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
+  type EncodedDelayTarget,
   useDelayedPlayout,
   useKerbcastStream,
 } from "./useKerbcastStream.js";
@@ -236,19 +238,25 @@ function StreamProbe({
   clock,
   captureUt,
   resetEpoch,
+  encodedTarget,
+  frameStamps,
   onResult,
 }: {
   flightId: number | null;
   clock: DelayClockLike;
   captureUt: () => number | null;
   resetEpoch?: number;
+  encodedTarget?: EncodedDelayTarget;
+  frameStamps?: FrameStampFeed;
   onResult: (r: DelayedPlayoutResult) => void;
 }): null {
   const raw = useKerbcastStream(flightId);
   const result = useDelayedPlayout(raw, {
     view: clock,
     captureUt,
+    frameStamps,
     resetEpoch,
+    encodedTarget,
   });
   onResult(result);
   return null;
@@ -516,16 +524,14 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     const track = fakeControllableVideoTrack();
     const cam = fakeCameraHandle(null);
     registerFakeKerbcastSource(cam);
-    const clock = manualClock(0);
-    registerUplinkHandle("kerbcast", {
-      id: "kerbcast",
-      getClient: () => ({ camera: () => cam }),
-      subscribeCamera: () => {},
-      unsubscribeCamera: () => {},
-      getReceiverForStream: () => {
+    vi.stubGlobal("RTCRtpScriptTransform", class {});
+    const clock = { ...manualClock(0), snapshot: () => ({}) };
+    const refusing: EncodedDelayTarget = {
+      key: {},
+      attach: () => {
         throw new Error("receiver lookup refused");
       },
-    });
+    };
 
     let latest: DelayedPlayoutResult | "unset" = "unset";
     render(
@@ -533,6 +539,7 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
         flightId={7}
         clock={clock}
         captureUt={() => 100}
+        encodedTarget={refusing}
         onResult={(r) => {
           latest = r;
         }}
@@ -764,6 +771,46 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     });
     await waitFor(() => {
       expect(gen?.written).toEqual([dated, undated]);
+    });
+  });
+
+  it("dates frames from the camera's own stamps and never consults the capture clock", async () => {
+    const { FakeGenerator } = installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const rawStream = fakeVideoStream(track);
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    const clock = manualClock(100);
+    const listeners = new Set<(s: { rtpTimestamp: number; ut: number; epoch: number }) => void>();
+    const feed: FrameStampFeed = {
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+    };
+
+    // A clock sample that has run 400 s ahead of the frames: stamping from it
+    // would hold every frame until the edge reached 500.
+    render(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => 500}
+        frameStamps={feed}
+        onResult={() => {}}
+      />,
+    );
+    act(() => {
+      cam.emit(rawStream);
+    });
+    const [gen] = FakeGenerator.instances;
+
+    for (const l of listeners) l({ rtpTimestamp: 3000, ut: 100, epoch: 1 });
+    const frame = { ...fakeFrame("stamped"), metadata: () => ({ rtpTimestamp: 3000 }) };
+    track.push(frame);
+
+    await waitFor(() => {
+      expect(gen?.written).toEqual([frame]);
     });
   });
 

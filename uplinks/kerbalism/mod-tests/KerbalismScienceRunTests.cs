@@ -185,6 +185,67 @@ namespace GonogoKerbalismUplink.Tests
             Assert.Null(row.Deployed);
         }
 
+        [Fact]
+        public void AWaitingExperimentWithNoSubjectSaysNoScienceIsDefinedHere()
+        {
+            var row = Instrument(new ScienceExperimentRaw { PartId = "1", RunningState = "Running", ExpStatus = "Waiting", SubjectKnown = false });
+
+            Assert.Equal("No science defined for this situation", row.RunIssue);
+        }
+
+        [Fact]
+        public void AWaitingExperimentWithNothingLeftSaysItIsCollected()
+        {
+            var row = Instrument(new ScienceExperimentRaw
+            {
+                PartId = "1", RunningState = "Running", ExpStatus = "Waiting", SubjectKnown = true, ScienceRemainingToCollect = 0,
+            });
+
+            Assert.Equal("All science here is collected", row.RunIssue);
+            var ext = (Dictionary<string, object?>)row.Extensions![KerbalismScienceMap.ProviderId]!;
+            Assert.Equal("All science here is collected", ext["waitingReason"]);
+        }
+
+        [Fact]
+        public void KerbalismsOwnIssueWinsOverTheWaitingReason()
+        {
+            var row = Instrument(new ScienceExperimentRaw
+            {
+                PartId = "1", RunningState = "Running", ExpStatus = "Issue", Issue = "No electric charge", SubjectKnown = true,
+            });
+
+            Assert.Equal("No electric charge", row.RunIssue);
+        }
+
+        [Fact]
+        public void ProgressAndTimeToFinishRideTheExtension()
+        {
+            var row = Instrument(new ScienceExperimentRaw
+            {
+                PartId = "1", RunningState = "Running", ExpStatus = "Running", ProgressFraction = 0.25, SecondsToComplete = 90,
+            });
+
+            var ext = (Dictionary<string, object?>)row.Extensions![KerbalismScienceMap.ProviderId]!;
+            Assert.Equal(0.25, ext["progressFraction"]);
+            Assert.Equal(90.0, ext["secondsToComplete"]);
+        }
+
+        [Fact]
+        public void TimeToFinishFollowsKerbalismsCountdown()
+        {
+            // (1 - 0.25) x (4 MB / 0.01 MB/s) = 300 s, stretched by a 0.5 production factor.
+            Assert.Equal(600.0, KerbalismScienceMap.SecondsToComplete(true, 0.25, 4, 0.01, 0.5));
+            // No subject yet: the whole experiment, and a zero production factor counts as 1.
+            Assert.Equal(400.0, KerbalismScienceMap.SecondsToComplete(false, null, 4, 0.01, 0));
+        }
+
+        [Fact]
+        public void TimeToFinishIsUnknownRatherThanFullLengthWhenTheCollectedShareIsUnread()
+        {
+            Assert.Null(KerbalismScienceMap.SecondsToComplete(true, null, 4, 0.01, 1));
+            Assert.Null(KerbalismScienceMap.SecondsToComplete(false, null, 4, 0, 1));
+        }
+
         [Theory]
         [InlineData("Running", "Running", true, true)]
         [InlineData("Forced", "Forced", true, true)]

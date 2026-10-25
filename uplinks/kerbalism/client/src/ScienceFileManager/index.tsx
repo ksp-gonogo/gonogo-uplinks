@@ -10,6 +10,7 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -73,6 +74,22 @@ function findDriveEntries(
   return out;
 }
 
+/** The title of the part whose drive holds the subject's file or sample, for the drive line. */
+function drivePartName(
+  experiments: ExperimentEntry[] | undefined,
+  subjectId: string,
+  kind: string | null | undefined,
+): string | undefined {
+  return (
+    experiments?.find(
+      (e) =>
+        e.subjectId === subjectId &&
+        readKerbalismScienceExperimentExt(e)?.kind === kind &&
+        e.partName,
+    )?.partName ?? undefined
+  );
+}
+
 /**
  * A drive figure on the arm of the reading it was read from, so `Unit` marks
  * one that is held and says when it was read.
@@ -88,9 +105,11 @@ type Dated = <U extends string>(
 function DriveCapacity({
   ext,
   dated,
+  partName,
 }: {
   ext: KerbalismScienceExperimentExt;
   dated: Dated;
+  partName: string | undefined;
 }) {
   /* `!= null`, not `!== undefined`: the mod writes an unread figure as JSON
      null and the key stays on the wire, so the strict-undefined form let a null
@@ -100,18 +119,19 @@ function DriveCapacity({
   if (!hasStorage && !hasSlots) return null;
   return (
     <Text size="xs" level="muted">
-      Drive{" "}
+      {partName ? `Stored in ${partName}` : "Stored on drive"}
       {hasStorage && (
         <>
-          <Unit value={dated(ext.storageUsedMB)} /> /{" "}
+          {" · files "}
+          <Unit value={dated(ext.storageUsedMB)} /> used of{" "}
           <Unit value={dated(ext.storageCapacityMB)} />
         </>
       )}
-      {hasStorage && hasSlots && " · "}
       {hasSlots && (
         <>
-          <Unit value={dated(ext.sampleSlotsUsed)} />/
-          <Unit value={dated(ext.sampleSlotsTotal)} /> slots
+          {" · sample slots "}
+          <Unit value={dated(ext.sampleSlotsUsed)} /> used of{" "}
+          <Unit value={dated(ext.sampleSlotsTotal)} />
         </>
       )}
     </Text>
@@ -213,12 +233,25 @@ function ScienceDataAboardRowAugment({
           <Cluster wrap justify="start">
             {file.dataSizeMB != null && (
               <Text size="xs">
-                <Unit value={dated(file.dataSizeMB)} />
+                File <Unit value={dated(file.dataSizeMB)} />
+              </Text>
+            )}
+            {file.dataSizeMB != null && file.sciencePerMB != null && (
+              <Text size="xs" level="muted">
+                Worth{" "}
+                <Unit
+                  value={dated(
+                    value(
+                      "science",
+                      file.dataSizeMB.magnitude * file.sciencePerMB.magnitude,
+                    ),
+                  )}
+                />
               </Text>
             )}
             {file.transmitRateMBps?.isPositive() && (
               <Text size="xs" level="muted">
-                <Unit value={dated(file.transmitRateMBps)} />
+                Sending at <Unit value={dated(file.transmitRateMBps)} />
               </Text>
             )}
             {file.transmitting === true && (
@@ -279,7 +312,21 @@ function ScienceDataAboardRowAugment({
           <Cluster wrap justify="start">
             {sample.sampleMass != null && (
               <Text size="xs">
-                <Unit value={dated(sample.sampleMass)} />
+                Sample <Unit value={dated(sample.sampleMass)} />
+              </Text>
+            )}
+            {sample.dataSizeMB != null && sample.sciencePerMB != null && (
+              <Text size="xs" level="muted">
+                Worth{" "}
+                <Unit
+                  value={dated(
+                    value(
+                      "science",
+                      sample.dataSizeMB.magnitude *
+                        sample.sciencePerMB.magnitude,
+                    ),
+                  )}
+                />
               </Text>
             )}
           </Cluster>
@@ -339,7 +386,13 @@ function ScienceDataAboardRowAugment({
           </Cluster>
         </Stack>
       )}
-      {driveExt && <DriveCapacity ext={driveExt} dated={dated} />}
+      {driveExt && (
+        <DriveCapacity
+          ext={driveExt}
+          dated={dated}
+          partName={drivePartName(experiments, subjectId, driveExt.kind)}
+        />
+      )}
     </Section>
   );
 }

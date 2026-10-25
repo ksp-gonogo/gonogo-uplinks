@@ -124,29 +124,18 @@ export function createMockKerbcastSession(): MockKerbcastSession {
 }
 
 /**
- * Build a URL-aware `fetch` implementation for kerbcast tests. The data source
- * makes two distinct calls on connect: a get `/ice-config` (turn creds) and
- * the SDK client's post `/offer` (SDP answer + camera flightIds). A single
- * shared `Response` can't serve both, its body is consumed on the first read,
- * so this returns a *fresh* Response per call, routed by URL.
+ * A `fetch` implementation answering the SDK client's post `/offer` (SDP answer
+ * + camera flightIds) with a fresh `Response` per call, since a body is
+ * consumed on its first read.
  *
  * Pass to `vi.spyOn(globalThis, "fetch").mockImplementation(kerbcastFetchImpl(...))`.
- * `iceServers` defaults to `[]` (the no-relay case → SDK STUN fallback);
- * pass servers to exercise the turn path.
  */
 export function kerbcastFetchImpl(opts?: {
   cameras?: number[];
-  iceServers?: RTCIceServer[];
 }): (input: RequestInfo | URL) => Promise<Response> {
   const cameras = opts?.cameras ?? [];
-  const iceServers = opts?.iceServers ?? [];
-  return async (input) => {
-    const url = String(input);
-    if (url.includes("/ice-config")) {
-      return new Response(JSON.stringify({ iceServers }), { status: 200 });
-    }
-    return new Response(JSON.stringify({ sdp: "answer-sdp", cameras }), {
+  return async () =>
+    new Response(JSON.stringify({ sdp: "answer-sdp", cameras }), {
       status: 200,
     });
-  };
 }

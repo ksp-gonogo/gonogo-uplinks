@@ -239,11 +239,15 @@ namespace Gonogo.RealAntennasUplink
         public double? Beamwidth(object antenna) => ReadDoubleMember(antenna, "Beamwidth");
 
         /// <summary>
-        /// Linear transmit EC draw (units/s): <c>RealAntenna.PowerDrawLinear</c>,
-        /// the actual electric-charge draw rather than the log-scaled
-        /// <c>PowerDraw</c>. Null when unreadable.
+        /// Transmit electric-charge draw (units/s): <c>RealAntenna.PowerDrawLinear</c>
+        /// (milliwatts, not the log-scaled <c>PowerDraw</c>) converted to the units
+        /// the game's resource is counted in. Null when unreadable.
         /// </summary>
-        public double? PowerDrawLinear(object antenna) => ReadDoubleMember(antenna, "PowerDrawLinear");
+        public double? PowerDrawEcPerSecond(object antenna)
+        {
+            var milliwatts = ReadDoubleMember(antenna, "PowerDrawLinear");
+            return milliwatts == null ? (double?)null : RaLinkBudget.EcPerSecondFromMilliwatts(milliwatts.Value);
+        }
 
         // ── The NODE's own antennas, for a pair that is not currently linked ─────
         //

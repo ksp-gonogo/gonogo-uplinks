@@ -8,6 +8,12 @@ import { frameBox, frameRequest } from "./frameShape.js";
  */
 const REPORT_DEBOUNCE_MS = 200;
 
+function fullscreenElementWithin(stage: HTMLElement): Element | null {
+  const d = document as Document & { webkitFullscreenElement?: Element | null };
+  const full = d.fullscreenElement ?? d.webkitFullscreenElement ?? null;
+  return full && stage.contains(full) ? full : null;
+}
+
 /**
  * Tell the sidecar what resolution to render this camera at, from the layout
  * alone: the box `stage` is given by the tile, fitted to 16:9 (`frameBox`) and
@@ -16,7 +22,8 @@ const REPORT_DEBOUNCE_MS = 200;
  * `<video>`'s size, the camera's render size) is read, so a change of
  * resolution can never cause another. Requests are debounced, and one equal to
  * the last one sent is not sent again. Must sit inside a `KerbcastProvider`.
- * Clears its report on unmount and when the camera changes.
+ * Entering or leaving fullscreen on a descendant of `stage` asks once for the
+ * fullscreen element's size and once for the tile's. Clears its report on unmount and when the camera changes.
  */
 export function useReportFrameSize(
   flightId: number | null,
@@ -37,13 +44,8 @@ export function useReportFrameSize(
       return;
     }
     let timer: ReturnType<typeof setTimeout> | null = null;
-    const observer = new ResizeObserver((entries) => {
-      const rect = entries[entries.length - 1]?.contentRect;
-      if (!rect) return;
-      const frame = frameBox({
-        w: Math.floor(rect.width),
-        h: Math.floor(rect.height),
-      });
+    const schedule = (box: { w: number; h: number }) => {
+      const frame = frameBox(box);
       const request = frameRequest(frame.width);
       if (timer !== null) clearTimeout(timer);
       timer = null;
@@ -54,10 +56,34 @@ export function useReportFrameSize(
         lastSent.current = key;
         displaySizes.report(flightId, instanceId, request.width, request.height);
       }, REPORT_DEBOUNCE_MS);
+    };
+    const fullscreenBox = () => {
+      const full = fullscreenElementWithin(el);
+      if (!full) return null;
+      const rect = full.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0
+        ? { w: Math.floor(rect.width), h: Math.floor(rect.height) }
+        : { w: window.innerWidth, h: window.innerHeight };
+    };
+    let tileBox = { w: 0, h: 0 };
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[entries.length - 1]?.contentRect;
+      if (!rect) return;
+      tileBox = { w: Math.floor(rect.width), h: Math.floor(rect.height) };
+      schedule(fullscreenBox() ?? tileBox);
     });
     observer.observe(el);
+    // The tile does not resize when the feed goes fullscreen, so the observer
+    // above never sees it; entering and leaving are read here instead.
+    const onFullscreenChange = () => {
+      schedule(fullscreenBox() ?? tileBox);
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", onFullscreenChange);
     return () => {
       observer.disconnect();
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", onFullscreenChange);
       if (timer !== null) clearTimeout(timer);
       lastSent.current = null;
       displaySizes.clear(flightId, instanceId);
