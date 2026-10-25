@@ -16,6 +16,7 @@ import type {
   EventOccurrence,
   StationBroker,
 } from "@ksp-gonogo/sitrep-sdk";
+import type { FrameStamp, FrameStampFeed } from "@ksp-gonogo/sitrep-sdk/media";
 import {
   createPerfBudget,
   GAME_HOST_KEY,
@@ -401,6 +402,10 @@ export class KerbcastDataSource {
 
   /** Cameras the sidecar said it does not have yet, subscribed again once they register. */
   private notThereYet = new Set<number>();
+  /** Whether the connected sidecar sends per-frame capture stamps (its hello offered them). */
+  private frameStampsOffered = false;
+  private readonly stampListeners = new Map<number, Set<(stamp: FrameStamp) => void>>();
+  private readonly stampFeeds = new Map<number, FrameStampFeed>();
 
   private refusalListeners = new Set<() => void>();
 
@@ -442,6 +447,35 @@ export class KerbcastDataSource {
     now: number | null | undefined,
   ): readonly EventOccurrence<KerbcastEventKind>[] {
     return this.eventProducer.revealed(now);
+  }
+
+  /**
+   * The capture stamps of camera `flightId`'s frames, as the sidecar sends them
+   * on the control channel, or `null` when the connected sidecar does not send
+   * stamps. The client asks for them itself when the sidecar offers them, so
+   * listening here costs nothing extra. The same feed is returned for the same
+   * camera for as long as the sidecar offers stamps.
+   */
+  frameStampFeed(flightId: number): FrameStampFeed | null {
+    if (!this.frameStampsOffered) return null;
+    let feed = this.stampFeeds.get(flightId);
+    if (!feed) {
+      feed = {
+        subscribe: (listener) => {
+          let listeners = this.stampListeners.get(flightId);
+          if (!listeners) {
+            listeners = new Set();
+            this.stampListeners.set(flightId, listeners);
+          }
+          listeners.add(listener);
+          return () => {
+            listeners.delete(listener);
+          };
+        },
+      };
+      this.stampFeeds.set(flightId, feed);
+    }
+    return feed;
   }
 
   /**
@@ -961,6 +995,28 @@ export class KerbcastDataSource {
    * control channel here, in wire order, ahead of the SDK.
    */
   private observeSlotMessage(msg: { type?: string; content?: unknown }): void {
+    if (msg.type === "frame-stamp") {
+      const stamp = msg.content as {
+        flightId: number;
+        rtpTimestamp: number;
+        captureUt: number;
+        captureEpoch: number;
+      };
+      for (const listener of this.stampListeners.get(stamp.flightId) ?? []) {
+        listener({
+          rtpTimestamp: stamp.rtpTimestamp,
+          ut: stamp.captureUt,
+          epoch: stamp.captureEpoch,
+        });
+      }
+      return;
+    }
+    if (msg.type === "hello") {
+      this.frameStampsOffered =
+        (msg.content as { frameStamps?: boolean } | undefined)?.frameStamps ===
+        true;
+      return;
+    }
     if (msg.type === "slot-map") {
       const { flightId } = (msg.content ?? {}) as { flightId?: number | null };
       if (flightId != null) {
@@ -1013,6 +1069,8 @@ export class KerbcastDataSource {
   }
 
   private forgetSlotState(): void {
+    this.frameStampsOffered = false;
+    this.stampFeeds.clear();
     this.awaitingSlot = [];
     this.notThereYet.clear();
     if (this.refusals.size > 0) {

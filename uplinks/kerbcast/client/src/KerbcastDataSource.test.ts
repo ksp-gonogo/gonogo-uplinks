@@ -1198,3 +1198,75 @@ describe("KeepaliveTransport: encoded transforms", () => {
     expect(installed).toEqual([["3", transform]]);
   });
 });
+
+describe("KerbcastDataSource: per-frame capture stamps", () => {
+  async function connectedSidecar(): Promise<{
+    ds: KerbcastDataSource;
+    sidecar: MockSidecar;
+  }> {
+    const sidecar = new MockSidecar();
+    sidecar.addCamera({ flightId: 42 });
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
+      Promise.resolve(
+        String(input).includes("/ice-config")
+          ? new Response(JSON.stringify({ iceServers: [] }), { status: 200 })
+          : MockSidecar.makeOfferResponse([]),
+      ),
+    );
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    return { ds, sidecar };
+  }
+
+  it("offers no feed until the sidecar says it sends stamps", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+    expect(ds.frameStampFeed(42)).toBeNull();
+
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+
+    expect(ds.frameStampFeed(42)).not.toBeNull();
+  });
+
+  it("asks the sidecar to send stamps when its hello offers them", async () => {
+    const { sidecar } = await connectedSidecar();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+
+    expect(sidecar.commands.some((c) => c.type === "set-frame-stamps")).toBe(
+      true,
+    );
+  });
+
+  it("delivers each stamp of a camera to its feed, in the units the delay reads", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+
+    const seen: unknown[] = [];
+    const stop = ds.frameStampFeed(42)?.subscribe((s) => seen.push(s));
+    sidecar.fireFrameStamp({
+      flightId: 42,
+      rtpTimestamp: 9000,
+      captureUt: 1234.5,
+      captureEpoch: 3,
+    });
+    sidecar.fireFrameStamp({
+      flightId: 43,
+      rtpTimestamp: 9000,
+      captureUt: 1,
+      captureEpoch: 3,
+    });
+
+    expect(seen).toEqual([{ rtpTimestamp: 9000, ut: 1234.5, epoch: 3 }]);
+
+    stop?.();
+    sidecar.fireFrameStamp({
+      flightId: 42,
+      rtpTimestamp: 12000,
+      captureUt: 1234.6,
+      captureEpoch: 3,
+    });
+    expect(seen).toHaveLength(1);
+  });
+});

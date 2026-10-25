@@ -12,6 +12,7 @@ import {
   createWorkerFrameDelayStream,
   type DelayedStreamBuildContext,
   type EncodedFrameDelayHandle,
+  type FrameStampFeed,
   isFrameDelaySupported,
   SharedDelayedStreams,
   type SnapshottableDelayClock,
@@ -250,6 +251,13 @@ export interface KerbcastStreamDelayOptions {
    *  test that only exercises the main-thread path), the worker backend
    *  simply won't be attempted without it. */
   getCaptureSample?(): CaptureClockSample;
+  /** The camera's per-frame capture stamps. When set, every backend dates each
+   *  frame from the stamp matching its RTP timestamp, and the capture clock
+   *  (`captureUt`, `getCaptureSample`) is not used: it runs ahead of a game
+   *  that is slower than wall time and snaps back at each sample. A frame
+   *  whose stamp was lost is dated from its neighbours, and a new capture epoch
+   *  empties the buffer. */
+  frameStamps?: FrameStampFeed;
   /** Bumped (any change) to flush the buffer on a timeline reset, pass the
    *  session's epoch/reset counter. Omit if the caller doesn't model resets. */
   resetEpoch?: number;
@@ -369,6 +377,7 @@ export function useDelayedPlayout(
   const key = atTarget ? target.key : raw;
   const targetRef = useRef(target);
   targetRef.current = atTarget ? target : null;
+  const frameStamps = delay?.frameStamps;
 
   // Attach to (or, as the first consumer, start) the SHARED per-camera
   // pipeline whenever the raw stream reference or the clock instance changes.
@@ -387,7 +396,7 @@ export function useDelayedPlayout(
       setResult(CONNECTING);
       return;
     }
-    if (!captureUtRef.current) {
+    if (!captureUtRef.current && !frameStamps) {
       // Delay was structurally requested (a `view` was passed) but the
       // caller has no capture clock yet, mirrors `useDelayedKerbcastStream`'s
       // own "no capture clock yet -> passthrough" case (old kerbcast
@@ -404,6 +413,7 @@ export function useDelayedPlayout(
         shown,
         view,
         maxBufferedFrames,
+        frameStamps,
         ctx,
         attachAt,
       ),
@@ -426,7 +436,7 @@ export function useDelayedPlayout(
       lease.release();
       leaseRef.current = null;
     };
-  }, [key, raw === null, view, maxBufferedFrames]);
+  }, [key, raw === null, view, maxBufferedFrames, frameStamps]);
 
   // Timeline-reset: flush the shared buffer (drop stale pre-reset frames)
   // WITHOUT tearing down the pipeline: the track keeps flowing. Shared, so a
@@ -466,6 +476,7 @@ function buildOrReportUnavailable(
   raw: MediaStream,
   view: DelayClockLike,
   maxBufferedFrames: number | undefined,
+  frameStamps: FrameStampFeed | undefined,
   ctx: DelayedStreamBuildContext<CaptureContribution>,
   attachAt: EncodedDelayTarget["attach"] | undefined,
 ):
@@ -489,6 +500,7 @@ function buildOrReportUnavailable(
       raw,
       view,
       maxBufferedFrames,
+      frameStamps,
       ctx,
       attachAt,
     );
@@ -521,6 +533,7 @@ function buildDelayedPipeline(
   raw: MediaStream,
   view: DelayClockLike,
   maxBufferedFrames: number | undefined,
+  frameStamps: FrameStampFeed | undefined,
   ctx: DelayedStreamBuildContext<CaptureContribution>,
   attachAt: EncodedDelayTarget["attach"] | undefined,
 ):
@@ -555,6 +568,7 @@ function buildDelayedPipeline(
     attachEncodedWorkerFrameDelay(receiver, {
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
+      frameStamps,
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(),
     });
@@ -583,6 +597,7 @@ function buildDelayedPipeline(
     const pipeline = createFrameDelayStream(raw, {
       view,
       captureUt,
+      frameStamps,
       maxBufferedFrames,
       onStats: frameDelayStatsLogger(),
       onError: (err) => {
@@ -633,6 +648,7 @@ function buildDelayedPipeline(
       // existing; only the worker backend needs it).
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
+      frameStamps,
       maxBufferedFrames,
       onStats: frameDelayStatsLogger(),
       onError: (err) => {

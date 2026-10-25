@@ -1,10 +1,11 @@
 import { useKerbcastClock } from "@ksp-gonogo/kerbcast-react";
 import type { DelayClockLike } from "@ksp-gonogo/sitrep-sdk";
-import { useViewClockOptional } from "@ksp-gonogo/sitrep-sdk";
+import { getUplinkHandle, useViewClockOptional } from "@ksp-gonogo/sitrep-sdk";
 import {
   type CaptureClockSample,
   interpolateCaptureUt,
 } from "@ksp-gonogo/sitrep-sdk/media";
+import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import {
   type DelayedPlayoutResult,
@@ -130,9 +131,12 @@ export function useDelayedPlaybackStatus(
  *     or before the first ~1Hz sample), so we never hold video without knowing
  *     when it was captured.
  *
- * When both are present, each arriving frame is stamped with the live capture
- * UT (the ~1Hz sample interpolated forward by warp rate) and released against
- * `confirmedEdgeUt()`. A `resetEpoch` bump (revert / quickload / scene reload)
+ * When both are present, each arriving frame is dated and released against
+ * `confirmedEdgeUt()`. A sidecar that sends per-frame stamps dates each frame
+ * from the stamp matching its RTP timestamp. Otherwise the frame is stamped
+ * with the live capture UT (the ~1Hz sample interpolated forward by warp rate),
+ * which runs ahead of a game slower than wall time and snaps back at each
+ * sample. A `resetEpoch` bump (revert / quickload / scene reload)
  * flushes the buffer so it resyncs rather than waiting on a UT that will never
  * arrive.
  *
@@ -188,13 +192,25 @@ export function useDelayedKerbcastStream(
   // see `KerbcastStreamDelayOptions.getCaptureSample`'s doc.
   const getCaptureSample = useCallback(() => sampleRef.current, []);
 
+  // The camera's own per-frame stamps, when the sidecar sends them. Frames are
+  // then dated from the stamp matching their RTP timestamp and the ~1Hz clock
+  // above is never consulted, so a game running slower than wall time cannot
+  // push the stamps ahead and back.
+  const frameStamps =
+    flightId === null
+      ? undefined
+      : (getUplinkHandle<KerbcastDataSource>("kerbcast")?.frameStampFeed?.(
+          flightId,
+        ) ?? undefined);
+
   const result = useDelayedPlayout(
     raw,
-    view && captureUt != null
+    view && (frameStamps !== undefined || captureUt != null)
       ? {
           view,
           captureUt: liveCaptureUt,
           getCaptureSample,
+          frameStamps,
           resetEpoch: epoch,
           encodedTarget,
         }
