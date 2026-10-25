@@ -508,14 +508,14 @@
       "text": "966eccf8"
     },
     "start-research-affordable--default.png": {
-      "hash": "81898f322dbd7400",
+      "hash": "d156aba4983ec28c",
       "elements": 165,
-      "text": "e54e2139"
+      "text": "388ff3cf"
     },
     "start-research-short--default.png": {
-      "hash": "b1e685aa102af5a6",
+      "hash": "e687988ae08464e9",
       "elements": 166,
-      "text": "5e448bcb"
+      "text": "2e966b3c"
     },
     "subsidy-clamped--default.png": {
       "hash": "301ae9f265b4614d",
@@ -583,14 +583,14 @@
       "text": "301e6653"
     },
     "warp-fund-target-standing--default.png": {
-      "hash": "eccc98fdd2aebb0d",
+      "hash": "b288f8ffa30ee659",
       "elements": 43,
-      "text": "3a8ca5df"
+      "text": "63be3b64"
     },
     "warp-no-fund-target--default.png": {
-      "hash": "ec7f56d9946f1994",
+      "hash": "09db9f2de5e07637",
       "elements": 35,
-      "text": "35924759"
+      "text": "821a46b1"
     }
   }
 }
