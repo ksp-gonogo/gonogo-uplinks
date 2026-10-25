@@ -607,6 +607,9 @@ export class KerbcastDataSource {
 
   async connect(): Promise<void> {
     this.reconnectEnabled = true;
+    // The sidecar sends H.264 only, so an offer from a browser that cannot
+    // decode it fails at the sidecar with an opaque 500.
+    if (!browserCanPlayH264()) return;
     // Brokered (station) mode gets its TURN creds from the host's relay
     // broadcast via attachBroker(); the localhost /ice-config fetch would hit the
     // station's own loopback, so skip it. On the main screen we stay STUN-only
@@ -755,6 +758,7 @@ export class KerbcastDataSource {
    * address left at its loopback default.
    */
   readinessNote(): string | null {
+    if (!browserCanPlayH264()) return NO_H264_MESSAGE;
     return this.sidecarReachability === "unreachable"
       ? sidecarUnreachableMessage(getGameHost(), this.cfg.port)
       : null;
@@ -1199,6 +1203,25 @@ export class KerbcastDataSource {
       this.scheduleReconnect();
     }
   }
+}
+
+/** The operator-facing sentence for a browser with no H.264 decoder. */
+export const NO_H264_MESSAGE =
+  "This browser cannot play the camera video: it has no H.264 decoder. " +
+  "Use a browser with H.264 support (in Firefox, enable OpenH264).";
+
+/**
+ * Whether this browser can receive H.264 video. True when the browser cannot
+ * be asked, so a missing capability query never blocks a working browser.
+ */
+export function browserCanPlayH264(): boolean {
+  const codecs =
+    typeof RTCRtpReceiver !== "undefined" &&
+    typeof RTCRtpReceiver.getCapabilities === "function"
+      ? RTCRtpReceiver.getCapabilities("video")?.codecs
+      : undefined;
+  if (!codecs) return true;
+  return codecs.some((c) => c.mimeType.toLowerCase() === "video/h264");
 }
 
 /** The operator-facing sentence for a sidecar the browser cannot reach. */
