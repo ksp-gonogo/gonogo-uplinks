@@ -32,5 +32,25 @@ namespace Gonogo.RealAntennasUplink
             forwardIsDownlink
                 ? (reverseBitsPerSec, forwardBitsPerSec)
                 : (forwardBitsPerSec, reverseBitsPerSec);
+
+        /// <summary>
+        /// The antennas and rate a hop reads, from a link whose stored
+        /// <c>a -&gt; b</c> direction may run with or against the hop.
+        /// <paramref name="fromIsForwardEnd"/> is whether the hop's near end is the
+        /// link's <c>a</c> node; the hop's transmitter and receiver are then the
+        /// forward pair, otherwise the reverse pair, and the rate the other way is
+        /// the reverse rate or the forward one to match.
+        /// </summary>
+        public static (T? Transmit, T? Receive, double? OppositeBitsPerSec) ForHop<T>(
+            bool fromIsForwardEnd,
+            T? forwardTransmit,
+            T? forwardReceive,
+            T? reverseTransmit,
+            T? reverseReceive,
+            double? forwardBitsPerSec,
+            double? reverseBitsPerSec) =>
+            fromIsForwardEnd
+                ? (forwardTransmit, forwardReceive, reverseBitsPerSec)
+                : (reverseTransmit, reverseReceive, forwardBitsPerSec);
     }
 }
