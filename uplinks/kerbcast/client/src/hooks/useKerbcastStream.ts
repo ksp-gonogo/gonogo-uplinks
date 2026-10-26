@@ -26,6 +26,13 @@ import {
 } from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
+/**
+ * The most encoded video, in bytes, one camera's delay holds before it drops
+ * the oldest. 256 MiB is about 8 minutes at 4 Mbps, past the longest light
+ * delay a stock lens can have from its viewer.
+ */
+export const ENCODED_HOLD_MAX_BYTES = 256 * 1024 * 1024;
+
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
  *  `ut: null` makes the worker/encoded backends treat frames as un-stampable
  *  (interpolation yields `null`), never stamping against a bogus UT. */
@@ -659,6 +666,7 @@ function buildDelayedPipeline(
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
       frameStamps,
+      maxBufferedBytes: ENCODED_HOLD_MAX_BYTES,
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(heldSeconds, clockFacts),
     });

@@ -34,6 +34,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
+  ENCODED_HOLD_MAX_BYTES,
   type EncodedDelayTarget,
   PIPELINE_RELEASE_GRACE_MS,
   useDelayedPlayout,
@@ -557,6 +558,22 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
       expect(options[0]?.holdMs).toBeTypeOf("function");
     });
     expect(options[0]?.holdMs?.()).toBeNaN();
+  });
+
+  it("holds the encoded video for minutes rather than the worker's default cap", async () => {
+    const Transform = stubTransforms();
+    registerKerbcast({ canvas: fakeStream(), path: "script" });
+
+    render(
+      <CameraProbe flightId={7} clock={manualClock()} onResult={() => {}} />,
+    );
+
+    await waitFor(() => {
+      expect(Transform.instances).toHaveLength(1);
+    });
+    expect(Transform.instances[0]?.options).toMatchObject({
+      maxBufferedBytes: ENCODED_HOLD_MAX_BYTES,
+    });
   });
 
   it("makes a fresh transform for each receiver the camera lands on, retiring the previous pipeline", async () => {
