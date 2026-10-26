@@ -961,8 +961,95 @@ describe("CameraFeed: empty state and status", () => {
 // `no-path`, which is the mode an absent `comms.delay` resolves to.
 // ---------------------------------------------------------------------------
 
-/** A link short enough that the camera itself is still what a control aims. */
-const LIVE_DELAY_S = 0.2;
+/** A link whose delay is inside the dead zone: no delay to wait out. */
+const LIVE_DELAY_S = 0.0005;
+
+/** A delay the live controls wait out before the camera hears them. */
+const SHORT_DELAY_S = 0.5;
+
+describe("CameraFeed -- serial-action dispatch (zoom/pan), delayed live link", () => {
+  async function shortFeed(): Promise<{ sidecar: MockSidecar }> {
+    const { sidecar } = await buildConnectedSource();
+    await act(async () => {
+      sidecar.updateCamera(42, {
+        supportsZoom: true,
+        fov: 60,
+        supportsPan: true,
+        panYawMin: -45,
+        panYawMax: 45,
+        panPitchMin: -30,
+        panPitchMax: 30,
+      });
+    });
+    const stream = setupStreamFixture();
+    renderFeedWithComms({ flightId: 42 }, stream);
+    act(() => {
+      emitComms(stream, { connected: true, signalDelay: SHORT_DELAY_S });
+    });
+    return { sidecar };
+  }
+
+  const sleep = (ms: number) =>
+    act(async () => {
+      await new Promise((r) => setTimeout(r, ms));
+    });
+
+  it("a zoom press reaches the camera one delay after the press, and its release one delay after the release", async () => {
+    const { sidecar } = await shortFeed();
+
+    await act(async () => {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", {
+        kind: "button",
+        value: true,
+      });
+    });
+    await sleep(200);
+    expect(sidecar.lastCommand("set-zoom-rate")).toBeUndefined();
+
+    await waitFor(
+      () =>
+        expect(sidecar.lastCommand("set-zoom-rate")?.content).toMatchObject({
+          rate: 1,
+        }),
+      { timeout: 1500 },
+    );
+
+    await act(async () => {
+      dispatchAction(TEST_INSTANCE_ID, "zoom-in", {
+        kind: "button",
+        value: false,
+      });
+    });
+    await sleep(200);
+    expect(sidecar.lastCommand("set-zoom-rate")?.content.rate).toBe(1);
+
+    await waitFor(
+      () => expect(sidecar.lastCommand("set-zoom-rate")?.content.rate).toBe(0),
+      { timeout: 1500 },
+    );
+  });
+
+  it("a held pan stick reaches the camera one delay after the input", async () => {
+    const { sidecar } = await shortFeed();
+
+    await act(async () => {
+      dispatchAction(TEST_INSTANCE_ID, "pan-yaw", {
+        kind: "analog",
+        value: 0.5,
+      });
+    });
+    await sleep(200);
+    expect(sidecar.lastCommand("set-pan-rate")).toBeUndefined();
+
+    await waitFor(
+      () =>
+        expect(sidecar.lastCommand("set-pan-rate")?.content).toMatchObject({
+          yawRate: 0.5,
+        }),
+      { timeout: 1500 },
+    );
+  });
+});
 
 describe("CameraFeed -- serial-action dispatch (zoom/pan), live link", () => {
   it("zoom-in serial action holds a +1 zoom rate, releases to 0", async () => {
@@ -1340,7 +1427,7 @@ describe("CameraFeed -- live pan/zoom against the staged cluster", () => {
   }
 
   it("leaves the SDK's pan pad and zoom pair in charge below the threshold", async () => {
-    await feedAtDelay(LIVE_DELAY_S);
+    await feedAtDelay(SHORT_DELAY_S);
 
     expect(screen.getByLabelText("Pan camera")).toBeTruthy();
     expect(screen.getByLabelText("Zoom in")).toBeTruthy();

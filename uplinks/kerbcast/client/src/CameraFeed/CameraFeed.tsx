@@ -14,6 +14,7 @@ import type {
 import {
   AugmentSlot,
   currentMode,
+  delayVisibility,
   getUplinkHandle,
   logger,
   observedValue,
@@ -55,6 +56,7 @@ import {
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { AimQueue, withDelayedAim } from "./delayedAim.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
   selectableFlightIds,
@@ -198,9 +200,21 @@ export function CameraFeed({
 }: Readonly<ComponentProps<CameraFeedConfig>>) {
   const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
   const dsClient = ds?.getClient();
+
+  // The one-way delay a pan or zoom waits out before it reaches the camera,
+  // read when the input is made. A delay inside the dead zone is no delay.
+  const liveDelayRef = useRef(0);
+  const aimQueue = useMemo(() => new AimQueue(), []);
   const client = useMemo(
-    () => (dsClient ? withPickerOrder(dsClient) : undefined),
-    [dsClient],
+    () =>
+      dsClient
+        ? withDelayedAim(
+            withPickerOrder(dsClient),
+            aimQueue,
+            () => liveDelayRef.current,
+          )
+        : undefined,
+    [dsClient, aimQueue],
   );
 
   // Ensure the sidecar connection is open before we render.
@@ -276,6 +290,10 @@ export function CameraFeed({
   const [effectiveFlightId, setEffectiveFlightId] = useState<number | null>(
     requested,
   );
+  // A held input made on one camera must not release on another.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the camera id is the trigger, not a value read
+  useEffect(() => () => aimQueue.clear(), [effectiveFlightId, aimQueue]);
+
 
   // Native topic reads: the canonical field paths, not a two-arg shim.
   // `observedValue` on both: the strength drives a quality pill and the H.264
@@ -309,6 +327,10 @@ export function CameraFeed({
   // the mode in two places is a widget that can disagree with itself about
   // which control an operator is holding.
   const controlMode = currentMode({ oneWaySeconds: signalDelay ?? null });
+  liveDelayRef.current =
+    controlMode === "live" && delayVisibility(signalDelay ?? null) === "shown"
+      ? (signalDelay?.magnitude ?? 0)
+      : 0;
 
   // ---- Serial-input actions ----
   // stepCamera, setZoomRate and setPanAxis are guarded internally by the
