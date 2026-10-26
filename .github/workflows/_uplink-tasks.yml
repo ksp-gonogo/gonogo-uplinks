@@ -191,6 +191,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c release-prepare
           node tooling/uplink-commits.mjs "${{ inputs.id }}" --out "$RUNNER_TEMP/commits.json"
           cat "$RUNNER_TEMP/commits.json"
           node tooling/uplink-tools.mjs "${{ inputs.name }}" release prepare ${{ inputs.prepare_args }} --commits "$RUNNER_TEMP/commits.json"
