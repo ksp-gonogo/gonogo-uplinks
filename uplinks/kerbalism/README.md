@@ -114,12 +114,14 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
-| `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 0 |  |
+| `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
+
+![A running thermometer with its collected share and time to finish under its row, and a waiting gravity scanner showing only its share](client/docs/assets/collecting-a-subject--default.png)
 
 ![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
 

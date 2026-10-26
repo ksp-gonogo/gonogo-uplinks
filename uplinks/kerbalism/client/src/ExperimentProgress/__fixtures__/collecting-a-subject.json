@@ -1,0 +1,84 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. A thermometer switched on and producing, 42 % of the situation's science collected with 3 minutes of running left, beside a gravity scanner that is switched on but waiting, which states its progress and no finish time."
+  },
+  "_scene": {
+    "augment": "experiments-instrument-progress",
+    "hostWidget": "experiments",
+    "caption": "A running thermometer with its collected share and time to finish under its row, and a waiting gravity scanner showing only its share",
+    "modes": [
+      "default"
+    ],
+    "size": {
+      "w": 10,
+      "h": 8
+    },
+    "paints": [
+      "Collected",
+      "To finish"
+    ],
+    "hero": true
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.available",
+        "payload": true
+      },
+      {
+        "topic": "science.instruments",
+        "payload": [
+          {
+            "partId": "1001",
+            "partName": "sensorThermometer",
+            "experimentId": "temperatureScan",
+            "title": "2HOT Thermometer",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": true,
+            "producing": true,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Running",
+                "progressFraction": 0.42,
+                "secondsToComplete": 180
+              }
+            }
+          },
+          {
+            "partId": "1002",
+            "partName": "sensorGravimeter",
+            "experimentId": "gravityScan",
+            "title": "GRAVMAX Negative Gravioli Detector",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": true,
+            "producing": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Running",
+                "progressFraction": 0.15
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
