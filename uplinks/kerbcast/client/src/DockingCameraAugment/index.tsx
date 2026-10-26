@@ -66,11 +66,14 @@ function stillTrue<T, A>(
 
 export function DockingCameraAugment({
   cameraFlightId,
-  reportPictureAspect,
+  reportPicture,
 }: SlotProps<"rendezvous.camera">) {
   // A camera roster is a fact: cameras are fitted by an event, not by a frame.
   const cameras = stillTrue(useTelemetry("kerbcast.cameras"), undefined);
   const flightId = selectDockingCamera(cameras, cameraFlightId);
+  const vfovDeg =
+    cameras?.find((c) => c.cameraId === flightId)?.fieldOfView?.magnitude ??
+    null;
   const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
   const client = ds?.getClient();
 
@@ -115,7 +118,8 @@ export function DockingCameraAugment({
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <DockingCameraVideo
         flightId={flightId}
-        reportPictureAspect={reportPictureAspect}
+        vfovDeg={vfovDeg}
+        reportPicture={reportPicture}
       />
     </KerbcastProvider>
   );
@@ -123,10 +127,12 @@ export function DockingCameraAugment({
 
 function DockingCameraVideo({
   flightId,
-  reportPictureAspect,
+  vfovDeg,
+  reportPicture,
 }: {
   flightId: number;
-  reportPictureAspect: (aspect: number | null) => void;
+  vfovDeg: number | null;
+  reportPicture: SlotProps<"rendezvous.camera">["reportPicture"];
 }) {
   // The DELAYED stream, not the raw live one. The HUD's reticle is UT-gated by
   // the ViewClock; the backdrop must be gated on the SAME clock or it marks
@@ -152,13 +158,17 @@ function DockingCameraVideo({
     }
   }, [stream]);
 
-  // The HUD scales its reticle to the picture's own field, so it is told the picture's shape and when it goes.
+  // The HUD projects its reticle through the camera's field onto this picture, so it is told the video's own size and the field, and when the picture goes.
   useEffect(() => {
     const v = videoRef.current;
-    if (!v || !stream) return;
+    if (!v || !stream || vfovDeg === null) return;
     const report = () => {
       if (v.videoWidth > 0 && v.videoHeight > 0) {
-        reportPictureAspect(v.videoWidth / v.videoHeight);
+        reportPicture({
+          frameWidth: v.videoWidth,
+          frameHeight: v.videoHeight,
+          vfovDeg,
+        });
       }
     };
     report();
@@ -167,9 +177,9 @@ function DockingCameraVideo({
     return () => {
       v.removeEventListener("loadedmetadata", report);
       v.removeEventListener("resize", report);
-      reportPictureAspect(null);
+      reportPicture(null);
     };
-  }, [stream, reportPictureAspect]);
+  }, [stream, vfovDeg, reportPicture]);
 
   // Absolutely positioned over the HudPanel (AugmentSlot renders a bare
   // fragment, so this box is a direct HudPanel child, exactly where the
