@@ -11,7 +11,8 @@
     "tier": "ckan",
     "ckan": "MechJeb2",
     "builtAgainst": "2.15.3.0",
-    "assembly": "MechJeb2/Plugins/MechJeb2.dll"
+    "assembly": "MechJeb2/Plugins/MechJeb2.dll",
+    "channels": [{ "ckan": "MechJeb2" }, { "github": "MuMech/MechJeb2" }]
   },
   "codegen": {
     "assembly": "GonogoMechJebUplink.Contract",

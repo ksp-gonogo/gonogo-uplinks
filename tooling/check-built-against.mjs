@@ -6,8 +6,8 @@
  *
  * The version appears in uplink.json and in the client's generated
  * gonogo-uplink.json, and the two must agree. Beyond that it is compared with
- * the source the Uplink actually builds against: the version floor of the mod's
- * npm client dependency (Kerbcast), or the version of the mod assembly
+ * the source the Uplink actually builds against: the version floor of each npm
+ * package `mod.packages` lists (Kerbcast), or the version of the mod assembly
  * named by `mod.assembly` under vendor/gamedata. The assembly check fails when
  * the assembly is not there, because a check that skips reports success it did
  * not earn, so run it where the reference set is resolved.
@@ -17,9 +17,6 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-
-/** Uplinks whose mod is an npm package the client depends on, by Uplink directory. */
-export const CLIENT_DEPENDENCY = { kerbcast: "@ksp-gonogo/kerbcast" };
 
 /** Version components with trailing zeros dropped, so 15.15.0 and 15.15.0.0 are one version. */
 export function normalise(version) {
@@ -88,8 +85,7 @@ export function problemsFor(name, root = ROOT, { requireAssembly = false } = {})
     }
   }
 
-  const npmName = CLIENT_DEPENDENCY[name];
-  if (npmName) {
+  for (const npmName of uplink.mod?.packages ?? []) {
     const pkg = readJson(join(dir, "client", "package.json"));
     const range = pkg.dependencies?.[npmName] ?? pkg.devDependencies?.[npmName];
     const floor = range && rangeFloor(range);

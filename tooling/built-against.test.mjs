@@ -26,7 +26,7 @@ test("a client dependency that moved past builtAgainst is reported", () => {
   mkdirSync(join(dir, "client"), { recursive: true });
   writeFileSync(
     join(dir, "uplink.json"),
-    JSON.stringify({ mod: { builtAgainst: "1.8.1" } }),
+    JSON.stringify({ mod: { builtAgainst: "1.8.1", packages: ["@ksp-gonogo/kerbcast"] } }),
   );
   writeFileSync(
     join(dir, "client", "gonogo-uplink.json"),

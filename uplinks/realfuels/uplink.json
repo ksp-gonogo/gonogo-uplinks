@@ -11,7 +11,8 @@
     "tier": "ckan",
     "ckan": "RealFuels",
     "builtAgainst": "15.15.0",
-    "assembly": "RealFuels/Plugins/RealFuels.dll"
+    "assembly": "RealFuels/Plugins/RealFuels.dll",
+    "channels": [{ "ckan": "RealFuels" }, { "github": "KSP-RO/RealFuels" }]
   },
   "codegen": {
     "assembly": "GonogoRealFuelsUplink.Contract",

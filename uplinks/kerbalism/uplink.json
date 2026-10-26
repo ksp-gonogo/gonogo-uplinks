@@ -10,7 +10,8 @@
     "name": "Kerbalism",
     "tier": "ckan",
     "ckan": "Kerbalism",
-    "builtAgainst": "3.32"
+    "builtAgainst": "3.32",
+    "channels": [{ "ckan": "Kerbalism" }, { "github": "Kerbalism/Kerbalism" }, { "spacedock": 1774 }]
   },
   "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {

@@ -9,7 +9,8 @@
   "mod": {
     "name": "Principia",
     "tier": "manual",
-    "builtAgainst": "2026081218-Levi-Civita"
+    "builtAgainst": "2026081218-Levi-Civita",
+    "channels": [{ "githubTags": "mockingbirdnest/Principia", "pattern": "^(?<order>\\d{10})-" }]
   },
   "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {

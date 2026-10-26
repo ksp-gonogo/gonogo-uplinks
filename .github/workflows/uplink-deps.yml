@@ -1,0 +1,157 @@
+name: uplink-deps
+
+# Reads every Uplink's pinned mod against each channel it publishes on, daily.
+# Nothing behind: the leg stops. Something behind: `uplink-tools deps bump` runs
+# on a throwaway branch of `staging` and, by its verdict:
+#   green       a pull request to staging
+#   unverified  the same, labelled needs-in-game-test
+#   red         an issue in this repository about what broke in the Uplink
+# A dependency version that already has an open pull request or issue gets no
+# second one; `tooling/uplink-deps.mjs` carries that and the rest of the policy.
+#
+# `schedule` runs the copy of this file on the default branch, so the nightly
+# starts once it is there.
+#
+# UPLINK_DEPS_TOKEN is a token that may push branches and open pull requests
+# here. A push or pull request made with the job's own token starts no CI run,
+# so the pull requests this opens would sit with no checks without it.
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      uplink:
+        description: One Uplink directory name to check; empty checks every Uplink.
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: uplink-deps
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: staging }
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - id: matrix
+        env:
+          ONLY: ${{ inputs.uplink }}
+        run: |
+          set -euo pipefail
+          node scripts/uplink-matrix.mjs --github > "$RUNNER_TEMP/matrix.txt"
+          node -e '
+            const fs = require("fs");
+            const line = fs.readFileSync(process.env.RUNNER_TEMP + "/matrix.txt", "utf8").split("\n").find((l) => l.startsWith("matrix="));
+            const matrix = JSON.parse(line.slice("matrix=".length));
+            const only = process.env.ONLY;
+            const include = only ? matrix.include.filter((u) => u.name === only) : matrix.include;
+            if (include.length === 0) { console.error("no Uplink matches " + only); process.exit(1); }
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, "matrix=" + JSON.stringify({ include: include.map((u) => ({ name: u.name, client: u.client })) }) + "\n");
+          '
+
+  watch:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    env:
+      GH_TOKEN: ${{ secrets.UPLINK_DEPS_TOKEN || github.token }}
+      KSP_MANAGED_TOKEN: ${{ secrets.KSP_MANAGED_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+          token: ${{ secrets.UPLINK_DEPS_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+
+      # Read-only, and needs no reference set or install: it answers whether
+      # anything is behind. Exit 0 stops the leg, 2 (a channel could not be
+      # read) fails it, so an outage is never a quiet green.
+      - name: Is anything behind
+        id: behind
+        run: |
+          set +e
+          node tooling/uplink-tools.mjs "${{ matrix.name }}" deps --json > "$RUNNER_TEMP/deps.json"
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/deps.json" || true
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -eq 2 ]; then
+            echo "::error title=${{ matrix.name }}::a channel could not be read"
+            exit 1
+          fi
+          if [ "$code" -ne 0 ] && [ "$code" -ne 10 ]; then
+            exit "$code"
+          fi
+
+      - uses: ./.github/actions/setup-dotnet-direct
+        if: steps.behind.outputs.code == '10'
+
+      - name: Reference set credential
+        if: steps.behind.outputs.code == '10'
+        run: |
+          if [ -z "$KSP_MANAGED_TOKEN" ]; then
+            echo "::error title=No KSP_MANAGED_TOKEN::The reference assemblies live in the private ksp-gonogo/ksp-managed, and this job has no credential for it."
+            exit 1
+          fi
+
+      - name: Check out the reference assemblies
+        if: steps.behind.outputs.code == '10'
+        uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/ksp-managed
+          token: ${{ secrets.KSP_MANAGED_TOKEN }}
+          path: .refs/ksp-managed
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Resolve the reference set
+        if: steps.behind.outputs.code == '10'
+        run: |
+          set -euo pipefail
+          vendor="$GITHUB_WORKSPACE/vendor"
+          mkdir -p "$vendor"
+          rm -rf "$vendor/ksp-managed" "$vendor/gamedata"
+          cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/KSP_Data/Managed" "$vendor/ksp-managed"
+          cp -R "$GITHUB_WORKSPACE/.refs/ksp-managed/GameData" "$vendor/gamedata"
+
+      - name: Install client dependencies
+        if: steps.behind.outputs.code == '10' && matrix.client
+        working-directory: uplinks/${{ matrix.name }}/client
+        run: npm ci --no-audit --no-fund
+
+      - name: Install the browser the page check renders in
+        if: steps.behind.outputs.code == '10' && matrix.client
+        working-directory: uplinks/${{ matrix.name }}/client
+        run: npm exec --no -- playwright install --with-deps chromium
+
+      - name: Bump and open a pull request or an issue
+        if: steps.behind.outputs.code == '10'
+        run: |
+          node tooling/uplink-deps.mjs "${{ matrix.name }}" \
+            --gamedata "$GITHUB_WORKSPACE/vendor/gamedata" \
+            --managed "$GITHUB_WORKSPACE/.refs/ksp-managed" \
+            --work "$RUNNER_TEMP/uplink-deps"
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.behind.outputs.code == '10'
+        with:
+          name: uplink-deps-${{ matrix.name }}
+          path: ${{ runner.temp }}/uplink-deps
+          if-no-files-found: ignore

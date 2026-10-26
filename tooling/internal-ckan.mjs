@@ -18,6 +18,12 @@
  * Harmony library an Uplink's assembly references, is listed in uplink.json as
  * `ckanDepends`, entries in CKAN's own relationship form.
  *
+ * `min_version` is `mod.ckanVersion` when the Uplink has one: the pinned release
+ * in the spelling CKAN lists it under, with its epoch and leading `v`, which
+ * `uplink-tools deps bump` and `deps pin-ckan` write. CKAN orders the epoch first
+ * and a `v` above no prefix, so the bare `builtAgainst` of a mod CKAN lists as
+ * `v4.7.0.0` or `1:1.6.0.1` is met by every release of it.
+ *
  * GonogoCore carries no version: the Uplinks build against a pinned gonogo
  * commit (vendor/gonogo-ref), which is not a GonogoCore release, and a
  * min_version CKAN cannot find a release for would make the Uplink
@@ -53,7 +59,7 @@ export function internalCkan({ uplink, manifest }) {
     if (!builtAgainst) {
       throw new Error(`${uplink.id} names the CKAN mod ${mod.ckan} but no builtAgainst version`);
     }
-    depends.push({ name: mod.ckan, min_version: builtAgainst });
+    depends.push({ name: mod.ckan, min_version: mod.ckanVersion ?? builtAgainst });
   }
   depends.push(...(uplink.ckanDepends ?? []), { name: "GonogoCore" });
   return { depends };

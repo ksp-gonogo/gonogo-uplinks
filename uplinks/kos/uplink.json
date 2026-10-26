@@ -11,7 +11,8 @@
     "tier": "ckan",
     "ckan": "kOS",
     "builtAgainst": "1.6.0.1",
-    "assembly": "kOS/Plugins/kOS.dll"
+    "assembly": "kOS/Plugins/kOS.dll",
+    "channels": [{ "ckan": "kOS" }, { "github": "KSP-KOS/KOS" }, { "spacedock": 60 }]
   },
   "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {

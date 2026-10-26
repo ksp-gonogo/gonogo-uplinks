@@ -10,7 +10,8 @@
     "name": "Ferram Aerospace Research",
     "tier": "ckan",
     "ckan": "FerramAerospaceResearchContinued",
-    "builtAgainst": "0.16.1.2"
+    "builtAgainst": "0.16.1.2",
+    "channels": [{ "ckan": "FerramAerospaceResearchContinued" }, { "github": "KSPModStewards/Ferram-Aerospace-Research" }]
   },
   "codegen": {
     "assembly": "GonogoFerramAerospaceResearchUplink.Contract",

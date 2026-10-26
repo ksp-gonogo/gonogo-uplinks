@@ -35,6 +35,13 @@ test("an Uplink depends on its mod at builtAgainst, and on GonogoCore", () => {
   });
 });
 
+test("min_version is the pinned release in CKAN's own spelling when the Uplink records it", () => {
+  const facts = readUplink("rp1");
+  facts.uplink.mod = { ...facts.uplink.mod, builtAgainst: "4.8.0.0", ckanVersion: "v4.8.0.0" };
+  delete facts.manifest;
+  assert.deepEqual(internalCkan(facts).depends[0], { name: "RP-1", min_version: "v4.8.0.0" });
+});
+
 test("an Uplink whose mod is not on CKAN names no mod in its depends", () => {
   const names = internalCkan(readUplink("principia")).depends.map((dep) => dep.name);
   assert.ok(!names.includes("Principia"));

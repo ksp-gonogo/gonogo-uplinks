@@ -11,7 +11,8 @@
     "tier": "ckan",
     "ckan": "SCANsat",
     "builtAgainst": "21.1",
-    "assembly": "SCANsat/Plugins/SCANsat.dll"
+    "assembly": "SCANsat/Plugins/SCANsat.dll",
+    "channels": [{ "ckan": "SCANsat" }, { "github": "KSPModStewards/SCANsat" }, { "spacedock": 129 }]
   },
   "codegen": {
     "assembly": "GonogoScansatUplink.Contract",

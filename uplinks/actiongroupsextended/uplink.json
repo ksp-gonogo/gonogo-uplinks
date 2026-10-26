@@ -10,7 +10,8 @@
     "name": "Action Groups Extended",
     "tier": "ckan",
     "ckan": "AGExt",
-    "builtAgainst": "2.4.1.4"
+    "builtAgainst": "2.4.1.4",
+    "channels": [{ "ckan": "AGExt" }, { "github": "linuxgurugamer/AGExt" }, { "spacedock": 1685 }]
   },
   "csharpNamespace": "Gonogo.ActionGroupsExtendedUplink"
 }
