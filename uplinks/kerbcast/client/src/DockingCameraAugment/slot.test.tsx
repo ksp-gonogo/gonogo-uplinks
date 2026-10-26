@@ -37,6 +37,8 @@ const HUD_CONTEXT = {
   reticleTravelPx: 40,
   reportPicture: () => {},
   aligned: false,
+  docked: false,
+  targetPort: undefined,
   ax: undefined,
   ay: undefined,
   distance: 42,
@@ -360,6 +362,7 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       unsubscribeCamera: () => {},
       getClient: () => ({
         clock: { captureUt: null, epoch: 0, warpRate: 1 },
+        cameras: [],
         on: () => () => {},
         camera: () => ({ mediaStream: picture, on: () => () => {} }),
         reportDisplaySize: () => Promise.resolve(),
@@ -400,5 +403,130 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       expect(container.querySelector("video")).not.toBeNull(),
     );
     expect(reported).toEqual([]);
+  });
+  it("marks the target port with an anchor on the camera and clears it on unmount", async () => {
+    const calls: Array<[number, unknown]> = [];
+    const picture = { id: "stream" } as unknown as MediaStream;
+    // One client for every call, as the data source hands out: the anchors follow its identity.
+    const client = {
+      clock: { captureUt: null, epoch: 0, warpRate: 1 },
+      cameras: [],
+      on: () => () => {},
+      camera: () => ({ mediaStream: picture, on: () => () => {} }),
+      reportDisplaySize: () => Promise.resolve(),
+      watchDisplayedFrames: () => () => {},
+      setAnchors: (flightId: number, anchors: unknown) => {
+        calls.push([flightId, anchors]);
+        return Promise.resolve();
+      },
+    };
+    registerUplinkHandle("kerbcast", {
+      id: "kerbcast",
+      name: "Kerbcast",
+      ensureConnected: () => {},
+      subscribeCamera: () => {},
+      unsubscribeCamera: () => {},
+      getClient: () => client,
+    });
+    const stream = setupStreamFixture();
+    const { unmount } = render(
+      <stream.Provider>
+        <DomainAvailabilityProvider>
+          <KerbcastAvailabilityFeeder />
+          <AugmentSlot
+            name="rendezvous.camera"
+            props={{
+              ...HUD_CONTEXT,
+              targetPort: {
+                vesselPersistentId: 4000000001,
+                portPersistentId: 1234,
+              },
+            }}
+          />
+        </DomainAvailabilityProvider>
+      </stream.Provider>,
+    );
+    act(() => {
+      stream.emit("kerbcast.available", true, {
+        quality: Quality.Loaded,
+        source: "kerbcast",
+      });
+    });
+    await waitFor(() =>
+      expect(stream.transport.isSubscribed("kerbcast.cameras")).toBe(true),
+    );
+    act(() => {
+      stream.emit(
+        "kerbcast.cameras",
+        [{ cameraId: 7, isDockingCamera: true }],
+        { quality: Quality.Loaded, source: "kerbcast" },
+      );
+    });
+
+    await waitFor(() =>
+      expect(calls).toEqual([
+        [
+          7,
+          [
+            {
+              id: "port",
+              kind: "part",
+              vessel: 4000000001,
+              part: 1234,
+              occlusion: true,
+            },
+          ],
+        ],
+      ]),
+    );
+
+    unmount();
+    expect(calls.at(-1)).toEqual([7, null]);
+  });
+
+  it("sets no anchor while the HUD reports no target port", async () => {
+    const calls: unknown[] = [];
+    const picture = { id: "stream" } as unknown as MediaStream;
+    registerUplinkHandle("kerbcast", {
+      id: "kerbcast",
+      name: "Kerbcast",
+      ensureConnected: () => {},
+      subscribeCamera: () => {},
+      unsubscribeCamera: () => {},
+      getClient: () => ({
+        clock: { captureUt: null, epoch: 0, warpRate: 1 },
+        cameras: [],
+        on: () => () => {},
+        camera: () => ({ mediaStream: picture, on: () => () => {} }),
+        reportDisplaySize: () => Promise.resolve(),
+        watchDisplayedFrames: () => () => {},
+        setAnchors: (...args: unknown[]) => {
+          calls.push(args);
+          return Promise.resolve();
+        },
+      }),
+    });
+    const stream = setupStreamFixture();
+    const { container } = renderSlot(stream);
+    act(() => {
+      stream.emit("kerbcast.available", true, {
+        quality: Quality.Loaded,
+        source: "kerbcast",
+      });
+    });
+    await waitFor(() =>
+      expect(stream.transport.isSubscribed("kerbcast.cameras")).toBe(true),
+    );
+    act(() => {
+      stream.emit(
+        "kerbcast.cameras",
+        [{ cameraId: 7, isDockingCamera: true }],
+        { quality: Quality.Loaded, source: "kerbcast" },
+      );
+    });
+    await waitFor(() =>
+      expect(container.querySelector("video")).not.toBeNull(),
+    );
+    expect(calls).toEqual([]);
   });
 });
