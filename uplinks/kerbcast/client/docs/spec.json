@@ -7,7 +7,7 @@
     "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
     "wraps": {
       "name": "kerbcast",
-      "builtAgainst": "1.11.0-rc.10",
+      "builtAgainst": "1.11.0",
       "tier": "ckan"
     }
   },
