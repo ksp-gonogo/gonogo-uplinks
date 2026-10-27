@@ -31,7 +31,7 @@ namespace Gonogo.KerbcastUplink
 
         private readonly CraftLabels _labels;
         private readonly Func<ApiFeature, bool> _supports;
-        private readonly List<IdentityEvent> _merges = new List<IdentityEvent>();
+        private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
         private readonly HashSet<string> _bound = new HashSet<string>(StringComparer.Ordinal);
         private CraftKnowledgeSample[] _buffer = new CraftKnowledgeSample[64];
@@ -42,7 +42,8 @@ namespace Gonogo.KerbcastUplink
         private double? _lastPublish;
         private int _lastTenure = -1;
         private string _lastBindings = "";
-        private int _lastAliasCount = -1;
+        private int _aliasVersion;
+        private int _lastAliasVersion = -1;
         private long _lastEpoch = -1;
 
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
@@ -64,16 +65,18 @@ namespace Gonogo.KerbcastUplink
         public void OnGameLoaded()
         {
             _epoch++;
-            _merges.Clear();
+            _pending.Clear();
             _aliases.Clear();
+            _aliasVersion++;
             _lastUt = null;
         }
 
         /// <summary>
         /// Takes one of Kerbcast's identity events. A renumbered craft is aliased at
-        /// once, since it is the same craft under a new id. A merge is held until
-        /// every scope that lists the merged craft has heard from the craft it
-        /// joined after the merge.
+        /// once, since it is the same craft under a new id. A merge is aliased once
+        /// every scope that lists the merged craft has heard from the craft it joined
+        /// after the merge, and a split undoes the merged craft's alias once every
+        /// scope that lists the craft it left has heard from it after the split.
         /// </summary>
         public void OnIdentity(IdentityEvent? change)
         {
@@ -85,10 +88,11 @@ namespace Gonogo.KerbcastUplink
             {
                 case IdentityChange.Renumber:
                     _labels.Renumber(change.PersistentId, change.OtherPersistentId);
-                    _aliases.Add(new HeardAlias(change.PersistentId, change.OtherPersistentId, change.Ut));
+                    TryAlias(change.PersistentId, change.OtherPersistentId, change.Ut);
                     break;
                 case IdentityChange.Merge:
-                    _merges.Add(change);
+                case IdentityChange.Split:
+                    _pending.Add(change);
                     break;
             }
         }
@@ -117,8 +121,11 @@ namespace Gonogo.KerbcastUplink
             if (_lastUt.HasValue && nowUt < _lastUt.Value)
             {
                 _epoch++;
-                _merges.RemoveAll(m => m.Ut > nowUt);
-                _aliases.RemoveAll(a => a.Ut > nowUt);
+                _pending.RemoveAll(m => m.Ut > nowUt);
+                if (_aliases.RemoveAll(a => a.Ut > nowUt) > 0)
+                {
+                    _aliasVersion++;
+                }
             }
             _lastUt = nowUt;
 
@@ -167,14 +174,14 @@ namespace Gonogo.KerbcastUplink
                 heard[scope] = lastHeard;
             }
 
-            ApplyHeardMerges(listed, heard);
+            ApplyHeardChanges(listed, heard);
 
             var bindingKey = BindingKey(bindings);
             var due = tenure != _lastTenure
                 || _epoch != _lastEpoch
                 || version != _lastVersion
                 || bindingKey != _lastBindings
-                || _aliases.Count != _lastAliasCount
+                || _aliasVersion != _lastAliasVersion
                 || !_lastPublish.HasValue
                 || realSeconds - _lastPublish.Value >= RefreshSeconds;
             if (!due)
@@ -221,7 +228,7 @@ namespace Gonogo.KerbcastUplink
             _lastTenure = tenure;
             _lastVersion = version;
             _lastBindings = bindingKey;
-            _lastAliasCount = _aliases.Count;
+            _lastAliasVersion = _aliasVersion;
             _lastEpoch = _epoch;
             _lastPublish = realSeconds;
             return result;
@@ -309,35 +316,92 @@ namespace Gonogo.KerbcastUplink
 
         /*
          * A merged craft falls silent at the merge, so the craft it joined is the one
-         * whose later word tells a centre of the dock. An alias is snapshot-wide, so it
-         * waits for the last scope listing the merged craft to hear of it: until then a
-         * scope that already knows keeps the two records apart, which tells it less
-         * than it knows and never more.
+         * whose later word tells a centre of the dock; a split is told by the craft
+         * that left. An alias is snapshot-wide, so each change waits for the last scope
+         * that lists the craft it concerns to hear of it: until then a scope that
+         * already knows keeps the old picture, which tells it less than it knows and
+         * never more. Changes apply in the order they happened, so an undock is never
+         * taken before the dock it undoes.
          */
-        private void ApplyHeardMerges(Dictionary<string, List<uint>> listed, Dictionary<string, Dictionary<uint, double?>> heard)
+        private void ApplyHeardChanges(Dictionary<string, List<uint>> listed, Dictionary<string, Dictionary<uint, double?>> heard)
         {
             if (listed.Count == 0)
             {
                 return;
             }
-            _merges.RemoveAll(merge =>
+            while (_pending.Count > 0)
             {
+                var change = _pending[0];
+                var concerns = change.Change == IdentityChange.Merge ? change.PersistentId : change.OtherPersistentId;
+                var teller = change.Change == IdentityChange.Merge ? change.OtherPersistentId : change.PersistentId;
                 foreach (var scope in listed)
                 {
-                    if (!scope.Value.Contains(merge.PersistentId))
+                    if (!scope.Value.Contains(concerns))
                     {
                         continue;
                     }
-                    if (!heard[scope.Key].TryGetValue(merge.OtherPersistentId, out var lastHeard)
+                    if (!heard[scope.Key].TryGetValue(teller, out var lastHeard)
                         || !lastHeard.HasValue
-                        || lastHeard.Value < merge.Ut)
+                        || lastHeard.Value < change.Ut)
                     {
-                        return false;
+                        return;
                     }
                 }
-                _aliases.Add(new HeardAlias(merge.PersistentId, merge.OtherPersistentId, merge.Ut));
-                return true;
-            });
+                _pending.RemoveAt(0);
+                if (change.Change == IdentityChange.Merge)
+                {
+                    TryAlias(change.PersistentId, change.OtherPersistentId, change.Ut);
+                }
+                else if (_aliases.RemoveAll(a => a.From == change.PersistentId) > 0)
+                {
+                    _aliasVersion++;
+                }
+            }
+        }
+
+        /*
+         * Kerbcast refuses the whole snapshot for one alias that names a craft twice or
+         * closes a loop, which would fail every feed closed until the lock is released.
+         * Such an alias describes an identity history the model cannot hold, so it is
+         * left out and the two craft stay apart.
+         */
+        private bool TryAlias(uint from, uint to, double ut)
+        {
+            if (from == 0 || to == 0 || from == to)
+            {
+                return false;
+            }
+            foreach (var alias in _aliases)
+            {
+                if (alias.From == from)
+                {
+                    return false;
+                }
+            }
+            for (var at = to; ;)
+            {
+                var next = 0u;
+                foreach (var alias in _aliases)
+                {
+                    if (alias.From == at)
+                    {
+                        next = alias.To;
+                        break;
+                    }
+                }
+                if (next == 0)
+                {
+                    break;
+                }
+                if (next == from)
+                {
+                    return false;
+                }
+                at = next;
+            }
+            _aliases.Add(new HeardAlias(from, to, ut));
+            _aliasVersion++;
+            return true;
         }
 
         private readonly struct HeardAlias

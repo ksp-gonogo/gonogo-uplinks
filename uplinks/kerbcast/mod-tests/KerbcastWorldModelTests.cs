@@ -172,6 +172,54 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void AnUndockUndoesTheAliasOnceHeardSoARedockIsAcceptedAgain()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 101.0);
+        _model.OnIdentity(Change(IdentityChange.Merge, 100.0, ProbePid, StationPid));
+        Publish(101.0, 0.0);
+        Assert.Single(_kc.Command.Published.Last().Aliases);
+
+        _model.OnIdentity(Change(IdentityChange.Split, 110.0, ProbePid, StationPid));
+        _model.OnIdentity(Change(IdentityChange.Merge, 120.0, ProbePid, StationPid));
+        _knowledge.Version++;
+        Assert.Equal(PublishResult.Accepted, Publish(111.0, 0.5));
+        Assert.Single(_kc.Command.Published.Last().Aliases);
+
+        _knowledge.Clear();
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 115.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 115.0);
+        Assert.Equal(PublishResult.Accepted, Publish(115.0, 1.0));
+        Assert.Empty(_kc.Command.Published.Last().Aliases);
+
+        _knowledge.Clear();
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Held, 119.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 125.0);
+        Assert.Equal(PublishResult.Accepted, Publish(125.0, 1.5));
+        Assert.Single(_kc.Command.Published.Last().Aliases);
+    }
+
+    [Fact]
+    public void AnAliasKerbcastWouldRefuseIsLeftOutAndTheSnapshotIsAccepted()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 105.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 105.0);
+        _model.OnIdentity(Change(IdentityChange.Merge, 100.0, ProbePid, StationPid));
+        _model.OnIdentity(Change(IdentityChange.Merge, 101.0, StationPid, ProbePid));
+        _model.OnIdentity(Change(IdentityChange.Merge, 102.0, ProbePid, HiddenPid));
+
+        Assert.Equal(PublishResult.Accepted, Publish(105.0, 0.0));
+
+        var alias = Assert.Single(_kc.Command.Published.Last().Aliases);
+        Assert.Equal(new KeyValuePair<uint, uint>(ProbePid, StationPid), alias);
+    }
+
+    private static IdentityEvent Change(IdentityChange change, double ut, uint pid, uint other) =>
+        new IdentityEvent { Change = change, Ut = ut, PersistentId = pid, OtherPersistentId = other };
+
+    [Fact]
     public void ARenumberedCraftIsAliasedAtOnceAndKeepsItsLabel()
     {
         _sites.Delivered[Ksc] = 100.0;
@@ -296,7 +344,11 @@ public class KerbcastWorldModelTests
             list.Add(new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, null, false));
         }
 
-        public void Clear() => _byCentre.Clear();
+        public void Clear()
+        {
+            _byCentre.Clear();
+            Version++;
+        }
 
         public int ReadCentre(string centreId, double ut, CraftKnowledgeSample[] buffer, out long version)
         {
