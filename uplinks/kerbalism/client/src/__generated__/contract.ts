@@ -156,6 +156,11 @@ export interface KerbalismSpaceWeather
 	blackout?: boolean | null;
 	inSunlight?: boolean | null;
 	/**
+	* The average sunlight exposure of the craft's solar panels, 0 to 1, as
+	* Kerbalism averages it over a loaded craft. Null until it has been measured.
+	*/
+	solarPanelExposure?: Value<"ratio"> | null;
+	/**
 	* Shielding resource amount/capacity (0 in the default profile; present under
 	* RO/Habitat).
 	*/

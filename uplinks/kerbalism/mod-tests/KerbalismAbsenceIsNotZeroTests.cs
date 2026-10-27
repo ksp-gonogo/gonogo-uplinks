@@ -91,6 +91,18 @@ public class KerbalismAbsenceIsNotZeroTests
         Assert.Null(unreadHabitat["pressureKpa"]);
     }
 
+    /// <summary>An exposure Kerbalism has not measured is carried as null, and a measured one as itself.</summary>
+    [Fact]
+    public void The_average_panel_exposure_is_null_until_measured()
+    {
+        var snap = Snapshot();
+        Assert.Null(KerbalismCapture.BuildSpaceWeather(snap)["solarPanelExposure"]);
+        Assert.Equal(
+            0.805,
+            (double)KerbalismCapture.BuildSpaceWeather(snap, solarPanelExposure: 0.805)["solarPanelExposure"]!,
+            9);
+    }
+
     /// <summary>
     /// The storm flags. False is not "we did not ask": it is the pill that tells
     /// an operator no CME is inbound, and the belt flags beside it are what the

@@ -83,6 +83,12 @@ public class KerbalismSpaceWeather
     public bool? Blackout { get; set; }
     [SitrepUnit(Units.Flag)]
     public bool? InSunlight { get; set; }
+    /// <summary>
+    /// The average sunlight exposure of the craft's solar panels, 0 to 1, as Kerbalism
+    /// averages it over a loaded craft. Null until it has been measured.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? SolarPanelExposure { get; set; }
     /// <summary>Shielding resource amount/capacity (0 in the default profile; present under RO/Habitat).</summary>
     [SitrepUnit(Units.ResourceUnits)]
     public double? ShieldingAmount { get; set; }

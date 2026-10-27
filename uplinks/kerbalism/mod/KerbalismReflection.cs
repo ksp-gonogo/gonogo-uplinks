@@ -1158,6 +1158,9 @@ namespace Gonogo.KerbalismUplink
             try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { }
             if (vd == null) return raw;
 
+            var exposure = MemberDouble(vd, "SolarPanelsAverageExposure");
+            raw.PanelExposure = exposure.HasValue && exposure.Value >= 0 ? exposure : null;
+
             if (Member(vd, "EnvSunsInfo") is not IEnumerable sunsInfo) return raw;
 
             // Two passes: the vantages first (they also produce the star list the

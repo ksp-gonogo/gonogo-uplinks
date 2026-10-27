@@ -317,6 +317,10 @@
           "unit": "units"
         },
         {
+          "name": "solarPanelExposure",
+          "unit": "ratio"
+        },
+        {
           "name": "stars",
           "shape": "KerbalismStarInfo[]"
         },

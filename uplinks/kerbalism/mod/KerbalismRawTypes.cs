@@ -227,6 +227,13 @@ namespace Gonogo.KerbalismUplink
     {
         public List<StarInfoRaw> Stars = new();
         public List<StormEntryRaw> Storms = new();
+
+        /// <summary>
+        /// <c>VesselData.SolarPanelsAverageExposure</c>, 0..1. Null when Kerbalism
+        /// has none yet: it is negative until a loaded vessel's panels have been
+        /// averaged, and a negative exposure is "not measured", never a dark panel.
+        /// </summary>
+        public double? PanelExposure;
     }
 
     /// <summary>

@@ -561,6 +561,11 @@ function ShipSystemsBody({
     summary.supplies.find((r) => r.name === "ElectricCharge") ??
     summary.other.find((r) => r.name === "ElectricCharge");
 
+  // Null, not false or zero: an unread flag is neither day nor night, and an
+  // unmeasured exposure is not a dark panel.
+  const inSunlight = weather?.inSunlight ?? null;
+  const panelExposure = magnitudeOf(weather?.solarPanelExposure);
+
   const runningCount = processes.filter((p) => p.state === "running").length;
   const brokenCount = processes.filter((p) => p.state === "broken").length;
   const unknownCount = processes.filter((p) => p.state === "unknown").length;
@@ -618,7 +623,23 @@ function ShipSystemsBody({
         // so it earns the one permanently visible readout, the same
         // "duplicate the balance next to where it matters" convention the
         // funds rule uses. Rendered only when the profile carries EC.
-        ecRow && (
+        (ecRow || inSunlight !== null || panelExposure !== null) && (
+          <Stack gap="caption">
+            {(inSunlight !== null || panelExposure !== null) && (
+              <Cluster justify="between" align="center" wrap>
+                {inSunlight !== null && (
+                  <Badge tone={inSunlight ? "go" : "neutral"} size="sm">
+                    {inSunlight ? "In sunlight" : "In shadow"}
+                  </Badge>
+                )}
+                {panelExposure !== null && (
+                  <Text level="muted" size="xs">
+                    Panels <Unit value={weather?.solarPanelExposure} decimals={1} />
+                  </Text>
+                )}
+              </Cluster>
+            )}
+            {ecRow && (
           <Meter
             label="Power"
             // Null, not 0: `fraction` is null when the craft carries no tank
@@ -639,6 +660,8 @@ function ShipSystemsBody({
               />
             }
           />
+            )}
+          </Stack>
         )
       }
       sections={[

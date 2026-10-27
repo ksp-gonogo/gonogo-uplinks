@@ -116,7 +116,9 @@
           "outerBelt": true,
           "innerBelt": false,
           "stormIncoming": false,
-          "stormInProgress": false
+          "stormInProgress": false,
+          "inSunlight": true,
+          "solarPanelExposure": 0.805
         }
       },
       {

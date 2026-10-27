@@ -571,7 +571,7 @@ namespace Gonogo.KerbalismUplink
         {
             if (captured is not KerbalismCaptured c) return;
             _spaceWeather?.Publish(
-                KerbalismCapture.BuildSpaceWeather(c.Snapshot, c.Solar.Stars, c.Solar.Storms, c.StormEjectionSpeed), c.Ut);
+                KerbalismCapture.BuildSpaceWeather(c.Snapshot, c.Solar.Stars, c.Solar.Storms, c.StormEjectionSpeed, c.Solar.PanelExposure), c.Ut);
             _lifeSupport?.Publish(
                 KerbalismCapture.BuildLifeSupport(c.Snapshot, c.Processes, c.Snapshot.Rates, c.RuleEnvModifiers, c.AsOfUt),
                 c.Ut);

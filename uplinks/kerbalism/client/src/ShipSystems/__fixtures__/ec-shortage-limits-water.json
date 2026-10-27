@@ -14,6 +14,20 @@
     "pinnedUt": 1000000,
     "emits": [
       {
+        "topic": "kerbalism.spaceweather",
+        "payload": {
+          "radiationRadPerSecond": 0.000004,
+          "habitatRadiationRadPerSecond": 0.000004,
+          "magnetosphere": true,
+          "outerBelt": false,
+          "innerBelt": false,
+          "stormIncoming": false,
+          "stormInProgress": false,
+          "inSunlight": true,
+          "solarPanelExposure": 0.805
+        }
+      },
+      {
         "topic": "kerbalism.profile",
         "payload": {
           "name": "Default",

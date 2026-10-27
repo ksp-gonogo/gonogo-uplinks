@@ -727,3 +727,46 @@ describe("ShipSystemsComponent: habitat readings that never arrived", () => {
     expect(panel.queryByText(/kPa/)).toBeNull();
   });
 });
+
+describe("ShipSystemsComponent: sunlight and panel exposure", () => {
+  function renderWithWeather(weather: Record<string, unknown>) {
+    const fixture = newFixture();
+    const { container } = renderWidget(fixture);
+    act(() => {
+      fixture.emit("kerbalism.profile", PROFILE);
+      fixture.emit("kerbalism.lifesupport", LIFE_SUPPORT);
+      fixture.emit("kerbalism.spaceweather", weather);
+      fixture.emit("vessel.resources", RESOURCES);
+      fixture.emit("vessel.crew", CREW);
+    });
+    return within(container);
+  }
+
+  it("states sunlight and the average panel exposure in the power footer", async () => {
+    const panel = renderWithWeather({
+      inSunlight: true,
+      solarPanelExposure: 0.805,
+    });
+
+    expect(await panel.findByText("In sunlight")).toBeInTheDocument();
+    expect(panel.getByText(/Panels/)).toHaveTextContent(/80\.5\s*%/);
+  });
+
+  it("says shadow when the craft is out of the light", async () => {
+    const panel = renderWithWeather({
+      inSunlight: false,
+      solarPanelExposure: 0,
+    });
+
+    expect(await panel.findByText("In shadow")).toBeInTheDocument();
+  });
+
+  it("claims neither sunlight nor an exposure that was not read", async () => {
+    const panel = renderWithWeather({ magnetosphere: true });
+
+    expect(await panel.findByText("Power")).toBeInTheDocument();
+    expect(panel.queryByText("In sunlight")).toBeNull();
+    expect(panel.queryByText("In shadow")).toBeNull();
+    expect(panel.queryByText(/Panels/)).toBeNull();
+  });
+});

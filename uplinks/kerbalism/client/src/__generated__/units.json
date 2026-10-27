@@ -261,6 +261,7 @@
       "radiationRadPerSecond": "rad/s",
       "shieldingAmount": "units",
       "shieldingCapacity": "units",
+      "solarPanelExposure": "ratio",
       "stormEjectionSpeed": "m/s",
       "stormInProgress": "flag",
       "stormIncoming": "flag"
@@ -355,6 +356,7 @@
       "radiationRadPerSecond": "rad/s",
       "shieldingAmount": "units",
       "shieldingCapacity": "units",
+      "solarPanelExposure": "ratio",
       "stormEjectionSpeed": "m/s",
       "stormInProgress": "flag",
       "stormIncoming": "flag"

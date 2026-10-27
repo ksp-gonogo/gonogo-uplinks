@@ -106,7 +106,8 @@ namespace Gonogo.KerbalismUplink
             KerbalismSnapshot s,
             IEnumerable<StarInfoRaw>? stars = null,
             IEnumerable<StormEntryRaw>? storms = null,
-            double? stormEjectionSpeed = null) => new()
+            double? stormEjectionSpeed = null,
+            double? solarPanelExposure = null) => new()
         {
             ["radiationRadPerSecond"] = s.Radiation,
             ["habitatRadiationRadPerSecond"] = s.HabitatRadiation,
@@ -117,6 +118,7 @@ namespace Gonogo.KerbalismUplink
             ["stormInProgress"] = s.StormInProgress,
             ["blackout"] = s.Blackout,
             ["inSunlight"] = s.InSunlight,
+            ["solarPanelExposure"] = solarPanelExposure,
             ["shieldingAmount"] = s.ShieldingAmount,
             ["shieldingCapacity"] = s.ShieldingCapacity,
             ["stars"] = BuildStars(stars),
