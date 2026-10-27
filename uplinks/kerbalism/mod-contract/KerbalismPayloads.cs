@@ -278,6 +278,14 @@ public class KerbalismHabitat
     public double? Volume { get; set; }
     [SitrepUnit(Units.SquareMetres)]
     public double? Surface { get; set; }
+    /// <summary>
+    /// Whether the craft holds enough atmosphere to supply more than one EVA
+    /// (Kerbalism's own "EVA status": <c>safe</c> or <c>risky</c>). Null when
+    /// Kerbalism does not model it: the pressure feature is off, no atmosphere is
+    /// lost per EVA, the craft is an EVA kerbal, or the figure could not be read.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? EvaSafe { get; set; }
 }
 
 /// <summary>One ProcessController process (scrubber / recycler / fuel cell).</summary>

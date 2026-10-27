@@ -95,6 +95,7 @@
     },
     "KerbalismHabitat": {
       "comfort": "ratio",
+      "evaSafe": "flag",
       "livingSpace": "ratio",
       "poisoning": "ratio",
       "pressure": "ratio",

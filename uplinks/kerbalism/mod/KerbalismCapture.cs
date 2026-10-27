@@ -36,7 +36,8 @@ namespace Gonogo.KerbalismUplink
             Func<string, double?> amount,
             Func<string, double?> capacity,
             IEnumerable<string> rateResources,
-            Func<string, double?> rate)
+            Func<string, double?> rate,
+            Func<bool?>? evaSafe = null)
         {
             var rates = new Dictionary<string, double>(StringComparer.Ordinal);
             foreach (var name in rateResources)
@@ -66,6 +67,7 @@ namespace Gonogo.KerbalismUplink
                 Comfort = api("Comfort"),
                 Volume = api("Volume"),
                 Surface = api("Surface"),
+                EvaSafe = evaSafe?.Invoke(),
             };
         }
 
@@ -412,6 +414,7 @@ namespace Gonogo.KerbalismUplink
                     ["comfort"] = s.Comfort,
                     ["volume"] = s.Volume,
                     ["surface"] = s.Surface,
+                    ["evaSafe"] = s.EvaSafe,
                 },
                 ["processes"] = procs,
                 ["ruleEnvModifiers"] = ruleModifierMap,
@@ -521,6 +524,8 @@ namespace Gonogo.KerbalismUplink
         public double? Radiation, HabitatRadiation, ShieldingAmount, ShieldingCapacity;
         public bool? Magnetosphere, InnerBelt, OuterBelt, StormIncoming, StormInProgress, Blackout, InSunlight;
         public double? Pressure, Poisoning, Shielding, LivingSpace, Comfort, Volume, Surface;
+        /// <summary>Null when Kerbalism does not model EVA atmosphere for this craft, never false standing in for it.</summary>
+        public bool? EvaSafe;
         /// <summary>
         /// Signed net rate per resource (units/s), keyed by KSP resource name.
         /// Replaced the Food/Water/Oxygen/ElectricCharge triples: those were four

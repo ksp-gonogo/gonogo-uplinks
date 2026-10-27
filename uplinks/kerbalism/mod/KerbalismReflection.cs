@@ -39,6 +39,7 @@ namespace Gonogo.KerbalismUplink
             internal Type? _prefsRadiationType;
             internal Type? _prefsReliabilityType;
             internal Type? _resourceCacheType;
+            internal Type? _settingsType;
             internal Type? _ruleType;
             internal MethodInfo? _ruleVariance;
             internal MethodInfo? _dbKerbal;
@@ -89,6 +90,7 @@ namespace Gonogo.KerbalismUplink
                 _prefsRadiationType = FindType("KERBALISM.PreferencesRadiation") ?? FindType("Kerbalism.PreferencesRadiation");
                 _prefsReliabilityType = FindType("KERBALISM.PreferencesReliability") ?? FindType("Kerbalism.PreferencesReliability");
                 _resourceCacheType = FindType("KERBALISM.ResourceCache") ?? FindType("Kerbalism.ResourceCache");
+                _settingsType = FindType("KERBALISM.Settings") ?? FindType("Kerbalism.Settings");
                 _ruleType = FindType("KERBALISM.Rule") ?? FindType("Kerbalism.Rule");
                 // Rule.Variance(name, crewMember, variance) is private static. Asked
                 // rather than reimplemented because it hashes a string built from the
@@ -1409,6 +1411,25 @@ namespace Gonogo.KerbalismUplink
             object? vd;
             try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
             return vd == null ? null : MemberBool(vd, "IsSimulated");
+        }
+
+        /// <summary>
+        /// Kerbalism's "EVA status" for the craft: <c>VesselData.Evas</c>, how many
+        /// EVAs its nitrogen stock supplies, safe when it is more than one, the
+        /// threshold its own telemetry page uses. Null where that page draws no
+        /// such row: an EVA kerbal, the pressure feature off, no atmosphere lost
+        /// per EVA (<c>Settings.LifeSupportAtmoLoss</c>), or an unreadable figure.
+        /// </summary>
+        public bool? EvaSafe(Vessel v)
+        {
+            if (v == null || v.isEVA || H._dbKerbalismData == null || !Modeled("Pressure")) return null;
+            var atmoLoss = AsDouble(H._settingsType?.GetField(
+                "LifeSupportAtmoLoss", BindingFlags.Public | BindingFlags.Static)?.GetValue(null));
+            if (atmoLoss is not > 0) return null;
+            object? vd;
+            try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
+            var evas = vd == null ? null : MemberDouble(vd, "Evas");
+            return evas.HasValue ? evas.Value > 1 : (bool?)null;
         }
 
         /// <summary>

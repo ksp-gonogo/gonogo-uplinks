@@ -135,6 +135,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   },
   "KerbalismHabitat": {
     comfort: "ratio",
+    evaSafe: "flag",
     livingSpace: "ratio",
     poisoning: "ratio",
     pressure: "ratio",

@@ -473,7 +473,8 @@ namespace Gonogo.KerbalismUplink
                 R,
                 Cap,
                 KerbalismCapture.ResourceNames(profile),
-                Rate);
+                Rate,
+                () => _k.EvaSafe(v));
 
             var modifierCtx = _k.BeginModifierContext(v);
             List<ProcessRaw>? processes = null;

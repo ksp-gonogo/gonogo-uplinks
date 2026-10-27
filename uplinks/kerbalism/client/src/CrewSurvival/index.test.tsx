@@ -364,6 +364,70 @@ describe("CrewSurvivalBadgeAugment", () => {
   });
 });
 
+describe("CrewSurvivalBadgeAugment: EVA status", () => {
+  function emitHabitat(
+    fixture: ReturnType<typeof newFixture>,
+    habitat: Record<string, unknown>,
+  ) {
+    act(() => {
+      fixture.emit("kerbalism.lifesupport", {
+        rates: {},
+        habitat,
+        processes: [],
+        ruleEnvModifiers: {},
+      });
+    });
+  }
+
+  it("shows EVA safe as a go badge when Kerbalism reports the craft safe", async () => {
+    const fixture = newFixture();
+    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    emitHabitat(fixture, { evaSafe: true });
+    expect(await screen.findByText("EVA safe")).toBeInTheDocument();
+  });
+
+  it("shows EVA risky when Kerbalism reports the craft risky", async () => {
+    const fixture = newFixture();
+    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    emitHabitat(fixture, { evaSafe: false });
+    expect(await screen.findByText("EVA risky")).toBeInTheDocument();
+    expect(screen.queryByText("EVA safe")).not.toBeInTheDocument();
+  });
+
+  it("shows no EVA badge where Kerbalism reports no status, which is not risky", async () => {
+    const fixture = newFixture();
+    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    emitHabitat(fixture, { evaSafe: null, pressure: 1 });
+    // A second reading proves the habitat arrived before the negative is asserted.
+    emitHabitat(fixture, { evaSafe: null, pressure: 0.9 });
+    expect(screen.queryByText(/EVA/)).not.toBeInTheDocument();
+  });
+
+  it("draws the EVA badge beside a survival warning on the same row", async () => {
+    const fixture = newFixture();
+    renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    emitHabitat(fixture, { evaSafe: true });
+    emit(fixture, CREW, [
+      {
+        name: "Jebediah Kerman",
+        rules: [{ name: "radiation", problem: 45, fatalThreshold: 50 }],
+      },
+    ]);
+    expect(await screen.findByText("EVA safe")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Radiation dose critical"),
+    ).toBeInTheDocument();
+  });
+
+  it("has no axe violations", async () => {
+    const fixture = newFixture();
+    const { container } = renderBadgeAugment(fixture, "Jebediah Kerman", 0);
+    emitHabitat(fixture, { evaSafe: true });
+    await screen.findByText("EVA safe");
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe("CrewSurvivalBadgeAugment under signal delay", () => {
   const OWLT = 60;
   /** Frames that left the craft one light time before its present of UT 1000, so the received edge is UT 940. */

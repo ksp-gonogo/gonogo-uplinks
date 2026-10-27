@@ -437,6 +437,10 @@
           "unit": "ratio"
         },
         {
+          "name": "evaSafe",
+          "unit": "flag"
+        },
+        {
           "name": "livingSpace",
           "unit": "ratio"
         },
@@ -1104,7 +1108,9 @@
     {
       "id": "crew-status-survival-badge",
       "augments": "crew-status.row-badges",
-      "channels": [],
+      "channels": [
+        "kerbalism.lifesupport"
+      ],
       "requires": "kerbalism",
       "suppressesVanillaBase": false,
       "settings": []

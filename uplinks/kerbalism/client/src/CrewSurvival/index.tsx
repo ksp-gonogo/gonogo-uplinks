@@ -1,5 +1,10 @@
 import type { SlotProps, Value } from "@ksp-gonogo/sitrep-sdk";
-import { registerAugment, useProcessor, value } from "@ksp-gonogo/sitrep-sdk";
+import {
+  registerAugment,
+  useProcessor,
+  useTelemetry,
+  value,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   ModelledAlongside,
@@ -7,6 +12,7 @@ import {
   type Severity,
   writeQuantity,
 } from "@ksp-gonogo/ui-kit";
+import { KERBALISM_LIFESUPPORT_TOPIC } from "../topics.js";
 import { KERBALISM } from "../uplink.js";
 // Side-effect: registers the per-kerbal survival METERS, which were the
 // `crew-status.survival` augment in this file until they became data. See that
@@ -92,12 +98,28 @@ function warningFor(kerbal: KerbalSurvival): {
 }
 
 /**
+ * Kerbalism's "EVA status" of the craft the crew is aboard: whether its
+ * atmosphere stock supplies more than one EVA. The same fact stands on every
+ * row, since it is a property of the craft and not of the kerbal. `undefined`
+ * where Kerbalism reports none, which is not the same as risky.
+ */
+function useEvaStatus(): { safe: boolean; held: boolean } | undefined {
+  const reading = useTelemetry(KERBALISM_LIFESUPPORT_TOPIC);
+  if (reading.state !== "observed" && reading.state !== "held") {
+    return undefined;
+  }
+  const safe = reading.value.habitat?.evaSafe;
+  return safe == null ? undefined : { safe, held: reading.state === "held" };
+}
+
+/**
  * CrewStatus's `crew-status.row-badges` augment: the name-adjacent per-row
  * slot (renders inline in the roster row's `Cluster`, right next to the
  * kerbal's name, per `CrewBadgeContext`'s own doc comment: "a future
- * Kerbalism Habitat/Radiation Uplink can badge each kerbal"). Fed by the
- * same `CREW_SURVIVAL` Processor the survival meters read (`./meters`) and the
- * panel badge reads (`./badge`): one per-frame derivation, three consumers.
+ * Kerbalism Habitat/Radiation Uplink can badge each kerbal"). The survival
+ * warning is fed by the same `CREW_SURVIVAL` Processor the survival meters read
+ * (`./meters`) and the panel badge reads (`./badge`): one per-frame derivation,
+ * three consumers. The EVA status badge beside it reads `kerbalism.lifesupport`.
  *
  * Still an augment, unlike the meters: what it draws is a consequence, and it
  * is the one thing here whose rendering the host has no rule for.
@@ -112,11 +134,31 @@ function CrewSurvivalBadgeAugment({
   crewIndex,
 }: SlotProps<"crew-status.row-badges">) {
   const answer = survivalFrom(useProcessor(CREW_SURVIVAL));
-  if (!answer) return null;
-  const kerbal = findKerbal(answer.survival, crewName, crewIndex);
-  if (!kerbal) return null;
-  const warning = warningFor(kerbal);
-  if (!warning) return null;
+  const eva = useEvaStatus();
+  const kerbal = answer
+    ? findKerbal(answer.survival, crewName, crewIndex)
+    : undefined;
+  const warning = kerbal ? warningFor(kerbal) : null;
+  const survival =
+    answer && kerbal && warning ? survivalBadge(answer, kerbal, warning) : null;
+  if (!eva && !survival) return null;
+  return (
+    <>
+      {eva ? (
+        <Badge tone={eva.safe ? "go" : "warn"} size="sm">
+          {`${eva.safe ? "EVA safe" : "EVA risky"}${eva.held ? " · held" : ""}`}
+        </Badge>
+      ) : null}
+      {survival}
+    </>
+  );
+}
+
+function survivalBadge(
+  answer: NonNullable<ReturnType<typeof survivalFrom>>,
+  kerbal: KerbalSurvival,
+  warning: NonNullable<ReturnType<typeof warningFor>>,
+) {
   /*
    * A carried answer is preferred to a held one: the held figure stays
    * reachable through the reading's own marks, and the carried one can still
@@ -155,6 +197,7 @@ registerAugment({
   id: "crew-status-survival-badge",
   augments: "crew-status.row-badges",
   component: CrewSurvivalBadgeAugment,
+  channels: [KERBALISM_LIFESUPPORT_TOPIC],
   requires: "kerbalism",
   owner: KERBALISM,
 });

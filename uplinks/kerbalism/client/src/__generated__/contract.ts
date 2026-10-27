@@ -316,6 +316,13 @@ export interface KerbalismHabitat
 	comfort?: Value<"ratio"> | null;
 	volume?: Value<"m³"> | null;
 	surface?: Value<"m²"> | null;
+	/**
+	* Whether the craft holds enough atmosphere to supply more than one EVA
+	* (Kerbalism's own "EVA status": `safe` or `risky`). Null when Kerbalism does
+	* not model it: the pressure feature is off, no atmosphere is lost per EVA,
+	* the craft is an EVA kerbal, or the figure could not be read.
+	*/
+	evaSafe?: boolean | null;
 }
 /** One ProcessController process (scrubber / recycler / fuel cell). */
 export interface KerbalismProcessEntry
