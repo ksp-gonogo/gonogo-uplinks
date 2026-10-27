@@ -28,17 +28,20 @@ public class KerbcastWorldModelTests
     private readonly RecordingKerbcast _kc = new RecordingKerbcast();
     private readonly FakeLensSites _sites = new FakeLensSites();
     private readonly FakeKnowledge _knowledge = new FakeKnowledge();
-    private readonly CraftIdMap _ids = new CraftIdMap();
+    private readonly CraftLabels _labels = new CraftLabels();
     private readonly KerbcastAuthority _authority;
     private readonly KerbcastWorldModel _model;
 
     public KerbcastWorldModelTests()
     {
         _authority = new KerbcastAuthority(() => _kc, _kc.Supports, "GonogoKerbcastUplink");
-        _model = new KerbcastWorldModel(_ids, _kc.Supports);
-        _ids.Learn(ProbeId, ProbePid, new CraftLabel("Probe", "Probe"));
-        _ids.Learn(StationId, StationPid, new CraftLabel("Station", "Station"));
-        _ids.Learn(HiddenId, HiddenPid, new CraftLabel("Hidden", "Ship"));
+        _model = new KerbcastWorldModel(_labels, _kc.Supports);
+        _kc.Cameras.Learn(ProbePid, ProbeId);
+        _kc.Cameras.Learn(StationPid, StationId);
+        _kc.Cameras.Learn(HiddenPid, HiddenId);
+        _labels.Learn(ProbePid, new CraftLabel("Probe", "Probe"));
+        _labels.Learn(StationPid, new CraftLabel("Station", "Station"));
+        _labels.Learn(HiddenPid, new CraftLabel("Hidden", "Ship"));
         _sites.Stations["KSC"] = Ksc;
         _kc.Command.AddFeed(new CommandFeed { FlightId = 1, SiteKey = "KSC", SiteKind = SiteKind.Station });
     }
@@ -120,6 +123,29 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void AKerbcastWithoutCraftIdentityListsNoCraft()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
+        _kc.SetSupported(f => f != ApiFeature.CraftIdentity);
+
+        Publish(100.0, 0.0);
+
+        Assert.Empty(_kc.Command.Published.Last().Records);
+    }
+
+    [Fact]
+    public void ARetakenLockGetsAFreshPublisherThatIsAccepted()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        Assert.Equal(PublishResult.Accepted, Publish(100.0, 0.0));
+
+        _authority.Tick(0.1, null);
+        Assert.Equal(PublishResult.Accepted, Publish(100.2, 0.2));
+        Assert.True(_authority.Tenure >= 2);
+    }
+
+    [Fact]
     public void ADockIsAliasedOnlyOnceTheCentreHasHeardFromTheCraftItJoined()
     {
         _sites.Delivered[Ksc] = 100.0;
@@ -154,6 +180,7 @@ public class KerbcastWorldModelTests
             Change = IdentityChange.Renumber, Ut = 100.0, PersistentId = ProbePid, VesselId = ProbeId,
             OtherPersistentId = 999, OtherVesselId = ProbeId,
         });
+        _kc.Cameras.Learn(999, ProbeId);
         _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
 
         Publish(100.0, 0.0);

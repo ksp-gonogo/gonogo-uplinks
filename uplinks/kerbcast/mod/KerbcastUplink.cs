@@ -56,14 +56,14 @@ namespace Gonogo.KerbcastUplink
         public const string SetFieldOfViewCommand = KerbcastManifest.SetFieldOfViewCommand;
         public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
-        /// <summary>Real seconds between reads of the game's craft list into <see cref="_craftIds"/>.</summary>
-        private const double CraftIdSeconds = 2.0;
+        /// <summary>Real seconds between reads of the game's craft list into <see cref="_craftLabels"/>.</summary>
+        private const double CraftLabelSeconds = 2.0;
 
         private IKerbcastApi? _kerbcast;
         private IKerbcastGovernor? _governor;
         private IUplinkHost? _host;
-        private readonly CraftIdMap _craftIds = new CraftIdMap();
-        private double? _craftIdsRead;
+        private readonly CraftLabels _craftLabels = new CraftLabels();
+        private double? _craftLabelsRead;
         private IChannelPublisher? _cameras;
         private readonly KerbcastModSettings _modSettings;
 
@@ -143,7 +143,7 @@ namespace Gonogo.KerbcastUplink
             }
             _kerbcast = binding.Api;
             _host = host;
-            _governor = NewGovernor(_craftIds, () => host.Kernel);
+            _governor = NewGovernor(_craftLabels, () => host.Kernel);
             GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
@@ -166,12 +166,12 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IKerbcastGovernor NewGovernor(CraftIdMap ids, Func<Kernel?> kernel) =>
+        private static IKerbcastGovernor NewGovernor(CraftLabels labels, Func<Kernel?> kernel) =>
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
                 typeof(KerbcastUplink).Assembly.GetName().Name,
-                ids,
+                labels,
                 kernel);
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
@@ -243,7 +243,7 @@ namespace Gonogo.KerbcastUplink
             var now = UnityEngine.Time.realtimeSinceStartup;
             if (coreActive)
             {
-                LearnCraftIds(now);
+                LearnCraftLabels(now);
                 _governor?.Tick(snapshot.Ut, now);
             }
 
@@ -289,18 +289,14 @@ namespace Gonogo.KerbcastUplink
             return Guid.TryParse(id, out var guid) && guid != Guid.Empty ? guid : (Guid?)null;
         }
 
-        /*
-         * Identity only, never position: each craft's id, persistentId, name and type,
-         * so the world model can name in Kerbcast's terms a craft Gonogo's knowledge
-         * names by id, including one the game has since lost.
-         */
-        private void LearnCraftIds(double now)
+        /* Names and types only, never position, so a craft the game has since lost still lists under its name. */
+        private void LearnCraftLabels(double now)
         {
-            if (_craftIdsRead.HasValue && now - _craftIdsRead.Value < CraftIdSeconds)
+            if (_craftLabelsRead.HasValue && now - _craftLabelsRead.Value < CraftLabelSeconds)
             {
                 return;
             }
-            _craftIdsRead = now;
+            _craftLabelsRead = now;
             var saved = HighLogic.CurrentGame?.flightState?.protoVessels;
             if (saved != null)
             {
@@ -308,7 +304,7 @@ namespace Gonogo.KerbcastUplink
                 {
                     if (proto != null)
                     {
-                        _craftIds.Learn(proto.vesselID, proto.persistentId, new CraftLabel(proto.vesselName, proto.vesselType.ToString()));
+                        _craftLabels.Learn(proto.persistentId, new CraftLabel(proto.vesselName, proto.vesselType.ToString()));
                     }
                 }
             }
@@ -319,7 +315,7 @@ namespace Gonogo.KerbcastUplink
                 {
                     if (vessel != null)
                     {
-                        _craftIds.Learn(vessel.id, vessel.persistentId, new CraftLabel(vessel.vesselName, vessel.vesselType.ToString()));
+                        _craftLabels.Learn(vessel.persistentId, new CraftLabel(vessel.vesselName, vessel.vesselType.ToString()));
                     }
                 }
             }

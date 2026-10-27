@@ -92,6 +92,11 @@ namespace Gonogo.KerbcastUplink
                 {
                     command.ReleaseLock(Owner);
                 }
+                if (_reserved)
+                {
+                    command.ClearReservation(Owner);
+                    _reserved = false;
+                }
                 Forget();
                 return State = AuthorityState.DelayOff;
             }

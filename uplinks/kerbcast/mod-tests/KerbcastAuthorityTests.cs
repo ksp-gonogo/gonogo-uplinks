@@ -51,6 +51,23 @@ public class KerbcastAuthorityTests
         Assert.Null(kc.Command.LockOwner);
         Assert.Null(kc.Command.SignalSpeed);
         Assert.Null(authority.Publisher);
+        Assert.Null(kc.Command.ReservedOwner);
+    }
+
+    [Fact]
+    public void AReleaseAndARetakeAttachAFreshPublisher()
+    {
+        var kc = new RecordingKerbcast();
+        var authority = Authority(kc);
+        authority.Tick(0.0, Light);
+        var first = authority.Publisher;
+
+        kc.Command.ReleaseLock(KerbcastAuthority.Owner);
+        Assert.False(first!.Attached);
+
+        Assert.Equal(AuthorityState.Governing, authority.Tick(0.1, Light));
+        Assert.NotSame(first, authority.Publisher);
+        Assert.True(authority.Publisher!.Attached);
     }
 
     [Fact]

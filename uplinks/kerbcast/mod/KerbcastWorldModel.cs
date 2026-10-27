@@ -19,8 +19,8 @@ namespace Gonogo.KerbcastUplink
     /// reached the lens.</para>
     ///
     /// <para>Records are <see cref="CraftFixState.Listed"/>: the craft lists, and a
-    /// feed may not aim at it. A craft whose persistentId is not known is left
-    /// out, so it reads as unknown.</para>
+    /// feed may not aim at it. A craft Kerbcast cannot give a persistentId for is
+    /// left out, so it reads as unknown.</para>
     /// </summary>
     public sealed class KerbcastWorldModel
     {
@@ -29,7 +29,7 @@ namespace Gonogo.KerbcastUplink
 
         private const string VesselCentrePrefix = "vessel:";
 
-        private readonly CraftIdMap _ids;
+        private readonly CraftLabels _labels;
         private readonly Func<ApiFeature, bool> _supports;
         private readonly List<IdentityEvent> _merges = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
@@ -45,11 +45,11 @@ namespace Gonogo.KerbcastUplink
         private int _lastAliasCount = -1;
         private long _lastEpoch = -1;
 
-        /// <param name="ids">Craft identity, fed on the main thread.</param>
+        /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
-        public KerbcastWorldModel(CraftIdMap ids, Func<ApiFeature, bool> supports)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports)
         {
-            _ids = ids;
+            _labels = labels;
             _supports = supports;
         }
 
@@ -84,7 +84,7 @@ namespace Gonogo.KerbcastUplink
             switch (change.Change)
             {
                 case IdentityChange.Renumber:
-                    _ids.Renumber(change.VesselId, change.PersistentId, change.OtherPersistentId);
+                    _labels.Renumber(change.PersistentId, change.OtherPersistentId);
                     _aliases.Add(new HeardAlias(change.PersistentId, change.OtherPersistentId, change.Ut));
                     break;
                 case IdentityChange.Merge:
@@ -135,6 +135,7 @@ namespace Gonogo.KerbcastUplink
             }
             scopes.Sort(StringComparer.Ordinal);
 
+            var identity = _supports(ApiFeature.CraftIdentity);
             var heard = new Dictionary<string, Dictionary<uint, double?>>(StringComparer.Ordinal);
             var listed = new Dictionary<string, List<uint>>(StringComparer.Ordinal);
             var scopeUt = new Dictionary<string, double>(StringComparer.Ordinal);
@@ -152,7 +153,9 @@ namespace Gonogo.KerbcastUplink
                     for (var i = 0; i < count; i++)
                     {
                         var sample = _buffer[i];
-                        if (sample.State == CraftKnowledgeState.Unknown || !_ids.TryPersistentId(sample.VesselId, out var pid))
+                        if (sample.State == CraftKnowledgeState.Unknown || !identity
+                            || !Guid.TryParse(sample.VesselId, out var vesselId)
+                            || !kerbcast.Cameras.TryPersistentId(vesselId, out var pid))
                         {
                             continue;
                         }
@@ -200,7 +203,7 @@ namespace Gonogo.KerbcastUplink
                 foreach (var pid in listed[scope])
                 {
                     builder.Listed(pid);
-                    if (_ids.TryLabel(pid, out var label))
+                    if (_labels.TryLabel(pid, out var label))
                     {
                         if (label.Name != null)
                         {

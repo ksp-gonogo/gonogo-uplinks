@@ -36,19 +36,19 @@ namespace Gonogo.KerbcastUplink
         /// <param name="kerbcast">Kerbcast in this scene, normally <see cref="KerbcastApi.Instance"/>.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
         /// <param name="ownerAssembly">The assembly whose presence keeps Kerbcast's reservation for Gonogo.</param>
-        /// <param name="ids">Craft identity, fed on the main thread.</param>
+        /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="kernel">The host's capability kernel.</param>
         public KerbcastGovernor(
             Func<IKerbcast?> kerbcast,
             Func<ApiFeature, bool> supports,
             string ownerAssembly,
-            CraftIdMap ids,
+            CraftLabels labels,
             Func<Kernel?> kernel)
         {
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports, ownerAssembly);
-            _model = new KerbcastWorldModel(ids, supports);
+            _model = new KerbcastWorldModel(labels, supports);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 

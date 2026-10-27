@@ -44,7 +44,7 @@
     <Compile Include="..\mod\IKerbcastApi.cs" />
     <Compile Include="..\mod\DockingCameraFacts.cs" />
     <Compile Include="..\mod\KerbcastApiAdapter.cs" />
-    <Compile Include="..\mod\CraftIdMap.cs" />
+    <Compile Include="..\mod\CraftLabels.cs" />
     <Compile Include="..\mod\KerbcastAuthority.cs" />
     <Compile Include="..\mod\KerbcastWorldModel.cs" />
     <Compile Include="..\mod\KerbcastGovernor.cs" />
@@ -73,9 +73,8 @@
          comment). The [Fact]s stay here, naming this Uplink's own types. -->
     <!-- KerbcastHealth builds Sitrep.Contract's UplinkHealth (KSP-free). -->
     <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
-    <!-- Kerbcast's packages target net48 alone; their assemblies load under net10.0. -->
-    <PackageReference Include="Kerbcast.API" Version="[$(KerbcastApiVersion)]" NoWarn="NU1701" />
-    <PackageReference Include="Kerbcast.API.Testing" Version="[$(KerbcastApiVersion)]" NoWarn="NU1701" />
+    <PackageReference Include="Kerbcast.API" Version="[$(KerbcastApiVersion)]" />
+    <PackageReference Include="Kerbcast.API.Testing" Version="[$(KerbcastApiVersion)]" />
   </ItemGroup>
 
 </Project>
