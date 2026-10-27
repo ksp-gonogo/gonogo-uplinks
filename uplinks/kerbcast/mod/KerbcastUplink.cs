@@ -64,6 +64,7 @@ namespace Gonogo.KerbcastUplink
         private IUplinkHost? _host;
         private readonly CraftLabels _craftLabels = new CraftLabels();
         private double? _craftLabelsRead;
+        private readonly KerbcastLensSites _lensSites = new KerbcastLensSites();
         private IChannelPublisher? _cameras;
         private readonly KerbcastModSettings _modSettings;
 
@@ -134,6 +135,8 @@ namespace Gonogo.KerbcastUplink
 
         public void Register(IUplinkHost host)
         {
+            RegisterLensNamespace(host);
+
             var binding = KerbcastBinding.Bind(
                 KerbcastBinding.IsKerbcastLoaded(), () => new KerbcastApiAdapter());
             if (binding.Api == null)
@@ -174,6 +177,24 @@ namespace Gonogo.KerbcastUplink
                 kernel);
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
+
+        /// <summary>
+        /// Declares the namespace the lens commands name as Subject. Registered even
+        /// when kerbcast is absent, since a command whose Subject resolves to nothing
+        /// takes the whole Uplink offline.
+        /// </summary>
+        private void RegisterLensNamespace(IUplinkHost host)
+        {
+            host.RegisterDynamicNamespace(KerbcastLensSites.Prefix, new ChannelDeclaration
+            {
+                Kind = SampleKind.Discrete,
+                Delivery = Delivery.LossyLatest,
+                Delay = DelayRole.Delayed,
+                Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+                PerLensNode = true,
+                LensSiteForKey = _lensSites.SiteFor,
+            });
+        }
 
         /// <summary>
         /// kerbcast absent or unreadable: report why, and register inert sources
@@ -249,6 +270,7 @@ namespace Gonogo.KerbcastUplink
             var reported = ActiveVesselId();
             if (!coreActive || reported == null)
             {
+                _lensSites.Clear();
                 // Definitive empty rather than "no value": kerbcast.cameras is
                 // LossyLatest, so publishing nothing would leave the previous
                 // vessel's camera list stale on the wire after a scene change,
@@ -257,6 +279,14 @@ namespace Gonogo.KerbcastUplink
                 capture.Entries = new List<object?>();
                 return capture;
             }
+
+            var loaded = new List<KeyValuePair<string, IReadOnlyList<KerbcastView>>>();
+            foreach (var craft in FlightGlobals.VesselsLoaded)
+            {
+                loaded.Add(new KeyValuePair<string, IReadOnlyList<KerbcastView>>(
+                    "vessel:" + craft.id, kerbcast.CamerasFor(craft.id)));
+            }
+            _lensSites.Replace(loaded);
 
             var vesselId = "vessel:" + reported.Value;
             var views = kerbcast.CamerasFor(reported.Value);
@@ -363,7 +393,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
             }
-            if (!TryCameraId(args.CameraId, out var cameraId))
+            if (!TryCameraId(args.CameraId, out var cameraId) || !KerbcastLensSites.Agrees(args.LensKey, args.CameraId))
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
@@ -382,7 +412,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
             }
-            if (!TryCameraId(args.CameraId, out var cameraId))
+            if (!TryCameraId(args.CameraId, out var cameraId) || !KerbcastLensSites.Agrees(args.LensKey, args.CameraId))
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }

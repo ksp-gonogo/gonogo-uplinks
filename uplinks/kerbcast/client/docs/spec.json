@@ -138,6 +138,10 @@
         {
           "name": "fieldOfView",
           "unit": "°"
+        },
+        {
+          "name": "lensKey",
+          "unit": "text"
         }
       ]
     },
@@ -147,6 +151,10 @@
         {
           "name": "cameraId",
           "unit": "id"
+        },
+        {
+          "name": "lensKey",
+          "unit": "text"
         },
         {
           "name": "pitch",

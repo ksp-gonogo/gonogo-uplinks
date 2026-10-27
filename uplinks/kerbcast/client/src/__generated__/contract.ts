@@ -109,6 +109,12 @@ export interface KerbcastSetFieldOfViewArgs
 	/** Target camera, identified by its `KerbcastCameraEntry.cameraId`. */
 	cameraId: number;
 	/**
+	* The lens the command is for: the camera id in decimal, as the lens namespace
+	* keys it. Must name the same camera as `KerbcastSetFieldOfViewArgs.cameraId`,
+	* and sets which craft's signal delay the command takes.
+	*/
+	lensKey: string;
+	/**
 	* Requested field of view, degrees. kerbcast clamps to the camera's own
 	* bounds.
 	*/
@@ -122,6 +128,12 @@ export interface KerbcastSetPanArgs
 {
 	/** Target camera, identified by its `KerbcastCameraEntry.cameraId`. */
 	cameraId: number;
+	/**
+	* The lens the command is for: the camera id in decimal, as the lens namespace
+	* keys it. Must name the same camera as `KerbcastSetPanArgs.cameraId`, and
+	* sets which craft's signal delay the command takes.
+	*/
+	lensKey: string;
 	/** Requested yaw, degrees. kerbcast clamps to the camera's own bounds. */
 	yaw: number;
 	/** Requested pitch, degrees. kerbcast clamps to the camera's own bounds. */

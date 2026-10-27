@@ -201,6 +201,14 @@ public class KerbcastSetFieldOfViewArgs
     [SitrepUnit(Units.Id)]
     public long CameraId { get; set; }
 
+    /// <summary>
+    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
+    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
+    /// delay the command takes.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string LensKey { get; set; } = "";
+
     /// <summary>Requested field of view, degrees. kerbcast clamps to the camera's own bounds.</summary>
     [SitrepUnit(Units.Degrees)]
     public double FieldOfView { get; set; }
@@ -220,6 +228,14 @@ public class KerbcastSetPanArgs
     /// <summary>Target camera, identified by its <see cref="KerbcastCameraEntry.CameraId"/>.</summary>
     [SitrepUnit(Units.Id)]
     public long CameraId { get; set; }
+
+    /// <summary>
+    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
+    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
+    /// delay the command takes.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string LensKey { get; set; } = "";
 
     /// <summary>Requested yaw, degrees. kerbcast clamps to the camera's own bounds.</summary>
     [SitrepUnit(Units.Degrees)]

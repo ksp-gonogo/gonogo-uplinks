@@ -36,8 +36,8 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 
 | Args | Fields |
 | --- | --- |
-| `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` ° |
-| `KerbcastSetPanArgs` | `cameraId` id, `pitch` °, `yaw` ° |
+| `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` °, `lensKey` text |
+| `KerbcastSetPanArgs` | `cameraId` id, `lensKey` text, `pitch` °, `yaw` ° |
 
 ## Widgets
 
