@@ -1,0 +1,19 @@
+{
+  "id": "aero",
+  "name": "Aerodynamics",
+  "description": "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "Ferram Aerospace Research",
+    "builtAgainst": "0.16.1.2"
+  },
+  "version": "1.0.0-rc.2",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 49,
+  "contractMinor": 4,
+  "bundleUrl": "aero/aero.client.js",
+  "integrity": "sha256-0eee8a91db3ca8f887fe3421888b0bc1836d3213215cbdcbab6d07f16892d816",
+  "sdkVersion": "0.0.1"
+}

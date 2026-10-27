@@ -1,0 +1,171 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "aero",
+    "name": "Aerodynamics",
+    "version": "1.0.0-rc.2",
+    "description": "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.",
+    "wraps": {
+      "name": "Ferram Aerospace Research",
+      "builtAgainst": "0.16.1.2",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "aero.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "aero.state",
+      "payload": "AeroState",
+      "array": false,
+      "fields": [
+        {
+          "name": "aeroModelValid",
+          "unit": "flag"
+        },
+        {
+          "name": "angleOfAttack",
+          "unit": "°"
+        },
+        {
+          "name": "ballisticCoefficient",
+          "unit": "kg/m²"
+        },
+        {
+          "name": "dragCoefficient",
+          "unit": "1"
+        },
+        {
+          "name": "dragForce",
+          "unit": "kN"
+        },
+        {
+          "name": "equivalentAirspeed",
+          "unit": "m/s"
+        },
+        {
+          "name": "indicatedAirspeed",
+          "unit": "m/s"
+        },
+        {
+          "name": "liftCoefficient",
+          "unit": "1"
+        },
+        {
+          "name": "liftForce",
+          "unit": "kN"
+        },
+        {
+          "name": "liftToDragRatio",
+          "unit": "1"
+        },
+        {
+          "name": "referenceArea",
+          "unit": "m²"
+        },
+        {
+          "name": "sideslip",
+          "unit": "°"
+        },
+        {
+          "name": "specificExcessPower",
+          "unit": "W/kg"
+        },
+        {
+          "name": "stallFraction",
+          "unit": "ratio"
+        },
+        {
+          "name": "terminalVelocity",
+          "unit": "m/s"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [],
+  "otherPayloads": [],
+  "commands": [],
+  "commandArgs": [],
+  "widgets": [
+    {
+      "id": "aerodynamics",
+      "name": "Aerodynamics",
+      "description": "Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Ferram Aerospace Research computes them. Shows that FAR is unavailable instead of zeros when it is not installed.",
+      "tags": [
+        "flight",
+        "ro"
+      ],
+      "channels": [
+        "aero.state"
+      ],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 4,
+        "h": 7
+      },
+      "minSize": {
+        "w": 4,
+        "h": 5
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [],
+  "contributions": [
+    {
+      "id": "aero:descent-envelope",
+      "contributes": "plots",
+      "deps": [
+        "aero.state",
+        "vessel.landing",
+        "vessel.flight",
+        "vessel.surface",
+        "vessel.identity",
+        "trackingStation.bodies"
+      ],
+      "requires": "aero",
+      "settings": []
+    },
+    {
+      "id": "aero:descent-envelope-badges",
+      "contributes": "landing-status.badges",
+      "deps": [
+        "aero.state"
+      ],
+      "requires": "aero",
+      "settings": []
+    }
+  ],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}
