@@ -1,0 +1,1221 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "principia",
+    "name": "Principia",
+    "version": "1.0.0-rc.2",
+    "description": "Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.",
+    "wraps": {
+      "name": "Principia",
+      "builtAgainst": "2026081218-Levi-Civita",
+      "tier": "manual"
+    }
+  },
+  "topics": [
+    {
+      "id": "principia.analysis",
+      "payload": "PrincipiaAnalysis",
+      "array": false,
+      "fields": [
+        {
+          "name": "coasts",
+          "shape": "PrincipiaCoastAnalysis[]"
+        },
+        {
+          "name": "orbit",
+          "shape": "PrincipiaOrbitAnalysis"
+        },
+        {
+          "name": "sampledAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "principia.plan",
+      "payload": "PrincipiaPlan",
+      "array": false,
+      "fields": [
+        {
+          "name": "actualFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "anomalousBurnCount",
+          "unit": "count"
+        },
+        {
+          "name": "burns",
+          "shape": "PrincipiaPlannedBurn[]"
+        },
+        {
+          "name": "desiredFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "firstFutureBurnIndex",
+          "unit": "count"
+        },
+        {
+          "name": "initialTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "integrator",
+          "shape": "PrincipiaPlanIntegrator"
+        },
+        {
+          "name": "optimisationRunning",
+          "unit": "flag"
+        },
+        {
+          "name": "planCount",
+          "unit": "count"
+        },
+        {
+          "name": "planExists",
+          "unit": "flag"
+        },
+        {
+          "name": "planIntegrated",
+          "unit": "flag"
+        },
+        {
+          "name": "reachedDeadline",
+          "unit": "flag"
+        },
+        {
+          "name": "sampledAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "selectedPlan",
+          "unit": "count"
+        },
+        {
+          "name": "statusError",
+          "unit": "enum"
+        },
+        {
+          "name": "statusMessage",
+          "unit": "text"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        },
+        {
+          "name": "writeSurface",
+          "shape": "PrincipiaWriteSurface"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "principia.settings",
+      "payload": "PrincipiaSettings",
+      "array": false,
+      "fields": [
+        {
+          "name": "analysisMissionDurationRequestedSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "burnFrames",
+          "shape": "PrincipiaReferenceFrame[]"
+        },
+        {
+          "name": "displayPatchedConics",
+          "unit": "flag"
+        },
+        {
+          "name": "flightPlanCount",
+          "unit": "count"
+        },
+        {
+          "name": "flushThreshold",
+          "unit": "count"
+        },
+        {
+          "name": "framesHidingUnpinnedCelestials",
+          "unit": "count"
+        },
+        {
+          "name": "framesHidingUnpinnedMarkers",
+          "unit": "count"
+        },
+        {
+          "name": "groundTrackRevolution",
+          "unit": "count"
+        },
+        {
+          "name": "historyLengthSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "journaling",
+          "unit": "flag"
+        },
+        {
+          "name": "logThreshold",
+          "unit": "count"
+        },
+        {
+          "name": "observedAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "optimiserTargetAltitudeMetres",
+          "unit": "m"
+        },
+        {
+          "name": "optimiserTargetInclinationDegrees",
+          "unit": "°"
+        },
+        {
+          "name": "pinnedCelestials",
+          "unit": "text"
+        },
+        {
+          "name": "planActualFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "planDesiredFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "planInitialTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "planMaxSteps",
+          "unit": "count"
+        },
+        {
+          "name": "planToleranceMetres",
+          "unit": "m"
+        },
+        {
+          "name": "plottingFrame",
+          "shape": "PrincipiaReferenceFrame"
+        },
+        {
+          "name": "pluginVersion",
+          "unit": "text"
+        },
+        {
+          "name": "predictionMaxSteps",
+          "unit": "count"
+        },
+        {
+          "name": "predictionToleranceMetres",
+          "unit": "m"
+        },
+        {
+          "name": "predictionVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "readingSuspended",
+          "unit": "flag"
+        },
+        {
+          "name": "readingSuspendedReason",
+          "unit": "text"
+        },
+        {
+          "name": "recordJournalRequested",
+          "unit": "flag"
+        },
+        {
+          "name": "recurrenceAutodetect",
+          "unit": "flag"
+        },
+        {
+          "name": "recurrenceDaysPerCycle",
+          "unit": "count"
+        },
+        {
+          "name": "recurrenceRevolutionsPerCycle",
+          "unit": "count"
+        },
+        {
+          "name": "selectedFlightPlan",
+          "unit": "count"
+        },
+        {
+          "name": "selectingTargetCelestial",
+          "unit": "flag"
+        },
+        {
+          "name": "selectingTargetVessel",
+          "unit": "flag"
+        },
+        {
+          "name": "showElementGraphs",
+          "unit": "flag"
+        },
+        {
+          "name": "showManoeuvreOnNavball",
+          "unit": "flag"
+        },
+        {
+          "name": "stabilityGridMaxEccentricityMinInclination",
+          "unit": "flag"
+        },
+        {
+          "name": "stabilityGridMinEccentricityMaxInclination",
+          "unit": "flag"
+        },
+        {
+          "name": "stderrThreshold",
+          "unit": "count"
+        },
+        {
+          "name": "targetCelestialBody",
+          "unit": "text"
+        },
+        {
+          "name": "targetPinned",
+          "unit": "flag"
+        },
+        {
+          "name": "targetVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "targetVesselName",
+          "unit": "text"
+        },
+        {
+          "name": "unpinnedCelestialsHiddenHere",
+          "unit": "flag"
+        },
+        {
+          "name": "unpinnedMarkersHiddenHere",
+          "unit": "flag"
+        },
+        {
+          "name": "verboseLevel",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "PrincipiaAngleInterval",
+      "fields": [
+        {
+          "name": "max",
+          "unit": "°"
+        },
+        {
+          "name": "min",
+          "unit": "°"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaCoastAnalysis",
+      "fields": [
+        {
+          "name": "analysis",
+          "shape": "PrincipiaOrbitAnalysis"
+        },
+        {
+          "name": "endsAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "index",
+          "unit": "count"
+        },
+        {
+          "name": "startsAtUt",
+          "unit": "ut"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaComposedBurn",
+      "fields": [
+        {
+          "name": "deltaVBinormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVNormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVTangent",
+          "unit": "m/s"
+        },
+        {
+          "name": "ignitionUt",
+          "unit": "ut"
+        },
+        {
+          "name": "inertiallyFixed",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaLengthInterval",
+      "fields": [
+        {
+          "name": "max",
+          "unit": "m"
+        },
+        {
+          "name": "min",
+          "unit": "m"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaOrbitAnalysis",
+      "fields": [
+        {
+          "name": "anomalisticPeriodSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "ascendingCrossingDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "ascendingNodeSolarTimeDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "descendingCrossingDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "descendingNodeSolarTimeDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "elementsEpochUt",
+          "unit": "ut"
+        },
+        {
+          "name": "elementsPresent",
+          "unit": "flag"
+        },
+        {
+          "name": "firstCollisionRiskUt",
+          "unit": "ut"
+        },
+        {
+          "name": "firstCollisionUt",
+          "unit": "ut"
+        },
+        {
+          "name": "firstReentryUt",
+          "unit": "ut"
+        },
+        {
+          "name": "gravitationallyBound",
+          "unit": "flag"
+        },
+        {
+          "name": "lowestAltitudeMetres",
+          "unit": "m"
+        },
+        {
+          "name": "meanApoapsisAltitudeMetres",
+          "shape": "PrincipiaLengthInterval"
+        },
+        {
+          "name": "meanArgumentOfPeriapsisDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "meanEccentricity",
+          "shape": "PrincipiaRatioInterval"
+        },
+        {
+          "name": "meanInclinationDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "meanLongitudeOfAscendingNodeDegrees",
+          "shape": "PrincipiaAngleInterval"
+        },
+        {
+          "name": "meanPeriapsisAltitudeMetres",
+          "shape": "PrincipiaLengthInterval"
+        },
+        {
+          "name": "meanSemimajorAxisMetres",
+          "shape": "PrincipiaLengthInterval"
+        },
+        {
+          "name": "missionDurationSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "nodalPeriodSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "nodalPrecessionDegreesPerHour",
+          "unit": "°/h"
+        },
+        {
+          "name": "primaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "primaryIndex",
+          "unit": "count"
+        },
+        {
+          "name": "progressOfNextAnalysis",
+          "unit": "ratio"
+        },
+        {
+          "name": "recurrenceCycleRotations",
+          "unit": "count"
+        },
+        {
+          "name": "recurrenceEquatorialShiftDegrees",
+          "unit": "°"
+        },
+        {
+          "name": "recurrenceGridIntervalDegrees",
+          "unit": "°"
+        },
+        {
+          "name": "recurrenceRevolutions",
+          "unit": "count"
+        },
+        {
+          "name": "recurrenceRevolutionsPerRotation",
+          "unit": "count"
+        },
+        {
+          "name": "recurrenceSubcycleRotations",
+          "unit": "count"
+        },
+        {
+          "name": "siderealPeriodSeconds",
+          "unit": "s"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanIntegrator",
+      "fields": [
+        {
+          "name": "generalizedIntegratorKind",
+          "unit": "enum"
+        },
+        {
+          "name": "integratorKind",
+          "unit": "enum"
+        },
+        {
+          "name": "lengthToleranceMetres",
+          "unit": "m"
+        },
+        {
+          "name": "maxSteps",
+          "unit": "count"
+        },
+        {
+          "name": "speedToleranceMetresPerSecond",
+          "unit": "m/s"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlannedBurn",
+      "fields": [
+        {
+          "name": "anomalous",
+          "unit": "flag"
+        },
+        {
+          "name": "centreBody",
+          "unit": "text"
+        },
+        {
+          "name": "coordinateSystem",
+          "unit": "enum"
+        },
+        {
+          "name": "cutoffUt",
+          "unit": "ut"
+        },
+        {
+          "name": "deltaV",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVBinormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVNormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVTangent",
+          "unit": "m/s"
+        },
+        {
+          "name": "durationSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "executing",
+          "unit": "flag"
+        },
+        {
+          "name": "finalMassTons",
+          "unit": "t"
+        },
+        {
+          "name": "frameEditable",
+          "unit": "flag"
+        },
+        {
+          "name": "frameType",
+          "unit": "enum"
+        },
+        {
+          "name": "ignitionUt",
+          "unit": "ut"
+        },
+        {
+          "name": "index",
+          "unit": "count"
+        },
+        {
+          "name": "inertiallyFixed",
+          "unit": "flag"
+        },
+        {
+          "name": "initialMassTons",
+          "unit": "t"
+        },
+        {
+          "name": "massFlowKilogramsPerSecond",
+          "unit": "kg/s"
+        },
+        {
+          "name": "primaryBodies",
+          "unit": "text"
+        },
+        {
+          "name": "primaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "secondaryBodies",
+          "unit": "text"
+        },
+        {
+          "name": "secondaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "specificImpulseSeconds",
+          "unit": "isp"
+        },
+        {
+          "name": "thrustKilonewtons",
+          "unit": "kN"
+        },
+        {
+          "name": "timeToHalfDeltaVSeconds",
+          "unit": "s"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaRatioInterval",
+      "fields": [
+        {
+          "name": "max",
+          "unit": "1"
+        },
+        {
+          "name": "min",
+          "unit": "1"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaReferenceFrame",
+      "fields": [
+        {
+          "name": "centreBody",
+          "unit": "text"
+        },
+        {
+          "name": "primaryBodies",
+          "unit": "text"
+        },
+        {
+          "name": "primaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "secondaryBodies",
+          "unit": "text"
+        },
+        {
+          "name": "secondaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "selector",
+          "unit": "text"
+        },
+        {
+          "name": "targetFrameSelected",
+          "unit": "flag"
+        },
+        {
+          "name": "targetPrimaryBody",
+          "unit": "text"
+        },
+        {
+          "name": "targetVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "targetVesselName",
+          "unit": "text"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaWriteSurface",
+      "fields": [
+        {
+          "name": "analysedVersion",
+          "unit": "text"
+        },
+        {
+          "name": "armed",
+          "unit": "flag"
+        },
+        {
+          "name": "available",
+          "unit": "flag"
+        },
+        {
+          "name": "burnLayoutVerified",
+          "unit": "flag"
+        },
+        {
+          "name": "detectedVersion",
+          "unit": "text"
+        },
+        {
+          "name": "integratorLayoutVerified",
+          "unit": "flag"
+        },
+        {
+          "name": "reason",
+          "unit": "text"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "PrincipiaPlanWriteReceipt",
+      "fields": [
+        {
+          "name": "plan",
+          "shape": "PrincipiaPlan"
+        },
+        {
+          "name": "refusal",
+          "unit": "id"
+        },
+        {
+          "name": "refusalDetail",
+          "unit": "text"
+        },
+        {
+          "name": "replayed",
+          "unit": "flag"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "statusError",
+          "unit": "enum"
+        },
+        {
+          "name": "statusMessage",
+          "unit": "text"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "principia.plan.arm",
+      "args": "PrincipiaPlanArmArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.burn.insert",
+      "args": "PrincipiaBurnEditArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.burn.remove",
+      "args": "PrincipiaBurnRemoveArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.burn.replace",
+      "args": "PrincipiaBurnEditArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.create",
+      "args": "PrincipiaPlanSlotArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.delete",
+      "args": "PrincipiaPlanSlotArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.duplicate",
+      "args": "PrincipiaPlanSlotArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.horizon",
+      "args": "PrincipiaPlanHorizonArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.integrator",
+      "args": "PrincipiaPlanIntegratorArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "principia.plan.send",
+      "args": "PrincipiaPlanSendArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "PrincipiaBurnEditArgs",
+      "fields": [
+        {
+          "name": "burnIndex",
+          "unit": "count"
+        },
+        {
+          "name": "deltaVBinormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVNormal",
+          "unit": "m/s"
+        },
+        {
+          "name": "deltaVTangent",
+          "unit": "m/s"
+        },
+        {
+          "name": "ignitionUt",
+          "unit": "ut"
+        },
+        {
+          "name": "inertiallyFixed",
+          "unit": "flag"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaBurnRemoveArgs",
+      "fields": [
+        {
+          "name": "burnIndex",
+          "unit": "count"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanArmArgs",
+      "fields": [
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanHorizonArgs",
+      "fields": [
+        {
+          "name": "desiredFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanIntegratorArgs",
+      "fields": [
+        {
+          "name": "lengthToleranceMetres",
+          "unit": "m"
+        },
+        {
+          "name": "maxSteps",
+          "unit": "count"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "speedToleranceMetresPerSecond",
+          "unit": "m/s"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanSendArgs",
+      "fields": [
+        {
+          "name": "burns",
+          "shape": "PrincipiaComposedBurn[]"
+        },
+        {
+          "name": "composedAtViewUt",
+          "unit": "ut"
+        },
+        {
+          "name": "desiredFinalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "observedAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "PrincipiaPlanSlotArgs",
+      "fields": [
+        {
+          "name": "finalTimeUt",
+          "unit": "ut"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "libration-points",
+      "name": "Libration Points",
+      "description": "The five libration points of a body pair, drawn in the frame that turns with it so they hold still, with the craft's offset from the one it is nearest.",
+      "tags": [
+        "telemetry",
+        "navigation"
+      ],
+      "channels": [
+        "trackingStation.bodies"
+      ],
+      "optionalChannels": [
+        "vessel.orbit",
+        "vessel.identity"
+      ],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [
+        {
+          "id": "cycle-pair",
+          "label": "Cycle Pair",
+          "description": "Step to the next body pair, with Auto in the cycle."
+        }
+      ],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 6,
+        "h": 10
+      },
+      "minSize": {
+        "w": 4,
+        "h": 7
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [
+    {
+      "id": "principia-burn-editor",
+      "augments": "maneuver-planner.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "principia-coast-analysis",
+      "augments": "maneuver-planner.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "principia-flight-plan",
+      "augments": "maneuver-planner.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "principia-orbit-analysis",
+      "augments": "current-orbit.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "principia-plan-composer",
+      "augments": "maneuver-planner.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "principia-plan-slots",
+      "augments": "maneuver-planner.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": [
+    {
+      "id": "principia.burnExecuting",
+      "refines": "notClearToProceed",
+      "sentence": "that burn is executing",
+      "meaning": "The burn is running right now. The plugin permits this and only the rebase entry point checks, so the guard is ours."
+    },
+    {
+      "id": "principia.burnFrameUnsupported",
+      "refines": "capabilityMismatch",
+      "sentence": "Principia cannot take that burn's frame back",
+      "meaning": "The burn's manœuvring frame is one the producer's frame factory does not handle, so sending the burn back would abort the game."
+    },
+    {
+      "id": "principia.burnIndexOutOfRange",
+      "refines": "notFound",
+      "sentence": "the plan has no burn at that position",
+      "meaning": "The burn index was outside the count read in the same frame."
+    },
+    {
+      "id": "principia.composedBurnIncomplete",
+      "refines": "range",
+      "sentence": "a first burn needs the time it lights",
+      "meaning": "A burn with no manœuvre ahead of it was asked for without the instant it lights. An absent instant elsewhere means \"leave it where it is\", and a burn with nothing ahead of it has no instant to be left at."
+    },
+    {
+      "id": "principia.finalTimeInPast",
+      "refines": "range",
+      "sentence": "the plan would end before it starts",
+      "meaning": "A plan cannot be created ending before it starts."
+    },
+    {
+      "id": "principia.guardReadUnreadable",
+      "refines": "unreadable",
+      "sentence": "a value a write guard needs would not read",
+      "meaning": "A read a guard depends on could not be decoded from the loaded build, so the guard cannot answer: whether a burn is under thrust, whether an optimisation would revert the edit, or what the producer's clock reads. Refused rather than permitted. Distinct from `PrincipiaErrorCodes.PluginShapeChanged`, which is a field this write must set; this is a value this build could not read."
+    },
+    {
+      "id": "principia.ignitionInPast",
+      "refines": "range",
+      "sentence": "the ignition time had already passed",
+      "meaning": "The ignition instant this write asked for had already passed by the time the write arrived, which signal delay can cause with nothing done wrong at either end. Distinct from `PrincipiaErrorCodes.FinalTimeInPast`, which is about a plan's end and only reachable while creating one."
+    },
+    {
+      "id": "principia.integratorBoundsExceeded",
+      "refines": "range",
+      "sentence": "an integrator bound is outside what Principia offers",
+      "meaning": "A requested integrator bound was outside the range the producer's own controls offer."
+    },
+    {
+      "id": "principia.integratorKindUnexpected",
+      "refines": "modeUnavailable",
+      "sentence": "the plan's integrators are not a pair this Uplink expects",
+      "meaning": "The integrator kinds read back from the plugin were not the pair this build expects, so writing them back could abort with no message. The read succeeded, so this is neither unreadable nor a craft's capability."
+    },
+    {
+      "id": "principia.layoutUnverified",
+      "refines": "modeUnavailable",
+      "sentence": "this Principia build's plan layout is not verified",
+      "meaning": "The struct this write passes to the plugin failed its round-trip probe, or the probe has not run. A stale shape does not fail to resolve: it writes a plausible wrong burn into the save."
+    },
+    {
+      "id": "principia.noFlightPlan",
+      "refines": "wrongState",
+      "sentence": "the vessel has no flight plan",
+      "meaning": "The vessel holds no flight plan to edit."
+    },
+    {
+      "id": "principia.notArmed",
+      "refines": "notClearToProceed",
+      "sentence": "plan writes are not armed",
+      "meaning": "The surface was not armed. Every plan write changes the player's saved game and re-integrates on the game's own thread, so it takes a deliberate arm first."
+    },
+    {
+      "id": "principia.optimisationRunning",
+      "refines": "notClearToProceed",
+      "sentence": "an optimisation is running on the plan",
+      "meaning": "An optimisation is running on this plan and would revert the edit without reporting it."
+    },
+    {
+      "id": "principia.planAlreadyExists",
+      "refines": "wrongState",
+      "sentence": "the vessel already has a flight plan",
+      "meaning": "A plan already exists and this write would have created a second without being asked to."
+    },
+    {
+      "id": "principia.planMalformed",
+      "refines": "range",
+      "sentence": "the composed plan cannot be read as one plan",
+      "meaning": "A composed plan that cannot be read as one: no burn list where a list was required, a burn missing from the middle, more burns than a single command may install, ignitions out of time order, or an end that falls before the last burn. It refuses the whole plan, because a plan half-installed is a trajectory nobody composed."
+    },
+    {
+      "id": "principia.planSlotsFull",
+      "refines": "limitReached",
+      "sentence": "the vessel already holds ten flight plans",
+      "meaning": "The vessel already holds the producer's maximum of ten plans. An eleventh makes the producer's own planner window throw on every layout pass, permanently, with the button that would delete it inside the part that stopped rendering."
+    },
+    {
+      "id": "principia.pluginShapeChanged",
+      "refines": "unreadable",
+      "sentence": "this Principia build's plan is not shaped as this Uplink expects",
+      "meaning": "A field this write must set was not found on the producer's own struct, so its shape is not the shape that was analysed. Nothing about the vessel was established, so this is not a craft's capability."
+    },
+    {
+      "id": "principia.surfaceUnavailable",
+      "refines": "modeUnavailable",
+      "sentence": "Principia's plan surface is not available",
+      "meaning": "No plugin, no session, or a producer build whose write entry points were never analysed. Writes fail closed to read-only."
+    },
+    {
+      "id": "principia.thrustNotPositive",
+      "refines": "range",
+      "sentence": "the thrust is not positive",
+      "meaning": "Thrust is not positive. A zero-thrust burn has infinite duration, which the producer's own singularity test does not catch: it pushes the plan's end instant to infinity, spawns a thread that never terminates, and serialises the infinity into the save."
+    },
+    {
+      "id": "principia.valueNotFinite",
+      "refines": "range",
+      "sentence": "a value was not a finite number",
+      "meaning": "A requested value was not finite, or a Δv triple would have been."
+    },
+    {
+      "id": "principia.vesselUnknown",
+      "refines": "noVessel",
+      "sentence": "Principia does not know this vessel",
+      "meaning": "The plugin no longer knows this vessel."
+    }
+  ]
+}
