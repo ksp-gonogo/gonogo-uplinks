@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using GonogoKerbcastUplink;
 using Sitrep.Contract;
@@ -40,10 +41,12 @@ namespace Gonogo.KerbcastUplink
     /// connection, exactly like every other Uplink. This is the first real
     /// <see cref="ISitrepUplink.Health"/> implementation in the repo.</para>
     ///
-    /// <para>kerbcast is reached through <see cref="IKerbcastApi"/>, whose one
-    /// implementation (<see cref="KerbcastControlApi"/>) is compiled against
-    /// Kerbcast.dll and only constructed once kerbcast is known to be loaded.
-    /// Compile surface is <c>Sitrep.Contract</c>, stock KSP and Kerbcast.</para>
+    /// <para>kerbcast is reached through Kerbcast.API: cameras through
+    /// <see cref="IKerbcastApi"/> (<see cref="KerbcastApiAdapter"/>), and the
+    /// command lock and world model through <see cref="IKerbcastGovernor"/>
+    /// (<see cref="KerbcastGovernor"/>). Both are constructed only once the
+    /// assembly is known to be loaded. Compile surface is <c>Sitrep.Contract</c>,
+    /// stock KSP and Kerbcast.API.</para>
     /// </summary>
     [SitrepUplink("kerbcast")]
     public sealed class KerbcastUplink : ISitrepUplink, IUplinkSettingsDeclarer, IModSettingsSource, IModSettingsWriter
@@ -53,7 +56,14 @@ namespace Gonogo.KerbcastUplink
         public const string SetFieldOfViewCommand = KerbcastManifest.SetFieldOfViewCommand;
         public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
+        /// <summary>Real seconds between reads of the game's craft list into <see cref="_craftIds"/>.</summary>
+        private const double CraftIdSeconds = 2.0;
+
         private IKerbcastApi? _kerbcast;
+        private IKerbcastGovernor? _governor;
+        private IUplinkHost? _host;
+        private readonly CraftIdMap _craftIds = new CraftIdMap();
+        private double? _craftIdsRead;
         private IChannelPublisher? _cameras;
         private readonly KerbcastModSettings _modSettings;
 
@@ -125,13 +135,16 @@ namespace Gonogo.KerbcastUplink
         public void Register(IUplinkHost host)
         {
             var binding = KerbcastBinding.Bind(
-                KerbcastBinding.IsKerbcastLoaded(), () => new KerbcastControlApi());
+                KerbcastBinding.IsKerbcastLoaded(), () => new KerbcastApiAdapter());
             if (binding.Api == null)
             {
                 GoInert(host, binding.Reason ?? "kerbcast unavailable");
                 return;
             }
             _kerbcast = binding.Api;
+            _host = host;
+            _governor = NewGovernor(_craftIds, () => host.Kernel);
+            GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
             _cameras = host.Publisher(CamerasTopic);
@@ -151,6 +164,17 @@ namespace Gonogo.KerbcastUplink
             host.AddCommandHandler<KerbcastSetPanArgs, CommandResult>(
                 SetPanCommand, HandleSetPan);
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static IKerbcastGovernor NewGovernor(CraftIdMap ids, Func<Kernel?> kernel) =>
+            new KerbcastGovernor(
+                () => Kerbcast.Api.KerbcastApi.Instance,
+                Kerbcast.Api.KerbcastApi.Supports,
+                typeof(KerbcastUplink).Assembly.GetName().Name,
+                ids,
+                kernel);
+
+        private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 
         /// <summary>
         /// kerbcast absent or unreadable: report why, and register inert sources
@@ -216,8 +240,15 @@ namespace Gonogo.KerbcastUplink
             }
             _sidecarConfirmedDead = _sidecarDebouncer.ConfirmedDead;
 
-            var vessel = FlightGlobals.ActiveVessel;
-            if (!coreActive || vessel == null)
+            var now = UnityEngine.Time.realtimeSinceStartup;
+            if (coreActive)
+            {
+                LearnCraftIds(now);
+                _governor?.Tick(snapshot.Ut, now);
+            }
+
+            var reported = ActiveVesselId();
+            if (!coreActive || reported == null)
             {
                 // Definitive empty rather than "no value": kerbcast.cameras is
                 // LossyLatest, so publishing nothing would leave the previous
@@ -228,19 +259,70 @@ namespace Gonogo.KerbcastUplink
                 return capture;
             }
 
-            var vesselId = "vessel:" + vessel.id;
-            var views = kerbcast.CamerasFor(vessel);
+            var vesselId = "vessel:" + reported.Value;
+            var views = kerbcast.CamerasFor(reported.Value);
             var entries = new List<object?>(views.Count);
 
             foreach (var view in views)
             {
-                var docking = DockingCameraDetector.Detect(view.Part);
+                var docking = DockingCameraFacts.FromView(view);
                 entries.Add(KerbcastCameraEntryBuilder.Build(view, docking, vesselId));
             }
 
             Volatile.Write(ref _cameraCount, entries.Count);
             capture.Entries = entries;
             return capture;
+        }
+
+        /// <summary>The craft every active-vessel channel reports, the one a kerbal on EVA left; null with no flight.</summary>
+        private Guid? ActiveVesselId()
+        {
+            string? id;
+            try
+            {
+                id = _host?.Kernel?.Query<IActiveVessel>(ActiveVesselCapability.Id).ReportedId;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            return Guid.TryParse(id, out var guid) && guid != Guid.Empty ? guid : (Guid?)null;
+        }
+
+        /*
+         * Identity only, never position: each craft's id, persistentId, name and type,
+         * so the world model can name in Kerbcast's terms a craft Gonogo's knowledge
+         * names by id, including one the game has since lost.
+         */
+        private void LearnCraftIds(double now)
+        {
+            if (_craftIdsRead.HasValue && now - _craftIdsRead.Value < CraftIdSeconds)
+            {
+                return;
+            }
+            _craftIdsRead = now;
+            var saved = HighLogic.CurrentGame?.flightState?.protoVessels;
+            if (saved != null)
+            {
+                foreach (var proto in saved)
+                {
+                    if (proto != null)
+                    {
+                        _craftIds.Learn(proto.vesselID, proto.persistentId, new CraftLabel(proto.vesselName, proto.vesselType.ToString()));
+                    }
+                }
+            }
+            var live = FlightGlobals.Vessels;
+            if (live != null)
+            {
+                foreach (var vessel in live)
+                {
+                    if (vessel != null)
+                    {
+                        _craftIds.Learn(vessel.id, vessel.persistentId, new CraftLabel(vessel.vesselName, vessel.vesselType.ToString()));
+                    }
+                }
+            }
         }
 
         /// <summary>COURIER-THREAD handle: publish the captured inventory.</summary>

@@ -8,12 +8,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * One kerbcast camera as it appears on the `kerbcast.cameras` channel, a bare
 * JSON array of these.
 *
-* Sourced by reflecting the running kerbcast plugin's public
-* `Kerbcast.KerbcastControl` static facade (never a compile-time reference:
-* kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection pattern is
-* mandatory; see `GonogoKerbcastUplink.csproj`'s header). Every field below is
-* read off kerbcast's `KerbcastCameraView`, except the docking fields, which
-* this Uplink derives from the stock KSP `Part` the view carries.
+* Every field is the camera as kerbcast reports it, docking facts included.
 *
 * R7 typed-absence discipline: every field is nullable. A camera whose pan
 * bounds could not be read carries `null`, never a 0 that a consumer would

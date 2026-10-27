@@ -14,6 +14,14 @@
   <PropertyGroup>
     <GonogoContractVersion>1.0.0-pin.gb38f074c2cba</GonogoContractVersion>
   </PropertyGroup>
+  <!-- The version of Kerbcast.API and Kerbcast.API.Testing the kerbcast Uplink
+       references. Until Kerbcast.API is on nuget.org both packages are in
+       vendor/nuget, packed from the Kerbcast commit in vendor/kerbcast-ref by
+       scripts/vendor-kerbcast-api.sh, which also writes this line. Once it is
+       released this becomes that release's version and the vendored files go. -->
+  <PropertyGroup>
+    <KerbcastApiVersion>1.0.0-pin.ge1dba42</KerbcastApiVersion>
+  </PropertyGroup>
   <!-- The version every Uplink's manifest reports. A release sets it from the
        tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->
   <PropertyGroup>

@@ -48,13 +48,11 @@ namespace GonogoKerbcastUplink;
 /// One kerbcast camera as it appears on the <c>kerbcast.cameras</c> channel,
 /// a bare JSON array of these.
 ///
-/// <para>Sourced by reflecting the running kerbcast plugin's public
-/// <c>Kerbcast.KerbcastControl</c> static facade (never a compile-time
-/// reference: kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection
-/// pattern is mandatory; see <c>GonogoKerbcastUplink.csproj</c>'s header).
-/// Every field below is read off kerbcast's <c>KerbcastCameraView</c>, except
-/// the docking fields, which this Uplink derives from the stock KSP
-/// <c>Part</c> the view carries.</para>
+/// <para>Every field is the camera as kerbcast reports it, docking facts
+/// included.</para>
+/// <internal>
+/// Read through Kerbcast.API's ICameras, by the Uplink's KerbcastApiAdapter.
+/// </internal>
 ///
 /// <para>R7 typed-absence discipline: every field is nullable. A camera whose
 /// pan bounds could not be read carries <c>null</c>, never a 0 that a consumer
