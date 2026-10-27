@@ -36,6 +36,10 @@ namespace Gonogo.KerbalismUplink
     /// </summary>
     public sealed class TransmissionRaw
     {
+        /// <summary>Bits per second, converted from Kerbalism's megabytes per second. Null with no link or no readable rate, never zero.</summary>
+        public double? DataRateBitsPerSecond;
+        /// <summary>Null with no link or an empty name.</summary>
+        public string? Target;
         public double? ScienceTransmitted;
     }
 

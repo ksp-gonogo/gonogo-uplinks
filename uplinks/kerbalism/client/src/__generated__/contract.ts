@@ -790,14 +790,28 @@ export interface KerbalismFeatures
 }
 /**
 * What Kerbalism reports about the craft's transmission to the command centre:
-* the science it has sent in total. Published on `kerbalism.transmission`, and
-* not for an EVA kerbal, whose suit has no transmitter to report on.
+* the rate it can send at, who it is sending to, and the science it has sent
+* in total. Published on `kerbalism.transmission`, and not for an EVA kerbal,
+* whose suit has no transmitter to report on.
 *
 * A figure Kerbalism does not report stays null and rides as null: an unread
-* total is not a total of zero.
+* total is not a total of zero, and a craft with no link has no rate.
 */
 export interface KerbalismTransmission
 {
+	/**
+	* The data rate Kerbalism gives the craft's link to the command centre: the
+	* antenna's base rate scaled by the link's signal strength, never below
+	* Kerbalism's minimum data rate setting. Null while the craft has no link, and
+	* when the link is through a relay whose own rate cannot be read.
+	*/
+	dataRate?: Value<"bit/s"> | null;
+	/**
+	* What the first hop of the craft's link ends at, as Kerbalism names it ("DSN:
+	* KSC" for the command centre, a relay's name otherwise). Null while the craft
+	* has no link.
+	*/
+	target?: string | null;
 	/**
 	* The science points this craft has transmitted since launch, the total
 	* Kerbalism's own telemetry page prints as "total science transmitted".

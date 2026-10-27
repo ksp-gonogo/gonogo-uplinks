@@ -21,7 +21,7 @@ import {
   registerAugment,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import { Badge, Cluster, Grid, Stack, Text, Unit } from "@ksp-gonogo/ui-kit";
+import { Badge, Grid, Stack, Text, Unit } from "@ksp-gonogo/ui-kit";
 import { readRealAntennasHopExt } from "../hopExt.js";
 import { REALANTENNAS } from "../uplink.js";
 // Side-effect import so the RA Topic registrations + the hop-bag hydration
@@ -53,37 +53,24 @@ const LABEL_STYLE = {
 };
 
 /**
- * Compact header chip: band + downlink rate, e.g. "X-band" alongside "262 kbps".
- * Renders nothing until RA reports a rate, so it never shows an empty chip.
+ * Compact header chip: the link's band, e.g. "X-band". Renders nothing until RA
+ * reports a band, so it never shows an empty chip. The link's data rate is not
+ * drawn here: it goes to CommNet Signal's shared rate slot
+ * (`../CommSignal/linkRate`), so it reads the same whichever Uplink supplies it.
  */
 function CommSignalRaBadges() {
-  // Only a current observation is drawn, matching CommSignal's own rule: a rate
+  // Only a current observation is drawn, matching CommSignal's own rule: a band
   // held from before a gap asserts a link that may be gone. No published model
   // carries these values forward, so a held read has nothing to offer here.
-  const dataRate = useTelemetry("comms.dataRate");
   const path = useTelemetry("comms.path");
   const linkDown = useLinkDown();
   const ext = readRealAntennasHopExt(
     primaryHop(path.state === "observed" ? path.value.hops : undefined),
   );
-  const down =
-    dataRate.state === "observed" ? dataRate.value.downBitsPerSec : undefined;
 
-  if (linkDown || (down === undefined && !ext?.band)) return null;
+  if (linkDown || !ext?.band) return null;
 
-  return (
-    // `sm` (not `xs`): the band pill and the rate value are two distinct
-    // readings, not one run-on label, and `xs`'s 2px gap read as the rate
-    // crowding the pill's rounded edge rather than sitting beside it.
-    <Cluster gap="related-dense" align="center">
-      {ext?.band ? <Badge tone="info">{ext.band}-band</Badge> : null}
-      {down !== undefined ? (
-        <Text size="xs" level="muted">
-          <Unit value={down} />
-        </Text>
-      ) : null}
-    </Cluster>
-  );
+  return <Badge tone="info">{ext.band}-band</Badge>;
 }
 
 /**
@@ -213,7 +200,7 @@ registerAugment({
   id: "realantennas-comm-signal-badge",
   augments: "comm-signal.badges",
   requires: "realantennas",
-  channels: ["comms.dataRate", "comms.path", "comms.link"],
+  channels: ["comms.path", "comms.link"],
   component: CommSignalRaBadges,
   owner: REALANTENNAS,
 });

@@ -348,8 +348,16 @@
       "array": false,
       "fields": [
         {
+          "name": "dataRate",
+          "unit": "bit/s"
+        },
+        {
           "name": "scienceTransmitted",
           "unit": "science"
+        },
+        {
+          "name": "target",
+          "unit": "text"
         }
       ],
       "disposition": {
@@ -1148,6 +1156,15 @@
     }
   ],
   "contributions": [
+    {
+      "id": "kerbalism:comm-signal-link-rate",
+      "contributes": "comm-signal.link-rate",
+      "deps": [
+        "kerbalism.transmission"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
     {
       "id": "kerbalism:crew-survival-badge",
       "contributes": "crew-status.badges",

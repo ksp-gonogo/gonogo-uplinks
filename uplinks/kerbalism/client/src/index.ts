@@ -172,6 +172,9 @@ import "./Reliability/index.js";
 // ScienceData's `science-data.archive-readouts` slot: the science the craft has
 // transmitted to the command centre, off `kerbalism.transmission`.
 import "./Transmission/scienceTransmitted.js";
+// CommNet Signal's `comm-signal.link-rate` slot: the rate and target Kerbalism
+// gives the craft's link, for a save running the stock network.
+import "./Transmission/linkRate.js";
 
 // The CrewSurvival Processor handle + its result types, the single per-frame
 // derivation the survival meters, the per-row badge and the panel badge all consume.

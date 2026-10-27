@@ -141,6 +141,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
 | `kerbalism:science-transmitted` | `science-data.archive-readouts` | `kerbalism.transmission` | only while `kerbalism` |
+| `kerbalism:comm-signal-link-rate` | `comm-signal.link-rate` | `kerbalism.transmission` | only while `kerbalism` |
 
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](client/docs/assets/radiation-dose-critical--default.png)
 

@@ -60,7 +60,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.dataRate`, `comms.path`, `comms.link` | only while `realantennas` | 0 |  |
+| `realantennas-comm-signal-badge` | `comm-signal.badges` | `comms.path`, `comms.link` | only while `realantennas` | 0 |  |
 | `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path`, `comms.link` | only while `realantennas` | 3 |  |
 | `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `trackingStation.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
 
@@ -73,6 +73,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `realantennas:comm-signal-hop-rates` | `comm-signal.hop-rates` | `realantennas.hopRates` | only while `realantennas` |
+| `realantennas:comm-signal-link-rate` | `comm-signal.link-rate` | `comms.dataRate` | only while `realantennas` |
 
 ![Per-hop bitrates joined onto CommSignal's route, with the slow middle leg flagged as the bottleneck](client/docs/assets/ra-hop-rates-bottleneck--default.png)
 

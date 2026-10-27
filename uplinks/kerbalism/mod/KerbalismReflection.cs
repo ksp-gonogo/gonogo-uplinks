@@ -1434,9 +1434,12 @@ namespace Gonogo.KerbalismUplink
 
         /// <summary>
         /// The craft's transmission figures from Kerbalism's per-vessel data
-        /// (<c>VesselData.scienceTransmitted</c>), the ones its own telemetry
-        /// page prints. Null for an EVA kerbal, which that page also leaves out,
-        /// and when the vessel's data cannot be read.
+        /// (<c>VesselData.Connection</c>'s rate and target name, and
+        /// <c>VesselData.scienceTransmitted</c>), the ones its own telemetry page
+        /// prints. The rate is Kerbalism's, already damped by signal strength and
+        /// floored at its minimum, so it is read and never recomputed. Null for an EVA
+        /// kerbal, which that page also leaves out, and when the vessel's data
+        /// cannot be read.
         /// </summary>
         public TransmissionRaw? Transmission(Vessel v)
         {
@@ -1444,7 +1447,19 @@ namespace Gonogo.KerbalismUplink
             object? vd;
             try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
             if (vd == null) return null;
-            return new TransmissionRaw { ScienceTransmitted = MemberDouble(vd, "scienceTransmitted") };
+            var connection = Member(vd, "Connection");
+            var (bits, target) = connection == null
+                ? ((double?)null, (string?)null)
+                : KerbalismCapture.LinkFigures(
+                    MemberBool(connection, "linked"),
+                    MemberDouble(connection, "rate"),
+                    MemberString(connection, "target_name"));
+            return new TransmissionRaw
+            {
+                DataRateBitsPerSecond = bits,
+                Target = target,
+                ScienceTransmitted = MemberDouble(vd, "scienceTransmitted"),
+            };
         }
 
         public ModifierContext? BeginModifierContext(Vessel v)

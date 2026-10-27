@@ -116,7 +116,7 @@ public class KerbalismWireParityTests
 
         var profile = KerbalismCapture.BuildProfile(Profile());
 
-        var transmission = KerbalismCapture.BuildTransmission(new TransmissionRaw { ScienceTransmitted = 12.5 });
+        var transmission = KerbalismCapture.BuildTransmission(new TransmissionRaw { DataRateBitsPerSecond = 144_000, Target = "DSN: KSC", ScienceTransmitted = 12.5 });
 
         var reliabilitySummary = KerbalismCapture.BuildReliabilitySummary(new GonogoKerbalismUplink.KerbalismReliabilitySummary());
         var reliabilityParts = KerbalismCapture.BuildReliabilityParts(new[]

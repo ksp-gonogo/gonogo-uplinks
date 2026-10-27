@@ -276,8 +276,32 @@ namespace Gonogo.KerbalismUplink
         public static Dictionary<string, object?> BuildTransmission(TransmissionRaw t) =>
             new Dictionary<string, object?>
             {
+                ["dataRate"] = t.DataRateBitsPerSecond,
+                ["target"] = t.Target,
                 ["scienceTransmitted"] = t.ScienceTransmitted,
             };
+
+        /// <summary>
+        /// Kerbalism stores a link's rate in megabytes per second, decimal (its
+        /// own <c>BPerMB</c> is 10^6), and compares it against its bits-per-second
+        /// minimum with this same factor.
+        /// </summary>
+        public const double BitsPerMegabyte = 8_000_000;
+
+        /// <summary>
+        /// A link's figures as Kerbalism's own <c>ConnectionInfo</c> holds them. A
+        /// craft that is not linked has neither a rate nor a target, and a rate
+        /// of zero on a linked craft is Kerbalism declining to say (a relay whose
+        /// own rate it cannot see), so none of those ride as a zero.
+        /// </summary>
+        public static (double? BitsPerSecond, string? Target) LinkFigures(
+            bool? linked, double? megabytesPerSecond, string? targetName)
+        {
+            if (linked != true) return (null, null);
+            double? bits = megabytesPerSecond is > 0 ? megabytesPerSecond * BitsPerMegabyte : null;
+            string? target = string.IsNullOrEmpty(targetName) ? null : targetName;
+            return (bits, target);
+        }
 
         /// <summary>
         /// The vessel-level reliability picture as the wire writes it (Topic

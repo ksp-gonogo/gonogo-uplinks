@@ -288,7 +288,9 @@
       "subjectId": "id"
     },
     "KerbalismTransmission": {
-      "scienceTransmitted": "science"
+      "dataRate": "bit/s",
+      "scienceTransmitted": "science",
+      "target": "text"
     }
   },
   "topics": {
@@ -357,7 +359,9 @@
       "stormIncoming": "flag"
     },
     "kerbalism.transmission": {
-      "scienceTransmitted": "science"
+      "dataRate": "bit/s",
+      "scienceTransmitted": "science",
+      "target": "text"
     }
   },
   "typeShapes": {

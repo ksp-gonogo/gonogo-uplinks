@@ -565,7 +565,6 @@
       "id": "realantennas-comm-signal-badge",
       "augments": "comm-signal.badges",
       "channels": [
-        "comms.dataRate",
         "comms.path",
         "comms.link"
       ],
@@ -594,6 +593,16 @@
         "realantennas.hopRates"
       ],
       "requires": "realantennas",
+      "settings": []
+    },
+    {
+      "id": "realantennas:comm-signal-link-rate",
+      "contributes": "comm-signal.link-rate",
+      "deps": [
+        "comms.dataRate"
+      ],
+      "requires": "realantennas",
+      "priority": 2,
       "settings": []
     }
   ],

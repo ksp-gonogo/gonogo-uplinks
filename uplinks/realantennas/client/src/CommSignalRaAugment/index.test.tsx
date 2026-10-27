@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it } from "vitest";
-import { CommSignalRaSection } from "./index.js";
+import { CommSignalRaBadges, CommSignalRaSection } from "./index.js";
 
 const renderedTrees: Array<() => void> = [];
 
@@ -76,5 +76,25 @@ describe("the link budget section", () => {
       expect(screen.queryByLabelText("Link budget detail")).toBeNull(),
     );
     expect(screen.queryByText("Convolutional 7, 1/2")).toBeNull();
+  });
+});
+
+describe("the header chip", () => {
+  it("names the band and leaves the data rate to the shared rate slot", async () => {
+    const stream = setupStreamFixture();
+    const result = render(
+      <stream.Provider>
+        <CommSignalRaBadges />
+      </stream.Provider>,
+    );
+    renderedTrees.push(result.unmount);
+    act(() => {
+      stream.emit("comms.link", { connected: true });
+      stream.emit("comms.dataRate", { upBitsPerSec: 9_600, downBitsPerSec: 262_000 });
+      stream.emit("comms.path", { hops: [HOP] });
+    });
+
+    await screen.findByText("L-band");
+    expect(screen.queryByText(/bit\/s|kbit/)).toBeNull();
   });
 });
