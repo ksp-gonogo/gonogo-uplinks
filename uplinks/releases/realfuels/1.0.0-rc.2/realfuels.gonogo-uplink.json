@@ -1,0 +1,19 @@
+{
+  "id": "realfuels",
+  "name": "RealFuels",
+  "description": "Reports per-engine RealFuels limits: ignitions remaining, ullage stability and pressure feed, plus cryogenic boiloff.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "RealFuels",
+    "builtAgainst": "15.15.0"
+  },
+  "version": "1.0.0-rc.2",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 49,
+  "contractMinor": 4,
+  "bundleUrl": "realfuels/realfuels.client.js",
+  "integrity": "sha256-6c9a10bf2cb3372e02d493976451c2d36451f997004e04a482acce9b943020a5",
+  "sdkVersion": "0.0.1"
+}
