@@ -20,7 +20,7 @@
        scripts/vendor-kerbcast-api.sh, which also writes this line. Once it is
        released this becomes that release's version and the vendored files go. -->
   <PropertyGroup>
-    <KerbcastApiVersion>1.0.0-pin.g39cf603</KerbcastApiVersion>
+    <KerbcastApiVersion>1.0.0-pin.g13b6608</KerbcastApiVersion>
   </PropertyGroup>
   <!-- The version every Uplink's manifest reports. A release sets it from the
        tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->

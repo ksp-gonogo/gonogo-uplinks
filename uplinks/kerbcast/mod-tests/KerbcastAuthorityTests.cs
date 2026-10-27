@@ -16,7 +16,7 @@ public class KerbcastAuthorityTests
     private const double Light = 299792458.0;
 
     private static KerbcastAuthority Authority(RecordingKerbcast kc) =>
-        new KerbcastAuthority(() => kc, kc.Supports, "GonogoKerbcastUplink");
+        new KerbcastAuthority(() => kc, kc.Supports);
 
     [Fact]
     public void DelayOnTakesTheLockWithAWorldModelRequiredAndPassesTheSignalSpeed()
@@ -30,7 +30,7 @@ public class KerbcastAuthorityTests
         Assert.Equal(LockOptions.WorldModelRequired, kc.Command.LockOptions);
         Assert.Equal(Light, kc.Command.SignalSpeed);
         Assert.Equal(KerbcastAuthority.Owner, kc.Command.ReservedOwner);
-        Assert.Equal("GonogoKerbcastUplink", kc.Command.ReservedAssembly);
+        Assert.Equal(typeof(KerbcastAuthority).Assembly.GetName().Name, kc.Command.ReservedAssembly);
         Assert.NotNull(authority.Publisher);
         Assert.True(authority.Publisher!.Attached);
     }
@@ -146,9 +146,25 @@ public class KerbcastAuthorityTests
     }
 
     [Fact]
+    public void AReservationHeldByAnotherModIsLeftAloneAndTheLockStillGoverns()
+    {
+        var kc = new RecordingKerbcast();
+        kc.Command.Reserve("someone-else", typeof(KerbcastAuthorityTests).Assembly.GetName().Name);
+        kc.Command.ChangeScene();
+        kc.Command.ReleaseLock("someone-else");
+        var authority = Authority(kc);
+
+        Assert.Equal(AuthorityState.Governing, authority.Tick(0.0, Light));
+        Assert.Equal(AuthorityState.Governing, authority.Tick(1.0, Light));
+
+        Assert.Equal("someone-else", kc.Command.ReservedOwner);
+        Assert.Equal(KerbcastAuthority.Owner, kc.Command.LockOwner);
+    }
+
+    [Fact]
     public void NoKerbcastInTheSceneIsAbsent()
     {
-        var authority = new KerbcastAuthority(() => null, _ => true, "GonogoKerbcastUplink");
+        var authority = new KerbcastAuthority(() => null, _ => true);
 
         Assert.Equal(AuthorityState.Absent, authority.Tick(0.0, Light));
         Assert.Null(authority.Publisher);

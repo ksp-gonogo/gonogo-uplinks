@@ -170,7 +170,6 @@ namespace Gonogo.KerbcastUplink
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
-                typeof(KerbcastUplink).Assembly.GetName().Name,
                 labels,
                 kernel);
 

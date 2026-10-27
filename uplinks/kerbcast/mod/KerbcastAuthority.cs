@@ -44,21 +44,20 @@ namespace Gonogo.KerbcastUplink
 
         private readonly Func<IKerbcast?> _kerbcast;
         private readonly Func<ApiFeature, bool> _supports;
-        private readonly string _ownerAssembly;
+        private readonly string _ownerAssembly = typeof(KerbcastAuthority).Assembly.GetName().Name;
         private bool _holds;
         private bool _reserved;
+        private bool _reserveRefused;
         private double? _lastBeat;
         private double? _speedSent;
         private bool _speedKnown;
 
         /// <param name="kerbcast">Kerbcast in this scene, normally <see cref="KerbcastApi.Instance"/>.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
-        /// <param name="ownerAssembly">The assembly whose presence keeps the reservation alive: this Uplink's.</param>
-        public KerbcastAuthority(Func<IKerbcast?> kerbcast, Func<ApiFeature, bool> supports, string ownerAssembly)
+        public KerbcastAuthority(Func<IKerbcast?> kerbcast, Func<ApiFeature, bool> supports)
         {
             _kerbcast = kerbcast;
             _supports = supports;
-            _ownerAssembly = ownerAssembly;
         }
 
         public AuthorityState State { get; private set; } = AuthorityState.Absent;
@@ -121,14 +120,14 @@ namespace Gonogo.KerbcastUplink
                 Publisher?.Dispose();
                 Publisher = command.AttachWorldModel(Owner);
                 _speedKnown = false;
+                _reserveRefused = false;
                 Tenure++;
             }
             _holds = true;
 
-            if (!_reserved)
+            if (!_reserved && !_reserveRefused)
             {
-                command.Reserve(Owner, _ownerAssembly);
-                _reserved = true;
+                Reserve(command);
             }
 
             if (Publisher == null)
@@ -146,6 +145,24 @@ namespace Gonogo.KerbcastUplink
             }
 
             return State = AuthorityState.Governing;
+        }
+
+        /*
+         * Kerbcast names the reservation after the assembly that calls it, and refuses
+         * one while another mod holds it. A refusal is not retried until the next
+         * tenure: the lock itself still governs this scene.
+         */
+        private void Reserve(ICommand command)
+        {
+            try
+            {
+                command.Reserve(Owner, _ownerAssembly);
+                _reserved = true;
+            }
+            catch (Exception e) when (e is ArgumentException || e is InvalidOperationException)
+            {
+                _reserveRefused = true;
+            }
         }
 
         private void Forget()

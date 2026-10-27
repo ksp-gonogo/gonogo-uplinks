@@ -34,7 +34,7 @@ public class KerbcastWorldModelTests
 
     public KerbcastWorldModelTests()
     {
-        _authority = new KerbcastAuthority(() => _kc, _kc.Supports, "GonogoKerbcastUplink");
+        _authority = new KerbcastAuthority(() => _kc, _kc.Supports);
         _model = new KerbcastWorldModel(_labels, _kc.Supports);
         _kc.Cameras.Learn(ProbePid, ProbeId);
         _kc.Cameras.Learn(StationPid, StationId);
@@ -290,7 +290,7 @@ public class KerbcastWorldModelTests
         Publish(100.0, 0.0);
 
         var empty = new RecordingKerbcast();
-        var authority = new KerbcastAuthority(() => empty, empty.Supports, "GonogoKerbcastUplink");
+        var authority = new KerbcastAuthority(() => empty, empty.Supports);
         authority.Tick(0.1, Light);
         _model.Publish(empty, authority.Publisher!, authority.Tenure, _sites, _knowledge, 100.1, 0.1);
 

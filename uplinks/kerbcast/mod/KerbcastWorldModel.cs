@@ -100,7 +100,7 @@ namespace Gonogo.KerbcastUplink
         /// <summary>
         /// Publishes a snapshot when anything it describes may have changed, and at
         /// least every <see cref="RefreshSeconds"/>. Returns Kerbcast's answer, or
-        /// null when nothing was due.
+        /// null when nothing was due or the snapshot could not be built.
         /// </summary>
         /// <param name="kerbcast">Kerbcast in this scene.</param>
         /// <param name="publisher">The publisher for this lock tenure.</param>
@@ -196,6 +196,39 @@ namespace Gonogo.KerbcastUplink
             }
 
             var builder = publisher.Begin(++_sequence, _epoch, knowledgeUt);
+            PublishResult result;
+            var sent = false;
+            try
+            {
+                Fill(builder, bindings, scopes, listed);
+                sent = true;
+                result = publisher.Publish(builder, out _);
+            }
+            catch (Exception)
+            {
+                /* The real store pools builder storage, and a builder neither published nor abandoned never returns it. */
+                if (!sent)
+                {
+                    publisher.Abandon(builder);
+                }
+                return null;
+            }
+
+            _lastTenure = tenure;
+            _lastEpoch = _epoch;
+            _lastVersion = version;
+            _lastBindings = bindingKey;
+            _lastAliasVersion = _aliasVersion;
+            _lastPublish = realSeconds;
+            return result;
+        }
+
+        private void Fill(
+            WorldModelBuilder builder,
+            Dictionary<string, string> bindings,
+            List<string> scopes,
+            Dictionary<string, List<uint>> listed)
+        {
             foreach (var binding in bindings)
             {
                 builder.BindSite(binding.Key, binding.Value);
@@ -223,15 +256,6 @@ namespace Gonogo.KerbcastUplink
                     }
                 }
             }
-
-            var result = publisher.Publish(builder, out _);
-            _lastTenure = tenure;
-            _lastVersion = version;
-            _lastBindings = bindingKey;
-            _lastAliasVersion = _aliasVersion;
-            _lastEpoch = _epoch;
-            _lastPublish = realSeconds;
-            return result;
         }
 
         /// <summary>Each command feed's site key, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
