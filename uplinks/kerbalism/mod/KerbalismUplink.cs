@@ -30,6 +30,7 @@ namespace Gonogo.KerbalismUplink
         private const string TransmissionTopic = "kerbalism.transmission";
         private const string ReliabilityTopic = "kerbalism.reliability";
         private const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
+        private const string DiagnosticsTopic = "kerbalism.diagnostics";
 
         private readonly KerbalismReflection _k = new();
 
@@ -72,6 +73,7 @@ namespace Gonogo.KerbalismUplink
         private IChannelPublisher? _transmission;
         private IChannelPublisher? _reliability;
         private IChannelPublisher? _reliabilityParts;
+        private IChannelPublisher? _diagnostics;
 
         /// <summary>Built once on first use; see <see cref="Profile"/>.</summary>
         private ProfileRaw? _profile;
@@ -117,6 +119,7 @@ namespace Gonogo.KerbalismUplink
                     Delayed(TransmissionTopic, SampleKind.Continuous),
                     Delayed(ReliabilityTopic, SampleKind.Discrete),
                     Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
+                    Delayed(DiagnosticsTopic, SampleKind.Continuous),
                 },
                 Commands = KerbalismCommandCatalog.All(),
                 ErrorCodes = ErrorCodeCatalog.Of(typeof(KerbalismErrorCodes)),
@@ -178,6 +181,7 @@ namespace Gonogo.KerbalismUplink
             _transmission = host.Publisher(TransmissionTopic);
             _reliability = host.Publisher(ReliabilityTopic);
             _reliabilityParts = host.Publisher(ReliabilityPartsTopic);
+            _diagnostics = host.Publisher(DiagnosticsTopic);
 
             // The rest of the fleet on the same reads, one namespace per craft
             // and gated per craft (see KerbalismFleetChannels). Registered
@@ -198,6 +202,29 @@ namespace Gonogo.KerbalismUplink
             RegisterIsru(host);
             RegisterFileManagerCommands(host, _fileActuator);
             RegisterReliability(host);
+
+            host.AddSampledSource(
+                snapshot => snapshot == null || !_k.IsAvailable
+                    ? null
+                    : new DiagnosticsSample(snapshot.Ut, _k.Diagnostics(ScopedVessel())),
+                captured =>
+                {
+                    if (captured is DiagnosticsSample sample)
+                        _diagnostics?.Publish(KerbalismCapture.BuildDiagnostics(sample.Raw), sample.Ut);
+                },
+                DiagnosticsTopic);
+        }
+
+        private sealed class DiagnosticsSample
+        {
+            public readonly double Ut;
+            public readonly DiagnosticsRaw Raw;
+
+            public DiagnosticsSample(double ut, DiagnosticsRaw raw)
+            {
+                Ut = ut;
+                Raw = raw;
+            }
         }
 
         private const int ScienceHookAttempts = 5;

@@ -141,6 +141,11 @@ public static class KerbalismRtConfig
             typeof(KerbalismReliabilityPart),
             typeof(KerbalismReliabilityBudget),
             typeof(KerbalismRepairCostItem),
+            // kerbalism.diagnostics: the automation devices and scripts, and the log
+            typeof(KerbalismDiagnostics),
+            typeof(KerbalismDevice),
+            typeof(KerbalismScript),
+            typeof(KerbalismLogEntry),
             // The Kerbalism namespaces of the four elected science.* payloads'
             // extension bags. No [SitrepTopic]: each is a sub-tree reached through
             // extensions["kerbalism"], typed here because the type belongs to

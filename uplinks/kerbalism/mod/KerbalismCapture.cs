@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gonogo.KerbalismUplink
 {
@@ -380,6 +381,31 @@ namespace Gonogo.KerbalismUplink
             }
             return list;
         }
+
+        /// <summary>
+        /// The <c>kerbalism.diagnostics</c> payload. A list that could not be read
+        /// stays null, so an unloaded craft is not reported as having no devices.
+        /// </summary>
+        public static Dictionary<string, object?> BuildDiagnostics(DiagnosticsRaw raw) => new()
+        {
+            ["devices"] = raw.Devices?.Select(d => (object)new Dictionary<string, object?>
+            {
+                ["id"] = d.Id,
+                ["name"] = d.Name,
+                ["partName"] = d.PartName,
+                ["status"] = d.Status,
+            }).ToList(),
+            ["scripts"] = raw.Scripts?.Select(sc => (object)new Dictionary<string, object?>
+            {
+                ["type"] = sc.Type,
+                ["deviceCount"] = sc.DeviceCount,
+            }).ToList(),
+            ["log"] = raw.Log?.Select(l => (object)new Dictionary<string, object?>
+            {
+                ["level"] = l.Level,
+                ["message"] = l.Message,
+            }).ToList(),
+        };
 
         private static Dictionary<string, object?> Cast(Dictionary<string, double> src)
         {

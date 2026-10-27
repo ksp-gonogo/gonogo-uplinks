@@ -20,6 +20,8 @@ const CARRIED = [
   "vessel.resources",
   "vessel.crew",
   "kerbalism.spaceweather",
+  "kerbalism.diagnostics",
+  "kerbalism.reliabilityParts",
 ];
 
 // A minimal-but-real profile: three Supplies (Water/ElectricCharge/Oxygen), a

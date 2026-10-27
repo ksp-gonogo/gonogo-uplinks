@@ -65,6 +65,12 @@
       "name": "text",
       "problem": "units"
     },
+    "KerbalismDevice": {
+      "id": "text",
+      "name": "text",
+      "partName": "text",
+      "status": "text"
+    },
     "KerbalismFeatures": {
       "automation": "flag",
       "comfort": "flag",
@@ -122,6 +128,10 @@
       "asOfKerbalismUt": "ut",
       "rates": "units/s",
       "ruleEnvModifiers": "1"
+    },
+    "KerbalismLogEntry": {
+      "level": "enum",
+      "message": "text"
     },
     "KerbalismProcessDef": {
       "dumpValves": "text",
@@ -251,6 +261,10 @@
       "effectiveRateMBps": "MB/s",
       "status": "id"
     },
+    "KerbalismScript": {
+      "deviceCount": "count",
+      "type": "enum"
+    },
     "KerbalismSpaceWeather": {
       "blackout": "flag",
       "habitatRadiationRadPerSecond": "rad/s",
@@ -371,6 +385,11 @@
     "KerbalismCrewEntry": {
       "rules": "KerbalismCrewRule[]"
     },
+    "KerbalismDiagnostics": {
+      "devices": "KerbalismDevice[]",
+      "log": "KerbalismLogEntry[]",
+      "scripts": "KerbalismScript[]"
+    },
     "KerbalismLifeSupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",
       "habitat": "KerbalismHabitat",
@@ -394,6 +413,11 @@
     "kerbalism.crew": {
       "rules": "KerbalismCrewRule[]"
     },
+    "kerbalism.diagnostics": {
+      "devices": "KerbalismDevice[]",
+      "log": "KerbalismLogEntry[]",
+      "scripts": "KerbalismScript[]"
+    },
     "kerbalism.lifesupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",
       "habitat": "KerbalismHabitat",
@@ -414,6 +438,9 @@
     }
   },
   "typeEnums": {
+    "KerbalismLogEntry": {
+      "level": null
+    },
     "KerbalismReliabilityBudget": {
       "kind": null
     },
@@ -425,6 +452,9 @@
     },
     "KerbalismResourceDef": {
       "flowModeOrdinal": "KspResourceFlowMode"
+    },
+    "KerbalismScript": {
+      "type": null
     },
     "KerbalismStormEntry": {
       "targetKind": "KerbalismStormTargetKind"

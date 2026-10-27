@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 // The payload shapes live in this Uplink's own contract slice, which declares
 // them in `GonogoKerbalismUplink` rather than `Sitrep.Contract`, same as
@@ -1237,6 +1238,136 @@ namespace Gonogo.KerbalismUplink
                 raw.Storms.Add(entry);
             }
             return raw;
+        }
+
+
+        /// <summary>
+        /// Kerbalism's automation and log windows for one craft: the devices its
+        /// <c>Computer</c> can switch, the event scripts that set them, and the
+        /// message log.
+        ///
+        /// <para>Devices come from <c>Computer.GetModuleDevices</c> and are
+        /// filtered by <c>IsVisible</c>, as Kerbalism's own window does, with
+        /// <c>OnUpdate</c> called first because several devices refresh their
+        /// state there. Kerbalism builds that list for a loaded craft only, so an
+        /// unloaded craft reports no devices and no scripts at all rather than an
+        /// empty list.</para>
+        ///
+        /// <para>The log is one static list for the whole game, not per craft.
+        /// An entry's severity is the colour-tagged title Kerbalism wrote, matched
+        /// back to the localized severity words it holds in <c>Local</c>, so a
+        /// translated install still names the right level.</para>
+        /// </summary>
+        public DiagnosticsRaw Diagnostics(Vessel? v)
+        {
+            var raw = new DiagnosticsRaw { Log = ReadLog() };
+            if (v == null || !v.loaded) return raw;
+
+            var computerType = FindType("KERBALISM.Computer");
+            var getDevices = computerType?.GetMethod("GetModuleDevices", BindingFlags.Public | BindingFlags.Static);
+            if (getDevices == null) return raw;
+
+            object? devices = null;
+            try { devices = getDevices.Invoke(null, new object[] { v }); } catch { }
+            if (devices is not IEnumerable list) return raw;
+
+            var deviceRows = new List<DeviceRaw>();
+            foreach (var d in list)
+            {
+                if (d == null) continue;
+                InvokeMethod(d, "OnUpdate");
+                if (MemberBool(d, "IsVisible") == false) continue;
+                var id = Member(d, "Id");
+                var name = MemberString(d, "DisplayName") ?? MemberString(d, "Name");
+                if (id == null || name == null) continue;
+                deviceRows.Add(new DeviceRaw
+                {
+                    Id = Convert.ToString(id, System.Globalization.CultureInfo.InvariantCulture) ?? "",
+                    Name = StripMarkup(name),
+                    PartName = StripMarkup(MemberString(d, "PartName") ?? ""),
+                    Status = MemberString(d, "Status") is { } status ? StripMarkup(status) : null,
+                });
+            }
+            raw.Devices = deviceRows;
+
+            var scriptType = FindType("KERBALISM.ScriptType");
+            if (scriptType == null || !scriptType.IsEnum) return raw;
+            var vd = H._dbKerbalismData == null ? null : SafeInvoke(H._dbKerbalismData, null, new object[] { v });
+            var computer = vd == null ? null : Member(vd, "computer");
+            var get = computer?.GetType().GetMethod("Get", BindingFlags.Public | BindingFlags.Instance, null, new[] { scriptType }, null);
+            if (computer == null || get == null) return raw;
+
+            var scripts = new List<ScriptRaw>();
+            foreach (var type in Enum.GetValues(scriptType))
+            {
+                var typeName = type.ToString();
+                if (typeName == "last") continue;
+                var script = SafeInvoke(get, computer, new[] { type });
+                if (script == null || Member(script, "states") is not ICollection states || states.Count == 0) continue;
+                scripts.Add(new ScriptRaw { Type = typeName, DeviceCount = states.Count });
+            }
+            raw.Scripts = scripts;
+            return raw;
+        }
+
+        private static object? SafeInvoke(MethodInfo m, object? target, object[] args)
+        {
+            try { return m.Invoke(target, args); } catch { return null; }
+        }
+
+        private static readonly System.Text.RegularExpressions.Regex Markup =
+            new("<[^>]*>", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        private static string StripMarkup(string text) => Markup.Replace(text, "").Trim();
+
+        /// <summary>The message log, newest first, or null when Kerbalism's <c>Message</c> type cannot be read.</summary>
+        private List<LogEntryRaw>? ReadLog()
+        {
+            var messageType = FindType("KERBALISM.Message");
+            var allLogs = messageType?.GetField("all_logs", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
+            if (allLogs == null) return null;
+            if (allLogs is not IList entries) return null;
+
+            var localType = FindType("KERBALISM.Local");
+            string? Word(string field) =>
+                localType?.GetField(field, BindingFlags.Public | BindingFlags.Static)?.GetValue(null) is string w
+                    ? StripMarkup(w)
+                    : null;
+            var levels = new (string Name, string? Word)[]
+            {
+                ("relax", Word("Message_RELAX")),
+                ("warning", Word("Message_WARNING")),
+                ("danger", Word("Message_DANGER")),
+                ("fatality", Word("Message_FATALITY")),
+                ("breakdown", Word("Message_BREAKDOWN")),
+            };
+
+            var log = new List<LogEntryRaw>();
+            for (var i = entries.Count - 1; i >= 0; i--)
+            {
+                var entry = entries[i];
+                if (entry == null) continue;
+                var title = MemberString(entry, "title");
+                string? level = null;
+                if (title == null) level = "alert";
+                else
+                {
+                    var shown = StripMarkup(title);
+                    foreach (var l in levels)
+                        if (l.Word != null && string.Equals(l.Word, shown, StringComparison.Ordinal)) { level = l.Name; break; }
+                }
+                log.Add(new LogEntryRaw
+                {
+                    Level = level,
+                    Message = string.Join(
+                        ". ",
+                        Markup.Replace(MemberString(entry, "msg") ?? "", "")
+                            .Split('\n')
+                            .Select(line => line.Trim())
+                            .Where(line => line.Length > 0)),
+                });
+            }
+            return log;
         }
 
         /// <summary>

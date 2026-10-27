@@ -62,6 +62,7 @@ import { KERBALISM } from "../uplink.js";
 // `@ksp-gonogo/components`.
 import "./GreenhouseSection.js";
 import { radiationTooHigh } from "./GreenhouseSection.js";
+import { DiagnosticsButtons } from "./diagnostics.js";
 import { RadiationSection } from "./RadiationSection.js";
 import { useResourceColorMap } from "./resourceColorMap.js";
 
@@ -850,6 +851,9 @@ function ShipSystemsBody({
           name="ship-systems.life-support"
           props={{ greenhouses, ambientRadiationRadPerSecond, held }}
         />,
+        <Section key="diagnostics" full>
+          <DiagnosticsButtons />
+        </Section>,
       ]}
     />
   );

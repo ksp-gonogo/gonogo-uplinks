@@ -222,6 +222,43 @@ namespace Gonogo.KerbalismUplink
         public string TargetName = "";
     }
 
+    /// <summary>One switchable device as Kerbalism's computer lists it.</summary>
+    public sealed class DeviceRaw
+    {
+        public string Id = "";
+        public string Name = "";
+        public string PartName = "";
+
+        /// <summary>Kerbalism's status text with its colour tags removed.</summary>
+        public string? Status;
+    }
+
+    /// <summary>One event script and the number of devices it sets.</summary>
+    public sealed class ScriptRaw
+    {
+        public string Type = "";
+        public int DeviceCount;
+    }
+
+    /// <summary>One entry of Kerbalism's message log.</summary>
+    public sealed class LogEntryRaw
+    {
+        public string? Level;
+        public string Message = "";
+    }
+
+    /// <summary>
+    /// What <c>KerbalismReflection.Diagnostics</c> read. Devices and Scripts are
+    /// null for a craft that is not loaded, where Kerbalism builds no device list,
+    /// so an unloaded craft is never reported as having none.
+    /// </summary>
+    public sealed class DiagnosticsRaw
+    {
+        public List<DeviceRaw>? Devices;
+        public List<ScriptRaw>? Scripts;
+        public List<LogEntryRaw>? Log;
+    }
+
     /// <summary>KerbalismReflection.Solar's return bundle: every star's vantage + every affected storm slot, for one vessel.</summary>
     public sealed class SolarRaw
     {

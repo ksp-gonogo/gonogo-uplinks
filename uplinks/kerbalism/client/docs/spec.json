@@ -53,6 +53,15 @@
       }
     },
     {
+      "id": "kerbalism.diagnostics",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
       "id": "kerbalism.features",
       "payload": "KerbalismFeatures",
       "array": false,
@@ -393,6 +402,27 @@
       ]
     },
     {
+      "name": "KerbalismDevice",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "text"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "partName",
+          "unit": "text"
+        },
+        {
+          "name": "status",
+          "unit": "text"
+        }
+      ]
+    },
+    {
       "name": "KerbalismGreenhouseEntry",
       "fields": [
         {
@@ -479,6 +509,19 @@
         {
           "name": "volume",
           "unit": "m³"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismLogEntry",
+      "fields": [
+        {
+          "name": "level",
+          "unit": "enum"
+        },
+        {
+          "name": "message",
+          "unit": "text"
         }
       ]
     },
@@ -657,6 +700,19 @@
         {
           "name": "ratePerSecond",
           "unit": "units/s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScript",
+      "fields": [
+        {
+          "name": "deviceCount",
+          "unit": "count"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
         }
       ]
     },

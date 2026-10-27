@@ -105,6 +105,12 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     name: "text",
     problem: "units",
   },
+  "KerbalismDevice": {
+    id: "text",
+    name: "text",
+    partName: "text",
+    status: "text",
+  },
   "KerbalismFeatures": {
     automation: "flag",
     comfort: "flag",
@@ -162,6 +168,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     asOfKerbalismUt: "ut",
     rates: "units/s",
     ruleEnvModifiers: "1",
+  },
+  "KerbalismLogEntry": {
+    level: "enum",
+    message: "text",
   },
   "KerbalismProcessDef": {
     dumpValves: "text",
@@ -290,6 +300,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     analysisRateMBps: "MB/s",
     effectiveRateMBps: "MB/s",
     status: "id",
+  },
+  "KerbalismScript": {
+    deviceCount: "count",
+    type: "enum",
   },
   "KerbalismSpaceWeather": {
     blackout: "flag",
@@ -445,6 +459,11 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "KerbalismCrewEntry": {
     rules: "KerbalismCrewRule[]",
   },
+  "KerbalismDiagnostics": {
+    devices: "KerbalismDevice[]",
+    log: "KerbalismLogEntry[]",
+    scripts: "KerbalismScript[]",
+  },
   "KerbalismLifeSupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
     habitat: "KerbalismHabitat",
@@ -469,6 +488,11 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
 export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "kerbalism.crew": {
     rules: "KerbalismCrewRule[]",
+  },
+  "kerbalism.diagnostics": {
+    devices: "KerbalismDevice[]",
+    log: "KerbalismLogEntry[]",
+    scripts: "KerbalismScript[]",
   },
   "kerbalism.lifesupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
@@ -499,6 +523,9 @@ export type EnumsByField = Readonly<Record<string, string | null>>;
 
 /** Keyed by the generated interface name in ./contract.ts. */
 export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
+  "KerbalismLogEntry": {
+    level: null,
+  },
   "KerbalismReliabilityBudget": {
     kind: null,
   },
@@ -510,6 +537,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "KerbalismResourceDef": {
     flowModeOrdinal: "KspResourceFlowMode",
+  },
+  "KerbalismScript": {
+    type: null,
   },
   "KerbalismStormEntry": {
     targetKind: "KerbalismStormTargetKind",
