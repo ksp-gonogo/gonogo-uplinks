@@ -3,7 +3,7 @@
   "uplink": {
     "id": "testflight",
     "name": "TestFlight",
-    "version": "1.0.0-rc.1",
+    "version": "1.0.0-rc.2",
     "description": "TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.",
     "wraps": {
       "name": "TestFlight",

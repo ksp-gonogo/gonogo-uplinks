@@ -4,7 +4,7 @@ import { defineUplinkClient, registerErrorCodes } from "@ksp-gonogo/sitrep-sdk";
 import { TESTFLIGHT_ERROR_CODES } from "./__generated__/error-codes.js";
 import { GENERATED_CONTRACT_TAGS } from "./__generated__/units.js";
 
-const UPLINK_VERSION = "1.0.0-rc.1";
+const UPLINK_VERSION = "1.0.0-rc.2";
 
 export const TESTFLIGHT = defineUplinkClient({
   id: "testflight",
