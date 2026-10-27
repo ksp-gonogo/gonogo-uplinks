@@ -12,10 +12,11 @@ namespace GonogoKerbalismUplink;
 /// <c>Configure</c> does. Deliberately names no sibling Uplink: doing so would
 /// trip that Uplink's own frontend uplink-boundary token.
 ///
-/// <para><b>Seven Topic-tagged roots, so the topic-map leg is not optional.</b>
+/// <para><b>Eight Topic-tagged roots, so the topic-map leg is not optional.</b>
 /// <see cref="KerbalismSpaceWeather"/>, <see cref="KerbalismProfile"/>,
 /// <see cref="KerbalismLifeSupport"/>, <see cref="KerbalismCrewEntry"/>
 /// (<c>isArray</c>), <see cref="KerbalismFeatures"/>,
+/// <see cref="KerbalismTransmission"/>,
 /// <see cref="KerbalismReliabilitySummary"/> and
 /// <see cref="KerbalismReliabilityPart"/> (<c>isArray</c>) each carry
 /// <c>[SitrepTopic]</c>, so <c>EmitTopicMap</c> is wired below. The remaining
@@ -132,6 +133,8 @@ public static class KerbalismRtConfig
             typeof(KerbalismProcessDef),
             // kerbalism.features
             typeof(KerbalismFeatures),
+            // kerbalism.transmission
+            typeof(KerbalismTransmission),
             // kerbalism.reliability + kerbalism.reliabilityParts, with the
             // budget and repair-cost shapes a part holds
             typeof(KerbalismReliabilitySummary),
@@ -186,7 +189,7 @@ public static class KerbalismRtConfig
         // mod/GonogoKerbalismUplink/client/src/__generated__/).
         Sitrep.Contract.RtConfig.ApplyUnitValueTypes(builder, wireTypes, valueImportFrom: "@ksp-gonogo/sitrep-sdk");
 
-        // Seven of these carry [SitrepTopic]: there ARE topics to name here,
+        // Eight of these carry [SitrepTopic]: there ARE topics to name here,
         // unlike a command-arg-only slice.
         var topicMapOut = Environment.GetEnvironmentVariable("SITREP_KERBALISM_TOPICMAP_OUT");
         if (!string.IsNullOrEmpty(topicMapOut))

@@ -268,6 +268,16 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
+        /// The craft's transmission figures as the wire writes them (Topic
+        /// "kerbalism.transmission"). An unread figure stays null and rides as null.
+        /// </summary>
+        public static Dictionary<string, object?> BuildTransmission(TransmissionRaw t) =>
+            new Dictionary<string, object?>
+            {
+                ["scienceTransmitted"] = t.ScienceTransmitted,
+            };
+
+        /// <summary>
         /// The vessel-level reliability picture as the wire writes it (Topic
         /// "kerbalism.reliability"). An unread figure stays null and rides as null.
         /// </summary>

@@ -76,7 +76,7 @@ namespace GonogoKerbalismUplink.Tests
                 nameof(KerbalismProcessEntry), nameof(KerbalismGreenhouseEntry),
                 nameof(KerbalismCrewEntry), nameof(KerbalismCrewRule),
                 nameof(KerbalismProfile), nameof(KerbalismResourceDef), nameof(KerbalismRuleDef),
-                nameof(KerbalismProcessDef), nameof(KerbalismFeatures),
+                nameof(KerbalismProcessDef), nameof(KerbalismFeatures), nameof(KerbalismTransmission),
                 // kerbalism.reliability and kerbalism.reliabilityParts, with the
                 // budget and repair-cost shapes reached only through a part, and
                 // kerbalism.repair's args and outcome.

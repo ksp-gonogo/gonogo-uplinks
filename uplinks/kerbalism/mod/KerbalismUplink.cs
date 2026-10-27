@@ -27,6 +27,7 @@ namespace Gonogo.KerbalismUplink
         private const string LifeSupportTopic = "kerbalism.lifesupport";
         private const string CrewTopic = "kerbalism.crew";
         private const string ProfileTopic = "kerbalism.profile";
+        private const string TransmissionTopic = "kerbalism.transmission";
         private const string ReliabilityTopic = "kerbalism.reliability";
         private const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
 
@@ -68,6 +69,7 @@ namespace Gonogo.KerbalismUplink
         private IChannelPublisher? _spaceWeather;
         private IChannelPublisher? _lifeSupport;
         private IChannelPublisher? _crew;
+        private IChannelPublisher? _transmission;
         private IChannelPublisher? _reliability;
         private IChannelPublisher? _reliabilityParts;
 
@@ -112,6 +114,7 @@ namespace Gonogo.KerbalismUplink
                     Delayed(SpaceWeatherTopic, SampleKind.Continuous),
                     Delayed(LifeSupportTopic, SampleKind.Continuous),
                     Delayed(CrewTopic, SampleKind.Continuous),
+                    Delayed(TransmissionTopic, SampleKind.Continuous),
                     Delayed(ReliabilityTopic, SampleKind.Discrete),
                     Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
                 },
@@ -172,6 +175,7 @@ namespace Gonogo.KerbalismUplink
             _spaceWeather = host.Publisher(SpaceWeatherTopic);
             _lifeSupport = host.Publisher(LifeSupportTopic);
             _crew = host.Publisher(CrewTopic);
+            _transmission = host.Publisher(TransmissionTopic);
             _reliability = host.Publisher(ReliabilityTopic);
             _reliabilityParts = host.Publisher(ReliabilityPartsTopic);
 
@@ -187,7 +191,8 @@ namespace Gonogo.KerbalismUplink
                 HandleOnCourier,
                 SpaceWeatherTopic,
                 LifeSupportTopic,
-                CrewTopic);
+                CrewTopic,
+                TransmissionTopic);
 
             RegisterScience(host);
             RegisterIsru(host);
@@ -496,6 +501,7 @@ namespace Gonogo.KerbalismUplink
                 AsOfUt = sinceEval.HasValue ? ut - sinceEval.Value : (double?)null,
                 Rules = profile.Rules,
                 RuleInputAmounts = KerbalismCapture.RuleInputAmounts(profile, R),
+                Transmission = _k.Transmission(v),
             };
         }
 
@@ -570,6 +576,8 @@ namespace Gonogo.KerbalismUplink
                 c.Ut);
             _crew?.Publish(
                 KerbalismCapture.BuildCrew(c.Crew, c.RuleConstants, c.AsOfUt, c.DeathClocks()), c.Ut);
+            if (c.Transmission != null)
+                _transmission?.Publish(KerbalismCapture.BuildTransmission(c.Transmission), c.Ut);
         }
 
         public IReadOnlyList<ModSetting> ListModSettings() => _modSettings.ListModSettings();
@@ -594,6 +602,9 @@ namespace Gonogo.KerbalismUplink
             /// <summary>Null for a background craft, whose part modules KSP has discarded: absent, not empty.</summary>
             public List<ProcessRaw>? Processes;
             public List<KerbalRulesRaw> Crew = new();
+
+            /// <summary>Null for an EVA kerbal and when Kerbalism's vessel data cannot be read: absent, not empty.</summary>
+            public TransmissionRaw? Transmission;
             public IReadOnlyDictionary<string, RuleConstants> RuleConstants = new Dictionary<string, RuleConstants>();
             public SolarRaw Solar = new();
             public double? StormEjectionSpeed;

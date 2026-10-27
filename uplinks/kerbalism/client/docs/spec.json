@@ -341,6 +341,21 @@
         "delivery": "lossy-latest",
         "delay": "delayed"
       }
+    },
+    {
+      "id": "kerbalism.transmission",
+      "payload": "KerbalismTransmission",
+      "array": false,
+      "fields": [
+        {
+          "name": "scienceTransmitted",
+          "unit": "science"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
     }
   ],
   "nestedPayloads": [
@@ -1170,6 +1185,15 @@
       "contributes": "resource-ops.filters",
       "deps": [
         "isru.converters"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:science-transmitted",
+      "contributes": "science-data.archive-readouts",
+      "deps": [
+        "kerbalism.transmission"
       ],
       "requires": "kerbalism",
       "settings": []

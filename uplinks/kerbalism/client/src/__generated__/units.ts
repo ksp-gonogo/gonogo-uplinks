@@ -326,6 +326,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     flag: "flag",
     subjectId: "id",
   },
+  "KerbalismTransmission": {
+    scienceTransmitted: "science",
+  },
 };
 
 /**
@@ -396,6 +399,9 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     stormEjectionSpeed: "m/s",
     stormInProgress: "flag",
     stormIncoming: "flag",
+  },
+  "kerbalism.transmission": {
+    scienceTransmitted: "science",
   },
 };
 

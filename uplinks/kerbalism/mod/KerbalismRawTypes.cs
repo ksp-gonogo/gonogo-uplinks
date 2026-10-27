@@ -30,6 +30,15 @@ namespace Gonogo.KerbalismUplink
         public Dictionary<string, double> RuleVarianceFactors = new();
     }
 
+    /// <summary>
+    /// What Kerbalism's per-vessel data says about the craft's transmission,
+    /// each figure null when it could not be read: an unread total is not zero.
+    /// </summary>
+    public sealed class TransmissionRaw
+    {
+        public double? ScienceTransmitted;
+    }
+
     public struct RuleConstants
     {
         public double DegenPerSec;      // Profile.rules[].degeneration

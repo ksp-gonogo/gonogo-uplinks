@@ -43,6 +43,7 @@ export type {
   KerbalismSpaceWeather,
   KerbalismStarInfo,
   KerbalismStormEntry,
+  KerbalismTransmission,
   // Type-only on purpose, though it is an enum: a VALUE import from this barrel
   // runs `defineUplinkClient` at module load, which throws in any tree with no
   // host installed. A reader annotates the ordinal it compares against instead,
@@ -100,6 +101,7 @@ export {
   KERBALISM_RELIABILITY_PARTS_TOPIC,
   KERBALISM_RELIABILITY_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
+  KERBALISM_TRANSMISSION_TOPIC,
 } from "./topics.js";
 // The megabyte units this Uplink declares. RE-EXPORTED for the same reason as
 // ./topics below: the module carries a `declare module "@ksp-gonogo/sitrep-sdk"`
@@ -167,6 +169,9 @@ import "./ExperimentProgress/index.js";
 // VesselCatalog's per-vessel `vessel-catalog.updates` slot: Kerbalism's failed and
 // service-due parts on the active craft's row, with the repair and its kit cost.
 import "./Reliability/index.js";
+// ScienceData's `science-data.archive-readouts` slot: the science the craft has
+// transmitted to the command centre, off `kerbalism.transmission`.
+import "./Transmission/scienceTransmitted.js";
 
 // The CrewSurvival Processor handle + its result types, the single per-frame
 // derivation the survival meters, the per-row badge and the panel badge all consume.

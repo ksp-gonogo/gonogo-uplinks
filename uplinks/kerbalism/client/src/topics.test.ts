@@ -24,6 +24,7 @@ import {
   KERBALISM_RELIABILITY_PARTS_TOPIC,
   KERBALISM_RELIABILITY_TOPIC,
   KERBALISM_SPACEWEATHER_TOPIC,
+  KERBALISM_TRANSMISSION_TOPIC,
 } from "./topics.js";
 
 // src -> client -> kerbalism
@@ -59,6 +60,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
     expect(KERBALISM_LIFESUPPORT_TOPIC).toBe(csTopic("LifeSupportTopic"));
     expect(KERBALISM_CREW_TOPIC).toBe(csTopic("CrewTopic"));
     expect(KERBALISM_FEATURES_TOPIC).toBe(csTopic("FeaturesTopic"));
+    expect(KERBALISM_TRANSMISSION_TOPIC).toBe(csTopic("TransmissionTopic"));
     expect(KERBALISM_RELIABILITY_TOPIC).toBe(csTopic("ReliabilityTopic"));
     expect(KERBALISM_RELIABILITY_PARTS_TOPIC).toBe(
       csTopic("ReliabilityPartsTopic"),
@@ -72,6 +74,7 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
       KERBALISM_LIFESUPPORT_TOPIC,
       KERBALISM_CREW_TOPIC,
       KERBALISM_FEATURES_TOPIC,
+      KERBALISM_TRANSMISSION_TOPIC,
       KERBALISM_RELIABILITY_TOPIC,
       KERBALISM_RELIABILITY_PARTS_TOPIC,
     ]) {

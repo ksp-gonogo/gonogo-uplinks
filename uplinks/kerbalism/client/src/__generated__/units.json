@@ -285,6 +285,9 @@
     "KerbalismSubjectFlagArgs": {
       "flag": "flag",
       "subjectId": "id"
+    },
+    "KerbalismTransmission": {
+      "scienceTransmitted": "science"
     }
   },
   "topics": {
@@ -351,6 +354,9 @@
       "stormEjectionSpeed": "m/s",
       "stormInProgress": "flag",
       "stormIncoming": "flag"
+    },
+    "kerbalism.transmission": {
+      "scienceTransmitted": "science"
     }
   },
   "typeShapes": {

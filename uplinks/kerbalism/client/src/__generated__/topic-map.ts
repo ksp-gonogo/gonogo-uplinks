@@ -27,6 +27,7 @@ import type {
   KerbalismReliabilityPart,
   KerbalismReliabilitySummary,
   KerbalismSpaceWeather,
+  KerbalismTransmission,
 } from "./contract.js";
 
 export interface GeneratedTopicPayloadMap {
@@ -37,6 +38,7 @@ export interface GeneratedTopicPayloadMap {
   "kerbalism.reliability": KerbalismReliabilitySummary;
   "kerbalism.reliabilityParts": KerbalismReliabilityPart[];
   "kerbalism.spaceweather": KerbalismSpaceWeather;
+  "kerbalism.transmission": KerbalismTransmission;
 }
 
 export const GENERATED_TOPIC_IDS = [
@@ -47,6 +49,7 @@ export const GENERATED_TOPIC_IDS = [
   "kerbalism.reliability",
   "kerbalism.reliabilityParts",
   "kerbalism.spaceweather",
+  "kerbalism.transmission",
 ] as const;
 
 // The Topics whose payload is a bare JSON array of the element type, so a

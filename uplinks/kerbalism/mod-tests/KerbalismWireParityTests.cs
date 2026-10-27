@@ -116,6 +116,8 @@ public class KerbalismWireParityTests
 
         var profile = KerbalismCapture.BuildProfile(Profile());
 
+        var transmission = KerbalismCapture.BuildTransmission(new TransmissionRaw { ScienceTransmitted = 12.5 });
+
         var reliabilitySummary = KerbalismCapture.BuildReliabilitySummary(new GonogoKerbalismUplink.KerbalismReliabilitySummary());
         var reliabilityParts = KerbalismCapture.BuildReliabilityParts(new[]
         {
@@ -151,6 +153,8 @@ public class KerbalismWireParityTests
             [T("KerbalismCrewRule")] = Entry(Dict(crewEntry)["rules"], 0),
 
             [T("KerbalismFeatures")] = features,
+
+            [T("KerbalismTransmission")] = transmission,
 
             [T("KerbalismProfile")] = profile,
             [T("KerbalismResourceDef")] = Dict(profile["resources"]).Values.First(),
@@ -268,7 +272,7 @@ public class KerbalismWireParityTests
         var roots = new[]
         {
             "KerbalismSpaceWeather", "KerbalismLifeSupport", "KerbalismCrewEntry",
-            "KerbalismFeatures", "KerbalismProfile",
+            "KerbalismFeatures", "KerbalismProfile", "KerbalismTransmission",
             "KerbalismReliabilitySummary", "KerbalismReliabilityPart",
         }.Select(n => contract.GetType("GonogoKerbalismUplink." + n, throwOnError: true)!);
 

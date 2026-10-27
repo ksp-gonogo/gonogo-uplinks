@@ -1411,6 +1411,21 @@ namespace Gonogo.KerbalismUplink
             return vd == null ? null : MemberBool(vd, "IsSimulated");
         }
 
+        /// <summary>
+        /// The craft's transmission figures from Kerbalism's per-vessel data
+        /// (<c>VesselData.scienceTransmitted</c>), the ones its own telemetry
+        /// page prints. Null for an EVA kerbal, which that page also leaves out,
+        /// and when the vessel's data cannot be read.
+        /// </summary>
+        public TransmissionRaw? Transmission(Vessel v)
+        {
+            if (v == null || v.isEVA || H._dbKerbalismData == null) return null;
+            object? vd;
+            try { vd = H._dbKerbalismData.Invoke(null, new object[] { v }); } catch { return null; }
+            if (vd == null) return null;
+            return new TransmissionRaw { ScienceTransmitted = MemberDouble(vd, "scienceTransmitted") };
+        }
+
         public ModifierContext? BeginModifierContext(Vessel v)
         {
             if (v == null || H._dbKerbalismData == null || H._resourceCacheGet == null) return null;

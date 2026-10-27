@@ -851,3 +851,26 @@ public class KerbalismFeatures
     [SitrepUnit(Units.Flag)]
     public bool? Deploy { get; set; }
 }
+
+/// <summary>
+/// What Kerbalism reports about the craft's transmission to the command centre:
+/// the science it has sent in total. Published on <c>kerbalism.transmission</c>,
+/// and not for an EVA kerbal, whose suit has no transmitter to report on.
+///
+/// <para>A figure Kerbalism does not report stays null and rides as null: an
+/// unread total is not a total of zero.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepTopic("kerbalism.transmission")]
+public class KerbalismTransmission
+{
+    /// <summary>
+    /// The science points this craft has transmitted since launch, the total
+    /// Kerbalism's own telemetry page prints as "total science transmitted".
+    /// </summary>
+    [SitrepUnit(Units.Science)]
+    public double? ScienceTransmitted { get; set; }
+}

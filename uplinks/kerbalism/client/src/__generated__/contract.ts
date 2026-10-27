@@ -782,6 +782,22 @@ export interface KerbalismFeatures
 	deploy?: boolean | null;
 }
 /**
+* What Kerbalism reports about the craft's transmission to the command centre:
+* the science it has sent in total. Published on `kerbalism.transmission`, and
+* not for an EVA kerbal, whose suit has no transmitter to report on.
+*
+* A figure Kerbalism does not report stays null and rides as null: an unread
+* total is not a total of zero.
+*/
+export interface KerbalismTransmission
+{
+	/**
+	* The science points this craft has transmitted since launch, the total
+	* Kerbalism's own telemetry page prints as "total science transmitted".
+	*/
+	scienceTransmitted?: Value<"science"> | null;
+}
+/**
 * Kerbalism's reliability picture of the craft: whether it is modelling part
 * failures at all, and the vessel-level figures that only mean anything while
 * it is. Published on `kerbalism.reliability`, and only while Kerbalism's
