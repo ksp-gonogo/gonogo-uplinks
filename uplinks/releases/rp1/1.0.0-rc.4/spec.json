@@ -1,0 +1,3407 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "rp1",
+    "name": "RP-1",
+    "version": "1.0.0-rc.4",
+    "description": "Brings RP-1's career layer to the dashboard: Programs with their objectives, deadlines, funding curves and the Confidence price at each speed.",
+    "wraps": {
+      "name": "RP-1",
+      "builtAgainst": "4.7.0.0",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "rp1.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "rp1.avionics",
+      "payload": "Rp1Avionics",
+      "array": false,
+      "fields": [
+        {
+          "name": "limitedByNonInterplanetary",
+          "unit": "flag"
+        },
+        {
+          "name": "lockLevel",
+          "unit": "enum"
+        },
+        {
+          "name": "supportedMassTons",
+          "unit": "t"
+        },
+        {
+          "name": "vesselMassTons",
+          "unit": "t"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.budget",
+      "payload": "Rp1Budget",
+      "array": false,
+      "fields": [
+        {
+          "name": "day",
+          "shape": "Rp1BudgetPeriod"
+        },
+        {
+          "name": "forecast",
+          "shape": "Rp1BudgetForecastSample[]"
+        },
+        {
+          "name": "month",
+          "shape": "Rp1BudgetPeriod"
+        },
+        {
+          "name": "refreshedAt",
+          "unit": "ut"
+        },
+        {
+          "name": "reputation",
+          "unit": "rep"
+        },
+        {
+          "name": "reputationDecayPerDay",
+          "unit": "rep/day"
+        },
+        {
+          "name": "reputationDecayPerYear",
+          "unit": "rep"
+        },
+        {
+          "name": "subsidyMaxPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "subsidyMaxRep",
+          "unit": "rep"
+        },
+        {
+          "name": "subsidyMinPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "subsidyPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "unlockCreditBalance",
+          "unit": "funds"
+        },
+        {
+          "name": "year",
+          "shape": "Rp1BudgetPeriod"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.budgetBreakdown",
+      "payload": "Rp1BudgetBreakdown",
+      "array": false,
+      "fields": [
+        {
+          "name": "astronautBase",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "astronautOperational",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "astronautTraining",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "buildings",
+          "shape": "Rp1BuildingUpkeepEntry[]"
+        },
+        {
+          "name": "complexes",
+          "shape": "Rp1ComplexUpkeepEntry[]"
+        },
+        {
+          "name": "constructions",
+          "shape": "Rp1ConstructionCostEntry[]"
+        },
+        {
+          "name": "courses",
+          "shape": "Rp1CourseCostEntry[]"
+        },
+        {
+          "name": "crew",
+          "shape": "Rp1CrewCostEntry[]"
+        },
+        {
+          "name": "integrationTeams",
+          "shape": "Rp1IntegrationTeamCostEntry[]"
+        },
+        {
+          "name": "nautBaseSalary",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "programs",
+          "shape": "Rp1ProgramFundingEntry[]"
+        },
+        {
+          "name": "refreshedAt",
+          "unit": "ut"
+        },
+        {
+          "name": "rollouts",
+          "shape": "Rp1RolloutCostEntry[]"
+        },
+        {
+          "name": "trainingFees",
+          "shape": "Rp1TrainingFeeEntry[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.buildable",
+      "payload": "Rp1BuildableCraftEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "complexes",
+          "shape": "Rp1BuildableComplex[]"
+        },
+        {
+          "name": "craftFile",
+          "unit": "id"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        },
+        {
+          "name": "lockedParts",
+          "unit": "text"
+        },
+        {
+          "name": "mass",
+          "unit": "t"
+        },
+        {
+          "name": "missingParts",
+          "unit": "text"
+        },
+        {
+          "name": "partCount",
+          "unit": "count"
+        },
+        {
+          "name": "shipName",
+          "unit": "text"
+        },
+        {
+          "name": "unpurchasedParts",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.buildCost",
+      "payload": "Rp1BuildCost",
+      "array": false,
+      "fields": [
+        {
+          "name": "requiredTechs",
+          "shape": "Rp1RequiredTechEntry[]"
+        },
+        {
+          "name": "rolloutCost",
+          "unit": "funds"
+        },
+        {
+          "name": "toolingCost",
+          "unit": "funds"
+        },
+        {
+          "name": "unlockCost",
+          "unit": "funds"
+        },
+        {
+          "name": "untooledSurcharge",
+          "unit": "funds"
+        },
+        {
+          "name": "vehicleCost",
+          "unit": "funds"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.buildQueue",
+      "payload": "Rp1BuildItemEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "cost",
+          "unit": "funds"
+        },
+        {
+          "name": "humanRated",
+          "unit": "flag"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchSite",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "mass",
+          "unit": "t"
+        },
+        {
+          "name": "progress",
+          "unit": "bp"
+        },
+        {
+          "name": "progressRatio",
+          "unit": "ratio"
+        },
+        {
+          "name": "projectType",
+          "unit": "enum"
+        },
+        {
+          "name": "rate",
+          "unit": "bp/s"
+        },
+        {
+          "name": "shipId",
+          "unit": "id"
+        },
+        {
+          "name": "shipName",
+          "unit": "text"
+        },
+        {
+          "name": "stalled",
+          "unit": "flag"
+        },
+        {
+          "name": "timeLeftSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "totalPoints",
+          "unit": "bp"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.careerEvents",
+      "payload": "Rp1CareerEvents",
+      "array": false,
+      "fields": [
+        {
+          "name": "enabled",
+          "unit": "flag"
+        },
+        {
+          "name": "events",
+          "shape": "Rp1CareerEventEntry[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.careerLedger",
+      "payload": "Rp1CareerLedger",
+      "array": false,
+      "fields": [
+        {
+          "name": "enabled",
+          "unit": "flag"
+        },
+        {
+          "name": "periods",
+          "shape": "Rp1LedgerPeriodEntry[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.centres",
+      "payload": "Rp1CentreEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "anyOperational",
+          "unit": "flag"
+        },
+        {
+          "name": "engineers",
+          "unit": "count"
+        },
+        {
+          "name": "groundStation",
+          "unit": "id"
+        },
+        {
+          "name": "idleSalaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "isActive",
+          "unit": "flag"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchComplexCount",
+          "unit": "count"
+        },
+        {
+          "name": "salaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "unassignedEngineers",
+          "unit": "count"
+        },
+        {
+          "name": "upkeepPerDay",
+          "unit": "f/day"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.complexes",
+      "payload": "Rp1ComplexEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "canIntegrate",
+          "unit": "flag"
+        },
+        {
+          "name": "efficiency",
+          "unit": "ratio"
+        },
+        {
+          "name": "efficiencyGroupKey",
+          "unit": "id"
+        },
+        {
+          "name": "efficiencySharedWith",
+          "unit": "id"
+        },
+        {
+          "name": "engineers",
+          "unit": "count"
+        },
+        {
+          "name": "humanRated",
+          "unit": "flag"
+        },
+        {
+          "name": "isOperational",
+          "unit": "flag"
+        },
+        {
+          "name": "isRushing",
+          "unit": "flag"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchPadCount",
+          "unit": "count"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "lcType",
+          "unit": "enum"
+        },
+        {
+          "name": "massMax",
+          "unit": "t"
+        },
+        {
+          "name": "massMin",
+          "unit": "t"
+        },
+        {
+          "name": "massOrig",
+          "unit": "t"
+        },
+        {
+          "name": "maxEngineers",
+          "unit": "count"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "newPadCost",
+          "unit": "funds"
+        },
+        {
+          "name": "rate",
+          "unit": "bp/s"
+        },
+        {
+          "name": "resourcesHandled",
+          "unit": "id"
+        },
+        {
+          "name": "rushSalaryDeltaPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "salaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "sizeMaxDepth",
+          "unit": "m"
+        },
+        {
+          "name": "sizeMaxHeight",
+          "unit": "m"
+        },
+        {
+          "name": "sizeMaxWidth",
+          "unit": "m"
+        },
+        {
+          "name": "upkeepPerDay",
+          "unit": "f/day"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.confidence",
+      "payload": "Rp1Confidence",
+      "array": false,
+      "fields": [
+        {
+          "name": "confidence",
+          "unit": "confidence"
+        },
+        {
+          "name": "earned",
+          "unit": "confidence"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.constructionRates",
+      "payload": "Rp1ConstructionRates",
+      "array": false,
+      "fields": [
+        {
+          "name": "constructions",
+          "shape": "Rp1ConstructionRateTable[]"
+        },
+        {
+          "name": "facilityUpgrades",
+          "shape": "Rp1FacilityUpgradeRate[]"
+        },
+        {
+          "name": "refreshedAt",
+          "unit": "ut"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.constructions",
+      "payload": "Rp1ConstructionEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "affordableFraction",
+          "unit": "ratio"
+        },
+        {
+          "name": "cost",
+          "unit": "funds"
+        },
+        {
+          "name": "currentLevel",
+          "unit": "count"
+        },
+        {
+          "name": "engineersToReadd",
+          "unit": "count"
+        },
+        {
+          "name": "facilityType",
+          "unit": "enum"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "isModify",
+          "unit": "flag"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "padId",
+          "unit": "id"
+        },
+        {
+          "name": "progress",
+          "unit": "bp"
+        },
+        {
+          "name": "progressRatio",
+          "unit": "ratio"
+        },
+        {
+          "name": "rate",
+          "unit": "bp/s"
+        },
+        {
+          "name": "spentCost",
+          "unit": "funds"
+        },
+        {
+          "name": "spentRushCost",
+          "unit": "funds"
+        },
+        {
+          "name": "stalled",
+          "unit": "flag"
+        },
+        {
+          "name": "targetLevel",
+          "unit": "count"
+        },
+        {
+          "name": "timeLeftSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "totalPoints",
+          "unit": "bp"
+        },
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.crew",
+      "payload": "Rp1CrewEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "latestRetiresAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "nextTrainingExpiryTarget",
+          "unit": "text"
+        },
+        {
+          "name": "nextTrainingExpiryUt",
+          "unit": "ut"
+        },
+        {
+          "name": "retired",
+          "unit": "flag"
+        },
+        {
+          "name": "retirementExtensionUsedSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "retiresAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "trainingCourse",
+          "unit": "text"
+        },
+        {
+          "name": "trainingExpiryCount",
+          "unit": "count"
+        },
+        {
+          "name": "trainingFinishesAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "trainingFractionComplete",
+          "unit": "ratio"
+        },
+        {
+          "name": "trainingStarted",
+          "unit": "flag"
+        },
+        {
+          "name": "trainingTarget",
+          "unit": "text"
+        },
+        {
+          "name": "trainingType",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.crewProgram",
+      "payload": "Rp1CrewProgram",
+      "array": false,
+      "fields": [
+        {
+          "name": "courses",
+          "unit": "count"
+        },
+        {
+          "name": "coursesStarted",
+          "unit": "count"
+        },
+        {
+          "name": "crewInTraining",
+          "unit": "count"
+        },
+        {
+          "name": "crewRnREnabled",
+          "unit": "flag"
+        },
+        {
+          "name": "missionTrainingRate",
+          "unit": "1"
+        },
+        {
+          "name": "proficiencyTrainingRate",
+          "unit": "1"
+        },
+        {
+          "name": "retirementExtensionCapSeconds",
+          "unit": "s"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.facilities",
+      "payload": "Rp1FacilityEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "currentTier",
+          "unit": "count"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        },
+        {
+          "name": "maxTier",
+          "unit": "count"
+        },
+        {
+          "name": "upgradeCost",
+          "unit": "funds"
+        },
+        {
+          "name": "upgradedByRp1",
+          "unit": "flag"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.fundsReachedAt.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.fundTarget",
+      "payload": "Rp1FundTarget",
+      "array": false,
+      "fields": [
+        {
+          "name": "active",
+          "unit": "flag"
+        },
+        {
+          "name": "originalFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "targetFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "timeLeft",
+          "unit": "s"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.lcPricing",
+      "payload": "Rp1LcPricing",
+      "array": false,
+      "fields": [
+        {
+          "name": "additionalPadCostMult",
+          "unit": "ratio"
+        },
+        {
+          "name": "resources",
+          "shape": "Rp1LcResourcePrice[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.leaders",
+      "payload": "Rp1LeaderEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "active",
+          "unit": "flag"
+        },
+        {
+          "name": "appointBlockedReason",
+          "unit": "text"
+        },
+        {
+          "name": "canAppoint",
+          "unit": "flag"
+        },
+        {
+          "name": "canRemoveFromUt",
+          "unit": "ut"
+        },
+        {
+          "name": "deactivateReputation",
+          "unit": "rep"
+        },
+        {
+          "name": "department",
+          "unit": "text"
+        },
+        {
+          "name": "dismissSubsidyLossPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "freeToRemoveFromUt",
+          "unit": "ut"
+        },
+        {
+          "name": "reactivateCooldown",
+          "unit": "s"
+        },
+        {
+          "name": "rehireFromUt",
+          "unit": "ut"
+        },
+        {
+          "name": "removeOnDeactivate",
+          "unit": "flag"
+        },
+        {
+          "name": "setupConfidence",
+          "unit": "confidence"
+        },
+        {
+          "name": "setupFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "setupReputation",
+          "unit": "rep"
+        },
+        {
+          "name": "setupScience",
+          "unit": "science"
+        },
+        {
+          "name": "strategyId",
+          "unit": "id"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.nextCompletion",
+      "payload": "Rp1NextCompletion",
+      "array": false,
+      "fields": [
+        {
+          "name": "basis",
+          "unit": "enum"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "label",
+          "unit": "text"
+        },
+        {
+          "name": "ut",
+          "unit": "ut"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.operations",
+      "payload": "Rp1OperationEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "associatedVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "blockingPeers",
+          "unit": "count"
+        },
+        {
+          "name": "cost",
+          "unit": "funds"
+        },
+        {
+          "name": "costRemaining",
+          "unit": "funds"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchPadId",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "progress",
+          "unit": "bp"
+        },
+        {
+          "name": "progressRatio",
+          "unit": "ratio"
+        },
+        {
+          "name": "rate",
+          "unit": "bp/s"
+        },
+        {
+          "name": "stalled",
+          "unit": "flag"
+        },
+        {
+          "name": "timeLeftSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "totalPoints",
+          "unit": "bp"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.pads",
+      "payload": "Rp1PadEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "fractionalLevel",
+          "unit": "ratio"
+        },
+        {
+          "name": "hasVesselWaiting",
+          "unit": "flag"
+        },
+        {
+          "name": "isOperational",
+          "unit": "flag"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchSiteName",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "level",
+          "unit": "count"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "padId",
+          "unit": "id"
+        },
+        {
+          "name": "status",
+          "unit": "enum"
+        },
+        {
+          "name": "waitingVesselName",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.personnel",
+      "payload": "Rp1Personnel",
+      "array": false,
+      "fields": [
+        {
+          "name": "applicants",
+          "unit": "count"
+        },
+        {
+          "name": "engineerHireQuote",
+          "unit": "funds"
+        },
+        {
+          "name": "engineerSalaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "engineerSalaryPerYear",
+          "unit": "funds"
+        },
+        {
+          "name": "hireCost",
+          "unit": "funds"
+        },
+        {
+          "name": "hireTarget",
+          "shape": "Rp1HireTarget"
+        },
+        {
+          "name": "idleSalaryMult",
+          "unit": "ratio"
+        },
+        {
+          "name": "pooledEngineerSalaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "researcherHireQuote",
+          "unit": "funds"
+        },
+        {
+          "name": "researcherSalaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "researcherSalaryPerHeadPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "researcherSalaryPerYear",
+          "unit": "funds"
+        },
+        {
+          "name": "researchers",
+          "unit": "count"
+        },
+        {
+          "name": "totalEngineers",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.programFundingCurves",
+      "payload": "Rp1FundingCurveEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "isDefault",
+          "unit": "flag"
+        },
+        {
+          "name": "keys",
+          "shape": "Rp1FundingCurveKey[]"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.programs",
+      "payload": "Rp1ProgramEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "acceptedUt",
+          "unit": "ut"
+        },
+        {
+          "name": "canAccept",
+          "unit": "flag"
+        },
+        {
+          "name": "canComplete",
+          "unit": "flag"
+        },
+        {
+          "name": "completedUt",
+          "unit": "ut"
+        },
+        {
+          "name": "confidenceCost",
+          "unit": "confidence"
+        },
+        {
+          "name": "deadlineUt",
+          "unit": "ut"
+        },
+        {
+          "name": "durationSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "fracElapsed",
+          "unit": "ratio"
+        },
+        {
+          "name": "fundingCurve",
+          "unit": "text"
+        },
+        {
+          "name": "fundingPayments",
+          "shape": "Rp1ProgramPaymentEntry[]"
+        },
+        {
+          "name": "fundsPaidOut",
+          "unit": "funds"
+        },
+        {
+          "name": "fundsRemaining",
+          "unit": "funds"
+        },
+        {
+          "name": "isHumanSpaceflight",
+          "unit": "flag"
+        },
+        {
+          "name": "lastPaymentUt",
+          "unit": "ut"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "nominalDurationSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "objectivesCompletedUt",
+          "unit": "ut"
+        },
+        {
+          "name": "objectivesMet",
+          "unit": "flag"
+        },
+        {
+          "name": "objectivesText",
+          "unit": "text"
+        },
+        {
+          "name": "programsToDisableOnAccept",
+          "unit": "id"
+        },
+        {
+          "name": "repDeltaOnCompletePerYearEarly",
+          "unit": "rep"
+        },
+        {
+          "name": "repForComplete",
+          "unit": "rep"
+        },
+        {
+          "name": "repPenaltyAssessed",
+          "unit": "rep"
+        },
+        {
+          "name": "repPenaltyPerYearLate",
+          "unit": "rep"
+        },
+        {
+          "name": "requirementsMet",
+          "unit": "flag"
+        },
+        {
+          "name": "requirementsText",
+          "unit": "text"
+        },
+        {
+          "name": "slots",
+          "unit": "count"
+        },
+        {
+          "name": "speed",
+          "unit": "enum"
+        },
+        {
+          "name": "speedOptions",
+          "shape": "Rp1ProgramSpeedOption[]"
+        },
+        {
+          "name": "status",
+          "unit": "enum"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        },
+        {
+          "name": "totalFunding",
+          "unit": "funds"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.programSlots",
+      "payload": "Rp1ProgramSlots",
+      "array": false,
+      "fields": [
+        {
+          "name": "activeCount",
+          "unit": "count"
+        },
+        {
+          "name": "completedCount",
+          "unit": "count"
+        },
+        {
+          "name": "freeSlots",
+          "unit": "count"
+        },
+        {
+          "name": "maxSlots",
+          "unit": "count"
+        },
+        {
+          "name": "usedSlots",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.research",
+      "payload": "Rp1ResearchEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "endYear",
+          "unit": "count"
+        },
+        {
+          "name": "progress",
+          "unit": "count"
+        },
+        {
+          "name": "progressRatio",
+          "unit": "ratio"
+        },
+        {
+          "name": "rate",
+          "unit": "count"
+        },
+        {
+          "name": "scienceCost",
+          "unit": "count"
+        },
+        {
+          "name": "stalled",
+          "unit": "flag"
+        },
+        {
+          "name": "startYear",
+          "unit": "count"
+        },
+        {
+          "name": "techId",
+          "unit": "id"
+        },
+        {
+          "name": "techName",
+          "unit": "text"
+        },
+        {
+          "name": "timeLeftSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.researchRates",
+      "payload": "Rp1ResearchRates",
+      "array": false,
+      "fields": [
+        {
+          "name": "refreshedAt",
+          "unit": "ut"
+        },
+        {
+          "name": "steps",
+          "shape": "Rp1ResearchRateStep[]"
+        },
+        {
+          "name": "techId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.rushTerms",
+      "payload": "Rp1RushTerms",
+      "array": false,
+      "fields": [
+        {
+          "name": "rateMult",
+          "unit": "ratio"
+        },
+        {
+          "name": "salaryMult",
+          "unit": "ratio"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.simulation",
+      "payload": "Rp1Simulation",
+      "array": false,
+      "fields": [
+        {
+          "name": "active",
+          "unit": "flag"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "rp1.tooling",
+      "payload": "Rp1Tooling",
+      "array": false,
+      "fields": [
+        {
+          "name": "parts",
+          "shape": "Rp1ToolingEntry[]"
+        },
+        {
+          "name": "toolAllCost",
+          "unit": "funds"
+        },
+        {
+          "name": "untooledCount",
+          "unit": "count"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.training",
+      "payload": "Rp1TrainingCourseEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "completed",
+          "unit": "flag"
+        },
+        {
+          "name": "completesAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "description",
+          "unit": "text"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "isTemporary",
+          "unit": "flag"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "queued",
+          "unit": "flag"
+        },
+        {
+          "name": "seatMax",
+          "unit": "count"
+        },
+        {
+          "name": "seatMin",
+          "unit": "count"
+        },
+        {
+          "name": "started",
+          "unit": "flag"
+        },
+        {
+          "name": "students",
+          "unit": "id"
+        },
+        {
+          "name": "studentsAvailableAtUt",
+          "unit": "ut"
+        },
+        {
+          "name": "target",
+          "unit": "id"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.trainingCatalogue",
+      "payload": "Rp1TrainingTemplateEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "baseTime",
+          "unit": "s"
+        },
+        {
+          "name": "description",
+          "unit": "text"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "isTemporary",
+          "unit": "flag"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "seatMax",
+          "unit": "count"
+        },
+        {
+          "name": "seatMin",
+          "unit": "count"
+        },
+        {
+          "name": "target",
+          "unit": "id"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        },
+        {
+          "name": "unlocked",
+          "unit": "flag"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "rp1.warehouse",
+      "payload": "Rp1WarehouseItemEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "cost",
+          "unit": "funds"
+        },
+        {
+          "name": "humanRated",
+          "unit": "flag"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchSite",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "mass",
+          "unit": "t"
+        },
+        {
+          "name": "projectType",
+          "unit": "enum"
+        },
+        {
+          "name": "rolloutCost",
+          "unit": "funds"
+        },
+        {
+          "name": "rolloutRefusals",
+          "unit": "text"
+        },
+        {
+          "name": "shipId",
+          "unit": "id"
+        },
+        {
+          "name": "shipName",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "Rp1BudgetForecastSample",
+      "fields": [
+        {
+          "name": "fundsDelta",
+          "unit": "funds"
+        },
+        {
+          "name": "horizon",
+          "unit": "s"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BudgetHorizons",
+      "fields": [
+        {
+          "name": "day",
+          "unit": "funds"
+        },
+        {
+          "name": "month",
+          "unit": "funds"
+        },
+        {
+          "name": "year",
+          "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BudgetPeriod",
+      "fields": [
+        {
+          "name": "astronauts",
+          "unit": "funds"
+        },
+        {
+          "name": "balance",
+          "unit": "funds"
+        },
+        {
+          "name": "constructions",
+          "unit": "funds"
+        },
+        {
+          "name": "facilities",
+          "unit": "funds"
+        },
+        {
+          "name": "fundsDelta",
+          "unit": "funds"
+        },
+        {
+          "name": "integrationTeams",
+          "unit": "funds"
+        },
+        {
+          "name": "net",
+          "unit": "funds"
+        },
+        {
+          "name": "programBudget",
+          "unit": "funds"
+        },
+        {
+          "name": "researchTeams",
+          "unit": "funds"
+        },
+        {
+          "name": "rollout",
+          "unit": "funds"
+        },
+        {
+          "name": "span",
+          "unit": "s"
+        },
+        {
+          "name": "subsidy",
+          "unit": "funds"
+        },
+        {
+          "name": "unlockCredit",
+          "unit": "funds"
+        },
+        {
+          "name": "upkeep",
+          "unit": "funds"
+        },
+        {
+          "name": "upkeepBeforeModifiers",
+          "unit": "funds"
+        },
+        {
+          "name": "upkeepModifiers",
+          "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BuildableComplex",
+      "fields": [
+        {
+          "name": "eligible",
+          "unit": "flag"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "refusals",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BuildingUpkeepEntry",
+      "fields": [
+        {
+          "name": "facility",
+          "unit": "enum"
+        },
+        {
+          "name": "upkeep",
+          "shape": "Rp1BudgetHorizons"
+        }
+      ]
+    },
+    {
+      "name": "Rp1CareerEventEntry",
+      "fields": [
+        {
+          "name": "builtAt",
+          "unit": "enum"
+        },
+        {
+          "name": "cost",
+          "unit": "funds"
+        },
+        {
+          "name": "detail",
+          "unit": "enum"
+        },
+        {
+          "name": "isAdd",
+          "unit": "flag"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "launchId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "repChange",
+          "unit": "rep"
+        },
+        {
+          "name": "ut",
+          "unit": "ut"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexSizeArgs",
+      "fields": [
+        {
+          "name": "sizeMaxDepth",
+          "unit": "m"
+        },
+        {
+          "name": "sizeMaxHeight",
+          "unit": "m"
+        },
+        {
+          "name": "sizeMaxWidth",
+          "unit": "m"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexUpkeepEntry",
+      "fields": [
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "operational",
+          "unit": "flag"
+        },
+        {
+          "name": "upkeep",
+          "shape": "Rp1BudgetHorizons"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ConstructionCostEntry",
+      "fields": [
+        {
+          "name": "cost",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ConstructionRateStep",
+      "fields": [
+        {
+          "name": "costMultiplier",
+          "unit": "ratio"
+        },
+        {
+          "name": "costPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "finishesAt",
+          "unit": "ut"
+        },
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ConstructionRateTable",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "steps",
+          "shape": "Rp1ConstructionRateStep[]"
+        }
+      ]
+    },
+    {
+      "name": "Rp1CourseCostEntry",
+      "fields": [
+        {
+          "name": "cost",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "students",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "Rp1CrewCostEntry",
+      "fields": [
+        {
+          "name": "cost",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "inFlight",
+          "unit": "flag"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1FacilityUpgradeRate",
+      "fields": [
+        {
+          "name": "buildSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "costPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        }
+      ]
+    },
+    {
+      "name": "Rp1FundingCurveKey",
+      "fields": [
+        {
+          "name": "frac",
+          "unit": "ratio"
+        },
+        {
+          "name": "inTangent",
+          "unit": "1"
+        },
+        {
+          "name": "outTangent",
+          "unit": "1"
+        },
+        {
+          "name": "paidFraction",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "Rp1HireTarget",
+      "fields": [
+        {
+          "name": "active",
+          "unit": "flag"
+        },
+        {
+          "name": "currentCount",
+          "unit": "count"
+        },
+        {
+          "name": "isResearch",
+          "unit": "flag"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "leftToHire",
+          "unit": "count"
+        },
+        {
+          "name": "targetCount",
+          "unit": "count"
+        },
+        {
+          "name": "timeLeft",
+          "unit": "s"
+        }
+      ]
+    },
+    {
+      "name": "Rp1IntegrationTeamCostEntry",
+      "fields": [
+        {
+          "name": "cost",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "engineers",
+          "unit": "count"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "unassigned",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "Rp1LcResourcePrice",
+      "fields": [
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "padCostPerUnit",
+          "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1LedgerPeriodEntry",
+      "fields": [
+        {
+          "name": "confidenceAtClose",
+          "unit": "confidence"
+        },
+        {
+          "name": "constructionFees",
+          "unit": "funds"
+        },
+        {
+          "name": "endUt",
+          "unit": "ut"
+        },
+        {
+          "name": "engineersAtClose",
+          "unit": "count"
+        },
+        {
+          "name": "entryCosts",
+          "unit": "funds"
+        },
+        {
+          "name": "facilityMaintenance",
+          "unit": "funds"
+        },
+        {
+          "name": "fundsAtClose",
+          "unit": "funds"
+        },
+        {
+          "name": "hiringEngineers",
+          "unit": "funds"
+        },
+        {
+          "name": "hiringResearchers",
+          "unit": "funds"
+        },
+        {
+          "name": "launchFees",
+          "unit": "funds"
+        },
+        {
+          "name": "lcMaintenance",
+          "unit": "funds"
+        },
+        {
+          "name": "maintenanceFees",
+          "unit": "funds"
+        },
+        {
+          "name": "open",
+          "unit": "flag"
+        },
+        {
+          "name": "otherFees",
+          "unit": "funds"
+        },
+        {
+          "name": "otherFundsEarned",
+          "unit": "funds"
+        },
+        {
+          "name": "programFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "repFromPrograms",
+          "unit": "rep"
+        },
+        {
+          "name": "reputationAtClose",
+          "unit": "rep"
+        },
+        {
+          "name": "researchersAtClose",
+          "unit": "count"
+        },
+        {
+          "name": "salaryCrew",
+          "unit": "funds"
+        },
+        {
+          "name": "salaryEngineers",
+          "unit": "funds"
+        },
+        {
+          "name": "salaryResearchers",
+          "unit": "funds"
+        },
+        {
+          "name": "scienceAtClose",
+          "unit": "science"
+        },
+        {
+          "name": "scienceEarnedAtClose",
+          "unit": "science"
+        },
+        {
+          "name": "spentUnlockCredit",
+          "unit": "funds"
+        },
+        {
+          "name": "startUt",
+          "unit": "ut"
+        },
+        {
+          "name": "subsidyPaidOut",
+          "unit": "funds"
+        },
+        {
+          "name": "subsidySize",
+          "unit": "funds"
+        },
+        {
+          "name": "toolingFees",
+          "unit": "funds"
+        },
+        {
+          "name": "trainingFees",
+          "unit": "funds"
+        },
+        {
+          "name": "unlockCreditAtClose",
+          "unit": "funds"
+        },
+        {
+          "name": "vesselPurchase",
+          "unit": "funds"
+        },
+        {
+          "name": "vesselRecovery",
+          "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ProgramFundingEntry",
+      "fields": [
+        {
+          "name": "deadlineUt",
+          "unit": "ut"
+        },
+        {
+          "name": "funding",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ProgramPaymentEntry",
+      "fields": [
+        {
+          "name": "cumulativeFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "funds",
+          "unit": "funds"
+        },
+        {
+          "name": "year",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ProgramSpeedOption",
+      "fields": [
+        {
+          "name": "confidenceCost",
+          "unit": "confidence"
+        },
+        {
+          "name": "durationSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "fundingPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "label",
+          "unit": "text"
+        },
+        {
+          "name": "speed",
+          "unit": "enum"
+        }
+      ]
+    },
+    {
+      "name": "Rp1RequiredTechEntry",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "parts",
+          "unit": "text"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ResearchRateStep",
+      "fields": [
+        {
+          "name": "finishesAt",
+          "unit": "ut"
+        },
+        {
+          "name": "researcherSalaryPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "unlockCreditPerDay",
+          "unit": "f/day"
+        },
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "Rp1RolloutCostEntry",
+      "fields": [
+        {
+          "name": "associatedVesselId",
+          "unit": "id"
+        },
+        {
+          "name": "cost",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "kscDisplayName",
+          "unit": "text"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "launchPadId",
+          "unit": "id"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "lcName",
+          "unit": "text"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        },
+        {
+          "name": "vesselName",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ToolingEntry",
+      "fields": [
+        {
+          "name": "parameterSummary",
+          "unit": "text"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "partTitle",
+          "unit": "text"
+        },
+        {
+          "name": "refitTargets",
+          "shape": "Rp1ToolingRefitTarget[]"
+        },
+        {
+          "name": "refittable",
+          "unit": "flag"
+        },
+        {
+          "name": "symmetryCounterparts",
+          "unit": "count"
+        },
+        {
+          "name": "tooled",
+          "unit": "flag"
+        },
+        {
+          "name": "toolingCost",
+          "unit": "funds"
+        },
+        {
+          "name": "toolingType",
+          "unit": "id"
+        },
+        {
+          "name": "toolingTypeTitle",
+          "unit": "text"
+        },
+        {
+          "name": "untooledSurcharge",
+          "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ToolingRefitTarget",
+      "fields": [
+        {
+          "name": "diameter",
+          "unit": "m"
+        },
+        {
+          "name": "length",
+          "unit": "m"
+        },
+        {
+          "name": "rfType",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1TrainingFeeEntry",
+      "fields": [
+        {
+          "name": "perStudent",
+          "shape": "Rp1BudgetHorizons"
+        },
+        {
+          "name": "templateId",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "Rp1BuildQuote",
+      "fields": [
+        {
+          "name": "affordable",
+          "unit": "flag"
+        },
+        {
+          "name": "balance",
+          "unit": "funds"
+        },
+        {
+          "name": "price",
+          "unit": "funds"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "rp1.build.quote",
+      "args": "Rp1BuildQuoteArgs",
+      "result": "CommandResultOf<Rp1BuildQuote>"
+    },
+    {
+      "id": "rp1.build.repeat",
+      "args": "Rp1BuildRepeatArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.build.start",
+      "args": "Rp1BuildStartArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.complex.dismantle",
+      "args": "Rp1ComplexDismantleArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.complex.modify",
+      "args": "Rp1ComplexModifyArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.complex.new",
+      "args": "Rp1ComplexNewArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.complex.rename",
+      "args": "Rp1ComplexRenameArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.complex.rush",
+      "args": "Rp1ComplexRushArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.construction.cancel",
+      "args": "Rp1ConstructionCancelArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.construction.setRate",
+      "args": "Rp1ConstructionRateArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.contracts.setPayload",
+      "args": "Rp1ContractPayloadArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.facility.upgrade",
+      "args": "Rp1FacilityUpgradeArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.fundTarget.cancel",
+      "args": "Rp1TargetCancelArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.hireTarget.cancel",
+      "args": "Rp1TargetCancelArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.hireTarget.set",
+      "args": "Rp1HireTargetSetArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.leader.appoint",
+      "args": "Rp1LeaderAppointArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.pad.dismantle",
+      "args": "Rp1PadDismantleArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.pad.new",
+      "args": "Rp1PadNewArgs",
+      "result": "CommandResultOf<Record<string, unknown>>"
+    },
+    {
+      "id": "rp1.pad.rename",
+      "args": "Rp1PadRenameArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.personnel.assign",
+      "args": "Rp1PersonnelAssignArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.personnel.fire",
+      "args": "Rp1PersonnelHeadcountArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.personnel.hire",
+      "args": "Rp1PersonnelHeadcountArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.program.accept",
+      "args": "Rp1ProgramAcceptArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.program.complete",
+      "args": "Rp1ProgramCompleteArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.research.setRate",
+      "args": "Rp1ResearchRateArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.tech.research",
+      "args": "Rp1TechResearchArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.tooling.refit",
+      "args": "Rp1ToolingRefitArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.tooling.toolAll",
+      "args": "Rp1ToolAllArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.training.cancel",
+      "args": "Rp1TrainingLeaveArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.training.enrol",
+      "args": "Rp1TrainingEnrolArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.training.remove",
+      "args": "Rp1TrainingLeaveArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.vehicle.rollback",
+      "args": "Rp1VehicleArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.vehicle.rollout",
+      "args": "Rp1RolloutArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.vehicle.scrap",
+      "args": "Rp1VehicleArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "Rp1BuildQuoteArgs",
+      "fields": [
+        {
+          "name": "craftFile",
+          "unit": "id"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BuildRepeatArgs",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1BuildStartArgs",
+      "fields": [
+        {
+          "name": "craftFile",
+          "unit": "id"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexDismantleArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexModifyArgs",
+      "fields": [
+        {
+          "name": "assignEngineersOnComplete",
+          "unit": "flag"
+        },
+        {
+          "name": "humanRated",
+          "unit": "flag"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "massMax",
+          "unit": "t"
+        },
+        {
+          "name": "size",
+          "shape": "Rp1ComplexSizeArgs"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexNewArgs",
+      "fields": [
+        {
+          "name": "assignEngineersOnComplete",
+          "unit": "flag"
+        },
+        {
+          "name": "humanRated",
+          "unit": "flag"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "massMax",
+          "unit": "t"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "size",
+          "shape": "Rp1ComplexSizeArgs"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexRenameArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ComplexRushArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "rushing",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ConstructionCancelArgs",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ConstructionRateArgs",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ContractPayloadArgs",
+      "fields": [
+        {
+          "name": "commsPayload",
+          "unit": "kg"
+        },
+        {
+          "name": "weatherPayload",
+          "unit": "kg"
+        }
+      ]
+    },
+    {
+      "name": "Rp1FacilityUpgradeArgs",
+      "fields": [
+        {
+          "name": "facility",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1HireTargetSetArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "reserveFunds",
+          "unit": "funds"
+        },
+        {
+          "name": "targetCount",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "Rp1LeaderAppointArgs",
+      "fields": [
+        {
+          "name": "factor",
+          "unit": "ratio"
+        },
+        {
+          "name": "strategyId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PadDismantleArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "padId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PadNewArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PadRenameArgs",
+      "fields": [
+        {
+          "name": "lcId",
+          "unit": "id"
+        },
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "padId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PersonnelAssignArgs",
+      "fields": [
+        {
+          "name": "engineers",
+          "unit": "count"
+        },
+        {
+          "name": "lcId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PersonnelHeadcountArgs",
+      "fields": [
+        {
+          "name": "count",
+          "unit": "count"
+        },
+        {
+          "name": "kscName",
+          "unit": "id"
+        },
+        {
+          "name": "research",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ProgramAcceptArgs",
+      "fields": [
+        {
+          "name": "speed",
+          "unit": "enum"
+        },
+        {
+          "name": "strategyId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ProgramCompleteArgs",
+      "fields": [
+        {
+          "name": "strategyId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ResearchRateArgs",
+      "fields": [
+        {
+          "name": "workRate",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "Rp1RolloutArgs",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "pad",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1TargetCancelArgs",
+      "fields": []
+    },
+    {
+      "name": "Rp1TechResearchArgs",
+      "fields": [
+        {
+          "name": "techId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1ToolAllArgs",
+      "fields": []
+    },
+    {
+      "name": "Rp1ToolingRefitArgs",
+      "fields": [
+        {
+          "name": "diameter",
+          "unit": "m"
+        },
+        {
+          "name": "length",
+          "unit": "m"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "rfType",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1TrainingEnrolArgs",
+      "fields": [
+        {
+          "name": "crew",
+          "unit": "id"
+        },
+        {
+          "name": "templateId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1TrainingLeaveArgs",
+      "fields": [
+        {
+          "name": "crewName",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1VehicleArgs",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "rp1-vehicle-assembly",
+      "name": "Vehicle Assembly",
+      "description": "Every craft RP-1 is integrating, holding or could start, across every launch complex at every space centre: what it costs, how far along it is, why its clock reads what it reads, and the controls to start a build, roll one out, bring it back or scrap it.",
+      "tags": [
+        "rp1",
+        "career",
+        "vehicles"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "rp1.available",
+        "rp1.warehouse",
+        "rp1.buildQueue",
+        "rp1.buildable",
+        "rp1.complexes",
+        "rp1.pads",
+        "rp1.operations",
+        "rp1.buildCost",
+        "rp1.tooling",
+        "career.status",
+        "rp1.budget"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "rp1-vehicle-assembly.sections"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 7,
+        "h": 16
+      },
+      "minSize": {
+        "w": 4,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [
+    {
+      "id": "rp1-contract-payload",
+      "augments": "contract-manager.sections",
+      "channels": [],
+      "priority": 0,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-crew-schedule",
+      "augments": "astronaut-complex.crew",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-crew-training-badge",
+      "augments": "astronaut-complex.crew-badge",
+      "channels": [
+        "rp1.available",
+        "rp1.crew"
+      ],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-facility-upgrades",
+      "augments": "space-center-status.sections",
+      "channels": [
+        "rp1.available",
+        "career.status",
+        "career.facilities",
+        "rp1.constructions",
+        "rp1.facilities",
+        "rp1.constructionRates"
+      ],
+      "requires": "rp1",
+      "priority": -0.5,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-finances",
+      "augments": "administration-building.screen-body",
+      "channels": [
+        "rp1.available",
+        "rp1.budget",
+        "rp1.budgetBreakdown",
+        "rp1.careerLedger",
+        "rp1.training",
+        "rp1.research"
+      ],
+      "requires": "rp1",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-ksc-complexes",
+      "augments": "space-center-status.sections",
+      "channels": [],
+      "priority": 1,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-ksc-construction",
+      "augments": "space-center-status.sections",
+      "channels": [],
+      "priority": 0,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-launch-complex-status",
+      "augments": "launch-director.pad",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-leader-detail",
+      "augments": "administration-building.screen-body",
+      "channels": [
+        "rp1.available",
+        "rp1.leaders",
+        "career.status"
+      ],
+      "requires": "rp1",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-program-detail",
+      "augments": "administration-building.screen-body",
+      "channels": [
+        "rp1.available",
+        "rp1.programs",
+        "rp1.programSlots",
+        "rp1.programFundingCurves",
+        "rp1.confidence",
+        "career.status"
+      ],
+      "requires": "rp1",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-research-queue",
+      "augments": "research-and-development.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-start-research",
+      "augments": "research-and-development.sections",
+      "channels": [
+        "rp1.available",
+        "career.status",
+        "rp1.research"
+      ],
+      "requires": "rp1",
+      "priority": 1,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-training-courses",
+      "augments": "astronaut-complex.tab",
+      "channels": [
+        "rp1.available",
+        "rp1.training",
+        "rp1.crew"
+      ],
+      "priority": 10,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-training-enrolment",
+      "augments": "astronaut-complex.tab",
+      "channels": [
+        "rp1.available",
+        "rp1.trainingCatalogue",
+        "rp1.crew",
+        "rp1.training",
+        "spaceCenter.crewRoster",
+        "rp1.budgetBreakdown"
+      ],
+      "priority": 20,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-vehicle-assembly-build-cost",
+      "augments": "rp1-vehicle-assembly.sections",
+      "channels": [],
+      "priority": -1,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-vehicle-assembly-buildable",
+      "augments": "rp1-vehicle-assembly.sections",
+      "channels": [],
+      "priority": 20,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-vehicle-assembly-building",
+      "augments": "rp1-vehicle-assembly.sections",
+      "channels": [],
+      "priority": 1,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-vehicle-assembly-tooling",
+      "augments": "rp1-vehicle-assembly.sections",
+      "channels": [],
+      "priority": -0.5,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-vehicle-assembly-warehouse",
+      "augments": "rp1-vehicle-assembly.sections",
+      "channels": [],
+      "priority": 0,
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "rp1-warp-targets",
+      "augments": "warp-control.stepper",
+      "channels": [],
+      "priority": 0,
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [
+    {
+      "id": "rp1:crew-core-stats",
+      "contributes": "astronaut-complex.readouts",
+      "deps": [
+        "rp1.crew",
+        "rp1.crewProgram",
+        "rp1.budgetBreakdown",
+        "settings.rp1"
+      ],
+      "requires": "rp1",
+      "settings": []
+    },
+    {
+      "id": "rp1:facility-tiers",
+      "contributes": "space-center-status.facilities",
+      "deps": [
+        "rp1.facilities"
+      ],
+      "requires": "rp1",
+      "settings": []
+    },
+    {
+      "id": "rp1:programs-screen",
+      "contributes": "administration-building.screens",
+      "deps": [],
+      "requires": "rp1",
+      "settings": []
+    },
+    {
+      "id": "rp1:rp1-avionics-badge",
+      "contributes": "navball.badges",
+      "deps": [
+        "rp1.avionics"
+      ],
+      "requires": "rp1",
+      "settings": []
+    },
+    {
+      "id": "rp1:rp1-simulation-badge",
+      "contributes": "app.header-badges",
+      "deps": [
+        "rp1.simulation"
+      ],
+      "requires": "rp1",
+      "settings": []
+    }
+  ],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": [
+    {
+      "id": "rp1.buildUnrecognised",
+      "refines": "unreadable",
+      "sentence": "this RP-1 build is not one this Uplink recognises",
+      "meaning": "The installed RP-1 build lacks a member this Uplink reads or calls, so the command could not be carried out. The detail names which one."
+    },
+    {
+      "id": "rp1.notManaging",
+      "refines": "careerModeRequired",
+      "sentence": "RP-1 is not managing this save",
+      "meaning": "RP-1 is installed but is not managing this save, so none of its career commands apply to it. A property of the save rather than of the moment."
+    },
+    {
+      "id": "rp1.notReady",
+      "refines": "wrongState",
+      "sentence": "the vehicle is not ready to fly yet",
+      "meaning": "The vehicle or the complex it needs has RP-1 work outstanding: never integrated, still integrating, not rolled out, or on a pad still being reconditioned. Nothing is over a limit and nothing is broken, the work simply has not been done. The detail says which."
+    },
+    {
+      "id": "rp1.spaceCentreNotLoaded",
+      "refines": "modeUnavailable",
+      "sentence": "RP-1's space centre is not loaded",
+      "meaning": "RP-1's space centre, which holds every queue and complex these commands act on, is not loaded in the current scene."
+    }
+  ]
+}
