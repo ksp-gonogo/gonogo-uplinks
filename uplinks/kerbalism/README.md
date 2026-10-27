@@ -8,9 +8,9 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | | |
 | --- | --- |
 | Uplink id | `kerbalism` |
-| Version | `1.0.0-rc.5` |
+| Version | `1.0.0-rc.4` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 49.8, extension API 6.0.0 |
+| Built against | contract 49.4, extension API 6.0.0 |
 
 ## Install
 
@@ -31,14 +31,13 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `kerbalism.reliability` | `KerbalismReliabilitySummary` | lossy-latest | delayed |
 | `kerbalism.reliabilityParts` | `KerbalismReliabilityPart[]` | lossy-latest | delayed |
 | `kerbalism.spaceweather` | `KerbalismSpaceWeather` | lossy-latest | delayed |
-| `kerbalism.transmission` | `KerbalismTransmission` | lossy-latest | delayed |
 | `kerbalism.available` | – | lossy-latest | true-now |
 
 | Payload | Fields |
 | --- | --- |
 | `KerbalismCrewRule` | `degenPerSec` units/s, `fatalThreshold` units, `name` text, `problem` units |
 | `KerbalismGreenhouseEntry` | `active` flag, `artificial` W/m², `cropResource` text, `ecRateMaxPerSec` units/s, `foodRatePerSec` units/s, `issue` text, `lampEcDrawPerSec` units/s, `lightToleranceWm2` W/m², `natural` W/m², `pressureTolerance` ratio, `radiationToleranceRadPerSec` rad/s |
-| `KerbalismHabitat` | `comfort` ratio, `evaSafe` flag, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `shielding` ratio, `surface` m², `volume` m³ |
+| `KerbalismHabitat` | `comfort` ratio, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `pressureKpa` kPa, `shielding` ratio, `surface` m², `volume` m³ |
 | `KerbalismIsruConverterExtension` | `broken` flag, `capacity` units, `processToken` text, `title` text, `valveIndex` count |
 | `KerbalismIsruDrillExtension` | `ecRate` units/s, `harvestType` text, `issue` text, `sourceMassRemaining` t, `sourceMassThreshold` t |
 | `KerbalismProcessDef` | `dumpValves` text, `inputs` units/s, `modifiers` text, `name` text, `outputs` units/s |
@@ -113,7 +112,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | --- | --- | --- | --- | --- | --- |
 | `life-support-greenhouse` | `ship-systems.life-support` | – |  | 1 |  |
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
-| `crew-status-survival-badge` | `crew-status.row-badges` | `kerbalism.lifesupport` | only while `kerbalism` | 0 |  |
+| `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
 | `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
@@ -140,8 +139,6 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:ship-map-part-meta` | `ship-map.part-meta` | `kerbalism.lifesupport` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
-| `kerbalism:science-transmitted` | `science-data.archive-readouts` | `kerbalism.transmission` | only while `kerbalism` |
-| `kerbalism:comm-signal-link-rate` | `comm-signal.link-rate` | `kerbalism.transmission` | only while `kerbalism` |
 
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](client/docs/assets/radiation-dose-critical--default.png)
 

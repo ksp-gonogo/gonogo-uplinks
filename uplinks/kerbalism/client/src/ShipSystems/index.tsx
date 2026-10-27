@@ -36,7 +36,7 @@ import {
   writtenAs,
   writtenQuantity,
 } from "@ksp-gonogo/ui-kit";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
 import type {
   KerbalismGreenhouseEntry,
   KerbalismHabitat,
@@ -753,6 +753,11 @@ function ShipSystemsBody({
                   ? "Pressurized"
                   : "Unpressurized"
             }
+            detail={
+              habitat?.pressureKpa ? (
+                <Unit value={habitat.pressureKpa} decimals={1} />
+              ) : undefined
+            }
             tone={
               pressurized === null ? "neutral" : pressurized ? "go" : "warn"
             }
@@ -830,27 +835,41 @@ function ShipSystemsBody({
 function SectionHead({
   label,
   value,
+  detail,
   tone,
 }: {
   label: string;
   value?: string;
+  /** A quieter figure beside the reading, in the same muted text without its tone. */
+  detail?: ReactNode;
   tone?: Tone;
 }) {
   return (
-    <Cluster justify="between" align="baseline">
+    // Wraps so a long reading drops under its label at the smallest tile
+    // instead of running past the right edge.
+    <Cluster justify="between" align="baseline" wrap>
       <Text level="muted" size="xs">
         {label.toUpperCase()}
       </Text>
-      {value !== undefined && (
-        // `neutral` is a Meter/Badge tone, not a Text one: a resting
-        // section reading renders in the same muted text as the label.
-        <Text
-          tone={tone === undefined || tone === "neutral" ? undefined : tone}
-          level="muted"
-          size="xs"
-        >
-          {value}
-        </Text>
+      {(value !== undefined || detail !== undefined) && (
+        <Cluster justify="end" align="baseline" wrap>
+          {value !== undefined && (
+            // `neutral` is a Meter/Badge tone, not a Text one: a resting
+            // section reading renders in the same muted text as the label.
+            <Text
+              tone={tone === undefined || tone === "neutral" ? undefined : tone}
+              level="muted"
+              size="xs"
+            >
+              {value}
+            </Text>
+          )}
+          {detail !== undefined && (
+            <Text level="muted" size="xs">
+              {detail}
+            </Text>
+          )}
+        </Cluster>
       )}
     </Cluster>
   );

@@ -99,6 +99,9 @@ namespace Gonogo.KerbalismUplink
             return map;
         }
 
+        /// <summary>Kerbalism's <c>Sim.PressureAtSeaLevel()</c>: a habitat pressure ratio of 1 reads as this many kPa.</summary>
+        internal const double SeaLevelPressureKpa = 101.0;
+
         public static Dictionary<string, object?> BuildSpaceWeather(
             KerbalismSnapshot s,
             IEnumerable<StarInfoRaw>? stars = null,
@@ -432,6 +435,7 @@ namespace Gonogo.KerbalismUplink
                 ["habitat"] = new Dictionary<string, object?>
                 {
                     ["pressure"] = s.Pressure,
+                    ["pressureKpa"] = s.Pressure * SeaLevelPressureKpa,
                     ["poisoning"] = s.Poisoning,
                     ["shielding"] = s.Shielding,
                     ["livingSpace"] = s.LivingSpace,

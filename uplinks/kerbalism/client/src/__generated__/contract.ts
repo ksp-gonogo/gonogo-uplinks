@@ -310,6 +310,11 @@ export interface KerbalismResource
 export interface KerbalismHabitat
 {
 	pressure?: Value<"ratio"> | null;
+	/**
+	* The same habitat pressure in kilopascals, as Kerbalism's own panels print it
+	* (the ratio times 101). Null whenever `Pressure` is.
+	*/
+	pressureKpa?: Value<"kPa"> | null;
 	poisoning?: Value<"ratio"> | null;
 	shielding?: Value<"ratio"> | null;
 	livingSpace?: Value<"ratio"> | null;

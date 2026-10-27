@@ -713,4 +713,17 @@ describe("ShipSystemsComponent: habitat readings that never arrived", () => {
     expect(panel.getByRole("meter", { name: "Comfort" })).toBeInTheDocument();
     expect(panel.queryByRole("meter", { name: "CO2 poisoning" })).toBeNull();
   });
+
+  it("writes the pressure in kPa beside the verdict", async () => {
+    const panel = renderWithHabitat({ pressure: 1, pressureKpa: 101 });
+
+    await habitatHeadReads(panel, "Pressurized101.0 kPa");
+  });
+
+  it("writes no pressure figure when only the ratio was reported", async () => {
+    const panel = renderWithHabitat({ pressure: 0.9 });
+
+    await habitatHeadReads(panel, "Pressurized");
+    expect(panel.queryByText(/kPa/)).toBeNull();
+  });
 });

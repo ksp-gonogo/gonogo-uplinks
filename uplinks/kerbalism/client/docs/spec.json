@@ -461,6 +461,10 @@
           "unit": "ratio"
         },
         {
+          "name": "pressureKpa",
+          "unit": "kPa"
+        },
+        {
           "name": "shielding",
           "unit": "ratio"
         },

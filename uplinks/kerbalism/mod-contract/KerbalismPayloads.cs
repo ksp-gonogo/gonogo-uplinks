@@ -266,6 +266,12 @@ public class KerbalismHabitat
 {
     [SitrepUnit(Units.Ratio)]
     public double? Pressure { get; set; }
+    /// <summary>
+    /// The same habitat pressure in kilopascals, as Kerbalism's own panels print it
+    /// (the ratio times 101). Null whenever <c>Pressure</c> is.
+    /// </summary>
+    [SitrepUnit(Units.Kilopascals)]
+    public double? PressureKpa { get; set; }
     [SitrepUnit(Units.Ratio)]
     public double? Poisoning { get; set; }
     [SitrepUnit(Units.Ratio)]

@@ -139,6 +139,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     livingSpace: "ratio",
     poisoning: "ratio",
     pressure: "ratio",
+    pressureKpa: "kPa",
     shielding: "ratio",
     surface: "m²",
     volume: "m³",
