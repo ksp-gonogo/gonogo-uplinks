@@ -7,7 +7,7 @@
     "description": "Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the next node, or land at the selected target, over the delayed command path.",
     "wraps": {
       "name": "MechJeb2",
-      "builtAgainst": "2.15.3.0",
+      "builtAgainst": "2.15.3.1",
       "tier": "ckan"
     }
   },
