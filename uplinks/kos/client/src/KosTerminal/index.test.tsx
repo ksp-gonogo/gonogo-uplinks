@@ -969,22 +969,27 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
   });
 
   it("keeps the screen through a brief gap in the CPU list and reopens the lease when it returns", async () => {
-    const fixture = terminalFixture();
+    const fixture = terminalFixture({ pinnedUt: 20 });
     render(
       <fixture.Provider>
         <KosTerminalComponent id="kos-terminal" config={{}} />
       </fixture.Provider>,
     );
-    act(() => fixture.emit("kos.processors", ONE_CPU));
+    act(() => fixture.emit("kos.processors", ONE_CPU, { validAt: 10 }));
     const opens = () =>
       fixture.commands.filter((c) => c.command === "kos.terminal.open").length;
     await waitFor(() => expect(opens()).toBe(1));
 
-    act(() => fixture.emit("kos.processors", []));
+    act(() => fixture.emit("kos.processors", [], { validAt: 11 }));
     expect(screen.queryByText(/No kOS CPUs/i)).toBeNull();
     expect(fixture.transport.isSubscribed("kos.terminal.7")).toBe(true);
+    await waitFor(() =>
+      expect(
+        fixture.commands.some((c) => c.command === "kos.terminal.close"),
+      ).toBe(true),
+    );
 
-    act(() => fixture.emit("kos.processors", ONE_CPU));
+    act(() => fixture.emit("kos.processors", ONE_CPU, { validAt: 12 }));
     await waitFor(() => expect(opens()).toBe(2));
     expect(screen.queryByRole("status", { name: /./ })).toBeNull();
   });
