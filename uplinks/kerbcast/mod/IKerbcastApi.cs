@@ -122,7 +122,7 @@ namespace Gonogo.KerbcastUplink
             catch (Exception e) when (e is TypeLoadException or MissingMemberException or System.IO.FileLoadException or System.IO.FileNotFoundException or TypeInitializationException)
             {
                 return new KerbcastBinding(null,
-                    "kerbcast's KerbcastControl surface has moved (" + e.GetType().Name + "): unsupported kerbcast version");
+                    "kerbcast's API surface has moved (" + e.GetType().Name + "): unsupported kerbcast version");
             }
         }
     }

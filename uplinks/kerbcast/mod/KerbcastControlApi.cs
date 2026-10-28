@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Kerbcast;
+using Kerbcast.Api;
 
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// <see cref="IKerbcastApi"/> over kerbcast's public static facade,
-    /// <c>Kerbcast.KerbcastControl</c>, compiled against Kerbcast.dll (a normal
-    /// reference, not bundled: kerbcast is installed beside this Uplink). A
-    /// rename in kerbcast is a build error here.
+    /// <see cref="IKerbcastApi"/> over kerbcast's supported surface,
+    /// <c>Kerbcast.Api.KerbcastApi</c> from Kerbcast.API.dll, compiled against
+    /// it and Kerbcast.dll (normal references, not bundled: kerbcast is installed
+    /// beside this Uplink). A rename in kerbcast is a build error here.
     ///
     /// <para>Constructed only through <see cref="KerbcastBinding.Bind"/>, after
     /// kerbcast is known to be loaded. Each member that names a kerbcast type
@@ -19,8 +20,8 @@ namespace Gonogo.KerbcastUplink
     /// fails the one call, not the whole class. The constructor compiles all of
     /// them up front so a moved surface fails the bind, with a reason.</para>
     ///
-    /// <para>Deliberately stays on the public <c>KerbcastControl</c> facade and
-    /// off kerbcast's internals (<c>KerbcastSidecarHost</c> and the like).</para>
+    /// <para>Deliberately stays on the published API and off kerbcast's internals
+    /// (<c>KerbcastSidecarHost</c> and the like).</para>
     /// </summary>
     public sealed class KerbcastControlApi : IKerbcastApi
     {
@@ -94,7 +95,7 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return KerbcastControl.SetFov(flightId, fov);
+                return SetFovCore(flightId, fov);
             }
             catch (Exception)
             {
@@ -106,7 +107,7 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return KerbcastControl.SetPan(flightId, yaw, pitch);
+                return SetPanCore(flightId, yaw, pitch);
             }
             catch (Exception)
             {
@@ -161,36 +162,50 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool ActiveCore() => KerbcastControl.IsActive;
+        private static bool ActiveCore() => KerbcastApi.Instance != null;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool SidecarAliveCore() => KerbcastControl.SidecarAlive;
+        private static IKerbcast Live() =>
+            KerbcastApi.Instance ?? throw new InvalidOperationException("kerbcast's API is not registered");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static KerbcastReach ReachCore() =>
-            new KerbcastReach(KerbcastControl.BindAddress, KerbcastControl.Port, KerbcastControl.BindIsLoopback);
+        private static bool SidecarAliveCore() => Live().SidecarAlive;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static KerbcastReach ReachCore()
+        {
+            var api = Live();
+            return new KerbcastReach(api.BindAddress, api.Port, api.BindIsLoopback);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool SetFovCore(uint flightId, float fov) => Live().Cameras.SetFov(flightId, fov);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool SetPanCore(uint flightId, float yaw, float pitch) => Live().Cameras.SetPan(flightId, yaw, pitch);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static IReadOnlyList<KerbcastView> CamerasForCore(Vessel vessel)
         {
-            var views = KerbcastControl.CamerasFor(vessel);
+            var views = Live().Cameras.CamerasFor(vessel.persistentId);
             var result = new List<KerbcastView>(views.Count);
             foreach (var view in views)
             {
                 if (view != null)
                 {
-                    result.Add(Read(view));
+                    result.Add(Read(view, vessel));
                 }
             }
             return result;
         }
 
+        /// <summary>The API's view carries the part's flight id, not the part, which the docking detector reads.</summary>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static KerbcastView Read(KerbcastCameraView view) => new KerbcastView
+        private static KerbcastView Read(CameraView view, Vessel vessel) => new KerbcastView
         {
             FlightId = view.FlightId,
             PartFlightId = view.PartFlightId,
-            CameraName = view.CameraName,
+            CameraName = view.Name,
             PartName = view.PartName,
             PartTitle = view.PartTitle,
             SupportsZoom = view.SupportsZoom,
@@ -204,8 +219,24 @@ namespace Gonogo.KerbcastUplink
             PanYawMax = view.PanYawMax,
             PanPitchMin = view.PanPitchMin,
             PanPitchMax = view.PanPitchMax,
-            Part = view.Part,
+            Part = PartOf(vessel, view.PartFlightId),
         };
+
+        private static Part? PartOf(Vessel vessel, uint partFlightId)
+        {
+            if (partFlightId == 0)
+            {
+                return null;
+            }
+            foreach (var part in vessel.parts)
+            {
+                if (part.flightID == partFlightId)
+                {
+                    return part;
+                }
+            }
+            return null;
+        }
 
         /// <summary>The loaded save's Kerbcast difficulty-settings node, or null with no save. Main thread only.</summary>
         [MethodImpl(MethodImplOptions.NoInlining)]

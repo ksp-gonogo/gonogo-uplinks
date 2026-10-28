@@ -42,6 +42,9 @@
     <Reference Include="Kerbcast" Private="false">
       <HintPath>$(KspGameData)\Kerbcast\Plugins\Kerbcast.dll</HintPath>
     </Reference>
+    <Reference Include="Kerbcast.API" Private="false">
+      <HintPath>$(KspGameData)\Kerbcast\Plugins\Kerbcast.API.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <!-- Sitrep.Contract ONLY of core's assemblies (Private="false"): the
