@@ -733,6 +733,7 @@ function KosTerminalScreen({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
+  const composerWrapRef = useRef<HTMLDivElement>(null);
   /*
    * Scopes this terminal's uplinks to its own CPU, used both to tag
    * outgoing line-mode sends and to scope the in-transit strip below, so
@@ -815,6 +816,23 @@ function KosTerminalScreen({
    * no-op rather than a dispatch into a torn-down emulator.
    */
   const onDataRef = useRef<((data: string) => void) | null>(null);
+  /*
+   * The composition bar only mirrors the line being typed; xterm's own
+   * textarea is what hears keys. A press anywhere on the bar that is not a
+   * control of its own hands focus to the emulator, so clicking the input
+   * line takes keystrokes the same way clicking the screen does.
+   */
+  useEffect(() => {
+    const wrap = composerWrapRef.current;
+    if (!wrap) return;
+    const focusTerminal = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest("button, input, [role=option]"))
+        return;
+      termRef.current?.focus();
+    };
+    wrap.addEventListener("click", focusTerminal);
+    return () => wrap.removeEventListener("click", focusTerminal);
+  }, [lineMode, readOnly]);
   // Intentionally keyed on lineMode: this effect exists to clear the
   // composition WHEN the mode flips, not to react to values it reads.
   // biome-ignore lint/correctness/useExhaustiveDependencies: lineMode is the trigger, not a read dependency
@@ -1346,7 +1364,7 @@ function KosTerminalScreen({
         composer={
           lineMode &&
           !readOnly && (
-            <CompositionBarWrap>
+            <CompositionBarWrap ref={composerWrapRef}>
               {/* The bar's flag is a SECOND no-path indicator on purpose: the
                   corner badge in the terminal pane is easy to miss when
                   attention is on the input line, and the error-toned outline

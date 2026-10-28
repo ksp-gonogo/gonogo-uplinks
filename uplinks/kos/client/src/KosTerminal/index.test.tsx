@@ -509,6 +509,22 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     expect(termSpies.focus).toHaveBeenCalled();
   });
 
+  it("line-mode: clicking the input line hands focus to the emulator", async () => {
+    const fixture = terminalFixture();
+    render(
+      <fixture.Provider>
+        <KosTerminalComponent id="kos-terminal" config={{ lineMode: true }} />
+      </fixture.Provider>,
+    );
+    act(() => fixture.emit("kos.processors", ONE_CPU));
+    await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
+    termSpies.focus.mockClear();
+
+    fireEvent.click(screen.getByRole("group", { name: "Line-mode input" }));
+
+    expect(termSpies.focus).toHaveBeenCalledTimes(1);
+  });
+
   it("opening the terminal puts focus in the emulator without a click", async () => {
     const fixture = terminalFixture();
     render(
