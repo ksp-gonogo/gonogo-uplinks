@@ -24,6 +24,12 @@ interface Options {
   readOnly: boolean;
   /** Re-acquire when the stream this terminal rides returns after being held. */
   streamHeld: boolean;
+  /**
+   * The CPU is in the live processor list. While it is not (a craft change),
+   * no open is attempted and no notice shown; the open goes out the moment it
+   * is listed again, since the game drops the lease with the CPU.
+   */
+  cpuListed: boolean;
   sendOpen: () => Promise<unknown>;
   sendResize: () => Promise<unknown>;
   sendClose: () => Promise<unknown>;
@@ -54,6 +60,7 @@ function readRefusal(error: unknown): Refusal {
       !heldElsewhere &&
       (rejection.errorCode === "wrongState" ||
         rejection.errorCode === "notFound" ||
+        rejection.errorCode === "noConnection" ||
         rejection.reason === KosErrorCodes.CpuBusy);
     return { text, transient, heldElsewhere };
   }
@@ -67,7 +74,8 @@ function readRefusal(error: unknown): Refusal {
 /**
  * Holds the terminal lease for as long as the widget is mounted: opens it,
  * retries an open the game refused for a reason that passes (the flight scene
- * still loading, the CPU not there yet, the CPU busy, no answer), stops at a
+ * still loading, the CPU not there yet, the CPU busy, no link to the craft yet,
+ * no answer), stops at a
  * refusal that will not clear (another screen holds the terminal) and says so,
  * and reopens when a keystroke finds the lease gone or the stream returns.
  * Used by the kOS terminal widget.
@@ -78,6 +86,7 @@ function readRefusal(error: unknown): Refusal {
 export function useTerminalLease({
   readOnly,
   streamHeld,
+  cpuListed,
   sendOpen,
   sendResize,
   sendClose,
@@ -96,7 +105,7 @@ export function useTerminalLease({
   // `attempt` is the effect's restart switch, so it is read nowhere inside.
   // biome-ignore lint/correctness/useExhaustiveDependencies: restart switch
   useEffect(() => {
-    if (readOnly) return;
+    if (readOnly || !cpuListed) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -135,7 +144,7 @@ export function useTerminalLease({
       setLease(null);
       void sendClose().catch(() => {});
     };
-  }, [readOnly, sendOpen, sendResize, sendClose, attempt]);
+  }, [readOnly, cpuListed, sendOpen, sendResize, sendClose, attempt]);
 
   const onKeystrokeRefused = useCallback((error: unknown) => {
     const refusal = readRefusal(error);

@@ -968,6 +968,27 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     );
   });
 
+  it("keeps the screen through a brief gap in the CPU list and reopens the lease when it returns", async () => {
+    const fixture = terminalFixture();
+    render(
+      <fixture.Provider>
+        <KosTerminalComponent id="kos-terminal" config={{}} />
+      </fixture.Provider>,
+    );
+    act(() => fixture.emit("kos.processors", ONE_CPU));
+    const opens = () =>
+      fixture.commands.filter((c) => c.command === "kos.terminal.open").length;
+    await waitFor(() => expect(opens()).toBe(1));
+
+    act(() => fixture.emit("kos.processors", []));
+    expect(screen.queryByText(/No kOS CPUs/i)).toBeNull();
+    expect(fixture.transport.isSubscribed("kos.terminal.7")).toBe(true);
+
+    act(() => fixture.emit("kos.processors", ONE_CPU));
+    await waitFor(() => expect(opens()).toBe(2));
+    expect(screen.queryByRole("status", { name: /./ })).toBeNull();
+  });
+
   it("has no accessible violations in the waiting state", async () => {
     const fixture = terminalFixture();
     const { container } = render(
@@ -2153,6 +2174,24 @@ describe("KosTerminal: the terminal lease and its refusals", () => {
       { timeout: 4000 },
     );
     expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(3);
+    await act(async () => {});
+  });
+
+  it("says a craft with no link is unreachable before anything is typed, and keeps asking", async () => {
+    const fixture = mount((command, nth) =>
+      command === "kos.terminal.open" && nth < 2
+        ? { success: false, errorCode: "noConnection" }
+        : {},
+    );
+
+    expect(await screen.findByRole("status")).toBeTruthy();
+    await waitFor(
+      () =>
+        expect(
+          sentCommands(fixture.commands, "kos.terminal.open"),
+        ).toHaveLength(2),
+      { timeout: 4000 },
+    );
     await act(async () => {});
   });
 
