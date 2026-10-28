@@ -12,7 +12,7 @@
        pin's bytes under it. Once a release of the package is on nuget.org this
        becomes that release's version and the vendored file goes. -->
   <PropertyGroup>
-    <GonogoContractVersion>1.0.0-pin.g93f2b1328ff3</GonogoContractVersion>
+    <GonogoContractVersion>1.0.0-pin.g7c83e442bb48</GonogoContractVersion>
   </PropertyGroup>
   <!-- The version every Uplink's manifest reports. A release sets it from the
        tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->

@@ -12,7 +12,7 @@
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "contractMajor": 49,
-  "contractMinor": 4,
+  "contractMinor": 8,
   "bundleUrl": "aero/aero.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"
