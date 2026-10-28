@@ -10,9 +10,23 @@
     "name": "kerbcast",
     "tier": "ckan",
     "ckan": "Kerbcast",
-    "builtAgainst": "1.11.0",
-    "channels": [{ "ckan": "Kerbcast" }, { "github": "ksp-gonogo/kerbcast" }, { "spacedock": 4366 }],
-    "packages": ["@ksp-gonogo/kerbcast", "@ksp-gonogo/kerbcast-react"]
+    "builtAgainst": "1.11.1",
+    "channels": [
+      {
+        "ckan": "Kerbcast"
+      },
+      {
+        "github": "ksp-gonogo/kerbcast"
+      },
+      {
+        "spacedock": 4366
+      }
+    ],
+    "packages": [
+      "@ksp-gonogo/kerbcast",
+      "@ksp-gonogo/kerbcast-react"
+    ],
+    "ckanVersion": "1.11.1"
   },
   "codegen": {
     "assembly": "GonogoKerbcastUplink.Contract",
