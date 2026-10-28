@@ -7,7 +7,7 @@
     "description": "Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.",
     "wraps": {
       "name": "Kerbalism",
-      "builtAgainst": "3.32",
+      "builtAgainst": "3.43",
       "tier": "ckan"
     }
   },

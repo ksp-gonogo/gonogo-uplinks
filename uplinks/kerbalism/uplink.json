@@ -10,10 +10,25 @@
     "name": "Kerbalism",
     "tier": "ckan",
     "ckan": "Kerbalism",
-    "builtAgainst": "3.32",
-    "channels": [{ "ckan": "Kerbalism" }, { "github": "Kerbalism/Kerbalism" }, { "spacedock": 1774 }]
+    "builtAgainst": "3.43",
+    "channels": [
+      {
+        "ckan": "Kerbalism"
+      },
+      {
+        "github": "Kerbalism/Kerbalism"
+      },
+      {
+        "spacedock": 1774
+      }
+    ],
+    "ckanVersion": "3.43"
   },
-  "ckanDepends": [{ "name": "Harmony2" }],
+  "ckanDepends": [
+    {
+      "name": "Harmony2"
+    }
+  ],
   "codegen": {
     "assembly": "GonogoKerbalismUplink.Contract",
     "configurationMethod": "GonogoKerbalismUplink.KerbalismRtConfig.Configure",
