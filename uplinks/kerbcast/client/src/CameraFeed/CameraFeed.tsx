@@ -63,6 +63,7 @@ import {
   withPickerOrder,
 } from "./cameraPicker.js";
 import { frameBox } from "./frameShape.js";
+import { FullscreenExit } from "./FullscreenExit.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
@@ -643,6 +644,7 @@ export function CameraFeed({
                     // layout instead (`FrameSizeReport` below).
                     renderSize="none"
                   />
+                  <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}
                     stage={stageRef}
