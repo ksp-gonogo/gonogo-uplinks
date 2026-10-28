@@ -7,7 +7,7 @@
     "description": "Reports per-engine RealFuels limits: ignitions remaining, ullage stability and pressure feed, plus cryogenic boiloff.",
     "wraps": {
       "name": "RealFuels",
-      "builtAgainst": "15.15.0",
+      "builtAgainst": "15.16.1.0",
       "tier": "ckan"
     }
   },
