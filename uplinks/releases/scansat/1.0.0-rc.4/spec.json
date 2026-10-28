@@ -1,0 +1,370 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "scansat",
+    "name": "SCANsat",
+    "version": "1.0.0-rc.4",
+    "description": "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.",
+    "wraps": {
+      "name": "SCANsat",
+      "builtAgainst": "21.1",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "scansat.anomalies.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "scansat.biome.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.coverage.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.height.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.mask.",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.scanningVessels",
+      "payload": "ScanningVesselEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "altitude",
+          "unit": "m"
+        },
+        {
+          "name": "body",
+          "unit": "text"
+        },
+        {
+          "name": "groundTrackLonHalfDeg",
+          "unit": "°"
+        },
+        {
+          "name": "groundTrackWidthDeg",
+          "unit": "°"
+        },
+        {
+          "name": "sensors",
+          "shape": "ScanSensorEntry[]"
+        },
+        {
+          "name": "subLatitude",
+          "unit": "°"
+        },
+        {
+          "name": "subLongitude",
+          "unit": "°"
+        },
+        {
+          "name": "trackColor",
+          "shape": "ScanTrackColor"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        },
+        {
+          "name": "vesselName",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "scansat.science",
+      "payload": "ScanScienceEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "deployed",
+          "unit": "flag"
+        },
+        {
+          "name": "expId",
+          "unit": "id"
+        },
+        {
+          "name": "hasData",
+          "unit": "flag"
+        },
+        {
+          "name": "inoperable",
+          "unit": "flag"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "partTitle",
+          "unit": "text"
+        },
+        {
+          "name": "rerunnable",
+          "unit": "flag"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "ScanSensorEntry",
+      "fields": [
+        {
+          "name": "bestAlt",
+          "unit": "m"
+        },
+        {
+          "name": "bestRange",
+          "unit": "flag"
+        },
+        {
+          "name": "fov",
+          "unit": "°"
+        },
+        {
+          "name": "inRange",
+          "unit": "flag"
+        },
+        {
+          "name": "maxAlt",
+          "unit": "m"
+        },
+        {
+          "name": "minAlt",
+          "unit": "m"
+        },
+        {
+          "name": "type",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "ScanTrackColor",
+      "fields": [
+        {
+          "name": "a",
+          "unit": "count"
+        },
+        {
+          "name": "b",
+          "unit": "count"
+        },
+        {
+          "name": "g",
+          "unit": "count"
+        },
+        {
+          "name": "r",
+          "unit": "count"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "ScanAnomalyEntry",
+      "fields": [
+        {
+          "name": "detail",
+          "unit": "flag"
+        },
+        {
+          "name": "known",
+          "unit": "flag"
+        },
+        {
+          "name": "latitude",
+          "unit": "°"
+        },
+        {
+          "name": "longitude",
+          "unit": "°"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        }
+      ]
+    }
+  ],
+  "commands": [],
+  "commandArgs": [],
+  "widgets": [
+    {
+      "id": "scanning",
+      "name": "Scanning",
+      "description": "SCANsat status: per-scan-type coverage of the current body, the list of vessels SCANsat is tracking with their on-board scanners and live in-range state, and the body's known anomalies with discovery state.",
+      "tags": [
+        "scan",
+        "fleet"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "scansat.available",
+        "scansat.scanningVessels",
+        "vessel.identity",
+        "trackingStation.bodies",
+        "vessel.surface",
+        "vessel.flight"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "scanning.sections"
+      ],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": true,
+      "defaultSize": {
+        "w": 6,
+        "h": 10
+      },
+      "minSize": {
+        "w": 4,
+        "h": 4
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [
+    {
+      "id": "scansat-coverage-panel",
+      "augments": "ground-track.sections",
+      "channels": [],
+      "requires": "scansat",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "scansat-coverage-sync",
+      "augments": "ground-track.overlay",
+      "channels": [],
+      "requires": "scansat",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "scansat-footprint-overlay",
+      "augments": "ground-track.overlay",
+      "channels": [],
+      "requires": "scansat",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "scansat:altimetry",
+      "augments": "ground-track.base",
+      "channels": [],
+      "requires": "scansat",
+      "suppressesVanillaBase": true,
+      "settings": [
+        {
+          "key": "show",
+          "type": 1,
+          "label": "Show altimetry",
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "scansat:biome",
+      "augments": "ground-track.base",
+      "channels": [],
+      "requires": "scansat",
+      "priority": 10,
+      "suppressesVanillaBase": true,
+      "settings": [
+        {
+          "key": "show",
+          "type": 1,
+          "label": "Show biome",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "contributions": [
+    {
+      "id": "scansat:science-instruments",
+      "contributes": "experiments.instruments",
+      "deps": [
+        "scansat.science",
+        "processor:scansat:science-reading"
+      ],
+      "requires": "scansat",
+      "settings": []
+    }
+  ],
+  "models": {
+    "processors": [
+      "scansat:science-reading"
+    ],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": []
+}
