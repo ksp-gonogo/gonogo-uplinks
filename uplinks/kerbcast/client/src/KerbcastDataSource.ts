@@ -61,8 +61,34 @@ export interface KerbcastBroker {
     sdp: string;
     cameras: number[];
     slots?: number;
-  }): Promise<{ sdp: string; cameras: number[] }>;
+  }): Promise<NegotiateAnswer>;
+  /**
+   * Relay a re-offer that adds video slots to the live connection named by
+   * `session`; resolve with the answer. Without it the pool grows only by
+   * reconnecting.
+   */
+  renegotiate?(offer: RenegotiateOffer): Promise<{ sdp: string }>;
 }
+
+/**
+ * The sidecar's answer to an offer. `session` names the connection for a later
+ * re-offer and is absent from a sidecar older than 1.12.
+ */
+export interface NegotiateAnswer {
+  sdp: string;
+  cameras: number[];
+  session?: string;
+}
+
+/** A re-offer that grows the slot pool of the connection named by `session` to `slots`. */
+export interface RenegotiateOffer {
+  session: string;
+  sdp: string;
+  slots: number;
+}
+
+/** How long the main screen waits for the sidecar to answer a re-offer. */
+const RENEGOTIATE_TIMEOUT_MS = 10_000;
 
 const DEFAULT_CONFIG: KerbcastConfig = { port: 8088 };
 
@@ -85,10 +111,15 @@ const RECONNECT_MAX_MS = 30_000;
 // with a larger one (see growPool). The sidecar has no pool cap of its own: it
 // builds exactly as many transceivers as the offer asks for.
 //
-// The SDK has no way to add transceivers to a live peer, so growing the pool
-// is a reconnect: every feed drops and re-binds from the initial set. Cameras
-// mounted together grow it once. MAX_SLOTS bounds it, and a camera past that
-// is left to the sidecar's own "no free slot" refusal.
+// A sidecar from 1.12 on adds slots to the live peer: the SDK re-offers when
+// a subscribe finds every slot taken, and running feeds keep theirs. That
+// needs the connection's `session` from the offer's answer and a re-offer
+// path, which a station relays through the main screen like its offer. A
+// station bridged through the relay's endpoint has neither, and an older
+// sidecar offers no re-offer, so for them growing the pool is a reconnect:
+// every feed drops and re-binds from the initial set, and cameras mounted
+// together grow it once. MAX_SLOTS bounds both, and a camera past that waits
+// for a slot another feed gives up.
 
 /** Slots negotiated when nothing, or little, is mounted. */
 export const MIN_SLOTS = 4;
@@ -279,9 +310,12 @@ export class KeepaliveTransport implements KerbcastTransport {
       waitForIceComplete: async () => peer.waitForIceComplete(),
       localSdp: () => peer.localSdp(),
       close: () => peer.close(),
+      rollback: peer.rollback?.bind(peer),
+      getStats: peer.getStats?.bind(peer),
       setReceiverTransform:
         peer.setReceiverTransform &&
         ((mid, transform) => peer.setReceiverTransform?.(mid, transform)),
+      setReceiverTap: peer.setReceiverTap?.bind(peer),
     };
   }
 }
@@ -332,6 +366,10 @@ export class KerbcastDataSource {
 
   /** Slots offered on the current connection. */
   private poolSlots = MIN_SLOTS;
+  /** The current connection's name for a re-offer, from the offer's answer. */
+  private session: string | null = null;
+  /** Whether the connected sidecar's hello offered re-offers. */
+  private renegotiateOffered = false;
   private poolGrowth: ReturnType<typeof setTimeout> | null = null;
 
   /**
@@ -526,7 +564,11 @@ export class KerbcastDataSource {
       .debug("subscribe", { flightId, holders: count + 1, status: this.status });
     if (this.status === "connected") {
       if (count === 0) {
-        if (this.desiredSubs.size > this.poolSlots && this.poolSlots < MAX_SLOTS) {
+        if (
+          !this.canGrowLive() &&
+          this.desiredSubs.size > this.poolSlots &&
+          this.poolSlots < MAX_SLOTS
+        ) {
           this.growPool();
         } else {
           this.requestSlot(flightId);
@@ -578,7 +620,7 @@ export class KerbcastDataSource {
     sdp: string;
     cameras: number[];
     slots?: number;
-  }): Promise<{ sdp: string; cameras: number[] }> {
+  }): Promise<NegotiateAnswer> {
     let res: Response;
     try {
       res = await fetch(`http://${getGameHost()}:${this.cfg.port}/offer`, {
@@ -594,7 +636,34 @@ export class KerbcastDataSource {
     if (!res.ok) {
       throw new Error(`kerbcast /offer returned ${res.status}`);
     }
-    return (await res.json()) as { sdp: string; cameras: number[] };
+    return (await res.json()) as NegotiateAnswer;
+  }
+
+  /**
+   * Main-screen half of a re-offer: forward it to the sidecar's HTTP
+   * `/renegotiate`, for this screen's own connection or a station's. A refusal
+   * keeps the sidecar's status in the error's message.
+   */
+  async relayRenegotiate(offer: RenegotiateOffer): Promise<{ sdp: string }> {
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), RENEGOTIATE_TIMEOUT_MS);
+    try {
+      const res = await fetch(
+        `http://${getGameHost()}:${this.cfg.port}/renegotiate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(offer),
+          signal: abort.signal,
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`kerbcast /renegotiate returned ${res.status}`);
+      }
+      return (await res.json()) as { sdp: string };
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /**
@@ -644,16 +713,23 @@ export class KerbcastDataSource {
   /**
    * Host-side dispatch entry point for station peer-relayed calls (see
    * PeerHostService.handleUplinkRelay / PeerClientDataSource.relay). The
-   * only method today is `negotiate`. A station that joined through the
-   * relay's endpoint cannot reach the sidecar, so its offer is bridged: the
+   * methods are `negotiate` and `renegotiate`. A station that joined through
+   * the relay's endpoint cannot reach the sidecar, so its offer is bridged: the
    * endpoint's own offer goes to the sidecar, and the station is answered by
-   * the endpoint. Any other station's offer goes to the sidecar as it is.
+   * the endpoint without a `session`, so it never re-offers. Any other
+   * station's offer and re-offer go to the sidecar as they are.
    */
   async relay(
     method: string,
     args: unknown,
     caller?: RelayCaller,
   ): Promise<unknown> {
+    if (method === "renegotiate") {
+      if (caller?.bridgeMedia) {
+        throw new Error("kerbcast relay handle: a bridged station cannot re-offer");
+      }
+      return this.relayRenegotiate(args as RenegotiateOffer);
+    }
     if (method !== "negotiate") {
       throw new Error(`kerbcast relay handle: unknown method "${method}"`);
     }
@@ -751,6 +827,10 @@ export class KerbcastDataSource {
     // later rebuild and doesn't re-read `this.broker` after a teardown.
     const broker = this.broker;
     const rtcTransport = this.rtcTransport;
+    const renegotiate: ((offer: RenegotiateOffer) => Promise<{ sdp: string }>) | undefined =
+      broker
+        ? broker.renegotiate?.bind(broker)
+        : (offer) => this.relayRenegotiate(offer);
     const client = new KerbcastClient(
       {
         host: getGameHost(),
@@ -766,14 +846,17 @@ export class KerbcastDataSource {
         // initial cameras it bound, and the SDK drops it in dynamic mode.
         negotiate: async (offer) => {
           try {
-            return broker
+            const answer = broker
               ? await broker.negotiate(offer)
               : await this.relayOffer(offer);
+            this.session = answer.session ?? null;
+            return answer;
           } catch (err) {
             rtcTransport?.releaseCurrentPeer();
             throw err;
           }
         },
+        renegotiate: renegotiate && ((offer) => renegotiate(offer)),
       },
       keepaliveTransport,
     );
@@ -920,9 +1003,11 @@ export class KerbcastDataSource {
       return;
     }
     if (msg.type === "hello") {
-      this.frameStampsOffered =
-        (msg.content as { frameStamps?: boolean } | undefined)?.frameStamps ===
-        true;
+      const hello = msg.content as
+        | { frameStamps?: boolean; renegotiate?: boolean }
+        | undefined;
+      this.frameStampsOffered = hello?.frameStamps === true;
+      this.renegotiateOffered = hello?.renegotiate === true;
       return;
     }
     if (msg.type === "slot-map") {
@@ -976,8 +1061,23 @@ export class KerbcastDataSource {
     return undefined;
   }
 
+  /**
+   * Whether the SDK can add slots to the live connection, so a camera that
+   * does not fit is subscribed and the pool grows under it instead of the
+   * connection being made again.
+   */
+  private canGrowLive(): boolean {
+    return (
+      this.renegotiateOffered &&
+      this.session !== null &&
+      (!this.broker || this.broker.renegotiate !== undefined)
+    );
+  }
+
   private forgetSlotState(): void {
     this.frameStampsOffered = false;
+    this.renegotiateOffered = false;
+    this.session = null;
     this.stampFeeds.clear();
     this.awaitingSlot = [];
     this.notThereYet.clear();
@@ -1115,10 +1215,9 @@ export function attachStationBroker(
 ): void {
   source.attachBroker({
     negotiate: (offer) =>
-      broker.relay("negotiate", offer) as Promise<{
-        sdp: string;
-        cameras: number[];
-      }>,
+      broker.relay("negotiate", offer) as Promise<NegotiateAnswer>,
+    renegotiate: (offer) =>
+      broker.relay("renegotiate", offer) as Promise<{ sdp: string }>,
   });
 }
 

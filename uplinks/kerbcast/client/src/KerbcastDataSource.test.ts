@@ -665,6 +665,98 @@ describe("KerbcastDataSource: the slot pool is sized to what is mounted", () => 
   });
 });
 
+describe("KerbcastDataSource: a 1.12 sidecar grows the pool on the live connection", () => {
+  function negotiateCalls(relay: ReturnType<typeof vi.fn>, method: string) {
+    return relay.mock.calls.filter(([m]) => m === method);
+  }
+
+  it("on a station, relays a re-offer instead of reconnecting, and every mounted camera binds", async () => {
+    const sidecar = new MockSidecar().withRenegotiation();
+    const ids = Array.from({ length: MIN_SLOTS + 2 }, (_, i) => 700 + i);
+    for (const flightId of ids) sidecar.addCamera({ flightId });
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("no localhost on a station"));
+    const relay = vi.fn((method: string, args?: unknown) =>
+      method === "negotiate"
+        ? sidecar.negotiate(args as { sdp: string; cameras: number[] })
+        : sidecar.renegotiate(args as { session: string; sdp: string; slots: number }),
+    );
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    attachStationBroker(ds, { relay } as unknown as StationBroker);
+
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    for (const id of ids) ds.subscribeCamera(id);
+
+    await vi.waitFor(() => {
+      for (const id of ids) expect(sidecar.slotMidFor(id)).toBeDefined();
+    });
+    expect(negotiateCalls(relay, "negotiate")).toHaveLength(1);
+    expect(negotiateCalls(relay, "renegotiate").length).toBeGreaterThan(0);
+    expect(negotiateCalls(relay, "renegotiate")[0]?.[1]).toMatchObject({
+      session: "mock-session",
+    });
+  });
+
+  it("on the main screen, posts the re-offer to the sidecar's /renegotiate", async () => {
+    const sidecar = new MockSidecar().withRenegotiation();
+    const ids = Array.from({ length: MIN_SLOTS + 2 }, (_, i) => 800 + i);
+    for (const flightId of ids) sidecar.addCamera({ flightId });
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      const answer = String(url).endsWith("/renegotiate")
+        ? await sidecar.renegotiate(body)
+        : await sidecar.negotiate(body);
+      return new Response(JSON.stringify(answer), { status: 200 });
+    });
+    fetchSpy.mockClear();
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    for (const id of ids) ds.subscribeCamera(id);
+
+    await vi.waitFor(() => {
+      for (const id of ids) expect(sidecar.slotMidFor(id)).toBeDefined();
+    });
+    const urls = fetchSpy.mock.calls.map(([url]) => String(url));
+    expect(urls.filter((u) => u.endsWith("/offer"))).toHaveLength(1);
+    expect(urls.some((u) => u.endsWith("/renegotiate"))).toBe(true);
+  });
+
+  it("relays a station's re-offer to the sidecar, but not a bridged station's", async () => {
+    const OFFER = { session: "s-1", sdp: "v=re-offer", slots: 12 };
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(JSON.stringify({ sdp: "v=re-answer" })));
+    fetchSpy.mockClear();
+    const ds = makeTracked();
+
+    await expect(
+      ds.relay("renegotiate", OFFER, { station: "station-a" }),
+    ).resolves.toEqual({ sdp: "v=re-answer" });
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toMatch(/\/renegotiate$/);
+    expect(JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body))).toEqual(OFFER);
+
+    await expect(
+      ds.relay("renegotiate", OFFER, {
+        station: "station-b",
+        bridgeMedia: async () => "v=endpoint-answer",
+      }),
+    ).rejects.toThrow(/bridged/);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the sidecar's status in a refused re-offer", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 422 }));
+    const ds = makeTracked();
+    await expect(
+      ds.relayRenegotiate({ session: "s-1", sdp: "v=re-offer", slots: 40 }),
+    ).rejects.toThrow(/422/);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // relayOffer: the main screen's half of the station broker. Forwards a
 // station's offer to the local sidecar's /offer and returns the answer.
@@ -1072,6 +1164,33 @@ describe("KerbcastDataSource: browser without an H.264 decoder", () => {
   it("stays quiet when H.264 is listed, in any letter case", () => {
     vi.stubGlobal("RTCRtpReceiver", receiverWith(["video/VP8", "video/h264"]));
     expect(makeTracked().readinessNote()).toBeNull();
+  });
+});
+
+describe("KeepaliveTransport: optional peer methods", () => {
+  it("passes rollback, stats and frame taps through to the peer it wraps", async () => {
+    const rollback = vi.fn(async () => {});
+    const getStats = vi.fn(async () => new Map() as unknown as RTCStatsReport);
+    const setReceiverTap = vi.fn();
+    const inner = {
+      createPeer: () => ({ rollback, getStats, setReceiverTap }),
+    } as unknown as KerbcastTransport;
+    const peer = new KeepaliveTransport(inner, () => {}).createPeer([]);
+
+    await peer.rollback?.();
+    await peer.getStats?.();
+    peer.setReceiverTap?.("3", null);
+
+    expect(rollback).toHaveBeenCalledTimes(1);
+    expect(getStats).toHaveBeenCalledTimes(1);
+    expect(setReceiverTap).toHaveBeenCalledWith("3", null);
+  });
+
+  it("leaves them absent when the wrapped peer has none", () => {
+    const inner = { createPeer: () => ({}) } as unknown as KerbcastTransport;
+    const peer = new KeepaliveTransport(inner, () => {}).createPeer([]);
+    expect(peer.rollback).toBeUndefined();
+    expect(peer.setReceiverTap).toBeUndefined();
   });
 });
 
