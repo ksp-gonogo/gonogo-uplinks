@@ -10,8 +10,16 @@
     "name": "TestFlight",
     "tier": "ckan",
     "ckan": "TestFlight",
-    "builtAgainst": "2.12.0.0",
-    "channels": [{ "ckan": "TestFlight" }, { "github": "KSP-RO/TestFlight" }]
+    "builtAgainst": "2.12.1.0",
+    "channels": [
+      {
+        "ckan": "TestFlight"
+      },
+      {
+        "github": "KSP-RO/TestFlight"
+      }
+    ],
+    "ckanVersion": "v2.12.1.0"
   },
   "codegen": {
     "assembly": "GonogoTestFlightUplink.Contract",
