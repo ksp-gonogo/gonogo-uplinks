@@ -120,6 +120,18 @@ namespace Gonogo.KosUplink
         private readonly Dictionary<int, Session> _sessions = new Dictionary<int, Session>();
         // Current single-owner write-lease holder per CPU (coreId -> token).
         private readonly Dictionary<int, string> _leases = new Dictionary<int, string>();
+        // Poll-clock reading at the holder's last open, keystroke or resize.
+        private readonly Dictionary<int, double> _leaseLastSeen = new Dictionary<int, double>();
+
+        /// <summary>
+        /// How long a lease holder may send nothing before another screen can
+        /// take the CPU's terminal. A closed tab or crashed screen never sends
+        /// a close, so without this it would hold the CPU until the scene
+        /// changed. A minute is long enough for an operator to read output
+        /// between commands and far longer than the one-second keyframe cadence
+        /// or the few seconds the client waits between open retries.
+        /// </summary>
+        public const double LeaseIdleSeconds = 60.0;
 
         // THREAD-SAFE: the set of CPUs with an individual subscribe
         // transition pending a reseed, as reported by NotifySubscribed
@@ -132,6 +144,11 @@ namespace Gonogo.KosUplink
         private readonly ConcurrentDictionary<int, byte> _pendingReseeds = new ConcurrentDictionary<int, byte>();
 
         private double _accumulatedSeconds;
+
+        // Real seconds summed from Poll's deltas. The lease lapse reads this
+        // rather than UT, which jumps under time warp and stands still when
+        // nobody is polling the game clock.
+        private double _clockSeconds;
 
         /// <param name="knownCoreIds">Current CPU <c>KOSCoreId</c>s (main thread; real impl reads <c>kOSProcessor.AllInstances()</c>).</param>
         /// <param name="isSubscribed">Is <c>kos.terminal.&lt;coreId&gt;</c> currently subscribed (e.g. <c>host.IsAnyTopicSubscribed</c>)? A pure "should I bother reading/publishing this CPU's screen at all" gate, the reseed decision is <see cref="NotifySubscribed"/>'s job, not this one.</param>
@@ -191,6 +208,7 @@ namespace Gonogo.KosUplink
         /// </summary>
         public void Poll(double deltaSeconds)
         {
+            _clockSeconds += deltaSeconds;
             _accumulatedSeconds += deltaSeconds;
             if (_accumulatedSeconds < _pollIntervalSeconds)
             {
@@ -289,11 +307,16 @@ namespace Gonogo.KosUplink
             {
                 _sessions.Remove(coreId);
                 _leases.Remove(coreId);
+                _leaseLastSeen.Remove(coreId);
                 _pendingReseeds.TryRemove(coreId, out _);
             }
         }
 
-        /// <summary>Acquire the single-owner write lease. Reject (no steal) if held by a different token.</summary>
+        /// <summary>
+        /// Acquire the single-owner write lease. Reject (no steal) if held by a
+        /// different token, unless that holder has been idle for
+        /// <see cref="LeaseIdleSeconds"/>.
+        /// </summary>
         public CommandResult Open(int coreId, string leaseToken)
         {
             if (string.IsNullOrEmpty(leaseToken))
@@ -304,12 +327,13 @@ namespace Gonogo.KosUplink
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
-            if (_leases.TryGetValue(coreId, out var holder) && holder != leaseToken)
+            if (_leases.TryGetValue(coreId, out var holder) && holder != leaseToken && !HolderIdle(coreId))
             {
                 // Rejected with a reason, never a silent steal.
                 return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
             _leases[coreId] = leaseToken;
+            _leaseLastSeen[coreId] = _clockSeconds;
             // Seed a clean full repaint to the opener on the next poll.
             GetOrCreateSession(coreId).PendingReseed = true;
             return CommandResult.Ok();
@@ -322,6 +346,7 @@ namespace Gonogo.KosUplink
             {
                 return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
+            _leaseLastSeen[coreId] = _clockSeconds;
             var screen = GetOrCreateSession(coreId).Screen;
             if (screen == null)
             {
@@ -358,6 +383,7 @@ namespace Gonogo.KosUplink
                     "No terminal size to resize to. Both cols and rows must be above 0, "
                         + "and an absent or unreadable dimension arrives here as 0.");
             }
+            _leaseLastSeen[coreId] = _clockSeconds;
             var screen = GetOrCreateSession(coreId).Screen;
             if (screen == null)
             {
@@ -376,9 +402,14 @@ namespace Gonogo.KosUplink
             if (_leases.TryGetValue(coreId, out var holder) && holder == leaseToken)
             {
                 _leases.Remove(coreId);
+                _leaseLastSeen.Remove(coreId);
             }
             return CommandResult.Ok();
         }
+
+        private bool HolderIdle(int coreId) =>
+            !_leaseLastSeen.TryGetValue(coreId, out var seen)
+            || _clockSeconds - seen >= LeaseIdleSeconds;
 
         private bool HoldsLease(int coreId, string leaseToken) =>
             !string.IsNullOrEmpty(leaseToken)

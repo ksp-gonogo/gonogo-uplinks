@@ -60,6 +60,7 @@ import type {
   KosTerminalResizeArgs,
 } from "../__generated__/contract.js";
 import { KOS } from "../uplink.js";
+import { tabLeaseToken } from "./tabLeaseToken.js";
 import { useKosScriptListing } from "./useKosScriptListing.js";
 import { useTerminalLease } from "./useTerminalLease.js";
 import "@xterm/xterm/css/xterm.css";
@@ -723,9 +724,11 @@ function KosTerminalScreen({
 }: Readonly<KosTerminalScreenProps>) {
   // One opaque write-lease token per attach: the mod uses it to arbitrate the
   // single-owner shared screen. Keyed by coreId (via the parent), so a CPU
-  // switch mints a fresh token with a clean open/close.
+  // switch mints a fresh token with a clean open/close. It is also kept for
+  // the tab per CPU, so a reload reclaims the lease the old page held.
   const leaseTokenRef = useRef<string>("");
-  if (leaseTokenRef.current === "") leaseTokenRef.current = safeRandomUuid();
+  if (leaseTokenRef.current === "")
+    leaseTokenRef.current = tabLeaseToken(coreId);
   const leaseToken = leaseTokenRef.current;
 
   const containerRef = useRef<HTMLDivElement>(null);

@@ -270,6 +270,52 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void Open_SameTokenAfterReload_Succeeds_DifferentTokenStillRefused()
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+
+            Assert.True(h.Manager.Open(7, "tokenA").Success);
+            var other = h.Manager.Open(7, "tokenB");
+            Assert.False(other.Success);
+            Assert.Equal(KosErrorCodes.TerminalHeld, other.ErrorCode);
+        }
+
+        [Fact]
+        public void Lease_IdleHolder_LapsesSoAnotherTokenCanOpen()
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+
+            for (var i = 0; i < (int)KosTerminalManager.LeaseIdleSeconds - 1; i++)
+            {
+                h.Tick();
+            }
+            Assert.False(h.Manager.Open(7, "tokenB").Success);
+
+            h.Tick();
+            Assert.True(h.Manager.Open(7, "tokenB").Success);
+            Assert.False(h.Manager.Keystroke(7, "tokenA", "x").Success);
+            Assert.True(h.Manager.Keystroke(7, "tokenB", "x").Success);
+        }
+
+        [Fact]
+        public void Lease_KeystrokeAndResizeKeepItFromLapsing()
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+            var half = (int)KosTerminalManager.LeaseIdleSeconds / 2 + 1;
+
+            for (var i = 0; i < half; i++) h.Tick();
+            Assert.True(h.Manager.Keystroke(7, "tokenA", "x").Success);
+            for (var i = 0; i < half; i++) h.Tick();
+            Assert.True(h.Manager.Resize(7, "tokenA", 80, 24).Success);
+            for (var i = 0; i < half; i++) h.Tick();
+
+            Assert.False(h.Manager.Open(7, "tokenB").Success);
+        }
+
+        [Fact]
         public void Poll_UnsubscribedCpu_PublishesNothing()
         {
             var h = new Harness();
