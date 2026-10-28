@@ -732,6 +732,28 @@ describe("CameraFeed: camera selection", () => {
     expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
   });
 
+  it("Next button clears the previous camera's picture until the new stream binds", async () => {
+    await buildConnectedSource(TWO_CAMERAS);
+
+    const { container } = renderStatefulFeed({ flightId: 42 });
+    const video = container.querySelector("video") as HTMLVideoElement;
+    const oldPicture = { id: "previous-camera" } as unknown as MediaStream;
+    let bound: MediaStream | null = oldPicture;
+    Object.defineProperty(video, "srcObject", {
+      configurable: true,
+      get: () => bound,
+      set: (next: MediaStream | null) => {
+        bound = next;
+      },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /next camera/i }));
+    });
+
+    expect(bound).toBeNull();
+  });
+
   it("Previous button steps backward and wraps round", async () => {
     await buildConnectedSource(TWO_CAMERAS);
 

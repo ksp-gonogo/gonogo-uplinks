@@ -265,10 +265,12 @@ export function CameraFeed({
   // stream is ready). ResizeObserver is stubbed in tests (installDomStubs).
   const [feedSize, setFeedSize] = useState({ width: 0, height: 0 });
   const overlayObserverRef = useRef<ResizeObserver | null>(null);
+  const overlayWrapRef = useRef<HTMLDivElement | null>(null);
   const [overlayWrapEl, setOverlayWrapEl] = useState<HTMLDivElement | null>(
     null,
   );
   const attachOverlayWrap = useCallback((el: HTMLDivElement | null) => {
+    overlayWrapRef.current = el;
     setOverlayWrapEl(el);
     overlayObserverRef.current?.disconnect();
     overlayObserverRef.current = null;
@@ -447,6 +449,23 @@ export function CameraFeed({
   const playoutStatus = useDelayedPlaybackStatus(effectiveFlightId);
   const unavailableReason =
     playoutStatus.kind === "unavailable" ? playoutStatus.reason : null;
+  const showsStream =
+    (playoutStatus.kind === "raw" || playoutStatus.kind === "delayed") &&
+    playoutStatus.stream !== null;
+
+  /*
+   * The SDK binds a stream to its `<video>` only when there is one, and keeps
+   * the previous srcObject when the stream goes null. On a camera switch the
+   * new camera has no stream for a moment, so the old camera's last frame sat
+   * on screen until static replaced it. Clearing the element while nothing is
+   * showable leaves the feed on its own empty look until the new stream binds.
+   */
+  useEffect(() => {
+    if (showsStream) return;
+    const video = overlayWrapRef.current?.querySelector("video");
+    if (!video) return;
+    video.srcObject = null;
+  }, [effectiveFlightId, showsStream]);
 
   // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
