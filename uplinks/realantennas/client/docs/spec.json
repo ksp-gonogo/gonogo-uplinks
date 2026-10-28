@@ -7,7 +7,7 @@
     "description": "Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.",
     "wraps": {
       "name": "RealAntennas",
-      "builtAgainst": "2.11.1.0",
+      "builtAgainst": "2.12.0.0",
       "tier": "ckan"
     }
   },

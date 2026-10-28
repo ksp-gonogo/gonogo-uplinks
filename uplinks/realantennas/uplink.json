@@ -10,8 +10,16 @@
     "name": "RealAntennas",
     "tier": "ckan",
     "ckan": "RealAntennas",
-    "builtAgainst": "2.11.1.0",
-    "channels": [{ "ckan": "RealAntennas" }, { "github": "KSP-RO/RealAntennas" }]
+    "builtAgainst": "2.12.0.0",
+    "channels": [
+      {
+        "ckan": "RealAntennas"
+      },
+      {
+        "github": "KSP-RO/RealAntennas"
+      }
+    ],
+    "ckanVersion": "v2.12.0.0"
   },
   "codegen": {
     "assembly": "GonogoRealAntennasUplink.Contract",
