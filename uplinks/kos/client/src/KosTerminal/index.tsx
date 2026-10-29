@@ -1660,6 +1660,10 @@ const Container = styled.div`
 const CompositionBarWrap = styled.div`
   position: relative;
   flex: 0 0 auto;
+  /* The picker's own layer stays inside this stack, which sits under the frame's
+     tags (the delay reading) rather than over them. */
+  isolation: isolate;
+  z-index: 0;
 `;
 
 /*
@@ -1685,6 +1689,9 @@ const ScriptComposerOptions = styled.div`
 // this widget's alone: the character pitch, which has to equal the xterm
 // screen's above so the composed characters line up on the terminal's own cells.
 const CompositionBar = styled(ComposerBar)`
+  /* Over the picker, so the bar's no-path flag is not cut by the list above it. */
+  position: relative;
+  z-index: calc(var(--z-dropdown) + 1);
   /* 1.6em, i.e. relative to TERMINAL_FONT_PX below, not to a token. */
   min-height: 1.6em;
   font-family: monospace;
