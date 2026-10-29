@@ -18,6 +18,7 @@ import {
   setActiveTelemetryClientForTests,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { act } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
@@ -143,6 +144,55 @@ describe("useKosScriptListing", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.paths).toEqual(["0:/boot.ks"]);
     expect(result.current.hint).toBeNull();
+  });
+
+  it("closing the picker while a listing is pending cancels it and ignores a late answer", async () => {
+    const { transport, dispatches } = harness();
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useKosScriptListing(CORE_ID, CPU_TAG, enabled),
+      { initialProps: { enabled: true } },
+    );
+    await waitFor(() => expect(dispatches).toHaveLength(1));
+    const late = dispatches[0].requestId;
+
+    rerender({ enabled: false });
+    // The cancelled second volume never leaves the queue.
+    await act(async () => {});
+    expect(dispatches).toHaveLength(1);
+
+    transport.emit(`kos.run.${CORE_ID}`, {
+      coreId: CORE_ID,
+      requestId: late,
+      fields: { listing: JSON.stringify([{ name: "late.ks", size: 1, isDir: false }]) },
+    } as KosRunResult);
+    await act(async () => {});
+    expect(result.current.paths).toEqual([]);
+    expect(dispatches).toHaveLength(1);
+  });
+
+  it("asks again when the picker is reopened after a cancelled listing", async () => {
+    const { transport, dispatches } = harness();
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useKosScriptListing(CORE_ID, CPU_TAG, enabled),
+      { initialProps: { enabled: true } },
+    );
+    await waitFor(() => expect(dispatches).toHaveLength(1));
+    rerender({ enabled: false });
+    rerender({ enabled: true });
+
+    await waitFor(() => expect(dispatches).toHaveLength(2));
+    const reply = (index: number, entries: unknown[]) =>
+      transport.emit(`kos.run.${CORE_ID}`, {
+        coreId: CORE_ID,
+        requestId: dispatches[index].requestId,
+        fields: { listing: JSON.stringify(entries) },
+      } as KosRunResult);
+    reply(1, [{ name: "boot.ks", size: 1, isDir: false }]);
+    await waitFor(() => expect(dispatches).toHaveLength(3));
+    reply(2, []);
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.paths).toEqual(["0:/boot.ks"]);
   });
 
   it("keeps a listing it already has when the link drops", async () => {

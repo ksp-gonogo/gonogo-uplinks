@@ -143,9 +143,15 @@ export class KosDataSource {
    * List the files on `volume` (`0:` the Archive, `1:` the CPU's own drive) of
    * the named CPU and resolve with the listing fields, read by the game
    * without typing anything into the CPU's terminal. Shares the per-CPU queue
-   * and the rejection rules of {@link executeScript}.
+   * and the rejection rules of {@link executeScript}. Aborting `signal` drops
+   * the request: it leaves the queue, or stops holding it if already sent, and
+   * rejects.
    */
-  listFiles(cpu: string, volume: string): Promise<KosData> {
+  listFiles(
+    cpu: string,
+    volume: string,
+    signal?: AbortSignal,
+  ): Promise<KosData> {
     KOS_DISPATCH_BUDGET.record();
     const client = getActiveTelemetryClient();
     if (!client) {
@@ -155,7 +161,7 @@ export class KosDataSource {
         ),
       );
     }
-    return this.uplinkExecutor.listFiles(client, cpu, volume);
+    return this.uplinkExecutor.listFiles(client, cpu, volume, signal);
   }
 
   // Host-side relay handle for station peer-relayed calls (see

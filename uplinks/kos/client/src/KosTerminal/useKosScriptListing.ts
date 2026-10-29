@@ -96,11 +96,12 @@ export function useKosScriptListing(
 
     let cancelled = false;
     let settledOnce = false;
+    const abort = new AbortController();
     setResult({ paths: [], loading: true, hint: null });
 
     Promise.allSettled(
       LISTED_VOLUMES.map((volume) =>
-        kosSource.listFiles(cpuTag, volume).then((data) => ({ volume, data })),
+        kosSource.listFiles(cpuTag, volume, abort.signal).then((data) => ({ volume, data })),
       ),
     ).then((settled) => {
       if (cancelled) return;
@@ -169,6 +170,7 @@ export function useKosScriptListing(
 
     return () => {
       cancelled = true;
+      abort.abort();
       // A listing cut off before it answered is asked for again next time.
       if (!settledOnce) fetchedForRef.current = null;
     };

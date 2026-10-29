@@ -43,6 +43,8 @@ interface QueuedRun {
   managed: KosManagedScript | null;
   /** Set for a file listing, which the game reads without typing anything. */
   listVolume?: string;
+  /** Aborting it drops the call, see `KosUplinkCpuQueue.cancel`. */
+  signal?: AbortSignal;
   resolve: (data: KosData) => void;
   reject: (err: Error) => void;
 }
@@ -87,18 +89,46 @@ class KosUplinkCpuQueue {
   }
 
   /** Queue a listing of `volume`'s files behind any run already waiting. */
-  enqueueListing(volume: string): Promise<KosData> {
+  enqueueListing(volume: string, signal?: AbortSignal): Promise<KosData> {
     return new Promise<KosData>((resolve, reject) => {
-      this.queue.push({
+      if (signal?.aborted) {
+        reject(new Error("kos.files.list: cancelled"));
+        return;
+      }
+      const call: QueuedRun = {
         script: "",
         args: [],
         managed: null,
         listVolume: volume,
+        signal,
         resolve,
         reject,
+      };
+      signal?.addEventListener("abort", () => this.cancel(call), {
+        once: true,
       });
+      this.queue.push(call);
       this.drain();
     });
+  }
+
+  /**
+   * Drops a call that was cancelled: one still waiting is removed, one in
+   * flight stops holding the CPU's queue (a late result for it is ignored).
+   */
+  private cancel(call: QueuedRun): void {
+    const error = new Error("kos.files.list: cancelled");
+    const queued = this.queue.indexOf(call);
+    if (queued !== -1) {
+      this.queue.splice(queued, 1);
+      call.reject(error);
+      return;
+    }
+    if (this.inFlight?.call !== call) return;
+    clearTimeout(this.inFlight.timer);
+    this.inFlight = null;
+    call.reject(error);
+    this.drain();
   }
 
   /** Reject every queued/in-flight call and drop the channel subscription. */
@@ -115,7 +145,12 @@ class KosUplinkCpuQueue {
 
   private drain(): void {
     if (this.inFlight) return;
-    const next = this.queue.shift();
+    let next = this.queue.shift();
+    // A call cancelled while it waited is rejected, never sent.
+    while (next?.signal?.aborted) {
+      next.reject(new Error("kos.files.list: cancelled"));
+      next = this.queue.shift();
+    }
     if (!next) return;
     const requestId = safeRandomUuid();
     const timer = setTimeout(() => {
@@ -318,6 +353,7 @@ export class KosUplinkExecutor {
     client: TelemetryClient,
     cpu: string,
     volume: string,
+    signal?: AbortSignal,
   ): Promise<KosData> {
     this.adoptClient(client);
     const coreId = this.coreIdByTag.get(cpu);
@@ -328,7 +364,7 @@ export class KosUplinkExecutor {
         ),
       );
     }
-    return this.getOrCreateQueue(coreId).enqueueListing(volume);
+    return this.getOrCreateQueue(coreId).enqueueListing(volume, signal);
   }
 
   /** Tear down every subscription and queue, rejecting any in-flight/queued call. */

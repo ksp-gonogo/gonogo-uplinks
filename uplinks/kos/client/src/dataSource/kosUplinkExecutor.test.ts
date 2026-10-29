@@ -438,4 +438,56 @@ describe("KosUplinkExecutor", () => {
     } satisfies KosRunResult);
     await fresh;
   });
+
+  it("a cancelled listing stops holding the CPU's queue for the run behind it", async () => {
+    const { transport, client } = makeClient();
+    const commands = captureDispatches(transport);
+    const executor = new KosUplinkExecutor();
+    primeProcessors(executor, client, transport, [
+      { coreId: 4, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+
+    const abort = new AbortController();
+    const listing = executor.listFiles(client, "cpu-a", "0:", abort.signal);
+    const listed = expect(listing).rejects.toThrow(/cancelled/);
+    const run = executor.run(client, "cpu-a", "0:/x.ks", [], null);
+    await waitFor(() => commands.length === 1);
+
+    abort.abort();
+    await listed;
+    await waitFor(() => commands.length === 2);
+
+    transport.emit("kos.run.4", {
+      coreId: 4,
+      requestId: commands[1].args.requestId,
+      fields: {},
+    } satisfies KosRunResult);
+    await run;
+  });
+
+  it("a listing cancelled before it was sent is never sent", async () => {
+    const { transport, client } = makeClient();
+    const commands = captureDispatches(transport);
+    const executor = new KosUplinkExecutor();
+    primeProcessors(executor, client, transport, [
+      { coreId: 4, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+
+    const first = executor.run(client, "cpu-a", "0:/x.ks", [], null);
+    const abort = new AbortController();
+    const listing = executor.listFiles(client, "cpu-a", "0:", abort.signal);
+    const listed = expect(listing).rejects.toThrow(/cancelled/);
+    await waitFor(() => commands.length === 1);
+
+    abort.abort();
+    await listed;
+    transport.emit("kos.run.4", {
+      coreId: 4,
+      requestId: commands[0].args.requestId,
+      fields: {},
+    } satisfies KosRunResult);
+    await first;
+    await new Promise((r) => setTimeout(r, 5));
+    expect(commands).toHaveLength(1);
+  });
 });
