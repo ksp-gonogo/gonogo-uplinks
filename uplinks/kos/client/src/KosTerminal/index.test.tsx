@@ -551,6 +551,24 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
       });
     });
 
+    it("drops a key sequence the line editor does not handle instead of typing it", async () => {
+      const fixture = await mountLineMode();
+      const onData = getOnData();
+      act(() => {
+        for (const ch of "ab") onData(ch);
+        onData("\x1b[1;3D");
+        onData("\x1b[1;3C");
+        onData("\x1bOP");
+        onData("\x1bx");
+        onData("\r");
+      });
+      await waitFor(() => {
+        const keys = sentCommands(fixture.commands, "kos.keystroke");
+        expect(keys).toHaveLength(1);
+        expect(keys[0].args.chars).toBe("ab\r");
+      });
+    });
+
     it("ignores a key release", async () => {
       await mountLineMode();
       const release = new KeyboardEvent("keyup", {

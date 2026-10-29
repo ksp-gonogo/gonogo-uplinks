@@ -185,6 +185,10 @@ interface LineComposition {
 
 const EMPTY_COMPOSITION: LineComposition = { text: "", cursor: 0 };
 
+/** One whole escape sequence from a key press: CSI, SS3, or Alt plus a character. */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: matching ESC is the intent
+const UNHANDLED_KEY_SEQUENCE = /^\x1b(?:\[[\d;?]*[@-~]|O[@-~]|.)$/s;
+
 /**
  * Reduces one input character into the in-progress line-mode composition,
  * a pure transform that never touches the terminal. The composition is
@@ -1208,6 +1212,9 @@ function KosTerminalScreen({
             sendKeystrokeRef.current("\x03", "^C");
             return;
           }
+          // A key sequence the line editor does not handle (Alt+arrow, F-keys,
+          // Alt+letter) is dropped, never typed into the line as text.
+          if (UNHANDLED_KEY_SEQUENCE.test(data)) return;
           // Any regular edit leaves history-browse mode: recalling a line
           // then typing continues editing it as the new live draft.
           historyIndexRef.current = null;
