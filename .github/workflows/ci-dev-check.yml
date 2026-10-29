@@ -1,0 +1,155 @@
+# Do the Uplinks here still build and pass against the Gonogo packages as they
+# stand on gonogo's `ci-dev` head, nightly?
+#
+# ci.yml builds from tarballs and a nupkg vendored from one gonogo commit, and
+# rc-check.yml from a published candidate; both are behind gonogo's integration
+# branch by days. This packs the three npm packages and the contract package from
+# the head of ksp-gonogo/gonogo `ci-dev` on the runner, swaps them in for the
+# vendored ones in the runner's checkout only (tooling/use-packed-gonogo.mjs), and
+# runs the same per-Uplink task set. A change in gonogo that breaks an Uplink
+# shows here before it reaches a release, and the run summary names which.
+#
+# It reports and never blocks: nothing depends on it, it has no required check,
+# and its summary job succeeds whatever the Uplink legs did. `schedule` runs the
+# copy on the default branch, so the nightly starts once this file is there.
+#
+#   gh workflow run ci-dev-check.yml [-f gonogo_ref=<branch, tag or sha>]
+name: ci-dev-check
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      gonogo_ref:
+        description: "Gonogo branch, tag or sha to pack. Empty = ci-dev."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ci-dev-check
+  cancel-in-progress: true
+
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - uses: ./.github/actions/setup-dotnet-direct
+      - id: matrix
+        run: node scripts/uplink-matrix.mjs --github >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/gonogo
+          ref: ${{ inputs.gonogo_ref || 'ci-dev' }}
+          path: gonogo
+          fetch-depth: 1
+      - id: sha
+        run: echo "sha=$(git -C gonogo rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: gonogo/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: gonogo/pnpm-lock.yaml
+      - name: Build the published packages
+        working-directory: gonogo
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec turbo build --filter=@ksp-gonogo/sitrep-sdk --filter=@ksp-gonogo/ui-kit --filter=@ksp-gonogo/uplink-tools
+
+      # The version names the commit, as the contract package's does, so an npm or
+      # NuGet cache keyed by version cannot serve bytes from an earlier night.
+      - name: Pack them from that commit
+        working-directory: gonogo
+        run: |
+          set -euo pipefail
+          sha="${{ steps.sha.outputs.sha }}"
+          release=$(node -p "require('./packages/app/package.json').version")
+          version="${release%%-*}-ci.${sha:0:12}"
+          out="$GITHUB_WORKSPACE/packed"
+          mkdir -p "$out" "$RUNNER_TEMP/raw"
+          for dir in mod/sitrep-sdk packages/ui-kit packages/uplink-tools; do
+            raw=$(node scripts/pack-publishable.mjs "$dir" "$RUNNER_TEMP/raw")
+            node scripts/release-packages.mjs stamp "$raw" "$version" "$out"
+          done
+          # The contract package is packed by the script this repo's pin comes
+          # from, into a scratch copy of this checkout so the real one stays as
+          # committed, and carries the same commit's version.
+          scratch="$RUNNER_TEMP/uplinks-scratch"
+          mkdir -p "$scratch"
+          cp -R "$GITHUB_WORKSPACE/uplinks" "$GITHUB_WORKSPACE/Directory.Build.props" "$scratch/"
+          bash scripts/vendor-uplinks-reference-set.sh "$scratch" "$sha"
+          cp "$scratch"/vendor/nuget/KspGonogo.Sitrep.Contract.*.nupkg "$out/"
+          sed -n 's#.*<GonogoContractVersion>\(.*\)</GonogoContractVersion>.*#\1#p' "$scratch/Directory.Build.props" > "$out/contract-version.txt"
+          ls -l "$out"
+          {
+            echo "### Packed from gonogo \`ci-dev\` at \`${sha:0:12}\`"
+            echo "Packages at \`$version\`, contract package at \`$(cat "$out/contract-version.txt")\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gonogo-packed
+          path: packed
+          if-no-files-found: error
+          retention-days: 3
+
+  uplink:
+    needs: pack
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.pack.outputs.matrix) }}
+    uses: ./.github/workflows/_uplink-tasks.yml
+    secrets: inherit
+    with:
+      name: ${{ matrix.name }}
+      id: ${{ matrix.id }}
+      client: ${{ matrix.client }}
+      mod_csproj: ${{ matrix.mod_csproj }}
+      tests_csproj: ${{ matrix.tests_csproj }}
+      codegen_csproj: ${{ matrix.codegen_csproj }}
+      devtools_csproj: ${{ matrix.devtools_csproj }}
+      typecheck: ${{ matrix.typecheck }}
+      test: ${{ matrix.test }}
+      bundle: ${{ matrix.bundle }}
+      packed_gonogo: gonogo-packed
+
+  report:
+    needs: [pack, uplink]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say what the Uplinks did against that commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.pack.outputs.sha }}
+          PACK: ${{ needs.pack.result }}
+        run: |
+          {
+            echo "## Uplinks against gonogo \`ci-dev\` at \`${SHA:0:12}\`"
+            echo
+            if [ "$PACK" != "success" ]; then
+              echo "Packing gonogo failed (\`$PACK\`), so no Uplink was tried. Read the \`pack\` job."
+              exit 0
+            fi
+            echo "| Leg | Result |"
+            echo "|---|---|"
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs" --paginate \
+              --jq '.jobs[] | select(.name | startswith("uplink")) | "| \(.name | sub(" / uplink$"; "")) | \(.conclusion // .status) |"' \
+              | sort
+            echo
+            echo "A red leg means that Uplink no longer builds or passes against gonogo's integration branch. This run blocks nothing."
+          } >> "$GITHUB_STEP_SUMMARY"

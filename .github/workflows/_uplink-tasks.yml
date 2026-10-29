@@ -28,6 +28,9 @@ on:
       # packages at exactly this version, not the tarballs vendored from a gonogo
       # sha. Empty on every ordinary run.
       packages_version: { required: false, type: string, default: "" }
+      # Set by ci-dev-check.yml only: the name of a workflow artifact holding
+      # packages packed from a gonogo commit (tooling/use-packed-gonogo.mjs).
+      packed_gonogo: { required: false, type: string, default: "" }
       # The release's version, from its tag. Every manifest reports it. Empty on
       # a build that is not a release, which reports 0.0.0-dev.
       version: { required: false, type: string, default: "" }
@@ -146,6 +149,17 @@ jobs:
         if: inputs.packages_version != ''
         run: node tooling/use-published-packages.mjs "${{ inputs.packages_version }}"
 
+      - name: Download the packed packages
+        if: inputs.packed_gonogo != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.packed_gonogo }}
+          path: .packed
+
+      - name: Use the packed packages
+        if: inputs.packed_gonogo != ''
+        run: node tooling/use-packed-gonogo.mjs .packed
+
       - uses: actions/setup-node@v4
         if: inputs.client
         with: { node-version: "24" }
@@ -154,7 +168,7 @@ jobs:
         if: inputs.client
         working-directory: uplinks/${{ inputs.name }}/client
         run: |
-          if [ -n "${{ inputs.packages_version }}" ]; then
+          if [ -n "${{ inputs.packages_version }}${{ inputs.packed_gonogo }}" ]; then
             npm install --no-audit --no-fund
           else
             npm ci --no-audit --no-fund
@@ -167,7 +181,7 @@ jobs:
       # describes itself. The step names what it wrote: a file listed here that
       # main does not carry (a new generated file) is what the next re-pin commits.
       - name: Write the page the published tools generate
-        if: inputs.packages_version != '' && inputs.client
+        if: (inputs.packages_version != '' || inputs.packed_gonogo != '') && inputs.client
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" page
 
       # The one thing a prepare leg does that no other leg does. `release
