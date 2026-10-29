@@ -93,22 +93,7 @@ namespace Gonogo.KosUplink
             // postfix (or the snapshot-scrape fallback when the postfix target
             // is absent). Every compute value is DELAYED (comms authority,
             // script PRINT downlink is vessel telemetry, spec §4.4).
-            _computeSource = host.RegisterDynamicNamespace(
-                KosChannels.ComputePrefix,
-                new ChannelDeclaration
-                {
-                    Kind = SampleKind.Event,
-                    Delivery = Delivery.LossyLatest,
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.Delayed,
-                    // Keyed by coreId, not by craft, so routing needs the map
-                    // CaptureProcessors maintains: without the resolver this
-                    // would read the coreId AS a vessel id and address a node
-                    // nothing writes a delay for.
-                    PerVesselNode = true,
-                    VesselIdForKey = VesselIdForCore,
-                    Requires = NeedsProcessor,
-                });
+            _computeSource = host.RegisterDynamicNamespace(KosChannels.ComputePrefix, ComputeNamespace());
 
             // Subscription short-circuit source for OnPrint: every kerboscript
             // PRINT flows through the postfix, but if nobody is subscribed under
@@ -146,38 +131,7 @@ namespace Gonogo.KosUplink
             // screen downlink + single-owner keystroke/resize/open/close.
             // The mod reads the CPU screen in-process, no telnet/node-pty
             // anywhere in the path.
-            _terminalSource = host.RegisterDynamicNamespace(
-                KosChannels.TerminalPrefix,
-                new ChannelDeclaration
-                {
-                    Kind = SampleKind.Event,
-                    // Reliable-ordered: terminal output is a discrete event
-                    // stream: a dropped frame corrupts the buffer.
-                    Delivery = Delivery.ReliableOrdered,
-                    // Delayed: the screen is vessel telemetry; it rides gonogo's
-                    // reveal clock exactly like vessel.flight (comms authority).
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.Delayed,
-                    // Keyed by coreId, not by craft, so routing needs the map
-                    // CaptureProcessors maintains: without the resolver this
-                    // would read the coreId AS a vessel id and address a node
-                    // nothing writes a delay for.
-                    PerVesselNode = true,
-                    VesselIdForKey = VesselIdForCore,
-                    // The screen is a cursor-relative diff stream, so a
-                    // late/returning subscriber's catch-up must land on a
-                    // self-contained FullRepaint frame, never a bare
-                    // incremental diff with no baseline: see
-                    // ChannelDeclaration.IsKeyframe and
-                    // Sitrep.Core.Courier's sticky-keyframe cache. Checks the
-                    // flattened dictionary (KosTerminalFrameBuilder), not the
-                    // KosTerminalFrame POCO: the dictionary is what actually
-                    // reaches Publish below, since the flatten happens at that
-                    // same call site.
-                    IsKeyframe = value => value is IDictionary<string, object?> d
-                        && d.TryGetValue("fullRepaint", out var fr) && fr is bool isFullRepaint && isFullRepaint,
-                    Requires = NeedsProcessor,
-                });
+            _terminalSource = host.RegisterDynamicNamespace(KosChannels.TerminalPrefix, TerminalNamespace());
 
             _terminalManager = new KosTerminalManager(
                 knownCoreIds: CurrentCoreIds,
@@ -226,22 +180,7 @@ namespace Gonogo.KosUplink
             // kos-uplink-full-migration.md). ReliableOrdered: a lost result
             // frame would strand the caller's promise until its own client-
             // side timeout, same posture as the terminal downlink.
-            _runSource = host.RegisterDynamicNamespace(
-                KosChannels.RunPrefix,
-                new ChannelDeclaration
-                {
-                    Kind = SampleKind.Event,
-                    Delivery = Delivery.ReliableOrdered,
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.Delayed,
-                    // Keyed by coreId, not by craft, so routing needs the map
-                    // CaptureProcessors maintains: without the resolver this
-                    // would read the coreId AS a vessel id and address a node
-                    // nothing writes a delay for.
-                    PerVesselNode = true,
-                    VesselIdForKey = VesselIdForCore,
-                    Requires = NeedsProcessor,
-                });
+            _runSource = host.RegisterDynamicNamespace(KosChannels.RunPrefix, RunNamespace());
             // Flattened here, at the actual publish boundary, via
             // KosRunResultBuilder: KosRunManager itself stays typed in terms
             // of the KosRunResult POCO (its own tests assert on that shape),
@@ -348,31 +287,6 @@ namespace Gonogo.KosUplink
             }
             return ids;
         }
-
-        /// <summary>
-        /// Which craft each CPU is aboard, keyed by <c>KOSCoreId</c> as a string
-        /// because that is the form a topic segment arrives in.
-        ///
-        /// <para>Written whole on the main thread by <see cref="CaptureProcessors"/>
-        /// and swapped in by reference; read on the Courier thread by
-        /// <see cref="VesselIdForCore"/>. Never mutated in place, so a reader
-        /// always sees one complete pass rather than a half-updated map, and no
-        /// lock is needed on a path that runs per topic.</para>
-        /// </summary>
-        private Dictionary<string, string> _coreVessels = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        /// <summary>
-        /// The vessel a kOS topic's <c>coreId</c> segment belongs to, or null
-        /// when the last main-thread pass did not see that CPU.
-        ///
-        /// <para>Null routes the topic to the active craft, which is where every
-        /// kOS topic sat before this existed. The alternative, handing back the
-        /// coreId itself, would mint <c>trackingStation.vessel.&lt;coreId&gt;</c>: a node no
-        /// delay is ever written for, which is a quieter wrong answer than the
-        /// one being fixed.</para>
-        /// </summary>
-        internal string? VesselIdForCore(string coreId) =>
-            Volatile.Read(ref _coreVessels).TryGetValue(coreId, out var vesselId) ? vesselId : null;
 
         /// <summary>MAIN-THREAD capture: read <c>AllInstances()</c> into a plain, KSP-handle-free list.</summary>
         internal object? CaptureProcessors(KspSnapshot? snapshot)

@@ -210,7 +210,11 @@ namespace Gonogo.KosUplink
             new CommandRequirement { Kind = "part-module-researched", Quantity = "kOSProcessor" },
         };
 
-        public UplinkManifest Manifest { get; } = new UplinkManifest
+        private UplinkManifest? _manifest;
+
+        public UplinkManifest Manifest => _manifest ??= BuildManifest();
+
+        private UplinkManifest BuildManifest() => new UplinkManifest
         {
             Id = "kos",
             Version = UplinkBuildVersion.Value,
@@ -277,6 +281,87 @@ namespace Gonogo.KosUplink
                 new CommandDeclaration { Command = KosChannels.FilesListCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
+            Namespaces = new[]
+            {
+                new NamespaceDeclaration { Prefix = KosChannels.ComputePrefix, Template = ComputeNamespace() },
+                new NamespaceDeclaration { Prefix = KosChannels.TerminalPrefix, Template = TerminalNamespace() },
+                new NamespaceDeclaration { Prefix = KosChannels.RunPrefix, Template = RunNamespace() },
+            },
+        };
+
+        /// <summary>
+        /// Which craft each CPU is aboard, keyed by <c>KOSCoreId</c> as a string
+        /// because that is the form a topic segment arrives in.
+        ///
+        /// <para>Written whole on the main thread by <see cref="CaptureProcessors"/>
+        /// and swapped in by reference; read on the Courier thread by
+        /// <see cref="VesselIdForCore"/>. Never mutated in place, so a reader
+        /// always sees one complete pass rather than a half-updated map, and no
+        /// lock is needed on a path that runs per topic.</para>
+        /// </summary>
+        private Dictionary<string, string> _coreVessels = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// The vessel a kOS topic's <c>coreId</c> segment belongs to, or null
+        /// when the last main-thread pass did not see that CPU.
+        ///
+        /// <para>Null routes the topic to the active craft, which is where every
+        /// kOS topic sat before this existed. The alternative, handing back the
+        /// coreId itself, would mint <c>trackingStation.vessel.&lt;coreId&gt;</c>: a node no
+        /// delay is ever written for, which is a quieter wrong answer than the
+        /// one being fixed.</para>
+        /// </summary>
+        internal string? VesselIdForCore(string coreId) =>
+            Volatile.Read(ref _coreVessels).TryGetValue(coreId, out var vesselId) ? vesselId : null;
+
+        // The three per-CPU namespaces. Declared here, in the half that needs no
+        // game, so the manifest lists them and the engine registers them before
+        // Register runs. Each is keyed by coreId, not by craft, so routing needs
+        // the map CaptureProcessors maintains: without the resolver the coreId
+        // would be read as a vessel id and address a node nothing writes a delay for.
+
+        /// <summary>kos.compute.&lt;id&gt;.&lt;field&gt;, fed by the Print postfix; delayed like any vessel telemetry.</summary>
+        private ChannelDeclaration ComputeNamespace() => new ChannelDeclaration
+        {
+            Kind = SampleKind.Event,
+            Delivery = Delivery.LossyLatest,
+            Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+            Delay = DelayRole.Delayed,
+            PerVesselNode = true,
+            VesselIdForKey = VesselIdForCore,
+            Requires = NeedsProcessor,
+        };
+
+        /// <summary>
+        /// kos.terminal.&lt;coreId&gt;. Reliable-ordered because the screen is a diff
+        /// stream and a dropped frame corrupts the buffer; delayed because the
+        /// screen is vessel telemetry. A late subscriber's catch-up must land on a
+        /// self-contained full repaint, never a bare incremental diff, so the
+        /// keyframe test reads the flattened dictionary that is actually published.
+        /// </summary>
+        private ChannelDeclaration TerminalNamespace() => new ChannelDeclaration
+        {
+            Kind = SampleKind.Event,
+            Delivery = Delivery.ReliableOrdered,
+            Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
+            Delay = DelayRole.Delayed,
+            PerVesselNode = true,
+            VesselIdForKey = VesselIdForCore,
+            IsKeyframe = value => value is IDictionary<string, object?> d
+                && d.TryGetValue("fullRepaint", out var fr) && fr is bool isFullRepaint && isFullRepaint,
+            Requires = NeedsProcessor,
+        };
+
+        /// <summary>kos.run.&lt;coreId&gt;, the ad-hoc RPC result; reliable-ordered because a lost result strands the caller's promise until its own timeout.</summary>
+        private ChannelDeclaration RunNamespace() => new ChannelDeclaration
+        {
+            Kind = SampleKind.Event,
+            Delivery = Delivery.ReliableOrdered,
+            Emission = new EmissionPolicy(keyframeIntervalUt: 3600, quantum: EmissionQuantum.Absolute(0)),
+            Delay = DelayRole.Delayed,
+            PerVesselNode = true,
+            VesselIdForKey = VesselIdForCore,
+            Requires = NeedsProcessor,
         };
 
         // ----------------------------------------------------------------
