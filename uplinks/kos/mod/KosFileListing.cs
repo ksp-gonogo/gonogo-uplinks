@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Sitrep.Contract;
 
 namespace Gonogo.KosUplink
 {
@@ -31,6 +32,21 @@ namespace Gonogo.KosUplink
     /// </summary>
     public static class KosFileListing
     {
+        /// <summary>The volume <c>kos.files.list</c> reads from the Archive; it is out of reach without a link home.</summary>
+        public const string ArchiveVolume = "0:";
+
+        /// <summary>
+        /// The refusal for listing <paramref name="volume"/>, or null when it may
+        /// be listed. The Archive is refused whenever the craft has no link home,
+        /// the same condition kOS refuses it on, so the listing never tells the
+        /// operator what the craft could not know; the CPU's own drive is always
+        /// listed.
+        /// </summary>
+        public static CommandResult? Refusal(string volume, bool archiveReachable) =>
+            volume == ArchiveVolume && !archiveReachable
+                ? CommandResult.Fail(CommandErrorCode.NoConnection)
+                : null;
+
         public static Dictionary<string, object?> Fields(string volume, IEnumerable<KosListedFile> files) =>
             new Dictionary<string, object?>
             {

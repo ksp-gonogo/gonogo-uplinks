@@ -270,6 +270,8 @@ namespace Gonogo.KosUplink
         /// volumes and answers on <c>kos.run.&lt;coreId&gt;</c>, so nothing is
         /// typed into the CPU's terminal. Only the top level of the volume is
         /// listed.
+        /// The Archive is refused with <c>noConnection</c> when kOS itself would
+        /// refuse it, so a craft with no link home cannot list it.
         ///
         /// <para><b>Unverified against live KSP</b>: this file has no
         /// reference DLLs to build against in a headless environment.</para>
@@ -287,6 +289,21 @@ namespace Gonogo.KosUplink
                 if (proc == null)
                 {
                     return CommandResult.Fail(CommandErrorCode.NotFound);
+                }
+
+                /*
+                 * The condition kOS's own volume manager refuses the Archive on
+                 * (ConnectivityVolumeManager.CheckRange): on the launchpad, or with a
+                 * link home. The manager itself is private to the processor.
+                 */
+                var vessel = proc.vessel;
+                var archiveReachable = vessel != null
+                    && (vessel.situation == Vessel.Situations.PRELAUNCH
+                        || kOS.Communication.ConnectivityManager.HasConnectionToHome(vessel));
+                var refusal = KosFileListing.Refusal(args.Volume, archiveReachable);
+                if (refusal != null)
+                {
+                    return refusal;
                 }
 
                 kOS.Safe.Persistence.Volume? volume =

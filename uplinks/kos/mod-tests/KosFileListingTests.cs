@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Gonogo.KosUplink;
+using Sitrep.Contract;
 using Xunit;
 
 namespace GonogoKosUplink.Tests
@@ -32,6 +33,23 @@ namespace GonogoKosUplink.Tests
             var json = KosFileListing.Json(new[] { new KosListedFile("a.ks", null, null) });
 
             Assert.Equal("[{\"name\":\"a.ks\",\"size\":null,\"isDir\":null}]", json);
+        }
+
+        [Fact]
+        public void WithNoLinkHome_TheArchiveIsRefusedAndTheCpuDriveIsListed()
+        {
+            var archive = KosFileListing.Refusal("0:", archiveReachable: false);
+            Assert.NotNull(archive);
+            Assert.Equal(CommandErrorCode.NoConnection, archive!.ErrorCode);
+
+            Assert.Null(KosFileListing.Refusal("1:", archiveReachable: false));
+        }
+
+        [Fact]
+        public void WithALinkHome_BothVolumesAreListed()
+        {
+            Assert.Null(KosFileListing.Refusal("0:", archiveReachable: true));
+            Assert.Null(KosFileListing.Refusal("1:", archiveReachable: true));
         }
 
         [Fact]

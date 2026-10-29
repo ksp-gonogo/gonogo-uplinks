@@ -143,7 +143,7 @@ class KosUplinkCpuQueue {
           this.settleFailure(
             requestId,
             new Error(
-              `kos.run: command rejected for CPU ${this.coreId} (errorCode ${r.errorCode})`,
+              `${next.listVolume === undefined ? "kos.run" : "kos.files.list"}: command rejected for CPU ${this.coreId} (errorCode ${r.errorCode})`,
             ),
           );
         }

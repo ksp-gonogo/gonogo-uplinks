@@ -104,6 +104,8 @@ namespace GonogoKosUplink.Tests
 
             Assert.Equal(DelayRole.Delayed, tagged[KosChannels.TerminalResizeCommand]);
             Assert.Equal(DelayRole.Delayed, tagged[KosChannels.KeystrokeCommand]);
+            Assert.Equal(DelayRole.Delayed, tagged[KosChannels.RunCommand]);
+            Assert.Equal(DelayRole.Delayed, tagged[KosChannels.FilesListCommand]);
         }
 
         /// <summary>
