@@ -2235,6 +2235,25 @@ describe("KosTerminal: the terminal lease and its refusals", () => {
     await act(async () => {});
   }, 10000);
 
+  it("renews a held lease so the game can free one whose screen vanished", async () => {
+    const fixture = mount(() => ({}));
+    await waitFor(() =>
+      expect(
+        sentCommands(fixture.commands, "kos.terminal.resize"),
+      ).toHaveLength(1),
+    );
+    expect(sentCommands(fixture.commands, "kos.terminal.open")).toHaveLength(1);
+
+    await waitFor(
+      () =>
+        expect(
+          sentCommands(fixture.commands, "kos.terminal.open").length,
+        ).toBeGreaterThanOrEqual(2),
+      { timeout: 7000 },
+    );
+    await act(async () => {});
+  }, 10000);
+
   it("shows a refused keystroke on the screen", async () => {
     mount((command) =>
       command === "kos.keystroke"

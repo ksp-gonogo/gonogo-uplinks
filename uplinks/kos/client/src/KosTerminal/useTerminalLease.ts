@@ -10,6 +10,13 @@ const RETRY_FIRST_MS = 500;
 const RETRY_CAP_MS = 5000;
 
 /**
+ * How often a held lease is renewed. The game frees a lease that has gone
+ * quiet for several of these, which is how a screen that vanished without
+ * sending a close lets go.
+ */
+const LEASE_BEAT_MS = 5000;
+
+/**
  * What the terminal tells the operator about its lease on the CPU's terminal:
  * `waiting` while an open is being retried, `refused` when the open was refused
  * for a reason that will not clear by itself, `keystroke` when a typed line was
@@ -72,8 +79,8 @@ function readRefusal(error: unknown): Refusal {
  * no answer), asks again at the slowest pace while another screen holds the
  * terminal so it takes over when that screen lets go, stops at any other
  * refusal that will not clear by itself and says so, and reopens when a
- * keystroke finds the lease gone or the stream returns, and releases the lease
- * when the page is closed.
+ * keystroke finds the lease gone or the stream returns, renews it while held, and
+ * releases it when the page is closed.
  * Used by the kOS terminal widget.
  *
  * `onKeystrokeRefused` takes the error a keystroke's send rejected with and
@@ -103,6 +110,17 @@ export function useTerminalLease({
     if (readOnly) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let beat: ReturnType<typeof setInterval> | null = null;
+
+    // A renewal the game refuses because another screen holds the terminal
+    // means this lease lapsed (a hidden tab's timers can stall): ask again.
+    const renew = () => {
+      sendOpen().catch((error: unknown) => {
+        if (cancelled || !readRefusal(error).heldElsewhere) return;
+        heldRef.current = false;
+        setAttempt((n) => n + 1);
+      });
+    };
 
     const open = (wait: number) => {
       sendOpen().then(
@@ -113,6 +131,8 @@ export function useTerminalLease({
           // The widget's fixed size is imposed once the lease is held, since a
           // resize before it is refused the same way the open was.
           void sendResize().catch(() => {});
+          if (beat !== null) clearInterval(beat);
+          beat = setInterval(renew, LEASE_BEAT_MS);
         },
         (error: unknown) => {
           if (cancelled) return;
@@ -138,9 +158,9 @@ export function useTerminalLease({
     open(RETRY_FIRST_MS);
 
     /*
-     * Closing the tab never runs the effect cleanup, and the game frees a lease
-     * only when it is closed or has sat idle for a minute, so the release is
-     * also sent as the page goes away. A reload sends the same token again.
+     * Closing the tab never runs the effect cleanup, so the release is also
+     * sent as the page goes away, when the socket may already be closing. A
+     * close that is lost is covered by the renewals stopping.
      */
     const onPageHide = () => {
       if (heldRef.current) void sendClose().catch(() => {});
@@ -151,6 +171,7 @@ export function useTerminalLease({
       window.removeEventListener("pagehide", onPageHide);
       cancelled = true;
       if (timer !== null) clearTimeout(timer);
+      if (beat !== null) clearInterval(beat);
       heldRef.current = false;
       setLease(null);
       void sendClose().catch(() => {});

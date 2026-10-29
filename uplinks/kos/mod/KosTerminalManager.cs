@@ -125,13 +125,14 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// How long a lease holder may send nothing before another screen can
-        /// take the CPU's terminal. A closed tab or crashed screen never sends
-        /// a close, so without this it would hold the CPU until the scene
-        /// changed. A minute is long enough for an operator to read output
-        /// between commands and far longer than the one-second keyframe cadence
-        /// or the few seconds the client waits between open retries.
+        /// take the CPU's terminal. A closed tab or crashed screen can lose its
+        /// close, and the game is not told when a screen's connection drops, so
+        /// without this it would hold the CPU until the scene changed. A held
+        /// terminal re-sends its open every few seconds (the client's
+        /// <c>LEASE_BEAT_MS</c>), so this is several missed beats and not the
+        /// time an operator spends reading.
         /// </summary>
-        public const double LeaseIdleSeconds = 60.0;
+        public const double LeaseIdleSeconds = 15.0;
 
         // THREAD-SAFE: the set of CPUs with an individual subscribe
         // transition pending a reseed, as reported by NotifySubscribed
