@@ -103,6 +103,19 @@ describe("diagnostics windows", () => {
     await expectNoA11yViolations(dialog);
   });
 
+  it("shows the Log and Failures counts as plain text, not chips", async () => {
+    const { fixture } = mount();
+    act(() => {
+      fixture.emit("kerbalism.diagnostics", diagnostics());
+      fixture.emit("kerbalism.reliabilityParts", parts());
+    });
+
+    const log = await screen.findByRole("button", { name: "Log 2" });
+    const failures = await screen.findByRole("button", { name: "Failures 2" });
+    expect(log.children).toHaveLength(0);
+    expect(failures.children).toHaveLength(0);
+  });
+
   it("switches a device on or off by its id", async () => {
     const { fixture } = mount();
     act(() => {

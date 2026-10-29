@@ -10,6 +10,7 @@ import {
   ModalProvider,
   NULL_DISPLAY,
   Stack,
+  Tag,
   Text,
   useModal,
 } from "@ksp-gonogo/ui-kit";
@@ -185,10 +186,10 @@ const deviceColumns: ReadonlyArray<DataTableColumn<KerbalismDevice>> = [
       <>
         {d.name ?? NULL_DISPLAY}
         {d.partName ? (
-          <Text level="muted" size="xs">
+          <>
             {" "}
-            {d.partName}
-          </Text>
+            <Tag label={d.partName} name />
+          </>
         ) : null}
       </>
     ),
@@ -458,21 +459,15 @@ function DiagnosticsButtonRow() {
         Auto
       </Button>
       <Button size="sm" onClick={() => open(<LogWindow />, { title: "Log" })}>
-        Log
-        {log !== undefined && log.length > 0 && (
-          <Badge size="sm">{log.length}</Badge>
-        )}
+        {log !== undefined && log.length > 0 ? `Log ${log.length}` : "Log"}
       </Button>
       <Button
         size="sm"
         onClick={() => open(<FailuresWindow />, { title: "Failures" })}
       >
-        Failures
-        {brokenOrDue !== null && brokenOrDue > 0 && (
-          <Badge size="sm" tone="warn">
-            {brokenOrDue}
-          </Badge>
-        )}
+        {brokenOrDue !== null && brokenOrDue > 0
+          ? `Failures ${brokenOrDue}`
+          : "Failures"}
       </Button>
     </Cluster>
   );
