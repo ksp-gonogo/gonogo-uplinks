@@ -22,6 +22,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { frameDelayStatsLogger } from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
+/** Added to the delay when telling Kerbcast how long a frame can be held: covers the pacer's adaptive lead limit up to a burst gap of 8 s. */
+const PACING_ALLOWANCE_MS = 10_000;
+
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
  *  `ut: null` makes the worker/encoded backends treat frames as un-stampable
  *  (interpolation yields `null`), never stamping against a bogus UT. */
@@ -577,16 +580,21 @@ function buildDelayedPipeline(
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(),
     });
-  /* The wall-clock time a frame is held now: the gap between the capture
-     time being rendered and the latest time that may be shown, over the warp
-     rate. NaN while the capture clock has no time, which Kerbcast reads as an
+  /* The longest a frame can sit in the transform now: the delay (the gap
+     between the capture time being rendered and the latest time that may be
+     shown, over the warp rate) plus what the pacing buffer can add. The pacer's
+     lead limit is adaptive (never below 2 s, 1.25 times the longest recent
+     burst gap) and the sdk does not expose it, so a fixed allowance stands in
+     for it: too high only slows Kerbcast's retries, too low leaves a feed on
+     static. NaN while the capture clock has no time, which Kerbcast reads as an
      unknown hold. */
   const holdMs = () => {
     const sample = getCaptureSample();
     const ut = interpolateCaptureUt(sample, performance.now());
     if (ut === null) return Number.NaN;
     const heldSeconds = ut - view.confirmedEdgeUt();
-    return Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
+    const delayMs = Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
+    return delayMs + PACING_ALLOWANCE_MS;
   };
   if (attachAt && encodedDelaySupported(view)) {
     const encodedHandle = attachAt(install, holdMs);

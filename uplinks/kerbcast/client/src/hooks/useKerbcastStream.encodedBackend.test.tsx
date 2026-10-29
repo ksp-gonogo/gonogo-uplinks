@@ -445,7 +445,7 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     expect(installed).not.toBe(Transform.instances[0]);
   });
 
-  it("tells Kerbcast how long the delay holds frames, from the clock edge and the warp rate", async () => {
+  it("tells Kerbcast how long a frame can be held: the delay from the clock edge and warp rate, plus the pacing allowance", async () => {
     stubTransforms();
     const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
     const clock = manualClock(6);
@@ -464,11 +464,15 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     await waitFor(() => {
       expect(options[0]?.holdMs).toBeTypeOf("function");
     });
-    expect(options[0]?.holdMs?.()).toBe(2000);
+    const pacing = 10_000;
+    expect(options[0]?.holdMs?.()).toBe(2000 + pacing);
     clock.setEdge(8);
-    expect(options[0]?.holdMs?.()).toBe(1000);
+    expect(options[0]?.holdMs?.()).toBe(1000 + pacing);
     clock.setEdge(12);
-    expect(options[0]?.holdMs?.()).toBe(0);
+    expect(options[0]?.holdMs?.()).toBe(pacing);
+    // the pacer's lead limit is never below 2 s, so the hold covers it
+    clock.setEdge(6);
+    expect(options[0]?.holdMs?.()).toBeGreaterThanOrEqual(2000 + 2000);
   });
 
   it("reports the hold as unknown while the capture clock has no time", async () => {
