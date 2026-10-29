@@ -145,6 +145,7 @@ public static class KerbalismRtConfig
             typeof(KerbalismDiagnostics),
             typeof(KerbalismDevice),
             typeof(KerbalismScript),
+            typeof(KerbalismScriptState),
             typeof(KerbalismLogEntry),
             // The Kerbalism namespaces of the four elected science.* payloads'
             // extension bags. No [SitrepTopic]: each is a sub-tree reached through
@@ -177,6 +178,9 @@ public static class KerbalismRtConfig
             // outcome its reply carries.
             typeof(KerbalismRepairPartArgs),
             typeof(KerbalismRepairOutcome),
+            // kerbalism.device.set and kerbalism.script.set: inbound args.
+            typeof(KerbalismDeviceSetArgs),
+            typeof(KerbalismScriptSetArgs),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

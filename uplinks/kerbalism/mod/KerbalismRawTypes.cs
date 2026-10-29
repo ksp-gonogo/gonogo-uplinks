@@ -238,6 +238,16 @@ namespace Gonogo.KerbalismUplink
     {
         public string Type = "";
         public int DeviceCount;
+
+        /// <summary>What the script sets each device to, by device id.</summary>
+        public List<ScriptStateRaw> States = new();
+    }
+
+    /// <summary>One device an event script sets, and the state it sets it to.</summary>
+    public sealed class ScriptStateRaw
+    {
+        public string DeviceId = "";
+        public bool On;
     }
 
     /// <summary>One entry of Kerbalism's message log.</summary>

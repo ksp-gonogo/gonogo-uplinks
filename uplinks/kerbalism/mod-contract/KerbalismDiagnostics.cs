@@ -70,6 +70,25 @@ public class KerbalismScript
     /// <summary>How many devices the script switches when the event happens.</summary>
     [SitrepUnit(Units.Count)]
     public int? DeviceCount { get; set; }
+
+    /// <summary>What the script sets each of its devices to when the event happens.</summary>
+    public IReadOnlyList<KerbalismScriptState>? States { get; set; }
+}
+
+/// <summary>The state one event script gives one device.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public class KerbalismScriptState
+{
+    /// <summary>The device, by the id <c>kerbalism.diagnostics</c> lists it under.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? DeviceId { get; set; }
+
+    /// <summary>Whether the script switches the device on, rather than off.</summary>
+    [SitrepUnit(Units.Flag)]
+    public bool? On { get; set; }
 }
 
 /// <summary>One message in Kerbalism's log.</summary>

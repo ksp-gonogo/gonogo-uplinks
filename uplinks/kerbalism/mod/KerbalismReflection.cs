@@ -1263,13 +1263,8 @@ namespace Gonogo.KerbalismUplink
             var raw = new DiagnosticsRaw { Log = ReadLog() };
             if (v == null || !v.loaded) return raw;
 
-            var computerType = FindType("KERBALISM.Computer");
-            var getDevices = computerType?.GetMethod("GetModuleDevices", BindingFlags.Public | BindingFlags.Static);
-            if (getDevices == null) return raw;
-
-            object? devices = null;
-            try { devices = getDevices.Invoke(null, new object[] { v }); } catch { }
-            if (devices is not IEnumerable list) return raw;
+            var list = LoadedDevices(v);
+            if (list == null) return raw;
 
             var deviceRows = new List<DeviceRaw>();
             foreach (var d in list)
@@ -1304,10 +1299,77 @@ namespace Gonogo.KerbalismUplink
                 if (typeName == "last") continue;
                 var script = SafeInvoke(get, computer, new[] { type });
                 if (script == null || Member(script, "states") is not ICollection states || states.Count == 0) continue;
-                scripts.Add(new ScriptRaw { Type = typeName, DeviceCount = states.Count });
+                var row = new ScriptRaw { Type = typeName, DeviceCount = states.Count };
+                if (states is IDictionary map)
+                {
+                    foreach (DictionaryEntry entry in map)
+                    {
+                        row.States.Add(new ScriptStateRaw
+                        {
+                            DeviceId = Convert.ToString(entry.Key, System.Globalization.CultureInfo.InvariantCulture) ?? "",
+                            On = entry.Value is true,
+                        });
+                    }
+                }
+                scripts.Add(row);
             }
             raw.Scripts = scripts;
             return raw;
+        }
+
+        /// <summary>Kerbalism's device list for a loaded craft, or null when its <c>Computer</c> cannot be asked.</summary>
+        private IEnumerable? LoadedDevices(Vessel v)
+        {
+            var getDevices = FindType("KERBALISM.Computer")?.GetMethod("GetModuleDevices", BindingFlags.Public | BindingFlags.Static);
+            if (getDevices == null) return null;
+            return SafeInvoke(getDevices, null, new object[] { v }) as IEnumerable;
+        }
+
+        /// <summary>The visible device with this id, as Kerbalism's own window would list it.</summary>
+        private object? FindDevice(Vessel v, string deviceId)
+        {
+            var list = LoadedDevices(v);
+            if (list == null) return null;
+            foreach (var d in list)
+            {
+                if (d == null || MemberBool(d, "IsVisible") == false) continue;
+                var id = Convert.ToString(Member(d, "Id"), System.Globalization.CultureInfo.InvariantCulture);
+                if (string.Equals(id, deviceId, StringComparison.Ordinal)) return d;
+            }
+            return null;
+        }
+
+        /// <summary>Switch a device: <c>Device.Ctrl(bool)</c>. False when the device is not on the craft or Kerbalism threw.</summary>
+        public bool SetDevice(Vessel v, string deviceId, bool on)
+        {
+            var device = FindDevice(v, deviceId);
+            var ctrl = device?.GetType().GetMethod("Ctrl", BindingFlags.Public | BindingFlags.Instance);
+            if (device == null || ctrl == null) return false;
+            try { ctrl.Invoke(device, new object[] { on }); return true; }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Set what an event script does to a device: <c>Script.Set(Device, bool?)</c>
+        /// on the script <c>Computer.Get</c> returns for the type, which creates it
+        /// when the craft has none. False when the script type or the device does
+        /// not exist, so a name that is not an event never creates an empty script.
+        /// </summary>
+        public bool SetScriptState(Vessel v, string scriptType, string deviceId, bool? state)
+        {
+            var type = FindType("KERBALISM.ScriptType");
+            if (type == null || !type.IsEnum || scriptType == "last" || !Enum.IsDefined(type, scriptType)) return false;
+            var device = FindDevice(v, deviceId);
+            if (device == null) return false;
+            var vd = H._dbKerbalismData == null ? null : SafeInvoke(H._dbKerbalismData, null, new object[] { v });
+            var computer = vd == null ? null : Member(vd, "computer");
+            var get = computer?.GetType().GetMethod("Get", BindingFlags.Public | BindingFlags.Instance, null, new[] { type }, null);
+            if (computer == null || get == null) return false;
+            var script = SafeInvoke(get, computer, new[] { Enum.Parse(type, scriptType) });
+            var set = script?.GetType().GetMethod("Set", BindingFlags.Public | BindingFlags.Instance);
+            if (script == null || set == null) return false;
+            try { set.Invoke(script, new object?[] { device, state }); return true; }
+            catch { return false; }
         }
 
         private static object? SafeInvoke(MethodInfo m, object? target, object[] args)

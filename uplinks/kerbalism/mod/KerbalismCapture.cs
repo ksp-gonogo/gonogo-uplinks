@@ -399,6 +399,11 @@ namespace Gonogo.KerbalismUplink
             {
                 ["type"] = sc.Type,
                 ["deviceCount"] = sc.DeviceCount,
+                ["states"] = sc.States.Select(st => (object)new Dictionary<string, object?>
+                {
+                    ["deviceId"] = st.DeviceId,
+                    ["on"] = st.On,
+                }).ToList(),
             }).ToList(),
             ["log"] = raw.Log?.Select(l => (object)new Dictionary<string, object?>
             {

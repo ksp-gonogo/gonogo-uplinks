@@ -60,4 +60,12 @@ public static class KerbalismErrorCodes
     /// <summary>No reliability module aboard has that id and is broken or due a service.</summary>
     public static readonly RefusalCode NothingToRepair =
         CommandErrorCode.NotFound.Refine("kerbalism.nothingToRepair", "no part aboard with that id is broken or due a service");
+
+    /// <summary>Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded.</summary>
+    public static readonly RefusalCode CraftNotLoaded =
+        CommandErrorCode.ModeUnavailable.Refine("kerbalism.craftNotLoaded", "the craft is not loaded, so Kerbalism cannot switch its devices");
+
+    /// <summary>The craft has no visible device with that id, or no event script by that name.</summary>
+    public static readonly RefusalCode NoSuchDevice =
+        CommandErrorCode.NotFound.Refine("kerbalism.noSuchDevice", "no device or script aboard matches that");
 }

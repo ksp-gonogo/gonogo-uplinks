@@ -113,8 +113,10 @@ namespace GonogoKerbalismUplink.Tests
         {
             var declared = KerbalismCommandCatalog.All().Select(c => c.Command).ToList();
 
-            Assert.Equal(6, declared.Count);
+            Assert.Equal(8, declared.Count);
             Assert.Contains(KerbalismCommandCatalog.RepairCommand, declared);
+            Assert.Contains(KerbalismDeviceCommandProvider.DeviceSetCommand, declared);
+            Assert.Contains(KerbalismDeviceCommandProvider.ScriptSetCommand, declared);
             Assert.Contains(KerbalismFileCommandProvider.MoveToLabCommand, declared);
         }
 

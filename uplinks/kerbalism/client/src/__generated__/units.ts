@@ -111,6 +111,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     partName: "text",
     status: "text",
   },
+  "KerbalismDeviceSetArgs": {
+    deviceId: "id",
+    on: "flag",
+  },
   "KerbalismFeatures": {
     automation: "flag",
     comfort: "flag",
@@ -305,6 +309,15 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     deviceCount: "count",
     type: "enum",
   },
+  "KerbalismScriptSetArgs": {
+    deviceId: "id",
+    scriptType: "enum",
+    state: "flag",
+  },
+  "KerbalismScriptState": {
+    deviceId: "id",
+    on: "flag",
+  },
   "KerbalismSpaceWeather": {
     blackout: "flag",
     habitatRadiationRadPerSecond: "rad/s",
@@ -478,6 +491,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     budgets: "KerbalismReliabilityBudget[]",
     repairCost: "KerbalismRepairCostItem[]",
   },
+  "KerbalismScript": {
+    states: "KerbalismScriptState[]",
+  },
   "KerbalismSpaceWeather": {
     stars: "KerbalismStarInfo[]",
     storms: "KerbalismStormEntry[]",
@@ -540,6 +556,9 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "KerbalismScript": {
     type: null,
+  },
+  "KerbalismScriptSetArgs": {
+    scriptType: null,
   },
   "KerbalismStormEntry": {
     targetKind: "KerbalismStormTargetKind",

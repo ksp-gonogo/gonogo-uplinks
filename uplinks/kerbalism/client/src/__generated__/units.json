@@ -71,6 +71,10 @@
       "partName": "text",
       "status": "text"
     },
+    "KerbalismDeviceSetArgs": {
+      "deviceId": "id",
+      "on": "flag"
+    },
     "KerbalismFeatures": {
       "automation": "flag",
       "comfort": "flag",
@@ -265,6 +269,15 @@
       "deviceCount": "count",
       "type": "enum"
     },
+    "KerbalismScriptSetArgs": {
+      "deviceId": "id",
+      "scriptType": "enum",
+      "state": "flag"
+    },
+    "KerbalismScriptState": {
+      "deviceId": "id",
+      "on": "flag"
+    },
     "KerbalismSpaceWeather": {
       "blackout": "flag",
       "habitatRadiationRadPerSecond": "rad/s",
@@ -404,6 +417,9 @@
       "budgets": "KerbalismReliabilityBudget[]",
       "repairCost": "KerbalismRepairCostItem[]"
     },
+    "KerbalismScript": {
+      "states": "KerbalismScriptState[]"
+    },
     "KerbalismSpaceWeather": {
       "stars": "KerbalismStarInfo[]",
       "storms": "KerbalismStormEntry[]"
@@ -455,6 +471,9 @@
     },
     "KerbalismScript": {
       "type": null
+    },
+    "KerbalismScriptSetArgs": {
+      "scriptType": null
     },
     "KerbalismStormEntry": {
       "targetKind": "KerbalismStormTargetKind"

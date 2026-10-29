@@ -5,6 +5,39 @@
 import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
 /**
+* Switch one device on or off, as Kerbalism's own automation window does. The
+* device is addressed by the id `kerbalism.diagnostics` lists it under.
+* `KerbalismDeviceSetArgs.on` is the state to set rather than a flip from the
+* current one, so a repeated or reordered dispatch lands in the same place.
+*/
+export interface KerbalismDeviceSetArgs
+{
+	/** The device, by the id `kerbalism.diagnostics` gives it. */
+	deviceId: string;
+	/** Whether the device should be on. */
+	on: boolean;
+}
+/**
+* Set what one event script does to one device when its event happens: switch
+* it on, switch it off, or leave it out of the script. The craft must be
+* loaded, since Kerbalism lists devices for a loaded craft only.
+*/
+export interface KerbalismScriptSetArgs
+{
+	/**
+	* The event, by the name `kerbalism.diagnostics` gives the script: `sunlight`,
+	* `power_low` and so on.
+	*/
+	scriptType: string;
+	/** The device, by the id `kerbalism.diagnostics` gives it. */
+	deviceId: string;
+	/**
+	* The state the script sets the device to, or null to take the device out of
+	* the script.
+	*/
+	state?: boolean;
+}
+/**
 * What Kerbalism's own automation and log windows show for the craft: the
 * devices its computer can switch, the event scripts that act on them, and the
 * most recent messages in its log. Published on `kerbalism.diagnostics`.
@@ -53,6 +86,16 @@ export interface KerbalismScript
 	type?: string | null;
 	/** How many devices the script switches when the event happens. */
 	deviceCount?: Value<"count"> | null;
+	/** What the script sets each of its devices to when the event happens. */
+	states?: KerbalismScriptState[] | null;
+}
+/** The state one event script gives one device. */
+export interface KerbalismScriptState
+{
+	/** The device, by the id `kerbalism.diagnostics` lists it under. */
+	deviceId?: string | null;
+	/** Whether the script switches the device on, rather than off. */
+	on?: boolean | null;
 }
 /** One message in Kerbalism's log. */
 export interface KerbalismLogEntry

@@ -1,8 +1,9 @@
-import { useTelemetry } from "@ksp-gonogo/sitrep-sdk";
+import { useCommand, useTelemetry } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Button,
   Cluster,
+  CommandButton,
   type DataTableColumn,
   DataTable,
   EmptyState,
@@ -20,6 +21,11 @@ import type {
   KerbalismScript,
 } from "../__generated__/contract.js";
 
+const useDeviceSet = () => useCommand("kerbalism.device.set");
+const useScriptSet = () => useCommand("kerbalism.script.set");
+type DeviceSetHandle = ReturnType<typeof useDeviceSet>;
+type ScriptSetHandle = ReturnType<typeof useScriptSet>;
+
 /** What the three windows draw, as the latest values the Ship Systems widget has read. */
 interface Diagnostics {
   devices: readonly KerbalismDevice[] | undefined;
@@ -28,6 +34,9 @@ interface Diagnostics {
   parts: readonly KerbalismReliabilityPart[] | undefined;
   /** Whether any of the above is the last reading rather than a current one. */
   held: boolean;
+  /** The commands the Auto window sends, read where the telemetry provider is mounted. */
+  deviceSet: DeviceSetHandle | undefined;
+  scriptSet: ScriptSetHandle | undefined;
 }
 
 const NOTHING: Diagnostics = {
@@ -36,6 +45,8 @@ const NOTHING: Diagnostics = {
   log: undefined,
   parts: undefined,
   held: false,
+  deviceSet: undefined,
+  scriptSet: undefined,
 };
 
 /*
@@ -53,7 +64,9 @@ function publish(next: Diagnostics) {
     next.scripts === current.scripts &&
     next.log === current.log &&
     next.parts === current.parts &&
-    next.held === current.held
+    next.held === current.held &&
+    next.deviceSet === current.deviceSet &&
+    next.scriptSet === current.scriptSet
   ) {
     return;
   }
@@ -132,6 +145,35 @@ function levelTone(level: string | null | undefined) {
   }
 }
 
+function DeviceSwitch({ device }: { device: KerbalismDevice }) {
+  const { deviceSet } = useDiagnostics();
+  if (!deviceSet || !device.id) return null;
+  const name = device.name ?? "device";
+  return (
+    <Cluster justify="end" wrap={false}>
+      <CommandButton
+        size="sm"
+        tone="go"
+        handle={deviceSet}
+        args={{ deviceId: device.id, on: true }}
+        commandLabel={`Switch ${name} on`}
+        label="On"
+        pendingLabel="Switching on..."
+        aria-label={`Switch ${name} on`}
+      />
+      <CommandButton
+        size="sm"
+        handle={deviceSet}
+        args={{ deviceId: device.id, on: false }}
+        commandLabel={`Switch ${name} off`}
+        label="Off"
+        pendingLabel="Switching off..."
+        aria-label={`Switch ${name} off`}
+      />
+    </Cluster>
+  );
+}
+
 const deviceColumns: ReadonlyArray<DataTableColumn<KerbalismDevice>> = [
   {
     key: "device",
@@ -158,6 +200,12 @@ const deviceColumns: ReadonlyArray<DataTableColumn<KerbalismDevice>> = [
     render: (d) =>
       d.status ? <Badge size="sm">{d.status}</Badge> : NULL_DISPLAY,
   },
+  {
+    key: "switch",
+    header: "Switch",
+    align: "end",
+    render: (d) => <DeviceSwitch device={d} />,
+  },
 ];
 
 const scriptColumns: ReadonlyArray<DataTableColumn<KerbalismScript>> = [
@@ -175,6 +223,97 @@ const scriptColumns: ReadonlyArray<DataTableColumn<KerbalismScript>> = [
     value: (s) => s.deviceCount,
   },
 ];
+
+function stateWords(state: boolean | null | undefined): string {
+  if (state == null) return "not set";
+  return state ? "on" : "off";
+}
+
+function ScriptDeviceControls({
+  script,
+  device,
+}: {
+  script: string;
+  device: KerbalismDevice;
+}) {
+  const { scriptSet } = useDiagnostics();
+  if (!scriptSet || !device.id) return null;
+  const name = device.name ?? "device";
+  const label = scriptLabel(script);
+  const setTo = (state: boolean | null, words: string) => (
+    <CommandButton
+      size="sm"
+      handle={scriptSet}
+      args={{ scriptType: script, deviceId: device.id as string, state: state ?? undefined }}
+      commandLabel={`${label} script: ${words} ${name}`}
+      label={words === "remove" ? "Remove" : words === "on" ? "On" : "Off"}
+      pendingLabel="Setting..."
+      aria-label={`${label} script: ${words} ${name}`}
+    />
+  );
+  return (
+    <Cluster justify="end" wrap={false}>
+      {setTo(true, "on")}
+      {setTo(false, "off")}
+      {setTo(null, "remove")}
+    </Cluster>
+  );
+}
+
+/** Each event script's devices and the state it gives each, with the controls that change it. */
+function ScriptEditor({
+  scripts,
+  devices,
+}: {
+  scripts: readonly KerbalismScript[];
+  devices: readonly KerbalismDevice[];
+}) {
+  return (
+    <>
+      {scripts.map((script) => {
+        const type = script.type ?? "";
+        const states = new Map(
+          (script.states ?? []).map((st) => [st.deviceId, st.on]),
+        );
+        return (
+          <Stack key={type}>
+            <Text weight="semibold">{`${scriptLabel(type)} script`}</Text>
+            <DataTable
+              caption={`What the ${scriptLabel(type).toLowerCase()} script does to each device`}
+              columns={[
+                {
+                  key: "device",
+                  header: "Device",
+                  rowHeader: true,
+                  width: "100%",
+                  render: (d: KerbalismDevice) => d.name ?? NULL_DISPLAY,
+                },
+                {
+                  key: "state",
+                  header: "Sets",
+                  align: "end",
+                  render: (d: KerbalismDevice) => (
+                    <Badge size="sm">{stateWords(states.get(d.id))}</Badge>
+                  ),
+                },
+                {
+                  key: "set",
+                  header: "Change",
+                  align: "end",
+                  render: (d: KerbalismDevice) => (
+                    <ScriptDeviceControls script={type} device={d} />
+                  ),
+                },
+              ]}
+              rows={devices}
+              rowKey={(d) => d.id ?? d.name ?? ""}
+            />
+          </Stack>
+        );
+      })}
+    </>
+  );
+}
 
 /** Says the window shows the last reading, since a held reading is otherwise drawn like a current one. */
 function HeldNote() {
@@ -209,6 +348,9 @@ export function AutoWindow() {
         rowKey={(s) => s.type ?? ""}
         empty={<EmptyState>No scripts</EmptyState>}
       />
+      {scripts && devices ? (
+        <ScriptEditor scripts={scripts} devices={devices} />
+      ) : null}
     </Stack>
   );
 }
@@ -345,6 +487,8 @@ function DiagnosticsButtonRow() {
 export function DiagnosticsButtons() {
   const diagnostics = useTelemetry("kerbalism.diagnostics");
   const partsReading = useTelemetry("kerbalism.reliabilityParts");
+  const deviceSet = useDeviceSet();
+  const scriptSet = useScriptSet();
 
   const body =
     diagnostics.state === "observed" || diagnostics.state === "held"
@@ -360,8 +504,8 @@ export function DiagnosticsButtons() {
   const scripts = body?.scripts ?? undefined;
   const log = body?.log ?? undefined;
   useEffect(() => {
-    publish({ devices, scripts, log, parts, held });
-  }, [devices, scripts, log, parts, held]);
+    publish({ devices, scripts, log, parts, held, deviceSet, scriptSet });
+  }, [devices, scripts, log, parts, held, deviceSet, scriptSet]);
   useEffect(() => () => publish(NOTHING), []);
 
   return (

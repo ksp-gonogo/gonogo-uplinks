@@ -8,9 +8,9 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | | |
 | --- | --- |
 | Uplink id | `kerbalism` |
-| Version | `1.0.0-rc.4` |
+| Version | `1.0.0-rc.5` |
 | Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 49.4, extension API 6.0.0 |
+| Built against | contract 49.8, extension API 6.0.0 |
 
 ## Install
 
@@ -31,6 +31,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `kerbalism.reliability` | `KerbalismReliabilitySummary` | lossy-latest | delayed |
 | `kerbalism.reliabilityParts` | `KerbalismReliabilityPart[]` | lossy-latest | delayed |
 | `kerbalism.spaceweather` | `KerbalismSpaceWeather` | lossy-latest | delayed |
+| `kerbalism.transmission` | `KerbalismTransmission` | lossy-latest | delayed |
 | `kerbalism.available` | – | lossy-latest | true-now |
 | `kerbalism.diagnostics` | – | lossy-latest | delayed |
 
@@ -39,7 +40,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismCrewRule` | `degenPerSec` units/s, `fatalThreshold` units, `name` text, `problem` units |
 | `KerbalismDevice` | `id` text, `name` text, `partName` text, `status` text |
 | `KerbalismGreenhouseEntry` | `active` flag, `artificial` W/m², `cropResource` text, `ecRateMaxPerSec` units/s, `foodRatePerSec` units/s, `issue` text, `lampEcDrawPerSec` units/s, `lightToleranceWm2` W/m², `natural` W/m², `pressureTolerance` ratio, `radiationToleranceRadPerSec` rad/s |
-| `KerbalismHabitat` | `comfort` ratio, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `pressureKpa` kPa, `shielding` ratio, `surface` m², `volume` m³ |
+| `KerbalismHabitat` | `comfort` ratio, `evaSafe` flag, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `pressureKpa` kPa, `shielding` ratio, `surface` m², `volume` m³ |
 | `KerbalismIsruConverterExtension` | `broken` flag, `capacity` units, `processToken` text, `title` text, `valveIndex` count |
 | `KerbalismIsruDrillExtension` | `ecRate` units/s, `harvestType` text, `issue` text, `sourceMassRemaining` t, `sourceMassThreshold` t |
 | `KerbalismLogEntry` | `level` enum, `message` text |
@@ -55,7 +56,8 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismScienceExperimentExt` | `analyze` flag, `dataSizeMB` MB, `kind` id, `sampleMass` t, `sampleSlotsTotal` count, `sampleSlotsUsed` count, `sciencePerMB` science/MB, `sendFlagged` flag, `storageCapacityMB` MB, `storageUsedMB` MB, `transmitRateMBps` MB/s, `transmitting` flag |
 | `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `progressFraction` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag, `secondsToComplete` s, `waitingReason` text |
 | `KerbalismScienceLabExt` | `analysisRateMBps` MB/s, `effectiveRateMBps` MB/s, `status` id |
-| `KerbalismScript` | `deviceCount` count, `type` enum |
+| `KerbalismScript` | `deviceCount` count, `states` KerbalismScriptState[], `type` enum |
+| `KerbalismScriptState` | `deviceId` id, `on` flag |
 | `KerbalismStarInfo` | `direction.x` 1, `direction.y` 1, `direction.z` 1, `distance` m, `star` text |
 | `KerbalismStormEntry` | `dist` m, `star` text, `stormDuration` s, `stormState` count, `stormTime` ut, `targetKind` enum, `targetName` text |
 
@@ -63,16 +65,20 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `kerbalism.device.set` | `KerbalismDeviceSetArgs` | `CommandResult` |
 | `kerbalism.file.delete` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.file.send` | `KerbalismSubjectFlagArgs` | `CommandResult` |
 | `kerbalism.repair` | `KerbalismRepairPartArgs` | `CommandResultOf<KerbalismRepairOutcome>` |
 | `kerbalism.sample.analyze` | `KerbalismSubjectFlagArgs` | `CommandResult` |
 | `kerbalism.sample.dump` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.sample.moveToLab` | `KerbalismSubjectActionArgs` | `CommandResult` |
+| `kerbalism.script.set` | `KerbalismScriptSetArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
+| `KerbalismDeviceSetArgs` | `deviceId` id, `on` flag |
 | `KerbalismRepairPartArgs` | `crewName` text, `partId` id |
+| `KerbalismScriptSetArgs` | `deviceId` id, `scriptType` enum, `state` flag |
 | `KerbalismSubjectActionArgs` | `subjectId` id |
 | `KerbalismSubjectFlagArgs` | `flag` flag, `subjectId` id |
 
@@ -116,7 +122,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | --- | --- | --- | --- | --- | --- |
 | `life-support-greenhouse` | `ship-systems.life-support` | – |  | 1 |  |
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
-| `crew-status-survival-badge` | `crew-status.row-badges` | – | only while `kerbalism` | 0 |  |
+| `crew-status-survival-badge` | `crew-status.row-badges` | `kerbalism.lifesupport` | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
 | `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
@@ -143,6 +149,8 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:ship-map-part-meta` | `ship-map.part-meta` | `kerbalism.lifesupport` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |
+| `kerbalism:science-transmitted` | `science-data.archive-readouts` | `kerbalism.transmission` | only while `kerbalism` |
+| `kerbalism:comm-signal-link-rate` | `comm-signal.link-rate` | `kerbalism.transmission` | only while `kerbalism` |
 
 ![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](client/docs/assets/radiation-dose-critical--default.png)
 
@@ -177,4 +185,6 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism.noKits` | `insufficientResource` | there are not enough repair kits aboard | The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes. |
 | `kerbalism.reliabilityNotModelled` | `modeUnavailable` | Kerbalism is not modelling part failures in this save | Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking. |
 | `kerbalism.nothingToRepair` | `notFound` | no part aboard with that id is broken or due a service | No reliability module aboard has that id and is broken or due a service. |
+| `kerbalism.craftNotLoaded` | `modeUnavailable` | the craft is not loaded, so Kerbalism cannot switch its devices | Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded. |
+| `kerbalism.noSuchDevice` | `notFound` | no device or script aboard matches that | The craft has no visible device with that id, or no event script by that name. |
 

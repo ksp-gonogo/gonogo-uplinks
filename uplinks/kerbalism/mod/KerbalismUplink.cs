@@ -201,6 +201,13 @@ namespace Gonogo.KerbalismUplink
             RegisterScience(host);
             RegisterIsru(host);
             RegisterFileManagerCommands(host, _fileActuator);
+            var deviceActuator = new KerbalismDeviceActuator(_k, host.Kernel);
+            host.AddCommandHandler<KerbalismDeviceSetArgs, CommandResult>(
+                KerbalismDeviceCommandProvider.DeviceSetCommand,
+                args => KerbalismDeviceCommandProvider.HandleDeviceSet(deviceActuator, args));
+            host.AddCommandHandler<KerbalismScriptSetArgs, CommandResult>(
+                KerbalismDeviceCommandProvider.ScriptSetCommand,
+                args => KerbalismDeviceCommandProvider.HandleScriptSet(deviceActuator, args));
             RegisterReliability(host);
 
             host.AddSampledSource(
