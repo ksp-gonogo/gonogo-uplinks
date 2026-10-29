@@ -152,9 +152,10 @@ export function useEncodedDelayTarget(
 
 /**
  * Hands Kerbcast a factory that makes one delay transform per receiver the
- * camera lands on, each with its own pipeline, the previous one disposed. The
- * first is made at once, so a delay that cannot be installed here is known
- * before Kerbcast is told to use it.
+ * camera lands on, each with its own pipeline built at the moment Kerbcast asks
+ * for it, the previous one disposed. A throwaway is built first and disposed
+ * unassigned, so a delay that cannot be installed here is known before Kerbcast
+ * is told to use it.
  */
 function attachThroughKerbcast(
   cam: KerbcastCameraHandle,
@@ -174,15 +175,12 @@ function attachThroughKerbcast(
     return { handle, transform: standIn.transform };
   };
 
-  let current = make();
-  if (!current) return null;
-  let firstUnused = true;
+  const probe = make();
+  if (!probe) return null;
+  probe.handle.dispose();
+  let current: ReturnType<typeof make> = null;
   try {
     cam.setEncodedTransform(() => {
-      if (firstUnused && current) {
-        firstUnused = false;
-        return current.transform as RTCRtpScriptTransform;
-      }
       current?.handle.dispose();
       current = make();
       if (!current) {
@@ -196,7 +194,6 @@ function attachThroughKerbcast(
     logger
       .tag("kerbcast:frame-delay")
       .warn("Kerbcast refused the video delay transform", { err });
-    current.handle.dispose();
     return null;
   }
   return {

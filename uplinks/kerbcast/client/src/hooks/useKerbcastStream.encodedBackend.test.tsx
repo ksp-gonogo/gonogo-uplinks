@@ -429,7 +429,9 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     expect(installs).toHaveLength(1);
     const installed = installs[0]?.({ flightId: 7, path: "script" });
     expect(installed).toBeInstanceOf(Transform);
-    expect(installed).toBe(Transform.instances[0]);
+    expect(Transform.instances).toHaveLength(2);
+    expect(installed).toBe(Transform.instances[1]);
+    expect(installed).not.toBe(Transform.instances[0]);
   });
 
   it("makes a fresh transform for each receiver the camera lands on, retiring the previous pipeline", async () => {
