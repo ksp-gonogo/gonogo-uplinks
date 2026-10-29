@@ -24,12 +24,6 @@ interface Options {
   readOnly: boolean;
   /** Re-acquire when the stream this terminal rides returns after being held. */
   streamHeld: boolean;
-  /**
-   * The CPU is in the live processor list. While it is not (a craft change),
-   * no open is attempted and no notice shown; the open goes out the moment it
-   * is listed again, since the game drops the lease with the CPU.
-   */
-  cpuListed: boolean;
   sendOpen: () => Promise<unknown>;
   sendResize: () => Promise<unknown>;
   sendClose: () => Promise<unknown>;
@@ -87,7 +81,6 @@ function readRefusal(error: unknown): Refusal {
 export function useTerminalLease({
   readOnly,
   streamHeld,
-  cpuListed,
   sendOpen,
   sendResize,
   sendClose,
@@ -106,7 +99,7 @@ export function useTerminalLease({
   // `attempt` is the effect's restart switch, so it is read nowhere inside.
   // biome-ignore lint/correctness/useExhaustiveDependencies: restart switch
   useEffect(() => {
-    if (readOnly || !cpuListed) return;
+    if (readOnly) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -150,7 +143,7 @@ export function useTerminalLease({
       setLease(null);
       void sendClose().catch(() => {});
     };
-  }, [readOnly, cpuListed, sendOpen, sendResize, sendClose, attempt]);
+  }, [readOnly, sendOpen, sendResize, sendClose, attempt]);
 
   const onKeystrokeRefused = useCallback((error: unknown) => {
     const refusal = readRefusal(error);

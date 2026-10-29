@@ -115,9 +115,6 @@ interface KosTerminalConfig {
 const KOS_TERM_COLS = 80;
 const KOS_TERM_ROWS = 24;
 
-/** How long a CPU may be missing from the processor list before its screen is dropped. */
-const CPU_GAP_GRACE_MS = 4000;
-
 // ── CPU resolution ───────────────────────────────────────────────────────────
 
 /**
@@ -634,26 +631,10 @@ function KosTerminalLive({
   // The screen rides the same stream, so once this reading is held the screen is too.
   const screenHeld = processorsReading.state === "held";
   const [pickedCoreId, setPickedCoreId] = useState<number | null>(null);
-  const resolvedCoreId = useMemo(
+  const coreId = useMemo(
     () => resolveCoreId(processors, cpuName, pickedCoreId),
     [processors, cpuName, pickedCoreId],
   );
-  /*
-   * Staging moves the CPU's part to a new vessel, and the processor list can
-   * lack that CPU for a moment while the craft changes. The last resolved core
-   * stays mounted through that gap, so the screen neither remounts nor falls
-   * back to the empty state; it gives up only when the CPU stays away.
-   */
-  const [lastCoreId, setLastCoreId] = useState<number | null>(null);
-  useEffect(() => {
-    if (resolvedCoreId !== null) {
-      setLastCoreId(resolvedCoreId);
-      return;
-    }
-    const timer = setTimeout(() => setLastCoreId(null), CPU_GAP_GRACE_MS);
-    return () => clearTimeout(timer);
-  }, [resolvedCoreId]);
-  const coreId = resolvedCoreId ?? lastCoreId;
   /*
    * The resolved CPU's tagname: `executeScript` (the `/`-picker's live
    * drive-listing RPC) dispatches by TAGNAME, not coreId, so
@@ -715,15 +696,7 @@ function KosTerminalLive({
       lineMode={lineMode}
       scriptPaths={scriptPaths}
       screenHeld={screenHeld}
-      cpuListed={resolvedCoreId !== null}
-      onChangeCpu={
-        canChangeCpu
-          ? () => {
-              setPickedCoreId(null);
-              setLastCoreId(null);
-            }
-          : undefined
-      }
+      onChangeCpu={canChangeCpu ? () => setPickedCoreId(null) : undefined}
     />
   );
 }
@@ -737,8 +710,6 @@ interface KosTerminalScreenProps {
   scriptPaths: string[];
   /** The stream this screen rides is no longer arriving. */
   screenHeld: boolean;
-  /** The CPU is in the live processor list; false while it is briefly missing from it. */
-  cpuListed: boolean;
   /**
    * When provided, render a "Change CPU" control that invokes this to return
    * to the picker. Omitted (undefined) when there is no real choice to return
@@ -754,7 +725,6 @@ function KosTerminalScreen({
   lineMode,
   scriptPaths,
   screenHeld,
-  cpuListed,
   onChangeCpu,
 }: Readonly<KosTerminalScreenProps>) {
   // One opaque write-lease token per attach: the mod uses it to arbitrate the
@@ -964,7 +934,6 @@ function KosTerminalScreen({
   const lease = useTerminalLease({
     readOnly,
     streamHeld: screenHeld,
-    cpuListed,
     sendOpen: useCallback(
       () => sendOpen({ coreId, leaseToken } satisfies KosTerminalOpenArgs),
       [sendOpen, coreId, leaseToken],
