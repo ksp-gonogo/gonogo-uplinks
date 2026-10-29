@@ -1599,6 +1599,46 @@ describe("CameraFeed: CommNet degrade", () => {
     expect(degradeMsg?.content.level).toBe(1.0);
   });
 
+  it("a launchpad command camera stays at full signal through a craft blackout", async () => {
+    const { sidecar } = await buildConnectedSource([
+      makeCamera({
+        flightId: 90,
+        kind: "command",
+        cameraName: "Launchpad camera",
+        commandCentre: {
+          stationId: "ground:LaunchPad",
+          nodeName: "LaunchPad",
+          displayName: "Launchpad",
+          body: "Kerbin",
+          latitude: -0.0972,
+          longitude: -74.5577,
+          altitude: 75,
+          targetPersistentId: 0,
+        },
+      }),
+    ]);
+
+    const stream = setupStreamFixture();
+    renderFeedWithComms({ flightId: 90 }, stream);
+
+    await act(async () => {
+      stream.emit("commandCentre.roster", [
+        { id: "ground:Kerbin: KSC", isHome: true },
+      ]);
+      emitComms(stream, { signalStrength: 0, connected: false });
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(20);
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(501);
+    });
+
+    const degradeMsg = sidecar.lastCommand("set-degrade");
+    expect(degradeMsg?.content.flightId).toBe(90);
+    expect(degradeMsg?.content.level).toBe(0);
+  });
+
   it("auto-mode (flightId: null) degrade targets the auto-picked camera", async () => {
     // When config.flightId is null, the wrapper resolves effectiveFlightId
     // independently (same latch algorithm as the shared component) and routes
