@@ -968,6 +968,29 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
     );
   });
 
+  it("releases the lease when the page is closed without unmounting", async () => {
+    const fixture = terminalFixture();
+    render(
+      <fixture.Provider>
+        <KosTerminalComponent id="kos-terminal" config={{}} />
+      </fixture.Provider>,
+    );
+    act(() => fixture.emit("kos.processors", ONE_CPU));
+    await waitFor(() =>
+      expect(
+        fixture.commands.some((c) => c.command === "kos.terminal.open"),
+      ).toBe(true),
+    );
+    await act(async () => {});
+
+    window.dispatchEvent(new Event("pagehide"));
+    await waitFor(() =>
+      expect(
+        fixture.commands.some((c) => c.command === "kos.terminal.close"),
+      ).toBe(true),
+    );
+  });
+
   it("has no accessible violations in the waiting state", async () => {
     const fixture = terminalFixture();
     const { container } = render(

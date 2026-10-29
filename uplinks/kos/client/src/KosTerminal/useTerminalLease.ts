@@ -72,7 +72,8 @@ function readRefusal(error: unknown): Refusal {
  * no answer), asks again at the slowest pace while another screen holds the
  * terminal so it takes over when that screen lets go, stops at any other
  * refusal that will not clear by itself and says so, and reopens when a
- * keystroke finds the lease gone or the stream returns.
+ * keystroke finds the lease gone or the stream returns, and releases the lease
+ * when the page is closed.
  * Used by the kOS terminal widget.
  *
  * `onKeystrokeRefused` takes the error a keystroke's send rejected with and
@@ -136,7 +137,18 @@ export function useTerminalLease({
     };
     open(RETRY_FIRST_MS);
 
+    /*
+     * Closing the tab never runs the effect cleanup, and the game frees a lease
+     * only when it is closed or has sat idle for a minute, so the release is
+     * also sent as the page goes away. A reload sends the same token again.
+     */
+    const onPageHide = () => {
+      if (heldRef.current) void sendClose().catch(() => {});
+    };
+    window.addEventListener("pagehide", onPageHide);
+
     return () => {
+      window.removeEventListener("pagehide", onPageHide);
       cancelled = true;
       if (timer !== null) clearTimeout(timer);
       heldRef.current = false;
