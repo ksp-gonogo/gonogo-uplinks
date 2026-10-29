@@ -60,6 +60,12 @@ import type {
   KosTerminalResizeArgs,
 } from "../__generated__/contract.js";
 import { KOS } from "../uplink.js";
+import {
+  applyLineEdit,
+  detectEditPlatform,
+  isDeletion,
+  matchLineEdit,
+} from "./lineEditShortcuts.js";
 import { tabLeaseToken } from "./tabLeaseToken.js";
 import { useKosScriptListing } from "./useKosScriptListing.js";
 import { useTerminalLease } from "./useTerminalLease.js";
@@ -1237,6 +1243,28 @@ function KosTerminalScreen({
         };
         onDataRef.current = handleData;
         term.onData(handleData);
+
+        /*
+         * xterm sends no data for Cmd+arrow or Cmd+Backspace and a plain
+         * Backspace for Ctrl/Option+Backspace, so the OS text-editing
+         * shortcuts are matched on the key event itself and applied to the
+         * composition. The `/` composer owns its own keys, and char mode has
+         * no composition to edit, so both leave the press to xterm.
+         */
+        const editPlatform = detectEditPlatform();
+        term.attachCustomKeyEventHandler((event) => {
+          if (event.type !== "keydown") return true;
+          if (!lineModeRef.current || scriptComposerRef.current !== null) {
+            return true;
+          }
+          const edit = matchLineEdit(event, editPlatform);
+          if (edit === null) return true;
+          if (isDeletion(edit)) historyIndexRef.current = null;
+          const next = applyLineEdit(lineBufferRef.current, edit);
+          lineBufferRef.current = next;
+          setComposition(next);
+          return false;
+        });
       }
 
       teardown = () => {

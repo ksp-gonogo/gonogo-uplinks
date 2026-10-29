@@ -30,6 +30,8 @@ const termSpies = vi.hoisted(() => ({
   write: vi.fn<(data: string) => void>(),
   writeln: vi.fn<(data: string) => void>(),
   onData: vi.fn<(handler: (data: string) => void) => void>(),
+  attachCustomKeyEventHandler:
+    vi.fn<(handler: (event: KeyboardEvent) => boolean) => void>(),
   onResize:
     vi.fn<(handler: (size: { cols: number; rows: number }) => void) => void>(),
   dispose: vi.fn(),
@@ -473,6 +475,89 @@ describe("KosTerminal: streamed over the Uplink (no proxy)", () => {
       const keys = sentCommands(fixture.commands, "kos.keystroke");
       expect(keys).toHaveLength(1);
       expect(keys[0].args.chars).toBe("list.\r");
+    });
+  });
+
+  describe("line-mode: text-editing shortcuts", () => {
+    function keyHandler(): (event: KeyboardEvent) => boolean {
+      return termSpies.attachCustomKeyEventHandler.mock.calls[0][0];
+    }
+
+    function chord(key: string, init: KeyboardEventInit): KeyboardEvent {
+      return new KeyboardEvent("keydown", { key, ...init });
+    }
+
+    async function mountLineMode() {
+      const fixture = terminalFixture();
+      render(
+        <fixture.Provider>
+          <KosTerminalComponent id="kos-terminal" config={{ lineMode: true }} />
+        </fixture.Provider>,
+      );
+      act(() => fixture.emit("kos.processors", ONE_CPU));
+      await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
+      return fixture;
+    }
+
+    it("Ctrl+Backspace deletes a word and Enter still sends the edited line", async () => {
+      const fixture = await mountLineMode();
+      const onData = getOnData();
+      let passedToXterm = true;
+      act(() => {
+        for (const ch of "print altitude") onData(ch);
+        passedToXterm = keyHandler()(chord("Backspace", { ctrlKey: true }));
+        onData("\r");
+      });
+      expect(passedToXterm).toBe(false);
+      await waitFor(() => {
+        const keys = sentCommands(fixture.commands, "kos.keystroke");
+        expect(keys).toHaveLength(1);
+        expect(keys[0].args.chars).toBe("print \r");
+      });
+    });
+
+    it("Ctrl+Left moves by word so the next character inserts there", async () => {
+      const fixture = await mountLineMode();
+      const onData = getOnData();
+      act(() => {
+        for (const ch of "print altitude") onData(ch);
+        keyHandler()(chord("ArrowLeft", { ctrlKey: true }));
+        onData("X");
+        onData("\r");
+      });
+      await waitFor(() => {
+        const keys = sentCommands(fixture.commands, "kos.keystroke");
+        expect(keys[0].args.chars).toBe("print Xaltitude\r");
+      });
+    });
+
+    it("leaves plain arrows and history recall to xterm", async () => {
+      const fixture = await mountLineMode();
+      const onData = getOnData();
+      act(() => {
+        for (const ch of "list.") onData(ch);
+        onData("\r");
+      });
+      let passedArrow = false;
+      act(() => {
+        passedArrow = keyHandler()(chord("ArrowLeft", {}));
+        onData("\x1b[A");
+        onData("\r");
+      });
+      expect(passedArrow).toBe(true);
+      await waitFor(() => {
+        const keys = sentCommands(fixture.commands, "kos.keystroke");
+        expect(keys.map((k) => k.args.chars)).toEqual(["list.\r", "list.\r"]);
+      });
+    });
+
+    it("ignores a key release", async () => {
+      await mountLineMode();
+      const release = new KeyboardEvent("keyup", {
+        key: "Backspace",
+        ctrlKey: true,
+      });
+      expect(keyHandler()(release)).toBe(true);
     });
   });
 

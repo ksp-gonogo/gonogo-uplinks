@@ -27,6 +27,8 @@ vi.mock("@xterm/xterm", async () => {
     dataHandler?: (data: string) => void;
     // The headless terminal has no DOM textarea to focus; the component calls this on open.
     focus() {}
+    // The headless terminal takes no key events; the component registers a handler on open.
+    attachCustomKeyEventHandler() {}
     // biome-ignore lint/suspicious/noExplicitAny: mirroring xterm's option bag
     constructor(options?: any) {
       // Respect the component's chosen cols/rows (its fixed size), only
