@@ -142,7 +142,7 @@ export class FakeKosUplink {
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);
-    const last = [...lines].reverse().find((l) => /^RUNPATH/i.test(l)) ?? "";
+    const last = lines[lines.length - 1] ?? "";
     const match = RUNPATH_RE.exec(last);
     if (!match) {
       this.respond(coreId, requestId, {

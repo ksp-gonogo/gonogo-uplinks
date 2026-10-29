@@ -47,11 +47,6 @@ const VERSION_SUFFIX = ".ver";
  * a `gonogoWrapper` prefix so they don't collide with whatever a
  * user has set up in their session.
  *
- * The CPU's terminal echoes every typed line, so the wrapper ends with
- * `CLEARSCREEN.` as its own line: the operator never keeps the wrapper source
- * or the data block it printed on the terminal. The line runs even when the
- * script errors, because the REPL submits each line separately.
- *
  * Steady-state path is tiny: exists + READALL + trim + equality
  * check, then RUNPATH. Only the one-time-per-version branch carries
  * the log storm.
@@ -86,7 +81,6 @@ export function buildKosWrapper(opts: BuildKosWrapperOptions): string {
     `  LOG gonogoWrapperVersion TO gonogoWrapperVerPath.`,
     `}`,
     `RUNPATH(${argList}).`,
-    `CLEARSCREEN.`,
   ];
   return `${out.join("\n")}\n`;
 }
