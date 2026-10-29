@@ -255,6 +255,67 @@ namespace Gonogo.KosUplink
                     KosRunResultBuilder.Build(result.CoreId, result.RequestId, result.Fields, result.Error),
                     host.NowUt()));
             host.AddCommandHandler<KosRunArgs, CommandResult>(KosChannels.RunCommand, Run);
+            host.AddCommandHandler<KosFilesListArgs, CommandResult>(KosChannels.FilesListCommand, FilesList);
+            _filesPublish = (coreId, requestId, fields, error) =>
+                _runSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
+                    KosRunResultBuilder.Build(coreId, requestId, fields, error),
+                    host.NowUt());
+        }
+
+        private Action<int, string, Dictionary<string, object?>?, string?>? _filesPublish;
+
+        /// <summary>
+        /// <c>kos.files.list</c> command handler: reads the Archive (<c>0:</c>)
+        /// or the CPU's own drive (<c>1:</c>) straight from the processor's
+        /// volumes and answers on <c>kos.run.&lt;coreId&gt;</c>, so nothing is
+        /// typed into the CPU's terminal. Only the top level of the volume is
+        /// listed.
+        ///
+        /// <para><b>Unverified against live KSP</b>: this file has no
+        /// reference DLLs to build against in a headless environment.</para>
+        /// </summary>
+        private CommandResult FilesList(KosFilesListArgs args)
+        {
+            if (args == null || string.IsNullOrEmpty(args.RequestId))
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound);
+            }
+
+            return RunOnMainThread(() =>
+            {
+                var proc = FindProcessor(args.CoreId);
+                if (proc == null)
+                {
+                    return CommandResult.Fail(CommandErrorCode.NotFound);
+                }
+
+                kOS.Safe.Persistence.Volume? volume =
+                    args.Volume == "0:" ? (kOS.Safe.Persistence.Volume)proc.Archive
+                    : args.Volume == "1:" ? (kOS.Safe.Persistence.Volume)proc.HardDisk
+                    : null;
+                if (volume == null)
+                {
+                    return CommandResult.Fail(CommandErrorCode.NotFound);
+                }
+
+                try
+                {
+                    var files = new List<KosListedFile>();
+                    foreach (var item in volume.Root.List().Values)
+                    {
+                        files.Add(new KosListedFile(
+                            item.Name,
+                            item.Size,
+                            item is kOS.Safe.VolumeDirectory ? true : item is kOS.Safe.Persistence.VolumeFile ? (bool?)false : null));
+                    }
+                    _filesPublish?.Invoke(args.CoreId, args.RequestId, KosFileListing.Fields(args.Volume, files), null);
+                }
+                catch (Exception e)
+                {
+                    _filesPublish?.Invoke(args.CoreId, args.RequestId, null, "could not read " + args.Volume + ": " + e.Message);
+                }
+                return CommandResult.Ok();
+            });
         }
 
         /// <summary>Current CPU <c>KOSCoreId</c>s (main thread): the terminal manager's discovery set.</summary>

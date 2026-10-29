@@ -1,8 +1,9 @@
 /**
  * The `/`-picker's live drive listing, driven end to end over a real
  * `StubTransport` + `TelemetryClient` through the real `kosSource`
- * singleton the hook imports. Nothing internal is mocked: the `kos.run`
- * dispatch, the per-CPU FIFO and the `kos.run.<coreId>` correlation all run.
+ * singleton the hook imports. Nothing internal is mocked: the
+ * `kos.files.list` dispatch, the per-CPU FIFO and the `kos.run.<coreId>`
+ * correlation all run.
  *
  * What these cover is the gap between "the RPC resolved" and "we got a
  * listing we could read". Both volumes in `LISTED_VOLUMES` are probed, so a
@@ -20,7 +21,6 @@ import {
 import { afterEach, describe, expect, it } from "vitest";
 import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
-import { KOS_FILES_SCRIPT } from "./scriptListingScript.js";
 import { useKosScriptListing } from "./useKosScriptListing.js";
 
 const CORE_ID = 11;
@@ -29,7 +29,7 @@ const CPU_TAG = "lister";
 interface Dispatched {
   coreId: number;
   requestId: string;
-  command: string;
+  volume: string;
 }
 
 /**
@@ -44,7 +44,7 @@ function isDispatched(value: unknown): value is Dispatched {
     value !== null &&
     "coreId" in value &&
     "requestId" in value &&
-    "command" in value
+    "volume" in value
   );
 }
 
@@ -243,26 +243,6 @@ describe("useKosScriptListing", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.paths).toEqual([]);
     expect(result.current.hint).toMatch(/did not say which are files/i);
-  });
-
-  it("emits an ABSENT kind from the kerboscript, never a definite false", () => {
-    // The wire half of the same fix. There is no kOS interpreter here, so the
-    // default is read off the script source: what the volume could not tell
-    // us has to reach the caller as the JSON null literal. A FALSE there is a
-    // claim that the entry is a file, and it is the claim that put a
-    // directory in the picker.
-    const fallback = /LOCAL isDir IS (.+)\./.exec(KOS_FILES_SCRIPT)?.[1];
-    expect(fallback).toBe('"null"');
-  });
-
-  it("emits an ABSENT size from the kerboscript, never a definite 0", () => {
-    /*
-     * A size the volume could not read has to reach the caller as JSON null
-     * too: a 0 is a claim that the file is empty, and nothing downstream could
-     * tell that apart from a file that really is.
-     */
-    const fallback = /LOCAL size IS (.+)\./.exec(KOS_FILES_SCRIPT)?.[1];
-    expect(fallback).toBe('"null"');
   });
 
   it("keeps quiet about a kind-less entry that was never a candidate anyway", async () => {

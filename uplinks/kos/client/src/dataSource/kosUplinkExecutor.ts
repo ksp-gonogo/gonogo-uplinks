@@ -2,6 +2,7 @@ import type { CommandResult, TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
 import { safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
 import type {
   KosProcessorInfo,
+  KosFilesListArgs,
   KosRunArgs,
   KosRunResult,
 } from "../__generated__/contract.js";
@@ -40,6 +41,8 @@ interface QueuedRun {
   script: string;
   args: KosScriptArg[];
   managed: KosManagedScript | null;
+  /** Set for a file listing, which the game reads without typing anything. */
+  listVolume?: string;
   resolve: (data: KosData) => void;
   reject: (err: Error) => void;
 }
@@ -83,6 +86,21 @@ class KosUplinkCpuQueue {
     });
   }
 
+  /** Queue a listing of `volume`'s files behind any run already waiting. */
+  enqueueListing(volume: string): Promise<KosData> {
+    return new Promise<KosData>((resolve, reject) => {
+      this.queue.push({
+        script: "",
+        args: [],
+        managed: null,
+        listVolume: volume,
+        resolve,
+        reject,
+      });
+      this.drain();
+    });
+  }
+
   /** Reject every queued/in-flight call and drop the channel subscription. */
   dispose(reason: string): void {
     this.unsubscribe();
@@ -100,17 +118,23 @@ class KosUplinkCpuQueue {
     const next = this.queue.shift();
     if (!next) return;
     const requestId = safeRandomUuid();
-    const command = buildKosRunCommand(next.script, next.args, next.managed);
     const timer = setTimeout(() => {
       this.onTimeout(requestId);
     }, this.timeoutMs);
     this.inFlight = { requestId, call: next, timer };
 
-    const { result } = this.client.dispatch("kos.run", {
-      coreId: this.coreId,
-      requestId,
-      command,
-    } satisfies KosRunArgs);
+    const { result } =
+      next.listVolume === undefined
+        ? this.client.dispatch("kos.run", {
+            coreId: this.coreId,
+            requestId,
+            command: buildKosRunCommand(next.script, next.args, next.managed),
+          } satisfies KosRunArgs)
+        : this.client.dispatch("kos.files.list", {
+            coreId: this.coreId,
+            requestId,
+            volume: next.listVolume,
+          } satisfies KosFilesListArgs);
 
     result
       .then((ack) => {
@@ -283,6 +307,28 @@ export class KosUplinkExecutor {
       );
     }
     return this.getOrCreateQueue(coreId).enqueue(script, args, managed);
+  }
+
+  /**
+   * List the files on `volume` of the CPU named `cpu`, over `kos.files.list`.
+   * Shares the per-CPU queue with {@link run}, and rejects the same way when
+   * `cpu` does not resolve to a known `coreId`.
+   */
+  listFiles(
+    client: TelemetryClient,
+    cpu: string,
+    volume: string,
+  ): Promise<KosData> {
+    this.adoptClient(client);
+    const coreId = this.coreIdByTag.get(cpu);
+    if (coreId === undefined) {
+      return Promise.reject(
+        new Error(
+          `kos.files.list: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
+        ),
+      );
+    }
+    return this.getOrCreateQueue(coreId).enqueueListing(volume);
   }
 
   /** Tear down every subscription and queue, rejecting any in-flight/queued call. */

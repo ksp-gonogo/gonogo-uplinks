@@ -36,6 +36,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `kos.files.list` | `KosFilesListArgs` | `CommandResult` |
 | `kos.keystroke` | `KosKeystrokeArgs` | `CommandResult` |
 | `kos.run` | `KosRunArgs` | `CommandResult` |
 | `kos.terminal.close` | `KosTerminalCloseArgs` | `CommandResult` |
@@ -44,6 +45,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 
 | Args | Fields |
 | --- | --- |
+| `KosFilesListArgs` | `coreId` id, `requestId` id, `volume` text |
 | `KosKeystrokeArgs` | `chars` text, `coreId` id, `leaseToken` id |
 | `KosRunArgs` | `command` text, `coreId` id, `requestId` id |
 | `KosTerminalCloseArgs` | `coreId` id, `leaseToken` id |

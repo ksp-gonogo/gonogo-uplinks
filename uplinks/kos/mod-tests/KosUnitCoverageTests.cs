@@ -49,7 +49,7 @@ namespace GonogoKosUplink.Tests
                 "Units.Seconds/Units.Count");
 
         /// <summary>
-        /// All nine are reached by the sweep, and nothing else is.
+        /// All ten are reached by the sweep, and nothing else is.
         /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes vacuously on
         /// any type the sweep does not reach, and this slice spans three files, so
         /// one of them losing its <c>[SitrepContract]</c> tags wholesale would
@@ -63,7 +63,8 @@ namespace GonogoKosUplink.Tests
                 nameof(KosTerminalFrame), nameof(KosTerminalOpenArgs),
                 nameof(KosKeystrokeArgs), nameof(KosTerminalResizeArgs),
                 nameof(KosTerminalCloseArgs),
-                nameof(KosRunArgs), nameof(KosRunResult));
+                nameof(KosRunArgs), nameof(KosRunResult),
+                nameof(KosFilesListArgs));
 
         /// <summary>
         /// The one field in this whole slice that a formatter could get wrong, as

@@ -83,6 +83,25 @@ export interface KosComputeStatus
 	paused: boolean;
 }
 /**
+* Args for the `kos.files.list` command: asks for the files on one of a CPU's
+* volumes, read straight from the CPU's own volumes without typing anything
+* into its terminal. The answer arrives on the `kos.run.<coreId>` channel as a
+* `KosRunResult` whose `KosRunResult.requestId` echoes
+* `KosFilesListArgs.requestId`, with the fields `op` (`list`), `path` (the
+* volume asked for) and `listing` (a JSON array of `{ name, size, isDir }`,
+* where `size` and `isDir` are `null` when the volume did not say). Used by a
+* script terminal's script picker.
+*/
+export interface KosFilesListArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** Caller-generated correlation token, echoed on the matching `KosRunResult`. */
+	requestId: string;
+	/** The volume to list: `0:` for the Archive, `1:` for the CPU's own drive. */
+	volume: string;
+}
+/**
 * Args for the `kos.run` command, the general-purpose in-process replacement
 * for the standalone telnet proxy's ad-hoc RUNPATH path
 * (`kos-uplink-full-migration.md`). It carries the whole literal command text

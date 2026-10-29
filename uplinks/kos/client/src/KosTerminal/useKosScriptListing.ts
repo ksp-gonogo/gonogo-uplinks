@@ -1,15 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { kosSource } from "../dataSource/kos.js";
 import type { KosData } from "../shared/kos-data-parser.js";
-import { hashKosScript } from "./hashKosScript.js";
-import {
-  KOS_FILES_SCRIPT,
-  KOS_FILES_SCRIPT_NAME,
-  type KosFileEntry,
-  kosEntryKind,
-} from "./scriptListingScript.js";
-
-const SCRIPT_VERSION = hashKosScript(KOS_FILES_SCRIPT);
+import { type KosFileEntry, kosEntryKind } from "./scriptListingScript.js";
 
 /**
  * Volumes probed for the `/`-picker's live listing, the Archive (where
@@ -42,9 +34,9 @@ export interface KosScriptListingResult {
 const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
 
 /**
- * Live drive listing for the `/`-script picker: dispatches the resurrected
- * `KOS_FILES_SCRIPT` ("list" op) via the surviving `KosDataSource.
- * executeScript` RPC for each of `LISTED_VOLUMES`, merges the file (not
+ * Live drive listing for the `/`-script picker: asks the game for each of
+ * `LISTED_VOLUMES`' files through `KosDataSource.listFiles`, which reads
+ * the volumes directly and types nothing into the CPU's terminal, merges the file (not
  * directory) entries, and filters to `*.ks`/`*.ksm`: the only RUNPATH-able
  * kinds. This is the RPC-shaped one-shot case (per-call args,
  * request/response), which is the only kOS read pattern that still exists:
@@ -59,10 +51,8 @@ const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
  * per `(coreId, cpuTag)` pair, reopening the picker within the same
  * session reuses the cached result rather than re-dispatching. Degrades
  * gracefully (empty `paths` + a `hint`, never a thrown error) on a
- * tagless CPU, no telemetry stream mounted, or a dispatch/timeout error,
- * `executeScript` itself is the thing flagged unverified-in-source for
- * this environment (`KosExtension.Ksp.cs:335-340`), so every failure mode
- * here is a "show a hint" path, never a crash.
+ * tagless CPU, no telemetry stream mounted, or a dispatch/timeout error, so
+ * every failure mode here is a "show a hint" path, never a crash.
  */
 export function useKosScriptListing(
   coreId: number,
@@ -96,12 +86,7 @@ export function useKosScriptListing(
 
     Promise.allSettled(
       LISTED_VOLUMES.map((volume) =>
-        kosSource
-          .executeScript(cpuTag, KOS_FILES_SCRIPT_NAME, ["list", volume], {
-            body: KOS_FILES_SCRIPT,
-            version: SCRIPT_VERSION,
-          })
-          .then((data) => ({ volume, data })),
+        kosSource.listFiles(cpuTag, volume).then((data) => ({ volume, data })),
       ),
     ).then((settled) => {
       if (cancelled) return;

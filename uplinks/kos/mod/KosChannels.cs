@@ -109,6 +109,9 @@ namespace Gonogo.KosUplink
         /// </summary>
         public const string RunCommand = "kos.run";
 
+        /// <summary>Command: list a CPU volume's files without typing into its terminal (<see cref="Sitrep.Contract.KosFilesListArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
+        public const string FilesListCommand = "kos.files.list";
+
         /// <summary>
         /// Dynamic namespace prefix for the <c>kos.run</c> result channel:
         /// <c>kos.run.&lt;coreId&gt;</c> (<c>Delivery.ReliableOrdered</c>,

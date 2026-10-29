@@ -272,6 +272,9 @@ namespace Gonogo.KosUplink
                 // guard every other CPU-targeted command re-checks at delivery
                 // on the main thread.
                 new CommandDeclaration { Command = KosChannels.RunCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                // kos.files.list: a volume's file list read in-process, answered on
+                // the same per-CPU result channel as kos.run.
+                new CommandDeclaration { Command = KosChannels.FilesListCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
         };

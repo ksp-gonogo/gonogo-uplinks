@@ -121,6 +121,8 @@ public static class KosRtConfig
             // kos.run.<coreId> ad-hoc RPC, command args + result
             typeof(KosRunArgs),
             typeof(KosRunResult),
+            // kos.files.list: a volume's file list read without the terminal
+            typeof(KosFilesListArgs),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

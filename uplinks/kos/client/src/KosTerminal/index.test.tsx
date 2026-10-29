@@ -1876,10 +1876,10 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
     commands: readonly { command: string; args: unknown }[],
     index: number,
   ): string {
-    return sentCommands(commands, "kos.run")[index].args.requestId;
+    return sentCommands(commands, "kos.files.list")[index].args.requestId;
   }
 
-  it("dispatches the resurrected KOS_FILES_SCRIPT via executeScript for each volume and populates the picker once resolved, filtering to *.ks/*.ksm files", async () => {
+  it("asks the game for each volume's files with kos.files.list and populates the picker once resolved, filtering to *.ks/*.ksm files", async () => {
     const fixture = scriptListingFixture();
     render(
       <fixture.Provider>
@@ -1906,7 +1906,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
      * time, so the second doesn't appear until the first is answered.
      */
     await waitFor(() => {
-      expect(sentCommands(fixture.commands, "kos.run")).toHaveLength(1);
+      expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(1);
     });
     act(() => {
       fixture.emit("kos.run.7", {
@@ -1925,7 +1925,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
     });
 
     await waitFor(() => {
-      expect(sentCommands(fixture.commands, "kos.run")).toHaveLength(2);
+      expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(2);
     });
     act(() => {
       fixture.emit("kos.run.7", {
@@ -1944,9 +1944,9 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
   });
 
   it("tells the operator the listing could not be read rather than claiming the drives are empty", async () => {
-    // Both volumes answer, and neither answer parses. `scriptListingScript`
-    // interpolates `f:NAME` raw into its JSON, so one filename carrying a
-    // quote does this for real. The picker used to draw "No scripts found".
+    // Both volumes answer, and neither answer parses. a
+    // listing that is not valid JSON does this. The picker used to draw "No
+    // scripts found".
     const fixture = scriptListingFixture();
     render(
       <fixture.Provider>
@@ -1964,7 +1964,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
     for (const volume of ["0:", "1:"]) {
       const index = volume === "0:" ? 0 : 1;
       await waitFor(() => {
-        expect(sentCommands(fixture.commands, "kos.run")).toHaveLength(
+        expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(
           index + 1,
         );
       });
@@ -2014,7 +2014,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
       expect(screen.getByRole("listbox")).toHaveTextContent(/no tagname/i);
     });
     // The tag check short-circuits before ever calling executeScript.
-    expect(sentCommands(fixture.commands, "kos.run")).toHaveLength(0);
+    expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(0);
   });
 
   it("a configured scriptPaths list wins over the live listing, no executeScript dispatch happens at all", async () => {
@@ -2037,7 +2037,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
 
     expect(screen.getByText("0:/manual.ks")).toBeInTheDocument();
     await Promise.resolve();
-    expect(sentCommands(fixture.commands, "kos.run")).toHaveLength(0);
+    expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(0);
   });
 
   it("Ctrl+L toggles 'copy local & run'; the send prefixes COPYPATH before RUNPATH, targeting the local (1:) copy", async () => {

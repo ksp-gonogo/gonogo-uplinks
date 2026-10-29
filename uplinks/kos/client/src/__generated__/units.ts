@@ -94,6 +94,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     running: "flag",
     scriptError: "text",
   },
+  "KosFilesListArgs": {
+    coreId: "id",
+    requestId: "id",
+    volume: "text",
+  },
   "KosKeystrokeArgs": {
     chars: "text",
     coreId: "id",

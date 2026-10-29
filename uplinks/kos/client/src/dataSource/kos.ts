@@ -139,9 +139,28 @@ export class KosDataSource {
     return this.uplinkExecutor.run(client, cpu, script, args, managed ?? null);
   }
 
+  /**
+   * List the files on `volume` (`0:` the Archive, `1:` the CPU's own drive) of
+   * the named CPU and resolve with the listing fields, read by the game
+   * without typing anything into the CPU's terminal. Shares the per-CPU queue
+   * and the rejection rules of {@link executeScript}.
+   */
+  listFiles(cpu: string, volume: string): Promise<KosData> {
+    KOS_DISPATCH_BUDGET.record();
+    const client = getActiveTelemetryClient();
+    if (!client) {
+      return Promise.reject(
+        new Error(
+          "kOS Uplink not connected: no telemetry stream is mounted, so listFiles has no transport to dispatch on.",
+        ),
+      );
+    }
+    return this.uplinkExecutor.listFiles(client, cpu, volume);
+  }
+
   // Host-side relay handle for station peer-relayed calls (see
   // PeerHostService.handleUplinkRelay / PeerClientDataSource.relay). Only
-  // the "executeScript" method is exposed today, the kOS-specific
+  // the "executeScript" and "listFiles" methods are exposed, the kOS-specific
   // isScriptError-via-errorMeta unwrap is the calling client's own
   // responsibility, not this source's.
   async relay(method: string, args: unknown): Promise<unknown> {
@@ -164,6 +183,20 @@ export class KosDataSource {
         managed?: KosManagedScript;
       };
       return this.executeScript(a.cpu, a.script, a.args, a.managed);
+    }
+    if (method === "listFiles") {
+      if (
+        typeof args !== "object" ||
+        args === null ||
+        typeof Reflect.get(args, "cpu") !== "string" ||
+        typeof Reflect.get(args, "volume") !== "string"
+      ) {
+        throw new Error(
+          'kos relay handle: "listFiles" needs a cpu and a volume',
+        );
+      }
+      const a = args as { cpu: string; volume: string };
+      return this.listFiles(a.cpu, a.volume);
     }
     throw new Error(`kos relay handle: unknown method "${method}"`);
   }
