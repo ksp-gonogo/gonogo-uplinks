@@ -1675,7 +1675,7 @@ describe("kOS terminal: `/` script-run composer (RUNPATH injection)", () => {
       const keys = sentCommands(fixture.commands, "kos.keystroke");
       expect(keys).toHaveLength(1);
       expect(keys[0].args.chars).toBe(
-        'RUNPATH("0:/widget_scripts/gravityturn.ks", 5, 10). CLEARSCREEN.\r',
+        'RUNPATH("0:/widget_scripts/gravityturn.ks", 5, 10).\r',
       );
     });
     // Same label convention as an ordinary composed line, trimmed of the
@@ -1720,7 +1720,7 @@ describe("kOS terminal: `/` script-run composer (RUNPATH injection)", () => {
       const keys = sentCommands(fixture.commands, "kos.keystroke");
       expect(keys).toHaveLength(1);
       expect(keys[0].args.chars).toBe(
-        'RUNPATH("0:/widget_scripts/deorbit.ks"). CLEARSCREEN.\r',
+        'RUNPATH("0:/widget_scripts/deorbit.ks").\r',
       );
     });
   });
@@ -2071,7 +2071,7 @@ describe("kOS terminal: live drive listing + copy-local (RUNPATH injection incre
       const keys = sentCommands(fixture.commands, "kos.keystroke");
       expect(keys).toHaveLength(1);
       expect(keys[0].args.chars).toBe(
-        'COPYPATH("0:/widget_scripts/gravityturn.ks", "1:/gravityturn.ks"). RUNPATH("1:/gravityturn.ks", 5). CLEARSCREEN.\r',
+        'COPYPATH("0:/widget_scripts/gravityturn.ks", "1:/gravityturn.ks"). RUNPATH("1:/gravityturn.ks", 5).\r',
       );
     });
   });

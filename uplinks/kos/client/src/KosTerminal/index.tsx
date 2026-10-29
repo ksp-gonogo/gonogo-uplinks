@@ -412,10 +412,8 @@ function scriptBasename(path: string): string {
  * each kerboscript statement; trailing `\r` is the wire Enter byte,
  * identical to an ordinary typed line's `reduceLineModeChar` Enter path.
  *
- * A `CLEARSCREEN.` follows the run on the same line, so the CPU's screen is
- * wiped once the script returns. kOS abandons the rest of a line when a
- * statement raises, so a failed run never reaches it and its error stays on
- * screen to be read. `label` omits it: it names what the operator asked for.
+ * Nothing clears the screen afterwards: the operator's own script keeps its
+ * output on the terminal.
  */
 function buildRunCommand(
   path: string,
@@ -427,7 +425,7 @@ function buildRunCommand(
   const runPath = copyLocal ? `1:/${scriptBasename(path)}` : path;
   const copyPrefix = copyLocal ? `COPYPATH("${path}", "${runPath}"). ` : "";
   const label = `${copyPrefix}RUNPATH("${runPath}"${argsPart}).`;
-  return { chars: `${label} CLEARSCREEN.\r`, label };
+  return { chars: `${label}\r`, label };
 }
 
 type ScriptComposerAction =
