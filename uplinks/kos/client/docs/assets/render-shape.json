@@ -3,7 +3,7 @@
   "engine": "chromium",
   "assets": {
     "boot-then-run--default.gif": {
-      "hash": "454319e7c065c189",
+      "hash": "144be3798454e397",
       "elements": 58,
       "text": "a0774835"
     },
@@ -13,12 +13,12 @@
       "text": "54cb2e54"
     },
     "lander-cpu-attached--default.png": {
-      "hash": "1e230d7eb91fefd9",
+      "hash": "5f79696a7b163661",
       "elements": 67,
       "text": "12f1d671"
     },
     "lander-cpu-attached-stopped-arriving--default.png": {
-      "hash": "23c16bd4545faefa",
+      "hash": "3ed99457b07520d8",
       "elements": 69,
       "text": "141acd90"
     },
