@@ -1,0 +1,37 @@
+# The nightly run of every Uplink against gonogo's newest build, as it stands on
+# `staging`. This is the part of it that has to be on the default branch.
+#
+# `schedule` and `workflow_dispatch` only run a workflow file that is on `main`,
+# and a scheduled run uses main's copy of it. So main carries only the trampoline:
+# a scheduled run dispatches this workflow with `--ref staging` and exits, and the
+# jobs that pack gonogo and try the Uplinks are in staging's copy of this file,
+# which a dispatch with `--ref staging` runs. A release brings staging's copy here
+# whole.
+#
+#   gh workflow run ci-dev-check.yml --ref staging [-f gonogo_ref=<branch, tag or sha>]
+name: ci-dev-check
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      gonogo_ref:
+        description: "Gonogo branch, tag or sha to pack. Empty = ci-dev."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  trampoline:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch this workflow on staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci-dev-check.yml --repo "$GITHUB_REPOSITORY" --ref staging
