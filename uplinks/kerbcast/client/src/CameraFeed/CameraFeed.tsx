@@ -59,6 +59,7 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
+  followedPartCameraId,
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
@@ -474,6 +475,30 @@ export function CameraFeed({
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
+  /*
+   * A part camera comes back under a new id after a relaunch, so a widget
+   * holding the old id would show static for good. Follow it to the live
+   * camera of the same name and keep the move in the saved config.
+   */
+  const heldCameraRef = useRef<CameraState | undefined>(undefined);
+  useEffect(() => {
+    if (requested === null) {
+      heldCameraRef.current = undefined;
+      return;
+    }
+    const current = cameras.find((c) => c.flightId === requested);
+    if (current) heldCameraRef.current = current;
+    else if (heldCameraRef.current?.flightId !== requested) {
+      heldCameraRef.current = undefined;
+    }
+    const next = followedPartCameraId(cameras, heldCameraRef.current);
+    if (next === null) return;
+    onConfigChange?.({
+      flightId: next,
+      showDebugInfo: config?.showDebugInfo ?? false,
+    });
+  }, [cameras, requested, onConfigChange, config?.showDebugInfo]);
+
   const pickerIds = useMemo(
     () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
     [cameras, requested, effectiveFlightId],

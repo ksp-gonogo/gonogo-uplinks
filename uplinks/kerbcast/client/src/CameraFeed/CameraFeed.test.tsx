@@ -825,6 +825,23 @@ describe("CameraFeed: camera selection", () => {
     expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
   });
 
+  it("follows a part camera to its new id when the craft is relaunched", async () => {
+    const { sidecar } = await buildConnectedSource(TWO_CAMERAS);
+
+    renderStatefulFeed({ flightId: 44 });
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+
+    // Same craft, same camera names, new ids.
+    await act(async () => {
+      sidecar.setCameras([
+        toInit(makeCamera({ flightId: 91, cameraName: "Starboard Cam" })),
+        toInit(makeCamera({ flightId: 92, cameraName: "Tail Cam" })),
+      ]);
+    });
+
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+  });
+
   it("step buttons are disabled when only one camera is available", async () => {
     await buildConnectedSource();
 
