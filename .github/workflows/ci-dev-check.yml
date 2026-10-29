@@ -10,10 +10,16 @@
 # shows here before it reaches a release, and the run summary names which.
 #
 # It reports and never blocks: nothing depends on it, it has no required check,
-# and its summary job succeeds whatever the Uplink legs did. `schedule` runs the
-# copy on the default branch, so the nightly starts once this file is there.
+# and its summary job succeeds whatever the Uplink legs did.
 #
-#   gh workflow run ci-dev-check.yml [-f gonogo_ref=<branch, tag or sha>]
+# `schedule` and `workflow_dispatch` only run a workflow file that is on the
+# DEFAULT branch (`main`, which moves at a release), and a scheduled run uses
+# main's copy of it. So this file behaves by where it runs: a scheduled run is a
+# trampoline that only dispatches this workflow with `--ref staging` and exits,
+# and every real job runs only when github.ref is refs/heads/staging, so the
+# Uplinks tried are staging's. The nightly starts once this file reaches main.
+#
+#   gh workflow run ci-dev-check.yml --ref staging [-f gonogo_ref=<branch, tag or sha>]
 name: ci-dev-check
 
 on:
@@ -35,7 +41,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  trampoline:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch this workflow on staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ci-dev-check.yml --repo "$GITHUB_REPOSITORY" --ref staging
+
   pack:
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
@@ -129,7 +147,7 @@ jobs:
 
   report:
     needs: [pack, uplink]
-    if: always()
+    if: always() && github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
       - name: Say what the Uplinks did against that commit
