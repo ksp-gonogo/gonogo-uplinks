@@ -83,6 +83,7 @@ namespace Gonogo.KosUplink
 
             // kos.processors: capture AllInstances() on the main thread, hand
             // the plain list to the Courier to publish (spec §2/§5).
+            _host = host;
             _processorsPublisher = host.Publisher(KosChannels.ProcessorsTopic);
             host.AddSampledSource(
                 CaptureProcessors,
@@ -349,7 +350,16 @@ namespace Gonogo.KosUplink
             {
                 return null;
             }
-            return new ProcessorsCapture { Ut = snapshot.Ut, List = list };
+            var activeVesselId = FlightGlobals.ActiveVessel?.id;
+            return new ProcessorsCapture
+            {
+                Ut = snapshot.Ut,
+                List = list,
+                ForceKeyframe = _switchKeyframe.Observe(
+                    activeVesselId != null && activeVesselId != Guid.Empty
+                        ? activeVesselId.Value.ToString()
+                        : null),
+            };
         }
 
         /// <summary>
