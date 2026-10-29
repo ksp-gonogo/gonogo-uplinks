@@ -1,4 +1,5 @@
 import {
+  CameraKind,
   ErrorCode,
   ErrorSource,
   type KerbcastTransport,
@@ -344,6 +345,34 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
     expect(sidecar.slotMidFor(42)).toBeUndefined();
 
+    ds.disconnect();
+  });
+
+  it("frees the slot of a part camera that leaves the camera list", async () => {
+    const { ds, sidecar } = await connectedSidecar([42]);
+    ds.subscribeCamera(42);
+    expect(sidecar.slotMidFor(42)).toBeDefined();
+
+    sidecar.setCameras([{ flightId: 77 }]);
+
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
+    expect(sidecar.slotMidFor(42)).toBeUndefined();
+    ds.disconnect();
+  });
+
+  it("keeps the slot of a command camera that leaves the camera list", async () => {
+    const sidecar = new MockSidecar();
+    sidecar.addCamera({ flightId: 42, kind: CameraKind.Command });
+    mockFetch();
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    ds.subscribeCamera(42);
+
+    sidecar.setCameras([{ flightId: 77 }]);
+
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
     ds.disconnect();
   });
 
