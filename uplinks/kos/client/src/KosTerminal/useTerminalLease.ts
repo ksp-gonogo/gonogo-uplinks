@@ -75,9 +75,10 @@ function readRefusal(error: unknown): Refusal {
  * Holds the terminal lease for as long as the widget is mounted: opens it,
  * retries an open the game refused for a reason that passes (the flight scene
  * still loading, the CPU not there yet, the CPU busy, no link to the craft yet,
- * no answer), stops at a
- * refusal that will not clear (another screen holds the terminal) and says so,
- * and reopens when a keystroke finds the lease gone or the stream returns.
+ * no answer), asks again at the slowest pace while another screen holds the
+ * terminal so it takes over when that screen lets go, stops at any other
+ * refusal that will not clear by itself and says so, and reopens when a
+ * keystroke finds the lease gone or the stream returns.
  * Used by the kOS terminal widget.
  *
  * `onKeystrokeRefused` takes the error a keystroke's send rejected with and
@@ -123,6 +124,11 @@ export function useTerminalLease({
           if (cancelled) return;
           heldRef.current = false;
           const refusal = readRefusal(error);
+          if (refusal.heldElsewhere) {
+            setLease({ kind: "refused", text: refusal.text });
+            timer = setTimeout(() => open(RETRY_CAP_MS), RETRY_CAP_MS);
+            return;
+          }
           if (!refusal.transient) {
             setLease({ kind: "refused", text: refusal.text });
             return;

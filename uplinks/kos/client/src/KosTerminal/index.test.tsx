@@ -2200,7 +2200,7 @@ describe("KosTerminal: the terminal lease and its refusals", () => {
     await act(async () => {});
   });
 
-  it("shows another screen's hold in player words and does not ask again", async () => {
+  it("shows another screen's hold in player words and does not ask again at once", async () => {
     const fixture = mount((command) =>
       command === "kos.terminal.open" ? HELD : {},
     );
@@ -2216,6 +2216,27 @@ describe("KosTerminal: the terminal lease and its refusals", () => {
       0,
     );
   });
+
+  it("takes the terminal over once the other screen lets go", async () => {
+    const fixture = mount((command, nth) =>
+      command === "kos.terminal.open" && nth < 2 ? HELD : {},
+    );
+
+    expect(
+      await screen.findByText("Another screen is using this CPU's terminal"),
+    ).toBeTruthy();
+    await waitFor(
+      () =>
+        expect(
+          sentCommands(fixture.commands, "kos.terminal.resize"),
+        ).toHaveLength(1),
+      { timeout: 7000 },
+    );
+    expect(
+      screen.queryByText("Another screen is using this CPU's terminal"),
+    ).toBeNull();
+    await act(async () => {});
+  }, 10000);
 
   it("shows a refused keystroke on the screen", async () => {
     mount((command) =>
