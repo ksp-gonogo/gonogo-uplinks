@@ -779,32 +779,6 @@ function KosTerminalScreen({
   const scriptComposerRef = useRef<ScriptComposerState | null>(null);
   const [scriptComposer, setScriptComposer] =
     useState<ScriptComposerState | null>(null);
-  // Live drive listing: only dispatched once the composer
-  // is actually open AND no static `scriptPaths` config already supplies a
-  // list, so every test/usage that configures a static list (increment
-  // (a)'s fixtures) never touches the real executeScript RPC. A config
-  // list, when present, wins outright over the live listing rather than
-  // merging with it.
-  const liveListing = useKosScriptListing(
-    coreId,
-    cpuTag,
-    scriptComposer !== null && scriptPaths.length === 0,
-  );
-  const effectiveScriptPaths =
-    scriptPaths.length > 0 ? scriptPaths : liveListing.paths;
-  /*
-   * `hint` only ever describes a settled outcome, so a listing still in
-   * flight needs its own line here rather than falling through to it.
-   */
-  const scriptListHint = (() => {
-    if (scriptPaths.length > 0) return null;
-    if (liveListing.loading) return "Reading the CPU's drives...";
-    return liveListing.hint;
-  })();
-  // scriptPaths can change at runtime (the live drive listing),
-  // read via ref for the same mount-only-closure reason as `lineModeRef`.
-  const scriptPathsRef = useRef<string[]>(effectiveScriptPaths);
-  scriptPathsRef.current = effectiveScriptPaths;
   const scriptListboxId = useId();
   // lineMode can flip at runtime (a config edit) and must NOT tear down the
   // live xterm: the onData handler reads this ref per keystroke instead of
@@ -915,6 +889,34 @@ function KosTerminalScreen({
   const connectivity = useLatestValue<CommsLink>("comms.link");
   const noPath = connectivity?.connected === false;
   noPathRef.current = noPath;
+
+  // Live drive listing: only dispatched once the composer
+  // is actually open AND no static `scriptPaths` config already supplies a
+  // list, so every test/usage that configures a static list (increment
+  // (a)'s fixtures) never touches the real executeScript RPC. A config
+  // list, when present, wins outright over the live listing rather than
+  // merging with it.
+  const liveListing = useKosScriptListing(
+    coreId,
+    cpuTag,
+    scriptComposer !== null && scriptPaths.length === 0,
+    noPath,
+  );
+  const effectiveScriptPaths =
+    scriptPaths.length > 0 ? scriptPaths : liveListing.paths;
+  /*
+   * `hint` only ever describes a settled outcome, so a listing still in
+   * flight needs its own line here rather than falling through to it.
+   */
+  const scriptListHint = (() => {
+    if (scriptPaths.length > 0) return null;
+    if (liveListing.loading) return "Reading the CPU's drives...";
+    return liveListing.hint;
+  })();
+  // scriptPaths can change at runtime (the live drive listing),
+  // read via ref for the same mount-only-closure reason as `lineModeRef`.
+  const scriptPathsRef = useRef<string[]>(effectiveScriptPaths);
+  scriptPathsRef.current = effectiveScriptPaths;
 
   // Uplink commands. Each `send` is a stable useCallback (keyed by command),
   // destructured so effects can depend on it without the surrounding

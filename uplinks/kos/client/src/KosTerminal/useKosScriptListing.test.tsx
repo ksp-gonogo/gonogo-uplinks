@@ -89,7 +89,7 @@ function harness() {
     }
   }
 
-  return { transport, answer };
+  return { transport, answer, dispatches };
 }
 
 function listingOf(entries: ReadonlyArray<Record<string, unknown>>) {
@@ -120,6 +120,48 @@ describe("useKosScriptListing", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.paths).toEqual(["0:/boot.ks", "1:/backup.ks"]);
     expect(result.current.hint).toBeNull();
+  });
+
+  it("says the drives cannot be read with no link, sends nothing, and lists them when the link returns", async () => {
+    const { answer, dispatches } = harness();
+    const { result, rerender } = renderHook(
+      ({ noLink }) => useKosScriptListing(CORE_ID, CPU_TAG, true, noLink),
+      { initialProps: { noLink: true } },
+    );
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.paths).toEqual([]);
+    expect(result.current.hint).toMatch(/no link/i);
+    expect(dispatches).toHaveLength(0);
+
+    rerender({ noLink: false });
+    await answer([
+      listingOf([{ name: "boot.ks", size: 10, isDir: false }]),
+      listingOf([]),
+    ]);
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.paths).toEqual(["0:/boot.ks"]);
+    expect(result.current.hint).toBeNull();
+  });
+
+  it("keeps a listing it already has when the link drops", async () => {
+    const { answer, dispatches } = harness();
+    const { result, rerender } = renderHook(
+      ({ noLink }) => useKosScriptListing(CORE_ID, CPU_TAG, true, noLink),
+      { initialProps: { noLink: false } },
+    );
+    await answer([
+      listingOf([{ name: "boot.ks", size: 10, isDir: false }]),
+      listingOf([]),
+    ]);
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    rerender({ noLink: true });
+
+    expect(result.current.paths).toEqual(["0:/boot.ks"]);
+    expect(result.current.hint).toBeNull();
+    expect(dispatches).toHaveLength(2);
   });
 
   it("reports NO hint for a volume that is genuinely empty", async () => {

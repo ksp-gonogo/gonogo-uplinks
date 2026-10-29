@@ -31,6 +31,10 @@ export interface KosScriptListingResult {
   hint: string | null;
 }
 
+/** Shown in place of the drives when the craft has no link to read them over. */
+const NO_LINK_HINT =
+  "No link to the craft: its drives can't be read until the link returns.";
+
 const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
 
 /**
@@ -45,6 +49,10 @@ const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
  * listing would not have belonged there anyway, being neither passive
  * telemetry nor a fixed no-args interval script.
  *
+ * With `noLink` set, no request is sent: the drives cannot be reached without a
+ * link, so the hint says so at once and the listing is read when the link
+ * returns.
+ *
  * Lazy + single-shot: does nothing until `enabled` is true (the terminal
  * only passes `true` once the `/`-picker is actually open and no static
  * `scriptPaths` config already supplies a list), and fetches at most once
@@ -58,6 +66,7 @@ export function useKosScriptListing(
   coreId: number,
   cpuTag: string | null | undefined,
   enabled: boolean,
+  noLink = false,
 ): KosScriptListingResult {
   const [result, setResult] = useState<KosScriptListingResult>(IDLE);
   // Tracks the (coreId, cpuTag) pair a fetch has already been kicked off
@@ -69,6 +78,10 @@ export function useKosScriptListing(
   useEffect(() => {
     if (!enabled) return;
     const fetchKey = `${coreId}:${cpuTag ?? ""}`;
+    if (noLink && fetchedForRef.current !== fetchKey) {
+      setResult({ paths: [], loading: false, hint: NO_LINK_HINT });
+      return;
+    }
     if (fetchedForRef.current === fetchKey) return;
     fetchedForRef.current = fetchKey;
 
@@ -82,6 +95,7 @@ export function useKosScriptListing(
     }
 
     let cancelled = false;
+    let settledOnce = false;
     setResult({ paths: [], loading: true, hint: null });
 
     Promise.allSettled(
@@ -90,6 +104,7 @@ export function useKosScriptListing(
       ),
     ).then((settled) => {
       if (cancelled) return;
+      settledOnce = true;
       const paths: string[] = [];
       // "A volume answered with a listing we could READ", which is not the
       // same as "the RPC resolved". A reply whose listing will not parse
@@ -154,8 +169,10 @@ export function useKosScriptListing(
 
     return () => {
       cancelled = true;
+      // A listing cut off before it answered is asked for again next time.
+      if (!settledOnce) fetchedForRef.current = null;
     };
-  }, [enabled, coreId, cpuTag]);
+  }, [enabled, coreId, cpuTag, noLink]);
 
   return result;
 }
