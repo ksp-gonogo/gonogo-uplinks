@@ -13,6 +13,7 @@ import {
   type DelayedStreamBuildContext,
   type EncodedFrameDelayHandle,
   type FrameStampFeed,
+  interpolateCaptureUt,
   isFrameDelaySupported,
   SharedDelayedStreams,
   type SnapshottableDelayClock,
@@ -120,11 +121,15 @@ export type InstallEncodedDelay = (
  * delay on the camera's receiver through `install`, and the handle it returns
  * removes it. `key` identifies the attachment: every consumer of the camera
  * shares one delayed pipeline under it. Taken by {@link useDelayedPlayout} as
- * `encodedTarget`.
+ * `encodedTarget`. `holdMs` gives the delay in milliseconds a frame is held for
+ * now, or `NaN` when it is not known.
  */
 export interface EncodedDelayTarget {
   key: object;
-  attach(install: InstallEncodedDelay): EncodedFrameDelayHandle | null;
+  attach(
+    install: InstallEncodedDelay,
+    holdMs: () => number,
+  ): EncodedFrameDelayHandle | null;
 }
 
 /**
@@ -146,7 +151,9 @@ export function useEncodedDelayTarget(
   return useMemo(() => {
     if (flightId === null || !client || !scriptPath) return null;
     const cam = client.camera(flightId);
-    return { key: cam, attach: (install) => attachThroughKerbcast(cam, install) };
+    return { key: cam, attach: (install, holdMs) =>
+        attachThroughKerbcast(cam, install, holdMs),
+    };
   }, [client, flightId, scriptPath]);
 }
 
@@ -160,6 +167,7 @@ export function useEncodedDelayTarget(
 function attachThroughKerbcast(
   cam: KerbcastCameraHandle,
   install: InstallEncodedDelay,
+  holdMs: () => number,
 ): EncodedFrameDelayHandle | null {
   const make = (): { handle: EncodedFrameDelayHandle; transform: unknown } | null => {
     /* attachEncodedWorkerFrameDelay sets the transform it builds on the
@@ -189,7 +197,7 @@ function attachThroughKerbcast(
         );
       }
       return current.transform as RTCRtpScriptTransform;
-    });
+    }, { holdMs });
   } catch (err) {
     logger
       .tag("kerbcast:frame-delay")
@@ -569,8 +577,19 @@ function buildDelayedPipeline(
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(),
     });
+  /* The wall-clock time a frame is held now: the gap between the capture
+     time being rendered and the latest time that may be shown, over the warp
+     rate. NaN while the capture clock has no time, which Kerbcast reads as an
+     unknown hold. */
+  const holdMs = () => {
+    const sample = getCaptureSample();
+    const ut = interpolateCaptureUt(sample, performance.now());
+    if (ut === null) return Number.NaN;
+    const heldSeconds = ut - view.confirmedEdgeUt();
+    return Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
+  };
   if (attachAt && encodedDelaySupported(view)) {
-    const encodedHandle = attachAt(install);
+    const encodedHandle = attachAt(install, holdMs);
     if (encodedHandle) {
       // No new track: the delay happens in place on the receiver's existing
       // track, upstream of decode, so `raw` is surfaced unchanged.

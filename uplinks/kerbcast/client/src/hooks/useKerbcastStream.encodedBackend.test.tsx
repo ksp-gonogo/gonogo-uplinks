@@ -25,7 +25,10 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import type { EncodedFrameDelayHandle } from "@ksp-gonogo/sitrep-sdk/media";
+import type {
+  CaptureClockSample,
+  EncodedFrameDelayHandle,
+} from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
 import {
@@ -136,16 +139,19 @@ function CameraProbe({
   flightId,
   clock,
   onResult,
+  getCaptureSample,
 }: {
   flightId: number;
   clock: DelayClockLike;
   onResult: (r: DelayedPlayoutResult) => void;
+  getCaptureSample?: () => CaptureClockSample;
 }): null {
   const shown = useKerbcastStream(flightId);
   const target = useEncodedDelayTarget(flightId);
   const result = useDelayedPlayout(shown, {
     view: clock,
     captureUt: () => 10,
+    getCaptureSample,
     encodedTarget: target,
   });
   onResult(result);
@@ -389,11 +395,16 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     path: "script" | "streams" | null;
   }) {
     const installs: Array<Factory | null> = [];
+    const options: Array<{ holdMs?: () => number } | undefined> = [];
     const cam = {
       mediaStream: opts.canvas,
       on: () => () => {},
-      setEncodedTransform: (factory: Factory | null) => {
+      setEncodedTransform: (
+        factory: Factory | null,
+        opt?: { holdMs?: () => number },
+      ) => {
         installs.push(factory);
+        options.push(opt);
       },
     };
     const client = { encodedTransformPath: opts.path, camera: () => cam };
@@ -403,7 +414,7 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
       subscribeCamera: () => {},
       unsubscribeCamera: () => {},
     });
-    return { installs };
+    return { installs, options };
   }
 
   it("with static on, hands Kerbcast the delay for the camera's receiver and shows the canvas", async () => {
@@ -432,6 +443,44 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     expect(Transform.instances).toHaveLength(2);
     expect(installed).toBe(Transform.instances[1]);
     expect(installed).not.toBe(Transform.instances[0]);
+  });
+
+  it("tells Kerbcast how long the delay holds frames, from the clock edge and the warp rate", async () => {
+    stubTransforms();
+    const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
+    const clock = manualClock(6);
+    // atMs in the future keeps the interpolated capture UT at the sample's own 10
+    const sample = { ut: 10, warpRate: 2, atMs: performance.now() + 1e9 };
+
+    render(
+      <CameraProbe
+        flightId={7}
+        clock={clock}
+        getCaptureSample={() => sample}
+        onResult={() => {}}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(options[0]?.holdMs).toBeTypeOf("function");
+    });
+    expect(options[0]?.holdMs?.()).toBe(2000);
+    clock.setEdge(8);
+    expect(options[0]?.holdMs?.()).toBe(1000);
+    clock.setEdge(12);
+    expect(options[0]?.holdMs?.()).toBe(0);
+  });
+
+  it("reports the hold as unknown while the capture clock has no time", async () => {
+    stubTransforms();
+    const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
+
+    render(<CameraProbe flightId={7} clock={manualClock(6)} onResult={() => {}} />);
+
+    await waitFor(() => {
+      expect(options[0]?.holdMs).toBeTypeOf("function");
+    });
+    expect(options[0]?.holdMs?.()).toBeNaN();
   });
 
   it("makes a fresh transform for each receiver the camera lands on, retiring the previous pipeline", async () => {
