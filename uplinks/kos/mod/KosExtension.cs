@@ -81,8 +81,6 @@ namespace Gonogo.KosUplink
         // volatile reads of cached state rather than touching kOS directly.
         private volatile string? _unavailableReason;
         private volatile bool _sampledOnce;
-        private IUplinkHost? _host;
-        private readonly KosSwitchKeyframe _switchKeyframe = new KosSwitchKeyframe();
         private int _lastProcessorCount = -1;
 
         // Interactive terminal-over-Uplink: the kos.terminal.<coreId> screen
@@ -392,10 +390,6 @@ namespace Gonogo.KosUplink
                 {
                     flattened.Add(KosProcessorInfoBuilder.Build(p.CoreId, p.Tag, p.HasBooted, p.BootFilePath, p.ProcessorMode, p.PartName));
                 }
-                if (capture.ForceKeyframe)
-                {
-                    _host?.ForceKeyframe(KosChannels.ProcessorsTopic);
-                }
                 _processorsPublisher?.Publish(flattened, capture.Ut);
 
                 // Health bookkeeping (see ISitrepUplink.Health / KosHealth):
@@ -429,7 +423,6 @@ namespace Gonogo.KosUplink
             public double Ut;
 #pragma warning restore CS0649
             public List<KosProcessorInfo> List = new List<KosProcessorInfo>();
-            public bool ForceKeyframe;
         }
 
         // ----------------------------------------------------------------

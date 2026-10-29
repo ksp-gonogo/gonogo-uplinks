@@ -64,7 +64,6 @@
          publish boundary (see its own doc comment). -->
     <Compile Include="..\mod\KosProcessorInfoBuilder.cs" />
     <Compile Include="..\mod\KosCoreVesselMap.cs" />
-    <Compile Include="..\mod\KosSwitchKeyframe.cs" />
     <!-- KosTerminalFrameBuilder/KosRunResultBuilder are used in production
          only from KosExtension.Ksp.cs (the KSP-touching half, deliberately
          NOT included in this project): included here anyway because the
