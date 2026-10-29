@@ -304,7 +304,7 @@ namespace Gonogo.KosUplink
             // unloaded, part destroyed) must LEAVE the map, and a map that only
             // ever gains entries would keep routing its topics at a craft that
             // is no longer carrying it.
-            var coreVessels = new Dictionary<string, string>(StringComparer.Ordinal);
+            var observedVessels = new List<KeyValuePair<string, string?>>();
             foreach (var p in kOSProcessor.AllInstances())
             {
                 if (p == null)
@@ -312,11 +312,9 @@ namespace Gonogo.KosUplink
                     continue;
                 }
                 var vesselId = p.part?.vessel?.id;
-                if (vesselId != null && vesselId != Guid.Empty)
-                {
-                    coreVessels[p.KOSCoreId.ToString(CultureInfo.InvariantCulture)] =
-                        vesselId.Value.ToString();
-                }
+                observedVessels.Add(new KeyValuePair<string, string?>(
+                    p.KOSCoreId.ToString(CultureInfo.InvariantCulture),
+                    vesselId != null && vesselId != Guid.Empty ? vesselId.Value.ToString() : null));
                 list.Add(new KosProcessorInfo
                 {
                     CoreId = p.KOSCoreId,
@@ -331,7 +329,7 @@ namespace Gonogo.KosUplink
             // useful whether or not there is a game clock to stamp a payload
             // with, and returning early without swapping it would leave routing
             // reading a pass older than the one just walked.
-            Volatile.Write(ref _coreVessels, coreVessels);
+            Volatile.Write(ref _coreVessels, KosCoreVesselMap.Next(Volatile.Read(ref _coreVessels), observedVessels));
             // Carry the capture UT alongside the list (mirrors
             // CommsCoreUplink.CommsCapture.Ut). Publishing at the real UT (not a
             // hardcoded 0.0) keeps this Delayed channel on the same UT-indexed
