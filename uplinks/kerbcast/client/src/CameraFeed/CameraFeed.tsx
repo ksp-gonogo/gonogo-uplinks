@@ -67,6 +67,7 @@ import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
 } from "./useDelayedKerbcastStream.js";
+import { useFeedSignal } from "./useFeedSignal.js";
 import { useReportFrameSize } from "./useReportFrameSize.js";
 
 export interface CameraFeedConfig extends Record<string, unknown> {
@@ -263,7 +264,11 @@ export function CameraFeed({
   // stream is ready). ResizeObserver is stubbed in tests (installDomStubs).
   const [feedSize, setFeedSize] = useState({ width: 0, height: 0 });
   const overlayObserverRef = useRef<ResizeObserver | null>(null);
+  const [overlayWrapEl, setOverlayWrapEl] = useState<HTMLDivElement | null>(
+    null,
+  );
   const attachOverlayWrap = useCallback((el: HTMLDivElement | null) => {
+    setOverlayWrapEl(el);
     overlayObserverRef.current?.disconnect();
     overlayObserverRef.current = null;
     if (!el || typeof ResizeObserver === "undefined") return;
@@ -437,6 +442,7 @@ export function CameraFeed({
   // INSTEAD of the SDK's own feed: never the live stream underneath it.
   // Called unconditionally, alongside every other hook above, BEFORE the
   // `!client` early return below (rules of hooks).
+  const feedSignal = useFeedSignal(overlayWrapEl);
   const playoutStatus = useDelayedPlaybackStatus(effectiveFlightId);
   const unavailableReason =
     playoutStatus.kind === "unavailable" ? playoutStatus.reason : null;
@@ -675,6 +681,17 @@ export function CameraFeed({
                       />
                     </div>
                   )}
+                  {feedSignal && !unavailableReason && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      style={FEED_SIGNAL_STYLE}
+                    >
+                      <Badge tone={feedSignal === "none" ? "info" : "warn"}>
+                        {feedSignal === "none" ? "NO CAMERA" : "FEED STALLED"}
+                      </Badge>
+                    </div>
+                  )}
                   {unavailableReason && (
                     <div
                       role="status"
@@ -839,6 +856,16 @@ const FEED_SETPOINT_STYLE: CSSProperties = {
 // dark background + centred reason IS the "no signal" visual language this
 // package already uses for a disconnected feed, reused for the "can't
 // delay" case rather than invented fresh.
+const FEED_SIGNAL_STYLE: CSSProperties = {
+  position: "absolute",
+  top: "var(--gutter-overlay)",
+  left: "var(--gutter-overlay)",
+  // Above the SDK's noise and top gradient (2) and its action bar (3), below
+  // the delayed controls: it is a label, not a scrim.
+  zIndex: 3,
+  pointerEvents: "none",
+};
+
 const FEED_UNAVAILABLE_STYLE: CSSProperties = {
   position: "absolute",
   inset: 0,
