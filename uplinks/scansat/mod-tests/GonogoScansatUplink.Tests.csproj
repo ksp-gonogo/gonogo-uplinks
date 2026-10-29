@@ -34,6 +34,7 @@
          the KSP-free Courier-side publish logic (see ScanPublicationsTests). -->
     <Compile Include="..\mod\ScanCapture.cs" />
     <Compile Include="..\mod\ScanPublications.cs" />
+    <Compile Include="..\mod\ScanPublishState.cs" />
   </ItemGroup>
 
   <!-- GonogoScansatUplink.Contract: ScanningVesselEntry/ScanSensorEntry/

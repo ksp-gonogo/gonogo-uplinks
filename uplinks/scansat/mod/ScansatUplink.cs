@@ -59,7 +59,7 @@ namespace Gonogo.ScansatUplink
     /// See the report for the full status and follow-ups.
     /// </summary>
     [SitrepUplink("scansat")]
-    public sealed class ScansatUplink : ISitrepUplink
+    public sealed class ScansatUplink : ISitrepUplink, IUplinkTimelineListener
     {
         public const string AvailableTopic = "scansat.available";
         public const string ScanningVesselsTopic = "scansat.scanningVessels";
@@ -86,29 +86,10 @@ namespace Gonogo.ScansatUplink
         private IDynamicChannelSource? _biomeSource;
         private IDynamicChannelSource? _anomaliesSource;
 
-        // "<body>|<typeBit>" -> last-emitted packed plane, the per-(body,type)
-        // keyframe-on-change gate (CoveragePlane, R7, spec §2.1/§2.3). One
-        // entry per (body,type) this uplink has ever published; a
-        // (body,type) whose plane never changes never re-emits after its
-        // first keyframe. COURIER-thread-owned: read/written only by
-        // HandleOnCourier (via ScanPublications.Compute).
-        private readonly Dictionary<string, byte[]> _lastPackedByBodyType = new Dictionary<string, byte[]>();
-
-        // "<body>" whose coarse coverage-grid hash last poll (any type's bits),
-        // the cheap body-level gate that avoids re-packing every type's
-        // plane every tick when nothing changed at all. COURIER-thread-owned,
-        // same as _lastPackedByBodyType.
-        private readonly Dictionary<string, ulong> _lastHashByBody = new Dictionary<string, ulong>();
-
-        // Bodies whose (expensive) height/biome grids have already been BUILT
-        // and captured. Height/biome are stock-PQS/BiomeMap derived and
-        // near-static (spec §2.2: "keyframe (near-static)"), so one keyframe
-        // per body visit is the model, rebuilding an identical ~64800-point
-        // grid every tick would be pure waste. MAIN-thread-owned: read/written
-        // only by CaptureOnMain (which is the only place the grids are built),
-        // so the once-per-body decision gates the expensive build itself, not
-        // just the publish.
-        private readonly HashSet<string> _heightBiomeCapturedBodies = new HashSet<string>();
+        // Everything this Uplink remembers of what it published: the change gates,
+        // the once-per-body height/biome gate and the late-subscriber reseed cache.
+        // Cleared on a timeline reset (see OnTimelineReset).
+        private readonly ScanPublishState _state = new ScanPublishState();
 
         // One-shot guard so a capture that fails because the game isn't ready yet
         // (Planetarium/SCANsat reads throwing at early ticks) logs ONCE per
@@ -122,18 +103,11 @@ namespace Gonogo.ScansatUplink
         // ConnectivityAt(entry.Ut): connectivity at the keyframe's OWN ut. A
         // keyframe first published while the vessel was dark is withheld forever
         // (biome/height are then never re-captured), so it never seeds a subscriber
-        // that joins later, which is every real client. Fix: cache the last
-        // payload per topic here (at PUBLISH time, before the reveal gate), and on
-        // a new subscription re-emit it at the CURRENT (hopefully connected) ut so
-        // the reveal gate releases it to the new subscriber. All Courier-thread:
-        // the cache is written in HandleOnCourier and read in the OnSubscribed
-        // reseed, so no main-thread state is touched and no grid is rebuilt.
+        // that joins later, which is every real client. Fix: ScanPublishState caches
+        // the last payload per topic at PUBLISH time (before the reveal gate), and on
+        // a new subscription it is re-emitted at the CURRENT (hopefully connected) ut
+        // so the reveal gate releases it to the new subscriber. All Courier-thread.
         private IUplinkHost? _host;
-        private readonly Dictionary<string, ScanPublication> _lastPublishedByTopic = new Dictionary<string, ScanPublication>();
-        // Coalesce a burst of subscribes (StrictMode double-mount / multiple
-        // clients) into ONE re-emit per topic within the grace window.
-        private readonly Dictionary<string, double> _lastReseedUtByTopic = new Dictionary<string, double>();
-        private const double ReseedGraceSeconds = 5.0;
 
         public UplinkManifest Manifest { get; } = new UplinkManifest
         {
@@ -208,6 +182,13 @@ namespace Gonogo.ScansatUplink
             _unavailableReason != null
                 ? new UplinkHealth(UplinkHealthState.Unavailable, _unavailableReason)
                 : UplinkHealth.Healthy;
+
+        /// <summary>
+        /// Forgets every grid and plane already published, so the next capture sends
+        /// height, biome, coverage and mask again to subscribers that survived the
+        /// load or quickload.
+        /// </summary>
+        public void OnTimelineReset(bool saveChanged) => _state.OnTimelineReset(saveChanged);
 
         public void Register(IUplinkHost host)
         {
@@ -324,17 +305,12 @@ namespace Gonogo.ScansatUplink
         /// </summary>
         private void ReseedTopic(string fullTopic)
         {
-            if (!_lastPublishedByTopic.TryGetValue(fullTopic, out var pub))
+            // Coalesced per topic so a burst of subscribes (StrictMode double-mount,
+            // multiple clients) is one re-emit.
+            if (!_state.TryTakeReseed(fullTopic, _host?.NowUt(), out var pub, out var nowUt))
             {
                 return; // nothing captured for this topic yet, the first capture will publish it
             }
-            var nowUt = _host?.NowUt() ?? pub.Ut;
-            if (_lastReseedUtByTopic.TryGetValue(fullTopic, out var last)
-                && nowUt - last < ReseedGraceSeconds)
-            {
-                return; // coalesce a burst of subscribes into one re-emit
-            }
-            _lastReseedUtByTopic[fullTopic] = nowUt;
             // Force a keyframe so the re-emit of the UNCHANGED cached payload is not
             // change-gate-suppressed. ProcessSubscribe's own NotifySubscribed only
             // forces on a 0->1 subscribe, but a late subscriber (every real client)
@@ -352,16 +328,6 @@ namespace Gonogo.ScansatUplink
             ScanChannelKind.Anomalies => _anomaliesSource,
             _ => null,
         };
-
-        private static string FullTopicFor(ScanChannelKind kind, string subTopic) => (kind switch
-        {
-            ScanChannelKind.Coverage => ScanChannels.CoveragePrefix,
-            ScanChannelKind.Mask => ScanChannels.MaskPrefix,
-            ScanChannelKind.Height => ScanChannels.HeightPrefix,
-            ScanChannelKind.Biome => ScanChannels.BiomePrefix,
-            ScanChannelKind.Anomalies => ScanChannels.AnomaliesPrefix,
-            _ => "",
-        }) + subTopic;
 
         /// <summary>
         /// MAIN-THREAD capture (see
@@ -449,7 +415,7 @@ namespace Gonogo.ScansatUplink
             // AFTER the (Planetarium-dependent) build succeeds: otherwise an
             // early not-ready failure would mark it done and height/biome would
             // never be retried for that body.
-            if (!_heightBiomeCapturedBodies.Contains(bodyName))
+            if (_state.NeedsHeightBiome(bodyName))
             {
                 var heightGrid = ScanGrids.BuildHeights(ScanGrids.Width, ScanGrids.Height, (lon, lat) =>
                 {
@@ -474,7 +440,7 @@ namespace Gonogo.ScansatUplink
                     capture.HeightGrid = heightGrid;
                     capture.BiomeEntries = biomeEntries;
                     capture.BiomeIndices = biomeIndices;
-                    _heightBiomeCapturedBodies.Add(bodyName);
+                    _state.MarkHeightBiomeCaptured(bodyName);
                 }
             }
 
@@ -513,14 +479,9 @@ namespace Gonogo.ScansatUplink
                 return; // Register hasn't wired the dynamic sources (unavailable uplink), nothing to publish.
             }
 
-            foreach (var publication in captures.SelectMany(capture => ScanPublications.Compute(capture, _lastHashByBody, _lastPackedByBodyType)))
+            foreach (var publication in captures.SelectMany(capture => _state.Compute(capture)))
             {
                 SourceForKind(publication.Kind)?.Publisher(publication.SubTopic).Publish(publication.Payload, publication.Ut);
-                // Cache for late-subscriber reseed (see _lastPublishedByTopic). The
-                // payload is captured here at PUBLISH time (before the reveal gate)
-                // so a keyframe later withheld at a disconnected ut can still be
-                // re-emitted for a new subscriber at a connected ut.
-                _lastPublishedByTopic[FullTopicFor(publication.Kind, publication.SubTopic)] = publication;
             }
         }
 
