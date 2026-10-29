@@ -16,6 +16,7 @@ import {
   PrincipiaWriteOutcome,
 } from "../__generated__/contract.js";
 import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
+import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import {
   clearPlanDrafts,
   type PlanDraft,
@@ -80,6 +81,9 @@ function mount() {
     </stream.Provider>,
   );
   renderedTrees.push(result.unmount);
+  act(() => {
+    stream.emit("system.uplink.delays", EVERY_COMMAND_TO_THE_CRAFT);
+  });
   if (store === null) throw new Error("the draft store was never handed over");
   return {
     ...stream,

@@ -59,6 +59,24 @@
         }
       },
       {
+        "topic": "system.uplink.delays",
+        "payload": {
+          "activeVessel": [
+            "principia.plan.arm",
+            "principia.plan.burn.insert",
+            "principia.plan.burn.remove",
+            "principia.plan.burn.replace",
+            "principia.plan.create",
+            "principia.plan.delete",
+            "principia.plan.duplicate",
+            "principia.plan.horizon",
+            "principia.plan.integrator",
+            "principia.plan.send"
+          ],
+          "elsewhere": []
+        }
+      },
+      {
         "topic": "principia.plan",
         "payload": {
           "vesselId": "Ares-IV",

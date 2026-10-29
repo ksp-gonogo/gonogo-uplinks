@@ -14,6 +14,7 @@ import {
 } from "../__generated__/contract.js";
 import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
 import { axe } from "../test/axe.js";
+import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { BurnEditor } from "./index.js";
 
 const renderedTrees: Array<() => void> = [];
@@ -35,6 +36,9 @@ function mount() {
     </stream.Provider>,
   );
   renderedTrees.push(result.unmount);
+  act(() => {
+    stream.emit("system.uplink.delays", EVERY_COMMAND_TO_THE_CRAFT);
+  });
   return { ...stream, container: result.container };
 }
 

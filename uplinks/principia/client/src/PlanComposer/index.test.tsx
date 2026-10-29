@@ -8,6 +8,7 @@ import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { utOfParts } from "@ksp-gonogo/ui-kit";
 import { afterEach, describe, expect, it } from "vitest";
 import { clearPlanDrafts } from "../planDrafts.js";
+import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { PlanComposer } from "./index.js";
 
 /**
@@ -48,6 +49,7 @@ async function setup() {
    * `VIEW_UT`, and every test here would quietly exercise the stale path.
    */
   act(() => {
+    fixture.emit("system.uplink.delays", EVERY_COMMAND_TO_THE_CRAFT);
     fixture.emit(
       "vessel.identity",
       {
