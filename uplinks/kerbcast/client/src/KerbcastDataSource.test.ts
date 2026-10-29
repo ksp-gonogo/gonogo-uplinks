@@ -1282,6 +1282,27 @@ describe("KerbcastDataSource: per-frame capture stamps", () => {
     expect(ds.frameStampFeed(42)).not.toBeNull();
   });
 
+  it("keeps the stamp feeds, and the feed's subscribers, across a drop that recovers", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    const feed = ds.frameStampFeed(42);
+    const seen: unknown[] = [];
+    feed?.subscribe((s) => seen.push(s));
+
+    sidecar.setConnectionState("disconnected");
+    sidecar.setConnectionState("connected");
+
+    expect(ds.frameStampFeed(42)).toBe(feed);
+    sidecar.fireFrameStamp({
+      flightId: 42,
+      rtpTimestamp: 9000,
+      captureUt: 5,
+      captureEpoch: 1,
+    });
+    expect(seen).toHaveLength(1);
+  });
+
   it("asks the sidecar to send stamps when its hello offers them", async () => {
     const { sidecar } = await connectedSidecar();
     sidecar.open();

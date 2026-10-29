@@ -879,7 +879,7 @@ export class KerbcastDataSource {
       client.on("state-change", (s) => {
         // The slot pool belongs to the peer, so a lost peer takes every
         // binding with it; the next answer restates them.
-        if (s === "disconnected" || s === "failed") this.forgetSlotState();
+        if (s === "disconnected" || s === "failed") this.forgetSlotState(false);
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
@@ -1112,11 +1112,21 @@ export class KerbcastDataSource {
     );
   }
 
-  private forgetSlotState(): void {
-    this.frameStampsOffered = false;
-    this.renegotiateOffered = false;
+  /*
+   * `sessionEnded` is false for a connection that dropped and may recover on
+   * the same sidecar session: the sidecar sends its hello once, when the
+   * control channel opens, so what it offered (frame stamps, renegotiation)
+   * and the stamp feeds delayed pipelines already hold stay valid, and
+   * forgetting them would leave a recovered connection without stamps for the
+   * rest of the session. A new connection reads its own hello.
+   */
+  private forgetSlotState(sessionEnded = true): void {
+    if (sessionEnded) {
+      this.frameStampsOffered = false;
+      this.renegotiateOffered = false;
+      this.stampFeeds.clear();
+    }
     this.session = null;
-    this.stampFeeds.clear();
     this.awaitingSlot = [];
     this.notThereYet.clear();
     if (this.refusals.size > 0) {
