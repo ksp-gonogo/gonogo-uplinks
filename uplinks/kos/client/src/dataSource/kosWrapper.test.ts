@@ -58,6 +58,18 @@ describe("buildKosWrapper", () => {
     expect(out).toContain(`"PRINT 1." + CHAR(10) + "" + CHAR(10) + "PRINT 2."`);
   });
 
+  it("clears the terminal screen after the script, as its own last line", () => {
+    const out = buildKosWrapper({
+      path: "0:/widget_scripts/x.ks",
+      body: "PRINT 1.",
+      version: "v1",
+      args: [],
+    });
+    const lines = out.trim().split("\n");
+    expect(lines[lines.length - 1]).toBe("CLEARSCREEN.");
+    expect(lines[lines.length - 2]).toBe(`RUNPATH("0:/widget_scripts/x.ks").`);
+  });
+
   it("orders SET assignments before RUNPATH (REPL processes in order)", () => {
     const out = buildKosWrapper({
       path: "0:/a.ks",
