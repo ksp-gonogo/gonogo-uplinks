@@ -45,6 +45,9 @@ namespace Gonogo.KerbcastUplink
         private readonly Action<string>? _log;
         private readonly Action<IReadOnlyDictionary<string, string>>? _onFeedSites;
         private readonly Func<string, LaunchSitePlace?>? _launchSite;
+        private readonly Func<uint?>? _activeCraft;
+        private readonly Dictionary<uint, uint> _followed = new Dictionary<uint, uint>();
+        private int _followTenure = -1;
         private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
@@ -67,11 +70,12 @@ namespace Gonogo.KerbcastUplink
         /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
         /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSitePlace?>? launchSite = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSitePlace?>? launchSite = null, Func<uint?>? activeCraft = null)
         {
             _log = log;
             _onFeedSites = onFeedSites;
             _launchSite = launchSite;
+            _activeCraft = activeCraft;
             _labels = labels;
             _places = places ?? new CraftPlaces();
             _supports = supports;
@@ -211,6 +215,7 @@ namespace Gonogo.KerbcastUplink
             }
 
             ApplyHeardChanges(listed, heard);
+            Follow(kerbcast, tenure, feedSites, listed);
 
             var bindingKey = BindingKey(bindings);
             var due = tenure != _lastTenure
@@ -258,6 +263,93 @@ namespace Gonogo.KerbcastUplink
             _lastPublish = realSeconds;
             LogEligibility(kerbcast);
             return result;
+        }
+
+        /*
+         * Each command feed follows the active craft while the centre at its site has
+         * heard from it and Kerbcast judges it in view for that feed. The aim is sent
+         * only when the subject changes, and again after a new lock tenure, since a new
+         * tenure starts from Kerbcast's own default. When the craft stops qualifying the
+         * feed is left to Kerbcast, which shows its own waiting view for a subject it
+         * cannot watch; the API has no call that clears an aim.
+         */
+        private void Follow(IKerbcast kerbcast, int tenure, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
+        {
+            if (_activeCraft == null || !_supports(ApiFeature.CommandFeeds))
+            {
+                return;
+            }
+            if (tenure != _followTenure)
+            {
+                _followed.Clear();
+                _followTenure = tenure;
+            }
+            var active = _activeCraft();
+            foreach (var feed in kerbcast.Command.Feeds())
+            {
+                if (feed == null)
+                {
+                    continue;
+                }
+                var subject = active.HasValue && Qualifies(kerbcast, feed, active.Value, feedSites, listed) ? active.Value : 0u;
+                if (subject == 0u)
+                {
+                    _followed.Remove(feed.FlightId);
+                    LogFollow(feed.FlightId, "none");
+                    continue;
+                }
+                if (_followed.TryGetValue(feed.FlightId, out var sent) && sent == subject)
+                {
+                    continue;
+                }
+                _followed[feed.FlightId] = subject;
+                var result = kerbcast.Command.SetAim(feed.FlightId, Aim.Vessel(subject, 0.0, false), KerbcastAuthority.Owner);
+                LogFollow(feed.FlightId, subject + " result=" + result);
+            }
+        }
+
+        private static bool Qualifies(IKerbcast kerbcast, CommandFeed feed, uint craft, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
+        {
+            if (!feedSites.TryGetValue(KerbcastLensSites.KeyFor(feed.FlightId), out var scope) || !listed.TryGetValue(scope, out var crafts))
+            {
+                return false;
+            }
+            var heard = false;
+            foreach (var candidate in crafts)
+            {
+                if (candidate.PersistentId == craft && candidate.Sample.State == CraftKnowledgeState.Heard)
+                {
+                    heard = true;
+                    break;
+                }
+            }
+            if (!heard)
+            {
+                return false;
+            }
+            foreach (var target in kerbcast.Command.Targets(feed.FlightId))
+            {
+                if (target.PersistentId == craft)
+                {
+                    return string.Equals(target.Eligibility, "ok", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return false;
+        }
+
+        private void LogFollow(uint feedFlightId, string detail)
+        {
+            if (_log == null)
+            {
+                return;
+            }
+            var key = "follow" + feedFlightId;
+            if (_logged.TryGetValue(key, out var last) && last == detail)
+            {
+                return;
+            }
+            _logged[key] = detail;
+            _log("[Kerbcast][WORLD] follow feed=" + feedFlightId + " subject=" + detail);
         }
 
         private void Fill(

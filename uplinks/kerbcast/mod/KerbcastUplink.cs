@@ -183,7 +183,8 @@ namespace Gonogo.KerbcastUplink
                 places,
                 UnityEngine.Debug.Log,
                 onFeedSites,
-                ReadLaunchSite);
+                ReadLaunchSite,
+                ReadActiveCraft);
 
         /* The first spawn point stands for the site, which is where its camera looks from. */
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -198,6 +199,13 @@ namespace Gonogo.KerbcastUplink
             }
             var index = FlightGlobals.Bodies?.IndexOf(body) ?? -1;
             return index < 0 ? (LaunchSitePlace?)null : new LaunchSitePlace(index, points[0].latitude, points[0].longitude);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static uint? ReadActiveCraft()
+        {
+            var vessel = FlightGlobals.ActiveVessel;
+            return vessel == null ? (uint?)null : vessel.persistentId;
         }
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();

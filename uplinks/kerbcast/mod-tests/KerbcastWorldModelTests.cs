@@ -202,6 +202,97 @@ public class KerbcastWorldModelTests
         Assert.False(_kc.Command.Published.Last().SiteBindings.ContainsKey("Island Runway"));
     }
 
+    private KerbcastWorldModel FollowingModel(Func<uint?> active, List<string>? log = null) =>
+        new KerbcastWorldModel(_labels, _kc.Supports, _places, log == null ? null : log.Add, null, null, active);
+
+    private void PublishWith(KerbcastWorldModel model, double ut, double real)
+    {
+        _authority.Tick(real, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, ut, real);
+    }
+
+    private void Judge(uint craft, string eligibility) =>
+        _kc.Command.SetTargets(1, new[] { new CommandTarget { PersistentId = craft, Eligibility = eligibility } });
+
+    private int AimCalls() => _kc.Calls.Count(c => c.StartsWith("SetAim", StringComparison.Ordinal));
+
+    [Fact]
+    public void ACommandFeedFollowsTheActiveCraftOnceItIsHeardAndInView()
+    {
+        var log = new List<string>();
+        var model = FollowingModel(() => ProbePid, log);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        Judge(ProbePid, "ok");
+
+        PublishWith(model, 100.0, 0.0);
+        PublishWith(model, 100.1, 0.1);
+
+        Assert.Equal(ProbePid, _kc.Command.Aims[1].SubjectPersistentId);
+        Assert.Equal(1, AimCalls());
+        Assert.Contains(log, l => l.Contains("follow feed=1 subject=" + ProbePid));
+    }
+
+    [Theory]
+    [InlineData(CraftKnowledgeState.Seen, "ok")]
+    [InlineData(CraftKnowledgeState.Heard, "tooUncertain")]
+    [InlineData(CraftKnowledgeState.Heard, "notPositioned")]
+    public void ACraftNotHeardOrNotInViewIsNotFollowed(CraftKnowledgeState state, string eligibility)
+    {
+        var model = FollowingModel(() => ProbePid);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, state, 99.0, 250.0);
+        Judge(ProbePid, eligibility);
+
+        PublishWith(model, 100.0, 0.0);
+
+        Assert.Equal(0, AimCalls());
+    }
+
+    [Fact]
+    public void OnlyTheActiveCraftIsFollowedAndNoActiveCraftFollowsNothing()
+    {
+        uint? active = StationPid;
+        var model = FollowingModel(() => active);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        _kc.Command.SetTargets(1, new[]
+        {
+            new CommandTarget { PersistentId = ProbePid, Eligibility = "ok" },
+            new CommandTarget { PersistentId = StationPid, Eligibility = "ok" },
+        });
+
+        PublishWith(model, 100.0, 0.0);
+        Assert.Equal(StationPid, _kc.Command.Aims[1].SubjectPersistentId);
+
+        active = null;
+        PublishWith(model, 100.1, 0.1);
+        Assert.Equal(1, AimCalls());
+
+        active = ProbePid;
+        PublishWith(model, 100.2, 0.2);
+        Assert.Equal(ProbePid, _kc.Command.Aims[1].SubjectPersistentId);
+        Assert.Equal(2, AimCalls());
+    }
+
+    [Fact]
+    public void ACraftThatStopsQualifyingIsAimedAtAgainWhenItQualifiesAgain()
+    {
+        var model = FollowingModel(() => ProbePid);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        Judge(ProbePid, "ok");
+        PublishWith(model, 100.0, 0.0);
+
+        Judge(ProbePid, "tooUncertain");
+        PublishWith(model, 100.1, 0.1);
+        Judge(ProbePid, "ok");
+        PublishWith(model, 100.2, 0.2);
+
+        Assert.Equal(2, AimCalls());
+    }
+
     [Fact]
     public void AStationWhoseNameIsNotOneStationIsLeftUnboundSoItFailsClosed()
     {
