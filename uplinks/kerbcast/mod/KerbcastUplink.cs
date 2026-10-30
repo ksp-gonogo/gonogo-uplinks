@@ -187,19 +187,75 @@ namespace Gonogo.KerbcastUplink
                 ReadActiveCraft);
 
         /*
-         * The place the game builds the site on is configuration, so it reads in every
-         * scene. A spawn point's own coordinates are only filled once the game has
-         * measured it from a transform in the scene, which a flight scene does not do,
-         * so they are the last resort.
+         * The site is looked up the way it is named to the player rather than through
+         * PSystemSetup.GetLaunchSite, which also filters on a content bundle and refuses
+         * a site that is listed. The place the game builds it on is configuration, so
+         * it reads in every scene. A spawn point's own coordinates are only filled
+         * once the game has measured them from a transform in the scene, so they come
+         * last, and the pad's building is the fallback for a site no launch site names.
          */
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static LaunchSiteReading ReadLaunchSite(string name)
         {
-            var site = PSystemSetup.Instance == null ? null : PSystemSetup.Instance.GetLaunchSite(name);
-            if (site == null)
+            var setup = PSystemSetup.Instance;
+            if (setup == null)
             {
-                return new LaunchSiteReading(null, "none: the game has no launch site of that name");
+                return new LaunchSiteReading(null, "none: PSystemSetup is not up");
             }
+            var site = FindLaunchSite(setup, name);
+            if (site != null)
+            {
+                return ReadSite(site);
+            }
+            var facility = FindFacility(setup, name);
+            return facility != null ? ReadFacility(facility) : new LaunchSiteReading(null, "none: no launch site or facility matches; " + Roster(setup));
+        }
+
+        private static bool Names(string key, string? candidate) =>
+            !string.IsNullOrEmpty(candidate) && string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase);
+
+        private static LaunchSite? FindLaunchSite(PSystemSetup setup, string key)
+        {
+            var sites = setup.LaunchSites;
+            for (var i = 0; sites != null && i < sites.Count; i++)
+            {
+                var site = sites[i];
+                if (site != null && (Names(key, site.name) || Names(key, site.launchSiteName) || NamesSpawnPoint(site.spawnPoints, key)))
+                {
+                    return site;
+                }
+            }
+            return null;
+        }
+
+        private static bool NamesSpawnPoint(LaunchSite.SpawnPoint[]? points, string key)
+        {
+            for (var i = 0; points != null && i < points.Length; i++)
+            {
+                if (Names(key, points[i].name))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static PSystemSetup.SpaceCenterFacility? FindFacility(PSystemSetup setup, string key)
+        {
+            var facilities = setup.SpaceCenterFacilities;
+            for (var i = 0; facilities != null && i < facilities.Length; i++)
+            {
+                var facility = facilities[i];
+                if (facility != null && (Names(key, facility.name) || Names(key, facility.facilityName)))
+                {
+                    return facility;
+                }
+            }
+            return null;
+        }
+
+        private static LaunchSiteReading ReadSite(LaunchSite site)
+        {
             var body = site.Body;
             if (body == null)
             {
@@ -219,6 +275,50 @@ namespace Gonogo.KerbcastUplink
                 ("PQSCity", site.pqsCity != null ? (ValueTuple<double, double>?)(site.pqsCity.lat, site.pqsCity.lon) : null),
                 ("PQSCity2", site.pqsCity2 != null ? (ValueTuple<double, double>?)(site.pqsCity2.lat, site.pqsCity2.lon) : null),
                 ("spawn point", spawn));
+        }
+
+        private static LaunchSiteReading ReadFacility(PSystemSetup.SpaceCenterFacility facility)
+        {
+            var body = facility.hostBody;
+            if (body == null)
+            {
+                return new LaunchSiteReading(null, "none: the facility has no body");
+            }
+            var index = FlightGlobals.Bodies == null ? -1 : FlightGlobals.Bodies.IndexOf(body);
+            if (index < 0)
+            {
+                return new LaunchSiteReading(null, "none: its body " + body.name + " is not in the body list");
+            }
+            var points = facility.spawnPoints;
+            var spawn = points != null && points.Length > 0 && points[0].latlonaltSet
+                ? (ValueTuple<double, double>?)(points[0].latitude, points[0].longitude)
+                : null;
+            ValueTuple<double, double>? building = null;
+            if (facility.facilityTransform != null)
+            {
+                body.GetLatLonAlt(facility.facilityTransform.position, out var latitude, out var longitude, out _);
+                building = (latitude, longitude);
+            }
+            var reading = LaunchSiteReading.FromFirst(index, ("facility spawn point", spawn), ("facility building", building));
+            return reading.Place == null ? reading : new LaunchSiteReading(reading.Place, "facility " + facility.facilityName + " " + reading.Source);
+        }
+
+        /* What the game has by those names, so a lookup that finds nothing says what it looked in. */
+        private static string Roster(PSystemSetup setup)
+        {
+            var text = new System.Text.StringBuilder("launch sites:");
+            var sites = setup.LaunchSites;
+            for (var i = 0; sites != null && i < sites.Count; i++)
+            {
+                text.Append(' ').Append(sites[i].name).Append('/').Append(sites[i].launchSiteName);
+            }
+            text.Append(" facilities:");
+            var facilities = setup.SpaceCenterFacilities;
+            for (var i = 0; facilities != null && i < facilities.Length; i++)
+            {
+                text.Append(' ').Append(facilities[i].name).Append('/').Append(facilities[i].facilityName);
+            }
+            return text.ToString();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
