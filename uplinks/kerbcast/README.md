@@ -31,11 +31,13 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `kerbcast.setCommandAim` | `KerbcastSetCommandAimArgs` | `CommandResult` |
 | `kerbcast.setFieldOfView` | `KerbcastSetFieldOfViewArgs` | `CommandResult` |
 | `kerbcast.setPan` | `KerbcastSetPanArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
+| `KerbcastSetCommandAimArgs` | `cameraId` id, `lensKey` text, `subjectPersistentId` id |
 | `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` °, `lensKey` text |
 | `KerbcastSetPanArgs` | `cameraId` id, `lensKey` text, `pitch` °, `yaw` ° |
 

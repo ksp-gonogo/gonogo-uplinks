@@ -33,12 +33,12 @@ namespace GonogoKerbcastUplink.Tests
         }
 
         [Fact]
-        public void Both_aim_commands_name_their_lens_as_Subject()
+        public void Every_aim_command_names_its_lens_as_Subject()
         {
             var commands = KerbcastManifest.Build().Commands;
 
             Assert.All(commands, c => Assert.Equal("kerbcast.lens.{args.LensKey}", c.Subject));
-            Assert.Equal(2, commands.Count);
+            Assert.Equal(3, commands.Count);
         }
 
         [Fact]

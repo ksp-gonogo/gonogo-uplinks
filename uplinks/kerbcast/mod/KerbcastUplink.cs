@@ -56,6 +56,8 @@ namespace Gonogo.KerbcastUplink
         public const string SetFieldOfViewCommand = KerbcastManifest.SetFieldOfViewCommand;
         public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
+        public const string SetCommandAimCommand = KerbcastManifest.SetCommandAimCommand;
+
         /// <summary>Real seconds between reads of the game's craft list into <see cref="_craftLabels"/>.</summary>
         private const double CraftLabelSeconds = 2.0;
 
@@ -147,7 +149,7 @@ namespace Gonogo.KerbcastUplink
             }
             _kerbcast = binding.Api;
             _host = host;
-            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel);
+            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel, _lensSites.ReplaceCommandFeeds);
             GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
@@ -167,16 +169,20 @@ namespace Gonogo.KerbcastUplink
                 SetFieldOfViewCommand, HandleSetFieldOfView);
             host.AddCommandHandler<KerbcastSetPanArgs, CommandResult>(
                 SetPanCommand, HandleSetPan);
+            host.AddCommandHandler<KerbcastSetCommandAimArgs, CommandResult>(
+                SetCommandAimCommand, HandleSetCommandAim);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel) =>
+        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel, Action<IReadOnlyDictionary<string, string>> onFeedSites) =>
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
                 labels,
                 kernel,
-                places);
+                places,
+                UnityEngine.Debug.Log,
+                onFeedSites);
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 
@@ -457,6 +463,28 @@ namespace Gonogo.KerbcastUplink
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
             return KerbcastAimOutcome.For(kerbcast.SetPan(cameraId, (float)args.Yaw, (float)args.Pitch));
+        }
+
+        /// <summary>MAIN-THREAD command: point a command camera at a craft.</summary>
+        internal CommandResult HandleSetCommandAim(KerbcastSetCommandAimArgs? args)
+        {
+            var kerbcast = _kerbcast;
+            if (args == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.Range);
+            }
+            if (kerbcast == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+            }
+            if (!TryCameraId(args.CameraId, out var cameraId)
+                || !KerbcastLensSites.Agrees(args.LensKey, args.CameraId)
+                || !TryCameraId(args.SubjectPersistentId, out var subject)
+                || subject == 0)
+            {
+                return CommandResult.Fail(CommandErrorCode.Range);
+            }
+            return KerbcastAimOutcome.ForCommandAim(kerbcast.SetCommandAim(cameraId, subject));
         }
 
         // The wire carries cameraId as a JSON number (long on the contract);

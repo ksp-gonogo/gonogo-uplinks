@@ -12,6 +12,8 @@ public sealed class FakeKerbcastApi : IKerbcastApi
     public List<KerbcastView> Cameras = new();
     public bool? FovResult = true;
     public bool? PanResult = true;
+    public string? CommandAimResult = "Ok";
+    public (uint FlightId, uint Subject)? LastCommandAim;
     public string? ThrottleReason;
     public bool? Throttle = false;
     public (uint FlightId, float Fov)? LastFov;
@@ -37,6 +39,12 @@ public sealed class FakeKerbcastApi : IKerbcastApi
     {
         LastPan = (flightId, yaw, pitch);
         return PanResult;
+    }
+
+    public string? SetCommandAim(uint flightId, uint subjectPersistentId)
+    {
+        LastCommandAim = (flightId, subjectPersistentId);
+        return CommandAimResult;
     }
 
     public string? ThrottleUnavailable() => ThrottleReason;

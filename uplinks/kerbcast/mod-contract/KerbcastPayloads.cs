@@ -39,8 +39,8 @@ namespace GonogoKerbcastUplink;
 // (GonogoKerbcastUplink.Contract), never in Sitrep.Contract: no
 // uplink-specific wire type may live in core, even for an in-monorepo Uplink.
 // KerbcastCameraEntry's nine Units.Degrees properties retype to Value<"deg">
-// below (see KerbcastRtConfig.Configure); the two "Args" command
-// types (KerbcastSetFieldOfViewArgs/KerbcastSetPanArgs) stay bare numbers,
+// below (see KerbcastRtConfig.Configure); the three "Args" command
+// types (KerbcastSetFieldOfViewArgs/KerbcastSetPanArgs/KerbcastSetCommandAimArgs) stay bare numbers,
 // since ApplyUnitValueTypes deliberately skips inbound-only command args.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -244,4 +244,33 @@ public class KerbcastSetPanArgs
     /// <summary>Requested pitch, degrees. kerbcast clamps to the camera's own bounds.</summary>
     [SitrepUnit(Units.Degrees)]
     public double Pitch { get; set; }
+}
+
+/// <summary>
+/// Args for the <c>kerbcast.setCommandAim</c> command: point one command
+/// camera at a craft. The camera keeps following that craft, at the place its
+/// command centre reckons it to be, until it is aimed at another.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("kerbcast.setCommandAim")]
+public class KerbcastSetCommandAimArgs
+{
+    /// <summary>Target command camera, identified by its <see cref="KerbcastCameraEntry.CameraId"/>.</summary>
+    [SitrepUnit(Units.Id)]
+    public long CameraId { get; set; }
+
+    /// <summary>
+    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
+    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
+    /// delay the command takes.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string LensKey { get; set; } = "";
+
+    /// <summary>The craft to watch, by the persistent id the camera's list of craft gives it.</summary>
+    [SitrepUnit(Units.Id)]
+    public long SubjectPersistentId { get; set; }
 }

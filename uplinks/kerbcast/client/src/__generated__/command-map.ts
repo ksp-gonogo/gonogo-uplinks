@@ -46,6 +46,7 @@
 // declared and handled without a tag would be dispatchable and absent here.
 
 import type {
+  KerbcastSetCommandAimArgs,
   KerbcastSetFieldOfViewArgs,
   KerbcastSetPanArgs,
 } from "./contract.js";
@@ -54,11 +55,13 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 
 export interface GeneratedCommandArgsMap {
+  "kerbcast.setCommandAim": KerbcastSetCommandAimArgs;
   "kerbcast.setFieldOfView": KerbcastSetFieldOfViewArgs;
   "kerbcast.setPan": KerbcastSetPanArgs;
 }
 
 export interface GeneratedCommandReplyMap {
+  "kerbcast.setCommandAim": CommandResult;
   "kerbcast.setFieldOfView": CommandResult;
   "kerbcast.setPan": CommandResult;
 }
@@ -74,6 +77,7 @@ export interface GeneratedCommandReplyMap {
  * its declared shape, unit hydration first among them, reads this.
  */
 export const GENERATED_COMMAND_REPLY_TYPES = {
+  "kerbcast.setCommandAim": "CommandResult",
   "kerbcast.setFieldOfView": "CommandResult",
   "kerbcast.setPan": "CommandResult",
 } as const satisfies Record<string, string>;
@@ -117,11 +121,13 @@ export interface GeneratedCommandRail {
  * an in-flight queue entry would be a fiction about the operator's own order.
  */
 export const GENERATED_COMMAND_RAIL = {
+  "kerbcast.setCommandAim": { replies: true, delayed: true },
   "kerbcast.setFieldOfView": { replies: true, delayed: true },
   "kerbcast.setPan": { replies: true, delayed: true },
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
+  "kerbcast.setCommandAim",
   "kerbcast.setFieldOfView",
   "kerbcast.setPan",
 ] as const;
