@@ -1,0 +1,19 @@
+{
+  "id": "contractConfigurator",
+  "name": "Contract Configurator",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "gamedata": "GonogoContractConfiguratorUplink",
+  "dll": "GonogoContractConfiguratorUplink.dll",
+  "minAppVersion": "0.0.0",
+  "mod": {
+    "name": "Contract Configurator",
+    "tier": "ckan",
+    "ckan": "ContractConfigurator",
+    "builtAgainst": "2.13.3.0",
+    "assembly": "ContractConfigurator/ContractConfigurator.dll",
+    "channels": [{ "ckan": "ContractConfigurator" }, { "github": "KSP-RO/ContractConfigurator" }]
+  },
+  "ckanDepends": [{ "name": "Harmony2" }],
+  "csharpNamespace": "Gonogo.ContractConfiguratorUplink"
+}

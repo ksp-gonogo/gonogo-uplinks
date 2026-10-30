@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- MIT. Contract Configurator is linked at compile time, as the kOS Uplink
+       links kOS: this assembly patches its parameter classes with Harmony, which
+       needs their types. It is copied nowhere (Private="false"), so the game's
+       own Contract Configurator satisfies the load. Without it installed this
+       Uplink loads, finds no assembly by that name and goes inert before any
+       Contract Configurator type is touched. -->
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>GonogoContractConfiguratorUplink</AssemblyName>
+    <RootNamespace>Gonogo.ContractConfiguratorUplink</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine" Private="false">
+      <HintPath>$(KspManaged)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule" Private="false">
+      <HintPath>$(KspManaged)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp" Private="false">
+      <HintPath>$(KspManaged)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass" Private="false">
+      <HintPath>$(KspManaged)\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="ContractConfigurator" Private="false">
+      <HintPath>$(KspGameData)\ContractConfigurator\ContractConfigurator.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony" Private="false">
+      <HintPath>$(KspGameData)\000_Harmony\0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Sitrep.Contract and nothing else of Gonogo's. Private=false because core
+       Gonogo already ships it and KSP loads every plugin into one AppDomain. -->
+  <ItemGroup>
+    <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
