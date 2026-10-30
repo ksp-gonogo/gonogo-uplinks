@@ -37,7 +37,7 @@
        types, and the Uplink reaches for them only once the assembly is known to
        be loaded (see KerbcastBinding). -->
   <ItemGroup>
-    <PackageReference Include="Kerbcast.API" Version="[$(KerbcastApiVersion)]" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="KspGonogo.Kerbcast.API" Version="[$(KerbcastApiVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Sitrep.Contract ONLY of core's assemblies (Private="false"): the

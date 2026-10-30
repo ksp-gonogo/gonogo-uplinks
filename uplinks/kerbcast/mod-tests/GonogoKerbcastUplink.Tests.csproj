@@ -74,8 +74,8 @@
          comment). The [Fact]s stay here, naming this Uplink's own types. -->
     <!-- KerbcastHealth builds Sitrep.Contract's UplinkHealth (KSP-free). -->
     <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
-    <PackageReference Include="Kerbcast.API" Version="[$(KerbcastApiVersion)]" />
-    <PackageReference Include="Kerbcast.API.Testing" Version="[$(KerbcastApiVersion)]" />
+    <PackageReference Include="KspGonogo.Kerbcast.API" Version="[$(KerbcastApiVersion)]" />
+    <PackageReference Include="KspGonogo.Kerbcast.API.Testing" Version="[$(KerbcastApiVersion)]" />
   </ItemGroup>
 
 </Project>

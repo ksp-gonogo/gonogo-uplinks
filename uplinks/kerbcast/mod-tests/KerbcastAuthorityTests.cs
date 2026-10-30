@@ -28,7 +28,7 @@ public class KerbcastAuthorityTests
 
         Assert.Equal(KerbcastAuthority.Owner, kc.Command.LockOwner);
         Assert.Equal(LockOptions.WorldModelRequired, kc.Command.LockOptions);
-        Assert.Equal(Light, kc.Command.SignalSpeed);
+        Assert.Equal(Light, kc.Command.LightSpeed);
         Assert.Equal(KerbcastAuthority.Owner, kc.Command.ReservedOwner);
         Assert.Equal(typeof(KerbcastAuthority).Assembly.GetName().Name, kc.Command.ReservedAssembly);
         Assert.NotNull(authority.Publisher);
@@ -49,7 +49,7 @@ public class KerbcastAuthorityTests
         Assert.Equal(AuthorityState.DelayOff, authority.Tick(2.0, null));
 
         Assert.Null(kc.Command.LockOwner);
-        Assert.Null(kc.Command.SignalSpeed);
+        Assert.Null(kc.Command.LightSpeed);
         Assert.Null(authority.Publisher);
         Assert.Null(kc.Command.ReservedOwner);
     }
@@ -80,7 +80,7 @@ public class KerbcastAuthorityTests
         Assert.Equal(AuthorityState.Unsupported, authority.Tick(0.0, Light));
         Assert.Null(kc.Command.LockOwner);
 
-        kc.SetSupported(f => f != ApiFeature.CommandLock && f != ApiFeature.WorldModel && f != ApiFeature.SignalSpeed);
+        kc.SetSupported(f => f != ApiFeature.CommandLock && f != ApiFeature.WorldModel && f != ApiFeature.LightSpeed);
         Assert.Equal(AuthorityState.Unsupported, authority.Tick(1.0, Light));
         Assert.Empty(kc.Calls);
     }
@@ -89,11 +89,11 @@ public class KerbcastAuthorityTests
     public void AKerbcastWithoutTheSignalSpeedStillGovernsAndNeverCallsIt()
     {
         var kc = new RecordingKerbcast();
-        kc.SetSupported(f => f != ApiFeature.SignalSpeed);
+        kc.SetSupported(f => f != ApiFeature.LightSpeed);
         var authority = Authority(kc);
 
         Assert.Equal(AuthorityState.Governing, authority.Tick(0.0, Light));
-        Assert.DoesNotContain(kc.Calls, c => c.StartsWith("SetSignalSpeed"));
+        Assert.DoesNotContain(kc.Calls, c => c.StartsWith("SetLightSpeed"));
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class KerbcastAuthorityTests
         Assert.Equal(2, kc.Calls.Count(c => c.StartsWith("TakeLock")));
 
         authority.Tick(1.1, 3.0);
-        Assert.Equal(3.0, kc.Command.SignalSpeed);
+        Assert.Equal(3.0, kc.Command.LightSpeed);
     }
 
     [Fact]
@@ -136,13 +136,13 @@ public class KerbcastAuthorityTests
         Assert.Equal(1, authority.Tenure);
 
         kc.Command.ChangeScene();
-        Assert.Null(kc.Command.SignalSpeed);
+        Assert.Null(kc.Command.LightSpeed);
 
         Assert.Equal(AuthorityState.Governing, authority.Tick(0.1, Light));
         Assert.NotSame(first, authority.Publisher);
         Assert.True(authority.Publisher!.Attached);
         Assert.Equal(2, authority.Tenure);
-        Assert.Equal(Light, kc.Command.SignalSpeed);
+        Assert.Equal(Light, kc.Command.LightSpeed);
     }
 
     [Fact]

@@ -151,11 +151,7 @@ public class KerbcastWorldModelTests
         _sites.Delivered[Ksc] = 100.0;
         _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
         _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 99.0);
-        _model.OnIdentity(new IdentityEvent
-        {
-            Change = IdentityChange.Merge, Ut = 100.0, PersistentId = ProbePid, VesselId = ProbeId,
-            OtherPersistentId = StationPid, OtherVesselId = StationId,
-        });
+        _model.OnIdentity(new IdentityEvent(change: IdentityChange.Merge, ut: 100.0, persistentId: ProbePid, vesselId: ProbeId, otherPersistentId: StationPid, otherVesselId: StationId));
 
         Publish(100.0, 0.0);
         Assert.Empty(_kc.Command.Published.Last().Aliases);
@@ -217,17 +213,13 @@ public class KerbcastWorldModelTests
     }
 
     private static IdentityEvent Change(IdentityChange change, double ut, uint pid, uint other) =>
-        new IdentityEvent { Change = change, Ut = ut, PersistentId = pid, OtherPersistentId = other };
+        new IdentityEvent(change: change, ut: ut, persistentId: pid, vesselId: Guid.Empty, otherPersistentId: other);
 
     [Fact]
     public void ARenumberedCraftIsAliasedAtOnceAndKeepsItsLabel()
     {
         _sites.Delivered[Ksc] = 100.0;
-        _model.OnIdentity(new IdentityEvent
-        {
-            Change = IdentityChange.Renumber, Ut = 100.0, PersistentId = ProbePid, VesselId = ProbeId,
-            OtherPersistentId = 999, OtherVesselId = ProbeId,
-        });
+        _model.OnIdentity(new IdentityEvent(change: IdentityChange.Renumber, ut: 100.0, persistentId: ProbePid, vesselId: ProbeId, otherPersistentId: 999, otherVesselId: ProbeId));
         _kc.Cameras.Learn(999, ProbeId);
         _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
 
@@ -242,11 +234,7 @@ public class KerbcastWorldModelTests
     public void TimeGoingBackwardsRaisesTheEpochAndDropsWhatHappenedAfterIt()
     {
         _sites.Delivered[Ksc] = 200.0;
-        _model.OnIdentity(new IdentityEvent
-        {
-            Change = IdentityChange.Renumber, Ut = 150.0, PersistentId = ProbePid, VesselId = ProbeId,
-            OtherPersistentId = 999, OtherVesselId = ProbeId,
-        });
+        _model.OnIdentity(new IdentityEvent(change: IdentityChange.Renumber, ut: 150.0, persistentId: ProbePid, vesselId: ProbeId, otherPersistentId: 999, otherVesselId: ProbeId));
         Publish(200.0, 0.0);
         var before = _kc.Command.Published.Last();
 

@@ -1,4 +1,8 @@
-import { CameraKind, type CameraState } from "@ksp-gonogo/kerbcast";
+import {
+  CameraKind,
+  CameraLifecycle,
+  type CameraState,
+} from "@ksp-gonogo/kerbcast";
 import { describe, expect, it } from "vitest";
 import { followedPartCameraId } from "./cameraPicker.js";
 
@@ -7,7 +11,7 @@ function cam(over: Partial<CameraState> & { flightId: number }): CameraState {
     cameraName: "Nav",
     vesselName: "Rover",
     kind: CameraKind.Part,
-    lifecycle: "active",
+    lifecycle: CameraLifecycle.Active,
     ...over,
   } as CameraState;
 }
@@ -19,7 +23,7 @@ describe("followedPartCameraId", () => {
   });
 
   it("moves off a destroyed camera that is still listed", () => {
-    const held = cam({ flightId: 1, lifecycle: "destroyed" });
+    const held = cam({ flightId: 1, lifecycle: CameraLifecycle.Destroyed });
     expect(
       followedPartCameraId([held, cam({ flightId: 9 })], held),
     ).toBe(9);

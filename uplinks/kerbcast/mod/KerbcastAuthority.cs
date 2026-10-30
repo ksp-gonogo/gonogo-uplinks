@@ -101,7 +101,7 @@ namespace Gonogo.KerbcastUplink
             }
 
             var tenureLost = _holds && (Publisher == null || !Publisher.Attached);
-            var speedDue = _supports(ApiFeature.SignalSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed));
+            var speedDue = _supports(ApiFeature.LightSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed));
             if (_holds && !tenureLost && !speedDue && _lastBeat.HasValue && realSeconds - _lastBeat.Value < HeartbeatSeconds)
             {
                 return State;
@@ -137,8 +137,8 @@ namespace Gonogo.KerbcastUplink
                 return State = AuthorityState.Unsupported;
             }
 
-            if (_supports(ApiFeature.SignalSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed))
-                && command.SetSignalSpeed(Owner, signalSpeed))
+            if (_supports(ApiFeature.LightSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed))
+                && command.SetLightSpeed(Owner, signalSpeed))
             {
                 _speedSent = signalSpeed;
                 _speedKnown = true;
