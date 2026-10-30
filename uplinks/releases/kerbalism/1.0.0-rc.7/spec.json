@@ -1,0 +1,1485 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "kerbalism",
+    "name": "Kerbalism",
+    "version": "1.0.0-rc.7",
+    "description": "Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.",
+    "wraps": {
+      "name": "Kerbalism",
+      "builtAgainst": "3.32",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "kerbalism.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "kerbalism.crew",
+      "payload": "KerbalismCrewEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "deathClockUt",
+          "unit": "ut"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "rules",
+          "shape": "KerbalismCrewRule[]"
+        },
+        {
+          "name": "rulesAsOfKerbalismUt",
+          "unit": "ut"
+        },
+        {
+          "name": "trait",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.diagnostics",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.features",
+      "payload": "KerbalismFeatures",
+      "array": false,
+      "fields": [
+        {
+          "name": "automation",
+          "unit": "flag"
+        },
+        {
+          "name": "comfort",
+          "unit": "flag"
+        },
+        {
+          "name": "deploy",
+          "unit": "flag"
+        },
+        {
+          "name": "habitat",
+          "unit": "flag"
+        },
+        {
+          "name": "livingSpace",
+          "unit": "flag"
+        },
+        {
+          "name": "poisoning",
+          "unit": "flag"
+        },
+        {
+          "name": "pressure",
+          "unit": "flag"
+        },
+        {
+          "name": "radiation",
+          "unit": "flag"
+        },
+        {
+          "name": "reliability",
+          "unit": "flag"
+        },
+        {
+          "name": "science",
+          "unit": "flag"
+        },
+        {
+          "name": "shielding",
+          "unit": "flag"
+        },
+        {
+          "name": "spaceWeather",
+          "unit": "flag"
+        },
+        {
+          "name": "supplies",
+          "unit": "flag"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "kerbalism.lifesupport",
+      "payload": "KerbalismLifeSupport",
+      "array": false,
+      "fields": [
+        {
+          "name": "asOfKerbalismUt",
+          "unit": "ut"
+        },
+        {
+          "name": "greenhouses",
+          "shape": "KerbalismGreenhouseEntry[]"
+        },
+        {
+          "name": "habitat",
+          "shape": "KerbalismHabitat"
+        },
+        {
+          "name": "processes",
+          "shape": "KerbalismProcessEntry[]"
+        },
+        {
+          "name": "rates",
+          "unit": "units/s"
+        },
+        {
+          "name": "ruleEnvModifiers",
+          "unit": "1"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.profile",
+      "payload": "KerbalismProfile",
+      "array": false,
+      "fields": [
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "processes",
+          "shape": "KerbalismProcessDef[]"
+        },
+        {
+          "name": "resources",
+          "shape": "*KerbalismResourceDef"
+        },
+        {
+          "name": "rules",
+          "shape": "KerbalismRuleDef[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
+      "id": "kerbalism.reliability",
+      "payload": "KerbalismReliabilitySummary",
+      "array": false,
+      "fields": [
+        {
+          "name": "brokenPartCount",
+          "unit": "count"
+        },
+        {
+          "name": "coverage",
+          "unit": "enum"
+        },
+        {
+          "name": "criticalChance",
+          "unit": "ratio"
+        },
+        {
+          "name": "incentiveRedundancy",
+          "unit": "flag"
+        },
+        {
+          "name": "requireRepairKits",
+          "unit": "flag"
+        },
+        {
+          "name": "safeModeChance",
+          "unit": "ratio"
+        },
+        {
+          "name": "serviceDuePartCount",
+          "unit": "count"
+        },
+        {
+          "name": "worstMtbfSeconds",
+          "unit": "s"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.reliabilityParts",
+      "payload": "KerbalismReliabilityPart",
+      "array": true,
+      "fields": [
+        {
+          "name": "budgets",
+          "shape": "KerbalismReliabilityBudget[]"
+        },
+        {
+          "name": "condition",
+          "unit": "enum"
+        },
+        {
+          "name": "conditionDetail",
+          "unit": "text"
+        },
+        {
+          "name": "mtbfSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        },
+        {
+          "name": "quality",
+          "unit": "flag"
+        },
+        {
+          "name": "redundancyGroup",
+          "unit": "text"
+        },
+        {
+          "name": "repairCost",
+          "shape": "KerbalismRepairCostItem[]"
+        },
+        {
+          "name": "repairLevel",
+          "unit": "count"
+        },
+        {
+          "name": "repairTrait",
+          "unit": "text"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.spaceweather",
+      "payload": "KerbalismSpaceWeather",
+      "array": false,
+      "fields": [
+        {
+          "name": "blackout",
+          "unit": "flag"
+        },
+        {
+          "name": "habitatRadiationRadPerSecond",
+          "unit": "rad/s"
+        },
+        {
+          "name": "inSunlight",
+          "unit": "flag"
+        },
+        {
+          "name": "innerBelt",
+          "unit": "flag"
+        },
+        {
+          "name": "magnetosphere",
+          "unit": "flag"
+        },
+        {
+          "name": "outerBelt",
+          "unit": "flag"
+        },
+        {
+          "name": "radiationRadPerSecond",
+          "unit": "rad/s"
+        },
+        {
+          "name": "shieldingAmount",
+          "unit": "units"
+        },
+        {
+          "name": "shieldingCapacity",
+          "unit": "units"
+        },
+        {
+          "name": "solarPanelExposure",
+          "unit": "ratio"
+        },
+        {
+          "name": "stars",
+          "shape": "KerbalismStarInfo[]"
+        },
+        {
+          "name": "stormEjectionSpeed",
+          "unit": "m/s"
+        },
+        {
+          "name": "stormInProgress",
+          "unit": "flag"
+        },
+        {
+          "name": "stormIncoming",
+          "unit": "flag"
+        },
+        {
+          "name": "storms",
+          "shape": "KerbalismStormEntry[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
+      "id": "kerbalism.transmission",
+      "payload": "KerbalismTransmission",
+      "array": false,
+      "fields": [
+        {
+          "name": "dataRate",
+          "unit": "bit/s"
+        },
+        {
+          "name": "scienceTransmitted",
+          "unit": "science"
+        },
+        {
+          "name": "target",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [
+    {
+      "name": "KerbalismCrewRule",
+      "fields": [
+        {
+          "name": "degenPerSec",
+          "unit": "units/s"
+        },
+        {
+          "name": "fatalThreshold",
+          "unit": "units"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "problem",
+          "unit": "units"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismDevice",
+      "fields": [
+        {
+          "name": "id",
+          "unit": "text"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "partName",
+          "unit": "text"
+        },
+        {
+          "name": "status",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismGreenhouseEntry",
+      "fields": [
+        {
+          "name": "active",
+          "unit": "flag"
+        },
+        {
+          "name": "artificial",
+          "unit": "W/m²"
+        },
+        {
+          "name": "cropResource",
+          "unit": "text"
+        },
+        {
+          "name": "ecRateMaxPerSec",
+          "unit": "units/s"
+        },
+        {
+          "name": "foodRatePerSec",
+          "unit": "units/s"
+        },
+        {
+          "name": "issue",
+          "unit": "text"
+        },
+        {
+          "name": "lampEcDrawPerSec",
+          "unit": "units/s"
+        },
+        {
+          "name": "lightToleranceWm2",
+          "unit": "W/m²"
+        },
+        {
+          "name": "natural",
+          "unit": "W/m²"
+        },
+        {
+          "name": "pressureTolerance",
+          "unit": "ratio"
+        },
+        {
+          "name": "radiationToleranceRadPerSec",
+          "unit": "rad/s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismHabitat",
+      "fields": [
+        {
+          "name": "comfort",
+          "unit": "ratio"
+        },
+        {
+          "name": "evaSafe",
+          "unit": "flag"
+        },
+        {
+          "name": "livingSpace",
+          "unit": "ratio"
+        },
+        {
+          "name": "poisoning",
+          "unit": "ratio"
+        },
+        {
+          "name": "pressure",
+          "unit": "ratio"
+        },
+        {
+          "name": "pressureKpa",
+          "unit": "kPa"
+        },
+        {
+          "name": "shielding",
+          "unit": "ratio"
+        },
+        {
+          "name": "surface",
+          "unit": "m²"
+        },
+        {
+          "name": "volume",
+          "unit": "m³"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismLogEntry",
+      "fields": [
+        {
+          "name": "level",
+          "unit": "enum"
+        },
+        {
+          "name": "message",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismProcessDef",
+      "fields": [
+        {
+          "name": "dumpValves",
+          "unit": "text"
+        },
+        {
+          "name": "inputs",
+          "unit": "units/s"
+        },
+        {
+          "name": "modifiers",
+          "unit": "text"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "outputs",
+          "unit": "units/s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismProcessEntry",
+      "fields": [
+        {
+          "name": "broken",
+          "unit": "flag"
+        },
+        {
+          "name": "capacity",
+          "unit": "units"
+        },
+        {
+          "name": "envModifier",
+          "unit": "1"
+        },
+        {
+          "name": "flightId",
+          "unit": "id"
+        },
+        {
+          "name": "resource",
+          "unit": "text"
+        },
+        {
+          "name": "running",
+          "unit": "flag"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        },
+        {
+          "name": "valveIndex",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismReliabilityBudget",
+      "fields": [
+        {
+          "name": "consumed",
+          "unit": "ratio"
+        },
+        {
+          "name": "id",
+          "unit": "id"
+        },
+        {
+          "name": "kind",
+          "unit": "enum"
+        },
+        {
+          "name": "label",
+          "unit": "text"
+        },
+        {
+          "name": "limitSeconds",
+          "unit": "s"
+        },
+        {
+          "name": "usedSeconds",
+          "unit": "s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismRepairCostItem",
+      "fields": [
+        {
+          "name": "name",
+          "unit": "id"
+        },
+        {
+          "name": "quantity",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismResourceDef",
+      "fields": [
+        {
+          "name": "density",
+          "unit": "kg/m³"
+        },
+        {
+          "name": "displayName",
+          "unit": "text"
+        },
+        {
+          "name": "flowMode",
+          "unit": "text"
+        },
+        {
+          "name": "flowModeOrdinal",
+          "unit": "enum"
+        },
+        {
+          "name": "isSupply",
+          "unit": "flag"
+        },
+        {
+          "name": "lowThreshold",
+          "unit": "ratio"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismRuleDef",
+      "fields": [
+        {
+          "name": "breakdown",
+          "unit": "flag"
+        },
+        {
+          "name": "degeneration",
+          "unit": "units/s"
+        },
+        {
+          "name": "fatalThreshold",
+          "unit": "units"
+        },
+        {
+          "name": "input",
+          "unit": "text"
+        },
+        {
+          "name": "interval",
+          "unit": "s"
+        },
+        {
+          "name": "modifiers",
+          "unit": "text"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "output",
+          "unit": "text"
+        },
+        {
+          "name": "rate",
+          "unit": "units"
+        },
+        {
+          "name": "ratePerSecond",
+          "unit": "units/s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScript",
+      "fields": [
+        {
+          "name": "deviceCount",
+          "unit": "count"
+        },
+        {
+          "name": "states",
+          "shape": "KerbalismScriptState[]"
+        },
+        {
+          "name": "type",
+          "unit": "enum"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScriptState",
+      "fields": [
+        {
+          "name": "deviceId",
+          "unit": "id"
+        },
+        {
+          "name": "on",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismStarInfo",
+      "fields": [
+        {
+          "name": "direction.x",
+          "unit": "1"
+        },
+        {
+          "name": "direction.y",
+          "unit": "1"
+        },
+        {
+          "name": "direction.z",
+          "unit": "1"
+        },
+        {
+          "name": "distance",
+          "unit": "m"
+        },
+        {
+          "name": "star",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismStormEntry",
+      "fields": [
+        {
+          "name": "dist",
+          "unit": "m"
+        },
+        {
+          "name": "star",
+          "unit": "text"
+        },
+        {
+          "name": "stormDuration",
+          "unit": "s"
+        },
+        {
+          "name": "stormState",
+          "unit": "count"
+        },
+        {
+          "name": "stormTime",
+          "unit": "ut"
+        },
+        {
+          "name": "targetKind",
+          "unit": "enum"
+        },
+        {
+          "name": "targetName",
+          "unit": "text"
+        }
+      ]
+    }
+  ],
+  "otherPayloads": [
+    {
+      "name": "KerbalismIsruConverterExtension",
+      "fields": [
+        {
+          "name": "broken",
+          "unit": "flag"
+        },
+        {
+          "name": "capacity",
+          "unit": "units"
+        },
+        {
+          "name": "processToken",
+          "unit": "text"
+        },
+        {
+          "name": "title",
+          "unit": "text"
+        },
+        {
+          "name": "valveIndex",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismIsruDrillExtension",
+      "fields": [
+        {
+          "name": "ecRate",
+          "unit": "units/s"
+        },
+        {
+          "name": "harvestType",
+          "unit": "text"
+        },
+        {
+          "name": "issue",
+          "unit": "text"
+        },
+        {
+          "name": "sourceMassRemaining",
+          "unit": "t"
+        },
+        {
+          "name": "sourceMassThreshold",
+          "unit": "t"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismRepairOutcome",
+      "fields": [
+        {
+          "name": "kitsFrom",
+          "unit": "id"
+        },
+        {
+          "name": "kitsUsed",
+          "unit": "count"
+        },
+        {
+          "name": "repaired",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismResource",
+      "fields": [
+        {
+          "name": "amount",
+          "unit": "units"
+        },
+        {
+          "name": "capacity",
+          "unit": "units"
+        },
+        {
+          "name": "rate",
+          "unit": "units/s"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScienceBreakdownExt",
+      "fields": [
+        {
+          "name": "percentCollectedTotal",
+          "unit": "ratio"
+        },
+        {
+          "name": "scienceCollectedInFlight",
+          "unit": "science"
+        },
+        {
+          "name": "scienceRemainingTotal",
+          "unit": "science"
+        },
+        {
+          "name": "timesCompleted",
+          "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScienceExperimentExt",
+      "fields": [
+        {
+          "name": "analyze",
+          "unit": "flag"
+        },
+        {
+          "name": "dataSizeMB",
+          "unit": "MB"
+        },
+        {
+          "name": "kind",
+          "unit": "id"
+        },
+        {
+          "name": "sampleMass",
+          "unit": "t"
+        },
+        {
+          "name": "sampleSlotsTotal",
+          "unit": "count"
+        },
+        {
+          "name": "sampleSlotsUsed",
+          "unit": "count"
+        },
+        {
+          "name": "sciencePerMB",
+          "unit": "science/MB"
+        },
+        {
+          "name": "sendFlagged",
+          "unit": "flag"
+        },
+        {
+          "name": "storageCapacityMB",
+          "unit": "MB"
+        },
+        {
+          "name": "storageUsedMB",
+          "unit": "MB"
+        },
+        {
+          "name": "transmitRateMBps",
+          "unit": "MB/s"
+        },
+        {
+          "name": "transmitting",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScienceInstrumentExt",
+      "fields": [
+        {
+          "name": "bodyCoveragePercent",
+          "unit": "%"
+        },
+        {
+          "name": "dataRateMBps",
+          "unit": "MB/s"
+        },
+        {
+          "name": "ecRate",
+          "unit": "units/s"
+        },
+        {
+          "name": "expStatus",
+          "unit": "id"
+        },
+        {
+          "name": "issue",
+          "unit": "text"
+        },
+        {
+          "name": "kind",
+          "unit": "id"
+        },
+        {
+          "name": "powerDisabled",
+          "unit": "flag"
+        },
+        {
+          "name": "prodFactor",
+          "unit": "ratio"
+        },
+        {
+          "name": "progressFraction",
+          "unit": "ratio"
+        },
+        {
+          "name": "remainingSampleMass",
+          "unit": "t"
+        },
+        {
+          "name": "runningState",
+          "unit": "id"
+        },
+        {
+          "name": "scanning",
+          "unit": "flag"
+        },
+        {
+          "name": "secondsToComplete",
+          "unit": "s"
+        },
+        {
+          "name": "waitingReason",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScienceLabExt",
+      "fields": [
+        {
+          "name": "analysisRateMBps",
+          "unit": "MB/s"
+        },
+        {
+          "name": "effectiveRateMBps",
+          "unit": "MB/s"
+        },
+        {
+          "name": "status",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "kerbalism.device.set",
+      "args": "KerbalismDeviceSetArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.file.delete",
+      "args": "KerbalismSubjectActionArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.file.send",
+      "args": "KerbalismSubjectFlagArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.repair",
+      "args": "KerbalismRepairPartArgs",
+      "result": "CommandResultOf<KerbalismRepairOutcome>"
+    },
+    {
+      "id": "kerbalism.sample.analyze",
+      "args": "KerbalismSubjectFlagArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.sample.dump",
+      "args": "KerbalismSubjectActionArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.sample.moveToLab",
+      "args": "KerbalismSubjectActionArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kerbalism.script.set",
+      "args": "KerbalismScriptSetArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "KerbalismDeviceSetArgs",
+      "fields": [
+        {
+          "name": "deviceId",
+          "unit": "id"
+        },
+        {
+          "name": "on",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismRepairPartArgs",
+      "fields": [
+        {
+          "name": "crewName",
+          "unit": "text"
+        },
+        {
+          "name": "partId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismScriptSetArgs",
+      "fields": [
+        {
+          "name": "deviceId",
+          "unit": "id"
+        },
+        {
+          "name": "scriptType",
+          "unit": "enum"
+        },
+        {
+          "name": "state",
+          "unit": "flag"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismSubjectActionArgs",
+      "fields": [
+        {
+          "name": "subjectId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismSubjectFlagArgs",
+      "fields": [
+        {
+          "name": "flag",
+          "unit": "flag"
+        },
+        {
+          "name": "subjectId",
+          "unit": "id"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "ship-systems",
+      "name": "Ship Systems",
+      "description": "Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resource as a meter with a per-source rate ledger, wear gauges, habitat, processes, and the power meter.",
+      "tags": [
+        "telemetry",
+        "kerbalism"
+      ],
+      "channels": [
+        "kerbalism.profile",
+        "kerbalism.lifesupport",
+        "vessel.resources",
+        "vessel.crew"
+      ],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "kerbalism.profile",
+        "kerbalism.lifesupport",
+        "vessel.resources",
+        "vessel.crew"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [
+        "ship-systems.life-support"
+      ],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 12,
+        "h": 24
+      },
+      "minSize": {
+        "w": 4,
+        "h": 5
+      },
+      "tiny": false
+    },
+    {
+      "id": "space-weather",
+      "name": "Space Weather",
+      "description": "Solar activity and radiation: each star's activity, coronal mass ejections with departure, transit progress, impact ETA and what they will hit, and the craft's own habitat dose rate, belt and magnetopause position and shielding.",
+      "tags": [
+        "telemetry",
+        "kerbalism"
+      ],
+      "channels": [
+        "kerbalism.spaceweather"
+      ],
+      "optionalChannels": [
+        "vessel.flight"
+      ],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [
+        "flight"
+      ],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 8,
+        "h": 11
+      },
+      "minSize": {
+        "w": 3,
+        "h": 4
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [
+    {
+      "id": "crew-status-radiation-summary",
+      "augments": "crew-status.summary",
+      "channels": [],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "crew-status-survival-badge",
+      "augments": "crew-status.row-badges",
+      "channels": [
+        "kerbalism.lifesupport"
+      ],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "experiments-instrument-progress",
+      "augments": "experiments.instrument",
+      "channels": [],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "kerbalism-reliability-updates",
+      "augments": "vessel-catalog.updates",
+      "channels": [],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "life-support-greenhouse",
+      "augments": "ship-systems.life-support",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
+      "id": "science-data-aboard-row-file-manager",
+      "augments": "science-data.aboard-row",
+      "channels": [],
+      "requires": "kerbalism",
+      "suppressesVanillaBase": false,
+      "settings": []
+    }
+  ],
+  "contributions": [
+    {
+      "id": "kerbalism:comm-signal-link-rate",
+      "contributes": "comm-signal.link-rate",
+      "deps": [
+        "kerbalism.transmission"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:crew-survival-badge",
+      "contributes": "crew-status.badges",
+      "deps": [
+        "processor:kerbalism:crew-survival"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:crew-survival-band-badge",
+      "contributes": "crew-status.badges",
+      "deps": [
+        "processor:kerbalism:crew-rule-readings",
+        "processor:kerbalism:crew-survival"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:crew-survival-meters",
+      "contributes": "crew-status.meters",
+      "deps": [
+        "processor:kerbalism:crew-survival",
+        "processor:kerbalism:crew-rule-readings"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:crew-survival-row-tone",
+      "contributes": "crew-status.row-tone",
+      "deps": [
+        "processor:kerbalism:crew-survival"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:resource-ops-processes",
+      "contributes": "resource-ops.filters",
+      "deps": [
+        "isru.converters"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:science-transmitted",
+      "contributes": "science-data.archive-readouts",
+      "deps": [
+        "kerbalism.transmission"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:ship-map-part-meta",
+      "contributes": "ship-map.part-meta",
+      "deps": [
+        "kerbalism.lifesupport"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:ship-map-part-meters",
+      "contributes": "ship-map.part-meters",
+      "deps": [
+        "vessel.parts",
+        "kerbalism.profile"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:ship-systems-badge",
+      "contributes": "ship-systems.badges",
+      "deps": [
+        "processor:kerbalism:ship-systems"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:space-weather-badge",
+      "contributes": "space-weather.badges",
+      "deps": [
+        "kerbalism.spaceweather"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:system-view-cme",
+      "contributes": "tracking-station.entities",
+      "deps": [
+        "kerbalism.spaceweather"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    }
+  ],
+  "models": {
+    "processors": [
+      "kerbalism:crew-rule-readings",
+      "kerbalism:crew-survival",
+      "kerbalism:ship-systems"
+    ],
+    "forwardModels": [
+      "kerbalism.crew",
+      "vessel.resources"
+    ],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": [
+    {
+      "id": "kerbalism.continuousScience",
+      "refines": "modeUnavailable",
+      "sentence": "Kerbalism runs and transmits experiments on its own",
+      "meaning": "Kerbalism runs and transmits experiments continuously on its own, so a one-shot deploy or transmit has nothing to act on."
+    },
+    {
+      "id": "kerbalism.craftNotLoaded",
+      "refines": "modeUnavailable",
+      "sentence": "the craft is not loaded, so Kerbalism cannot switch its devices",
+      "meaning": "Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded."
+    },
+    {
+      "id": "kerbalism.crewNotQualified",
+      "refines": "capabilityMismatch",
+      "sentence": "that kerbal does not meet Kerbalism's repair specs",
+      "meaning": "The kerbal lacks the trait or experience level Kerbalism's repair specs ask for, which it raises by one level for a critical failure."
+    },
+    {
+      "id": "kerbalism.driveRefused",
+      "refines": "modeUnavailable",
+      "sentence": "the Kerbalism drive did not make the change",
+      "meaning": "A Kerbalism drive was asked to change a file or sample and reported that it had not."
+    },
+    {
+      "id": "kerbalism.evaImpossible",
+      "refines": "notClearToProceed",
+      "sentence": "the crew cannot get out to it yet",
+      "meaning": "The kerbal cannot get out to the part: the hatch is inside a fairing, which clears once it is jettisoned."
+    },
+    {
+      "id": "kerbalism.experimentNotSwitched",
+      "refines": "modeUnavailable",
+      "sentence": "Kerbalism would not switch the experiment just now",
+      "meaning": "Kerbalism left the experiment as it was: it is broken, its animation is still moving, the same experiment is running elsewhere on the craft, or its fairing is still on."
+    },
+    {
+      "id": "kerbalism.noDriveSpace",
+      "refines": "limitReached",
+      "sentence": "no drive beside a lab has room for the whole sample",
+      "meaning": "No drive beside a lab, other than the one holding it, has room for the whole sample."
+    },
+    {
+      "id": "kerbalism.noKits",
+      "refines": "insufficientResource",
+      "sentence": "there are not enough repair kits aboard",
+      "meaning": "The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes."
+    },
+    {
+      "id": "kerbalism.noSuchCrew",
+      "refines": "notFound",
+      "sentence": "no crew member aboard has that name",
+      "meaning": "Nobody aboard the craft answers to the name the repair was given."
+    },
+    {
+      "id": "kerbalism.noSuchDevice",
+      "refines": "notFound",
+      "sentence": "no device or script aboard matches that",
+      "meaning": "The craft has no visible device with that id, or no event script by that name."
+    },
+    {
+      "id": "kerbalism.nothingToRepair",
+      "refines": "notFound",
+      "sentence": "no part aboard with that id is broken or due a service",
+      "meaning": "No reliability module aboard has that id and is broken or due a service."
+    },
+    {
+      "id": "kerbalism.reliabilityNotModelled",
+      "refines": "modeUnavailable",
+      "sentence": "Kerbalism is not modelling part failures in this save",
+      "meaning": "Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking."
+    },
+    {
+      "id": "kerbalism.scienceNotModelled",
+      "refines": "modeUnavailable",
+      "sentence": "Kerbalism is not modelling science here",
+      "meaning": "Kerbalism is not modelling science on this vessel, so there is no file or sample to act on."
+    }
+  ]
+}
