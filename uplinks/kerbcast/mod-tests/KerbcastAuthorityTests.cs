@@ -55,6 +55,26 @@ public class KerbcastAuthorityTests
     }
 
     [Fact]
+    public void DelayOffAtStartClearsAReservationAndLockLeftByAnEarlierRun()
+    {
+        var kc = new RecordingKerbcast();
+        kc.Command.Reserve(KerbcastAuthority.Owner, typeof(KerbcastAuthority).Assembly.GetName().Name);
+        kc.Command.ChangeScene();
+        Assert.Equal(KerbcastAuthority.Owner, kc.Command.LockOwner);
+        var authority = Authority(kc);
+
+        Assert.Equal(AuthorityState.DelayOff, authority.Tick(0.0, null));
+
+        Assert.Null(kc.Command.LockOwner);
+        Assert.Null(kc.Command.ReservedOwner);
+        var calls = kc.Calls.Count;
+
+        authority.Tick(1.0, null);
+
+        Assert.Equal(calls, kc.Calls.Count);
+    }
+
+    [Fact]
     public void AReleaseAndARetakeAttachAFreshPublisher()
     {
         var kc = new RecordingKerbcast();

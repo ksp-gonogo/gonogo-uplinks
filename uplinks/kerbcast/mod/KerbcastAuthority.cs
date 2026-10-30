@@ -48,6 +48,7 @@ namespace Gonogo.KerbcastUplink
         private bool _holds;
         private bool _reserved;
         private bool _reserveRefused;
+        private bool _delayOffSettled;
         private double? _lastBeat;
         private double? _speedSent;
         private bool _speedKnown;
@@ -87,18 +88,15 @@ namespace Gonogo.KerbcastUplink
             var command = kerbcast.Command;
             if (signalSpeed == null)
             {
-                if (_holds)
+                if (!_delayOffSettled)
                 {
-                    command.ReleaseLock(Owner);
-                }
-                if (_reserved)
-                {
-                    command.ClearReservation(Owner);
-                    _reserved = false;
+                    ReleaseHold(command);
+                    _delayOffSettled = true;
                 }
                 Forget();
                 return State = AuthorityState.DelayOff;
             }
+            _delayOffSettled = false;
 
             var tenureLost = _holds && (Publisher == null || !Publisher.Attached);
             var speedDue = _supports(ApiFeature.LightSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed));
@@ -163,6 +161,27 @@ namespace Gonogo.KerbcastUplink
             {
                 _reserveRefused = true;
             }
+        }
+
+        /*
+         * Kerbcast keeps a reservation across game runs and starts the scene locked for
+         * its owner, before this Uplink has run, so what this process remembers says
+         * nothing about whether a hold exists. Both are cleared once per delay-off
+         * stretch whatever this process thinks it holds. Clearing a reservation Kerbcast
+         * refuses to give up (another owner's) is left alone.
+         */
+        private void ReleaseHold(ICommand command)
+        {
+            command.ReleaseLock(Owner);
+            try
+            {
+                command.ClearReservation(Owner);
+            }
+            catch (Exception e) when (e is ArgumentException || e is InvalidOperationException)
+            {
+                // Not this Uplink's reservation to clear.
+            }
+            _reserved = false;
         }
 
         private void Forget()
