@@ -3,9 +3,9 @@
   "engine": "chromium",
   "assets": {
     "appoint-roster--default.png": {
-      "hash": "ce185070ac64fbe6",
-      "elements": 175,
-      "text": "4ab6d80a"
+      "hash": "fb39c019af6a2c15",
+      "elements": 141,
+      "text": "d0054b17"
     },
     "assembly-empty--default.png": {
       "hash": "9adb335b50b68939",
@@ -243,29 +243,29 @@
       "text": "5c399570"
     },
     "catalogue-picker--default.png": {
-      "hash": "c4fb272bef1b417e",
-      "elements": 309,
-      "text": "a2dcee6d"
+      "hash": "e22efee914c118d0",
+      "elements": 314,
+      "text": "38a71075"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "9508e3775703e275",
-      "elements": 324,
-      "text": "05668576"
+      "hash": "abe2b6a2f0fddd70",
+      "elements": 329,
+      "text": "0b3b1d5e"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "843257b1e26725a3",
-      "elements": 324,
-      "text": "05668576"
+      "hash": "88077d008426152e",
+      "elements": 329,
+      "text": "0b3b1d5e"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "c4fb272bef1b417e",
-      "elements": 309,
-      "text": "a2dcee6d"
+      "hash": "e22efee914c118d0",
+      "elements": 314,
+      "text": "38a71075"
     },
     "completed-program--default.png": {
-      "hash": "dae111caf806efd4",
-      "elements": 310,
-      "text": "c93f7cae"
+      "hash": "390ed411c584fcf5",
+      "elements": 315,
+      "text": "8affac5d"
     },
     "complexes-add-pad--default.png": {
       "hash": "4c125a21ee343409",
@@ -333,9 +333,9 @@
       "text": "fdb9f24e"
     },
     "contract-payload--default.png": {
-      "hash": "5fe4395ae8897b0c",
-      "elements": 48,
-      "text": "0f8a891b"
+      "hash": "f62e9d31c530922a",
+      "elements": 57,
+      "text": "13dcd465"
     },
     "crew-core-stats--default.png": {
       "hash": "81c068cd13b2e012",
@@ -438,14 +438,14 @@
       "text": "09f6aefd"
     },
     "no-curve-table--default.png": {
-      "hash": "be638edd812504ef",
-      "elements": 304,
-      "text": "93487f77"
+      "hash": "028e63ac6656c912",
+      "elements": 309,
+      "text": "fa01ee7a"
     },
     "offer-frontloaded--default.png": {
-      "hash": "210d4e27fc3b28c7",
-      "elements": 289,
-      "text": "53c161ab"
+      "hash": "f3763411b3a9bef2",
+      "elements": 294,
+      "text": "c6d03256"
     },
     "pad-holding-a-finished-vehicle--default.png": {
       "hash": "943f97a8e363ca2a",
@@ -473,9 +473,9 @@
       "text": "afcf1618"
     },
     "programs-screen--default.png": {
-      "hash": "316af6063292df3a",
-      "elements": 124,
-      "text": "758f02bc"
+      "hash": "f787f9711cfd8db7",
+      "elements": 113,
+      "text": "87ac8c92"
     },
     "research-queue-throttled-and-stalled--default.png": {
       "hash": "3cf8174c38a4e959",
@@ -488,34 +488,34 @@
       "text": "10b8b406"
     },
     "rp1-full-admin-building--default.png": {
-      "hash": "12e60c1cbbeee1a1",
-      "elements": 313,
-      "text": "b404a2d6"
+      "hash": "40f97bae9045bfdf",
+      "elements": 114,
+      "text": "2b08d951"
     },
     "running-backloaded--default.png": {
-      "hash": "17463fabce35b46b",
-      "elements": 336,
-      "text": "7d5aca9c"
+      "hash": "2d7855a72b68056a",
+      "elements": 341,
+      "text": "c8d63483"
     },
     "running-overrun-ready--default.png": {
-      "hash": "36367dbe36d30654",
-      "elements": 256,
-      "text": "8a717bf7"
+      "hash": "cf6cf2c83013ce67",
+      "elements": 258,
+      "text": "ebde44e8"
     },
     "serving-leader--default.png": {
-      "hash": "6b509c6b2fe4f38e",
-      "elements": 192,
-      "text": "966eccf8"
+      "hash": "ade87acde96f1c00",
+      "elements": 163,
+      "text": "8b6d77b3"
     },
     "start-research-affordable--default.png": {
-      "hash": "d0ccf0993254e3b6",
-      "elements": 165,
-      "text": "388ff3cf"
+      "hash": "34ec4f1b2927bd9a",
+      "elements": 161,
+      "text": "e8de4bda"
     },
     "start-research-short--default.png": {
-      "hash": "d2e33378ed6c6d4e",
-      "elements": 166,
-      "text": "2e966b3c"
+      "hash": "c65670d15b680dfa",
+      "elements": 162,
+      "text": "5d84b716"
     },
     "subsidy-clamped--default.png": {
       "hash": "62797c3a920d7348",
