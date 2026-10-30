@@ -9,8 +9,8 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | --- | --- |
 | Uplink id | `kerbcast` |
 | Version | `1.0.0-rc.6` |
-| Wraps | kerbcast 1.12.0-rc.1 (ckan) |
-| Built against | contract 49.8, extension API 6.0.0 |
+| Wraps | kerbcast 1.12.0-rc.2 (ckan) |
+| Built against | contract 50.1, extension API 6.0.0 |
 
 ## Install
 
@@ -36,8 +36,8 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 
 | Args | Fields |
 | --- | --- |
-| `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` ° |
-| `KerbcastSetPanArgs` | `cameraId` id, `pitch` °, `yaw` ° |
+| `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` °, `lensKey` text |
+| `KerbcastSetPanArgs` | `cameraId` id, `lensKey` text, `pitch` °, `yaw` ° |
 
 ## Widgets
 

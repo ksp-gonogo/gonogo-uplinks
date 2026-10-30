@@ -13,11 +13,9 @@
   </PropertyGroup>
 
   <!-- KSP / Unity reference assemblies: same portable copy + Private="false"
-       pattern as GonogoRealAntennasUplink. Stock KSP's Part / ModuleDockingNode
-       / FlightGlobals are stock KSP, so they are normal references, and so is
-       Kerbcast (below). Reading ModuleDockingNode off a stock Part is what
-       lets this uplink answer "which cameras are docking cameras" without
-       kerbcast knowing anything about docking at all. -->
+       pattern as GonogoRealAntennasUplink. The Uplink reads the scene, the save
+       and craft identities from stock KSP; every camera fact comes from
+       Kerbcast.API. -->
   <ItemGroup>
     <Reference Include="UnityEngine" Private="false">
       <HintPath>$(KspManaged)\UnityEngine.dll</HintPath>
@@ -33,15 +31,13 @@
     </Reference>
   </ItemGroup>
 
-  <!-- kerbcast's own assembly, compiled against so a rename in kerbcast fails
-       this build rather than a running game. Private="false": kerbcast is
-       installed beside this Uplink, never bundled with it. Only
-       KerbcastControlApi names its types, and it is constructed only after the
-       assembly is known to be loaded (see KerbcastBinding). -->
+  <!-- Kerbcast.API, compile-only: Kerbcast ships the assembly in its own
+       GameData folder, so this Uplink never bundles a copy. Only
+       KerbcastApiAdapter, KerbcastAuthority and KerbcastWorldModel name its
+       types, and the Uplink reaches for them only once the assembly is known to
+       be loaded (see KerbcastBinding). -->
   <ItemGroup>
-    <Reference Include="Kerbcast" Private="false">
-      <HintPath>$(KspGameData)\Kerbcast\Plugins\Kerbcast.dll</HintPath>
-    </Reference>
+    <PackageReference Include="KspGonogo.Kerbcast.API" Version="[$(KerbcastApiVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Sitrep.Contract ONLY of core's assemblies (Private="false"): the

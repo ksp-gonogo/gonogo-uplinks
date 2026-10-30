@@ -5,11 +5,11 @@ using System.Linq;
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// What this Uplink asks of kerbcast, in terms that name no kerbcast or KSP
-    /// type, so everything above it can be tested headless against a fake.
-    /// <see cref="KerbcastControlApi"/> is the one implementation that touches
-    /// kerbcast's assembly, and only after <see cref="KerbcastBinding"/> has
-    /// confirmed it is loaded and its surface resolves.
+    /// What this Uplink asks of kerbcast's cameras, in terms that name no
+    /// kerbcast or KSP type, so everything above it can be tested headless
+    /// against a fake. <see cref="KerbcastApiAdapter"/> is the one implementation,
+    /// over Kerbcast.API, built only after <see cref="KerbcastBinding"/> has
+    /// confirmed the assembly is loaded and its surface resolves.
     ///
     /// <para>Every member is fail-soft: a call kerbcast cannot answer yields
     /// typed absence (<c>null</c>, empty, or <c>false</c> for a write), never a
@@ -17,7 +17,7 @@ namespace Gonogo.KerbcastUplink
     /// </summary>
     public interface IKerbcastApi
     {
-        /// <summary>Whether kerbcast's core is live: a flight scene with the plugin running.</summary>
+        /// <summary>Whether kerbcast is running in this scene: in flight or at the Space Center.</summary>
         bool IsActive();
 
         /// <summary>
@@ -30,8 +30,8 @@ namespace Gonogo.KerbcastUplink
         /// <summary>Where kerbcast's camera feeds listen, or <see cref="KerbcastReach.Unknown"/> when nobody could ask.</summary>
         KerbcastReach Reach();
 
-        /// <summary>kerbcast's camera views for one vessel (a stock KSP <c>Vessel</c>), or empty.</summary>
-        IReadOnlyList<KerbcastView> CamerasFor(object? vessel);
+        /// <summary>kerbcast's part cameras on one craft, by its <c>Vessel.id</c>, or empty.</summary>
+        IReadOnlyList<KerbcastView> CamerasFor(Guid vesselId);
 
         /// <summary>Applies a field-of-view change. False is kerbcast's own rejection of the id; null means the call could not be made.</summary>
         bool? SetFov(uint flightId, float fov);
@@ -50,9 +50,7 @@ namespace Gonogo.KerbcastUplink
     }
 
     /// <summary>
-    /// A plain, kerbcast-type-free reading of one <c>KerbcastCameraView</c>.
-    /// Carries <see cref="Part"/> as a bare <c>object</c>: the value is a stock
-    /// KSP <c>Part</c>, and keeping it untyped here keeps this struct headless.
+    /// A plain, kerbcast-type-free reading of one part camera.
     ///
     /// <para>Every field is nullable: an unreadable member is typed absence,
     /// never a 0 the wire would misreport as a real reading.</para>
@@ -75,7 +73,11 @@ namespace Gonogo.KerbcastUplink
         public double? PanYawMax;
         public double? PanPitchMin;
         public double? PanPitchMax;
-        public object? Part;
+
+        /// <summary>Whether the camera's part has a docking node; null when kerbcast could not read it.</summary>
+        public bool? HasDockingNode;
+        public string? DockingNodeType;
+        public string? DockingNodeState;
     }
 
     /// <summary>
@@ -85,7 +87,7 @@ namespace Gonogo.KerbcastUplink
     /// </summary>
     public sealed class KerbcastBinding
     {
-        public const string KerbcastAssemblyName = "Kerbcast";
+        public const string KerbcastAssemblyName = "Kerbcast.API";
 
         public IKerbcastApi? Api { get; }
 
@@ -98,7 +100,7 @@ namespace Gonogo.KerbcastUplink
             Reason = reason;
         }
 
-        /// <summary>Whether an assembly named Kerbcast is loaded in this process.</summary>
+        /// <summary>Whether Kerbcast.API is loaded in this process.</summary>
         public static bool IsKerbcastLoaded() =>
             AppDomain.CurrentDomain.GetAssemblies().Any(a => string.Equals(
                 a.GetName().Name, KerbcastAssemblyName, StringComparison.OrdinalIgnoreCase));
@@ -113,7 +115,7 @@ namespace Gonogo.KerbcastUplink
         {
             if (!kerbcastLoaded)
             {
-                return new KerbcastBinding(null, "kerbcast mod not installed (Kerbcast assembly not loaded)");
+                return new KerbcastBinding(null, "kerbcast mod not installed (Kerbcast.API assembly not loaded)");
             }
             try
             {
@@ -122,7 +124,7 @@ namespace Gonogo.KerbcastUplink
             catch (Exception e) when (e is TypeLoadException or MissingMemberException or System.IO.FileLoadException or System.IO.FileNotFoundException or TypeInitializationException)
             {
                 return new KerbcastBinding(null,
-                    "kerbcast's KerbcastControl surface has moved (" + e.GetType().Name + "): unsupported kerbcast version");
+                    "kerbcast's API surface has moved (" + e.GetType().Name + "): unsupported kerbcast version");
             }
         }
     }

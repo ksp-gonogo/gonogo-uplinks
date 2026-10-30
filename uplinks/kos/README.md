@@ -10,7 +10,7 @@ Puts a kOS CPU's real terminal on the dashboard, streamed in process with no pro
 | Uplink id | `kos` |
 | Version | `1.0.0-rc.4` |
 | Wraps | kOS 1.6.0.1 (ckan) |
-| Built against | contract 49.8, extension API 6.0.0 |
+| Built against | contract 50.1, extension API 6.0.0 |
 
 ## Install
 

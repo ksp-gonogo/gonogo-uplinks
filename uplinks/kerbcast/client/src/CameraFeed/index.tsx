@@ -66,6 +66,7 @@ registerComponent<CameraFeedConfig>({
   // for signal strength / connection status / one-way signal delay (the
   // quality badge in the feed header, and which control the delay mode picks).
   dataRequirements: ["vessel.comms", "comms.link", "comms.delay"],
+  dataRates: { fast: ["vessel.flight"] },
   // Exposes an overlay slot, drawn over the video and passed the feed's pixel
   // dimensions and displayed camera id. No first-party augment fills it yet.
   augmentSlots: ["camera-feed.overlay"],

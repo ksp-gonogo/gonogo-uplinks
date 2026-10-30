@@ -8,12 +8,7 @@ import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 * One kerbcast camera as it appears on the `kerbcast.cameras` channel, a bare
 * JSON array of these.
 *
-* Sourced by reflecting the running kerbcast plugin's public
-* `Kerbcast.KerbcastControl` static facade (never a compile-time reference:
-* kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection pattern is
-* mandatory; see `GonogoKerbcastUplink.csproj`'s header). Every field below is
-* read off kerbcast's `KerbcastCameraView`, except the docking fields, which
-* this Uplink derives from the stock KSP `Part` the view carries.
+* Every field is the camera as kerbcast reports it, docking facts included.
 *
 * R7 typed-absence discipline: every field is nullable. A camera whose pan
 * bounds could not be read carries `null`, never a 0 that a consumer would
@@ -114,6 +109,12 @@ export interface KerbcastSetFieldOfViewArgs
 	/** Target camera, identified by its `KerbcastCameraEntry.cameraId`. */
 	cameraId: number;
 	/**
+	* The lens the command is for: the camera id in decimal, as the lens namespace
+	* keys it. Must name the same camera as `KerbcastSetFieldOfViewArgs.cameraId`,
+	* and sets which craft's signal delay the command takes.
+	*/
+	lensKey: string;
+	/**
 	* Requested field of view, degrees. kerbcast clamps to the camera's own
 	* bounds.
 	*/
@@ -127,6 +128,12 @@ export interface KerbcastSetPanArgs
 {
 	/** Target camera, identified by its `KerbcastCameraEntry.cameraId`. */
 	cameraId: number;
+	/**
+	* The lens the command is for: the camera id in decimal, as the lens namespace
+	* keys it. Must name the same camera as `KerbcastSetPanArgs.cameraId`, and
+	* sets which craft's signal delay the command takes.
+	*/
+	lensKey: string;
 	/** Requested yaw, degrees. kerbcast clamps to the camera's own bounds. */
 	yaw: number;
 	/** Requested pitch, degrees. kerbcast clamps to the camera's own bounds. */
