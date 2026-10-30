@@ -38,7 +38,10 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import type { FrameStampFeed } from "@ksp-gonogo/sitrep-sdk/media";
+import {
+  type FrameStampFeed,
+  SharedDelayedStreams,
+} from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
@@ -718,6 +721,58 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
 
     expect(heldFrame.closeCount).toBe(0);
     expect(FakeProcessor.instances).toHaveLength(1);
+  });
+
+  it("does not flush a pipeline built in the render that carries a new epoch, but flushes it on the next one", () => {
+    installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const rawStream = fakeVideoStream(track);
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    const clock = manualClock(Number.NEGATIVE_INFINITY);
+    const flush = vi.fn();
+    const acquire = SharedDelayedStreams.prototype.acquire;
+    vi.spyOn(SharedDelayedStreams.prototype, "acquire").mockImplementation(
+      function (this: SharedDelayedStreams<unknown, unknown>, ...args) {
+        const lease = acquire.apply(this, args);
+        lease.flush = flush;
+        return lease;
+      },
+    );
+
+    const { rerender } = render(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => 500}
+        resetEpoch={0}
+        onResult={() => {}}
+      />,
+    );
+    act(() => {
+      cam.emit(rawStream);
+      rerender(
+        <StreamProbe
+          flightId={7}
+          clock={clock}
+          captureUt={() => 500}
+          resetEpoch={1}
+          onResult={() => {}}
+        />,
+      );
+    });
+    expect(flush).not.toHaveBeenCalled();
+
+    rerender(
+      <StreamProbe
+        flightId={7}
+        clock={clock}
+        captureUt={() => 500}
+        resetEpoch={2}
+        onResult={() => {}}
+      />,
+    );
+    expect(flush).toHaveBeenCalledTimes(1);
   });
 
   // A gap in the ~1Hz capture-clock samples must not become a claim that the

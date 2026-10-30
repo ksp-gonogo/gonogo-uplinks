@@ -394,6 +394,10 @@ export function useDelayedPlayout(
   // consumer of the old track tears its pipeline down. Delay is a property of
   // the camera: N consumers of one track share ONE processor and one delayed
   // output (see `sharedDelayedStreams`).
+  const resetEpoch = delay?.resetEpoch;
+  const resetEpochRef = useRef(resetEpoch);
+  resetEpochRef.current = resetEpoch;
+  const seenEpochRef = useRef(resetEpoch);
   useEffect(() => {
     if (!view) {
       setResult(raw === null ? RAW_NULL : { kind: "raw", stream: raw });
@@ -415,6 +419,7 @@ export function useDelayedPlayout(
       return;
     }
 
+    seenEpochRef.current = resetEpochRef.current;
     const attachAt = targetRef.current?.attach;
     const lease = sharedDelayedStreams.acquire(key, (ctx) =>
       buildOrReportUnavailable(
@@ -454,8 +459,9 @@ export function useDelayedPlayout(
   // being switched on, reads the current epoch without having crossed one, and
   // a flush then would drop the frames of a stream another consumer is
   // watching, leaving its decoder without references until the next keyframe.
-  const resetEpoch = delay?.resetEpoch;
-  const seenEpochRef = useRef(resetEpoch);
+  // The same holds for a lease acquired in the render that carries a new
+  // epoch (a camera listed again after a relaunch): it starts at that epoch,
+  // so there is nothing stale to drop.
   useEffect(() => {
     const seen = seenEpochRef.current;
     seenEpochRef.current = resetEpoch;
