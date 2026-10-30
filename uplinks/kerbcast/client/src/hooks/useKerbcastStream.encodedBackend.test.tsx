@@ -25,9 +25,10 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import type {
-  CaptureClockSample,
-  EncodedFrameDelayHandle,
+import {
+  type CaptureClockSample,
+  DEFAULT_PACING_MAX_LEAD_SECONDS,
+  type EncodedFrameDelayHandle,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
@@ -97,7 +98,20 @@ function manualClock(initialEdge = Number.NEGATIVE_INFINITY): DelayClockLike & {
  */
 class FakeWorker {
   static posted: Array<{ type?: string; pipelineId?: string }> = [];
+  static instances: FakeWorker[] = [];
   onmessage: ((ev: MessageEvent) => void) | null = null;
+  constructor() {
+    FakeWorker.instances.push(this);
+  }
+
+  /** Reports a lead limit for a pipeline, as the worker's pacer does. */
+  static reportLeadLimit(pipelineId: string, seconds: number) {
+    for (const worker of FakeWorker.instances) {
+      worker.onmessage?.({
+        data: { type: "pipelineLeadLimit", pipelineId, seconds },
+      } as MessageEvent);
+    }
+  }
   postMessage(msg: { type?: string; pipelineId?: string }) {
     FakeWorker.posted.push(msg);
     if (msg?.type === "createPipeline") {
@@ -445,7 +459,7 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     expect(installed).not.toBe(Transform.instances[0]);
   });
 
-  it("tells Kerbcast how long a frame can be held: the delay from the clock edge and warp rate, plus the pacing allowance", async () => {
+  it("tells Kerbcast how long a frame can be held: the delay from the clock edge and warp rate, plus the default lead limit before a pipeline is installed", async () => {
     stubTransforms();
     const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
     const clock = manualClock(6);
@@ -464,15 +478,46 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     await waitFor(() => {
       expect(options[0]?.holdMs).toBeTypeOf("function");
     });
-    const pacing = 10_000;
-    expect(options[0]?.holdMs?.()).toBe(2000 + pacing);
+    const lead = DEFAULT_PACING_MAX_LEAD_SECONDS * 1000;
+    expect(options[0]?.holdMs?.()).toBe(2000 + lead);
     clock.setEdge(8);
-    expect(options[0]?.holdMs?.()).toBe(1000 + pacing);
+    expect(options[0]?.holdMs?.()).toBe(1000 + lead);
     clock.setEdge(12);
-    expect(options[0]?.holdMs?.()).toBe(pacing);
-    // the pacer's lead limit is never below 2 s, so the hold covers it
-    clock.setEdge(6);
-    expect(options[0]?.holdMs?.()).toBeGreaterThanOrEqual(2000 + 2000);
+    expect(options[0]?.holdMs?.()).toBe(lead);
+  });
+
+  it("holds for the delay plus the lead limit the installed pipeline reports", async () => {
+    const Transform = stubTransforms();
+    const { installs, options } = registerKerbcast({
+      canvas: fakeStream(),
+      path: "script",
+    });
+    const clock = manualClock(6);
+    const sample = { ut: 10, warpRate: 2, atMs: performance.now() + 1e9 };
+
+    render(
+      <CameraProbe
+        flightId={7}
+        clock={clock}
+        getCaptureSample={() => sample}
+        onResult={() => {}}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(options[0]?.holdMs).toBeTypeOf("function");
+    });
+    expect(options[0]?.holdMs?.()).toBe(2000 + 2000);
+
+    installs[0]?.({ flightId: 7, path: "script" });
+    const { pipelineId } = Transform.instances[
+      Transform.instances.length - 1
+    ]?.options as { pipelineId: string };
+    FakeWorker.reportLeadLimit(pipelineId, 2);
+    expect(options[0]?.holdMs?.()).toBe(2000 + 2000);
+
+    FakeWorker.reportLeadLimit(pipelineId, 9.5);
+    expect(options[0]?.holdMs?.()).toBe(2000 + 9500);
   });
 
   it("reports the hold as unknown while the capture clock has no time", async () => {

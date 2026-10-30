@@ -10,6 +10,7 @@ import {
   type CaptureClockSample,
   createFrameDelayStream,
   createWorkerFrameDelayStream,
+  DEFAULT_PACING_MAX_LEAD_SECONDS,
   type DelayedStreamBuildContext,
   type EncodedFrameDelayHandle,
   type FrameStampFeed,
@@ -21,9 +22,6 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { frameDelayStatsLogger } from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
-
-/** Added to the delay when telling Kerbcast how long a frame can be held: covers the pacer's adaptive lead limit up to a burst gap of 8 s. */
-const PACING_ALLOWANCE_MS = 10_000;
 
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
  *  `ut: null` makes the worker/encoded backends treat frames as un-stampable
@@ -216,6 +214,8 @@ function attachThroughKerbcast(
     flush() {
       current?.handle.flush();
     },
+    leadLimitSeconds: () =>
+      current?.handle.leadLimitSeconds() ?? DEFAULT_PACING_MAX_LEAD_SECONDS,
   };
 }
 
@@ -572,21 +572,31 @@ function buildDelayedPipeline(
   // Backend 0: encoded transform on the caller's target. See
   // `useDelayedPlayout`'s module doc. One transform per receiver: sharing at
   // the source is what keeps that invariant.
-  const install: InstallEncodedDelay = (receiver) =>
-    attachEncodedWorkerFrameDelay(receiver, {
+  let liveHandle: EncodedFrameDelayHandle | null = null;
+  const install: InstallEncodedDelay = (receiver) => {
+    const handle = attachEncodedWorkerFrameDelay(receiver, {
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
       frameStamps,
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(),
     });
+    if (!handle) return null;
+    liveHandle = handle;
+    return {
+      ...handle,
+      dispose() {
+        if (liveHandle === handle) liveHandle = null;
+        handle.dispose();
+      },
+    };
+  };
   /* The longest a frame can sit in the transform now: the delay (the gap
      between the capture time being rendered and the latest time that may be
-     shown, over the warp rate) plus what the pacing buffer can add. The pacer's
-     lead limit is adaptive (never below 2 s, 1.25 times the longest recent
-     burst gap) and the sdk does not expose it, so a fixed allowance stands in
-     for it: too high only slows Kerbcast's retries, too low leaves a feed on
-     static. NaN while the capture clock has no time, which Kerbcast reads as an
+     shown, over the warp rate) plus the pacer's lead limit, read from the
+     pipeline that holds the receiver (the default until one is installed).
+     Too high only slows Kerbcast's retries, too low leaves a feed on static.
+     NaN while the capture clock has no time, which Kerbcast reads as an
      unknown hold. */
   const holdMs = () => {
     const sample = getCaptureSample();
@@ -594,7 +604,9 @@ function buildDelayedPipeline(
     if (ut === null) return Number.NaN;
     const heldSeconds = ut - view.confirmedEdgeUt();
     const delayMs = Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
-    return delayMs + PACING_ALLOWANCE_MS;
+    const leadLimitSeconds =
+      liveHandle?.leadLimitSeconds() ?? DEFAULT_PACING_MAX_LEAD_SECONDS;
+    return delayMs + leadLimitSeconds * 1000;
   };
   if (attachAt && encodedDelaySupported(view)) {
     const encodedHandle = attachAt(install, holdMs);
