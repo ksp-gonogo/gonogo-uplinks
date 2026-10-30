@@ -8,7 +8,7 @@ Kerbalism life support as one ledger: every profile resource as a meter with the
 | | |
 | --- | --- |
 | Uplink id | `kerbalism` |
-| Version | `1.0.0-rc.6` |
+| Version | `1.0.0-rc.7` |
 | Wraps | Kerbalism 3.32 (ckan) |
 | Built against | contract 50.2, extension API 6.0.0 |
 

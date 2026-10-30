@@ -3,7 +3,7 @@
   "uplink": {
     "id": "kos",
     "name": "kOS",
-    "version": "1.0.0-rc.5",
+    "version": "1.0.0-rc.6",
     "description": "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.",
     "wraps": {
       "name": "kOS",

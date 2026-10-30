@@ -1,7 +1,7 @@
 {
   "name": "@ksp-gonogo/gonogo-kerbalism-uplink",
   "license": "MIT",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",

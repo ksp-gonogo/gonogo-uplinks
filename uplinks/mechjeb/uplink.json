@@ -25,6 +25,6 @@
   },
   "csharpNamespace": "Gonogo.MechJebUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/mechjeb/1.0.0-rc.3/mechjeb.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/mechjeb/1.0.0-rc.4/mechjeb.client.js"
   }
 }

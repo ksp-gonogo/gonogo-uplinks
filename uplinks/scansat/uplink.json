@@ -25,6 +25,6 @@
   },
   "csharpNamespace": "Gonogo.ScansatUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/scansat/1.0.0-rc.5/scansat.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/scansat/1.0.0-rc.6/scansat.client.js"
   }
 }

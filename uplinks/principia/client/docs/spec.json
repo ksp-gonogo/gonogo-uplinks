@@ -3,7 +3,7 @@
   "uplink": {
     "id": "principia",
     "name": "Principia",
-    "version": "1.0.0-rc.2",
+    "version": "1.0.0-rc.3",
     "description": "Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.",
     "wraps": {
       "name": "Principia",

@@ -3,7 +3,7 @@
   "uplink": {
     "id": "scansat",
     "name": "SCANsat",
-    "version": "1.0.0-rc.5",
+    "version": "1.0.0-rc.6",
     "description": "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.",
     "wraps": {
       "name": "SCANsat",
