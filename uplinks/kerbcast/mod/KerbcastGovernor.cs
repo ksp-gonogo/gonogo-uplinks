@@ -41,12 +41,13 @@ namespace Gonogo.KerbcastUplink
             Func<IKerbcast?> kerbcast,
             Func<ApiFeature, bool> supports,
             CraftLabels labels,
-            Func<Kernel?> kernel)
+            Func<Kernel?> kernel,
+            CraftPlaces? places = null)
         {
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
-            _model = new KerbcastWorldModel(labels, supports);
+            _model = new KerbcastWorldModel(labels, supports, places);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 

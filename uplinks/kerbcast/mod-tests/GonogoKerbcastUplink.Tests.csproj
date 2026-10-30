@@ -45,6 +45,7 @@
     <Compile Include="..\mod\DockingCameraFacts.cs" />
     <Compile Include="..\mod\KerbcastApiAdapter.cs" />
     <Compile Include="..\mod\CraftLabels.cs" />
+    <Compile Include="..\mod\CraftPlaces.cs" />
     <Compile Include="..\mod\KerbcastAuthority.cs" />
     <Compile Include="..\mod\KerbcastWorldModel.cs" />
     <Compile Include="..\mod\KerbcastGovernor.cs" />

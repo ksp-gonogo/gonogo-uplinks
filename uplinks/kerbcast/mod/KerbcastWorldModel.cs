@@ -18,9 +18,13 @@ namespace Gonogo.KerbcastUplink
     /// id and holds what that centre knows as of the instant its knowledge has
     /// reached the lens.</para>
     ///
-    /// <para>Records are <see cref="CraftFixState.Listed"/>: the craft lists, and a
-    /// feed may not aim at it. A craft Kerbcast cannot give a persistentId for is
-    /// left out, so it reads as unknown.</para>
+    /// <para>A craft a centre hears or sees, or carries forward on a course it was
+    /// holding, is positioned where the game had it when the centre last knew it, with
+    /// the centre's uncertainty, so a feed aims at that place. A craft held with
+    /// nothing to carry it forward, or one whose place or uncertainty is not known,
+    /// is <see cref="CraftFixState.Listed"/>: it lists, and a feed may not aim at it.
+    /// A craft Kerbcast cannot give a persistentId for is left out, so it reads as
+    /// unknown.</para>
     /// </summary>
     public sealed class KerbcastWorldModel
     {
@@ -29,7 +33,11 @@ namespace Gonogo.KerbcastUplink
 
         private const string VesselCentrePrefix = "vessel:";
 
+        /// <summary>How long a positioned record stands, measured from the instant it describes; each snapshot replaces the last long before this.</summary>
+        private const double RecordValiditySeconds = 1e9;
+
         private readonly CraftLabels _labels;
+        private readonly CraftPlaces _places;
         private readonly Func<ApiFeature, bool> _supports;
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
@@ -48,9 +56,11 @@ namespace Gonogo.KerbcastUplink
 
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports)
+        /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null)
         {
             _labels = labels;
+            _places = places ?? new CraftPlaces();
             _supports = supports;
         }
 
@@ -69,6 +79,7 @@ namespace Gonogo.KerbcastUplink
             _aliases.Clear();
             _aliasVersion++;
             _lastUt = null;
+            _places.Clear();
         }
 
         /// <summary>
@@ -121,6 +132,7 @@ namespace Gonogo.KerbcastUplink
             if (_lastUt.HasValue && nowUt < _lastUt.Value)
             {
                 _epoch++;
+                _places.DropAfter(nowUt);
                 _pending.RemoveAll(m => m.Ut > nowUt);
                 if (_aliases.RemoveAll(a => a.Ut > nowUt) > 0)
                 {
@@ -144,13 +156,13 @@ namespace Gonogo.KerbcastUplink
 
             var identity = _supports(ApiFeature.CraftIdentity);
             var heard = new Dictionary<string, Dictionary<uint, double?>>(StringComparer.Ordinal);
-            var listed = new Dictionary<string, List<uint>>(StringComparer.Ordinal);
+            var listed = new Dictionary<string, List<ScopeCraft>>(StringComparer.Ordinal);
             var scopeUt = new Dictionary<string, double>(StringComparer.Ordinal);
             long? version = null;
             foreach (var scope in scopes)
             {
                 var ut = sites?.KnowledgeUt(scope);
-                var crafts = new List<uint>();
+                var crafts = new List<ScopeCraft>();
                 var lastHeard = new Dictionary<uint, double?>();
                 if (ut.HasValue && knowledge != null)
                 {
@@ -166,7 +178,7 @@ namespace Gonogo.KerbcastUplink
                         {
                             continue;
                         }
-                        crafts.Add(pid);
+                        crafts.Add(new ScopeCraft(pid, vesselId, sample));
                         lastHeard[pid] = sample.LastKnownUt;
                     }
                 }
@@ -227,7 +239,7 @@ namespace Gonogo.KerbcastUplink
             WorldModelBuilder builder,
             Dictionary<string, string> bindings,
             List<string> scopes,
-            Dictionary<string, List<uint>> listed)
+            Dictionary<string, List<ScopeCraft>> listed)
         {
             foreach (var binding in bindings)
             {
@@ -240,9 +252,10 @@ namespace Gonogo.KerbcastUplink
             foreach (var scope in scopes)
             {
                 builder.Scope(scope);
-                foreach (var pid in listed[scope])
+                foreach (var craft in listed[scope])
                 {
-                    builder.Listed(pid);
+                    var pid = craft.PersistentId;
+                    Describe(builder, craft);
                     if (_labels.TryLabel(pid, out var label))
                     {
                         if (label.Name != null)
@@ -256,6 +269,54 @@ namespace Gonogo.KerbcastUplink
                     }
                 }
             }
+        }
+
+        /*
+         * Heard, seen and modelled craft are placed where the game had them when the
+         * centre last knew them, and the radius the centre gives is the whole of the
+         * uncertainty at that instant, so it does not grow here. A held craft has
+         * nothing to carry it forward, and a craft with no place on record that early,
+         * or whose uncertainty cannot be bounded, has nothing to aim at: those list.
+         */
+        private void Describe(WorldModelBuilder builder, ScopeCraft craft)
+        {
+            var sample = craft.Sample;
+            var pid = craft.PersistentId;
+            if (sample.State == CraftKnowledgeState.Held
+                || !sample.LastKnownUt.HasValue
+                || !sample.UncertaintyM.HasValue
+                || !_places.TryAt(craft.VesselId, sample.LastKnownUt.Value, out var place))
+            {
+                builder.Listed(pid);
+                return;
+            }
+            var from = place.Ut;
+            var until = place.Ut + RecordValiditySeconds;
+            if (place.OnSurface)
+            {
+                builder.Surface(pid, place.BodyIndex, place.Latitude, place.Longitude, place.Altitude, from, until);
+            }
+            else
+            {
+                builder.StateVector(pid, place.BodyIndex, place.Ut, new Vec3d(place.State6[0], place.State6[1], place.State6[2]), new Vec3d(place.State6[3], place.State6[4], place.State6[5]), from, until);
+            }
+            builder.Uncertainty(sample.UncertaintyM.Value, 0.0, 0.0, 0.0);
+        }
+
+        private readonly struct ScopeCraft
+        {
+            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample)
+            {
+                PersistentId = persistentId;
+                VesselId = vesselId;
+                Sample = sample;
+            }
+
+            public uint PersistentId { get; }
+
+            public Guid VesselId { get; }
+
+            public CraftKnowledgeSample Sample { get; }
         }
 
         /// <summary>Each command feed's site key, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
@@ -347,7 +408,7 @@ namespace Gonogo.KerbcastUplink
          * never more. Changes apply in the order they happened, so an undock is never
          * taken before the dock it undoes.
          */
-        private void ApplyHeardChanges(Dictionary<string, List<uint>> listed, Dictionary<string, Dictionary<uint, double?>> heard)
+        private void ApplyHeardChanges(Dictionary<string, List<ScopeCraft>> listed, Dictionary<string, Dictionary<uint, double?>> heard)
         {
             if (listed.Count == 0)
             {
@@ -360,7 +421,7 @@ namespace Gonogo.KerbcastUplink
                 var teller = change.Change == IdentityChange.Merge ? change.OtherPersistentId : change.PersistentId;
                 foreach (var scope in listed)
                 {
-                    if (!scope.Value.Contains(concerns))
+                    if (!scope.Value.Exists(c => c.PersistentId == concerns))
                     {
                         continue;
                     }

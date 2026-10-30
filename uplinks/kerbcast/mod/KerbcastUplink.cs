@@ -63,6 +63,7 @@ namespace Gonogo.KerbcastUplink
         private IKerbcastGovernor? _governor;
         private IUplinkHost? _host;
         private readonly CraftLabels _craftLabels = new CraftLabels();
+        private readonly CraftPlaces _craftPlaces = new CraftPlaces();
         private double? _craftLabelsRead;
         private readonly KerbcastLensSites _lensSites = new KerbcastLensSites();
         private IChannelPublisher? _cameras;
@@ -146,7 +147,7 @@ namespace Gonogo.KerbcastUplink
             }
             _kerbcast = binding.Api;
             _host = host;
-            _governor = NewGovernor(_craftLabels, () => host.Kernel);
+            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel);
             GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
@@ -169,12 +170,13 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IKerbcastGovernor NewGovernor(CraftLabels labels, Func<Kernel?> kernel) =>
+        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel) =>
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
                 labels,
-                kernel);
+                kernel,
+                places);
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 
@@ -264,6 +266,7 @@ namespace Gonogo.KerbcastUplink
             if (coreActive)
             {
                 LearnCraftLabels(now);
+                LearnCraftPlaces(snapshot.Ut);
                 _governor?.Tick(snapshot.Ut, now);
             }
 
@@ -346,6 +349,43 @@ namespace Gonogo.KerbcastUplink
                     {
                         _craftLabels.Learn(vessel.persistentId, new CraftLabel(vessel.vesselName, vessel.vesselType.ToString()));
                     }
+                }
+            }
+        }
+
+        /// <summary>Reads each craft's place into <see cref="_craftPlaces"/> where it is not already kept for this instant.</summary>
+        private void LearnCraftPlaces(double ut)
+        {
+            var live = FlightGlobals.Vessels;
+            if (live == null)
+            {
+                return;
+            }
+            foreach (var vessel in live)
+            {
+                if (vessel == null || vessel.mainBody == null || !_craftPlaces.Wants(vessel.id, ut))
+                {
+                    continue;
+                }
+                var body = vessel.mainBody.flightGlobalsIndex;
+                switch (vessel.situation)
+                {
+                    case Vessel.Situations.LANDED:
+                    case Vessel.Situations.SPLASHED:
+                    case Vessel.Situations.PRELAUNCH:
+                        _craftPlaces.Learn(vessel.id, CraftPlace.Surface(ut, body, vessel.latitude, vessel.longitude, vessel.altitude));
+                        break;
+                    default:
+                        var orbit = vessel.orbit;
+                        if (orbit == null)
+                        {
+                            break;
+                        }
+                        var position = Planetarium.Zup.LocalToWorld(orbit.getRelativePositionAtUT(ut));
+                        var velocity = Planetarium.Zup.LocalToWorld(orbit.getOrbitalVelocityAtUT(ut));
+                        _craftPlaces.Learn(vessel.id, CraftPlace.State(
+                            ut, body, position.x, position.y, position.z, velocity.x, velocity.y, velocity.z));
+                        break;
                 }
             }
         }

@@ -29,13 +29,14 @@ public class KerbcastWorldModelTests
     private readonly FakeLensSites _sites = new FakeLensSites();
     private readonly FakeKnowledge _knowledge = new FakeKnowledge();
     private readonly CraftLabels _labels = new CraftLabels();
+    private readonly CraftPlaces _places = new CraftPlaces();
     private readonly KerbcastAuthority _authority;
     private readonly KerbcastWorldModel _model;
 
     public KerbcastWorldModelTests()
     {
         _authority = new KerbcastAuthority(() => _kc, _kc.Supports);
-        _model = new KerbcastWorldModel(_labels, _kc.Supports);
+        _model = new KerbcastWorldModel(_labels, _kc.Supports, _places);
         _kc.Cameras.Learn(ProbePid, ProbeId);
         _kc.Cameras.Learn(StationPid, StationId);
         _kc.Cameras.Learn(HiddenPid, HiddenId);
@@ -212,6 +213,119 @@ public class KerbcastWorldModelTests
         Assert.Equal(new KeyValuePair<uint, uint>(ProbePid, StationPid), alias);
     }
 
+    private PublishedRecord ProbeRecord()
+    {
+        var record = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        Assert.NotNull(record);
+        return record;
+    }
+
+    [Fact]
+    public void AHeardCraftIsPositionedWhereTheGameHadItWhenItWasLastHeard()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(90.0, 1, -0.0972, -74.5577, 70.0));
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, -0.0972, -74.5577, 71.0));
+        _places.Learn(ProbeId, CraftPlace.Surface(100.0, 1, 5.0, 5.0, 5.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.5, 12.0);
+
+        Publish(100.0, 0.0);
+
+        var probe = ProbeRecord();
+        Assert.Equal(CraftFixState.Positioned, probe.State);
+        Assert.Equal(KinematicsKind.Surface, probe.Kinematics);
+        Assert.Equal(1, probe.BodyIndex);
+        Assert.Equal(-0.0972, probe.Latitude);
+        Assert.Equal(71.0, probe.Altitude);
+        Assert.Equal(99.0, probe.ValidFromUt);
+        Assert.True(probe.HasUncertainty);
+        Assert.Equal(12.0, probe.UncertaintyRadiusM);
+        Assert.Equal("Probe", probe.Name);
+    }
+
+    [Fact]
+    public void ASeenCraftIsPositionedTheSameWay()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(90.0, 1, 1.0, 2.0, 3.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Seen, 95.0, 40.0);
+
+        Publish(100.0, 0.0);
+
+        var probe = ProbeRecord();
+        Assert.Equal(CraftFixState.Positioned, probe.State);
+        Assert.Equal(40.0, probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void AModelledCraftIsPositionedOnTheCourseItWasHoldingWhenLastKnown()
+    {
+        _sites.Delivered[Ksc] = 500.0;
+        _places.Learn(ProbeId, CraftPlace.State(60.0, 2, 1000.0, 2000.0, 3000.0, 4.0, 5.0, 6.0));
+        _places.Learn(ProbeId, CraftPlace.State(400.0, 2, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Modelled, 100.0, 8000.0);
+
+        Publish(500.0, 0.0);
+
+        var probe = ProbeRecord();
+        Assert.Equal(CraftFixState.Positioned, probe.State);
+        Assert.Equal(KinematicsKind.StateVector, probe.Kinematics);
+        Assert.Equal(2, probe.BodyIndex);
+        Assert.Equal(60.0, probe.StateUt);
+        Assert.Equal(new Vec3d(1000.0, 2000.0, 3000.0), probe.Position);
+        Assert.Equal(new Vec3d(4.0, 5.0, 6.0), probe.Velocity);
+        Assert.Equal(8000.0, probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void AHeldCraftStaysListedWhateverTheGameHadForIt()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(90.0, 1, 1.0, 2.0, 3.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Held, 95.0, 40.0);
+
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Listed, ProbeRecord().State);
+    }
+
+    [Fact]
+    public void ACraftWhoseUncertaintyCannotBeBoundedStaysListed()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(90.0, 1, 1.0, 2.0, 3.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 95.0, null);
+
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Listed, ProbeRecord().State);
+    }
+
+    [Fact]
+    public void ACraftWithNoPlaceOnRecordThatEarlyStaysListed()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 1.0, 2.0, 3.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 95.0, 10.0);
+
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Listed, ProbeRecord().State);
+    }
+
+    [Fact]
+    public void APlaceReadAfterAGameLoadIsNotCarriedIntoTheNewTimeline()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(90.0, 1, 1.0, 2.0, 3.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 95.0, 10.0);
+
+        _model.OnGameLoaded();
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Listed, ProbeRecord().State);
+    }
+
     private static IdentityEvent Change(IdentityChange change, double ut, uint pid, uint other) =>
         new IdentityEvent(change: change, ut: ut, persistentId: pid, vesselId: Guid.Empty, otherPersistentId: other);
 
@@ -323,13 +437,13 @@ public class KerbcastWorldModelTests
 
         public long Version { get; set; } = 1;
 
-        public void Add(string centre, Guid vessel, CraftKnowledgeState state, double? lastKnownUt)
+        public void Add(string centre, Guid vessel, CraftKnowledgeState state, double? lastKnownUt, double? uncertaintyM = null)
         {
             if (!_byCentre.TryGetValue(centre, out var list))
             {
                 _byCentre[centre] = list = new List<CraftKnowledgeSample>();
             }
-            list.Add(new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, null, false));
+            list.Add(new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, uncertaintyM, false));
         }
 
         public void Clear()
