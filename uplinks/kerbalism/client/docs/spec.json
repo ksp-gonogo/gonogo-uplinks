@@ -3,7 +3,7 @@
   "uplink": {
     "id": "kerbalism",
     "name": "Kerbalism",
-    "version": "1.0.0-rc.5",
+    "version": "1.0.0-rc.6",
     "description": "Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.",
     "wraps": {
       "name": "Kerbalism",

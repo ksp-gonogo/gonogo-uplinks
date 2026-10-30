@@ -28,6 +28,6 @@
   },
   "csharpNamespace": "Gonogo.KosUplink",
   "client": {
-    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/kos/1.0.0-rc.4/kos.client.js"
+    "url": "https://cdn.jsdelivr.net/gh/ksp-gonogo/gonogo-uplinks@releases/uplinks/releases/kos/1.0.0-rc.5/kos.client.js"
   }
 }

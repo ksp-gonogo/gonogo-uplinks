@@ -3,7 +3,7 @@
   "uplink": {
     "id": "aero",
     "name": "Aerodynamics",
-    "version": "1.0.0-rc.2",
+    "version": "1.0.0-rc.3",
     "description": "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.",
     "wraps": {
       "name": "Ferram Aerospace Research",
