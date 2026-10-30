@@ -5,6 +5,7 @@ using Gonogo.KerbcastUplink;
 using Kerbcast.Api;
 using Kerbcast.Api.Testing;
 using Sitrep.Contract;
+using CraftPlace = Gonogo.KerbcastUplink.CraftPlace;
 using Xunit;
 
 namespace GonogoKerbcastUplink.Tests;
