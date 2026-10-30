@@ -49,11 +49,12 @@ namespace GonogoKerbcastUplink.Tests
         /// invisible in the remaining green.
         /// </summary>
         [Fact]
-        public void TheContractTypesAreExactlyTheCameraEntryAndItsTwoArgShapes() =>
+        public void TheContractTypesAreExactlyTheCameraEntryAndItsThreeArgShapes() =>
             UnitCoverageAssertion.AssertContractTypesAreExactly(
                 typeof(KerbcastCameraEntry).Assembly,
                 nameof(KerbcastCameraEntry),
                 nameof(KerbcastSetFieldOfViewArgs),
-                nameof(KerbcastSetPanArgs));
+                nameof(KerbcastSetPanArgs),
+                nameof(KerbcastSetCommandAimArgs));
     }
 }

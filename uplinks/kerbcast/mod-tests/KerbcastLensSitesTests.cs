@@ -28,6 +28,29 @@ namespace GonogoKerbcastUplink.Tests
         }
 
         [Fact]
+        public void A_command_camera_resolves_to_the_command_centre_its_lens_stands_at()
+        {
+            var sites = new KerbcastLensSites();
+
+            sites.ReplaceCommandFeeds(new Dictionary<string, string> { ["1"] = "ground:KSC" });
+
+            Assert.Equal("ground:KSC", sites.SiteFor("1"));
+        }
+
+        [Fact]
+        public void Replacing_the_lenses_that_ride_craft_leaves_the_command_cameras_placed()
+        {
+            var sites = new KerbcastLensSites();
+            sites.ReplaceCommandFeeds(new Dictionary<string, string> { ["1"] = "ground:KSC" });
+
+            sites.Replace(new[] { Craft("vessel:aaa", 11) });
+            sites.Clear();
+
+            Assert.Equal("ground:KSC", sites.SiteFor("1"));
+            Assert.Null(sites.SiteFor("11"));
+        }
+
+        [Fact]
         public void An_unknown_lens_has_no_site()
         {
             var sites = new KerbcastLensSites();

@@ -69,6 +69,11 @@
       "supportsZoom": "flag",
       "vesselId": "id"
     },
+    "KerbcastSetCommandAimArgs": {
+      "cameraId": "id",
+      "lensKey": "text",
+      "subjectPersistentId": "id"
+    },
     "KerbcastSetFieldOfViewArgs": {
       "cameraId": "id",
       "fieldOfView": "°",

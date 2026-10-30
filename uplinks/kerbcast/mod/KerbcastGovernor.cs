@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Kerbcast.Api;
 using Sitrep.Contract;
 
@@ -42,12 +43,14 @@ namespace Gonogo.KerbcastUplink
             Func<ApiFeature, bool> supports,
             CraftLabels labels,
             Func<Kernel?> kernel,
-            CraftPlaces? places = null)
+            CraftPlaces? places = null,
+            Action<string>? log = null,
+            Action<IReadOnlyDictionary<string, string>>? onFeedSites = null)
         {
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
-            _model = new KerbcastWorldModel(labels, supports, places);
+            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 

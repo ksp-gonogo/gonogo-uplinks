@@ -14,6 +14,8 @@ namespace Gonogo.KerbcastUplink
         public const string CamerasTopic = "kerbcast.cameras";
         public const string SetFieldOfViewCommand = "kerbcast.setFieldOfView";
         public const string SetPanCommand = "kerbcast.setPan";
+
+        public const string SetCommandAimCommand = "kerbcast.setCommandAim";
         public const string LensSubject = KerbcastLensSites.Prefix + "{args.LensKey}";
 
         public static UplinkManifest Build() => new UplinkManifest
@@ -79,6 +81,7 @@ namespace Gonogo.KerbcastUplink
                 // active.
                 new CommandDeclaration { Command = SetFieldOfViewCommand, Subject = LensSubject },
                 new CommandDeclaration { Command = SetPanCommand, Subject = LensSubject },
+                new CommandDeclaration { Command = SetCommandAimCommand, Subject = LensSubject },
             },
         };
     }

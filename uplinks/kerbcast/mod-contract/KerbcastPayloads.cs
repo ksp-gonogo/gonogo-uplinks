@@ -245,3 +245,32 @@ public class KerbcastSetPanArgs
     [SitrepUnit(Units.Degrees)]
     public double Pitch { get; set; }
 }
+
+/// <summary>
+/// Args for the <c>kerbcast.setCommandAim</c> command: point one command
+/// camera at a craft. The camera keeps following that craft, at the place its
+/// command centre reckons it to be, until it is aimed at another.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("kerbcast.setCommandAim")]
+public class KerbcastSetCommandAimArgs
+{
+    /// <summary>Target command camera, identified by its <see cref="KerbcastCameraEntry.CameraId"/>.</summary>
+    [SitrepUnit(Units.Id)]
+    public long CameraId { get; set; }
+
+    /// <summary>
+    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
+    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
+    /// delay the command takes.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string LensKey { get; set; } = "";
+
+    /// <summary>The craft to watch, by the persistent id the camera's list of craft gives it.</summary>
+    [SitrepUnit(Units.Id)]
+    public long SubjectPersistentId { get; set; }
+}

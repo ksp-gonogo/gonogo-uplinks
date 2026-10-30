@@ -76,6 +76,108 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void ACraftsPlaceAndRadiusAreLoggedOnceAndAgainWhenTheyChange()
+    {
+        var lines = new List<string>();
+        _kc.Command.SetTargets(1, new[] { new CommandTarget { PersistentId = ProbePid, Eligibility = "tooUncertain", RangeM = 448.0 } });
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, lines.Add);
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Heard, 99.0, 900.0);
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 5.0);
+
+        Assert.Contains(lines, l => l.StartsWith("[Kerbcast][WORLD]") && l.Contains("craft=" + ProbePid) && l.Contains("positioned") && l.Contains("radiusM=250"));
+        Assert.Contains(lines, l => l.Contains("craft=" + StationPid) && l.Contains("listed"));
+        Assert.Equal(2, lines.Count(l => l.Contains("scope=")));
+        Assert.Contains(lines, l => l.Contains("feed=1") && l.Contains("craft=" + ProbePid) && l.Contains("eligibility=tooUncertain") && l.Contains("rangeM=448"));
+    }
+
+    private static Func<double, Sitrep.Contract.CraftPlace?> MovingAlong(Sitrep.Contract.CraftPlaceBasis basis, double x0, double speed) =>
+        ut => new Sitrep.Contract.CraftPlace(1, new Vector3d(x0 + speed * ut, 2.0, 3.0), basis);
+
+    [Theory]
+    [InlineData(Sitrep.Contract.CraftPlaceBasis.Coasting, 0.0)]
+    [InlineData(Sitrep.Contract.CraftPlaceBasis.Burning, 400.0)]
+    public void ACraftWithAPredictedPlaceIsAimedAtThatPlaceWithItsRadiusAtTheInstantRead(Sitrep.Contract.CraftPlaceBasis basis, double radiusM)
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(50.0, 1, 9.0, 9.0, 9.0));
+        _knowledge.AddWithPlace(Ksc, ProbeId, CraftKnowledgeState.Heard, 50.0, radiusM, MovingAlong(basis, 1000.0, 10.0));
+
+        Publish(100.0, 0.0);
+
+        var probe = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        Assert.NotNull(probe);
+        Assert.Equal(CraftFixState.Positioned, probe.State);
+        Assert.Equal(KinematicsKind.StateVector, probe.Kinematics);
+        Assert.Equal(1, probe.BodyIndex);
+        Assert.Equal(100.0, probe.StateUt);
+        Assert.Equal(2000.0, probe.Position.X);
+        Assert.Equal(10.0, probe.Velocity.X);
+        Assert.Equal(radiusM, probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void ACraftWithNoPredictedPlaceKeepsTheLastRecordedPlaceAndNothingReadsThePresent()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(50.0, 1, 9.0, 9.0, 9.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 50.0, 250.0);
+
+        Publish(100.0, 0.0);
+
+        var probe = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        Assert.NotNull(probe);
+        Assert.Equal(CraftFixState.Positioned, probe.State);
+        Assert.Equal(50.0, probe.ValidFromUt);
+        Assert.Equal(250.0, probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void ACraftWithAPredictedPlaceNeedsNoPlaceOnRecord()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.AddWithPlace(Ksc, ProbeId, CraftKnowledgeState.Heard, 50.0, 0.0, MovingAlong(Sitrep.Contract.CraftPlaceBasis.Coasting, 0.0, 1.0));
+
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Positioned, _kc.Command.Published.Last().Find(Ksc, ProbePid)!.State);
+    }
+
+    [Fact]
+    public void ACraftWithAPredictedPlaceButNoRadiusListsInstead()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.AddWithPlace(Ksc, ProbeId, CraftKnowledgeState.Heard, 50.0, null, MovingAlong(Sitrep.Contract.CraftPlaceBasis.Coasting, 0.0, 1.0));
+
+        Publish(100.0, 0.0);
+
+        Assert.Equal(CraftFixState.Listed, _kc.Command.Published.Last().Find(Ksc, ProbePid)!.State);
+    }
+
+    [Fact]
+    public void EveryCommandFeedReportsTheCentreItsLensStandsAtEvenWhenTwoShareASite()
+    {
+        IReadOnlyDictionary<string, string>? reported = null;
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, null, sites => reported = sites);
+        _kc.Command.AddFeed(new CommandFeed { FlightId = 7, SiteKey = "KSC", SiteKind = SiteKind.Station });
+        _kc.Command.AddFeed(new CommandFeed { FlightId = 8, SiteKey = "Unknown", SiteKind = SiteKind.Station });
+        _sites.Delivered[Ksc] = 100.0;
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+
+        Assert.NotNull(reported);
+        Assert.Equal(Ksc, reported!["1"]);
+        Assert.Equal(Ksc, reported["7"]);
+        Assert.False(reported.ContainsKey("8"));
+    }
+
+    [Fact]
     public void AStationWhoseNameIsNotOneStationIsLeftUnboundSoItFailsClosed()
     {
         _kc.Command.AddFeed(new CommandFeed { FlightId = 2, SiteKey = "Twin", SiteKind = SiteKind.Station });
@@ -431,7 +533,7 @@ public class KerbcastWorldModelTests
 
     private sealed class FakeKnowledge : IBulkCraftKnowledge
     {
-        private readonly Dictionary<string, List<CraftKnowledgeSample>> _byCentre = new();
+        private readonly Dictionary<string, List<Func<double, CraftKnowledgeSample>>> _byCentre = new();
         public readonly Dictionary<string, double> AskedAt = new();
 
         public string ProviderId => "fake-knowledge";
@@ -440,11 +542,17 @@ public class KerbcastWorldModelTests
 
         public void Add(string centre, Guid vessel, CraftKnowledgeState state, double? lastKnownUt, double? uncertaintyM = null)
         {
+            AddWithPlace(centre, vessel, state, lastKnownUt, uncertaintyM, null);
+        }
+
+        /// <summary>Adds a craft whose predicted place is asked of <paramref name="place"/> at whatever instant is read.</summary>
+        public void AddWithPlace(string centre, Guid vessel, CraftKnowledgeState state, double? lastKnownUt, double? uncertaintyM, Func<double, Sitrep.Contract.CraftPlace?>? place)
+        {
             if (!_byCentre.TryGetValue(centre, out var list))
             {
-                _byCentre[centre] = list = new List<CraftKnowledgeSample>();
+                _byCentre[centre] = list = new List<Func<double, CraftKnowledgeSample>>();
             }
-            list.Add(new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, uncertaintyM, false));
+            list.Add(ut => new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, uncertaintyM, false, place?.Invoke(ut)));
         }
 
         public void Clear()
@@ -463,7 +571,7 @@ public class KerbcastWorldModelTests
             }
             for (var i = 0; i < list.Count && i < buffer.Length; i++)
             {
-                buffer[i] = list[i];
+                buffer[i] = list[i](ut);
             }
             return list.Count;
         }
