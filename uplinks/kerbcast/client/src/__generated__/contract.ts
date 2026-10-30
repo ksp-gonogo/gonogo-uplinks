@@ -139,24 +139,3 @@ export interface KerbcastSetPanArgs
 	/** Requested pitch, degrees. kerbcast clamps to the camera's own bounds. */
 	pitch: number;
 }
-/**
-* Args for the `kerbcast.setCommandAim` command: point one command camera at a
-* craft. The camera keeps following that craft, at the place its command
-* centre reckons it to be, until it is aimed at another.
-*/
-export interface IKerbcastSetCommandAimArgs
-{
-	/** Target command camera, identified by its `KerbcastCameraEntry.cameraId`. */
-	cameraId: number;
-	/**
-	* The lens the command is for: the camera id in decimal, as the lens namespace
-	* keys it. Must name the same camera as `IKerbcastSetCommandAimArgs.cameraId`,
-	* and sets which craft's signal delay the command takes.
-	*/
-	lensKey: string;
-	/**
-	* The craft to watch, by the persistent id the camera's list of craft gives
-	* it.
-	*/
-	subjectPersistentId: number;
-}

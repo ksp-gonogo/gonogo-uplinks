@@ -33,29 +33,5 @@ namespace Gonogo.KerbcastUplink
                 ? CommandResult.Ok()
                 : CommandResult.Fail(CommandErrorCode.NotFound);
         }
-
-        /// <summary>
-        /// What kerbcast's <c>AimResult</c> (by name) means for a command camera's aim. A refusal
-        /// about the craft itself (not positioned, stale, too uncertain, refused) is a range
-        /// refusal: the camera cannot see that craft now. Null is the call never having been made.
-        /// </summary>
-        public static CommandResult ForCommandAim(string? aimResult)
-        {
-            switch (aimResult)
-            {
-                case null:
-                case "NotLockHolder":
-                case "NotRunning":
-                case "Unknown":
-                    return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
-                case "Ok":
-                    return CommandResult.Ok();
-                case "UnknownCraft":
-                case "NotCommandFeed":
-                    return CommandResult.Fail(CommandErrorCode.NotFound);
-                default:
-                    return CommandResult.Fail(CommandErrorCode.Range);
-            }
-        }
     }
 }

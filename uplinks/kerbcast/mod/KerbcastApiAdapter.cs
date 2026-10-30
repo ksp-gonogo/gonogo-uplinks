@@ -96,18 +96,6 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
-        public string? SetCommandAim(uint flightId, uint subjectPersistentId)
-        {
-            try
-            {
-                return SetCommandAimCore(flightId, subjectPersistentId);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
         public bool? SetPan(uint flightId, float yaw, float pitch)
         {
             try
@@ -208,15 +196,6 @@ namespace Gonogo.KerbcastUplink
             return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CameraControl)
                 ? (bool?)null
                 : kerbcast.Cameras.SetPan(flightId, yaw, pitch);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string? SetCommandAimCore(uint flightId, uint subjectPersistentId)
-        {
-            var kerbcast = KerbcastApi.Instance;
-            return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CommandFeeds)
-                ? null
-                : kerbcast.Command.SetAim(flightId, Aim.Vessel(subjectPersistentId, 0.0, false), KerbcastAuthority.Owner).ToString();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

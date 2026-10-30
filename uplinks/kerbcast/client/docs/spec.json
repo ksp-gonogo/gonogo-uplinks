@@ -117,11 +117,6 @@
   "otherPayloads": [],
   "commands": [
     {
-      "id": "kerbcast.setCommandAim",
-      "args": "KerbcastSetCommandAimArgs",
-      "result": "CommandResult"
-    },
-    {
       "id": "kerbcast.setFieldOfView",
       "args": "KerbcastSetFieldOfViewArgs",
       "result": "CommandResult"
@@ -133,23 +128,6 @@
     }
   ],
   "commandArgs": [
-    {
-      "name": "KerbcastSetCommandAimArgs",
-      "fields": [
-        {
-          "name": "cameraId",
-          "unit": "id"
-        },
-        {
-          "name": "lensKey",
-          "unit": "text"
-        },
-        {
-          "name": "subjectPersistentId",
-          "unit": "id"
-        }
-      ]
-    },
     {
       "name": "KerbcastSetFieldOfViewArgs",
       "fields": [

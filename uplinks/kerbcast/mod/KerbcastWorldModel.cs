@@ -36,20 +36,13 @@ namespace Gonogo.KerbcastUplink
         /// <summary>How long a positioned record stands, measured from the instant it describes; each snapshot replaces the last long before this.</summary>
         private const double RecordValiditySeconds = 1e9;
 
-        /// <summary>How far past the instant read a predicted place is read again, to give the craft the velocity its prediction implies.</summary>
-        private const double VelocitySpanSeconds = 1.0;
-
         private readonly CraftLabels _labels;
         private readonly CraftPlaces _places;
         private readonly Func<ApiFeature, bool> _supports;
-        private readonly Action<string>? _log;
-        private readonly Action<IReadOnlyDictionary<string, string>>? _onFeedSites;
-        private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
         private readonly HashSet<string> _bound = new HashSet<string>(StringComparer.Ordinal);
         private CraftKnowledgeSample[] _buffer = new CraftKnowledgeSample[64];
-        private CraftKnowledgeSample[] _ahead = new CraftKnowledgeSample[64];
         private long _sequence;
         private long _epoch;
         private double? _lastUt;
@@ -64,12 +57,8 @@ namespace Gonogo.KerbcastUplink
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
         /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
-        /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
-        /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null)
         {
-            _log = log;
-            _onFeedSites = onFeedSites;
             _labels = labels;
             _places = places ?? new CraftPlaces();
             _supports = supports;
@@ -91,8 +80,6 @@ namespace Gonogo.KerbcastUplink
             _aliasVersion++;
             _lastUt = null;
             _places.Clear();
-            _logged.Clear();
-            _onFeedSites?.Invoke(new Dictionary<string, string>());
         }
 
         /// <summary>
@@ -154,8 +141,7 @@ namespace Gonogo.KerbcastUplink
             }
             _lastUt = nowUt;
 
-            var bindings = Bindings(kerbcast, sites, out var feedSites);
-            _onFeedSites?.Invoke(feedSites);
+            var bindings = Bindings(kerbcast, sites);
             SyncLensSites(sites, bindings);
 
             var scopes = new List<string>();
@@ -183,14 +169,6 @@ namespace Gonogo.KerbcastUplink
                     scopeUt[scope] = ut.Value;
                     var count = Read(knowledge, scope, ut.Value, out var read);
                     version = version.HasValue ? Math.Max(version.Value, read) : read;
-                    var aheadCount = 0;
-                    for (var i = 0; i < count && aheadCount == 0; i++)
-                    {
-                        if (_buffer[i].Place != null)
-                        {
-                            aheadCount = Read(knowledge, scope, ut.Value + VelocitySpanSeconds, ref _ahead, out _);
-                        }
-                    }
                     for (var i = 0; i < count; i++)
                     {
                         var sample = _buffer[i];
@@ -200,7 +178,7 @@ namespace Gonogo.KerbcastUplink
                         {
                             continue;
                         }
-                        crafts.Add(new ScopeCraft(pid, vesselId, sample, ut.Value, PlaceAhead(sample, aheadCount)));
+                        crafts.Add(new ScopeCraft(pid, vesselId, sample));
                         lastHeard[pid] = sample.LastKnownUt;
                     }
                 }
@@ -254,7 +232,6 @@ namespace Gonogo.KerbcastUplink
             _lastBindings = bindingKey;
             _lastAliasVersion = _aliasVersion;
             _lastPublish = realSeconds;
-            LogEligibility(kerbcast);
             return result;
         }
 
@@ -278,7 +255,7 @@ namespace Gonogo.KerbcastUplink
                 foreach (var craft in listed[scope])
                 {
                     var pid = craft.PersistentId;
-                    Describe(builder, scope, craft);
+                    Describe(builder, craft);
                     if (_labels.TryLabel(pid, out var label))
                     {
                         if (label.Name != null)
@@ -295,30 +272,22 @@ namespace Gonogo.KerbcastUplink
         }
 
         /*
-         * A craft the centre has a predicted place for is aimed at that place, at the
-         * instant the scope's knowledge has reached, with the radius the centre gives.
-         * Any other heard, seen or modelled craft is placed where the game had it when
-         * the centre last knew it, and its radius is the whole of the uncertainty at
-         * that instant, so it does not grow here. A held craft has nothing to carry it
-         * forward, and a craft with no place on record that early, or whose uncertainty
-         * cannot be bounded, has nothing to aim at: those list.
+         * Heard, seen and modelled craft are placed where the game had them when the
+         * centre last knew them, and the radius the centre gives is the whole of the
+         * uncertainty at that instant, so it does not grow here. A held craft has
+         * nothing to carry it forward, and a craft with no place on record that early,
+         * or whose uncertainty cannot be bounded, has nothing to aim at: those list.
          */
-        private void Describe(WorldModelBuilder builder, string scope, ScopeCraft craft)
+        private void Describe(WorldModelBuilder builder, ScopeCraft craft)
         {
             var sample = craft.Sample;
             var pid = craft.PersistentId;
-            if (sample.State != CraftKnowledgeState.Held && sample.UncertaintyM.HasValue && sample.Place != null)
-            {
-                DescribePredicted(builder, scope, craft, sample.Place, sample.UncertaintyM.Value);
-                return;
-            }
             if (sample.State == CraftKnowledgeState.Held
                 || !sample.LastKnownUt.HasValue
                 || !sample.UncertaintyM.HasValue
                 || !_places.TryAt(craft.VesselId, sample.LastKnownUt.Value, out var place))
             {
                 builder.Listed(pid);
-                Log(scope, craft, "listed", null);
                 return;
             }
             var from = place.Ut;
@@ -332,79 +301,15 @@ namespace Gonogo.KerbcastUplink
                 builder.StateVector(pid, place.BodyIndex, place.Ut, new Vec3d(place.State6[0], place.State6[1], place.State6[2]), new Vec3d(place.State6[3], place.State6[4], place.State6[5]), from, until);
             }
             builder.Uncertainty(sample.UncertaintyM.Value, 0.0, 0.0, 0.0);
-            Log(scope, craft, "positioned", sample.UncertaintyM.Value);
-        }
-
-        /* The velocity is the place's own motion over the span read ahead; with none it is zero, which holds the craft where it is predicted to be. */
-        private void DescribePredicted(WorldModelBuilder builder, string scope, ScopeCraft craft, Sitrep.Contract.CraftPlace place, double radiusM)
-        {
-            var position = place.Position;
-            var ahead = craft.Ahead;
-            var velocity = ahead == null
-                ? new Vec3d(0.0, 0.0, 0.0)
-                : new Vec3d(
-                    (ahead.Position.X - position.X) / VelocitySpanSeconds,
-                    (ahead.Position.Y - position.Y) / VelocitySpanSeconds,
-                    (ahead.Position.Z - position.Z) / VelocitySpanSeconds);
-            var ut = craft.Ut;
-            builder.StateVector(craft.PersistentId, place.BodyIndex, ut, new Vec3d(position.X, position.Y, position.Z), velocity, ut, ut + RecordValiditySeconds);
-            builder.Uncertainty(radiusM, 0.0, 0.0, 0.0);
-            Log(scope, craft, place.Basis.ToString().ToLowerInvariant(), radiusM);
-        }
-
-        /* What Kerbcast then says each command feed may watch, once per craft per feed and again only when its answer changes. */
-        private void LogEligibility(IKerbcast kerbcast)
-        {
-            if (_log == null || !_supports(ApiFeature.CommandFeeds))
-            {
-                return;
-            }
-            foreach (var feed in kerbcast.Command.Feeds())
-            {
-                if (feed == null)
-                {
-                    continue;
-                }
-                foreach (var target in kerbcast.Command.Targets(feed.FlightId))
-                {
-                    var detail = "eligibility=" + target.Eligibility + " rangeM=" + (double.IsNaN(target.RangeM) ? "none" : Math.Round(target.RangeM).ToString(System.Globalization.CultureInfo.InvariantCulture));
-                    var key = "feed" + feed.FlightId + "|" + target.PersistentId;
-                    if (_logged.TryGetValue(key, out var last) && last == detail)
-                    {
-                        continue;
-                    }
-                    _logged[key] = detail;
-                    _log("[Kerbcast][WORLD] feed=" + feed.FlightId + " craft=" + target.PersistentId + " " + detail);
-                }
-            }
-        }
-
-        /* One line per craft per scope, repeated only when what it says changes, so a steady craft does not fill the log every snapshot. */
-        private void Log(string scope, ScopeCraft craft, string fix, double? radiusM)
-        {
-            if (_log == null)
-            {
-                return;
-            }
-            var detail = fix + " state=" + craft.Sample.State + (radiusM.HasValue ? " radiusM=" + Math.Round(radiusM.Value).ToString(System.Globalization.CultureInfo.InvariantCulture) : "");
-            var key = scope + "|" + craft.PersistentId;
-            if (_logged.TryGetValue(key, out var last) && last == detail)
-            {
-                return;
-            }
-            _logged[key] = detail;
-            _log("[Kerbcast][WORLD] scope=" + scope + " craft=" + craft.PersistentId + " " + detail);
         }
 
         private readonly struct ScopeCraft
         {
-            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, Sitrep.Contract.CraftPlace? ahead)
+            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample)
             {
                 PersistentId = persistentId;
                 VesselId = vesselId;
                 Sample = sample;
-                Ut = ut;
-                Ahead = ahead;
             }
 
             public uint PersistentId { get; }
@@ -412,36 +317,24 @@ namespace Gonogo.KerbcastUplink
             public Guid VesselId { get; }
 
             public CraftKnowledgeSample Sample { get; }
-
-            /// <summary>The instant the scope's knowledge was read at.</summary>
-            public double Ut { get; }
-
-            /// <summary>The craft's predicted place a moment after <see cref="Ut"/>, for its velocity.</summary>
-            public Sitrep.Contract.CraftPlace? Ahead { get; }
         }
 
         /// <summary>Each command feed's site key, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
-        private Dictionary<string, string> Bindings(IKerbcast kerbcast, ILensSites? sites, out Dictionary<string, string> feedSites)
+        private Dictionary<string, string> Bindings(IKerbcast kerbcast, ILensSites? sites)
         {
             var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
-            feedSites = new Dictionary<string, string>(StringComparer.Ordinal);
             if (!_supports(ApiFeature.CommandFeeds))
             {
                 return bindings;
             }
             foreach (var feed in kerbcast.Command.Feeds())
             {
-                if (feed == null || string.IsNullOrEmpty(feed.SiteKey))
+                if (feed == null || string.IsNullOrEmpty(feed.SiteKey) || bindings.ContainsKey(feed.SiteKey))
                 {
                     continue;
                 }
                 var centre = CentreAt(kerbcast, sites, feed);
-                if (centre == null)
-                {
-                    continue;
-                }
-                feedSites[KerbcastLensSites.KeyFor(feed.FlightId)] = centre;
-                if (!bindings.ContainsKey(feed.SiteKey))
+                if (centre != null)
                 {
                     bindings[feed.SiteKey] = centre;
                 }
@@ -495,36 +388,15 @@ namespace Gonogo.KerbcastUplink
             });
         }
 
-        private int Read(IBulkCraftKnowledge knowledge, string centre, double ut, out long version) =>
-            Read(knowledge, centre, ut, ref _buffer, out version);
-
-        private static int Read(IBulkCraftKnowledge knowledge, string centre, double ut, ref CraftKnowledgeSample[] buffer, out long version)
+        private int Read(IBulkCraftKnowledge knowledge, string centre, double ut, out long version)
         {
-            var count = knowledge.ReadCentre(centre, ut, buffer, out version);
-            if (count > buffer.Length)
+            var count = knowledge.ReadCentre(centre, ut, _buffer, out version);
+            if (count > _buffer.Length)
             {
-                buffer = new CraftKnowledgeSample[count * 2];
-                count = knowledge.ReadCentre(centre, ut, buffer, out version);
+                _buffer = new CraftKnowledgeSample[count * 2];
+                count = knowledge.ReadCentre(centre, ut, _buffer, out version);
             }
-            return Math.Min(count, buffer.Length);
-        }
-
-        /// <summary>The place the same craft is predicted at <see cref="VelocitySpanSeconds"/> later, or null when it has none there or was not placed.</summary>
-        private Sitrep.Contract.CraftPlace? PlaceAhead(CraftKnowledgeSample sample, int aheadCount)
-        {
-            if (sample.Place == null)
-            {
-                return null;
-            }
-            for (var i = 0; i < aheadCount; i++)
-            {
-                var later = _ahead[i];
-                if (later.VesselId == sample.VesselId && later.Place != null && later.Place.BodyIndex == sample.Place.BodyIndex)
-                {
-                    return later.Place;
-                }
-            }
-            return null;
+            return Math.Min(count, _buffer.Length);
         }
 
         /*

@@ -43,29 +43,4 @@ public class KerbcastAimOutcomeTests
         Assert.False(result.Success);
         Assert.Equal(CommandErrorCode.ModeUnavailable, result.ErrorCode);
     }
-
-    [Fact]
-    public void ACommandAimKerbcastAcceptsSucceeds() =>
-        Assert.True(KerbcastAimOutcome.ForCommandAim("Ok").Success);
-
-    [Theory]
-    [InlineData("UnknownCraft")]
-    [InlineData("NotCommandFeed")]
-    public void ACommandAimAtAnUnknownCraftOrCameraIsNotFound(string answer) =>
-        Assert.Equal(CommandErrorCode.NotFound, KerbcastAimOutcome.ForCommandAim(answer).ErrorCode);
-
-    [Theory]
-    [InlineData("NotPositioned")]
-    [InlineData("TooUncertain")]
-    [InlineData("Stale")]
-    [InlineData("Refused")]
-    public void ACommandAimAtACraftTheCameraCannotSeeIsARangeRefusal(string answer) =>
-        Assert.Equal(CommandErrorCode.Range, KerbcastAimOutcome.ForCommandAim(answer).ErrorCode);
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("NotLockHolder")]
-    [InlineData("NotRunning")]
-    public void ACommandAimThatCouldNotBeMadeIsModeUnavailable(string? answer) =>
-        Assert.Equal(CommandErrorCode.ModeUnavailable, KerbcastAimOutcome.ForCommandAim(answer).ErrorCode);
 }

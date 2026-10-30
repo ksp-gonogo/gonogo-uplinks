@@ -109,11 +109,6 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportsZoom: "flag",
     vesselId: "id",
   },
-  "KerbcastSetCommandAimArgs": {
-    cameraId: "id",
-    lensKey: "text",
-    subjectPersistentId: "id",
-  },
   "KerbcastSetFieldOfViewArgs": {
     cameraId: "id",
     fieldOfView: "°",

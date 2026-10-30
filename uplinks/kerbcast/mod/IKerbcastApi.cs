@@ -39,12 +39,6 @@ namespace Gonogo.KerbcastUplink
         /// <summary>Applies an absolute pan. False is kerbcast's own rejection of the id; null means the call could not be made.</summary>
         bool? SetPan(uint flightId, float yaw, float pitch);
 
-        /// <summary>
-        /// Points a command camera at a craft. Returns kerbcast's answer as the name of its
-        /// <c>AimResult</c> ("Ok", "TooUncertain", "NotPositioned"), or null when the call could not be made.
-        /// </summary>
-        string? SetCommandAim(uint flightId, uint subjectPersistentId);
-
         /// <summary>Why the main-render throttle cannot be reached, or null when it can.</summary>
         string? ThrottleUnavailable();
 
