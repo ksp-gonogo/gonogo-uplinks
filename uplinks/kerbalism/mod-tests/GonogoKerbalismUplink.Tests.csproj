@@ -70,8 +70,6 @@
          is the KSP-touching half and stays out). -->
     <Compile Include="..\mod\IKerbalismFileActuator.cs" />
     <Compile Include="..\mod\KerbalismFileCommandProvider.cs" />
-    <Compile Include="..\mod\IKerbalismDeviceActuator.cs" />
-    <Compile Include="..\mod\KerbalismDeviceCommandProvider.cs" />
     <!-- The start and stop seam, compiled as an interface only for the same
          reason: the live module switch is the KSP-touching half. -->
     <Compile Include="..\mod\IKerbalismRunActuator.cs" />

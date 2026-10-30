@@ -75,34 +75,6 @@ public class KerbalismAbsenceIsNotZeroTests
         Assert.Null(habitat[wireKey]);
     }
 
-    /// <summary>The kPa figure is the ratio times Kerbalism's sea-level 101, and absent exactly when the ratio is.</summary>
-    [Fact]
-    public void The_pressure_in_kilopascals_follows_the_ratio_and_its_absence()
-    {
-        var read = KerbalismCapture.BuildLifeSupport(
-            Snapshot(api: name => name == "Pressure" ? 0.5 : 1.0), processes: null);
-        var habitat = Assert.IsType<Dictionary<string, object?>>(read["habitat"]);
-        Assert.Equal(50.5, (double)habitat["pressureKpa"]!, 9);
-
-        var unread = KerbalismCapture.BuildLifeSupport(
-            Snapshot(api: name => name == "Pressure" ? (double?)null : 1.0), processes: null);
-        var unreadHabitat = Assert.IsType<Dictionary<string, object?>>(unread["habitat"]);
-        Assert.True(unreadHabitat.ContainsKey("pressureKpa"));
-        Assert.Null(unreadHabitat["pressureKpa"]);
-    }
-
-    /// <summary>An exposure Kerbalism has not measured is carried as null, and a measured one as itself.</summary>
-    [Fact]
-    public void The_average_panel_exposure_is_null_until_measured()
-    {
-        var snap = Snapshot();
-        Assert.Null(KerbalismCapture.BuildSpaceWeather(snap)["solarPanelExposure"]);
-        Assert.Equal(
-            0.805,
-            (double)KerbalismCapture.BuildSpaceWeather(snap, solarPanelExposure: 0.805)["solarPanelExposure"]!,
-            9);
-    }
-
     /// <summary>
     /// The storm flags. False is not "we did not ask": it is the pill that tells
     /// an operator no CME is inbound, and the belt flags beside it are what the

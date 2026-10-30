@@ -18,7 +18,6 @@ import { describe, expect, it } from "vitest";
 import {
   KERBALISM_AVAILABLE_TOPIC,
   KERBALISM_CREW_TOPIC,
-  KERBALISM_DIAGNOSTICS_TOPIC,
   KERBALISM_FEATURES_TOPIC,
   KERBALISM_LIFESUPPORT_TOPIC,
   KERBALISM_PROFILE_TOPIC,
@@ -66,7 +65,6 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
     expect(KERBALISM_RELIABILITY_PARTS_TOPIC).toBe(
       csTopic("ReliabilityPartsTopic"),
     );
-    expect(KERBALISM_DIAGNOSTICS_TOPIC).toBe(csTopic("DiagnosticsTopic"));
   });
 
   it("are known TopicIds once this client's topics module has loaded", () => {
@@ -79,7 +77,6 @@ describe("kerbalism structured Topics (relocated out of Sitrep.Contract)", () =>
       KERBALISM_TRANSMISSION_TOPIC,
       KERBALISM_RELIABILITY_TOPIC,
       KERBALISM_RELIABILITY_PARTS_TOPIC,
-      KERBALISM_DIAGNOSTICS_TOPIC,
     ]) {
       expect(isTopicId(topic)).toBe(true);
       expect(getAllKnownTopicIds()).toContain(topic);

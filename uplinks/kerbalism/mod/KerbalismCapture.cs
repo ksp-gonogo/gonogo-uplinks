@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Gonogo.KerbalismUplink
 {
@@ -100,15 +99,11 @@ namespace Gonogo.KerbalismUplink
             return map;
         }
 
-        /// <summary>Kerbalism's <c>Sim.PressureAtSeaLevel()</c>: a habitat pressure ratio of 1 reads as this many kPa.</summary>
-        internal const double SeaLevelPressureKpa = 101.0;
-
         public static Dictionary<string, object?> BuildSpaceWeather(
             KerbalismSnapshot s,
             IEnumerable<StarInfoRaw>? stars = null,
             IEnumerable<StormEntryRaw>? storms = null,
-            double? stormEjectionSpeed = null,
-            double? solarPanelExposure = null) => new()
+            double? stormEjectionSpeed = null) => new()
         {
             ["radiationRadPerSecond"] = s.Radiation,
             ["habitatRadiationRadPerSecond"] = s.HabitatRadiation,
@@ -119,7 +114,6 @@ namespace Gonogo.KerbalismUplink
             ["stormInProgress"] = s.StormInProgress,
             ["blackout"] = s.Blackout,
             ["inSunlight"] = s.InSunlight,
-            ["solarPanelExposure"] = solarPanelExposure,
             ["shieldingAmount"] = s.ShieldingAmount,
             ["shieldingCapacity"] = s.ShieldingCapacity,
             ["stars"] = BuildStars(stars),
@@ -382,36 +376,6 @@ namespace Gonogo.KerbalismUplink
             return list;
         }
 
-        /// <summary>
-        /// The <c>kerbalism.diagnostics</c> payload. A list that could not be read
-        /// stays null, so an unloaded craft is not reported as having no devices.
-        /// </summary>
-        public static Dictionary<string, object?> BuildDiagnostics(DiagnosticsRaw raw) => new()
-        {
-            ["devices"] = raw.Devices?.Select(d => (object)new Dictionary<string, object?>
-            {
-                ["id"] = d.Id,
-                ["name"] = d.Name,
-                ["partName"] = d.PartName,
-                ["status"] = d.Status,
-            }).ToList(),
-            ["scripts"] = raw.Scripts?.Select(sc => (object)new Dictionary<string, object?>
-            {
-                ["type"] = sc.Type,
-                ["deviceCount"] = sc.DeviceCount,
-                ["states"] = sc.States.Select(st => (object)new Dictionary<string, object?>
-                {
-                    ["deviceId"] = st.DeviceId,
-                    ["on"] = st.On,
-                }).ToList(),
-            }).ToList(),
-            ["log"] = raw.Log?.Select(l => (object)new Dictionary<string, object?>
-            {
-                ["level"] = l.Level,
-                ["message"] = l.Message,
-            }).ToList(),
-        };
-
         private static Dictionary<string, object?> Cast(Dictionary<string, double> src)
         {
             var outMap = new Dictionary<string, object?>(StringComparer.Ordinal);
@@ -468,7 +432,6 @@ namespace Gonogo.KerbalismUplink
                 ["habitat"] = new Dictionary<string, object?>
                 {
                     ["pressure"] = s.Pressure,
-                    ["pressureKpa"] = s.Pressure * SeaLevelPressureKpa,
                     ["poisoning"] = s.Poisoning,
                     ["shielding"] = s.Shielding,
                     ["livingSpace"] = s.LivingSpace,

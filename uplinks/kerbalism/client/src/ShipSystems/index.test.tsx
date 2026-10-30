@@ -20,8 +20,6 @@ const CARRIED = [
   "vessel.resources",
   "vessel.crew",
   "kerbalism.spaceweather",
-  "kerbalism.diagnostics",
-  "kerbalism.reliabilityParts",
 ];
 
 // A minimal-but-real profile: three Supplies (Water/ElectricCharge/Oxygen), a
@@ -714,61 +712,5 @@ describe("ShipSystemsComponent: habitat readings that never arrived", () => {
     await habitatHeadReads(panel, "Pressurized");
     expect(panel.getByRole("meter", { name: "Comfort" })).toBeInTheDocument();
     expect(panel.queryByRole("meter", { name: "CO2 poisoning" })).toBeNull();
-  });
-
-  it("writes the pressure in kPa beside the verdict", async () => {
-    const panel = renderWithHabitat({ pressure: 1, pressureKpa: 101 });
-
-    await habitatHeadReads(panel, "Pressurized101.0 kPa");
-  });
-
-  it("writes no pressure figure when only the ratio was reported", async () => {
-    const panel = renderWithHabitat({ pressure: 0.9 });
-
-    await habitatHeadReads(panel, "Pressurized");
-    expect(panel.queryByText(/kPa/)).toBeNull();
-  });
-});
-
-describe("ShipSystemsComponent: sunlight and panel exposure", () => {
-  function renderWithWeather(weather: Record<string, unknown>) {
-    const fixture = newFixture();
-    const { container } = renderWidget(fixture);
-    act(() => {
-      fixture.emit("kerbalism.profile", PROFILE);
-      fixture.emit("kerbalism.lifesupport", LIFE_SUPPORT);
-      fixture.emit("kerbalism.spaceweather", weather);
-      fixture.emit("vessel.resources", RESOURCES);
-      fixture.emit("vessel.crew", CREW);
-    });
-    return within(container);
-  }
-
-  it("states sunlight and the average panel exposure in the power footer", async () => {
-    const panel = renderWithWeather({
-      inSunlight: true,
-      solarPanelExposure: 0.805,
-    });
-
-    expect(await panel.findByText("In sunlight")).toBeInTheDocument();
-    expect(panel.getByText(/Panels/)).toHaveTextContent(/80\.5\s*%/);
-  });
-
-  it("says shadow when the craft is out of the light", async () => {
-    const panel = renderWithWeather({
-      inSunlight: false,
-      solarPanelExposure: 0,
-    });
-
-    expect(await panel.findByText("In shadow")).toBeInTheDocument();
-  });
-
-  it("claims neither sunlight nor an exposure that was not read", async () => {
-    const panel = renderWithWeather({ magnetosphere: true });
-
-    expect(await panel.findByText("Power")).toBeInTheDocument();
-    expect(panel.queryByText("In sunlight")).toBeNull();
-    expect(panel.queryByText("In shadow")).toBeNull();
-    expect(panel.queryByText(/Panels/)).toBeNull();
   });
 });

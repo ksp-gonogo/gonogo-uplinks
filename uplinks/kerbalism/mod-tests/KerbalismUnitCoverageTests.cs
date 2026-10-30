@@ -83,10 +83,6 @@ namespace GonogoKerbalismUplink.Tests
                 nameof(KerbalismReliabilitySummary), nameof(KerbalismReliabilityPart),
                 nameof(KerbalismReliabilityBudget), nameof(KerbalismRepairCostItem),
                 nameof(KerbalismRepairPartArgs), nameof(KerbalismRepairOutcome),
-                // kerbalism.diagnostics and the device, script and log shapes in it.
-                nameof(KerbalismDiagnostics), nameof(KerbalismDevice),
-                nameof(KerbalismScript), nameof(KerbalismLogEntry),
-                nameof(KerbalismScriptState), nameof(KerbalismDeviceSetArgs), nameof(KerbalismScriptSetArgs),
                 // The four Kerbalism namespaces of the CORE science.* payloads'
                 // extension bags (KerbalismScienceExt.cs), same rationale as
                 // the reliability shapes above at a larger scale: Kerbalism wins the

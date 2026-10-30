@@ -14,47 +14,6 @@
     "pinnedUt": 1000000,
     "emits": [
       {
-        "topic": "kerbalism.diagnostics",
-        "payload": {
-          "devices": [
-            { "id": "101", "name": "Fission Reactor", "partName": "Reactor", "status": "on" },
-            { "id": "102", "name": "Water Recycler", "partName": "Recycler", "status": "on" },
-            { "id": "103", "name": "Cabin Light", "partName": "Cabin", "status": "off" }
-          ],
-          "scripts": [
-            { "type": "sunlight", "deviceCount": 2 },
-            { "type": "power_low", "deviceCount": 1 }
-          ],
-          "log": [
-            { "level": "danger", "message": "Electric Charge is running critically low." },
-            { "level": "warning", "message": "Water Recycler has stopped." },
-            { "level": "alert", "message": "Experiment complete." }
-          ]
-        }
-      },
-      {
-        "topic": "kerbalism.reliabilityParts",
-        "payload": [
-          { "partId": "1:0", "title": "Antenna", "condition": "failed", "redundancyGroup": "Communication" },
-          { "partId": "2:0", "title": "Reactor", "condition": "service-due", "redundancyGroup": "Power" },
-          { "partId": "3:0", "title": "Relay", "condition": "nominal", "redundancyGroup": "Communication" }
-        ]
-      },
-      {
-        "topic": "kerbalism.spaceweather",
-        "payload": {
-          "radiationRadPerSecond": 0.000004,
-          "habitatRadiationRadPerSecond": 0.000004,
-          "magnetosphere": true,
-          "outerBelt": false,
-          "innerBelt": false,
-          "stormIncoming": false,
-          "stormInProgress": false,
-          "inSunlight": true,
-          "solarPanelExposure": 0.805
-        }
-      },
-      {
         "topic": "kerbalism.profile",
         "payload": {
           "name": "Default",
@@ -131,7 +90,6 @@
           },
           "habitat": {
             "pressure": 0.9,
-            "pressureKpa": 90.9,
             "poisoning": 0.05,
             "comfort": 0.6,
             "livingSpace": 0.7

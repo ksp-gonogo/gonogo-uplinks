@@ -65,16 +65,6 @@
       "name": "text",
       "problem": "units"
     },
-    "KerbalismDevice": {
-      "id": "text",
-      "name": "text",
-      "partName": "text",
-      "status": "text"
-    },
-    "KerbalismDeviceSetArgs": {
-      "deviceId": "id",
-      "on": "flag"
-    },
     "KerbalismFeatures": {
       "automation": "flag",
       "comfort": "flag",
@@ -109,7 +99,6 @@
       "livingSpace": "ratio",
       "poisoning": "ratio",
       "pressure": "ratio",
-      "pressureKpa": "kPa",
       "shielding": "ratio",
       "surface": "m²",
       "volume": "m³"
@@ -132,10 +121,6 @@
       "asOfKerbalismUt": "ut",
       "rates": "units/s",
       "ruleEnvModifiers": "1"
-    },
-    "KerbalismLogEntry": {
-      "level": "enum",
-      "message": "text"
     },
     "KerbalismProcessDef": {
       "dumpValves": "text",
@@ -265,19 +250,6 @@
       "effectiveRateMBps": "MB/s",
       "status": "id"
     },
-    "KerbalismScript": {
-      "deviceCount": "count",
-      "type": "enum"
-    },
-    "KerbalismScriptSetArgs": {
-      "deviceId": "id",
-      "scriptType": "enum",
-      "state": "flag"
-    },
-    "KerbalismScriptState": {
-      "deviceId": "id",
-      "on": "flag"
-    },
     "KerbalismSpaceWeather": {
       "blackout": "flag",
       "habitatRadiationRadPerSecond": "rad/s",
@@ -288,7 +260,6 @@
       "radiationRadPerSecond": "rad/s",
       "shieldingAmount": "units",
       "shieldingCapacity": "units",
-      "solarPanelExposure": "ratio",
       "stormEjectionSpeed": "m/s",
       "stormInProgress": "flag",
       "stormIncoming": "flag"
@@ -383,7 +354,6 @@
       "radiationRadPerSecond": "rad/s",
       "shieldingAmount": "units",
       "shieldingCapacity": "units",
-      "solarPanelExposure": "ratio",
       "stormEjectionSpeed": "m/s",
       "stormInProgress": "flag",
       "stormIncoming": "flag"
@@ -397,11 +367,6 @@
   "typeShapes": {
     "KerbalismCrewEntry": {
       "rules": "KerbalismCrewRule[]"
-    },
-    "KerbalismDiagnostics": {
-      "devices": "KerbalismDevice[]",
-      "log": "KerbalismLogEntry[]",
-      "scripts": "KerbalismScript[]"
     },
     "KerbalismLifeSupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",
@@ -417,9 +382,6 @@
       "budgets": "KerbalismReliabilityBudget[]",
       "repairCost": "KerbalismRepairCostItem[]"
     },
-    "KerbalismScript": {
-      "states": "KerbalismScriptState[]"
-    },
     "KerbalismSpaceWeather": {
       "stars": "KerbalismStarInfo[]",
       "storms": "KerbalismStormEntry[]"
@@ -428,11 +390,6 @@
   "topicShapes": {
     "kerbalism.crew": {
       "rules": "KerbalismCrewRule[]"
-    },
-    "kerbalism.diagnostics": {
-      "devices": "KerbalismDevice[]",
-      "log": "KerbalismLogEntry[]",
-      "scripts": "KerbalismScript[]"
     },
     "kerbalism.lifesupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",
@@ -454,9 +411,6 @@
     }
   },
   "typeEnums": {
-    "KerbalismLogEntry": {
-      "level": null
-    },
     "KerbalismReliabilityBudget": {
       "kind": null
     },
@@ -468,12 +422,6 @@
     },
     "KerbalismResourceDef": {
       "flowModeOrdinal": "KspResourceFlowMode"
-    },
-    "KerbalismScript": {
-      "type": null
-    },
-    "KerbalismScriptSetArgs": {
-      "scriptType": null
     },
     "KerbalismStormEntry": {
       "targetKind": "KerbalismStormTargetKind"

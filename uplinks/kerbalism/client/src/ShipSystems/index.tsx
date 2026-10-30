@@ -36,7 +36,7 @@ import {
   writtenAs,
   writtenQuantity,
 } from "@ksp-gonogo/ui-kit";
-import { createContext, type ReactNode, useContext, useMemo } from "react";
+import { createContext, useContext, useMemo } from "react";
 import type {
   KerbalismGreenhouseEntry,
   KerbalismHabitat,
@@ -62,7 +62,6 @@ import { KERBALISM } from "../uplink.js";
 // `@ksp-gonogo/components`.
 import "./GreenhouseSection.js";
 import { radiationTooHigh } from "./GreenhouseSection.js";
-import { DiagnosticsButtons } from "./diagnostics.js";
 import { RadiationSection } from "./RadiationSection.js";
 import { useResourceColorMap } from "./resourceColorMap.js";
 
@@ -562,11 +561,6 @@ function ShipSystemsBody({
     summary.supplies.find((r) => r.name === "ElectricCharge") ??
     summary.other.find((r) => r.name === "ElectricCharge");
 
-  // Null, not false or zero: an unread flag is neither day nor night, and an
-  // unmeasured exposure is not a dark panel.
-  const inSunlight = weather?.inSunlight ?? null;
-  const panelExposure = magnitudeOf(weather?.solarPanelExposure);
-
   const runningCount = processes.filter((p) => p.state === "running").length;
   const brokenCount = processes.filter((p) => p.state === "broken").length;
   const unknownCount = processes.filter((p) => p.state === "unknown").length;
@@ -624,23 +618,7 @@ function ShipSystemsBody({
         // so it earns the one permanently visible readout, the same
         // "duplicate the balance next to where it matters" convention the
         // funds rule uses. Rendered only when the profile carries EC.
-        (ecRow || inSunlight !== null || panelExposure !== null) && (
-          <Stack gap="caption">
-            {(inSunlight !== null || panelExposure !== null) && (
-              <Cluster justify="between" align="center" wrap>
-                {inSunlight !== null && (
-                  <Badge tone={inSunlight ? "go" : "neutral"} size="sm">
-                    {inSunlight ? "In sunlight" : "In shadow"}
-                  </Badge>
-                )}
-                {panelExposure !== null && (
-                  <Text level="muted" size="xs">
-                    Panels <Unit value={weather?.solarPanelExposure} decimals={1} />
-                  </Text>
-                )}
-              </Cluster>
-            )}
-            {ecRow && (
+        ecRow && (
           <Meter
             label="Power"
             // Null, not 0: `fraction` is null when the craft carries no tank
@@ -661,8 +639,6 @@ function ShipSystemsBody({
               />
             }
           />
-            )}
-          </Stack>
         )
       }
       sections={[
@@ -777,11 +753,6 @@ function ShipSystemsBody({
                   ? "Pressurized"
                   : "Unpressurized"
             }
-            detail={
-              habitat?.pressureKpa ? (
-                <Unit value={habitat.pressureKpa} decimals={1} />
-              ) : undefined
-            }
             tone={
               pressurized === null ? "neutral" : pressurized ? "go" : "warn"
             }
@@ -851,9 +822,6 @@ function ShipSystemsBody({
           name="ship-systems.life-support"
           props={{ greenhouses, ambientRadiationRadPerSecond, held }}
         />,
-        <Section key="diagnostics" full>
-          <DiagnosticsButtons />
-        </Section>,
       ]}
     />
   );
@@ -862,41 +830,27 @@ function ShipSystemsBody({
 function SectionHead({
   label,
   value,
-  detail,
   tone,
 }: {
   label: string;
   value?: string;
-  /** A quieter figure beside the reading, in the same muted text without its tone. */
-  detail?: ReactNode;
   tone?: Tone;
 }) {
   return (
-    // Wraps so a long reading drops under its label at the smallest tile
-    // instead of running past the right edge.
-    <Cluster justify="between" align="baseline" wrap>
+    <Cluster justify="between" align="baseline">
       <Text level="muted" size="xs">
         {label.toUpperCase()}
       </Text>
-      {(value !== undefined || detail !== undefined) && (
-        <Cluster justify="end" align="baseline" wrap>
-          {value !== undefined && (
-            // `neutral` is a Meter/Badge tone, not a Text one: a resting
-            // section reading renders in the same muted text as the label.
-            <Text
-              tone={tone === undefined || tone === "neutral" ? undefined : tone}
-              level="muted"
-              size="xs"
-            >
-              {value}
-            </Text>
-          )}
-          {detail !== undefined && (
-            <Text level="muted" size="xs">
-              {detail}
-            </Text>
-          )}
-        </Cluster>
+      {value !== undefined && (
+        // `neutral` is a Meter/Badge tone, not a Text one: a resting
+        // section reading renders in the same muted text as the label.
+        <Text
+          tone={tone === undefined || tone === "neutral" ? undefined : tone}
+          level="muted"
+          size="xs"
+        >
+          {value}
+        </Text>
       )}
     </Cluster>
   );

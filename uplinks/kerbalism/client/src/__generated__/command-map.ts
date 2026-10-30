@@ -46,10 +46,8 @@
 // declared and handled without a tag would be dispatchable and absent here.
 
 import type {
-  KerbalismDeviceSetArgs,
   KerbalismRepairOutcome,
   KerbalismRepairPartArgs,
-  KerbalismScriptSetArgs,
   KerbalismSubjectActionArgs,
   KerbalismSubjectFlagArgs,
 } from "./contract.js";
@@ -59,25 +57,21 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 
 export interface GeneratedCommandArgsMap {
-  "kerbalism.device.set": KerbalismDeviceSetArgs;
   "kerbalism.file.delete": KerbalismSubjectActionArgs;
   "kerbalism.file.send": KerbalismSubjectFlagArgs;
   "kerbalism.repair": KerbalismRepairPartArgs;
   "kerbalism.sample.analyze": KerbalismSubjectFlagArgs;
   "kerbalism.sample.dump": KerbalismSubjectActionArgs;
   "kerbalism.sample.moveToLab": KerbalismSubjectActionArgs;
-  "kerbalism.script.set": KerbalismScriptSetArgs;
 }
 
 export interface GeneratedCommandReplyMap {
-  "kerbalism.device.set": CommandResult;
   "kerbalism.file.delete": CommandResult;
   "kerbalism.file.send": CommandResult;
   "kerbalism.repair": CommandResultOf<KerbalismRepairOutcome>;
   "kerbalism.sample.analyze": CommandResult;
   "kerbalism.sample.dump": CommandResult;
   "kerbalism.sample.moveToLab": CommandResult;
-  "kerbalism.script.set": CommandResult;
 }
 
 /**
@@ -91,14 +85,12 @@ export interface GeneratedCommandReplyMap {
  * its declared shape, unit hydration first among them, reads this.
  */
 export const GENERATED_COMMAND_REPLY_TYPES = {
-  "kerbalism.device.set": "CommandResult",
   "kerbalism.file.delete": "CommandResult",
   "kerbalism.file.send": "CommandResult",
   "kerbalism.repair": "CommandResultOf<KerbalismRepairOutcome>",
   "kerbalism.sample.analyze": "CommandResult",
   "kerbalism.sample.dump": "CommandResult",
   "kerbalism.sample.moveToLab": "CommandResult",
-  "kerbalism.script.set": "CommandResult",
 } as const satisfies Record<string, string>;
 
 /**
@@ -140,23 +132,19 @@ export interface GeneratedCommandRail {
  * an in-flight queue entry would be a fiction about the operator's own order.
  */
 export const GENERATED_COMMAND_RAIL = {
-  "kerbalism.device.set": { replies: true, delayed: true },
   "kerbalism.file.delete": { replies: true, delayed: true },
   "kerbalism.file.send": { replies: true, delayed: true },
   "kerbalism.repair": { replies: true, delayed: true },
   "kerbalism.sample.analyze": { replies: true, delayed: true },
   "kerbalism.sample.dump": { replies: true, delayed: true },
   "kerbalism.sample.moveToLab": { replies: true, delayed: true },
-  "kerbalism.script.set": { replies: true, delayed: true },
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
-  "kerbalism.device.set",
   "kerbalism.file.delete",
   "kerbalism.file.send",
   "kerbalism.repair",
   "kerbalism.sample.analyze",
   "kerbalism.sample.dump",
   "kerbalism.sample.moveToLab",
-  "kerbalism.script.set",
 ] as const;

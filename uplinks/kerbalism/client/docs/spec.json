@@ -53,15 +53,6 @@
       }
     },
     {
-      "id": "kerbalism.diagnostics",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
       "id": "kerbalism.features",
       "payload": "KerbalismFeatures",
       "array": false,
@@ -326,10 +317,6 @@
           "unit": "units"
         },
         {
-          "name": "solarPanelExposure",
-          "unit": "ratio"
-        },
-        {
           "name": "stars",
           "shape": "KerbalismStarInfo[]"
         },
@@ -398,27 +385,6 @@
         {
           "name": "problem",
           "unit": "units"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismDevice",
-      "fields": [
-        {
-          "name": "id",
-          "unit": "text"
-        },
-        {
-          "name": "name",
-          "unit": "text"
-        },
-        {
-          "name": "partName",
-          "unit": "text"
-        },
-        {
-          "name": "status",
-          "unit": "text"
         }
       ]
     },
@@ -495,10 +461,6 @@
           "unit": "ratio"
         },
         {
-          "name": "pressureKpa",
-          "unit": "kPa"
-        },
-        {
           "name": "shielding",
           "unit": "ratio"
         },
@@ -509,19 +471,6 @@
         {
           "name": "volume",
           "unit": "m³"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismLogEntry",
-      "fields": [
-        {
-          "name": "level",
-          "unit": "enum"
-        },
-        {
-          "name": "message",
-          "unit": "text"
         }
       ]
     },
@@ -700,36 +649,6 @@
         {
           "name": "ratePerSecond",
           "unit": "units/s"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismScript",
-      "fields": [
-        {
-          "name": "deviceCount",
-          "unit": "count"
-        },
-        {
-          "name": "states",
-          "shape": "KerbalismScriptState[]"
-        },
-        {
-          "name": "type",
-          "unit": "enum"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismScriptState",
-      "fields": [
-        {
-          "name": "deviceId",
-          "unit": "id"
-        },
-        {
-          "name": "on",
-          "unit": "flag"
         }
       ]
     },
@@ -1032,11 +951,6 @@
   ],
   "commands": [
     {
-      "id": "kerbalism.device.set",
-      "args": "KerbalismDeviceSetArgs",
-      "result": "CommandResult"
-    },
-    {
       "id": "kerbalism.file.delete",
       "args": "KerbalismSubjectActionArgs",
       "result": "CommandResult"
@@ -1065,27 +979,9 @@
       "id": "kerbalism.sample.moveToLab",
       "args": "KerbalismSubjectActionArgs",
       "result": "CommandResult"
-    },
-    {
-      "id": "kerbalism.script.set",
-      "args": "KerbalismScriptSetArgs",
-      "result": "CommandResult"
     }
   ],
   "commandArgs": [
-    {
-      "name": "KerbalismDeviceSetArgs",
-      "fields": [
-        {
-          "name": "deviceId",
-          "unit": "id"
-        },
-        {
-          "name": "on",
-          "unit": "flag"
-        }
-      ]
-    },
     {
       "name": "KerbalismRepairPartArgs",
       "fields": [
@@ -1096,23 +992,6 @@
         {
           "name": "partId",
           "unit": "id"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismScriptSetArgs",
-      "fields": [
-        {
-          "name": "deviceId",
-          "unit": "id"
-        },
-        {
-          "name": "scriptType",
-          "unit": "enum"
-        },
-        {
-          "name": "state",
-          "unit": "flag"
         }
       ]
     },
@@ -1410,12 +1289,6 @@
       "meaning": "Kerbalism runs and transmits experiments continuously on its own, so a one-shot deploy or transmit has nothing to act on."
     },
     {
-      "id": "kerbalism.craftNotLoaded",
-      "refines": "modeUnavailable",
-      "sentence": "the craft is not loaded, so Kerbalism cannot switch its devices",
-      "meaning": "Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded."
-    },
-    {
       "id": "kerbalism.crewNotQualified",
       "refines": "capabilityMismatch",
       "sentence": "that kerbal does not meet Kerbalism's repair specs",
@@ -1456,12 +1329,6 @@
       "refines": "notFound",
       "sentence": "no crew member aboard has that name",
       "meaning": "Nobody aboard the craft answers to the name the repair was given."
-    },
-    {
-      "id": "kerbalism.noSuchDevice",
-      "refines": "notFound",
-      "sentence": "no device or script aboard matches that",
-      "meaning": "The craft has no visible device with that id, or no event script by that name."
     },
     {
       "id": "kerbalism.nothingToRepair",
