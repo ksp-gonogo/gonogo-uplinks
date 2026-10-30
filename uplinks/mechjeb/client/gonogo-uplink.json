@@ -6,7 +6,7 @@
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {
     "name": "MechJeb2",
-    "builtAgainst": "2.15.3.0"
+    "builtAgainst": "2.15.4.0"
   },
   "version": "1.0.0-rc.3",
   "minAppVersion": "0.0.0",
