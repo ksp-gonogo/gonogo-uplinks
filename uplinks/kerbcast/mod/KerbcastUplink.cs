@@ -186,19 +186,35 @@ namespace Gonogo.KerbcastUplink
                 ReadLaunchSite,
                 ReadActiveCraft);
 
-        /* The first spawn point stands for the site, which is where its camera looks from. */
+        /*
+         * The place the game builds the site on is configuration, so it reads in every
+         * scene. A spawn point's own coordinates are only filled once the game has
+         * measured it from a transform in the scene, which a flight scene does not do,
+         * so they are the last resort.
+         */
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static LaunchSitePlace? ReadLaunchSite(string name)
         {
             var site = PSystemSetup.Instance?.GetLaunchSite(name);
             var body = site?.Body;
-            var points = site?.spawnPoints;
-            if (body == null || points == null || points.Length == 0 || !points[0].latlonaltSet)
+            if (site == null || body == null)
             {
                 return null;
             }
             var index = FlightGlobals.Bodies?.IndexOf(body) ?? -1;
-            return index < 0 ? (LaunchSitePlace?)null : new LaunchSitePlace(index, points[0].latitude, points[0].longitude);
+            if (index < 0)
+            {
+                return null;
+            }
+            var points = site.spawnPoints;
+            var spawn = points != null && points.Length > 0 && points[0].latlonaltSet
+                ? (ValueTuple<double, double>?)(points[0].latitude, points[0].longitude)
+                : null;
+            return LaunchSitePlace.FromFirst(
+                index,
+                site.pqsCity != null ? (ValueTuple<double, double>?)(site.pqsCity.lat, site.pqsCity.lon) : null,
+                site.pqsCity2 != null ? (ValueTuple<double, double>?)(site.pqsCity2.lat, site.pqsCity2.lon) : null,
+                spawn);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

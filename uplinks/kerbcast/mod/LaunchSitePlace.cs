@@ -10,6 +10,19 @@ namespace Gonogo.KerbcastUplink
             Longitude = longitude;
         }
 
+        /// <summary>The first of <paramref name="candidates"/> that is set, as a place on <paramref name="bodyIndex"/>; null when none is.</summary>
+        public static LaunchSitePlace? FromFirst(int bodyIndex, params (double Latitude, double Longitude)?[] candidates)
+        {
+            foreach (var candidate in candidates)
+            {
+                if (candidate.HasValue)
+                {
+                    return new LaunchSitePlace(bodyIndex, candidate.Value.Latitude, candidate.Value.Longitude);
+                }
+            }
+            return null;
+        }
+
         public int BodyIndex { get; }
 
         public double Latitude { get; }
