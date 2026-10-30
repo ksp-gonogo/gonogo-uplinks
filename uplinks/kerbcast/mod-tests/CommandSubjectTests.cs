@@ -26,19 +26,7 @@ namespace GonogoKerbcastUplink.Tests
         [Fact]
         public void Every_delayed_command_names_a_Subject_that_resolves()
         {
-            Assert.Empty(CommandSubjectAssertion.Violations(
-                KerbcastManifest.Build(),
-                typeof(KerbcastSetPanArgs).Assembly,
-                new[] { KerbcastLensSites.Prefix }));
-        }
-
-        [Fact]
-        public void Both_aim_commands_name_their_lens_as_Subject()
-        {
-            var commands = KerbcastManifest.Build().Commands;
-
-            Assert.All(commands, c => Assert.Equal("kerbcast.lens.{args.LensKey}", c.Subject));
-            Assert.Equal(2, commands.Count);
+            Assert.Empty(CommandSubjectAssertion.Violations(KerbcastManifest.Build(), typeof(KerbcastSetPanArgs).Assembly));
         }
 
         [Fact]

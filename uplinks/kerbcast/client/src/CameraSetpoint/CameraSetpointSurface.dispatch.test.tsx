@@ -31,8 +31,8 @@ describe("CameraSetpointSurface dispatch", () => {
     const fov = transport.sentCommands.find(
       (c) => c.command === "kerbcast.setFieldOfView",
     );
-    expect(pan?.args).toEqual({ cameraId: 42, lensKey: "42", yaw: 10, pitch: -5 });
-    expect(fov?.args).toEqual({ cameraId: 42, lensKey: "42", fieldOfView: 40 });
+    expect(pan?.args).toEqual({ cameraId: 42, yaw: 10, pitch: -5 });
+    expect(fov?.args).toEqual({ cameraId: 42, fieldOfView: 40 });
   });
 
   it("does not dispatch when gated (no-path)", () => {

@@ -14,7 +14,6 @@ namespace Gonogo.KerbcastUplink
         public const string CamerasTopic = "kerbcast.cameras";
         public const string SetFieldOfViewCommand = "kerbcast.setFieldOfView";
         public const string SetPanCommand = "kerbcast.setPan";
-        public const string LensSubject = KerbcastLensSites.Prefix + "{args.LensKey}";
 
         public static UplinkManifest Build() => new UplinkManifest
         {
@@ -74,11 +73,11 @@ namespace Gonogo.KerbcastUplink
                 // command). Restating it here is banned by
                 // styleguide-command-delay-single-source.test.ts.
                 //
-                // Each names its lens as Subject, so the order is delayed by the
-                // signal delay to the craft that lens rides, whichever craft is
-                // active.
-                new CommandDeclaration { Command = SetFieldOfViewCommand, Subject = LensSubject },
-                new CommandDeclaration { Command = SetPanCommand, Subject = LensSubject },
+                // Each names kerbcast.cameras as its Subject: the camera it
+                // aims is one that channel lists, so the order rides the same
+                // craft's light-time the inventory does.
+                new CommandDeclaration { Command = SetFieldOfViewCommand, Subject = CamerasTopic },
+                new CommandDeclaration { Command = SetPanCommand, Subject = CamerasTopic },
             },
         };
     }

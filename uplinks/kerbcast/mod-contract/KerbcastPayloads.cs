@@ -48,11 +48,13 @@ namespace GonogoKerbcastUplink;
 /// One kerbcast camera as it appears on the <c>kerbcast.cameras</c> channel,
 /// a bare JSON array of these.
 ///
-/// <para>Every field is the camera as kerbcast reports it, docking facts
-/// included.</para>
-/// <internal>
-/// Read through Kerbcast.API's ICameras, by the Uplink's KerbcastApiAdapter.
-/// </internal>
+/// <para>Sourced by reflecting the running kerbcast plugin's public
+/// <c>Kerbcast.KerbcastControl</c> static facade (never a compile-time
+/// reference: kerbcast is CC-BY-NC-SA-4.0, so the arm's-length reflection
+/// pattern is mandatory; see <c>GonogoKerbcastUplink.csproj</c>'s header).
+/// Every field below is read off kerbcast's <c>KerbcastCameraView</c>, except
+/// the docking fields, which this Uplink derives from the stock KSP
+/// <c>Part</c> the view carries.</para>
 ///
 /// <para>R7 typed-absence discipline: every field is nullable. A camera whose
 /// pan bounds could not be read carries <c>null</c>, never a 0 that a consumer
@@ -201,14 +203,6 @@ public class KerbcastSetFieldOfViewArgs
     [SitrepUnit(Units.Id)]
     public long CameraId { get; set; }
 
-    /// <summary>
-    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
-    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
-    /// delay the command takes.
-    /// </summary>
-    [SitrepUnit(Units.Text)]
-    public string LensKey { get; set; } = "";
-
     /// <summary>Requested field of view, degrees. kerbcast clamps to the camera's own bounds.</summary>
     [SitrepUnit(Units.Degrees)]
     public double FieldOfView { get; set; }
@@ -228,14 +222,6 @@ public class KerbcastSetPanArgs
     /// <summary>Target camera, identified by its <see cref="KerbcastCameraEntry.CameraId"/>.</summary>
     [SitrepUnit(Units.Id)]
     public long CameraId { get; set; }
-
-    /// <summary>
-    /// The lens the command is for: the camera id in decimal, as the lens namespace keys it.
-    /// Must name the same camera as <see cref="CameraId"/>, and sets which craft's signal
-    /// delay the command takes.
-    /// </summary>
-    [SitrepUnit(Units.Text)]
-    public string LensKey { get; set; } = "";
 
     /// <summary>Requested yaw, degrees. kerbcast clamps to the camera's own bounds.</summary>
     [SitrepUnit(Units.Degrees)]

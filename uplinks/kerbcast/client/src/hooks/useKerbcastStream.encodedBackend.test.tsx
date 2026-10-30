@@ -25,11 +25,7 @@ import {
   render,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import {
-  type CaptureClockSample,
-  DEFAULT_PACING_MAX_LEAD_SECONDS,
-  type EncodedFrameDelayHandle,
-} from "@ksp-gonogo/sitrep-sdk/media";
+import type { EncodedFrameDelayHandle } from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
 import {
@@ -98,20 +94,7 @@ function manualClock(initialEdge = Number.NEGATIVE_INFINITY): DelayClockLike & {
  */
 class FakeWorker {
   static posted: Array<{ type?: string; pipelineId?: string }> = [];
-  static instances: FakeWorker[] = [];
   onmessage: ((ev: MessageEvent) => void) | null = null;
-  constructor() {
-    FakeWorker.instances.push(this);
-  }
-
-  /** Reports a lead limit for a pipeline, as the worker's pacer does. */
-  static reportLeadLimit(pipelineId: string, seconds: number) {
-    for (const worker of FakeWorker.instances) {
-      worker.onmessage?.({
-        data: { type: "pipelineLeadLimit", pipelineId, seconds },
-      } as MessageEvent);
-    }
-  }
   postMessage(msg: { type?: string; pipelineId?: string }) {
     FakeWorker.posted.push(msg);
     if (msg?.type === "createPipeline") {
@@ -153,19 +136,16 @@ function CameraProbe({
   flightId,
   clock,
   onResult,
-  getCaptureSample,
 }: {
   flightId: number;
   clock: DelayClockLike;
   onResult: (r: DelayedPlayoutResult) => void;
-  getCaptureSample?: () => CaptureClockSample;
 }): null {
   const shown = useKerbcastStream(flightId);
   const target = useEncodedDelayTarget(flightId);
   const result = useDelayedPlayout(shown, {
     view: clock,
     captureUt: () => 10,
-    getCaptureSample,
     encodedTarget: target,
   });
   onResult(result);
@@ -409,16 +389,11 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     path: "script" | "streams" | null;
   }) {
     const installs: Array<Factory | null> = [];
-    const options: Array<{ holdMs?: () => number } | undefined> = [];
     const cam = {
       mediaStream: opts.canvas,
       on: () => () => {},
-      setEncodedTransform: (
-        factory: Factory | null,
-        opt?: { holdMs?: () => number },
-      ) => {
+      setEncodedTransform: (factory: Factory | null) => {
         installs.push(factory);
-        options.push(opt);
       },
     };
     const client = { encodedTransformPath: opts.path, camera: () => cam };
@@ -428,7 +403,7 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
       subscribeCamera: () => {},
       unsubscribeCamera: () => {},
     });
-    return { installs, options };
+    return { installs };
   }
 
   it("with static on, hands Kerbcast the delay for the camera's receiver and shows the canvas", async () => {
@@ -454,82 +429,7 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     expect(installs).toHaveLength(1);
     const installed = installs[0]?.({ flightId: 7, path: "script" });
     expect(installed).toBeInstanceOf(Transform);
-    expect(Transform.instances).toHaveLength(2);
-    expect(installed).toBe(Transform.instances[1]);
-    expect(installed).not.toBe(Transform.instances[0]);
-  });
-
-  it("tells Kerbcast how long a frame can be held: the delay from the clock edge and warp rate, plus the default lead limit before a pipeline is installed", async () => {
-    stubTransforms();
-    const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
-    const clock = manualClock(6);
-    // atMs in the future keeps the interpolated capture UT at the sample's own 10
-    const sample = { ut: 10, warpRate: 2, atMs: performance.now() + 1e9 };
-
-    render(
-      <CameraProbe
-        flightId={7}
-        clock={clock}
-        getCaptureSample={() => sample}
-        onResult={() => {}}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(options[0]?.holdMs).toBeTypeOf("function");
-    });
-    const lead = DEFAULT_PACING_MAX_LEAD_SECONDS * 1000;
-    expect(options[0]?.holdMs?.()).toBe(2000 + lead);
-    clock.setEdge(8);
-    expect(options[0]?.holdMs?.()).toBe(1000 + lead);
-    clock.setEdge(12);
-    expect(options[0]?.holdMs?.()).toBe(lead);
-  });
-
-  it("holds for the delay plus the lead limit the installed pipeline reports", async () => {
-    const Transform = stubTransforms();
-    const { installs, options } = registerKerbcast({
-      canvas: fakeStream(),
-      path: "script",
-    });
-    const clock = manualClock(6);
-    const sample = { ut: 10, warpRate: 2, atMs: performance.now() + 1e9 };
-
-    render(
-      <CameraProbe
-        flightId={7}
-        clock={clock}
-        getCaptureSample={() => sample}
-        onResult={() => {}}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(options[0]?.holdMs).toBeTypeOf("function");
-    });
-    expect(options[0]?.holdMs?.()).toBe(2000 + 2000);
-
-    installs[0]?.({ flightId: 7, path: "script" });
-    const { pipelineId } = Transform.instances[
-      Transform.instances.length - 1
-    ]?.options as { pipelineId: string };
-    FakeWorker.reportLeadLimit(pipelineId, 2);
-    expect(options[0]?.holdMs?.()).toBe(2000 + 2000);
-
-    FakeWorker.reportLeadLimit(pipelineId, 9.5);
-    expect(options[0]?.holdMs?.()).toBe(2000 + 9500);
-  });
-
-  it("reports the hold as unknown while the capture clock has no time", async () => {
-    stubTransforms();
-    const { options } = registerKerbcast({ canvas: fakeStream(), path: "script" });
-
-    render(<CameraProbe flightId={7} clock={manualClock(6)} onResult={() => {}} />);
-
-    await waitFor(() => {
-      expect(options[0]?.holdMs).toBeTypeOf("function");
-    });
-    expect(options[0]?.holdMs?.()).toBeNaN();
+    expect(installed).toBe(Transform.instances[0]);
   });
 
   it("makes a fresh transform for each receiver the camera lands on, retiring the previous pipeline", async () => {

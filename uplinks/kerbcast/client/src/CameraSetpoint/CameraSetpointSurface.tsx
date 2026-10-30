@@ -312,22 +312,11 @@ export const CameraSetpointSurface = forwardRef<
   const handleCommit = (next: CameraSetpoint): void => {
     if (axes.pan) {
       setPan
-        .send({
-          cameraId,
-          lensKey: String(cameraId),
-          yaw: next.yaw,
-          pitch: next.pitch,
-        })
+        .send({ cameraId, yaw: next.yaw, pitch: next.pitch })
         .catch(() => {});
     }
     if (axes.zoom) {
-      setFov
-        .send({
-          cameraId,
-          lensKey: String(cameraId),
-          fieldOfView: next.fov,
-        })
-        .catch(() => {});
+      setFov.send({ cameraId, fieldOfView: next.fov }).catch(() => {});
     }
     setCommitting(true);
     if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);

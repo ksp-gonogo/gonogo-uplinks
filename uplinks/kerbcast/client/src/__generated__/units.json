@@ -71,12 +71,10 @@
     },
     "KerbcastSetFieldOfViewArgs": {
       "cameraId": "id",
-      "fieldOfView": "°",
-      "lensKey": "text"
+      "fieldOfView": "°"
     },
     "KerbcastSetPanArgs": {
       "cameraId": "id",
-      "lensKey": "text",
       "pitch": "°",
       "yaw": "°"
     }

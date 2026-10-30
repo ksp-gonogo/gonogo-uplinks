@@ -2,30 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Kerbcast.Api;
+using Kerbcast;
 
 namespace Gonogo.KerbcastUplink
 {
     /// <summary>
-    /// <see cref="IKerbcastApi"/> over Kerbcast.API's <see cref="KerbcastApi.Instance"/>.
-    /// Main thread only, as Kerbcast's cameras are.
+    /// <see cref="IKerbcastApi"/> over kerbcast's public static facade,
+    /// <c>Kerbcast.KerbcastControl</c>, compiled against Kerbcast.dll (a normal
+    /// reference, not bundled: kerbcast is installed beside this Uplink). A
+    /// rename in kerbcast is a build error here.
     ///
     /// <para>Constructed only through <see cref="KerbcastBinding.Bind"/>, after
-    /// Kerbcast.API is known to be loaded. Each member that names a Kerbcast.API
-    /// type sits in its own non-inlined method, because the JIT resolves a
-    /// method's type references when it compiles it: an API that moved a member
+    /// kerbcast is known to be loaded. Each member that names a kerbcast type
+    /// sits in its own non-inlined method, because the JIT resolves a method's
+    /// type references when it compiles it: a kerbcast build that moved a member
     /// fails the one call, not the whole class. The constructor compiles all of
     /// them up front so a moved surface fails the bind, with a reason.</para>
+    ///
+    /// <para>Deliberately stays on the public <c>KerbcastControl</c> facade and
+    /// off kerbcast's internals (<c>KerbcastSidecarHost</c> and the like).</para>
     /// </summary>
-    public sealed class KerbcastApiAdapter : IKerbcastApi
+    public sealed class KerbcastControlApi : IKerbcastApi
     {
-        public KerbcastApiAdapter()
+        public KerbcastControlApi()
         {
             const BindingFlags all = BindingFlags.Public | BindingFlags.NonPublic
                 | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-            foreach (var method in typeof(KerbcastApiAdapter).GetMethods(all))
+            foreach (var method in typeof(KerbcastControlApi).GetMethods(all))
             {
-                if (!method.IsAbstract && !method.ContainsGenericParameters)
+                // The throttle node is optional: a Kerbcast without it still streams, so its absence degrades one setting rather than the bind.
+                if (!method.IsAbstract && !method.ContainsGenericParameters && method.Name != nameof(ThrottleNode))
                 {
                     RuntimeHelpers.PrepareMethod(method.MethodHandle);
                 }
@@ -68,15 +74,15 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
-        public IReadOnlyList<KerbcastView> CamerasFor(Guid vesselId)
+        public IReadOnlyList<KerbcastView> CamerasFor(object? vessel)
         {
-            if (vesselId == Guid.Empty)
+            if (vessel is not Vessel stock)
             {
                 return Array.Empty<KerbcastView>();
             }
             try
             {
-                return CamerasForCore(vesselId);
+                return CamerasForCore(stock);
             }
             catch (Exception)
             {
@@ -88,7 +94,7 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return SetFovCore(flightId, fov);
+                return KerbcastControl.SetFov(flightId, fov);
             }
             catch (Exception)
             {
@@ -100,7 +106,7 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return SetPanCore(flightId, yaw, pitch);
+                return KerbcastControl.SetPan(flightId, yaw, pitch);
             }
             catch (Exception)
             {
@@ -112,7 +118,11 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return ThrottleUnavailableCore();
+                return ThrottleNode() == null ? "no save loaded" : null;
+            }
+            catch (Exception e) when (e is MissingMemberException or TypeLoadException)
+            {
+                return "this Kerbcast has no main-render throttle";
             }
             catch (Exception)
             {
@@ -124,7 +134,7 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                return ThrottleCore()?.MainScreen;
+                return ThrottleNode()?.ThrottleMainScreen;
             }
             catch (Exception)
             {
@@ -136,8 +146,13 @@ namespace Gonogo.KerbcastUplink
         {
             try
             {
-                var throttle = ThrottleCore();
-                return throttle != null && throttle.SetMainScreen(on);
+                var node = ThrottleNode();
+                if (node == null)
+                {
+                    return false;
+                }
+                node.ThrottleMainScreen = on;
+                return true;
             }
             catch (Exception)
             {
@@ -146,29 +161,19 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool ActiveCore() => KerbcastApi.Instance != null;
+        private static bool ActiveCore() => KerbcastControl.IsActive;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool? SidecarAliveCore() => KerbcastApi.Instance?.SidecarAlive;
+        private static bool SidecarAliveCore() => KerbcastControl.SidecarAlive;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static KerbcastReach ReachCore()
+        private static KerbcastReach ReachCore() =>
+            new KerbcastReach(KerbcastControl.BindAddress, KerbcastControl.Port, KerbcastControl.BindIsLoopback);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static IReadOnlyList<KerbcastView> CamerasForCore(Vessel vessel)
         {
-            var kerbcast = KerbcastApi.Instance;
-            return kerbcast == null
-                ? KerbcastReach.Unknown
-                : new KerbcastReach(kerbcast.BindAddress, kerbcast.Port, kerbcast.BindIsLoopback);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IReadOnlyList<KerbcastView> CamerasForCore(Guid vesselId)
-        {
-            var kerbcast = KerbcastApi.Instance;
-            if (kerbcast == null || !KerbcastApi.Supports(ApiFeature.CraftIdentity))
-            {
-                return Array.Empty<KerbcastView>();
-            }
-            var views = kerbcast.Cameras.CamerasFor(vesselId);
+            var views = KerbcastControl.CamerasFor(vessel);
             var result = new List<KerbcastView>(views.Count);
             foreach (var view in views)
             {
@@ -181,46 +186,11 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool? SetFovCore(uint flightId, float fov)
-        {
-            var kerbcast = KerbcastApi.Instance;
-            return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CameraControl)
-                ? (bool?)null
-                : kerbcast.Cameras.SetFov(flightId, fov);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool? SetPanCore(uint flightId, float yaw, float pitch)
-        {
-            var kerbcast = KerbcastApi.Instance;
-            return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CameraControl)
-                ? (bool?)null
-                : kerbcast.Cameras.SetPan(flightId, yaw, pitch);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string? ThrottleUnavailableCore()
-        {
-            if (KerbcastApi.Instance != null && !KerbcastApi.Supports(ApiFeature.Throttle))
-            {
-                return "this Kerbcast has no main-render throttle";
-            }
-            return ThrottleCore()?.MainScreen == null ? "no save loaded" : null;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ThrottleSettings? ThrottleCore()
-        {
-            var kerbcast = KerbcastApi.Instance;
-            return kerbcast == null || !KerbcastApi.Supports(ApiFeature.Throttle) ? null : kerbcast.Cameras.Throttle;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static KerbcastView Read(CameraView view) => new KerbcastView
+        private static KerbcastView Read(KerbcastCameraView view) => new KerbcastView
         {
             FlightId = view.FlightId,
-            PartFlightId = view.PartFlightId == 0 ? (uint?)null : view.PartFlightId,
-            CameraName = view.Name,
+            PartFlightId = view.PartFlightId,
+            CameraName = view.CameraName,
             PartName = view.PartName,
             PartTitle = view.PartTitle,
             SupportsZoom = view.SupportsZoom,
@@ -234,9 +204,12 @@ namespace Gonogo.KerbcastUplink
             PanYawMax = view.PanYawMax,
             PanPitchMin = view.PanPitchMin,
             PanPitchMax = view.PanPitchMax,
-            HasDockingNode = view.HasDockingNode,
-            DockingNodeType = view.DockingNodeType,
-            DockingNodeState = view.DockingNodeState,
+            Part = view.Part,
         };
+
+        /// <summary>The loaded save's Kerbcast difficulty-settings node, or null with no save. Main thread only.</summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static KerbcastGameParameters? ThrottleNode() =>
+            HighLogic.CurrentGame?.Parameters?.CustomParams<KerbcastGameParameters>();
     }
 }
