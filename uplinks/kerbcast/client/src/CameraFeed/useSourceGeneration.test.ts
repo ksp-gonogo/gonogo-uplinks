@@ -1,6 +1,6 @@
 import type { CameraState } from "@ksp-gonogo/kerbcast";
 import { act, renderHook } from "@ksp-gonogo/sitrep-sdk/testing";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useSourceGeneration } from "./useSourceGeneration.js";
 
 function cam(flightId: number, lifecycle = "active"): CameraState {
@@ -20,6 +20,10 @@ function setup(initial: Props) {
     { initialProps: initial },
   );
 }
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const base: Props = { flightId: 5, cameras: [cam(5)], ut: 1000, epoch: 1 };
 
@@ -64,5 +68,37 @@ describe("useSourceGeneration", () => {
     expect(result.current).toBe(1);
     act(() => rerender({ ...base, flightId: 9, cameras: [cam(5), cam(9)] }));
     expect(result.current).toBe(1);
+  });
+
+  it("does not count the clock's first epoch as a new timeline, but counts the next change", () => {
+    const { result, rerender } = setup({ ...base, ut: null, epoch: 0 });
+    act(() => rerender({ ...base, ut: 1000, epoch: 5 }));
+    expect(result.current).toBe(0);
+    act(() => rerender({ ...base, ut: 1001, epoch: 6 }));
+    expect(result.current).toBe(1);
+  });
+
+  it("logs the source of a bump with the epoch, capture time and whether the camera is listed", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const { rerender } = setup(base);
+    act(() => rerender({ ...base, epoch: 2 }));
+    act(() => rerender({ ...base, epoch: 2, cameras: [] }));
+    act(() => rerender({ ...base, epoch: 2, cameras: [cam(5)] }));
+
+    const lines = info.mock.calls.map((c) => c.join(" "));
+    expect(lines.some((l) => l.includes("bump: epoch"))).toBe(true);
+    expect(lines.some((l) => l.includes("bump: camera-listed"))).toBe(true);
+    expect(lines.find((l) => l.includes("bump: epoch"))).toContain("1000");
+  });
+
+  it("logs the first clock epoch it ignores", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const { rerender } = setup({ ...base, ut: null, epoch: 0 });
+    act(() => rerender({ ...base, ut: 1000, epoch: 5 }));
+
+    const lines = info.mock.calls.map((c) => c.join(" "));
+    expect(lines.some((l) => l.includes("ignored: first clock epoch"))).toBe(
+      true,
+    );
   });
 });
