@@ -90,6 +90,22 @@ describe("Ship Systems says a held ledger is held", () => {
     expect(container.querySelectorAll("[data-held]")).toHaveLength(0);
   });
 
+  it("says the log window shows the last log received once the link drops", async () => {
+    await scene(held);
+    fireEvent.click(screen.getByRole("button", { name: /^Log/ }));
+
+    expect(visibleText(await screen.findByRole("dialog"))).toContain("held");
+  });
+
+  it("does not say the log window is held while the log is current", async () => {
+    await scene(live);
+    fireEvent.click(screen.getByRole("button", { name: /^Log/ }));
+
+    expect(visibleText(await screen.findByRole("dialog"))).not.toContain(
+      "held",
+    );
+  });
+
   it("dims every ledger term's bar once the ledger is held", async () => {
     const container = await scene(held);
     fireEvent.click(

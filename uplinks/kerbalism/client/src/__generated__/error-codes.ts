@@ -66,6 +66,16 @@ export const KerbalismErrorCodes = {
    * No reliability module aboard has that id and is broken or due a service.
    */
   NothingToRepair: "kerbalism.nothingToRepair",
+  /**
+   * Kerbalism lists and switches devices for a loaded craft only, and this one
+   * is not loaded.
+   */
+  CraftNotLoaded: "kerbalism.craftNotLoaded",
+  /**
+   * The craft has no visible device with that id, or no event script by that
+   * name.
+   */
+  NoSuchDevice: "kerbalism.noSuchDevice",
 } as const;
 export type KerbalismErrorCodes = (typeof KerbalismErrorCodes)[keyof typeof KerbalismErrorCodes];
 
@@ -162,5 +172,21 @@ export const KERBALISM_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
     origin: null,
     sentence: "no part aboard with that id is broken or due a service",
     meaning: "No reliability module aboard has that id and is broken or due a service.",
+  },
+  {
+    id: "kerbalism.craftNotLoaded",
+    kind: "refusal",
+    refines: "modeUnavailable",
+    origin: null,
+    sentence: "the craft is not loaded, so Kerbalism cannot switch its devices",
+    meaning: "Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded.",
+  },
+  {
+    id: "kerbalism.noSuchDevice",
+    kind: "refusal",
+    refines: "notFound",
+    origin: null,
+    sentence: "no device or script aboard matches that",
+    meaning: "The craft has no visible device with that id, or no event script by that name.",
   },
 ];

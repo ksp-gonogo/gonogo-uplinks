@@ -33,14 +33,17 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `kerbalism.spaceweather` | `KerbalismSpaceWeather` | lossy-latest | delayed |
 | `kerbalism.transmission` | `KerbalismTransmission` | lossy-latest | delayed |
 | `kerbalism.available` | – | lossy-latest | true-now |
+| `kerbalism.diagnostics` | – | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |
 | `KerbalismCrewRule` | `degenPerSec` units/s, `fatalThreshold` units, `name` text, `problem` units |
+| `KerbalismDevice` | `id` text, `name` text, `partName` text, `status` text |
 | `KerbalismGreenhouseEntry` | `active` flag, `artificial` W/m², `cropResource` text, `ecRateMaxPerSec` units/s, `foodRatePerSec` units/s, `issue` text, `lampEcDrawPerSec` units/s, `lightToleranceWm2` W/m², `natural` W/m², `pressureTolerance` ratio, `radiationToleranceRadPerSec` rad/s |
-| `KerbalismHabitat` | `comfort` ratio, `evaSafe` flag, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `shielding` ratio, `surface` m², `volume` m³ |
+| `KerbalismHabitat` | `comfort` ratio, `evaSafe` flag, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `pressureKpa` kPa, `shielding` ratio, `surface` m², `volume` m³ |
 | `KerbalismIsruConverterExtension` | `broken` flag, `capacity` units, `processToken` text, `title` text, `valveIndex` count |
 | `KerbalismIsruDrillExtension` | `ecRate` units/s, `harvestType` text, `issue` text, `sourceMassRemaining` t, `sourceMassThreshold` t |
+| `KerbalismLogEntry` | `level` enum, `message` text |
 | `KerbalismProcessDef` | `dumpValves` text, `inputs` units/s, `modifiers` text, `name` text, `outputs` units/s |
 | `KerbalismProcessEntry` | `broken` flag, `capacity` units, `envModifier` 1, `flightId` id, `resource` text, `running` flag, `title` text, `valveIndex` count |
 | `KerbalismReliabilityBudget` | `consumed` ratio, `id` id, `kind` enum, `label` text, `limitSeconds` s, `usedSeconds` s |
@@ -53,6 +56,8 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismScienceExperimentExt` | `analyze` flag, `dataSizeMB` MB, `kind` id, `sampleMass` t, `sampleSlotsTotal` count, `sampleSlotsUsed` count, `sciencePerMB` science/MB, `sendFlagged` flag, `storageCapacityMB` MB, `storageUsedMB` MB, `transmitRateMBps` MB/s, `transmitting` flag |
 | `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `progressFraction` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag, `secondsToComplete` s, `waitingReason` text |
 | `KerbalismScienceLabExt` | `analysisRateMBps` MB/s, `effectiveRateMBps` MB/s, `status` id |
+| `KerbalismScript` | `deviceCount` count, `states` KerbalismScriptState[], `type` enum |
+| `KerbalismScriptState` | `deviceId` id, `on` flag |
 | `KerbalismStarInfo` | `direction.x` 1, `direction.y` 1, `direction.z` 1, `distance` m, `star` text |
 | `KerbalismStormEntry` | `dist` m, `star` text, `stormDuration` s, `stormState` count, `stormTime` ut, `targetKind` enum, `targetName` text |
 
@@ -60,16 +65,20 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `kerbalism.device.set` | `KerbalismDeviceSetArgs` | `CommandResult` |
 | `kerbalism.file.delete` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.file.send` | `KerbalismSubjectFlagArgs` | `CommandResult` |
 | `kerbalism.repair` | `KerbalismRepairPartArgs` | `CommandResultOf<KerbalismRepairOutcome>` |
 | `kerbalism.sample.analyze` | `KerbalismSubjectFlagArgs` | `CommandResult` |
 | `kerbalism.sample.dump` | `KerbalismSubjectActionArgs` | `CommandResult` |
 | `kerbalism.sample.moveToLab` | `KerbalismSubjectActionArgs` | `CommandResult` |
+| `kerbalism.script.set` | `KerbalismScriptSetArgs` | `CommandResult` |
 
 | Args | Fields |
 | --- | --- |
+| `KerbalismDeviceSetArgs` | `deviceId` id, `on` flag |
 | `KerbalismRepairPartArgs` | `crewName` text, `partId` id |
+| `KerbalismScriptSetArgs` | `deviceId` id, `scriptType` enum, `state` flag |
 | `KerbalismSubjectActionArgs` | `subjectId` id |
 | `KerbalismSubjectFlagArgs` | `flag` flag, `subjectId` id |
 
@@ -176,4 +185,6 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism.noKits` | `insufficientResource` | there are not enough repair kits aboard | The save requires repair kits and the kerbal and the craft's stores hold fewer than the repair takes. |
 | `kerbalism.reliabilityNotModelled` | `modeUnavailable` | Kerbalism is not modelling part failures in this save | Kerbalism's reliability feature or its MTBF failures are switched off in this save, so no part is breaking. |
 | `kerbalism.nothingToRepair` | `notFound` | no part aboard with that id is broken or due a service | No reliability module aboard has that id and is broken or due a service. |
+| `kerbalism.craftNotLoaded` | `modeUnavailable` | the craft is not loaded, so Kerbalism cannot switch its devices | Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded. |
+| `kerbalism.noSuchDevice` | `notFound` | no device or script aboard matches that | The craft has no visible device with that id, or no event script by that name. |
 

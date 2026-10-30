@@ -105,6 +105,16 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     name: "text",
     problem: "units",
   },
+  "KerbalismDevice": {
+    id: "text",
+    name: "text",
+    partName: "text",
+    status: "text",
+  },
+  "KerbalismDeviceSetArgs": {
+    deviceId: "id",
+    on: "flag",
+  },
   "KerbalismFeatures": {
     automation: "flag",
     comfort: "flag",
@@ -139,6 +149,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     livingSpace: "ratio",
     poisoning: "ratio",
     pressure: "ratio",
+    pressureKpa: "kPa",
     shielding: "ratio",
     surface: "m²",
     volume: "m³",
@@ -161,6 +172,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     asOfKerbalismUt: "ut",
     rates: "units/s",
     ruleEnvModifiers: "1",
+  },
+  "KerbalismLogEntry": {
+    level: "enum",
+    message: "text",
   },
   "KerbalismProcessDef": {
     dumpValves: "text",
@@ -290,6 +305,19 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     effectiveRateMBps: "MB/s",
     status: "id",
   },
+  "KerbalismScript": {
+    deviceCount: "count",
+    type: "enum",
+  },
+  "KerbalismScriptSetArgs": {
+    deviceId: "id",
+    scriptType: "enum",
+    state: "flag",
+  },
+  "KerbalismScriptState": {
+    deviceId: "id",
+    on: "flag",
+  },
   "KerbalismSpaceWeather": {
     blackout: "flag",
     habitatRadiationRadPerSecond: "rad/s",
@@ -300,6 +328,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     radiationRadPerSecond: "rad/s",
     shieldingAmount: "units",
     shieldingCapacity: "units",
+    solarPanelExposure: "ratio",
     stormEjectionSpeed: "m/s",
     stormInProgress: "flag",
     stormIncoming: "flag",
@@ -399,6 +428,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     radiationRadPerSecond: "rad/s",
     shieldingAmount: "units",
     shieldingCapacity: "units",
+    solarPanelExposure: "ratio",
     stormEjectionSpeed: "m/s",
     stormInProgress: "flag",
     stormIncoming: "flag",
@@ -442,6 +472,11 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "KerbalismCrewEntry": {
     rules: "KerbalismCrewRule[]",
   },
+  "KerbalismDiagnostics": {
+    devices: "KerbalismDevice[]",
+    log: "KerbalismLogEntry[]",
+    scripts: "KerbalismScript[]",
+  },
   "KerbalismLifeSupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
     habitat: "KerbalismHabitat",
@@ -456,6 +491,9 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     budgets: "KerbalismReliabilityBudget[]",
     repairCost: "KerbalismRepairCostItem[]",
   },
+  "KerbalismScript": {
+    states: "KerbalismScriptState[]",
+  },
   "KerbalismSpaceWeather": {
     stars: "KerbalismStarInfo[]",
     storms: "KerbalismStormEntry[]",
@@ -466,6 +504,11 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
 export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "kerbalism.crew": {
     rules: "KerbalismCrewRule[]",
+  },
+  "kerbalism.diagnostics": {
+    devices: "KerbalismDevice[]",
+    log: "KerbalismLogEntry[]",
+    scripts: "KerbalismScript[]",
   },
   "kerbalism.lifesupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
@@ -496,6 +539,9 @@ export type EnumsByField = Readonly<Record<string, string | null>>;
 
 /** Keyed by the generated interface name in ./contract.ts. */
 export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
+  "KerbalismLogEntry": {
+    level: null,
+  },
   "KerbalismReliabilityBudget": {
     kind: null,
   },
@@ -507,6 +553,12 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "KerbalismResourceDef": {
     flowModeOrdinal: "KspResourceFlowMode",
+  },
+  "KerbalismScript": {
+    type: null,
+  },
+  "KerbalismScriptSetArgs": {
+    scriptType: null,
   },
   "KerbalismStormEntry": {
     targetKind: "KerbalismStormTargetKind",

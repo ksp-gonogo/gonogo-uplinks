@@ -5,6 +5,111 @@
 import { Value, Vec3Of } from '@ksp-gonogo/sitrep-sdk';
 
 /**
+* Switch one device on or off, as Kerbalism's own automation window does. The
+* device is addressed by the id `kerbalism.diagnostics` lists it under.
+* `KerbalismDeviceSetArgs.on` is the state to set rather than a flip from the
+* current one, so a repeated or reordered dispatch lands in the same place.
+*/
+export interface KerbalismDeviceSetArgs
+{
+	/** The device, by the id `kerbalism.diagnostics` gives it. */
+	deviceId: string;
+	/** Whether the device should be on. */
+	on: boolean;
+}
+/**
+* Set what one event script does to one device when its event happens: switch
+* it on, switch it off, or leave it out of the script. The craft must be
+* loaded, since Kerbalism lists devices for a loaded craft only.
+*/
+export interface KerbalismScriptSetArgs
+{
+	/**
+	* The event, by the name `kerbalism.diagnostics` gives the script: `sunlight`,
+	* `power_low` and so on.
+	*/
+	scriptType: string;
+	/** The device, by the id `kerbalism.diagnostics` gives it. */
+	deviceId: string;
+	/**
+	* The state the script sets the device to, or null to take the device out of
+	* the script.
+	*/
+	state?: boolean;
+}
+/**
+* What Kerbalism's own automation and log windows show for the craft: the
+* devices its computer can switch, the event scripts that act on them, and the
+* most recent messages in its log. Published on `kerbalism.diagnostics`.
+*
+* Each list is null when Kerbalism could not be asked, which is not the same
+* as empty: a craft that is not loaded has no devices to read, and an empty
+* list says there are none.
+*/
+export interface KerbalismDiagnostics
+{
+	/**
+	* The craft's switchable devices in the order Kerbalism lists them. Null while
+	* the craft is not loaded.
+	*/
+	devices?: KerbalismDevice[] | null;
+	/**
+	* The event scripts that act on at least one device. Null while the craft is
+	* not loaded.
+	*/
+	scripts?: KerbalismScript[] | null;
+	/** Kerbalism's message log, newest first. */
+	log?: KerbalismLogEntry[] | null;
+}
+/** One device the Kerbalism computer can switch. */
+export interface KerbalismDevice
+{
+	/** Kerbalism's id for the device, the key an event script refers to it by. */
+	id?: string | null;
+	/** The name Kerbalism lists the device under. */
+	name?: string | null;
+	/** The part the device belongs to. */
+	partName?: string | null;
+	/**
+	* The device's state in Kerbalism's own words, with its colouring removed
+	* ("on", "off", "always on").
+	*/
+	status?: string | null;
+}
+/** One event script and how many devices it sets. */
+export interface KerbalismScript
+{
+	/**
+	* Kerbalism's name for the event: `sunlight`, `shadow`, `power_low`, `landed`
+	* and so on.
+	*/
+	type?: string | null;
+	/** How many devices the script switches when the event happens. */
+	deviceCount?: Value<"count"> | null;
+	/** What the script sets each of its devices to when the event happens. */
+	states?: KerbalismScriptState[] | null;
+}
+/** The state one event script gives one device. */
+export interface KerbalismScriptState
+{
+	/** The device, by the id `kerbalism.diagnostics` lists it under. */
+	deviceId?: string | null;
+	/** Whether the script switches the device on, rather than off. */
+	on?: boolean | null;
+}
+/** One message in Kerbalism's log. */
+export interface KerbalismLogEntry
+{
+	/**
+	* `relax`, `warning`, `danger`, `fatality`, `breakdown` or `alert` (a message
+	* posted with no severity). Null when the title could not be matched to one of
+	* those.
+	*/
+	level?: string | null;
+	/** The message text, with Kerbalism's formatting removed. */
+	message?: string | null;
+}
+/**
 * Args shared by the two reversible flag commands, `kerbalism.file.send` and
 * `kerbalism.sample.analyze`: the stored result addressed by its stock subject
 * id (see this file's header comment), plus the desired end state.
@@ -155,6 +260,11 @@ export interface KerbalismSpaceWeather
 	stormInProgress?: boolean | null;
 	blackout?: boolean | null;
 	inSunlight?: boolean | null;
+	/**
+	* The average sunlight exposure of the craft's solar panels, 0 to 1, as
+	* Kerbalism averages it over a loaded craft. Null until it has been measured.
+	*/
+	solarPanelExposure?: Value<"ratio"> | null;
 	/**
 	* Shielding resource amount/capacity (0 in the default profile; present under
 	* RO/Habitat).
@@ -310,6 +420,11 @@ export interface KerbalismResource
 export interface KerbalismHabitat
 {
 	pressure?: Value<"ratio"> | null;
+	/**
+	* The same habitat pressure in kilopascals, as Kerbalism's own panels print it
+	* (the ratio times 101). Null whenever `Pressure` is.
+	*/
+	pressureKpa?: Value<"kPa"> | null;
 	poisoning?: Value<"ratio"> | null;
 	shielding?: Value<"ratio"> | null;
 	livingSpace?: Value<"ratio"> | null;

@@ -21,6 +21,8 @@ namespace Gonogo.KerbalismUplink
 
         internal const string ReliabilityPartsTopic = "kerbalism.reliabilityParts";
 
+        internal const string DiagnosticsTopic = "kerbalism.diagnostics";
+
         /// <summary>
         /// The <c>science.experiments</c> channel topic every File Manager
         /// command's Subject resolves its node through: each command acts on a
@@ -48,6 +50,9 @@ namespace Gonogo.KerbalismUplink
             Command(KerbalismFileCommandProvider.MoveToLabCommand, ScienceExperimentsSubject),
             // Acts on a part the parts listing named, on the same craft it reads.
             Command(RepairCommand, ReliabilityPartsTopic),
+            // Act on a device the diagnostics listing named, on the same craft it reads.
+            Command(KerbalismDeviceCommandProvider.DeviceSetCommand, DiagnosticsTopic),
+            Command(KerbalismDeviceCommandProvider.ScriptSetCommand, DiagnosticsTopic),
         };
 
         private static CommandDeclaration Command(string command, string subject) => new()

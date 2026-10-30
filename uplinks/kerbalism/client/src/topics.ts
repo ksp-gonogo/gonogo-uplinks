@@ -31,6 +31,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import type {
   KerbalismCrewEntry,
+  KerbalismDiagnostics,
   KerbalismFeatures,
   KerbalismLifeSupport,
   KerbalismProfile,
@@ -83,6 +84,9 @@ export const KERBALISM_RELIABILITY_TOPIC = "kerbalism.reliability";
 /** One entry per Kerbalism reliability module aboard (an array channel). */
 export const KERBALISM_RELIABILITY_PARTS_TOPIC = "kerbalism.reliabilityParts";
 
+/** Kerbalism's automation devices and scripts, and its message log. */
+export const KERBALISM_DIAGNOSTICS_TOPIC = "kerbalism.diagnostics";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "kerbalism.available": boolean;
@@ -94,6 +98,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "kerbalism.transmission": KerbalismTransmission;
     "kerbalism.reliability": KerbalismReliabilitySummary;
     "kerbalism.reliabilityParts": KerbalismReliabilityPart[];
+    "kerbalism.diagnostics": KerbalismDiagnostics;
   }
 }
 
@@ -106,6 +111,7 @@ registerUplinkTopic(KERBALISM_FEATURES_TOPIC);
 registerUplinkTopic(KERBALISM_TRANSMISSION_TOPIC);
 registerUplinkTopic(KERBALISM_RELIABILITY_TOPIC);
 registerUplinkTopic(KERBALISM_RELIABILITY_PARTS_TOPIC);
+registerUplinkTopic(KERBALISM_DIAGNOSTICS_TOPIC);
 
 // `kerbalism.crew`'s and `kerbalism.reliabilityParts`' unit maps describe one
 // element, not the list, so a field path under either names no value of the
@@ -214,4 +220,7 @@ export type _ResolvesKerbalismReliability = Expect<
 >;
 export type _ResolvesKerbalismReliabilityParts = Expect<
   Equal<TopicPayload<"kerbalism.reliabilityParts">, KerbalismReliabilityPart[]>
+>;
+export type _ResolvesKerbalismDiagnostics = Expect<
+  Equal<TopicPayload<"kerbalism.diagnostics">, KerbalismDiagnostics>
 >;

@@ -54,6 +54,7 @@
           },
           "habitat": {
             "pressure": 1,
+            "pressureKpa": 101.0,
             "poisoning": 0.02,
             "comfort": 0.55,
             "livingSpace": 0.8
