@@ -182,7 +182,23 @@ namespace Gonogo.KerbcastUplink
                 kernel,
                 places,
                 UnityEngine.Debug.Log,
-                onFeedSites);
+                onFeedSites,
+                ReadLaunchSite);
+
+        /* The first spawn point stands for the site, which is where its camera looks from. */
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static LaunchSitePlace? ReadLaunchSite(string name)
+        {
+            var site = PSystemSetup.Instance?.GetLaunchSite(name);
+            var body = site?.Body;
+            var points = site?.spawnPoints;
+            if (body == null || points == null || points.Length == 0 || !points[0].latlonaltSet)
+            {
+                return null;
+            }
+            var index = FlightGlobals.Bodies?.IndexOf(body) ?? -1;
+            return index < 0 ? (LaunchSitePlace?)null : new LaunchSitePlace(index, points[0].latitude, points[0].longitude);
+        }
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 

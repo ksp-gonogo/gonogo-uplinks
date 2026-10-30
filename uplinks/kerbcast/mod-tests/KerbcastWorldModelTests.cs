@@ -178,6 +178,31 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void ALaunchSiteFeedIsBoundToTheStationNearestItAndItsLensIsPlaced()
+    {
+        IReadOnlyDictionary<string, string>? reported = null;
+        var model = new KerbcastWorldModel(
+            _labels,
+            _kc.Supports,
+            _places,
+            null,
+            sites => reported = sites,
+            name => name == "LaunchPad" ? new LaunchSitePlace(1, -0.09, -74.55) : (LaunchSitePlace?)null);
+        _sites.Near.Add((1, -0.1, -74.6, Ksc));
+        _kc.Command.AddFeed(new CommandFeed { FlightId = 5, SiteKey = "LaunchPad", SiteKind = SiteKind.LaunchSite });
+        _kc.Command.AddFeed(new CommandFeed { FlightId = 6, SiteKey = "Island Runway", SiteKind = SiteKind.LaunchSite });
+        _sites.Delivered[Ksc] = 100.0;
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+
+        Assert.Equal(Ksc, _kc.Command.Published.Last().SiteBindings["LaunchPad"]);
+        Assert.Equal(Ksc, reported!["5"]);
+        Assert.False(reported.ContainsKey("6"));
+        Assert.False(_kc.Command.Published.Last().SiteBindings.ContainsKey("Island Runway"));
+    }
+
+    [Fact]
     public void AStationWhoseNameIsNotOneStationIsLeftUnboundSoItFailsClosed()
     {
         _kc.Command.AddFeed(new CommandFeed { FlightId = 2, SiteKey = "Twin", SiteKind = SiteKind.Station });
@@ -523,6 +548,12 @@ public class KerbcastWorldModelTests
         public string ProviderId => "fake-lens-sites";
 
         public string? GroundStationNamed(string nodeName) => Stations.TryGetValue(nodeName, out var id) ? id : null;
+
+        public readonly List<(int Body, double Latitude, double Longitude, string Id)> Near = new();
+
+        public string? GroundStationNear(int bodyIndex, double latitude, double longitude) =>
+            Near.Where(n => n.Body == bodyIndex && Math.Abs(n.Latitude - latitude) < 1.0 && Math.Abs(n.Longitude - longitude) < 1.0)
+                .Select(n => n.Id).FirstOrDefault();
 
         public void Bind(string scope, string site, string commandingCentre) => Bound.Add((scope, site, commandingCentre));
 

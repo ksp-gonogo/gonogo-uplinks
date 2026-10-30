@@ -44,6 +44,7 @@ namespace Gonogo.KerbcastUplink
         private readonly Func<ApiFeature, bool> _supports;
         private readonly Action<string>? _log;
         private readonly Action<IReadOnlyDictionary<string, string>>? _onFeedSites;
+        private readonly Func<string, LaunchSitePlace?>? _launchSite;
         private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
@@ -66,10 +67,11 @@ namespace Gonogo.KerbcastUplink
         /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
         /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSitePlace?>? launchSite = null)
         {
             _log = log;
             _onFeedSites = onFeedSites;
+            _launchSite = launchSite;
             _labels = labels;
             _places = places ?? new CraftPlaces();
             _supports = supports;
@@ -454,8 +456,9 @@ namespace Gonogo.KerbcastUplink
             switch (feed.SiteKind)
             {
                 case SiteKind.Station:
-                case SiteKind.LaunchSite:
                     return sites?.GroundStationNamed(feed.SiteKey);
+                case SiteKind.LaunchSite:
+                    return StationNear(sites, feed.SiteKey);
                 case SiteKind.Vessel:
                     if (feed.VantagePersistentId == 0 || !_supports(ApiFeature.CraftIdentity)
                         || !kerbcast.Cameras.TryVessel(feed.VantagePersistentId, out var vesselId)
@@ -467,6 +470,13 @@ namespace Gonogo.KerbcastUplink
                 default:
                     return null;
             }
+        }
+
+        /* A launch site is no network node, so it belongs to the ground station nearest it. */
+        private string? StationNear(ILensSites? sites, string siteKey)
+        {
+            var place = _launchSite?.Invoke(siteKey);
+            return place is LaunchSitePlace at ? sites?.GroundStationNear(at.BodyIndex, at.Latitude, at.Longitude) : null;
         }
 
         /* A bound site is commanded by the centre standing at it, so its knowledge reaches the lens at once. */
