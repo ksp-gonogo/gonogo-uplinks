@@ -6,8 +6,6 @@ import {
   interpolateCaptureUt,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
-import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
-import { useSourceGeneration } from "./useSourceGeneration.js";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import {
   type DelayedPlayoutResult,
@@ -167,12 +165,6 @@ export function useDelayedKerbcastStream(
   // the real `ViewClock` satisfies it (see that class's own doc).
   const view = useViewClockOptional() as DelayClockLike | undefined;
   const { captureUt, epoch, warpRate } = useKerbcastClock();
-  const sourceGeneration = useSourceGeneration(
-    flightId,
-    useKerbcastCameras(),
-    captureUt,
-    epoch,
-  );
 
   // Latch each ~1Hz clock sample with the wall-clock instant we saw it, so the
   // per-frame `liveCaptureUt` can interpolate forward between samples. Kept in
@@ -219,7 +211,7 @@ export function useDelayedKerbcastStream(
           captureUt: liveCaptureUt,
           getCaptureSample,
           frameStamps,
-          resetEpoch: sourceGeneration,
+          resetEpoch: epoch,
           encodedTarget,
         }
       : undefined,

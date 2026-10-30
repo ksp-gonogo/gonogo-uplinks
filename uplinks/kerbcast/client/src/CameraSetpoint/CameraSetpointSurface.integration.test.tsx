@@ -53,8 +53,8 @@ describe("delayed camera control, end to end", () => {
     const fov = transport.sentCommands.find(
       (c) => c.command === "kerbcast.setFieldOfView",
     );
-    expect(pan?.args).toEqual({ cameraId: 42, lensKey: "42", yaw: 1, pitch: 0 });
-    expect(fov?.args).toEqual({ cameraId: 42, lensKey: "42", fieldOfView: 60 });
+    expect(pan?.args).toEqual({ cameraId: 42, yaw: 1, pitch: 0 });
+    expect(fov?.args).toEqual({ cameraId: 42, fieldOfView: 60 });
   });
 
   it("no-path: commit is dropped", () => {

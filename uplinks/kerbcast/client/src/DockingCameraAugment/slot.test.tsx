@@ -156,7 +156,6 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       // passthrough (no clock yet), which is all this connect-path test needs.
       getClient: () => ({
         clock: { captureUt: null, epoch: 0, warpRate: 1 },
-        cameras: [],
         on: () => () => {},
         camera: () => ({ mediaStream: null, on: () => () => {} }),
       }),
@@ -215,7 +214,6 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       unsubscribeCamera: () => {},
       getClient: () => ({
         clock: { captureUt: null, epoch: 0, warpRate: 1 },
-        cameras: [],
         on: () => () => {},
         camera: () => ({ mediaStream: null, on: () => () => {} }),
         reportDisplaySize: (flightId: number, w: number, h: number) => {
@@ -261,7 +259,6 @@ describe("kerbcast docking-camera augment: rendezvous.camera slot", () => {
       unsubscribeCamera: () => {},
       getClient: () => ({
         clock: { captureUt: null, epoch: 0, warpRate: 1 },
-        cameras: [],
         on: () => () => {},
         camera: () => ({ mediaStream: picture, on: () => () => {} }),
         reportDisplaySize: () => Promise.resolve(),

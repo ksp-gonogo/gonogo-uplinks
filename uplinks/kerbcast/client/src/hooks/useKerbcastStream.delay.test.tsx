@@ -774,35 +774,6 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     });
   });
 
-  it("with no stamp feed, as after the sidecar's offer is gone, dates frames by capture time and releases them", async () => {
-    const { FakeGenerator } = installFakeWebCodecs();
-    const track = fakeControllableVideoTrack();
-    const rawStream = fakeVideoStream(track);
-    const cam = fakeCameraHandle(null);
-    registerFakeKerbcastSource(cam);
-    const clock = manualClock(100);
-
-    render(
-      <StreamProbe
-        flightId={7}
-        clock={clock}
-        captureUt={() => 100}
-        frameStamps={undefined}
-        onResult={() => {}}
-      />,
-    );
-    act(() => {
-      cam.emit(rawStream);
-    });
-    const [gen] = FakeGenerator.instances;
-    const frame = fakeFrame("unstamped");
-    track.push(frame);
-
-    await waitFor(() => {
-      expect(gen?.written).toEqual([frame]);
-    });
-  });
-
   it("dates frames from the camera's own stamps and never consults the capture clock", async () => {
     const { FakeGenerator } = installFakeWebCodecs();
     const track = fakeControllableVideoTrack();

@@ -1,5 +1,4 @@
 import {
-  CameraKind,
   ErrorCode,
   ErrorSource,
   type KerbcastTransport,
@@ -345,34 +344,6 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
     expect(sidecar.slotMidFor(42)).toBeUndefined();
 
-    ds.disconnect();
-  });
-
-  it("frees the slot of a part camera that leaves the camera list", async () => {
-    const { ds, sidecar } = await connectedSidecar([42]);
-    ds.subscribeCamera(42);
-    expect(sidecar.slotMidFor(42)).toBeDefined();
-
-    sidecar.setCameras([{ flightId: 77 }]);
-
-    expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
-    expect(sidecar.slotMidFor(42)).toBeUndefined();
-    ds.disconnect();
-  });
-
-  it("keeps the slot of a command camera that leaves the camera list", async () => {
-    const sidecar = new MockSidecar();
-    sidecar.addCamera({ flightId: 42, kind: CameraKind.Command });
-    mockFetch();
-    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    await ds.connect();
-    sidecar.open();
-    sidecar.setConnectionState("connected");
-    ds.subscribeCamera(42);
-
-    sidecar.setCameras([{ flightId: 77 }]);
-
-    expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
     ds.disconnect();
   });
 
@@ -1280,27 +1251,6 @@ describe("KerbcastDataSource: per-frame capture stamps", () => {
     sidecar.setConnectionState("connected");
 
     expect(ds.frameStampFeed(42)).not.toBeNull();
-  });
-
-  it("keeps the stamp feeds, and the feed's subscribers, across a drop that recovers", async () => {
-    const { ds, sidecar } = await connectedSidecar();
-    sidecar.open();
-    sidecar.setConnectionState("connected");
-    const feed = ds.frameStampFeed(42);
-    const seen: unknown[] = [];
-    feed?.subscribe((s) => seen.push(s));
-
-    sidecar.setConnectionState("disconnected");
-    sidecar.setConnectionState("connected");
-
-    expect(ds.frameStampFeed(42)).toBe(feed);
-    sidecar.fireFrameStamp({
-      flightId: 42,
-      rtpTimestamp: 9000,
-      captureUt: 5,
-      captureEpoch: 1,
-    });
-    expect(seen).toHaveLength(1);
   });
 
   it("asks the sidecar to send stamps when its hello offers them", async () => {

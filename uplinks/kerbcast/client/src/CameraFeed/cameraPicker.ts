@@ -1,8 +1,4 @@
-import {
-  CameraKind,
-  type CameraState,
-  type KerbcastClient,
-} from "@ksp-gonogo/kerbcast";
+import type { CameraState, KerbcastClient } from "@ksp-gonogo/kerbcast";
 import { isCameraDestroyed } from "@ksp-gonogo/kerbcast-react";
 
 /**
@@ -66,31 +62,4 @@ export function withPickerOrder(client: KerbcastClient): KerbcastClient {
       return typeof value === "function" ? value.bind(target) : value;
     },
   });
-}
-
-/**
- * The live part camera a widget should move to when the part camera it holds
- * is gone: the same camera name and kind, on the same craft where there is a
- * choice. `held` is the last state seen for the held id. Returns null while the
- * held camera is still live, for command cameras (their id survives a
- * relaunch) and for kerbal face cameras, or when no such camera is live.
- */
-export function followedPartCameraId(
-  cameras: readonly CameraState[],
-  held: CameraState | undefined,
-): number | null {
-  if (!held || held.kind === CameraKind.Command || held.kind === CameraKind.Kerbal) {
-    return null;
-  }
-  const current = cameras.find((c) => c.flightId === held.flightId);
-  if (current && !isCameraDestroyed(current)) return null;
-  const candidates = cameras.filter(
-    (c) =>
-      c.flightId !== held.flightId &&
-      !isCameraDestroyed(c) &&
-      c.cameraName === held.cameraName &&
-      c.kind === held.kind,
-  );
-  const sameCraft = candidates.find((c) => c.vesselName === held.vesselName);
-  return (sameCraft ?? candidates[0])?.flightId ?? null;
 }

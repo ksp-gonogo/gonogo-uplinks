@@ -61,11 +61,9 @@ public class KerbcastBindingTests
     }
 
     [Fact]
-    public void KerbcastIsFoundByItsApiAssembly()
+    public void AnAssemblyNamedKerbcastIsNotLoadedInATestProcess()
     {
-        Assert.Equal(KerbcastBinding.KerbcastAssemblyName, typeof(Kerbcast.Api.KerbcastApi).Assembly.GetName().Name);
-
-        Assert.True(KerbcastBinding.IsKerbcastLoaded());
+        Assert.False(KerbcastBinding.IsKerbcastLoaded());
     }
 }
 

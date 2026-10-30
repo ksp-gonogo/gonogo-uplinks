@@ -112,11 +112,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "KerbcastSetFieldOfViewArgs": {
     cameraId: "id",
     fieldOfView: "°",
-    lensKey: "text",
   },
   "KerbcastSetPanArgs": {
     cameraId: "id",
-    lensKey: "text",
     pitch: "°",
     yaw: "°",
   },

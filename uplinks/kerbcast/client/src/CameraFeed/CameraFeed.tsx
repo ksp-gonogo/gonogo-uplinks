@@ -59,12 +59,10 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
-  followedPartCameraId,
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
 import { frameBox } from "./frameShape.js";
-import { FullscreenExit } from "./FullscreenExit.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
@@ -266,12 +264,10 @@ export function CameraFeed({
   // stream is ready). ResizeObserver is stubbed in tests (installDomStubs).
   const [feedSize, setFeedSize] = useState({ width: 0, height: 0 });
   const overlayObserverRef = useRef<ResizeObserver | null>(null);
-  const overlayWrapRef = useRef<HTMLDivElement | null>(null);
   const [overlayWrapEl, setOverlayWrapEl] = useState<HTMLDivElement | null>(
     null,
   );
   const attachOverlayWrap = useCallback((el: HTMLDivElement | null) => {
-    overlayWrapRef.current = el;
     setOverlayWrapEl(el);
     overlayObserverRef.current?.disconnect();
     overlayObserverRef.current = null;
@@ -450,23 +446,6 @@ export function CameraFeed({
   const playoutStatus = useDelayedPlaybackStatus(effectiveFlightId);
   const unavailableReason =
     playoutStatus.kind === "unavailable" ? playoutStatus.reason : null;
-  const showsStream =
-    (playoutStatus.kind === "raw" || playoutStatus.kind === "delayed") &&
-    playoutStatus.stream !== null;
-
-  /*
-   * The SDK binds a stream to its `<video>` only when there is one, and keeps
-   * the previous srcObject when the stream goes null. On a camera switch the
-   * new camera has no stream for a moment, so the old camera's last frame sat
-   * on screen until static replaced it. Clearing the element while nothing is
-   * showable leaves the feed on its own empty look until the new stream binds.
-   */
-  useEffect(() => {
-    if (showsStream) return;
-    const video = overlayWrapRef.current?.querySelector("video");
-    if (!video) return;
-    video.srcObject = null;
-  }, [effectiveFlightId, showsStream]);
 
   // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
@@ -475,30 +454,6 @@ export function CameraFeed({
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
-  /*
-   * A part camera comes back under a new id after a relaunch, so a widget
-   * holding the old id would show static for good. Follow it to the live
-   * camera of the same name and keep the move in the saved config.
-   */
-  const heldCameraRef = useRef<CameraState | undefined>(undefined);
-  useEffect(() => {
-    if (requested === null) {
-      heldCameraRef.current = undefined;
-      return;
-    }
-    const current = cameras.find((c) => c.flightId === requested);
-    if (current) heldCameraRef.current = current;
-    else if (heldCameraRef.current?.flightId !== requested) {
-      heldCameraRef.current = undefined;
-    }
-    const next = followedPartCameraId(cameras, heldCameraRef.current);
-    if (next === null) return;
-    onConfigChange?.({
-      flightId: next,
-      showDebugInfo: config?.showDebugInfo ?? false,
-    });
-  }, [cameras, requested, onConfigChange, config?.showDebugInfo]);
-
   const pickerIds = useMemo(
     () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
     [cameras, requested, effectiveFlightId],
@@ -688,7 +643,6 @@ export function CameraFeed({
                     // layout instead (`FrameSizeReport` below).
                     renderSize="none"
                   />
-                  <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}
                     stage={stageRef}

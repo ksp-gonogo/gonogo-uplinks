@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Gonogo.KerbcastUplink;
 
@@ -25,7 +24,7 @@ public sealed class FakeKerbcastApi : IKerbcastApi
 
     public bool? SidecarAlive() => Sidecar;
 
-    public IReadOnlyList<KerbcastView> CamerasFor(Guid vesselId) => vesselId == Guid.Empty ? new List<KerbcastView>() : Cameras;
+    public IReadOnlyList<KerbcastView> CamerasFor(object? vessel) => vessel == null ? new List<KerbcastView>() : Cameras;
 
     public bool? SetFov(uint flightId, float fov)
     {
