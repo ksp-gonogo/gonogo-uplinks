@@ -732,6 +732,28 @@ describe("CameraFeed: camera selection", () => {
     expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
   });
 
+  it("Next button clears the previous camera's picture until the new stream binds", async () => {
+    await buildConnectedSource(TWO_CAMERAS);
+
+    const { container } = renderStatefulFeed({ flightId: 42 });
+    const video = container.querySelector("video") as HTMLVideoElement;
+    const oldPicture = { id: "previous-camera" } as unknown as MediaStream;
+    let bound: MediaStream | null = oldPicture;
+    Object.defineProperty(video, "srcObject", {
+      configurable: true,
+      get: () => bound,
+      set: (next: MediaStream | null) => {
+        bound = next;
+      },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /next camera/i }));
+    });
+
+    expect(bound).toBeNull();
+  });
+
   it("Previous button steps backward and wraps round", async () => {
     await buildConnectedSource(TWO_CAMERAS);
 
@@ -801,6 +823,23 @@ describe("CameraFeed: camera selection", () => {
     // Configured 44 is gone → widget falls back to the surviving first camera
     // rather than wedging on a dead id.
     expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
+  });
+
+  it("follows a part camera to its new id when the craft is relaunched", async () => {
+    const { sidecar } = await buildConnectedSource(TWO_CAMERAS);
+
+    renderStatefulFeed({ flightId: 44 });
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+
+    // Same craft, same camera names, new ids.
+    await act(async () => {
+      sidecar.setCameras([
+        toInit(makeCamera({ flightId: 91, cameraName: "Starboard Cam" })),
+        toInit(makeCamera({ flightId: 92, cameraName: "Tail Cam" })),
+      ]);
+    });
+
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
   });
 
   it("step buttons are disabled when only one camera is available", async () => {

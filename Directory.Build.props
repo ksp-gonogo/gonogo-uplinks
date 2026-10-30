@@ -12,7 +12,13 @@
        pin's bytes under it. Once a release of the package is on nuget.org this
        becomes that release's version and the vendored file goes. -->
   <PropertyGroup>
-    <GonogoContractVersion>1.0.0-pin.gb38f074c2cba</GonogoContractVersion>
+    <GonogoContractVersion>1.0.0-pin.g5bbf4c29c9e7</GonogoContractVersion>
+  </PropertyGroup>
+  <!-- The version of KspGonogo.Kerbcast.API and KspGonogo.Kerbcast.API.Testing the
+       kerbcast Uplink references, from nuget.org. It is the API package built from
+       the Kerbcast release the Uplink is built against. -->
+  <PropertyGroup>
+    <KerbcastApiVersion>1.0.0-rc.90</KerbcastApiVersion>
   </PropertyGroup>
   <!-- The version every Uplink's manifest reports. A release sets it from the
        tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->

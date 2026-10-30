@@ -1,5 +1,6 @@
 import {
   BrowserKerbcastTransport,
+  CameraKind,
   type CameraState,
   type ClientMessage,
   type EncodedTransformPath,
@@ -390,6 +391,9 @@ export class KerbcastDataSource {
 
   /** Cameras the sidecar said it does not have yet, subscribed again once they register. */
   private notThereYet = new Set<number>();
+
+  /** The kind each camera in the list last reported, for ids that have since left it. */
+  private lastKindSeen = new Map<number, CameraKind | undefined>();
   /** Whether the connected sidecar sends per-frame capture stamps (its hello offered them). */
   private frameStampsOffered = false;
   private readonly stampListeners = new Map<number, Set<(stamp: FrameStamp) => void>>();
@@ -875,7 +879,7 @@ export class KerbcastDataSource {
       client.on("state-change", (s) => {
         // The slot pool belongs to the peer, so a lost peer takes every
         // binding with it; the next answer restates them.
-        if (s === "disconnected" || s === "failed") this.forgetSlotState();
+        if (s === "disconnected" || s === "failed") this.forgetSlotState(false);
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
@@ -892,6 +896,7 @@ export class KerbcastDataSource {
       }),
       client.on("cameras-change", () => {
         KERBCAST_CAMERAS_BUDGET.record();
+        this.releaseDepartedCameras();
         this.retryNotThereYet();
       }),
     );
@@ -972,6 +977,39 @@ export class KerbcastDataSource {
       if (!registered.has(flightId)) continue;
       this.notThereYet.delete(flightId);
       if (this.desiredSubs.has(flightId)) this.requestSlot(flightId);
+    }
+  }
+
+  /**
+   * Free the slot of every subscribed camera that has left the camera list.
+   * The sidecar keeps a slot for a subscribed id so a camera returning under
+   * the same id can rebind, which only command cameras do; a part camera comes
+   * back under a new id after a relaunch, so its old slot would stay taken and
+   * a later relaunch would find none free. An id never seen in the list is
+   * left alone: it is a camera named before KSP had it.
+   */
+  private releaseDepartedCameras(): void {
+    const present = new Set<number>();
+    for (const camera of this.client.cameras) {
+      present.add(camera.flightId);
+      this.lastKindSeen.set(camera.flightId, camera.kind);
+    }
+    for (const [flightId, kind] of [...this.lastKindSeen]) {
+      if (present.has(flightId)) continue;
+      this.lastKindSeen.delete(flightId);
+      if (kind === CameraKind.Command || !this.desiredSubs.has(flightId)) continue;
+      logger
+        .tag("kerbcast:subscriptions")
+        .debug("release departed", { flightId, status: this.status });
+      this.desiredSubs.delete(flightId);
+      this.notThereYet.delete(flightId);
+      this.dropAwaiting(flightId);
+      this.setRefusal(flightId, undefined);
+      if (this.status === "connected") {
+        void this.client.unsubscribe(flightId).catch(() => {
+          /* already tearing down */
+        });
+      }
     }
   }
 
@@ -1074,11 +1112,21 @@ export class KerbcastDataSource {
     );
   }
 
-  private forgetSlotState(): void {
-    this.frameStampsOffered = false;
-    this.renegotiateOffered = false;
+  /*
+   * `sessionEnded` is false for a connection that dropped and may recover on
+   * the same sidecar session: the sidecar sends its hello once, when the
+   * control channel opens, so what it offered (frame stamps, renegotiation)
+   * and the stamp feeds delayed pipelines already hold stay valid, and
+   * forgetting them would leave a recovered connection without stamps for the
+   * rest of the session. A new connection reads its own hello.
+   */
+  private forgetSlotState(sessionEnded = true): void {
+    if (sessionEnded) {
+      this.frameStampsOffered = false;
+      this.renegotiateOffered = false;
+      this.stampFeeds.clear();
+    }
     this.session = null;
-    this.stampFeeds.clear();
     this.awaitingSlot = [];
     this.notThereYet.clear();
     if (this.refusals.size > 0) {

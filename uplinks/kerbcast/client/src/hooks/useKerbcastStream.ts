@@ -10,9 +10,11 @@ import {
   type CaptureClockSample,
   createFrameDelayStream,
   createWorkerFrameDelayStream,
+  DEFAULT_PACING_MAX_LEAD_SECONDS,
   type DelayedStreamBuildContext,
   type EncodedFrameDelayHandle,
   type FrameStampFeed,
+  interpolateCaptureUt,
   isFrameDelaySupported,
   SharedDelayedStreams,
   type SnapshottableDelayClock,
@@ -120,11 +122,15 @@ export type InstallEncodedDelay = (
  * delay on the camera's receiver through `install`, and the handle it returns
  * removes it. `key` identifies the attachment: every consumer of the camera
  * shares one delayed pipeline under it. Taken by {@link useDelayedPlayout} as
- * `encodedTarget`.
+ * `encodedTarget`. `holdMs` gives the delay in milliseconds a frame is held for
+ * now, or `NaN` when it is not known.
  */
 export interface EncodedDelayTarget {
   key: object;
-  attach(install: InstallEncodedDelay): EncodedFrameDelayHandle | null;
+  attach(
+    install: InstallEncodedDelay,
+    holdMs: () => number,
+  ): EncodedFrameDelayHandle | null;
 }
 
 /**
@@ -146,19 +152,23 @@ export function useEncodedDelayTarget(
   return useMemo(() => {
     if (flightId === null || !client || !scriptPath) return null;
     const cam = client.camera(flightId);
-    return { key: cam, attach: (install) => attachThroughKerbcast(cam, install) };
+    return { key: cam, attach: (install, holdMs) =>
+        attachThroughKerbcast(cam, install, holdMs),
+    };
   }, [client, flightId, scriptPath]);
 }
 
 /**
  * Hands Kerbcast a factory that makes one delay transform per receiver the
- * camera lands on, each with its own pipeline, the previous one disposed. The
- * first is made at once, so a delay that cannot be installed here is known
- * before Kerbcast is told to use it.
+ * camera lands on, each with its own pipeline built at the moment Kerbcast asks
+ * for it, the previous one disposed. A throwaway is built first and disposed
+ * unassigned, so a delay that cannot be installed here is known before Kerbcast
+ * is told to use it.
  */
 function attachThroughKerbcast(
   cam: KerbcastCameraHandle,
   install: InstallEncodedDelay,
+  holdMs: () => number,
 ): EncodedFrameDelayHandle | null {
   const make = (): { handle: EncodedFrameDelayHandle; transform: unknown } | null => {
     /* attachEncodedWorkerFrameDelay sets the transform it builds on the
@@ -174,15 +184,12 @@ function attachThroughKerbcast(
     return { handle, transform: standIn.transform };
   };
 
-  let current = make();
-  if (!current) return null;
-  let firstUnused = true;
+  const probe = make();
+  if (!probe) return null;
+  probe.handle.dispose();
+  let current: ReturnType<typeof make> = null;
   try {
     cam.setEncodedTransform(() => {
-      if (firstUnused && current) {
-        firstUnused = false;
-        return current.transform as RTCRtpScriptTransform;
-      }
       current?.handle.dispose();
       current = make();
       if (!current) {
@@ -191,12 +198,11 @@ function attachThroughKerbcast(
         );
       }
       return current.transform as RTCRtpScriptTransform;
-    });
+    }, { holdMs });
   } catch (err) {
     logger
       .tag("kerbcast:frame-delay")
       .warn("Kerbcast refused the video delay transform", { err });
-    current.handle.dispose();
     return null;
   }
   return {
@@ -208,6 +214,8 @@ function attachThroughKerbcast(
     flush() {
       current?.handle.flush();
     },
+    leadLimitSeconds: () =>
+      current?.handle.leadLimitSeconds() ?? DEFAULT_PACING_MAX_LEAD_SECONDS,
   };
 }
 
@@ -564,16 +572,44 @@ function buildDelayedPipeline(
   // Backend 0: encoded transform on the caller's target. See
   // `useDelayedPlayout`'s module doc. One transform per receiver: sharing at
   // the source is what keeps that invariant.
-  const install: InstallEncodedDelay = (receiver) =>
-    attachEncodedWorkerFrameDelay(receiver, {
+  let liveHandle: EncodedFrameDelayHandle | null = null;
+  const install: InstallEncodedDelay = (receiver) => {
+    const handle = attachEncodedWorkerFrameDelay(receiver, {
       view: view as unknown as SnapshottableDelayClock,
       getCaptureSample,
       frameStamps,
       onError: onPipelineError,
       onStats: frameDelayStatsLogger(),
     });
+    if (!handle) return null;
+    liveHandle = handle;
+    return {
+      ...handle,
+      dispose() {
+        if (liveHandle === handle) liveHandle = null;
+        handle.dispose();
+      },
+    };
+  };
+  /* The longest a frame can sit in the transform now: the delay (the gap
+     between the capture time being rendered and the latest time that may be
+     shown, over the warp rate) plus the pacer's lead limit, read from the
+     pipeline that holds the receiver (the default until one is installed).
+     Too high only slows Kerbcast's retries, too low leaves a feed on static.
+     NaN while the capture clock has no time, which Kerbcast reads as an
+     unknown hold. */
+  const holdMs = () => {
+    const sample = getCaptureSample();
+    const ut = interpolateCaptureUt(sample, performance.now());
+    if (ut === null) return Number.NaN;
+    const heldSeconds = ut - view.confirmedEdgeUt();
+    const delayMs = Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
+    const leadLimitSeconds =
+      liveHandle?.leadLimitSeconds() ?? DEFAULT_PACING_MAX_LEAD_SECONDS;
+    return delayMs + leadLimitSeconds * 1000;
+  };
   if (attachAt && encodedDelaySupported(view)) {
-    const encodedHandle = attachAt(install);
+    const encodedHandle = attachAt(install, holdMs);
     if (encodedHandle) {
       // No new track: the delay happens in place on the receiver's existing
       // track, upstream of decode, so `raw` is surfaced unchanged.
