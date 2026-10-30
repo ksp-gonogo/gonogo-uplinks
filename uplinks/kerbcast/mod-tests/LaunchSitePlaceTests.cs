@@ -9,7 +9,9 @@ public class LaunchSitePlaceTests
     [Fact]
     public void TheFirstSetCandidateIsTheSitesPlace()
     {
-        var place = LaunchSitePlace.FromFirst(1, null, (-0.0972, -74.5577), (1.0, 2.0));
+        var reading = LaunchSiteReading.FromFirst(1, ("PQSCity", null), ("PQSCity2", (-0.0972, -74.5577)), ("spawn point", (1.0, 2.0)));
+        var place = reading.Place;
+        Assert.Equal("PQSCity2", reading.Source);
 
         Assert.NotNull(place);
         Assert.Equal(1, place!.Value.BodyIndex);
@@ -20,6 +22,9 @@ public class LaunchSitePlaceTests
     [Fact]
     public void NoCandidateSetIsNoPlace()
     {
-        Assert.Null(LaunchSitePlace.FromFirst(1, null, null, null));
+        var reading = LaunchSiteReading.FromFirst(1, ("PQSCity", null), ("spawn point", null));
+
+        Assert.Null(reading.Place);
+        Assert.Equal("none: no coordinates set (PQSCity, spawn point)", reading.Source);
     }
 }

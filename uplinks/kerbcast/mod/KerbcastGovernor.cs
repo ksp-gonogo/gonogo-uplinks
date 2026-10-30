@@ -46,7 +46,7 @@ namespace Gonogo.KerbcastUplink
             CraftPlaces? places = null,
             Action<string>? log = null,
             Action<IReadOnlyDictionary<string, string>>? onFeedSites = null,
-            Func<string, LaunchSitePlace?>? launchSite = null,
+            Func<string, LaunchSiteReading>? launchSite = null,
             Func<uint?>? activeCraft = null)
         {
             _kerbcast = kerbcast;

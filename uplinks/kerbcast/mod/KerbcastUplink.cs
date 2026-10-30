@@ -193,28 +193,32 @@ namespace Gonogo.KerbcastUplink
          * so they are the last resort.
          */
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static LaunchSitePlace? ReadLaunchSite(string name)
+        private static LaunchSiteReading ReadLaunchSite(string name)
         {
-            var site = PSystemSetup.Instance?.GetLaunchSite(name);
-            var body = site?.Body;
-            if (site == null || body == null)
+            var site = PSystemSetup.Instance == null ? null : PSystemSetup.Instance.GetLaunchSite(name);
+            if (site == null)
             {
-                return null;
+                return new LaunchSiteReading(null, "none: the game has no launch site of that name");
             }
-            var index = FlightGlobals.Bodies?.IndexOf(body) ?? -1;
+            var body = site.Body;
+            if (body == null)
+            {
+                return new LaunchSiteReading(null, "none: the launch site has no body");
+            }
+            var index = FlightGlobals.Bodies == null ? -1 : FlightGlobals.Bodies.IndexOf(body);
             if (index < 0)
             {
-                return null;
+                return new LaunchSiteReading(null, "none: its body " + body.name + " is not in the body list");
             }
             var points = site.spawnPoints;
             var spawn = points != null && points.Length > 0 && points[0].latlonaltSet
                 ? (ValueTuple<double, double>?)(points[0].latitude, points[0].longitude)
                 : null;
-            return LaunchSitePlace.FromFirst(
+            return LaunchSiteReading.FromFirst(
                 index,
-                site.pqsCity != null ? (ValueTuple<double, double>?)(site.pqsCity.lat, site.pqsCity.lon) : null,
-                site.pqsCity2 != null ? (ValueTuple<double, double>?)(site.pqsCity2.lat, site.pqsCity2.lon) : null,
-                spawn);
+                ("PQSCity", site.pqsCity != null ? (ValueTuple<double, double>?)(site.pqsCity.lat, site.pqsCity.lon) : null),
+                ("PQSCity2", site.pqsCity2 != null ? (ValueTuple<double, double>?)(site.pqsCity2.lat, site.pqsCity2.lon) : null),
+                ("spawn point", spawn));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

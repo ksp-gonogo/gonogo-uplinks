@@ -44,7 +44,7 @@ namespace Gonogo.KerbcastUplink
         private readonly Func<ApiFeature, bool> _supports;
         private readonly Action<string>? _log;
         private readonly Action<IReadOnlyDictionary<string, string>>? _onFeedSites;
-        private readonly Func<string, LaunchSitePlace?>? _launchSite;
+        private readonly Func<string, LaunchSiteReading>? _launchSite;
         private readonly Func<uint?>? _activeCraft;
         private readonly Dictionary<uint, uint> _followed = new Dictionary<uint, uint>();
         private int _followTenure = -1;
@@ -70,7 +70,7 @@ namespace Gonogo.KerbcastUplink
         /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
         /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSitePlace?>? launchSite = null, Func<uint?>? activeCraft = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null)
         {
             _log = log;
             _onFeedSites = onFeedSites;
@@ -550,7 +550,7 @@ namespace Gonogo.KerbcastUplink
                 case SiteKind.Station:
                     return sites?.GroundStationNamed(feed.SiteKey);
                 case SiteKind.LaunchSite:
-                    return StationNear(sites, feed.SiteKey);
+                    return StationNear(sites, feed.SiteKey, feed.FlightId);
                 case SiteKind.Vessel:
                     if (feed.VantagePersistentId == 0 || !_supports(ApiFeature.CraftIdentity)
                         || !kerbcast.Cameras.TryVessel(feed.VantagePersistentId, out var vesselId)
@@ -565,10 +565,47 @@ namespace Gonogo.KerbcastUplink
         }
 
         /* A launch site is no network node, so it belongs to the ground station nearest it. */
-        private string? StationNear(ILensSites? sites, string siteKey)
+        private string? StationNear(ILensSites? sites, string siteKey, uint feedFlightId)
         {
-            var place = _launchSite?.Invoke(siteKey);
-            return place is LaunchSitePlace at ? sites?.GroundStationNear(at.BodyIndex, at.Latitude, at.Longitude) : null;
+            if (_launchSite == null)
+            {
+                return null;
+            }
+            LaunchSiteReading reading;
+            try
+            {
+                reading = _launchSite(siteKey);
+            }
+            catch (Exception e)
+            {
+                reading = new LaunchSiteReading(null, "none: reading the launch site threw " + e.GetType().Name + ": " + e.Message);
+            }
+            if (!(reading.Place is LaunchSitePlace at))
+            {
+                LogLaunchSite(feedFlightId, siteKey, reading.Source + " near=none");
+                return null;
+            }
+            var near = sites?.GroundStationNear(at.BodyIndex, at.Latitude, at.Longitude);
+            var where = " body=" + at.BodyIndex + " lat=" + Math.Round(at.Latitude, 5).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                + " lon=" + Math.Round(at.Longitude, 5).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            LogLaunchSite(feedFlightId, siteKey, "source=" + reading.Source + where + " near=" + (near ?? (sites == null ? "none (no lens sites)" : "none")));
+            return near;
+        }
+
+        private void LogLaunchSite(uint feedFlightId, string siteKey, string detail)
+        {
+            if (_log == null)
+            {
+                return;
+            }
+            var key = "launchsite" + feedFlightId;
+            var line = "site=" + siteKey + " " + detail;
+            if (_logged.TryGetValue(key, out var last) && last == line)
+            {
+                return;
+            }
+            _logged[key] = line;
+            _log("[Kerbcast][WORLD] launch-site feed=" + feedFlightId + " " + line);
         }
 
         /* A bound site is commanded by the centre standing at it, so its knowledge reaches the lens at once. */

@@ -181,13 +181,14 @@ public class KerbcastWorldModelTests
     public void ALaunchSiteFeedIsBoundToTheStationNearestItAndItsLensIsPlaced()
     {
         IReadOnlyDictionary<string, string>? reported = null;
+        var log = new List<string>();
         var model = new KerbcastWorldModel(
             _labels,
             _kc.Supports,
             _places,
-            null,
+            log.Add,
             sites => reported = sites,
-            name => name == "LaunchPad" ? new LaunchSitePlace(1, -0.09, -74.55) : (LaunchSitePlace?)null);
+            name => name == "LaunchPad" ? new LaunchSiteReading(new LaunchSitePlace(1, -0.09, -74.55), "PQSCity") : new LaunchSiteReading(null, "none: the game has no launch site of that name"));
         _sites.Near.Add((1, -0.1, -74.6, Ksc));
         _kc.Command.AddFeed(new CommandFeed { FlightId = 5, SiteKey = "LaunchPad", SiteKind = SiteKind.LaunchSite });
         _kc.Command.AddFeed(new CommandFeed { FlightId = 6, SiteKey = "Island Runway", SiteKind = SiteKind.LaunchSite });
@@ -200,6 +201,8 @@ public class KerbcastWorldModelTests
         Assert.Equal(Ksc, reported!["5"]);
         Assert.False(reported.ContainsKey("6"));
         Assert.False(_kc.Command.Published.Last().SiteBindings.ContainsKey("Island Runway"));
+        Assert.Contains(log, l => l == "[Kerbcast][WORLD] launch-site feed=5 site=LaunchPad source=PQSCity body=1 lat=-0.09 lon=-74.55 near=" + Ksc);
+        Assert.Contains(log, l => l == "[Kerbcast][WORLD] launch-site feed=6 site=Island Runway none: the game has no launch site of that name near=none");
     }
 
     private KerbcastWorldModel FollowingModel(Func<uint?> active, List<string>? log = null) =>
