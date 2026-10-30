@@ -1,0 +1,344 @@
+{
+  "specVersion": 1,
+  "uplink": {
+    "id": "kos",
+    "name": "kOS",
+    "version": "1.0.0-rc.6",
+    "description": "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.",
+    "wraps": {
+      "name": "kOS",
+      "builtAgainst": "1.6.0.1",
+      "tier": "ckan"
+    }
+  },
+  "topics": [
+    {
+      "id": "kos.processors",
+      "payload": "KosProcessorInfo",
+      "array": true,
+      "fields": [
+        {
+          "name": "bootFilePath",
+          "unit": "text"
+        },
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "hasBooted",
+          "unit": "flag"
+        },
+        {
+          "name": "partName",
+          "unit": "text"
+        },
+        {
+          "name": "processorMode",
+          "unit": "text"
+        },
+        {
+          "name": "tag",
+          "unit": "text"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    }
+  ],
+  "nestedPayloads": [],
+  "otherPayloads": [
+    {
+      "name": "KosComputeStatus",
+      "fields": [
+        {
+          "name": "lastGoodAt",
+          "unit": "ut"
+        },
+        {
+          "name": "parseError",
+          "unit": "text"
+        },
+        {
+          "name": "paused",
+          "unit": "flag"
+        },
+        {
+          "name": "running",
+          "unit": "flag"
+        },
+        {
+          "name": "scriptError",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KosRunResult",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "error",
+          "unit": "text"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KosTerminalFrame",
+      "fields": [
+        {
+          "name": "chunk",
+          "unit": "text"
+        },
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "fullRepaint",
+          "unit": "flag"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "kos.files.list",
+      "args": "KosFilesListArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.keystroke",
+      "args": "KosKeystrokeArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.run",
+      "args": "KosRunArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.terminal.close",
+      "args": "KosTerminalCloseArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.terminal.open",
+      "args": "KosTerminalOpenArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.terminal.resize",
+      "args": "KosTerminalResizeArgs",
+      "result": "CommandResult"
+    }
+  ],
+  "commandArgs": [
+    {
+      "name": "KosFilesListArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "volume",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KosKeystrokeArgs",
+      "fields": [
+        {
+          "name": "chars",
+          "unit": "text"
+        },
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "leaseToken",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KosRunArgs",
+      "fields": [
+        {
+          "name": "command",
+          "unit": "text"
+        },
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KosTerminalCloseArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "leaseToken",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KosTerminalOpenArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "leaseToken",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "KosTerminalResizeArgs",
+      "fields": [
+        {
+          "name": "cols",
+          "unit": "count"
+        },
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "leaseToken",
+          "unit": "id"
+        },
+        {
+          "name": "rows",
+          "unit": "count"
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "kos-script-trigger",
+      "name": "kOS Script Trigger",
+      "description": "Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the Uplink, and see the correlated result or error inline.",
+      "tags": [
+        "kos",
+        "control"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "kos.processors"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 10,
+        "h": 9
+      },
+      "minSize": {
+        "w": 6,
+        "h": 7
+      },
+      "tiny": false
+    },
+    {
+      "id": "kos-terminal",
+      "name": "kOS Terminal",
+      "description": "The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.",
+      "tags": [
+        "kos",
+        "control",
+        "telemetry"
+      ],
+      "channels": [],
+      "optionalChannels": [],
+      "commands": [],
+      "channelFamilies": [],
+      "optionalChannelFamilies": [],
+      "readsFromConfig": false,
+      "dataRequirements": [
+        "kos.processors"
+      ],
+      "fields": [],
+      "actions": [],
+      "augmentSlots": [],
+      "contributionSlots": [],
+      "requires": [],
+      "replaces": null,
+      "pushable": false,
+      "defaultSize": {
+        "w": 18,
+        "h": 15
+      },
+      "minSize": {
+        "w": 8,
+        "h": 6
+      },
+      "tiny": false
+    }
+  ],
+  "augments": [],
+  "contributions": [],
+  "models": {
+    "processors": [],
+    "forwardModels": [],
+    "derivedChannels": [],
+    "inputRuleExemptions": []
+  },
+  "errorCodes": [
+    {
+      "id": "kos.cpuBusy",
+      "refines": "notClearToProceed",
+      "sentence": "the CPU is busy and not at its prompt",
+      "meaning": "The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one."
+    },
+    {
+      "id": "kos.noTerminal",
+      "refines": "capabilityMismatch",
+      "sentence": "that CPU has no terminal window to type into",
+      "meaning": "The CPU has no terminal window a script could be typed into."
+    },
+    {
+      "id": "kos.terminalHeld",
+      "refines": "notClearToProceed",
+      "sentence": "another screen is using this CPU's terminal",
+      "meaning": "Another screen holds this CPU's terminal. A terminal is leased to one screen at a time and never taken from it; it frees when that screen closes it."
+    }
+  ]
+}
