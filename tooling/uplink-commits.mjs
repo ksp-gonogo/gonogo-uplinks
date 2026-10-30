@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 const SUBJECT = /^(\w+)(?:\(([^)]*)\))?(!)?:\s+(.+)$/;
 
 function git(root, args) {
-  const ran = spawnSync("git", args, { cwd: root, encoding: "utf8" });
+  const ran = spawnSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
   if (ran.status !== 0) {
     throw new Error(`git ${args.join(" ")} failed:\n${ran.stderr}`);
   }
