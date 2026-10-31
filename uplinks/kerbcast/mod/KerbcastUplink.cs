@@ -184,7 +184,18 @@ namespace Gonogo.KerbcastUplink
                 UnityEngine.Debug.Log,
                 onFeedSites,
                 ReadLaunchSite,
-                ReadActiveCraft);
+                ReadActiveCraft,
+                ReadBodyMu);
+
+        /* The body's gravitational parameter, which Kerbcast moves a record's craft by between snapshots. */
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static double? ReadBodyMu(int bodyIndex)
+        {
+            var bodies = FlightGlobals.Bodies;
+            return bodies != null && bodyIndex >= 0 && bodyIndex < bodies.Count && bodies[bodyIndex] != null
+                ? bodies[bodyIndex].gravParameter
+                : (double?)null;
+        }
 
         /*
          * The site is looked up the way it is named to the player rather than through

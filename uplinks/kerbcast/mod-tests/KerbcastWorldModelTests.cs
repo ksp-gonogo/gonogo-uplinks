@@ -135,72 +135,149 @@ public class KerbcastWorldModelTests
         return (probe.UncertaintyRadiusM, probe.RateMps, probe.ValidFromUt);
     }
 
-    [Fact]
-    public void ARecordCarriesTheRateTheRadiusWasAlreadyMovingAtSoConsecutiveRecordsMeet()
+    /// <summary>The bound of a craft whose capture is <paramref name="age"/> seconds old, as the centre grows it: 20 m/s² for as long as it has been.</summary>
+    private static double Bound(double age) => 0.5 * 20.0 * age * age;
+
+    [Theory]
+    [InlineData(1.0)]
+    [InlineData(3.0)]
+    [InlineData(5.0)]
+    public void ARecordHoldsTheCraftFromItsStartToItsReplacementWhateverTheAgeOfTheCapture(double age)
     {
-        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
-        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => 100.0 * (ut - 98.0));
+        _places.Learn(ProbeId, CraftPlace.Surface(100.0 - age, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 100.0 - age, ut => Bound(age + (ut - 100.0)));
 
         PublishAt(100.0, 0.0);
-        PublishAt(101.0, 5.0);
-        PublishAt(102.0, 10.0);
-
-        var first = Record(3);
-        var second = Record(2);
-        var third = Record(1);
-        Assert.Equal(0.0, first.Rate);
-        Assert.Equal(200.0, first.Radius);
-        Assert.Equal(100.0, second.Rate);
-        Assert.Equal(300.0, second.Radius + second.Rate * (101.0 - second.From));
-        Assert.Equal(400.0, second.Radius + second.Rate * (102.0 - second.From));
-        Assert.Equal(second.Rate, third.Rate);
-        Assert.Equal(400.0, third.Radius + third.Rate * (102.0 - third.From));
-    }
-
-    [Fact]
-    public void ARecordAtAnOlderInstantNeverStartsBelowZeroWhateverTheTrend()
-    {
-        _places.Learn(ProbeId, CraftPlace.Surface(98.0, 1, 0.0, 0.0, 70.0));
-        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => ut < 101.0 ? 10.0 : 100.0);
-
-        PublishAt(100.0, 0.0);
-        PublishAt(101.0, 5.0);
 
         var record = Record(1);
-        Assert.Equal(0.0, record.Radius);
-        Assert.Equal(100.0 / (101.0 - 98.0), record.Rate, 6);
-        Assert.Equal(100.0, record.Radius + record.Rate * (101.0 - record.From), 6);
+        Assert.Equal(0.0, record.Rate);
+        for (var later = 0.0; later <= 1.0; later += 0.25)
+        {
+            Assert.True(record.Radius >= Bound(age + later) - 1e-9, $"age {age} s, {later} s into the record: {record.Radius:F1} m against {Bound(age + later):F1} m");
+        }
     }
 
     [Fact]
-    public void APredictedRecordStartsAtTheRadiusAtTheInstantReadAndGrowsAtTheTrend()
+    public void ARecordIsTheSameFromOneSecondToTheNextWhileTheCaptureStaysAsOldAsItWas()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        var capture = 99.0;
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => capture, ut => Bound(ut - capture));
+
+        PublishAt(100.0, 0.0);
+        capture = 100.0;
+        PublishAt(101.0, 5.0);
+        capture = 101.0;
+        PublishAt(102.0, 10.0);
+
+        Assert.Equal(Record(3).Radius, Record(2).Radius);
+        Assert.Equal(Record(2).Radius, Record(1).Radius);
+        Assert.Equal(Bound(2.0), Record(1).Radius);
+    }
+
+    [Fact]
+    public void APredictedRecordCarriesTheRadiusAtTheEndOfItsLifeAndNoRate()
     {
         _places.Learn(ProbeId, CraftPlace.Surface(50.0, 1, 9.0, 9.0, 9.0));
-        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => 100.0 * (ut - 98.0), MovingAlong(Sitrep.Contract.CraftPlaceBasis.Burning, 1000.0, 10.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 99.0, ut => Bound(ut - 99.0), MovingAlong(Sitrep.Contract.CraftPlaceBasis.Burning, 1000.0, 10.0));
 
         PublishAt(100.0, 0.0);
-        PublishAt(101.0, 5.0);
 
         var record = Record(1);
-        Assert.Equal(300.0, record.Radius);
-        Assert.Equal(100.0, record.Rate);
-        Assert.Equal(101.0, record.From);
+        Assert.Equal(Bound(2.0), record.Radius);
+        Assert.Equal(0.0, record.Rate);
+        Assert.Equal(100.0, record.From);
     }
 
     [Fact]
-    public void AFallingRadiusAndAGapInTheRecordsPublishNoRate()
+    public void ARecordNeverSettlesBelowTheBoundNowWhenTheReadAMomentLaterCameFromANewerCapture()
     {
         _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
-        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => ut <= 102.0 ? 500.0 - 100.0 * (ut - 100.0) : 1000.0);
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut < 100.5 ? 99.0 : 100.4, ut => ut < 100.5 ? 130.0 : 5.0);
 
         PublishAt(100.0, 0.0);
-        PublishAt(101.0, 5.0);
-        Assert.Equal(0.0, Record(1).Rate);
 
-        PublishAt(102.0, 10.0);
-        Assert.Equal(0.0, Record(1).Rate);
-        PublishAt(120.0, 15.0);
-        Assert.Equal(0.0, Record(1).Rate);
+        Assert.Equal(130.0, Record(1).Radius);
+    }
+
+    private const double KerbinMu = 3.5316e12;
+
+    /// <summary>A craft 2 km up at 6 m/s down under a parachute, turning with the planet at 175 m/s: its drag holds it at a steady speed, so it moves in a straight line.</summary>
+    private static Sitrep.Contract.CraftPlace? Terminal(double ut) =>
+        new Sitrep.Contract.CraftPlace(1, new Vector3d(602_000.0 - 6.0 * (ut - 100.0), 175.0 * (ut - 100.0), 0.0), Sitrep.Contract.CraftPlaceBasis.Burning);
+
+    /// <summary>Where Kerbcast puts a record's craft <paramref name="seconds"/> into it: the start and velocity carried on under the body's gravity and nothing else.</summary>
+    private static double[] KerbcastCarries(Vec3d position, Vec3d speed, double seconds)
+    {
+        var start = new[] { position.X, position.Y, position.Z };
+        var velocity = new[] { speed.X, speed.Y, speed.Z };
+        var r = Math.Sqrt(start[0] * start[0] + start[1] * start[1] + start[2] * start[2]);
+        var at = new double[3];
+        for (var i = 0; i < 3; i++)
+        {
+            at[i] = start[i] + velocity[i] * seconds - 0.5 * KerbinMu * start[i] / (r * r * r) * seconds * seconds;
+        }
+        return at;
+    }
+
+    private static double Gap(double[] carried, Sitrep.Contract.CraftPlace truth)
+    {
+        var dx = carried[0] - truth.Position.X;
+        var dy = carried[1] - truth.Position.Y;
+        var dz = carried[2] - truth.Position.Z;
+        return Math.Sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    [Fact]
+    public void KerbcastsGravityAloneNeverCarriesACraftAtTerminalSpeedFurtherThanTheRecordsRadiusFromWhereItIs()
+    {
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, bodyMu: _ => KerbinMu);
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 99.0, ut => 2.0, Terminal);
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+
+        var record = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        for (var seconds = 0.0; seconds <= 1.0; seconds += 0.25)
+        {
+            var gap = Gap(KerbcastCarries(record.Position, record.Velocity, seconds), Terminal(100.0 + seconds)!);
+            Assert.True(gap <= record.UncertaintyRadiusM, $"{seconds} s into the record: {gap:F2} m off, radius {record.UncertaintyRadiusM:F2} m");
+        }
+        // It meets the craft where the record is replaced, where gravity alone would be 4.9 m off, and is a quarter of that off in the middle.
+        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(101.0)!) < 0.05);
+        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 0.5), Terminal(100.5)!) < 9.745 / 8.0 + 0.05);
+    }
+
+    [Fact]
+    public void WithNoBodyToTakeGravityFromTheVelocityIsThePlacesOwnMotionAndKerbcastsGravityLeavesTheCraftAboveItsAim()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 99.0, ut => 2.0, Terminal);
+
+        Publish(100.0, 0.0);
+
+        var record = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        // Half g t² at one second: the aim falls 4.9 m below a craft that does not fall.
+        Assert.Equal(4.87, Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(101.0)!), 1);
+    }
+
+    [Fact]
+    public void ARecordCarriesTheCraftsOwnSizeAsItsRadiusAndALeftOutSizeLeavesKerbcastItsNominalOne()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 99.0, ut => 2.0, Terminal, extentM: 11.5);
+        _knowledge.AddByUt(Ksc, StationId, CraftKnowledgeState.Heard, ut => 99.0, ut => 2.0, Terminal);
+        _places.Learn(StationId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+
+        PublishAt(100.0, 0.0);
+
+        var snapshot = _kc.Command.Published.Last();
+        Assert.Equal(11.5, snapshot.Find(Ksc, ProbePid).RadiusM);
+        Assert.True(double.IsNaN(snapshot.Find(Ksc, StationPid).RadiusM));
+        Assert.True(snapshot.Find(Ksc, ProbePid).UncertaintyRadiusM < 11.5);
     }
 
     private static Func<double, Sitrep.Contract.CraftPlace?> MovingAlong(Sitrep.Contract.CraftPlaceBasis basis, double x0, double speed) =>
@@ -788,13 +865,13 @@ public class KerbcastWorldModelTests
         }
 
         /// <summary>Adds a craft whose last known instant and uncertainty are asked of the two functions at whatever instant is read.</summary>
-        public void AddByUt(string centre, Guid vessel, CraftKnowledgeState state, Func<double, double?> lastKnownAt, Func<double, double?> uncertaintyAt, Func<double, Sitrep.Contract.CraftPlace?>? place = null)
+        public void AddByUt(string centre, Guid vessel, CraftKnowledgeState state, Func<double, double?> lastKnownAt, Func<double, double?> uncertaintyAt, Func<double, Sitrep.Contract.CraftPlace?>? place = null, double? extentM = null)
         {
             if (!_byCentre.TryGetValue(centre, out var list))
             {
                 _byCentre[centre] = list = new List<Func<double, CraftKnowledgeSample>>();
             }
-            list.Add(ut => new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownAt(ut), uncertaintyAt(ut), false, place?.Invoke(ut)));
+            list.Add(ut => new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownAt(ut), uncertaintyAt(ut), false, place?.Invoke(ut), extentM));
         }
 
         public void Clear()
