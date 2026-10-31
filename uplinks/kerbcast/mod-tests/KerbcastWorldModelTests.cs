@@ -464,7 +464,7 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
-    public void ACraftThatStopsQualifyingIsAimedAtAgainWhenItQualifiesAgain()
+    public void ACraftStillHeardThatIsBrieflyTooUncertainIsNotAimedAtAgainWhenItIsInViewAgain()
     {
         var model = FollowingModel(() => ProbePid);
         _sites.Delivered[Ksc] = 100.0;
@@ -474,6 +474,28 @@ public class KerbcastWorldModelTests
 
         Judge(ProbePid, "tooUncertain");
         PublishWith(model, 100.1, 0.1);
+        PublishWith(model, 100.2, 0.2);
+        Judge(ProbePid, "ok");
+        PublishWith(model, 100.3, 0.3);
+
+        Assert.Equal(1, AimCalls());
+    }
+
+    [Fact]
+    public void ACraftNoLongerHeardIsAimedAtAgainWhenItIsHeardAndInView()
+    {
+        var model = FollowingModel(() => ProbePid);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        Judge(ProbePid, "ok");
+        PublishWith(model, 100.0, 0.0);
+
+        Judge(ProbePid, "notPositioned");
+        _knowledge.Clear();
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Seen, 99.0, 250.0);
+        PublishWith(model, 100.1, 0.1);
+        _knowledge.Clear();
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
         Judge(ProbePid, "ok");
         PublishWith(model, 100.2, 0.2);
 

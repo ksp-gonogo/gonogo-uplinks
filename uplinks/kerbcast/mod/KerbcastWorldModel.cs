@@ -279,8 +279,10 @@ namespace Gonogo.KerbcastUplink
          * Each command feed follows the active craft while the centre at its site has
          * heard from it and Kerbcast judges it in view for that feed. The aim is sent
          * only when the subject changes, and again after a new lock tenure, since a new
-         * tenure starts from Kerbcast's own default. When the craft stops qualifying the
-         * feed is left to Kerbcast, which shows its own waiting view for a subject it
+         * tenure starts from Kerbcast's own default. A craft still heard whose view
+         * Kerbcast judges too uncertain for now stays the subject, so its return to
+         * view sends no aim and leaves the framing as it was. When the craft stops
+         * qualifying otherwise the feed is left to Kerbcast, which shows its own waiting view for a subject it
          * cannot watch; the API has no call that clears an aim.
          */
         private void Follow(IKerbcast kerbcast, int tenure, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
@@ -302,6 +304,10 @@ namespace Gonogo.KerbcastUplink
                     continue;
                 }
                 var subject = active.HasValue && Qualifies(kerbcast, feed, active.Value, feedSites, listed) ? active.Value : 0u;
+                if (subject == 0u && active.HasValue && _followed.TryGetValue(feed.FlightId, out var aimed) && aimed == active.Value && IsHeard(feed, active.Value, feedSites, listed))
+                {
+                    continue;
+                }
                 if (subject == 0u)
                 {
                     _followed.Remove(feed.FlightId);
@@ -318,22 +324,25 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
-        private static bool Qualifies(IKerbcast kerbcast, CommandFeed feed, uint craft, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
+        private static bool IsHeard(CommandFeed feed, uint craft, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
         {
             if (!feedSites.TryGetValue(KerbcastLensSites.KeyFor(feed.FlightId), out var scope) || !listed.TryGetValue(scope, out var crafts))
             {
                 return false;
             }
-            var heard = false;
             foreach (var candidate in crafts)
             {
                 if (candidate.PersistentId == craft && candidate.Sample.State == CraftKnowledgeState.Heard)
                 {
-                    heard = true;
-                    break;
+                    return true;
                 }
             }
-            if (!heard)
+            return false;
+        }
+
+        private static bool Qualifies(IKerbcast kerbcast, CommandFeed feed, uint craft, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
+        {
+            if (!IsHeard(feed, craft, feedSites, listed))
             {
                 return false;
             }
