@@ -73,7 +73,10 @@ export function withPickerOrder(client: KerbcastClient): KerbcastClient {
  * is gone: the same camera name and kind, on the same craft where there is a
  * choice. `held` is the last state seen for the held id. Returns null while the
  * held camera is still live, for command cameras (their id survives a
- * relaunch) and for kerbal face cameras, or when no such camera is live.
+ * relaunch) and for kerbal face cameras, when no such camera is live, and when
+ * the camera could be any of several on other craft. Among cameras on the same
+ * craft the lowest id wins, so the answer does not depend on the order the
+ * list arrives in.
  */
 export function followedPartCameraId(
   cameras: readonly CameraState[],
@@ -91,6 +94,9 @@ export function followedPartCameraId(
       c.cameraName === held.cameraName &&
       c.kind === held.kind,
   );
-  const sameCraft = candidates.find((c) => c.vesselName === held.vesselName);
-  return (sameCraft ?? candidates[0])?.flightId ?? null;
+  const sameCraft = candidates
+    .filter((c) => c.vesselName === held.vesselName)
+    .sort((a, b) => a.flightId - b.flightId);
+  if (sameCraft.length > 0) return sameCraft[0]?.flightId ?? null;
+  return candidates.length === 1 ? (candidates[0]?.flightId ?? null) : null;
 }

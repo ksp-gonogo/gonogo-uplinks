@@ -60,7 +60,6 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
-  followedPartCameraId,
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
@@ -74,6 +73,7 @@ import { LostSignalStatic } from "./LostSignalStatic.js";
 import { useFeedBindProbe } from "./useFeedBindProbe.js";
 import { useCraftPowerLost } from "./useCraftPowerLost.js";
 import { useFeedSignal } from "./useFeedSignal.js";
+import { useFollowedPartCamera } from "./useFollowedPartCamera.js";
 import { useReportFrameSize } from "./useReportFrameSize.js";
 
 export interface CameraFeedConfig extends Record<string, unknown> {
@@ -505,29 +505,16 @@ export function CameraFeed({
     };
   }, [covered, effectiveFlightId, showsStream]);
 
-  /*
-   * A part camera comes back under a new id after a relaunch, so a widget
-   * holding the old id would show static for good. Follow it to the live
-   * camera of the same name and keep the move in the saved config.
-   */
-  const heldCameraRef = useRef<CameraState | undefined>(undefined);
-  useEffect(() => {
-    if (requested === null) {
-      heldCameraRef.current = undefined;
-      return;
-    }
-    const current = cameras.find((c) => c.flightId === requested);
-    if (current) heldCameraRef.current = current;
-    else if (heldCameraRef.current?.flightId !== requested) {
-      heldCameraRef.current = undefined;
-    }
-    const next = followedPartCameraId(cameras, heldCameraRef.current);
-    if (next === null) return;
-    onConfigChange?.({
-      flightId: next,
-      showDebugInfo: config?.showDebugInfo ?? false,
-    });
-  }, [cameras, requested, onConfigChange, config?.showDebugInfo]);
+  const showDebugForFollow = config?.showDebugInfo ?? false;
+  useFollowedPartCamera(
+    cameras,
+    requested,
+    useCallback(
+      (flightId: number) =>
+        onConfigChange?.({ flightId, showDebugInfo: showDebugForFollow }),
+      [onConfigChange, showDebugForFollow],
+    ),
+  );
 
   const pickerIds = useMemo(
     () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
@@ -537,6 +524,20 @@ export function CameraFeed({
     (camera: CameraState) => isPartCamera(camera) && pickerIds.has(camera.flightId),
     [pickerIds],
   );
+
+  const displayedContext = useRef({ requested, cameras, pickerFilter });
+  displayedContext.current = { requested, cameras, pickerFilter };
+  const onDisplayedCameraChange = useCallback((flightId: number | null) => {
+    const { requested: asked, cameras: listed, pickerFilter: filter } =
+      displayedContext.current;
+    logger.tag("kerbcast:subscriptions").debug("displayed camera changed", {
+      displayed: flightId,
+      requested: asked,
+      filtered: listed.filter(filter).map((c) => c.flightId),
+      listed: listed.length,
+    });
+    setEffectiveFlightId(flightId);
+  }, []);
 
   // ---- Frame shape ----
   // The box the frame is fitted INTO, measured so the frame itself can be given
@@ -690,7 +691,7 @@ export function CameraFeed({
                         showDebugInfo: config?.showDebugInfo ?? false,
                       })
                     }
-                    onDisplayedCameraChange={setEffectiveFlightId}
+                    onDisplayedCameraChange={onDisplayedCameraChange}
                     showDebugInfo={showDebugInfo}
                     emptyMessage={sidecarNote ?? undefined}
                     enableFullscreen

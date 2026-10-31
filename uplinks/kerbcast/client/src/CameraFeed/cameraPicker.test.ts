@@ -51,3 +51,30 @@ describe("followedPartCameraId", () => {
     ).toBeNull();
   });
 });
+
+describe("followedPartCameraId: independent of list order", () => {
+  const held = cam({ flightId: 1 });
+
+  it("takes the lowest id on the same craft whatever order the list is in", () => {
+    const a = cam({ flightId: 30 });
+    const b = cam({ flightId: 12 });
+    expect(followedPartCameraId([a, b], held)).toBe(12);
+    expect(followedPartCameraId([b, a], held)).toBe(12);
+  });
+
+  it("does not choose between cameras on other craft", () => {
+    const list = [
+      cam({ flightId: 8, vesselName: "Debris A" }),
+      cam({ flightId: 9, vesselName: "Debris B" }),
+    ];
+    expect(followedPartCameraId(list, held)).toBeNull();
+    expect(followedPartCameraId([...list].reverse(), held)).toBeNull();
+  });
+
+  it("takes the one camera on another craft when there is only one", () => {
+    expect(
+      followedPartCameraId([cam({ flightId: 8, vesselName: "Debris A" })], held),
+    ).toBe(8);
+  });
+});
+

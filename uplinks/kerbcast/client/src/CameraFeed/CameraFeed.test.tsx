@@ -68,6 +68,7 @@ import {
 // Side-effect import: `registerComponent` lives in ./index, not ./CameraFeed,
 // and `renderWidget`/`WidgetHost` look the widget up by id.
 import "./index.js";
+import { FOLLOW_SETTLE_MS } from "./useFollowedPartCamera.js";
 import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel.js";
 
 // ---------------------------------------------------------------------------
@@ -838,7 +839,55 @@ describe("CameraFeed: camera selection", () => {
         toInit(makeCamera({ flightId: 92, cameraName: "Tail Cam" })),
       ]);
     });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, FOLLOW_SETTLE_MS + 100));
+    });
 
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+  });
+
+  it("saves no new camera from a single snapshot that lacks the held one", async () => {
+    const { ds, sidecar } = await buildConnectedSource(TWO_CAMERAS);
+    const subscribe = vi.spyOn(ds, "subscribeCamera");
+    const saved = vi.fn();
+    function Harness() {
+      return (
+        <WidgetHost widgetId="camera-feed" instanceId={TEST_INSTANCE_ID}>
+          <CameraFeed
+            config={fullConfig({ flightId: 44 })}
+            id={TEST_INSTANCE_ID}
+            onConfigChange={saved}
+          />
+        </WidgetHost>
+      );
+    }
+    const result = render(<Harness />);
+    renderedTrees.push(result.unmount);
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+    subscribe.mockClear();
+
+    // The scene changes: for one snapshot the held camera is missing and a
+    // camera of the same name on another craft is listed.
+    await act(async () => {
+      sidecar.setCameras([
+        toInit(makeCamera({ flightId: 42, cameraName: "Starboard Cam" })),
+        toInit(
+          makeCamera({
+            flightId: 77,
+            cameraName: "Tail Cam",
+            vesselName: "Kerbal X Debris",
+          }),
+        ),
+      ]);
+    });
+    await act(async () => {
+      sidecar.setCameras(TWO_CAMERAS.map(toInit));
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, FOLLOW_SETTLE_MS + 100));
+    });
+
+    expect(saved).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
   });
 
