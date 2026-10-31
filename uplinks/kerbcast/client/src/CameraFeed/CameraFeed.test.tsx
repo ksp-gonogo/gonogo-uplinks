@@ -1823,6 +1823,84 @@ describe("CameraFeed: signal quality badge", () => {
     expect(video()?.style.visibility).toBe("");
   });
 
+  describe("craft power", () => {
+    const covered = () => document.querySelector("[data-kc-lost-signal]");
+
+    async function mount(cameras?: Parameters<typeof buildConnectedSource>[0]) {
+      await buildConnectedSource(cameras);
+      const stream = setupStreamFixture();
+      renderFeedWithComms({ flightId: 42 }, stream);
+      act(() => {
+        emitComms(stream, { signalStrength: 1.0, connected: true });
+      });
+      await waitFor(() => expect(headerText()).toContain("SIGNAL 100 %"));
+      return stream;
+    }
+
+    const charge = (stream: StreamFixture, current: number) => {
+      stream.emit("vessel.identity", { name: "Kerbal X" });
+      stream.emit("vessel.resources", {
+        resources: {
+          ElectricCharge: { current, max: 100, active: true },
+        },
+      });
+    };
+
+    it("covers a part camera on the active vessel while its Electric Charge reads empty", async () => {
+      const stream = await mount();
+
+      act(() => charge(stream, 0));
+      await waitFor(() => expect(covered()).not.toBeNull());
+
+      act(() => charge(stream, 40));
+      await waitFor(() => expect(covered()).toBeNull());
+    });
+
+    it("does not cover a feed when no Electric Charge is reported", async () => {
+      const stream = await mount();
+
+      act(() => {
+        stream.emit("vessel.identity", { name: "Kerbal X" });
+        stream.emit("vessel.resources", { resources: {} });
+      });
+
+      expect(covered()).toBeNull();
+    });
+
+    it("does not cover a camera on another vessel", async () => {
+      const stream = await mount();
+
+      act(() => {
+        stream.emit("vessel.identity", { name: "Another Craft" });
+        stream.emit("vessel.resources", {
+          resources: { ElectricCharge: { current: 0, max: 100, active: true } },
+        });
+      });
+
+      expect(covered()).toBeNull();
+    });
+
+    it("never covers a command camera for a craft's power", async () => {
+      const stream = await mount([
+        makeCamera({ flightId: 42, kind: "command" as CameraKind }),
+      ]);
+
+      act(() => charge(stream, 0));
+
+      expect(covered()).toBeNull();
+    });
+  });
+
+  it("says the camera is being re-acquired while its slot is bound again", async () => {
+    const { ds } = await buildConnectedSource();
+    vi.spyOn(ds, "isReacquiring").mockReturnValue(true);
+
+    const stream = setupStreamFixture();
+    renderFeedWithComms({ flightId: 42 }, stream);
+
+    await waitFor(() => expect(frameText()).toContain("RE-ACQUIRING CAMERA"));
+  });
+
   it("drops the signal badge when the camera goes and the feed has nothing to show", async () => {
     const { sidecar } = await buildConnectedSource();
 

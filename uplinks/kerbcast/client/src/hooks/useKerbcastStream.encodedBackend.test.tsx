@@ -34,6 +34,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   type DelayedPlayoutResult,
   type EncodedDelayTarget,
+  PIPELINE_RELEASE_GRACE_MS,
   useDelayedPlayout,
   useEncodedDelayTarget,
   useKerbcastStream,
@@ -548,6 +549,38 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     });
   });
 
+  it("keeps the delay on the receiver when a feed is mounted anew for the same camera", async () => {
+    stubTransforms();
+    FakeWorker.posted = [];
+    const { installs } = registerKerbcast({
+      canvas: fakeStream(),
+      path: "script",
+    });
+    const clock = manualClock();
+
+    const first = render(
+      <CameraProbe flightId={7} clock={clock} onResult={() => {}} />,
+    );
+    await waitFor(() => {
+      expect(installs).toHaveLength(1);
+    });
+    first.unmount();
+    let latest: DelayedPlayoutResult | "unset" = "unset";
+    render(
+      <CameraProbe
+        flightId={7}
+        clock={clock}
+        onResult={(r) => {
+          latest = r;
+        }}
+      />,
+    );
+    await new Promise((resolve) => setTimeout(resolve, PIPELINE_RELEASE_GRACE_MS + 50));
+
+    expect(installs).toHaveLength(1);
+    expect(latest).toMatchObject({ kind: "delayed" });
+  });
+
   it("detaches from Kerbcast when the last consumer goes", async () => {
     stubTransforms();
     const { installs } = registerKerbcast({
@@ -563,7 +596,9 @@ describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => 
     });
     unmount();
 
-    expect(installs).toHaveLength(2);
+    await waitFor(() => {
+      expect(installs).toHaveLength(2);
+    });
     expect(installs[1]).toBeNull();
   });
 

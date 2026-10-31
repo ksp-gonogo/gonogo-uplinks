@@ -22,6 +22,7 @@ import {
   kerbcastSource,
   MAX_SLOTS,
   MIN_SLOTS,
+  RELEASE_GRACE_MS,
   slotPoolFor,
   NO_H264_MESSAGE,
   sidecarUnreachableMessage,
@@ -290,6 +291,10 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
 // the real subscribe → slot-map round-trip the sidecar speaks.
 // ---------------------------------------------------------------------------
 
+/** Waits out the grace a camera's slot is kept after its last feed goes. */
+const pastGrace = () =>
+  new Promise<void>((resolve) => setTimeout(resolve, RELEASE_GRACE_MS + 50));
+
 describe("KerbcastDataSource: dynamic slot subscription", () => {
   function mockFetch(): void {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) =>
@@ -341,7 +346,9 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
     expect(sidecar.slotMidFor(42)).toBeDefined();
 
-    ds.unsubscribeCamera(42); // last widget gone: slot frees
+    ds.unsubscribeCamera(42); // last widget gone: slot frees after the grace
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
+    await pastGrace();
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
     expect(sidecar.slotMidFor(42)).toBeUndefined();
 
@@ -373,6 +380,63 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     sidecar.setCameras([{ flightId: 77 }]);
 
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
+    ds.disconnect();
+  });
+
+  it("binds a command camera again when it returns to the camera list", async () => {
+    const sidecar = new MockSidecar();
+    sidecar.addCamera({ flightId: 42, kind: CameraKind.Command });
+    mockFetch();
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    ds.subscribeCamera(42);
+    expect(subscribeCount(sidecar, 42)).toBe(1);
+
+    sidecar.setCameras([{ flightId: 77 }]);
+    expect(subscribeCount(sidecar, 42)).toBe(1);
+    expect(ds.isReacquiring(42)).toBe(false);
+
+    sidecar.setCameras([{ flightId: 42, kind: CameraKind.Command }]);
+
+    await vi.waitFor(() => expect(subscribeCount(sidecar, 42)).toBe(2));
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
+    await vi.waitFor(() => expect(ds.isReacquiring(42)).toBe(false));
+    ds.disconnect();
+  });
+
+  it("a feed mounted anew for the same camera takes the subscription over without freeing it", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+    ds.subscribeCamera(42);
+    const mid = sidecar.slotMidFor(42);
+    expect(mid).toBeDefined();
+
+    ds.unsubscribeCamera(42);
+    ds.subscribeCamera(42);
+    await pastGrace();
+
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeUndefined();
+    expect(subscribeCount(sidecar, 42)).toBe(1);
+    expect(sidecar.slotMidFor(42)).toBe(mid);
+
+    ds.unsubscribeCamera(42);
+    await pastGrace();
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
+    ds.disconnect();
+  });
+
+  it("showing a different camera frees the previous camera's slot first", async () => {
+    const { ds, sidecar } = await connectedSidecar();
+    ds.subscribeCamera(42);
+
+    ds.unsubscribeCamera(42);
+    ds.subscribeCamera(43);
+
+    const order = sidecar.commands
+      .filter((c) => c.type === "subscribe" || c.type === "unsubscribe")
+      .map((c) => `${c.type}:${c.content.flightId}`);
+    expect(order).toEqual(["subscribe:42", "unsubscribe:42", "subscribe:43"]);
     ds.disconnect();
   });
 
@@ -443,6 +507,7 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
       expect(changes).toHaveBeenCalledTimes(1);
 
       ds.unsubscribeCamera(43);
+      await pastGrace();
       expect(ds.refusalFor(43)).toBeUndefined();
 
       ds.disconnect();
@@ -532,6 +597,7 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
         code: ErrorCode.CameraNotFound,
       });
       ds.unsubscribeCamera(99);
+      await pastGrace();
       const before = subscribeCount(sidecar, 99);
 
       sidecar.setCameras([{ flightId: 42 }, { flightId: 99 }]);
@@ -685,6 +751,7 @@ describe("KerbcastDataSource: the slot pool is sized to what is mounted", () => 
     for (const id of ids) ds.subscribeCamera(id);
     await vi.waitFor(() => expect(offerBodies()).toHaveLength(2));
     for (const id of ids) ds.unsubscribeCamera(id);
+    await pastGrace();
 
     await ds.connect();
 

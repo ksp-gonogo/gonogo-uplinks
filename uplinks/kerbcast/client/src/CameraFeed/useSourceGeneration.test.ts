@@ -54,6 +54,23 @@ describe("useSourceGeneration", () => {
     expect(result.current).toBe(1);
   });
 
+  it("moves on when the sidecar reports a new attach of the same camera", () => {
+    const withAttach = (attach: number) => [{ ...cam(5), attach } as CameraState];
+    const { result, rerender } = setup({ ...base, cameras: withAttach(1) });
+    act(() => rerender({ ...base, cameras: withAttach(1) }));
+    expect(result.current).toBe(0);
+    act(() => rerender({ ...base, cameras: withAttach(2) }));
+    expect(result.current).toBe(1);
+  });
+
+  it("does not move on when a camera is first seen with an attach", () => {
+    const { result, rerender } = setup({ ...base, flightId: 5, cameras: [cam(5)] });
+    act(() =>
+      rerender({ ...base, cameras: [{ ...cam(5), attach: 3 } as CameraState] }),
+    );
+    expect(result.current).toBe(0);
+  });
+
   it("moves on when the camera returns to the list after being gone", () => {
     const { result, rerender } = setup(base);
     act(() => rerender({ ...base, cameras: [] }));

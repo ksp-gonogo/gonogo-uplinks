@@ -122,6 +122,13 @@ const RECONNECT_MAX_MS = 30_000;
 // together grow it once. MAX_SLOTS bounds both, and a camera past that waits
 // for a slot another feed gives up.
 
+/**
+ * How long a camera's slot is kept after its last feed goes, in milliseconds,
+ * so a feed mounted anew for the same camera takes the subscription over
+ * instead of freeing it and binding it again.
+ */
+export const RELEASE_GRACE_MS = 500;
+
 /** Slots negotiated when nothing, or little, is mounted. */
 export const MIN_SLOTS = 4;
 
@@ -401,6 +408,23 @@ export class KerbcastDataSource {
 
   private refusalListeners = new Set<() => void>();
 
+  /**
+   * Subscribed command cameras that have left the camera list. The sidecar
+   * keeps their slot for a return under the same id, but the track in it does
+   * not necessarily carry frames again, so a return is re-subscribed.
+   */
+  private departedCommand = new Set<number>();
+  /**
+   * Cameras whose last display reference has been released, and the timer that
+   * frees their slot. A camera shown again before it fires keeps its slot and
+   * its stream, which is what a feed does when it is mounted anew in the same
+   * place, as the dashboard does when a tile moves.
+   */
+  private releasing = new Map<number, ReturnType<typeof setTimeout>>();
+  /** Cameras whose slot is being bound again after a return, until the sidecar answers. */
+  private reacquiring = new Set<number>();
+  private reacquiringListeners = new Set<() => void>();
+
   private pingWatchdog: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
@@ -561,6 +585,21 @@ export class KerbcastDataSource {
    * so a station with no camera widget never opens a sidecar peer.
    */
   subscribeCamera(flightId: number): void {
+    const pending = this.releasing.get(flightId);
+    if (pending !== undefined) {
+      /* The reference being released passes to this holder: the slot, the
+         stream and the holder count are all left as they are. */
+      clearTimeout(pending);
+      this.releasing.delete(flightId);
+      logger
+        .tag("kerbcast:subscriptions")
+        .debug("subscribe picked up a pending release", { flightId });
+      return;
+    }
+    /* A different camera being shown is a switch, not a remount: the slots
+       waiting to be freed go first, as they did when release was immediate, so
+       the new bind never meets a pool the old camera still holds. */
+    this.flushReleasing();
     const count = this.desiredSubs.get(flightId) ?? 0;
     this.desiredSubs.set(flightId, count + 1);
     logger
@@ -600,7 +639,28 @@ export class KerbcastDataSource {
       this.desiredSubs.set(flightId, count - 1);
       return;
     }
+    if (this.releasing.has(flightId)) return;
+    this.releasing.set(
+      flightId,
+      setTimeout(() => {
+        this.releasing.delete(flightId);
+        this.releaseSlot(flightId);
+      }, RELEASE_GRACE_MS),
+    );
+  }
+
+  private flushReleasing(): void {
+    for (const [flightId, timer] of [...this.releasing]) {
+      clearTimeout(timer);
+      this.releasing.delete(flightId);
+      this.releaseSlot(flightId);
+    }
+  }
+
+  private releaseSlot(flightId: number): void {
     this.desiredSubs.delete(flightId);
+    this.departedCommand.delete(flightId);
+    this.setReacquiring(flightId, false);
     this.notThereYet.delete(flightId);
     this.dropAwaiting(flightId);
     this.setRefusal(flightId, undefined);
@@ -775,6 +835,7 @@ export class KerbcastDataSource {
 
   disconnect(): void {
     this.reconnectEnabled = false;
+    this.flushReleasing();
     this.clearTimers();
     this.client.disconnect();
     this.forgetSlotState();
@@ -897,6 +958,7 @@ export class KerbcastDataSource {
       client.on("cameras-change", () => {
         KERBCAST_CAMERAS_BUDGET.record();
         this.releaseDepartedCameras();
+        this.reacquireReturnedCameras();
         this.retryNotThereYet();
       }),
     );
@@ -997,7 +1059,11 @@ export class KerbcastDataSource {
     for (const [flightId, kind] of [...this.lastKindSeen]) {
       if (present.has(flightId)) continue;
       this.lastKindSeen.delete(flightId);
-      if (kind === CameraKind.Command || !this.desiredSubs.has(flightId)) continue;
+      if (!this.desiredSubs.has(flightId)) continue;
+      if (kind === CameraKind.Command) {
+        this.departedCommand.add(flightId);
+        continue;
+      }
       logger
         .tag("kerbcast:subscriptions")
         .debug("release departed", { flightId, status: this.status });
@@ -1011,6 +1077,62 @@ export class KerbcastDataSource {
         });
       }
     }
+  }
+
+  /**
+   * Bind again every subscribed command camera that was off the camera list
+   * and is back on it. The slot is released and requested afresh, so the
+   * camera gets a new track rather than the one that stopped carrying frames
+   * when the scene it was in ended.
+   */
+  private reacquireReturnedCameras(): void {
+    if (this.departedCommand.size === 0) return;
+    const present = new Set(this.client.cameras.map((c) => c.flightId));
+    for (const flightId of [...this.departedCommand]) {
+      if (!this.desiredSubs.has(flightId)) {
+        this.departedCommand.delete(flightId);
+        continue;
+      }
+      if (!present.has(flightId)) continue;
+      this.departedCommand.delete(flightId);
+      if (this.status !== "connected") continue;
+      logger
+        .tag("kerbcast:subscriptions")
+        .info("re-acquire returned camera", { flightId });
+      this.setReacquiring(flightId, true);
+      void this.client
+        .unsubscribe(flightId)
+        .catch(() => {
+          /* already tearing down */
+        })
+        .then(() => {
+          if (this.desiredSubs.has(flightId) && this.status === "connected") {
+            this.requestSlot(flightId);
+          } else {
+            this.setReacquiring(flightId, false);
+          }
+        });
+    }
+  }
+
+  /** Whether `flightId` is being bound again after returning to the camera list. */
+  isReacquiring(flightId: number): boolean {
+    return this.reacquiring.has(flightId);
+  }
+
+  /** Called whenever a camera starts or finishes being bound again. */
+  onReacquiringChange(cb: () => void): () => void {
+    this.reacquiringListeners.add(cb);
+    return () => this.reacquiringListeners.delete(cb);
+  }
+
+  private setReacquiring(flightId: number, on: boolean): void {
+    if (this.reacquiring.has(flightId) === on) return;
+    if (on) this.reacquiring.add(flightId);
+    else this.reacquiring.delete(flightId);
+    this.reacquiringListeners.forEach((cb) => {
+      cb();
+    });
   }
 
   private dropAwaiting(flightId: number): void {
@@ -1054,6 +1176,7 @@ export class KerbcastDataSource {
         this.dropAwaiting(flightId);
         this.notThereYet.delete(flightId);
         this.setRefusal(flightId, undefined);
+        this.setReacquiring(flightId, false);
       }
       return;
     }
@@ -1129,6 +1252,8 @@ export class KerbcastDataSource {
     this.session = null;
     this.awaitingSlot = [];
     this.notThereYet.clear();
+    this.departedCommand.clear();
+    for (const flightId of [...this.reacquiring]) this.setReacquiring(flightId, false);
     if (this.refusals.size > 0) {
       this.refusals.clear();
       this.refusalListeners.forEach((cb) => {

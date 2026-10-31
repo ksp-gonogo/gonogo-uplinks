@@ -10,8 +10,10 @@ const BACKWARD_JUMP_SECONDS = 1;
 
 /**
  * A number that goes up whenever the frames of one camera start a new capture
- * timeline: the capture clock's epoch changes, its time steps backwards, or the
- * camera comes back into the list after being absent or destroyed. A camera
+ * timeline: the capture clock's epoch changes, its time steps backwards, the
+ * camera comes back into the list after being absent or destroyed, or the
+ * sidecar reports a new `attach` for it (which it does when the camera is
+ * reattached in place, as after an undo that keeps the camera's id). A camera
  * that keeps its id and slot across a relaunch sends such frames down the same
  * receiver, so the delay holding the previous flight's frames needs this signal
  * to flush. The epoch the clock reports before its first capture time is the
@@ -47,13 +49,24 @@ export function useSourceGeneration(
 
   const lastUt = useRef<number | null>(null);
   const wasLive = useRef<boolean | null>(null);
+  const attach = cameras.find((c) => c.flightId === flightId)?.attach;
+  const lastAttach = useRef<number | undefined>(attach);
   const lastFlight = useRef(flightId);
   useEffect(() => {
     if (lastFlight.current === flightId) return;
     lastFlight.current = flightId;
     lastUt.current = null;
     wasLive.current = null;
-  }, [flightId]);
+    lastAttach.current = attach;
+  }, [flightId, attach]);
+
+  useEffect(() => {
+    const before = lastAttach.current;
+    lastAttach.current = attach;
+    if (before !== undefined && attach !== undefined && attach !== before) {
+      bump("attach");
+    }
+  }, [attach]);
 
   const lastEpoch = useRef(epoch);
   useEffect(() => {

@@ -26,6 +26,9 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
  *  `ut: null` makes the worker/encoded backends treat frames as un-stampable
  *  (interpolation yields `null`), never stamping against a bogus UT. */
+/** How long a camera's delay pipeline outlives its last feed, in milliseconds. */
+export const PIPELINE_RELEASE_GRACE_MS = 500;
+
 const NEUTRAL_CAPTURE_SAMPLE: CaptureClockSample = {
   ut: null,
   warpRate: 1,
@@ -398,6 +401,15 @@ export function useDelayedPlayout(
   const resetEpochRef = useRef(resetEpoch);
   resetEpochRef.current = resetEpoch;
   const seenEpochRef = useRef(resetEpoch);
+  /* Declared before the effect below so its cleanup runs first on unmount,
+     telling that effect's cleanup the consumer is leaving and not switching. */
+  const unmountingRef = useRef(false);
+  useEffect(() => {
+    unmountingRef.current = false;
+    return () => {
+      unmountingRef.current = true;
+    };
+  }, []);
   useEffect(() => {
     if (!view) {
       setResult(raw === null ? RAW_NULL : { kind: "raw", stream: raw });
@@ -446,8 +458,20 @@ export function useDelayedPlayout(
 
     return () => {
       unsubscribe();
-      lease.release();
       leaseRef.current = null;
+      if (!unmountingRef.current) {
+        lease.release();
+        return;
+      }
+      /* The consumer is going, not switching: the pipeline is torn down a
+         moment late, so a feed mounted anew for the same camera (a tile moved
+         on the dashboard) joins it instead of rebuilding it. Until then the
+         lease contributes no capture clock, since its consumer is gone. */
+      lease.setContribution({
+        captureUt: () => null,
+        getCaptureSample: () => NEUTRAL_CAPTURE_SAMPLE,
+      });
+      setTimeout(() => lease.release(), PIPELINE_RELEASE_GRACE_MS);
     };
   }, [key, raw === null, view, maxBufferedFrames, frameStamps]);
 

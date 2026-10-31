@@ -54,6 +54,7 @@ import {
   type CameraSetpointSurfaceHandle,
 } from "../CameraSetpoint/CameraSetpointSurface.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
+import { useReacquiring } from "../hooks/useReacquiring.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
@@ -70,6 +71,8 @@ import {
   useDelayedPlaybackStatus,
 } from "./useDelayedKerbcastStream.js";
 import { LostSignalStatic } from "./LostSignalStatic.js";
+import { useFeedBindProbe } from "./useFeedBindProbe.js";
+import { useCraftPowerLost } from "./useCraftPowerLost.js";
 import { useFeedSignal } from "./useFeedSignal.js";
 import { useReportFrameSize } from "./useReportFrameSize.js";
 
@@ -469,24 +472,6 @@ export function CameraFeed({
     video.srcObject = null;
   }, [effectiveFlightId, showsStream]);
 
-  /*
-   * With no link the SDK's own static is speckle over the live frame, so the
-   * picture still shows through it. The static layer below covers the picture,
-   * and the video element is hidden as well so Picture-in-Picture and
-   * fullscreen cannot show it either. Hidden rather than cleared: the SDK only
-   * binds a stream when it changes, so a cleared element would stay dark after
-   * the link returns.
-   */
-  const linkLost = commConnected === false;
-  useEffect(() => {
-    const video = overlayWrapRef.current?.querySelector("video");
-    if (!video) return;
-    video.style.visibility = linkLost ? "hidden" : "";
-    return () => {
-      video.style.visibility = "";
-    };
-  }, [linkLost, effectiveFlightId, showsStream]);
-
   // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
   // this camera's own pan/zoom envelopes and seed the dialled target from the
@@ -494,6 +479,32 @@ export function CameraFeed({
   // hooks) alongside every hook above.
   const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
+  const reacquiring = useReacquiring(effectiveFlightId);
+  useFeedBindProbe(effectiveFlightId, overlayWrapEl, playoutStatus.kind);
+  /*
+   * With no link, or no power on the craft the camera is part of, the SDK's own
+   * static is speckle over the live frame, so the picture still shows through
+   * it. The static layer below covers the picture, and the video element is
+   * hidden as well so Picture-in-Picture and fullscreen cannot show it either.
+   * Hidden rather than cleared: the SDK only binds a stream when it changes, so
+   * a cleared element would stay dark after the feed returns.
+   */
+  const linkLost = commConnected === false;
+  const powerLost = useCraftPowerLost(
+    effectiveFlightId === null
+      ? undefined
+      : cameras.find((c) => c.flightId === effectiveFlightId),
+  );
+  const covered = linkLost || powerLost;
+  useEffect(() => {
+    const video = overlayWrapRef.current?.querySelector("video");
+    if (!video) return;
+    video.style.visibility = covered ? "hidden" : "";
+    return () => {
+      video.style.visibility = "";
+    };
+  }, [covered, effectiveFlightId, showsStream]);
+
   /*
    * A part camera comes back under a new id after a relaunch, so a widget
    * holding the old id would show static for good. Follow it to the live
@@ -746,8 +757,17 @@ export function CameraFeed({
                       />
                     </div>
                   )}
-                  {linkLost && !unavailableReason && <LostSignalStatic />}
-                  {feedSignal && !linkLost && !unavailableReason && (
+                  {covered && !unavailableReason && <LostSignalStatic />}
+                  {reacquiring && !covered && !unavailableReason && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      style={FEED_SIGNAL_STYLE}
+                    >
+                      <Badge tone="info">RE-ACQUIRING CAMERA</Badge>
+                    </div>
+                  )}
+                  {feedSignal && !reacquiring && !covered && !unavailableReason && (
                     <div
                       role="status"
                       aria-live="polite"

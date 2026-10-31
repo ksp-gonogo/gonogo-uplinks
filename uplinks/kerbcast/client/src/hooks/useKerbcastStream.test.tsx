@@ -16,7 +16,7 @@ import {
   render,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { KerbcastDataSource, RELEASE_GRACE_MS } from "../KerbcastDataSource.js";
 import { useKerbcastStream } from "./useKerbcastStream.js";
 
 function StreamProbe({ flightId }: { flightId: number | null }): null {
@@ -69,6 +69,7 @@ describe("useKerbcastStream: slot subscription lifecycle", () => {
     act(() => {
       unmount();
     });
+    await new Promise((resolve) => setTimeout(resolve, RELEASE_GRACE_MS + 50));
 
     expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
     expect(sidecar.slotMidFor(42)).toBeUndefined();
