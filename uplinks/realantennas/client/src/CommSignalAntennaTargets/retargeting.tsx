@@ -17,6 +17,7 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
+import { useId } from "react";
 import type { RealAntennasVesselRetargeting } from "../__generated__/contract.js";
 import "../commands";
 import "../topics";
@@ -44,7 +45,8 @@ const LABEL_STYLE = {
 interface SwitchRowProps {
   /** The craft's guid. */
   vesselId: string;
-  name: string;
+  /** The heading of the card the switch sits in, which tells this craft's switch from another's. */
+  heading: string;
   entry: RealAntennasVesselRetargeting | undefined;
 }
 
@@ -54,20 +56,27 @@ interface SwitchRowProps {
  * switch shows what the craft was last known to be set to and the order sits on
  * the delay rail until it lands.
  */
-function RetargetSwitch({ vesselId, name, entry }: SwitchRowProps) {
+function RetargetSwitch({ vesselId, heading, entry }: SwitchRowProps) {
+  const switchId = useId();
   const setAutoRetarget = useCommand("realantennas.vessel.setAutoRetarget");
   const allowed = entry?.allowed ?? true;
   return (
     <Cluster gap="related-comfortable" align="center" wrap justify="start">
       <Switch
         checked={allowed}
-        label={`Automatic retargeting, ${name}`}
+        id={switchId}
+        aria-label={`Automatic retargeting, ${heading}`}
         onChange={(next) => {
           void setAutoRetarget
             .send({ vessel: vesselId, allow: next })
             .catch(() => undefined);
         }}
       />
+      <label htmlFor={switchId} style={{ cursor: "pointer" }}>
+        <Text size="xs" level="muted" style={LABEL_STYLE}>
+          Automatic retargeting
+        </Text>
+      </label>
     </Cluster>
   );
 }
@@ -140,11 +149,7 @@ export function Retargeting({ vesselId, entries, vessels }: RetargetingProps) {
           <Text size="xs" level="muted" style={LABEL_STYLE}>
             This craft
           </Text>
-          <RetargetSwitch
-            vesselId={vesselId}
-            name={nameOf(`vessel:${vesselId}`, vessels)}
-            entry={own}
-          />
+          <RetargetSwitch vesselId={vesselId} heading="This craft" entry={own} />
           {own ? <BorrowedNotice entry={own} vessels={vessels} /> : null}
           {own ? <LastNotice entry={own} vessels={vessels} /> : null}
         </Stack>
@@ -157,7 +162,7 @@ export function Retargeting({ vesselId, entries, vessels }: RetargetingProps) {
             </Text>
             <RetargetSwitch
               vesselId={entry.vesselId}
-              name={nameOf(`vessel:${entry.vesselId}`, vessels)}
+              heading={nameOf(`vessel:${entry.vesselId}`, vessels)}
               entry={entry}
             />
             <BorrowedNotice entry={entry} vessels={vessels} />

@@ -81,7 +81,7 @@ describe("dish turning", () => {
     await mount();
 
     const toggle = screen.getByRole("checkbox", {
-      name: "Automatic retargeting, Mun Relay 2",
+      name: "Automatic retargeting, This craft",
     }) as HTMLInputElement;
     expect(toggle.checked).toBe(true);
   });
@@ -90,7 +90,7 @@ describe("dish turning", () => {
     const stream = await mount();
 
     await userEvent.click(
-      screen.getByRole("checkbox", { name: "Automatic retargeting, Mun Relay 2" }),
+      screen.getByRole("checkbox", { name: "Automatic retargeting, This craft" }),
     );
     await act(async () => {});
 
@@ -106,7 +106,7 @@ describe("dish turning", () => {
     await mount([entry({ allowed: false })]);
 
     expect(
-      (screen.getByRole("checkbox", { name: "Automatic retargeting, Mun Relay 2" }) as HTMLInputElement).checked,
+      (screen.getByRole("checkbox", { name: "Automatic retargeting, This craft" }) as HTMLInputElement).checked,
     ).toBe(false);
   });
 
@@ -135,15 +135,19 @@ describe("dish turning", () => {
       entry({ vesselId: OTHER, allowed: false, meta: { source: `vessel:${OTHER}` } }),
     ]);
 
-    expect(
-      screen.getByRole("checkbox", { name: "Automatic retargeting, Duna Relay" }),
-    ).toBeTruthy();
+    const names = screen
+      .getAllByRole("checkbox")
+      .map((box) => box.getAttribute("aria-label"));
+    expect(names).toEqual([
+      "Automatic retargeting, This craft",
+      "Automatic retargeting, Duna Relay",
+    ]);
   });
 
   it("does not list another craft that is allowed and has nothing out", async () => {
     await mount([entry({ vesselId: OTHER, meta: { source: `vessel:${OTHER}` } })]);
 
-    expect(screen.queryByRole("checkbox", { name: "Automatic retargeting, Duna Relay" })).toBeNull();
+    expect(screen.getAllByRole("checkbox")).toHaveLength(1);
   });
 
   it("says how the last loan ended when none is out", async () => {
