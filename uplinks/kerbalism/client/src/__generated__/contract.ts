@@ -1229,6 +1229,15 @@ export interface KerbalismScienceInstrumentExt
 	*/
 	dataRateMBps?: Value<"MB/s"> | null;
 	/**
+	* Science per megabyte of the subject this experiment is collecting in the
+	* vessel's current situation (Kerbalism's `SciencePerMB`). Multiplied by
+	* `KerbalismScienceInstrumentExt.dataRateMBps` and
+	* `KerbalismScienceInstrumentExt.prodFactor` it gives the science the
+	* experiment earns each second. Null while the situation has no subject or the
+	* subject could not be read, and always null on a scanner row.
+	*/
+	sciencePerMB?: Value<"science/MB"> | null;
+	/**
 	* Kerbalism's `prodFactor`, 0..1: the fraction of nominal rate actually
 	* achieved last tick (resource starvation scales it down). 0 with no
 	* `KerbalismScienceInstrumentExt.issue` means throttled, not stopped.

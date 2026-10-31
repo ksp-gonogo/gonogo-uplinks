@@ -54,7 +54,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismRuleDef` | `breakdown` flag, `degeneration` units/s, `fatalThreshold` units, `input` text, `interval` s, `modifiers` text, `name` text, `output` text, `rate` units, `ratePerSecond` units/s |
 | `KerbalismScienceBreakdownExt` | `percentCollectedTotal` ratio, `scienceCollectedInFlight` science, `scienceRemainingTotal` science, `timesCompleted` count |
 | `KerbalismScienceExperimentExt` | `analyze` flag, `dataSizeMB` MB, `kind` id, `sampleMass` t, `sampleSlotsTotal` count, `sampleSlotsUsed` count, `sciencePerMB` science/MB, `sendFlagged` flag, `storageCapacityMB` MB, `storageUsedMB` MB, `transmitRateMBps` MB/s, `transmitting` flag |
-| `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `progressFraction` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag, `secondsToComplete` s, `waitingReason` text |
+| `KerbalismScienceInstrumentExt` | `bodyCoveragePercent` %, `dataRateMBps` MB/s, `ecRate` units/s, `expStatus` id, `issue` text, `kind` id, `powerDisabled` flag, `prodFactor` ratio, `progressFraction` ratio, `remainingSampleMass` t, `runningState` id, `scanning` flag, `sciencePerMB` science/MB, `secondsToComplete` s, `waitingReason` text |
 | `KerbalismScienceLabExt` | `analysisRateMBps` MB/s, `effectiveRateMBps` MB/s, `status` id |
 | `KerbalismScript` | `deviceCount` count, `states` KerbalismScriptState[], `type` enum |
 | `KerbalismScriptState` | `deviceId` id, `on` flag |
@@ -124,14 +124,14 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | `kerbalism.lifesupport` | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
-| `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 1 |  |
+| `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 2 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
 ![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
 
 ![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
 
-![A running thermometer with its collected share and time to finish under its row, and a waiting gravity scanner showing only its share](client/docs/assets/collecting-a-subject--default.png)
+![A running thermometer with its time to finish inside its card, and a waiting gravity scanner with nothing added](client/docs/assets/collecting-a-subject--default.png)
 
 ![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
 

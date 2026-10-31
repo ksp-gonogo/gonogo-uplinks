@@ -257,6 +257,7 @@
       "remainingSampleMass": "t",
       "runningState": "id",
       "scanning": "flag",
+      "sciencePerMB": "science/MB",
       "secondsToComplete": "s",
       "waitingReason": "text"
     },

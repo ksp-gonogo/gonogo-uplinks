@@ -1003,6 +1003,10 @@
           "unit": "flag"
         },
         {
+          "name": "sciencePerMB",
+          "unit": "science/MB"
+        },
+        {
           "name": "secondsToComplete",
           "unit": "s"
         },

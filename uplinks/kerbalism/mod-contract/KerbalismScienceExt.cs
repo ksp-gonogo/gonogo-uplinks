@@ -224,6 +224,16 @@ public class KerbalismScienceInstrumentExt
     public double? DataRateMBps { get; set; }
 
     /// <summary>
+    /// Science per megabyte of the subject this experiment is collecting in the
+    /// vessel's current situation (Kerbalism's <c>SciencePerMB</c>). Multiplied by
+    /// <see cref="DataRateMBps"/> and <see cref="ProdFactor"/> it gives the science
+    /// the experiment earns each second. Null while the situation has no subject
+    /// or the subject could not be read, and always null on a scanner row.
+    /// </summary>
+    [SitrepUnit("science/MB")]
+    public double? SciencePerMB { get; set; }
+
+    /// <summary>
     /// Kerbalism's <c>prodFactor</c>, 0..1: the fraction of nominal rate actually
     /// achieved last tick (resource starvation scales it down). 0 with no
     /// <see cref="Issue"/> means throttled, not stopped.

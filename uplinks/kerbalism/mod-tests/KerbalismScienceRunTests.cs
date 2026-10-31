@@ -231,6 +231,39 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
+        public void CurrentSubjectsSciencePerMegabyteRidesTheExtension()
+        {
+            var known = Instrument(new ScienceExperimentRaw { PartId = "1", RunningState = "Running", SciencePerMB = 30 });
+            var unknown = Instrument(new ScienceExperimentRaw { PartId = "1", RunningState = "Running", SciencePerMB = null });
+
+            Assert.Equal(30.0, ((Dictionary<string, object?>)known.Extensions![KerbalismScienceMap.ProviderId]!)["sciencePerMB"]);
+            Assert.Null(((Dictionary<string, object?>)unknown.Extensions![KerbalismScienceMap.ProviderId]!)["sciencePerMB"]);
+        }
+
+        [Fact]
+        public void CurrentSubjectsBankedScienceAndCapFillTheCoreFields()
+        {
+            var row = Instrument(new ScienceExperimentRaw
+            {
+                PartId = "1", RunningState = "Running", SubjectId = "temperatureScan@KerbinSrfLanded", Science = 4.2, ScienceCap = 10,
+            });
+
+            Assert.Equal("temperatureScan@KerbinSrfLanded", row.SubjectId);
+            Assert.Equal(4.2, row.Science);
+            Assert.Equal(10.0, row.ScienceCap);
+        }
+
+        [Fact]
+        public void NoCurrentSubjectLeavesTheCoreScienceFieldsAbsent()
+        {
+            var row = Instrument(new ScienceExperimentRaw { PartId = "1", RunningState = "Running" });
+
+            Assert.Null(row.SubjectId);
+            Assert.Null(row.Science);
+            Assert.Null(row.ScienceCap);
+        }
+
+        [Fact]
         public void TimeToFinishFollowsKerbalismsCountdown()
         {
             // (1 - 0.25) x (4 MB / 0.01 MB/s) = 300 s, stretched by a 0.5 production factor.

@@ -416,6 +416,14 @@ namespace Gonogo.KerbalismUplink
         public double? ScienceRemainingToCollect;
         /// <summary>Seconds a run needs to collect the rest of the subject at the current production factor, as Kerbalism's own countdown computes it.</summary>
         public double? SecondsToComplete;
+        /// <summary>Science per megabyte of the current subject (<c>SciencePerMB</c>). Null with no subject or an unreadable one.</summary>
+        public double? SciencePerMB;
+        /// <summary>The current subject's stock-format id. Null with no subject.</summary>
+        public string? SubjectId;
+        /// <summary>Science collected so far from the current subject: its maximum times <c>PercentCollectedTotal</c>. Null with no subject or no readable maximum.</summary>
+        public double? Science;
+        /// <summary>The most science the current subject can yield (<c>ScienceMaxValue</c>). Null with no subject or an unreadable one.</summary>
+        public double? ScienceCap;
         /// <summary>Whether the module takes a finite sample at all (drives whether RemainingSampleMass means anything).</summary>
         public bool TakesSample;
     }

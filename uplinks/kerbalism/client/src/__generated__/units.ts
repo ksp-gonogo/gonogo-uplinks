@@ -297,6 +297,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     remainingSampleMass: "t",
     runningState: "id",
     scanning: "flag",
+    sciencePerMB: "science/MB",
     secondsToComplete: "s",
     waitingReason: "text",
   },

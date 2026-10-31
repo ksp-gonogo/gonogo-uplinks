@@ -198,6 +198,10 @@ describe("kerbalism's namespaces of the elected science.* payloads", () => {
       magnitude: 0.002,
       unit: "MB/s",
     });
+    expect(blocked?.sciencePerMB).toMatchObject({
+      magnitude: 30,
+      unit: "science/MB",
+    });
     expect(blocked?.kind).toBe("experiment");
 
     const labs = await decoded<LabEntry[]>(

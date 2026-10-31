@@ -1,0 +1,163 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. Five instruments on one vessel: four Kerbalism experiments (running at its full rate, throttled to half by a shortage, switched off, and switched on with no science defined for the situation, which gives no per-megabyte value) and one stock instrument with no Kerbalism extension. The first three carry the banked science and cap core draws as its own 'collected' share."
+  },
+  "_scene": {
+    "augment": "experiments-instrument-progress",
+    "hostWidget": "experiments",
+    "caption": "Earning rates under each Kerbalism experiment: full rate, half rate, a known zero when switched off, and nothing when the situation has no subject or the instrument is stock",
+    "modes": [
+      "default"
+    ],
+    "size": {
+      "w": 10,
+      "h": 12
+    },
+    "paints": [
+      "Earning"
+    ],
+    "hero": false
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.available",
+        "payload": true
+      },
+      {
+        "topic": "science.instruments",
+        "payload": [
+          {
+            "partId": "1001",
+            "partName": "sensorThermometer",
+            "experimentId": "temperatureScan",
+            "title": "2HOT Thermometer",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": true,
+            "producing": true,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Running",
+                "dataRateMBps": 0.002,
+                "prodFactor": 1,
+                "sciencePerMB": 30,
+                "progressFraction": 0.42,
+                "secondsToComplete": 180
+              }
+            },
+            "subjectId": "temperatureScan@KerbinSrfLandedLaunchPad",
+            "science": 4.2,
+            "scienceCap": 10
+          },
+          {
+            "partId": "1002",
+            "partName": "sensorBarometer",
+            "experimentId": "barometerScan",
+            "title": "PresMat Barometer",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": true,
+            "producing": true,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Running",
+                "dataRateMBps": 0.002,
+                "prodFactor": 0.5,
+                "sciencePerMB": 30,
+                "progressFraction": 0.1,
+                "secondsToComplete": 600
+              }
+            },
+            "subjectId": "temperatureScan@KerbinSrfLandedLaunchPad",
+            "science": 1.0,
+            "scienceCap": 10
+          },
+          {
+            "partId": "1003",
+            "partName": "sensorGravimeter",
+            "experimentId": "gravityScan",
+            "title": "GRAVMAX Negative Gravioli Detector",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": false,
+            "producing": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Stopped",
+                "dataRateMBps": 0.004,
+                "prodFactor": 0,
+                "sciencePerMB": 18
+              }
+            },
+            "subjectId": "temperatureScan@KerbinSrfLandedLaunchPad",
+            "science": 2.0,
+            "scienceCap": 10
+          },
+          {
+            "partId": "1004",
+            "partName": "sensorAccelerometer",
+            "experimentId": "accelerometerScan",
+            "title": "Double-C Seismic Accelerometer",
+            "deployed": true,
+            "inoperable": false,
+            "rerunnable": true,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": true,
+            "running": true,
+            "producing": false,
+            "extensions": {
+              "kerbalism": {
+                "kind": "experiment",
+                "issue": "",
+                "state": "Running",
+                "dataRateMBps": 0.003,
+                "prodFactor": 0
+              }
+            }
+          },
+          {
+            "partId": "1005",
+            "partName": "GooExperiment",
+            "experimentId": "mysteryGoo",
+            "title": "Mystery Goo Containment Unit",
+            "deployed": false,
+            "inoperable": false,
+            "rerunnable": false,
+            "resettable": false,
+            "dataIsCollectable": false,
+            "holdsData": false,
+            "continuous": false,
+            "running": null,
+            "producing": null
+          }
+        ]
+      }
+    ]
+  }
+}

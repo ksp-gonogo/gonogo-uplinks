@@ -12,7 +12,7 @@
        pin's bytes under it. Once a release of the package is on nuget.org this
        becomes that release's version and the vendored file goes. -->
   <PropertyGroup>
-    <GonogoContractVersion>1.0.0-pin.g424b84758b2f</GonogoContractVersion>
+    <GonogoContractVersion>1.0.0-pin.g2a607120ec0e</GonogoContractVersion>
   </PropertyGroup>
   <!-- The version of KspGonogo.Kerbcast.API and KspGonogo.Kerbcast.API.Testing the
        kerbcast Uplink references, from nuget.org. It is the API package built from

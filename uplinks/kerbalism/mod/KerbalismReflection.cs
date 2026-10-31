@@ -1793,12 +1793,19 @@ namespace Gonogo.KerbalismUplink
             var subjectKnown = subject != null;
             var percentCollected = subject != null ? MemberDouble(subject, "PercentCollectedTotal") : null;
             var remaining = subject != null ? MemberDouble(subject, "ScienceRemainingToCollect") : null;
+            var sciencePerMB = subject != null ? MemberDouble(subject, "SciencePerMB") : null;
+            var scienceCap = subject != null ? MemberDouble(subject, "ScienceMaxValue") : null;
+            var subjectId = subject != null ? MemberString(subject, "StockSubjectId") ?? MemberString(subject, "Id") : null;
             var dataSize = Member(pm, "ExpInfo") is { } info ? MemberDouble(info, "DataSize") : null;
             return new ScienceExperimentRaw
             {
                 SubjectKnown = subjectKnown,
                 ProgressFraction = percentCollected,
                 ScienceRemainingToCollect = remaining,
+                SciencePerMB = sciencePerMB,
+                SubjectId = string.IsNullOrEmpty(subjectId) ? null : subjectId,
+                ScienceCap = scienceCap,
+                Science = scienceCap.HasValue && percentCollected.HasValue ? scienceCap.Value * percentCollected.Value : (double?)null,
                 SecondsToComplete = KerbalismScienceMap.SecondsToComplete(subjectKnown, percentCollected, dataSize, dataRate, prodFactor),
                 PartId = partId,
                 PartName = partName,

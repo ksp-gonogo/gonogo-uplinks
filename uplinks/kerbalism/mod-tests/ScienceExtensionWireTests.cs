@@ -67,9 +67,10 @@ namespace GonogoKerbalismUplink.Tests
                     PartId = "101", PartName = "Geiger Counter",
                     ExperimentId = "radiationScan", Title = "Radiation Scan",
                     Issue = "no storage", RunningState = "Running", ExpStatus = "Issue",
-                    DataRate = 0.002, ProdFactor = 0.5,
+                    DataRate = 0.002, ProdFactor = 0.5, SciencePerMB = 30,
                     TakesSample = false, RemainingSampleMass = null,
                     SubjectKnown = true, ProgressFraction = 0.25, ScienceRemainingToCollect = 3.0, SecondsToComplete = 600,
+                    SubjectId = "radiationScan@KerbinSrfLanded", Science = 2.5, ScienceCap = 10,
                 },
                 new ScienceExperimentRaw
                 {

@@ -1,12 +1,12 @@
 {
   "_meta": {
     "synthetic": true,
-    "notes": "SYNTHETIC. A thermometer switched on and producing, 42 % of the situation's science collected with 3 minutes of running left, beside a gravity scanner that is switched on but waiting, which states its progress and no finish time."
+    "notes": "SYNTHETIC. A thermometer switched on and producing with 3 minutes of running left, beside a gravity scanner that is switched on but waiting, which states no finish time."
   },
   "_scene": {
     "augment": "experiments-instrument-progress",
     "hostWidget": "experiments",
-    "caption": "A running thermometer with its collected share and time to finish under its row, and a waiting gravity scanner showing only its share",
+    "caption": "A running thermometer with its time to finish inside its card, and a waiting gravity scanner with nothing added",
     "modes": [
       "default"
     ],
@@ -15,7 +15,6 @@
       "h": 8
     },
     "paints": [
-      "Collected",
       "To finish"
     ],
     "hero": true
