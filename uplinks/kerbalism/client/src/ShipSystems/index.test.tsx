@@ -350,6 +350,65 @@ describe("ShipSystemsComponent", () => {
       expect(caption.textContent).not.toMatch(/empty in/);
     });
 
+    /** Ten seconds of the recorded sequence: a level falling 0.1 a second while the measured rate swings between -0.085 and +0.0005. */
+    async function glitchSequence(seconds: number, startUt = 10) {
+      const fixture = setupStreamFixture({ pinnedUt: startUt + seconds });
+      primeSubscriptions(fixture);
+      renderWidget(fixture);
+      act(() => {
+        fixture.emit("kerbalism.profile", PROFILE);
+        fixture.emit("vessel.crew", CREW);
+      });
+      const seen: string[] = [];
+      for (let i = 0; i < seconds; i++) {
+        const rate = i % 3 === 1 ? 0.0005 : -0.085;
+        act(() => {
+          fixture.emit(
+            "kerbalism.lifesupport",
+            {
+              ...LIFE_SUPPORT,
+              asOfKerbalismUt: startUt + i,
+              rates: { ElectricCharge: rate },
+            },
+            { validAt: startUt + i },
+          );
+          fixture.emit(
+            "vessel.resources",
+            {
+              ...RESOURCES,
+              resources: {
+                ...RESOURCES.resources,
+                ElectricCharge: {
+                  current: 138.9 - 0.1 * i,
+                  max: 140,
+                  active: true,
+                },
+              },
+            },
+            { validAt: startUt + i },
+          );
+        });
+        await flushProviderFrame();
+        const captions = screen.queryAllByText(/^\d.* \/ 140/);
+        if (captions.length > 0) {
+          seen.push(captions[captions.length - 1].textContent ?? "");
+        }
+      }
+      return seen;
+    }
+
+    it("never says full for a falling level whose rate swings to a near-zero reading, with a minute of history", async () => {
+      const seen = await glitchSequence(90);
+      expect(seen.length).toBeGreaterThan(60);
+      expect(seen.slice(35).filter((t) => !/empty in/.test(t))).toEqual([]);
+    });
+
+    it("never says full for that sequence while too little has been observed to fit a trend", async () => {
+      const seen = await glitchSequence(12);
+      expect(seen.length).toBeGreaterThan(8);
+      expect(seen.slice(1).filter((t) => !/empty in/.test(t))).toEqual([]);
+    });
+
     it("says neither for a steady level", async () => {
       const caption = await observe([50, 50, 50, 50, 50, 50], 0.05);
       expect(caption.textContent).not.toMatch(/full in|empty in/);

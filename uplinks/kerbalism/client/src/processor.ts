@@ -6,7 +6,7 @@ import type {
   TopicReading,
   Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { deriveReading, observedAt } from "@ksp-gonogo/sitrep-sdk";
+import { deriveReading, observedAt, value } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOr } from "@ksp-gonogo/ui-kit";
 import type {
   KerbalismLifeSupport,
@@ -14,6 +14,7 @@ import type {
 } from "./__generated__/contract.js";
 import { type RowCrossing, type Summary, summarise } from "./ecosystem.js";
 import { LevelHistory, reconcileCrossing } from "./levelTrend.js";
+import { RateHold } from "./rateHold.js";
 import { resourceBoundaryCrossings } from "./resourceReckoning.js";
 import { KERBALISM } from "./uplink.js";
 
@@ -85,9 +86,35 @@ export interface LevelsProvenance {
  */
 const levelHistory = new LevelHistory();
 
-/** Clears the observed levels, for a test that needs a fresh vessel. */
+/*
+ * The last real measured rate of each resource, so a stray near-zero sample of
+ * the opposite sign does not turn a countdown to empty into one to full.
+ */
+const rateHold = new RateHold();
+
+/** Clears the observed levels and held rates, for a test that needs a fresh vessel. */
 export function resetLevelHistory(): void {
   levelHistory.reset();
+  rateHold.reset();
+}
+
+/** The life-support payload with each measured rate replaced by its held one. */
+function withHeldRates(
+  lifeSupport: KerbalismLifeSupport | undefined,
+): KerbalismLifeSupport | undefined {
+  const rates = lifeSupport?.rates;
+  const asOfUt = lifeSupport?.asOfKerbalismUt?.magnitude;
+  if (!lifeSupport || !rates || asOfUt === undefined) return lifeSupport;
+  const measured: Record<string, number> = {};
+  for (const [name, rate] of Object.entries(rates)) {
+    if (rate != null) measured[name] = rate.magnitude;
+  }
+  const held = rateHold.filter(asOfUt, measured);
+  const heldRates: typeof rates = { ...rates };
+  for (const [name, rate] of Object.entries(held)) {
+    if (rate !== measured[name]) heldRates[name] = value("units/s", rate);
+  }
+  return { ...lifeSupport, rates: heldRates };
 }
 
 /**
@@ -136,7 +163,7 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     const crossings: Record<string, RowCrossing> = {};
     for (const c of resourceBoundaryCrossings(
       resources ?? null,
-      lifeSupport,
+      withHeldRates(lifeSupport),
       profile,
     )) {
       crossings[c.resource] = {
