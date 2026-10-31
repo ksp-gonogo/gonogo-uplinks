@@ -96,6 +96,113 @@ public class KerbcastWorldModelTests
         Assert.Contains(lines, l => l.Contains("feed=1") && l.Contains("craft=" + ProbePid) && l.Contains("eligibility=tooUncertain") && l.Contains("rangeM=448"));
     }
 
+    [Fact]
+    public void ARecordLineIsWrittenWhenTheRadiusMovesByMoreThanFivePercentAndNotBefore()
+    {
+        var lines = new List<string>();
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, lines.Add);
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        double radius = 200.0;
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, _ => 99.0, _ => radius);
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+        radius = 205.0;
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 5.0);
+        radius = 260.0;
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 10.0);
+
+        var records = lines.Where(l => l.StartsWith("[Kerbcast][RECORD]")).ToList();
+        Assert.Equal(2, records.Count);
+        Assert.Contains("craft=" + ProbePid, records[0]);
+        Assert.Contains("radiusM=200", records[0]);
+        Assert.Contains("lastKnownUt=99", records[0]);
+        Assert.Contains("version=", records[0]);
+        Assert.Contains("aheadVersion=", records[0]);
+        Assert.Contains("radiusM=260", records[1]);
+    }
+
+    private void PublishAt(double ut, double real)
+    {
+        _sites.Delivered[Ksc] = ut;
+        Publish(ut, real);
+    }
+
+    private (double Radius, double Rate, double From) Record(int fromEnd)
+    {
+        var probe = _kc.Command.Published[^fromEnd].Find(Ksc, ProbePid);
+        return (probe.UncertaintyRadiusM, probe.RateMps, probe.ValidFromUt);
+    }
+
+    [Fact]
+    public void ARecordCarriesTheRateTheRadiusWasAlreadyMovingAtSoConsecutiveRecordsMeet()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => 100.0 * (ut - 98.0));
+
+        PublishAt(100.0, 0.0);
+        PublishAt(101.0, 5.0);
+        PublishAt(102.0, 10.0);
+
+        var first = Record(3);
+        var second = Record(2);
+        var third = Record(1);
+        Assert.Equal(0.0, first.Rate);
+        Assert.Equal(200.0, first.Radius);
+        Assert.Equal(100.0, second.Rate);
+        Assert.Equal(300.0, second.Radius + second.Rate * (101.0 - second.From));
+        Assert.Equal(400.0, second.Radius + second.Rate * (102.0 - second.From));
+        Assert.Equal(second.Rate, third.Rate);
+        Assert.Equal(400.0, third.Radius + third.Rate * (102.0 - third.From));
+    }
+
+    [Fact]
+    public void ARecordAtAnOlderInstantNeverStartsBelowZeroWhateverTheTrend()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(98.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => ut < 101.0 ? 10.0 : 100.0);
+
+        PublishAt(100.0, 0.0);
+        PublishAt(101.0, 5.0);
+
+        var record = Record(1);
+        Assert.Equal(0.0, record.Radius);
+        Assert.Equal(100.0 / (101.0 - 98.0), record.Rate, 6);
+        Assert.Equal(100.0, record.Radius + record.Rate * (101.0 - record.From), 6);
+    }
+
+    [Fact]
+    public void APredictedRecordStartsAtTheRadiusAtTheInstantReadAndGrowsAtTheTrend()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(50.0, 1, 9.0, 9.0, 9.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => 100.0 * (ut - 98.0), MovingAlong(Sitrep.Contract.CraftPlaceBasis.Burning, 1000.0, 10.0));
+
+        PublishAt(100.0, 0.0);
+        PublishAt(101.0, 5.0);
+
+        var record = Record(1);
+        Assert.Equal(300.0, record.Radius);
+        Assert.Equal(100.0, record.Rate);
+        Assert.Equal(101.0, record.From);
+    }
+
+    [Fact]
+    public void AFallingRadiusAndAGapInTheRecordsPublishNoRate()
+    {
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => ut - 1.0, ut => ut <= 102.0 ? 500.0 - 100.0 * (ut - 100.0) : 1000.0);
+
+        PublishAt(100.0, 0.0);
+        PublishAt(101.0, 5.0);
+        Assert.Equal(0.0, Record(1).Rate);
+
+        PublishAt(102.0, 10.0);
+        Assert.Equal(0.0, Record(1).Rate);
+        PublishAt(120.0, 15.0);
+        Assert.Equal(0.0, Record(1).Rate);
+    }
+
     private static Func<double, Sitrep.Contract.CraftPlace?> MovingAlong(Sitrep.Contract.CraftPlaceBasis basis, double x0, double speed) =>
         ut => new Sitrep.Contract.CraftPlace(1, new Vector3d(x0 + speed * ut, 2.0, 3.0), basis);
 
@@ -678,6 +785,16 @@ public class KerbcastWorldModelTests
                 _byCentre[centre] = list = new List<Func<double, CraftKnowledgeSample>>();
             }
             list.Add(ut => new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownUt, uncertaintyM, false, place?.Invoke(ut)));
+        }
+
+        /// <summary>Adds a craft whose last known instant and uncertainty are asked of the two functions at whatever instant is read.</summary>
+        public void AddByUt(string centre, Guid vessel, CraftKnowledgeState state, Func<double, double?> lastKnownAt, Func<double, double?> uncertaintyAt, Func<double, Sitrep.Contract.CraftPlace?>? place = null)
+        {
+            if (!_byCentre.TryGetValue(centre, out var list))
+            {
+                _byCentre[centre] = list = new List<Func<double, CraftKnowledgeSample>>();
+            }
+            list.Add(ut => new CraftKnowledgeSample(vessel.ToString(), state, null, lastKnownAt(ut), uncertaintyAt(ut), false, place?.Invoke(ut)));
         }
 
         public void Clear()

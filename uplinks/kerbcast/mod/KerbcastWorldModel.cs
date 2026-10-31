@@ -39,6 +39,9 @@ namespace Gonogo.KerbcastUplink
         /// <summary>How far past the instant read a predicted place is read again, to give the craft the velocity its prediction implies.</summary>
         private const double VelocitySpanSeconds = 1.0;
 
+        /// <summary>The longest gap between two records of a craft over which the change in its radius still says how it is moving.</summary>
+        private const double MaxTrendGapSeconds = 5.0;
+
         private readonly CraftLabels _labels;
         private readonly CraftPlaces _places;
         private readonly Func<ApiFeature, bool> _supports;
@@ -49,6 +52,8 @@ namespace Gonogo.KerbcastUplink
         private readonly Dictionary<uint, uint> _followed = new Dictionary<uint, uint>();
         private int _followTenure = -1;
         private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, RecordTrend> _trends = new Dictionary<string, RecordTrend>(StringComparer.Ordinal);
+        private readonly Dictionary<string, double> _recordRadius = new Dictionary<string, double>(StringComparer.Ordinal);
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
         private readonly HashSet<string> _bound = new HashSet<string>(StringComparer.Ordinal);
@@ -98,6 +103,8 @@ namespace Gonogo.KerbcastUplink
             _lastUt = null;
             _places.Clear();
             _logged.Clear();
+            _recordRadius.Clear();
+            _trends.Clear();
             _onFeedSites?.Invoke(new Dictionary<string, string>());
         }
 
@@ -190,11 +197,12 @@ namespace Gonogo.KerbcastUplink
                     var count = Read(knowledge, scope, ut.Value, out var read);
                     version = version.HasValue ? Math.Max(version.Value, read) : read;
                     var aheadCount = 0;
+                    var aheadVersion = read;
                     for (var i = 0; i < count && aheadCount == 0; i++)
                     {
-                        if (_buffer[i].Place != null)
+                        if (_buffer[i].State != CraftKnowledgeState.Unknown && (_buffer[i].Place != null || _buffer[i].UncertaintyM.HasValue))
                         {
-                            aheadCount = Read(knowledge, scope, ut.Value + VelocitySpanSeconds, ref _ahead, out _);
+                            aheadCount = Read(knowledge, scope, ut.Value + VelocitySpanSeconds, ref _ahead, out aheadVersion);
                         }
                     }
                     for (var i = 0; i < count; i++)
@@ -206,7 +214,7 @@ namespace Gonogo.KerbcastUplink
                         {
                             continue;
                         }
-                        crafts.Add(new ScopeCraft(pid, vesselId, sample, ut.Value, PlaceAhead(sample, aheadCount)));
+                        crafts.Add(new ScopeCraft(pid, vesselId, sample, ut.Value, AheadOf(sample, aheadCount), read, aheadVersion));
                         lastHeard[pid] = sample.LastKnownUt;
                     }
                 }
@@ -425,7 +433,17 @@ namespace Gonogo.KerbcastUplink
             {
                 builder.StateVector(pid, place.BodyIndex, place.Ut, new Vec3d(place.State6[0], place.State6[1], place.State6[2]), new Vec3d(place.State6[3], place.State6[4], place.State6[5]), from, until);
             }
-            builder.Uncertainty(sample.UncertaintyM.Value, 0.0, 0.0, 0.0);
+            var radiusM = sample.UncertaintyM.Value;
+            var rateMps = TrendOf(scope, craft, radiusM);
+            var sinceFrom = craft.Ut - from;
+            if (sinceFrom > 0.0)
+            {
+                /* The record starts at its own older instant, so the rate is held to what leaves a start that is not below zero. */
+                rateMps = Math.Min(rateMps, radiusM / sinceFrom);
+            }
+            var startM = radiusM - rateMps * Math.Max(sinceFrom, 0.0);
+            builder.Uncertainty(startM, rateMps, 0.0, 0.0);
+            LogRecord(scope, craft, from, startM, rateMps);
             Log(scope, craft, "positioned", sample.UncertaintyM.Value);
         }
 
@@ -442,7 +460,9 @@ namespace Gonogo.KerbcastUplink
                     (ahead.Position.Z - position.Z) / VelocitySpanSeconds);
             var ut = craft.Ut;
             builder.StateVector(craft.PersistentId, place.BodyIndex, ut, new Vec3d(position.X, position.Y, position.Z), velocity, ut, ut + RecordValiditySeconds);
-            builder.Uncertainty(radiusM, 0.0, 0.0, 0.0);
+            var rateMps = TrendOf(scope, craft, radiusM);
+            builder.Uncertainty(radiusM, rateMps, 0.0, 0.0);
+            LogRecord(scope, craft, ut, radiusM, rateMps);
             Log(scope, craft, place.Basis.ToString().ToLowerInvariant(), radiusM);
         }
 
@@ -473,6 +493,88 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
+        /*
+         * How fast the bound on the craft's place has been moving from one record to
+         * the next, in metres per second, never below zero. Kerbcast carries a record's
+         * radius forward at the rate it is given until the next snapshot, so giving it
+         * the rate the radius was already moving at makes consecutive records meet where
+         * the first leaves off, and the framing radius ramps where it would otherwise
+         * step. It is taken from earlier records, not from the same craft read a moment
+         * later: the centre reads each craft once a second and every capture is the same
+         * age when it is read, so the bound at the instant read is already as stale as it
+         * will ever be, and carrying it forward by the second read's difference doubles
+         * it just before the next record brings it back. A gap in the records, or game
+         * time going back, starts the trend again from nothing.
+         */
+        private double TrendOf(string scope, ScopeCraft craft, double radiusAtUt)
+        {
+            var key = scope + "|" + craft.PersistentId;
+            var trend = 0.0;
+            if (_trends.TryGetValue(key, out var before))
+            {
+                var elapsed = craft.Ut - before.Ut;
+                if (elapsed > 0.0 && elapsed <= MaxTrendGapSeconds)
+                {
+                    trend = Math.Max(0.0, (radiusAtUt - before.RadiusM) / elapsed);
+                }
+                else if (elapsed == 0.0)
+                {
+                    trend = before.Trend;
+                }
+            }
+            _trends[key] = new RecordTrend(craft.Ut, radiusAtUt, trend);
+            return trend;
+        }
+
+        private readonly struct RecordTrend
+        {
+            public RecordTrend(double ut, double radiusM, double trend)
+            {
+                Ut = ut;
+                RadiusM = radiusM;
+                Trend = trend;
+            }
+
+            public double Ut { get; }
+
+            public double RadiusM { get; }
+
+            public double Trend { get; }
+        }
+
+        /*
+         * What each positioned record says about its uncertainty, for finding where a
+         * framing radius steps. Written when the radius moves by more than five percent
+         * since the last line for the craft, and whenever the read a moment later came
+         * from a different capture than the first, which would put two captures into one
+         * record.
+         */
+        private void LogRecord(string scope, ScopeCraft craft, double validFromUt, double radiusM, double rateMps)
+        {
+            if (_log == null)
+            {
+                return;
+            }
+            var sample = craft.Sample;
+            var aheadKnown = craft.AheadSample?.LastKnownUt;
+            var mixed = craft.AheadSample.HasValue && aheadKnown != sample.LastKnownUt;
+            var key = scope + "|" + craft.PersistentId;
+            var radiusAtUt = radiusM + rateMps * (craft.Ut - validFromUt);
+            var moved = !_recordRadius.TryGetValue(key, out var last) || Math.Abs(radiusAtUt - last) > 0.05 * Math.Max(Math.Abs(last), 1.0);
+            if (!moved && !mixed)
+            {
+                return;
+            }
+            _recordRadius[key] = radiusAtUt;
+            _log("[Kerbcast][RECORD] centre=" + scope + " craft=" + craft.PersistentId
+                + " ut=" + Num(craft.Ut) + " from=" + Num(validFromUt) + " radiusM=" + Num(radiusM) + " rateMps=" + Num(rateMps) + " radiusAtUt=" + Num(radiusAtUt)
+                + " lastKnownUt=" + Num(sample.LastKnownUt) + " aheadLastKnownUt=" + Num(aheadKnown)
+                + " version=" + craft.ReadVersion + " aheadVersion=" + craft.AheadVersion + (mixed ? " mixed=true" : ""));
+        }
+
+        private static string Num(double? value) =>
+            value.HasValue ? Math.Round(value.Value, 3).ToString(System.Globalization.CultureInfo.InvariantCulture) : "none";
+
         /* One line per craft per scope, repeated only when what it says changes, so a steady craft does not fill the log every snapshot. */
         private void Log(string scope, ScopeCraft craft, string fix, double? radiusM)
         {
@@ -492,13 +594,15 @@ namespace Gonogo.KerbcastUplink
 
         private readonly struct ScopeCraft
         {
-            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, Sitrep.Contract.CraftPlace? ahead)
+            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, CraftKnowledgeSample? aheadSample, long readVersion, long aheadVersion)
             {
                 PersistentId = persistentId;
                 VesselId = vesselId;
                 Sample = sample;
                 Ut = ut;
-                Ahead = ahead;
+                AheadSample = aheadSample;
+                ReadVersion = readVersion;
+                AheadVersion = aheadVersion;
             }
 
             public uint PersistentId { get; }
@@ -510,8 +614,18 @@ namespace Gonogo.KerbcastUplink
             /// <summary>The instant the scope's knowledge was read at.</summary>
             public double Ut { get; }
 
-            /// <summary>The craft's predicted place a moment after <see cref="Ut"/>, for its velocity.</summary>
-            public Sitrep.Contract.CraftPlace? Ahead { get; }
+            /// <summary>The craft as the centre reads it a moment after <see cref="Ut"/>, for its velocity and the way its uncertainty is growing; null when that read does not list it.</summary>
+            public CraftKnowledgeSample? AheadSample { get; }
+
+            /// <summary>The knowledge board version of the read at <see cref="Ut"/>.</summary>
+            public long ReadVersion { get; }
+
+            /// <summary>The knowledge board version of the read a moment after <see cref="Ut"/>.</summary>
+            public long AheadVersion { get; }
+
+            /// <summary>The craft's predicted place a moment after <see cref="Ut"/>, for its velocity; null when it has none there or was not placed.</summary>
+            public Sitrep.Contract.CraftPlace? Ahead =>
+                Sample.Place != null && AheadSample?.Place is { } later && later.BodyIndex == Sample.Place.BodyIndex ? later : null;
         }
 
         /// <summary>Each command feed's site key, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
@@ -648,19 +762,14 @@ namespace Gonogo.KerbcastUplink
             return Math.Min(count, buffer.Length);
         }
 
-        /// <summary>The place the same craft is predicted at <see cref="VelocitySpanSeconds"/> later, or null when it has none there or was not placed.</summary>
-        private Sitrep.Contract.CraftPlace? PlaceAhead(CraftKnowledgeSample sample, int aheadCount)
+        /// <summary>The same craft as the centre reads it <see cref="VelocitySpanSeconds"/> later, or null when that read does not list it.</summary>
+        private CraftKnowledgeSample? AheadOf(CraftKnowledgeSample sample, int aheadCount)
         {
-            if (sample.Place == null)
-            {
-                return null;
-            }
             for (var i = 0; i < aheadCount; i++)
             {
-                var later = _ahead[i];
-                if (later.VesselId == sample.VesselId && later.Place != null && later.Place.BodyIndex == sample.Place.BodyIndex)
+                if (_ahead[i].VesselId == sample.VesselId)
                 {
-                    return later.Place;
+                    return _ahead[i];
                 }
             }
             return null;
