@@ -9,7 +9,7 @@ Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of 
 | --- | --- |
 | Uplink id | `aero` |
 | Version | `1.0.0-rc.4` |
-| Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
+| Wraps | Ferram Aerospace Research 0.16.2.0 (ckan) |
 | Built against | contract 50.2, extension API 6.0.0 |
 
 ## Install
