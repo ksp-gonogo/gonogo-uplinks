@@ -69,6 +69,7 @@ import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
 } from "./useDelayedKerbcastStream.js";
+import { LostSignalStatic } from "./LostSignalStatic.js";
 import { useFeedSignal } from "./useFeedSignal.js";
 import { useReportFrameSize } from "./useReportFrameSize.js";
 
@@ -468,6 +469,24 @@ export function CameraFeed({
     video.srcObject = null;
   }, [effectiveFlightId, showsStream]);
 
+  /*
+   * With no link the SDK's own static is speckle over the live frame, so the
+   * picture still shows through it. The static layer below covers the picture,
+   * and the video element is hidden as well so Picture-in-Picture and
+   * fullscreen cannot show it either. Hidden rather than cleared: the SDK only
+   * binds a stream when it changes, so a cleared element would stay dark after
+   * the link returns.
+   */
+  const linkLost = commConnected === false;
+  useEffect(() => {
+    const video = overlayWrapRef.current?.querySelector("video");
+    if (!video) return;
+    video.style.visibility = linkLost ? "hidden" : "";
+    return () => {
+      video.style.visibility = "";
+    };
+  }, [linkLost, effectiveFlightId, showsStream]);
+
   // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
   // this camera's own pan/zoom envelopes and seed the dialled target from the
@@ -727,7 +746,8 @@ export function CameraFeed({
                       />
                     </div>
                   )}
-                  {feedSignal && !unavailableReason && (
+                  {linkLost && !unavailableReason && <LostSignalStatic />}
+                  {feedSignal && !linkLost && !unavailableReason && (
                     <div
                       role="status"
                       aria-live="polite"

@@ -585,7 +585,7 @@ function buildDelayedPipeline(
       getCaptureSample,
       frameStamps,
       onError: onPipelineError,
-      onStats: frameDelayStatsLogger(),
+      onStats: frameDelayStatsLogger(heldSeconds),
     });
     if (!handle) return null;
     liveHandle = handle;
@@ -596,6 +596,10 @@ function buildDelayedPipeline(
         handle.dispose();
       },
     };
+  };
+  const heldSeconds = (): number | null => {
+    const ut = interpolateCaptureUt(getCaptureSample(), performance.now());
+    return ut === null ? null : ut - view.confirmedEdgeUt();
   };
   /* The longest a frame can sit in the transform now: the delay (the gap
      between the capture time being rendered and the latest time that may be
@@ -608,8 +612,8 @@ function buildDelayedPipeline(
     const sample = getCaptureSample();
     const ut = interpolateCaptureUt(sample, performance.now());
     if (ut === null) return Number.NaN;
-    const heldSeconds = ut - view.confirmedEdgeUt();
-    const delayMs = Math.max(0, (heldSeconds / (sample.warpRate || 1)) * 1000);
+    const held = ut - view.confirmedEdgeUt();
+    const delayMs = Math.max(0, (held / (sample.warpRate || 1)) * 1000);
     const leadLimitSeconds =
       liveHandle?.leadLimitSeconds() ?? DEFAULT_PACING_MAX_LEAD_SECONDS;
     return delayMs + leadLimitSeconds * 1000;
@@ -641,7 +645,7 @@ function buildDelayedPipeline(
       captureUt,
       frameStamps,
       maxBufferedFrames,
-      onStats: frameDelayStatsLogger(),
+      onStats: frameDelayStatsLogger(heldSeconds),
       onError: (err) => {
         onErrorReason = String(err);
         onPipelineError(err);
@@ -692,7 +696,7 @@ function buildDelayedPipeline(
       getCaptureSample,
       frameStamps,
       maxBufferedFrames,
-      onStats: frameDelayStatsLogger(),
+      onStats: frameDelayStatsLogger(heldSeconds),
       onError: (err) => {
         workerErrorReason = String(err);
         onPipelineError(err);

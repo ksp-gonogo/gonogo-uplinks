@@ -31,7 +31,6 @@ import {
   type EncodedFrameDelayHandle,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { FRAME_DELAY_STATS_KEY } from "../frameDelayStats.js";
 import {
   type DelayedPlayoutResult,
   type EncodedDelayTarget,
@@ -224,37 +223,27 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
     expect((latest as unknown as { stream: MediaStream }).stream).toBe(shown);
   });
 
-  it("asks the worker for frame totals only while the stats flag is on", async () => {
+  it("asks the worker for frame totals every time, so a playtest log always carries them", async () => {
     const Transform = stubTransforms();
-    const attach = async (flag: boolean) => {
-      if (flag) localStorage.setItem(FRAME_DELAY_STATS_KEY, "1");
-      else localStorage.removeItem(FRAME_DELAY_STATS_KEY);
-      let latest: DelayedPlayoutResult | "unset" = "unset";
-      const { unmount } = render(
-        <TargetedStreamProbe
-          shown={fakeStream()}
-          target={targetOn(fakeReceiver())}
-          clock={manualClock()}
-          onResult={(r) => {
-            latest = r;
-          }}
-        />,
-      );
-      await waitFor(() => {
-        expect(latest).toMatchObject({ kind: "delayed" });
-      });
-      unmount();
-    };
+    let latest: DelayedPlayoutResult | "unset" = "unset";
+    render(
+      <TargetedStreamProbe
+        shown={fakeStream()}
+        target={targetOn(fakeReceiver())}
+        clock={manualClock()}
+        onResult={(r) => {
+          latest = r;
+        }}
+      />,
+    );
+    await waitFor(() => {
+      expect(latest).toMatchObject({ kind: "delayed" });
+    });
 
-    await attach(false);
-    await attach(true);
-
-    const [off, on] = Transform.instances as unknown as Array<{
+    const [only] = Transform.instances as unknown as Array<{
       options: { statsIntervalMs?: number };
     }>;
-    expect(off?.options.statsIntervalMs).toBeUndefined();
-    expect(on?.options.statsIntervalMs).toBeGreaterThan(0);
-    localStorage.clear();
+    expect(only?.options.statsIntervalMs).toBeGreaterThan(0);
   });
 
   it("falls through to the next backend, never throwing, when the transform cannot be built", async () => {

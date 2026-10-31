@@ -1796,6 +1796,33 @@ describe("CameraFeed: signal quality badge", () => {
     expect(visibleText()).not.toContain("72 %");
   });
 
+  it("covers the picture with static while the link is lost and uncovers it when the link returns", async () => {
+    await buildConnectedSource();
+
+    const stream = setupStreamFixture();
+    const { container } = renderFeedWithComms({ flightId: 42 }, stream);
+    const covered = () => container.querySelector("[data-kc-lost-signal]");
+    const video = () => container.querySelector("video");
+
+    act(() => {
+      emitComms(stream, { signalStrength: 1.0, connected: true });
+    });
+    await waitFor(() => expect(headerText()).toContain("SIGNAL 100 %"));
+    expect(covered()).toBeNull();
+
+    act(() => {
+      emitComms(stream, { signalStrength: 1.0, connected: false });
+    });
+    await waitFor(() => expect(covered()).not.toBeNull());
+    expect(video()?.style.visibility).toBe("hidden");
+
+    act(() => {
+      emitComms(stream, { signalStrength: 1.0, connected: true });
+    });
+    await waitFor(() => expect(covered()).toBeNull());
+    expect(video()?.style.visibility).toBe("");
+  });
+
   it("drops the signal badge when the camera goes and the feed has nothing to show", async () => {
     const { sidecar } = await buildConnectedSource();
 
