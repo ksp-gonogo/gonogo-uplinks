@@ -13,24 +13,29 @@
       "text": "52c0d842"
     },
     "collecting-a-subject--default.png": {
-      "hash": "6a4b35e889a55c2f",
-      "elements": 67,
-      "text": "31018ce5"
+      "hash": "6b0473f30f4969e7",
+      "elements": 56,
+      "text": "ae9b77c0"
     },
     "dose-band-from-a-fitted-rate--default.png": {
-      "hash": "2d993db81c5e1707",
+      "hash": "b3a565436b6861b3",
       "elements": 77,
       "text": "7b142087"
     },
     "dose-band-reaching-critical--default.png": {
-      "hash": "a082a19ae37ed379",
+      "hash": "63e75bda27002f05",
       "elements": 72,
       "text": "88fa8724"
     },
     "dose-band-the-model-declines--default.png": {
-      "hash": "01bef0e462b1249e",
+      "hash": "9e215aa27bbb1c12",
       "elements": 64,
       "text": "250fb3d6"
+    },
+    "earning-science-rate--default.png": {
+      "hash": "fa3dad9ad4893c66",
+      "elements": 142,
+      "text": "375a5be1"
     },
     "ec-falling-while-rate-positive--default.gif": {
       "hash": "82374846470ec577",
@@ -68,7 +73,7 @@
       "text": "fbd599fd"
     },
     "file-and-sample-on-one-subject-stopped-arriving--default.png": {
-      "hash": "8337034964e54bfd",
+      "hash": "aa8560116b088f20",
       "elements": 150,
       "text": "5b2cfd94"
     },
@@ -93,12 +98,12 @@
       "text": "5db7f31e"
     },
     "kit-cost-beside-the-repair--default.png": {
-      "hash": "18c046828ee79faa",
+      "hash": "9868b12eb8d011d5",
       "elements": 77,
       "text": "33d0a6e3"
     },
     "kit-cost-beside-the-repair-stopped-arriving--default.png": {
-      "hash": "45d3c4da30ddee25",
+      "hash": "38b190739bd3ed1a",
       "elements": 76,
       "text": "9f8e260c"
     },
@@ -118,32 +123,32 @@
       "text": "ab909171"
     },
     "radiation-dose-critical--default.png": {
-      "hash": "524377b01c9adf33",
+      "hash": "60ecbb926dd58a07",
       "elements": 143,
       "text": "632bed9c"
     },
     "radiation-dose-critical-stopped-arriving--default.png": {
-      "hash": "6a0bdc7834f0ed68",
+      "hash": "b355306f3ed25762",
       "elements": 154,
       "text": "464768d6"
     },
     "radiation-rising--default.png": {
-      "hash": "eee5c9ea93b5d8ae",
+      "hash": "ce81de962ed2b783",
       "elements": 92,
       "text": "f0e1918e"
     },
     "radiation-rising-light-time--default.png": {
-      "hash": "98c8c32e9473028b",
+      "hash": "dba922776c6483f5",
       "elements": 100,
       "text": "1b4e5925"
     },
     "radiation-rising-stopped-arriving--default.png": {
-      "hash": "34b1d83f002f57f7",
+      "hash": "e237c49e85d650dd",
       "elements": 98,
       "text": "c15a61ee"
     },
     "radiation-rising-stopped-arriving-later--default.png": {
-      "hash": "c307842b79f523f2",
+      "hash": "0e76fb870f57deea",
       "elements": 106,
       "text": "06c4806b"
     },
@@ -163,13 +168,13 @@
       "text": "78bd6f8c"
     },
     "supply-tank-meters--default.png": {
-      "hash": "d36ae11a68a05c9a",
-      "elements": 46,
+      "hash": "cc0ddb1f055cd9aa",
+      "elements": 52,
       "text": "1cb7c398"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "daf5ab09114cf118",
-      "elements": 51,
+      "hash": "c33d68e8663df20d",
+      "elements": 57,
       "text": "1cb7c398"
     },
     "unread-send-and-analyze-flags--default.png": {

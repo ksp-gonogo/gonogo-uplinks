@@ -183,12 +183,12 @@
       "text": "942b1ca1"
     },
     "astronaut-costs--default.png": {
-      "hash": "c9f2a9b2e0c5dc72",
-      "elements": 406,
-      "text": "8833c652"
+      "hash": "d9920e5b0ec49204",
+      "elements": 408,
+      "text": "af085cff"
     },
     "avionics-controls-locked--default.png": {
-      "hash": "7ce577eca9fe397e",
+      "hash": "39a98c072eba98bc",
       "elements": 274,
       "text": "54fd06e5"
     },
@@ -198,7 +198,7 @@
       "text": "3d55d883"
     },
     "avionics-roll-only--default.png": {
-      "hash": "557b1fdacd831b99",
+      "hash": "57f08cb1b6a7af60",
       "elements": 274,
       "text": "cb7882c3"
     },
@@ -238,9 +238,9 @@
       "text": "6d7939f4"
     },
     "career-log--default.png": {
-      "hash": "d3b3079d785b1c44",
-      "elements": 592,
-      "text": "5c399570"
+      "hash": "5757d74cd195e0d5",
+      "elements": 594,
+      "text": "928693c3"
     },
     "catalogue-picker--default.png": {
       "hash": "e22efee914c118d0",
@@ -383,14 +383,14 @@
       "text": "8e8301c3"
     },
     "early-career--default.png": {
-      "hash": "87e602e8df3528ed",
-      "elements": 382,
-      "text": "61fa0835"
+      "hash": "248c4759dc020021",
+      "elements": 384,
+      "text": "545f2275"
     },
     "facilities-two-centres--default.png": {
-      "hash": "5b17907fd5313564",
-      "elements": 395,
-      "text": "b561206b"
+      "hash": "4b14ebf2fbdfe077",
+      "elements": 397,
+      "text": "bff3c1dc"
     },
     "facility-tiers-in-flight--default.png": {
       "hash": "ebec4f5e2e946ad8",
@@ -413,9 +413,9 @@
       "text": "344b4491"
     },
     "funds-alarm--default.png": {
-      "hash": "2dada8947a085e29",
-      "elements": 382,
-      "text": "a9c47cbf"
+      "hash": "83c74612148226e3",
+      "elements": 384,
+      "text": "ff5227b2"
     },
     "hire-target-standing--default.png": {
       "hash": "b9e0101078c5d32e",
@@ -428,9 +428,9 @@
       "text": "00659e19"
     },
     "link-down--default.png": {
-      "hash": "8117e199e7ea615e",
-      "elements": 422,
-      "text": "61fa0835"
+      "hash": "120e692899cdc0dd",
+      "elements": 424,
+      "text": "545f2275"
     },
     "no-budget--default.png": {
       "hash": "716a26f4411f2231",
@@ -448,14 +448,14 @@
       "text": "c6d03256"
     },
     "pad-holding-a-finished-vehicle--default.png": {
-      "hash": "943f97a8e363ca2a",
-      "elements": 76,
-      "text": "41464c65"
+      "hash": "a9fab97f82e31392",
+      "elements": 79,
+      "text": "b7dd8d9a"
     },
     "pad-rolling-out--default.png": {
-      "hash": "f2c79ac2501a42c9",
-      "elements": 76,
-      "text": "8789ce9c"
+      "hash": "c936aba368c7dcbf",
+      "elements": 79,
+      "text": "b34f8df6"
     },
     "personnel-hire-fire--default.png": {
       "hash": "72ebfd04ee92bff9",
@@ -518,9 +518,9 @@
       "text": "5d84b716"
     },
     "subsidy-clamped--default.png": {
-      "hash": "62797c3a920d7348",
-      "elements": 568,
-      "text": "1f1fbcce"
+      "hash": "1fae838246edb35b",
+      "elements": 570,
+      "text": "01e41eaf"
     },
     "tooling-nothing-outstanding--default.png": {
       "hash": "5d50df41bfac3c7d",
@@ -583,12 +583,12 @@
       "text": "301e6653"
     },
     "warp-fund-target-standing--default.png": {
-      "hash": "10ef662b8fb1f872",
+      "hash": "f1bc343bc2017a30",
       "elements": 43,
       "text": "63be3b64"
     },
     "warp-no-fund-target--default.png": {
-      "hash": "c90fcf069151b379",
+      "hash": "a0029840888f996a",
       "elements": 35,
       "text": "821a46b1"
     }
