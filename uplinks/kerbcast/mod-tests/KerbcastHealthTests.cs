@@ -10,8 +10,8 @@ namespace GonogoKerbcastUplink.Tests;
 ///
 /// <para>These assert the distinctions, not just the enum: an operator looking
 /// at a black camera feed must be able to tell "kerbcast isn't installed" from
-/// "idle outside a flight" from "the sidecar died" from "your craft has no camera
-/// on it", because those are four different fixes.</para>
+/// "idle outside a flight" from "the sidecar died", because those are different fixes; a craft with no
+/// camera is idle, not a fault.</para>
 /// </summary>
 public class KerbcastHealthTests
 {
@@ -78,16 +78,16 @@ public class KerbcastHealthTests
     }
 
     [Fact]
-    public void ReportsDegradedCraftProblem_InAFlight_WhenNoCamerasOnTheVessel()
+    public void ReportsIdle_InAFlight_WhenNoCamerasOnTheVessel()
     {
         var health = Eval(cameras: 0);
 
-        Assert.Equal(UplinkHealthState.Degraded, health.State);
+        Assert.Equal(UplinkHealthState.Healthy, health.State);
         Assert.Contains("no camera parts", health.Detail);
     }
 
     [Fact]
-    public void TreatsAnUnsetCameraCountAsDegraded_NotHealthy()
+    public void TreatsAnUnsetCameraCountAsDegraded_NotIdle()
     {
         Assert.Equal(UplinkHealthState.Degraded, Eval(cameras: -1).State);
     }

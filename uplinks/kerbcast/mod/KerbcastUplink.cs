@@ -572,9 +572,9 @@ namespace Gonogo.KerbcastUplink
         /// outside a flight, "core not running" in a flight means kerbcast
         /// refused to start, "sidecar not alive" is a
         /// process problem (the video sidecar died: see
-        /// <see cref="SidecarDeathDebouncer"/>), and "no cameras" is a craft
-        /// problem (you didn't put a camera on it). An operator staring at a
-        /// black feed can tell those apart at a glance.</para>
+        /// <see cref="SidecarDeathDebouncer"/>), and "no cameras" is an idle
+        /// craft, not a fault. An operator staring at a black feed can tell
+        /// those apart at a glance.</para>
         /// </summary>
         public UplinkHealth Health() => KerbcastHealth.Evaluate(
             _unavailableReason, _inFlight, _coreActive, _coreMissingSettled, !_sidecarConfirmedDead, Volatile.Read(ref _cameraCount), _reach);

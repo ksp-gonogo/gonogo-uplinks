@@ -33,8 +33,7 @@ namespace Gonogo.KerbcastUplink
         /// refused to start (an install or graphics problem, Unavailable since
         /// no camera feed will carry anything), a sidecar problem (kerbcast's
         /// video process died and the feed will be black regardless of what's
-        /// on the craft), or a craft problem (you flew something with no camera
-        /// on it).</para>
+        /// on the craft). A vessel with no camera parts is idle and reads Healthy.</para>
         /// </summary>
         /// <param name="unavailableReason">
         /// Non-null when the uplink went inert at registration (kerbcast absent,
@@ -84,10 +83,17 @@ namespace Gonogo.KerbcastUplink
                 return new UplinkHealth(UplinkHealthState.Degraded,
                     "video sidecar not alive; feeds will be black", facts);
             }
-            if (cameraCount <= 0)
+            if (cameraCount < 0)
             {
+                // No camera sample has been taken in this flight yet.
                 return new UplinkHealth(UplinkHealthState.Degraded,
-                    "kerbcast running, but the active vessel carries no camera parts", facts);
+                    "kerbcast is starting with the flight scene", facts);
+            }
+            if (cameraCount == 0)
+            {
+                // A vessel without camera parts is a normal craft, not a fault.
+                return new UplinkHealth(UplinkHealthState.Healthy,
+                    "idle, no camera parts on the active vessel", facts);
             }
             return new UplinkHealth(UplinkHealthState.Healthy,
                 cameraCount == 1 ? "1 camera" : cameraCount + " cameras", facts);
