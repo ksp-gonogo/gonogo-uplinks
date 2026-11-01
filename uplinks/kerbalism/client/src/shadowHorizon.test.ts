@@ -81,7 +81,7 @@ describe("the craft's next move between sunlight and the planet's shadow", () =>
   it("shows nothing for an orbit that rides the terminator and stays lit", () => {
     expect(
       nextLightChange(
-        circular(900_000, 0, { inc: value("deg", 90), lan: value("deg", 90) }),
+        circular(900_000, 0, { inc: value("°", 90), lan: value("°", 90) }),
         BODIES,
         0,
       ),
