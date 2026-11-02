@@ -59,6 +59,7 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { KERBCAST_RELEASE_GRACE_MS } from "@ksp-gonogo/kerbcast-react";
 import { KerbcastDataSource } from "../KerbcastDataSource.js";
 import {
   CameraFeed,
@@ -822,8 +823,13 @@ describe("CameraFeed: camera selection", () => {
     });
 
     // Configured 44 is gone → widget falls back to the surviving first camera
-    // rather than wedging on a dead id.
-    expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
+    // rather than wedging on a dead id, once the SDK's hold on the departed
+    // camera runs out.
+    expect(screen.getByRole("heading", { name: "Tail Cam" })).toBeTruthy();
+    await waitFor(
+      () => expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy(),
+      { timeout: KERBCAST_RELEASE_GRACE_MS + 1000 },
+    );
   });
 
   it("follows a part camera to its new id when the craft is relaunched", async () => {
@@ -1965,8 +1971,11 @@ describe("CameraFeed: signal quality badge", () => {
       sidecar.setCameras([]);
     });
 
-    await waitFor(() => expect(frameText()).toContain("No camera feeds"));
-    expect(headerText()).not.toContain("SIGNAL");
+    // The SDK holds the departed camera on screen briefly before the feed lets go.
+    await waitFor(() => expect(frameText()).toContain("No camera feeds"), {
+      timeout: KERBCAST_RELEASE_GRACE_MS + 1000,
+    });
+    await waitFor(() => expect(headerText()).not.toContain("SIGNAL"));
   });
 });
 
