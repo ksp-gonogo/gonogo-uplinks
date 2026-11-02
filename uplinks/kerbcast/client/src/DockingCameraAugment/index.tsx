@@ -45,6 +45,11 @@ import { KERBCAST } from "../uplink.js";
 // which also imports this module for the same reason).
 import "../topics.js";
 import { dockCorners } from "./dockMarkers.js";
+import {
+  type DockMarkInputs,
+  dockFrameLogEnabled,
+  logDockFrame,
+} from "./dockFrameLog.js";
 import { selectDockingCamera } from "./selectDockingCamera.js";
 
 /**
@@ -202,6 +207,16 @@ function DockingCameraVideo({
       void client.setAnchors(flightId, null).catch(() => {});
     };
   }, [client, flightId, vesselPersistentId, portPersistentId]);
+
+  // Development aid, off unless its switch is set: every displayed frame's anchor positions and rtp timestamp, with what the widget handed the marks at that moment.
+  const markInputs = useRef<DockMarkInputs | null>(null);
+  markInputs.current = { ax, ay, aligned, docked };
+  useEffect(() => {
+    if (!dockFrameLogEnabled() || !client || !videoEl) return;
+    return client.watchDisplayedFrames(flightId, videoEl, (f) =>
+      logDockFrame(f, markInputs.current),
+    );
+  }, [client, flightId, videoEl]);
 
   const anchorOverlay: AnchorOverlay = useMemo(
     () => ({
