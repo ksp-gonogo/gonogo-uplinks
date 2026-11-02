@@ -133,11 +133,11 @@ importers:
   uplinks/kerbcast/client:
     dependencies:
       '@ksp-gonogo/kerbcast':
-        specifier: 1.12.0-rc.3
-        version: 1.12.0-rc.3
+        specifier: 1.12.0-rc.2
+        version: 1.12.0-rc.2
       '@ksp-gonogo/kerbcast-react':
-        specifier: 1.12.0-rc.3
-        version: 1.12.0-rc.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: 1.12.0-rc.2
+        version: 1.12.0-rc.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/ui-kit':
         specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-8925128885c7.tgz
         version: file:vendor/ksp-gonogo-ui-kit-0.1.0-8925128885c7.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -149,8 +149,8 @@ importers:
         specifier: ^5.2.8
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-69445385435c.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-69445385435c.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
         specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-f6366ec86a67.tgz
         version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-f6366ec86a67.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-8925128885c7.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.64.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
@@ -1062,30 +1062,15 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@ksp-gonogo/kerbcast-react@1.12.0-rc.3':
-    resolution: {integrity: sha512-xCOrrsFr9B/6WcOL5oz/kXomHaINdyEhk/6GOAbhf9JVE1tksKVj2gmmr3obLeuhkTJK+wCqQhloplXLce/gmQ==}
+  '@ksp-gonogo/kerbcast-react@1.12.0-rc.2':
+    resolution: {integrity: sha512-/AZBj7BO5UJz5ipXI8Aa4V9RcOtpN7L6c3XdT2p5oruo7kQOsU/TqO+bogcqQyZLNI7/fQq9BubG1yUNf9hBcA==}
     peerDependencies:
       react: ^18 || ^19
       react-dom: ^18 || ^19
       styled-components: ^6
 
-  '@ksp-gonogo/kerbcast@1.12.0-rc.3':
-    resolution: {integrity: sha512-QnGX1xwZyzKa/L+ithbxdorVP8SaErkN84YjoU4jAAYGeugbJHdKUMrU9lgfPoAJDXN2LxC8SQBp8rOKN0rAbg==}
-
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz':
-    resolution: {integrity: sha512-ZKWuQ2TFNiB6vI0dJ+fv5pw75ucbvyc995p922VeJkJQ+aDl0ce8QylSZJPuplx08v3pbRG3BqdUu2m7Qf1Jzw==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz}
-    version: 0.0.1
-    peerDependencies:
-      '@testing-library/react': ^16.0.0
-      react: ^18 || ^19
-      styled-components: ^6.0.0
-    peerDependenciesMeta:
-      '@testing-library/react':
-        optional: true
-      react:
-        optional: true
-      styled-components:
-        optional: true
+  '@ksp-gonogo/kerbcast@1.12.0-rc.2':
+    resolution: {integrity: sha512-leVPJt7LtU6caLdnRuqQk4uQmKgp7RZhM6wvnJy7iotcsh13ZFUf6hPGE2EWVRnZgh6BZDPu57LE7Ca7WD291A==}
 
   '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-69445385435c.tgz':
     resolution: {integrity: sha512-ACkZev5rmAA1+lbfUl38+7LQ10mZSVVhAlMRm1EiPjOnK6uc3CZgrxI+Nto3Z1C+iZYFq/97IOqiV+HsZG1cHw==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-69445385435c.tgz}
@@ -2412,22 +2397,16 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@ksp-gonogo/kerbcast-react@1.12.0-rc.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@ksp-gonogo/kerbcast-react@1.12.0-rc.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
-      '@ksp-gonogo/kerbcast': 1.12.0-rc.3
+      '@ksp-gonogo/kerbcast': 1.12.0-rc.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  '@ksp-gonogo/kerbcast@1.12.0-rc.3':
+  '@ksp-gonogo/kerbcast@1.12.0-rc.2':
     dependencies:
       mediabunny: 1.62.1
-
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
-    optionalDependencies:
-      '@testing-library/react': 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react: 18.3.1
-      styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-69445385435c.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     optionalDependencies:
