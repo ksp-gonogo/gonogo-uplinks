@@ -18,9 +18,13 @@
 // on the shared ViewClock). That split is the whole design: control plane on
 // the Uplink, media off it.
 
+import { type Anchor, AnchorKind } from "@ksp-gonogo/kerbcast";
 import {
+  AnchorMarkers,
+  type AnchorOverlay,
   KerbcastProvider,
   type KerbcastSubscriptions,
+  useDisplayedFrame,
   useReportDisplaySize,
 } from "@ksp-gonogo/kerbcast-react";
 import type { SlotProps, TopicReading } from "@ksp-gonogo/sitrep-sdk";
@@ -29,7 +33,7 @@ import {
   registerAugment,
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDelayedKerbcastStream } from "../CameraFeed/useDelayedKerbcastStream.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { KERBCAST } from "../uplink.js";
@@ -40,6 +44,7 @@ import { KERBCAST } from "../uplink.js";
 // than relying on the package entry point's import order (see ../index.ts,
 // which also imports this module for the same reason).
 import "../topics.js";
+import { dockCorners } from "./dockMarkers.js";
 import { selectDockingCamera } from "./selectDockingCamera.js";
 
 /**
@@ -64,13 +69,24 @@ function stillTrue<T, A>(
   return undefined;
 }
 
+/** The id of the anchor on the target port. */
+const PORT_ANCHOR_ID = "port";
+
 export function DockingCameraAugment({
   cameraFlightId,
-  reportPictureAspect,
+  reportPicture,
+  targetPort,
+  ax,
+  ay,
+  aligned,
+  docked,
 }: SlotProps<"rendezvous.camera">) {
   // A camera roster is a fact: cameras are fitted by an event, not by a frame.
   const cameras = stillTrue(useTelemetry("kerbcast.cameras"), undefined);
   const flightId = selectDockingCamera(cameras, cameraFlightId);
+  const vfovDeg =
+    cameras?.find((c) => c.cameraId === flightId)?.fieldOfView?.magnitude ??
+    null;
   const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
   const client = ds?.getClient();
 
@@ -115,7 +131,13 @@ export function DockingCameraAugment({
     <KerbcastProvider client={client} subscriptions={subscriptions}>
       <DockingCameraVideo
         flightId={flightId}
-        reportPictureAspect={reportPictureAspect}
+        vfovDeg={vfovDeg}
+        reportPicture={reportPicture}
+        targetPort={targetPort}
+        ax={ax}
+        ay={ay}
+        aligned={aligned}
+        docked={docked}
       />
     </KerbcastProvider>
   );
@@ -123,10 +145,22 @@ export function DockingCameraAugment({
 
 function DockingCameraVideo({
   flightId,
-  reportPictureAspect,
+  vfovDeg,
+  reportPicture,
+  targetPort,
+  ax,
+  ay,
+  aligned,
+  docked,
 }: {
   flightId: number;
-  reportPictureAspect: (aspect: number | null) => void;
+  vfovDeg: number | null;
+  reportPicture: SlotProps<"rendezvous.camera">["reportPicture"];
+  targetPort: SlotProps<"rendezvous.camera">["targetPort"];
+  ax: number | undefined;
+  ay: number | undefined;
+  aligned: boolean;
+  docked: boolean;
 }) {
   // The DELAYED stream, not the raw live one. The HUD's reticle is UT-gated by
   // the ViewClock; the backdrop must be gated on the SAME clock or it marks
@@ -135,30 +169,69 @@ function DockingCameraVideo({
   // delayed output available) draws no backdrop rather than falling back to
   // live.
   const stream = useDelayedKerbcastStream(flightId);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  // Held in state so the effects and the markers follow the element as it mounts.
+  const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
   // The backdrop's own box, mounted whether or not there is a picture yet: the
   // size report observes the element once, when the camera is chosen, and a
   // video that only appears with the stream would never be seen by it.
   const boxRef = useRef<HTMLDivElement>(null);
   useReportDisplaySize(flightId, boxRef);
 
+  const client = getUplinkHandle<KerbcastDataSource>("kerbcast")?.getClient();
+  const vesselPersistentId = targetPort?.vesselPersistentId;
+  const portPersistentId = targetPort?.portPersistentId;
+  // The target port is marked by the game, in every displayed frame, so the triangles sit where the picture shows it.
   useEffect(() => {
-    const v = videoRef.current;
+    if (
+      !client ||
+      vesselPersistentId === undefined ||
+      portPersistentId === undefined
+    )
+      return;
+    const anchors: Anchor[] = [
+      {
+        id: PORT_ANCHOR_ID,
+        kind: AnchorKind.Part,
+        vessel: vesselPersistentId,
+        part: portPersistentId,
+        occlusion: true,
+      },
+    ];
+    client.setAnchors(flightId, anchors).catch(() => {});
+    return () => {
+      void client.setAnchors(flightId, null).catch(() => {});
+    };
+  }, [client, flightId, vesselPersistentId, portPersistentId]);
+
+  const anchorOverlay: AnchorOverlay = useMemo(
+    () => ({
+      shape: "triangles",
+      corners: (anchor) => dockCorners({ anchor, ax, ay, aligned, docked }),
+    }),
+    [ax, ay, aligned, docked],
+  );
+
+  useEffect(() => {
+    const v = videoEl;
     if (!v) return;
     v.srcObject = stream;
     if (stream) {
       // play() can reject when srcObject is reassigned mid-flight, benign.
       void v.play().catch(() => {});
     }
-  }, [stream]);
+  }, [stream, videoEl]);
 
-  // The HUD scales its reticle to the picture's own field, so it is told the picture's shape and when it goes.
+  // The HUD is told the video's own size and the camera's field, and when the picture goes: it draws no reticle of its own over a picture.
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !stream) return;
+    const v = videoEl;
+    if (!v || !stream || vfovDeg === null) return;
     const report = () => {
       if (v.videoWidth > 0 && v.videoHeight > 0) {
-        reportPictureAspect(v.videoWidth / v.videoHeight);
+        reportPicture({
+          frameWidth: v.videoWidth,
+          frameHeight: v.videoHeight,
+          vfovDeg,
+        });
       }
     };
     report();
@@ -167,9 +240,9 @@ function DockingCameraVideo({
     return () => {
       v.removeEventListener("loadedmetadata", report);
       v.removeEventListener("resize", report);
-      reportPictureAspect(null);
+      reportPicture(null);
     };
-  }, [stream, reportPictureAspect]);
+  }, [stream, videoEl, vfovDeg, reportPicture]);
 
   // Absolutely positioned over the HudPanel (AugmentSlot renders a bare
   // fragment, so this box is a direct HudPanel child, exactly where the
@@ -182,7 +255,7 @@ function DockingCameraVideo({
     >
       {stream && (
         <video
-          ref={videoRef}
+          ref={setVideoEl}
           autoPlay
           muted
           playsInline
@@ -196,8 +269,29 @@ function DockingCameraVideo({
           }}
         />
       )}
+      {stream && vesselPersistentId !== undefined && (
+        <PortMarkers
+          flightId={flightId}
+          video={videoEl}
+          overlay={anchorOverlay}
+        />
+      )}
     </div>
   );
+}
+
+/** The markers on the displayed frame, kept in a component of their own so only they re-render at the frame rate. */
+function PortMarkers({
+  flightId,
+  video,
+  overlay,
+}: {
+  flightId: number;
+  video: HTMLVideoElement | null;
+  overlay: AnchorOverlay;
+}) {
+  const frame = useDisplayedFrame(true, flightId, video);
+  return <AnchorMarkers frame={frame} video={video} overlay={overlay} />;
 }
 
 registerAugment({
