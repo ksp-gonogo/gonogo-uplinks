@@ -58,6 +58,9 @@ namespace Gonogo.KerbcastUplink
         private CraftKnowledgeSample[] _buffer = new CraftKnowledgeSample[64];
         private CraftKnowledgeSample[] _ahead = new CraftKnowledgeSample[64];
         private CraftKnowledgeSample[] _mid = new CraftKnowledgeSample[64];
+        private CraftKnowledgeSample[] _heardBuffer = new CraftKnowledgeSample[64];
+        private CraftKnowledgeSample[] _heardAhead = new CraftKnowledgeSample[64];
+        private CraftKnowledgeSample[] _heardMid = new CraftKnowledgeSample[64];
         private long _sequence;
         private long _epoch;
         private double? _lastUt;
@@ -216,7 +219,23 @@ namespace Gonogo.KerbcastUplink
                         {
                             continue;
                         }
-                        crafts.Add(new ScopeCraft(pid, vesselId, sample, ut.Value, AheadOf(sample, aheadCount, _ahead), read, aheadVersion, AheadOf(sample, midCount, _mid)));
+                        var at = ut.Value;
+                        var ahead = AheadOf(sample, aheadCount, _ahead);
+                        var mid = AheadOf(sample, midCount, _mid);
+                        var sampleRead = read;
+                        var sampleAheadVersion = aheadVersion;
+                        if (sample.State != CraftKnowledgeState.Held && sample.UncertaintyM.HasValue && sample.Place != null
+                            && sample.LastKnownUt.HasValue && sample.LastKnownUt.Value < at
+                            && TryHeard(knowledge, scope, sample, sample.LastKnownUt.Value, out var heardSample, out var heardAhead, out var heardMid, out var heardRead, out var heardAheadVersion))
+                        {
+                            at = sample.LastKnownUt.Value;
+                            sample = heardSample;
+                            ahead = heardAhead;
+                            mid = heardMid;
+                            sampleRead = heardRead;
+                            sampleAheadVersion = heardAheadVersion;
+                        }
+                        crafts.Add(new ScopeCraft(pid, vesselId, sample, at, ahead, sampleRead, sampleAheadVersion, mid));
                         lastHeard[pid] = sample.LastKnownUt;
                     }
                 }
@@ -408,8 +427,9 @@ namespace Gonogo.KerbcastUplink
         }
 
         /*
-         * A craft the centre has a predicted place for is aimed at that place, at the
-         * instant the scope's knowledge has reached, with the radius the centre gives.
+         * A craft the centre has a predicted place for is aimed at the place and radius
+         * the centre gives for the instant it last heard the craft, and its record starts
+         * there.
          * Any other heard, seen or modelled craft is placed where the game had it when
          * the centre last knew it, and its radius is the whole of the uncertainty at
          * that instant, so it does not grow here. A held craft has nothing to carry it
@@ -634,7 +654,7 @@ namespace Gonogo.KerbcastUplink
 
             public CraftKnowledgeSample Sample { get; }
 
-            /// <summary>The instant the scope's knowledge was read at.</summary>
+            /// <summary>The instant the record describes: the one the centre last heard the craft at, or the scope's read instant for a craft with no predicted place.</summary>
             public double Ut { get; }
 
             /// <summary>The craft as the centre reads it a moment after <see cref="Ut"/>, for its velocity and the way its uncertainty is growing; null when that read does not list it.</summary>
@@ -786,6 +806,44 @@ namespace Gonogo.KerbcastUplink
                 count = knowledge.ReadCentre(centre, ut, buffer, out version);
             }
             return Math.Min(count, buffer.Length);
+        }
+
+        /*
+         * A predicted record starts at the instant the centre last heard the craft, with
+         * the place and radius it had then, as a heard craft's record does. Kerbcast
+         * reads a record forward from its start, so a record started at the scope's read
+         * instant would count the signal delay a second time. The three reads that give
+         * the velocity and acceleration are taken from the heard instant too. Returns
+         * false, leaving the prediction at the read instant, when the centre lists the
+         * craft there in a different state or without a place and radius.
+         */
+        private bool TryHeard(
+            IBulkCraftKnowledge knowledge,
+            string scope,
+            CraftKnowledgeSample sample,
+            double heardUt,
+            out CraftKnowledgeSample heard,
+            out CraftKnowledgeSample? ahead,
+            out CraftKnowledgeSample? mid,
+            out long readVersion,
+            out long aheadVersion)
+        {
+            heard = default;
+            ahead = null;
+            mid = null;
+            aheadVersion = 0;
+            var count = Read(knowledge, scope, heardUt, ref _heardBuffer, out readVersion);
+            if (AheadOf(sample, count, _heardBuffer) is not { } found
+                || found.State != sample.State || found.Place == null || !found.UncertaintyM.HasValue)
+            {
+                return false;
+            }
+            heard = found;
+            var aheadCount = Read(knowledge, scope, heardUt + VelocitySpanSeconds, ref _heardAhead, out aheadVersion);
+            var midCount = Read(knowledge, scope, heardUt + VelocitySpanSeconds / 2.0, ref _heardMid, out _);
+            ahead = AheadOf(sample, aheadCount, _heardAhead);
+            mid = AheadOf(sample, midCount, _heardMid);
+            return true;
         }
 
         /// <summary>The same craft as the centre reads it <see cref="VelocitySpanSeconds"/> later, or null when that read does not list it.</summary>

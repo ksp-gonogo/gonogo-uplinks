@@ -184,9 +184,9 @@ public class KerbcastWorldModelTests
         PublishAt(100.0, 0.0);
 
         var record = Record(1);
-        Assert.Equal(Bound(2.0), record.Radius);
+        Assert.Equal(Bound(1.0), record.Radius);
         Assert.Equal(0.0, record.Rate);
-        Assert.Equal(100.0, record.From);
+        Assert.Equal(99.0, record.From);
     }
 
     [Fact]
@@ -242,12 +242,12 @@ public class KerbcastWorldModelTests
         var record = _kc.Command.Published.Last().Find(Ksc, ProbePid);
         for (var seconds = 0.0; seconds <= 1.0; seconds += 0.25)
         {
-            var gap = Gap(KerbcastCarries(record.Position, record.Velocity, seconds), Terminal(100.0 + seconds)!);
+            var gap = Gap(KerbcastCarries(record.Position, record.Velocity, seconds), Terminal(99.0 + seconds)!);
             Assert.True(gap <= record.UncertaintyRadiusM, $"{seconds} s into the record: {gap:F2} m off, radius {record.UncertaintyRadiusM:F2} m");
         }
         // It meets the craft where the record is replaced, where gravity alone would be 4.9 m off, and is a quarter of that off in the middle.
-        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(101.0)!) < 0.05);
-        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 0.5), Terminal(100.5)!) < 9.745 / 8.0 + 0.05);
+        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(100.0)!) < 0.05);
+        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 0.5), Terminal(99.5)!) < 9.745 / 8.0 + 0.05);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class KerbcastWorldModelTests
 
         var record = _kc.Command.Published.Last().Find(Ksc, ProbePid);
         // Half g t² at one second: the aim falls 4.9 m below a craft that does not fall.
-        Assert.Equal(4.87, Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(101.0)!), 1);
+        Assert.Equal(4.87, Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Terminal(100.0)!), 1);
     }
 
     [Fact]
@@ -286,7 +286,7 @@ public class KerbcastWorldModelTests
     [Theory]
     [InlineData(Sitrep.Contract.CraftPlaceBasis.Coasting, 0.0)]
     [InlineData(Sitrep.Contract.CraftPlaceBasis.Burning, 400.0)]
-    public void ACraftWithAPredictedPlaceIsAimedAtThatPlaceWithItsRadiusAtTheInstantRead(Sitrep.Contract.CraftPlaceBasis basis, double radiusM)
+    public void ACraftWithAPredictedPlaceIsAimedAtThePlaceAndRadiusFromTheInstantItWasLastHeard(Sitrep.Contract.CraftPlaceBasis basis, double radiusM)
     {
         _sites.Delivered[Ksc] = 100.0;
         _places.Learn(ProbeId, CraftPlace.Surface(50.0, 1, 9.0, 9.0, 9.0));
@@ -299,10 +299,27 @@ public class KerbcastWorldModelTests
         Assert.Equal(CraftFixState.Positioned, probe.State);
         Assert.Equal(KinematicsKind.StateVector, probe.Kinematics);
         Assert.Equal(1, probe.BodyIndex);
-        Assert.Equal(100.0, probe.StateUt);
-        Assert.Equal(2000.0, probe.Position.X);
+        Assert.Equal(50.0, probe.StateUt);
+        Assert.Equal(1500.0, probe.Position.X);
         Assert.Equal(10.0, probe.Velocity.X);
         Assert.Equal(radiusM, probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void ASignalDelayedCraftInPoweredClimbIsRecordedFromTheInstantItWasHeard()
+    {
+        _sites.Delivered[Ksc] = 117.26;
+        _knowledge.AddWithPlace(Ksc, ProbeId, CraftKnowledgeState.Heard, 102.26, 400.0, MovingAlong(Sitrep.Contract.CraftPlaceBasis.Burning, 1000.0, 10.0));
+
+        Publish(117.26, 0.0);
+
+        var probe = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        Assert.NotNull(probe);
+        Assert.Equal(102.26, probe.ValidFromUt);
+        Assert.Equal(102.26, probe.StateUt);
+        Assert.Equal(1000.0 + 10.0 * 102.26, probe.Position.X, 6);
+        Assert.Equal(10.0, probe.Velocity.X, 6);
+        Assert.Equal(400.0, probe.UncertaintyRadiusM);
     }
 
     [Fact]
