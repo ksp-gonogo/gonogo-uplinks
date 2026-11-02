@@ -250,6 +250,92 @@ public class KerbcastWorldModelTests
         Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 0.5), Terminal(99.5)!) < 9.745 / 8.0 + 0.05);
     }
 
+    /// <summary>A craft 100 km up climbing at 300 m/s under a net 25 m/s² along the radius, thrust and gravity together.</summary>
+    private static Sitrep.Contract.CraftPlace? Climbing(double ut)
+    {
+        var t = ut - 99.0;
+        return new Sitrep.Contract.CraftPlace(1, new Vector3d(700_000.0 + 300.0 * t + 12.5 * t * t, 10.0 * t, 0.0), Sitrep.Contract.CraftPlaceBasis.Burning);
+    }
+
+    private static double[] CarriedUnderAcceleration(PublishedRecord record, double seconds) => new[]
+    {
+        record.Position.X + record.Velocity.X * seconds + 0.5 * record.Acceleration.X * seconds * seconds,
+        record.Position.Y + record.Velocity.Y * seconds + 0.5 * record.Acceleration.Y * seconds * seconds,
+        record.Position.Z + record.Velocity.Z * seconds + 0.5 * record.Acceleration.Z * seconds * seconds,
+    };
+
+    private PublishedRecord PublishClimbing(Func<bool>? supportsAcceleration, Func<double, Sitrep.Contract.CraftPlace?> place)
+    {
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, bodyMu: _ => KerbinMu, supportsAcceleration: supportsAcceleration);
+        _sites.Delivered[Ksc] = 100.0;
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, ut => 99.0, ut => 2.0, place);
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
+        return _kc.Command.Published.Last().Find(Ksc, ProbePid);
+    }
+
+    [Fact]
+    public void ACraftUnderThrustCarriesItsNetAccelerationAndReadingItForwardLandsOnTheCraft()
+    {
+        var record = PublishClimbing(() => true, Climbing);
+
+        Assert.True(record.HasAcceleration);
+        Assert.Equal(25.0, record.Acceleration.X, 3);
+        Assert.Equal(300.0, record.Velocity.X, 3);
+        for (var seconds = 0.0; seconds <= 1.0; seconds += 0.25)
+        {
+            Assert.True(Gap(CarriedUnderAcceleration(record, seconds), Climbing(99.0 + seconds)!) < 0.01, $"{seconds} s into the record");
+        }
+    }
+
+    [Fact]
+    public void ACraftHeldAtTerminalSpeedCarriesItsNearZeroNetAccelerationAndReadingItForwardLandsOnTheCraft()
+    {
+        var record = PublishClimbing(() => true, Terminal);
+
+        Assert.True(record.HasAcceleration);
+        Assert.True(Gap(CarriedUnderAcceleration(record, 1.0), Terminal(100.0)!) < 0.01);
+    }
+
+    [Fact]
+    public void ACraftFollowingItsConicCarriesNoAcceleration()
+    {
+        var record = PublishClimbing(() => true, ut =>
+        {
+            var t = ut - 99.0;
+            var r = 700_000.0;
+            var g = -KerbinMu / (r * r);
+            return new Sitrep.Contract.CraftPlace(1, new Vector3d(r + 50.0 * t + 0.5 * g * t * t, 0.0, 0.0), Sitrep.Contract.CraftPlaceBasis.Burning);
+        });
+
+        Assert.False(record.HasAcceleration);
+    }
+
+    [Fact]
+    public void AKerbcastBelowApiMinorOneIsGivenTheGravityOnlyRecordAndNoAcceleration()
+    {
+        var asked = 0;
+        var record = PublishClimbing(() =>
+        {
+            asked++;
+            return false;
+        }, Climbing);
+
+        Assert.True(asked > 0);
+        Assert.False(record.HasAcceleration);
+        Assert.Equal(0.0, record.Acceleration.X);
+        Assert.True(Gap(KerbcastCarries(record.Position, record.Velocity, 1.0), Climbing(100.0)!) < 0.05);
+    }
+
+    [Fact]
+    public void AWorldModelBuiltWithNoSupportAnswerNeverGivesAnAcceleration()
+    {
+        var record = PublishClimbing(null, Climbing);
+
+        Assert.False(record.HasAcceleration);
+    }
+
     [Fact]
     public void WithNoBodyToTakeGravityFromTheVelocityIsThePlacesOwnMotionAndKerbcastsGravityLeavesTheCraftAboveItsAim()
     {

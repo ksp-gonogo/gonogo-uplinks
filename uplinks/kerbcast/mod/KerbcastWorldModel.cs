@@ -39,6 +39,9 @@ namespace Gonogo.KerbcastUplink
         /// <summary>How far past the instant read a predicted place is read again, to give the craft the velocity its prediction implies.</summary>
         private const double VelocitySpanSeconds = 1.0;
 
+        /** Net acceleration beyond gravity, in m/s², above which a record is given its acceleration; below it the craft follows its conic. */
+        private const double ThrustThreshold = 0.1;
+
 
         private readonly CraftLabels _labels;
         private readonly CraftPlaces _places;
@@ -48,6 +51,7 @@ namespace Gonogo.KerbcastUplink
         private readonly Func<string, LaunchSiteReading>? _launchSite;
         private readonly Func<uint?>? _activeCraft;
         private readonly Func<int, double?>? _bodyMu;
+        private readonly Func<bool>? _supportsAcceleration;
         private readonly Dictionary<uint, uint> _followed = new Dictionary<uint, uint>();
         private int _followTenure = -1;
         private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -77,10 +81,12 @@ namespace Gonogo.KerbcastUplink
         /// <param name="places">Where each craft was, fed on the main thread; null positions nothing.</param>
         /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
         /// <param name="bodyMu">A body's gravitational parameter by index, which is what Kerbcast moves a record's craft by between snapshots; null leaves the velocity as the place implies it.</param>
+        /// <param name="supportsAcceleration">Whether this Kerbcast takes a record's net acceleration (API 1.1), normally <see cref="KerbcastApiMinor1.Supported"/>; null means it does not.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null)
         {
             _bodyMu = bodyMu;
+            _supportsAcceleration = supportsAcceleration;
             _log = log;
             _onFeedSites = onFeedSites;
             _launchSite = launchSite;
@@ -482,6 +488,10 @@ namespace Gonogo.KerbcastUplink
          * reckoned path is read at the start, half way and the end of the span, so the
          * acceleration it carries is known and not assumed. With no body to take gravity
          * from, or a read missing, the velocity is the place's own motion over the span.
+         * When the reckoned acceleration differs from gravity by more than a thrust threshold
+         * and this Kerbcast takes a net acceleration (API 1.1), the record instead carries the
+         * velocity at its start and the reckoned net acceleration, which Kerbcast holds over
+         * the record's life, so there is no gravity residual left to widen the radius by.
          */
         private void DescribePredicted(WorldModelBuilder builder, string scope, ScopeCraft craft, Sitrep.Contract.CraftPlace place, double radiusM)
         {
@@ -494,6 +504,7 @@ namespace Gonogo.KerbcastUplink
                     (ahead.Position.Y - position.Y) / VelocitySpanSeconds,
                     (ahead.Position.Z - position.Z) / VelocitySpanSeconds);
             var residualM = 0.0;
+            Vec3d? net = null;
             if (ahead != null && craft.MidSample?.Place is { } mid && mid.BodyIndex == place.BodyIndex && _bodyMu?.Invoke(place.BodyIndex) is double mu && mu > 0.0)
             {
                 var half = VelocitySpanSeconds / 2.0;
@@ -502,6 +513,8 @@ namespace Gonogo.KerbcastUplink
                 var midAxes = new[] { mid.Position.X, mid.Position.Y, mid.Position.Z };
                 var endAxes = new[] { ahead.Position.X, ahead.Position.Y, ahead.Position.Z };
                 var published = new double[3];
+                var v0s = new double[3];
+                var nets = new double[3];
                 var squared = 0.0;
                 for (var i = 0; i < 3; i++)
                 {
@@ -511,13 +524,25 @@ namespace Gonogo.KerbcastUplink
                     var g = -mu * axes[i] / (r * r * r);
                     var gap = g - a;
                     published[i] = v0 - 0.5 * gap * VelocitySpanSeconds;
+                    v0s[i] = v0;
+                    nets[i] = a;
                     squared += gap * gap;
                 }
                 velocity = new Vec3d(published[0], published[1], published[2]);
                 residualM = Math.Sqrt(squared) * VelocitySpanSeconds * VelocitySpanSeconds / 8.0;
+                if (Math.Sqrt(squared) > ThrustThreshold && _supportsAcceleration?.Invoke() == true)
+                {
+                    velocity = new Vec3d(v0s[0], v0s[1], v0s[2]);
+                    net = new Vec3d(nets[0], nets[1], nets[2]);
+                    residualM = 0.0;
+                }
             }
             var ut = craft.Ut;
             builder.StateVector(craft.PersistentId, place.BodyIndex, ut, new Vec3d(position.X, position.Y, position.Z), velocity, ut, ut + RecordValiditySeconds);
+            if (net is { } acceleration)
+            {
+                KerbcastApiMinor1.Accelerate(builder, acceleration.X, acceleration.Y, acceleration.Z);
+            }
             var publishedM = EndOfLifeRadius(craft, radiusM) + residualM;
             builder.Uncertainty(publishedM, 0.0, 0.0, 0.0);
             SayExtent(builder, craft);

@@ -185,7 +185,8 @@ namespace Gonogo.KerbcastUplink
                 onFeedSites,
                 ReadLaunchSite,
                 ReadActiveCraft,
-                ReadBodyMu);
+                ReadBodyMu,
+                KerbcastApiMinor1.Supported);
 
         /* The body's gravitational parameter, which Kerbcast moves a record's craft by between snapshots. */
         [MethodImpl(MethodImplOptions.NoInlining)]

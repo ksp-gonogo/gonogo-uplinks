@@ -260,4 +260,37 @@ namespace Gonogo.KerbcastUplink
             DockingNodeState = view.DockingNodeState,
         };
     }
+
+    /// <summary>
+    /// The Kerbcast.API 1.1 members this Uplink uses, behind a guard on
+    /// <see cref="KerbcastApi.ApiMinor"/>. Kept out of <see cref="KerbcastApiAdapter"/> because
+    /// that class compiles every method when it binds: a member an older Kerbcast lacks would
+    /// fail the whole bind rather than the one call.
+    /// </summary>
+    public static class KerbcastApiMinor1
+    {
+        /// <summary>Whether this Kerbcast implements API 1.1 or later; false when it cannot be asked.</summary>
+        public static bool Supported()
+        {
+            try
+            {
+                return MinorCore() >= 1;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gives the state-vector record last added to <paramref name="builder"/> a net acceleration
+        /// in metres per second squared, gravity included. Call it only when <see cref="Supported"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void Accelerate(WorldModelBuilder builder, double x, double y, double z) =>
+            builder.Acceleration(new Vec3d(x, y, z));
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static int MinorCore() => KerbcastApi.ApiMinor;
+    }
 }

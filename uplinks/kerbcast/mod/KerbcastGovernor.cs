@@ -48,12 +48,13 @@ namespace Gonogo.KerbcastUplink
             Action<IReadOnlyDictionary<string, string>>? onFeedSites = null,
             Func<string, LaunchSiteReading>? launchSite = null,
             Func<uint?>? activeCraft = null,
-            Func<int, double?>? bodyMu = null)
+            Func<int, double?>? bodyMu = null,
+            Func<bool>? supportsAcceleration = null)
         {
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
-            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu);
+            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu, supportsAcceleration);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 
