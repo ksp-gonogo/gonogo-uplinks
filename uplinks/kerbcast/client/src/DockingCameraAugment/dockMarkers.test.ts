@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dockCorners, LINED_UP_DEG } from "./dockMarkers";
+import { dockCorners, LINED_UP_DEG } from "./dockMarkers.js";
 
 const SEEN = { inFrame: true, behind: false, occluded: false };
 const GO = "var(--color-accent-fg)";
