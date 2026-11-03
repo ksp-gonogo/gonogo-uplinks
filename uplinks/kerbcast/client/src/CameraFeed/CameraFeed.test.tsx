@@ -2398,7 +2398,7 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
     expect(frameOf(video).style.width).toBe("170px");
     expect(frameOf(video).style.height).toBe("95px");
     expect(sizeReports(sidecar)).toEqual([
-      { flightId: 42, width: 176, height: 100 },
+      { flightId: 42, width: 240, height: 136 },
     ]);
   });
 
@@ -2475,7 +2475,7 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
     await settle();
     expect(sizeReports(sidecar).slice(before)).toEqual([
       { flightId: 42, width: 1200, height: 676 },
-      { flightId: 42, width: 176, height: 100 },
+      { flightId: 42, width: 240, height: 136 },
     ]);
   });
 });

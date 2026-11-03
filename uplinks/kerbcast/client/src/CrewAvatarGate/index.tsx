@@ -16,6 +16,7 @@ import {
 import { Badge, TextButton, useModal } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo } from "react";
+import { useReportFaceSize } from "../CameraFeed/useReportFaceSize.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { KERBCAST } from "../uplink.js";
@@ -127,6 +128,7 @@ function FacecamAvatarFeed({
   // `KerbcastProvider`, same reasoning).
   const client = useKerbcastClient();
   const subscriptions = useKerbcastSubscriptions();
+  useReportFaceSize(flightId);
 
   return (
     <TextButton
@@ -148,7 +150,7 @@ function FacecamAvatarFeed({
       }
       aria-label={`Spotlight ${crewName}'s ${isEva ? "EVA" : "seated"} face camera`}
     >
-      <KerbalFaceFeed flightId={flightId} showActions={false}>
+      <KerbalFaceFeed flightId={flightId} showActions={false} reportSize={false}>
         {crewLocation && <LocationBadge isEva={isEva} corner="avatar" />}
       </KerbalFaceFeed>
     </TextButton>

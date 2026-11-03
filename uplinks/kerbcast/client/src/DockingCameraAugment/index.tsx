@@ -25,7 +25,6 @@ import {
   KerbcastProvider,
   type KerbcastSubscriptions,
   useDisplayedFrame,
-  useReportDisplaySize,
 } from "@ksp-gonogo/kerbcast-react";
 import type { SlotProps, TopicReading } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -35,6 +34,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDelayedKerbcastStream } from "../CameraFeed/useDelayedKerbcastStream.js";
+import { useReportFrameSize } from "../CameraFeed/useReportFrameSize.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { KERBCAST } from "../uplink.js";
 // Side-effect import: registers kerbcast.cameras's unit map into the SDK's
@@ -175,7 +175,7 @@ function DockingCameraVideo({
   // size report observes the element once, when the camera is chosen, and a
   // video that only appears with the stream would never be seen by it.
   const boxRef = useRef<HTMLDivElement>(null);
-  useReportDisplaySize(flightId, boxRef);
+  useReportFrameSize(flightId, boxRef);
 
   const client = getUplinkHandle<KerbcastDataSource>("kerbcast")?.getClient();
   const vesselPersistentId = targetPort?.vesselPersistentId;

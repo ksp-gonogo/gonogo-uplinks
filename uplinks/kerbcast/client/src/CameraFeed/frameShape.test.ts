@@ -50,4 +50,13 @@ describe("frameRequest", () => {
   it("asks for nothing before the frame has a width", () => {
     expect(frameRequest(0)).toBeNull();
   });
+
+  it("never asks for a side under 128 px", () => {
+    for (const width of [1, 15, 48, 100, 200]) {
+      const request = frameRequest(width);
+      expect(request?.width).toBeGreaterThanOrEqual(128);
+      expect(request?.height).toBeGreaterThanOrEqual(128);
+    }
+    expect(frameRequest(48, 1)).toEqual({ width: 128, height: 128 });
+  });
 });

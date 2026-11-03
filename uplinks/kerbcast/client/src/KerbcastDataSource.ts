@@ -96,6 +96,14 @@ const DEFAULT_CONFIG: KerbcastConfig = { port: 8088 };
 const STORAGE_KEY = "gonogo.datasource.kerbcast";
 
 const PING_WATCHDOG_MS = 15_000;
+
+/**
+ * The ping window for a station: its control channel shares a mobile link with
+ * the media, so a reliable channel can stall for tens of seconds while the
+ * connection is still alive. A connection that is really gone reports
+ * `failed` and is rebuilt then.
+ */
+const STATION_PING_WATCHDOG_MS = 60_000;
 const RECONNECT_BASE_MS = 2_000;
 const RECONNECT_MAX_MS = 30_000;
 
@@ -426,6 +434,7 @@ export class KerbcastDataSource {
   private reacquiringListeners = new Set<() => void>();
 
   private pingWatchdog: ReturnType<typeof setTimeout> | null = null;
+  private lastPingAt: number | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private reconnectEnabled = false;
@@ -819,6 +828,7 @@ export class KerbcastDataSource {
    * heuristic: it's a plain method, safe to call outside render.)
    */
   attachBroker(broker: KerbcastBroker): void {
+    logger.tag("kerbcast:reconnect").info("config rebuild: station broker attached");
     this.broker = broker;
     const wasEnabled = this.reconnectEnabled;
     this.teardownClient();
@@ -860,6 +870,9 @@ export class KerbcastDataSource {
   }
 
   private applyConfig(next: KerbcastConfig): void {
+    logger.tag("kerbcast:reconnect").info("config rebuild: port changed", {
+      port: next.port,
+    });
     const wasEnabled = this.reconnectEnabled;
     this.cfg = next;
     this.reconnectEnabled = false;
@@ -883,6 +896,7 @@ export class KerbcastDataSource {
       innerTransport,
       (sendFn) => {
         sendFn({ type: "pong" });
+        this.lastPingAt = Date.now();
         this.startWatchdog();
       },
       (msg) => this.observeSlotMessage(msg),
@@ -952,6 +966,11 @@ export class KerbcastDataSource {
           }
           this.startWatchdog();
         } else if (s === "failed" && this.reconnectEnabled) {
+          logger
+            .tag("kerbcast:reconnect")
+            .warn("peer state failed, scheduling a rebuild", {
+              attempt: this.reconnectAttempts + 1,
+            });
           this.scheduleReconnect();
         }
       }),
@@ -991,6 +1010,10 @@ export class KerbcastDataSource {
       this.poolGrowth = null;
       if (!this.reconnectEnabled || this.status !== "connected") return;
       if (this.desiredSubs.size <= this.poolSlots) return;
+      logger.tag("kerbcast:reconnect").info("pool growth, rebuilding", {
+        cameras: this.desiredSubs.size,
+        slots: this.poolSlots,
+      });
       void this.attemptReconnect();
     }, POOL_GROWTH_DEBOUNCE_MS);
   }
@@ -1289,12 +1312,23 @@ export class KerbcastDataSource {
       clearTimeout(this.pingWatchdog);
       this.pingWatchdog = null;
     }
+    const windowMs = this.broker
+      ? STATION_PING_WATCHDOG_MS
+      : PING_WATCHDOG_MS;
     this.pingWatchdog = setTimeout(() => {
       this.pingWatchdog = null;
       if (this.reconnectEnabled) {
+        logger.tag("kerbcast:reconnect").warn("ping watchdog fired, rebuilding", {
+          secondsSinceLastPing:
+            this.lastPingAt === null
+              ? null
+              : Math.round((Date.now() - this.lastPingAt) / 1000),
+          windowSeconds: windowMs / 1000,
+          station: this.broker !== null,
+        });
         void this.attemptReconnect();
       }
-    }, PING_WATCHDOG_MS);
+    }, windowMs);
   }
 
   private scheduleReconnect(): void {
@@ -1322,7 +1356,11 @@ export class KerbcastDataSource {
       await this.client.connect([...this.desiredSubs.keys()], {
         slots: this.poolSlots,
       });
-    } catch {
+    } catch (err) {
+      logger.tag("kerbcast:reconnect").warn("connect failed, retrying", {
+        attempt: this.reconnectAttempts + 1,
+        error: err instanceof Error ? err.message : String(err),
+      });
       this.scheduleReconnect();
     }
   }

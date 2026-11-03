@@ -242,6 +242,28 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
     ds.disconnect();
   });
 
+  it("a station gives the control channel a minute before the watchdog rebuilds the peer", async () => {
+    const session = createMockKerbcastSession();
+    const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
+    const ds = makeTracked({ port: 1 }, session.transport);
+    attachStationBroker(ds, { relay } as unknown as StationBroker);
+    await ds.connect();
+    session.setState("connected");
+    relay.mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(59_000);
+    });
+    expect(relay).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_000);
+    });
+    expect(relay).toHaveBeenCalled();
+
+    ds.disconnect();
+  });
+
   it("explicit disconnect() prevents reconnect after watchdog fires", async () => {
     const session = createMockKerbcastSession();
     const ds = makeTracked({ port: 1 }, session.transport);
