@@ -11,7 +11,6 @@ import { MIN_REQUEST_SIDE_PX } from "./frameShape.js";
  * inside a `KerbcastProvider`.
  */
 export function useReportFaceSize(flightId: number): void {
-  // gonogo:reads none
   const displaySizes = useKerbcastDisplaySizes();
   const instanceId = useId();
   useEffect(() => {
