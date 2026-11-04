@@ -20,6 +20,7 @@ import type {
   Rp1CrewEntry,
   Rp1TrainingCourseEntry,
 } from "../__generated__/contract.js";
+import { Breakable } from "../shared/Breakable.js";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
@@ -147,26 +148,27 @@ function Course({
           }
         >
           <Text size="base" weight="semibold">
-            {titleOf(course)}
+            <Breakable>{titleOf(course)}</Breakable>
           </Text>
         </SubjectHeading>
-        {/* Four labelled readings in one aligned column, the same treatment the
-            roster row's dates got and for the same reason. A course states two
-            dates that are easy to confuse, so each of them says which it is
-            rather than relying on the order they happen to be in. */}
+        {/* Four labelled readings. A course states two dates that are easy to
+            confuse, so each of them says which it is rather than relying on the
+            order they happen to be in. The labels are not aligned into a column:
+            the kit's label column is seven characters wide and "Finishes" and
+            "Students" are eight, so they run into their values. */}
         <Stack gap="caption">
           {fraction !== null && started && (
-            <DataLine aligned key="progress" label="Progress">
+            <DataLine key="progress" label="Progress">
               <Unit value={fraction} />
             </DataLine>
           )}
           {finishes !== null && (
-            <DataLine aligned key="finishes" label="Finishes">
+            <DataLine key="finishes" label="Finishes">
               <MissionDate value={course.completesAtUt} />
             </DataLine>
           )}
           {free !== null && (
-            <DataLine aligned key="free" label="Crew free">
+            <DataLine key="free" label="Crew free">
               <MissionDate value={course.studentsAvailableAtUt} />
             </DataLine>
           )}

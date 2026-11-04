@@ -6,6 +6,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
   CommandButton,
   NULL_DISPLAY,
@@ -122,8 +123,8 @@ export function BuildableSection() {
  *
  * <para>The card is toned by whether any complex would take it, because that is
  * the question it exists to answer. A craft nothing can build is still drawn,
- * with the reason: an operator who saved a craft and cannot find it here would
- * go looking for a fault in the Uplink.</para>
+ * with dead buttons whose tips give the reason: an operator who saved a craft
+ * and cannot find it here would go looking for a fault in the Uplink.</para>
  */
 function CraftCard({
   craft,
@@ -139,6 +140,10 @@ function CraftCard({
   const complexes = craft.complexes ?? [];
   const eligible = complexes.filter((complex) => complex.eligible === true);
   const partBlock = partRefusal(craft);
+  /* A craft with no file name has no address, and guessing one from the ship
+     name would build whichever file the folder listed first. */
+  const blockReason =
+    partBlock ?? (file === null ? "No craft file name for this design" : null);
 
   return (
     <ProjectCard
@@ -148,7 +153,7 @@ function CraftCard({
         </>
       }
       name={name}
-      tone={eligible.length > 0 && partBlock === null ? "go" : "warn"}
+      tone={eligible.length > 0 && blockReason === null ? "go" : "warn"}
     >
       <Text size="xs" level="muted">
         <Unit value={craft.mass} /> ·{" "}
@@ -160,17 +165,10 @@ function CraftCard({
         parts
       </Text>
 
-      {partBlock !== null ? (
-        <Text size="xs" level="muted">
-          Cannot be built: {partBlock}
-        </Text>
-      ) : file === null ? (
-        // Readable and not commandable, and it says which. A craft with no
-        // file name has no address, and guessing one from the ship name would
-        // build whichever file the folder listed first.
-        <Text size="xs" level="muted">
-          No craft file name for this design
-        </Text>
+      {blockReason !== null ? (
+        <Cluster gap="related-dense" justify="start" wrap>
+          <DeadButtons complexes={complexes} reason={blockReason} />
+        </Cluster>
       ) : (
         <Stack gap="related-dense">
           {eligible.map((complex) => (
@@ -206,7 +204,7 @@ function CraftCard({
                 size="sm"
               />
             ))}
-            <Refusals complexes={complexes} handle={handle} />
+            <Refusals complexes={complexes} />
           </Cluster>
         </Stack>
       )}
@@ -335,57 +333,68 @@ function BuildQuote({
 }
 
 /**
- * Every complex that refused this craft, as a dead button carrying its reason.
+ * Every complex that refused this craft, as a dead button whose tip carries
+ * its reason.
  *
  * <para>Drawn even when another complex would take it, because "LC-1 is too
  * small for this" is what tells an operator which complex to modify, and a list
  * of only the yeses leaves them pressing the one button they have without
  * learning why there is one.</para>
  *
- * <para>A button rather than a line of prose, which is what this was. Prose
- * spent a whole row per complex saying "LC-1 at Cape Canaveral: too light for
- * the complex", and a disabled control in the same cluster as the live ones
- * says the same thing in the shape the operator is already reading: these are
- * the complexes, these are the ones you can press. The reason moves to the
- * title, where it costs no space until it is wanted.</para>
- *
- * <para>The live control, `disabled`, rather than the kit's `Button`. `Button`
- * is a font size larger and uppercase, so the pair drew the complex an operator
- * cannot press louder than the ones they can, which is the hierarchy the other
- * way up. One component carries both states and the chrome matches by
- * construction.</para>
- *
  * <para>A complex with no reasons at all is skipped: it said yes and already
  * has a live button beside these.</para>
  */
 function Refusals({
   complexes,
-  handle,
-}: Readonly<{
-  complexes: readonly Rp1BuildableComplex[];
-  handle: Parameters<typeof CommandButton>[0]["handle"];
-}>) {
+}: Readonly<{ complexes: readonly Rp1BuildableComplex[] }>) {
   const refused = complexes.filter(
     (complex) => (complex.refusals ?? []).length > 0,
   );
-  if (refused.length === 0) {
-    return null;
-  }
-
   return (
     <>
       {refused.map((complex) => (
-        <CommandButton
+        <Button
           disabled
-          handle={handle}
+          disabledReason={(complex.refusals ?? []).join("; ")}
           key={complex.lcId ?? complexLabel(complex)}
-          /* No `aria-label`: the visible label is the accessible name, which is
-             what this announced as a disabled Button. The live control's richer
-             name describes an act this complex refused. */
-          label={`Build at ${complex.name ?? complexLabel(complex)}`}
           size="sm"
-          title={(complex.refusals ?? []).join("; ")}
-        />
+        >
+          {`Build at ${complex.name ?? complexLabel(complex)}`}
+        </Button>
+      ))}
+    </>
+  );
+}
+
+/**
+ * One dead button per complex, each carrying the same reason in its tip, for a
+ * craft that nothing can build. A centre with no complexes gets a single one.
+ */
+function DeadButtons({
+  complexes,
+  reason,
+}: Readonly<{
+  complexes: readonly Rp1BuildableComplex[];
+  reason: string;
+}>) {
+  if (complexes.length === 0) {
+    return (
+      <Button disabled disabledReason={reason} size="sm">
+        Build
+      </Button>
+    );
+  }
+  return (
+    <>
+      {complexes.map((complex) => (
+        <Button
+          disabled
+          disabledReason={reason}
+          key={complex.lcId ?? complexLabel(complex)}
+          size="sm"
+        >
+          {`Build at ${complex.name ?? complexLabel(complex)}`}
+        </Button>
       ))}
     </>
   );

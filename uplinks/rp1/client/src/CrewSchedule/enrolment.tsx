@@ -29,6 +29,7 @@ import type {
   Rp1TrainingCourseEntry,
   Rp1TrainingTemplateEntry,
 } from "../__generated__/contract.js";
+import { Breakable } from "../shared/Breakable.js";
 import { current } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 // Side-effect import: hydrates these Topics' units at decode time, so a base
@@ -174,7 +175,7 @@ export function TrainingEnrolment() {
                   onClick={() => setPickedTemplate(template.id ?? null)}
                   selected={template.id === selected.id}
                 >
-                  {titleOf(template)}
+                  <Breakable>{titleOf(template)}</Breakable>
                 </SelectableRow>
               ))}
             </Stack>

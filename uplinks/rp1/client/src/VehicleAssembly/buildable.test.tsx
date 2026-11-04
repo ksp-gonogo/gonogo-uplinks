@@ -250,7 +250,7 @@ describe("starting a build from a saved craft", () => {
   it("asks no quote for a craft that cannot be built", async () => {
     const { fixture } = await withOneSavedCraft({ missingParts: ["fooPart"] });
 
-    await screen.findByText(/Cannot be built/i);
+    await screen.findAllByRole("button", { name: /Build at/i });
     await act(async () => {});
 
     expect(
@@ -328,7 +328,7 @@ describe("starting a build from a saved craft", () => {
     const refused = await screen.findByRole("button", {
       name: /Build at LC-1/i,
     });
-    expect(refused).toBeDisabled();
+    expect(refused).toHaveAttribute("aria-disabled", "true");
     expect(refused).toHaveAccessibleDescription(
       expect.stringContaining("too heavy"),
     );
@@ -364,24 +364,12 @@ describe("starting a build from a saved craft", () => {
         name: /Start building Atlas LV-3B at LC-1/i,
       }),
     ).toBeInTheDocument();
-    /* The refused complex is a DEAD BUTTON carrying its reason in the title,
-       not a line of prose. Asserted by role and title rather than by text,
-       because the reason no longer occupies the page until it is wanted. */
+    // The refused complex is a dead button whose tip carries its reason
     const refused = screen.getByRole("button", { name: /Build at LC-2/i });
-    expect(refused).toBeDisabled();
+    expect(refused).toHaveAttribute("aria-disabled", "true");
     expect(refused).toHaveAccessibleDescription(
       expect.stringContaining("too large"),
     );
-    /* The two are ONE control in two states, so the complex an operator cannot
-       press is not drawn louder than the one they can: the kit's `Button`,
-       which used to carry the refusal, is a font size larger and uppercase.
-       `data-command-phase` is what reverting to one would lose.
-
-       The names are pinned on both, because merging the controls is where they
-       would quietly move: the live one names the act and the craft, and the
-       refused one keeps the complex label it announced as a disabled
-       `Button`. */
-    expect(refused).toHaveAttribute("data-command-phase", "idle");
     expect(refused).toHaveAccessibleName("Build at LC-2");
     expect(
       screen.getByRole("button", { name: /Start building/i }),
@@ -397,8 +385,10 @@ describe("starting a build from a saved craft", () => {
     await withOneSavedCraft({ unpurchasedParts: ["RO-Vanguard-X405"] });
 
     expect(
-      await screen.findByText(/researched but not bought, unlock at R&D first/),
-    ).toBeInTheDocument();
+      (await screen.findAllByRole("button", { name: /Build at/i }))[0],
+    ).toHaveAccessibleDescription(
+      expect.stringContaining("researched but not bought, unlock at R&D first"),
+    );
     expect(
       screen.queryByRole("button", { name: /Start building/i }),
     ).not.toBeInTheDocument();
@@ -410,8 +400,10 @@ describe("starting a build from a saved craft", () => {
     });
 
     expect(
-      await screen.findByText(/this install does not have RO-Atlas-LR89/),
-    ).toBeInTheDocument();
+      (await screen.findAllByRole("button", { name: /Build at/i }))[0],
+    ).toHaveAccessibleDescription(
+      expect.stringContaining("this install does not have RO-Atlas-LR89"),
+    );
 
     act(() => {
       fixture.emit("rp1.buildable", [
@@ -419,9 +411,13 @@ describe("starting a build from a saved craft", () => {
       ]);
     });
 
-    expect(
-      await screen.findByText(/not researched yet: RO-Agena-8096/),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.getAllByRole("button", { name: /Build at/i })[0],
+      ).toHaveAccessibleDescription(
+        expect.stringContaining("not researched yet: RO-Agena-8096"),
+      ),
+    );
   });
 
   it("says the career has no craft rather than drawing nothing", async () => {

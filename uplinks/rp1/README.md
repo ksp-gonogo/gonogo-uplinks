@@ -239,7 +239,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![Three builds under integration: one with a date at a rushing complex, one stalled because nobody is assigned to its complex, and one RP-1 has not costed yet](client/docs/assets/building-three-clocks--default.png)
 
-![Three saved craft: one startable at either complex, one only at LC-1 with LC-2's refusal named, and one blocked on parts that are researched but not bought](client/docs/assets/buildable-blocked-and-buildable--default.png)
+![Three saved craft: one startable at either complex, one only at LC-1 with LC-2 dead, and one blocked on parts that are researched but not bought](client/docs/assets/buildable-blocked-and-buildable--default.png)
 
 ![Every tooling on this vehicle is already owned: the cards say so and no purchase control is offered, because there is nothing left to buy](client/docs/assets/tooling-nothing-outstanding--default.png)
 

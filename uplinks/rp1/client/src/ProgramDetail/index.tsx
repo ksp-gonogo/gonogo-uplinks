@@ -8,6 +8,7 @@ import {
   Badge,
   Cluster,
   CommandButton,
+  DataLine,
   DataTable,
   EmptyState,
   ExpandableText,
@@ -44,6 +45,7 @@ import type {
 } from "../__generated__/contract.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { current } from "../shared/current.js";
+import { SnugTable, useNarrowerThan, TABLE_MIN_WIDTH } from "../shared/narrow.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 import {
@@ -1089,39 +1091,32 @@ function PaymentSchedule({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
   return (
     <Section>
       <SectionTitle>FUNDING SUMMARY</SectionTitle>
+      <SnugTable>
       <DataTable
         caption="Funding paid per nominal year of this Program"
         rows={schedule as Rp1ProgramPaymentEntry[]}
         rowKey={(row) => String(magnitudeOf(row.year) ?? "")}
         columns={[
           {
-            /* "Year", not "Nominal year". The caption above already says which
-               calendar these are counted on, and the longer header was the
-               widest thing in the table: it held all three columns 6ch wider
-               than the readings need and pushed "Cumulative" into the table's
-               own horizontal scroller at the Administration Building's narrower
-               tiles. */
             key: "year",
             header: "Year",
             render: (row) => <Unit value={row.year} />,
-            minWidth: "6ch",
           },
           {
             key: "funds",
             header: "Pays",
             align: "end",
             render: (row) => <Unit value={row.funds} />,
-            minWidth: "10ch",
           },
           {
             key: "cumulative",
             header: "Cumulative",
             align: "end",
             render: (row) => <Unit value={row.cumulativeFunds} />,
-            minWidth: "10ch",
           },
         ]}
       />
+      </SnugTable>
     </Section>
   );
 }
@@ -1141,12 +1136,55 @@ function SpeedLadder({
   confidenceHeld: number | null;
 }>) {
   const ladder = present(options);
+  const { ref, narrow } = useNarrowerThan(TABLE_MIN_WIDTH);
   if (ladder === undefined || ladder.length === 0) {
     return null;
   }
+  const speedName = (row: Rp1ProgramSpeedOption) => (
+    <Text>
+      {row.label ?? row.speed ?? NULL_DISPLAY}
+      {row.speed === chosen && (
+        <>
+          {" "}
+          <Badge tone="info">SELECTED</Badge>
+        </>
+      )}
+    </Text>
+  );
+  const price = (row: Rp1ProgramSpeedOption) => (
+    <Text>
+      <Unit value={row.confidenceCost} />
+      {outOfReach(row.confidenceCost, confidenceHeld) && (
+        <>
+          {" "}
+          <Badge tone="caution">SHORT</Badge>
+        </>
+      )}
+    </Text>
+  );
+  if (narrow) {
+    return (
+      <Section>
+        <div ref={ref}>
+          <SectionTitle>SPEED</SectionTitle>
+        </div>
+        {(ladder as Rp1ProgramSpeedOption[]).map((row) => (
+          <Section gap="related-dense" key={row.speed ?? ""}>
+            {speedName(row)}
+            <DataLine label="Confidence">{price(row)}</DataLine>
+            <DataLine label="Term">
+              <Unit value={row.durationSeconds} />
+            </DataLine>
+          </Section>
+        ))}
+      </Section>
+    );
+  }
   return (
     <Section>
-      <SectionTitle>SPEED</SectionTitle>
+      <div ref={ref}>
+        <SectionTitle>SPEED</SectionTitle>
+      </div>
       <DataTable
         caption="Confidence price and duration at each speed this Program can be accepted at"
         rows={ladder as Rp1ProgramSpeedOption[]}
@@ -1166,10 +1204,6 @@ function SpeedLadder({
                 )}
               </Text>
             ),
-            /* The speeds are one short word each ("Slow", "Normal", "Fast");
-               the floor only has to hold the widest of them beside its SELECTED
-               badge, which wraps under it. */
-            minWidth: "9ch",
           },
           {
             key: "confidence",
@@ -1186,19 +1220,12 @@ function SpeedLadder({
                 )}
               </Text>
             ),
-            /* The header is the widest thing in this column: the prices are
-               three digits and the SHORT badge wraps under them. */
-            minWidth: "10ch",
           },
           {
             key: "duration",
             header: "Term",
             align: "end",
             render: (row) => <Unit value={row.durationSeconds} />,
-            /* "9y 183d" is the widest term RP-1 offers and the header is
-               shorter than that, so 8ch is the column and 10ch was 2ch of slack
-               the narrow tiles could not spare. */
-            minWidth: "8ch",
           },
         ]}
       />

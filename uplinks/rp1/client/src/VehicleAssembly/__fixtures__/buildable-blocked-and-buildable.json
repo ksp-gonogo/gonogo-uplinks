@@ -1,12 +1,12 @@
 {
   "_meta": {
-    "notes": "The three answers this section has to be able to give about a saved craft, side by side. One is buildable at either complex, so it draws a button per complex named after the complex rather than a bare Start build; one is buildable at only one and carries the other complex's refusal underneath, which is what tells an operator which complex to modify; one is blocked by parts researched but never bought, a state RP-1's own window resolves with a popup that a command sent from another machine has nobody to answer. No funds line: the balance is the host's, drawn once for every section"
+    "notes": "The three answers this section has to be able to give about a saved craft, side by side. One is buildable at either complex, so it draws a button per complex named after the complex rather than a bare Start build; one is buildable at only one and has the other complex's button dead, which tells an operator which complex to modify; one is blocked by parts researched but never bought, so its buttons are dead, a state RP-1's own window resolves with a popup that a command sent from another machine has nobody to answer. No funds line: the balance is the host's, drawn once for every section"
   },
   "_scene": {
     "hero": true,
     "augment": "rp1-vehicle-assembly-buildable",
     "size": { "w": 11, "h": 22 },
-    "caption": "Three saved craft: one startable at either complex, one only at LC-1 with LC-2's refusal named, and one blocked on parts that are researched but not bought",
+    "caption": "Three saved craft: one startable at either complex, one only at LC-1 with LC-2 dead, and one blocked on parts that are researched but not bought",
     "paints": [
       "START A BUILD",
       "Vanguard",
@@ -14,8 +14,6 @@
       "Build at LC-2",
       "Atlas-LV3",
       "Titan-I",
-      "Cannot be built",
-      "unlock at R&D first",
       "parts"
     ]
   },

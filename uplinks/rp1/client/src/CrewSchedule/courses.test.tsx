@@ -197,7 +197,7 @@ describe("TrainingCourses", () => {
       ).toBeInTheDocument();
     });
     const name = screen.getByText("Proficiency: Mercury-Redstone");
-    expect(name.parentElement?.textContent).toBe(
+    expect(name.parentElement?.parentElement?.textContent).toBe(
       "Proficiency: Mercury-RedstoneTRAINING",
     );
   });

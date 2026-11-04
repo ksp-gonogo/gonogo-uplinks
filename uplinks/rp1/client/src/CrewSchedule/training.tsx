@@ -131,7 +131,7 @@ export function Students({
 }: Readonly<{ course: Rp1TrainingCourseEntry }>) {
   const students = course.students ?? [];
   return (
-    <DataLine aligned label="Students">
+    <DataLine label="Students">
       {students.length === 0 ? "Nobody on it yet" : students.join(", ")}
     </DataLine>
   );

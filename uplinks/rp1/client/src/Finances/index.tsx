@@ -12,6 +12,7 @@ import {
 import {
   Badge,
   Cluster,
+  DataLine,
   DataTable,
   type DataTableColumn,
   Disclosure,
@@ -21,6 +22,7 @@ import {
   magnitudeOf,
   Section,
   Stat,
+  Text,
   ToggleButton,
   Unit,
   useElementSize,
@@ -39,6 +41,8 @@ import type {
 import { FINANCES_SCREEN_ID } from "../AdminBuilding/financesScreen.js";
 import { latest } from "../shared/current.js";
 import { facilityLabel } from "../shared/facilityLabels.js";
+import { TABLE_MIN_WIDTH } from "../shared/narrow.js";
+import { WrapHeader } from "../shared/WrapHeader.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 import { FundsAlarm } from "./FundsAlarm.js";
@@ -167,6 +171,7 @@ export function Finances({ screenId }: { screenId: string }) {
               budget={budgetReading}
               courseNames={namesById(training, "id")}
               periods={periods}
+              stacked={size.w < TABLE_MIN_WIDTH}
             />
           </Section>
           <Modifiers budget={budgetReading} />
@@ -241,11 +246,13 @@ function BudgetTable({
   breakdown,
   periods,
   courseNames,
+  stacked,
 }: Readonly<{
   budget: BudgetReading;
   breakdown: BreakdownReading;
   periods: readonly Period[];
   courseNames: ReadonlyMap<string, string>;
+  stacked: boolean;
 }>) {
   const rows: BudgetRow[] = RP1_ROWS.map(({ key, label, drill }) => ({
     id: key,
@@ -264,6 +271,34 @@ function BudgetTable({
       at: unused,
       unsigned: true,
     });
+  }
+
+  if (stacked) {
+    const period = periods[0];
+    return (
+      <Section gap="related-dense">
+        {rows.map((row) => (
+          <Section gap="related-dense" key={row.id}>
+            <DataLine label={row.label}>
+              {row.unsigned ? (
+                <Unit value={row.at(period)} />
+              ) : (
+                <Signed amount={row.at(period)} />
+              )}
+            </DataLine>
+            {row.drill === undefined || latest(breakdown) === undefined ? null : (
+              <DrillDown
+                breakdown={breakdown}
+                courseNames={courseNames}
+                drill={row.drill}
+                periods={periods}
+                stacked
+              />
+            )}
+          </Section>
+        ))}
+      </Section>
+    );
   }
 
   const columns: DataTableColumn<BudgetRow>[] = [
@@ -322,15 +357,38 @@ function DrillDown({
   breakdown,
   periods,
   courseNames,
+  stacked = false,
 }: Readonly<{
   drill: Drill;
   breakdown: BreakdownReading;
   periods: readonly Period[];
   courseNames: ReadonlyMap<string, string>;
+  stacked?: boolean;
 }>) {
   const { lines, summary } = linesFor(drill, breakdown, courseNames);
   if (lines.length === 0) {
     return null;
+  }
+
+  if (stacked) {
+    const period = periods[0];
+    return (
+      <Disclosure asButton chevron={false} label={summary} variant="inline">
+        <Section gap="related-dense">
+          {lines.map((line) =>
+            line.amounts === undefined ? (
+              <Text key={line.id} level="muted" size="xs">
+                {line.label}
+              </Text>
+            ) : (
+              <DataLine key={line.id} label={line.label}>
+                <Signed amount={line.amounts[period] as FundsReading} />
+              </DataLine>
+            ),
+          )}
+        </Section>
+      </Disclosure>
+    );
   }
 
   const columns: DataTableColumn<Line>[] = [
@@ -656,13 +714,13 @@ function Forecast({ budget }: Readonly<{ budget: BudgetReading }>) {
   const columns: DataTableColumn<Point>[] = [
     {
       key: "horizon",
-      header: "Years ahead",
+      header: <WrapHeader>Years ahead</WrapHeader>,
       rowHeader: true,
       render: (p) => <Unit value={value("count", p.year)} />,
     },
     {
       key: "change",
-      header: "Funds change",
+      header: <WrapHeader>Funds change</WrapHeader>,
       align: "end",
       render: (p) => <Signed amount={p.change as FundsReading} />,
     },
@@ -761,7 +819,7 @@ function CareerLog({
   const allColumns: DataTableColumn<Month>[] = [
     {
       key: "month",
-      header: "Month from",
+      header: <WrapHeader>Month from</WrapHeader>,
       rowHeader: true,
       render: (m) => (
         <>
@@ -777,19 +835,19 @@ function CareerLog({
     },
     {
       key: "programs",
-      header: "Program funds",
+      header: <WrapHeader>Program funds</WrapHeader>,
       align: "end",
       render: (m) => <Unit value={figure(m, "programFunds")} />,
     },
     {
       key: "maintenance",
-      header: "Maintenance",
+      header: <WrapHeader>Maintenance</WrapHeader>,
       align: "end",
       render: (m) => <Unit value={figure(m, "maintenanceFees")} />,
     },
     {
       key: "funds",
-      header: "Funds at close",
+      header: <WrapHeader>Funds at close</WrapHeader>,
       align: "end",
       render: (m) => <Unit value={figure(m, "fundsAtClose")} />,
     },
@@ -880,8 +938,8 @@ function Signed({ amount }: Readonly<{ amount: Amount }>) {
   const sign = magnitudeOf(raw);
   const shown = <Unit value={unsignedOf(amount)} />;
   if (sign === null || sign === 0) return shown;
-  if (sign < 0) return <>({shown})</>;
-  return <>+{shown}</>;
+  if (sign < 0) return <span>({shown})</span>;
+  return <span>+{shown}</span>;
 }
 
 function unsignedOf(amount: Amount): Funds | FundsReading | null | undefined {
