@@ -2,10 +2,14 @@ import { renderHook } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it, vi } from "vitest";
 import { useLaunchCountdownSender } from "./useLaunchCountdownSender.js";
 
-const countdown = (remainingSeconds: number, lengthSeconds = 10) => ({
+const countdown = (
+  remainingSeconds: number,
+  lengthSeconds = 10,
+  liftedOff = false,
+) => ({
   remainingSeconds,
   lengthSeconds,
-  liftedOff: false,
+  liftedOff,
 });
 
 describe("useLaunchCountdownSender", () => {
@@ -77,6 +81,18 @@ describe("useLaunchCountdownSender", () => {
       { initialProps: { liftoff: null as ReturnType<typeof countdown> | null } },
     );
     rerender({ liftoff: null });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("sends nothing when it first sees a countdown that has already run out", () => {
+    const send = vi.fn();
+    renderHook(() => useLaunchCountdownSender(countdown(0), send));
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("sends nothing when it first sees a craft that has already lifted off", () => {
+    const send = vi.fn();
+    renderHook(() => useLaunchCountdownSender(countdown(0, 10, true), send));
     expect(send).not.toHaveBeenCalled();
   });
 });

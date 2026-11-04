@@ -12,8 +12,10 @@ export interface LaunchCountdownMessage {
  * Tells the Uplink when a countdown to liftoff starts and when it is called
  * off, so the launchpad cameras can frame the craft wider over the time left.
  * A countdown that runs out is not called off: the cameras hold wide until the
- * craft is off the ground. Mount it on the main screen only, so one command
- * goes out per countdown however many screens are open.
+ * craft is off the ground, and one first seen at or after T-0 sends nothing,
+ * since the craft it would frame is leaving the pad or already gone. Mount it
+ * on the main screen only, so one command goes out per countdown however many
+ * screens are open.
  */
 export function useLaunchCountdownSender(
   liftoff: LiftoffCountdown | null,
@@ -39,6 +41,7 @@ export function useLaunchCountdownSender(
     const restarted = liftoff.remainingSeconds > lastRemaining.current + 0.5;
     lastRemaining.current = liftoff.remainingSeconds;
     if (sent.current && !restarted) return;
+    if (liftoff.liftedOff || liftoff.remainingSeconds <= 0) return;
     sent.current = true;
     sendRef.current({
       running: true,
