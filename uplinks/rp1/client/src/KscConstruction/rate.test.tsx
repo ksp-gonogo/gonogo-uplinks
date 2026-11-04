@@ -170,6 +170,14 @@ describe("KscConstruction work rate and cancel", () => {
     expect(visibleText(view.container)).not.toContain("rush premium");
   });
 
+  it("names no rush premium when the share of the price drawn did not arrive", async () => {
+    const { view } = mount(construction({ spentCost: null }));
+
+    await screen.findByText("Set rate");
+    expect(visibleText(view.container)).toContain("12,500");
+    expect(visibleText(view.container)).not.toContain("rush premium");
+  });
+
   it("offers neither control on a row RP-1 gave no id", async () => {
     const { view } = mount(construction({ id: null }));
 

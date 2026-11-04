@@ -47,8 +47,10 @@ import { RP1 } from "../uplink.js";
  * that control sends `career.facility.upgrade`, which RP-1 refuses on a save it
  * manages. This Uplink's Facility Upgrades widget queues the same upgrade, so
  * the grid's control would be a dead second one for the same building, priced in
- * stock rounding. The refusal is read from the published gate set; a gate that
- * passes or could not be read leaves the price and the stock control alone.</para>
+ * stock rounding. The refusal is read from the published gate set. A gate that
+ * could not decide counts as a refusal, because the engine refuses the dispatch
+ * on it; a gate that passes or abstains leaves the price and the stock control
+ * alone.</para>
  */
 export function facilityTiers(
   rows: readonly Rp1FacilityEntry[] | null | undefined,
@@ -93,7 +95,8 @@ function isRefused(
   command: string,
 ): boolean {
   const entry = gates?.gates?.find((gate) => gate.command === command);
-  return entry?.verdict?.outcome === GateOutcome.Fail;
+  const outcome = entry?.verdict?.outcome;
+  return outcome === GateOutcome.Fail || outcome === GateOutcome.Unknown;
 }
 
 RP1.registerContribution({

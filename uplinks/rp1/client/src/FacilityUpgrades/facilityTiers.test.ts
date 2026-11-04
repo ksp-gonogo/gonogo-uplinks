@@ -113,7 +113,8 @@ describe("facilityTiers", () => {
   /**
    * The grid draws its Upgrade control from the price and that control sends the
    * stock command, so a refusal of it must leave no price and no control, while
-   * a passing or unreadable gate leaves both.
+   * a gate that passes or abstains leaves both. Unknown withholds them too,
+   * because the engine refuses a dispatch its gate could not decide.
    */
   describe("when the stock upgrade command is refused", () => {
     const row = {
@@ -134,13 +135,16 @@ describe("facilityTiers", () => {
       channels: [],
     });
 
-    it("withholds the price", () => {
-      expect(
-        facilityTiers([row], undefined, gate(GateOutcome.Fail)),
-      ).toEqual([{ facility: "LaunchPad", currentTier: 1, maxTier: 3 }]);
-    });
+    it.each([GateOutcome.Fail, GateOutcome.Unknown])(
+      "withholds the price on %s",
+      (outcome) => {
+        expect(facilityTiers([row], undefined, gate(outcome))).toEqual([
+          { facility: "LaunchPad", currentTier: 1, maxTier: 3 },
+        ]);
+      },
+    );
 
-    it.each([GateOutcome.Pass, GateOutcome.Unknown, GateOutcome.Abstain])(
+    it.each([GateOutcome.Pass, GateOutcome.Abstain])(
       "keeps the price on %s",
       (outcome) => {
         expect(facilityTiers([row], undefined, gate(outcome))[0]).toMatchObject(

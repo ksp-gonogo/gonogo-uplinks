@@ -162,13 +162,15 @@ export function CancelControl({
   if (row.id == null) {
     return null;
   }
+  const spentRush = magnitudeOf(row.spentRushCost);
+  const spent = magnitudeOf(row.spentCost);
   const premium =
-    (magnitudeOf(row.spentRushCost) ?? 0) - (magnitudeOf(row.spentCost) ?? 0);
+    spentRush === null || spent === null ? null : spentRush - spent;
   return (
     <Cluster align="center" gap="related-dense" justify="start" wrap>
       <Text size="xs" level="muted">
         <Unit value={row.spentRushCost} /> drawn so far, none refunded
-        {premium > 0 && (
+        {premium !== null && premium > 0 && (
           <>
             {" ("}
             <Unit value={value("funds", premium)} /> of it rush premium)
