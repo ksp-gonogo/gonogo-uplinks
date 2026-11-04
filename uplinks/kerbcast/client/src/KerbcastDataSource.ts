@@ -1,3 +1,4 @@
+import { isCameraDestroyed } from "@ksp-gonogo/kerbcast-react";
 import {
   BrowserKerbcastTransport,
   CameraKind,
@@ -1078,6 +1079,9 @@ export class KerbcastDataSource {
     for (const camera of this.client.cameras) {
       present.add(camera.flightId);
       this.lastKindSeen.set(camera.flightId, camera.kind);
+      if (isCameraDestroyed(camera) && this.desiredSubs.has(camera.flightId)) {
+        this.departedCommand.add(camera.flightId);
+      }
     }
     for (const [flightId, kind] of [...this.lastKindSeen]) {
       if (present.has(flightId)) continue;
@@ -1103,14 +1107,17 @@ export class KerbcastDataSource {
   }
 
   /**
-   * Bind again every subscribed command camera that was off the camera list
-   * and is back on it. The slot is released and requested afresh, so the
-   * camera gets a new track rather than the one that stopped carrying frames
-   * when the scene it was in ended.
+   * Bind again every subscribed camera that was off the camera list, or listed
+   * as destroyed, and is back on it live (a revert brings a camera back under
+   * the same id, often without it ever leaving the list). The slot is released
+   * and requested afresh, so the camera gets a new track rather than the one
+   * that stopped carrying frames when the scene it was in ended.
    */
   private reacquireReturnedCameras(): void {
     if (this.departedCommand.size === 0) return;
-    const present = new Set(this.client.cameras.map((c) => c.flightId));
+    const present = new Set(
+      this.client.cameras.filter((c) => !isCameraDestroyed(c)).map((c) => c.flightId),
+    );
     for (const flightId of [...this.departedCommand]) {
       if (!this.desiredSubs.has(flightId)) {
         this.departedCommand.delete(flightId);

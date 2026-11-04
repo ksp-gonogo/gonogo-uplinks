@@ -1,5 +1,6 @@
 import {
   CameraKind,
+  CameraLifecycle,
   ErrorCode,
   ErrorSource,
   type KerbcastTransport,
@@ -419,6 +420,34 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     sidecar.setCameras([{ flightId: 77 }]);
     expect(subscribeCount(sidecar, 42)).toBe(1);
     expect(ds.isReacquiring(42)).toBe(false);
+
+    sidecar.setCameras([{ flightId: 42, kind: CameraKind.Command }]);
+
+    await vi.waitFor(() => expect(subscribeCount(sidecar, 42)).toBe(2));
+    expect(sidecar.lastCommand("unsubscribe", 42)).toBeTruthy();
+    await vi.waitFor(() => expect(ds.isReacquiring(42)).toBe(false));
+    ds.disconnect();
+  });
+
+  it("binds a camera again when a revert brings it back under the same id without leaving the list", async () => {
+    const sidecar = new MockSidecar();
+    sidecar.addCamera({ flightId: 42, kind: CameraKind.Command });
+    mockFetch();
+    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
+    await ds.connect();
+    sidecar.open();
+    sidecar.setConnectionState("connected");
+    ds.subscribeCamera(42);
+    expect(subscribeCount(sidecar, 42)).toBe(1);
+
+    sidecar.setCameras([
+      {
+        flightId: 42,
+        kind: CameraKind.Command,
+        lifecycle: CameraLifecycle.Destroyed,
+      },
+    ]);
+    expect(subscribeCount(sidecar, 42)).toBe(1);
 
     sidecar.setCameras([{ flightId: 42, kind: CameraKind.Command }]);
 
