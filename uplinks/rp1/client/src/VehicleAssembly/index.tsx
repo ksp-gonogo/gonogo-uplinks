@@ -273,6 +273,8 @@ registerComponent<VehicleAssemblyConfig>({
     "career.status",
     // The unlock credit drawn beside that balance, which tooling spends first.
     "rp1.budget",
+    // Mission training per kerbal, for the crew line on a build in progress.
+    "rp1.crew",
   ],
   defaultConfig: {},
   actions: [],

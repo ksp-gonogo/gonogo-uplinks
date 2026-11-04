@@ -165,6 +165,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "Rp1BuildQuote": {
     affordable: "flag",
     balance: "funds",
+    integrationSeconds: "s",
     price: "funds",
   },
   "Rp1BuildQuoteArgs": {

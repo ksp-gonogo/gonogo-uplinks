@@ -68,7 +68,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 | `Rp1BudgetPeriod` | `astronauts` funds, `balance` funds, `constructions` funds, `facilities` funds, `fundsDelta` funds, `integrationTeams` funds, `net` funds, `programBudget` funds, `researchTeams` funds, `rollout` funds, `span` s, `subsidy` funds, `unlockCredit` funds, `upkeep` funds, `upkeepBeforeModifiers` funds, `upkeepModifiers` funds |
 | `Rp1BuildableComplex` | `eligible` flag, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `refusals` text |
 | `Rp1BuildingUpkeepEntry` | `facility` enum, `upkeep` Rp1BudgetHorizons |
-| `Rp1BuildQuote` | `affordable` flag, `balance` funds, `price` funds |
+| `Rp1BuildQuote` | `affordable` flag, `balance` funds, `integrationSeconds` s, `price` funds |
 | `Rp1CareerEventEntry` | `builtAt` enum, `cost` funds, `detail` enum, `isAdd` flag, `kind` enum, `launchId` id, `name` text, `repChange` rep, `ut` ut |
 | `Rp1ComplexSizeArgs` | `sizeMaxDepth` m, `sizeMaxHeight` m, `sizeMaxWidth` m |
 | `Rp1ComplexUpkeepEntry` | `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `operational` flag, `upkeep` Rp1BudgetHorizons |
@@ -174,11 +174,11 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | | |
 | --- | --- |
 | Widget id | `rp1-vehicle-assembly` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget`, `rp1.crew` |
 | Slots of its own | `rp1-vehicle-assembly.sections` |
 | Default size, in grid units | 7 × 16 |
 | Smallest size, in grid units | 4 × 6 |
-| Scenes | 10 |
+| Scenes | 11 |
 
 ![Four craft across two launch complexes: one flying-ready and one still integrating at each, the key line at the top saying what LC-1 and LC-2 are and where they stand, and every card naming its complex and the staffing that sets its rate](client/docs/assets/assembly-two-complexes--default.png)
 

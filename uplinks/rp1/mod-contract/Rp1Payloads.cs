@@ -2416,6 +2416,16 @@ public sealed class Rp1BuildQuote
     /// <summary>Whether <see cref="Balance"/> covers <see cref="Price"/>.</summary>
     [SitrepUnit(Units.Flag)]
     public bool Affordable { get; set; }
+
+    /// <summary>
+    /// How long integrating the vehicle at this complex would take, at the
+    /// complex's engineers and efficiency now, in seconds. Null when the
+    /// complex has no rate to integrate at (no engineers, or not operational)
+    /// or RP-1 would not say, which is a different fact from a build that takes
+    /// no time.
+    /// </summary>
+    [SitrepUnit(Units.Seconds)]
+    public double? IntegrationSeconds { get; set; }
 }
 
 /// <summary>

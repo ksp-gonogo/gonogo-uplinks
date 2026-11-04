@@ -142,41 +142,61 @@ describe("starting a build from a saved craft", () => {
     ).toBeInTheDocument();
   });
 
-  it("says RP-1 prices the build when it is started until a quote arrives", async () => {
-    /*
-     * RP-1 charges a vehicle's whole price in funds at the press, so before a
-     * quote lands the card says that instead of showing nothing.
-     */
+  it("draws no price row until a quote arrives", async () => {
     const mounted = mount();
     mounted.fixture.transport.holdCommands();
     await rp1IsPresent(mounted.fixture);
     act(() => {
-      mounted.fixture.emit("career.status", CAREER);
       mounted.fixture.emit("rp1.complexes", COMPLEXES);
       mounted.fixture.emit("rp1.warehouse", []);
       mounted.fixture.emit("rp1.buildQueue", []);
       mounted.fixture.emit("rp1.buildable", [craft()]);
     });
 
-    expect(
-      await screen.findByText(/Priced by RP-1 when started, charged up front/i),
-    ).toBeInTheDocument();
+    await screen.findByRole("button", { name: /Start building Atlas LV-3B/i });
+    expect(screen.queryByText("Price")).not.toBeInTheDocument();
   });
 
-  it("shows RP-1's own price beside Start build once it is quoted", async () => {
+  it("names each complex on its own rows when more than one would take the craft", async () => {
+    await withOneSavedCraft({
+      complexes: ["lc-1", "lc-2"].map((lcId) => ({
+        eligible: true,
+        kscName: "Cape",
+        lcId,
+        name: lcId.toUpperCase(),
+        refusals: [],
+      })),
+    });
+
+    expect(await screen.findByText("LC-1")).toBeInTheDocument();
+    expect(screen.getByText("LC-2")).toBeInTheDocument();
+  });
+
+  it("shows how long integration takes as its own row", async () => {
+    await withOneSavedCraft({}, { ...QUOTE, integrationSeconds: 3 * 24 * 3600 });
+
+    const label = await screen.findByText("Integration");
+    expect(label.parentElement).toHaveTextContent(/\d+d/);
+  });
+
+  it("leaves the integration row out when RP-1 gives none", async () => {
     await withOneSavedCraft();
 
-    const price = await screen.findByText(/Costs/);
-    expect(price).toHaveTextContent("40,000");
-    expect(
-      screen.queryByText(/Priced by RP-1 when started/i),
-    ).not.toBeInTheDocument();
+    await screen.findByText("Price");
+    expect(screen.queryByText("Integration")).not.toBeInTheDocument();
+  });
+
+  it("shows RP-1's own price as a row once it is quoted", async () => {
+    await withOneSavedCraft();
+
+    const label = await screen.findByText("Price");
+    expect(label.parentElement).toHaveTextContent("40,000");
   });
 
   it("asks for the quote with the craft, the editor and the complex, from the space program", async () => {
     const { fixture } = await withOneSavedCraft();
 
-    await screen.findByText(/Costs/);
+    await screen.findByText("Price");
     const sent = fixture.transport.sentCommands.filter(
       (c) => c.command === RP1_BUILD_QUOTE_COMMAND,
     );
@@ -191,7 +211,7 @@ describe("starting a build from a saved craft", () => {
 
   it("asks once for a craft however often the listing is re-sent", async () => {
     const { fixture } = await withOneSavedCraft();
-    await screen.findByText(/Costs/);
+    await screen.findByText("Price");
 
     act(() => {
       fixture.emit("rp1.buildable", [craft()]);
@@ -208,7 +228,7 @@ describe("starting a build from a saved craft", () => {
 
   it("asks again when the craft file was saved over", async () => {
     const { fixture } = await withOneSavedCraft();
-    await screen.findByText(/Costs/);
+    await screen.findByText("Price");
 
     act(() => {
       fixture.emit("rp1.buildable", [craft({ mass: 150, partCount: 51 })]);
@@ -223,28 +243,12 @@ describe("starting a build from a saved craft", () => {
     });
   });
 
-  it("says the career cannot afford it once its funds fall short, since RP-1 refuses up front", async () => {
-    const { fixture } = await withOneSavedCraft();
-    await screen.findByText(/Costs/);
-    expect(screen.queryByText(/Cannot afford/)).not.toBeInTheDocument();
-
-    act(() => {
-      fixture.emit("career.status", {
-        balances: { funds: 1_000, reputation: 40, science: 12 },
-      });
-    });
-
-    expect(await screen.findByText(/Cannot afford/)).toBeInTheDocument();
-  });
-
-  it("keeps the plain fact when RP-1 will not quote the craft", async () => {
+  it("draws no price row and no sentence when RP-1 will not quote the craft", async () => {
     await withOneSavedCraft({}, null);
     await act(async () => {});
 
-    expect(
-      await screen.findByText(/Priced by RP-1 when started, charged up front/i),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/Costs/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Price")).not.toBeInTheDocument();
+    expect(screen.queryByText(/priced by RP-1/i)).not.toBeInTheDocument();
   });
 
   it("asks no quote for a craft that cannot be built", async () => {
@@ -296,7 +300,7 @@ describe("starting a build from a saved craft", () => {
   it("keeps the quoted price on screen while the confirm is armed", async () => {
     await withOneSavedCraft();
     const user = userEvent.setup();
-    await screen.findByText(/Costs/);
+    await screen.findByText("Price");
 
     await user.click(
       await screen.findByRole("button", {

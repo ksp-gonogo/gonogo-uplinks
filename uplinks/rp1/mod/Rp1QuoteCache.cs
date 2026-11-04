@@ -9,9 +9,9 @@ namespace GonogoRp1Uplink
     ///
     /// <para>An entry is good while two things hold. The key names the build: the
     /// craft file, its editor, when the file was last written and the complex.
-    /// The stamp names what else the price depends on, which is the career's own
-    /// state (tooling bought, and what leaders and strategies do to a vehicle
-    /// purchase). A different stamp makes the entry a miss, and the next quote
+    /// The stamp names what else the price and the integration time depend on:
+    /// the career's own state (tooling bought, and what leaders and strategies
+    /// do to a vehicle purchase) and the complex's staffing. A different stamp makes the entry a miss, and the next quote
     /// replaces it.</para>
     ///
     /// <para>Read and written on the game's main thread only, where commands run.
@@ -30,39 +30,43 @@ namespace GonogoRp1Uplink
             file.Length + ":" + file + "|" + (facility == null ? "-" : ((int)facility.Value).ToString())
             + "|" + modified + "|" + lcId;
 
-        /// <summary>The cached price when an entry exists for the key and was made under the same stamp.</summary>
-        public bool TryGet(string key, string stamp, out double price)
+        /// <summary>The cached price and integration time when an entry exists for the key and was made under the same stamp.</summary>
+        public bool TryGet(string key, string stamp, out double price, out double? seconds)
         {
             if (_entries.TryGetValue(key, out var entry) && entry.Stamp == stamp)
             {
                 price = entry.Price;
+                seconds = entry.Seconds;
                 return true;
             }
 
             price = 0.0;
+            seconds = null;
             return false;
         }
 
-        /// <summary>Remembers a price under a key and the stamp it was made under, replacing any earlier one.</summary>
-        public void Put(string key, string stamp, double price)
+        /// <summary>Remembers a price and integration time under a key and the stamp they were made under, replacing any earlier entry.</summary>
+        public void Put(string key, string stamp, double price, double? seconds)
         {
             if (_entries.Count >= Capacity && !_entries.ContainsKey(key))
             {
                 _entries.Clear();
             }
 
-            _entries[key] = new Entry(stamp, price);
+            _entries[key] = new Entry(stamp, price, seconds);
         }
 
         private readonly struct Entry
         {
             public readonly string Stamp;
             public readonly double Price;
+            public readonly double? Seconds;
 
-            public Entry(string stamp, double price)
+            public Entry(string stamp, double price, double? seconds)
             {
                 Stamp = stamp;
                 Price = price;
+                Seconds = seconds;
             }
         }
     }

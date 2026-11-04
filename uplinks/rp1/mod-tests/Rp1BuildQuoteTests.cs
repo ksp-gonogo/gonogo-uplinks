@@ -38,6 +38,7 @@ namespace GonogoRp1Uplink.Tests
             CurrencyModifierQueryRP0.Reset();
             ToolingDatabase.Generation = 0;
             RP0.Harmony.RFECMPatcher.techNode = null;
+            VesselProject.NextTimeLeft = double.PositiveInfinity;
         }
 
         private static LaunchComplex Centre()
@@ -80,6 +81,46 @@ namespace GonogoRp1Uplink.Tests
             Assert.Equal(20_000.0, result.Payload!.Price);
             Assert.Equal(100_000.0, result.Payload.Balance);
             Assert.True(result.Payload.Affordable);
+        }
+
+        [Fact]
+        public void Gives_the_integration_time_rp1_estimates_for_the_complex()
+        {
+            VesselProject.NextTimeLeft = 86_400.0 * 30;
+            var lc = Centre();
+            Craft();
+
+            var result = Quote("Atlas", lc);
+
+            Assert.Equal(86_400.0 * 30, result.Payload!.IntegrationSeconds);
+        }
+
+        [Fact]
+        public void Gives_no_integration_time_where_the_complex_has_no_rate()
+        {
+            var lc = Centre();
+            Craft();
+
+            var result = Quote("Atlas", lc);
+
+            Assert.True(result.Success);
+            Assert.Null(result.Payload!.IntegrationSeconds);
+        }
+
+        [Fact]
+        public void Asks_again_for_the_time_when_the_complex_is_restaffed()
+        {
+            VesselProject.NextTimeLeft = 1_000.0;
+            var lc = Centre();
+            Craft();
+            Quote("Atlas", lc);
+
+            lc.Engineers = 20;
+            VesselProject.NextTimeLeft = 500.0;
+            var again = Quote("Atlas", lc);
+
+            Assert.Equal(500.0, again.Payload!.IntegrationSeconds);
+            Assert.Equal(2, _catalogue.Loaded.Count);
         }
 
         [Fact]

@@ -1,0 +1,189 @@
+{
+  "_meta": {
+    "notes": "A vehicle 45 days from the end of integration beside four mission-trained kerbals: two would be trained and out of any course by then, one lapses first and one is still in a course."
+  },
+  "_scene": {
+    "hero": false,
+    "widget": "rp1-vehicle-assembly",
+    "size": {
+      "w": 8,
+      "h": 20
+    },
+    "caption": "One vehicle integrating at LC-1, finishing in 45 days, with a Crew free / trained line under its clock: two of the four mission-trained kerbals would still be trained and out of any course when it finishes",
+    "paints": [
+      "Atlas",
+      "INTEGRATING",
+      "until integration finishes",
+      "Crew free / trained",
+      "2/4"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "career.status",
+        "payload": {
+          "balances": {
+            "funds": 289848,
+            "reputation": 62,
+            "science": 340
+          }
+        }
+      },
+      {
+        "topic": "rp1.available",
+        "payload": true
+      },
+      {
+        "topic": "rp1.complexes",
+        "payload": [
+          {
+            "kscName": "Cape",
+            "lcId": "lc-1",
+            "name": "LC-1",
+            "lcType": "Pad",
+            "isOperational": true,
+            "isRushing": false,
+            "engineers": 18,
+            "maxEngineers": 60,
+            "efficiency": 0.72,
+            "canIntegrate": true,
+            "rate": 0.00019290123456790122,
+            "humanRated": false,
+            "massMin": 6,
+            "massMax": 180
+          },
+          {
+            "kscName": "Cape",
+            "lcId": "lc-2",
+            "name": "LC-2",
+            "lcType": "Pad",
+            "isOperational": true,
+            "isRushing": false,
+            "engineers": 6,
+            "maxEngineers": 40,
+            "efficiency": 0.4,
+            "canIntegrate": true,
+            "rate": 6.430041152263374e-05,
+            "humanRated": false,
+            "massMin": 3,
+            "massMax": 90
+          }
+        ]
+      },
+      {
+        "topic": "rp1.pads",
+        "payload": [
+          {
+            "kscName": "Cape",
+            "lcId": "lc-1",
+            "padId": "pad-1",
+            "isOperational": true,
+            "name": "LaunchPad",
+            "launchSiteName": "LaunchPad",
+            "level": 2,
+            "fractionalLevel": 2,
+            "status": "Free",
+            "hasVesselWaiting": false,
+            "waitingVesselName": null
+          },
+          {
+            "kscName": "Cape",
+            "lcId": "lc-2",
+            "padId": "pad-2",
+            "isOperational": true,
+            "name": "LaunchPad 2",
+            "launchSiteName": "LaunchPad 2",
+            "level": 1,
+            "fractionalLevel": 1,
+            "status": "Free",
+            "hasVesselWaiting": false,
+            "waitingVesselName": null
+          }
+        ]
+      },
+      {
+        "topic": "rp1.operations",
+        "payload": []
+      },
+      {
+        "topic": "rp1.warehouse",
+        "payload": []
+      },
+      {
+        "topic": "rp1.buildQueue",
+        "payload": [
+          {
+            "id": "vp-atlas-2",
+            "shipId": "ship-atlas-2",
+            "kscName": "Cape",
+            "lcId": "lc-1",
+            "shipName": "Atlas",
+            "cost": 40000,
+            "mass": 120,
+            "humanRated": false,
+            "launchSite": "LaunchPad",
+            "projectType": "VAB",
+            "progress": 250,
+            "totalPoints": 1000,
+            "progressRatio": 0.25,
+            "rate": 0.00019290123456790122,
+            "timeLeftSeconds": 3888000,
+            "stalled": false,
+            "rolloutRefusals": null
+          }
+        ]
+      },
+      {
+        "topic": "rp1.buildable",
+        "payload": []
+      },
+      {
+        "topic": "rp1.crew",
+        "payload": [
+          {
+            "name": "Valentina Kerman",
+            "retired": false,
+            "trainingExpiryCount": 1,
+            "nextTrainingExpiryUt": 5200000,
+            "nextTrainingExpiryTarget": "Atlas-D",
+            "retiresAtUt": 90000000,
+            "trainingCourse": null,
+            "trainingFinishesAtUt": null
+          },
+          {
+            "name": "Jebediah Kerman",
+            "retired": false,
+            "trainingExpiryCount": 1,
+            "nextTrainingExpiryUt": 4500000,
+            "nextTrainingExpiryTarget": "Atlas-D",
+            "retiresAtUt": 90000000,
+            "trainingCourse": null,
+            "trainingFinishesAtUt": null
+          },
+          {
+            "name": "Bill Kerman",
+            "retired": false,
+            "trainingExpiryCount": 1,
+            "nextTrainingExpiryUt": 5200000,
+            "nextTrainingExpiryTarget": "Atlas-D",
+            "retiresAtUt": 90000000,
+            "trainingCourse": "Mission training",
+            "trainingFinishesAtUt": 4600000
+          },
+          {
+            "name": "Bob Kerman",
+            "retired": false,
+            "trainingExpiryCount": 1,
+            "nextTrainingExpiryUt": 5200000,
+            "nextTrainingExpiryTarget": "Atlas-D",
+            "retiresAtUt": 90000000,
+            "trainingCourse": "Mission training",
+            "trainingFinishesAtUt": 5000000
+          }
+        ]
+      }
+    ]
+  }
+}

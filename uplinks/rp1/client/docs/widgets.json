@@ -26,7 +26,8 @@
         "rp1.buildCost",
         "rp1.tooling",
         "career.status",
-        "rp1.budget"
+        "rp1.budget",
+        "rp1.crew"
       ],
       "fields": [],
       "actions": [],

@@ -300,10 +300,14 @@ namespace GonogoRp1Uplink
             }
 
             var stamp = CareerStamp();
-            var key = KeyFor(target!, args!.Facility);
-            if (key != null && stamp != null && _quotes.TryGet(key, stamp, out var cached))
+            if (stamp != null)
             {
-                return Quoted(cached);
+                stamp += "|" + StaffingStamp(target!.Complex);
+            }
+            var key = KeyFor(target!, args!.Facility);
+            if (key != null && stamp != null && _quotes.TryGet(key, stamp, out var cached, out var cachedSeconds))
+            {
+                return Quoted(cached, cachedSeconds);
             }
 
             refusal = OpenCraft(target!, args.Facility, out var load);
@@ -326,16 +330,18 @@ namespace GonogoRp1Uplink
                     return Refused(priceFailure);
                 }
 
+                var seconds = IntegrationSeconds(vessel!);
                 var modified = load!.Measured?.Modified;
                 if (stamp != null && modified != null)
                 {
                     _quotes.Put(
                         Rp1QuoteCache.KeyOf(target.File, args.Facility, modified.Value, target.LcId),
                         stamp,
-                        price);
+                        price,
+                        seconds);
                 }
 
-                return Quoted(price);
+                return Quoted(price, seconds);
             }
             finally
             {
@@ -346,7 +352,41 @@ namespace GonogoRp1Uplink
         private static CommandResult<Rp1BuildQuote> Refused(CommandResult refusal) =>
             CommandResult<Rp1BuildQuote>.Fail(refusal.ErrorCode!, refusal.Detail);
 
-        private static CommandResult<Rp1BuildQuote> Quoted(double price)
+        /// <summary>
+        /// RP-1's own estimate of how long the prepared vehicle takes to integrate
+        /// at its complex (<c>VesselProject.GetTimeLeft()</c>, the figure its build
+        /// list shows). Null when the call is missing or throws, and when it answers
+        /// infinity or a non-positive number, which is what a complex with no rate
+        /// returns: neither is a duration a client can draw.
+        /// </summary>
+        private static double? IntegrationSeconds(object vessel)
+        {
+            try
+            {
+                var method = Rp1Types.InstanceMethod(vessel, "GetTimeLeft", 0);
+                var seconds = Rp1Types.ToDouble(method?.Invoke(vessel, null));
+                return seconds != null && !double.IsNaN(seconds.Value) && !double.IsInfinity(seconds.Value)
+                    && seconds.Value > 0.0
+                    ? seconds
+                    : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// What the complex's rate depends on and an operator can change: its
+        /// engineers, whether it is rushing, and the rate those give. Part of the
+        /// cache stamp, so a quote taken before a hire is not served after it.
+        /// </summary>
+        private static string StaffingStamp(object complex) =>
+            (Rp1Types.ReadDouble(complex, "Engineers") ?? -1.0).ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+            + "|" + (Rp1Types.ReadBool(complex, "IsRushing") == true ? "1" : "0")
+            + "|" + (Rp1Types.ReadDouble(complex, "Rate") ?? -1.0).ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+
+        private static CommandResult<Rp1BuildQuote> Quoted(double price, double? seconds)
         {
             var balance = Rp1Pricing.FundsBalance();
             return CommandResult<Rp1BuildQuote>.Ok(new Rp1BuildQuote
@@ -354,6 +394,7 @@ namespace GonogoRp1Uplink
                 Price = price,
                 Balance = balance,
                 Affordable = balance != null && balance.Value >= price,
+                IntegrationSeconds = seconds,
             });
         }
 

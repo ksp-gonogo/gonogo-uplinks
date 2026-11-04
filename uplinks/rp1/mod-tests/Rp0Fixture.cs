@@ -458,6 +458,14 @@ namespace RP0
 
         public void SetBuildRate(double rate) => _buildRate = rate;
 
+        /// <summary>
+        /// What <see cref="GetTimeLeft"/> answers for every vehicle, infinity by
+        /// default as on the real type at a zero rate.
+        /// </summary>
+        public static double NextTimeLeft = double.PositiveInfinity;
+
+        public double GetTimeLeft() => NextTimeLeft;
+
         /// <summary>Puts this vehicle in a complex, the way RP-1's own add does.</summary>
         public void SetComplex(LaunchComplex lc) => _lc = lc;
 

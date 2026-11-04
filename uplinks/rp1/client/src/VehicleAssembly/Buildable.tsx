@@ -5,10 +5,11 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Badge,
   Button,
   Cluster,
   CommandButton,
+  Countdown,
+  DataLine,
   NULL_DISPLAY,
   Section,
   SectionTitle,
@@ -76,7 +77,6 @@ export const RP1_BUILD_QUOTE_COMMAND = "rp1.build.quote";
 export function BuildableSection() {
   const available = current(useTelemetry("rp1.available"));
   const buildable = current(useTelemetry("rp1.buildable"));
-  const funds = current(useTelemetry("career.status"))?.balances?.funds;
 
   // Unconditional and above the early returns on purpose: a hook after one
   // would change count on the first frame RP-1 answers.
@@ -106,7 +106,6 @@ export function BuildableSection() {
           {buildable.map((craft) => (
             <CraftCard
               craft={craft}
-              funds={funds}
               handle={start}
               key={cardKey(craft)}
             />
@@ -116,6 +115,8 @@ export function BuildableSection() {
     </Section>
   );
 }
+
+const NO_FILE_NAME = "No craft file name for this design";
 
 /**
  * One saved craft: what it is, and where it could be
@@ -128,11 +129,9 @@ export function BuildableSection() {
  */
 function CraftCard({
   craft,
-  funds,
   handle,
 }: Readonly<{
   craft: Rp1BuildableCraftEntry;
-  funds: Value<"funds"> | null | undefined;
   handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const name = craft.shipName ?? craft.craftFile ?? NULL_DISPLAY;
@@ -143,7 +142,7 @@ function CraftCard({
   /* A craft with no file name has no address, and guessing one from the ship
      name would build whichever file the folder listed first. */
   const blockReason =
-    partBlock ?? (file === null ? "No craft file name for this design" : null);
+    partBlock ?? (file === null ? NO_FILE_NAME : null);
 
   return (
     <ProjectCard
@@ -165,9 +164,9 @@ function CraftCard({
         parts
       </Text>
 
-      {blockReason !== null ? (
+      {blockReason !== null || file === null ? (
         <Cluster gap="related-dense" justify="start" wrap>
-          <DeadButtons complexes={complexes} reason={blockReason} />
+          <DeadButtons complexes={complexes} reason={blockReason ?? NO_FILE_NAME} />
         </Cluster>
       ) : (
         <Stack gap="related-dense">
@@ -176,7 +175,6 @@ function CraftCard({
               complex={complex}
               craft={craft}
               file={file}
-              funds={funds}
               key={`${cardKey(craft)}:${complex.lcId ?? complexLabel(complex)}:${craft.mass}:${craft.partCount}`}
               named={eligible.length > 1}
             />
@@ -212,17 +210,16 @@ function CraftCard({
   );
 }
 
-/** A quote with its figures as funds, ready to draw and to compare with the balance. */
+/** A quote with its figures carrying their units, ready to draw. */
 interface QuotedFigures {
-  readonly affordable: boolean;
-  readonly balance: Value<"funds"> | null;
+  readonly integration: Value<"s"> | null;
   readonly price: Value<"funds">;
 }
 
 /**
- * The quote's figures as funds. An Uplink's own command replies reach the
- * client without their units, so the two amounts arrive as bare numbers and are
- * given theirs here; a reply that already carries them passes through.
+ * The quote's figures with their units. An Uplink's own command replies reach
+ * the client without them, so the amounts arrive as bare numbers and are given
+ * theirs here; a reply that already carries them passes through.
  */
 function quotedFigures(
   quote: Readonly<Rp1BuildQuote> | null | undefined,
@@ -231,10 +228,18 @@ function quotedFigures(
     return null;
   }
   return {
-    affordable: quote.affordable,
-    balance: asFunds(quote.balance),
+    integration: asSeconds(quote.integrationSeconds),
     price: asFunds(quote.price),
   };
+}
+
+function asSeconds(
+  amount: Value<"s"> | number | null | undefined,
+): Value<"s"> | null {
+  if (amount === null || amount === undefined) {
+    return null;
+  }
+  return typeof amount === "number" ? value("s", amount) : amount;
 }
 
 function asFunds(amount: Value<"funds"> | number): Value<"funds">;
@@ -247,32 +252,29 @@ function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"fun
 }
 
 /**
- * What RP-1 will charge to start this craft at one complex, beside the control
- * that starts it.
+ * What RP-1 will charge to start this craft at one complex, and how long
+ * integration would take there, as two label and value lines above the buttons.
+ * Useful for showing the operator what each complex costs and how long it takes
+ * before either build button is pressed. Used by the cards of the Vehicle
+ * Assembly start a build section.
  *
- * <para>RP-1 takes a vehicle's whole price in funds at the press and refuses
- * when the career cannot cover it, so a price and a verdict against the
- * balance are both honest here. The price is RP-1's own, asked once when the
- * card is drawn and again only when the craft's measured figures change, which
- * is when its file was saved over: a quote loads the craft's parts in the game,
- * so it is never asked on a timer. Until it arrives, or when RP-1 will not
- * quote, the card says that RP-1 prices the build when it is started.</para>
- *
- * <para>The verdict compares the quoted price with the balance as it is now
- * and not as it was when the quote was given, so it follows the career's
- * funds without asking again.</para>
+ * <para>The price is RP-1's own, asked once when the card is drawn and again
+ * only when the craft's measured figures change, because a quote loads the
+ * craft's parts in the game. Nothing is drawn until it arrives or when RP-1
+ * will not quote. The integration row is left out when RP-1 gives no estimate.
+ * With more than one eligible complex each pair is headed by the complex's
+ * name. Whether the career can afford it is left to the build button, which
+ * RP-1 refuses at the press.</para>
  */
 function BuildQuote({
   complex,
   craft,
   file,
-  funds,
   named,
 }: Readonly<{
   complex: Rp1BuildableComplex;
   craft: Rp1BuildableCraftEntry;
   file: string;
-  funds: Value<"funds"> | null | undefined;
   named: boolean;
 }>) {
   const quote = useCommand(RP1_BUILD_QUOTE_COMMAND, {
@@ -284,6 +286,7 @@ function BuildQuote({
   const [answer, setAnswer] = useState<QuotedFigures | null>(null);
   const facility = craft.facility;
   const lcId = complex.lcId;
+  const complexName = complex.name ?? complexLabel(complex);
 
   useEffect(() => {
     let live = true;
@@ -306,29 +309,26 @@ function BuildQuote({
     };
   }, [file, facility, lcId]);
 
-  const where = named ? ` at ${complex.name ?? complexLabel(complex)}` : "";
   if (answer === null) {
-    return (
-      <Text size="xs" level="muted">
-        Priced by RP-1 when started, charged up front in funds
-      </Text>
-    );
+    return null;
   }
 
-  const balance = funds ?? answer.balance;
-  const affordable =
-    balance == null
-      ? answer.affordable
-      : balance.valueOf() >= answer.price.valueOf();
-
   return (
-    <Cluster gap="related-dense" justify="start" wrap>
-      <Text size="xs" level="muted">
-        Costs <Unit value={answer.price} decimals={0} />
-        {where}, charged up front
-      </Text>
-      {affordable ? null : <Badge tone="nogo">Cannot afford</Badge>}
-    </Cluster>
+    <Stack gap="related-dense">
+      {named ? (
+        <Text size="xs" level="muted">
+          {complexName}
+        </Text>
+      ) : null}
+      <DataLine label="Price">
+        <Unit value={answer.price} decimals={0} />
+      </DataLine>
+      {answer.integration === null ? null : (
+        <DataLine label="Integration">
+          <Countdown value={answer.integration} />
+        </DataLine>
+      )}
+    </Stack>
   );
 }
 

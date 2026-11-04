@@ -2614,6 +2614,13 @@ export interface Rp1BuildQuote
 	balance?: Value<"funds"> | null;
 	/** Whether `Rp1BuildQuote.balance` covers `Rp1BuildQuote.price`. */
 	affordable: boolean;
+	/**
+	* How long integrating the vehicle at this complex would take, at the
+	* complex's engineers and efficiency now, in seconds. Null when the complex
+	* has no rate to integrate at (no engineers, or not operational) or RP-1 would
+	* not say, which is a different fact from a build that takes no time.
+	*/
+	integrationSeconds?: Value<"s"> | null;
 }
 /**
 * One saved craft file, and what each launch complex would make of it.

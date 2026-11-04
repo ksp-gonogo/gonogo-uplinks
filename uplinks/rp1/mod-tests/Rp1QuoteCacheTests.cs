@@ -12,9 +12,9 @@ namespace GonogoRp1Uplink.Tests
         public void Gives_back_a_price_for_the_same_build_under_the_same_stamp()
         {
             var cache = new Rp1QuoteCache();
-            cache.Put(Key(), "s1", 40_000.0);
+            cache.Put(Key(), "s1", 40_000.0, null);
 
-            Assert.True(cache.TryGet(Key(), "s1", out var price));
+            Assert.True(cache.TryGet(Key(), "s1", out var price, out _));
             Assert.Equal(40_000.0, price);
         }
 
@@ -22,40 +22,40 @@ namespace GonogoRp1Uplink.Tests
         public void Misses_when_the_careers_stamp_moved()
         {
             var cache = new Rp1QuoteCache();
-            cache.Put(Key(), "s1", 40_000.0);
+            cache.Put(Key(), "s1", 40_000.0, null);
 
-            Assert.False(cache.TryGet(Key(), "s2", out _));
+            Assert.False(cache.TryGet(Key(), "s2", out _, out _));
         }
 
         [Fact]
         public void Misses_when_the_file_was_written_again()
         {
             var cache = new Rp1QuoteCache();
-            cache.Put(Key(modified: 100), "s1", 40_000.0);
+            cache.Put(Key(modified: 100), "s1", 40_000.0, null);
 
-            Assert.False(cache.TryGet(Key(modified: 101), "s1", out _));
+            Assert.False(cache.TryGet(Key(modified: 101), "s1", out _, out _));
         }
 
         [Fact]
         public void Keeps_each_complex_and_each_editor_apart()
         {
             var cache = new Rp1QuoteCache();
-            cache.Put(Key(lc: "lc-1"), "s", 1.0);
+            cache.Put(Key(lc: "lc-1"), "s", 1.0, null);
 
-            Assert.False(cache.TryGet(Key(lc: "lc-2"), "s", out _));
+            Assert.False(cache.TryGet(Key(lc: "lc-2"), "s", out _, out _));
             Assert.False(cache.TryGet(
-                Rp1QuoteCache.KeyOf("Atlas", KspEditorFacility.SPH, 100, "lc-1"), "s", out _));
+                Rp1QuoteCache.KeyOf("Atlas", KspEditorFacility.SPH, 100, "lc-1"), "s", out _, out _));
         }
 
         [Fact]
         public void A_newer_stamp_replaces_the_older_price()
         {
             var cache = new Rp1QuoteCache();
-            cache.Put(Key(), "s1", 40_000.0);
-            cache.Put(Key(), "s2", 30_000.0);
+            cache.Put(Key(), "s1", 40_000.0, null);
+            cache.Put(Key(), "s2", 30_000.0, null);
 
-            Assert.False(cache.TryGet(Key(), "s1", out _));
-            Assert.True(cache.TryGet(Key(), "s2", out var price));
+            Assert.False(cache.TryGet(Key(), "s1", out _, out _));
+            Assert.True(cache.TryGet(Key(), "s2", out var price, out _));
             Assert.Equal(30_000.0, price);
         }
 
@@ -65,13 +65,13 @@ namespace GonogoRp1Uplink.Tests
             var cache = new Rp1QuoteCache();
             for (var i = 0; i < Rp1QuoteCache.Capacity; i++)
             {
-                cache.Put(Key(file: "craft" + i), "s", i);
+                cache.Put(Key(file: "craft" + i), "s", i, null);
             }
 
-            cache.Put(Key(file: "one-more"), "s", 1.0);
+            cache.Put(Key(file: "one-more"), "s", 1.0, null);
 
-            Assert.False(cache.TryGet(Key(file: "craft0"), "s", out _));
-            Assert.True(cache.TryGet(Key(file: "one-more"), "s", out _));
+            Assert.False(cache.TryGet(Key(file: "craft0"), "s", out _, out _));
+            Assert.True(cache.TryGet(Key(file: "one-more"), "s", out _, out _));
         }
     }
 }

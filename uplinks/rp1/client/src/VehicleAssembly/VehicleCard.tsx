@@ -17,6 +17,7 @@ import type {
   Rp1WarehouseItemEntry,
 } from "../__generated__/contract.js";
 import { ProjectCard } from "../shared/ProjectCard.js";
+import { CrewAtFinishLine } from "./CrewAtFinishLine.js";
 import {
   atPad,
   eligiblePadNames,
@@ -102,6 +103,9 @@ export function VehicleCard({
       tone={settled(item, waiting, operation) ? "go" : "warn"}
     >
       <TimeLeft complex={complex} item={item} operation={operation} />
+      {waiting && operation === undefined ? (
+        <CrewAtFinishLine build={item as Rp1BuildItemEntry} />
+      ) : null}
       <ComplexRate complex={complex} />
 
       {id === null ? (

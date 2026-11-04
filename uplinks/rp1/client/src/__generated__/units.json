@@ -125,6 +125,7 @@
     "Rp1BuildQuote": {
       "affordable": "flag",
       "balance": "funds",
+      "integrationSeconds": "s",
       "price": "funds"
     },
     "Rp1BuildQuoteArgs": {
