@@ -69,6 +69,11 @@
       "supportsZoom": "flag",
       "vesselId": "id"
     },
+    "KerbcastLaunchCountdownArgs": {
+      "lengthSeconds": "s",
+      "remainingSeconds": "s",
+      "running": "flag"
+    },
     "KerbcastSetCommandAimArgs": {
       "cameraId": "id",
       "lensKey": "text",

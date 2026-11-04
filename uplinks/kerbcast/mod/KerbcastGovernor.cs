@@ -17,6 +17,12 @@ namespace Gonogo.KerbcastUplink
 
         /// <summary>Main thread: a game state was loaded.</summary>
         void OnGameLoaded();
+
+        /// <summary>Any thread: a countdown to liftoff has <paramref name="remainingSeconds"/> left of its <paramref name="lengthSeconds"/>.</summary>
+        void SayLaunchCountdown(double remainingSeconds, double lengthSeconds);
+
+        /// <summary>Any thread: the countdown to liftoff was called off.</summary>
+        void CancelLaunchCountdown();
     }
 
     /// <summary>
@@ -87,6 +93,10 @@ namespace Gonogo.KerbcastUplink
         }
 
         public void OnGameLoaded() => _model.OnGameLoaded();
+
+        public void SayLaunchCountdown(double remainingSeconds, double lengthSeconds) => _model.SayLaunchCountdown(remainingSeconds, lengthSeconds);
+
+        public void CancelLaunchCountdown() => _model.CancelLaunchCountdown();
 
         public void Dispose() => KerbcastApi.Identity -= _model.OnIdentity;
 

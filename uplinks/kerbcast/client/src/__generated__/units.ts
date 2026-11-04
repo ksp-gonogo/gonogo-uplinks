@@ -109,6 +109,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportsZoom: "flag",
     vesselId: "id",
   },
+  "KerbcastLaunchCountdownArgs": {
+    lengthSeconds: "s",
+    remainingSeconds: "s",
+    running: "flag",
+  },
   "KerbcastSetCommandAimArgs": {
     cameraId: "id",
     lensKey: "text",

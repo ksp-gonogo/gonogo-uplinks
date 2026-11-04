@@ -73,6 +73,7 @@ public static class KerbcastRtConfig
             typeof(KerbcastSetFieldOfViewArgs),
             typeof(KerbcastSetPanArgs),
             typeof(KerbcastSetCommandAimArgs),
+            typeof(KerbcastLaunchCountdownArgs),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Gonogo.KerbcastUplink;
 using GonogoKerbcastUplink;
 using Sitrep.Contract;
@@ -36,9 +38,19 @@ namespace GonogoKerbcastUplink.Tests
         public void Every_aim_command_names_its_lens_as_Subject()
         {
             var commands = KerbcastManifest.Build().Commands;
+            var aims = commands.Where(c => c.Command != KerbcastManifest.LaunchCountdownCommand).ToList();
 
-            Assert.All(commands, c => Assert.Equal("kerbcast.lens.{args.LensKey}", c.Subject));
-            Assert.Equal(3, commands.Count);
+            Assert.All(aims, c => Assert.Equal("kerbcast.lens.{args.LensKey}", c.Subject));
+            Assert.Equal(3, aims.Count);
+        }
+
+        [Fact]
+        public void The_launch_countdown_is_a_ground_side_choice_that_takes_no_signal_delay()
+        {
+            var tag = (SitrepCommandAttribute)Attribute.GetCustomAttribute(typeof(KerbcastLaunchCountdownArgs), typeof(SitrepCommandAttribute))!;
+
+            Assert.Equal(KerbcastManifest.LaunchCountdownCommand, tag.CommandId);
+            Assert.Equal(DelayRole.TrueNow, tag.Delay);
         }
 
         [Fact]

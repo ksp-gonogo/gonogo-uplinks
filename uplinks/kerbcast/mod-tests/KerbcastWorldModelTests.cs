@@ -492,6 +492,59 @@ public class KerbcastWorldModelTests
         Assert.Contains(log, l => l == "[Kerbcast][WORLD] launch-site feed=6 site=Island Runway none: the game has no launch site of that name near=none");
     }
 
+    [Fact]
+    public void ACountdownWidensTheActiveCraftsFramingAndLeavesEveryOtherCraftAlone()
+    {
+        var model = FollowingModel(() => ProbePid);
+        foreach (var id in new[] { ProbeId, StationId })
+        {
+            _places.Learn(id, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+            _knowledge.Add(Ksc, id, CraftKnowledgeState.Heard, 99.0, 2.0);
+        }
+
+        _sites.Delivered[Ksc] = 100.0;
+        PublishWith(model, 100.0, 0.0);
+        var before = _kc.Command.Published.Last().Find(Ksc, ProbePid).UncertaintyRadiusM;
+
+        model.SayLaunchCountdown(10.0, 10.0);
+        _sites.Delivered[Ksc] = 101.0;
+        PublishWith(model, 101.0, 1.0);
+        _sites.Delivered[Ksc] = 106.0;
+        PublishWith(model, 106.0, 6.0);
+        var halfway = _kc.Command.Published.Last();
+        _sites.Delivered[Ksc] = 112.0;
+        PublishWith(model, 112.0, 12.0);
+        var atLiftoff = _kc.Command.Published.Last();
+
+        Assert.Equal(2.0, before);
+        Assert.Equal(KerbcastLaunchFraming.WidestRadiusM * KerbcastLaunchFraming.Ease(0.5), halfway.Find(Ksc, ProbePid).UncertaintyRadiusM, 1);
+        Assert.Equal(KerbcastLaunchFraming.WidestRadiusM, atLiftoff.Find(Ksc, ProbePid).UncertaintyRadiusM, 1);
+        Assert.Equal(2.0, atLiftoff.Find(Ksc, StationPid).UncertaintyRadiusM);
+    }
+
+    [Fact]
+    public void ACalledOffCountdownEasesTheActiveCraftBackToItsRecordsFraming()
+    {
+        var model = FollowingModel(() => ProbePid);
+        _places.Learn(ProbeId, CraftPlace.Surface(99.0, 1, 0.0, 0.0, 70.0));
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 2.0);
+        model.SayLaunchCountdown(10.0, 10.0);
+        _sites.Delivered[Ksc] = 100.0;
+        PublishWith(model, 100.0, 0.0);
+        _sites.Delivered[Ksc] = 105.0;
+        PublishWith(model, 105.0, 5.0);
+
+        model.CancelLaunchCountdown();
+        _sites.Delivered[Ksc] = 108.0;
+        PublishWith(model, 108.0, 8.0);
+        var easing = _kc.Command.Published.Last().Find(Ksc, ProbePid).UncertaintyRadiusM;
+        _sites.Delivered[Ksc] = 112.5;
+        PublishWith(model, 112.5, 12.5);
+
+        Assert.True(easing > 2.0);
+        Assert.Equal(2.0, _kc.Command.Published.Last().Find(Ksc, ProbePid).UncertaintyRadiusM);
+    }
+
     private KerbcastWorldModel FollowingModel(Func<uint?> active, List<string>? log = null) =>
         new KerbcastWorldModel(_labels, _kc.Supports, _places, log == null ? null : log.Add, null, null, active);
 

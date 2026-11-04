@@ -160,3 +160,23 @@ export interface KerbcastSetCommandAimArgs
 	*/
 	subjectPersistentId: number;
 }
+/**
+* Args for the `kerbcast.launchCountdown` command: tells the launchpad cameras
+* that a countdown to the liftoff of the active craft is running, or that it
+* was called off. While it runs the cameras widen their view of the craft over
+* the time left, and after liftoff they pull in again. It is a choice about
+* what the picture shows on the ground, not an order to a craft, so it takes
+* no signal delay.
+*/
+export interface KerbcastLaunchCountdownArgs
+{
+	/** True while a countdown to liftoff is running, false when it was called off. */
+	running: boolean;
+	/**
+	* Seconds left on the countdown when the command was sent. Ignored when it is
+	* not running.
+	*/
+	remainingSeconds: number;
+	/** The countdown's whole length in seconds. Ignored when it is not running. */
+	lengthSeconds: number;
+}

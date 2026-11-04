@@ -274,3 +274,31 @@ public class KerbcastSetCommandAimArgs
     [SitrepUnit(Units.Id)]
     public long SubjectPersistentId { get; set; }
 }
+
+/// <summary>
+/// Args for the <c>kerbcast.launchCountdown</c> command: tells the launchpad
+/// cameras that a countdown to the liftoff of the active craft is running, or
+/// that it was called off. While it runs the cameras widen their view of the
+/// craft over the time left, and after liftoff they pull in again. It is a
+/// choice about what the picture shows on the ground, not an order to a craft,
+/// so it takes no signal delay.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("kerbcast.launchCountdown", Delay = DelayRole.TrueNow)]
+public class KerbcastLaunchCountdownArgs
+{
+    /// <summary>True while a countdown to liftoff is running, false when it was called off.</summary>
+    [SitrepUnit(Units.Flag)]
+    public bool Running { get; set; }
+
+    /// <summary>Seconds left on the countdown when the command was sent. Ignored when it is not running.</summary>
+    [SitrepUnit(Units.Seconds)]
+    public double RemainingSeconds { get; set; }
+
+    /// <summary>The countdown's whole length in seconds. Ignored when it is not running.</summary>
+    [SitrepUnit(Units.Seconds)]
+    public double LengthSeconds { get; set; }
+}

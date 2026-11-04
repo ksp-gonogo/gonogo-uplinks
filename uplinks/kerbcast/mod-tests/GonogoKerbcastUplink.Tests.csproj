@@ -47,6 +47,7 @@
     <Compile Include="..\mod\CraftLabels.cs" />
     <Compile Include="..\mod\CraftPlaces.cs" />
     <Compile Include="..\mod\KerbcastAuthority.cs" />
+    <Compile Include="..\mod\KerbcastLaunchFraming.cs" />
     <Compile Include="..\mod\KerbcastWorldModel.cs" />
     <Compile Include="..\mod\KerbcastGovernor.cs" />
     <Compile Include="..\mod\SidecarDeathDebouncer.cs" />

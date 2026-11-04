@@ -1,6 +1,11 @@
-import type { Screen } from "@ksp-gonogo/sitrep-sdk";
+import {
+  type Screen,
+  useCommand,
+  useLiftoffCountdown,
+} from "@ksp-gonogo/sitrep-sdk";
 import type { ReactNode } from "react";
 import { useKerbcastMainConnect } from "./hooks/useKerbcastMainConnect.js";
+import { useLaunchCountdownSender } from "./hooks/useLaunchCountdownSender.js";
 import { kerbcastSource } from "./KerbcastDataSource.js";
 import { KERBCAST_EVENTS_TOPIC } from "./KerbcastEventProducer.js";
 import { KERBCAST } from "./uplink.js";
@@ -16,6 +21,11 @@ import { KERBCAST } from "./uplink.js";
  */
 function KerbcastMainConnect({ children }: { children: ReactNode }) {
   useKerbcastMainConnect();
+  const liftoff = useLiftoffCountdown();
+  const { send } = useCommand("kerbcast.launchCountdown");
+  useLaunchCountdownSender(liftoff, (message) => {
+    void send(message);
+  });
   return <>{children}</>;
 }
 

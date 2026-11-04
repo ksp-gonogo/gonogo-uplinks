@@ -57,6 +57,7 @@ namespace Gonogo.KerbcastUplink
         public const string SetPanCommand = KerbcastManifest.SetPanCommand;
 
         public const string SetCommandAimCommand = KerbcastManifest.SetCommandAimCommand;
+        public const string LaunchCountdownCommand = KerbcastManifest.LaunchCountdownCommand;
 
         /// <summary>Real seconds between reads of the game's craft list into <see cref="_craftLabels"/>.</summary>
         private const double CraftLabelSeconds = 2.0;
@@ -177,6 +178,8 @@ namespace Gonogo.KerbcastUplink
                 SetPanCommand, HandleSetPan);
             host.AddCommandHandler<KerbcastSetCommandAimArgs, CommandResult>(
                 SetCommandAimCommand, HandleSetCommandAim);
+            host.AddCommandHandler<KerbcastLaunchCountdownArgs, CommandResult>(
+                LaunchCountdownCommand, HandleLaunchCountdown);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -679,6 +682,29 @@ namespace Gonogo.KerbcastUplink
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
             return KerbcastAimOutcome.ForCommandAim(kerbcast.SetCommandAim(cameraId, subject));
+        }
+
+        /// <summary>Any thread: a countdown to liftoff started or was called off, which the launchpad cameras frame wider for.</summary>
+        internal CommandResult HandleLaunchCountdown(KerbcastLaunchCountdownArgs? args)
+        {
+            var governor = _governor;
+            if (args == null || double.IsNaN(args.RemainingSeconds) || double.IsNaN(args.LengthSeconds) || args.RemainingSeconds < 0.0 || args.LengthSeconds < 0.0)
+            {
+                return CommandResult.Fail(CommandErrorCode.Range);
+            }
+            if (governor == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.ModeUnavailable);
+            }
+            if (args.Running)
+            {
+                governor.SayLaunchCountdown(args.RemainingSeconds, args.LengthSeconds);
+            }
+            else
+            {
+                governor.CancelLaunchCountdown();
+            }
+            return CommandResult.Ok();
         }
 
         // The wire carries cameraId as a JSON number (long on the contract);

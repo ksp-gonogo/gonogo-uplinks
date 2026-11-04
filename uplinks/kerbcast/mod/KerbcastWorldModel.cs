@@ -31,6 +31,9 @@ namespace Gonogo.KerbcastUplink
         /// <summary>Real seconds between snapshots when nothing has changed, so an accepted publish keeps arriving.</summary>
         public const double RefreshSeconds = 2.0;
 
+        /// <summary>Seconds between records while the launch framing is widening or easing back.</summary>
+        public const double FramingRefreshSeconds = 0.25;
+
         private const string VesselCentrePrefix = "vessel:";
 
         /// <summary>How long a positioned record stands, measured from the instant it describes; each snapshot replaces the last long before this.</summary>
@@ -75,6 +78,8 @@ namespace Gonogo.KerbcastUplink
         private int _aliasVersion;
         private int _lastAliasVersion = -1;
         private long _lastEpoch = -1;
+        private readonly KerbcastLaunchFraming _framing = new KerbcastLaunchFraming();
+        private double _realSeconds;
 
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
@@ -95,6 +100,12 @@ namespace Gonogo.KerbcastUplink
             _places = places ?? new CraftPlaces();
             _supports = supports;
         }
+
+        /// <summary>Any thread: a countdown to liftoff of the active craft has <paramref name="remainingSeconds"/> left of its <paramref name="lengthSeconds"/>, so the camera widens over what is left.</summary>
+        public void SayLaunchCountdown(double remainingSeconds, double lengthSeconds) => _framing.Start(remainingSeconds, lengthSeconds);
+
+        /// <summary>Any thread: the countdown to liftoff was called off, so the camera eases back in.</summary>
+        public void CancelLaunchCountdown() => _framing.Cancel();
 
         /// <summary>Whether at least one command feed is aimed at a craft Gonogo follows for it.</summary>
         public bool Following => _followed.Count > 0;
@@ -178,6 +189,7 @@ namespace Gonogo.KerbcastUplink
                 }
             }
             _lastUt = nowUt;
+            _realSeconds = realSeconds;
 
             var bindings = Bindings(kerbcast, sites, out var feedSites);
             _onFeedSites?.Invoke(feedSites);
@@ -262,7 +274,8 @@ namespace Gonogo.KerbcastUplink
                 || bindingKey != _lastBindings
                 || _aliasVersion != _lastAliasVersion
                 || !_lastPublish.HasValue
-                || realSeconds - _lastPublish.Value >= RefreshSeconds;
+                || realSeconds - _lastPublish.Value >= RefreshSeconds
+                || (_framing.Active && realSeconds - _lastPublish.Value >= FramingRefreshSeconds);
             if (!due)
             {
                 return null;
@@ -473,7 +486,7 @@ namespace Gonogo.KerbcastUplink
             {
                 builder.StateVector(pid, place.BodyIndex, place.Ut, new Vec3d(place.State6[0], place.State6[1], place.State6[2]), new Vec3d(place.State6[3], place.State6[4], place.State6[5]), from, until);
             }
-            var publishedM = EndOfLifeRadius(craft, sample.UncertaintyM.Value);
+            var publishedM = Math.Max(EndOfLifeRadius(craft, sample.UncertaintyM.Value), LaunchFramingM(craft, place.OnSurface));
             builder.Uncertainty(publishedM, 0.0, 0.0, 0.0);
             SayExtent(builder, craft);
             LogRecord(scope, craft, from, publishedM, sample.UncertaintyM.Value);
@@ -546,7 +559,7 @@ namespace Gonogo.KerbcastUplink
             {
                 KerbcastApiMinor1.Accelerate(builder, acceleration.X, acceleration.Y, acceleration.Z);
             }
-            var publishedM = EndOfLifeRadius(craft, radiusM) + residualM;
+            var publishedM = Math.Max(EndOfLifeRadius(craft, radiusM) + residualM, LaunchFramingM(craft, false));
             builder.Uncertainty(publishedM, 0.0, 0.0, 0.0);
             SayExtent(builder, craft);
             LogRecord(scope, craft, ut, publishedM, radiusM);
@@ -578,6 +591,19 @@ namespace Gonogo.KerbcastUplink
                     _log("[Kerbcast][WORLD] feed=" + feed.FlightId + " craft=" + target.PersistentId + " " + detail);
                 }
             }
+        }
+
+        /*
+         * While a countdown to liftoff runs, the active craft is framed wider than its
+         * uncertainty by the launch framing's radius, so a camera on the pad has the
+         * whole climb in view when the record it holds is still a craft sitting on the
+         * ground. Every other craft is framed as its record says.
+         */
+        private double LaunchFramingM(ScopeCraft craft, bool onGround)
+        {
+            return _activeCraft?.Invoke() is uint active && active == craft.PersistentId
+                ? _framing.RadiusM(_realSeconds, onGround)
+                : 0.0;
         }
 
         /*
