@@ -8,9 +8,9 @@
       "text": "bb12c779"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "c9f1addea737066f",
-      "elements": 265,
-      "text": "9b07dc4b"
+      "hash": "3e88474dbded989d",
+      "elements": 272,
+      "text": "20374491"
     },
     "burn-editor-writes-shut--default.png": {
       "hash": "516c91ae0e8ae9a2",
@@ -58,9 +58,9 @@
       "text": "6b16f5d3"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "33aa9247c6d7171d",
-      "elements": 199,
-      "text": "4ebd02d1"
+      "hash": "f16b39e7e5b61d11",
+      "elements": 202,
+      "text": "9ec2558b"
     },
     "flight-plan-other-vessel--default.png": {
       "hash": "c19e89bc78b2a1fb",
@@ -73,9 +73,9 @@
       "text": "825af4a4"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "ba4c0a725f18b7f0",
-      "elements": 142,
-      "text": "8d0bc864"
+      "hash": "4805c190817e7244",
+      "elements": 145,
+      "text": "60539d0a"
     },
     "flight-plan-unobserved--default.png": {
       "hash": "1cb2b421d2c5e7cc",
@@ -88,29 +88,29 @@
       "text": "5b2073a1"
     },
     "kerbin-mun-integrated-arc--default.png": {
-      "hash": "01914f1bd467b694",
+      "hash": "66aa4f8e7646c594",
       "elements": 97,
-      "text": "4a7b7ae0"
+      "text": "cc38c488"
     },
     "kerbin-mun-integrated-arc--landscape-18x5.png": {
-      "hash": "dd3ac1ee511ab306",
+      "hash": "eda4ac21ae3dd8e6",
       "elements": 97,
-      "text": "4a7b7ae0"
+      "text": "cc38c488"
     },
     "kerbin-mun-integrated-arc--min.png": {
-      "hash": "6aa76fac6f849b8d",
+      "hash": "8569c807a39e98e8",
       "elements": 97,
-      "text": "4a7b7ae0"
+      "text": "cc38c488"
     },
     "kerbin-mun-integrated-arc--mobile-9x8.png": {
-      "hash": "01914f1bd467b694",
+      "hash": "66aa4f8e7646c594",
       "elements": 97,
-      "text": "4a7b7ae0"
+      "text": "cc38c488"
     },
     "kerbin-mun-integrated-arc--portrait-5x18.png": {
-      "hash": "a4a40ba8074fe1ed",
+      "hash": "9e51b79bb2daf71b",
       "elements": 97,
-      "text": "4a7b7ae0"
+      "text": "cc38c488"
     },
     "kerbin-mun-no-craft--default.png": {
       "hash": "985128fd715362dc",
@@ -163,29 +163,29 @@
       "text": "1f1c6e88"
     },
     "low-kerbin-orbit--default.png": {
-      "hash": "183ef2d346073011",
+      "hash": "b0508196e6764a0e",
       "elements": 84,
-      "text": "268641d4"
+      "text": "42259c98"
     },
     "low-kerbin-orbit--landscape-18x5.png": {
-      "hash": "2562b82a0513dfc6",
+      "hash": "469ec2509480999d",
       "elements": 84,
-      "text": "268641d4"
+      "text": "42259c98"
     },
     "low-kerbin-orbit--min.png": {
-      "hash": "eae4bffe74d80ab9",
+      "hash": "81c89e9c225e7e3b",
       "elements": 84,
-      "text": "268641d4"
+      "text": "42259c98"
     },
     "low-kerbin-orbit--mobile-9x8.png": {
-      "hash": "183ef2d346073011",
+      "hash": "b0508196e6764a0e",
       "elements": 84,
-      "text": "268641d4"
+      "text": "42259c98"
     },
     "low-kerbin-orbit--portrait-5x18.png": {
-      "hash": "eaa112c3422696bf",
+      "hash": "2de4a629a353d1c9",
       "elements": 84,
-      "text": "268641d4"
+      "text": "42259c98"
     },
     "low-kerbin-orbit-mun-control-frame--default.png": {
       "hash": "35f19562bfd9dcf3",
@@ -213,129 +213,129 @@
       "text": "bbcfdd0f"
     },
     "minmus-l4-trojan--default.png": {
-      "hash": "b1af4f58cbfb1af6",
+      "hash": "64a625b96efd1bc4",
       "elements": 84,
-      "text": "10f811db"
+      "text": "f69a11e1"
     },
     "minmus-l4-trojan--landscape-18x5.png": {
-      "hash": "ca89766981a4b698",
+      "hash": "a1314c3fa96dc17e",
       "elements": 84,
-      "text": "10f811db"
+      "text": "f69a11e1"
     },
     "minmus-l4-trojan--min.png": {
-      "hash": "9eb3104ec0d94ed6",
+      "hash": "4fa8c3096ab522a7",
       "elements": 84,
-      "text": "10f811db"
+      "text": "f69a11e1"
     },
     "minmus-l4-trojan--mobile-9x8.png": {
-      "hash": "b1af4f58cbfb1af6",
+      "hash": "64a625b96efd1bc4",
       "elements": 84,
-      "text": "10f811db"
+      "text": "f69a11e1"
     },
     "minmus-l4-trojan--portrait-5x18.png": {
-      "hash": "80ae731af4ff03d4",
+      "hash": "5cc3bf4c335ff7cb",
       "elements": 84,
-      "text": "10f811db"
+      "text": "f69a11e1"
     },
     "mun-l1-holding-station--default.png": {
-      "hash": "89784c171da0526a",
+      "hash": "2a5558178e875272",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--landscape-18x5.png": {
-      "hash": "3d63af91bfe38d63",
+      "hash": "f1c90d1f188c3b78",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--min.png": {
-      "hash": "fdadc06ca1183008",
+      "hash": "714e23c7ecb1e89d",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--mobile-9x8.png": {
-      "hash": "89784c171da0526a",
+      "hash": "2a5558178e875272",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l1-holding-station--portrait-5x18.png": {
-      "hash": "9b63ea921eb22905",
+      "hash": "85aea37b04c10f37",
       "elements": 84,
       "text": "f5147711"
     },
     "mun-l2-drifting--default.png": {
-      "hash": "0d3aa08d57bf5c2d",
+      "hash": "82232676b905306e",
       "elements": 84,
-      "text": "9a6666c2"
+      "text": "8c7b603d"
     },
     "mun-l2-drifting--landscape-18x5.png": {
-      "hash": "ba69f19ebb5675fd",
+      "hash": "8ec407824972fe68",
       "elements": 84,
-      "text": "9a6666c2"
+      "text": "8c7b603d"
     },
     "mun-l2-drifting--min.png": {
-      "hash": "f7d3063d81e682e0",
+      "hash": "f52a3d73fb385717",
       "elements": 84,
-      "text": "9a6666c2"
+      "text": "8c7b603d"
     },
     "mun-l2-drifting--mobile-9x8.png": {
-      "hash": "0d3aa08d57bf5c2d",
+      "hash": "82232676b905306e",
       "elements": 84,
-      "text": "9a6666c2"
+      "text": "8c7b603d"
     },
     "mun-l2-drifting--portrait-5x18.png": {
-      "hash": "6d2a6d6382219373",
+      "hash": "aaad428bdef35385",
       "elements": 84,
-      "text": "9a6666c2"
+      "text": "8c7b603d"
     },
     "mun-l2-drifting-stopped-arriving--default.png": {
-      "hash": "17e5dc8a75617630",
+      "hash": "4c6930d65c79e2a7",
       "elements": 85,
-      "text": "5fc08eed"
+      "text": "b84040be"
     },
     "mun-l2-drifting-stopped-arriving--landscape-18x5.png": {
-      "hash": "dc1e93beadbce426",
+      "hash": "4d3cda82073162e0",
       "elements": 85,
-      "text": "5fc08eed"
+      "text": "b84040be"
     },
     "mun-l2-drifting-stopped-arriving--min.png": {
-      "hash": "975f91e095579b8c",
+      "hash": "78762bcc3df13f9c",
       "elements": 85,
-      "text": "5fc08eed"
+      "text": "b84040be"
     },
     "mun-l2-drifting-stopped-arriving--mobile-9x8.png": {
-      "hash": "17e5dc8a75617630",
+      "hash": "4c6930d65c79e2a7",
       "elements": 85,
-      "text": "5fc08eed"
+      "text": "b84040be"
     },
     "mun-l2-drifting-stopped-arriving--portrait-5x18.png": {
-      "hash": "ccea5e2be68a3dd7",
+      "hash": "74bb11309b4a00af",
       "elements": 85,
-      "text": "5fc08eed"
+      "text": "b84040be"
     },
     "mun-l2-path-withheld--default.png": {
-      "hash": "b43af878d10620af",
+      "hash": "c711fedf18cab083",
       "elements": 84,
-      "text": "55a97130"
+      "text": "53a6f190"
     },
     "mun-l2-path-withheld--landscape-18x5.png": {
-      "hash": "efab1ff436b95abd",
+      "hash": "7cf76cfbce115b0a",
       "elements": 84,
-      "text": "55a97130"
+      "text": "53a6f190"
     },
     "mun-l2-path-withheld--min.png": {
-      "hash": "cb71b63385c50883",
+      "hash": "b9be838ed530424c",
       "elements": 84,
-      "text": "55a97130"
+      "text": "53a6f190"
     },
     "mun-l2-path-withheld--mobile-9x8.png": {
-      "hash": "b43af878d10620af",
+      "hash": "c711fedf18cab083",
       "elements": 84,
-      "text": "55a97130"
+      "text": "53a6f190"
     },
     "mun-l2-path-withheld--portrait-5x18.png": {
-      "hash": "38dff544ec94a318",
+      "hash": "9dc69201005a9e1a",
       "elements": 84,
-      "text": "55a97130"
+      "text": "53a6f190"
     },
     "mun-l2-path-withheld-stopped-arriving--default.png": {
       "hash": "d90fdfb9f3cb3f35",
