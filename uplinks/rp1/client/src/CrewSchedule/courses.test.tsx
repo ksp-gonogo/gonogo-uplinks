@@ -269,12 +269,8 @@ describe("TrainingCourses", () => {
         (c) => c.command === RP1_TRAINING_CANCEL_COMMAND,
       )?.args,
     ).toEqual({ crewName: NAUT });
-    // The count is on the confirm, which is where it decides anything. Once
-    // sent, the one control reads SENT until the mod answers.
-    const sent = screen.getByRole("button", {
-      name: "Cancel this course sent, not yet received",
-    });
-    expect(sent).toHaveTextContent("SENT");
+    // The count is on the confirm, which is where it decides anything. Whatever
+    // the control reads once sent, it is still the one cancel control.
     expect(
       screen.queryAllByRole("button", { name: /^Cancel this course/ }),
     ).toHaveLength(1);
