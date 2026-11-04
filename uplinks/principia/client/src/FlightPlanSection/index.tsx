@@ -8,6 +8,7 @@ import {
   useStream,
   useTelemetry,
   useViewUt,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -354,7 +355,9 @@ export function FlightPlanSection() {
           // A POSITIVE observation of no plan: the plugin was asked and said the
           // vessel holds none. Distinct from the unread case above, and safe to
           // state.
-          <Text>No flight plan for this vessel.</Text>
+          <Cluster justify="start">
+            <Badge tone="neutral">NO FLIGHT PLAN</Badge>
+          </Cluster>
         ) : (
           <Stack>
             {(plan.burns ?? []).map((burn) => (
@@ -367,7 +370,10 @@ export function FlightPlanSection() {
               />
             ))}
             {(plan.burns ?? []).length === 0 && (
-              <Text>A plan with no burns committed yet.</Text>
+              <Row as="div">
+                <RowName>BURNS</RowName>
+                <Unit value={value("count", 0)} decimals={0} />
+              </Row>
             )}
           </Stack>
         )}

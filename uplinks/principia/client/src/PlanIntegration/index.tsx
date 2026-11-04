@@ -14,6 +14,7 @@ import {
   Stack,
   Stepper,
   Text,
+  Tooltip,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
@@ -188,11 +189,10 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
         )}
       </Row>
       {shortfall !== null && shortfall > 0 && (
-        <Text level="faint" size="sm">
-          {"Stopped "}
+        <Row as="div">
+          <RowName>SHORT OF END BY</RowName>
           <Countdown value={shortfall} />
-          {" short of the requested end."}
-        </Text>
+        </Row>
       )}
 
       {/* The second remedy, beside the first. Moving the end is the cheapest
@@ -214,7 +214,17 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               all, and it belongs where the eye scans for a quantity. */}
           <Row as="div">
             <RowName>BURNS DROPPED</RowName>
-            <Unit value={value("count", strandedBurns)} decimals={0} />
+            <Cluster justify="end" gap="related-dense">
+              {strandedBurns > 0 && (
+                <Tooltip
+                  text="Every burn igniting at or after this end is removed, and Principia reports the write as a success"
+                  focusable
+                >
+                  <Badge tone="warn">REMOVED ON SET</Badge>
+                </Tooltip>
+              )}
+              <Unit value={value("count", strandedBurns)} decimals={0} />
+            </Cluster>
           </Row>
           <Cluster justify="end" gap="related-dense" wrap>
             <CommandButton
@@ -229,23 +239,17 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               label="SET END"
               confirmLabel="CONFIRM"
               pendingLabel="Setting..."
+              title={
+                endsBeforeStart
+                  ? "A plan cannot end at or before it starts"
+                  : (frozenReason ?? undefined)
+              }
               disabled={frozen || endUt === desired || endsBeforeStart}
               aria-label="Move the flight plan's end instant"
               confirmAriaLabel="Confirm moving the flight plan's end instant"
               onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
             />
           </Cluster>
-          {strandedBurns > 0 && (
-            <Text tone="warn" size="sm">
-              Every burn igniting at or after this end is removed. Principia
-              reports the write as a success and the burns are simply gone.
-            </Text>
-          )}
-          {endsBeforeStart && (
-            <Text tone="warn" size="sm">
-              A plan cannot end at or before it starts.
-            </Text>
-          )}
         </Stack>
       )}
 
@@ -300,6 +304,12 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               maxSteps: chosen ?? undefined,
             }}
             commandLabel="Set the flight plan's step limit"
+            title={
+              frozenReason ??
+              (stepParametersUnverified
+                ? "Principia's step parameters have not survived a round trip this session, so the limit cannot be written"
+                : undefined)
+            }
             label="SET"
             confirmLabel="CONFIRM"
             pendingLabel="Setting..."
@@ -315,32 +325,6 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
           />
         </Cluster>
       </Row>
-      {/* The remedy, said where the failure is read rather than in a manual.
-          Raising it costs integration time and nothing else. */}
-      <Text level="faint" size="sm">
-        Raise this when the plan stops short of its requested end.
-      </Text>
-      {/* Why the readout above is the absent token while the control beside it
-          still steps. "Raise this" needs something to raise FROM, and there is
-          nothing: the sentence above is the only advice available and it cannot
-          be followed against a limit nobody read. */}
-      {maxSteps === null && (
-        <Text tone="warn" size="sm">
-          The plan's current step limit was not read, so there is nothing to
-          raise it from. Stepping to a value sends that value as the new limit
-          rather than an increase on the old one.
-        </Text>
-      )}
-      {/* Why the control above is dark while the end instant beside it is live
-          and the surface reads armed. The consequence rather than the mod's own
-          sentence for the failed round trip, which travels on the surface's
-          `reason` and is shown wherever that is. */}
-      {plan.writeSurface?.armed === true && stepParametersUnverified && (
-        <Text tone="warn" size="sm">
-          Principia's step parameters have not survived a round trip in this
-          session, so the step limit cannot be written. The plan's end can.
-        </Text>
-      )}
       {/* Neither control's success state can see this, and the receipt is the
           only thing that says so: the mod answers a repeated request id with the
           one it stored the first time without calling the plugin, and a receipt
@@ -356,11 +340,14 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
           </Cluster>
           {lastWrite.replayed === true ? (
-            <Text level="faint" size="sm">
-              This matched a request already sent, so the mod answered with the
-              earlier receipt instead of writing again. The plan still holds
-              whatever the last write that DID land put there.
-            </Text>
+            <Cluster justify="start">
+              <Tooltip
+                text="The mod answered a request it had already seen with the earlier receipt and wrote nothing."
+                focusable
+              >
+                <Badge tone="neutral">REPLAYED RECEIPT</Badge>
+              </Tooltip>
+            </Cluster>
           ) : (
             <Text level="faint" size="sm">
               {planWriteRefusalLine(lastWrite)}
@@ -369,12 +356,12 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
         </Stack>
       )}
 
-      {/* Once, under both, because it is one gate and repeating it beside each
-          control would say the same thing twice. */}
       {frozenReason !== null && (
-        <Text level="faint" size="sm">
-          {frozenReason}
-        </Text>
+        <Cluster justify="start">
+          <Tooltip text={frozenReason} focusable>
+            <Badge tone="caution">WRITES HELD</Badge>
+          </Tooltip>
+        </Cluster>
       )}
     </Stack>
   );

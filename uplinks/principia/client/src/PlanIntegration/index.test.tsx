@@ -139,16 +139,12 @@ describe("PlanIntegrationBlock", () => {
     const { container } = mount(
       plan({ actualFinalTimeUt: (VIEW_UT + 100_000) as never }),
     );
-    expect(await visibleText(container)).toContain(
-      "short of the requested end",
-    );
+    expect(await visibleText(container)).toContain("SHORT OF END BY");
   });
 
-  it("says nothing about a shortfall when the plan reached its end", async () => {
+  it("shows no shortfall row when the plan reached its end", async () => {
     const { container } = mount(plan());
-    expect(await visibleText(container)).not.toContain(
-      "short of the requested",
-    );
+    expect(await visibleText(container)).not.toContain("SHORT OF END BY");
   });
 
   /**
@@ -216,28 +212,6 @@ describe("PlanIntegrationBlock", () => {
     expect(
       screen.getByRole("button", { name: "Set the flight plan's step limit" }),
     ).toBeEnabled();
-  });
-
-  /**
-   * "Raise this" needs something to raise from, and the caption above the
-   * control says exactly that whatever the readout holds.
-   */
-  it("says there is nothing to raise the step limit from", async () => {
-    const { container } = mount(
-      plan({ integrator: integratorWithoutStepLimit() }),
-    );
-
-    expect(await visibleText(container)).toContain(
-      "current step limit was not read",
-    );
-  });
-
-  it("says nothing about an unread step limit when the plan carries one", async () => {
-    const { container } = mount(plan());
-
-    expect(await visibleText(container)).not.toContain(
-      "current step limit was not read",
-    );
   });
 
   /**
@@ -328,8 +302,8 @@ describe("PlanIntegrationBlock", () => {
       }),
     ).toBeEnabled();
     expect(
-      screen.getByText(/step parameters have not survived a round trip/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Set the flight plan's step limit" }),
+    ).toHaveAccessibleDescription(/step parameters have not survived/);
   });
 
   /**
@@ -384,9 +358,10 @@ describe("PlanIntegrationBlock", () => {
       screen.getByRole("button", { name: "Plan end earlier by 1d" }),
     );
 
-    expect(await visibleText(container)).toContain("BURNS DROPPED1");
-    expect(await visibleText(container)).toContain(
-      "Every burn igniting at or after this end is removed",
+    expect(await visibleText(container)).toContain("BURNS DROPPED");
+    expect(await visibleText(container)).toContain("REMOVED ON SET");
+    expect(screen.getByText("REMOVED ON SET")).toHaveAccessibleDescription(
+      /Every burn igniting at or after this end is removed/,
     );
   });
 
@@ -427,8 +402,8 @@ describe("PlanIntegrationBlock", () => {
       }),
     ).toHaveAttribute("aria-disabled", "true");
     // The mod's own sentence, passed through rather than reworded.
-    expect(await visibleText(document.body)).toContain(
-      "Arming runs a round trip",
+    expect(screen.getByText("WRITES HELD")).toHaveAccessibleDescription(
+      /Arming runs a round trip/,
     );
   });
 
@@ -439,7 +414,7 @@ describe("PlanIntegrationBlock", () => {
    * producer's own planner swaps it over the live one every frame.
    */
   it("freezes both remedies while Principia is optimising", async () => {
-    const { container } = mount(plan({ optimisationRunning: true }));
+    mount(plan({ optimisationRunning: true }));
 
     expect(
       screen.getByRole("button", { name: "Set the flight plan's step limit" }),
@@ -449,8 +424,8 @@ describe("PlanIntegrationBlock", () => {
         name: "Move the flight plan's end instant",
       }),
     ).toBeDisabled();
-    expect(await visibleText(container)).toContain(
-      "Principia is optimising this plan",
+    expect(screen.getByText("WRITES HELD")).toHaveAccessibleDescription(
+      /Principia is optimising this plan/,
     );
   });
 

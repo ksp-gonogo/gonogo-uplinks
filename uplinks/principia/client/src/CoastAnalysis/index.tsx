@@ -154,9 +154,6 @@ export function CoastAnalysisSection() {
           <Cluster justify="start">
             <Badge tone="caution">ANALYSIS NOT OBSERVED</Badge>
           </Cluster>
-          <Text level="faint" size="sm">
-            No n-body analysis has reached this console for the active craft.
-          </Text>
         </Stack>
       </Section>
     );
@@ -168,9 +165,7 @@ export function CoastAnalysisSection() {
         <SectionTitle>PLANNED ORBITS</SectionTitle>
         {/* A positive observation of no plan, not silence about one. */}
         <Cluster justify="start" gap="related-dense">
-          <Text level="faint" size="sm">
-            No flight plan, so no planned orbits.
-          </Text>
+          <Badge tone="neutral">NO FLIGHT PLAN</Badge>
           {reading.state === "held" && <HeldTag />}
         </Cluster>
       </Section>

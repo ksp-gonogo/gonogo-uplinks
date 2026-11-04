@@ -109,7 +109,7 @@ describe("CoastAnalysisSection", () => {
     await emit(stream, []);
 
     expect(await visibleText(stream.container)).toContain(
-      "No flight plan, so no planned orbits.",
+      "NO FLIGHT PLAN",
     );
   });
 

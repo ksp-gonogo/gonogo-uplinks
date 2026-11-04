@@ -19,6 +19,7 @@ import {
   SectionTitle,
   Stack,
   Text,
+  Tooltip,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type {
@@ -556,12 +557,9 @@ export function OrbitAnalysisSection() {
       <Section data-orbit-analysis="">
         <SectionTitle>N-BODY ORBIT ANALYSIS</SectionTitle>
         <Stack role="status" aria-live="polite">
-          <Text tone="warn" size="sm">
-            Analysis not observed
-          </Text>
-          <Text level="faint" size="sm">
-            No n-body analysis has reached this console for the active craft.
-          </Text>
+          <Cluster justify="start">
+            <Badge tone="caution">ANALYSIS NOT OBSERVED</Badge>
+          </Cluster>
         </Stack>
       </Section>
     );
@@ -573,20 +571,11 @@ export function OrbitAnalysisSection() {
         <SectionTitle>N-BODY ORBIT ANALYSIS</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start" gap="related-dense">
-            <Text tone="warn" size="sm">
-              Not being analysed
-            </Text>
+            <Tooltip text="Principia analyses one craft at a time" focusable>
+              <Badge tone="caution">NOT BEING ANALYSED</Badge>
+            </Tooltip>
             {reading.state === "held" && <HeldTag />}
           </Cluster>
-          {/* A positive observation, not silence: Principia knows this craft and
-              is running no analysis of it. It starts one while its own main
-              window is open and destroys it outright when asked to analyse a
-              different craft, so this is the ordinary state rather than a
-              fault, and saying which is what stops an operator hunting one. */}
-          <Text level="faint" size="sm">
-            Principia analyses one craft at a time, while its own window is
-            open. Open it on this craft and the elements will appear here.
-          </Text>
         </Stack>
       </Section>
     );

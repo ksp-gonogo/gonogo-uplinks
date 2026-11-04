@@ -20,6 +20,7 @@ import {
   SectionTitle,
   Stack,
   Text,
+  Tooltip,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import { useState } from "react";
@@ -209,30 +210,22 @@ export function PlanSlots() {
           {plan.optimisationRunning === true && (
             <Badge tone="warn">OPTIMISING</Badge>
           )}
-          {armed ? (
-            <Badge tone="go">ARMED</Badge>
-          ) : (
-            <Badge tone="caution">NOT ARMED</Badge>
+          {/* The mod's own sentence, not one composed here: it names the guard
+              that is standing in the way, and for a craft with no plan it says
+              which write is the one available. */}
+          <Tooltip text={surface?.reason} focusable>
+            {armed ? (
+              <Badge tone="go">ARMED</Badge>
+            ) : (
+              <Badge tone="caution">NOT ARMED</Badge>
+            )}
+          </Tooltip>
+          {outOfContact !== null && (
+            <Tooltip text={outOfContact} focusable>
+              <Badge tone="warn">OUT OF CONTACT</Badge>
+            </Tooltip>
           )}
-          {outOfContact !== null && <Badge tone="warn">OUT OF CONTACT</Badge>}
         </Cluster>
-
-        {/* The mod's own sentence, not one composed here: it names the guard
-            that is standing in the way, and for a craft with no plan it says
-            which write is the one available. */}
-        {surface?.reason && (
-          <Text level="faint" size="sm">
-            {surface.reason}
-          </Text>
-        )}
-
-        {/* Beside the badge rather than instead of it: the badge catches the
-            eye and the sentence says which of the three things to check. */}
-        {outOfContact !== null && (
-          <Text level="faint" size="sm">
-            {outOfContact}
-          </Text>
-        )}
 
         <Stack gap="caption">
           {/* The slot's extent. `initialTimeUt` is where Principia began
@@ -289,10 +282,10 @@ export function PlanSlots() {
           <Stack gap="caption">
             <SectionTitle>NEW PLAN ENDS AT</SectionTitle>
             {endUt === null ? (
-              <Text level="faint" size="sm">
-                No view clock, so there is no instant to measure a plan's end
-                against.
-              </Text>
+              <Row as="div">
+                <RowName>NEW PLAN END</RowName>
+                <Text>{NULL_DISPLAY}</Text>
+              </Row>
             ) : (
               <>
                 <MissionDateField
@@ -310,11 +303,14 @@ export function PlanSlots() {
                   )}
                 </Row>
                 {arrivalUt !== null && endUt <= arrivalUt && (
-                  <Text tone="warn" size="sm">
-                    This end instant has already passed by the time the write
-                    arrives, and Principia asserts on a plan that ends before it
-                    starts rather than answering an error. Move it later.
-                  </Text>
+                  <Cluster justify="start">
+                    <Tooltip
+                      text="This end instant has already passed by the time the write arrives. Move it later."
+                      focusable
+                    >
+                      <Badge tone="warn">END BEFORE ARRIVAL</Badge>
+                    </Tooltip>
+                  </Cluster>
                 )}
               </>
             )}
@@ -374,11 +370,14 @@ export function PlanSlots() {
               <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
             </Cluster>
             {lastWrite.replayed === true ? (
-              <Text level="faint" size="sm">
-                This matched a request already sent, so the mod answered with
-                the earlier receipt instead of writing again. The slot still
-                holds whatever the last write that DID land put there.
-              </Text>
+              <Cluster justify="start">
+                <Tooltip
+                  text="The mod answered a request it had already seen with the earlier receipt and wrote nothing."
+                  focusable
+                >
+                  <Badge tone="neutral">REPLAYED RECEIPT</Badge>
+                </Tooltip>
+              </Cluster>
             ) : (
               <Text level="faint" size="sm">
                 {planWriteRefusalLine(lastWrite)}
@@ -389,15 +388,14 @@ export function PlanSlots() {
 
         {/* The values above came off a reading, and every write below is
             bounded against the slot count that reading carried. */}
-        <Text level="faint" size="sm">
-          Slot state as read at{" "}
+        <Row as="div">
+          <RowName>SLOT READ AT</RowName>
           {plan.sampledAtUt == null ? (
-            NULL_DISPLAY
+            <Text>{NULL_DISPLAY}</Text>
           ) : (
             <MissionDate value={plan.sampledAtUt} />
           )}
-          .
-        </Text>
+        </Row>
       </Stack>
     </Section>
   );
@@ -484,6 +482,11 @@ function ExistingPlan({
           handle={deleteCmd}
           args={{ vesselId, requestId: `delete-${vesselId ?? "none"}` }}
           commandLabel="Delete this flight plan"
+          title={
+            burnCount > 0
+              ? "Discards this slot's burns with it. Copy the slot first to keep them."
+              : undefined
+          }
           label="DELETE PLAN"
           confirmLabel="CONFIRM DELETE"
           confirmTone="nogo"
@@ -494,16 +497,6 @@ function ExistingPlan({
           confirmAriaLabel="Confirm deleting this flight plan"
         />
       </Cluster>
-
-      {/* What a delete costs, from the reading rather than from the press. The
-          count is the BURNS row above; repeating it inside a sentence would put
-          the same number on the panel twice. */}
-      {burnCount > 0 && (
-        <Text level="faint" size="sm">
-          Deleting this slot discards the burns above with it. Copying it first
-          leaves the original in place.
-        </Text>
-      )}
 
       {executing && (
         <Cluster justify="start">
@@ -521,11 +514,15 @@ function ExistingPlan({
       )}
 
       {nextBurnWindow?.shut === true && (
-        <Text tone="warn" size="sm">
-          The next burn lights before a write sent now reaches Principia, so it
-          flies whatever this slot holds. The window shut at{" "}
-          <MissionDate value={value("ut", nextBurnWindow.deadlineUt)} />.
-        </Text>
+        <Row as="div">
+          <Tooltip
+            text="The next burn lights before a write sent now reaches Principia, so it flies whatever this slot holds."
+            focusable
+          >
+            <Badge tone="warn">WRITE WINDOW SHUT AT</Badge>
+          </Tooltip>
+          <MissionDate value={value("ut", nextBurnWindow.deadlineUt)} />
+        </Row>
       )}
     </Stack>
   );
@@ -573,11 +570,10 @@ function InstallDrafts({
     <Stack gap="caption" data-plan-slots-install="">
       <SectionTitle>INSTALL A COMPOSED PLAN</SectionTitle>
       {drafts.length === 0 ? (
-        <Text level="faint" size="sm">
-          No saved plan for this craft. A composed plan reaches Principia's
-          flight plan from here, with the end instant above, or whole from the
-          composer's own upload.
-        </Text>
+        <Row as="div">
+          <RowName>SAVED PLANS</RowName>
+          <Unit value={value("count", 0)} decimals={0} />
+        </Row>
       ) : null}
       {drafts.map((draft, index) => (
         <InstallRow
@@ -664,6 +660,29 @@ function InstallRow({
     endsBeforeLastBurn ||
     window?.shut === true ||
     (arrivalUt !== null && planEndUt <= arrivalUt);
+  /*
+   * The first reason that applies, in the order the gate reads them. It is the
+   * disabled button's tip: a reason printed beside a control nobody can press
+   * is a sentence the panel carries for ever.
+   */
+  const blockedReason = frozen
+    ? "Flight-plan writes are held"
+    : burnStructUnusable
+      ? "Principia's burn layout is unverified, and this slot holds burns to copy from"
+      : planEndUt === null
+        ? "The plan has no end instant"
+        : endsBeforeLastBurn
+          ? "The plan end is at or before the plan's last ignition"
+          : window?.shut === true
+            ? "The first burn lights before this plan could reach the craft"
+            : arrivalUt !== null && planEndUt <= arrivalUt
+              ? "The plan end is before the plan could arrive"
+              : null;
+  const installTitle = blocked
+    ? (blockedReason ?? undefined)
+    : burnCount > 0 && plan.planExists === true
+      ? "Replaces the burns this slot holds now, whole"
+      : undefined;
 
   return (
     <Stack gap="caption">
@@ -702,45 +721,23 @@ function InstallRow({
         confirmTone="nogo"
         pendingLabel="Installing..."
         onConfirmed={(result) => onWrite(planWriteReceipt(result))}
+        title={installTitle}
         disabled={blocked}
         aria-label="Install this plan as Principia's flight plan"
         confirmAriaLabel="Confirm installing this plan as Principia's flight plan"
       />
 
-      {/* What an install REPLACES. A slot already holding burns is overwritten
-          whole, and there is no undo from the operator's seat. */}
-      {burnCount > 0 && plan.planExists === true && (
-        <Text level="faint" size="sm">
-          This overwrites the burns the slot holds now, whole.
-        </Text>
-      )}
-
-      {burnStructUnusable && (
-        <Text tone="warn" size="sm">
-          Principia's burn struct has not survived a round trip in this session,
-          and this slot already holds burns to copy from, so the mod refuses the
-          install. A slot holding none builds its head burn instead and is not
-          held to the verdict.
-        </Text>
-      )}
-
-      {endsBeforeLastBurn && (
-        <Text tone="warn" size="sm">
-          The plan end above is at or before this plan's last ignition, so the
-          plan would not reach its own last manoeuvre.
-        </Text>
-      )}
-
       {window?.shut === true && (
-        <Text tone="warn" size="sm">
-          The first burn lights before this plan could reach the craft, and the
-          mod refuses the whole plan rather than installing the burns still
-          ahead. The window shut at{" "}
-          <MissionDate value={value("ut", window.deadlineUt)} />,{" "}
-          <Countdown value={value("s", 2 * window.oneWaySeconds)} /> before
-          ignition: one light time because the reading is that old, and a second
-          because the plan has the same distance to travel back.
-        </Text>
+        <>
+          <Row as="div">
+            <RowName>WINDOW SHUT AT</RowName>
+            <MissionDate value={value("ut", window.deadlineUt)} />
+          </Row>
+          <Row as="div">
+            <RowName>SHUT BEFORE IGNITION</RowName>
+            <Countdown value={value("s", 2 * window.oneWaySeconds)} />
+          </Row>
+        </>
       )}
     </Stack>
   );

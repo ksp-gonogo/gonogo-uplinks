@@ -321,8 +321,8 @@ describe("BurnEditor", () => {
 
     expect(screen.getByText("NOT ARMED")).toBeInTheDocument();
     expect(
-      screen.getByText(/round trip of Principia's own burn/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
+    ).toHaveAccessibleDescription(/round trip of Principia's own burn/);
     expect(screen.getByLabelText("DAY")).toBeDisabled();
     expect(screen.getByLabelText("NORMAL")).toBeDisabled();
     await act(async () => {});
@@ -346,8 +346,8 @@ describe("BurnEditor", () => {
 
     expect(screen.getByRole("button", { name: "Burn 1" })).toBeInTheDocument();
     expect(
-      screen.getByText(/not analysed for flight-plan WRITES/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
+    ).toHaveAccessibleDescription(/not analysed for flight-plan WRITES/);
     expect(
       screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
     ).toBeDisabled();
@@ -594,7 +594,7 @@ describe("BurnEditor", () => {
     const stream = mount();
     await emitPlan(stream, { burns: [] });
 
-    expect(screen.getByText(/Compose one below/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Burn \d/ })).toBeNull();
     expect(screen.queryByText(/Principia's own/)).toBeNull();
     await act(async () => {});
   });
@@ -815,8 +815,8 @@ describe("BurnEditor", () => {
     // top of the section. The consequence rather than a second copy of the
     // surface's own sentence, which is already up there.
     expect(
-      screen.getByText(/APPLY and ADD write one and are refused/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toHaveAccessibleDescription(/burn layout is unverified/);
     await act(async () => {});
   });
 
@@ -1417,8 +1417,8 @@ describe("BurnEditor", () => {
       screen.getByRole("button", { name: "Remove this burn from the plan" }),
     ).not.toBeDisabled();
     expect(
-      screen.getByText(/ignition instant could not be read/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toHaveAccessibleDescription(/ignition instant is unstated/);
     await act(async () => {});
   });
 

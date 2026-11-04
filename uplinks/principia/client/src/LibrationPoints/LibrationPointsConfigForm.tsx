@@ -49,12 +49,9 @@ export function LibrationPointsConfigForm({
           ))}
         </Select>
         <FieldHint>
-          The pair is also the frame. Five libration points stand still only in
-          the frame that turns with the two bodies they belong to, so choosing
-          the pair is choosing what the picture holds still, and there is
-          nothing else to choose. "Auto" follows the in-game view when it turns
-          with one of these pairs, and otherwise follows the craft to whichever
-          pair it is nearest to.
+          The pair sets the frame the picture holds still. Auto follows the
+          in-game view when it turns with a pair, else the pair nearest the
+          craft.
         </FieldHint>
       </Field>
     </ConfigForm>

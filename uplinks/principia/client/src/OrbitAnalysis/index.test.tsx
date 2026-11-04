@@ -50,7 +50,7 @@ async function emit(
     stream.emit("principia.analysis", payload, { validAt: VIEW_UT });
   });
   await waitFor(() => {
-    expect(stream.container.textContent).not.toContain("Analysis not observed");
+    expect(stream.container.textContent).not.toContain("ANALYSIS NOT OBSERVED");
   });
 }
 
@@ -107,7 +107,7 @@ describe("OrbitAnalysisSection", () => {
   it("keeps its three absences apart", async () => {
     const nothing = mount();
     expect(await visibleText(nothing.container)).toContain(
-      "Analysis not observed",
+      "ANALYSIS NOT OBSERVED",
     );
 
     const notAnalysing = mount();
@@ -117,7 +117,7 @@ describe("OrbitAnalysisSection", () => {
       orbit: null,
     });
     expect(await visibleText(notAnalysing.container)).toContain(
-      "Not being analysed",
+      "NOT BEING ANALYSED",
     );
 
     const noElements = mount();

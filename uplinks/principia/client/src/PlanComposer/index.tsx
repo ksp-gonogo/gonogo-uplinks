@@ -17,7 +17,9 @@ import {
   withoutReckoning,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Badge,
   Button,
+  Cluster,
   CommandButton,
   Countdown,
   FieldLabel,
@@ -91,9 +93,9 @@ export function PlanComposer() {
     return (
       <Section>
         <SectionTitle>Compose a plan</SectionTitle>
-        <Text level="faint" size="sm">
-          No vessel is being read, so there is nothing to plan for.
-        </Text>
+        <Cluster justify="start">
+          <Badge tone="caution">NO VESSEL</Badge>
+        </Cluster>
       </Section>
     );
   }

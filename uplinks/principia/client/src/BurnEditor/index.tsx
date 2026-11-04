@@ -27,6 +27,7 @@ import {
   TangentIcon,
   Text,
   ToggleButton,
+  Tooltip,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type { ComponentProps } from "react";
@@ -281,11 +282,10 @@ export function BurnEditor() {
         <SectionTitle>BURN EDITOR</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start">
-            <Badge tone="caution">NO PLAN READING</Badge>
+            <Tooltip text={view.reason} focusable>
+              <Badge tone="caution">NO PLAN READING</Badge>
+            </Tooltip>
           </Cluster>
-          <Text level="faint" size="sm">
-            {view.reason}
-          </Text>
         </Stack>
       </Section>
     );
@@ -378,6 +378,21 @@ export function BurnEditor() {
    * deadline as a dead end rather than something to act on.
    */
   const tooLate = draftWindow?.shut === true;
+  /*
+   * The first reason APPLY and ADD BURN are dark, as their tip. REMOVE sends
+   * the index alone, so none of the reasons about stated values hold it.
+   */
+  const writeBlockedReason = frozen
+    ? undefined
+    : tooLate
+      ? "The edit would reach Principia after this burn has ignited"
+      : burnStructUnverified
+        ? "Principia's burn layout is unverified, so APPLY and ADD BURN are refused"
+        : tripleUnstated
+          ? "A delta-v component is unstated. Type all three to send"
+          : ignitionUnstated
+            ? "The ignition instant is unstated. Type one to send"
+            : undefined;
 
   return (
     <Section data-burn-editor="">
@@ -403,17 +418,12 @@ export function BurnEditor() {
           ) : (
             <Badge tone="caution">NOT ARMED</Badge>
           )}
-          {outOfContact !== null && <Badge tone="warn">OUT OF CONTACT</Badge>}
+          {outOfContact !== null && (
+            <Tooltip text={outOfContact} focusable>
+              <Badge tone="warn">OUT OF CONTACT</Badge>
+            </Tooltip>
+          )}
         </Cluster>
-
-        {/* Beside the badge rather than instead of it: the badge is what catches
-            the eye and the sentence is what says which of the three things to go
-            and check. */}
-        {outOfContact !== null && (
-          <Text level="faint" size="sm">
-            {outOfContact}
-          </Text>
-        )}
 
         {/* Arming is a real write of Principia's own burn back into the plan, so
             it confirms rather than firing on the first press. */}
@@ -429,16 +439,12 @@ export function BurnEditor() {
               confirmLabel="CONFIRM ARM"
               confirmTone="nogo"
               pendingLabel="Arming..."
+              title={surface?.reason ?? undefined}
               disabled={!available}
               aria-label="Arm the flight-plan write surface"
               confirmAriaLabel="Confirm arming the flight-plan write surface"
               onConfirmed={(result) => setLastArm(planWriteReceipt(result))}
             />
-            {surface?.reason && (
-              <Text level="faint" size="sm">
-                {surface.reason}
-              </Text>
-            )}
           </Cluster>
 
           {/* An arm that was answered from the mod's own store granted nothing,
@@ -455,11 +461,14 @@ export function BurnEditor() {
                 <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
               </Cluster>
               {lastArm.replayed === true ? (
-                <Text level="faint" size="sm">
-                  This arm matched one already sent, so the mod answered with
-                  the earlier receipt instead of arming again. The badge above
-                  is what the surface actually holds.
-                </Text>
+                <Cluster justify="start">
+                  <Tooltip
+                    text="The mod answered a request it had already seen with the earlier receipt and armed nothing."
+                    focusable
+                  >
+                    <Badge tone="neutral">REPLAYED RECEIPT</Badge>
+                  </Tooltip>
+                </Cluster>
               ) : (
                 <Text level="faint" size="sm">
                   {planWriteRefusalLine(lastArm)}
@@ -477,10 +486,10 @@ export function BurnEditor() {
             )}
           </Text>
           {burns.length === 0 && (
-            <Text>
-              This plan has no burns. Compose one below and send it: the editor
-              here changes burns that already exist.
-            </Text>
+            <Row as="div">
+              <RowName>BURNS</RowName>
+              <Unit value={value("count", 0)} decimals={0} />
+            </Row>
           )}
           {burns.map((burn) => {
             const index = magnitudeOf(burn.index);
@@ -631,17 +640,23 @@ export function BurnEditor() {
                     </Badge>
                   )}
                 </Cluster>
-                <Text level="faint" size="sm">
-                  {draftWindow.shut
-                    ? "An edit sent now reaches Principia after this burn has ignited, so the burn flies as it stands. Move the ignition later, or edit a later burn."
-                    : "Past this the edit arrives after ignition and the burn flies as it stands."}{" "}
-                  The window shuts at{" "}
-                  <MissionDate value={value("ut", draftWindow.deadlineUt)} />,{" "}
-                  <Countdown value={2 * draftWindow.oneWaySeconds} /> before the
-                  ignition above: one light time because the plan on screen is
-                  that old, and a second because the edit has the same distance
-                  to travel back.
-                </Text>
+                <Row as="div">
+                  <Tooltip
+                    text={
+                      draftWindow.shut
+                        ? "An edit sent now reaches Principia after this burn has ignited, so the burn flies as it stands"
+                        : "Past this the edit arrives after ignition and the burn flies as it stands"
+                    }
+                    focusable
+                  >
+                    <RowName>WINDOW SHUTS AT</RowName>
+                  </Tooltip>
+                  <MissionDate value={value("ut", draftWindow.deadlineUt)} />
+                </Row>
+                <Row as="div">
+                  <RowName>SHUTS BEFORE IGNITION</RowName>
+                  <Countdown value={2 * draftWindow.oneWaySeconds} />
+                </Row>
               </Stack>
             )}
 
@@ -758,6 +773,7 @@ export function BurnEditor() {
                 confirmTone="nogo"
                 pendingLabel="Applying..."
                 onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+                title={writeBlockedReason}
                 disabled={
                   frozen ||
                   tooLate ||
@@ -834,6 +850,7 @@ export function BurnEditor() {
                  * ignition too, so one composed for an instant the write cannot
                  * beat is a burn added to the plan already in the past.
                  */
+                title={writeBlockedReason}
                 disabled={
                   frozen ||
                   tooLate ||
@@ -877,47 +894,6 @@ export function BurnEditor() {
               />
             </Cluster>
 
-            {/* Why the two above are dark while REMOVE beside them is live, and
-                while the badge at the top of the section reads ARMED. The
-                surface's own sentence for WHY the round trip failed is already
-                up beside the ARM control and is not repeated here; what is here
-                is the consequence, which is the half that names these controls
-                and which nothing else on screen says. */}
-            {armed && burnStructUnverified && (
-              <Text tone="warn" size="sm">
-                Principia's burn struct has not survived a round trip in this
-                session. APPLY and ADD write one and are refused; REMOVE writes
-                none.
-              </Text>
-            )}
-
-            {/* Why the boxes above are empty and live at the same time, and why
-                the two writes are dark over them. Said here rather than beside
-                the delta-v rows because it is about the CONTROLS: the rows say
-                what is missing, this says what it costs and what mends it. */}
-            {tripleUnstated && (
-              <Text tone="warn" size="sm">
-                At least one delta-v component is unstated, so there is no
-                triple to send: an edit keeps whichever components it omits, and
-                Principia holds none this Uplink could read for those. Type all
-                three to mend the burn. REMOVE sends the index alone and is
-                unaffected.
-              </Text>
-            )}
-
-            {/* The same sentence for the instant, and it is a separate one
-                because the two absences mend differently: a triple is retyped
-                against numbers the operator can see elsewhere, and an instant
-                that nothing aboard holds has to be chosen. */}
-            {ignitionUnstated && (
-              <Text tone="warn" size="sm">
-                This burn's ignition instant could not be read, so there is no
-                date to edit and no deadline to measure a write against. Type an
-                instant to state one, or REMOVE the burn: REMOVE sends the index
-                alone and is unaffected.
-              </Text>
-            )}
-
             {/* A confirmed dispatch is not always a write, and the RECEIPT is
                 what says so: the mod answers a repeated request id with the one
                 it stored the first time without calling the plugin, and a
@@ -932,12 +908,14 @@ export function BurnEditor() {
                   <Badge tone="warn">NOTHING WAS WRITTEN</Badge>
                 </Cluster>
                 {lastWrite.replayed === true ? (
-                  <Text level="faint" size="sm">
-                    This edit matched one already sent, so the mod answered with
-                    the earlier receipt instead of writing again. The plan still
-                    holds whatever the last write that DID land put there.
-                    Change a value and send again.
-                  </Text>
+                  <Cluster justify="start">
+                    <Tooltip
+                      text="The mod answered a request it had already seen with the earlier receipt and wrote nothing. Change a value to send again."
+                      focusable
+                    >
+                      <Badge tone="neutral">REPLAYED RECEIPT</Badge>
+                    </Tooltip>
+                  </Cluster>
                 ) : (
                   <Text level="faint" size="sm">
                     {planWriteRefusalLine(lastWrite)}
@@ -949,15 +927,14 @@ export function BurnEditor() {
             {/* The values on screen came from a reading; APPLY sends them all,
                 including the ones nobody touched, so the operator is told which
                 reading they are editing rather than assuming it is now. */}
-            <Text level="faint" size="sm">
-              Editing the plan as read at{" "}
+            <Row as="div">
+              <RowName>EDITING PLAN READ AT</RowName>
               {plan.sampledAtUt == null ? (
-                NULL_DISPLAY
+                <Text>{NULL_DISPLAY}</Text>
               ) : (
                 <MissionDate value={plan.sampledAtUt} />
               )}
-              .
-            </Text>
+            </Row>
           </Stack>
         )}
       </Stack>

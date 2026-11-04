@@ -338,9 +338,9 @@ describe("PlanSlots", () => {
     });
 
     expect(screen.getByText("NOT ARMED")).toBeInTheDocument();
-    expect(
-      await visibleText(screen.getByText("NOT ARMED").ownerDocument.body),
-    ).toContain("Arming runs a round trip");
+    expect(screen.getByText("NOT ARMED")).toHaveAccessibleDescription(
+      /Arming runs a round trip/,
+    );
     expect(
       screen.getByRole("button", { name: "Delete this flight plan" }),
     ).toBeDisabled();
@@ -378,10 +378,9 @@ describe("PlanSlots", () => {
     await emitPlan(stream, { burns: [burn(), burn({ index: 1 })] });
 
     const body = screen.getByText("BURNS").ownerDocument.body;
-    expect(await visibleText(body)).toContain(
-      "Deleting this slot discards the burns above",
-    );
-    // The count is the BURNS row's, not a number repeated inside the sentence.
+    expect(
+      screen.getByRole("button", { name: "Delete this flight plan" }),
+    ).toHaveAccessibleDescription(/Discards this slot's burns/);
     expect(await visibleText(body)).toContain("BURNS2");
     await act(async () => {});
   });
@@ -570,10 +569,8 @@ describe("PlanSlots", () => {
     });
     await emitPlan(stream);
 
-    expect(
-      await visibleText(screen.getByText("BURNS").ownerDocument.body),
-    ).toContain(
-      "The next burn lights before a write sent now reaches Principia",
+    expect(screen.getByText("WRITE WINDOW SHUT AT")).toHaveAccessibleDescription(
+      /The next burn lights before a write sent now reaches Principia/,
     );
     await act(async () => {});
   });
@@ -628,8 +625,8 @@ describe("PlanSlots", () => {
     );
 
     expect(create).toBeDisabled();
-    expect(await visibleText(create.ownerDocument.body)).toContain(
-      "has already passed by the time the write arrives",
+    expect(screen.getByText("END BEFORE ARRIVAL")).toHaveAccessibleDescription(
+      /already passed by the time the write arrives/,
     );
     await act(async () => {});
   });
@@ -794,7 +791,7 @@ describe("PlanSlots", () => {
 
     expect(
       await visibleText(screen.getByText("BURNS").ownerDocument.body),
-    ).toContain("No saved plan for this craft");
+    ).toContain("SAVED PLANS0");
     await act(async () => {});
   });
 
@@ -803,14 +800,13 @@ describe("PlanSlots", () => {
     saveDraft(stream.store);
     await emitPlan(stream);
 
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toBeEnabled();
-    expect(
-      await visibleText(screen.getByText("SAVED PLAN 1").ownerDocument.body),
-    ).toContain("overwrites the burns the slot holds now");
+    const install = screen.getByRole("button", {
+      name: "Install this plan as Principia's flight plan",
+    });
+    expect(install).toBeEnabled();
+    expect(install).toHaveAccessibleDescription(
+      /Replaces the burns this slot holds now/,
+    );
     await act(async () => {});
   });
 
@@ -948,8 +944,10 @@ describe("PlanSlots", () => {
       }),
     ).toBeDisabled();
     expect(
-      screen.getByText(/this slot already holds burns to copy from/),
-    ).toBeInTheDocument();
+      screen.getByRole("button", {
+        name: "Install this plan as Principia's flight plan",
+      }),
+    ).toHaveAccessibleDescription(/burn layout is unverified/);
     await act(async () => {});
   });
 
@@ -1009,9 +1007,13 @@ describe("PlanSlots", () => {
         name: "Install this plan as Principia's flight plan",
       }),
     ).toBeDisabled();
+    const body = screen.getByText("SAVED PLAN 1").ownerDocument.body;
+    expect(await visibleText(body)).toContain("WINDOW SHUT AT");
     expect(
-      await visibleText(screen.getByText("SAVED PLAN 1").ownerDocument.body),
-    ).toContain("refuses the whole plan");
+      screen.getByRole("button", {
+        name: "Install this plan as Principia's flight plan",
+      }),
+    ).toHaveAccessibleDescription(/first burn lights before this plan could reach/);
     await act(async () => {});
   });
 
