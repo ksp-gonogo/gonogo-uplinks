@@ -4,7 +4,7 @@
     "vessel": "Far Side Relay",
     "body": "Kerbin",
     "situation": "A relay beyond the Mun, about 980 km outside the Kerbin-Mun L2 point",
-    "notes": "Kerbin-Mun L2 sits 14,318 km from Kerbin. The craft is on a circular Kerbin orbit at 15,300 km, in phase with the Mun, which is about 8% of the separation off the point: drifting rather than holding station."
+    "notes": "Kerbin-Mun L2 sits 14,318 km from Kerbin. The craft is on a circular Kerbin orbit at 15,300 km, in phase with the Mun: 982 km off the point and moving about 210 m/s against it, so it is passing the point rather than station-keeping on it."
   },
   "_scene": {
     "widget": "libration-points",

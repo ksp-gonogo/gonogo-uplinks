@@ -126,6 +126,29 @@ function integrationBadge(plan: PrincipiaPlan) {
 }
 
 /**
+ * Why the integrator stopped, in its own words, or its error code when it sent
+ * no words. Nothing when it sent neither.
+ */
+function FailureReason({ plan }: Readonly<{ plan: PrincipiaPlan }>) {
+  const message = plan.statusMessage?.trim();
+  if (message) {
+    return (
+      <Row as="div">
+        <RowName>REASON</RowName>
+        <Text tone="nogo">{message}</Text>
+      </Row>
+    );
+  }
+  if (plan.statusError == null) return null;
+  return (
+    <Row as="div">
+      <RowName>REASON</RowName>
+      <Text tone="nogo">error code {plan.statusError}</Text>
+    </Row>
+  );
+}
+
+/**
  * One burn row.
  *
  * The countdown is measured from the received edge, not from the plan's
@@ -311,6 +334,8 @@ export function FlightPlanSection() {
               normally missing should not shift the ones that are always there. */}
           {buildBadge(buildHealth)}
         </Cluster>
+
+        {plan.planIntegrated === false && <FailureReason plan={plan} />}
 
         {/* The plan is read for a named vessel, which is not always the active
             one, so a plan is never presented as this vessel's without the guid

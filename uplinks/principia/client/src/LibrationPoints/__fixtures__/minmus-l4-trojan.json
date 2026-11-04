@@ -4,7 +4,7 @@
     "vessel": "Minmus Trojan Probe",
     "body": "Kerbin",
     "situation": "A probe sharing Minmus's orbit 60 degrees ahead of it, at the Kerbin-Minmus L4 point",
-    "notes": "The craft's elements are Minmus's own with the mean anomaly advanced by a sixth of a turn, so it sits on the leading triangular point and stays there."
+    "notes": "The craft's elements are Minmus's own with the mean anomaly advanced by a sixth of a turn, so it sits on the leading triangular point. Its two-body orbit moves about 9 m/s against the pair's frame, a libration about a megametre wide, so it reads as drifting rather than holding station."
   },
   "_scene": {
     "widget": "libration-points",

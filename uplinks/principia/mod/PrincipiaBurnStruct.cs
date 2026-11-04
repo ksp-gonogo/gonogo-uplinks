@@ -125,10 +125,11 @@ namespace GonogoPrincipiaUplink
             extension == 6000 || extension == 6003;
 
         /// <summary>The Cartesian coordinate system, the one whose three Δv
-        /// components are the whole of the intensity. The other three members of
-        /// the producer's enum are spherical and carry the magnitude and two angles
-        /// instead, so a component edit against one of those would write a triple
-        /// the plugin does not read.</summary>
+        /// components are what the player enters. Under the other three members of
+        /// the producer's enum the player enters a magnitude and two angles; the
+        /// plugin still hands back the Cartesian components in <c>xyz</c>, but a
+        /// component edit against one of those would write a triple the plugin
+        /// does not read.</summary>
         public const int CartesianTnb = 1;
 
         private readonly Dictionary<string, FieldInfo?> _fields = new Dictionary<string, FieldInfo?>();

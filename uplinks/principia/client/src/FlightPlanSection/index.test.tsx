@@ -313,6 +313,36 @@ describe("FlightPlanSection: a reading, dated", () => {
     expect(visibleText(stream.container)).not.toMatch(/FAILED AT BURN/);
   });
 
+  it("shows the integrator's own message for a failed plan", async () => {
+    const stream = mount();
+
+    emitPlan(stream, {
+      planIntegrated: false,
+      statusError: 8,
+      statusMessage: "max steps reached",
+    });
+
+    expect(await screen.findByText("max steps reached")).toBeInTheDocument();
+    expect(screen.queryByText(/error code/)).not.toBeInTheDocument();
+  });
+
+  it("falls back to the error code when a failed plan carries no message", async () => {
+    const stream = mount();
+
+    emitPlan(stream, { planIntegrated: false, statusError: 11 });
+
+    expect(await screen.findByText("error code 11")).toBeInTheDocument();
+  });
+
+  it("shows no reason for a plan that integrated", async () => {
+    const stream = mount();
+
+    emitPlan(stream, { planIntegrated: true, statusError: 0 });
+
+    expect(await screen.findByText("INTEGRATED")).toBeInTheDocument();
+    expect(screen.queryByText("REASON")).not.toBeInTheDocument();
+  });
+
   it("keeps an unreadable integration status as unknown rather than rounding it", async () => {
     const stream = mount();
 

@@ -1228,36 +1228,33 @@ describe("BurnEditor", () => {
   });
 
   /**
-   * The three Dv fields are only three velocities under the producer's Cartesian
-   * coordinate system. Its other three are spherical and put a magnitude and two
-   * angles in the same three slots, which the producer's own write rule states
-   * in full when it refuses such an edit: writing components onto one "would set
-   * a triple the plugin does not read, so the burn would come back unchanged and
-   * look like a write that landed".
-   *
-   * That refusal is on the far side of a light delay and of a press. Until it
-   * arrives the editor showed three live boxes, each with `m/s` beside it, over
-   * two numbers that are degrees. So the guard is here too, before anything is
-   * typed, in the same shape the frame guard already takes.
-   *
-   * The Cartesian direction is asserted as well, because a badge that showed on
-   * every burn would say nothing.
+   * A burn the player entered as Spherical in-game arrives as coordinate system
+   * 2 with its Cartesian components, the figures here read off a live game. The
+   * components and their magnitude are real Dv and are shown as such; they are
+   * not editable, because an edit to them is one the plugin does not read.
    */
-  it("freezes and marks a burn whose Dv is in spherical coordinates", async () => {
+  it("shows a spherical burn's components as delta-v, frozen", async () => {
     const stream = mount();
-    await emitPlan(stream, { burns: [burn({ coordinateSystem: 2 })] });
+    await emitPlan(stream, {
+      burns: [
+        burn({
+          coordinateSystem: 2,
+          deltaV: 100,
+          deltaVTangent: 99.99725448717251,
+          deltaVNormal: 0.7407749705494311,
+          deltaVBinormal: 0.018640565004431318,
+        }),
+      ],
+    });
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(screen.getByText("DELTA-V NOT IN COMPONENTS")).toBeInTheDocument();
-    // The tangent field's label carries its stock gloss, so it is matched by
-    // prefix where the other two are exact.
+    expect(screen.getByText("SPHERICAL IN-GAME")).toBeInTheDocument();
     expect(screen.getByLabelText(/^TANGENT/)).toBeDisabled();
+    expect(screen.getByLabelText(/^TANGENT/)).toHaveValue(99.99725448717251);
     expect(screen.getByLabelText("NORMAL")).toBeDisabled();
     expect(screen.getByLabelText("BINORMAL")).toBeDisabled();
-    // The derived hypotenuse goes with them. Over a magnitude and two angles it
-    // is not the size of the burn, and it reads as a plausible one.
     const form = document.querySelector("[data-burn-editor-form]");
-    expect(form?.textContent ?? "").toContain(`MAGNITUDE${NULL_DISPLAY}`);
+    expect(form?.textContent ?? "").toContain("MAGNITUDE100.0");
     await act(async () => {});
   });
 
@@ -1266,7 +1263,7 @@ describe("BurnEditor", () => {
     await emitPlan(stream);
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(screen.queryByText("DELTA-V NOT IN COMPONENTS")).toBeNull();
+    expect(screen.queryByText("SPHERICAL IN-GAME")).toBeNull();
     expect(screen.getByLabelText(/^TANGENT/)).not.toBeDisabled();
     await act(async () => {});
   });

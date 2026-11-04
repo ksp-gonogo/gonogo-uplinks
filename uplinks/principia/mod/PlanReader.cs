@@ -293,12 +293,11 @@ namespace GonogoPrincipiaUplink
         /// <summary>
         /// One manoeuvre, flattened.
         ///
-        /// <para>The Dv triple is only the whole story for the producer's Cartesian
-        /// coordinate system; under its three spherical ones the same struct carries
-        /// a magnitude and two angles in a different field. The components are
-        /// published either way and the coordinate system travels with them, because
-        /// suppressing them would leave a client unable to tell a spherical burn from
-        /// an unreadable one.</para>
+        /// <para>The Dv triple is the burn's Cartesian Dv in every coordinate system:
+        /// under the producer's three spherical ones the plugin hands back the
+        /// components of the magnitude and angles the player entered. The coordinate
+        /// system travels with them, because it decides whether an edit to them can
+        /// be written back.</para>
         /// </summary>
         internal static PlannedBurnObservation Describe(
             object manoeuvre,

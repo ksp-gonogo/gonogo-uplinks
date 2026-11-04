@@ -83,7 +83,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | Smallest size, in grid units | 4 × 7 |
 | Scenes | 11 |
 
-![A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies](client/docs/assets/mun-l1-holding-station--default.png)
+![A relay 46 km Kerbin-ward of the Kerbin-Mun L1 point, turning with the pair](client/docs/assets/mun-l1-holding-station--default.png)
 
 ## Augments
 

@@ -147,7 +147,7 @@ export function LibrationPointsComponent({
     [orbit],
   );
 
-  const vesselInertial = useMemo(
+  const vesselState = useMemo(
     () =>
       system === null
         ? null
@@ -163,7 +163,7 @@ export function LibrationPointsComponent({
       candidates,
       ut,
       system,
-      vesselInertial,
+      vesselState,
       identity?.parentBodyIndex,
       controlFrame,
     );
@@ -174,7 +174,7 @@ export function LibrationPointsComponent({
     candidates,
     ut,
     system,
-    vesselInertial,
+    vesselState,
     identity?.parentBodyIndex,
     controlFrame,
   ]);
@@ -186,9 +186,9 @@ export function LibrationPointsComponent({
         secondaryIndex,
         ut ?? Number.NaN,
         system,
-        vesselInertial,
+        vesselState,
       ),
-    [facts, secondaryIndex, ut, system, vesselInertial],
+    [facts, secondaryIndex, ut, system, vesselState],
   );
 
   const drawn = answer.refusal === LIBRATION_REFUSALS.NotRefused;

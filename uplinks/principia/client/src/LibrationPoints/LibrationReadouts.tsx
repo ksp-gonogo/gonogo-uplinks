@@ -1,7 +1,6 @@
 import { staticValue, type Tone, value } from "@ksp-gonogo/sitrep-sdk";
 import type {
   LibrationAnswer,
-  LibrationOffset,
 } from "@ksp-gonogo/sitrep-sdk/frames";
 import {
   type EphemerisFigure,
@@ -11,9 +10,10 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
+import type { CraftOffset, LibrationStationKeeping } from "./pairResolution.js";
 
 /** Not stationkeeping carries no state, so it recedes through the `muted` level the rows pass alongside. */
-const KEEPING_TONE: Record<LibrationOffset["keeping"], Tone> = {
+const KEEPING_TONE: Record<LibrationStationKeeping, Tone> = {
   "on-station": "go",
   drifting: "warn",
   elsewhere: "neutral",
@@ -34,7 +34,7 @@ export function LibrationReadouts({
   ephemerisFigure,
 }: Readonly<{
   answer: LibrationAnswer;
-  offset: LibrationOffset | null;
+  offset: CraftOffset | null;
   /** Whether there is a craft orbit of now at all, observed or modelled. */
   hasCraft: boolean;
   /** The mark the craft's orbit gives the figures derived from it. */
@@ -69,7 +69,7 @@ function CraftOffsetRows({
   offset,
   marking,
 }: Readonly<{
-  offset: LibrationOffset | null;
+  offset: CraftOffset | null;
   marking: ReckoningMarking | null;
 }>) {
   if (offset === null) {

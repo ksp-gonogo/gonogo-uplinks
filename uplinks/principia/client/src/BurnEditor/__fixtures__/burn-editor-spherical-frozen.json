@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The burn the editor cannot edit and still has to show. Principia's spherical coordinate systems put a magnitude and two angles in the three slots a Cartesian burn puts three velocities in, so the numbers are real and are not metres per second. This is the one render that shows what the surface WITHDRAWS: the unit symbols come off the boxes, the derived magnitude becomes a dash rather than a plausible hypotenuse of a magnitude and two angles, and every control freezes. It is also the scene carrying the sentence that sends the operator back to the game, which is the copy on this surface worth reading in a picture rather than in a test"
+    "notes": "A burn the player switched to Spherical in Principia's editor, in the shape the plugin hands it back: coordinate system 2 and the Cartesian components of the magnitude and angles entered, read off a live game (100 m/s, in-plane 0°25′28″, out-of-plane 0°00′38″). The components are shown as delta-v, and every control freezes because an edit to them is one the plugin does not read."
   },
   "_scene": {
     "augment": "principia-burn-editor",
@@ -8,7 +8,7 @@
       "w": 13,
       "h": 26
     },
-    "caption": "A burn stated in one of Principia's spherical systems: the numbers are shown, the claim that they are three velocities is withdrawn, the magnitude reads as a dash and every control is frozen",
+    "caption": "A burn entered as Spherical in-game: its components and magnitude are shown as delta-v, and every control is frozen",
     "before": [
       {
         "press": "Burn 1"
@@ -18,10 +18,7 @@
       "BURN EDITOR",
       "ARMED",
       "BURN 1",
-      "DELTA-V NOT IN COMPONENTS",
-      "spherical coordinate systems",
-      "magnitude and two angles",
-      "cannot be edited here",
+      "SPHERICAL IN-GAME",
       "TANGENT",
       "NORMAL",
       "MAGNITUDE",
@@ -68,11 +65,11 @@
               "cutoffUt": 1042054,
               "durationSeconds": 54,
               "timeToHalfDeltaVSeconds": 26,
-              "deltaV": 973.4,
-              "deltaVTangent": 973.4,
-              "deltaVNormal": 18.75,
-              "deltaVBinormal": -42.1,
-              "coordinateSystem": 4,
+              "deltaV": 100,
+              "deltaVTangent": 99.99725448717251,
+              "deltaVNormal": 0.7407749705494311,
+              "deltaVBinormal": 0.018640565004431318,
+              "coordinateSystem": 2,
               "inertiallyFixed": false,
               "thrustKilonewtons": 486.5,
               "specificImpulseSeconds": 348,

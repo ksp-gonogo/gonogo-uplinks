@@ -1,10 +1,10 @@
 import {
   type LagrangePointName,
   type LibrationAnswer,
-  type LibrationOffset,
   type OrbitTrajectory,
   TrajectoryFrameKindLike,
 } from "@ksp-gonogo/sitrep-sdk/frames";
+import type { CraftOffset } from "./pairResolution.js";
 
 /**
  * The pair's own frame, drawn. Every coordinate is a multiple of the pair's
@@ -133,7 +133,7 @@ function collinearLabelX(
 
 export interface LibrationDiagramProps {
   answer: LibrationAnswer;
-  offset: LibrationOffset | null;
+  offset: CraftOffset | null;
   /** The two bodies' physical radii, metres, for their discs. Null where the catalogue has none. */
   primaryRadius: number | null;
   secondaryRadius: number | null;

@@ -3,13 +3,13 @@
     "capturedAt": "2026-09-29",
     "vessel": "Munar Relay L1",
     "body": "Kerbin",
-    "situation": "A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies",
-    "notes": "Kerbin-Mun L1 sits 9,946 km from Kerbin. The craft is on a circular Kerbin orbit at 9,900 km, in phase with the Mun, so it is well inside the on-station band of 2% of the separation."
+    "situation": "A relay 46 km Kerbin-ward of the Kerbin-Mun L1 point, turning with the pair",
+    "notes": "Kerbin-Mun L1 sits 9,946 km from Kerbin. The craft is at the apoapsis of a Kerbin orbit placed on the Kerbin-Mun line at 9,900 km, where its speed matches the pair's rotation, so it is nearly at rest relative to the point."
   },
   "_scene": {
     "widget": "libration-points",
     "hero": true,
-    "caption": "A relay parked 46 km sunward of the Kerbin-Mun L1 point, on the line between the two bodies",
+    "caption": "A relay 46 km Kerbin-ward of the Kerbin-Mun L1 point, turning with the pair",
     "config": {
       "pair": "Mun"
     }
@@ -123,12 +123,12 @@
         "topic": "vessel.orbit",
         "payload": {
           "referenceBodyIndex": 1,
-          "sma": 9900000,
-          "ecc": 0,
+          "sma": 6882740,
+          "ecc": 0.43838,
           "inc": 0,
           "lan": 0,
-          "argPe": 0,
-          "meanAnomalyAtEpoch": 1.7,
+          "argPe": 277.4028,
+          "meanAnomalyAtEpoch": 3.141592653589793,
           "epoch": 0,
           "mu": 3531600000000.0,
           "horizon": {

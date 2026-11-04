@@ -330,9 +330,9 @@ public sealed class PrincipiaPlannedBurn
     public double? DeltaVBinormal { get; set; }
 
     /// <summary>Which coordinate system the triple is expressed in, as the
-    /// producer's own enum ordinal. One of its four values is Cartesian and the
-    /// other three are spherical, and the components above are only the whole
-    /// story for the Cartesian one.</summary>
+    /// producer's own enum ordinal: 1 is Cartesian, and 2 to 4 are spherical,
+    /// where the player enters the Δv as a magnitude and two angles. The
+    /// components above are the burn's Δv in every one of them.</summary>
     [SitrepUnit(Units.Enumeration)]
     public int? CoordinateSystem { get; set; }
 
