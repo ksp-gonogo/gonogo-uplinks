@@ -159,7 +159,6 @@ function DeviceSwitch({ device }: { device: KerbalismDevice }) {
         args={{ deviceId: device.id, on: true }}
         commandLabel={`Switch ${name} on`}
         label="On"
-        pendingLabel="Switching on..."
         aria-label={`Switch ${name} on`}
       />
       <CommandButton
@@ -168,7 +167,6 @@ function DeviceSwitch({ device }: { device: KerbalismDevice }) {
         args={{ deviceId: device.id, on: false }}
         commandLabel={`Switch ${name} off`}
         label="Off"
-        pendingLabel="Switching off..."
         aria-label={`Switch ${name} off`}
       />
     </Cluster>
@@ -248,7 +246,6 @@ function ScriptDeviceControls({
       args={{ scriptType: script, deviceId: device.id as string, state: state ?? undefined }}
       commandLabel={`${label} script: ${words} ${name}`}
       label={words === "remove" ? "Remove" : words === "on" ? "On" : "Off"}
-      pendingLabel="Setting..."
       aria-label={`${label} script: ${words} ${name}`}
     />
   );

@@ -238,7 +238,6 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               commandLabel="Move the flight plan's end instant"
               label="SET END"
               confirmLabel="CONFIRM"
-              pendingLabel="Setting..."
               title={
                 endsBeforeStart
                   ? "A plan cannot end at or before it starts"
@@ -312,7 +311,6 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             }
             label="SET"
             confirmLabel="CONFIRM"
-            pendingLabel="Setting..."
             disabled={
               frozen ||
               stepParametersUnverified ||

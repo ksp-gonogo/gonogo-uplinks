@@ -283,7 +283,6 @@ function ScienceDataAboardRowAugment({
               disabled={!send.read}
               title={send.read ? undefined : UNREAD_FLAG_TITLE}
               label={send.read ? (send.on ? "Queued" : "Send") : "Unknown"}
-              pendingLabel={send.on ? "Cancelling..." : "Queueing..."}
               aria-label={
                 send.read
                   ? send.on
@@ -300,7 +299,6 @@ function ScienceDataAboardRowAugment({
               label="Delete"
               confirmLabel="Confirm"
               confirmTone="nogo"
-              pendingLabel="Deleting..."
               aria-label="Delete file"
               confirmAriaLabel="Confirm delete file"
             />
@@ -347,7 +345,6 @@ function ScienceDataAboardRowAugment({
                     : "Analyze"
                   : "Unknown"
               }
-              pendingLabel={analyze.on ? "Cancelling..." : "Flagging..."}
               aria-label={
                 analyze.read
                   ? analyze.on
@@ -362,7 +359,6 @@ function ScienceDataAboardRowAugment({
               args={{ subjectId }}
               commandLabel="Move to lab"
               label="Move to lab"
-              pendingLabel="Moving..."
               disabled={!hasLab}
               title={hasLab ? undefined : "No lab part aboard this vessel"}
               aria-label={
@@ -379,7 +375,6 @@ function ScienceDataAboardRowAugment({
               label="Dump"
               confirmLabel="Confirm"
               confirmTone="nogo"
-              pendingLabel="Dumping..."
               aria-label="Dump sample"
               confirmAriaLabel="Confirm dump sample"
             />

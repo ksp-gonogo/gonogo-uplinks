@@ -392,7 +392,6 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
                 commandLabel={`Aim ${antennaName}`}
                 label="AIM"
                 confirmLabel="CONFIRM AIM"
-                pendingLabel="Aiming..."
               />
               <CommandButton
                 size="sm"
@@ -401,7 +400,6 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
                 commandLabel={`Aim ${antennaName} at the home body`}
                 label="HOME"
                 confirmLabel="CONFIRM HOME"
-                pendingLabel="Aiming..."
               />
             </Cluster>
 

@@ -438,7 +438,6 @@ export function BurnEditor() {
               label="ARM WRITES"
               confirmLabel="CONFIRM ARM"
               confirmTone="nogo"
-              pendingLabel="Arming..."
               title={surface?.reason ?? undefined}
               disabled={!available}
               aria-label="Arm the flight-plan write surface"
@@ -771,7 +770,6 @@ export function BurnEditor() {
                 label="APPLY"
                 confirmLabel="CONFIRM APPLY"
                 confirmTone="nogo"
-                pendingLabel="Applying..."
                 onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
                 title={writeBlockedReason}
                 disabled={
@@ -843,7 +841,6 @@ export function BurnEditor() {
                 label="ADD BURN"
                 confirmLabel="CONFIRM ADD"
                 confirmTone="nogo"
-                pendingLabel="Adding..."
                 onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
                 /*
                  * The same deadline: an inserted burn is written at the draft's
@@ -873,7 +870,6 @@ export function BurnEditor() {
                 label="REMOVE"
                 confirmLabel="CONFIRM REMOVE"
                 confirmTone="nogo"
-                pendingLabel="Removing..."
                 onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
                 // Out of contact freezes this too: the index is the whole of the
                 // request, and an index off an hour-old burn list can name a

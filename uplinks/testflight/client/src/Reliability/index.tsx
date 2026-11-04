@@ -53,7 +53,6 @@ function RepairEngine({ partId, title }: { partId: string; title: string }) {
         commandLabel={`Repair ${title}`}
         label="Repair"
         confirmLabel="Confirm"
-        pendingLabel="Repair..."
       />
     </Cluster>
   );

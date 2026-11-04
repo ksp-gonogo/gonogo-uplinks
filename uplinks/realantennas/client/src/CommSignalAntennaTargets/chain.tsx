@@ -289,7 +289,6 @@ export function AntennaChain({
             commandLabel={`Set the fallback chain for ${antennaName}`}
             label="SET CHAIN"
             confirmLabel="CONFIRM CHAIN"
-            pendingLabel="Sending..."
             onConfirmed={onSent}
           />
         ) : null}
@@ -306,7 +305,6 @@ export function AntennaChain({
             commandLabel={`Clear the fallback chain for ${antennaName}`}
             label="CLEAR CHAIN"
             confirmLabel="CONFIRM CLEAR"
-            pendingLabel="Clearing..."
           />
         ) : null}
       </Cluster>

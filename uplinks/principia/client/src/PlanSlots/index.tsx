@@ -328,7 +328,6 @@ export function PlanSlots() {
                 label="CREATE EMPTY PLAN"
                 confirmLabel="CONFIRM CREATE"
                 confirmTone="nogo"
-                pendingLabel="Creating..."
                 onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
                 disabled={
                   frozen ||
@@ -471,7 +470,6 @@ function ExistingPlan({
           label="COPY TO A NEW SLOT"
           confirmLabel="CONFIRM COPY"
           confirmTone="nogo"
-          pendingLabel="Copying..."
           onConfirmed={(result) => onWrite(planWriteReceipt(result))}
           disabled={frozen || slotsFull}
           aria-label="Copy this flight plan into a new slot"
@@ -490,7 +488,6 @@ function ExistingPlan({
           label="DELETE PLAN"
           confirmLabel="CONFIRM DELETE"
           confirmTone="nogo"
-          pendingLabel="Deleting..."
           onConfirmed={(result) => onWrite(planWriteReceipt(result))}
           disabled={frozen}
           aria-label="Delete this flight plan"
@@ -719,7 +716,6 @@ function InstallRow({
         label="INSTALL AS FLIGHT PLAN"
         confirmLabel="CONFIRM INSTALL"
         confirmTone="nogo"
-        pendingLabel="Installing..."
         onConfirmed={(result) => onWrite(planWriteReceipt(result))}
         title={installTitle}
         disabled={blocked}

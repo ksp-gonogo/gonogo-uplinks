@@ -391,7 +391,6 @@ function ReadyPlan({
         label="Upload to vessel"
         confirmLabel="CONFIRM UPLOAD"
         confirmTone="nogo"
-        pendingLabel="Uploading..."
         disabled={pending || window?.shut === true}
         aria-label="Upload this flight plan to the vessel"
         confirmAriaLabel="Confirm uploading this flight plan to the vessel"

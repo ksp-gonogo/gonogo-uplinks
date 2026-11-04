@@ -120,7 +120,6 @@ export function RepairControl({
         commandLabel={`${verb} with ${performer ?? "nobody"}`}
         label={verb}
         confirmLabel={price ? `Confirm, ${price.toLowerCase()}` : "Confirm"}
-        pendingLabel={`${verb}...`}
         disabled={refusal !== null}
         title={refusal ?? undefined}
       />
