@@ -363,6 +363,34 @@ async function buildConnectedSource(
   return { ds, sidecar };
 }
 
+/**
+ * Holds a camera's handle on a stand-in stream for the rest of the test. jsdom
+ * makes no tracks, so the slot binding that follows a mount would otherwise
+ * report none and replace it.
+ */
+function holdStream(
+  ds: KerbcastDataSource,
+  flightId: number,
+  id: string,
+): MediaStream {
+  const stream = {
+    id,
+    getTracks: () => [],
+    getVideoTracks: () => [],
+  } as unknown as MediaStream;
+  const handle = ds.getClient().camera(flightId);
+  Object.defineProperty(handle, "mediaStream", {
+    configurable: true,
+    get: () => stream,
+  });
+  const on = handle.on.bind(handle);
+  vi.spyOn(handle, "on").mockImplementation(((
+    event: Parameters<typeof on>[0],
+    cb: Parameters<typeof on>[1],
+  ) => (event === "stream" ? () => {} : on(event, cb))) as typeof on);
+  return stream;
+}
+
 // ---------------------------------------------------------------------------
 // Camera selection: picker, Next/Previous, serial actions, empty/status
 // ---------------------------------------------------------------------------
@@ -735,25 +763,32 @@ describe("CameraFeed: camera selection", () => {
   });
 
   it("Next button clears the previous camera's picture until the new stream binds", async () => {
-    await buildConnectedSource(TWO_CAMERAS);
+    const { ds } = await buildConnectedSource(TWO_CAMERAS);
+    const previous = holdStream(ds, 42, "previous-camera");
 
     const { container } = renderStatefulFeed({ flightId: 42 });
+    await act(async () => {});
     const video = container.querySelector("video") as HTMLVideoElement;
-    const oldPicture = { id: "previous-camera" } as unknown as MediaStream;
-    let bound: MediaStream | null = oldPicture;
-    Object.defineProperty(video, "srcObject", {
-      configurable: true,
-      get: () => bound,
-      set: (next: MediaStream | null) => {
-        bound = next;
-      },
-    });
+    expect(video.srcObject).toBe(previous);
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /next camera/i }));
     });
 
-    expect(bound).toBeNull();
+    expect(video.srcObject).toBeNull();
+  });
+
+  it("keeps the picture of a camera whose stream is already up when the tile mounts", async () => {
+    const { ds } = await buildConnectedSource([
+      makeCamera({ flightId: 77, cameraName: "Hull Cam" }),
+    ]);
+    const live = holdStream(ds, 77, "hull-camera");
+
+    const { container } = renderStatefulFeed({ flightId: 77 });
+    await act(async () => {});
+
+    const video = container.querySelector("video") as HTMLVideoElement;
+    expect(video.srcObject).toBe(live);
   });
 
   it("Previous button steps backward and wraps round", async () => {

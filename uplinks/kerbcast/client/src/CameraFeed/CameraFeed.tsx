@@ -459,18 +459,13 @@ export function CameraFeed({
     playoutStatus.stream !== null;
 
   /*
-   * The SDK binds a stream to its `<video>` only when there is one, and keeps
-   * the previous srcObject when the stream goes null. On a camera switch the
-   * new camera has no stream for a moment, so the old camera's last frame sat
-   * on screen until static replaced it. Clearing the element while nothing is
-   * showable leaves the feed on its own empty look until the new stream binds.
+   * The `<video>` belongs to the SDK, which binds whatever the stream hook
+   * returns (null included) and rebinds only when that reference changes. This
+   * component never writes its srcObject: `showsStream` is published from the
+   * SDK's own effect and is shared by every tile on the camera, so it can lag
+   * a bind, and a clear on a lagging value leaves the tile dark for as long as
+   * the stream object lives.
    */
-  useEffect(() => {
-    if (showsStream) return;
-    const video = overlayWrapRef.current?.querySelector("video");
-    if (!video) return;
-    video.srcObject = null;
-  }, [effectiveFlightId, showsStream]);
 
   // ---- Delayed camera control gate ----
   // The live snapshot of the camera registry, so the setpoint surface can read
@@ -480,7 +475,12 @@ export function CameraFeed({
   const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
   const reacquiring = useReacquiring(effectiveFlightId);
-  useFeedBindProbe(effectiveFlightId, overlayWrapEl, playoutStatus.kind);
+  useFeedBindProbe(
+    effectiveFlightId,
+    overlayWrapEl,
+    playoutStatus.kind,
+    showsStream,
+  );
   /*
    * With no link, or no power on the craft the camera is part of, the SDK's own
    * static is speckle over the live frame, so the picture still shows through

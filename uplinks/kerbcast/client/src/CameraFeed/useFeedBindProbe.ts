@@ -11,11 +11,16 @@ export const BIND_PROBE_DELAY_MS = 3000;
  * that stream and how much of it has decoded, under the `kerbcast:feed-bind`
  * tag. Useful for telling a black feed whose stream never arrived from one
  * whose stream is not on the video element. Used by {@link CameraFeed}.
+ *
+ * `showsStream` is whether the feed's playout has a stream to show. When it
+ * does and the video element has no srcObject, the tile is dark with a picture
+ * available, and a second line says so at debug level.
  */
 export function useFeedBindProbe(
   flightId: number | null,
   wrap: HTMLElement | null,
   playout: string,
+  showsStream: boolean,
 ): void {
   useEffect(() => {
     if (flightId === null || !wrap) return;
@@ -25,7 +30,15 @@ export function useFeedBindProbe(
           ?.getClient()
           .camera(flightId).mediaStream ?? null;
       const video = wrap.querySelector("video");
-      logger.tag("kerbcast:feed-bind").info("feed bind", {
+      const log = logger.tag("kerbcast:feed-bind");
+      if (showsStream && video !== null && video.srcObject == null) {
+        log.debug("feed has a stream but its video has none", {
+          flightId,
+          playout,
+          handleHasStream: stream !== null,
+        });
+      }
+      log.info("feed bind", {
         flightId,
         playout,
         handleHasStream: stream !== null,
@@ -38,5 +51,5 @@ export function useFeedBindProbe(
       });
     }, BIND_PROBE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [flightId, wrap, playout]);
+  }, [flightId, wrap, playout, showsStream]);
 }
