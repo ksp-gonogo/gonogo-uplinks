@@ -275,6 +275,98 @@ describe("KscConstruction", () => {
     expect(visibleText()).toContain("no funds to draw");
   });
 
+  it("names a wound-down work rate as the cause of a stall", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({
+        workRate: 0,
+        rate: 0,
+        affordableFraction: 1,
+        timeLeftSeconds: null,
+        stalled: true,
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("work rate is set to 0%");
+    });
+    expect(visibleText()).not.toContain("no funds to draw");
+  });
+
+  it("says RP-1 gave no cause when a stall is neither the rate nor the funds", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({
+        workRate: 1,
+        rate: 0,
+        affordableFraction: null,
+        timeLeftSeconds: null,
+        stalled: true,
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("RP-1 does not say why it stopped");
+    });
+  });
+
+  it("sums the draw of every build and sets it beside RP-1's month", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({ id: "a", name: "Runway" }),
+      construction({ id: "b", name: "LaunchPad", workRate: 0.5 }),
+    ]);
+    fixture.emit("rp1.constructionRates", {
+      refreshedAt: 0,
+      constructions: [
+        { id: "a", steps: [{ workRate: 1, costPerDay: 400 }] },
+        { id: "b", steps: [{ workRate: 0.5, costPerDay: 150 }] },
+      ],
+      facilityUpgrades: [],
+    });
+    fixture.emit("rp1.budget", {
+      month: { constructions: -16_500, fundsDelta: -52_000 },
+    });
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("All builds draw");
+    });
+    const text = visibleText();
+    expect(text).toContain("550");
+    expect(text).toContain("across 2 builds");
+    expect(text).toContain("Builds, 30 days");
+    expect(text).toContain("net with builds");
+  });
+
+  it("gives no total when a build has no price at its rate", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.centres", CENTRES);
+    fixture.emit("career.status", CAREER);
+    fixture.emit("rp1.constructions", [
+      construction({ id: "a", name: "Runway" }),
+      construction({ id: "b", name: "LaunchPad" }),
+    ]);
+    fixture.emit("rp1.constructionRates", {
+      refreshedAt: 0,
+      constructions: [{ id: "a", steps: [{ workRate: 1, costPerDay: 400 }] }],
+      facilityUpgrades: [],
+    });
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("not every build is priced yet");
+    });
+  });
+
   it("marks a construction slowed to what the career can pay", async () => {
     const { fixture } = mount();
     fixture.emit("rp1.available", true);

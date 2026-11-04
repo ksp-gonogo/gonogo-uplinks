@@ -3,11 +3,14 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  useViewUt,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Cluster,
   CommandButton,
+  Countdown,
   EmptyState,
   FilterRegion,
   Grid,
@@ -32,6 +35,7 @@ import { useState } from "react";
 import type { Rp1LeaderEntry } from "../__generated__/contract.js";
 import { LEADERS_SCREEN_ID } from "../AdminBuilding/leadersScreen.js";
 import { current } from "../shared/current.js";
+import { type DismissalWindow, dismissalSamples } from "./dismissalCost.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 
@@ -118,6 +122,11 @@ export function LeaderDetail({ screenId }: { screenId: string }) {
             dismiss={dismiss}
             entry={entry}
             leader={chosen}
+            reputation={
+              careerReading.balances.reputation.state === "observed"
+                ? magnitudeOf(careerReading.balances.reputation.value)
+                : null
+            }
           />
         </Grid>
       )}
@@ -243,11 +252,13 @@ function ChosenLeader({
   dismiss,
   entry,
   leader,
+  reputation,
 }: Readonly<{
   appoint: Parameters<typeof CommandButton>[0]["handle"];
   dismiss: Parameters<typeof CommandButton>[0]["handle"];
   entry: CareerStrategyEntry | undefined;
   leader: Rp1LeaderEntry;
+  reputation: number | null;
 }>) {
   const effects = effectLines(entry?.effect);
   return (
@@ -257,7 +268,12 @@ function ChosenLeader({
       </SubjectHeading>
 
       {leader.active === true ? (
-        <DismissControl entry={entry} handle={dismiss} leader={leader} />
+        <DismissControl
+          entry={entry}
+          handle={dismiss}
+          leader={leader}
+          reputation={reputation}
+        />
       ) : (
         <AppointControl handle={appoint} leader={leader} />
       )}
@@ -417,12 +433,21 @@ function DismissControl({
   entry,
   handle,
   leader,
+  reputation,
 }: Readonly<{
   entry: CareerStrategyEntry | undefined;
   handle: Parameters<typeof CommandButton>[0]["handle"];
   leader: Rp1LeaderEntry;
+  reputation: number | null;
 }>) {
   const name = label(leader);
+  const nowUt = magnitudeOf(useViewUt());
+  const freeUt = magnitudeOf(leader.freeToRemoveFromUt);
+  const window = dismissalWindow(leader);
+  const samples =
+    window === null || nowUt === null || reputation === null
+      ? []
+      : dismissalSamples(window, nowUt, reputation);
   const blocked = entry?.canDeactivate === false;
   const costs = (magnitudeOf(leader.deactivateReputation) ?? 0) > 0;
   return (
@@ -468,8 +493,28 @@ function DismissControl({
             <RowName>Free to dismiss</RowName>
             <Text>
               <MissionDate value={leader.freeToRemoveFromUt} />
+              {freeUt !== null && nowUt !== null && freeUt > nowUt && (
+                <>
+                  {" (in "}
+                  <Countdown value={freeUt - nowUt} />
+                  {")"}
+                </>
+              )}
             </Text>
           </Row>
+        )}
+        {costs && samples.length > 0 && (
+          <Stack as="li" gap="caption">
+            <Text size="xs" level="muted">
+              Cost if dismissed later, at today's reputation
+            </Text>
+            {samples.map((sample) => (
+              <Text key={sample.years}>
+                In {sample.years} {sample.years === 1 ? "year" : "years"}:{" "}
+                <Unit value={value("rep", sample.reputation)} />
+              </Text>
+            ))}
+          </Stack>
         )}
         <Row wrap>
           <RowName>After dismissal</RowName>
@@ -480,6 +525,21 @@ function DismissControl({
       </Stack>
     </Section>
   );
+}
+
+/**
+ * The three instants of a serving leader's dismissal window, or null when the
+ * mod did not send one of them (an older build does not send the appointment).
+ */
+function dismissalWindow(leader: Rp1LeaderEntry): DismissalWindow | null {
+  const activatedUt = magnitudeOf(leader.activatedUt);
+  const canRemoveFromUt = magnitudeOf(leader.canRemoveFromUt);
+  const freeToRemoveFromUt = magnitudeOf(leader.freeToRemoveFromUt);
+  return activatedUt === null ||
+    canRemoveFromUt === null ||
+    freeToRemoveFromUt === null
+    ? null
+    : { activatedUt, canRemoveFromUt, freeToRemoveFromUt };
 }
 
 registerAugment({

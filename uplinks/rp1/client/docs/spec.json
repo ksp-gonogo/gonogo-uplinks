@@ -886,6 +886,10 @@
       "array": true,
       "fields": [
         {
+          "name": "activatedUt",
+          "unit": "ut"
+        },
+        {
           "name": "active",
           "unit": "flag"
         },

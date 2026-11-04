@@ -143,7 +143,8 @@ describe("KscConstruction work rate and cancel", () => {
 
     await screen.findByText("Set rate");
     expect(visibleText(view.container)).toContain("12,500");
-    expect(visibleText(view.container)).toContain("spent, not refunded");
+    expect(visibleText(view.container)).toContain("drawn so far, none refunded");
+    expect(visibleText(view.container)).toContain("2,500f of it rush premium");
 
     await user.click(screen.getByRole("button", { name: "Cancel Vehicle Assembly Building" }));
     expect(
@@ -159,6 +160,14 @@ describe("KscConstruction work rate and cancel", () => {
       (c) => c.command === RP1_CONSTRUCTION_CANCEL_COMMAND,
     );
     expect(sent?.args).toEqual({ id: ID });
+  });
+
+  it("names no rush premium when nothing was rushed", async () => {
+    const { view } = mount(construction({ spentRushCost: 10_000 }));
+
+    await screen.findByText("Set rate");
+    expect(visibleText(view.container)).toContain("drawn so far, none refunded");
+    expect(visibleText(view.container)).not.toContain("rush premium");
   });
 
   it("offers neither control on a row RP-1 gave no id", async () => {

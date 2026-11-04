@@ -50,11 +50,11 @@
             "setupScience": 0,
             "setupReputation": 0,
             "setupConfidence": 0,
-            "deactivateReputation": 162.4,
+            "deactivateReputation": 160.6,
             "dismissSubsidyLossPerDay": 10.9,
             "removeOnDeactivate": true,
             "reactivateCooldown": 31557600,
-            "canRemoveFromUt": 6100000,
+            "activatedUt": 5600000, "canRemoveFromUt": 6100000,
             "freeToRemoveFromUt": 321676000
           },
           {

@@ -2685,6 +2685,16 @@ public class Rp1LeaderEntry
     public double? ReactivateCooldown { get; set; }
 
     /// <summary>
+    /// The instant the leader was appointed, on a serving leader. An instant, so
+    /// a UT. With <see cref="CanRemoveFromUt"/> and <see cref="FreeToRemoveFromUt"/>
+    /// it fixes the whole dismissal-cost curve: the cost is a share of
+    /// reputation that holds at 20% until the least duration, then falls to zero
+    /// by the instant dismissal is free.
+    /// </summary>
+    [SitrepUnit(Sitrep.Contract.Units.UniversalTime)]
+    public double? ActivatedUt { get; set; }
+
+    /// <summary>
     /// The instant dismissal becomes possible at all, on a serving leader. An
     /// instant, so a UT.
     /// </summary>

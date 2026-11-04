@@ -231,7 +231,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](client/docs/assets/catalogue-picker--landscape-18x5.png)
 
-![Three queued nodes: one being worked with a countdown and its era window, one throttled down to a fifth of full rate, and one stalled with nothing to date it from](client/docs/assets/research-queue-throttled-and-stalled--default.png)
+![A throttled node at the head of the queue, and two waiting behind it: RP-1 researches only the first node, and the last also has its work rate at zero](client/docs/assets/research-queue-throttled-and-stalled--default.png)
 
 ![The same frontier against a balance that can meet it, with a node already on the queue withheld from the picker: RP-1 refuses a second press ahead of the charge, so offering one would be offering a press that cannot land](client/docs/assets/start-research-affordable--default.png)
 

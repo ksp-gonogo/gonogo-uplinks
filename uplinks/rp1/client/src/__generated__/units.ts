@@ -452,6 +452,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     strategyId: "id",
   },
   "Rp1LeaderEntry": {
+    activatedUt: "ut",
     active: "flag",
     appointBlockedReason: "text",
     canAppoint: "flag",
@@ -961,6 +962,7 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     additionalPadCostMult: "ratio",
   },
   "rp1.leaders": {
+    activatedUt: "ut",
     active: "flag",
     appointBlockedReason: "text",
     canAppoint: "flag",

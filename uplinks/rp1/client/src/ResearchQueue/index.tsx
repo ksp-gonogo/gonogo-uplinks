@@ -73,8 +73,12 @@ export function ResearchQueue() {
       <SectionTitle>RESEARCH QUEUE</SectionTitle>
       <ResearchRateControl queue={queue} rates={rates} handle={setRate} />
       <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
-        {queue.map((node) => (
-          <ResearchRow key={node.techId ?? ""} node={node} />
+        {queue.map((node, index) => (
+          <ResearchRow
+            behind={index === 0 ? null : (queue[0].techName ?? NULL_DISPLAY)}
+            key={node.techId ?? ""}
+            node={node}
+          />
         ))}
       </Stack>
     </Section>
@@ -85,7 +89,10 @@ export function ResearchQueue() {
  * One queued node. The throttle is shown only when the operator has moved it,
  * because a full-rate node saying "100%" beside every sibling is noise.
  */
-function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
+function ResearchRow({
+  node,
+  behind,
+}: Readonly<{ node: Rp1ResearchEntry; behind: string | null }>) {
   const ratio = magnitudeOf(node.progressRatio);
   const workRate = magnitudeOf(node.workRate);
   return (
@@ -98,7 +105,10 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
             node.timeLeftSeconds !== null ? (
               <Countdown value={node.timeLeftSeconds} />
             ) : node.stalled === true ? (
-              <Badge tone="caution">STALLED</Badge>
+              <>
+                <Badge tone="caution">STALLED</Badge>{" "}
+                {stallCause(node, behind)}
+              </>
             ) : workRate === null ? (
               /* A different absence from the one below: the throttle is what
                  the rate is derived FROM, so a node whose throttle would not
@@ -122,7 +132,7 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
             <Unit value={node.progress} /> / <Unit value={node.scienceCost} />
             {workRate !== null && workRate < 1 && (
               <>
-                {" · throttled to "}
+                {" · work rate set to "}
                 <Unit value={node.workRate} />
               </>
             )}
@@ -155,6 +165,21 @@ function ResearchRow({ node }: Readonly<{ node: Rp1ResearchEntry }>) {
       )}
     </Stack>
   );
+}
+
+/**
+ * Why a node is making no progress. RP-1 researches only the first node in the
+ * queue, so any other is held at zero whatever its work rate; at the head, a
+ * work rate of zero stops it. Any other stop is not carried on the wire.
+ */
+function stallCause(node: Rp1ResearchEntry, behind: string | null): string {
+  if (behind !== null) {
+    return `waiting behind ${behind}, the only node researched at a time`;
+  }
+  if (magnitudeOf(node.workRate) === 0) {
+    return "work rate is set to 0%";
+  }
+  return "RP-1 does not say why it stopped";
 }
 
 /**

@@ -2,6 +2,7 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
@@ -11,10 +12,12 @@ import {
   NULL_DISPLAY,
   Section,
   SectionTitle,
+  Stack,
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type {
+  Rp1BudgetPeriod,
   Rp1ConstructionEntry,
   Rp1ConstructionRateTable,
 } from "../__generated__/contract.js";
@@ -24,6 +27,7 @@ import { ProjectCard, ProjectCardList } from "../shared/ProjectCard.js";
 import { RP1 } from "../uplink.js";
 import {
   CancelControl,
+  drawPerDay,
   RateControl,
   RP1_CONSTRUCTION_CANCEL_COMMAND,
   RP1_CONSTRUCTION_SET_RATE_COMMAND,
@@ -65,6 +69,7 @@ export function KscConstruction() {
   const constructions = current(useTelemetry("rp1.constructions"));
   const centres = current(useTelemetry("rp1.centres"));
   const rates = current(useTelemetry("rp1.constructionRates"));
+  const budget = current(useTelemetry("rp1.budget"));
 
   // Unconditional and above the early return: a hook after one would change
   // count on the first frame RP-1 answers.
@@ -111,7 +116,13 @@ export function KscConstruction() {
         // same kind of thing as every other empty state in this panel.
         <EmptyState>Nothing being built</EmptyState>
       ) : (
-        <ProjectCardList>
+        <>
+          <BuildsTotal
+            month={budget?.month ?? undefined}
+            rows={rows}
+            tables={tables}
+          />
+          <ProjectCardList>
           {rows.map((row) => (
             <ConstructionRow
               cancel={cancel}
@@ -123,11 +134,83 @@ export function KscConstruction() {
               table={row.id == null ? undefined : tables.get(row.id)}
             />
           ))}
-        </ProjectCardList>
+          </ProjectCardList>
+        </>
       )}
     </Section>
   );
 }
+
+/**
+ * What every build in the list draws together, set beside RP-1's own figures for
+ * the coming thirty days. The money is drawn as the work advances and a short
+ * balance slows it, so these are rates and totals to read the career's income
+ * against, never an affordability verdict.
+ *
+ * <para>The total is absent as a whole when any build has no price at its
+ * current rate, rather than the sum of the ones that do. The month figures are
+ * RP-1's Budget tab: the builds row is the part of each build's cost that falls
+ * inside the thirty days, and the net is the tab's funds change with that row
+ * counted in.</para>
+ */
+function BuildsTotal({
+  rows,
+  tables,
+  month,
+}: Readonly<{
+  rows: readonly Rp1ConstructionEntry[];
+  tables: ReadonlyMap<string, Rp1ConstructionRateTable>;
+  month: Rp1BudgetPeriod | undefined;
+}>) {
+  const draws = rows.map((row) =>
+    drawPerDay(row, row.id == null ? undefined : tables.get(row.id)),
+  );
+  const priced = draws.every((draw) => draw !== null);
+  const total = priced ? draws.reduce<number>((sum, d) => sum + (d ?? 0), 0) : 0;
+  const met = rows.map((row) => magnitudeOf(row.affordableFraction));
+  const slowed =
+    priced &&
+    total > 0 &&
+    met.every((fraction) => fraction !== null) &&
+    draws.some((draw, i) => (draw ?? 0) > 0 && (met[i] ?? 1) < 1);
+  const metShare = slowed
+    ? draws.reduce<number>((sum, d, i) => sum + (d ?? 0) * (met[i] ?? 1), 0) /
+      total
+    : 1;
+  return (
+    <Stack gap="caption">
+      <Text size="sm">
+        All builds draw{" "}
+        {priced ? (
+          <>
+            <Unit decimals={0} value={value("f/day", total)} />
+            {rows.length > 1 && <> across {rows.length} builds</>}
+            {slowed && (
+              <>
+                {", funds meet "}
+                <Unit value={value("ratio", metShare)} />
+              </>
+            )}
+          </>
+        ) : (
+          <>{NULL_DISPLAY} not every build is priced yet</>
+        )}
+      </Text>
+      {month?.constructions != null && (
+        <Text size="sm">
+          Builds, 30 days <Unit value={month.constructions} />
+          {month.fundsDelta != null && (
+            <>
+              {", net with builds "}
+              <Unit value={month.fundsDelta} />
+            </>
+          )}
+        </Text>
+      )}
+    </Stack>
+  );
+}
+
 
 /**
  * One thing being built. The kind decides only what the detail line says: the
@@ -275,7 +358,7 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
         )}
         {throttle !== null && throttle > 0 && throttle < 1 && (
           <>
-            {", at "}
+            {", work rate set to "}
             <Unit value={row.workRate} />
           </>
         )}
@@ -292,10 +375,7 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
   if (row.stalled === true) {
     return (
       <>
-        <Badge tone="caution">STALLED</Badge>{" "}
-        {magnitudeOf(row.affordableFraction) === 0
-          ? "no funds to draw, so no end date until the career can pay"
-          : "no end date while work is stopped"}
+        <Badge tone="caution">STALLED</Badge> {stallCause(row)}
       </>
     );
   }
@@ -316,6 +396,21 @@ function TimeLeft({ row }: Readonly<{ row: Rp1ConstructionEntry }>) {
     return <>{NULL_DISPLAY} RP-1 has not said how far along this is</>;
   }
   return <>{NULL_DISPLAY} RP-1 has not costed this yet</>;
+}
+
+/**
+ * Why a costed construction is making no progress. RP-1 stops one for two
+ * reasons only, a work rate wound to zero or a career with no funds to draw, and
+ * the affordable share tells them apart.
+ */
+function stallCause(row: Rp1ConstructionEntry): string {
+  if (magnitudeOf(row.workRate) === 0) {
+    return "work rate is set to 0%, so no end date";
+  }
+  if (magnitudeOf(row.affordableFraction) === 0) {
+    return "no funds to draw, so no end date until the career can pay";
+  }
+  return "no end date, and RP-1 does not say why it stopped";
 }
 
 /** What each RP-1 construction kind is, in a word an operator scans for. */

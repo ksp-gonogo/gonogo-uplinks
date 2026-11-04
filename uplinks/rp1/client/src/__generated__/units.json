@@ -412,6 +412,7 @@
       "strategyId": "id"
     },
     "Rp1LeaderEntry": {
+      "activatedUt": "ut",
       "active": "flag",
       "appointBlockedReason": "text",
       "canAppoint": "flag",
@@ -916,6 +917,7 @@
       "additionalPadCostMult": "ratio"
     },
     "rp1.leaders": {
+      "activatedUt": "ut",
       "active": "flag",
       "appointBlockedReason": "text",
       "canAppoint": "flag",

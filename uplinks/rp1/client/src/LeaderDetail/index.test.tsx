@@ -177,6 +177,45 @@ describe("LeaderDetail", () => {
     expect(visibleText()).toContain("Re-hire from");
   });
 
+  it("shows when dismissal is free as a countdown and how the cost falls before then", async () => {
+    const fixture = setupStreamFixture({ pinnedUt: 0 });
+    render(
+      <fixture.Provider>
+        <DelayRailProvider>
+          <LeaderDetail screenId={LEADERS_SCREEN_ID} />
+        </DelayRailProvider>
+      </fixture.Provider>,
+    );
+    await feed(fixture, [
+      serving({ activatedUt: 0, canRemoveFromUt: 86_400 * 30 }),
+    ]);
+
+    await waitFor(() => {
+      expect(visibleText()).toContain("In 1 year:");
+    });
+    const text = visibleText();
+    expect(text).toContain("In 2 years:");
+    expect(text).toContain("In 5 years:");
+    expect(text).not.toContain("In 10 years:");
+    expect(text).toContain("at today's reputation");
+    expect(text).toMatch(/Free to dismiss.*\(in /);
+  });
+
+  it("shows no future costs when the mod did not send the appointment", async () => {
+    const fixture = setupStreamFixture({ pinnedUt: 0 });
+    render(
+      <fixture.Provider>
+        <DelayRailProvider>
+          <LeaderDetail screenId={LEADERS_SCREEN_ID} />
+        </DelayRailProvider>
+      </fixture.Provider>,
+    );
+    await feed(fixture, [serving()]);
+
+    expect(visibleText()).toContain("Free to dismiss");
+    expect(visibleText()).not.toContain("In 1 year:");
+  });
+
   it("dismisses through core's deactivate, with the reputation it costs now and what that pays in subsidy", async () => {
     const user = userEvent.setup();
     const { fixture } = mount();

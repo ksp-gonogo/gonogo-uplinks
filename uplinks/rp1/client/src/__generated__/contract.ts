@@ -2816,6 +2816,14 @@ export interface Rp1LeaderEntry
 	*/
 	reactivateCooldown?: Value<"s"> | null;
 	/**
+	* The instant the leader was appointed, on a serving leader. An instant, so a
+	* UT. With `Rp1LeaderEntry.canRemoveFromUt` and
+	* `Rp1LeaderEntry.freeToRemoveFromUt` it fixes the whole dismissal-cost curve:
+	* the cost is a share of reputation that holds at 20% until the least
+	* duration, then falls to zero by the instant dismissal is free.
+	*/
+	activatedUt?: Value<"ut"> | null;
+	/**
 	* The instant dismissal becomes possible at all, on a serving leader. An
 	* instant, so a UT.
 	*/

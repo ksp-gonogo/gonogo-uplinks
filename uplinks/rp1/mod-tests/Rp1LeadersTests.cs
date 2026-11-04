@@ -207,6 +207,7 @@ namespace GonogoRp1Uplink.Tests
             Assert.True(row.Active);
             Assert.Equal(10d, row.DeactivateReputation);
             Assert.Equal(1d, row.DismissSubsidyLossPerDay!.Value, 9);
+            Assert.Equal(1000d, row.ActivatedUt);
             Assert.Equal(1000d + 30 * 86400d, row.CanRemoveFromUt);
             Assert.Equal(1000d + 10 * Year, row.FreeToRemoveFromUt);
             Assert.Null(row.CanAppoint);

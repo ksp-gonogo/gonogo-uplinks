@@ -1,4 +1,4 @@
-import { magnitudeOf } from "@ksp-gonogo/sitrep-sdk";
+import { magnitudeOf, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Cluster,
   CommandButton,
@@ -37,6 +37,27 @@ function stepOf(workRate: Rp1ConstructionEntry["workRate"]): number | null {
 }
 
 const percent = (step: number) => `${step * 5}%`;
+
+/**
+ * What a construction draws per day at the rate it is running, off its rate
+ * table, or null when RP-1 has not priced that rate. A stopped construction
+ * draws nothing, which is a price and not an absence.
+ */
+export function drawPerDay(
+  row: Rp1ConstructionEntry,
+  table: Rp1ConstructionRateTable | undefined,
+): number | null {
+  const step = stepOf(row.workRate);
+  if (step === null) {
+    return null;
+  }
+  if (step === 0) {
+    return 0;
+  }
+  return magnitudeOf(
+    table?.steps?.find((s) => stepOf(s.workRate) === step)?.costPerDay,
+  );
+}
 
 /**
  * The work rate on one construction, with what the chosen rate draws per day
@@ -129,8 +150,9 @@ function StepReadout({
 }
 
 /**
- * Stop building, as RP-1's own "X" does, with what has already been spent beside
- * it: RP-1 refunds none of it, and says so in its own confirmation.
+ * Stop building, as RP-1's own "X" does. RP-1 refunds no funds on a cancel and
+ * drops the work, so the figure beside it is everything drawn so far: the share
+ * of the price paid (`spentCost`) plus any rush premium on it (`spentRushCost`).
  */
 export function CancelControl({
   row,
@@ -140,10 +162,18 @@ export function CancelControl({
   if (row.id == null) {
     return null;
   }
+  const premium =
+    (magnitudeOf(row.spentRushCost) ?? 0) - (magnitudeOf(row.spentCost) ?? 0);
   return (
     <Cluster align="center" gap="related-dense" justify="start" wrap>
       <Text size="xs" level="muted">
-        <Unit value={row.spentRushCost} /> spent, not refunded
+        <Unit value={row.spentRushCost} /> drawn so far, none refunded
+        {premium > 0 && (
+          <>
+            {" ("}
+            <Unit value={value("funds", premium)} /> of it rush premium)
+          </>
+        )}
       </Text>
       <CommandButton
         args={{ id: row.id }}

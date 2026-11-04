@@ -38,6 +38,7 @@ namespace GonogoRp1Uplink
         public double? DismissSubsidyLossPerDay;
         public bool? RemoveOnDeactivate;
         public double? ReactivateCooldown;
+        public double? ActivatedUt;
         public double? CanRemoveFromUt;
         public double? FreeToRemoveFromUt;
     }
@@ -72,6 +73,7 @@ namespace GonogoRp1Uplink
                     ["dismissSubsidyLossPerDay"] = l.DismissSubsidyLossPerDay,
                     ["removeOnDeactivate"] = l.RemoveOnDeactivate,
                     ["reactivateCooldown"] = l.ReactivateCooldown,
+                    ["activatedUt"] = l.ActivatedUt,
                     ["canRemoveFromUt"] = l.CanRemoveFromUt,
                     ["freeToRemoveFromUt"] = l.FreeToRemoveFromUt,
                 });

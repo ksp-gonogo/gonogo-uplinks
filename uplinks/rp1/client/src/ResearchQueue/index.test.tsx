@@ -98,8 +98,54 @@ describe("ResearchQueue", () => {
     fixture.emit("rp1.research", [node({ workRate: 0.5 })]);
 
     await waitFor(() => {
-      expect(screen.getByText(/throttled to/)).toBeInTheDocument();
+      expect(screen.getByText(/work rate set to/)).toBeInTheDocument();
     });
+  });
+
+  it("says a node behind the head of the queue is waiting for it", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.research", [
+      node(),
+      node({
+        techId: "other",
+        techName: "Early Flight Control",
+        rate: null,
+        timeLeftSeconds: null,
+        stalled: true,
+      }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("STALLED")).toBeInTheDocument();
+    });
+    expect(visibleText()).toContain("waiting behind Basic Rocketry");
+  });
+
+  it("names a work rate of zero as the cause of a stall at the head", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.research", [
+      node({ workRate: 0, rate: 0, timeLeftSeconds: null, stalled: true }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("STALLED")).toBeInTheDocument();
+    });
+    expect(visibleText()).toContain("work rate is set to 0%");
+  });
+
+  it("says RP-1 gave no cause for a stalled head running at full rate", async () => {
+    const { fixture } = mount();
+    fixture.emit("rp1.available", true);
+    fixture.emit("rp1.research", [
+      node({ rate: 0, timeLeftSeconds: null, stalled: true }),
+    ]);
+
+    await waitFor(() => {
+      expect(screen.getByText("STALLED")).toBeInTheDocument();
+    });
+    expect(visibleText()).toContain("RP-1 does not say why it stopped");
   });
 
   it("does not mention the throttle on a node running at full rate", async () => {
@@ -110,7 +156,7 @@ describe("ResearchQueue", () => {
     await waitFor(() => {
       expect(screen.getByText("Basic Rocketry")).toBeInTheDocument();
     });
-    expect(screen.queryByText(/throttled to/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/work rate set to/)).not.toBeInTheDocument();
   });
 
   it("says NOT COSTED rather than stalled on a node RP-1 has not priced", async () => {

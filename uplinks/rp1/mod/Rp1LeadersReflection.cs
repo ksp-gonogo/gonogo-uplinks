@@ -210,6 +210,7 @@ namespace GonogoRp1Uplink
             var activated = Rp1Types.ReadDouble(strategy, "DateActivated");
             if (activated != null)
             {
+                leader.ActivatedUt = activated;
                 var least = Rp1Types.ReadDouble(strategy, "LeastDuration");
                 leader.CanRemoveFromUt = least == null ? null : activated + Math.Max(least.Value, 0d);
                 var penalty = Rp1Types.ReadDouble(strategy, "RemovePenaltyDuration");

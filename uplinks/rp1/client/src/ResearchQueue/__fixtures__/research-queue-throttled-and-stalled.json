@@ -5,37 +5,31 @@
   "_scene": {
     "hero": true,
     "augment": "rp1-research-queue",
-    "size": { "w": 10, "h": 14 },
-    "caption": "Three queued nodes: one being worked with a countdown and its era window, one throttled down to a fifth of full rate, and one stalled with nothing to date it from",
+    "size": {
+      "w": 10,
+      "h": 14
+    },
+    "caption": "A throttled node at the head of the queue, and two waiting behind it: RP-1 researches only the first node, and the last also has its work rate at zero",
     "paints": [
       "RESEARCH QUEUE",
       "Early Rocketry",
       "Progress",
       "Era",
-      "throttled to",
-      "STALLED"
+      "work rate set to",
+      "STALLED",
+      "waiting behind Basic Rocketry"
     ]
   },
   "_stream": {
     "pinnedUt": 1000000,
     "emits": [
-      { "topic": "rp1.available", "payload": true },
+      {
+        "topic": "rp1.available",
+        "payload": true
+      },
       {
         "topic": "rp1.research",
         "payload": [
-          {
-            "techId": "start",
-            "techName": "Early Rocketry",
-            "scienceCost": 40,
-            "progress": 26.5,
-            "progressRatio": 0.6625,
-            "workRate": 1,
-            "rate": 0.0000041,
-            "timeLeftSeconds": 3283000,
-            "stalled": false,
-            "startYear": 1951,
-            "endYear": 1955
-          },
           {
             "techId": "basicRocketry",
             "techName": "Basic Rocketry",
@@ -43,11 +37,22 @@
             "progress": 12,
             "progressRatio": 0.1333,
             "workRate": 0.2,
-            "rate": 0.0000008,
+            "rate": 8e-07,
             "timeLeftSeconds": 97500000,
             "stalled": false,
             "startYear": 1953,
             "endYear": 1958
+          },
+          {
+            "techId": "start",
+            "techName": "Early Rocketry",
+            "scienceCost": 40,
+            "progress": 26.5,
+            "progressRatio": 0.6625,
+            "workRate": 1,
+            "stalled": true,
+            "startYear": 1951,
+            "endYear": 1955
           },
           {
             "techId": "earlyFlightControl",
@@ -55,7 +60,7 @@
             "scienceCost": 45,
             "progress": 0,
             "progressRatio": 0,
-            "workRate": 1,
+            "workRate": 0,
             "stalled": true
           }
         ]
@@ -66,27 +71,132 @@
           "refreshedAt": 1000000,
           "techId": "start",
           "steps": [
-            { "workRate": 0.0, "researcherSalaryPerDay": 61.6016, "unlockCreditPerDay": 0.0000, "finishesAt": null },
-            { "workRate": 0.05, "researcherSalaryPerDay": 64.6817, "unlockCreditPerDay": 3.6961, "finishesAt": 66660000 },
-            { "workRate": 0.1, "researcherSalaryPerDay": 67.7618, "unlockCreditPerDay": 7.3922, "finishesAt": 33830000 },
-            { "workRate": 0.15, "researcherSalaryPerDay": 70.8419, "unlockCreditPerDay": 11.0883, "finishesAt": 22886666.7 },
-            { "workRate": 0.2, "researcherSalaryPerDay": 73.9220, "unlockCreditPerDay": 14.7844, "finishesAt": 17415000 },
-            { "workRate": 0.25, "researcherSalaryPerDay": 77.0021, "unlockCreditPerDay": 18.4805, "finishesAt": 14132000 },
-            { "workRate": 0.3, "researcherSalaryPerDay": 80.0821, "unlockCreditPerDay": 22.1766, "finishesAt": 11943333.3 },
-            { "workRate": 0.35, "researcherSalaryPerDay": 83.1622, "unlockCreditPerDay": 25.8727, "finishesAt": 10380000 },
-            { "workRate": 0.4, "researcherSalaryPerDay": 86.2423, "unlockCreditPerDay": 29.5688, "finishesAt": 9207500 },
-            { "workRate": 0.45, "researcherSalaryPerDay": 89.3224, "unlockCreditPerDay": 33.2649, "finishesAt": 8295555.6 },
-            { "workRate": 0.5, "researcherSalaryPerDay": 92.4025, "unlockCreditPerDay": 36.9610, "finishesAt": 7566000 },
-            { "workRate": 0.55, "researcherSalaryPerDay": 95.4825, "unlockCreditPerDay": 40.6571, "finishesAt": 6969090.9 },
-            { "workRate": 0.6, "researcherSalaryPerDay": 98.5626, "unlockCreditPerDay": 44.3532, "finishesAt": 6471666.7 },
-            { "workRate": 0.65, "researcherSalaryPerDay": 101.6427, "unlockCreditPerDay": 48.0493, "finishesAt": 6050769.2 },
-            { "workRate": 0.7, "researcherSalaryPerDay": 104.7228, "unlockCreditPerDay": 51.7454, "finishesAt": 5690000 },
-            { "workRate": 0.75, "researcherSalaryPerDay": 107.8029, "unlockCreditPerDay": 55.4415, "finishesAt": 5377333.3 },
-            { "workRate": 0.8, "researcherSalaryPerDay": 110.8830, "unlockCreditPerDay": 59.1376, "finishesAt": 5103750 },
-            { "workRate": 0.85, "researcherSalaryPerDay": 113.9630, "unlockCreditPerDay": 62.8337, "finishesAt": 4862352.9 },
-            { "workRate": 0.9, "researcherSalaryPerDay": 117.0431, "unlockCreditPerDay": 66.5298, "finishesAt": 4647777.8 },
-            { "workRate": 0.95, "researcherSalaryPerDay": 120.1232, "unlockCreditPerDay": 70.2259, "finishesAt": 4455789.5 },
-            { "workRate": 1.0, "researcherSalaryPerDay": 123.2033, "unlockCreditPerDay": 73.9220, "finishesAt": 4283000 }
+            {
+              "workRate": 0.0,
+              "researcherSalaryPerDay": 61.6016,
+              "unlockCreditPerDay": 0.0,
+              "finishesAt": null
+            },
+            {
+              "workRate": 0.05,
+              "researcherSalaryPerDay": 64.6817,
+              "unlockCreditPerDay": 3.6961,
+              "finishesAt": 66660000
+            },
+            {
+              "workRate": 0.1,
+              "researcherSalaryPerDay": 67.7618,
+              "unlockCreditPerDay": 7.3922,
+              "finishesAt": 33830000
+            },
+            {
+              "workRate": 0.15,
+              "researcherSalaryPerDay": 70.8419,
+              "unlockCreditPerDay": 11.0883,
+              "finishesAt": 22886666.7
+            },
+            {
+              "workRate": 0.2,
+              "researcherSalaryPerDay": 73.922,
+              "unlockCreditPerDay": 14.7844,
+              "finishesAt": 17415000
+            },
+            {
+              "workRate": 0.25,
+              "researcherSalaryPerDay": 77.0021,
+              "unlockCreditPerDay": 18.4805,
+              "finishesAt": 14132000
+            },
+            {
+              "workRate": 0.3,
+              "researcherSalaryPerDay": 80.0821,
+              "unlockCreditPerDay": 22.1766,
+              "finishesAt": 11943333.3
+            },
+            {
+              "workRate": 0.35,
+              "researcherSalaryPerDay": 83.1622,
+              "unlockCreditPerDay": 25.8727,
+              "finishesAt": 10380000
+            },
+            {
+              "workRate": 0.4,
+              "researcherSalaryPerDay": 86.2423,
+              "unlockCreditPerDay": 29.5688,
+              "finishesAt": 9207500
+            },
+            {
+              "workRate": 0.45,
+              "researcherSalaryPerDay": 89.3224,
+              "unlockCreditPerDay": 33.2649,
+              "finishesAt": 8295555.6
+            },
+            {
+              "workRate": 0.5,
+              "researcherSalaryPerDay": 92.4025,
+              "unlockCreditPerDay": 36.961,
+              "finishesAt": 7566000
+            },
+            {
+              "workRate": 0.55,
+              "researcherSalaryPerDay": 95.4825,
+              "unlockCreditPerDay": 40.6571,
+              "finishesAt": 6969090.9
+            },
+            {
+              "workRate": 0.6,
+              "researcherSalaryPerDay": 98.5626,
+              "unlockCreditPerDay": 44.3532,
+              "finishesAt": 6471666.7
+            },
+            {
+              "workRate": 0.65,
+              "researcherSalaryPerDay": 101.6427,
+              "unlockCreditPerDay": 48.0493,
+              "finishesAt": 6050769.2
+            },
+            {
+              "workRate": 0.7,
+              "researcherSalaryPerDay": 104.7228,
+              "unlockCreditPerDay": 51.7454,
+              "finishesAt": 5690000
+            },
+            {
+              "workRate": 0.75,
+              "researcherSalaryPerDay": 107.8029,
+              "unlockCreditPerDay": 55.4415,
+              "finishesAt": 5377333.3
+            },
+            {
+              "workRate": 0.8,
+              "researcherSalaryPerDay": 110.883,
+              "unlockCreditPerDay": 59.1376,
+              "finishesAt": 5103750
+            },
+            {
+              "workRate": 0.85,
+              "researcherSalaryPerDay": 113.963,
+              "unlockCreditPerDay": 62.8337,
+              "finishesAt": 4862352.9
+            },
+            {
+              "workRate": 0.9,
+              "researcherSalaryPerDay": 117.0431,
+              "unlockCreditPerDay": 66.5298,
+              "finishesAt": 4647777.8
+            },
+            {
+              "workRate": 0.95,
+              "researcherSalaryPerDay": 120.1232,
+              "unlockCreditPerDay": 70.2259,
+              "finishesAt": 4455789.5
+            },
+            {
+              "workRate": 1.0,
+              "researcherSalaryPerDay": 123.2033,
+              "unlockCreditPerDay": 73.922,
+              "finishesAt": 4283000
+            }
           ]
         }
       }

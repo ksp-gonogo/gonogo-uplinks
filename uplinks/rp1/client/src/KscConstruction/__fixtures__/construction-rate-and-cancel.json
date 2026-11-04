@@ -6,7 +6,7 @@
       "w": 12,
       "h": 20
     },
-    "caption": "The rate and the cancel on each construction, RP-1's own slider and \"X\". Beside the rate: what it draws per day and when it would be done, because a construction is billed as it builds and a short balance slows it rather than refusing it. Beside the cancel: what has been spent already, which RP-1 does not refund",
+    "caption": "The rate and the cancel on each construction, RP-1's own slider and \"X\". Beside the rate: what it draws per day and when it would be done, because a construction is billed as it builds and a short balance slows it rather than refusing it. Beside the cancel: what has been drawn so far, which RP-1 does not refund on a cancel",
     "paints": [
       "SITE CONSTRUCTION",
       "100%",
@@ -14,8 +14,9 @@
       "draws",
       "f/day",
       "done",
-      "spent, not refunded",
-      "Cancel"
+      "Cancel",
+      "All builds draw",
+      "drawn so far, none refunded"
     ]
   },
   "_stream": {
@@ -792,6 +793,15 @@
             }
           ],
           "facilityUpgrades": []
+        }
+      },
+      {
+        "topic": "rp1.budget",
+        "payload": {
+          "month": {
+            "constructions": -27000,
+            "fundsDelta": -41000
+          }
         }
       }
     ]

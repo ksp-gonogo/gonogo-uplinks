@@ -7,7 +7,15 @@
       "h": 14
     },
     "caption": "The two clock states that are not an ETA, side by side: money being spent faster on purpose, and a throttle wound shut",
-    "paints": ["RUSHING", "STALLED", "Vehicle Assembly Building", "Pad B"]
+    "paints": [
+      "RUSHING",
+      "STALLED",
+      "Vehicle Assembly Building",
+      "Pad B",
+      "All builds draw",
+      "work rate is set to 0%",
+      "rush premium"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
@@ -136,12 +144,14 @@
             "totalPoints": 1000,
             "progressRatio": 0.25,
             "workRate": 1.5,
-            "rate": 9.645061728395061e-5,
+            "rate": 9.645061728395061e-05,
             "timeLeftSeconds": 5184000,
             "stalled": false,
             "cost": 40000,
             "spentCost": 10000,
-            "spentRushCost": 0
+            "spentRushCost": 12500,
+            "id": "vab-upgrade",
+            "affordableFraction": 1
           },
           {
             "kscName": "Cape",
@@ -163,9 +173,411 @@
             "stalled": true,
             "cost": 40000,
             "spentCost": 10000,
-            "spentRushCost": 0
+            "spentRushCost": 10000,
+            "id": "pad-b",
+            "affordableFraction": 1
           }
         ]
+      },
+      {
+        "topic": "rp1.constructionRates",
+        "payload": {
+          "refreshedAt": 1000000,
+          "constructions": [
+            {
+              "id": "vab-upgrade",
+              "steps": [
+                {
+                  "workRate": 0.0,
+                  "costMultiplier": 1,
+                  "costPerDay": 0,
+                  "finishesAt": null
+                },
+                {
+                  "workRate": 0.05,
+                  "costMultiplier": 1,
+                  "costPerDay": 20.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.1,
+                  "costMultiplier": 1,
+                  "costPerDay": 40.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.15,
+                  "costMultiplier": 1,
+                  "costPerDay": 60.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.2,
+                  "costMultiplier": 1,
+                  "costPerDay": 80.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.25,
+                  "costMultiplier": 1,
+                  "costPerDay": 100.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.3,
+                  "costMultiplier": 1,
+                  "costPerDay": 120.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.35,
+                  "costMultiplier": 1,
+                  "costPerDay": 140.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.4,
+                  "costMultiplier": 1,
+                  "costPerDay": 160.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.45,
+                  "costMultiplier": 1,
+                  "costPerDay": 180.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.5,
+                  "costMultiplier": 1,
+                  "costPerDay": 200.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.55,
+                  "costMultiplier": 1,
+                  "costPerDay": 220.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.6,
+                  "costMultiplier": 1,
+                  "costPerDay": 240.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.65,
+                  "costMultiplier": 1,
+                  "costPerDay": 260.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.7,
+                  "costMultiplier": 1,
+                  "costPerDay": 280.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.75,
+                  "costMultiplier": 1,
+                  "costPerDay": 300.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.8,
+                  "costMultiplier": 1,
+                  "costPerDay": 320.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.85,
+                  "costMultiplier": 1,
+                  "costPerDay": 340.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.9,
+                  "costMultiplier": 1,
+                  "costPerDay": 360.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.95,
+                  "costMultiplier": 1,
+                  "costPerDay": 380.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.0,
+                  "costMultiplier": 1,
+                  "costPerDay": 400.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.05,
+                  "costMultiplier": 1.1,
+                  "costPerDay": 462.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.1,
+                  "costMultiplier": 1.2,
+                  "costPerDay": 528.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.15,
+                  "costMultiplier": 1.3,
+                  "costPerDay": 598.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.2,
+                  "costMultiplier": 1.4,
+                  "costPerDay": 672.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.25,
+                  "costMultiplier": 1.5,
+                  "costPerDay": 750.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.3,
+                  "costMultiplier": 1.6,
+                  "costPerDay": 832.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.35,
+                  "costMultiplier": 1.7000000000000002,
+                  "costPerDay": 918.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.4,
+                  "costMultiplier": 1.8,
+                  "costPerDay": 1008.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.45,
+                  "costMultiplier": 1.9,
+                  "costPerDay": 1102.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.5,
+                  "costMultiplier": 2.0,
+                  "costPerDay": 1200.0,
+                  "finishesAt": 6184000
+                }
+              ]
+            },
+            {
+              "id": "pad-b",
+              "steps": [
+                {
+                  "workRate": 0.0,
+                  "costMultiplier": 1,
+                  "costPerDay": 0,
+                  "finishesAt": null
+                },
+                {
+                  "workRate": 0.05,
+                  "costMultiplier": 1,
+                  "costPerDay": 16.67,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.1,
+                  "costMultiplier": 1,
+                  "costPerDay": 33.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.15,
+                  "costMultiplier": 1,
+                  "costPerDay": 50.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.2,
+                  "costMultiplier": 1,
+                  "costPerDay": 66.67,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.25,
+                  "costMultiplier": 1,
+                  "costPerDay": 83.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.3,
+                  "costMultiplier": 1,
+                  "costPerDay": 100.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.35,
+                  "costMultiplier": 1,
+                  "costPerDay": 116.67,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.4,
+                  "costMultiplier": 1,
+                  "costPerDay": 133.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.45,
+                  "costMultiplier": 1,
+                  "costPerDay": 150.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.5,
+                  "costMultiplier": 1,
+                  "costPerDay": 166.66,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.55,
+                  "costMultiplier": 1,
+                  "costPerDay": 183.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.6,
+                  "costMultiplier": 1,
+                  "costPerDay": 200.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.65,
+                  "costMultiplier": 1,
+                  "costPerDay": 216.66,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.7,
+                  "costMultiplier": 1,
+                  "costPerDay": 233.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.75,
+                  "costMultiplier": 1,
+                  "costPerDay": 250.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.8,
+                  "costMultiplier": 1,
+                  "costPerDay": 266.66,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.85,
+                  "costMultiplier": 1,
+                  "costPerDay": 283.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.9,
+                  "costMultiplier": 1,
+                  "costPerDay": 300.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 0.95,
+                  "costMultiplier": 1,
+                  "costPerDay": 316.66,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.0,
+                  "costMultiplier": 1,
+                  "costPerDay": 333.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.05,
+                  "costMultiplier": 1.1,
+                  "costPerDay": 385.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.1,
+                  "costMultiplier": 1.2,
+                  "costPerDay": 440.0,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.15,
+                  "costMultiplier": 1.3,
+                  "costPerDay": 498.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.2,
+                  "costMultiplier": 1.4,
+                  "costPerDay": 559.99,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.25,
+                  "costMultiplier": 1.5,
+                  "costPerDay": 624.99,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.3,
+                  "costMultiplier": 1.6,
+                  "costPerDay": 693.33,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.35,
+                  "costMultiplier": 1.7000000000000002,
+                  "costPerDay": 764.99,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.4,
+                  "costMultiplier": 1.8,
+                  "costPerDay": 839.99,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.45,
+                  "costMultiplier": 1.9,
+                  "costPerDay": 918.32,
+                  "finishesAt": 6184000
+                },
+                {
+                  "workRate": 1.5,
+                  "costMultiplier": 2.0,
+                  "costPerDay": 999.99,
+                  "finishesAt": 6184000
+                }
+              ]
+            }
+          ],
+          "facilityUpgrades": []
+        }
+      },
+      {
+        "topic": "rp1.budget",
+        "payload": {
+          "month": {
+            "constructions": -18000,
+            "fundsDelta": -52000
+          }
+        }
       }
     ]
   }
