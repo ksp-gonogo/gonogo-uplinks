@@ -222,7 +222,7 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
     ds.disconnect();
   });
 
-  it("watchdog fires after 15s and triggers reconnect", async () => {
+  it("missed pings on a connected peer do not rebuild it", async () => {
     const session = createMockKerbcastSession();
     const ds = makeTracked({ port: 1 }, session.transport);
 
@@ -232,24 +232,59 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
     const fetchSpy = vi.mocked(globalThis.fetch);
     const callsBefore = fetchSpy.mock.calls.length;
 
-    // No ping: advance past the 15s watchdog
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(15_001);
+      await vi.advanceTimersByTimeAsync(61_000);
     });
 
-    // Reconnect attempt should have fired (a new /offer fetch)
-    expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
-
-    ds.disconnect();
+    expect(fetchSpy.mock.calls.length).toBe(callsBefore);
+    expect(ds.status).toBe("connected");
   });
 
-  it("a station gives the control channel a minute before the watchdog rebuilds the peer", async () => {
+  it("a station keeps a connected peer through a minute of missed pings", async () => {
     const session = createMockKerbcastSession();
     const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
     const ds = makeTracked({ port: 1 }, session.transport);
     attachStationBroker(ds, { relay } as unknown as StationBroker);
     await ds.connect();
     session.setState("connected");
+    relay.mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(130_000);
+    });
+    expect(relay).not.toHaveBeenCalled();
+  });
+
+  it("a peer that dropped without failing is rebuilt once the pings stop", async () => {
+    const session = createMockKerbcastSession();
+    const ds = makeTracked({ port: 1 }, session.transport);
+
+    await ds.connect();
+    session.setState("connected");
+    session.setState("disconnected");
+
+    const fetchSpy = vi.mocked(globalThis.fetch);
+    const callsBefore = fetchSpy.mock.calls.length;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(14_000);
+    });
+    expect(fetchSpy.mock.calls.length).toBe(callsBefore);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_001);
+    });
+    expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
+  });
+
+  it("a station rebuilds a dropped peer after a minute without pings", async () => {
+    const session = createMockKerbcastSession();
+    const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
+    const ds = makeTracked({ port: 1 }, session.transport);
+    attachStationBroker(ds, { relay } as unknown as StationBroker);
+    await ds.connect();
+    session.setState("connected");
+    session.setState("disconnected");
     relay.mockClear();
 
     await act(async () => {
@@ -261,8 +296,37 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
       await vi.advanceTimersByTimeAsync(2_000);
     });
     expect(relay).toHaveBeenCalled();
+  });
 
-    ds.disconnect();
+  it("a ping whose pong cannot be sent still restarts the watchdog", async () => {
+    const session = createMockKerbcastSession();
+    const ds = makeTracked({ port: 1 }, session.transport);
+
+    await ds.connect();
+    session.openChannel();
+    session.setState("connected");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+
+    session.sentMessages.push = () => {
+      throw new Error("channel closed");
+    };
+    expect(() => session.sendServerMessage({ type: "ping" })).toThrow();
+    session.setState("disconnected");
+
+    const fetchSpy = vi.mocked(globalThis.fetch);
+    const callsBefore = fetchSpy.mock.calls.length;
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6_000);
+    });
+    expect(fetchSpy.mock.calls.length).toBe(callsBefore);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+    expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
   });
 
   it("explicit disconnect() prevents reconnect after watchdog fires", async () => {

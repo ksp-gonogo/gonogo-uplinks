@@ -896,9 +896,10 @@ export class KerbcastDataSource {
     const keepaliveTransport = new KeepaliveTransport(
       innerTransport,
       (sendFn) => {
-        sendFn({ type: "pong" });
+        // A ping proves the sidecar is alive even when the pong cannot be sent.
         this.lastPingAt = Date.now();
         this.startWatchdog();
+        sendFn({ type: "pong" });
       },
       (msg) => this.observeSlotMessage(msg),
     );
@@ -1314,6 +1315,13 @@ export class KerbcastDataSource {
     }
   }
 
+  /**
+   * Arm the missed-ping check. A lapse rebuilds the peer only when it is not
+   * connected: the sidecar never closes over a missing pong, and a reliable
+   * control channel on a weak link can stall while the media keeps flowing,
+   * so a quiet but connected peer is left alone and checked again. A peer
+   * that is really gone reports `failed` and is rebuilt by that path.
+   */
   private startWatchdog(): void {
     if (this.pingWatchdog !== null) {
       clearTimeout(this.pingWatchdog);
@@ -1324,17 +1332,27 @@ export class KerbcastDataSource {
       : PING_WATCHDOG_MS;
     this.pingWatchdog = setTimeout(() => {
       this.pingWatchdog = null;
-      if (this.reconnectEnabled) {
-        logger.tag("kerbcast:reconnect").warn("ping watchdog fired, rebuilding", {
-          secondsSinceLastPing:
-            this.lastPingAt === null
-              ? null
-              : Math.round((Date.now() - this.lastPingAt) / 1000),
-          windowSeconds: windowMs / 1000,
-          station: this.broker !== null,
-        });
-        void this.attemptReconnect();
+      if (!this.reconnectEnabled) return;
+      const facts = {
+        secondsSinceLastPing:
+          this.lastPingAt === null
+            ? null
+            : Math.round((Date.now() - this.lastPingAt) / 1000),
+        windowSeconds: windowMs / 1000,
+        station: this.broker !== undefined,
+        peerStatus: this.status,
+      };
+      if (this.status === "connected") {
+        logger
+          .tag("kerbcast:reconnect")
+          .info("ping watchdog lapsed on a connected peer, keeping it", facts);
+        this.startWatchdog();
+        return;
       }
+      logger
+        .tag("kerbcast:reconnect")
+        .warn("ping watchdog lapsed on a peer that is not connected, rebuilding", facts);
+      void this.attemptReconnect();
     }, windowMs);
   }
 
