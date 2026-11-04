@@ -3,89 +3,89 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "38127bfc8015bf69",
-      "elements": 315,
-      "text": "bb12c779"
+      "hash": "26b2e2f2e1138a95",
+      "elements": 320,
+      "text": "fd807537"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "3e88474dbded989d",
-      "elements": 272,
-      "text": "20374491"
+      "hash": "6f79d704767a2f0a",
+      "elements": 274,
+      "text": "3449b324"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "516c91ae0e8ae9a2",
+      "hash": "797c148a4170e8ec",
       "elements": 190,
-      "text": "99be9999"
+      "text": "f6158ec8"
     },
     "coast-analysis-expanded--default.png": {
-      "hash": "83d596fc9b34abcc",
+      "hash": "8938d3b769b515a9",
       "elements": 167,
-      "text": "79fa12ae"
+      "text": "329ffdc5"
     },
     "coast-analysis-no-plan--default.png": {
-      "hash": "6639e5966f6a4b79",
+      "hash": "14d005089d28969c",
       "elements": 40,
-      "text": "95f6da0c"
+      "text": "8a9ec80e"
     },
     "coast-analysis-plan--default.png": {
-      "hash": "829d9dee6b8b3e01",
+      "hash": "183debc2cdffa7c4",
       "elements": 65,
-      "text": "a7f133ae"
+      "text": "d4f6f01a"
     },
     "composer-composing--default.png": {
-      "hash": "77440808d9263640",
-      "elements": 147,
-      "text": "fb0c46a3"
+      "hash": "f4f5b539a4b4bd4f",
+      "elements": 145,
+      "text": "c29f095e"
     },
     "composer-delayed-vantage--default.png": {
-      "hash": "ab0faadf2023f02d",
-      "elements": 63,
-      "text": "664d0a4b"
+      "hash": "3066b5a3f4c89026",
+      "elements": 61,
+      "text": "593d7fdb"
     },
     "composer-ready-to-upload--default.png": {
-      "hash": "4f91cf2af0e6e2aa",
-      "elements": 60,
-      "text": "2ce0994e"
+      "hash": "d849f653ebcb5ca2",
+      "elements": 58,
+      "text": "9d14fddd"
     },
     "composer-upload-armed--default.png": {
-      "hash": "8ab2785608779cb9",
-      "elements": 60,
-      "text": "f50765cc"
+      "hash": "a888ec1a8cbd8115",
+      "elements": 58,
+      "text": "d826297a"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "7fc4f3b416f081f7",
-      "elements": 194,
-      "text": "6b16f5d3"
+      "hash": "123bac5c2b4a584a",
+      "elements": 197,
+      "text": "b7abd2d0"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "f16b39e7e5b61d11",
-      "elements": 202,
-      "text": "9ec2558b"
+      "hash": "f0be75714f2656d0",
+      "elements": 206,
+      "text": "58a74aa3"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "c19e89bc78b2a1fb",
-      "elements": 195,
-      "text": "48502c53"
+      "hash": "f424f3f001042f87",
+      "elements": 198,
+      "text": "2d68e160"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "e1c1cead67277406",
-      "elements": 195,
-      "text": "825af4a4"
+      "hash": "72c9b4816bbbffcd",
+      "elements": 198,
+      "text": "c7c093b4"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "4805c190817e7244",
-      "elements": 145,
-      "text": "60539d0a"
+      "hash": "7335d91c87b5dbb0",
+      "elements": 153,
+      "text": "e43828e4"
     },
     "flight-plan-unobserved--default.png": {
-      "hash": "1cb2b421d2c5e7cc",
-      "elements": 42,
-      "text": "8f33ffde"
+      "hash": "88bbb1e762612771",
+      "elements": 41,
+      "text": "af863937"
     },
     "jogwheel-rate-mode--default.gif": {
-      "hash": "7ef55fbc6062998a",
-      "elements": 102,
-      "text": "5b2073a1"
+      "hash": "848650f40d2469f3",
+      "elements": 100,
+      "text": "6d96d805"
     },
     "kerbin-mun-integrated-arc--default.png": {
       "hash": "66aa4f8e7646c594",
@@ -378,29 +378,29 @@
       "text": "503ddb46"
     },
     "orbit-analysis-not-analysing--default.png": {
-      "hash": "1654b8821f73c6a4",
-      "elements": 20,
-      "text": "87a8217b"
+      "hash": "cf7e2bad2185fab7",
+      "elements": 19,
+      "text": "84fa8f81"
     },
     "orbit-analysis-unobserved--default.png": {
-      "hash": "16d20f22a8207287",
+      "hash": "62d27bce8bc449df",
       "elements": 19,
-      "text": "67e79a4e"
+      "text": "84da3896"
     },
     "plan-slots-armed--default.png": {
-      "hash": "d85c06064cf3bfd3",
-      "elements": 170,
-      "text": "ae962754"
+      "hash": "de5a4b7f047c8cf2",
+      "elements": 171,
+      "text": "0e444074"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "8d44b1fa82baa9cc",
-      "elements": 130,
-      "text": "9b035d85"
+      "hash": "936a33c081c0bc50",
+      "elements": 132,
+      "text": "53df2d05"
     },
     "plan-slots-shut--default.png": {
-      "hash": "baf21d43f854aef4",
-      "elements": 159,
-      "text": "476efbbc"
+      "hash": "eb4f5cf5f3fd6978",
+      "elements": 162,
+      "text": "5b41f46a"
     }
   }
 }
