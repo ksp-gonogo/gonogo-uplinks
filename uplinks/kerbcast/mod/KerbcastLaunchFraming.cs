@@ -93,7 +93,7 @@ namespace Gonogo.KerbcastUplink
                             _holdStartedAt = _reachesZeroAt;
                             return Held(realSeconds, onGround);
                         }
-                        return WidestRadiusM * Ease(Progress(realSeconds));
+                        return Widened(Progress(realSeconds));
                     case Phase.Holding:
                         return Held(realSeconds, onGround);
                     case Phase.Easing:
@@ -142,7 +142,7 @@ namespace Gonogo.KerbcastUplink
             switch (_phase)
             {
                 case Phase.Counting:
-                    return WidestRadiusM * Ease(Progress(realSeconds));
+                    return Widened(Progress(realSeconds));
                 case Phase.Holding:
                     return WidestRadiusM;
                 case Phase.Easing:
@@ -168,6 +168,29 @@ namespace Gonogo.KerbcastUplink
                 return 0.0;
             }
             return _easeFrom * (1.0 - Ease(done));
+        }
+
+        /// <summary>The radius of a craft's nominal size, metres, that the widening is measured against.</summary>
+        internal const double NominalCraftRadiusM = 10.0;
+
+        /// <summary>The fraction of the countdown at which the camera has finished widening; it holds the full width for the rest.</summary>
+        internal const double WidenedByFraction = 0.95;
+
+        /*
+         * The extra radius at a progress through the countdown. What the operator sees
+         * is the craft shrink, in proportion to one over the radius being framed, so the
+         * widening is eased in that apparent size and not in metres: metres would put
+         * most of the visible change in the first part of the countdown. The apparent
+         * size follows smoothstep to its smallest at WidenedByFraction of the countdown,
+         * with no change in speed at either end, and stays there.
+         */
+        internal static double Widened(double progress)
+        {
+            var q = Math.Max(0.0, Math.Min(1.0, progress / WidenedByFraction));
+            var eased = q * q * (3.0 - 2.0 * q);
+            var largest = 1.0 / NominalCraftRadiusM;
+            var smallest = 1.0 / (NominalCraftRadiusM + WidestRadiusM);
+            return 1.0 / (largest + (smallest - largest) * eased) - NominalCraftRadiusM;
         }
 
         private double Progress(double realSeconds) => Math.Max(0.0, Math.Min(1.0, 1.0 - (_reachesZeroAt - realSeconds) / _length));

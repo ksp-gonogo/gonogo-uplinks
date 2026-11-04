@@ -29,7 +29,7 @@ public class KerbcastLaunchFramingTests
         framing.Start(10.0, 10.0);
 
         Assert.Equal(0.0, framing.RadiusM(100.0, true), 6);
-        Assert.Equal(Widest * KerbcastLaunchFraming.Ease(0.5), framing.RadiusM(105.0, true), 6);
+        Assert.Equal(KerbcastLaunchFraming.Widened(0.5), framing.RadiusM(105.0, true), 6);
         Assert.Equal(Widest, framing.RadiusM(110.0, true), 6);
     }
 
@@ -39,7 +39,7 @@ public class KerbcastLaunchFramingTests
         var framing = new KerbcastLaunchFraming();
         framing.Start(5.0, 20.0);
 
-        Assert.Equal(Widest * KerbcastLaunchFraming.Ease(0.75), framing.RadiusM(100.0, true), 6);
+        Assert.Equal(KerbcastLaunchFraming.Widened(0.75), framing.RadiusM(100.0, true), 6);
         Assert.Equal(Widest, framing.RadiusM(105.0, true), 6);
     }
 
@@ -88,7 +88,7 @@ public class KerbcastLaunchFramingTests
         var framing = new KerbcastLaunchFraming();
         framing.Start(10.0, 10.0);
         framing.RadiusM(0.0, true);
-        var half = Widest * KerbcastLaunchFraming.Ease(0.5);
+        var half = KerbcastLaunchFraming.Widened(0.5);
         Assert.Equal(half, framing.RadiusM(5.0, true), 6);
 
         framing.Cancel();
@@ -157,5 +157,45 @@ public class KerbcastLaunchFramingTests
     public void ThePullInIsLongerThanOneSecondSoItIsNotASnap()
     {
         Assert.True(Ease >= 2.0);
+    }
+
+    private static double ApparentSizeFraction(double progress)
+    {
+        var nominal = KerbcastLaunchFraming.NominalCraftRadiusM;
+        var largest = 1.0 / nominal;
+        var smallest = 1.0 / (nominal + Widest);
+        var size = 1.0 / (nominal + KerbcastLaunchFraming.Widened(progress));
+        return (largest - size) / (largest - smallest);
+    }
+
+    [Fact]
+    public void TheWideningKeepsShrinkingTheCraftUntilTheLastFifteenPercentOfTheCountdown()
+    {
+        Assert.Equal(0.0, ApparentSizeFraction(0.0), 9);
+        for (var i = 1; i <= 84; i++)
+        {
+            Assert.True(ApparentSizeFraction(i / 100.0) < 0.97, $"at {i} percent the craft is already within 3 percent of its smallest");
+        }
+        for (var i = 96; i <= 100; i++)
+        {
+            Assert.True(ApparentSizeFraction(i / 100.0) > 0.99, $"at {i} percent");
+        }
+        Assert.Equal(Widest, KerbcastLaunchFraming.Widened(1.0), 6);
+    }
+
+    [Fact]
+    public void TheWideningIsSteadyWithNoChangeInSpeedAtEitherEnd()
+    {
+        var last = 0.0;
+        for (var i = 1; i <= 100; i++)
+        {
+            var value = KerbcastLaunchFraming.Widened(i / 100.0);
+            Assert.True(value >= last, $"step {i}");
+            last = value;
+        }
+        const double h = 1e-4;
+        Assert.True(ApparentSizeFraction(h) / h < 0.01);
+        Assert.True((ApparentSizeFraction(1.0) - ApparentSizeFraction(1.0 - h)) / h < 0.01);
+        Assert.True((ApparentSizeFraction(KerbcastLaunchFraming.WidenedByFraction) - ApparentSizeFraction(KerbcastLaunchFraming.WidenedByFraction - h)) / h < 0.01);
     }
 }

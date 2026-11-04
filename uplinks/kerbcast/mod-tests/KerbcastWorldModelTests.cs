@@ -517,7 +517,7 @@ public class KerbcastWorldModelTests
         var atLiftoff = _kc.Command.Published.Last();
 
         Assert.Equal(2.0, before);
-        Assert.Equal(KerbcastLaunchFraming.WidestRadiusM * KerbcastLaunchFraming.Ease(0.5), halfway.Find(Ksc, ProbePid).UncertaintyRadiusM, 1);
+        Assert.Equal(KerbcastLaunchFraming.Widened(0.5), halfway.Find(Ksc, ProbePid).UncertaintyRadiusM, 1);
         Assert.Equal(KerbcastLaunchFraming.WidestRadiusM, atLiftoff.Find(Ksc, ProbePid).UncertaintyRadiusM, 1);
         Assert.Equal(2.0, atLiftoff.Find(Ksc, StationPid).UncertaintyRadiusM);
     }
