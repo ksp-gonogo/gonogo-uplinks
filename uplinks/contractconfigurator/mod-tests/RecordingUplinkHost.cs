@@ -128,6 +128,9 @@ namespace Gonogo.ContractConfiguratorUplink.Tests
         public IDisposable RegisterDelayModifier(double factor, string reason) =>
             throw NotExpected("RegisterDelayModifier");
 
+        public IDisposable HoldRate(string topic, double samplesPerSecond) =>
+            throw NotExpected("HoldRate");
+
         public void ForceKeyframe(string topic) => throw NotExpected("ForceKeyframe");
 
         public void ResetChannelBirth(IEnumerable<string> topics) =>

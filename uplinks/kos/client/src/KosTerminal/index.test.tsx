@@ -1161,6 +1161,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
               members: ["c1"],
             },
           ],
+          settled: [],
         } satisfies WireOf<PendingUplinkQueue>,
         { validAt: 100, deliveredAt: 100 },
       ),
@@ -1224,6 +1225,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
               members: ["c1"],
             },
           ],
+          settled: [],
         } satisfies WireOf<PendingUplinkQueue>,
         { validAt: 100, deliveredAt: 100 },
       ),
@@ -1301,6 +1303,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
             members: ["c1"],
           },
         ],
+        settled: [],
       } satisfies WireOf<PendingUplinkQueue>),
     );
 
@@ -1343,6 +1346,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
               members: ["c1"],
             },
           ],
+          settled: [],
         } satisfies WireOf<PendingUplinkQueue>,
         { validAt: 100, deliveredAt: 100 },
       ),
@@ -1396,6 +1400,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
             members: ["c2"],
           },
         ],
+        settled: [],
       } satisfies WireOf<PendingUplinkQueue>),
     );
 
@@ -1472,6 +1477,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
               members: ["c1"],
             },
           ],
+          settled: [],
         } satisfies WireOf<PendingUplinkQueue>,
         { validAt: 25, deliveredAt: 25 },
       ),
@@ -1505,7 +1511,7 @@ describe("KosTerminal: in-transit uplink queue strip (prediction-only, never exe
     act(() =>
       fixture.emit(
         "system.uplink.pending",
-        { pending: [] } satisfies WireOf<PendingUplinkQueue>,
+        { pending: [], settled: [] } satisfies WireOf<PendingUplinkQueue>,
         { validAt: 26, deliveredAt: 26 },
       ),
     );

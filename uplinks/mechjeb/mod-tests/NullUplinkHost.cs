@@ -26,6 +26,7 @@ namespace GonogoMechJebUplink.Tests
 
         public void SetPathBreakSource(Func<KspSnapshot?, double, IReadOnlyList<PathBreak>?> computeOnMainThread) { }
         public IDisposable RegisterDelayModifier(double factor, string reason) => throw NotExpected();
+        public IDisposable HoldRate(string topic, double samplesPerSecond) => throw NotExpected();
         private static NotSupportedException NotExpected() =>
             new NotSupportedException("MechJebUplink.Register should not call the host in a headless test build");
 
