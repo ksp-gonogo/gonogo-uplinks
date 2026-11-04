@@ -1,4 +1,9 @@
-import { magnitudeOf, type Reading } from "@ksp-gonogo/sitrep-sdk";
+import {
+  type CommandGateReport,
+  GateOutcome,
+  magnitudeOf,
+  type Reading,
+} from "@ksp-gonogo/sitrep-sdk";
 import type { Rp1FacilityEntry } from "../__generated__/contract.js";
 import { lastValue } from "../lastValue.js";
 import { RP1 } from "../uplink.js";
@@ -36,12 +41,22 @@ import { RP1 } from "../uplink.js";
  * mean of the ones it does upgrade. The tier is a reading and is reported; the
  * price would be for a step nothing will take, so it is withheld and the grid
  * draws no control beside it.</para>
+ *
+ * <para><b>While the game refuses the stock upgrade command, no building gets a
+ * price here either.</b> The grid draws its Upgrade control from the price, and
+ * that control sends `career.facility.upgrade`, which RP-1 refuses on a save it
+ * manages. This Uplink's Facility Upgrades widget queues the same upgrade, so
+ * the grid's control would be a dead second one for the same building, priced in
+ * stock rounding. The refusal is read from the published gate set; a gate that
+ * passes or could not be read leaves the price and the stock control alone.</para>
  */
 export function facilityTiers(
   rows: readonly Rp1FacilityEntry[] | null | undefined,
   held?: Reading<unknown>,
+  gates?: CommandGateReport | null,
 ) {
   if (!Array.isArray(rows)) return [];
+  const stockUpgradeRefused = isRefused(gates, STOCK_UPGRADE_COMMAND);
   return rows.flatMap((row) => {
     const facility = row.facility;
     const currentTier = magnitudeOf(row.currentTier);
@@ -56,7 +71,9 @@ export function facilityTiers(
       return [];
     }
     const upgradeCost =
-      row.upgradedByRp1 === false ? null : magnitudeOf(row.upgradeCost);
+      row.upgradedByRp1 === false || stockUpgradeRefused
+        ? null
+        : magnitudeOf(row.upgradeCost);
     return [
       {
         facility,
@@ -69,14 +86,25 @@ export function facilityTiers(
   });
 }
 
+const STOCK_UPGRADE_COMMAND = "career.facility.upgrade";
+
+function isRefused(
+  gates: CommandGateReport | null | undefined,
+  command: string,
+): boolean {
+  const entry = gates?.gates?.find((gate) => gate.command === command);
+  return entry?.verdict?.outcome === GateOutcome.Fail;
+}
+
 RP1.registerContribution({
   id: "facility-tiers",
   contributes: "space-center-status.facilities",
   requires: "rp1",
-  deps: ["rp1.facilities"],
+  deps: ["rp1.facilities", "system.uplink.gates"],
   compute: (topics) =>
     facilityTiers(
       lastValue(topics["rp1.facilities"]),
       topics["rp1.facilities"],
+      lastValue(topics["system.uplink.gates"]),
     ),
 });

@@ -3341,7 +3341,8 @@
       "id": "rp1:facility-tiers",
       "contributes": "space-center-status.facilities",
       "deps": [
-        "rp1.facilities"
+        "rp1.facilities",
+        "system.uplink.gates"
       ],
       "requires": "rp1",
       "settings": []

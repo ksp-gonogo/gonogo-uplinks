@@ -217,7 +217,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 
 ![The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions](client/docs/assets/contract-payload--default.png)
 
-![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid's own Upgrade controls are disabled, because the tier they would buy is not for sale under RP-1 at all](client/docs/assets/facility-upgrades-at-centre--default.png)
+![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid above draws each tier with no price and no Upgrade control, because the stock command is refused under RP-1: this section holds the one control for each building](client/docs/assets/facility-upgrades-at-centre--default.png)
 
 ![An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon](client/docs/assets/early-career--default.png)
 
@@ -254,7 +254,7 @@ Every craft RP-1 is integrating, holding or could start, across every launch com
 | `rp1:rp1-avionics-badge` | `navball.badges` | `rp1.avionics` | only while `rp1` |
 | `rp1:programs-screen` | `administration-building.screens` | – | only while `rp1` |
 | `rp1:crew-core-stats` | `astronaut-complex.readouts` | `rp1.crew`, `rp1.crewProgram`, `rp1.budgetBreakdown`, `settings.rp1` | only while `rp1` |
-| `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities` | only while `rp1` |
+| `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities`, `system.uplink.gates` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |
 
 ![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](client/docs/assets/avionics-controls-locked--default.png)

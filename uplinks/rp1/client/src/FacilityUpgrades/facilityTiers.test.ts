@@ -1,4 +1,4 @@
-import { value } from "@ksp-gonogo/sitrep-sdk";
+import { GateOutcome, value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import { facilityTiers } from "./facilityTiers.js";
 
@@ -108,5 +108,51 @@ describe("facilityTiers", () => {
         },
       ]),
     ).toEqual([{ facility: "Runway", currentTier: 1, maxTier: 3 }]);
+  });
+
+  /**
+   * The grid draws its Upgrade control from the price and that control sends the
+   * stock command, so a refusal of it must leave no price and no control, while
+   * a passing or unreadable gate leaves both.
+   */
+  describe("when the stock upgrade command is refused", () => {
+    const row = {
+      facility: "LaunchPad",
+      currentTier: value("count", 1),
+      maxTier: value("count", 3),
+      upgradeCost: value("funds", 112_500),
+      upgradedByRp1: true,
+    };
+    const gate = (outcome: GateOutcome) => ({
+      gates: [
+        {
+          command: "career.facility.upgrade",
+          itemSets: [],
+          verdict: { outcome, detail: "" },
+        },
+      ],
+      channels: [],
+    });
+
+    it("withholds the price", () => {
+      expect(
+        facilityTiers([row], undefined, gate(GateOutcome.Fail)),
+      ).toEqual([{ facility: "LaunchPad", currentTier: 1, maxTier: 3 }]);
+    });
+
+    it.each([GateOutcome.Pass, GateOutcome.Unknown, GateOutcome.Abstain])(
+      "keeps the price on %s",
+      (outcome) => {
+        expect(facilityTiers([row], undefined, gate(outcome))[0]).toMatchObject(
+          { upgradeCost: 112_500 },
+        );
+      },
+    );
+
+    it("keeps the price with no gate report", () => {
+      expect(facilityTiers([row], undefined, undefined)[0]).toMatchObject({
+        upgradeCost: 112_500,
+      });
+    });
   });
 });
