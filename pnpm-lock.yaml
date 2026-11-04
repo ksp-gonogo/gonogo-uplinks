@@ -1087,21 +1087,6 @@ packages:
       styled-components:
         optional: true
 
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz':
-    resolution: {integrity: sha512-ZKWuQ2TFNiB6vI0dJ+fv5pw75ucbvyc995p922VeJkJQ+aDl0ce8QylSZJPuplx08v3pbRG3BqdUu2m7Qf1Jzw==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz}
-    version: 0.0.1
-    peerDependencies:
-      '@testing-library/react': ^16.0.0
-      react: ^18 || ^19
-      styled-components: ^6.0.0
-    peerDependenciesMeta:
-      '@testing-library/react':
-        optional: true
-      react:
-        optional: true
-      styled-components:
-        optional: true
-
   '@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-8925128885c7.tgz':
     resolution: {integrity: sha512-foIiHQTeLfwDtxTHRtDkevw2wBLZBpYT0qEAlVa1GpNfSoh/5U9azT6pSawJCoLVQH253cKHppjFvAOaPOyoAQ==, tarball: file:vendor/ksp-gonogo-ui-kit-0.1.0-8925128885c7.tgz}
     version: 0.1.0
@@ -2422,12 +2407,6 @@ snapshots:
   '@ksp-gonogo/kerbcast@1.12.0-rc.3':
     dependencies:
       mediabunny: 1.62.1
-
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
-    optionalDependencies:
-      '@testing-library/react': 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react: 18.3.1
-      styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-7f3d51cd3927.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     optionalDependencies:
