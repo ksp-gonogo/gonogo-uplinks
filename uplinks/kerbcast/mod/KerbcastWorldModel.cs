@@ -96,6 +96,9 @@ namespace Gonogo.KerbcastUplink
             _supports = supports;
         }
 
+        /// <summary>Whether at least one command feed is aimed at a craft Gonogo follows for it.</summary>
+        public bool Following => _followed.Count > 0;
+
         /// <summary>The epoch of the timeline the model describes, raised when game time goes backwards and on every game load.</summary>
         public long Epoch => _epoch;
 

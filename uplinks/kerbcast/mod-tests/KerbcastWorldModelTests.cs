@@ -523,6 +523,37 @@ public class KerbcastWorldModelTests
         Assert.Contains(log, l => l.Contains("follow feed=1 subject=" + ProbePid));
     }
 
+    [Fact]
+    public void TheModelSaysItIsFollowingOnlyWhileAFeedHasACraftToFollow()
+    {
+        uint? active = ProbePid;
+        var model = FollowingModel(() => active);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0, 250.0);
+        Judge(ProbePid, "ok");
+        Assert.False(model.Following);
+
+        PublishWith(model, 100.0, 0.0);
+        Assert.True(model.Following);
+
+        active = null;
+        PublishWith(model, 100.1, 0.1);
+        Assert.False(model.Following);
+    }
+
+    [Fact]
+    public void TheModelIsNotFollowingACraftTheCentreCannotHear()
+    {
+        var model = FollowingModel(() => ProbePid);
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Seen, 99.0, 250.0);
+        Judge(ProbePid, "ok");
+
+        PublishWith(model, 100.0, 0.0);
+
+        Assert.False(model.Following);
+    }
+
     [Theory]
     [InlineData(CraftKnowledgeState.Seen, "ok")]
     [InlineData(CraftKnowledgeState.Heard, "tooUncertain")]

@@ -63,6 +63,12 @@ namespace Gonogo.KerbcastUplink
 
         private IKerbcastApi? _kerbcast;
         private IKerbcastGovernor? _governor;
+
+        /// <summary>Samples per game second asked of the host while a command feed follows a craft.</summary>
+        internal const double FollowSamplesPerSecond = 4.0;
+
+        private static readonly IDisposable NoRate = new NoRateRelease();
+        private IDisposable? _followRate;
         private IUplinkHost? _host;
         private readonly CraftLabels _craftLabels = new CraftLabels();
         private readonly CraftPlaces _craftPlaces = new CraftPlaces();
@@ -149,7 +155,7 @@ namespace Gonogo.KerbcastUplink
             }
             _kerbcast = binding.Api;
             _host = host;
-            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel, _lensSites.ReplaceCommandFeeds);
+            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel, _lensSites.ReplaceCommandFeeds, HoldFollowRate);
             GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
@@ -174,7 +180,7 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel, Action<IReadOnlyDictionary<string, string>> onFeedSites) =>
+        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel, Action<IReadOnlyDictionary<string, string>> onFeedSites, Action<bool> onFollowing) =>
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
@@ -186,7 +192,39 @@ namespace Gonogo.KerbcastUplink
                 ReadLaunchSite,
                 ReadActiveCraft,
                 ReadBodyMu,
-                KerbcastApiMinor1.Supported);
+                KerbcastApiMinor1.Supported,
+                onFollowing);
+
+        /**
+         * A command feed that follows a craft aims at the place the host's craft knowledge
+         * gives it, which is only as fresh as the sample behind it. Four samples a game
+         * second keeps that place within a fraction of a metre of a craft under thrust
+         * and leaves a little of the old steps, where one a second let it drift metres
+         * off between samples. The rate is asked for only while a feed follows.
+         */
+        private void HoldFollowRate(bool following)
+        {
+            if (following == (_followRate != null) || _host == null)
+            {
+                return;
+            }
+            if (!following)
+            {
+                _followRate!.Dispose();
+                _followRate = null;
+                return;
+            }
+            try
+            {
+                _followRate = _host.HoldRate(CamerasTopic, FollowSamplesPerSecond);
+            }
+            catch (Exception ex)
+            {
+                // Without the faster rate the feeds still follow, one sample a second.
+                UnityEngine.Debug.LogWarning("[Kerbcast] could not hold the follow sample rate: " + ex.Message);
+                _followRate = NoRate;
+            }
+        }
 
         /* The body's gravitational parameter, which Kerbcast moves a record's craft by between snapshots. */
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -661,6 +699,13 @@ namespace Gonogo.KerbcastUplink
         {
             public double Ut;
             public List<object?>? Entries;
+        }
+
+        private sealed class NoRateRelease : IDisposable
+        {
+            public void Dispose()
+            {
+            }
         }
     }
 }

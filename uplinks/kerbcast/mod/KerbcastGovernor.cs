@@ -33,11 +33,13 @@ namespace Gonogo.KerbcastUplink
         private readonly Func<Kernel?> _kernel;
         private readonly KerbcastAuthority _authority;
         private readonly KerbcastWorldModel _model;
+        private readonly Action<bool>? _onFollowing;
 
         /// <param name="kerbcast">Kerbcast in this scene, normally <see cref="KerbcastApi.Instance"/>.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="kernel">The host's capability kernel.</param>
+        /// <param name="onFollowing">Told on every tick whether a command feed is following a craft, so the caller can ask for fresher samples only while one is.</param>
         public KerbcastGovernor(
             Func<IKerbcast?> kerbcast,
             Func<ApiFeature, bool> supports,
@@ -49,8 +51,10 @@ namespace Gonogo.KerbcastUplink
             Func<string, LaunchSiteReading>? launchSite = null,
             Func<uint?>? activeCraft = null,
             Func<int, double?>? bodyMu = null,
-            Func<bool>? supportsAcceleration = null)
+            Func<bool>? supportsAcceleration = null,
+            Action<bool>? onFollowing = null)
         {
+            _onFollowing = onFollowing;
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
@@ -68,6 +72,7 @@ namespace Gonogo.KerbcastUplink
             var publisher = _authority.Publisher;
             if (state != AuthorityState.Governing || kerbcast == null || publisher == null)
             {
+                _onFollowing?.Invoke(false);
                 return;
             }
             _model.Publish(
@@ -78,6 +83,7 @@ namespace Gonogo.KerbcastUplink
                 Query<ICraftKnowledge>(CraftKnowledgeCapability.Id) as IBulkCraftKnowledge,
                 nowUt,
                 realSeconds);
+            _onFollowing?.Invoke(_model.Following);
         }
 
         public void OnGameLoaded() => _model.OnGameLoaded();
