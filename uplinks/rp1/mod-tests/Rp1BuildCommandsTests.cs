@@ -494,6 +494,20 @@ namespace GonogoRp1Uplink.Tests
         }
 
         [Fact]
+        public void Opens_only_the_build_quote_to_the_meta_vantage()
+        {
+            // The quote prices a craft nobody has started and changes nothing,
+            // so Vehicle Assembly asks it with no signal delay; every other
+            // command here is an order and keeps the delay.
+            var meta = new Rp1ScUplink().Manifest.Commands
+                .Where(c => c.AllowMetaVantage)
+                .Select(c => c.Command)
+                .ToArray();
+
+            Assert.Equal(new[] { Rp1BuildStartCommands.QuoteCommand }, meta);
+        }
+
+        [Fact]
         public void Every_declared_requirement_has_an_evaluator_in_this_uplink()
         {
             // A declared kind with no evaluator is a startup failure for the whole

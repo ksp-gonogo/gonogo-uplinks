@@ -850,6 +850,7 @@ namespace GonogoRp1Uplink
                 {
                     Command = Rp1BuildStartCommands.QuoteCommand,
                     Subject = BuildQueueTopic,
+                    AllowMetaVantage = true,
                     Requires = new[]
                     {
                         Rp1BuildCommands.Requirements()[0],
