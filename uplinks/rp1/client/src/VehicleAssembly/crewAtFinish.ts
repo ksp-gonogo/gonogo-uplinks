@@ -25,14 +25,14 @@ export function crewAtFinish(
   let trained = 0;
   let free = 0;
   for (const kerbal of crew) {
-    if (
-      kerbal.retired === true ||
-      (magnitudeOf(kerbal.trainingExpiryCount) ?? 0) < 1
-    ) {
+    const lapse = magnitudeOf(kerbal.nextTrainingExpiryUt);
+    const held = magnitudeOf(kerbal.trainingExpiryCount);
+    /* An unsent count is not zero: a lapse date is evidence the training exists. */
+    const hasTraining = held === null ? lapse !== null : held >= 1;
+    if (kerbal.retired === true || !hasTraining) {
       continue;
     }
     trained += 1;
-    const lapse = magnitudeOf(kerbal.nextTrainingExpiryUt);
     const retires = magnitudeOf(kerbal.retiresAtUt);
     const courseEnds = magnitudeOf(kerbal.trainingFinishesAtUt);
     const clearOfCourse =

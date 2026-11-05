@@ -259,6 +259,39 @@ describe("LeaderDetail", () => {
     expect(visibleText()).toContain("cannot be hired again");
   });
 
+  it("does not claim a leader cannot come back when the removal flag was not sent", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [
+      serving({ reactivateCooldown: 0, removeOnDeactivate: null }),
+    ]);
+
+    expect(visibleText()).not.toContain("cannot be hired again");
+  });
+
+  it("draws the subsidy as unknown too when the reputation cost was not sent", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [serving({ deactivateReputation: null })]);
+
+    expect(visibleText()).toContain("— reputation now, costing — of subsidy");
+  });
+
+  it("keeps the dismissal window rows when the reputation cost was not sent", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [serving({ deactivateReputation: null })]);
+
+    expect(visibleText()).toContain("Free to dismiss");
+  });
+
+  it("keeps the whole name of a dismissal row when a long date shares its line", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [serving()]);
+
+    expect(screen.getByText("Free to dismiss")).toHaveAttribute(
+      "style",
+      "min-width: min(max-content, 100%);",
+    );
+  });
+
   it("is accessible", async () => {
     const { fixture, view } = mount();
     await feed(fixture, [

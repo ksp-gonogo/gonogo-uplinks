@@ -31,7 +31,7 @@ import {
   Unit,
   useRowFilter,
 } from "@ksp-gonogo/ui-kit";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import type { Rp1LeaderEntry } from "../__generated__/contract.js";
 import { LEADERS_SCREEN_ID } from "../AdminBuilding/leadersScreen.js";
 import { current } from "../shared/current.js";
@@ -141,6 +141,13 @@ const MASTER_DETAIL_COLUMNS = "repeat(auto-fit, minmax(min(15rem, 100%), 1fr))";
 const CATALOGUE_SCROLL = { maxHeight: "16rem", overflowY: "auto" } as const;
 
 /** A Row renders an `<li>`. */
+/**
+ * A wrapped Row keeps only 12 characters for its name, so a longer name was
+ * cut to an ellipsis beside a long date. This keeps the whole name and lets the
+ * value drop to the next line instead.
+ */
+const WHOLE_NAME_STYLE: CSSProperties = { minWidth: "min(max-content, 100%)" };
+
 const LIST_STYLE = { listStyle: "none", margin: 0, padding: 0 } as const;
 
 type Standing = "serving" | "offered" | "cooldown" | "locked";
@@ -364,7 +371,7 @@ function AppointControl({
           </Row>
         )}
         <Row wrap>
-          <RowName>After dismissal</RowName>
+          <RowName style={WHOLE_NAME_STYLE}>After dismissal</RowName>
           <Text>
             <AfterDismissal leader={leader} />
           </Text>
@@ -415,7 +422,13 @@ function AfterDismissal({ leader }: Readonly<{ leader: Rp1LeaderEntry }>) {
   }
   const cooldown = magnitudeOf(leader.reactivateCooldown);
   if (cooldown === null) return <>{NULL_DISPLAY}</>;
-  if (cooldown === 0) return <>cannot be hired again</>;
+  if (cooldown === 0) {
+    return leader.removeOnDeactivate === true ? (
+      <>cannot be hired again</>
+    ) : (
+      <>{NULL_DISPLAY}</>
+    );
+  }
   return (
     <>
       <Unit value={leader.reactivateCooldown} /> before re-hiring
@@ -449,7 +462,8 @@ function DismissControl({
       ? []
       : dismissalSamples(window, nowUt, reputation);
   const blocked = entry?.canDeactivate === false;
-  const costs = (magnitudeOf(leader.deactivateReputation) ?? 0) > 0;
+  const charged = magnitudeOf(leader.deactivateReputation);
+  const costs = charged === null || charged > 0;
   return (
     <Section>
       <SectionTitle>DISMISS</SectionTitle>
@@ -458,7 +472,10 @@ function DismissControl({
             beside a funds rate reads as funds. */}
         <Text size="sm" level="muted">
           <Unit value={leader.deactivateReputation} /> reputation now, costing{" "}
-          <Unit value={leader.dismissSubsidyLossPerDay} /> of subsidy
+          <Unit
+            value={charged === null ? null : leader.dismissSubsidyLossPerDay}
+          />{" "}
+          of subsidy
         </Text>
         <CommandButton
           args={{ strategyId: leader.strategyId ?? "" }}
@@ -490,7 +507,7 @@ function DismissControl({
         )}
         {costs && leader.freeToRemoveFromUt != null && (
           <Row wrap>
-            <RowName>Free to dismiss</RowName>
+            <RowName style={WHOLE_NAME_STYLE}>Free to dismiss</RowName>
             <Text>
               <MissionDate value={leader.freeToRemoveFromUt} />
               {freeUt !== null && nowUt !== null && freeUt > nowUt && (
@@ -517,7 +534,7 @@ function DismissControl({
           </Stack>
         )}
         <Row wrap>
-          <RowName>After dismissal</RowName>
+          <RowName style={WHOLE_NAME_STYLE}>After dismissal</RowName>
           <Text>
             <AfterDismissal leader={leader} />
           </Text>

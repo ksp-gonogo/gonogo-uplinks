@@ -117,7 +117,13 @@ export function ToolingSection() {
     return null;
   }
 
-  const outstanding = magnitudeOf(tooling.untooledCount) ?? 0;
+  /* An absent count falls back to the parts themselves: a part listed as not
+     tooled is outstanding work whether or not RP-1 totalled it. */
+  const counted = magnitudeOf(tooling.untooledCount);
+  const outstanding =
+    counted === null
+      ? (tooling.parts ?? []).some((part) => part.tooled === false)
+      : counted > 0;
 
   return (
     <Section gap="related-dense" data-tooling-section="">
@@ -127,7 +133,7 @@ export function ToolingSection() {
           above the rows. Below them it would be read as their total, which it
           is not: the fuzzy match makes RP-1's figure the smaller number by
           however much one size covers another. */}
-      {outstanding > 0 && (
+      {outstanding && (
         <Cluster
           gap="related-dense"
           justify="start"

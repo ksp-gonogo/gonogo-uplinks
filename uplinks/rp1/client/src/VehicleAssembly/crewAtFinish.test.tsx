@@ -66,6 +66,31 @@ describe("crew trained and free when a vehicle finishes", () => {
   });
 });
 
+describe("a kerbal whose training count RP-1 did not send", () => {
+  it("counts as trained when a lapse date shows the training exists", () => {
+    expect(
+      crewAtFinish(
+        [kerbal({ trainingExpiryCount: undefined })] as never,
+        FINISH,
+      ),
+    ).toEqual({ free: 1, trained: 1 });
+  });
+
+  it("is left out when there is no date either", () => {
+    expect(
+      crewAtFinish(
+        [
+          kerbal({
+            nextTrainingExpiryUt: undefined,
+            trainingExpiryCount: undefined,
+          }),
+        ] as never,
+        FINISH,
+      ),
+    ).toEqual({ free: 0, trained: 0 });
+  });
+});
+
 describe("the crew line on a vehicle being integrated", () => {
   async function mountWith(crew: unknown[], timeLeftSeconds = 375) {
     const fixture = setupStreamFixture();

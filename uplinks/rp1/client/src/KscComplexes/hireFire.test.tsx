@@ -46,7 +46,10 @@ const PERSONNEL = {
   hireTarget: { active: false },
 };
 
-function mount(funds: number | null = 120_000) {
+function mount(
+  funds: number | null = 120_000,
+  personnel: Record<string, unknown> = PERSONNEL,
+) {
   const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
@@ -58,7 +61,7 @@ function mount(funds: number | null = 120_000) {
     fixture.emit("rp1.centres", [CAPE, VANDENBERG]);
     fixture.emit("rp1.complexes", []);
     fixture.emit("rp1.pads", []);
-    fixture.emit("rp1.personnel", PERSONNEL);
+    fixture.emit("rp1.personnel", personnel);
     if (funds !== null) {
       fixture.emit("career.status", { balances: { funds } });
     }
@@ -181,6 +184,23 @@ describe("hiring and firing now", () => {
     expect(
       screen.getByRole("button", { name: "Fire 5 researchers" }),
     ).toBeEnabled();
+  });
+
+  it("states the price as unknown and leaves Hire lit when RP-1 sent no applicant count", async () => {
+    const user = userEvent.setup();
+    const { applicants: _omitted, ...unknownApplicants } = PERSONNEL;
+    const { view } = mount(800, unknownApplicants);
+
+    await open(user, "5");
+
+    // 5 heads at 300f is 1,500f against 800f, but 2 may be free: nothing is known.
+    expect(
+      screen.getByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeEnabled();
+    expect(view.container.textContent).not.toContain("RP-1 will refuse");
+    expect(view.container.textContent).not.toContain("more than the balance");
+    expect(view.container.textContent).not.toMatch(/1,500f/);
+    expect(view.container.textContent).toContain("applicants unknown");
   });
 
   it("is absent on a save with no funding", () => {

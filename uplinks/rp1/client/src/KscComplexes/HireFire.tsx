@@ -80,9 +80,11 @@ export function HireFireControl({
   const salary = perHead === null ? null : count * perHead;
 
   const charge = magnitudeOf(personnel?.hireCost);
-  const applicants = magnitudeOf(personnel?.applicants) ?? 0;
+  const applicants = magnitudeOf(personnel?.applicants);
   const cost =
-    charge === null ? null : Math.max(0, count - applicants) * charge;
+    charge === null || applicants === null
+      ? null
+      : Math.max(0, count - applicants) * charge;
   const short = cost !== null && cost > funds;
   const tooMany = firable !== null && count > firable;
 

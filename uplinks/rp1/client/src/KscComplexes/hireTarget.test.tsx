@@ -324,6 +324,25 @@ describe("what the hire will cost", () => {
     expect(view.container.textContent).toContain("600");
   });
 
+  it("states the price as unknown, not as every head paid, when RP-1 sent no applicant count", async () => {
+    const user = userEvent.setup();
+    const { applicants: _omitted, ...unknownApplicants } = PRICED;
+    const { view } = mount(unknownApplicants);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Set a hire target" }),
+    );
+    const headcount = await screen.findByLabelText("Target headcount");
+    await user.clear(headcount);
+    await user.type(headcount, "40");
+
+    await waitFor(() => {
+      expect(view.container.textContent).toContain("applicants unknown");
+    });
+    // 9 heads at 300f is 2,700f, which is only true if no applicant is waiting.
+    expect(view.container.textContent).not.toContain("2,700");
+  });
+
   it("says nothing about price when RP-1 has not given one", async () => {
     const user = userEvent.setup();
     const { view } = mount(IDLE);

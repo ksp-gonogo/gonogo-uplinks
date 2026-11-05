@@ -243,6 +243,17 @@ describe("ToolingSection: what a vehicle owes, and what it costs not to pay", ()
     ).not.toBeInTheDocument();
   });
 
+  it("still offers the purchase when RP-1 sent parts needing tooling but no count", async () => {
+    const stream = mount();
+    const { untooledCount: _omitted, ...withoutCount } = SHARED;
+
+    emit(stream, withoutCount);
+
+    expect(
+      await screen.findByRole("button", { name: /tool this vehicle/i }),
+    ).toBeInTheDocument();
+  });
+
   /**
    * The client never computes affordability, and this is what holds that.
    *

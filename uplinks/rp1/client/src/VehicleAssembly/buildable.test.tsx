@@ -243,12 +243,43 @@ describe("starting a build from a saved craft", () => {
     });
   });
 
-  it("draws no price row and no sentence when RP-1 will not quote the craft", async () => {
+  it("draws the price as unknown when RP-1 will not quote the craft", async () => {
     await withOneSavedCraft({}, null);
-    await act(async () => {});
 
-    expect(screen.queryByText("Price")).not.toBeInTheDocument();
-    expect(screen.queryByText(/priced by RP-1/i)).not.toBeInTheDocument();
+    const label = await screen.findByText("Price");
+    expect(label.parentElement).toHaveTextContent("—");
+    expect(screen.queryByText("SHORT")).not.toBeInTheDocument();
+    // The control stays: RP-1 judges affordability at the press.
+    expect(
+      screen.getByRole("button", { name: /Start building Atlas LV-3B/i }),
+    ).toBeEnabled();
+  });
+
+  it("marks the price SHORT when the quote's own balance does not cover it", async () => {
+    await withOneSavedCraft(
+      {},
+      { affordable: false, balance: 10_000, price: 40_000 },
+    );
+
+    await screen.findByText("Price");
+    expect(await screen.findByText("SHORT")).toBeInTheDocument();
+    // Charged up front and refused when short: dark, with the shortfall as the tip.
+    const press = await screen.findByRole("button", { name: "Build at LC-1" });
+    expect(press).toBeDisabled();
+    expect(press).toHaveAccessibleDescription("Short 30,000f");
+  });
+
+  it("does not mark SHORT when RP-1 could not read the balance", async () => {
+    await withOneSavedCraft(
+      {},
+      { affordable: false, balance: null, price: 40_000 },
+    );
+
+    await screen.findByText("Price");
+    expect(screen.queryByText("SHORT")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Start building Atlas LV-3B/i }),
+    ).toBeEnabled();
   });
 
   it("asks no quote for a craft that cannot be built", async () => {

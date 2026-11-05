@@ -5,11 +5,13 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Badge,
   Button,
   Cluster,
   CommandButton,
   Countdown,
   DataLine,
+  magnitudeOf,
   NULL_DISPLAY,
   Section,
   SectionTitle,
@@ -17,7 +19,7 @@ import {
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Value } from "@ksp-gonogo/sitrep-sdk";
 import type {
   Rp1BuildableComplex,
@@ -136,6 +138,21 @@ function CraftCard({
 }>) {
   const name = craft.shipName ?? craft.craftFile ?? NULL_DISPLAY;
   const file = craft.craftFile ?? null;
+  const [shortfalls, setShortfalls] = useState<Readonly<Record<string, number>>>(
+    {},
+  );
+  const reportShortfall = useCallback(
+    (key: string, shortBy: number | null) => {
+      setShortfalls((held) => {
+        if ((held[key] ?? null) === shortBy) {
+          return held;
+        }
+        const { [key]: _dropped, ...rest } = held;
+        return shortBy === null ? rest : { ...rest, [key]: shortBy };
+      });
+    },
+    [],
+  );
   const complexes = craft.complexes ?? [];
   const eligible = complexes.filter((complex) => complex.eligible === true);
   const partBlock = partRefusal(craft);
@@ -177,20 +194,29 @@ function CraftCard({
               file={file}
               key={`${cardKey(craft)}:${complex.lcId ?? complexLabel(complex)}:${craft.mass}:${craft.partCount}`}
               named={eligible.length > 1}
+              onShortfall={reportShortfall}
+              slotKey={complexKey(complex)}
             />
           ))}
           <Cluster gap="related-dense" justify="start" wrap>
-            {eligible.map((complex) => (
+            {eligible.map((complex) => {
+              const shortBy = shortfalls[complexKey(complex)];
+              return (
               <CommandButton
                 args={{
                   craftFile: file,
                   facility: craft.facility,
                   lcId: complex.lcId,
                 }}
-                aria-label={`Start building ${name} at ${complexLabel(complex)}`}
+                aria-label={
+                  shortBy === undefined
+                    ? `Start building ${name} at ${complexLabel(complex)}`
+                    : undefined
+                }
                 commandLabel={`Start building ${name} at ${complexLabel(complex)}`}
                 confirmAriaLabel={`Confirm starting ${name} at ${complexLabel(complex)}`}
                 confirmLabel="Start build"
+                disabled={shortBy !== undefined}
                 handle={handle}
                 key={complex.lcId ?? complexLabel(complex)}
                 /* One button per complex, always named, even when there is
@@ -200,8 +226,14 @@ function CraftCard({
                    learns two buttons for one action. */
                 label={`Build at ${complex.name ?? complexLabel(complex)}`}
                 size="sm"
+                title={
+                  shortBy === undefined
+                    ? undefined
+                    : `Short ${Math.ceil(shortBy).toLocaleString("en-US")}f`
+                }
               />
-            ))}
+              );
+            })}
             <Refusals complexes={complexes} />
           </Cluster>
         </Stack>
@@ -212,6 +244,7 @@ function CraftCard({
 
 /** A quote with its figures carrying their units, ready to draw. */
 interface QuotedFigures {
+  readonly balance: Value<"funds"> | null;
   readonly integration: Value<"s"> | null;
   readonly price: Value<"funds">;
 }
@@ -228,6 +261,7 @@ function quotedFigures(
     return null;
   }
   return {
+    balance: asFunds(quote.balance),
     integration: asSeconds(quote.integrationSeconds),
     price: asFunds(quote.price),
   };
@@ -260,22 +294,30 @@ function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"fun
  *
  * <para>The price is RP-1's own, asked once when the card is drawn and again
  * only when the craft's measured figures change, because a quote loads the
- * craft's parts in the game. Nothing is drawn until it arrives or when RP-1
- * will not quote. The integration row is left out when RP-1 gives no estimate.
- * With more than one eligible complex each pair is headed by the complex's
- * name. Whether the career can afford it is left to the build button, which
- * RP-1 refuses at the press.</para>
+ * craft's parts in the game. Nothing is drawn until it arrives, and when RP-1
+ * will not quote the price is drawn as unknown. A price the quote's own balance
+ * does not cover carries a short badge, and its build button is darkened with
+ * the shortfall as its tip. The integration row is left out when
+ * RP-1 gives no estimate. With more than one eligible complex each pair is
+ * headed by the complex's name. Whether the career can afford it is left to the build button, which
+ * RP-1 refuses at the press; the career's funds are drawn once, in the host
+ * widget's body.</para>
  */
 function BuildQuote({
   complex,
   craft,
   file,
   named,
+  onShortfall,
+  slotKey,
 }: Readonly<{
   complex: Rp1BuildableComplex;
   craft: Rp1BuildableCraftEntry;
   file: string;
   named: boolean;
+  /** Told how far the price is over the balance, or null when it is not or either is unknown. */
+  onShortfall: (key: string, shortBy: number | null) => void;
+  slotKey: string;
 }>) {
   const quote = useCommand(RP1_BUILD_QUOTE_COMMAND, {
     rail: false,
@@ -283,7 +325,9 @@ function BuildQuote({
   });
   const send = useRef(quote.send);
   send.current = quote.send;
-  const [answer, setAnswer] = useState<QuotedFigures | null>(null);
+  const [answer, setAnswer] = useState<QuotedFigures | "unquoted" | null>(
+    null,
+  );
   const facility = craft.facility;
   const lcId = complex.lcId;
   const complexName = complex.name ?? complexLabel(complex);
@@ -298,16 +342,30 @@ function BuildQuote({
       })
       .then((reply) => {
         if (live) {
-          setAnswer(quotedFigures(reply.payload));
+          setAnswer(quotedFigures(reply.payload) ?? "unquoted");
         }
       })
       .catch(() => {
-        // The game would not price it. The plain fact below stays.
+        if (live) {
+          setAnswer("unquoted");
+        }
       });
     return () => {
       live = false;
     };
   }, [file, facility, lcId]);
+
+  const balance =
+    answer === null || answer === "unquoted" ? null : magnitudeOf(answer.balance);
+  const price =
+    answer === null || answer === "unquoted" ? null : magnitudeOf(answer.price);
+  const short = balance !== null && price !== null && price > balance;
+  const shortBy = short ? price - balance : null;
+
+  useEffect(() => {
+    onShortfall(slotKey, shortBy);
+    return () => onShortfall(slotKey, null);
+  }, [onShortfall, slotKey, shortBy]);
 
   if (answer === null) {
     return null;
@@ -321,15 +379,32 @@ function BuildQuote({
         </Text>
       ) : null}
       <DataLine label="Price">
-        <Unit value={answer.price} decimals={0} />
+        {answer === "unquoted" ? (
+          NULL_DISPLAY
+        ) : (
+          <>
+            <Unit value={answer.price} decimals={0} />
+            {short && (
+              <>
+                {" "}
+                <Badge tone="caution">SHORT</Badge>
+              </>
+            )}
+          </>
+        )}
       </DataLine>
-      {answer.integration === null ? null : (
+      {answer === "unquoted" || answer.integration === null ? null : (
         <DataLine label="Integration">
           <Countdown value={answer.integration} />
         </DataLine>
       )}
     </Stack>
   );
+}
+
+/** The key one complex's button and quote share within a card. */
+function complexKey(complex: Rp1BuildableComplex): string {
+  return complex.lcId ?? complexLabel(complex);
 }
 
 /**

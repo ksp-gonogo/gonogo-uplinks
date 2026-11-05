@@ -184,6 +184,9 @@ function StandingTarget({
  * see RP-1's screen needs to know which of the two numbers will actually
  * leave.</para>
  *
+ * <para>The applicant count is absent, not zero, when RP-1 has not sent it: how
+ * many heads are paid is then unknown, so the line says so and gives no total.</para>
+ *
  * <para>Absent, not zero, when RP-1 has given no price. A hire drawn as free is
  * worse than a hire drawn with no price on it, and the bound on the spend beside
  * this needs no price at all, so it goes on standing.</para>
@@ -202,10 +205,20 @@ export function HireSpend({
   const quote = magnitudeOf(
     isResearch ? personnel?.researcherHireQuote : personnel?.engineerHireQuote,
   );
-  const applicants = magnitudeOf(personnel?.applicants) ?? 0;
+  const applicants = magnitudeOf(personnel?.applicants);
 
   if (charge === null || leftToHire === null || leftToHire <= 0) {
     return null;
+  }
+
+  if (applicants === null) {
+    return (
+      <Text size="xs" level="muted">
+        <Unit value={value("count", leftToHire)} /> to hire at{" "}
+        <Unit decimals={0} value={value("funds", charge)} /> each · applicants
+        unknown
+      </Text>
+    );
   }
 
   const free = Math.min(leftToHire, applicants);
