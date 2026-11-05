@@ -380,11 +380,6 @@ export class KerbcastDataSource {
   // the initial set on (re)connect so a reconnect re-binds whatever's on screen
   // without a client-side round-trip (the sidecar pushes the SlotMaps on Hello).
   private desiredSubs = new Map<number, number>();
-  /**
-   * Cameras subscribed while the peer was not connected and not part of the
-   * set its connect carried. Each is bound once the peer connects.
-   */
-  private pendingBind = new Set<number>();
 
   /** Slots offered on the current connection. */
   private poolSlots = MIN_SLOTS;
@@ -558,7 +553,6 @@ export class KerbcastDataSource {
     // decode it fails at the sidecar with an opaque 500.
     if (!browserCanPlayH264()) return;
     this.awaitingSlot = [];
-    this.pendingBind.clear();
     this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
       await this.client.connect([...this.desiredSubs.keys()], {
@@ -622,10 +616,19 @@ export class KerbcastDataSource {
       .tag("kerbcast:subscriptions")
       .debug("subscribe", { flightId, holders: count + 1, status: this.status });
     if (this.status === "connected") {
-      if (count === 0) this.bindCamera(flightId);
+      if (count === 0) {
+        if (
+          !this.canGrowLive() &&
+          this.desiredSubs.size > this.poolSlots &&
+          this.poolSlots < MAX_SLOTS
+        ) {
+          this.growPool();
+        } else {
+          this.requestSlot(flightId);
+        }
+      }
       return;
     }
-    if (count === 0) this.pendingBind.add(flightId);
     // Not connected. A brokered station source isn't eager-connected anywhere,
     // so the first widget that wants a stream triggers the connect; the camera
     // binds via the initial set (desiredSubs). The main screen connects all
@@ -960,7 +963,6 @@ export class KerbcastDataSource {
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
-          this.bindPending();
           this.retryNotThereYet();
           this.reconnectAttempts = 0;
           if (this.reconnectTimer !== null) {
@@ -1019,28 +1021,6 @@ export class KerbcastDataSource {
       });
       void this.attemptReconnect();
     }, POOL_GROWTH_DEBOUNCE_MS);
-  }
-
-  /** Bind `flightId` on the connected peer, growing the pool first when it is full. */
-  private bindCamera(flightId: number): void {
-    if (
-      !this.canGrowLive() &&
-      this.desiredSubs.size > this.poolSlots &&
-      this.poolSlots < MAX_SLOTS
-    ) {
-      this.growPool();
-    } else {
-      this.requestSlot(flightId);
-    }
-  }
-
-  /** Bind the cameras that were subscribed while the peer was connecting. */
-  private bindPending(): void {
-    const pending = [...this.pendingBind];
-    this.pendingBind.clear();
-    for (const flightId of pending) {
-      if (this.desiredSubs.has(flightId)) this.bindCamera(flightId);
-    }
   }
 
   /** Ask the connected sidecar to bind `flightId` into a free slot. */
@@ -1399,7 +1379,6 @@ export class KerbcastDataSource {
 
   private async attemptReconnect(): Promise<void> {
     this.awaitingSlot = [];
-    this.pendingBind.clear();
     this.poolSlots = slotPoolFor(this.desiredSubs.size);
     try {
       await this.client.connect([...this.desiredSubs.keys()], {

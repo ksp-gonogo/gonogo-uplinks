@@ -7,33 +7,12 @@ namespace Gonogo.KerbcastUplink
     /// liftoff runs. It is nothing until a countdown starts, grows over the countdown to
     /// <see cref="WidestRadiusM"/> at T-0, holds there while the craft is still on the
     /// ground, and eases back to nothing once the craft is known to be off it, or at
-    /// once if the countdown is called off. Whenever the camera reports its view blocked,
-    /// whether or not a countdown is running, the radius is further widened by the
-    /// occlusion extra (see <see cref="OcclusionExtraM"/>), on the same easing and over
-    /// the same time, and eased back when the view clears.
+    /// once if the countdown is called off.
     /// </summary>
     internal sealed class KerbcastLaunchFraming
     {
         /// <summary>The widest extra radius, metres: where a craft climbing at 20 m/s² for the 2.5 s a record can be old at ignition ends up.</summary>
         internal const double WidestRadiusM = 62.5;
-
-        /// <summary>
-        /// The least further radius, metres, added while the launchpad camera's view is blocked: one
-        /// more widest step, so on the pad the whole allowance covers a record about 3.5 s old at
-        /// ignition rather than 2.5 s. It is built from <see cref="WidestRadiusM"/> so the two move together.
-        /// </summary>
-        internal const double OcclusionExtraRadiusM = WidestRadiusM;
-
-        /// <summary>
-        /// The further radius as a fraction of the craft's range from the camera. The view's half-extent
-        /// is 3.333 times the radius framed, so one 128th of the range frames about 3 degrees across, three
-        /// times the camera's 1 degree floor, which is the narrowest it frames a craft far downrange.
-        /// </summary>
-        internal const double OcclusionRangeFraction = 1.0 / 128.0;
-
-        /// <summary>The further radius at a range, metres: the larger of <see cref="OcclusionExtraRadiusM"/> and the range fraction.</summary>
-        internal static double OcclusionExtraM(double rangeM) =>
-            Math.Max(OcclusionExtraRadiusM, double.IsNaN(rangeM) || rangeM < 0.0 ? 0.0 : rangeM * OcclusionRangeFraction);
 
         /// <summary>Seconds the radius takes to fall back to nothing after liftoff or a called-off countdown.</summary>
         internal const double EaseBackSeconds = 3.0;
@@ -60,11 +39,6 @@ namespace Gonogo.KerbcastUplink
         private double _easeFrom;
         private double _easeStartedAt;
         private double _holdStartedAt;
-        private double _weightFrom;
-        private double _weightTo;
-        private double _weightStartedAt;
-        private double _weightNow;
-        private double _extraSizeM = OcclusionExtraRadiusM;
 
         /// <summary>Whether the radius is moving or held wide, so the model keeps republishing it.</summary>
         public bool Active
@@ -73,7 +47,7 @@ namespace Gonogo.KerbcastUplink
             {
                 lock (_gate)
                 {
-                    return _phase != Phase.Idle || _pending || _weightNow > 0.0;
+                    return _phase != Phase.Idle || _pending;
                 }
             }
         }
@@ -105,60 +79,28 @@ namespace Gonogo.KerbcastUplink
         /// </summary>
         /// <param name="realSeconds">A monotonic real-time clock in seconds.</param>
         /// <param name="onGround">Whether the craft's last known place is on the ground.</param>
-        /// <param name="occluded">Whether the launchpad camera reports its view blocked.</param>
-        /// <param name="rangeM">The craft's range from that camera in metres, NaN or negative when unknown.</param>
-        public double RadiusM(double realSeconds, bool onGround, bool occluded = false, double rangeM = double.NaN)
+        public double RadiusM(double realSeconds, bool onGround)
         {
             lock (_gate)
             {
-                var radius = Base(realSeconds, onGround);
-                if (occluded)
+                Take(realSeconds);
+                switch (_phase)
                 {
-                    _extraSizeM = OcclusionExtraM(rangeM);
-                }
-                return radius + Weight(realSeconds, occluded ? 1.0 : 0.0) * _extraSizeM;
-            }
-        }
-
-        /*
-         * How much of the occlusion extra applies, from 0 to 1. It eases toward its target on
-         * the curve and over the time the rest of the framing uses, from wherever it had got,
-         * so a view that flickers at an edge turns the radius around smoothly rather than
-         * snapping it. The size is kept apart from the weight, so a range that changes every
-         * tick moves the extra without restarting the ease.
-         */
-        private double Weight(double realSeconds, double target)
-        {
-            if (target != _weightTo)
-            {
-                _weightFrom = _weightNow;
-                _weightTo = target;
-                _weightStartedAt = realSeconds;
-            }
-            var done = (realSeconds - _weightStartedAt) / EaseBackSeconds;
-            _weightNow = done >= 1.0 ? _weightTo : _weightFrom + (_weightTo - _weightFrom) * Ease(done);
-            return _weightNow;
-        }
-
-        private double Base(double realSeconds, bool onGround)
-        {
-            Take(realSeconds);
-            switch (_phase)
-            {
-                case Phase.Counting:
-                    if (realSeconds >= _reachesZeroAt)
-                    {
-                        _phase = Phase.Holding;
-                        _holdStartedAt = _reachesZeroAt;
+                    case Phase.Counting:
+                        if (realSeconds >= _reachesZeroAt)
+                        {
+                            _phase = Phase.Holding;
+                            _holdStartedAt = _reachesZeroAt;
+                            return Held(realSeconds, onGround);
+                        }
+                        return Widened(Progress(realSeconds));
+                    case Phase.Holding:
                         return Held(realSeconds, onGround);
-                    }
-                    return Widened(Progress(realSeconds));
-                case Phase.Holding:
-                    return Held(realSeconds, onGround);
-                case Phase.Easing:
-                    return Eased(realSeconds);
-                default:
-                    return 0.0;
+                    case Phase.Easing:
+                        return Eased(realSeconds);
+                    default:
+                        return 0.0;
+                }
             }
         }
 

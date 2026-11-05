@@ -180,7 +180,7 @@ function installFakeWebCodecs() {
     static instances: FakeProcessor[] = [];
     cancelled = false;
     readable: { getReader(): unknown };
-    constructor(public init: { track: MediaStreamTrack }) {
+    constructor(public init: MediaStreamTrackProcessorInit) {
       FakeProcessor.instances.push(this);
       const track = init.track as unknown as FakeControllableVideoTrack;
       this.readable = {
@@ -200,7 +200,7 @@ function installFakeWebCodecs() {
     closed = false;
     written: unknown[] = [];
     writable: { getWriter(): unknown };
-    constructor(public init: { kind: string }) {
+    constructor(public init: MediaStreamTrackGeneratorInit) {
       FakeGenerator.instances.push(this);
       this.writable = {
         getWriter: () => ({

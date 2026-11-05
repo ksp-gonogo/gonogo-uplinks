@@ -453,39 +453,6 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     ds.disconnect();
   });
 
-  it("binds a camera subscribed while the peer is still connecting once it connects", async () => {
-    const sidecar = new MockSidecar();
-    sidecar.addCamera({ flightId: 42 });
-    mockFetch();
-    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    await ds.connect();
-    sidecar.open();
-
-    ds.subscribeCamera(42);
-    expect(sidecar.lastCommand("subscribe", 42)).toBeUndefined();
-    sidecar.setConnectionState("connected");
-
-    expect(subscribeCount(sidecar, 42)).toBe(1);
-    expect(sidecar.slotMidFor(42)).toBeDefined();
-
-    ds.disconnect();
-  });
-
-  it("does not bind again a camera the connect already carried", async () => {
-    const sidecar = new MockSidecar();
-    sidecar.addCamera({ flightId: 42 });
-    mockFetch();
-    const ds = makeTracked({ port: 1 }, sidecar.createTransport());
-    ds.subscribeCamera(42);
-    await ds.connect();
-    sidecar.open();
-    sidecar.setConnectionState("connected");
-
-    expect(subscribeCount(sidecar, 42)).toBe(0);
-
-    ds.disconnect();
-  });
-
   it("refcounts subscribers: one slot shared, freed only on the last release", async () => {
     const { ds, sidecar } = await connectedSidecar();
 
