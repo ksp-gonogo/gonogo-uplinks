@@ -69,6 +69,25 @@ describe("KosScriptTrigger", () => {
     expect(invocation.args).toEqual(["42"]);
   });
 
+  it("runs the script once when Run is pressed twice before the screen redraws", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    fake.registerScript("0:/deltav.ks", () => "[KOSDATA] ok=true [/KOSDATA]");
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText("Script path"), {
+      target: { value: "0:/deltav.ks" },
+    });
+
+    const run = screen.getByRole("button", { name: "Run" });
+    act(() => {
+      run.click();
+      run.click();
+    });
+
+    await waitFor(() => expect(screen.getByText("OK")).toBeInTheDocument());
+    expect(fake.invocations()).toHaveLength(1);
+  });
+
   it("surfaces a script-author fault as a script error, inline", async () => {
     const { fake } = renderWidget();
     fake.setCpus([{ number: 7, tagname: "lander" }]);

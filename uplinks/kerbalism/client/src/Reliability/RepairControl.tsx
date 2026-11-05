@@ -69,7 +69,9 @@ export function RepairControl({
         .slice()
         .sort((a, b) => carriedOf(b, rankOn) - carriedOf(a, rankOn))[0]
     : eligible[0];
-  const performer = chosen ?? readiest?.name ?? null;
+  // A pick that has left the eligible list (gone on EVA, transferred) no longer stands.
+  const pick = eligible.find((c) => c.name === chosen);
+  const performer = pick?.name ?? readiest?.name ?? null;
   const acting = eligible.find((c) => c.name === performer);
 
   const lines = cost.map((line) => {

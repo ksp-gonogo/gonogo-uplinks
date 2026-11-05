@@ -3,6 +3,7 @@ import {
   act,
   screen,
   setupStreamFixture,
+  stopArriving,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { expectNoA11yViolations, renderWithRail } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
@@ -163,6 +164,30 @@ describe("dish turning", () => {
     ]);
 
     expect(screen.getByText(/Last borrowed for Kerbal Space Center, put back/)).toBeTruthy();
+  });
+
+  it("keeps an opted-out switch off and the borrowed dish listed once the link drops", async () => {
+    const stream = await mount([
+      entry({
+        allowed: false,
+        borrowed: {
+          dishId: `vessel:${VESSEL}#4021/0`,
+          peerId: `vessel:${OTHER}`,
+          dishName: "HG-55 High Gain Antenna",
+          sinceUt: value("ut", 5000),
+          previousAim: "Kerbin",
+        },
+      }),
+    ]);
+    act(() => stopArriving(stream));
+
+    expect((await screen.findAllByText(/offline/i)).length).toBeGreaterThan(0);
+    expect(
+      (screen.getByRole("checkbox", { name: "Automatic retargeting, This craft" }) as HTMLInputElement).checked,
+    ).toBe(false);
+    const notice = screen.getByRole("status").textContent ?? "";
+    expect(notice).toContain("Borrowed");
+    expect(notice).toContain("Duna Relay");
   });
 
   it("has no accessibility violations", async () => {

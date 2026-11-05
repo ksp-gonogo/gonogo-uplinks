@@ -1,5 +1,5 @@
 import type { CommandResult, TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
-import { safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
+import { magnitudeOf, safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
 import type {
   KosProcessorInfo,
   KosFilesListArgs,
@@ -34,7 +34,13 @@ import { buildKosRunCommand } from "./kosWrapper.js";
  */
 
 const PROCESSORS_TOPIC = "kos.processors";
+const COMMS_DELAY_TOPIC = "comms.delay";
 
+/**
+ * How long a CPU gets to run a script once the signal has done its travelling.
+ * The wait for an answer is this plus the command's round trip, so a delayed
+ * craft is never given up on while its answer is still on the way.
+ */
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 interface QueuedRun {
@@ -53,6 +59,8 @@ interface InFlightRun {
   requestId: string;
   call: QueuedRun;
   timer: ReturnType<typeof setTimeout>;
+  /** The wait this call was given, which the timeout message reports. */
+  waitMs: number;
 }
 
 /**
@@ -69,7 +77,7 @@ class KosUplinkCpuQueue {
   constructor(
     private readonly client: TelemetryClient,
     private readonly coreId: number,
-    private readonly timeoutMs: number,
+    private readonly timeoutMs: () => number,
   ) {
     this.unsubscribe = client.subscribe(`kos.run.${coreId}`, (payload) => {
       const result = asRunResult(payload);
@@ -153,10 +161,11 @@ class KosUplinkCpuQueue {
     }
     if (!next) return;
     const requestId = safeRandomUuid();
+    const waitMs = this.timeoutMs();
     const timer = setTimeout(() => {
       this.onTimeout(requestId);
-    }, this.timeoutMs);
-    this.inFlight = { requestId, call: next, timer };
+    }, waitMs);
+    this.inFlight = { requestId, call: next, timer, waitMs };
 
     const { result } =
       next.listVolume === undefined
@@ -234,11 +243,11 @@ class KosUplinkCpuQueue {
 
   private onTimeout(requestId: string): void {
     if (!this.inFlight || this.inFlight.requestId !== requestId) return;
-    const { call } = this.inFlight;
+    const { call, waitMs } = this.inFlight;
     this.inFlight = null;
     call.reject(
       new Error(
-        `kos.run: CPU ${this.coreId} did not respond within ${this.timeoutMs}ms`,
+        `kos.run: CPU ${this.coreId} did not respond within ${waitMs}ms`,
       ),
     );
     this.drain();
@@ -265,6 +274,9 @@ class KosUplinkCpuQueue {
  */
 export class KosUplinkExecutor {
   private readonly timeoutMs: number;
+  /** The latest one-way delay `comms.delay` reported, in seconds, or `null` while none is known. */
+  private oneWaySeconds: number | null = null;
+  private delayUnsub: (() => void) | null = null;
   private client: TelemetryClient | null = null;
   private processorsUnsub: (() => void) | null = null;
   private readonly coreIdByTag = new Map<string, number>();
@@ -371,6 +383,9 @@ export class KosUplinkExecutor {
   dispose(): void {
     this.processorsUnsub?.();
     this.processorsUnsub = null;
+    this.delayUnsub?.();
+    this.delayUnsub = null;
+    this.oneWaySeconds = null;
     for (const queue of this.queues.values()) {
       queue.dispose("kos: Uplink executor disposed");
     }
@@ -389,6 +404,19 @@ export class KosUplinkExecutor {
     this.processorsUnsub = client.subscribe(PROCESSORS_TOPIC, (payload) => {
       this.handleProcessors(asProcessorList(payload));
     });
+    this.delayUnsub = client.subscribe(COMMS_DELAY_TOPIC, (payload) => {
+      this.oneWaySeconds = asOneWaySeconds(payload);
+    });
+  }
+
+  /**
+   * The wait a dispatch made now is given: the script's own allowance plus the
+   * command's round trip, since both the order and its result cross the delay.
+   * With no delay known the allowance stands alone.
+   */
+  private waitMs(): number {
+    const roundTripMs = (this.oneWaySeconds ?? 0) * 2 * 1000;
+    return this.timeoutMs + roundTripMs;
   }
 
   private handleProcessors(info: KosProcessorInfo[] | undefined): void {
@@ -412,10 +440,22 @@ export class KosUplinkExecutor {
       // but keeps this method safe to call standalone.
       throw new Error("kos.run: no active telemetry client");
     }
-    const queue = new KosUplinkCpuQueue(this.client, coreId, this.timeoutMs);
+    const queue = new KosUplinkCpuQueue(this.client, coreId, () => this.waitMs());
     this.queues.set(coreId, queue);
     return queue;
   }
+}
+
+/**
+ * The one-way delay a `comms.delay` frame carries, in seconds, and `null` when
+ * it carries none a wait can be sized from.
+ */
+function asOneWaySeconds(payload: unknown): number | null {
+  if (typeof payload !== "object" || payload === null) return null;
+  const seconds = magnitudeOf(
+    Reflect.get(payload, "oneWaySeconds") as Parameters<typeof magnitudeOf>[0],
+  );
+  return seconds !== null && seconds > 0 ? seconds : null;
 }
 
 /**

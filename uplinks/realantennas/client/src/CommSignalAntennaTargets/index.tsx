@@ -25,6 +25,9 @@ import {
   Field,
   FieldLabel,
   Grid,
+  HeldFigure,
+  heldFigureOf,
+  heldMarking,
   Input,
   magnitudeOf,
   SectionTitle,
@@ -83,9 +86,39 @@ interface AntennaCardProps {
   chain: RealAntennasAntennaChain | undefined;
   bodies: readonly string[];
   vessels: readonly { id: string; name: string }[];
+  /** The antenna list the card was drawn from, so a held one marks the figures taken from it. */
+  reading: Parameters<typeof heldMarking>[0];
 }
 
-function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
+/** A section heading, carrying the kit's held mark when the reading it stands for is held. */
+function SectionHeading({
+  reading,
+  children,
+}: {
+  reading: Parameters<typeof heldMarking>[0];
+  children: string;
+}) {
+  const marking = heldMarking(reading);
+  return (
+    <SectionTitle>
+      {marking === null ? (
+        children
+      ) : (
+        <HeldFigure caption={marking.caption} kind={marking.kind}>
+          {children}
+        </HeldFigure>
+      )}
+    </SectionTitle>
+  );
+}
+
+function AntennaCard({
+  antenna,
+  chain,
+  bodies,
+  vessels,
+  reading,
+}: AntennaCardProps) {
   const fieldId = useId();
   const [mode, setMode] = useState<ModeId>("BodyCenter");
   const [bodyName, setBodyName] = useState("");
@@ -175,7 +208,7 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
                 Tech level
               </Text>
               <Text size="sm">
-                <Unit value={antenna.techLevel} />
+                <Unit value={heldFigureOf(antenna.techLevel, reading)} />
               </Text>
             </>
           ) : null}
@@ -201,13 +234,13 @@ function AntennaCard({ antenna, chain, bodies, vessels }: AntennaCardProps) {
               </Text>
             </>
           ) : null}
-          {!isOmni && magnitudeOf(antenna.cone10Db) !== null ? (
+          {!isOmni && antenna.cone10Db != null && magnitudeOf(antenna.cone10Db) !== null ? (
             <>
               <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Beam
               </Text>
               <Text size="sm">
-                <Unit value={antenna.cone10Db} />
+                <Unit value={heldFigureOf(antenna.cone10Db, reading)} />
               </Text>
             </>
           ) : null}
@@ -431,7 +464,9 @@ function CommSignalAntennaTargets() {
   const vesselsReading = useTelemetry("trackingStation.catalog");
 
   const antennas =
-    antennasReading.state === "observed" ? antennasReading.value : undefined;
+    antennasReading.state === "observed" || antennasReading.state === "held"
+      ? antennasReading.value
+      : undefined;
   if (!antennas || antennas.length === 0) return null;
 
   /*
@@ -440,24 +475,38 @@ function CommSignalAntennaTargets() {
     two arrays do not correspond index for index and never did.
   */
   const chains = new Map(
-    (chainsReading.state === "observed" ? chainsReading.value : []).map(
+    (chainsReading.state === "observed" || chainsReading.state === "held"
+      ? chainsReading.value
+      : []
+    ).map(
       (chain) => [chain.antennaId, chain],
     ),
   );
 
   const bodies =
-    bodiesReading.state === "observed"
+    bodiesReading.state === "observed" || bodiesReading.state === "held"
       ? bodiesReading.value.bodies
           .map((b) => b.name)
           .filter((n): n is string => !!n)
       : [];
   const vessels =
-    vesselsReading.state === "observed"
+    vesselsReading.state === "observed" || vesselsReading.state === "held"
       ? vesselsReading.value.entries.map((v) => ({
           id: v.vesselId,
           name: v.name || v.vesselId,
         }))
       : [];
+
+  /*
+    The switches are last-known facts: an opt-out stays in force until something
+    changes it, and nothing can arrive down a link that is not delivering. So a
+    held list is still drawn, marked held. Before any list has arrived there is
+    nothing to draw, and a switch at its default would read as a reported state.
+  */
+  const retargeting =
+    retargetingReading.state === "observed" || retargetingReading.state === "held"
+      ? retargetingReading.value
+      : undefined;
 
   /*
     The craft these antennas are on, from where the mod says it read them: the
@@ -470,7 +519,7 @@ function CommSignalAntennaTargets() {
 
   return (
     <Stack gap="related-dense" aria-label="Antenna targeting">
-      <SectionTitle>Antenna targeting</SectionTitle>
+      <SectionHeading reading={antennasReading}>Antenna targeting</SectionHeading>
       {antennas.map((antenna) => (
         <AntennaCard
           key={antenna.antennaId}
@@ -478,14 +527,14 @@ function CommSignalAntennaTargets() {
           chain={chains.get(antenna.antennaId)}
           bodies={bodies}
           vessels={vessels}
+          reading={antennasReading}
         />
       ))}
-      {reportedVessel ? (
+      {reportedVessel && retargeting ? (
         <Retargeting
           vesselId={reportedVessel}
-          entries={
-            retargetingReading.state === "observed" ? retargetingReading.value : []
-          }
+          entries={retargeting}
+          reading={retargetingReading}
           vessels={vessels}
         />
       ) : null}

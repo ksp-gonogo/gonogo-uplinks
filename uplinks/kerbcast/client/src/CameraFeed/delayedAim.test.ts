@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AimQueue } from "./delayedAim.js";
+import type { KerbcastClient } from "@ksp-gonogo/kerbcast";
+import { AimQueue, withDelayedAim } from "./delayedAim.js";
 
 describe("AimQueue", () => {
   let t = 0;
@@ -83,14 +84,53 @@ describe("AimQueue", () => {
     expect(sent).toEqual(["press"]);
   });
 
-  it("drops what is waiting on clear", async () => {
+  it("drops a waiting movement when the queue is released", async () => {
     const q = new AimQueue(now);
     const { sent, msg } = recorder();
     void q.enqueue(0.5, msg("press"));
-    q.clear();
+    q.release();
 
     await advance(1000);
     expect(sent).toEqual([]);
     expect(q.size).toBe(0);
+  });
+
+  it("sends a waiting stop at once when the queue is released, so the camera is not left moving", async () => {
+    const q = new AimQueue(now);
+    const { sent, msg } = recorder();
+    void q.enqueue(3, msg("press"));
+    await advance(100);
+    void q.enqueue(3, msg("release"), true);
+    q.release();
+
+    await advance(0);
+    expect(sent).toEqual(["release"]);
+    await advance(5000);
+    expect(sent).toEqual(["release"]);
+  });
+
+  it("treats a zero pan or zoom rate as a stop through the client view", async () => {
+    const calls: string[] = [];
+    const camera = {
+      setPanRate: (yaw: number, pitch: number) => {
+        calls.push(`pan ${yaw},${pitch}`);
+        return Promise.resolve();
+      },
+      setZoomRate: (rate: number) => {
+        calls.push(`zoom ${rate}`);
+        return Promise.resolve();
+      },
+    };
+    const client = { camera: () => camera } as unknown as KerbcastClient;
+    const q = new AimQueue(now);
+    const view = withDelayedAim(client, q, () => 3);
+
+    void view.camera(1).setPanRate(1, 0);
+    void view.camera(1).setPanRate(0, 0);
+    void view.camera(1).setZoomRate(0);
+    q.release();
+    await advance(0);
+
+    expect(calls).toEqual(["pan 0,0", "zoom 0"]);
   });
 });

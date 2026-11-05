@@ -298,40 +298,59 @@ export const CameraSetpointSurface = forwardRef<
     return () => clearInterval(timer);
   }, [rates]);
 
-  useEffect(
-    () => () => {
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
       if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);
-    },
-    [],
-  );
+    };
+  }, []);
 
-  // Commit dispatches BOTH absolute delayed commands (one pan vector + one FOV
-  // scalar) through the Sitrep Courier, then runs the local confirm morph.
-  // CommandGroup already blocks the commit while gated (`no-path`), so no extra
-  // guard is needed here. Degrees are plain numbers, absolute (not rates).
+  /*
+   * Commit dispatches BOTH absolute delayed commands (one pan vector + one FOV
+   * scalar) through the Sitrep Courier. CommandGroup already blocks the commit
+   * while gated (`no-path`), so no extra guard is needed here. Degrees are plain
+   * numbers, absolute (not rates).
+   *
+   * The unwind morph draws the preview resolving into the new live view, so it
+   * runs only once every dispatched command has been answered successfully. A
+   * refused or lost command leaves the draft and the preview where they were,
+   * and the panel's rail carries the refusal.
+   */
   const handleCommit = (next: CameraSetpoint): void => {
+    const sends: Promise<unknown>[] = [];
     if (axes.pan) {
-      setPan
-        .send({
+      sends.push(
+        setPan.send({
           cameraId,
           lensKey: String(cameraId),
           yaw: next.yaw,
           pitch: next.pitch,
-        })
-        .catch(() => {});
+        }),
+      );
     }
     if (axes.zoom) {
-      setFov
-        .send({
+      sends.push(
+        setFov.send({
           cameraId,
           lensKey: String(cameraId),
           fieldOfView: next.fov,
-        })
-        .catch(() => {});
+        }),
+      );
     }
-    setCommitting(true);
-    if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);
-    morphTimerRef.current = setTimeout(() => setCommitting(false), MORPH_MS);
+    void Promise.all(sends).then(
+      () => {
+        if (!mountedRef.current) return;
+        setCommitting(true);
+        if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);
+        morphTimerRef.current = setTimeout(
+          () => setCommitting(false),
+          MORPH_MS,
+        );
+      },
+      () => {},
+    );
   };
 
   if (mode === "live") return null;

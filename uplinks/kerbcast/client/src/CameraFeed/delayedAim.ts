@@ -8,6 +8,8 @@ const AIM_METHODS = ["setPanRate", "setZoomRate", "setPan", "setFov"] as const;
 
 interface Pending {
   due: number;
+  /** Whether sending it brings the camera's movement to rest. */
+  stops: boolean;
   send: () => Promise<void>;
   done: () => void;
 }
@@ -34,23 +36,36 @@ export class AimQueue {
    * Sends `send` once `delaySeconds` have passed, and never before a message
    * queued earlier. A delay that shrinks while messages are waiting cannot
    * bring a later message ahead of them, because its due time is held at or
-   * after the previous one.
+   * after the previous one. `stops` marks a message that brings the movement it
+   * follows to rest, which {@link release} still sends when the queue is
+   * abandoned.
    */
-  enqueue(delaySeconds: number, send: () => Promise<void>): Promise<void> {
+  enqueue(
+    delaySeconds: number,
+    send: () => Promise<void>,
+    stops = false,
+  ): Promise<void> {
     if (this.pending.length === 0 && delaySeconds <= 0) return send();
     const due = Math.max(this.now() + delaySeconds * 1000, this.lastDue);
     this.lastDue = due;
     return new Promise<void>((done) => {
-      this.pending.push({ due, send, done });
+      this.pending.push({ due, stops, send, done });
       this.arm();
     });
   }
 
-  /** Drops every waiting message unsent. */
-  clear(): void {
+  /**
+   * Abandons the queue: waiting movements are dropped unsent, and waiting stops
+   * are sent at once, in order. A camera that was being moved must not be left
+   * moving because the message that ends it was still waiting out the delay.
+   */
+  release(): void {
     if (this.timer !== null) clearTimeout(this.timer);
     this.timer = null;
-    for (const p of this.pending.splice(0)) p.done();
+    for (const p of this.pending.splice(0)) {
+      if (p.stops) p.send().then(p.done, p.done);
+      else p.done();
+    }
   }
 
   private arm(): void {
@@ -72,6 +87,14 @@ export class AimQueue {
     }
     this.arm();
   }
+}
+
+/** Whether an aim message is a rate of zero, which is how a held input is released. */
+function isStop(method: string | symbol, args: readonly unknown[]): boolean {
+  return (
+    (method === "setPanRate" || method === "setZoomRate") &&
+    args.every((arg) => arg === 0)
+  );
 }
 
 /**
@@ -97,11 +120,14 @@ export function withDelayedAim(
                 (AIM_METHODS as readonly (string | symbol)[]).includes(name)
               ) {
                 return (...args: unknown[]) =>
-                  queue.enqueue(delaySeconds(), () =>
-                    (value as (...a: unknown[]) => Promise<void>).apply(
-                      h,
-                      args,
-                    ),
+                  queue.enqueue(
+                    delaySeconds(),
+                    () =>
+                      (value as (...a: unknown[]) => Promise<void>).apply(
+                        h,
+                        args,
+                      ),
+                    isStop(name, args),
                   );
               }
               return value.bind(h);

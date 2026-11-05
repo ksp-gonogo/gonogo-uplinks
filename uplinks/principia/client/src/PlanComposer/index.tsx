@@ -78,8 +78,9 @@ export function PlanComposer() {
   const { store, drafts } = usePlanDrafts();
   const send = useSendDraft();
   const viewUt = useViewUt();
-  // Which draft the one outcome belongs to. The send handle is shared across
-  // every draft, so without this an answer renders under all of them.
+  // Which draft revision the one outcome belongs to. The send handle is shared
+  // across every draft, and an edited draft is a different plan from the one
+  // that was answered, so the answer renders under that revision alone.
   const [sent, setSent] = useState<string | null>(null);
   /*
    * The send's own handle reaches the panel's delay rail, so an operator at a
@@ -143,10 +144,12 @@ export function PlanComposer() {
               command={planCommand}
               oneWaySeconds={planCommand.effectiveDelaySeconds}
               pending={send.pending}
-              outcome={sent === draft.id ? send.outcome : null}
+              outcome={
+                sent === `${draft.id}@${draft.revision}` ? send.outcome : null
+              }
               onReopen={() => store.update(draft.id, { saved: false })}
               onSend={() => {
-                setSent(draft.id);
+                setSent(`${draft.id}@${draft.revision}`);
                 return send.send(draft);
               }}
             />

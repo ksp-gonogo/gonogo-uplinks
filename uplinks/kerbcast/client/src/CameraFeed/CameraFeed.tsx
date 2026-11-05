@@ -305,7 +305,7 @@ export function CameraFeed({
   );
   // A held input made on one camera must not release on another.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the camera id is the trigger, not a value read
-  useEffect(() => () => aimQueue.clear(), [effectiveFlightId, aimQueue]);
+  useEffect(() => () => aimQueue.release(), [effectiveFlightId, aimQueue]);
 
 
   // Native topic reads: the canonical field paths, not a two-arg shim.
@@ -748,6 +748,7 @@ export function CameraFeed({
                       }}
                     >
                       <CameraSetpointSurface
+                        key={effectiveFlightId}
                         ref={setpointRef}
                         cameraId={effectiveFlightId as number}
                         bounds={setpointBounds as CameraSetpointBounds}

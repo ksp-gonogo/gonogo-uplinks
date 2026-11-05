@@ -7,10 +7,14 @@
  * decides is whether a craft may do it at all, and what they see is the dish
  * that is out of place while it lasts.
  */
-import { useCommand, value } from "@ksp-gonogo/sitrep-sdk";
+import { type TopicReading, useCommand, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Card,
   Cluster,
+  HeldFigure,
+  heldFigureOf,
+  heldMarking,
+  NULL_DISPLAY,
   SectionTitle,
   Stack,
   Switch,
@@ -22,19 +26,31 @@ import type { RealAntennasVesselRetargeting } from "../__generated__/contract.js
 import "../commands";
 import "../topics";
 
+/** A heading's words, with the kit's held mark after them when `reading` is held. */
+function heldingOf(reading: TopicReading<unknown>, words: string) {
+  const marking = heldMarking(reading);
+  return marking === null ? (
+    words
+  ) : (
+    <HeldFigure caption={marking.caption} kind={marking.kind}>
+      {words}
+    </HeldFigure>
+  );
+}
+
 /** The guid of a node id such as `vessel:<guid>`, or the text unchanged when it has no prefix. */
 function guidOf(nodeId: string): string {
   return nodeId.startsWith("vessel:") ? nodeId.slice("vessel:".length) : nodeId;
 }
 
-/** What a node is called: a craft by its name when it is known, a ground station by its own. */
+/** What a node is called: a craft by its name when it is known, a ground station by its own, and the kit's absent mark when a craft has no name on record. */
 function nameOf(
   nodeId: string,
   vessels: readonly { id: string; name: string }[],
 ): string {
   if (nodeId.startsWith("ground:")) return nodeId.slice("ground:".length);
   const guid = guidOf(nodeId);
-  return vessels.find((v) => v.id === guid)?.name ?? guid;
+  return vessels.find((v) => v.id === guid)?.name || NULL_DISPLAY;
 }
 
 const LABEL_STYLE = {
@@ -83,24 +99,26 @@ function RetargetSwitch({ vesselId, heading, entry }: SwitchRowProps) {
 
 interface BorrowedProps {
   entry: RealAntennasVesselRetargeting;
+  /** The list the entry came from, so a held one marks the dates taken from it. */
+  reading: TopicReading<unknown>;
   vessels: readonly { id: string; name: string }[];
 }
 
 /** The dish that is out of place, and where it goes back to. */
-function BorrowedNotice({ entry, vessels }: BorrowedProps) {
+function BorrowedNotice({ entry, vessels, reading }: BorrowedProps) {
   const borrowed = entry.borrowed;
   if (!borrowed) return null;
   return (
     <Text size="sm" role="status">
       Borrowed · {borrowed.dishName || "a dish"} aimed at{" "}
       {nameOf(borrowed.peerId, vessels)} since{" "}
-      <Unit value={borrowed.sinceUt} /> · turns back to {borrowed.previousAim}
+      <Unit value={heldFigureOf(borrowed.sinceUt, reading)} /> · turns back to {borrowed.previousAim}
     </Text>
   );
 }
 
 /** The last loan that finished, in one line. */
-function LastNotice({ entry, vessels }: BorrowedProps) {
+function LastNotice({ entry, vessels, reading }: BorrowedProps) {
   const last = entry.last;
   if (!last || entry.borrowed) return null;
   const outcome =
@@ -113,9 +131,12 @@ function LastNotice({ entry, vessels }: BorrowedProps) {
     <Text size="xs" level="muted">
       Last borrowed for {nameOf(last.peerId, vessels)}, {outcome}, for{" "}
       <Unit
-        value={value(
-          "s",
-          Math.max(0, last.endedUt.valueOf() - last.turnedUt.valueOf()),
+        value={heldFigureOf(
+          value(
+            "s",
+            Math.max(0, last.endedUt.valueOf() - last.turnedUt.valueOf()),
+          ),
+          reading,
         )}
       />
     </Text>
@@ -125,8 +146,10 @@ function LastNotice({ entry, vessels }: BorrowedProps) {
 interface RetargetingProps {
   /** The reported craft's guid, from the antennas' own source. */
   vesselId: string;
-  /** Every craft's dish turning as `realantennas.retargeting` reports it; read by the section, which is subscribed before this appears. */
+  /** Every craft's dish turning as `realantennas.retargeting` last reported it; read by the section, which is subscribed before this appears. */
   entries: readonly RealAntennasVesselRetargeting[];
+  /** The reading the list came from, which marks the section and its figures when it is held. */
+  reading: TopicReading<unknown>;
   vessels: readonly { id: string; name: string }[];
 }
 
@@ -136,22 +159,29 @@ interface RetargetingProps {
  * switching to it, and a craft that has borrowed a dish is shown whether or not
  * it is the one being watched.
  */
-export function Retargeting({ vesselId, entries, vessels }: RetargetingProps) {
+export function Retargeting({
+  vesselId,
+  entries,
+  reading,
+  vessels,
+}: RetargetingProps) {
   const own = entries.find((e) => e.vesselId === vesselId);
   const others = entries.filter(
     (e) => e.vesselId !== vesselId && (!e.allowed || e.borrowed),
   );
   return (
     <Stack gap="related-dense" aria-label="Dish turning">
-      <SectionTitle>Dish turning</SectionTitle>
+      <SectionTitle>
+        {heldingOf(reading, "Dish turning")}
+      </SectionTitle>
       <Card>
         <Stack gap="related-dense">
           <Text size="xs" level="muted" style={LABEL_STYLE}>
             This craft
           </Text>
           <RetargetSwitch vesselId={vesselId} heading="This craft" entry={own} />
-          {own ? <BorrowedNotice entry={own} vessels={vessels} /> : null}
-          {own ? <LastNotice entry={own} vessels={vessels} /> : null}
+          {own ? <BorrowedNotice entry={own} vessels={vessels} reading={reading} /> : null}
+          {own ? <LastNotice entry={own} vessels={vessels} reading={reading} /> : null}
         </Stack>
       </Card>
       {others.map((entry) => (
@@ -165,7 +195,7 @@ export function Retargeting({ vesselId, entries, vessels }: RetargetingProps) {
               heading={nameOf(`vessel:${entry.vesselId}`, vessels)}
               entry={entry}
             />
-            <BorrowedNotice entry={entry} vessels={vessels} />
+            <BorrowedNotice entry={entry} vessels={vessels} reading={reading} />
           </Stack>
         </Card>
       ))}

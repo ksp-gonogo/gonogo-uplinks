@@ -400,4 +400,28 @@ describe("PlanComposer", () => {
       "write surface is not armed",
     );
   });
+
+  it("does not say a reopened and edited plan is aboard", async () => {
+    // The answer belongs to the revision that was sent. An edit makes a plan
+    // the craft has never seen, and it must not inherit the old confirmation.
+    const { fixture } = await setup();
+    fixture.transport.setCommandHandler(() => ({ success: true }));
+
+    press("Draft plan");
+    press("Add burn");
+    press("Save draft");
+    confirm(
+      "Upload this flight plan to the vessel",
+      "Confirm uploading this flight plan to the vessel",
+    );
+    await act(async () => {});
+    expect(screen.getByRole("status").textContent).toContain("Aboard");
+
+    press("Reopen");
+    press("Add burn");
+    press("Save draft");
+    await act(async () => {});
+
+    expect(screen.queryByText(/Aboard/)).toBeNull();
+  });
 });

@@ -338,6 +338,53 @@ describe("KosUplinkExecutor", () => {
     await assertion;
   });
 
+  it("waits out the round trip of a delayed craft before giving up", async () => {
+    vi.useFakeTimers();
+    const { transport, client } = makeClient();
+    const commands = captureDispatches(transport);
+    const executor = new KosUplinkExecutor({ timeoutMs: 30_000 });
+    primeProcessors(executor, client, transport, [
+      { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+    transport.emit("comms.delay", { oneWaySeconds: 20 });
+
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    let settled = false;
+    pending.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      },
+    );
+    await vi.advanceTimersByTimeAsync(40_000);
+    expect(commands).toHaveLength(1);
+    expect(settled).toBe(false);
+
+    transport.emit("kos.run.1", {
+      coreId: 1,
+      requestId: commands[0].args.requestId,
+      fields: { ok: true },
+    } satisfies KosRunResult);
+    await expect(pending).resolves.toEqual({ ok: true });
+  });
+
+  it("still gives up once the round trip and the script's allowance have both passed", async () => {
+    vi.useFakeTimers();
+    const { transport, client } = makeClient();
+    const executor = new KosUplinkExecutor({ timeoutMs: 30_000 });
+    primeProcessors(executor, client, transport, [
+      { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+    transport.emit("comms.delay", { oneWaySeconds: 20 });
+
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const assertion = expect(pending).rejects.toThrow(/within 70000ms/);
+    await vi.advanceTimersByTimeAsync(70_000);
+    await assertion;
+  });
+
   it("a foreign requestId on the channel does not settle an unrelated in-flight call", async () => {
     const { transport, client } = makeClient();
     const commands = captureDispatches(transport);

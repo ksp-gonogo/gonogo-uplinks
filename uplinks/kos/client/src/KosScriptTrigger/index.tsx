@@ -128,6 +128,9 @@ function KosScriptTriggerComponent({
   // newer one was started) clobbering the latest result, and against a
   // setState after unmount.
   const runIdRef = useRef(0);
+  // True from the press until the run settles. The button's own disabled state
+  // follows a render, so two presses in one tick would both pass it.
+  const runningRef = useRef(false);
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -164,17 +167,20 @@ function KosScriptTriggerComponent({
   const cpuId = useId();
 
   const dispatch = () => {
-    if (!canRun || selectedTag === null) return;
+    if (!canRun || selectedTag === null || runningRef.current) return;
+    runningRef.current = true;
     const cpu = selectedTag;
     const args = parseScriptArgs(argsText);
     const id = ++runIdRef.current;
     setRun({ status: "running", cpu });
     kosSource.executeScript(cpu, trimmedPath, args).then(
       (data) => {
+        runningRef.current = false;
         if (!mountedRef.current || runIdRef.current !== id) return;
         setRun({ status: "ok", cpu, data });
       },
       (err: unknown) => {
+        runningRef.current = false;
         if (!mountedRef.current || runIdRef.current !== id) return;
         setRun({
           status: "error",

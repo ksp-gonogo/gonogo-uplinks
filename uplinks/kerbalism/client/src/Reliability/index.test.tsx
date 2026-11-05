@@ -131,6 +131,38 @@ describe("KerbalismReliabilityUpdates", () => {
     ).toBeInTheDocument();
   });
 
+  it("falls back to someone eligible when the chosen crew member leaves the roster", async () => {
+    const user = userEvent.setup();
+    const engineer = (name: string) => ({
+      name,
+      trait: "Engineer",
+      experienceLevel: 3,
+      carrying: [{ name: "evaRepairKit", title: "EVA Repair Kit", quantity: 1 }],
+    });
+    const crew = (names: string[]) => ({
+      count: names.length,
+      capacity: 6,
+      crew: names.map(engineer),
+      meta: { source: "vessel:4", quality: 1 },
+    });
+    const { fixture } = await renderRow(
+      streamWith({ "vessel.crew": crew(["Valentina Kerman", "Bill Kerman"]) }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Repair" }));
+    await user.click(screen.getByText(/^Valentina Kerman/));
+    expect(
+      screen.getByRole("button", { name: /^Valentina Kerman/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    act(() => fixture.emit("vessel.crew", crew(["Bill Kerman"])));
+
+    expect(
+      await screen.findByRole("button", { name: /^Bill Kerman/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByText(/Valentina Kerman/)).toBeNull();
+  });
+
   it("draws nothing on any row but the active craft's", async () => {
     const { container } = await renderRow(HERO, { vesselId: "v-lander" });
     expect(container).toBeEmptyDOMElement();
