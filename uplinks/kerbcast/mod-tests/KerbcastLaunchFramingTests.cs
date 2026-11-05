@@ -110,6 +110,97 @@ public class KerbcastLaunchFramingTests
     }
 
     [Fact]
+    public void AnOccludedViewEasesTheHeldRadiusOutByTheOcclusionExtraAndBackOnceItClears()
+    {
+        var framing = new KerbcastLaunchFraming();
+        framing.Start(1.0, 1.0);
+        framing.RadiusM(0.0, true);
+        var extra = KerbcastLaunchFraming.OcclusionExtraRadiusM;
+
+        Assert.Equal(Widest, framing.RadiusM(2.0, true, true), 6);
+        Assert.Equal(Widest + extra * KerbcastLaunchFraming.Ease(0.5), framing.RadiusM(2.0 + Ease / 2.0, true, true), 6);
+        Assert.Equal(Widest + extra, framing.RadiusM(2.0 + Ease, true, true), 6);
+        Assert.Equal(Widest + extra, framing.RadiusM(10.0, true, true), 6);
+
+        Assert.Equal(Widest + extra, framing.RadiusM(10.0, true, false), 6);
+        Assert.Equal(Widest + extra * (1.0 - KerbcastLaunchFraming.Ease(0.5)), framing.RadiusM(10.0 + Ease / 2.0, true, false), 6);
+        Assert.Equal(Widest, framing.RadiusM(10.0 + Ease, true, false), 6);
+    }
+
+    [Fact]
+    public void TheLeastOcclusionExtraIsOneMoreWidestStep()
+    {
+        Assert.Equal(KerbcastLaunchFraming.WidestRadiusM, KerbcastLaunchFraming.OcclusionExtraRadiusM);
+    }
+
+    [Fact]
+    public void AViewThatClearsPartWayOutEasesBackFromWhereItHadGot()
+    {
+        var framing = new KerbcastLaunchFraming();
+        framing.Start(1.0, 1.0);
+        framing.RadiusM(0.0, true);
+        var extra = KerbcastLaunchFraming.OcclusionExtraRadiusM;
+        framing.RadiusM(2.0, true, true);
+        var part = Widest + extra * KerbcastLaunchFraming.Ease(0.5);
+        Assert.Equal(part, framing.RadiusM(2.0 + Ease / 2.0, true, true), 6);
+
+        Assert.Equal(part, framing.RadiusM(2.0 + Ease / 2.0, true, false), 6);
+        Assert.Equal(Widest + (part - Widest) * (1.0 - KerbcastLaunchFraming.Ease(0.5)), framing.RadiusM(2.0 + Ease, true, false), 6);
+    }
+
+    [Fact]
+    public void OcclusionWithNoCountdownRunningStillEasesTheExtraInAndOut()
+    {
+        var framing = new KerbcastLaunchFraming();
+        var extra = KerbcastLaunchFraming.OcclusionExtraRadiusM;
+
+        Assert.Equal(0.0, framing.RadiusM(5.0, false, true), 6);
+        Assert.Equal(extra * KerbcastLaunchFraming.Ease(0.5), framing.RadiusM(5.0 + Ease / 2.0, false, true), 6);
+        Assert.Equal(extra, framing.RadiusM(5.0 + Ease, false, true), 6);
+        Assert.True(framing.Active);
+
+        Assert.Equal(extra, framing.RadiusM(20.0, false, false), 6);
+        Assert.Equal(0.0, framing.RadiusM(20.0 + Ease, false, false), 6);
+        Assert.False(framing.Active);
+    }
+
+    [Fact]
+    public void TheOcclusionExtraGrowsWithTheRangeAboveItsFloor()
+    {
+        Assert.Equal(KerbcastLaunchFraming.OcclusionExtraRadiusM, KerbcastLaunchFraming.OcclusionExtraM(500.0));
+        Assert.Equal(KerbcastLaunchFraming.OcclusionExtraRadiusM, KerbcastLaunchFraming.OcclusionExtraM(double.NaN));
+        Assert.Equal(13619.0 / 128.0, KerbcastLaunchFraming.OcclusionExtraM(13619.0), 6);
+    }
+
+    [Fact]
+    public void ARangeThatChangesEveryTickMovesTheExtraWithoutRestartingTheEase()
+    {
+        var framing = new KerbcastLaunchFraming();
+        framing.RadiusM(0.0, false, true, 10000.0);
+
+        var half = framing.RadiusM(Ease / 2.0, false, true, 12000.0);
+        var done = framing.RadiusM(Ease, false, true, 14000.0);
+
+        Assert.Equal(12000.0 / 128.0 * KerbcastLaunchFraming.Ease(0.5), half, 6);
+        Assert.Equal(14000.0 / 128.0, done, 6);
+    }
+
+    [Fact]
+    public void TheFramingStaysActiveWhileTheOcclusionExtraIsStillEasingBack()
+    {
+        var framing = new KerbcastLaunchFraming();
+        framing.RadiusM(0.0, false, true);
+        framing.RadiusM(Ease, false, true);
+
+        framing.RadiusM(10.0, false, false);
+        framing.RadiusM(10.0 + Ease / 2.0, false, false);
+        Assert.True(framing.Active);
+
+        Assert.Equal(0.0, framing.RadiusM(10.0 + Ease, false, false), 6);
+        Assert.False(framing.Active);
+    }
+
+    [Fact]
     public void TheCurveRisesSteadilyWithNoChangeInSpeedAtEitherEnd()
     {
         var last = 0.0;
