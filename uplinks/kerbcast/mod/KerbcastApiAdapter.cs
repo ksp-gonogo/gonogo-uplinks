@@ -293,48 +293,4 @@ namespace Gonogo.KerbcastUplink
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static int MinorCore() => KerbcastApi.ApiMinor;
     }
-
-    /// <summary>
-    /// The Kerbcast.API 1.2 members this Uplink uses, behind a guard on
-    /// <see cref="KerbcastApi.ApiMinor"/>, kept out of <see cref="KerbcastApiAdapter"/> for the
-    /// reason <see cref="KerbcastApiMinor1"/> is.
-    /// </summary>
-    public static class KerbcastApiMinor2
-    {
-        /// <summary>Whether this Kerbcast implements API 1.2 or later; false when it cannot be asked.</summary>
-        public static bool Supported()
-        {
-            try
-            {
-                return MinorCore() >= 2;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Whether command feed <paramref name="flightId"/> reports its view blocked. False when it
-        /// is unknown or cannot be read. Call it only when <see cref="Supported"/>.
-        /// </summary>
-        public static bool Occluded(IKerbcast kerbcast, uint flightId)
-        {
-            try
-            {
-                return OccludedCore(kerbcast, flightId);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool OccludedCore(IKerbcast kerbcast, uint flightId) => kerbcast.Cameras.View(flightId)?.Occluded == true;
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static int MinorCore() => KerbcastApi.ApiMinor;
-    }
-
 }

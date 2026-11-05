@@ -80,9 +80,6 @@ namespace Gonogo.KerbcastUplink
         private long _lastEpoch = -1;
         private readonly KerbcastLaunchFraming _framing = new KerbcastLaunchFraming();
         private double _realSeconds;
-        private bool _occluded;
-        private double _occludedRangeM = double.NaN;
-        private readonly Func<bool>? _supportsOcclusion;
 
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
@@ -90,11 +87,9 @@ namespace Gonogo.KerbcastUplink
         /// <param name="log">Receives one line each time a craft's place or radius in a scope changes; null logs nothing.</param>
         /// <param name="bodyMu">A body's gravitational parameter by index, which is what Kerbcast moves a record's craft by between snapshots; null leaves the velocity as the place implies it.</param>
         /// <param name="supportsAcceleration">Whether this Kerbcast takes a record's net acceleration (API 1.1), normally <see cref="KerbcastApiMinor1.Supported"/>; null means it does not.</param>
-        /// <param name="supportsOcclusion">Whether this Kerbcast reports a command feed's view as blocked (API 1.2), normally <see cref="KerbcastApiMinor2.Supported"/>; null means it does not.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null, Func<bool>? supportsOcclusion = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null)
         {
-            _supportsOcclusion = supportsOcclusion;
             _bodyMu = bodyMu;
             _supportsAcceleration = supportsAcceleration;
             _log = log;
@@ -271,7 +266,6 @@ namespace Gonogo.KerbcastUplink
 
             ApplyHeardChanges(listed, heard);
             Follow(kerbcast, tenure, feedSites, listed);
-            _occluded = LaunchpadOccluded(kerbcast, out _occludedRangeM);
 
             var bindingKey = BindingKey(bindings);
             var due = tenure != _lastTenure
@@ -600,40 +594,6 @@ namespace Gonogo.KerbcastUplink
         }
 
         /*
-         * Whether a launch-site command feed that is following the active craft reports its
-         * view blocked, and how far the craft is from it. Only a launch-site feed counts: a station's feed is blocked by the
-         * planet whenever the craft is over the horizon, which says nothing about the pad.
-         * The raw reading flickers at an edge; the framing's easing is what smooths it.
-         */
-        private bool LaunchpadOccluded(IKerbcast kerbcast, out double rangeM)
-        {
-            rangeM = double.NaN;
-            if (_supportsOcclusion?.Invoke() != true || _activeCraft?.Invoke() is not uint active)
-            {
-                return false;
-            }
-            foreach (var feed in kerbcast.Command.Feeds())
-            {
-                if (feed != null
-                    && feed.SiteKind == SiteKind.LaunchSite
-                    && _followed.TryGetValue(feed.FlightId, out var subject)
-                    && subject == active
-                    && KerbcastApiMinor2.Occluded(kerbcast, feed.FlightId))
-                {
-                    foreach (var target in kerbcast.Command.Targets(feed.FlightId))
-                    {
-                        if (target.PersistentId == active)
-                        {
-                            rangeM = target.RangeM;
-                        }
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /*
          * While a countdown to liftoff runs, the active craft is framed wider than its
          * uncertainty by the launch framing's radius, so a camera on the pad has the
          * whole climb in view when the record it holds is still a craft sitting on the
@@ -642,7 +602,7 @@ namespace Gonogo.KerbcastUplink
         private double LaunchFramingM(ScopeCraft craft, bool onGround)
         {
             return _activeCraft?.Invoke() is uint active && active == craft.PersistentId
-                ? _framing.RadiusM(_realSeconds, onGround, _occluded, _occludedRangeM)
+                ? _framing.RadiusM(_realSeconds, onGround)
                 : 0.0;
         }
 

@@ -18,7 +18,7 @@
        kerbcast Uplink references, from nuget.org. It is the API package built from
        the Kerbcast release the Uplink is built against. -->
   <PropertyGroup>
-    <KerbcastApiVersion>1.2.0-rc.96</KerbcastApiVersion>
+    <KerbcastApiVersion>1.1.0-rc.95</KerbcastApiVersion>
   </PropertyGroup>
   <!-- The version every Uplink's manifest reports. A release sets it from the
        tag (GONOGO_UPLINK_VERSION); any other build is not a release and says so. -->

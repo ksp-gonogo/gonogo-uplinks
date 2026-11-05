@@ -196,8 +196,7 @@ namespace Gonogo.KerbcastUplink
                 ReadActiveCraft,
                 ReadBodyMu,
                 KerbcastApiMinor1.Supported,
-                onFollowing,
-                KerbcastApiMinor2.Supported);
+                onFollowing);
 
         /**
          * A command feed that follows a craft aims at the place the host's craft knowledge
