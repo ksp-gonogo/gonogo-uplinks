@@ -454,7 +454,7 @@ export class KerbcastDataSource {
     this.unsubGameHost = subscribeSetting(GAME_HOST_KEY, () => {
       // Host moved, same effect as a reconfigure: rebuild the client against
       // the new host, preserving the connected/disconnected state.
-      this.applyConfig({ ...this.cfg });
+      this.applyConfig({ ...this.cfg }, "game host changed");
     });
   }
 
@@ -867,11 +867,14 @@ export class KerbcastDataSource {
       port: typeof config.port === "number" ? config.port : this.cfg.port,
     };
     persistConfig(next);
-    this.applyConfig(next);
+    this.applyConfig(next, "port changed");
   }
 
-  private applyConfig(next: KerbcastConfig): void {
-    logger.tag("kerbcast:reconnect").info("config rebuild: port changed", {
+  private applyConfig(
+    next: KerbcastConfig,
+    reason: "port changed" | "game host changed",
+  ): void {
+    logger.tag("kerbcast:reconnect").info(`config rebuild: ${reason}`, {
       port: next.port,
     });
     const wasEnabled = this.reconnectEnabled;

@@ -92,6 +92,38 @@ describe("KerbcastDataSource", () => {
   });
 });
 
+describe("KerbcastDataSource: config rebuild log", () => {
+  const rebuildLogs = (spy: { mock: { calls: unknown[][] } }): string[] =>
+    spy.mock.calls
+      .map((call) => call.join(" "))
+      .filter((line) => line.includes("config rebuild"));
+
+  it("names the game host when only the host moved", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const ds = makeTracked({ port: 8088 });
+    info.mockClear();
+    setSetting(GAME_HOST_KEY, "10.0.0.9");
+    const logs = rebuildLogs(info);
+    expect(logs.length).toBeGreaterThan(0);
+    for (const line of logs) {
+      expect(line).toContain("game host changed");
+      expect(line).not.toContain("port changed");
+    }
+    ds.disconnect();
+  });
+
+  it("names the port when the port was configured", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const ds = makeTracked({ port: 8088 });
+    info.mockClear();
+    ds.configure({ port: 9000 });
+    const logs = rebuildLogs(info);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toContain("port changed");
+    ds.disconnect();
+  });
+});
+
 describe("KerbcastDataSource: sidecar reachability", () => {
   const OFFER = { sdp: "offer", cameras: [] as number[] };
 
