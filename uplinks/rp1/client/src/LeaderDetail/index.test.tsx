@@ -288,7 +288,7 @@ describe("LeaderDetail", () => {
 
     expect(screen.getByText("Free to dismiss")).toHaveAttribute(
       "style",
-      "min-width: min(max-content, 100%);",
+      "min-width: max-content;",
     );
   });
 

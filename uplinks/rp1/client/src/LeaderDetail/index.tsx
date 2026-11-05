@@ -146,7 +146,7 @@ const CATALOGUE_SCROLL = { maxHeight: "16rem", overflowY: "auto" } as const;
  * cut to an ellipsis beside a long date. This keeps the whole name and lets the
  * value drop to the next line instead.
  */
-const WHOLE_NAME_STYLE: CSSProperties = { minWidth: "min(max-content, 100%)" };
+const WHOLE_NAME_STYLE: CSSProperties = { minWidth: "max-content" };
 
 const LIST_STYLE = { listStyle: "none", margin: 0, padding: 0 } as const;
 
