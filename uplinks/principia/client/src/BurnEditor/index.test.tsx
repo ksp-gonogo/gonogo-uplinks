@@ -118,8 +118,11 @@ async function addABurn() {
 /** Open burn 1, press remove, and confirm it. */
 async function removeTheSelectedBurn() {
   await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
+  // The control reads SENT for a short while after a press, then is live again
   await userEvent.click(
-    screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    await screen.findByRole("button", {
+      name: "Remove this burn from the plan",
+    }),
   );
   await userEvent.click(
     screen.getByRole("button", {

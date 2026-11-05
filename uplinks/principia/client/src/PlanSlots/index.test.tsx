@@ -1074,8 +1074,9 @@ describe("PlanSlots", () => {
       }),
     );
     const deleteOnce = async () => {
+      // The control reads SENT for a short while after a press, then is live again
       await userEvent.click(
-        screen.getByRole("button", { name: "Delete this flight plan" }),
+        await screen.findByRole("button", { name: "Delete this flight plan" }),
       );
       await userEvent.click(
         screen.getByRole("button", { name: /^Confirm deleting/ }),
