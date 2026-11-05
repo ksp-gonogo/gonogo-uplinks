@@ -216,3 +216,31 @@ export function sampleFundingCurve({
 
   return { points, axis, nominalEnd: scale, end: lastFrac * scale };
 }
+
+/**
+ * The chart's x and y arrays for a sampled curve, as funds per year or as
+ * cumulative funds. A point with no rate is left out of the per-year trace and
+ * the line breaks there, so a rate the curve could not state is a hole in the
+ * trace and never a stretch at zero.
+ */
+export function plottedFunding(
+  points: readonly FundingCurvePoint[],
+  perYear: boolean,
+): { x: number[]; y: number[]; breaks: number[] } {
+  const x: number[] = [];
+  const y: number[] = [];
+  const breaks: number[] = [];
+  let skipped = false;
+  for (const p of points) {
+    const v = perYear ? p.fundsPerYear : p.funds;
+    if (v === null) {
+      skipped = true;
+      continue;
+    }
+    if (skipped && x.length > 0) breaks.push(x.length);
+    skipped = false;
+    x.push(p.x);
+    y.push(v);
+  }
+  return { x, y, breaks };
+}

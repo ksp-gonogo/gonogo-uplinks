@@ -4,6 +4,7 @@ import type { Rp1FundingCurveKey } from "../__generated__/contract.js";
 import {
   evaluateFundingCurve,
   plainCurveKeys,
+  plottedFunding,
   sampleFundingCurve,
 } from "./fundingCurve.js";
 
@@ -223,5 +224,26 @@ describe("sampling a funding curve for a chart", () => {
         samples: 8,
       }),
     ).toBeNull();
+  });
+});
+
+describe("plottedFunding", () => {
+  const pt = (x: number, funds: number, fundsPerYear: number | null) => ({
+    x,
+    funds,
+    fundsPerYear,
+  });
+
+  it("leaves a missing rate out and breaks the line there, never plotting zero", () => {
+    const plotted = plottedFunding(
+      [pt(0, 0, 10), pt(1, 10, null), pt(2, 30, 20), pt(3, 60, 30)],
+      true,
+    );
+    expect(plotted).toEqual({ x: [0, 2, 3], y: [10, 20, 30], breaks: [1] });
+  });
+
+  it("plots every point of the cumulative series", () => {
+    const plotted = plottedFunding([pt(0, 0, null), pt(1, 10, null)], false);
+    expect(plotted).toEqual({ x: [0, 1], y: [0, 10], breaks: [] });
   });
 });

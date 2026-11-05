@@ -1,3 +1,4 @@
+import { Staleness } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   screen,
@@ -67,6 +68,20 @@ function mount(
     }
   });
   return { fixture, view };
+}
+
+/** The career balance arrives again marked held, with RP-1's own readings still current. */
+function holdBalance(
+  fixture: ReturnType<typeof setupStreamFixture>,
+  funds: number,
+) {
+  act(() => {
+    fixture.emit(
+      "career.status",
+      { balances: { funds } },
+      { staleness: Staleness.Held },
+    );
+  });
 }
 
 async function open(user: ReturnType<typeof userEvent.setup>, count: string) {
@@ -201,6 +216,47 @@ describe("hiring and firing now", () => {
     expect(view.container.textContent).not.toContain("more than the balance");
     expect(view.container.textContent).not.toMatch(/1,500f/);
     expect(view.container.textContent).toContain("applicants unknown");
+  });
+
+  it("reads the cost as unknown, with Hire still lit, when RP-1 sent no hire cost", async () => {
+    const user = userEvent.setup();
+    const { hireCost: _omitted, ...unknownCost } = PERSONNEL;
+    const { view } = mount(800, unknownCost);
+
+    await open(user, "5");
+
+    expect(
+      screen.getByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeEnabled();
+    expect(view.container.textContent).toMatch(/—\s*of\s*800/);
+  });
+
+  it("keeps Hire and judges it against the last balance received while the balance is held", async () => {
+    const user = userEvent.setup();
+    const { fixture, view } = mount(800);
+    holdBalance(fixture, 800);
+
+    // 5 heads against 2 applicants is 3 x 300f = 900f, over the 800f last received.
+    await open(user, "5");
+
+    expect(
+      await screen.findByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeDisabled();
+    expect(view.container.textContent).toContain("900");
+    expect(view.container.textContent).toContain("800");
+    expect(view.container.textContent).toContain("more than the balance");
+  });
+
+  it("allows Hire while the held balance covers the cost", async () => {
+    const user = userEvent.setup();
+    const { fixture } = mount(120_000);
+    holdBalance(fixture, 120_000);
+
+    await open(user, "5");
+
+    expect(
+      await screen.findByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeEnabled();
   });
 
   it("is absent on a save with no funding", () => {

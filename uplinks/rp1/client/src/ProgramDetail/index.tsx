@@ -51,6 +51,7 @@ import "../topics.js";
 import {
   type FundingCurveSample,
   plainCurveKeys,
+  plottedFunding,
   sampleFundingCurve,
 } from "./fundingCurve.js";
 
@@ -974,12 +975,7 @@ function FundingCurveChart({
                 label: perYear ? "Funding per year" : "Cumulative funding",
                 axis: "primary",
                 color: "var(--color-go-text)",
-                data: {
-                  x: sample.points.map((p) => p.x),
-                  y: sample.points.map((p) =>
-                    perYear ? (p.fundsPerYear ?? 0) : p.funds,
-                  ),
-                },
+                data: plottedFunding(sample.points, perYear === true),
               },
             ]}
             xKind="value"

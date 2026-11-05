@@ -383,7 +383,7 @@ function AppointControl({
 
 /**
  * The setup price RP-1 charges, in each currency it names, or "No cost" when
- * every one is zero. Absent figures say so rather than reading as free.
+ * every one is zero. A figure that is absent or unreadable says so rather than reading as free.
  */
 function SetupCost({
   leader,
@@ -395,7 +395,7 @@ function SetupCost({
     leader.setupReputation,
     leader.setupConfidence,
   ];
-  if (parts.some((part) => part == null)) {
+  if (parts.some((part) => magnitudeOf(part) === null)) {
     return <>{NULL_DISPLAY} RP-1 did not send the setup cost</>;
   }
   const charged = parts.filter((part) => (magnitudeOf(part) ?? 0) !== 0);

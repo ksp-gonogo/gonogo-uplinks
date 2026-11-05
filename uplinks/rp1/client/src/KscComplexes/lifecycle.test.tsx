@@ -1,3 +1,4 @@
+import { Staleness } from "@ksp-gonogo/sitrep-sdk";
 import {
   act,
   screen,
@@ -325,6 +326,38 @@ describe("adding a launch pad", () => {
     expect(
       screen.getByRole("button", { name: "Name the pad before building it" }),
     ).toBeDisabled();
+  });
+
+  it("judges a pad against the last balance received while the balance is held", async () => {
+    const user = userEvent.setup();
+    const { fixture } = withCentre();
+    act(() => {
+      fixture.emit(
+        "career.status",
+        { balances: { funds: 400 } },
+        { staleness: Staleness.Held },
+      );
+    });
+    await openDetail(user);
+
+    expect(
+      screen.getByText(/more than the balance, so it builds slower/),
+    ).toBeInTheDocument();
+  });
+
+  it("does not call a pad short while the held balance covers it", async () => {
+    const user = userEvent.setup();
+    const { fixture } = withCentre();
+    act(() => {
+      fixture.emit(
+        "career.status",
+        { balances: { funds: 289_848 } },
+        { staleness: Staleness.Held },
+      );
+    });
+    await openDetail(user);
+
+    expect(screen.queryByText(/more than the balance/)).toBeNull();
   });
 
   it("calls a shortfall a slower build, not a refusal", async () => {

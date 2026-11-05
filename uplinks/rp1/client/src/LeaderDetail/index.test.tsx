@@ -4,7 +4,7 @@ import {
   setupStreamFixture,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import { DelayRailProvider } from "@ksp-gonogo/ui-kit";
+import { DelayRailProvider, NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
   visibleText,
@@ -123,6 +123,16 @@ describe("LeaderDetail", () => {
     await waitFor(() => {
       expect(view.container).toBeEmptyDOMElement();
     });
+  });
+
+  it("does not read an unreadable setup cost as no cost", async () => {
+    const { fixture } = mount();
+    await feed(fixture, [
+      leader({ setupFunds: Number.NaN }),
+    ]);
+
+    expect(visibleText()).not.toContain("No cost");
+    expect(visibleText()).toContain(NULL_DISPLAY);
   });
 
   it("appoints an offered leader, stating it costs nothing", async () => {

@@ -878,13 +878,14 @@ describe("what the course adds per day", () => {
   });
 
   /** A fee nobody sent is not a free course. */
-  it("draws no course line while the fee is unread", async () => {
+  it("reads the course fee as unknown while it is unread", async () => {
     const { fixture } = mount();
     await present(fixture, {
       breakdown: { trainingFees: [{ templateId: "tt-mercury", perStudent: { day: -120 } }] },
     });
 
     await screen.findByRole("button", { name: LUDREY });
+    expect(visibleText()).toMatch(/Course\s*—/);
     expect(visibleText()).not.toContain("f/day");
   });
 });

@@ -3,7 +3,9 @@ import {
   Cluster,
   CommandButton,
   Disclosure,
+  heldFigureOf,
   magnitudeOf,
+  NULL_DISPLAY,
   Row,
   Stack,
   Switch,
@@ -45,13 +47,16 @@ export function HireFireControl({
   centres,
   fire,
   funds,
+  fundsReading,
   hire,
   personnel,
 }: Readonly<{
   centres: readonly Rp1CentreEntry[];
   fire: Parameters<typeof CommandButton>[0]["handle"];
-  /** The career balance. Null takes the whole control off. */
+  /** The last career balance received. Null takes the whole control off. */
   funds: number | null;
+  /** The reading `funds` came from, so a held balance is drawn with its held mark. */
+  fundsReading?: Parameters<typeof heldFigureOf>[1];
   hire: Parameters<typeof CommandButton>[0]["handle"];
   personnel: Rp1Personnel | undefined;
 }>) {
@@ -135,12 +140,12 @@ export function HireFireControl({
         />
         <Row as="div">
           <Text size="xs" level="muted">
-            {cost === null ? null : (
-              <>
-                <Unit decimals={0} value={value("funds", cost)} /> of{" "}
-                <Unit decimals={0} value={value("funds", funds)} /> ·{" "}
-              </>
-            )}
+            {cost === null ? NULL_DISPLAY : <Unit decimals={0} value={value("funds", cost)} />} of{" "}
+            <Unit
+              decimals={0}
+              value={heldFigureOf(value("funds", funds), fundsReading)}
+            />{" "}
+            ·{" "}
             <SalaryDelta sign="+" salary={salary} />
           </Text>
           <CommandButton

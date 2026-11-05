@@ -3,6 +3,7 @@ import {
   Cluster,
   CommandButton,
   Disclosure,
+  heldFigureOf,
   magnitudeOf,
   NULL_DISPLAY,
   Row,
@@ -64,14 +65,17 @@ export function HireTargetControl({
   cancel,
   complexes,
   funds,
+  fundsReading,
   personnel,
   set,
 }: Readonly<{
   cancel: Parameters<typeof CommandButton>[0]["handle"];
   /** Every complex in the career, for the engineer half's picker. */
   complexes: readonly Rp1ComplexEntry[];
-  /** The career balance. Null takes the whole control off, see the summary. */
+  /** The last career balance received. Null takes the whole control off, see the summary. */
   funds: number | null;
+  /** The reading `funds` came from, so a held balance is drawn with its held mark. */
+  fundsReading?: Parameters<typeof heldFigureOf>[1];
   personnel: Rp1Personnel | undefined;
   set: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
@@ -96,6 +100,7 @@ export function HireTargetControl({
     <HireTargetForm
       complexes={complexes}
       funds={funds}
+      fundsReading={fundsReading}
       handle={set}
       personnel={personnel}
     />
@@ -274,11 +279,13 @@ export function HireSpend({
 function HireTargetForm({
   complexes,
   funds,
+  fundsReading,
   handle,
   personnel,
 }: Readonly<{
   complexes: readonly Rp1ComplexEntry[];
   funds: number;
+  fundsReading?: Parameters<typeof heldFigureOf>[1];
   handle: Parameters<typeof CommandButton>[0]["handle"];
   personnel: Rp1Personnel | undefined;
 }>) {
@@ -411,7 +418,10 @@ function HireTargetForm({
           <Text size="xs" level="muted">
             draws at most{" "}
             <Unit value={value("funds", spendable)} decimals={0} /> of{" "}
-            <Unit value={value("funds", funds)} decimals={0} />
+            <Unit
+              value={heldFigureOf(value("funds", funds), fundsReading)}
+              decimals={0}
+            />
           </Text>
           <CommandButton
             args={

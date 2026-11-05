@@ -13,6 +13,7 @@ import {
   CommandButton,
   DataLine,
   magnitudeOf,
+  NULL_DISPLAY,
   ReadoutCaption,
   Section,
   SectionTitle,
@@ -338,7 +339,11 @@ function CourseCost({
   // Signed as a funds change, so money going out is negative.
   const perDay = magnitudeOf(fee?.perStudent?.day);
   if (perDay === null) {
-    return null;
+    return (
+      <DataLine aligned label="Course">
+        {NULL_DISPLAY}
+      </DataLine>
+    );
   }
   const perStudent = <Unit decimals={0} value={value("f/day", -perDay)} />;
   return (

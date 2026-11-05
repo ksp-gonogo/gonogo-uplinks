@@ -15,7 +15,7 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type { Rp1Personnel } from "../__generated__/contract.js";
-import { current } from "../shared/current.js";
+import { current, latest } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 // Side-effect import: hydrates these Topics' units at decode time. Here rather
 // than left to the entry point's import order, because this file is the
@@ -99,7 +99,9 @@ export function KscComplexes() {
   // The balance is NOT drawn here: the host widget already carries it beside its
   // pad line, and the repo rule is per-widget. It is read for one derived fact a
   // standing readout cannot give, which is whether it covers a particular quote.
-  const career = current(useTelemetry("career.status"));
+  const careerReading = useTelemetry("career.status");
+  // Every spend control here judges against the last balance received, held or live.
+  const lastFunds = magnitudeOf(latest(careerReading)?.balances?.funds);
   const pricing = current(useTelemetry("rp1.lcPricing"));
 
   // Unconditional and above the early return on purpose: a hook after it would
@@ -157,7 +159,8 @@ export function KscComplexes() {
         <HireTargetControl
           cancel={cancelHireTarget}
           complexes={complexRows}
-          funds={magnitudeOf(career?.balances?.funds)}
+          funds={lastFunds}
+          fundsReading={careerReading}
           personnel={personnel}
           set={setHireTarget}
         />
@@ -165,7 +168,8 @@ export function KscComplexes() {
         <HireFireControl
           centres={centreRows}
           fire={fire}
-          funds={magnitudeOf(career?.balances?.funds)}
+          funds={lastFunds}
+          fundsReading={careerReading}
           hire={hire}
           personnel={personnel}
         />
@@ -188,7 +192,7 @@ export function KscComplexes() {
               complexNames={complexNames}
               dismantle={dismantle}
               dismantlePad={dismantlePad}
-              funds={magnitudeOf(career?.balances?.funds)}
+              funds={lastFunds}
               modify={modifyComplex}
               newPad={newPad}
               pricing={pricing}
@@ -216,7 +220,7 @@ export function KscComplexes() {
             .map((complex) => complex.name)
             .filter((name): name is string => name != null)
         }
-        funds={magnitudeOf(career?.balances?.funds)}
+        funds={lastFunds}
         handle={newComplex}
         pricing={pricing}
       />
