@@ -6,7 +6,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  changelogOf,
   eligible,
   listingHolds,
   modIdOf,
@@ -60,19 +59,6 @@ test("a version SpaceDock already lists is held, and an unreadable reply is an e
   assert.equal(listingHolds(listing, "1.0.0"), true);
   assert.equal(listingHolds(listing, "1.0.1"), false);
   assert.throws(() => listingHolds({ error: true }, "1.0.0"), /no versions list/);
-});
-
-test("the changelog keeps features and fixes and counts the rest as one line", () => {
-  const text = changelogOf([
-    "feat(scansat): footprints draw across the map's edge",
-    "fix(scansat)!: the scan no longer stalls",
-    "chore: regenerate Uplink pages",
-    "docs: wording",
-  ]);
-  assert.match(text, /\*\*Features\*\*\n\n- footprints draw across the map's edge/);
-  assert.match(text, /\*\*Bug Fixes\*\*\n\n- the scan no longer stalls/);
-  assert.match(text, /Other changes: maintenance, documentation and tests\./);
-  assert.equal(changelogOf([]), "First release.\n");
 });
 
 import { spawnSync } from "node:child_process";

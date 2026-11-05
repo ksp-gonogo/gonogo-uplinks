@@ -173,8 +173,8 @@ jobs:
       ID: ${{ needs.resolve.outputs.id }}
       PRERELEASE: ${{ needs.resolve.outputs.prerelease }}
     steps:
-      # Full history, for the changelog SpaceDock shows: the commits that touched
-      # this Uplink since its previous stable tag.
+      # Full history, for the release notes: the commits that belong to this
+      # Uplink since its previous stable tag.
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
@@ -222,13 +222,23 @@ jobs:
           echo "Would create the GitHub release $TAG as a $([ "$PRERELEASE" = true ] && echo prerelease || echo 'full release') with:"
           ls artifacts/*.zip
 
+      # The commits that belong to this Uplink, from the full release before the
+      # tag up to the tag. The GitHub release and the SpaceDock version carry the
+      # same text.
+      - name: Write the release notes
+        run: |
+          set -eu
+          node tooling/uplink-notes.mjs "$ID" --tag "$TAG" --out release-notes.md
+          cat release-notes.md
+
       - name: Attach the mod to the tag's GitHub release
         if: needs.resolve.outputs.dry != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          { cat release-notes.md; printf '\nClient: %s\n' "$URL"; } > github-notes.md
           gh release create "$TAG" artifacts/*.zip \
-            --verify-tag --title "$TAG" --notes "Client: $URL" \
+            --verify-tag --title "$TAG" --notes-file github-notes.md \
             $([ "$PRERELEASE" = true ] && echo --prerelease)
 
       # SpaceDock, and through it CKAN, for a full release only. The listing id
@@ -259,15 +269,6 @@ jobs:
           fi
           rm -f sd-listing.json
 
-      - name: Write the SpaceDock changelog
-        if: steps.sd.outputs.upload == 'true'
-        run: |
-          set -eu
-          PREVIOUS="$(git tag --sort=-creatordate --merged "${TAG}^" \
-            | grep -E "^${ID}-v[0-9]+\.[0-9]+\.[0-9]+$" | head -1 || true)"
-          node tooling/spacedock-release.mjs changelog "$PREVIOUS" "uplinks/$NAME" > sd-changelog.md
-          cat sd-changelog.md
-
       # The game version is the one every Gonogo mod zip declares.
       - name: Publish to SpaceDock
         if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true' && steps.sd.outputs.upload == 'true'
@@ -286,7 +287,7 @@ jobs:
           fi
           resp="$(curl -sS -b ./sd-cookies \
             -F version="$VERSION" \
-            -F "changelog=<sd-changelog.md" \
+            -F "changelog=<release-notes.md" \
             -F game-version="$GAME_VERSION" \
             -F notify-followers=yes \
             -F zipball=@"$ZIP" \
@@ -294,7 +295,7 @@ jobs:
           if printf '%s' "$resp" | grep -q '"error"[[:space:]]*:[[:space:]]*true'; then
             echo "::error::SpaceDock upload failed: $resp"; exit 1
           fi
-          rm -f ./sd-cookies sd-changelog.md
+          rm -f ./sd-cookies
           echo "SpaceDock mod ${SPACEDOCK_MOD_ID} ($ID) updated to ${VERSION} (KSP ${GAME_VERSION})"
           echo "### SpaceDock updated: $ID ${VERSION} (KSP ${GAME_VERSION})" >> "$GITHUB_STEP_SUMMARY"
 

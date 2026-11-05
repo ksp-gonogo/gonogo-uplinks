@@ -48,12 +48,12 @@ export function uplinkNames(root) {
   return names;
 }
 
-/** The latest full-release tag of `id` reachable from HEAD, or undefined. */
-export function lastRelease(root, id) {
+/** The latest full-release tag of `id` reachable from `ref`, or undefined. */
+export function lastRelease(root, id, ref = "HEAD") {
   const tags = git(root, [
     "tag",
     "--merged",
-    "HEAD",
+    ref,
     "--sort=-v:refname",
     "--list",
     `${id}-v*`,
@@ -64,14 +64,14 @@ export function lastRelease(root, id) {
 }
 
 /**
- * The simplified commits of `id` since `since`, oldest first, as
+ * The simplified commits of `id` from `since` up to `until`, oldest first, as
  * `{ subject, breaking }` objects.
  */
-export function uplinkCommits(root, id, since) {
+export function uplinkCommits(root, id, since, until = "HEAD") {
   const all = uplinkNames(root);
   const own = all.get(id);
   if (!own) throw new Error(`no Uplink under uplinks/ declares the id ${id}`);
-  const range = since ? [`${since}..HEAD`] : ["HEAD"];
+  const range = since ? [`${since}..${until}`] : [until];
   const log = git(root, [
     "log",
     "--no-merges",
