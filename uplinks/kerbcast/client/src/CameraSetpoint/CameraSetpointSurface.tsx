@@ -6,8 +6,9 @@
  * `CameraSetpointInput`, reviews it against the current framing on the
  * `FramingPreview`, and commits one delayed command per axis-group through the
  * Sitrep command Courier (`kerbcast.setPan` + `kerbcast.setFieldOfView`, both
- * already `Delayed`). Under `no-path` the surface still shows but the commit is
- * gated, consistent with any uplink command under signal loss.
+ * already `Delayed`). Under `no-path` the surface still shows and the commit
+ * still sends: a command with no signal path is sent all the same, and the
+ * delay rail shows what became of it.
  *
  * It is drawn over the picture as two absolutely positioned siblings, and
  * neither takes a share of the layout, because the host widget is a video one whose
@@ -309,8 +310,8 @@ export const CameraSetpointSurface = forwardRef<
 
   /*
    * Commit dispatches BOTH absolute delayed commands (one pan vector + one FOV
-   * scalar) through the Sitrep Courier. CommandGroup already blocks the commit
-   * while gated (`no-path`), so no extra guard is needed here. Degrees are plain
+   * scalar) through the Sitrep Courier. The commit is never blocked for a
+   * comms or delay reason, including under `no-path`. Degrees are plain
    * numbers, absolute (not rates).
    *
    * The unwind morph draws the preview resolving into the new live view, so it
@@ -369,9 +370,8 @@ export const CameraSetpointSurface = forwardRef<
           value={setpoint}
           bounds={bounds}
           axes={axes}
-          gated={mode === "no-path"}
-          gatedReason="No signal path"
-          onChange={setSetpoint}
+          warning={mode === "no-path" ? "No signal path" : undefined}
+                   onChange={setSetpoint}
           onCommit={handleCommit}
         />
       </Box>

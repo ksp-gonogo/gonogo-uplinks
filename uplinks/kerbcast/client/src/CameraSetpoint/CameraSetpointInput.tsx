@@ -6,13 +6,16 @@
  * is wide. The three sit inside the existing `CommandGroup` commit container, so
  * the whole vector dispatches as one delayed command on an explicit commit
  * (never on a child's own change). Vanilla-safe: props only, no gonogo data
- * hooks. The `gated`/`gatedReason`/`commitLabel` pass straight through to
- * `CommandGroup`, whose own gating disables the commit under `no-path`, so this
- * component does not re-implement it.
+ * hooks. The `commitLabel` passes straight through to `CommandGroup`.
  */
 
 import { value } from "@ksp-gonogo/sitrep-sdk";
-import { CommandGroup, JogWheel, writeQuantity } from "@ksp-gonogo/ui-kit";
+import {
+  CommandGroup,
+  JogWheel,
+  Tooltip,
+  writeQuantity,
+} from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 // Named, not default: `styled-components@6` ships no `exports` map, so under
 // `moduleResolution: nodenext` the default import resolves to the CJS
@@ -40,9 +43,11 @@ export interface CameraSetpointInputProps {
   axes?: CameraSetpointAxes;
   onChange: (next: CameraSetpoint) => void;
   onCommit: (v: CameraSetpoint) => void;
-  /** `no-path` → disable + error-tone the commit (forwarded to CommandGroup). */
-  gated?: boolean;
-  gatedReason?: string;
+  /**
+   * A warning about the commit, shown as a tip on the cluster and in the
+   * warning tone on the commit. It never disables or refuses the commit.
+   */
+  warning?: string;
   /** Per-wheel increment. Default 1 (degree). */
   step?: number;
   /** Commit button label. Default "Commit". */
@@ -218,18 +223,16 @@ export function CameraSetpointInput({
   axes = { pan: true, zoom: true },
   onChange,
   onCommit,
-  gated,
-  gatedReason,
+  warning,
   step = 1,
   commitLabel,
 }: CameraSetpointInputProps): JSX.Element {
   return (
-    <CommitScope>
+    <Tooltip text={warning}>
+      <CommitScope data-warning={warning ? "true" : undefined}>
       <CommandGroup
         value={value}
         onCommit={onCommit}
-        gated={gated}
-        gatedReason={gatedReason}
         commitLabel={commitLabel}
         /* Beside the wheels, not under them. Under, the commit cost a whole
            line: a 52px block of wheels drew an 88px cluster, nearly half the
@@ -301,7 +304,8 @@ export function CameraSetpointInput({
           )}
         </div>
       </CommandGroup>
-    </CommitScope>
+      </CommitScope>
+    </Tooltip>
   );
 }
 
@@ -331,8 +335,8 @@ const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
  * What makes the commit read as part of this cluster rather than as a form
  * button dropped on a video.
  *
- * `CommandGroup` renders its own commit and offers a caller three things about
- * it: `commitLabel` (a string), `orientation`, and `gated`. None of them is
+ * `CommandGroup` renders its own commit and offers a caller two things about
+ * it: `commitLabel` (a string) and `orientation`. Neither is
  * appearance, and a bespoke button beside the group would be a second
  * implementation of select-then-commit. So the lever is the scope the kit's
  * button is drawn in, in two parts.
@@ -372,5 +376,10 @@ const CommitScope = styled.div`
     font-family: var(--font-family-mono);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+  }
+
+  &[data-warning] button {
+    border-color: var(--color-warn-mark);
+    color: var(--color-warn-text);
   }
 `;

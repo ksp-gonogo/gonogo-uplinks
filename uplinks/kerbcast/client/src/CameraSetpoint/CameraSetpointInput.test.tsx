@@ -120,6 +120,7 @@ describe("CameraSetpointInput", () => {
       <CameraSetpointInput
         value={{ yaw: 10, pitch: -5, fov: 40 }}
         bounds={bounds}
+        warning="No signal path"
         onChange={() => {}}
         onCommit={onCommit}
         commitLabel="Commit"
@@ -130,21 +131,19 @@ describe("CameraSetpointInput", () => {
     expect(onCommit).toHaveBeenCalledWith({ yaw: 10, pitch: -5, fov: 40 });
   });
 
-  it("gates the commit when gated (no-path)", () => {
+  it("commits with a warning shown", () => {
     const onCommit = vi.fn();
     render(
       <CameraSetpointInput
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
-        gated
-        gatedReason="No signal path"
         onChange={() => {}}
         onCommit={onCommit}
         commitLabel="Commit"
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Commit" }));
-    expect(onCommit).not.toHaveBeenCalled();
+    expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
   it("draws the pitch wheel as the flat wheel turned a quarter turn", () => {

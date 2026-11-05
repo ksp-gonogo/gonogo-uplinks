@@ -57,7 +57,7 @@ describe("delayed camera control, end to end", () => {
     expect(fov?.args).toEqual({ cameraId: 42, lensKey: "42", fieldOfView: 60 });
   });
 
-  it("no-path: commit is dropped", () => {
+  it("no-path: commit still sends", () => {
     const { transport } = renderWithCommandClient(
       <CameraSetpointSurface
         cameraId={42}
@@ -67,7 +67,9 @@ describe("delayed camera control, end to end", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: /commit/i }));
-    expect(transport.sentCommands).toHaveLength(0);
+    expect(
+      transport.sentCommands.map((c) => c.command).sort(),
+    ).toEqual(["kerbcast.setFieldOfView", "kerbcast.setPan"]);
   });
 
   // The reason the widget was put under `Panel` at all: a camera aim is a

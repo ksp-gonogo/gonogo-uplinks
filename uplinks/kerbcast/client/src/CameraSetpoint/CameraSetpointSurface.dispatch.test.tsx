@@ -35,7 +35,7 @@ describe("CameraSetpointSurface dispatch", () => {
     expect(fov?.args).toEqual({ cameraId: 42, lensKey: "42", fieldOfView: 40 });
   });
 
-  it("does not dispatch when gated (no-path)", () => {
+  it("dispatches with no signal path", () => {
     const { transport } = renderWithCommandClient(
       <CameraSetpointSurface
         cameraId={42}
@@ -45,7 +45,9 @@ describe("CameraSetpointSurface dispatch", () => {
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: /commit/i }));
-    expect(transport.sentCommands).toHaveLength(0);
+    expect(
+      transport.sentCommands.map((c) => c.command).sort(),
+    ).toEqual(["kerbcast.setFieldOfView", "kerbcast.setPan"]);
   });
 
   describe("the commit morph", () => {

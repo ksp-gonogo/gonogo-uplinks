@@ -43,7 +43,7 @@ describe("CameraSetpointSurface", () => {
     expect(screen.getByRole("slider", { name: /field of view/i })).toBeTruthy();
   });
 
-  it("gates the commit in no-path mode", () => {
+  it("warns of no signal path without disabling the commit", () => {
     render(
       <CameraSetpointSurface
         cameraId={42}
@@ -53,7 +53,8 @@ describe("CameraSetpointSurface", () => {
       />,
     );
     const commit = screen.getByRole("button", { name: /commit/i });
-    expect(commit.getAttribute("aria-disabled")).toBe("true");
+    expect(commit.getAttribute("aria-disabled")).not.toBe("true");
+    expect(commit.closest("[data-warning]")).not.toBeNull();
   });
 
   it("draws the framing preview at the bottom centre, outside the cluster", () => {
