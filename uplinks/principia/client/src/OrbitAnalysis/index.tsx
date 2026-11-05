@@ -404,14 +404,14 @@ export function OrbitAnalysisRows({
         />
       </Row>
       <Row as="div">
-        <RowName>PE</RowName>
+        <RowName>PE ALT</RowName>
         <Band
           min={orbit.meanPeriapsisAltitudeMetres?.min}
           max={orbit.meanPeriapsisAltitudeMetres?.max}
         />
       </Row>
       <Row as="div">
-        <RowName>AP</RowName>
+        <RowName>AP ALT</RowName>
         <Band
           min={orbit.meanApoapsisAltitudeMetres?.min}
           max={orbit.meanApoapsisAltitudeMetres?.max}
@@ -629,7 +629,7 @@ export function OrbitAnalysisSection() {
 
 registerAugment({
   id: "principia-orbit-analysis",
-  augments: "current-orbit.sections",
+  augments: "orbit-view.sections",
   component: OrbitAnalysisSection,
   owner: PRINCIPIA,
 });

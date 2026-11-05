@@ -77,7 +77,7 @@ describe("LibrationDiagram labels", () => {
   });
 
   it("parts L1's and L2's names where the two points sit closer than a name is wide", async () => {
-    // Kerbin is a millionth of Kerbol's mass, so its L1 and L2 are a hair either side of it.
+    // Kerbin is a millionth of Sun's mass, so its L1 and L2 are a hair either side of it.
     const svg = await drawn(mount(kerbolKerbin, "Kerbin"));
     const l1 = label(svg, "L1");
     const l2 = label(svg, "L2");
@@ -86,6 +86,25 @@ describe("LibrationDiagram labels", () => {
     expect(Number(l1.getAttribute("x"))).toBeLessThan(
       Number(l2.getAttribute("x")),
     );
+    await act(async () => {});
+  });
+});
+
+describe("the mass ratio readout", () => {
+  it("reads as a power of ten for the Sun and Kerbin, where a percentage would round to zero", async () => {
+    const view = mount(kerbolKerbin, "Kerbin");
+    await waitFor(() => {
+      expect(view.container.textContent).toMatch(/Mass ratio\d(\.\d)? × 10⁻[⁰-⁹]/);
+    });
+    expect(view.container.textContent).not.toContain("0.000");
+    await act(async () => {});
+  });
+
+  it("keeps a percentage for a pair whose ratio is large enough to read", async () => {
+    const view = mount(kerbinMun);
+    await waitFor(() => {
+      expect(view.container.textContent).toMatch(/Mass ratio\d+\.\d{3}\s?%/);
+    });
     await act(async () => {});
   });
 });

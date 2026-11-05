@@ -92,6 +92,13 @@ function overlaps(a: PlacedLabel, b: PlacedLabel): boolean {
   );
 }
 
+/** The x a centred name is drawn at so that both its ends stay inside the picture. */
+function keptInside(x: number, text: string, size: number): number {
+  const half = (text.length * size * GLYPH_ADVANCE) / 2;
+  const edge = HALF_WIDTH_UNITS * PX_PER_UNIT;
+  return Math.max(-edge + half, Math.min(edge - half, x));
+}
+
 /**
  * The craft's name drops a line at a time until it clears both bodies' names.
  * A craft worth drawing here is usually beside one of the bodies, at a libration
@@ -185,14 +192,18 @@ export function LibrationDiagram({
     text: answer.pair?.secondaryName ?? "secondary",
     size: BODY_LABEL_SIZE,
   };
+  const vesselLabelX =
+    vessel === null || vesselName === null
+      ? 0
+      : keptInside(vessel.x, vesselName, VESSEL_LABEL_SIZE);
   const vesselLabel: PlacedLabel | null =
     vessel === null || vesselName === null
       ? null
       : {
-          x: vessel.x,
+          x: vesselLabelX,
           y: vesselLabelY(
             {
-              x: vessel.x,
+              x: vesselLabelX,
               y: vessel.y + 18,
               text: vesselName,
               size: VESSEL_LABEL_SIZE,

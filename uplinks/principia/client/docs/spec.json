@@ -1063,7 +1063,7 @@
     },
     {
       "id": "principia-orbit-analysis",
-      "augments": "current-orbit.sections",
+      "augments": "orbit-view.sections",
       "channels": [],
       "suppressesVanillaBase": false,
       "settings": []

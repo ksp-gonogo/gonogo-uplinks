@@ -8,7 +8,7 @@ const CANDIDATES: readonly LibrationPair[] = [
     secondaryIndex: 1,
     secondaryName: "Kerbin",
     primaryIndex: 0,
-    primaryName: "Kerbol",
+    primaryName: "Sun",
   },
   {
     secondaryIndex: 2,
@@ -56,7 +56,7 @@ describe("controlFramePair", () => {
       controlFramePair(
         {
           kind: ControlFrameKind.RotatingPulsating,
-          primaryBody: "Kerbol",
+          primaryBody: "Sun",
           secondaryBody: "Mun",
         },
         CANDIDATES,
@@ -96,7 +96,7 @@ describe("autoPair with a Control Frame", () => {
     expect(
       autoPair(undefined, CANDIDATES, 0, null, null, 1, {
         kind: ControlFrameKind.RotatingPulsating,
-        primaryBody: "Kerbol",
+        primaryBody: "Sun",
         secondaryBody: "Mun",
       }),
     ).toBe(1);

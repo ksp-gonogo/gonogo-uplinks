@@ -3,16 +3,16 @@
     "capturedAt": "2026-09-29",
     "vessel": "Kerbal X",
     "body": "Kerbin",
-    "situation": "The saved pair is Kerbol, which has no parent to pair with",
+    "situation": "The saved pair is Sun, which has no parent to pair with",
     "notes": "The refusal sentence replaces the diagram and the readouts."
   },
   "_scene": {
     "widget": "libration-points",
-    "caption": "The saved pair is Kerbol, which has no parent to pair with",
+    "caption": "The saved pair is Sun, which has no parent to pair with",
     "config": {
-      "pair": "Kerbol"
+      "pair": "Sun"
     },
-    "unchangedWhenHeld": "Kerbol has no parent, so it makes no pair: the widget draws the refusal sentence and the pair control, and neither is a figure"
+    "unchangedWhenHeld": "Sun has no parent, so it makes no pair: the widget draws the refusal sentence and the pair control, and neither is a figure"
   },
   "_stream": {
     "pinnedUt": 0,
@@ -23,7 +23,7 @@
           "bodies": [
             {
               "index": 0,
-              "name": "Kerbol",
+              "name": "Sun",
               "parentIndex": null,
               "radius": 261600000,
               "gravParameter": 1.1723328e+18,

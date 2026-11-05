@@ -18,7 +18,7 @@
 //     install share, which is why installing a composed plan is here rather than
 //     in the composer.
 //
-//   - `OrbitAnalysis` -> registerAugment into `current-orbit.sections`, and
+//   - `OrbitAnalysis` -> registerAugment into `orbit-view.sections`, and
 //     `CoastAnalysis` -> `maneuver-planner.sections`. The producer's own n-body
 //     analysis: mean elements as bands, the three periods, the drift of the
 //     node, and what orbit each coast of the plan leaves the craft in. They go

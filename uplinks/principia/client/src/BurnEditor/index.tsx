@@ -40,6 +40,7 @@ import type {
 import { PrincipiaBurnProfile } from "../__generated__/contract.js";
 import { useAttemptId } from "../attemptId.js";
 import { commandWindow } from "../commandWindow.js";
+import { IgnitionTime } from "../IgnitionTime.js";
 import { untilIgnition } from "../ignitionCountdown.js";
 import { planView, slotNumber } from "../planReading.js";
 import {
@@ -563,9 +564,8 @@ export function BurnEditor() {
                 <Cluster justify="end" gap="related-dense">
                   {/* To IGNITION, never to a node. Principia anchors a burn to
                       its start and honouring that is the whole point. */}
-                  <Countdown
-                    value={untilIgnition(planReading, index, receivedUt)}
-                    clock
+                  <IgnitionTime
+                    until={untilIgnition(planReading, index, receivedUt)}
                   />
                   {burn.deltaV == null ? (
                     <Text>{NULL_DISPLAY}</Text>
@@ -597,12 +597,14 @@ export function BurnEditor() {
                   {burn.frameEditable == null && (
                     <Badge tone="caution">FRAME UNREAD</Badge>
                   )}
-                  {burn.anomalous === true && <Badge tone="warn">ANOM</Badge>}
+                  {burn.anomalous === true && (
+                    <Badge tone="warn">ANOMALOUS</Badge>
+                  )}
                   {/* Flagged is a property the integrator reported. This is the
                       plan's flagged count not having been read at all, and
                       drawing nothing for it says the integrator was happy. */}
                   {burn.anomalous == null && (
-                    <Badge tone="caution">ANOM UNREAD</Badge>
+                    <Badge tone="caution">ANOMALOUS UNREAD</Badge>
                   )}
                 </Cluster>
               </SelectableRow>

@@ -116,7 +116,7 @@
               "finalMassTons": 22.28,
               "massFlowKilogramsPerSecond": 8.57,
               "frameType": 6004,
-              "primaryBody": "Kerbol",
+              "primaryBody": "Sun",
               "secondaryBody": "Kerbin",
               "frameEditable": false,
               "executing": false,

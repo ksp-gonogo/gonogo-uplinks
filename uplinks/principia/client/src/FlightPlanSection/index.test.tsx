@@ -106,6 +106,57 @@ describe("FlightPlanSection: a reading, dated", () => {
     expect(screen.queryByText(/No flight plan/i)).not.toBeInTheDocument();
   });
 
+  it("names the wait for a first reading rather than blaming the vessel", () => {
+    mount();
+
+    expect(screen.getByText(/Awaiting first signal/)).toBeInTheDocument();
+    expect(screen.queryByText(/No vessel/)).not.toBeInTheDocument();
+  });
+
+  const burnOf = (index: number, deltaV: number | null) => ({
+    index,
+    ignitionUt: VIEW_UT + 600 * (index + 1),
+    durationSeconds: 60,
+    deltaV,
+    anomalous: false,
+  });
+
+  it("words a burn's time as plain 'in' and 'ago', not launch-clock signs", async () => {
+    const stream = mount();
+
+    emitPlan(stream, {
+      burns: [
+        { ...burnOf(0, 100), ignitionUt: VIEW_UT - 7200 },
+        { ...burnOf(1, 100), ignitionUt: VIEW_UT + 1320 },
+      ],
+    });
+
+    await screen.findByText("TOTAL");
+    const text = visibleText(stream.container);
+    expect(text).toMatch(/2h ago/);
+    expect(text).toMatch(/in 22min/);
+    expect(text).not.toMatch(/T[−+]/);
+  });
+
+  it("adds the burns' delta-v into a total", async () => {
+    const stream = mount();
+
+    emitPlan(stream, { burns: [burnOf(0, 100), burnOf(1, 250.4)] });
+
+    const total = (await screen.findByText("TOTAL")).closest("div");
+    expect(total?.textContent).toMatch(/350/);
+  });
+
+  it("shows a dash for the total while one burn's delta-v is unread", async () => {
+    const stream = mount();
+
+    emitPlan(stream, { burns: [burnOf(0, 100), burnOf(1, null)] });
+
+    const total = (await screen.findByText("TOTAL")).closest("div");
+    expect(total?.textContent).toContain(NULL_DISPLAY);
+    expect(total?.textContent).not.toMatch(/100/);
+  });
+
   /**
    * And the complement, which is what makes the test above non-vacuous: an
    * absence the plugin positively reported is stated plainly. Two different
@@ -242,7 +293,7 @@ describe("FlightPlanSection: a reading, dated", () => {
       ],
     });
 
-    expect(await screen.findByText("ANOM")).toBeInTheDocument();
+    expect(await screen.findByText("ANOMALOUS")).toBeInTheDocument();
   });
 
   /**
@@ -267,10 +318,10 @@ describe("FlightPlanSection: a reading, dated", () => {
       ],
     });
 
-    expect(await screen.findByText("ANOM UNREAD")).toBeInTheDocument();
+    expect(await screen.findByText("ANOMALOUS UNREAD")).toBeInTheDocument();
     // Neither of the two readings it must not collapse onto: not flagged, and
     // not the badge-free row a clean burn gets.
-    expect(screen.queryByText("ANOM")).not.toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS")).not.toBeInTheDocument();
   });
 
   /**
@@ -283,8 +334,8 @@ describe("FlightPlanSection: a reading, dated", () => {
     emitPlan(stream);
 
     expect(await screen.findByText("READ NOW")).toBeInTheDocument();
-    expect(screen.queryByText("ANOM UNREAD")).not.toBeInTheDocument();
-    expect(screen.queryByText("ANOM")).not.toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS UNREAD")).not.toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS")).not.toBeInTheDocument();
   });
 
   /**
@@ -302,7 +353,7 @@ describe("FlightPlanSection: a reading, dated", () => {
    * integrator blamed, so the sentence pointed an operator at whichever row had
    * been touched. The plugin offers no per-burn attribution and the badge no
    * longer invents one; the burns the integrator actually flagged carry their own
-   * ANOM badge.
+   * ANOMALOUS badge.
    */
   it("reports a failed integration without blaming a burn it cannot identify", async () => {
     const stream = mount();
@@ -532,7 +583,7 @@ describe("FlightPlanSection under signal delay", () => {
         deliveredAt: VIEW_UT,
       });
     });
-    await screen.findByText(/T.12min/);
+    await screen.findByText(/12min/);
     expect(
       result.container.querySelector("[data-modelled-alongside]"),
     ).toBeNull();

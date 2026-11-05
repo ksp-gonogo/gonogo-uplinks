@@ -149,7 +149,7 @@ export function CoastAnalysisSection() {
   if (coasts === null) {
     return (
       <Section data-coast-analysis="">
-        <SectionTitle>PLANNED ORBITS</SectionTitle>
+        <SectionTitle>PLANNED ORBITS, MEAN ELEMENTS</SectionTitle>
         <Stack role="status" aria-live="polite">
           <Cluster justify="start">
             <Badge tone="caution">ANALYSIS NOT OBSERVED</Badge>
@@ -162,7 +162,7 @@ export function CoastAnalysisSection() {
   if (coasts.length === 0) {
     return (
       <Section data-coast-analysis="">
-        <SectionTitle>PLANNED ORBITS</SectionTitle>
+        <SectionTitle>PLANNED ORBITS, MEAN ELEMENTS</SectionTitle>
         {/* A positive observation of no plan, not silence about one. */}
         <Cluster justify="start" gap="related-dense">
           <Badge tone="neutral">NO FLIGHT PLAN</Badge>
@@ -174,7 +174,7 @@ export function CoastAnalysisSection() {
 
   return (
     <Section data-coast-analysis="">
-      <SectionTitle>PLANNED ORBITS</SectionTitle>
+      <SectionTitle>PLANNED ORBITS, MEAN ELEMENTS</SectionTitle>
       <Stack gap="caption">
         {coasts.map((coast, position) => (
           <CoastRow

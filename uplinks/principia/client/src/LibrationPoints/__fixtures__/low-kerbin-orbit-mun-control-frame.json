@@ -4,7 +4,7 @@
     "vessel": "Kerbal X",
     "body": "Kerbin",
     "situation": "The 100 km Kerbin parking orbit of low-kerbin-orbit, with a Kerbin-Mun RotatingPulsating Control Frame on system.frame, which no stock install reports",
-    "notes": "Proximity alone would pick Kerbol-Kerbin here, as low-kerbin-orbit shows. Under Auto the widget follows the Control Frame's pair instead, since Kerbin-Mun is one of the catalogue's pairs."
+    "notes": "Proximity alone would pick Sun-Kerbin here, as low-kerbin-orbit shows. Under Auto the widget follows the Control Frame's pair instead, since Kerbin-Mun is one of the catalogue's pairs."
   },
   "_scene": {
     "widget": "libration-points",
@@ -22,7 +22,7 @@
           "bodies": [
             {
               "index": 0,
-              "name": "Kerbol",
+              "name": "Sun",
               "parentIndex": null,
               "radius": 261600000,
               "gravParameter": 1.1723328e+18,

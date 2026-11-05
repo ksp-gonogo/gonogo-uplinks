@@ -226,10 +226,14 @@ export function controlFramePair(
 /**
  * The pair `"auto"` picks. The live Control Frame's pair first, when it turns
  * with one of the candidates, since the operator has already chosen that view
- * in game. Otherwise the nearest as a fraction of each pair's own separation,
- * since in metres the widest pair would win almost everywhere. With no craft,
- * the craft's own body if it can be half of a pair, then the catalogue's
- * first pair.
+ * in game. Otherwise the craft is matched against the pairs of the body it
+ * orbits: those that body is the primary of first (a craft orbiting Kerbin is
+ * judged against Kerbin-Mun, never the Sun-Kerbin pair it is a hair from at
+ * any distance), then those it is the secondary of. Within that group, and
+ * among every pair when the craft's body belongs to none, the nearest as a
+ * fraction of each pair's own separation wins, since in metres the widest pair
+ * would win almost everywhere. With no craft, the craft's own body if it can
+ * be half of a pair, then the catalogue's first pair.
  */
 export function autoPair(
   facts: CelestialFacts | undefined,
@@ -245,7 +249,19 @@ export function autoPair(
   if (followed !== null) return followed;
   if (vessel !== null && system !== null) {
     let best: { index: number; units: number } | null = null;
-    for (const pair of candidates) {
+    const ofItsPrimary = candidates.filter(
+      (p) => p.primaryIndex === vesselBodyIndex,
+    );
+    const ofItsSecondary = candidates.filter(
+      (p) => p.secondaryIndex === vesselBodyIndex,
+    );
+    const group =
+      ofItsPrimary.length > 0
+        ? ofItsPrimary
+        : ofItsSecondary.length > 0
+          ? ofItsSecondary
+          : candidates;
+    for (const pair of group) {
       const { offset } = resolveFor(
         facts,
         pair.secondaryIndex,

@@ -34,7 +34,7 @@ function kerbolSystem() {
     bodies: [
       {
         index: 0,
-        name: "Kerbol",
+        name: "Sun",
         parentIndex: null,
         radius: 261_600_000,
         gravParameter: KERBOL_MU,
@@ -156,7 +156,7 @@ describe("LibrationPoints: the pair reaches the frame", () => {
   it("draws a DIFFERENT pair's frame for a different saved value, so the config is really read", async () => {
     const { view } = mount({ pair: "Kerbin" }, 0);
     const svg = await svgOf(view);
-    expect(svg.getAttribute("data-libration-pair")).toBe("Kerbol-Kerbin");
+    expect(svg.getAttribute("data-libration-pair")).toBe("Sun-Kerbin");
     await act(async () => {});
   });
 
@@ -166,16 +166,16 @@ describe("LibrationPoints: the pair reaches the frame", () => {
     const svg = await svgOf(view);
     const auto = svg.getAttribute("data-libration-pair");
     expect(auto).not.toBeNull();
-    expect(["Kerbol-Kerbin", "Kerbin-Mun"]).toContain(auto);
+    expect(["Sun-Kerbin", "Kerbin-Mun"]).toContain(auto);
     await act(async () => {});
   });
 
   it("says which pair has no points and why, rather than drawing nothing", async () => {
-    const { view } = mount({ pair: "Kerbol" }, 0);
+    const { view } = mount({ pair: "Sun" }, 0);
     await waitFor(() => {
       expect(view.container.textContent).toContain("orbits nothing");
     });
-    expect(view.container.textContent).toContain("Kerbol");
+    expect(view.container.textContent).toContain("Sun");
     // No frame, so no diagram: the sentence is the whole answer.
     expect(view.container.querySelector("[data-libration-frame]")).toBeNull();
     await act(async () => {});
@@ -266,7 +266,7 @@ describe("LibrationPoints: the craft's offset", () => {
       expect(view.container.textContent).toContain("Nearest");
     });
     // 9 Mm out from Kerbin with Mun 7.2 Mm away is near the far collinear point, not on it.
-    expect(view.container.textContent).toContain("L2 · drifting off station");
+    expect(view.container.textContent).toContain("drifting off");
     expect(view.container.textContent).toContain("Off station");
     await act(async () => {});
   });
@@ -277,7 +277,7 @@ describe("LibrationPoints: the craft's offset", () => {
     await waitFor(() => {
       expect(view.container.textContent).toContain("Nearest");
     });
-    expect(view.container.textContent).toContain("not stationkeeping on it");
+    expect(view.container.textContent).toContain("not held");
     await act(async () => {});
   });
 
@@ -301,7 +301,7 @@ describe("LibrationPoints: the pair control has an action", () => {
       (await svgOf(view)).getAttribute("data-libration-pair");
     const select = () =>
       view.container.querySelector("select") as HTMLSelectElement;
-    expect(await pairOf()).toBe("Kerbol-Kerbin");
+    expect(await pairOf()).toBe("Sun-Kerbin");
 
     const seen = new Set<string>();
     const steps = select().options.length;
@@ -312,7 +312,7 @@ describe("LibrationPoints: the pair control has an action", () => {
 
     expect(seen).toEqual(new Set(["auto", "Kerbin", "Mun"]));
     expect(select().value).toBe("Kerbin");
-    expect(await pairOf()).toBe("Kerbol-Kerbin");
+    expect(await pairOf()).toBe("Sun-Kerbin");
     await act(async () => {});
   });
 

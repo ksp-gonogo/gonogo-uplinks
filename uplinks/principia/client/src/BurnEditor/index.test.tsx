@@ -384,14 +384,14 @@ describe("BurnEditor", () => {
         burn({
           frameType: 6004,
           frameEditable: false,
-          primaryBody: "Kerbol",
+          primaryBody: "Sun",
           secondaryBody: "Kerbin",
         }),
       ],
     });
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(screen.getByText("Kerbol\u2013Kerbin Lagrange")).toBeInTheDocument();
+    expect(screen.getByText("Sun\u2013Kerbin Lagrange")).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -456,8 +456,8 @@ describe("BurnEditor", () => {
       burns: [burn({ anomalous: null })],
     });
 
-    expect(screen.getByText("ANOM UNREAD")).toBeInTheDocument();
-    expect(screen.queryByText("ANOM")).not.toBeInTheDocument();
+    expect(screen.getByText("ANOMALOUS UNREAD")).toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS")).not.toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -468,8 +468,8 @@ describe("BurnEditor", () => {
     const stream = mount();
     await emitPlan(stream, { burns: [burn({ anomalous: false })] });
 
-    expect(screen.queryByText("ANOM UNREAD")).not.toBeInTheDocument();
-    expect(screen.queryByText("ANOM")).not.toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS UNREAD")).not.toBeInTheDocument();
+    expect(screen.queryByText("ANOMALOUS")).not.toBeInTheDocument();
     await act(async () => {});
   });
 

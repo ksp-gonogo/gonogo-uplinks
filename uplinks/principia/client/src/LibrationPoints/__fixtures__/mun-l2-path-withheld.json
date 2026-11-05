@@ -23,7 +23,7 @@
           "bodies": [
             {
               "index": 0,
-              "name": "Kerbol",
+              "name": "Sun",
               "parentIndex": null,
               "radius": 261600000,
               "gravParameter": 1.1723328e+18,

@@ -7,7 +7,10 @@
       "w": 12,
       "h": 12
     },
-    "paints": ["PLANNED ORBITS", "FINAL"]
+    "paints": [
+      "PLANNED ORBITS",
+      "FINAL"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
@@ -39,12 +42,12 @@
                 "gravitationallyBound": true,
                 "elementsPresent": true,
                 "elementsEpochUt": 986800,
-                "siderealPeriodSeconds": 5401.2,
-                "nodalPeriodSeconds": 5388.4,
-                "anomalisticPeriodSeconds": 5412.9,
+                "siderealPeriodSeconds": 1958.8,
+                "nodalPeriodSeconds": 1957.4,
+                "anomalisticPeriodSeconds": 1959.9,
                 "meanSemimajorAxisMetres": {
-                  "min": 6700120,
-                  "max": 6700480
+                  "min": 700410,
+                  "max": 700590
                 },
                 "meanEccentricity": {
                   "min": 0.0011,
@@ -63,14 +66,14 @@
                   "max": 74.7
                 },
                 "meanPeriapsisAltitudeMetres": {
-                  "min": 493200,
-                  "max": 496400
+                  "min": 99100,
+                  "max": 99500
                 },
                 "meanApoapsisAltitudeMetres": {
-                  "min": 505900,
-                  "max": 508300
+                  "min": 101200,
+                  "max": 101700
                 },
-                "lowestAltitudeMetres": 492800,
+                "lowestAltitudeMetres": 98900,
                 "nodalPrecessionDegreesPerHour": -0.2061
               }
             },
@@ -91,16 +94,16 @@
                 "gravitationallyBound": true,
                 "elementsPresent": true,
                 "elementsEpochUt": 1111638,
-                "siderealPeriodSeconds": 9820.4,
-                "nodalPeriodSeconds": 9819.1,
-                "anomalisticPeriodSeconds": 9821.7,
+                "siderealPeriodSeconds": 6345.0,
+                "nodalPeriodSeconds": 6344.2,
+                "anomalisticPeriodSeconds": 6346.1,
                 "meanSemimajorAxisMetres": {
-                  "min": 412000,
-                  "max": 419400
+                  "min": 403000,
+                  "max": 407000
                 },
                 "meanEccentricity": {
-                  "min": 0.61,
-                  "max": 0.68
+                  "min": 0.395,
+                  "max": 0.405
                 },
                 "meanInclinationDegrees": {
                   "min": 141.2,
@@ -108,7 +111,7 @@
                 },
                 "meanLongitudeOfAscendingNodeDegrees": {
                   "min": 4.1,
-                  "max": 359.2
+                  "max": 6.8
                 },
                 "meanArgumentOfPeriapsisDegrees": {
                   "min": 210.4,
@@ -119,8 +122,8 @@
                   "max": 44800
                 },
                 "meanApoapsisAltitudeMetres": {
-                  "min": 498900,
-                  "max": 512300
+                  "min": 364000,
+                  "max": 369500
                 },
                 "lowestAltitudeMetres": 40900,
                 "firstReentryUt": 1139200,

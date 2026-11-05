@@ -11,6 +11,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  AwaitingSignal,
   Badge,
   Cluster,
   Countdown,
@@ -29,6 +30,7 @@ import type {
   PrincipiaPlan,
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
+import { IgnitionTime } from "../IgnitionTime.js";
 import { untilIgnition } from "../ignitionCountdown.js";
 import { PlanIntegrationBlock } from "../PlanIntegration/index.js";
 import { PRINCIPIA } from "../uplink.js";
@@ -116,7 +118,7 @@ function integrationBadge(plan: PrincipiaPlan) {
      * back rather than a burn the integrator blamed. Naming a burn from it pointed
      * an operator at whichever row happened to have been touched. The producer
      * offers no per-burn attribution, so neither does this; the burns it flagged
-     * carry their own ANOM badge below.
+     * carry their own ANOMALOUS badge below.
      */
     return <Badge tone="nogo">INTEGRATION FAILED</Badge>;
   }
@@ -177,10 +179,7 @@ function BurnRow({
     <Row as="div" data-burn-row="">
       <RowName>{index === null ? NULL_DISPLAY : `#${index + 1}`}</RowName>
       <Cluster justify="end" gap="related-dense">
-        <Countdown
-          value={untilIgnition(planReading, index, receivedUt)}
-          clock
-        />
+        <IgnitionTime until={untilIgnition(planReading, index, receivedUt)} />
         {burn.deltaV == null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
@@ -192,12 +191,14 @@ function BurnRow({
           <Countdown value={burn.durationSeconds} />
         )}
         {isNext && <Badge tone="info">NEXT</Badge>}
-        {burn.anomalous === true && <Badge tone="warn">ANOM</Badge>}
+        {burn.anomalous === true && <Badge tone="warn">ANOMALOUS</Badge>}
         {/* The third state, and it is not clean: the plan's flagged count would
             not read, so nothing here can say whether the integrator flagged this
             burn. Drawing nothing is exactly what a burn it was happy with draws,
             which is the claim `=== true` was making on its behalf. */}
-        {burn.anomalous == null && <Badge tone="caution">ANOM UNREAD</Badge>}
+        {burn.anomalous == null && (
+          <Badge tone="caution">ANOMALOUS UNREAD</Badge>
+        )}
       </Cluster>
     </Row>
   );
@@ -272,6 +273,11 @@ export function FlightPlanSection() {
       : undefined;
   const receivedUt = useViewUt();
   const viewUt = magnitudeOf(receivedUt);
+  const delayReading = useTelemetry("comms.delay");
+  const oneWaySeconds =
+    delayReading.state === "observed"
+      ? magnitudeOf(delayReading.value.oneWaySeconds)
+      : null;
 
   if (view.kind === "unread") {
     return (
@@ -290,7 +296,11 @@ export function FlightPlanSection() {
               looking. A vessel that genuinely holds none says so below, on a
               sample that arrived. */}
           <Text level="faint" size="sm">
-            No vessel, or no session with the integrator.
+            {planReading.state === "pending" ? (
+              <AwaitingSignal expectedIn={oneWaySeconds} />
+            ) : (
+              "No vessel, or no session with the integrator."
+            )}
           </Text>
         </Stack>
       </Section>
@@ -369,6 +379,12 @@ export function FlightPlanSection() {
                 isNext={isNextBurn(burn, plan)}
               />
             ))}
+            {(plan.burns?.length ?? 0) > 1 && (
+              <Row as="div">
+                <RowName>TOTAL</RowName>
+                <TotalDeltaV burns={plan.burns ?? []} />
+              </Row>
+            )}
             {(plan.burns == null || plan.burns.length === 0) && (
               <Row as="div">
                 <RowName>BURNS</RowName>
@@ -384,6 +400,22 @@ export function FlightPlanSection() {
       </Stack>
     </Section>
   );
+}
+
+/**
+ * The delta-v of every burn in the plan added together, or a dash while any
+ * burn's own figure is unread: a sum over a missing term is not a total.
+ */
+function TotalDeltaV({
+  burns,
+}: Readonly<{ burns: readonly PrincipiaPlannedBurn[] }>) {
+  let total = 0;
+  for (const burn of burns) {
+    const each = magnitudeOf(burn.deltaV);
+    if (each === null) return <Text>{NULL_DISPLAY}</Text>;
+    total += each;
+  }
+  return <Unit value={value("m/s", total)} decimals={0} />;
 }
 
 /**

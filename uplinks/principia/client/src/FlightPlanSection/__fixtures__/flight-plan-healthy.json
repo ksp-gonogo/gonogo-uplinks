@@ -7,7 +7,10 @@
       "w": 12,
       "h": 10
     },
-    "paints": ["N-BODY FLIGHT PLAN", "INTEGRATED"]
+    "paints": [
+      "N-BODY FLIGHT PLAN",
+      "INTEGRATED"
+    ]
   },
   "_stream": {
     "pinnedUt": 1000000,
@@ -37,7 +40,9 @@
               "cutoffUt": 992896,
               "durationSeconds": 96,
               "deltaV": 842.7,
-              "anomalous": false
+              "anomalous": false,
+              "executing": false,
+              "frameEditable": false
             },
             {
               "index": 1,
@@ -45,7 +50,9 @@
               "cutoffUt": 1001463,
               "durationSeconds": 143,
               "deltaV": 1204.3,
-              "anomalous": false
+              "anomalous": false,
+              "executing": false,
+              "frameEditable": true
             },
             {
               "index": 2,
@@ -53,7 +60,9 @@
               "cutoffUt": 1111638,
               "durationSeconds": 38,
               "deltaV": 61.9,
-              "anomalous": false
+              "anomalous": false,
+              "executing": false,
+              "frameEditable": true
             }
           ],
           "sampledAtUt": 1000000,

@@ -20,10 +20,29 @@ const KEEPING_TONE: Record<LibrationStationKeeping, Tone> = {
 };
 
 const KEEPING_WORDS = {
-  "on-station": "holding station",
-  drifting: "drifting off station",
-  elsewhere: "not stationkeeping on it",
+  "on-station": "holding",
+  drifting: "drifting off",
+  elsewhere: "not held",
 } as const;
+
+const SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
+/**
+ * The pair's mass ratio as a percentage, or as a power of ten once the
+ * percentage would round to zero at three decimals (the Sun and Kerbin sit near
+ * three millionths).
+ */
+function MassRatio({ ratio }: Readonly<{ ratio: number }>) {
+  if (!(ratio > 0) || ratio >= 1e-5) {
+    return <Unit value={staticValue("%", ratio * 100)} decimals={3} />;
+  }
+  const [mantissa, exponent] = ratio.toExponential(1).split("e");
+  const power = Number(exponent)
+    .toString()
+    .replace("-", "⁻")
+    .replace(/\d/g, (d) => SUPERSCRIPT_DIGITS[Number(d)]);
+  return <>{`${mantissa} × 10${power}`}</>;
+}
 
 /** The pair's separation and mass ratio, then where the craft sits against its nearest point. */
 export function LibrationReadouts({
@@ -56,7 +75,7 @@ export function LibrationReadouts({
         <RowName>Mass ratio</RowName>
         <Text>
           {/* The only parameter the five positions depend on, and a function of two body masses alone. */}
-          <Unit value={staticValue("%", answer.massRatio * 100)} decimals={3} />
+          <MassRatio ratio={answer.massRatio} />
         </Text>
       </Row>
       {/* With no orbit of now there is no craft to place, so there is nothing to say about one. */}
@@ -84,8 +103,12 @@ function CraftOffsetRows({
     <>
       <Row>
         <RowName>Nearest</RowName>
+        <Text level="muted">{offset.nearest}</Text>
+      </Row>
+      <Row>
+        <RowName>Station</RowName>
         <Text tone={KEEPING_TONE[offset.keeping]} level="muted">
-          {offset.nearest} · {KEEPING_WORDS[offset.keeping]}
+          {KEEPING_WORDS[offset.keeping]}
         </Text>
       </Row>
       <Row>

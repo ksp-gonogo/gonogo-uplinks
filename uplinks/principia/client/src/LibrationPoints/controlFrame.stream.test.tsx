@@ -16,7 +16,7 @@ import "./index.js";
 
 /**
  * Auto follows a rotating Control Frame's pair ahead of proximity. The scene
- * is a low Kerbin orbit, where proximity alone picks Kerbol-Kerbin, under a
+ * is a low Kerbin orbit, where proximity alone picks Sun-Kerbin, under a
  * Kerbin-Mun Control Frame, so the two rules name different pairs.
  */
 
@@ -53,15 +53,23 @@ async function drawnPair(view: { container: HTMLElement }) {
 }
 
 describe("LibrationPoints: Auto follows a rotating Control Frame", () => {
-  it("picks the nearest pair by proximity when no Control Frame is reported", async () => {
+  it("picks a pair of the body the craft orbits when no Control Frame is reported, never the Sun's pair", async () => {
     const view = mount({});
-    expect(await drawnPair(view)).toBe("Kerbol-Kerbin");
+    expect(await drawnPair(view)).toBe("Kerbin-Mun");
     await act(async () => {});
   });
 
   it("draws the Control Frame's pair where proximity would pick another", async () => {
-    const view = mount({}, { frame: CONTROL_FRAME });
-    expect(await drawnPair(view)).toBe("Kerbin-Mun");
+    const view = mount(
+      {},
+      {
+        frame: {
+          ...(CONTROL_FRAME as object),
+          secondaryBody: "Minmus",
+        },
+      },
+    );
+    expect(await drawnPair(view)).toBe("Kerbin-Minmus");
     await expectNoA11yViolations(view.container);
   });
 
@@ -71,12 +79,12 @@ describe("LibrationPoints: Auto follows a rotating Control Frame", () => {
     await act(async () => {});
   });
 
-  it("falls through to proximity when the Control Frame's pair is not parent and child", async () => {
+  it("falls through to the craft's own body when the Control Frame's pair is not parent and child", async () => {
     const view = mount(
       {},
-      { frame: { kind: 4, primaryBody: "Kerbol", secondaryBody: "Mun" } },
+      { frame: { kind: 4, primaryBody: "Sun", secondaryBody: "Mun" } },
     );
-    expect(await drawnPair(view)).toBe("Kerbol-Kerbin");
+    expect(await drawnPair(view)).toBe("Kerbin-Mun");
     await act(async () => {});
   });
 
