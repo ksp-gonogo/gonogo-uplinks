@@ -1296,31 +1296,25 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Single(plugin.Known(Guid).Burns);
         }
 
-        /// <summary>A replay reports the outcome, the guard and the typed code it
-        /// reported the first time, including a failure: the honest answer to "what
-        /// happened to request 7" does not change on being asked twice, and a client
-        /// branching on the coarse code must not see it move under a retry.</summary>
+        /// <summary>A refusal is never replayed: it wrote nothing, so a retry under the
+        /// same request id is judged against the plan as it is now.</summary>
         [Fact]
-        public void AReplayedRefusalIsStillARefusal()
+        public void ARefusalIsNotReplayedToALaterAttempt()
         {
             var (plugin, commands) = Wire();
             Armed(commands);
+            plugin.Writes.Clear();
 
-            var first = commands.ReplaceBurn(
-                new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "r", BurnIndex = 40 });
-            var again = commands.ReplaceBurn(
-                new PrincipiaBurnEditArgs { VesselId = Guid, RequestId = "r", BurnIndex = 40 });
+            var first = commands.RemoveBurn(
+                new PrincipiaBurnRemoveArgs { VesselId = Guid, RequestId = "r", BurnIndex = 40 });
+            var again = commands.RemoveBurn(
+                new PrincipiaBurnRemoveArgs { VesselId = Guid, RequestId = "r", BurnIndex = 0 });
 
             Assert.False(first.Success);
-            Assert.False(again.Success);
-            Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, Refusal(again));
-            Assert.Equal(true, Receipt(again)["replayed"]);
-            // The code too, and it must be the SAME one: a client that branches on
-            // the shared vocabulary would otherwise see a retry turn "the burn is
-            // not in this plan" into something else.
             Assert.Equal(PrincipiaErrorCodes.BurnIndexOutOfRange, first.ErrorCode);
-            Assert.Equal(CommandErrorCode.NotFound, first.ErrorCode!.Root);
-            Assert.Equal(first.ErrorCode, again.ErrorCode);
+            Assert.True(again.Success);
+            Assert.Equal(false, Receipt(again)["replayed"]);
+            Assert.Equal(new[] { "Remove@0" }, plugin.Writes);
         }
 
 

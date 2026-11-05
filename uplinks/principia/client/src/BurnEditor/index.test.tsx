@@ -3,9 +3,10 @@ import {
   act,
   screen,
   setupStreamFixture,
+  waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
+import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import {
@@ -857,7 +858,7 @@ describe("BurnEditor", () => {
     expect(sent.command).toBe("principia.plan.burn.insert");
     expect(sent.args).toEqual({
       vesselId: "vessel-1",
-      requestId: DEFAULT_ADD_REQUEST_ID,
+      requestId: expect.stringMatching(/^insert-0-.+#.+$/),
       burnIndex: 0,
       ignitionUt: VIEW_UT + 3600,
       deltaVTangent: 100,
@@ -986,7 +987,7 @@ describe("BurnEditor", () => {
     expect(sent.command).toBe("principia.plan.burn.remove");
     expect(sent.args).toEqual({
       vesselId: "vessel-1",
-      requestId: "remove-0",
+      requestId: expect.stringMatching(/^remove-0#.+$/),
       burnIndex: 0,
     });
     expect(screen.queryByText("NOTHING WAS WRITTEN")).not.toBeInTheDocument();
@@ -1434,6 +1435,78 @@ describe("BurnEditor", () => {
     expect(
       screen.getByRole("button", { name: "Apply the edited burn" }),
     ).not.toBeDisabled();
+    await act(async () => {});
+  });
+
+  it("shows unread counts and an unread burn list as unread, never as zero", async () => {
+    const stream = mount();
+    act(() => {
+      stream.emit(
+        "principia.plan",
+        plan({ planCount: null, selectedPlan: null, burns: null }),
+        { validAt: VIEW_UT },
+      );
+    });
+    await screen.findByText(`PLAN ${NULL_DISPLAY} OF ${NULL_DISPLAY}`);
+
+    expect(screen.queryByText("PLAN 0 OF 0")).not.toBeInTheDocument();
+    const row = screen.getByText("BURNS").parentElement as HTMLElement;
+    expect(row).toHaveTextContent(NULL_DISPLAY);
+    expect(row).not.toHaveTextContent("0");
+    await act(async () => {});
+  });
+
+  it("states a plan read with no burns as zero burns", async () => {
+    const stream = mount();
+    await emitPlan(stream, { burns: [] });
+
+    const row = screen.getByText("BURNS").parentElement as HTMLElement;
+    expect(row).toHaveTextContent("0");
+    await act(async () => {});
+  });
+
+  it("sends a second remove under its own request id", async () => {
+    const stream = mount();
+    stream.transport.setCommandHandler(() =>
+      planWriteReply({
+        replayed: false,
+        outcome: PrincipiaWriteOutcome.Written,
+        refusal: null,
+      }),
+    );
+    await emitPlan(stream);
+
+    await removeTheSelectedBurn();
+    const first = (lastSent(stream).args as { requestId: string }).requestId;
+    await emitPlan(stream);
+    await removeTheSelectedBurn();
+    const second = (lastSent(stream).args as { requestId: string }).requestId;
+
+    expect(second).not.toBe(first);
+    await act(async () => {});
+  });
+
+  it("drops the open form when the burn at its index is no longer the one it was opened on", async () => {
+    const stream = mount();
+    await emitPlan(stream);
+    await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeInTheDocument();
+
+    act(() => {
+      stream.emit(
+        "principia.plan",
+        plan({ burns: [burn({ ignitionUt: VIEW_UT + 9000 })] }),
+        { validAt: VIEW_UT },
+      );
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "Apply the edited burn" }),
+      ).not.toBeInTheDocument(),
+    );
     await act(async () => {});
   });
 });

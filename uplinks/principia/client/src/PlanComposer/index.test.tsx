@@ -4,8 +4,8 @@ import {
   screen,
   setupStreamFixture,
 } from "@ksp-gonogo/sitrep-sdk/testing";
-import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { utOfParts } from "@ksp-gonogo/ui-kit";
+import { renderWithRail as render } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { clearPlanDrafts } from "../planDrafts.js";
 import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
@@ -423,5 +423,25 @@ describe("PlanComposer", () => {
     await act(async () => {});
 
     expect(screen.queryByText(/Aboard/)).toBeNull();
+  });
+
+  it("does not say aboard when the mod answered from an earlier send", async () => {
+    const { fixture } = await setup();
+    fixture.transport.setCommandHandler(() => ({
+      success: true,
+      payload: { outcome: 0, replayed: true, refusal: null },
+    }));
+
+    press("Draft plan");
+    press("Save draft");
+    confirm(
+      "Upload this flight plan to the vessel",
+      "Confirm uploading this flight plan to the vessel",
+    );
+    await act(async () => {});
+
+    const status = screen.getByRole("status").textContent ?? "";
+    expect(status).not.toContain("Aboard");
+    expect(status).toContain("nothing new was installed");
   });
 });

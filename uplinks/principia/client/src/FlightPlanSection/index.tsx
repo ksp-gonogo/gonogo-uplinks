@@ -369,10 +369,14 @@ export function FlightPlanSection() {
                 isNext={isNextBurn(burn, plan)}
               />
             ))}
-            {(plan.burns ?? []).length === 0 && (
+            {(plan.burns == null || plan.burns.length === 0) && (
               <Row as="div">
                 <RowName>BURNS</RowName>
-                <Unit value={value("count", 0)} decimals={0} />
+                {plan.burns == null ? (
+                  <Text>{NULL_DISPLAY}</Text>
+                ) : (
+                  <Unit value={value("count", 0)} decimals={0} />
+                )}
               </Row>
             )}
           </Stack>

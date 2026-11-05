@@ -372,4 +372,18 @@ describe("OrbitAnalysisSection", () => {
 
     expect(await axe(stream.container)).toHaveNoViolations();
   });
+
+  it("says unread elements were not read, and explains no cause", async () => {
+    const stream = mount();
+    await emit(stream, {
+      vesselId: "v",
+      sampledAtUt: VIEW_UT,
+      orbit: orbit({ elementsPresent: null }),
+    });
+
+    const text = await visibleText(stream.container);
+    expect(text).toContain("Elements not read");
+    expect(text).not.toContain("Elements not determined");
+    expect(text).not.toContain("full revolution");
+  });
 });

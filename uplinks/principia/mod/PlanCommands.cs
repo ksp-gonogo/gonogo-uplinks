@@ -1244,6 +1244,11 @@ namespace GonogoPrincipiaUplink
         /// and it still carries the whole receipt: the code is what a client branches
         /// on and the receipt is what it shows. Neither is worth sending without the
         /// other.</para>
+        ///
+        /// <para>Only a written receipt is remembered for replay. A refusal wrote
+        /// nothing, so there is nothing to protect from a repeat, and answering a
+        /// later attempt from the stored refusal would report a state the plan has
+        /// since left.</para>
         /// </summary>
         private CommandResult<Dictionary<string, object?>> Settle(
             string command,
@@ -1252,9 +1257,9 @@ namespace GonogoPrincipiaUplink
             PlanObservation? plan)
         {
             var receipt = PlanBuilder.BuildReceipt(requestId, result, plan);
-            Remember(command, requestId, receipt);
             if (result.Outcome == PrincipiaWriteOutcome.Written)
             {
+                Remember(command, requestId, receipt);
                 return Ok(receipt, replay: false);
             }
             return new CommandResult<Dictionary<string, object?>>

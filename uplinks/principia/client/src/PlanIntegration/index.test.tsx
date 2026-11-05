@@ -4,11 +4,11 @@ import {
   screen,
   setupStreamFixture,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import {
   renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
-import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import type {
@@ -16,10 +16,8 @@ import type {
   PrincipiaPlanIntegrator,
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
+import { PrincipiaWriteOutcome } from "../__generated__/contract.js";
 import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
-import {
-  PrincipiaWriteOutcome,
-} from "../__generated__/contract.js";
 import { axe } from "../test/axe.js";
 import { MAX_STEPS_OPTIONS, PlanIntegrationBlock } from "./index.js";
 
@@ -502,7 +500,9 @@ describe("PlanIntegrationBlock", () => {
     );
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/principia\.surfaceUnavailable/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/principia\.surfaceUnavailable/),
+    ).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -566,5 +566,16 @@ describe("PlanIntegrationBlock", () => {
   it("has no accessibility violations", async () => {
     const { container } = mount(plan());
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("shows the burns a shorter plan would drop as unread when a burn ignition was not read", async () => {
+    const { container } = mount(
+      plan({ burns: [{ ...burn(VIEW_UT + 1_000), ignitionUt: null }] }),
+    );
+
+    const row = screen.getByText("BURNS DROPPED").parentElement as HTMLElement;
+    expect(row).toHaveTextContent(NULL_DISPLAY);
+    expect(row).not.toHaveTextContent("0");
+    await visibleText(container);
   });
 });

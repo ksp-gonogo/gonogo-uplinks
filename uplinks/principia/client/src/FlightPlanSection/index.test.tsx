@@ -3,11 +3,11 @@ import {
   screen,
   setupStreamFixture,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import {
   renderWithRail as render,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
-import { NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import { afterEach, describe, expect, it } from "vitest";
 import { axe } from "../test/axe.js";
 import { FlightPlanSection } from "./index.js";
@@ -536,5 +536,14 @@ describe("FlightPlanSection under signal delay", () => {
     expect(
       result.container.querySelector("[data-modelled-alongside]"),
     ).toBeNull();
+  });
+
+  it("shows an unread burn list as unread, not as zero burns", async () => {
+    const stream = mount();
+    emitPlan(stream, { burns: null });
+
+    const row = (await screen.findByText("BURNS")).parentElement as HTMLElement;
+    expect(row).toHaveTextContent(NULL_DISPLAY);
+    expect(row).not.toHaveTextContent("0");
   });
 });

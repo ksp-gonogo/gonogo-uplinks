@@ -1,4 +1,5 @@
-import type { HeldGrade, TopicReading } from "@ksp-gonogo/sitrep-sdk";
+import type { HeldGrade, TopicReading, Value } from "@ksp-gonogo/sitrep-sdk";
+import { magnitudeOf, NULL_DISPLAY } from "@ksp-gonogo/ui-kit";
 import type { PrincipiaPlan } from "./__generated__/contract.js";
 
 /**
@@ -96,4 +97,19 @@ export function outOfContactReason(grade: HeldGrade): string {
     case "no-game":
       return "No game is loaded. The burns below are the last set the game sent while one was.";
   }
+}
+
+/**
+ * The one-based slot number a plan badge prints for the selected slot, or the
+ * kit's unread dash when the selection was not read.
+ *
+ * <p>The producer's selection is zero-based. An unread selection is not slot
+ * zero, so it never reaches the arithmetic. Used by the plan badge in the plan
+ * slots and burn editor sections.</p>
+ */
+export function slotNumber(
+  selected: Value<"count"> | null | undefined,
+): string {
+  const index = magnitudeOf(selected);
+  return index === null ? NULL_DISPLAY : String(index + 1);
 }

@@ -4,9 +4,14 @@ import {
   useViewUt,
   type Value,
 } from "@ksp-gonogo/sitrep-sdk";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { PrincipiaComposedBurn } from "./__generated__/contract.js";
 import { PrincipiaBurnProfile } from "./__generated__/contract.js";
+import {
+  nothingWasWritten,
+  type PrincipiaPlanWriteReply,
+  planWriteReceipt,
+} from "./planWrite.js";
 
 /**
  * The command that installs a composed plan whole, as Principia's flight plan.
@@ -89,7 +94,11 @@ export class PlanDraftStore {
   }
 
   create(draft: Omit<PlanDraft, "id" | "revision">): PlanDraft {
-    const created: PlanDraft = { ...draft, id: `draft-${this.nextId}`, revision: 1 };
+    const created: PlanDraft = {
+      ...draft,
+      id: `draft-${this.nextId}`,
+      revision: 1,
+    };
     this.nextId += 1;
     this.drafts.set(created.id, created);
     this.changed();
@@ -210,6 +219,12 @@ export function useSendDraft(): {
   const viewUt = useViewUt();
   const [pending, setPending] = useState(false);
   const [outcome, setOutcome] = useState<SendDraftOutcome | null>(null);
+  /*
+   * One request id per attempt at a draft: a refusal leaves it, so the mod sees
+   * the same attempt again, and a send the vessel took ends it, so sending the
+   * same draft a second time is a new write rather than a replay of the first.
+   */
+  const attempts = useRef(new Map<string, number>());
 
   const send = useCallback(
     async (draft: PlanDraft): Promise<SendDraftOutcome> => {
@@ -225,15 +240,21 @@ export function useSendDraft(): {
       try {
         const reply = await command.send({
           vesselId: draft.vesselId,
-          requestId: `${draft.id}@${draft.revision}`,
+          requestId: `${draft.id}@${draft.revision}#${attempts.current.get(draft.id) ?? 0}-${sessionNonce}`,
           composedAtViewUt,
           observedAtUt: draft.observedAt.magnitude,
           desiredFinalTimeUt: draft.desiredFinalTimeUt,
           burns: draft.burns.map(composedBurn),
         });
         const next = outcomeOfReply(
-          reply as { success?: boolean; detail?: string } | undefined,
+          reply as PrincipiaPlanWriteReply | undefined,
         );
+        if (next.accepted) {
+          attempts.current.set(
+            draft.id,
+            (attempts.current.get(draft.id) ?? 0) + 1,
+          );
+        }
         setOutcome(next);
         return next;
       } catch (error) {
@@ -263,10 +284,21 @@ function whyNotSendable(
   return undefined;
 }
 
+const sessionNonce = Math.random().toString(36).slice(2);
+
 function outcomeOfReply(
-  reply: { success?: boolean; detail?: string } | undefined,
+  reply: PrincipiaPlanWriteReply | undefined,
 ): SendDraftOutcome {
-  if (reply?.success) return { accepted: true };
+  if (reply?.success) {
+    if (nothingWasWritten(planWriteReceipt(reply))) {
+      return {
+        accepted: false,
+        refusal:
+          "The vessel answered from an earlier send of this plan, so nothing new was installed.",
+      };
+    }
+    return { accepted: true };
+  }
   return {
     accepted: false,
     refusal:

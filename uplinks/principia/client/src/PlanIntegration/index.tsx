@@ -22,6 +22,7 @@ import type {
   PrincipiaPlan,
   PrincipiaPlanWriteReceipt,
 } from "../__generated__/contract.js";
+import { useAttemptId } from "../attemptId.js";
 import {
   nothingWasWritten,
   planWriteReceipt,
@@ -94,6 +95,8 @@ function frozenBecause(plan: PrincipiaPlan): string | null {
 export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
   const integratorCmd = useCommand("principia.plan.integrator");
   const horizonCmd = useCommand("principia.plan.horizon");
+  const horizonAttempt = useAttemptId("horizon");
+  const integratorAttempt = useAttemptId("integrator");
   const [draftSteps, setDraftSteps] = useState<number | null>(null);
   const [draftEndUt, setDraftEndUt] = useState<number | null>(null);
   /*
@@ -159,13 +162,20 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
    * this as the trap: the burns go, the write reports success, and a burn that
    * vanished reads as a burn that was deleted.
    */
-  const strandedBurns =
-    endUt === null
-      ? 0
-      : (plan.burns ?? []).filter((burn) => {
-          const ignition = magnitudeOf(burn.ignitionUt);
-          return ignition !== null && ignition >= endUt;
-        }).length;
+  const burnIgnitions = (plan.burns ?? []).map((burn) =>
+    magnitudeOf(burn.ignitionUt),
+  );
+  /*
+   * Null when it cannot be said: the end, the burn list or any burn's ignition
+   * was not read, and a count over what was read would be a lower bound shown
+   * as the answer.
+   */
+  const strandedBurns: number | null =
+    endUt === null ||
+    plan.burns == null ||
+    burnIgnitions.some((ignition) => ignition === null)
+      ? null
+      : burnIgnitions.filter((ignition) => (ignition ?? 0) >= endUt).length;
   const startUt = magnitudeOf(plan.initialTimeUt);
   const endsBeforeStart =
     endUt !== null && startUt !== null && endUt <= startUt;
@@ -215,7 +225,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
           <Row as="div">
             <RowName>BURNS DROPPED</RowName>
             <Cluster justify="end" gap="related-dense">
-              {strandedBurns > 0 && (
+              {strandedBurns !== null && strandedBurns > 0 && (
                 <Tooltip
                   text="Every burn igniting at or after this end is removed, and Principia reports the write as a success"
                   focusable
@@ -223,7 +233,11 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
                   <Badge tone="warn">REMOVED ON SET</Badge>
                 </Tooltip>
               )}
-              <Unit value={value("count", strandedBurns)} decimals={0} />
+              {strandedBurns === null ? (
+                <Text>{NULL_DISPLAY}</Text>
+              ) : (
+                <Unit value={value("count", strandedBurns)} decimals={0} />
+              )}
             </Cluster>
           </Row>
           <Cluster justify="end" gap="related-dense" wrap>
@@ -232,7 +246,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               handle={horizonCmd}
               args={{
                 vesselId: plan.vesselId ?? undefined,
-                requestId: `horizon-${plan.vesselId ?? "none"}-${endUt}`,
+                requestId: `${horizonAttempt.requestId}-${plan.vesselId ?? "none"}-${endUt}`,
                 desiredFinalTimeUt: endUt,
               }}
               commandLabel="Move the flight plan's end instant"
@@ -246,7 +260,10 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               disabled={frozen || endUt === desired || endsBeforeStart}
               aria-label="Move the flight plan's end instant"
               confirmAriaLabel="Confirm moving the flight plan's end instant"
-              onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+              onConfirmed={(result) => {
+                horizonAttempt.settle();
+                setLastWrite(planWriteReceipt(result));
+              }}
             />
           </Cluster>
         </Stack>
@@ -295,7 +312,7 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             handle={integratorCmd}
             args={{
               vesselId: plan.vesselId ?? undefined,
-              requestId: `integrator-${plan.vesselId ?? "none"}-${chosen}`,
+              requestId: `${integratorAttempt.requestId}-${plan.vesselId ?? "none"}-${chosen}`,
               // `undefined`, never a number, for a limit nobody stated: the mod
               // leaves an omitted step parameter at the plugin's own value. The
               // control is held shut in that state anyway, so this is the shape
@@ -319,7 +336,10 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             }
             aria-label="Set the flight plan's step limit"
             confirmAriaLabel="Confirm setting the flight plan's step limit"
-            onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+            onConfirmed={(result) => {
+              integratorAttempt.settle();
+              setLastWrite(planWriteReceipt(result));
+            }}
           />
         </Cluster>
       </Row>

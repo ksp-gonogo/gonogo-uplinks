@@ -28,9 +28,10 @@ import type {
   PrincipiaPlan,
   PrincipiaPlanWriteReceipt,
 } from "../__generated__/contract.js";
+import { useAttemptId } from "../attemptId.js";
 import { commandWindow } from "../commandWindow.js";
 import { composedBurn, type PlanDraft, usePlanDrafts } from "../planDrafts.js";
-import { planView } from "../planReading.js";
+import { planView, slotNumber } from "../planReading.js";
 import type { PrincipiaPlanWriteHandle } from "../planWrite.js";
 import {
   nothingWasWritten,
@@ -112,6 +113,7 @@ export function PlanSlots() {
   const [lastWrite, setLastWrite] = useState<PrincipiaPlanWriteReceipt | null>(
     null,
   );
+  const createAttempt = useAttemptId("create");
 
   if (view.kind === "none") {
     return (
@@ -133,10 +135,11 @@ export function PlanSlots() {
   const surface = plan.writeSurface;
   const armed = surface?.armed === true;
   const planExists = plan.planExists === true;
+  const planAbsent = plan.planExists === false;
   const vesselId = plan.vesselId ?? undefined;
   const burns = plan.burns ?? [];
-  const planCount = magnitudeOf(plan.planCount) ?? 0;
-  const slotsFull = planCount >= MAX_FLIGHT_PLANS;
+  const planCount = magnitudeOf(plan.planCount);
+  const slotsFull = planCount !== null && planCount >= MAX_FLIGHT_PLANS;
 
   // The four handles carry the same vantage, so one answers for all four.
   const oneWaySeconds = createCmd.effectiveDelaySeconds;
@@ -199,10 +202,14 @@ export function PlanSlots() {
               says there is no plan is a second, worse way of saying so. */}
           {planExists ? (
             <Badge tone="info">
-              {`PLAN ${(magnitudeOf(plan.selectedPlan) ?? -1) + 1} OF ${planCount}`}
+              {`PLAN ${slotNumber(plan.selectedPlan)} OF ${
+                planCount ?? NULL_DISPLAY
+              }`}
             </Badge>
-          ) : (
+          ) : planAbsent ? (
             <Badge tone="caution">NO PLAN ON THIS VESSEL</Badge>
+          ) : (
+            <Badge tone="caution">PLAN NOT READ</Badge>
           )}
           {slotsFull && (
             <Badge tone="warn">{`SLOTS FULL AT ${MAX_FLIGHT_PLANS}`}</Badge>
@@ -253,7 +260,11 @@ export function PlanSlots() {
           </Row>
           <Row as="div">
             <RowName>BURNS</RowName>
-            <Unit value={value("count", burns.length)} decimals={0} />
+            {plan.burns == null ? (
+              <Text>{NULL_DISPLAY}</Text>
+            ) : (
+              <Unit value={value("count", burns.length)} decimals={0} />
+            )}
           </Row>
         </Stack>
 
@@ -278,7 +289,7 @@ export function PlanSlots() {
             that state one rather than inside either, because it is the one field
             create and install share and a second copy could disagree with the
             first. */}
-        {!planExists && (
+        {planAbsent && (
           <Stack gap="caption">
             <SectionTitle>NEW PLAN ENDS AT</SectionTitle>
             {endUt === null ? (
@@ -321,14 +332,17 @@ export function PlanSlots() {
                 handle={createCmd}
                 args={{
                   vesselId,
-                  requestId: `create-${vesselId ?? "none"}-${endUt ?? "none"}`,
+                  requestId: `${createAttempt.requestId}-${vesselId ?? "none"}-${endUt ?? "none"}`,
                   finalTimeUt: endUt ?? undefined,
                 }}
                 commandLabel="Create a flight plan"
                 label="CREATE EMPTY PLAN"
                 confirmLabel="CONFIRM CREATE"
                 confirmTone="nogo"
-                onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+                onConfirmed={(result) => {
+                  createAttempt.settle();
+                  setLastWrite(planWriteReceipt(result));
+                }}
                 disabled={
                   frozen ||
                   endUt === null ||
@@ -425,7 +439,7 @@ function ExistingPlan({
   vesselId: string | undefined;
   frozen: boolean;
   slotsFull: boolean;
-  planCount: number;
+  planCount: number | null;
   burnCount: number;
   /** The next burn still ahead of the reading, when the plan names one. */
   nextIgnitionUt: number | null;
@@ -436,6 +450,10 @@ function ExistingPlan({
   deleteCmd: PrincipiaPlanWriteHandle;
   onWrite: (receipt: PrincipiaPlanWriteReceipt | null) => void;
 }>) {
+  const duplicateAttempt = useAttemptId(
+    `duplicate-${vesselId ?? "none"}-${planCount ?? "unread"}`,
+  );
+  const deleteAttempt = useAttemptId(`delete-${vesselId ?? "none"}`);
   const executing = (plan.burns ?? []).some((burn) => burn.executing === true);
   /*
    * A burn nobody could say was idle, which is the third state of the same
@@ -464,21 +482,24 @@ function ExistingPlan({
           handle={duplicateCmd}
           args={{
             vesselId,
-            requestId: `duplicate-${vesselId ?? "none"}-${planCount}`,
+            requestId: duplicateAttempt.requestId,
           }}
           commandLabel="Copy this flight plan into a new slot"
           label="COPY TO A NEW SLOT"
           confirmLabel="CONFIRM COPY"
           confirmTone="nogo"
-          onConfirmed={(result) => onWrite(planWriteReceipt(result))}
-          disabled={frozen || slotsFull}
+          onConfirmed={(result) => {
+            duplicateAttempt.settle();
+            onWrite(planWriteReceipt(result));
+          }}
+          disabled={frozen || slotsFull || planCount === null}
           aria-label="Copy this flight plan into a new slot"
           confirmAriaLabel="Confirm copying this flight plan into a new slot"
         />
         <CommandButton
           size="sm"
           handle={deleteCmd}
-          args={{ vesselId, requestId: `delete-${vesselId ?? "none"}` }}
+          args={{ vesselId, requestId: deleteAttempt.requestId }}
           commandLabel="Delete this flight plan"
           title={
             burnCount > 0
@@ -488,7 +509,10 @@ function ExistingPlan({
           label="DELETE PLAN"
           confirmLabel="CONFIRM DELETE"
           confirmTone="nogo"
-          onConfirmed={(result) => onWrite(planWriteReceipt(result))}
+          onConfirmed={(result) => {
+            deleteAttempt.settle();
+            onWrite(planWriteReceipt(result));
+          }}
           disabled={frozen}
           aria-label="Delete this flight plan"
           confirmAriaLabel="Confirm deleting this flight plan"
@@ -621,6 +645,7 @@ function InstallRow({
   sendCmd: PrincipiaPlanWriteHandle;
   onWrite: (receipt: PrincipiaPlanWriteReceipt | null) => void;
 }>) {
+  const sendAttempt = useAttemptId(`send-${draft.id}@${draft.revision}`);
   const first = draft.burns[0];
   const window = commandWindow(
     magnitudeOf(first?.ignitionUt),
@@ -698,15 +723,14 @@ function InstallRow({
         args={{
           vesselId,
           /*
-           * The draft's CONTENT is the intent, never its id alone: the mod
-           * answers a request id it has already seen out of its replay cache
-           * without looking at the plan that came with it, so a corrected plan
-           * resent under the id its earlier version went under is answered
-           * "aboard" about a trajectory the craft has never seen. `revision`
-           * counts the content, and the end instant is stated here rather than
-           * in the draft, so it joins the key.
+           * The attempt owns the id and the draft's content is part of it: the
+           * mod answers a request id it has already written under from its
+           * receipt without looking at the plan that came with it, so a
+           * corrected plan must not go out under the id of its earlier version.
+           * `revision` counts the content and the end instant is stated here
+           * rather than in the draft, so it joins the key.
            */
-          requestId: `send-${draft.id}@${draft.revision}-${planEndUt ?? "none"}`,
+          requestId: `${sendAttempt.requestId}-${planEndUt ?? "none"}`,
           composedAtViewUt: viewUt ?? undefined,
           observedAtUt: magnitudeOf(draft.observedAt) ?? undefined,
           desiredFinalTimeUt: planEndUt ?? undefined,
@@ -716,7 +740,10 @@ function InstallRow({
         label="INSTALL AS FLIGHT PLAN"
         confirmLabel="CONFIRM INSTALL"
         confirmTone="nogo"
-        onConfirmed={(result) => onWrite(planWriteReceipt(result))}
+        onConfirmed={(result) => {
+          sendAttempt.settle();
+          onWrite(planWriteReceipt(result));
+        }}
         title={installTitle}
         disabled={blocked}
         aria-label="Install this plan as Principia's flight plan"

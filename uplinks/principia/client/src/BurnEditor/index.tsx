@@ -33,13 +33,15 @@ import {
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import type {
+  PrincipiaPlan,
   PrincipiaPlannedBurn,
   PrincipiaPlanWriteReceipt,
 } from "../__generated__/contract.js";
 import { PrincipiaBurnProfile } from "../__generated__/contract.js";
+import { useAttemptId } from "../attemptId.js";
 import { commandWindow } from "../commandWindow.js";
 import { untilIgnition } from "../ignitionCountdown.js";
-import { planView } from "../planReading.js";
+import { planView, slotNumber } from "../planReading.js";
 import {
   nothingWasWritten,
   planWriteReceipt,
@@ -70,7 +72,15 @@ const editWindow = commandWindow;
  * not be read and the form under it stated a date, and the one the operator
  * believed was the form.
  */
+/** Which burn, in which plan, a draft was opened on. */
+interface DraftOrigin {
+  vesselId: string | null;
+  selectedPlan: number | null;
+  ignitionUt: number | null;
+}
+
 interface Draft {
+  origin: DraftOrigin;
   burnIndex: number;
   ignitionUt: number | null;
   tangent: number | null;
@@ -80,8 +90,13 @@ interface Draft {
   instantImpulse: boolean;
 }
 
-function draftOf(burn: PrincipiaPlannedBurn): Draft {
+function draftOf(burn: PrincipiaPlannedBurn, plan: PrincipiaPlan): Draft {
   return {
+    origin: {
+      vesselId: plan.vesselId ?? null,
+      selectedPlan: magnitudeOf(plan.selectedPlan),
+      ignitionUt: magnitudeOf(burn.ignitionUt),
+    },
     burnIndex: magnitudeOf(burn.index) ?? 0,
     ignitionUt: magnitudeOf(burn.ignitionUt),
     tangent: magnitudeOf(burn.deltaVTangent),
@@ -90,6 +105,18 @@ function draftOf(burn: PrincipiaPlannedBurn): Draft {
     inertiallyFixed: burn.inertiallyFixed === true,
     instantImpulse: false,
   };
+}
+
+function draftStillFits(draft: Draft, plan: PrincipiaPlan): boolean {
+  const burn = (plan.burns ?? []).find(
+    (candidate) => magnitudeOf(candidate.index) === draft.burnIndex,
+  );
+  return (
+    burn !== undefined &&
+    (plan.vesselId ?? null) === draft.origin.vesselId &&
+    magnitudeOf(plan.selectedPlan) === draft.origin.selectedPlan &&
+    magnitudeOf(burn.ignitionUt) === draft.origin.ignitionUt
+  );
 }
 
 /**
@@ -262,7 +289,19 @@ export function BurnEditor() {
   const insertCmd = useCommand("principia.plan.burn.insert");
   const removeCmd = useCommand("principia.plan.burn.remove");
 
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const [openDraft, setDraft] = useState<Draft | null>(null);
+  /*
+   * A draft is a copy of one burn, found again by its index in every new
+   * reading. When the vessel, the plan slot or the burn at that index is no
+   * longer the one it was opened on, the index names a different burn and the
+   * form would send its old values to it, so the draft is dropped.
+   */
+  const draft =
+    openDraft !== null &&
+    view.kind === "plan" &&
+    !draftStillFits(openDraft, view.plan)
+      ? null
+      : openDraft;
   const [lastWrite, setLastWrite] = useState<PrincipiaPlanWriteReceipt | null>(
     null,
   );
@@ -275,6 +314,14 @@ export function BurnEditor() {
   const [lastArm, setLastArm] = useState<PrincipiaPlanWriteReceipt | null>(
     null,
   );
+  const draftContent =
+    draft === null
+      ? "none"
+      : `${draft.burnIndex}-${draft.ignitionUt}-${draft.tangent}-${draft.normal}-${draft.binormal}-${draft.inertiallyFixed}-${draft.instantImpulse}`;
+  const armAttempt = useAttemptId("arm");
+  const replaceAttempt = useAttemptId(`replace-${draftContent}`);
+  const insertAttempt = useAttemptId(`insert-${draftContent}`);
+  const removeAttempt = useAttemptId(`remove-${draft?.burnIndex ?? "none"}`);
 
   if (view.kind === "none") {
     return (
@@ -403,8 +450,8 @@ export function BurnEditor() {
             is the failure mode ten parallel plans creates. */}
         <Cluster wrap justify="start" gap="related-dense">
           <Badge tone="info">
-            {`PLAN ${(magnitudeOf(plan.selectedPlan) ?? -1) + 1} OF ${
-              magnitudeOf(plan.planCount) ?? 0
+            {`PLAN ${slotNumber(plan.selectedPlan)} OF ${
+              magnitudeOf(plan.planCount) ?? NULL_DISPLAY
             }`}
           </Badge>
           {plan.planExists === false && (
@@ -433,7 +480,10 @@ export function BurnEditor() {
               size="sm"
               tone="go"
               handle={armCmd}
-              args={{ vesselId, requestId: `arm-${vesselId ?? "none"}` }}
+              args={{
+                vesselId,
+                requestId: `${armAttempt.requestId}-${vesselId ?? "none"}`,
+              }}
               commandLabel="Arm the flight-plan write surface"
               label="ARM WRITES"
               confirmLabel="CONFIRM ARM"
@@ -442,7 +492,10 @@ export function BurnEditor() {
               disabled={!available}
               aria-label="Arm the flight-plan write surface"
               confirmAriaLabel="Confirm arming the flight-plan write surface"
-              onConfirmed={(result) => setLastArm(planWriteReceipt(result))}
+              onConfirmed={(result) => {
+                armAttempt.settle();
+                setLastArm(planWriteReceipt(result));
+              }}
             />
           </Cluster>
 
@@ -484,10 +537,14 @@ export function BurnEditor() {
               <MissionDate value={plan.desiredFinalTimeUt} />
             )}
           </Text>
-          {burns.length === 0 && (
+          {(plan.burns == null || burns.length === 0) && (
             <Row as="div">
               <RowName>BURNS</RowName>
-              <Unit value={value("count", 0)} decimals={0} />
+              {plan.burns == null ? (
+                <Text>{NULL_DISPLAY}</Text>
+              ) : (
+                <Unit value={value("count", 0)} decimals={0} />
+              )}
             </Row>
           )}
           {burns.map((burn) => {
@@ -497,7 +554,7 @@ export function BurnEditor() {
               <SelectableRow
                 key={index ?? String(burn.ignitionUt)}
                 selected={draft?.burnIndex === index}
-                onClick={() => setDraft(draftOf(burn))}
+                onClick={() => setDraft(draftOf(burn, plan))}
                 aria-label={`Burn ${(index ?? 0) + 1}`}
               >
                 <RowName>
@@ -747,7 +804,7 @@ export function BurnEditor() {
                 handle={replaceCmd}
                 args={{
                   vesselId,
-                  requestId: `replace-${draft.burnIndex}-${draft.ignitionUt}-${draft.tangent}-${draft.normal}-${draft.binormal}-${draft.inertiallyFixed}-${draft.instantImpulse}`,
+                  requestId: replaceAttempt.requestId,
                   burnIndex: draft.burnIndex,
                   // `undefined` rather than a zero for an instant nobody stated, the
                   // same as the components below. Both controls are held shut in
@@ -770,7 +827,10 @@ export function BurnEditor() {
                 label="APPLY"
                 confirmLabel="CONFIRM APPLY"
                 confirmTone="nogo"
-                onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+                onConfirmed={(result) => {
+                  replaceAttempt.settle();
+                  setLastWrite(planWriteReceipt(result));
+                }}
                 title={writeBlockedReason}
                 disabled={
                   frozen ||
@@ -810,7 +870,7 @@ export function BurnEditor() {
                    * keyed on the index and the instant alone made every press
                    * after the first at one index and instant a silent no-op.
                    */
-                  requestId: `insert-${draft.burnIndex}-${draft.ignitionUt}-${draft.tangent}-${draft.normal}-${draft.binormal}-${draft.inertiallyFixed}-${draft.instantImpulse}`,
+                  requestId: insertAttempt.requestId,
                   burnIndex: draft.burnIndex,
                   // `undefined` rather than a zero for an instant nobody stated, the
                   // same as the components below. Both controls are held shut in
@@ -841,7 +901,10 @@ export function BurnEditor() {
                 label="ADD BURN"
                 confirmLabel="CONFIRM ADD"
                 confirmTone="nogo"
-                onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+                onConfirmed={(result) => {
+                  insertAttempt.settle();
+                  setLastWrite(planWriteReceipt(result));
+                }}
                 /*
                  * The same deadline: an inserted burn is written at the draft's
                  * ignition too, so one composed for an instant the write cannot
@@ -863,14 +926,17 @@ export function BurnEditor() {
                 handle={removeCmd}
                 args={{
                   vesselId,
-                  requestId: `remove-${draft.burnIndex}`,
+                  requestId: removeAttempt.requestId,
                   burnIndex: draft.burnIndex,
                 }}
                 commandLabel={`Remove burn ${draft.burnIndex + 1}`}
                 label="REMOVE"
                 confirmLabel="CONFIRM REMOVE"
                 confirmTone="nogo"
-                onConfirmed={(result) => setLastWrite(planWriteReceipt(result))}
+                onConfirmed={(result) => {
+                  removeAttempt.settle();
+                  setLastWrite(planWriteReceipt(result));
+                }}
                 // Out of contact freezes this too: the index is the whole of the
                 // request, and an index off an hour-old burn list can name a
                 // different burn by the time it arrives. NOT frozen by the edit

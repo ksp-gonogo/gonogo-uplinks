@@ -16,13 +16,13 @@ import {
   PrincipiaWriteOutcome,
 } from "../__generated__/contract.js";
 import { PrincipiaErrorCodes } from "../__generated__/error-codes.js";
-import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import {
   clearPlanDrafts,
   type PlanDraft,
   type PlanDraftStore,
   usePlanDrafts,
 } from "../planDrafts.js";
+import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { PlanSlots } from "./index.js";
 
 /**
@@ -443,7 +443,9 @@ describe("PlanSlots", () => {
     );
 
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
-    expect(screen.getByText(/principia\.surfaceUnavailable/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/principia\.surfaceUnavailable/),
+    ).toBeInTheDocument();
     await act(async () => {});
   });
 
@@ -569,7 +571,9 @@ describe("PlanSlots", () => {
     });
     await emitPlan(stream);
 
-    expect(screen.getByText("WRITE WINDOW SHUT AT")).toHaveAccessibleDescription(
+    expect(
+      screen.getByText("WRITE WINDOW SHUT AT"),
+    ).toHaveAccessibleDescription(
       /The next burn lights before a write sent now reaches Principia/,
     );
     await act(async () => {});
@@ -668,7 +672,7 @@ describe("PlanSlots", () => {
     expect(sent.command).toBe("principia.plan.create");
     expect(sent.args).toEqual({
       vesselId: "vessel-1",
-      requestId: "create-vessel-1-13600",
+      requestId: expect.stringMatching(/^create#.+-vessel-1-13600$/),
       finalTimeUt: VIEW_UT + 3600,
     });
     expect(screen.queryByText("NOTHING WAS WRITTEN")).not.toBeInTheDocument();
@@ -741,7 +745,7 @@ describe("PlanSlots", () => {
     expect(sent.command).toBe("principia.plan.duplicate");
     expect(sent.args).toEqual({
       vesselId: "vessel-1",
-      requestId: "duplicate-vessel-1-2",
+      requestId: expect.stringMatching(/^duplicate-vessel-1-2#.+$/),
     });
     expect(screen.queryByText("NOTHING WAS WRITTEN")).not.toBeInTheDocument();
     await act(async () => {});
@@ -854,7 +858,9 @@ describe("PlanSlots", () => {
       vesselId: "vessel-1",
       // The draft's CONTENT at its revision, plus the end instant, which is
       // stated by the panel rather than by the draft and so has to join the key.
-      requestId: `send-${draft.id}@${draft.revision}-110000`,
+      requestId: expect.stringMatching(
+        new RegExp(`^send-${draft.id}@${draft.revision}#.+-110000$`),
+      ),
       composedAtViewUt: VIEW_UT,
       observedAtUt: VIEW_UT,
       desiredFinalTimeUt: 110_000,
@@ -1013,7 +1019,9 @@ describe("PlanSlots", () => {
       screen.getByRole("button", {
         name: "Install this plan as Principia's flight plan",
       }),
-    ).toHaveAccessibleDescription(/first burn lights before this plan could reach/);
+    ).toHaveAccessibleDescription(
+      /first burn lights before this plan could reach/,
+    );
     await act(async () => {});
   });
 
@@ -1023,6 +1031,64 @@ describe("PlanSlots", () => {
     await emitPlan(stream);
 
     await expectNoA11yViolations(stream.container);
+    await act(async () => {});
+  });
+
+  it("offers no write and says the plan was not read when planExists is unread", async () => {
+    const stream = mount();
+    await emitPlan(stream, { planExists: null, planCount: null, burns: null });
+
+    expect(screen.getByText("PLAN NOT READ")).toBeInTheDocument();
+    expect(
+      screen.queryByText("NO PLAN ON THIS VESSEL"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: "Create a flight plan for this vessel",
+      }),
+    ).not.toBeInTheDocument();
+    const row = screen.getByText("BURNS").parentElement as HTMLElement;
+    expect(row).not.toHaveTextContent("0");
+    await act(async () => {});
+  });
+
+  it("holds the copy shut when the slot count is unread", async () => {
+    const stream = mount();
+    await emitPlan(stream, { planCount: null });
+
+    expect(
+      screen.getByRole("button", {
+        name: "Copy this flight plan into a new slot",
+      }),
+    ).toBeDisabled();
+    await act(async () => {});
+  });
+
+  it("sends a second delete under its own request id", async () => {
+    const stream = mount();
+    stream.transport.setCommandHandler(() =>
+      planWriteReply({
+        replayed: false,
+        outcome: PrincipiaWriteOutcome.Written,
+        refusal: null,
+      }),
+    );
+    const deleteOnce = async () => {
+      await userEvent.click(
+        screen.getByRole("button", { name: "Delete this flight plan" }),
+      );
+      await userEvent.click(
+        screen.getByRole("button", { name: /^Confirm deleting/ }),
+      );
+      return (lastSent(stream).args as { requestId: string }).requestId;
+    };
+    await emitPlan(stream);
+
+    const first = await deleteOnce();
+    await emitPlan(stream);
+    const second = await deleteOnce();
+
+    expect(second).not.toBe(first);
     await act(async () => {});
   });
 });

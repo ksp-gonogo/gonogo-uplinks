@@ -280,7 +280,9 @@ export function OrbitAnalysisRows({
       <Stack>
         <Cluster justify="start" gap="related-dense">
           <Text tone="warn" size="sm">
-            Elements not determined
+            {orbit.elementsPresent == null
+              ? "Elements not read"
+              : "Elements not determined"}
           </Text>
           {source.state === "held" && <HeldTag />}
         </Cluster>
@@ -289,11 +291,14 @@ export function OrbitAnalysisRows({
             analysis integrates forward from the craft's present state, and it
             refuses a span shorter than one revolution. Waiting fixes it; looking
             for a fault does not. */}
-        <Text level="faint" size="sm">
-          {orbit.gravitationallyBound === false
-            ? "This trajectory is bound to nothing over the analysed span."
-            : "The analysed span does not yet cover one full revolution."}
-        </Text>
+        {orbit.elementsPresent === false &&
+          orbit.gravitationallyBound != null && (
+            <Text level="faint" size="sm">
+              {orbit.gravitationallyBound === false
+                ? "This trajectory is bound to nothing over the analysed span."
+                : "The analysed span does not yet cover one full revolution."}
+            </Text>
+          )}
       </Stack>
     );
   }
