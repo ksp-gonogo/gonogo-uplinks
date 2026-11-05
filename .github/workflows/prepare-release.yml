@@ -16,7 +16,8 @@
 #      nothing and uploads the commit it made as a patch. Every leg runs, so one
 #      failure is reported beside the others, and any failure stops the release
 #   3. assemble: applies every patch and makes ONE release commit on staging
-#   4. ci: the whole of ci.yml on that commit. A push made with the job's own
+#   4. ci: ci.yml on that commit, with the repo-wide checks, the scaffold proof
+#      and the legs of the chosen Uplinks only. A push made with the job's own
 #      token starts no run, so it is called from here
 #   5. release: only when ci is green, main fast-forwards to the commit, the tags
 #      go with it in one atomic push, and release.yml is dispatched on each tag
@@ -75,6 +76,7 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       args: ${{ steps.plan.outputs.args }}
+      ids: ${{ steps.plan.outputs.ids }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -213,6 +215,7 @@ jobs:
     secrets: inherit
     with:
       ref: ${{ needs.assemble.outputs.sha }}
+      uplinks: ${{ needs.plan.outputs.ids }}
 
   release:
     needs: [assemble, ci]

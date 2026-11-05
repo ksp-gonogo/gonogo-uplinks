@@ -6,15 +6,21 @@ name: ci
 on:
   push: { branches: [main, staging] }
   pull_request: { branches: [staging] }
-  # `prepare-release.yml` runs the whole of this on the release commit before
-  # `main` moves to it, because a push made with the job's own token starts no
-  # run of its own.
+  # `prepare-release.yml` runs this on the release commit before `main` moves to
+  # it, because a push made with the job's own token starts no run of its own.
+  # It names the Uplinks being released, so a release is held to the checks about
+  # the repo and to the legs of those Uplinks, and no other Uplink's leg.
   workflow_call:
     inputs:
       ref:
         description: The commit to check.
         required: true
         type: string
+      uplinks:
+        description: Uplink ids, comma separated, whose legs run. Empty runs every leg.
+        required: false
+        type: string
+        default: ""
 
 jobs:
   # Discovery is its own job so a broken walk fails HERE with a message, rather
@@ -26,13 +32,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
+      scaffold_sibling: ${{ steps.sibling.outputs.name }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: "${{ inputs.ref }}" }
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
       - id: matrix
-        run: node scripts/uplink-matrix.mjs --github >> "$GITHUB_OUTPUT"
+        env:
+          UPLINKS: ${{ inputs.uplinks }}
+        run: node scripts/uplink-matrix.mjs --github --only "$UPLINKS" >> "$GITHUB_OUTPUT"
+      - id: sibling
+        run: echo "name=$(node scripts/uplink-matrix.mjs --scaffold-sibling)" >> "$GITHUB_OUTPUT"
       - run: node scripts/uplink-matrix.mjs
       # The repo's front door describes the repo. Generated from the same
       # uplink.json files the matrix reads, so it cannot drift into describing a
@@ -86,5 +97,23 @@ jobs:
       typecheck: ${{ matrix.typecheck }}
       test: ${{ matrix.test }}
       bundle: ${{ matrix.bundle }}
-      # One leg proves the scaffold, with that leg's own installed tools.
-      scaffold: ${{ matrix.name == 'testflight' }}
+
+  # `uplink-tools new` is held to producing an Uplink that builds: scaffold one
+  # beside the real ones with a sibling's own CLI, and run the commands its
+  # closing message names, through to a release. It proves the scaffold and the
+  # pinned toolchain rather than any one Uplink, so it gates every release and
+  # sits in no Uplink's leg.
+  scaffold:
+    needs: discover
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.ref }}" }
+      - uses: ./.github/actions/setup-dotnet-direct
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - name: Install the sibling's client dependencies
+        working-directory: uplinks/${{ needs.discover.outputs.scaffold_sibling }}/client
+        run: npm ci --no-audit --no-fund
+      - name: Scaffold proof
+        run: scripts/scaffold-proof.sh "${{ needs.discover.outputs.scaffold_sibling }}"

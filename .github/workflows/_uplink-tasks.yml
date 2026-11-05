@@ -23,7 +23,6 @@ on:
       test: { required: true, type: boolean }
       bundle: { required: true, type: boolean }
       publish: { required: false, type: boolean, default: false }
-      scaffold: { required: false, type: boolean, default: false }
       # Set by rc-check.yml only: build this Uplink against the PUBLISHED
       # packages at exactly this version, not the tarballs vendored from a gonogo
       # sha. Empty on every ordinary run.
@@ -295,15 +294,6 @@ jobs:
         if: inputs.tests_csproj != '' && inputs.prepare_args == ''
         run: |
           dotnet test "${{ inputs.tests_csproj }}" -c Release --nologo
-
-      # `uplink-tools new` is held to producing an Uplink that builds: scaffold
-      # one beside the real ones with this leg's own CLI, and run the commands
-      # its closing message names, through to a release. Run on one leg only, since it
-      # proves the scaffold and the pinned toolchain rather than any one Uplink,
-      # and it deletes what it made.
-      - name: Scaffold proof
-        if: inputs.scaffold && inputs.prepare_args == ''
-        run: scripts/scaffold-proof.sh "${{ inputs.name }}"
 
       - name: Bundle client
         if: inputs.bundle && !inputs.publish && inputs.prepare_args == ''

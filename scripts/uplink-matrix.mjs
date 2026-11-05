@@ -36,6 +36,9 @@
  *   node scripts/uplink-matrix.mjs             pretty JSON, for a human
  *   node scripts/uplink-matrix.mjs --github    `matrix=<json>` for $GITHUB_OUTPUT
  *   node scripts/uplink-matrix.mjs --ids       one id per line
+ *   node scripts/uplink-matrix.mjs --only a,b  only the Uplinks with these ids or names
+ *   node scripts/uplink-matrix.mjs --scaffold-sibling
+ *                                              the name of an Uplink the scaffold proof can lean on
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -135,10 +138,41 @@ if (missingId.length > 0) {
 }
 
 const args = process.argv.slice(2);
+
+if (args.includes("--scaffold-sibling")) {
+  const sibling = legs.find((leg) => leg.client);
+  if (!sibling) {
+    console.error("✖ no Uplink has a client, so the scaffold proof has nothing to lean on");
+    process.exit(1);
+  }
+  console.log(sibling.name);
+  process.exit(0);
+}
+
+/**
+ * The legs a caller asked for. The floor and the checks above ran on the whole
+ * set, so a filter narrows a walk that has already been proven, and a name that
+ * matches nothing is refused rather than shrinking the matrix to a skipped job.
+ */
+const onlyAt = args.indexOf("--only");
+const wanted =
+  onlyAt < 0
+    ? []
+    : (args[onlyAt + 1] ?? "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+const chosen = wanted.length === 0 ? legs : legs.filter((l) => wanted.includes(l.id) || wanted.includes(l.name));
+const unknown = wanted.filter((w) => !legs.some((l) => l.id === w || l.name === w));
+if (unknown.length > 0) {
+  console.error(`✖ --only names ${unknown.join(", ")}, which no Uplink here is called.`);
+  process.exit(1);
+}
+
 if (args.includes("--ids")) {
-  for (const leg of legs) console.log(leg.id);
+  for (const leg of chosen) console.log(leg.id);
 } else if (args.includes("--github")) {
-  console.log(`matrix=${JSON.stringify({ include: legs })}`);
+  console.log(`matrix=${JSON.stringify({ include: chosen })}`);
 } else {
-  console.log(JSON.stringify(legs, null, 2));
+  console.log(JSON.stringify(chosen, null, 2));
 }
