@@ -40,12 +40,14 @@ namespace Gonogo.KerbcastUplink
         private readonly KerbcastAuthority _authority;
         private readonly KerbcastWorldModel _model;
         private readonly Action<bool>? _onFollowing;
+        private readonly Action<IReadOnlyList<CraftKnowledgeFact>, double>? _onKnowledge;
 
         /// <param name="kerbcast">Kerbcast in this scene, normally <see cref="KerbcastApi.Instance"/>.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
         /// <param name="labels">Craft names and kinds, fed on the main thread.</param>
         /// <param name="kernel">The host's capability kernel.</param>
         /// <param name="supportsOcclusion">Whether this Kerbcast reports a command feed's view as blocked (API 1.2), normally <see cref="KerbcastApiMinor2.Supported"/>; null means it does not.</param>
+        /// <param name="onKnowledge">Told on every governed tick how each command centre knows each craft it knows of, and the game time that describes.</param>
         /// <param name="onFollowing">Told on every tick whether a command feed is following a craft, so the caller can ask for fresher samples only while one is.</param>
         public KerbcastGovernor(
             Func<IKerbcast?> kerbcast,
@@ -60,13 +62,15 @@ namespace Gonogo.KerbcastUplink
             Func<int, double?>? bodyMu = null,
             Func<bool>? supportsAcceleration = null,
             Action<bool>? onFollowing = null,
-            Func<bool>? supportsOcclusion = null)
+            Func<bool>? supportsOcclusion = null,
+            Action<IReadOnlyList<CraftKnowledgeFact>, double>? onKnowledge = null)
         {
             _onFollowing = onFollowing;
+            _onKnowledge = onKnowledge;
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
-            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu, supportsAcceleration, supportsOcclusion);
+            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu, supportsAcceleration, supportsOcclusion, onKnowledge);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 
@@ -81,6 +85,8 @@ namespace Gonogo.KerbcastUplink
             if (state != AuthorityState.Governing || kerbcast == null || publisher == null)
             {
                 _onFollowing?.Invoke(false);
+                // A centre that is not being governed is not known to know anything: say so, so no entry outlives its tick.
+                _onKnowledge?.Invoke(Array.Empty<CraftKnowledgeFact>(), nowUt);
                 return;
             }
             _model.Publish(

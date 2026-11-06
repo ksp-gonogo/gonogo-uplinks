@@ -20,7 +20,10 @@ import {
   observedValue,
   useActionInput,
   useLatestValue,
+  useObservedVantage,
   useTelemetry,
+  useViewClockOptional,
+  useViewUt,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -57,7 +60,14 @@ import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import { useReacquiring } from "../hooks/useReacquiring.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
+import { resolveCameraLink } from "./cameraLink.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
+import { groundBracketOverlay } from "./groundBracketOverlay.js";
+import {
+  GroundFeedClockContext,
+  useGroundCameraClock,
+} from "./groundFeedClock.js";
+import { feedKnowledgeEntry, networkKnowledge } from "./networkKnowledge.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
   selectableFlightIds,
@@ -314,14 +324,18 @@ export function CameraFeed({
   // degrade level, and a held figure would claim a link the craft may no longer
   // have. A held strength is worse than none here, because the badge it feeds
   // is read as the situation now.
+  const cameras = useKerbcastCameras();
+  const activeCamera =
+    effectiveFlightId === null
+      ? undefined
+      : cameras.find((c) => c.flightId === effectiveFlightId);
   const vesselComms = observedValue(useTelemetry("vessel.comms"));
-  const signalStrength = vesselComms?.signalStrength;
   // `comms.link` (NOT `vessel.comms.connected`): a dedicated, freeze-EXEMPT
   // MetaTopic. `vessel.comms` is a Delayed struct subject to the reveal-gate
   // freeze, so its own `.connected` field would stick at last-known through
   // a blackout instead of firing "NO SIGNAL". `comms.link` escapes that
   // freeze, so it's the edge that actually reflects a live disconnect.
-  const commConnected =
+  const craftConnected =
     observedValue(useTelemetry("comms.link"))?.connected ?? undefined;
   // One-way light-time delay for THIS downlink (the footage left the craft
   // this long ago): NOT round-trip. Round-trip doubling only applies to
@@ -331,8 +345,59 @@ export function CameraFeed({
   // (not `useTelemetry`) reads it straight off the stream, bypassing the
   // certainty-gated frame, so the delay figure itself doesn't appear a whole
   // one-way-delay late (see `useLatestValue`'s own doc).
-  const signalDelay =
+  const craftDelay =
     useLatestValue<TopicPayload<"comms.delay">>("comms.delay")?.oneWaySeconds;
+  // A command camera stands on the ground, so its link is the one from the
+  // command centre this screen views from to where it stands, never the
+  // craft's: a craft blackout must not darken it.
+  const {
+    connected: commConnected,
+    signalStrength,
+    oneWay: signalDelay,
+  } = resolveCameraLink(
+    activeCamera,
+    {
+      connected: craftConnected,
+      signalStrength: vesselComms?.signalStrength,
+      oneWay: craftDelay,
+    },
+    useLatestValue<TopicPayload<"commandCentre.roster">>(
+      "commandCentre.roster",
+    ),
+    useLatestValue<TopicPayload<"commandCentre.separation">>(
+      "commandCentre.separation",
+    ),
+    useObservedVantage(),
+  );
+  const isGroundCamera = activeCamera?.kind === CameraKind.Command;
+  const groundClock = useGroundCameraClock(
+    useViewClockOptional(),
+    signalDelay === undefined ? undefined : (signalDelay?.magnitude ?? null),
+    isGroundCamera,
+  );
+  const craftKnowledge = observedValue(
+    useTelemetry("kerbcast.craftKnowledge"),
+  );
+  const viewUt = useViewUt();
+  const bracketOverlay = useMemo(
+    () =>
+      isGroundCamera
+        ? groundBracketOverlay(
+            networkKnowledge(
+              feedKnowledgeEntry(
+                craftKnowledge,
+                activeCamera?.commandCentre?.stationId,
+                activeCamera?.commandCentre?.subjectPersistentId,
+              ),
+              commConnected,
+              viewUt?.magnitude,
+              activeCamera?.commandTrack?.hasFix === true &&
+                activeCamera.commandTrack.occluded === false,
+            ),
+          )
+        : undefined,
+    [isGroundCamera, craftKnowledge, commConnected, viewUt, activeCamera],
+  );
   const degradeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Delayed camera control: live vs. staged vs. no-path off the same
@@ -469,11 +534,6 @@ export function CameraFeed({
    */
 
   // ---- Delayed camera control gate ----
-  // The live snapshot of the camera registry, so the setpoint surface can read
-  // this camera's own pan/zoom envelopes and seed the dialled target from the
-  // current aim rather than hardcoding bounds. Called unconditionally (rules of
-  // hooks) alongside every hook above.
-  const cameras = useKerbcastCameras();
   const sidecarNote = useSidecarNote();
   const reacquiring = useReacquiring(effectiveFlightId);
   useFeedBindProbe(
@@ -599,10 +659,6 @@ export function CameraFeed({
   // nothing and the SDK's own live controls stay in charge; above it the
   // setpoint surface takes over. Bounds + the seed target come off THIS camera's
   // live `CameraState` (never hardcoded).
-  const activeCamera =
-    effectiveFlightId === null
-      ? undefined
-      : cameras.find((c) => c.flightId === effectiveFlightId);
   const setpointBounds: CameraSetpointBounds | undefined = activeCamera
     ? {
         yawMin: activeCamera.panYawMin,
@@ -682,8 +738,10 @@ export function CameraFeed({
                 onBlur={onFeedBlur}
               >
                 <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
+                  <GroundFeedClockContext.Provider value={groundClock}>
                   <SharedCameraFeed
                     ref={feedRef}
+                    targetBracketOverlay={bracketOverlay}
                     useStream={useDelayedKerbcastStream}
                     flightId={requested}
                     cameraFilter={pickerFilter}
@@ -721,6 +779,7 @@ export function CameraFeed({
                     // layout instead (`FrameSizeReport` below).
                     renderSize="none"
                   />
+                  </GroundFeedClockContext.Provider>
                   <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}

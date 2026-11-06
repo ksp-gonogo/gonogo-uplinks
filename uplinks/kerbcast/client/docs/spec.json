@@ -111,6 +111,33 @@
         "delivery": "lossy-latest",
         "delay": "delayed"
       }
+    },
+    {
+      "id": "kerbcast.craftKnowledge",
+      "payload": "KerbcastCraftKnowledgeEntry",
+      "array": true,
+      "fields": [
+        {
+          "name": "centre",
+          "unit": "id"
+        },
+        {
+          "name": "craftId",
+          "unit": "id"
+        },
+        {
+          "name": "knowledge",
+          "unit": "text"
+        },
+        {
+          "name": "lastKnownUt",
+          "unit": "ut"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
     }
   ],
   "nestedPayloads": [],

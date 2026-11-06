@@ -76,6 +76,8 @@ namespace Gonogo.KerbcastUplink
         private double? _craftLabelsRead;
         private readonly KerbcastLensSites _lensSites = new KerbcastLensSites();
         private IChannelPublisher? _cameras;
+        private IChannelPublisher? _craftKnowledge;
+        private readonly KerbcastCraftKnowledgeFeed _craftKnowledgeFeed = new KerbcastCraftKnowledgeFeed();
         private readonly KerbcastModSettings _modSettings;
 
         // Health state, written by the MAIN-THREAD capture and read by Health()
@@ -156,11 +158,12 @@ namespace Gonogo.KerbcastUplink
             }
             _kerbcast = binding.Api;
             _host = host;
-            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel, _lensSites.ReplaceCommandFeeds, HoldFollowRate);
+            _governor = NewGovernor(_craftLabels, _craftPlaces, () => host.Kernel, _lensSites.ReplaceCommandFeeds, HoldFollowRate, PublishCraftKnowledge);
             GameEvents.onGameStateLoad.Add(OnGameStateLoad);
 
             host.AddChannelSource(AvailableTopic, _ => true);
             _cameras = host.Publisher(CamerasTopic);
+            _craftKnowledge = host.Publisher(CraftKnowledgeTopic);
 
             // The UNGATED AddSampledSource overload, deliberately. The gated
             // overload skips the capture when nobody is subscribed to the
@@ -183,7 +186,7 @@ namespace Gonogo.KerbcastUplink
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel, Action<IReadOnlyDictionary<string, string>> onFeedSites, Action<bool> onFollowing) =>
+        private static IKerbcastGovernor NewGovernor(CraftLabels labels, CraftPlaces places, Func<Kernel?> kernel, Action<IReadOnlyDictionary<string, string>> onFeedSites, Action<bool> onFollowing, Action<IReadOnlyList<CraftKnowledgeFact>, double> onKnowledge) =>
             new KerbcastGovernor(
                 () => Kerbcast.Api.KerbcastApi.Instance,
                 Kerbcast.Api.KerbcastApi.Supports,
@@ -197,7 +200,8 @@ namespace Gonogo.KerbcastUplink
                 ReadBodyMu,
                 KerbcastApiMinor1.Supported,
                 onFollowing,
-                KerbcastApiMinor2.Supported);
+                KerbcastApiMinor2.Supported,
+                onKnowledge);
 
         /**
          * A command feed that follows a craft aims at the place the host's craft knowledge
@@ -227,6 +231,16 @@ namespace Gonogo.KerbcastUplink
                 // Without the faster rate the feeds still follow, one sample a second.
                 UnityEngine.Debug.LogWarning("[Kerbcast] could not hold the follow sample rate: " + ex.Message);
                 _followRate = NoRate;
+            }
+        }
+
+        /* Sent only when it differs from what was last sent: the channel is lossy-latest, so a repeat carries nothing a screen has not got. */
+        private void PublishCraftKnowledge(IReadOnlyList<CraftKnowledgeFact> facts, double ut)
+        {
+            var entries = _craftKnowledgeFeed.Next(facts);
+            if (entries != null)
+            {
+                _craftKnowledge?.Publish(entries, ut);
             }
         }
 
@@ -416,6 +430,7 @@ namespace Gonogo.KerbcastUplink
             host.SetAvailability(Availability.Unavailable(reason));
             host.AddChannelSource(AvailableTopic, _ => false);
             host.AddChannelSource(CamerasTopic, _ => new List<object>());
+            host.AddChannelSource(CraftKnowledgeTopic, _ => new List<object>());
         }
 
         /// <summary>

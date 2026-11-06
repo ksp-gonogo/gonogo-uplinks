@@ -21,14 +21,17 @@
 
 import type {
   KerbcastCameraEntry,
+  KerbcastCraftKnowledgeEntry,
 } from "./contract.js";
 
 export interface GeneratedTopicPayloadMap {
   "kerbcast.cameras": KerbcastCameraEntry[];
+  "kerbcast.craftKnowledge": KerbcastCraftKnowledgeEntry[];
 }
 
 export const GENERATED_TOPIC_IDS = [
   "kerbcast.cameras",
+  "kerbcast.craftKnowledge",
 ] as const;
 
 // The Topics whose payload is a bare JSON array of the element type, so a
@@ -36,4 +39,5 @@ export const GENERATED_TOPIC_IDS = [
 // The `[]` above says the same to the type system, and a type is erased.
 export const GENERATED_COLLECTION_TOPIC_IDS = [
   "kerbcast.cameras",
+  "kerbcast.craftKnowledge",
 ] as const;

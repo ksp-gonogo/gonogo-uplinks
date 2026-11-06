@@ -70,6 +70,7 @@ public static class KerbcastRtConfig
         var wireTypes = new[]
         {
             typeof(KerbcastCameraEntry),
+            typeof(KerbcastCraftKnowledgeEntry),
             typeof(KerbcastSetFieldOfViewArgs),
             typeof(KerbcastSetPanArgs),
             typeof(KerbcastSetCommandAimArgs),

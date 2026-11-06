@@ -180,3 +180,38 @@ export interface KerbcastLaunchCountdownArgs
 	/** The countdown's whole length in seconds. Ignored when it is not running. */
 	lengthSeconds: number;
 }
+/**
+* How one command centre knows one craft, as an entry of the
+* `kerbcast.craftKnowledge` channel, a bare JSON array with one entry for
+* every craft each command centre that has a command camera knows of.
+*
+* Useful for telling the operator whether the craft a ground camera is aimed
+* at is where its centre last heard it, where a model carries it, or where it
+* was last known. A camera's subject is found here by
+* `KerbcastCraftKnowledgeEntry.craftId`, in the entry for the camera's own
+* centre.
+*
+* A craft the centre knows nothing of has no entry.
+*/
+export interface KerbcastCraftKnowledgeEntry
+{
+	/**
+	* The command centre that holds this knowledge, in the `commandCentre.roster`
+	* vocabulary: `ground:<name>` or `vessel:<guid>`.
+	*/
+	centre?: string | null;
+	/** The craft's `Vessel.persistentId`, the id a camera names its subject by. */
+	craftId?: number | null;
+	/**
+	* How the centre knows the craft: `heard` (its telemetry reaches the centre),
+	* `seen` (a ground station has it in view), `modelled` (carried forward on the
+	* course it was holding) or `held` (the last place known, with nothing to
+	* carry it forward on).
+	*/
+	knowledge?: string | null;
+	/**
+	* The last instant the centre knows the craft's place. Null when the centre
+	* cannot say.
+	*/
+	lastKnownUt?: Value<"ut"> | null;
+}
