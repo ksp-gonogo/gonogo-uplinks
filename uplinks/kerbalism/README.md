@@ -146,6 +146,7 @@ Solar activity and radiation: each star's activity, coronal mass ejections with 
 | `kerbalism:crew-survival-row-tone` | `crew-status.row-tone` | `processor:kerbalism:crew-survival` | only while `kerbalism` |
 | `kerbalism:space-weather-badge` | `space-weather.badges` | `kerbalism.spaceweather` | only while `kerbalism` |
 | `kerbalism:system-view-cme` | `tracking-station.entities` | `kerbalism.spaceweather` | only while `kerbalism` |
+| `kerbalism:ship-map-part-actions` | `ship-map.part-actions` | `science.instruments` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meta` | `ship-map.part-meta` | `kerbalism.lifesupport` | only while `kerbalism` |
 | `kerbalism:ship-map-part-meters` | `ship-map.part-meters` | `vessel.parts`, `kerbalism.profile` | only while `kerbalism` |
 | `kerbalism:resource-ops-processes` | `resource-ops.filters` | `isru.converters` | only while `kerbalism` |

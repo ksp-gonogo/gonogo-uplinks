@@ -152,6 +152,7 @@ import "./SystemViewCme/contribution.js";
 // contribution feeds (`packages/components/src/ShipMap/
 // partMetersContribution.ts`). ShipMap itself stays in @ksp-gonogo/components;
 // only these two Kerbalism-derived contributions live here.
+import "./ShipMap/partActions.js";
 import "./ShipMap/partMeta.js";
 import "./ShipMap/partMeters.js";
 // ResourceOps' filter slot: Kerbalism's per-process axis over its own

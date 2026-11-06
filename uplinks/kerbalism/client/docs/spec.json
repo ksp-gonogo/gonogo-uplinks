@@ -1347,6 +1347,15 @@
       "settings": []
     },
     {
+      "id": "kerbalism:ship-map-part-actions",
+      "contributes": "ship-map.part-actions",
+      "deps": [
+        "science.instruments"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
       "id": "kerbalism:ship-map-part-meta",
       "contributes": "ship-map.part-meta",
       "deps": [
