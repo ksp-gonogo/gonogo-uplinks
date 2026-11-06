@@ -69,6 +69,12 @@
       "supportsZoom": "flag",
       "vesselId": "id"
     },
+    "KerbcastCraftKnowledgeEntry": {
+      "centre": "id",
+      "craftId": "id",
+      "knowledge": "text",
+      "lastKnownUt": "ut"
+    },
     "KerbcastLaunchCountdownArgs": {
       "lengthSeconds": "s",
       "remainingSeconds": "s",
@@ -113,6 +119,12 @@
       "supportsPan": "flag",
       "supportsZoom": "flag",
       "vesselId": "id"
+    },
+    "kerbcast.craftKnowledge": {
+      "centre": "id",
+      "craftId": "id",
+      "knowledge": "text",
+      "lastKnownUt": "ut"
     }
   },
   "typeShapes": {

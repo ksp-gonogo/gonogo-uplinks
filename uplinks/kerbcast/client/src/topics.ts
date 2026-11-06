@@ -34,7 +34,10 @@ import {
   registerEnumMembers,
   registerTopicUnits,
 } from "@ksp-gonogo/sitrep-sdk";
-import type { KerbcastCameraEntry } from "./__generated__/contract.js";
+import type {
+  KerbcastCameraEntry,
+  KerbcastCraftKnowledgeEntry,
+} from "./__generated__/contract.js";
 import {
   GENERATED_ENUM_MEMBERS,
   GENERATED_TOPIC_ENUMS,
@@ -55,15 +58,24 @@ export const KERBCAST_AVAILABLE_TOPIC = "kerbcast.available";
  */
 export const KERBCAST_CAMERAS_TOPIC = "kerbcast.cameras";
 
+/**
+ * How each command centre knows each craft it knows of. Its value must match
+ * `KerbcastManifest.CraftKnowledgeTopic` in ../mod/KerbcastManifest.cs:
+ * `topics.test.ts` asserts that.
+ */
+export const KERBCAST_CRAFT_KNOWLEDGE_TOPIC = "kerbcast.craftKnowledge";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "kerbcast.available": boolean;
     "kerbcast.cameras": KerbcastCameraEntry[];
+    "kerbcast.craftKnowledge": KerbcastCraftKnowledgeEntry[];
   }
 }
 
 registerUplinkTopic(KERBCAST_AVAILABLE_TOPIC);
 registerUplinkTopic(KERBCAST_CAMERAS_TOPIC);
+registerUplinkTopic(KERBCAST_CRAFT_KNOWLEDGE_TOPIC);
 
 // The runtime half. The SDK's own generated unit map knows nothing about
 // KerbcastCameraEntry, so it cannot hydrate kerbcast.cameras's nine
@@ -78,6 +90,14 @@ registerTopicUnits(
   GENERATED_TOPIC_SHAPES[KERBCAST_CAMERAS_TOPIC] ?? {},
   GENERATED_TOPIC_STATICS[KERBCAST_CAMERAS_TOPIC] ?? [],
   GENERATED_TOPIC_ENUMS[KERBCAST_CAMERAS_TOPIC] ?? {},
+);
+
+registerTopicUnits(
+  KERBCAST_CRAFT_KNOWLEDGE_TOPIC,
+  GENERATED_TOPIC_UNITS[KERBCAST_CRAFT_KNOWLEDGE_TOPIC] ?? {},
+  GENERATED_TOPIC_SHAPES[KERBCAST_CRAFT_KNOWLEDGE_TOPIC] ?? {},
+  GENERATED_TOPIC_STATICS[KERBCAST_CRAFT_KNOWLEDGE_TOPIC] ?? [],
+  GENERATED_TOPIC_ENUMS[KERBCAST_CRAFT_KNOWLEDGE_TOPIC] ?? {},
 );
 
 for (const [enumName, members] of Object.entries(GENERATED_ENUM_MEMBERS)) {
@@ -106,4 +126,10 @@ export type _ResolvesKerbcastAvailable = Expect<
 >;
 export type _ResolvesKerbcastCameras = Expect<
   Equal<TopicPayload<"kerbcast.cameras">, KerbcastCameraEntry[]>
+>;
+export type _ResolvesKerbcastCraftKnowledge = Expect<
+  Equal<
+    TopicPayload<"kerbcast.craftKnowledge">,
+    KerbcastCraftKnowledgeEntry[]
+  >
 >;

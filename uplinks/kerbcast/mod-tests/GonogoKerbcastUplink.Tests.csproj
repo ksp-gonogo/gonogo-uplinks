@@ -41,6 +41,7 @@
     <Compile Include="..\mod\FlightCoreWatch.cs" />
     <Compile Include="..\mod\KerbcastReach.cs" />
     <Compile Include="..\mod\KerbcastCameraEntryBuilder.cs" />
+    <Compile Include="..\mod\KerbcastCraftKnowledge.cs" />
     <Compile Include="..\mod\IKerbcastApi.cs" />
     <Compile Include="..\mod\DockingCameraFacts.cs" />
     <Compile Include="..\mod\KerbcastApiAdapter.cs" />
