@@ -1,4 +1,12 @@
-import { CommandButton, NULL_DISPLAY, Row, Text, Unit } from "@ksp-gonogo/ui-kit";
+import {
+  CommandButton,
+  NULL_DISPLAY,
+  Row,
+  RowName,
+  Stack,
+  Text,
+  Unit,
+} from "@ksp-gonogo/ui-kit";
 import type { Rp1FundTarget } from "../__generated__/contract.js";
 
 /** Withdraw a target RP-1's own screen stood up. Must match `Rp1TargetCommands.CancelFundCommand`. */
@@ -24,20 +32,25 @@ export function StandingFundTarget({
   target: Rp1FundTarget;
 }>) {
   return (
-    <Row as="div">
-      <Text size="xs" level="muted">
-        {target.targetFunds == null ? (
-          NULL_DISPLAY
-        ) : (
-          <Unit value={target.targetFunds} decimals={0} />
-        )}
-        {target.timeLeft != null && (
-          <>
-            {" · "}
-            <Unit value={target.timeLeft} /> away
-          </>
-        )}
-      </Text>
+    <Stack gap="related-dense">
+      <Row as="div">
+        <RowName>Fund target</RowName>
+        <Text size="xs">
+          {target.targetFunds == null ? (
+            NULL_DISPLAY
+          ) : (
+            <Unit value={target.targetFunds} decimals={0} />
+          )}
+        </Text>
+      </Row>
+      {target.timeLeft != null && (
+        <Row as="div">
+          <RowName>Reached in</RowName>
+          <Text size="xs">
+            <Unit value={target.timeLeft} />
+          </Text>
+        </Row>
+      )}
       <CommandButton
         args={{}}
         aria-label="Cancel the fund target"
@@ -46,6 +59,6 @@ export function StandingFundTarget({
         label="Cancel"
         size="sm"
       />
-    </Row>
+    </Stack>
   );
 }
