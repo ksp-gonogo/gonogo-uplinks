@@ -467,6 +467,11 @@
       "vesselPurchase": "funds",
       "vesselRecovery": "funds"
     },
+    "Rp1NewComplexRate": {
+      "buildRate": "bp/s",
+      "centre": "id",
+      "fundsMultiplier": "ratio"
+    },
     "Rp1NextCompletion": {
       "basis": "enum",
       "kind": "enum",
@@ -1156,7 +1161,8 @@
     },
     "Rp1ConstructionRates": {
       "constructions": "Rp1ConstructionRateTable[]",
-      "facilityUpgrades": "Rp1FacilityUpgradeRate[]"
+      "facilityUpgrades": "Rp1FacilityUpgradeRate[]",
+      "newComplexes": "Rp1NewComplexRate[]"
     },
     "Rp1CourseCostEntry": {
       "cost": "Rp1BudgetHorizons"
@@ -1235,7 +1241,8 @@
     },
     "rp1.constructionRates": {
       "constructions": "Rp1ConstructionRateTable[]",
-      "facilityUpgrades": "Rp1FacilityUpgradeRate[]"
+      "facilityUpgrades": "Rp1FacilityUpgradeRate[]",
+      "newComplexes": "Rp1NewComplexRate[]"
     },
     "rp1.lcPricing": {
       "resources": "Rp1LcResourcePrice[]"

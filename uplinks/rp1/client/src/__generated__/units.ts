@@ -507,6 +507,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     vesselPurchase: "funds",
     vesselRecovery: "funds",
   },
+  "Rp1NewComplexRate": {
+    buildRate: "bp/s",
+    centre: "id",
+    fundsMultiplier: "ratio",
+  },
   "Rp1NextCompletion": {
     basis: "enum",
     kind: "enum",
@@ -1231,6 +1236,7 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "Rp1ConstructionRates": {
     constructions: "Rp1ConstructionRateTable[]",
     facilityUpgrades: "Rp1FacilityUpgradeRate[]",
+    newComplexes: "Rp1NewComplexRate[]",
   },
   "Rp1CourseCostEntry": {
     cost: "Rp1BudgetHorizons",
@@ -1312,6 +1318,7 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
   "rp1.constructionRates": {
     constructions: "Rp1ConstructionRateTable[]",
     facilityUpgrades: "Rp1FacilityUpgradeRate[]",
+    newComplexes: "Rp1NewComplexRate[]",
   },
   "rp1.lcPricing": {
     resources: "Rp1LcResourcePrice[]",

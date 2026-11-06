@@ -1,8 +1,15 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import { describe, expect, it } from "vitest";
 import CASES from "./__testdata__/lc-cost-cases.json" with { type: "json" };
+import BUILD_POINT_CASES from "./__testdata__/lc-build-points-cases.json" with { type: "json" };
 import MODIFY_CASES from "./__testdata__/lc-modify-cases.json" with { type: "json" };
-import { type LcSpec, quoteModifyComplex, quoteNewComplex } from "./lcCost.js";
+import {
+  type LcSpec,
+  newComplexBuildPoints,
+  quoteModifyComplex,
+  quoteNewComplex,
+  quoteNewComplexBuild,
+} from "./lcCost.js";
 
 /**
  * The client's transcription of RP-1's build price, held against the shipped
@@ -272,5 +279,44 @@ describe("quoting a renovation of a complex the career has", () => {
         {},
       ),
     ).not.toBeNull();
+  });
+});
+
+describe("the build points and draw of a new complex", () => {
+  it.each(
+    BUILD_POINT_CASES.cases,
+  )("a price of $cost costs RP-1 $buildPoints build points", (c) => {
+    expect(newComplexBuildPoints(c.cost)).toBeCloseTo(c.buildPoints, 9);
+  });
+
+  it("draws the discounted price over the days the build points take", () => {
+    // 10,000 funds is 100 build points. At 0.01 points a second that is 10,000
+    // seconds, so a day draws 8.64 of those, scaled by the 0.8 funds share.
+    const quote = quoteNewComplexBuild(10_000, {
+      buildRate: value("bp/s", 0.01),
+      centre: "Cape",
+      fundsMultiplier: value("ratio", 0.8),
+    });
+
+    expect(quote?.buildSeconds).toBeCloseTo(10_000, 6);
+    expect(quote?.costPerDay).toBeCloseTo(10_000 * 0.8 * 8.64, 6);
+  });
+
+  it("quotes nothing when RP-1 gave no rate or no funds share", () => {
+    const rate = {
+      buildRate: value("bp/s", 0.01),
+      centre: "Cape",
+      fundsMultiplier: value("ratio", 0.8),
+    };
+    expect(quoteNewComplexBuild(10_000, undefined)).toBeNull();
+    expect(
+      quoteNewComplexBuild(10_000, { ...rate, buildRate: undefined }),
+    ).toBeNull();
+    expect(
+      quoteNewComplexBuild(10_000, { ...rate, fundsMultiplier: undefined }),
+    ).toBeNull();
+    expect(
+      quoteNewComplexBuild(10_000, { ...rate, buildRate: value("bp/s", 0) }),
+    ).toBeNull();
   });
 });

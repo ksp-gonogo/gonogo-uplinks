@@ -237,6 +237,26 @@ public class Rp1ConstructionRateTests : IDisposable
     }
 
     [Fact]
+    public void A_new_complex_is_costed_per_centre_at_the_launch_pad_rate_and_the_complex_funds_share()
+    {
+        Install(_ => { });
+        SpaceCenterManagement.Instance!.KSCs.Add(new LCSpaceCenter { KSCName = "Woomera" });
+        Formula.ConstructionBuildRate = 0.004;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.StructureConstructionLC] = 0.75;
+        CurrencyUtils.Multipliers[TransactionReasonsRP0.StructureConstruction] = 3.0;
+
+        var rows = new Rp1ConstructionRatesReflection().CaptureOnMain(0)!.NewComplexes!;
+
+        Assert.Equal(new[] { "Cape", "Woomera" }, rows.Select(r => r.Centre));
+        Assert.All(rows, r =>
+        {
+            Assert.Equal(0.004, r.BuildRate!.Value, 9);
+            Assert.Equal(0.75, r.FundsMultiplier!.Value, 9);
+        });
+        Assert.Equal(SpaceCenterFacility.LaunchPad, Formula.LastRateFacility);
+    }
+
+    [Fact]
     public void An_uncosted_construction_has_no_draw_and_no_finish_except_at_a_stop()
     {
         Install(ksc => ksc.FacilityUpgrades.Add(Upgrade()));
@@ -331,6 +351,10 @@ public class Rp1ConstructionRateTests : IDisposable
             {
                 new Rp1FacilityUpgradeRateRaw { Facility = "VehicleAssemblyBuilding", CostPerDay = 3.0, BuildSeconds = 60.0 },
             },
+            NewComplexes = new List<Rp1NewComplexRateRaw>
+            {
+                new Rp1NewComplexRateRaw { Centre = "KSC", BuildRate = 0.01, FundsMultiplier = 0.8 },
+            },
         };
 
         var payload = WireJson.Checked(Rp1ConstructionRatesCapture.Build(raw)!);
@@ -342,6 +366,8 @@ public class Rp1ConstructionRateTests : IDisposable
         Assert.Equal(new object?[] { 1.0, 1.0, 5.0, 99.0 }, new[] { step["workRate"], step["costMultiplier"], step["costPerDay"], step["finishesAt"] });
         var facility = (Dictionary<string, object?>)((List<object?>)payload["facilityUpgrades"]!).Single()!;
         Assert.Equal(new object?[] { "VehicleAssemblyBuilding", 3.0, 60.0 }, new[] { facility["facility"], facility["costPerDay"], facility["buildSeconds"] });
+        var complex = (Dictionary<string, object?>)((List<object?>)payload["newComplexes"]!).Single()!;
+        Assert.Equal(new object?[] { "KSC", 0.01, 0.8 }, new[] { complex["centre"], complex["buildRate"], complex["fundsMultiplier"] });
         Assert.Null(Rp1ConstructionRatesCapture.Build(null));
     }
 

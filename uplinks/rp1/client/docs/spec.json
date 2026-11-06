@@ -580,6 +580,10 @@
           "shape": "Rp1FacilityUpgradeRate[]"
         },
         {
+          "name": "newComplexes",
+          "shape": "Rp1NewComplexRate[]"
+        },
+        {
           "name": "refreshedAt",
           "unit": "ut"
         }
@@ -2266,6 +2270,23 @@
         {
           "name": "vesselRecovery",
           "unit": "funds"
+        }
+      ]
+    },
+    {
+      "name": "Rp1NewComplexRate",
+      "fields": [
+        {
+          "name": "buildRate",
+          "unit": "bp/s"
+        },
+        {
+          "name": "centre",
+          "unit": "id"
+        },
+        {
+          "name": "fundsMultiplier",
+          "unit": "ratio"
         }
       ]
     },

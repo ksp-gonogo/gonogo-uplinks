@@ -83,6 +83,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 | `Rp1IntegrationTeamCostEntry` | `cost` Rp1BudgetHorizons, `engineers` count, `kscDisplayName` text, `kscName` id, `lcId` id, `name` text, `unassigned` flag |
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
 | `Rp1LedgerPeriodEntry` | `confidenceAtClose` confidence, `constructionFees` funds, `endUt` ut, `engineersAtClose` count, `entryCosts` funds, `facilityMaintenance` funds, `fundsAtClose` funds, `hiringEngineers` funds, `hiringResearchers` funds, `launchFees` funds, `lcMaintenance` funds, `maintenanceFees` funds, `open` flag, `otherFees` funds, `otherFundsEarned` funds, `programFunds` funds, `repFromPrograms` rep, `reputationAtClose` rep, `researchersAtClose` count, `salaryCrew` funds, `salaryEngineers` funds, `salaryResearchers` funds, `scienceAtClose` science, `scienceEarnedAtClose` science, `spentUnlockCredit` funds, `startUt` ut, `subsidyPaidOut` funds, `subsidySize` funds, `toolingFees` funds, `trainingFees` funds, `unlockCreditAtClose` funds, `vesselPurchase` funds, `vesselRecovery` funds |
+| `Rp1NewComplexRate` | `buildRate` bp/s, `centre` id, `fundsMultiplier` ratio |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `label` text, `speed` enum |

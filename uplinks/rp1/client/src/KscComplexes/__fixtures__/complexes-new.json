@@ -9,7 +9,7 @@
       "w": 12,
       "h": 24
     },
-    "caption": "The new-complex form open at its defaults: every field priced, the tonnage limit stating the renovation range it fixes for life, and a 26,453f quote against a 400f balance that slows the build rather than refusing it",
+    "caption": "The new-complex form open at its defaults: every field priced, the tonnage limit stating the renovation range it fixes for life, and a 26,453f quote with its daily draw and finish date, against a 400f balance that slows the build rather than refusing it",
     "paints": [
       "Centre",
       "Name",
@@ -213,6 +213,19 @@
             "hasVesselWaiting": false
           }
         ]
+      },
+      {
+        "topic": "rp1.constructionRates",
+        "payload": {
+          "refreshedAt": 1000000,
+          "newComplexes": [
+            {
+              "centre": "Cape",
+              "buildRate": 0.0004,
+              "fundsMultiplier": 0.8
+            }
+          ]
+        }
       },
       {
         "topic": "rp1.lcPricing",

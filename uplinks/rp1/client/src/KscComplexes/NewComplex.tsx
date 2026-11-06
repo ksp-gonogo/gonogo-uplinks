@@ -4,6 +4,7 @@ import {
   Disclosure,
   Inline,
   magnitudeOf,
+  MissionDate,
   Row,
   RowName,
   Stack,
@@ -16,9 +17,10 @@ import {
 import { useState } from "react";
 import type {
   Rp1CentreEntry,
+  Rp1ConstructionRates,
   Rp1LcPricing,
 } from "../__generated__/contract.js";
-import { quoteNewComplex } from "./lcCost.js";
+import { quoteNewComplex, quoteNewComplexBuild } from "./lcCost.js";
 
 /** Build a new launch complex. Must match `Rp1ComplexConstructionCommands.NewComplexCommand`. */
 export const RP1_COMPLEX_NEW_COMMAND = "rp1.complex.new";
@@ -51,6 +53,7 @@ export function NewComplexControl({
   funds,
   handle,
   pricing,
+  rates,
 }: Readonly<{
   centres: readonly Rp1CentreEntry[];
   /** Complex names already at the chosen centre, which RP-1 refuses a duplicate of. */
@@ -58,6 +61,8 @@ export function NewComplexControl({
   funds: number | null;
   handle: Parameters<typeof CommandButton>[0]["handle"];
   pricing: Rp1LcPricing | undefined;
+  /** What a new complex is costed at per centre, for the draw and finish date. */
+  rates: Rp1ConstructionRates | undefined;
 }>) {
   const [name, setName] = useState("");
   const [massMax, setMassMax] = useState(value("t", 100));
@@ -91,6 +96,14 @@ export function NewComplexControl({
     sizeMaxWidth: magnitudeOf(width) ?? 0,
   };
   const quote = quoteNewComplex(spec, pricing);
+  const build =
+    quote === null
+      ? null
+      : quoteNewComplexBuild(
+          quote.total,
+          rates?.newComplexes?.find((r) => r.centre === chosen),
+        );
+  const pricedAt = magnitudeOf(rates?.refreshedAt);
   const short = funds !== null && quote !== null && funds < quote.total;
   const massed = spec.massMax > 0;
 
@@ -187,6 +200,26 @@ export function NewComplexControl({
           label="Assign idle engineers when it is built"
           onChange={setStaffOnComplete}
         />
+
+        {build !== null && pricedAt !== null && (
+          <>
+            <Row as="div">
+              <RowName>Daily draw</RowName>
+              <Text
+                size="xs"
+                title="At the full work rate; a lower rate draws less per day"
+              >
+                {Math.round(build.costPerDay).toLocaleString("en-US")} f/day
+              </Text>
+            </Row>
+            <Row as="div">
+              <RowName>Done if queued now</RowName>
+              <Text size="xs">
+                <MissionDate value={pricedAt + build.buildSeconds} />
+              </Text>
+            </Row>
+          </>
+        )}
 
         <Row as="div">
           <Text size="xs" tone={short ? "warn" : undefined} level="muted">

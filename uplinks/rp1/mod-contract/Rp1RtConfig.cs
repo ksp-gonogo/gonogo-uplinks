@@ -127,6 +127,7 @@ public static class Rp1RtConfig
             typeof(Rp1ConstructionRateTable),
             typeof(Rp1ConstructionRateStep),
             typeof(Rp1FacilityUpgradeRate),
+            typeof(Rp1NewComplexRate),
             typeof(Rp1ResearchRateArgs),
             typeof(Rp1ResearchRates),
             typeof(Rp1ResearchRateStep),

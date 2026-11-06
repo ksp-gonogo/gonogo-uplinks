@@ -20,6 +20,7 @@ namespace GonogoRp1Uplink
                 ["refreshedAt"] = raw.RefreshedAt,
                 ["constructions"] = Tables(raw.Constructions),
                 ["facilityUpgrades"] = Facilities(raw.FacilityUpgrades),
+                ["newComplexes"] = NewComplexes(raw.NewComplexes),
             };
         }
 
@@ -47,6 +48,25 @@ namespace GonogoRp1Uplink
                 {
                     ["id"] = t.Id,
                     ["steps"] = steps,
+                });
+            }
+            return rows;
+        }
+
+        private static List<object?>? NewComplexes(List<Rp1NewComplexRateRaw>? rates)
+        {
+            if (rates == null)
+            {
+                return null;
+            }
+            var rows = new List<object?>(rates.Count);
+            foreach (var r in rates)
+            {
+                rows.Add(new Dictionary<string, object?>
+                {
+                    ["centre"] = r.Centre,
+                    ["buildRate"] = r.BuildRate,
+                    ["fundsMultiplier"] = r.FundsMultiplier,
                 });
             }
             return rows;

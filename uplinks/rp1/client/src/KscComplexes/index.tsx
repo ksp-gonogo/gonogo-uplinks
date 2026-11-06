@@ -103,6 +103,7 @@ export function KscComplexes() {
   // Every spend control here judges against the last balance received, held or live.
   const lastFunds = magnitudeOf(latest(careerReading)?.balances?.funds);
   const pricing = current(useTelemetry("rp1.lcPricing"));
+  const rates = current(useTelemetry("rp1.constructionRates"));
 
   // Unconditional and above the early return on purpose: a hook after it would
   // change count on the first frame RP-1 answers.
@@ -223,6 +224,7 @@ export function KscComplexes() {
         funds={lastFunds}
         handle={newComplex}
         pricing={pricing}
+        rates={rates}
       />
     </Section>
   );

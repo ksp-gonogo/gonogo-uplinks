@@ -591,6 +591,38 @@ describe("building a launch complex", () => {
     });
   });
 
+  it("shows the daily draw and finish date beside the price, never a refusal", async () => {
+    const user = userEvent.setup();
+    const { fixture } = withCentre();
+    act(() => {
+      fixture.emit("rp1.constructionRates", {
+        newComplexes: [
+          { buildRate: 0.01, centre: "Cape", fundsMultiplier: 0.8 },
+        ],
+        refreshedAt: 0,
+      });
+    });
+    await open(user);
+
+    // 26,452.62 funds is 162.64 build points, so 16,264 s at 0.01 points a
+    // second, drawing 80% of the price over that time.
+    await waitFor(() => {
+      expect(screen.getByText("Daily draw")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/^112,\d{3} f\/day$/)).toBeInTheDocument();
+    expect(screen.getByText("Done if queued now")).toBeInTheDocument();
+    expect(screen.queryByText(/cannot afford/i)).toBeNull();
+  });
+
+  it("shows no draw when RP-1 has not said what a new complex builds at", async () => {
+    const user = userEvent.setup();
+    withCentre();
+    await open(user);
+
+    expect(screen.getByText(/26,453/)).toBeInTheDocument();
+    expect(screen.queryByText("Daily draw")).toBeNull();
+  });
+
   it("reprices when the human rating changes, because that is what it costs", async () => {
     const user = userEvent.setup();
     withCentre();

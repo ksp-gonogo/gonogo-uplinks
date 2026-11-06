@@ -1126,6 +1126,45 @@ public sealed class Rp1ConstructionRates
 
     /// <summary>Every building RP-1 upgrades that has a tier left, priced at the full work rate.</summary>
     public List<Rp1FacilityUpgradeRate>? FacilityUpgrades { get; set; }
+
+    /// <summary>
+    /// What building a new launch complex would be costed at, one row per space
+    /// centre. A form pricing a complex from the figures an operator is still
+    /// typing combines this row with the build points it works out itself.
+    /// </summary>
+    public List<Rp1NewComplexRate>? NewComplexes { get; set; }
+}
+
+/// <summary>
+/// The two figures a new launch complex's build is costed with, which do not
+/// depend on the complex.
+///
+/// <para>The build points of a new complex are <c>max(3, sqrt(cost))</c> over its
+/// undiscounted price, which a client computes beside the price. The days the work
+/// takes are those points over <see cref="BuildRate"/>, and the funds drawn per
+/// day are the price times <see cref="FundsMultiplier"/> spread over the same
+/// days.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public sealed class Rp1NewComplexRate
+{
+    /// <summary>The space centre this row is for, as <c>rp1.centres[].kscName</c> names it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? Centre { get; set; }
+
+    /// <summary>Build points per second a new complex is built at, at the full work rate.</summary>
+    [SitrepUnit(Contract.Units.BuildPointsPerSecond)]
+    public double? BuildRate { get; set; }
+
+    /// <summary>
+    /// What the career's modifiers do to a complex construction's price: 0.8 draws
+    /// 80% of the undiscounted price. Absent when RP-1 would not answer.
+    /// </summary>
+    [SitrepUnit(Units.Ratio)]
+    public double? FundsMultiplier { get; set; }
 }
 
 /// <summary>One construction's draw and finish at every work rate RP-1's slider offers.</summary>

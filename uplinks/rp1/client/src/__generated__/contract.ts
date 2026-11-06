@@ -1705,6 +1705,34 @@ export interface Rp1ConstructionRates
 	* rate.
 	*/
 	facilityUpgrades?: Rp1FacilityUpgradeRate[] | null;
+	/**
+	* What building a new launch complex would be costed at, one row per space
+	* centre. A form pricing a complex from the figures an operator is still
+	* typing combines this row with the build points it works out itself.
+	*/
+	newComplexes?: Rp1NewComplexRate[] | null;
+}
+/**
+* The two figures a new launch complex's build is costed with, which do not
+* depend on the complex.
+*
+* The build points of a new complex are `max(3, sqrt(cost))` over its
+* undiscounted price, which a client computes beside the price. The days the
+* work takes are those points over `Rp1NewComplexRate.buildRate`, and the
+* funds drawn per day are the price times `Rp1NewComplexRate.fundsMultiplier`
+* spread over the same days.
+*/
+export interface Rp1NewComplexRate
+{
+	/** The space centre this row is for, as `rp1.centres[].kscName` names it. */
+	centre?: string | null;
+	/** Build points per second a new complex is built at, at the full work rate. */
+	buildRate?: Value<"bp/s"> | null;
+	/**
+	* What the career's modifiers do to a complex construction's price: 0.8 draws
+	* 80% of the undiscounted price. Absent when RP-1 would not answer.
+	*/
+	fundsMultiplier?: Value<"ratio"> | null;
 }
 /** One construction's draw and finish at every work rate RP-1's slider offers. */
 export interface Rp1ConstructionRateTable

@@ -1,5 +1,8 @@
 import { magnitudeOf } from "@ksp-gonogo/ui-kit";
-import type { Rp1LcPricing } from "../__generated__/contract.js";
+import type {
+  Rp1LcPricing,
+  Rp1NewComplexRate,
+} from "../__generated__/contract.js";
 
 /**
  * What RP-1 would charge to build a complex to a given specification.
@@ -67,6 +70,45 @@ export function quoteNewComplex(
     pad: stats.pad,
     resources,
     total: stats.pad + stats.integration + resources,
+  };
+}
+
+/** What building a new complex would draw per day and how long it would take. */
+export interface LcBuildQuote {
+  /** Funds drawn per day at the full work rate, while the career can meet it. */
+  costPerDay: number;
+  buildSeconds: number;
+}
+
+/**
+ * The build points of a complex with no prior cost, which is RP-1's
+ * `Formula.GetConstructionBP` with an old cost of zero: the square root of the
+ * price, floored at 3. Pinned against the shipped formula by
+ * `lc-build-points-cases.json`.
+ */
+export function newComplexBuildPoints(cost: number): number {
+  return Math.max(Math.sqrt(cost), 3);
+}
+
+/**
+ * The draw and duration of building a complex priced at `cost`, from the build
+ * rate and funds multiplier the mod publishes for the centre. Null when either
+ * figure is missing or the rate is not positive: a draw guessed from a rate
+ * RP-1 did not give would read as a fact.
+ */
+export function quoteNewComplexBuild(
+  cost: number,
+  rate: Rp1NewComplexRate | undefined,
+): LcBuildQuote | null {
+  const buildRate = magnitudeOf(rate?.buildRate);
+  const multiplier = magnitudeOf(rate?.fundsMultiplier);
+  if (buildRate === null || multiplier === null || buildRate <= 0) {
+    return null;
+  }
+  const points = newComplexBuildPoints(cost);
+  return {
+    buildSeconds: points / buildRate,
+    costPerDay: (cost * multiplier * buildRate * 86400) / points,
   };
 }
 

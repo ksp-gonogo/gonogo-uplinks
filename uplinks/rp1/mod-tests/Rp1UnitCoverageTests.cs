@@ -90,6 +90,7 @@ namespace GonogoRp1Uplink.Tests
                 nameof(Rp1ConstructionRateTable),
                 nameof(Rp1ConstructionRateStep),
                 nameof(Rp1FacilityUpgradeRate),
+                nameof(Rp1NewComplexRate),
                 nameof(Rp1ConstructionRateArgs),
                 nameof(Rp1ConstructionCancelArgs),
                 nameof(Rp1ResearchRates),

@@ -58,6 +58,9 @@ namespace GonogoRp1Uplink
     {
         private const double SecondsPerDay = 86400d;
 
+        /// <summary>The <c>SpaceCenterFacility</c> RP-1's new complex window costs a build as: the launch pad.</summary>
+        private const int NewComplexFacilityType = 2;
+
         private const string MaintenanceTypeName = "RP0.MaintenanceHandler";
         private const string SpaceCenterTypeName = "RP0.SpaceCenterManagement";
         private const string CurrencyUtilsTypeName = "RP0.CurrencyUtils";
@@ -149,6 +152,7 @@ namespace GonogoRp1Uplink
             {
                 RefreshedAt = ut,
                 Constructions = Constructions(spaceCenter, ut),
+                NewComplexes = NewComplexes(spaceCenter),
                 FacilityUpgrades = FacilityUpgrades(spaceCenter),
             };
             _lastSpaceCenter = spaceCenter;
@@ -298,6 +302,42 @@ namespace GonogoRp1Uplink
         }
 
         /// <summary>
+        /// What a new complex is costed at, per centre: the build rate
+        /// <c>Formula.GetConstructionBuildRate</c> gives a launch pad type of
+        /// construction, and the share of the price the complex funds query
+        /// leaves. Both are what RP-1's own new complex window uses.
+        /// </summary>
+        private List<Rp1NewComplexRateRaw>? NewComplexes(object spaceCenter)
+        {
+            if (_constructionRate == null)
+            {
+                return null;
+            }
+            // Probed with a round figure: the visible modifiers on a funds query
+            // only multiply it, so the ratio is the same at any price.
+            const double Probe = 1000d;
+            var facilityType = Enum.ToObject(_constructionRate.GetParameters()[2].ParameterType, NewComplexFacilityType);
+            var modified = Funds(ReasonFor("LaunchPad"), -Probe);
+
+            var rows = new List<Rp1NewComplexRateRaw>();
+            foreach (var ksc in Rp1Types.Enumerate(Rp1Types.Member(spaceCenter, "KSCs")))
+            {
+                var name = Rp1Types.ReadString(ksc, "KSCName");
+                if (name == null)
+                {
+                    continue;
+                }
+                rows.Add(new Rp1NewComplexRateRaw
+                {
+                    Centre = name,
+                    BuildRate = Finite(Rp1Types.ToDouble(Call(_constructionRate, 0, ksc, facilityType))),
+                    FundsMultiplier = modified == null ? null : Finite(modified.Value / -Probe),
+                });
+            }
+            return rows;
+        }
+
+        /// <summary>
         /// RP-1's rush multiplier at a work rate, or null for every rate when the
         /// curve could not be reached.
         /// </summary>
@@ -380,6 +420,14 @@ namespace GonogoRp1Uplink
         public double? RefreshedAt;
         public List<Rp1ConstructionRateTableRaw>? Constructions;
         public List<Rp1FacilityUpgradeRateRaw>? FacilityUpgrades;
+        public List<Rp1NewComplexRateRaw>? NewComplexes;
+    }
+
+    public sealed class Rp1NewComplexRateRaw
+    {
+        public string? Centre;
+        public double? BuildRate;
+        public double? FundsMultiplier;
     }
 
     public sealed class Rp1ConstructionRateTableRaw
