@@ -28,6 +28,26 @@ const totals = (over: Partial<Record<string, number>> = {}) => ({
 });
 
 describe("frameDelayStatsLogger", () => {
+  it("adds what it is told of the capture clock to each line", () => {
+    const facts = {
+      flightId: 767722819,
+      sampleAgeSeconds: 0.4,
+      clockEpoch: 3,
+      stampsReceived: 280,
+      stampAgeSeconds: 0.1,
+      clockStale: false,
+    };
+    const report = frameDelayStatsLogger(() => 1, () => facts);
+    report(totals({ read: 10, presented: 10 }));
+    expect(info).toHaveBeenCalledWith("frame rates", expect.objectContaining(facts));
+  });
+
+  it("leaves the clock out when no consumer knows it", () => {
+    const report = frameDelayStatsLogger(() => 1, () => null);
+    report(totals());
+    expect(info.mock.calls[0]?.[1]).not.toHaveProperty("clockEpoch");
+  });
+
   it("logs rates and depth since the last report under the frame-delay tag", () => {
     let now = 1000;
     vi.spyOn(performance, "now").mockImplementation(() => now);
