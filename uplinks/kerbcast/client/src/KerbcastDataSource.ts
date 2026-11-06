@@ -947,29 +947,13 @@ export class KerbcastDataSource {
     logger.tag("kerbcast:clock").debug("built KerbcastClient", { instanceId });
     const reportDisplaySize = client.reportDisplaySize.bind(client);
     client.reportDisplaySize = (flightId, width, height) => {
-      /* A size that is not a number goes on the wire as null, and the sidecar
-         rejects the whole message, so it is refused here, from whichever feed
-         measured it. */
-      if (!Number.isFinite(width) || !Number.isFinite(height)) {
-        logger
-          .tag("kerbcast:subscriptions")
-          .warn("report-display-size refused: the size is not a number", {
-            flightId,
-            width: String(width),
-            height: String(height),
-          });
-        return Promise.resolve();
-      }
       logger
         .tag("kerbcast:subscriptions")
         .debug("report-display-size", { flightId, width, height });
       return reportDisplaySize(flightId, width, height);
     };
-    let previousState: string | null = null;
     this.clientUnsubs.push(
       client.on("state-change", (s) => {
-        this.logPeerState(instanceId, previousState, s);
-        previousState = s;
         // The slot pool belongs to the peer, so a lost peer takes every
         // binding with it; the next answer restates them.
         if (s === "disconnected" || s === "failed") this.forgetSlotState(false);
@@ -1330,36 +1314,6 @@ export class KerbcastDataSource {
         cb();
       });
     }
-  }
-
-  /**
-   * One line per change of the peer's state, so a feed that blanks for a few
-   * seconds can be matched to the connection dropping and coming back. Leaving
-   * `connected` is a warning; the facts are the client instance, how long since
-   * the sidecar's last ping, whether this is a station's brokered peer and the
-   * rebuild attempt it is on.
-   */
-  private logPeerState(
-    instanceId: number,
-    previous: string | null,
-    next: string,
-  ): void {
-    if (previous === next) return;
-    const facts = {
-      instanceId,
-      from: previous,
-      to: next,
-      secondsSinceLastPing:
-        this.lastPingAt === null
-          ? null
-          : Math.round((Date.now() - this.lastPingAt) / 1000),
-      station: this.broker !== undefined,
-      attempt: this.reconnectAttempts,
-    };
-    const message = `peer ${previous ?? "new"} to ${next}`;
-    const log = logger.tag("kerbcast:reconnect");
-    if (previous === "connected") log.warn(message, facts);
-    else log.info(message, facts);
   }
 
   private setStatus(status: DataSourceStatus): void {
