@@ -3,9 +3,9 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "49317bc44abb5632",
+      "hash": "05b4fe47a7baed16",
       "elements": 325,
-      "text": "8ce39124"
+      "text": "73062ab1"
     },
     "burn-editor-spherical-frozen--default.png": {
       "hash": "7e40b6e403235be0",
@@ -363,14 +363,19 @@
       "text": "e3f9c194"
     },
     "orbit-analysis-decaying--default.png": {
-      "hash": "d7d4497ed041af6a",
+      "hash": "11e03d450b87c4a3",
       "elements": 183,
-      "text": "6b3e3152"
+      "text": "c5c0e715"
     },
     "orbit-analysis-live--default.png": {
-      "hash": "14779216f82bfbdc",
+      "hash": "38f350ab6dc6b73c",
       "elements": 168,
-      "text": "ef0f0ecc"
+      "text": "08c33ef0"
+    },
+    "orbit-analysis-never-run--default.png": {
+      "hash": "cacf53751792468a",
+      "elements": 19,
+      "text": "b7e1893b"
     },
     "orbit-analysis-no-elements--default.png": {
       "hash": "b75d3dbccbb6c2af",
