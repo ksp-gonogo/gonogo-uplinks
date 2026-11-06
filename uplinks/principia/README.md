@@ -91,7 +91,7 @@ The five libration points of a body pair, drawn in the frame that turns with it 
 | --- | --- | --- | --- | --- | --- |
 | `principia-flight-plan` | `maneuver-planner.sections` | – |  | 6 |  |
 | `principia-plan-slots` | `maneuver-planner.sections` | – |  | 3 |  |
-| `principia-orbit-analysis` | `orbit-view.sections` | – |  | 5 |  |
+| `principia-orbit-analysis` | `orbit-view.sections` | – |  | 6 |  |
 | `principia-coast-analysis` | `maneuver-planner.sections` | – |  | 3 |  |
 | `principia-burn-editor` | `maneuver-planner.sections` | – |  | 3 |  |
 | `principia-plan-composer` | `maneuver-planner.sections` | – |  | 5 |  |

@@ -48,12 +48,11 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         private sealed class AdapterFieldHandle : IPrincipiaPluginHandle
         {
-            private const string AdapterTypeName = "principia.ksp_plugin_adapter.PrincipiaPluginAdapter";
             private const string PluginField = "plugin_";
 
             private static readonly ReflectedMembers Members = new ReflectedMembers();
 
-            private object? _adapter;
+            private readonly PrincipiaAddonCache _adapter = PrincipiaSceneAddon.ForAdapter();
 
             public IntPtr Current()
             {
@@ -66,27 +65,15 @@ namespace GonogoPrincipiaUplink
             }
 
             /// <summary>
-            /// Principia's addon, found once and kept.
+            /// Principia's addon, found again whenever the one held has been
+            /// destroyed by a scene change.
             ///
             /// <para>Caching the ADDON is safe where caching the handle is not: it
-            /// is a scene object that outlives the plugin resets, and when it does
-            /// go away the field read simply misses and answers zero, which the
-            /// session treats as "no plugin" rather than as an error.</para>
+            /// outlives the plugin resets within a scene, and while the scene has
+            /// none the field read misses and answers zero, which the session
+            /// treats as "no plugin" rather than as an error.</para>
             /// </summary>
-            private object? Adapter()
-            {
-                if (_adapter != null)
-                {
-                    return _adapter;
-                }
-                var adapterType = HarmonyLib.AccessTools.TypeByName(AdapterTypeName);
-                if (adapterType == null)
-                {
-                    return null;
-                }
-                _adapter = UnityEngine.Object.FindObjectOfType(adapterType);
-                return _adapter;
-            }
+            private object? Adapter() => _adapter.Current();
         }
     }
 }

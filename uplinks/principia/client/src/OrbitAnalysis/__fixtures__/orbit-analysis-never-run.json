@@ -1,0 +1,35 @@
+{
+  "_scene": {
+    "augment": "principia-orbit-analysis",
+    "caption": "Principia holds no analysis of this craft because its orbit analysis window has not been opened for it: nothing was analysed, so nothing is bound or unbound",
+    "size": {
+      "w": 12,
+      "h": 9
+    },
+    "paints": [
+      "NOT ANALYSED"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "principia.analysis",
+        "payload": {
+          "vesselId": "Ares-IV",
+          "sampledAtUt": 1000000,
+          "coasts": [],
+          "orbit": {
+            "missionDurationSeconds": 0,
+            "progressOfNextAnalysis": 0,
+            "primaryIndex": 1,
+            "primaryBody": "Kerbin",
+            "gravitationallyBound": false,
+            "elementsPresent": false,
+            "elementsEpochUt": null
+          }
+        }
+      }
+    ]
+  }
+}

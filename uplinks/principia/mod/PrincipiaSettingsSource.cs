@@ -26,7 +26,6 @@ namespace GonogoPrincipiaUplink
     /// </summary>
     public sealed class PrincipiaSettingsSource : ISettingsSource
     {
-        private const string AdapterTypeName = "principia.ksp_plugin_adapter.PrincipiaPluginAdapter";
 
         private const string MainWindowField = "main_window_";
         private const string FrameSelectorField = "plotting_frame_selector_";
@@ -37,7 +36,7 @@ namespace GonogoPrincipiaUplink
 
         private static readonly ReflectedMembers Members = new ReflectedMembers();
 
-        private object? _adapter;
+        private readonly PrincipiaAddonCache _adapter = PrincipiaSceneAddon.ForAdapter();
         private PrincipiaSession? _session;
         private bool _sessionRefused;
 
@@ -169,18 +168,9 @@ namespace GonogoPrincipiaUplink
 
         private object Adapter()
         {
-            if (_adapter != null)
-            {
-                return _adapter;
-            }
-            var adapterType = AccessTools.TypeByName(AdapterTypeName);
-            if (adapterType != null)
-            {
-                _adapter = UnityEngine.Object.FindObjectOfType(adapterType);
-            }
             // A sentinel rather than null so the member reads above stay
             // unconditional: reading a name off a bare object simply misses.
-            return _adapter ?? NotFound;
+            return _adapter.Current() ?? NotFound;
         }
 
         private static readonly object NotFound = new object();

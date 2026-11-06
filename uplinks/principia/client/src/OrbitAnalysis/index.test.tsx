@@ -235,8 +235,8 @@ describe("OrbitAnalysisSection", () => {
 
     const text = await visibleText(stream.container);
     expect(text).toContain("SIDEREAL");
-    expect(text).toContain("−12s");
-    expect(text).toContain("+11s");
+    expect(text).toContain("−13s");
+    expect(text).toContain("+12s");
   });
 
   it("carries the node drift in degrees per hour", async () => {
@@ -385,5 +385,48 @@ describe("OrbitAnalysisSection", () => {
     expect(text).toContain("Elements not read");
     expect(text).not.toContain("Elements not determined");
     expect(text).not.toContain("full revolution");
+  });
+
+  it("shows one NOT ANALYSED state, with its reason in a tooltip, when the producer ran no analysis", async () => {
+    const stream = mount();
+    await emit(stream, {
+      vesselId: "v",
+      sampledAtUt: VIEW_UT,
+      orbit: orbit({
+        elementsPresent: false,
+        gravitationallyBound: false,
+        missionDurationSeconds: 0,
+      }),
+    });
+
+    const text = await visibleText(stream.container);
+    expect(text).toContain("NOT ANALYSED");
+    expect(text).not.toContain("Elements not determined");
+    expect(text).not.toContain("unknown age");
+    expect(text).not.toContain("bound to nothing");
+  });
+
+  it("still says bound to nothing for a trajectory that was analysed and escapes", async () => {
+    const stream = mount();
+    await emit(stream, {
+      vesselId: "v",
+      sampledAtUt: VIEW_UT,
+      orbit: orbit({ elementsPresent: false, gravitationallyBound: false }),
+    });
+
+    expect(await visibleText(stream.container)).toContain("bound to nothing");
+  });
+
+  it("rounds a period to the nearest second instead of cutting it", async () => {
+    const stream = mount();
+    await emit(stream, {
+      vesselId: "v",
+      sampledAtUt: VIEW_UT,
+      orbit: orbit({ siderealPeriodSeconds: 3270.99 }),
+    });
+
+    const text = await visibleText(stream.container);
+    expect(text).toContain("54min 31s");
+    expect(text).not.toContain("54min 30s");
   });
 });

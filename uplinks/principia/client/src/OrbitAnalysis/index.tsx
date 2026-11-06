@@ -275,6 +275,23 @@ export function OrbitAnalysisRows({
   source: TopicReading<PrincipiaAnalysis>;
 }) {
   const dated = datedBy(source);
+  if (
+    orbit.elementsPresent === false &&
+    orbit.gravitationallyBound === false &&
+    magnitudeOf(orbit.missionDurationSeconds) === 0
+  ) {
+    return (
+      <Cluster justify="start" gap="related-dense">
+        <Tooltip
+          text="Principia analyses this vessel while its orbit analysis window is open"
+          focusable
+        >
+          <Badge tone="caution">NOT ANALYSED</Badge>
+        </Tooltip>
+        {source.state === "held" && <HeldTag />}
+      </Cluster>
+    );
+  }
   if (orbit.elementsPresent !== true) {
     return (
       <Stack>
@@ -324,7 +341,11 @@ export function OrbitAnalysisRows({
         {orbit.missionDurationSeconds == null ? (
           <Text>{NULL_DISPLAY}</Text>
         ) : (
-          <Countdown value={dated(orbit.missionDurationSeconds)} />
+          <Countdown
+            value={dated(
+              value("s", Math.round(orbit.missionDurationSeconds.magnitude)),
+            )}
+          />
         )}
       </Row>
       {/* Three periods, each with its offset from the first. The whole content
@@ -486,11 +507,11 @@ function PeriodRow({
         <Text>{NULL_DISPLAY}</Text>
       ) : (
         <Cluster justify="end" gap="related-dense">
-          <Countdown value={dated(seconds)} />
+          <Countdown value={dated(value("s", Math.round(seconds.magnitude)))} />
           {offset !== null && offset !== 0 && (
             <Text level="faint" size="sm">
               {offset > 0 ? "+" : "−"}
-              <Countdown value={dated(value("s", Math.abs(offset)))} />
+              <Countdown value={dated(value("s", Math.round(Math.abs(offset))))} />
             </Text>
           )}
         </Cluster>
