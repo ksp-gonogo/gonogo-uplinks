@@ -1,5 +1,9 @@
 import { logger } from "@ksp-gonogo/sitrep-sdk";
 import type { FrameDelayStats } from "@ksp-gonogo/sitrep-sdk/media";
+import type { CaptureClockFacts } from "./CameraFeed/useCaptureClockHealth.js";
+
+/** Reads what a delay log line says about the camera's capture clock, or null when no consumer knows it. */
+export type CaptureClockFactsReader = () => CaptureClockFacts | null;
 
 /**
  * The `onStats` callback to hand a frame-delay backend: each report logs, under
@@ -7,12 +11,18 @@ import type { FrameDelayStats } from "@ksp-gonogo/sitrep-sdk/media";
  * the camera and presented to the screen since the last report, how many frames
  * it holds now (`buffered`, from the totals) and how long they are held
  * (`heldSeconds`, from `heldSeconds()`, null while the capture clock has no
- * time). Useful for telling a feed that stalls because frames stop arriving
- * from one whose frames the delay is holding or discarding. The first report
- * measures from when the logger was made.
+ * time). With `clockFacts` it adds the camera's flight id and its capture
+ * clock's state: how long ago its
+ * last sample and per-frame stamp arrived, its epoch, the stamps received since
+ * the last report and whether the clock is distrusted. Useful for telling a
+ * feed that stalls because frames stop arriving from one whose frames the delay
+ * is holding or discarding, and a held feed whose clock has gone quiet from one
+ * that is waiting out the delay. The first report measures from when the logger
+ * was made.
  */
 export function frameDelayStatsLogger(
   heldSeconds: () => number | null,
+  clockFacts?: CaptureClockFactsReader,
 ): (stats: FrameDelayStats) => void {
   const log = logger.tag("kerbcast:frame-delay");
   let last: FrameDelayStats | null = null;
@@ -40,6 +50,7 @@ export function frameDelayStatsLogger(
       evicted: since((s) => s.evicted),
       flushDropped: since((s) => s.flushDropped),
       awaitingKeyframeDropped: since((s) => s.awaitingKeyframeDropped),
+      ...(clockFacts?.() ?? {}),
     });
   };
 }

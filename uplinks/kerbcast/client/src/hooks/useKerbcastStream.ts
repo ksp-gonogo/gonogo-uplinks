@@ -20,7 +20,10 @@ import {
   type SnapshottableDelayClock,
 } from "@ksp-gonogo/sitrep-sdk/media";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { frameDelayStatsLogger } from "../frameDelayStats.js";
+import {
+  type CaptureClockFactsReader,
+  frameDelayStatsLogger,
+} from "../frameDelayStats.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /** A neutral capture sample for the moment before the ~1Hz clock arrives,
@@ -48,6 +51,8 @@ interface CaptureContribution {
    *  `NEUTRAL_CAPTURE_SAMPLE` carries for the worker/encoded backends. */
   captureUt(): number | null;
   getCaptureSample(): CaptureClockSample;
+  /** What the delay log line says about the capture clock, when the consumer knows it. */
+  clockFacts?: CaptureClockFactsReader;
 }
 
 /**
@@ -161,6 +166,15 @@ export function useEncodedDelayTarget(
   }, [client, flightId, scriptPath]);
 }
 
+/*
+ * The factory each camera was last given by an attach here. Kerbcast keeps one
+ * factory per camera and the last one set wins, so an attach being disposed
+ * after a newer one was installed must not clear the newer one: that would put
+ * Kerbcast's passthrough on the receiver and leave the newer delay reading
+ * nothing.
+ */
+const installedFactory = new WeakMap<KerbcastCameraHandle, unknown>();
+
 /**
  * Hands Kerbcast a factory that makes one delay transform per receiver the
  * camera lands on, each with its own pipeline built at the moment Kerbcast asks
@@ -191,17 +205,19 @@ function attachThroughKerbcast(
   if (!probe) return null;
   probe.handle.dispose();
   let current: ReturnType<typeof make> = null;
+  const factory = () => {
+    current?.handle.dispose();
+    current = make();
+    if (!current) {
+      throw new Error(
+        "the video delay could not be installed on this camera's receiver",
+      );
+    }
+    return current.transform as RTCRtpScriptTransform;
+  };
   try {
-    cam.setEncodedTransform(() => {
-      current?.handle.dispose();
-      current = make();
-      if (!current) {
-        throw new Error(
-          "the video delay could not be installed on this camera's receiver",
-        );
-      }
-      return current.transform as RTCRtpScriptTransform;
-    }, { holdMs });
+    cam.setEncodedTransform(factory, { holdMs });
+    installedFactory.set(cam, factory);
   } catch (err) {
     logger
       .tag("kerbcast:frame-delay")
@@ -210,7 +226,10 @@ function attachThroughKerbcast(
   }
   return {
     dispose() {
-      cam.setEncodedTransform(null);
+      if (installedFactory.get(cam) === factory) {
+        installedFactory.delete(cam);
+        cam.setEncodedTransform(null);
+      }
       current?.handle.dispose();
       current = null;
     },
@@ -269,6 +288,8 @@ export interface KerbcastStreamDelayOptions {
    *  whose stamp was lost is dated from its neighbours, and a new capture epoch
    *  empties the buffer. */
   frameStamps?: FrameStampFeed;
+  /** What each delay log line says about the capture clock: sample and stamp ages, epoch, stamps received. */
+  clockFacts?: CaptureClockFactsReader;
   /** Bumped (any change) to flush the buffer on a timeline reset, pass the
    *  session's epoch/reset counter. Omit if the caller doesn't model resets. */
   resetEpoch?: number;
@@ -372,6 +393,8 @@ export function useDelayedPlayout(
   captureUtRef.current = delay?.captureUt;
   const getCaptureSampleRef = useRef(delay?.getCaptureSample);
   getCaptureSampleRef.current = delay?.getCaptureSample;
+  const clockFactsRef = useRef(delay?.clockFacts);
+  clockFactsRef.current = delay?.clockFacts;
   const rawRef = useRef(raw);
   rawRef.current = raw;
 
@@ -451,6 +474,7 @@ export function useDelayedPlayout(
       captureUt: () => captureUtRef.current?.() ?? null,
       getCaptureSample: () =>
         getCaptureSampleRef.current?.() ?? NEUTRAL_CAPTURE_SAMPLE,
+      clockFacts: () => clockFactsRef.current?.() ?? null,
     });
     const sync = () => setResult(lease.get() ?? CONNECTING);
     const unsubscribe = lease.subscribe(sync);
@@ -598,6 +622,7 @@ function buildDelayedPipeline(
   };
   const getCaptureSample = () =>
     ctx.contribution()?.getCaptureSample() ?? NEUTRAL_CAPTURE_SAMPLE;
+  const clockFacts = () => ctx.contribution()?.clockFacts?.() ?? null;
 
   // Backend 0: encoded transform on the caller's target. See
   // `useDelayedPlayout`'s module doc. One transform per receiver: sharing at
@@ -609,7 +634,7 @@ function buildDelayedPipeline(
       getCaptureSample,
       frameStamps,
       onError: onPipelineError,
-      onStats: frameDelayStatsLogger(heldSeconds),
+      onStats: frameDelayStatsLogger(heldSeconds, clockFacts),
     });
     if (!handle) return null;
     liveHandle = handle;
@@ -669,7 +694,7 @@ function buildDelayedPipeline(
       captureUt,
       frameStamps,
       maxBufferedFrames,
-      onStats: frameDelayStatsLogger(heldSeconds),
+      onStats: frameDelayStatsLogger(heldSeconds, clockFacts),
       onError: (err) => {
         onErrorReason = String(err);
         onPipelineError(err);
@@ -720,7 +745,7 @@ function buildDelayedPipeline(
       getCaptureSample,
       frameStamps,
       maxBufferedFrames,
-      onStats: frameDelayStatsLogger(heldSeconds),
+      onStats: frameDelayStatsLogger(heldSeconds, clockFacts),
       onError: (err) => {
         workerErrorReason = String(err);
         onPipelineError(err);
