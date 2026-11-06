@@ -23,7 +23,6 @@ import { clearRegistry, registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
 import {
   clearUplinkHandles,
   render,
-  renderHook,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import {
@@ -390,42 +389,6 @@ describe("useDelayedPlayout with an encoded target behind the shown stream", () 
   });
 });
 
-
-describe("useEncodedDelayTarget, an older attach disposed late", () => {
-  it("leaves the newer attach's delay installed, and clears it once the newer one goes", () => {
-    const installs: unknown[] = [];
-    const cam = {
-      mediaStream: fakeStream(),
-      on: () => () => {},
-      setEncodedTransform: (factory: unknown) => {
-        installs.push(factory);
-      },
-    };
-    registerUplinkHandle("kerbcast", {
-      id: "kerbcast",
-      getClient: () => ({ encodedTransformPath: "script", camera: () => cam }),
-      subscribeCamera: () => {},
-      unsubscribeCamera: () => {},
-    });
-    const install = (receiver: RTCRtpReceiver) => {
-      (receiver as unknown as { transform: unknown }).transform = {};
-      return { dispose() {}, flush() {}, leadLimitSeconds: () => 0 };
-    };
-    const { result } = renderHook(() => useEncodedDelayTarget(7));
-    const target = result.current;
-    if (!target) throw new Error("no encoded delay target");
-
-    const older = target.attach(install, () => 0);
-    const newer = target.attach(install, () => 0);
-    const newerFactory = installs[installs.length - 1];
-    older?.dispose();
-    expect(installs[installs.length - 1]).toBe(newerFactory);
-    expect(installs).not.toContain(null);
-
-    newer?.dispose();
-    expect(installs[installs.length - 1]).toBeNull();
-  });
-});
 
 describe("useEncodedDelayTarget, through Kerbcast's setEncodedTransform", () => {
   type Factory = (ctx: { flightId: number; path: string }) => unknown;

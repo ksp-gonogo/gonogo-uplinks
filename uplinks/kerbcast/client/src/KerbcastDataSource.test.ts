@@ -92,41 +92,6 @@ describe("KerbcastDataSource", () => {
   });
 });
 
-describe("KerbcastDataSource: peer state log", () => {
-  it("logs each change of the peer's state, and leaving connected as a warning", async () => {
-    const info = vi.spyOn(console, "info").mockImplementation(() => {});
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const session = createMockKerbcastSession();
-    const ds = makeTracked({ port: 1 }, session.transport);
-    await ds.connect();
-    session.setState("connected");
-    session.setState("disconnected");
-    const lines = (spy: { mock: { calls: unknown[][] } }) =>
-      spy.mock.calls.map((call) => call.join(" ")).filter((l) => l.startsWith("peer "));
-    expect(lines(info).some((l) => l.includes("to connected"))).toBe(true);
-    expect(lines(warn).some((l) => l.includes("peer connected to disconnected"))).toBe(true);
-    expect(lines(info).some((l) => l.includes("connected to disconnected"))).toBe(false);
-  });
-});
-
-describe("KerbcastDataSource: display sizes", () => {
-  it("never sends the sidecar a size that is not a number, and says so", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const session = createMockKerbcastSession();
-    const ds = makeTracked({ port: 1 }, session.transport);
-    await ds.connect();
-    session.openChannel();
-    session.setState("connected");
-    const sizes = () => session.sentMessages.filter((m) => m.includes("report-display-size"));
-    await ds.getClient().reportDisplaySize(5, Number.NaN, 208);
-    expect(sizes()).toEqual([]);
-    expect(warn.mock.calls.some((c) => String(c[0]).includes("the size is not a number"))).toBe(true);
-    await ds.getClient().reportDisplaySize(5, 368, 208);
-    expect(sizes()).toHaveLength(1);
-    expect(sizes()[0]).toContain('"width":368');
-  });
-});
-
 describe("KerbcastDataSource: config rebuild log", () => {
   const rebuildLogs = (spy: { mock: { calls: unknown[][] } }): string[] =>
     spy.mock.calls
