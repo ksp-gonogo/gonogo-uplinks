@@ -7,6 +7,7 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/media";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
+import { useCaptureClockHealth } from "./useCaptureClockHealth.js";
 import { useSourceGeneration } from "./useSourceGeneration.js";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import {
@@ -87,6 +88,9 @@ function getStatusSnapshot(flightId: number): DelayedPlayoutResult {
 }
 
 const NO_FLIGHT_STATUS: DelayedPlayoutResult = { kind: "raw", stream: null };
+
+/* What a feed shows while its camera's clock cannot date its frames, one object so the published status only changes when the state does. */
+const CLOCK_DISTRUSTED: DelayedPlayoutResult = { kind: "connecting" };
 
 /**
  * Reactive read of the delayed-playout status published by
@@ -211,6 +215,23 @@ export function useDelayedKerbcastStream(
           flightId,
         ) ?? undefined);
 
+  /* A camera clock that has not followed the game back (a revert whose new
+     timeline has not reached this screen yet) dates every frame ahead of the
+     game, and the delay would hold them all for as long as the gap: a frozen
+     picture for minutes. While it is distrusted the feed shows as connecting,
+     and each change of trust flushes what was held against the old dating. */
+  const clock = useCaptureClockHealth({
+    flightId,
+    view,
+    captureUt,
+    epoch,
+    warpRate,
+    frameStamps,
+  });
+  const clockFactsRef = useRef(clock.facts);
+  clockFactsRef.current = clock.facts;
+  const clockFacts = useCallback(() => clockFactsRef.current(), []);
+
   const result = useDelayedPlayout(
     raw,
     view && (frameStamps !== undefined || captureUt != null)
@@ -219,16 +240,19 @@ export function useDelayedKerbcastStream(
           captureUt: liveCaptureUt,
           getCaptureSample,
           frameStamps,
-          resetEpoch: sourceGeneration,
+          clockFacts,
+          resetEpoch: sourceGeneration + clock.resets,
           encodedTarget,
         }
       : undefined,
   );
+  const shown: DelayedPlayoutResult =
+    clock.stale && result.kind === "delayed" ? CLOCK_DISTRUSTED : result;
 
   useEffect(() => {
-    if (flightId !== null) publishStatus(flightId, result);
-  }, [flightId, result]);
+    if (flightId !== null) publishStatus(flightId, shown);
+  }, [flightId, shown]);
 
-  if (result.kind === "raw" || result.kind === "delayed") return result.stream;
+  if (shown.kind === "raw" || shown.kind === "delayed") return shown.stream;
   return null;
 }

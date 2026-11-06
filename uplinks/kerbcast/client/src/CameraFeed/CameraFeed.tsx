@@ -71,6 +71,7 @@ import {
 } from "./useDelayedKerbcastStream.js";
 import { LostSignalStatic } from "./LostSignalStatic.js";
 import { useFeedBindProbe } from "./useFeedBindProbe.js";
+import { useFeedStallWatch } from "./useFeedStallWatch.js";
 import { useCraftPowerLost } from "./useCraftPowerLost.js";
 import { useFeedSignal } from "./useFeedSignal.js";
 import { useFollowedPartCamera } from "./useFollowedPartCamera.js";
@@ -481,6 +482,7 @@ export function CameraFeed({
     playoutStatus.kind,
     showsStream,
   );
+  useFeedStallWatch(effectiveFlightId, overlayWrapEl, playoutStatus.kind);
   /*
    * With no link, or no power on the craft the camera is part of, the SDK's own
    * static is speckle over the live frame, so the picture still shows through
