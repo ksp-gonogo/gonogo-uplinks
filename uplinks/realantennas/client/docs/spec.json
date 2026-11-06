@@ -119,8 +119,16 @@
           "unit": "text"
         },
         {
+          "name": "band",
+          "unit": "text"
+        },
+        {
           "name": "beamwidth",
           "unit": "°"
+        },
+        {
+          "name": "condition",
+          "unit": "text"
         },
         {
           "name": "cone10Db",
@@ -145,6 +153,10 @@
         {
           "name": "name",
           "unit": "text"
+        },
+        {
+          "name": "powerDrawEc",
+          "unit": "units/s"
         },
         {
           "name": "steerable",
@@ -197,6 +209,10 @@
         {
           "name": "techLevel",
           "unit": "count"
+        },
+        {
+          "name": "txPowerDbm",
+          "unit": "dB"
         }
       ],
       "disposition": {
@@ -211,6 +227,33 @@
       "disposition": {
         "delivery": "lossy-latest",
         "delay": "true-now"
+      }
+    },
+    {
+      "id": "realantennas.fleet",
+      "payload": "RealAntennasFleetRow",
+      "array": true,
+      "fields": [
+        {
+          "name": "bestBand",
+          "unit": "text"
+        },
+        {
+          "name": "bitsPerSecToHome",
+          "unit": "bit/s"
+        },
+        {
+          "name": "dishCount",
+          "unit": "count"
+        },
+        {
+          "name": "vesselId",
+          "unit": "id"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
       }
     },
     {
@@ -429,6 +472,27 @@
         {
           "name": "reverseBitsPerSec",
           "unit": "bit/s"
+        },
+        {
+          "name": "rxAntennaId",
+          "unit": "id"
+        },
+        {
+          "name": "techLevel",
+          "unit": "count"
+        },
+        {
+          "name": "txAntennaId",
+          "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "RealAntennasStationExt",
+      "fields": [
+        {
+          "name": "antennaCount",
+          "unit": "count"
         },
         {
           "name": "techLevel",

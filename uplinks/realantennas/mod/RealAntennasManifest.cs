@@ -85,6 +85,13 @@ namespace Gonogo.RealAntennasUplink
         public const string RetargetingTopic = "realantennas.retargeting";
 
         /// <summary>
+        /// One comms summary per craft that carries a RealAntennas antenna: a bare
+        /// array of <see cref="RealAntennasFleetRow"/>. Two segments, as every
+        /// channel here is (see <see cref="ChainsTopic"/>).
+        /// </summary>
+        public const string FleetTopic = "realantennas.fleet";
+
+        /// <summary>
         /// Allow or forbid a craft turning an idle dish on its own to carry a message.
         /// Args: <see cref="RealAntennasSetAutoRetargetArgs"/>. Addressed to the craft
         /// by id and delayed to that craft, whichever craft is reported.
@@ -170,6 +177,7 @@ namespace Gonogo.RealAntennasUplink
                 Delayed(AntennasTopic, SampleKind.Discrete),
                 Delayed(ChainsTopic, SampleKind.Discrete),
                 Delayed(RetargetingTopic, SampleKind.Discrete),
+                Delayed(FleetTopic, SampleKind.Discrete),
             },
             Commands = new List<CommandDeclaration>
             {

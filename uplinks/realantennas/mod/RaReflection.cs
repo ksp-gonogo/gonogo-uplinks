@@ -249,6 +249,38 @@ namespace Gonogo.RealAntennasUplink
             return milliwatts == null ? (double?)null : RaLinkBudget.EcPerSecondFromMilliwatts(milliwatts.Value);
         }
 
+        /// <summary>
+        /// The antenna's condition: the <c>Condition</c> field of the
+        /// <c>ModuleRealAntenna</c> that owns it, an <c>AntennaCondition</c> flags
+        /// enum, as the names its <c>ToString</c> gives. Null when the field does
+        /// not resolve.
+        /// </summary>
+        public string? Condition(object antenna) => ReadMember(Parent(antenna), "Condition")?.ToString();
+
+        /// <summary>
+        /// The address of an antenna in the form <c>realantennas.antennas</c> gives
+        /// it: its part's flight id and an ordinal among the antennas of the same
+        /// part on its own node. Null for an antenna with no part (a ground
+        /// station's) or one whose node's list does not hold it.
+        /// </summary>
+        public string? AntennaAddress(object antenna)
+        {
+            var list = NodeAntennas(ReadMember(antenna, "ParentNode"));
+            var flightIds = new List<string?>(list.Count);
+            var index = -1;
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (ReferenceEquals(list[i], antenna))
+                {
+                    index = i;
+                }
+                flightIds.Add(ReadMember(Parent(list[i]), "part") is Part part
+                    ? part.flightID.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    : null);
+            }
+            return RaAntennaIds.Of(flightIds, index);
+        }
+
         // ── The NODE's own antennas, for a pair that is not currently linked ─────
         //
         // Every accessor above reaches an antenna through a LINK, which answers

@@ -113,13 +113,16 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "RealAntennasAntennaState": {
     antennaId: "id",
     availableTargetModes: "text",
+    band: "text",
     beamwidth: "°",
+    condition: "text",
     cone10Db: "°",
     cone3Db: "°",
     gain: "dB",
     index: "count",
     minimumDistance: "m",
     name: "text",
+    powerDrawEc: "units/s",
     steerable: "flag",
     targetAltitude: "m",
     targetAzimuth: "°",
@@ -133,6 +136,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     targetVesselId: "id",
     targeted: "flag",
     techLevel: "count",
+    txPowerDbm: "dB",
   },
   "RealAntennasBorrowedDish": {
     dishId: "id",
@@ -140,6 +144,12 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     peerId: "id",
     previousAim: "text",
     sinceUt: "ut",
+  },
+  "RealAntennasFleetRow": {
+    bestBand: "text",
+    bitsPerSecToHome: "bit/s",
+    dishCount: "count",
+    vesselId: "id",
   },
   "RealAntennasHopExt": {
     band: "text",
@@ -150,7 +160,9 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     powerDrawEc: "units/s",
     requiredEbN0: "dB",
     reverseBitsPerSec: "bit/s",
+    rxAntennaId: "id",
     techLevel: "count",
+    txAntennaId: "id",
   },
   "RealAntennasHopRate": {
     bitsPerSec: "bit/s",
@@ -166,6 +178,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   "RealAntennasSetAutoRetargetArgs": {
     allow: "flag",
     vessel: "id",
+  },
+  "RealAntennasStationExt": {
+    antennaCount: "count",
+    techLevel: "count",
   },
   "RealAntennasTargetArgs": {
     altitude: "m",
@@ -239,13 +255,16 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
   "realantennas.antennas": {
     antennaId: "id",
     availableTargetModes: "text",
+    band: "text",
     beamwidth: "°",
+    condition: "text",
     cone10Db: "°",
     cone3Db: "°",
     gain: "dB",
     index: "count",
     minimumDistance: "m",
     name: "text",
+    powerDrawEc: "units/s",
     steerable: "flag",
     targetAltitude: "m",
     targetAzimuth: "°",
@@ -259,6 +278,13 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     targetVesselId: "id",
     targeted: "flag",
     techLevel: "count",
+    txPowerDbm: "dB",
+  },
+  "realantennas.fleet": {
+    bestBand: "text",
+    bitsPerSecToHome: "bit/s",
+    dishCount: "count",
+    vesselId: "id",
   },
   "realantennas.hopRates": {
     bitsPerSec: "bit/s",

@@ -24,6 +24,7 @@ import type {
   CommsLinkMargin,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
+  RealAntennasFleetRow,
   RealAntennasHopRate,
   RealAntennasVesselRetargeting,
 } from "./contract.js";
@@ -33,6 +34,7 @@ export interface GeneratedTopicPayloadMap {
   "comms.linkMargin": CommsLinkMargin;
   "realantennas.antennaChains": RealAntennasAntennaChain[];
   "realantennas.antennas": RealAntennasAntennaState[];
+  "realantennas.fleet": RealAntennasFleetRow[];
   "realantennas.hopRates": RealAntennasHopRate[];
   "realantennas.retargeting": RealAntennasVesselRetargeting[];
 }
@@ -42,6 +44,7 @@ export const GENERATED_TOPIC_IDS = [
   "comms.linkMargin",
   "realantennas.antennaChains",
   "realantennas.antennas",
+  "realantennas.fleet",
   "realantennas.hopRates",
   "realantennas.retargeting",
 ] as const;
@@ -52,6 +55,7 @@ export const GENERATED_TOPIC_IDS = [
 export const GENERATED_COLLECTION_TOPIC_IDS = [
   "realantennas.antennaChains",
   "realantennas.antennas",
+  "realantennas.fleet",
   "realantennas.hopRates",
   "realantennas.retargeting",
 ] as const;

@@ -38,6 +38,7 @@ import type {
   CommsLinkMargin,
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
+  RealAntennasFleetRow,
   RealAntennasHopRate,
   RealAntennasVesselRetargeting,
 } from "./__generated__/contract.js";
@@ -118,6 +119,16 @@ export const REALANTENNAS_CHAINS_TOPIC = "realantennas.antennaChains";
  */
 export const REALANTENNAS_RETARGETING_TOPIC = "realantennas.retargeting";
 
+/**
+ * One comms summary per craft: a bare array of {@link RealAntennasFleetRow}, one
+ * entry for every craft that carries a RealAntennas antenna. Its value must match
+ * `RealAntennasUplink.FleetTopic` in ../../RealAntennasUplink.cs.
+ *
+ * Delayed, and fleet-wide like `realantennas.retargeting`: an entry for another
+ * craft is delivered by the reported craft's delay and not its own.
+ */
+export const REALANTENNAS_FLEET_TOPIC = "realantennas.fleet";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "realantennas.available": boolean;
@@ -127,6 +138,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "realantennas.antennas": RealAntennasAntennaState[];
     "realantennas.antennaChains": RealAntennasAntennaChain[];
     "realantennas.retargeting": RealAntennasVesselRetargeting[];
+    "realantennas.fleet": RealAntennasFleetRow[];
   }
 }
 
@@ -137,6 +149,7 @@ registerUplinkTopic(REALANTENNAS_HOP_RATES_TOPIC);
 registerUplinkTopic(REALANTENNAS_ANTENNAS_TOPIC);
 registerUplinkTopic(REALANTENNAS_CHAINS_TOPIC);
 registerUplinkTopic(REALANTENNAS_RETARGETING_TOPIC);
+registerUplinkTopic(REALANTENNAS_FLEET_TOPIC);
 
 // The runtime half of the relocation. Both registries are fed, by looping over
 // the generated maps rather than naming entries, so a Topic or type added to

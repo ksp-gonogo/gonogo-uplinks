@@ -41,9 +41,11 @@ export type {
   RealAntennasAntennaChain,
   RealAntennasAntennaState,
   RealAntennasBorrowedDish,
+  RealAntennasFleetRow,
   RealAntennasHopExt,
   RealAntennasLastBorrow,
   RealAntennasSetAutoRetargetArgs,
+  RealAntennasStationExt,
   RealAntennasTargetArgs,
   RealAntennasTargetChainArgs,
   RealAntennasTargetStep,
@@ -71,6 +73,7 @@ export {
 export * from "./commands.js";
 // The typed reader + hop-bag hydration registration for extensions.realantennas.
 export { readRealAntennasHopExt } from "./hopExt.js";
+export { readRealAntennasStationExt } from "./stationExt.js";
 export * from "./topics.js";
 
 // Side-effect registrations at module load: importing this package wires the RA

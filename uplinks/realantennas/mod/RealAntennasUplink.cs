@@ -45,6 +45,7 @@ namespace Gonogo.RealAntennasUplink
         public const string TargetHomeCommand = RealAntennasManifest.TargetHomeCommand;
         public const string TargetChainCommand = RealAntennasManifest.TargetChainCommand;
         public const string RetargetingTopic = RealAntennasManifest.RetargetingTopic;
+        public const string FleetTopic = RealAntennasManifest.FleetTopic;
         public const string SetAutoRetargetCommand = RealAntennasManifest.SetAutoRetargetCommand;
 
         // Fallback link-budget inputs, used only when the live per-link read
@@ -76,6 +77,7 @@ namespace Gonogo.RealAntennasUplink
         private IChannelPublisher? _linkMargin;
         private IChannelPublisher? _hopRates;
         private IChannelPublisher? _antennas;
+        private IChannelPublisher? _fleet;
         private IChannelPublisher? _chains;
         private IChannelPublisher? _retargeting;
 
@@ -161,6 +163,7 @@ namespace Gonogo.RealAntennasUplink
             _antennas = host.Publisher(AntennasTopic);
             _chains = host.Publisher(ChainsTopic);
             _retargeting = host.Publisher(RetargetingTopic);
+            _fleet = host.Publisher(FleetTopic);
 
             host.AddSampledSource(CaptureOnMain, HandleOnCourier, DataRateTopic, LinkMarginTopic, HopRatesTopic);
 
@@ -182,6 +185,7 @@ namespace Gonogo.RealAntennasUplink
             _chainWalk = new RaChains(_ra, _targeting, RaChainScenario.Chains, _retargets);
             host.AddSampledSource(CaptureChainsOnMain, HandleChainsOnCourier);
             host.AddSampledSource(CaptureRetargetingOnMain, HandleRetargetingOnCourier, RetargetingTopic);
+            host.AddSampledSource(CaptureFleetOnMain, HandleFleetOnCourier, FleetTopic);
 
             host.AddCommandHandler<RealAntennasTargetArgs, CommandResult>(
                 TargetCommand, args => _targeting.Target(ScopedVessel(), args));
@@ -283,6 +287,96 @@ namespace Gonogo.RealAntennasUplink
                 };
             }
             return new RaRetargetingCapture { Ut = ut, Vessels = new List<RealAntennasVesselRetargeting>(vessels.Values) };
+        }
+
+        /// <summary>
+        /// Main thread: the <c>realantennas.fleet</c> value, one row for every craft
+        /// that carries a RealAntennas antenna. A craft whose antennas cannot be read
+        /// this tick is left out of the row set rather than shown with made-up
+        /// figures, and a read that throws costs that craft's row only.
+        /// </summary>
+        internal object? CaptureFleetOnMain(KspSnapshot? snapshot)
+        {
+            if (_ra == null)
+            {
+                return null;
+            }
+            var rows = new List<RealAntennasFleetRow>();
+            var vessels = FlightGlobals.Vessels;
+            if (vessels != null)
+            {
+                foreach (var vessel in vessels)
+                {
+                    try
+                    {
+                        var row = FleetRowOf(vessel);
+                        if (row != null)
+                        {
+                            rows.Add(row);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("[RealAntennasUplink] fleet row read failed: " + ex.Message);
+                    }
+                }
+            }
+            return new RaFleetCapture { Ut = UtOf(snapshot), Rows = rows };
+        }
+
+        private RealAntennasFleetRow? FleetRowOf(Vessel? vessel)
+        {
+            var comm = vessel?.connection?.Comm;
+            if (vessel == null || comm == null)
+            {
+                return null;
+            }
+            var antennas = _ra!.NodeAntennas(comm);
+            if (antennas.Count == 0)
+            {
+                return null;
+            }
+            var readings = new List<RaFleet.Reading>(antennas.Count);
+            foreach (var antenna in antennas)
+            {
+                readings.Add(new RaFleet.Reading(_ra.BandName(antenna), _ra.Frequency(antenna), _ra.Steerable(antenna)));
+            }
+
+            var route = new List<RaFleet.Hop>();
+            CommNode near = comm;
+            var path = vessel.connection.ControlPath;
+            if (path != null)
+            {
+                foreach (var link in path)
+                {
+                    if (link?.a == null || link.b == null)
+                    {
+                        continue;
+                    }
+                    var nearIsA = ReferenceEquals(link.a, near);
+                    route.Add(new RaFleet.Hop(_ra.ForwardDataRate(link), _ra.ReverseDataRate(link), nearIsA));
+                    near = nearIsA ? link.b : link.a;
+                }
+            }
+
+            var id = vessel.id.ToString();
+            return new RealAntennasFleetRow
+            {
+                VesselId = id,
+                BestBand = RaFleet.BestBand(readings),
+                BitsPerSecToHome = RaFleet.RateToHome(route),
+                DishCount = RaFleet.DishCount(readings),
+                Meta = new PayloadMeta { Source = "vessel:" + id },
+            };
+        }
+
+        internal void HandleFleetOnCourier(object? captured)
+        {
+            if (captured is not RaFleetCapture capture)
+            {
+                return;
+            }
+            _fleet?.Publish(RaWire.Fleet(capture.Rows), capture.Ut);
         }
 
         internal void HandleRetargetingOnCourier(object? captured)
@@ -632,6 +726,12 @@ namespace Gonogo.RealAntennasUplink
         {
             public double Ut;
             public List<RealAntennasAntennaState> Antennas = new List<RealAntennasAntennaState>();
+        }
+
+        private sealed class RaFleetCapture
+        {
+            public double Ut;
+            public List<RealAntennasFleetRow> Rows = new List<RealAntennasFleetRow>();
         }
 
         private sealed class RaRetargetingCapture

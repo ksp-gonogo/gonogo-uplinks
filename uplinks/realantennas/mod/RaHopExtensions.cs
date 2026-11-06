@@ -60,13 +60,16 @@ namespace Gonogo.RealAntennasUplink
             var beamwidth = tx != null ? ra.Beamwidth(tx) : null;
             var powerDrawEc = tx != null ? ra.PowerDrawEcPerSecond(tx) : null;
             var requiredEbN0 = rx != null ? ra.RequiredEbN0Db(rx) : null;
+            var txAntennaId = tx != null ? ra.AntennaAddress(tx) : null;
+            var rxAntennaId = rx != null ? ra.AntennaAddress(rx) : null;
 
             // Nothing read at all: leave the bag off so the hop is the bare shared
             // shape (the vanilla CommNet posture), rather than an empty namespace a
             // widget would read as "RA present but silent".
             if (band == null && techLevel == null && modulationBits == null && encoder == null &&
                 codingRate == null && beamwidth == null && powerDrawEc == null &&
-                requiredEbN0 == null && reverseBitsPerSec == null)
+                requiredEbN0 == null && reverseBitsPerSec == null &&
+                txAntennaId == null && rxAntennaId == null)
             {
                 return null;
             }
@@ -84,6 +87,8 @@ namespace Gonogo.RealAntennasUplink
                     ["beamwidth"] = beamwidth,
                     ["powerDrawEc"] = powerDrawEc,
                     ["reverseBitsPerSec"] = reverseBitsPerSec,
+                    ["txAntennaId"] = txAntennaId,
+                    ["rxAntennaId"] = rxAntennaId,
                 },
             };
         }

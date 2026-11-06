@@ -23,7 +23,7 @@ namespace Gonogo.RealAntennasUplink
     /// <para>Main-thread only (live KSP reads), called from the RA uplink's
     /// capture-on-main sampler.</para>
     /// </summary>
-    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend, ILinkStrengthRestorer, ILinkModelRestorer
+    public sealed class RaCommsBackend : CommsBackendBase, ICommsContactModel, ICommsPathStrength, ICommsRetargetBackend, ILinkStrengthRestorer, ILinkModelRestorer, ICommsGroundStations
     {
         public const string Id = "realantennas";
 
@@ -67,6 +67,16 @@ namespace Gonogo.RealAntennasUplink
         }
 
         public override string ProviderId => Id;
+
+        private RaGroundStations? _stations;
+
+        /// <summary>
+        /// Every ground station with its place on its body, each carrying its
+        /// tech level and antenna count in the <c>"realantennas"</c> extension bag.
+        /// Main thread only.
+        /// </summary>
+        public IReadOnlyList<CommsGroundStation> GroundStations() =>
+            (_stations ??= new RaGroundStations(_ra)).Read();
 
         /// <summary>
         /// The craft this backend answers for, from core's <c>activeVessel</c>
@@ -505,7 +515,7 @@ namespace Gonogo.RealAntennasUplink
         }
 
         /// <summary>The human label, independent of the (now unique) id.</summary>
-        private static string NodeDisplayName(CommNode node)
+        internal static string NodeDisplayName(CommNode node)
         {
             if (node == null) return "unknown";
             if (!string.IsNullOrEmpty(node.displayName)) return node.displayName;

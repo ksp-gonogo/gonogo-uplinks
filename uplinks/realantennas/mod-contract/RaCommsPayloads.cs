@@ -154,7 +154,12 @@ public class RealAntennasHopExt
     [SitrepUnit(Units.Degrees)]
     public double? Beamwidth { get; set; }
 
-    /// <summary>Transmit electric-charge draw (units/s): the comms power cost of this hop.</summary>
+    /// <summary>
+    /// Transmit electric-charge draw (units/s) RealAntennas computes for the
+    /// hop's transmitting antenna at its power setting. A calculated figure for
+    /// the link, not a measurement of what the craft draws, and it leaves out the
+    /// antenna's idle draw.
+    /// </summary>
     [SitrepUnit(Units.ResourceUnitsPerSecond)]
     public double? PowerDrawEc { get; set; }
 
@@ -165,6 +170,52 @@ public class RealAntennasHopExt
     /// </summary>
     [SitrepUnit(Units.BitsPerSecond)]
     public double? ReverseBitsPerSec { get; set; }
+
+    /// <summary>
+    /// The address of the antenna that transmits along this hop, in the same
+    /// form <c>realantennas.antennas</c> uses (<c>"1234567890/0"</c>: the part's
+    /// flight id and an ordinal). Joins onto that channel only when the hop's
+    /// near end is the reported craft; for a relay the id names a part on that
+    /// relay. Null when the antenna belongs to no part, as a ground station's
+    /// does, or its part cannot be read.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? TxAntennaId { get; set; }
+
+    /// <summary>
+    /// The address of the antenna that receives along this hop, in the form of
+    /// <see cref="TxAntennaId"/>. Null under the same rule.
+    /// </summary>
+    [SitrepUnit(Units.Id)]
+    public string? RxAntennaId { get; set; }
+}
+
+/// <summary>
+/// RealAntennas' namespace of a <c>CommsGroundStation</c>'s provider extension
+/// bag: the facts of the station's own radio equipment, carried under the
+/// provider id <c>"realantennas"</c> and typed here rather than in core. Read
+/// client-side through <c>readRealAntennasStationExt</c>.
+///
+/// <para>Every field is nullable: absent under bare CommNet (the vanilla
+/// backend leaves the whole bag off), and individually absent when a
+/// RealAntennas read fails.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public class RealAntennasStationExt
+{
+    /// <summary>
+    /// The station's tech level (0..9): the highest tech level among its
+    /// antennas, which is what its upgrade level sets.
+    /// </summary>
+    [SitrepUnit(Units.Count)]
+    public int? TechLevel { get; set; }
+
+    /// <summary>How many antennas the station carries.</summary>
+    [SitrepUnit(Units.Count)]
+    public int? AntennaCount { get; set; }
 }
 
 /// <summary>

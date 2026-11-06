@@ -10,7 +10,7 @@ Shows RealAntennas' radio links in the comms readouts when it is installed: band
 | Uplink id | `realantennas` |
 | Version | `1.0.0-rc.6` |
 | Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 50.4, extension API 6.0.0 |
+| Built against | contract 51.0, extension API 6.0.0 |
 
 ## Install
 
@@ -28,6 +28,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | `comms.linkMargin` | `CommsLinkMargin` | lossy-latest | delayed |
 | `realantennas.antennaChains` | `RealAntennasAntennaChain[]` | lossy-latest | delayed |
 | `realantennas.antennas` | `RealAntennasAntennaState[]` | lossy-latest | delayed |
+| `realantennas.fleet` | `RealAntennasFleetRow[]` | lossy-latest | delayed |
 | `realantennas.hopRates` | `RealAntennasHopRate[]` | lossy-latest | delayed |
 | `realantennas.retargeting` | `RealAntennasVesselRetargeting[]` | lossy-latest | delayed |
 | `realantennas.available` | – | lossy-latest | true-now |
@@ -35,8 +36,9 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | Payload | Fields |
 | --- | --- |
 | `RealAntennasBorrowedDish` | `dishId` id, `dishName` text, `peerId` id, `previousAim` text, `sinceUt` ut |
-| `RealAntennasHopExt` | `band` text, `beamwidth` °, `codingRate` ratio, `encoder` text, `modulationBits` count, `powerDrawEc` units/s, `requiredEbN0` dB, `reverseBitsPerSec` bit/s, `techLevel` count |
+| `RealAntennasHopExt` | `band` text, `beamwidth` °, `codingRate` ratio, `encoder` text, `modulationBits` count, `powerDrawEc` units/s, `requiredEbN0` dB, `reverseBitsPerSec` bit/s, `rxAntennaId` id, `techLevel` count, `txAntennaId` id |
 | `RealAntennasLastBorrow` | `endedUt` ut, `outcome` text, `peerId` id, `turnedUt` ut |
+| `RealAntennasStationExt` | `antennaCount` count, `techLevel` count |
 | `RealAntennasTargetStep` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 | `RealAntennasTargetStepArgs` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 

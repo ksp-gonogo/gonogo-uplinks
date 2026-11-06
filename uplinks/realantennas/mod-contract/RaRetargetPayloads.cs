@@ -130,3 +130,46 @@ public class RealAntennasVesselRetargeting
 
     public PayloadMeta Meta { get; set; } = new();
 }
+
+/// <summary>
+/// One craft's comms summary, an entry of <c>realantennas.fleet</c>: the best
+/// band it can transmit on, the rate its radio gives it to home, and how many
+/// dishes it carries. The channel value is a bare array with an entry for every
+/// craft that carries a RealAntennas antenna.
+///
+/// <para>As the reported craft's own delay delivers it: the channel is
+/// <c>Delayed</c> and carries the whole fleet, so an entry for another craft is
+/// not older or newer than the delay to the reported one makes it.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepTopic("realantennas.fleet", isArray: true)]
+public class RealAntennasFleetRow
+{
+    /// <summary>The craft, by its id as <c>trackingStation.catalog</c> gives it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string VesselId { get; set; } = "";
+
+    /// <summary>
+    /// The band of the craft's highest-frequency antenna (L/S/X/K). Null when
+    /// no antenna's band can be read.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? BestBand { get; set; }
+
+    /// <summary>
+    /// The rate the craft can send at to home along its present route: the
+    /// slowest hop's rate in the direction from the craft. Null when the craft
+    /// has no route home or a hop's rate cannot be read, never 0.
+    /// </summary>
+    [SitrepUnit(Units.BitsPerSecond)]
+    public double? BitsPerSecToHome { get; set; }
+
+    /// <summary>How many steerable antennas the craft carries.</summary>
+    [SitrepUnit(Units.Count)]
+    public int DishCount { get; set; }
+
+    public PayloadMeta Meta { get; set; } = new();
+}

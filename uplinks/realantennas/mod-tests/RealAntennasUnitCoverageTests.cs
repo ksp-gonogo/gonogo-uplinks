@@ -96,7 +96,9 @@ namespace GonogoRealAntennasUplink.Tests
                 nameof(RealAntennasSetAutoRetargetArgs),
                 nameof(RealAntennasBorrowedDish),
                 nameof(RealAntennasLastBorrow),
-                nameof(RealAntennasVesselRetargeting));
+                nameof(RealAntennasVesselRetargeting),
+                nameof(RealAntennasStationExt),
+                nameof(RealAntennasFleetRow));
 
         /// <summary>
         /// The antenna id is what both commands address, and it must stay a

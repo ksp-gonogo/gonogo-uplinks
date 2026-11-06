@@ -128,6 +128,10 @@ namespace Gonogo.RealAntennasUplink
                     Targeted = targeted,
                     Gain = _ra.Gain(antenna),
                     TechLevel = techLevel,
+                    Band = _ra.BandName(antenna),
+                    TxPowerDbm = _ra.TxPower(antenna),
+                    PowerDrawEc = _ra.PowerDrawEcPerSecond(antenna),
+                    Condition = _ra.Condition(antenna),
                     Beamwidth = beamwidth,
                     // RealAntennas draws the 3 dB cone at half the beamwidth and
                     // the 10 dB cone at all of it (RACommNetScenario's MapUI
@@ -515,21 +519,12 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         internal string[] AntennaIds(IReadOnlyList<object> antennas)
         {
-            var ids = new string[antennas.Count];
-            var seen = new Dictionary<string, int>();
+            var flightIds = new string?[antennas.Count];
             for (var i = 0; i < antennas.Count; i++)
             {
-                var flightId = FlightId(antennas[i]);
-                if (flightId == null)
-                {
-                    ids[i] = "index/" + i.ToString(CultureInfo.InvariantCulture);
-                    continue;
-                }
-                seen.TryGetValue(flightId, out var ordinal);
-                seen[flightId] = ordinal + 1;
-                ids[i] = flightId + "/" + ordinal.ToString(CultureInfo.InvariantCulture);
+                flightIds[i] = FlightId(antennas[i]);
             }
-            return ids;
+            return RaAntennaIds.ForList(flightIds);
         }
 
         /// <summary>

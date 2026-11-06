@@ -116,6 +116,32 @@ public class RealAntennasAntennaState
     [SitrepUnit(Units.Count)]
     public int? TechLevel { get; set; }
 
+    /// <summary>RF band the antenna works on (L/S/X/K): <c>RealAntenna.RFBand.name</c>. Null when unreadable.</summary>
+    [SitrepUnit(Units.Text)]
+    public string? Band { get; set; }
+
+    /// <summary>The antenna's transmit power setting (dBm), as RealAntennas holds it. Null when unreadable.</summary>
+    [SitrepUnit(Units.Decibels)]
+    public double? TxPowerDbm { get; set; }
+
+    /// <summary>
+    /// Electric charge RealAntennas computes the antenna draws while
+    /// transmitting (units/s), at its power setting: a calculated figure, not a
+    /// measurement of what the craft draws, and it leaves out the antenna's idle
+    /// draw. Null when unreadable.
+    /// </summary>
+    [SitrepUnit(Units.ResourceUnitsPerSecond)]
+    public double? PowerDrawEc { get; set; }
+
+    /// <summary>
+    /// The antenna's condition as RealAntennas names it: <c>Enabled</c>,
+    /// <c>Disabled</c>, <c>PermanentShutdown</c> or <c>Broken</c>, or several
+    /// of those joined by a comma and a space when more than one holds. Null
+    /// when RealAntennas states none, which says nothing about the antenna.
+    /// </summary>
+    [SitrepUnit(Units.Text)]
+    public string? Condition { get; set; }
+
     /// <summary>
     /// Beamwidth (degrees), from gain. RealAntennas draws the 3 dB cone at half
     /// this and the 10 dB cone at all of it, so this is the wider of the two.

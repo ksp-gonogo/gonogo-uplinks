@@ -71,7 +71,7 @@ describe("generated contract.ts: Value usage resolves to core", () => {
     );
     expect(src).not.toMatch(/meta:\s*any;/);
     // The two link channels, the per-antenna targeting state, the retargeting
-    // state, and the per-antenna fallback chain.
-    expect(src.match(/meta:\s*PayloadMeta;/g)).toHaveLength(5);
+    // state, the per-antenna fallback chain, and the per-craft fleet row.
+    expect(src.match(/meta:\s*PayloadMeta;/g)).toHaveLength(6);
   });
 });

@@ -32,6 +32,8 @@
     <Compile Include="..\mod\RaLinkDown.cs" />
     <Compile Include="..\mod\RaHealth.cs" />
     <Compile Include="..\mod\RaWire.cs" />
+    <Compile Include="..\mod\RaAntennaIds.cs" />
+    <Compile Include="..\mod\RaFleet.cs" />
     <!-- RaLinkDirection is the pure, KSP-free up/down resolver for the RA link's
          forward/reverse rates; RaLinkDirectionTests exercises both orientations. -->
     <Compile Include="..\mod\RaLinkDirection.cs" />
@@ -121,6 +123,7 @@
          under test and the test naming it belong under the gate below. -->
     <Compile Remove="RaChainPersistenceTests.cs" />
     <Compile Remove="RaRetargetPersistenceTests.cs" />
+    <Compile Remove="RaStationBagTests.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(KspManagedAvailable)' == 'true'">
@@ -140,6 +143,8 @@
     <!-- RaCommsBackend turns dishes through the game-touching half, so the half it
          names comes with it: part ids, targeting's writes and the turner itself. -->
     <Compile Include="..\mod\RaPartIds.cs" />
+    <Compile Include="..\mod\RaGroundStations.cs" />
+    <Compile Include="RaStationBagTests.cs" />
     <Compile Include="..\mod\RaTargeting.cs" />
     <Compile Include="..\mod\RaDishTurner.cs" />
     <Compile Include="..\mod\RaHopExtensions.cs" />

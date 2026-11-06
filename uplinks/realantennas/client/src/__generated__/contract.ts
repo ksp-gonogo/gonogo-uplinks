@@ -306,7 +306,12 @@ export interface RealAntennasHopExt
 	requiredEbN0?: Value<"dB"> | null;
 	/** Dish beamwidth (degrees): pointing tightness/sensitivity. */
 	beamwidth?: Value<"°"> | null;
-	/** Transmit electric-charge draw (units/s): the comms power cost of this hop. */
+	/**
+	* Transmit electric-charge draw (units/s) RealAntennas computes for the hop's
+	* transmitting antenna at its power setting. A calculated figure for the link,
+	* not a measurement of what the craft draws, and it leaves out the antenna's
+	* idle draw.
+	*/
 	powerDrawEc?: Value<"units/s"> | null;
 	/**
 	* Reverse-direction throughput (bits/sec): the opposite of the forward rate
@@ -314,6 +319,40 @@ export interface RealAntennasHopExt
 	* RACommLink. The backend only surfaced the forward direction before.
 	*/
 	reverseBitsPerSec?: Value<"bit/s"> | null;
+	/**
+	* The address of the antenna that transmits along this hop, in the same form
+	* `realantennas.antennas` uses (`"1234567890/0"`: the part's flight id and an
+	* ordinal). Joins onto that channel only when the hop's near end is the
+	* reported craft; for a relay the id names a part on that relay. Null when the
+	* antenna belongs to no part, as a ground station's does, or its part cannot
+	* be read.
+	*/
+	txAntennaId?: string | null;
+	/**
+	* The address of the antenna that receives along this hop, in the form of
+	* `RealAntennasHopExt.txAntennaId`. Null under the same rule.
+	*/
+	rxAntennaId?: string | null;
+}
+/**
+* RealAntennas' namespace of a `CommsGroundStation`'s provider extension bag:
+* the facts of the station's own radio equipment, carried under the provider
+* id `"realantennas"` and typed here rather than in core. Read client-side
+* through `readRealAntennasStationExt`.
+*
+* Every field is nullable: absent under bare CommNet (the vanilla backend
+* leaves the whole bag off), and individually absent when a RealAntennas read
+* fails.
+*/
+export interface RealAntennasStationExt
+{
+	/**
+	* The station's tech level (0..9): the highest tech level among its antennas,
+	* which is what its upgrade level sets.
+	*/
+	techLevel?: Value<"count"> | null;
+	/** How many antennas the station carries. */
+	antennaCount?: Value<"count"> | null;
 }
 /**
 * One entry of the `realantennas.hopRates` channel: the RealAntennas forward
@@ -434,6 +473,35 @@ export interface RealAntennasVesselRetargeting
 	meta: PayloadMeta;
 }
 /**
+* One craft's comms summary, an entry of `realantennas.fleet`: the best band
+* it can transmit on, the rate its radio gives it to home, and how many dishes
+* it carries. The channel value is a bare array with an entry for every craft
+* that carries a RealAntennas antenna.
+*
+* As the reported craft's own delay delivers it: the channel is `Delayed` and
+* carries the whole fleet, so an entry for another craft is not older or newer
+* than the delay to the reported one makes it.
+*/
+export interface RealAntennasFleetRow
+{
+	/** The craft, by its id as `trackingStation.catalog` gives it. */
+	vesselId: string;
+	/**
+	* The band of the craft's highest-frequency antenna (L/S/X/K). Null when no
+	* antenna's band can be read.
+	*/
+	bestBand?: string | null;
+	/**
+	* The rate the craft can send at to home along its present route: the slowest
+	* hop's rate in the direction from the craft. Null when the craft has no route
+	* home or a hop's rate cannot be read, never 0.
+	*/
+	bitsPerSecToHome?: Value<"bit/s"> | null;
+	/** How many steerable antennas the craft carries. */
+	dishCount: Value<"count">;
+	meta: PayloadMeta;
+}
+/**
 * One antenna of the reported craft, on the `realantennas.antennas` channel:
 * what it is, what it can do, and where it is currently pointed. The channel
 * value is a bare array of these, one entry per antenna, in the order
@@ -498,6 +566,30 @@ export interface RealAntennasAntennaState
 	gain?: Value<"dB"> | null;
 	/** Antenna tech level (0..9): the level the mode gate compares against. */
 	techLevel?: Value<"count"> | null;
+	/**
+	* RF band the antenna works on (L/S/X/K): `RealAntenna.RFBand.name`. Null when
+	* unreadable.
+	*/
+	band?: string | null;
+	/**
+	* The antenna's transmit power setting (dBm), as RealAntennas holds it. Null
+	* when unreadable.
+	*/
+	txPowerDbm?: Value<"dB"> | null;
+	/**
+	* Electric charge RealAntennas computes the antenna draws while transmitting
+	* (units/s), at its power setting: a calculated figure, not a measurement of
+	* what the craft draws, and it leaves out the antenna's idle draw. Null when
+	* unreadable.
+	*/
+	powerDrawEc?: Value<"units/s"> | null;
+	/**
+	* The antenna's condition as RealAntennas names it: `Enabled`, `Disabled`,
+	* `PermanentShutdown` or `Broken`, or several of those joined by a comma and a
+	* space when more than one holds. Null when RealAntennas states none, which
+	* says nothing about the antenna.
+	*/
+	condition?: string | null;
 	/**
 	* Beamwidth (degrees), from gain. RealAntennas draws the 3 dB cone at half
 	* this and the 10 dB cone at all of it, so this is the wider of the two.

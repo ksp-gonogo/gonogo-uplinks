@@ -121,6 +121,11 @@ public static class RealAntennasRtConfig
             typeof(RealAntennasBorrowedDish),
             typeof(RealAntennasLastBorrow),
             typeof(RealAntennasVesselRetargeting),
+            // The bag on a comms.groundStations entry, typed here like the hop bag
+            // above: no [SitrepTopic] of its own, listed so its counts are retyped.
+            typeof(RealAntennasStationExt),
+            // realantennas.fleet: one comms summary per craft, a bare ARRAY again.
+            typeof(RealAntennasFleetRow),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

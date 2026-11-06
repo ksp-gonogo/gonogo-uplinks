@@ -100,6 +100,10 @@ namespace Gonogo.RealAntennasUplink
                     ["targeted"] = antenna.Targeted,
                     ["gain"] = antenna.Gain,
                     ["techLevel"] = antenna.TechLevel,
+                    ["band"] = antenna.Band,
+                    ["txPowerDbm"] = antenna.TxPowerDbm,
+                    ["powerDrawEc"] = antenna.PowerDrawEc,
+                    ["condition"] = antenna.Condition,
                     ["beamwidth"] = antenna.Beamwidth,
                     ["cone3Db"] = antenna.Cone3Db,
                     ["cone10Db"] = antenna.Cone10Db,
@@ -152,6 +156,28 @@ namespace Gonogo.RealAntennasUplink
                     ["connected"] = chain.Connected,
                     ["carrying"] = chain.Carrying,
                     ["meta"] = Meta(chain.Meta),
+                });
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// The <c>realantennas.fleet</c> channel value: a bare array, one entry per
+        /// craft that carries a RealAntennas antenna. An empty list is a legitimate
+        /// value (no such craft), not typed absence.
+        /// </summary>
+        public static List<Dictionary<string, object?>> Fleet(IReadOnlyList<RealAntennasFleetRow> rows)
+        {
+            var list = new List<Dictionary<string, object?>>(rows.Count);
+            foreach (var row in rows)
+            {
+                list.Add(new Dictionary<string, object?>
+                {
+                    ["vesselId"] = row.VesselId,
+                    ["bestBand"] = row.BestBand,
+                    ["bitsPerSecToHome"] = row.BitsPerSecToHome,
+                    ["dishCount"] = row.DishCount,
+                    ["meta"] = Meta(row.Meta),
                 });
             }
             return list;
