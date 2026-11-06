@@ -693,8 +693,8 @@ export function BurnEditor() {
                     <Badge tone="warn">EDIT WINDOW SHUT</Badge>
                   ) : (
                     <Badge tone="caution">
-                      EDIT WINDOW{" "}
-                      <Countdown value={draftWindow.remainingSeconds} clock />
+                      EDIT WINDOW CLOSES IN{" "}
+                      <Countdown value={draftWindow.remainingSeconds} />
                     </Badge>
                   )}
                 </Cluster>

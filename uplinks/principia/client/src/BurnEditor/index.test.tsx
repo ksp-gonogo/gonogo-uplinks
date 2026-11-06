@@ -733,7 +733,7 @@ describe("BurnEditor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
     expect(screen.queryByText("EDIT WINDOW SHUT")).not.toBeInTheDocument();
-    expect(screen.getByText(/EDIT WINDOW/)).toHaveTextContent("T−1h");
+    expect(screen.getByText(/EDIT WINDOW/)).toHaveTextContent("CLOSES IN 1h");
     expect(
       screen.getByRole("button", { name: "Apply the edited burn" }),
     ).toBeEnabled();
