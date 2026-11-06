@@ -35,7 +35,7 @@ jobs:
       scaffold_sibling: ${{ steps.sibling.outputs.name }}
     steps:
       - uses: actions/checkout@v4
-        with: { ref: "${{ inputs.ref }}" }
+        with: { ref: "${{ inputs.ref }}", fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
       - id: matrix
@@ -73,6 +73,14 @@ jobs:
       # Is any assistant working-notes or tool-config file tracked. The
       # repo is public. Plants a violation and fails as BLIND if unseen.
       - run: node tooling/check-private-notes.mjs
+      # Does each commit a push or pull request adds name the Uplinks it
+      # touches. The same module the commit-msg hook runs, over commits after
+      # the sha named in tooling/commit-scope.mjs.
+      - if: inputs.ref == ''
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node tooling/commit-scope.mjs --since "$BASE" --to "$HEAD_SHA"
       - run: node --test "tooling/*.test.mjs"
 
   uplink:

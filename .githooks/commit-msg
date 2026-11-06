@@ -139,3 +139,9 @@ MSG
     fi
     ;;
 esac
+
+# The scope names the Uplinks the commit touches, so per-Uplink release notes
+# list each change under the right Uplink. The rule lives in one module that CI
+# runs too.
+root=$(git rev-parse --show-toplevel)
+node "$root/tooling/commit-scope.mjs" --message "$1"

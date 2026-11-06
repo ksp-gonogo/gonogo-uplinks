@@ -7,9 +7,11 @@
  *
  * One repository holds every Uplink, so an Uplink's history is a filter over the
  * shared one. A commit belongs to an Uplink when its scope names it
- * (`feat(kerbcast): ...`), or when it touched that Uplink's directory and its
+ * (`feat(kerbcast): ...`; a comma list such as `fix(kerbcast,rp1): ...` names each),
+ * (`uplinks` names every Uplink whose directory the commit touched), or when it
+ * touched that Uplink's directory and its
  * scope names no other Uplink. A commit that touched several Uplinks and is
- * scoped to one belongs to that one alone.
+ * scoped to some Uplinks belongs to those alone.
  *
  * The list is simplified before it is handed on: release commits are dropped,
  * and a revert is dropped together with the commit it undoes, found by the
@@ -33,6 +35,15 @@ function git(root, args) {
     throw new Error(`git ${args.join(" ")} failed:\n${ran.stderr}`);
   }
   return ran.stdout;
+}
+
+/** The names in a commit scope: `kerbcast,rp1` is two, no scope is none. */
+export function scopeNames(scope) {
+  if (scope === undefined) return [];
+  return scope
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
 }
 
 /** Every name an Uplink answers to in a commit scope: its id and its directory. */
@@ -88,12 +99,14 @@ export function uplinkCommits(root, id, since, until = "HEAD") {
     const [subject, body, files] = record.split("\x1f");
     const match = SUBJECT.exec(subject.trim());
     if (!match) continue;
-    const scope = match[2];
+    const scopes = scopeNames(match[2]);
     const touched = files
       .split("\n")
       .some((file) => file.startsWith(`uplinks/${own.dir}/`));
-    const named = scope !== undefined && own.names.has(scope);
-    if (!(named || (touched && !(scope !== undefined && others.has(scope))))) continue;
+    const wide = scopes.includes("uplinks");
+    const named = scopes.some((name) => own.names.has(name)) || (wide && touched);
+    const namesOther = scopes.some((name) => others.has(name));
+    if (!(named || (touched && !namesOther))) continue;
     commits.push({
       subject: subject.trim(),
       type: match[1].toLowerCase(),

@@ -157,7 +157,8 @@ jobs:
             echo "Every Uplink page already describes the code. Nothing to commit."
           else
             git diff --cached --name-status
-            git commit -m "chore: regenerate Uplink pages"
+            scope=$(node tooling/commit-scope.mjs --scope-for)
+            git commit -m "chore${scope:+($scope)}: regenerate Uplink pages"
             git push origin HEAD:${{ github.ref_name }}
           fi
 
