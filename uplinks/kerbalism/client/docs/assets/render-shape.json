@@ -43,18 +43,18 @@
       "text": "2a000e90"
     },
     "ec-shortage-limits-water--default.png": {
-      "hash": "856befcd31cbe98b",
-      "elements": 221,
+      "hash": "b5df61d6c55ae8a9",
+      "elements": 227,
       "text": "9f956fb6"
     },
     "ec-shortage-limits-water--min.png": {
-      "hash": "bc4b16ce358bd0e5",
-      "elements": 222,
+      "hash": "1392fce2dc7884f5",
+      "elements": 228,
       "text": "9678bf1e"
     },
     "ec-shortage-limits-water-light-time--default.png": {
-      "hash": "59a93f1b041db898",
-      "elements": 227,
+      "hash": "0e7a1abc4251be12",
+      "elements": 233,
       "text": "13fc57a5"
     },
     "ec-shortage-limits-water-stopped-arriving--default.png": {
@@ -68,14 +68,14 @@
       "text": "9799a339"
     },
     "file-and-sample-on-one-subject--default.png": {
-      "hash": "4f4d82d2b824d096",
-      "elements": 134,
-      "text": "fbd599fd"
+      "hash": "4fb03b7c9f0ba98f",
+      "elements": 132,
+      "text": "07ddfe70"
     },
     "file-and-sample-on-one-subject-stopped-arriving--default.png": {
-      "hash": "a36745ea3e79e851",
-      "elements": 153,
-      "text": "5b2cfd94"
+      "hash": "8fc93c25b37de897",
+      "elements": 151,
+      "text": "ac041e7b"
     },
     "greenhouse-halted-in-the-dark--default.png": {
       "hash": "9a7068c43b3428da",
@@ -168,19 +168,19 @@
       "text": "78bd6f8c"
     },
     "supply-tank-meters--default.png": {
-      "hash": "cc0ddb1f055cd9aa",
-      "elements": 52,
-      "text": "1cb7c398"
+      "hash": "33e59ac9e7b0e1b7",
+      "elements": 77,
+      "text": "9d645099"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "c33d68e8663df20d",
-      "elements": 57,
-      "text": "1cb7c398"
+      "hash": "8a8b5dd1cd513d91",
+      "elements": 82,
+      "text": "9d645099"
     },
     "unread-send-and-analyze-flags--default.png": {
-      "hash": "6ccb5e52fec6ddb0",
-      "elements": 131,
-      "text": "78f842dd"
+      "hash": "74c0d687f747ad52",
+      "elements": 129,
+      "text": "487c657c"
     }
   }
 }
