@@ -25,6 +25,13 @@ import {
 import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { PlanSlots } from "./index.js";
 
+/** A commanded button by its visible word: its accessible name is the reason while it is blocked. */
+function control(word: string): HTMLElement {
+  const button = screen.getByText(word).closest("button");
+  if (!button) throw new Error(`no button reads ${word}`);
+  return button;
+}
+
 /**
  * A plan write's answer as the mod actually sends it: a `CommandResult` whose
  * `payload` is the receipt. See `JsonWriter.AppendCommandResult`, and the
@@ -315,11 +322,10 @@ describe("PlanSlots", () => {
     await emitPlan(stream, { planCount: 10, selectedPlan: 9 });
 
     expect(screen.getByText("SLOTS FULL AT 10")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", {
-        name: "Copy this flight plan into a new slot",
-      }),
-    ).toBeDisabled();
+    expect(control("COPY TO A NEW SLOT")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await act(async () => {});
   });
 
@@ -341,14 +347,11 @@ describe("PlanSlots", () => {
     expect(screen.getByText("NOT ARMED")).toHaveAccessibleDescription(
       /Arming runs a round trip/,
     );
-    expect(
-      screen.getByRole("button", { name: "Delete this flight plan" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", {
-        name: "Copy this flight plan into a new slot",
-      }),
-    ).toBeDisabled();
+    expect(control("DELETE PLAN")).toHaveAttribute("aria-disabled", "true");
+    expect(control("COPY TO A NEW SLOT")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await act(async () => {});
   });
 
@@ -362,9 +365,7 @@ describe("PlanSlots", () => {
     await emitPlan(stream, { optimisationRunning: true });
 
     expect(screen.getByText("OPTIMISING")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Delete this flight plan" }),
-    ).toBeDisabled();
+    expect(control("DELETE PLAN")).toHaveAttribute("aria-disabled", "true");
     await act(async () => {});
   });
 
@@ -378,9 +379,10 @@ describe("PlanSlots", () => {
     await emitPlan(stream, { burns: [burn(), burn({ index: 1 })] });
 
     const body = screen.getByText("BURNS").ownerDocument.body;
-    expect(
-      screen.getByRole("button", { name: "Delete this flight plan" }),
-    ).toHaveAccessibleDescription(/Discards this slot's burns/);
+    expect(control("DELETE PLAN")).toHaveAttribute(
+      "data-tooltip",
+      expect.stringMatching(/Discards this slot's burns/),
+    );
     expect(await visibleText(body)).toContain("BURNS2");
     await act(async () => {});
   });
@@ -617,10 +619,8 @@ describe("PlanSlots", () => {
     });
     await emitPlan(stream, { planExists: false, planCount: 0, burns: [] });
 
-    const create = screen.getByRole("button", {
-      name: "Create a flight plan for this vessel",
-    });
-    expect(create).toBeEnabled();
+    const create = control("CREATE EMPTY PLAN");
+    expect(create).not.toHaveAttribute("aria-disabled", "true");
 
     // A day earlier than the seeded end, which puts it behind the arrival
     // instant two one-way delays out.
@@ -628,7 +628,7 @@ describe("PlanSlots", () => {
       screen.getByRole("button", { name: "New plan end earlier by 1d" }),
     );
 
-    expect(create).toBeDisabled();
+    expect(create).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("END BEFORE ARRIVAL")).toHaveAccessibleDescription(
       /already passed by the time the write arrives/,
     );
@@ -944,16 +944,14 @@ describe("PlanSlots", () => {
       },
     });
 
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toHaveAccessibleDescription(/burn layout is unverified/);
+    expect(control("INSTALL AS FLIGHT PLAN")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(control("INSTALL AS FLIGHT PLAN")).toHaveAttribute(
+      "data-tooltip",
+      expect.stringMatching(/burn layout is unverified/),
+    );
     await act(async () => {});
   });
 
@@ -973,11 +971,10 @@ describe("PlanSlots", () => {
       },
     });
 
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toBeEnabled();
+    expect(control("INSTALL AS FLIGHT PLAN")).not.toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await act(async () => {});
   });
 
@@ -1008,19 +1005,15 @@ describe("PlanSlots", () => {
     });
     await emitPlan(stream);
 
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toBeDisabled();
+    expect(control("INSTALL AS FLIGHT PLAN")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     const body = screen.getByText("SAVED PLAN 1").ownerDocument.body;
     expect(await visibleText(body)).toContain("WINDOW SHUT AT");
-    expect(
-      screen.getByRole("button", {
-        name: "Install this plan as Principia's flight plan",
-      }),
-    ).toHaveAccessibleDescription(
-      /first burn lights before this plan could reach/,
+    expect(control("INSTALL AS FLIGHT PLAN")).toHaveAttribute(
+      "data-tooltip",
+      expect.stringMatching(/first burn lights before this plan could reach/),
     );
     await act(async () => {});
   });
@@ -1056,11 +1049,10 @@ describe("PlanSlots", () => {
     const stream = mount();
     await emitPlan(stream, { planCount: null });
 
-    expect(
-      screen.getByRole("button", {
-        name: "Copy this flight plan into a new slot",
-      }),
-    ).toBeDisabled();
+    expect(control("COPY TO A NEW SLOT")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
     await act(async () => {});
   });
 

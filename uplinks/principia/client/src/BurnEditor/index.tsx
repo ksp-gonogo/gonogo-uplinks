@@ -8,15 +8,15 @@ import {
 import {
   Badge,
   BinormalIcon,
+  Button,
   Cluster,
-  CommandButton,
   Countdown,
   FieldLabel,
   FrenetNormalIcon,
   Input,
+  magnitudeOf,
   MissionDate,
   MissionDateField,
-  magnitudeOf,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -431,7 +431,7 @@ export function BurnEditor() {
    * the index alone, so none of the reasons about stated values hold it.
    */
   const writeBlockedReason = frozen
-    ? undefined
+    ? "Burn writes are held: the plan is not armed, the burn is not editable or not known to be idle, or the vessel is out of contact"
     : tooLate
       ? "The edit would reach Principia after this burn has ignited"
       : burnStructUnverified
@@ -440,7 +440,7 @@ export function BurnEditor() {
           ? "A delta-v component is unstated. Type all three to send"
           : ignitionUnstated
             ? "The ignition instant is unstated. Type one to send"
-            : undefined;
+            : null;
 
   return (
     <Section data-burn-editor="">
@@ -477,27 +477,36 @@ export function BurnEditor() {
             it confirms rather than firing on the first press. */}
         <Stack gap="caption">
           <Cluster gap="related-dense" wrap justify="start">
-            <CommandButton
+            <Button
+              command={armCmd.with(
+                {
+                  vesselId,
+                  requestId: `${armAttempt.requestId}-${vesselId ?? "none"}`,
+                },
+                {
+                  label: "Arm the flight-plan write surface",
+                  onConfirmed: (result) => {
+                    armAttempt.settle();
+                    setLastArm(planWriteReceipt(result));
+                  },
+                },
+              )}
+              variant="ghost"
               size="sm"
               tone="go"
-              handle={armCmd}
-              args={{
-                vesselId,
-                requestId: `${armAttempt.requestId}-${vesselId ?? "none"}`,
-              }}
-              commandLabel="Arm the flight-plan write surface"
-              label="ARM WRITES"
               confirmLabel="CONFIRM ARM"
               confirmTone="nogo"
-              title={surface?.reason ?? undefined}
-              disabled={!available}
+              unavailable={
+                available
+                  ? null
+                  : (surface?.reason ?? "The write surface is not available")
+              }
+              tip={surface?.reason ?? undefined}
               aria-label="Arm the flight-plan write surface"
               confirmAriaLabel="Confirm arming the flight-plan write surface"
-              onConfirmed={(result) => {
-                armAttempt.settle();
-                setLastArm(planWriteReceipt(result));
-              }}
-            />
+            >
+              ARM WRITES
+            </Button>
           </Cluster>
 
           {/* An arm that was answered from the mod's own store granted nothing,
@@ -800,50 +809,48 @@ export function BurnEditor() {
             </Cluster>
 
             <Cluster gap="related-dense" wrap justify="start">
-              <CommandButton
+              <Button
+                command={replaceCmd.with(
+                  {
+                    vesselId,
+                    requestId: replaceAttempt.requestId,
+                    burnIndex: draft.burnIndex,
+                    // `undefined` rather than a zero for an instant nobody stated, the
+                    // same as the components below. Both controls are held shut in
+                    // that state, so this is the shape of the args rather than a
+                    // write that happens.
+                    ignitionUt: draft.ignitionUt ?? undefined,
+                    // `undefined`, never a zero, for a component the operator has not
+                    // stated: the mod leaves an omitted component at the plugin's own
+                    // value, which is the only honest thing to say about one nobody
+                    // could read. Both controls are held shut in that state anyway.
+                    deltaVTangent: draft.tangent ?? undefined,
+                    deltaVNormal: draft.normal ?? undefined,
+                    deltaVBinormal: draft.binormal ?? undefined,
+                    inertiallyFixed: draft.inertiallyFixed,
+                    profile: draft.instantImpulse
+                      ? PrincipiaBurnProfile.InstantImpulse
+                      : PrincipiaBurnProfile.Unchanged,
+                  },
+                  {
+                    label: `Apply burn ${draft.burnIndex + 1}`,
+                    onConfirmed: (result) => {
+                      replaceAttempt.settle();
+                      setLastWrite(planWriteReceipt(result));
+                    },
+                  },
+                )}
+                variant="ghost"
                 size="sm"
                 tone="go"
-                handle={replaceCmd}
-                args={{
-                  vesselId,
-                  requestId: replaceAttempt.requestId,
-                  burnIndex: draft.burnIndex,
-                  // `undefined` rather than a zero for an instant nobody stated, the
-                  // same as the components below. Both controls are held shut in
-                  // that state, so this is the shape of the args rather than a
-                  // write that happens.
-                  ignitionUt: draft.ignitionUt ?? undefined,
-                  // `undefined`, never a zero, for a component the operator has not
-                  // stated: the mod leaves an omitted component at the plugin's own
-                  // value, which is the only honest thing to say about one nobody
-                  // could read. Both controls are held shut in that state anyway.
-                  deltaVTangent: draft.tangent ?? undefined,
-                  deltaVNormal: draft.normal ?? undefined,
-                  deltaVBinormal: draft.binormal ?? undefined,
-                  inertiallyFixed: draft.inertiallyFixed,
-                  profile: draft.instantImpulse
-                    ? PrincipiaBurnProfile.InstantImpulse
-                    : PrincipiaBurnProfile.Unchanged,
-                }}
-                commandLabel={`Apply burn ${draft.burnIndex + 1}`}
-                label="APPLY"
                 confirmLabel="CONFIRM APPLY"
                 confirmTone="nogo"
-                onConfirmed={(result) => {
-                  replaceAttempt.settle();
-                  setLastWrite(planWriteReceipt(result));
-                }}
-                title={writeBlockedReason}
-                disabled={
-                  frozen ||
-                  tooLate ||
-                  burnStructUnverified ||
-                  tripleUnstated ||
-                  ignitionUnstated
-                }
+                unavailable={writeBlockedReason}
                 aria-label="Apply the edited burn"
                 confirmAriaLabel="Confirm applying the edited burn"
-              />
+              >
+                APPLY
+              </Button>
               {/*
                 A burn composed in THIS form, not a copy of the one it was
                 opened from. The mod does build it by copying: `EditBurn` takes
@@ -861,101 +868,94 @@ export function BurnEditor() {
                 them: flip one, press this, and the new burn quietly took the
                 template's mode instead.
               */}
-              <CommandButton
+              <Button
+                command={insertCmd.with(
+                  {
+                    vesselId,
+                    /*
+                     * The whole draft, as APPLY's is. A repeated id is answered
+                     * out of the mod's receipt cache without a write, so an id
+                     * keyed on the index and the instant alone made every press
+                     * after the first at one index and instant a silent no-op.
+                     */
+                    requestId: insertAttempt.requestId,
+                    burnIndex: draft.burnIndex,
+                    // `undefined` rather than a zero for an instant nobody stated, the
+                    // same as the components below. Both controls are held shut in
+                    // that state, so this is the shape of the args rather than a
+                    // write that happens.
+                    ignitionUt: draft.ignitionUt ?? undefined,
+                    // `undefined`, never a zero, for a component the operator has not
+                    // stated: the mod leaves an omitted component at the plugin's own
+                    // value, which is the only honest thing to say about one nobody
+                    // could read. Both controls are held shut in that state anyway.
+                    deltaVTangent: draft.tangent ?? undefined,
+                    deltaVNormal: draft.normal ?? undefined,
+                    deltaVBinormal: draft.binormal ?? undefined,
+                    /*
+                     * The same two fields APPLY sends, because this control copies
+                     * the burn ON SCREEN and both are part of it. Insert leaves an
+                     * unstated field at the TEMPLATE's value and the template is
+                     * the SAVED burn, so omitting them added the draft back with
+                     * the attitude and the profile it had before the operator
+                     * touched either.
+                     */
+                    inertiallyFixed: draft.inertiallyFixed,
+                    profile: draft.instantImpulse
+                      ? PrincipiaBurnProfile.InstantImpulse
+                      : PrincipiaBurnProfile.Unchanged,
+                  },
+                  {
+                    label: "Add a burn",
+                    onConfirmed: (result) => {
+                      insertAttempt.settle();
+                      setLastWrite(planWriteReceipt(result));
+                    },
+                  },
+                )}
+                variant="ghost"
                 size="sm"
-                handle={insertCmd}
-                args={{
-                  vesselId,
-                  /*
-                   * The whole draft, as APPLY's is. A repeated id is answered
-                   * out of the mod's receipt cache without a write, so an id
-                   * keyed on the index and the instant alone made every press
-                   * after the first at one index and instant a silent no-op.
-                   */
-                  requestId: insertAttempt.requestId,
-                  burnIndex: draft.burnIndex,
-                  // `undefined` rather than a zero for an instant nobody stated, the
-                  // same as the components below. Both controls are held shut in
-                  // that state, so this is the shape of the args rather than a
-                  // write that happens.
-                  ignitionUt: draft.ignitionUt ?? undefined,
-                  // `undefined`, never a zero, for a component the operator has not
-                  // stated: the mod leaves an omitted component at the plugin's own
-                  // value, which is the only honest thing to say about one nobody
-                  // could read. Both controls are held shut in that state anyway.
-                  deltaVTangent: draft.tangent ?? undefined,
-                  deltaVNormal: draft.normal ?? undefined,
-                  deltaVBinormal: draft.binormal ?? undefined,
-                  /*
-                   * The same two fields APPLY sends, because this control copies
-                   * the burn ON SCREEN and both are part of it. Insert leaves an
-                   * unstated field at the TEMPLATE's value and the template is
-                   * the SAVED burn, so omitting them added the draft back with
-                   * the attitude and the profile it had before the operator
-                   * touched either.
-                   */
-                  inertiallyFixed: draft.inertiallyFixed,
-                  profile: draft.instantImpulse
-                    ? PrincipiaBurnProfile.InstantImpulse
-                    : PrincipiaBurnProfile.Unchanged,
-                }}
-                commandLabel="Add a burn"
-                label="ADD BURN"
                 confirmLabel="CONFIRM ADD"
                 confirmTone="nogo"
-                onConfirmed={(result) => {
-                  insertAttempt.settle();
-                  setLastWrite(planWriteReceipt(result));
-                }}
-                /*
-                 * The same deadline: an inserted burn is written at the draft's
-                 * ignition too, so one composed for an instant the write cannot
-                 * beat is a burn added to the plan already in the past.
-                 */
-                title={writeBlockedReason}
-                disabled={
-                  frozen ||
-                  tooLate ||
-                  burnStructUnverified ||
-                  tripleUnstated ||
-                  ignitionUnstated
-                }
+                unavailable={writeBlockedReason}
                 aria-label="Add a burn from these values"
                 confirmAriaLabel="Confirm adding a burn from these values"
-              />
-              <CommandButton
+              >
+                ADD BURN
+              </Button>
+              <Button
+                command={removeCmd.with(
+                  {
+                    vesselId,
+                    requestId: removeAttempt.requestId,
+                    burnIndex: draft.burnIndex,
+                  },
+                  {
+                    label: `Remove burn ${draft.burnIndex + 1}`,
+                    onConfirmed: (result) => {
+                      removeAttempt.settle();
+                      setLastWrite(planWriteReceipt(result));
+                    },
+                  },
+                )}
+                variant="ghost"
                 size="sm"
-                handle={removeCmd}
-                args={{
-                  vesselId,
-                  requestId: removeAttempt.requestId,
-                  burnIndex: draft.burnIndex,
-                }}
-                commandLabel={`Remove burn ${draft.burnIndex + 1}`}
-                label="REMOVE"
                 confirmLabel="CONFIRM REMOVE"
                 confirmTone="nogo"
-                onConfirmed={(result) => {
-                  removeAttempt.settle();
-                  setLastWrite(planWriteReceipt(result));
-                }}
-                // Out of contact freezes this too: the index is the whole of the
-                // request, and an index off an hour-old burn list can name a
-                // different burn by the time it arrives. NOT frozen by the edit
-                // deadline, though, because dropping a burn that has already
-                // flown is how a plan gets tidied and is the one write with
-                // nothing to beat.
-                //
-                // `notKnownIdle` freezes it because this is the DESTRUCTIVE one.
-                // Deleting a burn that may be under thrust changes the plan
-                // beneath a craft that is flying it, and the mod's refusal used
-                // to be unreachable: an unreadable instant answered "no refusal"
-                // and the receipt came back Written, so the operator's own
-                // console confirmed the deletion.
-                disabled={!armed || notKnownIdle || outOfContact !== null}
+                unavailable={
+                  !armed
+                    ? "The plan is not armed for writing"
+                    : notKnownIdle
+                      ? "This burn is not known to be idle"
+                      : outOfContact !== null
+                        ? "The vessel is out of contact"
+                        : null
+                }
                 aria-label="Remove this burn from the plan"
                 confirmAriaLabel="Confirm removing this burn from the plan"
-              />
+              >
+                REMOVE
+              </Button>
             </Cluster>
 
             {/* A confirmed dispatch is not always a write, and the RECEIPT is

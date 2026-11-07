@@ -7,12 +7,12 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
-  CommandButton,
   Countdown,
+  magnitudeOf,
   MissionDate,
   MissionDateField,
-  magnitudeOf,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -52,6 +52,9 @@ import "../topics";
  * to it blind would be handing them that state.</p>
  */
 const MAX_FLIGHT_PLANS = 10;
+
+const FROZEN_REASON =
+  "The plan is not armed, the vessel is out of contact or Principia is optimising";
 
 /**
  * How far past the round trip a newly created plan is asked to end, and the
@@ -326,31 +329,40 @@ export function PlanSlots() {
               </>
             )}
             <Cluster gap="related-dense" wrap justify="start">
-              <CommandButton
+              <Button
+                command={createCmd.with(
+                  {
+                    vesselId,
+                    requestId: `${createAttempt.requestId}-${vesselId ?? "none"}-${endUt ?? "none"}`,
+                    finalTimeUt: endUt ?? undefined,
+                  },
+                  {
+                    label: "Create a flight plan",
+                    onConfirmed: (result) => {
+                      createAttempt.settle();
+                      setLastWrite(planWriteReceipt(result));
+                    },
+                  },
+                )}
+                variant="ghost"
                 size="sm"
                 tone="go"
-                handle={createCmd}
-                args={{
-                  vesselId,
-                  requestId: `${createAttempt.requestId}-${vesselId ?? "none"}-${endUt ?? "none"}`,
-                  finalTimeUt: endUt ?? undefined,
-                }}
-                commandLabel="Create a flight plan"
-                label="CREATE EMPTY PLAN"
                 confirmLabel="CONFIRM CREATE"
                 confirmTone="nogo"
-                onConfirmed={(result) => {
-                  createAttempt.settle();
-                  setLastWrite(planWriteReceipt(result));
-                }}
-                disabled={
-                  frozen ||
-                  endUt === null ||
-                  (arrivalUt !== null && endUt <= arrivalUt)
+                unavailable={
+                  frozen
+                    ? FROZEN_REASON
+                    : endUt === null
+                      ? "The end of the flight plan is not stated"
+                      : arrivalUt !== null && endUt <= arrivalUt
+                        ? "The plan would end before the vessel arrives"
+                        : null
                 }
                 aria-label="Create a flight plan for this vessel"
                 confirmAriaLabel="Confirm creating a flight plan for this vessel"
-              />
+              >
+                CREATE EMPTY PLAN
+              </Button>
             </Cluster>
           </Stack>
         )}
@@ -477,46 +489,64 @@ function ExistingPlan({
   return (
     <Stack gap="caption" data-plan-slots-existing="">
       <Cluster gap="related-dense" wrap justify="start">
-        <CommandButton
+        <Button
+          command={duplicateCmd.with(
+            {
+              vesselId,
+              requestId: duplicateAttempt.requestId,
+            },
+            {
+              label: "Copy this flight plan into a new slot",
+              onConfirmed: (result) => {
+                duplicateAttempt.settle();
+                onWrite(planWriteReceipt(result));
+              },
+            },
+          )}
+          variant="ghost"
           size="sm"
-          handle={duplicateCmd}
-          args={{
-            vesselId,
-            requestId: duplicateAttempt.requestId,
-          }}
-          commandLabel="Copy this flight plan into a new slot"
-          label="COPY TO A NEW SLOT"
           confirmLabel="CONFIRM COPY"
           confirmTone="nogo"
-          onConfirmed={(result) => {
-            duplicateAttempt.settle();
-            onWrite(planWriteReceipt(result));
-          }}
-          disabled={frozen || slotsFull || planCount === null}
+          unavailable={
+            frozen
+              ? FROZEN_REASON
+              : slotsFull
+                ? "Every flight plan slot is in use"
+                : planCount === null
+                  ? "The number of flight plans is not known"
+                  : null
+          }
           aria-label="Copy this flight plan into a new slot"
           confirmAriaLabel="Confirm copying this flight plan into a new slot"
-        />
-        <CommandButton
+        >
+          COPY TO A NEW SLOT
+        </Button>
+        <Button
+          command={deleteCmd.with(
+            { vesselId, requestId: deleteAttempt.requestId },
+            {
+              label: "Delete this flight plan",
+              onConfirmed: (result) => {
+                deleteAttempt.settle();
+                onWrite(planWriteReceipt(result));
+              },
+            },
+          )}
+          variant="ghost"
           size="sm"
-          handle={deleteCmd}
-          args={{ vesselId, requestId: deleteAttempt.requestId }}
-          commandLabel="Delete this flight plan"
-          title={
+          confirmLabel="CONFIRM DELETE"
+          confirmTone="nogo"
+          unavailable={frozen ? FROZEN_REASON : null}
+          tip={
             burnCount > 0
               ? "Discards this slot's burns with it. Copy the slot first to keep them."
               : undefined
           }
-          label="DELETE PLAN"
-          confirmLabel="CONFIRM DELETE"
-          confirmTone="nogo"
-          onConfirmed={(result) => {
-            deleteAttempt.settle();
-            onWrite(planWriteReceipt(result));
-          }}
-          disabled={frozen}
           aria-label="Delete this flight plan"
           confirmAriaLabel="Confirm deleting this flight plan"
-        />
+        >
+          DELETE PLAN
+        </Button>
       </Cluster>
 
       {executing && (
@@ -675,13 +705,6 @@ function InstallRow({
    */
   const burnStructUnusable =
     burnCount > 0 && plan.writeSurface?.burnLayoutVerified !== true;
-  const blocked =
-    frozen ||
-    burnStructUnusable ||
-    planEndUt === null ||
-    endsBeforeLastBurn ||
-    window?.shut === true ||
-    (arrivalUt !== null && planEndUt <= arrivalUt);
   /*
    * The first reason that applies, in the order the gate reads them. It is the
    * disabled button's tip: a reason printed beside a control nobody can press
@@ -700,9 +723,8 @@ function InstallRow({
             : arrivalUt !== null && planEndUt <= arrivalUt
               ? "The plan end is before the plan could arrive"
               : null;
-  const installTitle = blocked
-    ? (blockedReason ?? undefined)
-    : burnCount > 0 && plan.planExists === true
+  const installTip =
+    burnCount > 0 && plan.planExists === true
       ? "Replaces the burns this slot holds now, whole"
       : undefined;
 
@@ -716,39 +738,44 @@ function InstallRow({
         </Cluster>
       </Row>
 
-      <CommandButton
+      <Button
+        command={sendCmd.with(
+          {
+            vesselId,
+            /*
+             * The attempt owns the id and the draft's content is part of it: the
+             * mod answers a request id it has already written under from its
+             * receipt without looking at the plan that came with it, so a
+             * corrected plan must not go out under the id of its earlier version.
+             * `revision` counts the content and the end instant is stated here
+             * rather than in the draft, so it joins the key.
+             */
+            requestId: `${sendAttempt.requestId}-${planEndUt ?? "none"}`,
+            composedAtViewUt: viewUt ?? undefined,
+            observedAtUt: magnitudeOf(draft.observedAt) ?? undefined,
+            desiredFinalTimeUt: planEndUt ?? undefined,
+            burns: draft.burns.map(composedBurn),
+          },
+          {
+            label: "Install this plan as Principia's flight plan",
+            onConfirmed: (result) => {
+              sendAttempt.settle();
+              onWrite(planWriteReceipt(result));
+            },
+          },
+        )}
+        variant="ghost"
         size="sm"
         tone="go"
-        handle={sendCmd}
-        args={{
-          vesselId,
-          /*
-           * The attempt owns the id and the draft's content is part of it: the
-           * mod answers a request id it has already written under from its
-           * receipt without looking at the plan that came with it, so a
-           * corrected plan must not go out under the id of its earlier version.
-           * `revision` counts the content and the end instant is stated here
-           * rather than in the draft, so it joins the key.
-           */
-          requestId: `${sendAttempt.requestId}-${planEndUt ?? "none"}`,
-          composedAtViewUt: viewUt ?? undefined,
-          observedAtUt: magnitudeOf(draft.observedAt) ?? undefined,
-          desiredFinalTimeUt: planEndUt ?? undefined,
-          burns: draft.burns.map(composedBurn),
-        }}
-        commandLabel="Install this plan as Principia's flight plan"
-        label="INSTALL AS FLIGHT PLAN"
         confirmLabel="CONFIRM INSTALL"
         confirmTone="nogo"
-        onConfirmed={(result) => {
-          sendAttempt.settle();
-          onWrite(planWriteReceipt(result));
-        }}
-        title={installTitle}
-        disabled={blocked}
+        unavailable={blockedReason}
+        tip={installTip}
         aria-label="Install this plan as Principia's flight plan"
         confirmAriaLabel="Confirm installing this plan as Principia's flight plan"
-      />
+      >
+        INSTALL AS FLIGHT PLAN
+      </Button>
 
       {window?.shut === true && (
         <>
