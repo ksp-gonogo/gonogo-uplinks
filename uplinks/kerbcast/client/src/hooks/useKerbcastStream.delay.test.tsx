@@ -948,6 +948,50 @@ describe("useKerbcastStream: delayed playout wiring (SUPPORTED path, stubbed Web
     expect(delayedStream(resultA)).toBe(delayedStream(resultB));
   });
 
+  it("a feed mounted anew on the same camera under a different clock reads that clock, not the one the pipeline it replaced was built with", async () => {
+    const { FakeGenerator } = installFakeWebCodecs();
+    const track = fakeControllableVideoTrack();
+    const rawStream = fakeVideoStream(track);
+    const cam = fakeCameraHandle(null);
+    registerFakeKerbcastSource(cam);
+    // The first screen's clock stops receiving samples when its provider is gone.
+    const deadClock = manualClock(10);
+    const liveClock = manualClock(1000);
+
+    const first = render(
+      <StreamProbe
+        flightId={7}
+        clock={deadClock}
+        captureUt={() => 500}
+        onResult={() => {}}
+      />,
+    );
+    act(() => {
+      cam.emit(rawStream);
+    });
+    track.push(fakeFrame("before"));
+    await act(async () => {});
+    first.unmount();
+
+    render(
+      <StreamProbe
+        flightId={7}
+        clock={liveClock}
+        captureUt={() => 500}
+        onResult={() => {}}
+      />,
+    );
+    const after = fakeFrame("after");
+    track.push(after);
+    await act(async () => {});
+
+    await waitFor(() => {
+      expect(FakeGenerator.instances.flatMap((g) => g.written)).toContain(
+        after,
+      );
+    });
+  });
+
   it("a SECOND, different camera builds its own independent processor (both delayed simultaneously)", () => {
     const { FakeProcessor } = installFakeWebCodecs();
     const trackA = fakeControllableVideoTrack();

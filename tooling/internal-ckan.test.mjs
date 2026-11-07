@@ -27,9 +27,10 @@ function releaseZip(gamedata, extra = []) {
 }
 
 test("an Uplink depends on its mod at builtAgainst, and on GonogoCore", () => {
-  assert.deepEqual(internalCkan(readUplink("kerbcast")), {
+  const kerbcast = readUplink("kerbcast");
+  assert.deepEqual(internalCkan(kerbcast), {
     depends: [
-      { name: "Kerbcast", min_version: "1.12.0-rc.8" },
+      { name: "Kerbcast", min_version: kerbcast.uplink.mod.builtAgainst },
       { name: "GonogoCore" },
     ],
   });
