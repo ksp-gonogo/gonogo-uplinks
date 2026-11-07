@@ -48,15 +48,14 @@ export interface CaptureClockHealthInput {
 /**
  * Whether one camera's capture clock can still date its frames against the
  * screen's view clock. It stops being trusted when the game's present steps
- * back by more than {@link PRESENT_STEP_BACK_SECONDS} while the frames are still
- * dated ahead of that new present (a revert or quickload the camera's clock has
- * not followed yet; the estimate refitting to a sample is not one), or when frames have been dated more
+ * back by more than {@link PRESENT_STEP_BACK_SECONDS} (a revert or quickload
+ * the camera's clock has not followed yet), or when frames have been dated more
  * than {@link AHEAD_LIMIT_SECONDS} ahead of the game's present for
  * {@link AHEAD_HOLD_MS}. It is trusted again once the source frames are dated
  * from (the per-frame stamps when the sidecar sends them, else the clock
  * samples) delivers a time after that which is not ahead of the present.
- * `resets` goes up each time the clock stops being trusted, for the caller to flush
- * its delay buffer with, and each change either way is logged under `kerbcast:frame-delay`. `facts`
+ * `resets` goes up on each change either way, for the caller to flush its delay
+ * buffer with, and each change is logged under `kerbcast:frame-delay`. `facts`
  * is read once per delay log line and counts stamps since the previous read.
  * Used by the camera feed's delayed stream.
  */
@@ -117,6 +116,7 @@ export function useCaptureClockHealth(input: CaptureClockHealthInput): {
       ut,
     });
     setStale(false);
+    setResets((n) => n + 1);
   };
 
   useEffect(() => {
@@ -146,13 +146,7 @@ export function useCaptureClockHealth(input: CaptureClockHealthInput): {
       const present = presentUt();
       if (present === null) return;
       if (lastPresent !== null && present < lastPresent - PRESENT_STEP_BACK_SECONDS) {
-        /* The estimate refitting to a sample is not a revert: the camera's own dating
-           stays with the new present. Only a dating that is still ahead of it is. */
-        const ut = datingUt(performance.now());
-        const ahead = ut === null ? null : aheadSeconds(ut);
-        if (ahead !== null && ahead > PRESENT_STEP_BACK_SECONDS) {
-          enter("the game clock stepped back", { from: lastPresent, to: present });
-        }
+        enter("the game clock stepped back", { from: lastPresent, to: present });
       }
       lastPresent = present;
       const now = performance.now();

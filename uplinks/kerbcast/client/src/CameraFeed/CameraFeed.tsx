@@ -22,7 +22,6 @@ import {
   useLatestValue,
   useObservedVantage,
   useTelemetry,
-  useViewClockOptional,
   useViewUt,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -63,10 +62,6 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { resolveCameraLink } from "./cameraLink.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
 import { groundBracketOverlay } from "./groundBracketOverlay.js";
-import {
-  GroundFeedClockContext,
-  useGroundCameraClock,
-} from "./groundFeedClock.js";
 import { feedKnowledgeEntry, networkKnowledge } from "./networkKnowledge.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
@@ -370,11 +365,6 @@ export function CameraFeed({
     useObservedVantage(),
   );
   const isGroundCamera = activeCamera?.kind === CameraKind.Command;
-  const groundClock = useGroundCameraClock(
-    useViewClockOptional(),
-    signalDelay === undefined ? undefined : (signalDelay?.magnitude ?? null),
-    isGroundCamera,
-  );
   const craftKnowledge = observedValue(
     useTelemetry("kerbcast.craftKnowledge"),
   );
@@ -738,7 +728,6 @@ export function CameraFeed({
                 onBlur={onFeedBlur}
               >
                 <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
-                  <GroundFeedClockContext.Provider value={groundClock}>
                   <SharedCameraFeed
                     ref={feedRef}
                     targetBracketOverlay={bracketOverlay}
@@ -779,7 +768,6 @@ export function CameraFeed({
                     // layout instead (`FrameSizeReport` below).
                     renderSize="none"
                   />
-                  </GroundFeedClockContext.Provider>
                   <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}
