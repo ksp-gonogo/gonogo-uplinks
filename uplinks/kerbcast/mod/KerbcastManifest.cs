@@ -12,7 +12,6 @@ namespace Gonogo.KerbcastUplink
     {
         public const string AvailableTopic = "kerbcast.available";
         public const string CamerasTopic = "kerbcast.cameras";
-        public const string CraftKnowledgeTopic = "kerbcast.craftKnowledge";
         public const string SetFieldOfViewCommand = "kerbcast.setFieldOfView";
         public const string SetPanCommand = "kerbcast.setPan";
 
@@ -66,19 +65,6 @@ namespace Gonogo.KerbcastUplink
                     Delivery = Delivery.LossyLatest,
                     Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
                     Delay = DelayRole.Delayed,
-                },
-                // How each command centre knows each craft is a fact the centre
-                // holds on the ground, already as of the instant its knowledge
-                // has reached it, so it is not delayed again on the way to the
-                // screen. The age a screen shows is measured from the instant
-                // it carries.
-                new ChannelDeclaration
-                {
-                    Topic = CraftKnowledgeTopic,
-                    Kind = SampleKind.Discrete,
-                    Delivery = Delivery.LossyLatest,
-                    Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
-                    Delay = DelayRole.TrueNow,
                 },
             },
             Commands = new List<CommandDeclaration>

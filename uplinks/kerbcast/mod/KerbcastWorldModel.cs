@@ -50,7 +50,6 @@ namespace Gonogo.KerbcastUplink
         private readonly CraftPlaces _places;
         private readonly Func<ApiFeature, bool> _supports;
         private readonly Action<string>? _log;
-        private readonly Action<IReadOnlyList<CraftKnowledgeFact>, double>? _onKnowledge;
         private readonly Action<IReadOnlyDictionary<string, string>>? _onFeedSites;
         private readonly Func<string, LaunchSiteReading>? _launchSite;
         private readonly Func<uint?>? _activeCraft;
@@ -92,15 +91,13 @@ namespace Gonogo.KerbcastUplink
         /// <param name="bodyMu">A body's gravitational parameter by index, which is what Kerbcast moves a record's craft by between snapshots; null leaves the velocity as the place implies it.</param>
         /// <param name="supportsAcceleration">Whether this Kerbcast takes a record's net acceleration (API 1.1), normally <see cref="KerbcastApiMinor1.Supported"/>; null means it does not.</param>
         /// <param name="supportsOcclusion">Whether this Kerbcast reports a command feed's view as blocked (API 1.2), normally <see cref="KerbcastApiMinor2.Supported"/>; null means it does not.</param>
-        /// <param name="onKnowledge">Receives, on every publish attempt, how each command centre knows each craft it knows of, and the game time it describes; null reports nothing.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null, Func<bool>? supportsOcclusion = null, Action<IReadOnlyList<CraftKnowledgeFact>, double>? onKnowledge = null)
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null, Func<bool>? supportsOcclusion = null)
         {
             _supportsOcclusion = supportsOcclusion;
             _bodyMu = bodyMu;
             _supportsAcceleration = supportsAcceleration;
             _log = log;
-            _onKnowledge = onKnowledge;
             _onFeedSites = onFeedSites;
             _launchSite = launchSite;
             _activeCraft = activeCraft;
@@ -217,7 +214,6 @@ namespace Gonogo.KerbcastUplink
             var heard = new Dictionary<string, Dictionary<uint, double?>>(StringComparer.Ordinal);
             var listed = new Dictionary<string, List<ScopeCraft>>(StringComparer.Ordinal);
             var scopeUt = new Dictionary<string, double>(StringComparer.Ordinal);
-            var facts = _onKnowledge == null ? null : new List<CraftKnowledgeFact>();
             long? version = null;
             foreach (var scope in scopes)
             {
@@ -249,7 +245,6 @@ namespace Gonogo.KerbcastUplink
                         {
                             continue;
                         }
-                        facts?.Add(new CraftKnowledgeFact(scope, pid, sample.State, sample.LastKnownUt));
                         var at = ut.Value;
                         var ahead = AheadOf(sample, aheadCount, _ahead);
                         var mid = AheadOf(sample, midCount, _mid);
@@ -274,10 +269,6 @@ namespace Gonogo.KerbcastUplink
                 heard[scope] = lastHeard;
             }
 
-            if (facts != null)
-            {
-                _onKnowledge!(facts, nowUt);
-            }
             ApplyHeardChanges(listed, heard);
             Follow(kerbcast, tenure, feedSites, listed);
             _occluded = LaunchpadOccluded(kerbcast, out _occludedRangeM);

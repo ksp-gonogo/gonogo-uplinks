@@ -15,11 +15,7 @@ import {
 import { describe, expect, it } from "vitest";
 // Side-effect import: registers `kerbcast.available`/`kerbcast.cameras` into
 // the SDK's runtime registry.
-import {
-  KERBCAST_AVAILABLE_TOPIC,
-  KERBCAST_CAMERAS_TOPIC,
-  KERBCAST_CRAFT_KNOWLEDGE_TOPIC,
-} from "./topics.js";
+import { KERBCAST_AVAILABLE_TOPIC, KERBCAST_CAMERAS_TOPIC } from "./topics.js";
 
 // src -> client -> uplinks/kerbcast, where `mod/` holds the C# these Topic
 // strings have to agree with.
@@ -104,32 +100,5 @@ describe("kerbcast.cameras Topic (relocated out of Sitrep.Contract)", () => {
     // cameraId is Units.Id (a non-quantity token): stays a bare number, never
     // wrapped, the same contrast AvionicsStatus's Flag fields drew.
     expect(camera?.cameraId).toBe(7);
-  });
-});
-
-describe("kerbcast.craftKnowledge Topic", () => {
-  it("registers the same string the C# Uplink declares", () => {
-    const src = readFileSync(join(MOD_ROOT, "KerbcastManifest.cs"), "utf8");
-    const m = src.match(/const\s+string\s+CraftKnowledgeTopic\s*=\s*"([^"]+)"/);
-    expect(m?.[1]).toBe(KERBCAST_CRAFT_KNOWLEDGE_TOPIC);
-    expect(isTopicId(KERBCAST_CRAFT_KNOWLEDGE_TOPIC)).toBe(true);
-  });
-
-  it('hydrates lastKnownUt into a Value<"ut"> at decode time', async () => {
-    const fixture = setupStreamFixture();
-    const { result } = renderHook(
-      () => observedValue(useTelemetry(KERBCAST_CRAFT_KNOWLEDGE_TOPIC)),
-      { wrapper: fixture.Provider },
-    );
-
-    fixture.emit(KERBCAST_CRAFT_KNOWLEDGE_TOPIC, [
-      { centre: "ground:KSC", craftId: 7, knowledge: "modelled", lastKnownUt: 40 },
-    ]);
-
-    await waitFor(() => {
-      expect(result.current?.[0]?.lastKnownUt).toBeDefined();
-    });
-    expect(result.current?.[0]?.lastKnownUt).toMatchObject({ magnitude: 40 });
-    expect(result.current?.[0]?.knowledge).toBe("modelled");
   });
 });

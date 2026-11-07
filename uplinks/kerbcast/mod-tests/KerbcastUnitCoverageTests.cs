@@ -42,18 +42,17 @@ namespace GonogoKerbcastUplink.Tests
                 "Units.Degrees");
 
         /// <summary>
-        /// Every type is reached by the sweep, and nothing else is.
+        /// All three types are reached by the sweep, and nothing else is.
         /// <see cref="EveryScalarWirePropertyDeclaresAUnit"/> passes vacuously on
         /// any type that quietly loses <c>[SitrepContract]</c>, and with the read
         /// payload and the two arg shapes sharing an assembly the loss would be
         /// invisible in the remaining green.
         /// </summary>
         [Fact]
-        public void TheContractTypesAreExactlyTheCameraEntryTheKnowledgeEntryAndTheArgShapes() =>
+        public void TheContractTypesAreExactlyTheCameraEntryAndItsFourArgShapes() =>
             UnitCoverageAssertion.AssertContractTypesAreExactly(
                 typeof(KerbcastCameraEntry).Assembly,
                 nameof(KerbcastCameraEntry),
-                nameof(KerbcastCraftKnowledgeEntry),
                 nameof(KerbcastSetFieldOfViewArgs),
                 nameof(KerbcastSetPanArgs),
                 nameof(KerbcastSetCommandAimArgs),

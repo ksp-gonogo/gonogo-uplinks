@@ -109,12 +109,6 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportsZoom: "flag",
     vesselId: "id",
   },
-  "KerbcastCraftKnowledgeEntry": {
-    centre: "id",
-    craftId: "id",
-    knowledge: "text",
-    lastKnownUt: "ut",
-  },
   "KerbcastLaunchCountdownArgs": {
     lengthSeconds: "s",
     remainingSeconds: "s",
@@ -164,12 +158,6 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     supportsPan: "flag",
     supportsZoom: "flag",
     vesselId: "id",
-  },
-  "kerbcast.craftKnowledge": {
-    centre: "id",
-    craftId: "id",
-    knowledge: "text",
-    lastKnownUt: "ut",
   },
 };
 

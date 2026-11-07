@@ -76,28 +76,6 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
-    public void EachCentreReportsHowItKnowsEveryCraftItKnowsOfNotJustTheActiveOne()
-    {
-        var reported = new List<CraftKnowledgeFact>();
-        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, activeCraft: () => ProbePid, onKnowledge: (facts, _) =>
-        {
-            reported.Clear();
-            reported.AddRange(facts);
-        });
-        _sites.Delivered[Ksc] = 100.0;
-        _knowledge.Add(Ksc, ProbeId, CraftKnowledgeState.Heard, 99.0);
-        _knowledge.Add(Ksc, StationId, CraftKnowledgeState.Modelled, 40.0);
-        _knowledge.Add(Ksc, HiddenId, CraftKnowledgeState.Unknown, null);
-        _authority.Tick(0.0, Light);
-
-        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 0.0);
-
-        Assert.Contains(reported, f => f.Centre == Ksc && f.PersistentId == ProbePid && f.State == CraftKnowledgeState.Heard && f.LastKnownUt == 99.0);
-        Assert.Contains(reported, f => f.Centre == Ksc && f.PersistentId == StationPid && f.State == CraftKnowledgeState.Modelled && f.LastKnownUt == 40.0);
-        Assert.DoesNotContain(reported, f => f.PersistentId == HiddenPid);
-    }
-
-    [Fact]
     public void ACraftsPlaceAndRadiusAreLoggedOnceAndAgainWhenTheyChange()
     {
         var lines = new List<string>();

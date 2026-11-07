@@ -25,7 +25,6 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
 | `kerbcast.cameras` | `KerbcastCameraEntry[]` | lossy-latest | delayed |
-| `kerbcast.craftKnowledge` | `KerbcastCraftKnowledgeEntry[]` | lossy-latest | true-now |
 | `kerbcast.available` | – | lossy-latest | true-now |
 
 ## Commands
