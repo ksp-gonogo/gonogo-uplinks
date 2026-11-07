@@ -32,6 +32,16 @@ import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 /** How long a camera's delay pipeline outlives its last feed, in milliseconds. */
 export const PIPELINE_RELEASE_GRACE_MS = 500;
 
+/** The pipeline each camera keeps for a moment after its feed unmounts, with the clock it was built against. */
+const keptPipelines = new Map<
+  unknown,
+  {
+    view: DelayClockLike;
+    lease: ReturnType<typeof sharedDelayedStreams.acquire>;
+    timer: ReturnType<typeof setTimeout>;
+  }
+>();
+
 const NEUTRAL_CAPTURE_SAMPLE: CaptureClockSample = {
   ut: null,
   warpRate: 1,
@@ -454,6 +464,16 @@ export function useDelayedPlayout(
       return;
     }
 
+    /* A pipeline kept a moment for a feed that was unmounted was built against
+       that feed's clock. A feed arriving on the same camera under another clock
+       (the stream provider was built again, so the old clock gets no more
+       samples) must not join it, so it is released first and built anew. */
+    const kept = keptPipelines.get(key);
+    if (kept && kept.view !== view) {
+      clearTimeout(kept.timer);
+      keptPipelines.delete(key);
+      kept.lease.release();
+    }
     seenEpochRef.current = resetEpochRef.current;
     const attachAt = targetRef.current?.attach;
     const lease = sharedDelayedStreams.acquire(key, (ctx) =>
@@ -495,7 +515,11 @@ export function useDelayedPlayout(
         captureUt: () => null,
         getCaptureSample: () => NEUTRAL_CAPTURE_SAMPLE,
       });
-      setTimeout(() => lease.release(), PIPELINE_RELEASE_GRACE_MS);
+      const timer = setTimeout(() => {
+        if (keptPipelines.get(key)?.lease === lease) keptPipelines.delete(key);
+        lease.release();
+      }, PIPELINE_RELEASE_GRACE_MS);
+      keptPipelines.set(key, { view, lease, timer });
     };
   }, [key, raw === null, view, maxBufferedFrames, frameStamps]);
 
@@ -602,7 +626,9 @@ function buildDelayedPipeline(
   | BuiltDelayedStream<DelayedPlayoutResult>
   | Promise<BuiltDelayedStream<DelayedPlayoutResult>> {
   const onPipelineError = (err: unknown) => {
-    logger.tag("kerbcast:frame-delay").warn("frame pipeline error", { err });
+    logger.tag("kerbcast:frame-delay").warn("frame pipeline error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   };
   // Stamp against the last UT the capture clock actually produced, never a
   // fabricated one. `NEUTRAL_CAPTURE_SAMPLE` already carries that absence for
