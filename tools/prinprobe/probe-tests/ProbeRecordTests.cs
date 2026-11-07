@@ -49,6 +49,34 @@ namespace GonogoPrinProbe.Tests
             Assert.Equal("a \"b\"\n{ c = d }\\", json.RootElement.GetProperty("value").GetString());
         }
 
+        private enum Status { Ok, Failed }
+
+        private struct Parameters
+        {
+            public long max_steps;
+            public double length_integration_tolerance;
+            public Status status;
+            public string name;
+        }
+
+        [Fact]
+        public void DescribeTreatsADoubleAnEnumAndAStringAsTheirOwnText()
+        {
+            Assert.Equal("1861.9799999985967", ProbeRecord.Describe(1861.9799999985967));
+            Assert.Equal("Failed", ProbeRecord.Describe(Status.Failed));
+            Assert.Equal("Kerbin", ProbeRecord.Describe("Kerbin"));
+            Assert.Equal("null", ProbeRecord.Describe(null));
+        }
+
+        [Fact]
+        public void DescribeWalksAStructsFieldsWithoutRecursingIntoThem()
+        {
+            var parameters = new Parameters { max_steps = 1000, length_integration_tolerance = 1.0, status = Status.Ok, name = "a" };
+            Assert.Equal(
+                "max_steps=1000, length_integration_tolerance=1, status=Ok, name=a",
+                ProbeRecord.Describe(parameters));
+        }
+
         [Fact]
         public void AWorldVectorSwapsItsYAndZForThePlanetariumFrame()
         {

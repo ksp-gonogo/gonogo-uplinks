@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace GonogoPrinProbe
@@ -127,6 +129,32 @@ namespace GonogoPrinProbe
             + ",\"rotation\":" + Number(rotation)
             + ",\"q\":" + Vector(q)
             + ",\"p\":" + Vector(p) + "}";
+
+        /// <summary>
+        /// A value from Principia's interface as text, field by field. A primitive, an enum
+        /// or a string is its own text: reflecting into a boxed double finds its private
+        /// <c>m_value</c>, another double, and never ends.
+        /// </summary>
+        public static string Describe(object? boxed)
+        {
+            if (boxed == null)
+            {
+                return "null";
+            }
+            if (boxed is double number)
+            {
+                return Number(number);
+            }
+            var type = boxed.GetType();
+            if (type.IsPrimitive || type.IsEnum || boxed is string)
+            {
+                return boxed is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture) : boxed.ToString();
+            }
+            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return fields.Length == 0
+                ? boxed.ToString()
+                : string.Join(", ", fields.Select(f => f.Name + "=" + Describe(f.GetValue(boxed))).ToArray());
+        }
 
         /// <summary>A free-form fact recorded once, such as the prediction parameters.</summary>
         public static string Fact(string name, string value) =>

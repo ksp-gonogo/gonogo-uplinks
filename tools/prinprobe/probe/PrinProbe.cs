@@ -174,25 +174,13 @@ namespace GonogoPrinProbe
 
         private static Triple Of(Vector3d v) => new Triple(v.x, v.y, v.z);
 
-        private static string Describe(object? boxed)
-        {
-            if (boxed == null)
-            {
-                return "null";
-            }
-            var fields = boxed.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            return fields.Length == 0
-                ? boxed.ToString()
-                : string.Join(", ", fields.Select(f => f.Name + "=" + Describe(f.GetValue(boxed))).ToArray());
-        }
-
         private void WriteFacts()
         {
             var vessel = FlightGlobals.ActiveVessel;
             var plugin = Plugin();
             var guid = vessel.id.ToString();
             _out!.WriteLine(ProbeRecord.Fact("vessel", vessel.vesselName + " " + guid));
-            _out.WriteLine(ProbeRecord.Fact("predictionParameters", Describe(Call("VesselGetPredictionAdaptiveStepParameters", plugin, guid))));
+            _out.WriteLine(ProbeRecord.Fact("predictionParameters", ProbeRecord.Describe(Call("VesselGetPredictionAdaptiveStepParameters", plugin, guid))));
             foreach (var node in new[] { "principia_numerics_blueprint", "principia_gravity_model", "principia_initial_state" })
             {
                 var nodes = GameDatabase.Instance.GetConfigNodes(node);
@@ -329,9 +317,9 @@ namespace GonogoPrinProbe
                         field.SetValue(parameters, Convert.ChangeType(same.GetValue(prediction), field.FieldType));
                     }
                 }
-                writer.WriteLine(ProbeRecord.Fact("planParameters", Describe(parameters)));
-                writer.WriteLine(ProbeRecord.Fact("planStatus", Describe(Call("FlightPlanSetAdaptiveStepParameters", plugin, guid, parameters))));
-                writer.WriteLine(ProbeRecord.Fact("planActualFinalTime", Describe(Call("FlightPlanGetActualFinalTime", plugin, guid))));
+                writer.WriteLine(ProbeRecord.Fact("planParameters", ProbeRecord.Describe(parameters)));
+                writer.WriteLine(ProbeRecord.Fact("planStatus", ProbeRecord.Describe(Call("FlightPlanSetAdaptiveStepParameters", plugin, guid, parameters))));
+                writer.WriteLine(ProbeRecord.Fact("planActualFinalTime", ProbeRecord.Describe(Call("FlightPlanGetActualFinalTime", plugin, guid))));
                 writer.WriteLine(ProbeRecord.Fact("planVesselState", ProbeRecord.Seed(ut, parent, Planetarium.InverseRotAngle, q0, p0)));
 
                 var segment = Method("FlightPlanRenderedSegment");
