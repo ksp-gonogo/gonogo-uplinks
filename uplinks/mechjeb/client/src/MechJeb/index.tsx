@@ -1,6 +1,5 @@
 import type {
   ActionDefinition,
-  CommandStatus,
   ComponentProps,
   SystemUplinkHealth,
 } from "@ksp-gonogo/sitrep-sdk";
@@ -15,17 +14,16 @@ import {
 import {
   Badge,
   Button,
-  Cluster,
+  type CommandInput,
   Field,
   FieldLabel,
   Input,
   Panel,
   Section,
-  type Severity,
   Text,
   writeQuantity,
 } from "@ksp-gonogo/ui-kit";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { MECHJEB } from "../uplink.js";
 
 /**
@@ -77,53 +75,6 @@ const mechjebActions = [
 ] as const satisfies readonly ActionDefinition[];
 export type MechJebActions = typeof mechjebActions;
 
-/*
- * CommandStatus.phase to an operator-facing chip, in the delayed-command
- * vocabulary. `in-flight` is the dispatched-but-unconfirmed window: from the
- * operator's seat the command is in transit, awaiting reply across the delay.
- */
-function commandChip(
-  phase: CommandStatus["phase"],
-): { severity: Severity; text: string } | undefined {
-  switch (phase) {
-    case "in-flight":
-      return { severity: "warn", text: "awaiting reply" };
-    case "confirmed":
-      return { severity: "go", text: "confirmed" };
-    case "failed":
-      return { severity: "nogo", text: "rejected" };
-    case "refused":
-      // The game evaluated the command and said no, which is a different
-      // thing from the machinery breaking above: MechJeb not installed at the
-      // version the guard wants, no vessel, wrong mode. Nothing was broken and
-      // a retry changes nothing until the situation does.
-      return { severity: "nogo", text: "refused" };
-    case "lost":
-      return { severity: "nogo", text: "no reply" };
-    case "undelivered":
-      // The link never came back and the command was still queued here, so it
-      // reached no autopilot at all. Still `critical`, because the vessel is
-      // not doing what was asked, but a different sentence from the one above:
-      // "no reply" leaves an operator wondering whether MechJeb took it.
-      return { severity: "nogo", text: "not sent" };
-    case "found":
-      // The command reported above as "no reply" turned out to have arrived.
-      // `info`, not `nominal`: it is the most interesting thing on an otherwise
-      // quiet row, and the operator may have re-sent it in the meantime. Only
-      // the phase reaches here, so the chip says the reversal and the rail says
-      // what the reply actually was.
-      return { severity: "info", text: "found" };
-    case "idle":
-      return undefined; // nothing dispatched yet, so nothing to report
-  }
-  // Deliberately no `default`. A widened `phase: string` plus a catch-all
-  // cannot notice a new phase, so one arrives as a silently missing chip rather
-  // than a compile error. Assigning to `never` makes the next one fail the
-  // typecheck here instead.
-  const unhandled: never = phase;
-  return unhandled;
-}
-
 /**
  * Whether MechJeb2 itself is reachable, off the uplink roster rather than any
  * topic of this Uplink's own: which MechJeb is installed is the identity of a
@@ -154,34 +105,24 @@ function unavailableReason(
 
 function CommandRow({
   label,
-  phase,
-  disabled,
-  onFire,
+  command,
+  unavailable,
+  onPressReady,
 }: Readonly<{
   label: string;
-  phase: CommandStatus["phase"];
-  disabled?: boolean;
-  onFire: () => void;
+  command: CommandInput;
+  unavailable: string | null;
+  onPressReady: (press: (() => void) | null) => void;
 }>) {
-  const chip = commandChip(phase);
   return (
-    <Cluster justify="between" gap="related-dense">
-      <Button
-        type="button"
-        onClick={onFire}
-        disabled={disabled}
-        aria-label={label}
-      >
-        {label}
-      </Button>
-      <span role="status" aria-live="polite">
-        {chip ? (
-          <Badge tone={chip.severity} size="sm">
-            {chip.text}
-          </Badge>
-        ) : null}
-      </span>
-    </Cluster>
+    <Button
+      command={command}
+      unavailable={unavailable}
+      onPressReady={onPressReady}
+      aria-label={label}
+    >
+      {label}
+    </Button>
   );
 }
 
@@ -234,41 +175,28 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
       ? parsedAltitude
       : undefined;
 
-  // The refusals live in the fire functions rather than on the buttons alone,
-  // because a bound serial or keyboard input reaches these directly and never
-  // sees a `disabled` attribute.
-  const fireEngage = () => {
-    // Refusing to draw beats drawing a zero, and refusing to SEND beats sending
-    // one: this is an autopilot engage, so the number is flown.
-    if (altitudeKm == null || unavailable != null) return;
-    void engage.send(
-      { targetAltitudeKm: altitudeKm },
-      { label: `Engage ascent to ${writeQuantity(value("km", altitudeKm))}` },
-    );
+  // A bound serial or keyboard input presses the same control a click does, so
+  // the refusals live on the controls and a press is null while one applies.
+  const presses = useRef<Record<string, (() => void) | null>>({});
+  const pressReady = (id: string) => (press: (() => void) | null) => {
+    presses.current[id] = press;
   };
-  const fireExecuteNode = () => {
-    if (unavailable != null) return;
-    void executeNode.send({}, { label: "Execute next node" });
-  };
-  const fireLand = () => {
-    if (unavailable != null) return;
-    void land.send({}, { label: "Land at target" });
-  };
+  const firePress = (id: string) => presses.current[id]?.();
 
   useActionInput<MechJebActions>({
     "engage-ascent": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return undefined;
-      fireEngage();
+      firePress("engage");
       return undefined;
     },
     "execute-node": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return undefined;
-      fireExecuteNode();
+      firePress("execute");
       return undefined;
     },
     "land-at-target": (payload) => {
       if (payload.kind === "button" && payload.value !== true) return undefined;
-      fireLand();
+      firePress("land");
       return undefined;
     },
   });
@@ -323,23 +251,36 @@ function MechJebComponent({ config }: Readonly<ComponentProps<MechJebConfig>>) {
           ) : null}
           <CommandRow
             label="Engage ascent autopilot"
-            phase={engage.status.phase}
-            disabled={altitudeKm == null || unavailable != null}
-            onFire={fireEngage}
+            command={engage.with(
+              { targetAltitudeKm: altitudeKm ?? 0 },
+              {
+                label:
+                  altitudeKm == null
+                    ? "Engage ascent"
+                    : `Engage ascent to ${writeQuantity(value("km", altitudeKm))}`,
+              },
+            )}
+            unavailable={
+              unavailable ??
+              (altitudeKm == null
+                ? "No target altitude read from the field"
+                : null)
+            }
+            onPressReady={pressReady("engage")}
           />
         </Section>,
         <Section key="maneuvers" title="Maneuvers">
           <CommandRow
             label="Execute next node"
-            phase={executeNode.status.phase}
-            disabled={unavailable != null}
-            onFire={fireExecuteNode}
+            command={executeNode.with({}, { label: "Execute next node" })}
+            unavailable={unavailable}
+            onPressReady={pressReady("execute")}
           />
           <CommandRow
             label="Land at target"
-            phase={land.status.phase}
-            disabled={unavailable != null}
-            onFire={fireLand}
+            command={land.with({}, { label: "Land at target" })}
+            unavailable={unavailable}
+            onPressReady={pressReady("land")}
           />
         </Section>,
       ]}

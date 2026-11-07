@@ -132,9 +132,9 @@ describe("MechJeb command widget", () => {
      * fly whatever number arrives.
      */
     const button = screen.getByRole("button", {
-      name: /engage ascent autopilot/i,
+      name: /no target altitude read from the field/i,
     });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
     await userEvent.click(button);
     await act(async () => {});
     expect(
@@ -151,8 +151,10 @@ describe("MechJeb command widget", () => {
     await userEvent.type(input, "0");
 
     expect(
-      screen.getByRole("button", { name: /engage ascent autopilot/i }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: /no target altitude read from the field/i,
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
     await act(async () => {});
     expect(
       fixture.transport.sentCommands.some(
@@ -182,14 +184,23 @@ describe("MechJeb command widget", () => {
     });
   });
 
-  it("surfaces the command lifecycle on the row (confirmed after the stub answers)", async () => {
-    renderMechJeb();
+  it("is pressable again once the stub has answered", async () => {
+    const { fixture } = renderMechJeb();
     await userEvent.click(
       screen.getByRole("button", { name: /land at target/i }),
     );
-    // StubTransport answers the command-request on a later microtask, so the
-    // land row's status chip resolves to confirmed.
-    expect(await screen.findByText(/confirmed/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        fixture.transport.sentCommands.some(
+          (c) => c.command === "mechjeb.landAtTarget",
+        ),
+      ).toBe(true),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /land at target/i }),
+      ).not.toHaveAttribute("aria-disabled"),
+    );
   });
 
   it("has no axe violations", async () => {
@@ -243,19 +254,17 @@ describe("MechJeb2 not reachable", () => {
       screen.getByText(/MechJeb2 assembly version unreadable/),
     ).toBeInTheDocument();
 
-    for (const name of [
-      /engage ascent autopilot/i,
-      /execute next node/i,
-      /land at target/i,
-    ]) {
-      expect(screen.getByRole("button", { name })).toBeDisabled();
+    const dead = screen.getAllByRole("button", {
+      name: /MechJeb2 assembly version unreadable/,
+    });
+    expect(dead).toHaveLength(3);
+    for (const button of dead) {
+      expect(button).toHaveAttribute("aria-disabled", "true");
     }
 
-    // Not merely greyed: a bound serial or keyboard input calls the same fire
-    // path and never sees `disabled`, so nothing reaches the wire either way.
-    await userEvent.click(
-      screen.getByRole("button", { name: /land at target/i }),
-    );
+    // Not merely greyed: a press of a blocked control sends nothing, whether it
+    // is a click or a bound serial or keyboard input.
+    await userEvent.click(dead[2] as HTMLElement);
     await act(async () => {});
     expect(fixture.transport.sentCommands).toHaveLength(0);
   });
