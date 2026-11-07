@@ -3,7 +3,6 @@ import { useCommand } from "@ksp-gonogo/sitrep-sdk";
 import {
   Button,
   Cluster,
-  CommandButton,
   SelectableRow,
   Stack,
   Text,
@@ -115,16 +114,18 @@ export function RepairControl({
         </SelectableRow>
       ))}
       {refusal && <span>{refusal}</span>}
-      <CommandButton
-        handle={repair}
-        args={{ partId, crewName: performer ?? "" }}
+      <Button
+        command={repair.with(
+          { partId, crewName: performer ?? "" },
+          { label: `${verb} with ${performer ?? "nobody"}` },
+        )}
+        variant="ghost"
         size="sm"
-        commandLabel={`${verb} with ${performer ?? "nobody"}`}
-        label={verb}
         confirmLabel={price ? `Confirm, ${price.toLowerCase()}` : "Confirm"}
-        disabled={refusal !== null}
-        title={refusal ?? undefined}
-      />
+        unavailable={refusal ?? null}
+      >
+        {verb}
+      </Button>
     </Stack>
   );
 }
