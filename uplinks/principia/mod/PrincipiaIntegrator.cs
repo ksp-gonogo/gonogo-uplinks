@@ -34,8 +34,8 @@ namespace GonogoPrincipiaUplink
         private readonly Func<IPrincipiaWorkerChannel?> _spawn;
         private readonly Func<string?> _system;
         private readonly string _directory;
-        private readonly double _rotation;
         private readonly Func<bool> _forceCheck;
+        private readonly Action<string> _log;
         private readonly object _gate = new object();
         private readonly object _channelGate = new object();
 
@@ -52,7 +52,7 @@ namespace GonogoPrincipiaUplink
         /// <param name="spawn">Opens the private copy, or returns null where it cannot run.</param>
         /// <param name="system">The solar system as text, or null when it cannot be read yet.</param>
         /// <param name="directory">Where the temporary file of the copy may be written.</param>
-        /// <param name="rotation">The game's planetarium rotation, in degrees.</param>
+        /// <param name="log">Where a caught failure in the copy is written so an operator can find it.</param>
         /// <param name="forceCheck">
         /// True when the next ask should first force a fatal check in the copy, so recovery
         /// can be exercised in the real game. Null never forces one.
@@ -61,14 +61,14 @@ namespace GonogoPrincipiaUplink
             Func<IPrincipiaWorkerChannel?> spawn,
             Func<string?> system,
             string directory = "",
-            double rotation = 0.0,
-            Func<bool>? forceCheck = null)
+            Func<bool>? forceCheck = null,
+            Action<string>? log = null)
         {
             _spawn = spawn ?? throw new ArgumentNullException(nameof(spawn));
             _system = system ?? throw new ArgumentNullException(nameof(system));
             _directory = directory;
-            _rotation = rotation;
             _forceCheck = forceCheck ?? (() => false);
+            _log = log ?? (_ => { });
         }
 
         /// <summary>
@@ -248,16 +248,27 @@ namespace GonogoPrincipiaUplink
 
                 if (_forceCheck())
                 {
-                    channel.Exchange("X\t" + library + "\t" + _directory + "\n");
+                    Report(channel.Exchange("X\t" + library + "\t" + _directory + "\n"));
                 }
 
-                var reply = channel.Exchange(Request(library, _directory, _rotation, system, seed, toUt, count));
+                var reply = channel.Exchange(Request(library, _directory, system, seed, toUt, count));
                 if (reply == null)
                 {
                     DropChannel();
                     return PropagatedPath.Refused("Principia's private copy stopped before it answered.");
                 }
+                Report(reply);
                 return Parse(reply, seed, basis);
+            }
+        }
+
+        private void Report(string? reply)
+        {
+            if (PrincipiaWorkerProcess.BoolField(reply, "caught") == true)
+            {
+                _log("[Gonogo] Principia's private copy: "
+                    + (PrincipiaWorkerProcess.PlainStringField(reply, "reason") ?? "a failure was caught")
+                    + ". The game is unaffected, and the next prediction opens a new copy.");
             }
         }
 
@@ -287,7 +298,7 @@ namespace GonogoPrincipiaUplink
         private static string Text(double value) => PrincipiaWorkerSystem.Number(value);
 
         internal static string Request(
-            string library, string directory, double rotation, string system, PropagationSeed seed, double toUt, int count)
+            string library, string directory, string system, PropagationSeed seed, double toUt, int count)
         {
             var p = seed.State.Position;
             var v = seed.State.Velocity;
@@ -297,7 +308,7 @@ namespace GonogoPrincipiaUplink
                 {
                     "P", library, Text(seed.Ut), seed.ParentBodyIndex.ToString(CultureInfo.InvariantCulture),
                     Text(p.X), Text(p.Y), Text(p.Z), Text(v.X), Text(v.Y), Text(v.Z),
-                    Text(toUt), count.ToString(CultureInfo.InvariantCulture), Text(rotation), directory,
+                    Text(toUt), count.ToString(CultureInfo.InvariantCulture), directory,
                 })
                 + "\n" + system;
         }

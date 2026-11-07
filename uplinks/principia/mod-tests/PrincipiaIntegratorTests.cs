@@ -288,8 +288,9 @@ namespace GonogoPrincipiaUplink.Tests
             });
 
             var force = 0;
+            var logged = new List<string>();
             var integrator = new PrincipiaIntegrator(
-                () => route(directory), system.ToText, directory, 0.0, () => force-- > 0);
+                () => route(directory), system.ToText, directory, () => force-- > 0, logged.Add);
             integrator.Authorise(library, "test build", MayRun);
             var seed = new PropagationSeed(
                 new StateVector(new Vector3d(700_000.0, 0.0, 0.0), new Vector3d(0.0, Math.Sqrt(Mu / 700_000.0), 0.0)),
@@ -339,6 +340,22 @@ namespace GonogoPrincipiaUplink.Tests
                 }
             }
             Assert.True(path.Solved, path.Refusal);
+        }
+
+        [Fact]
+        public void ACaughtFailureLeavesALineAnOperatorCanFind()
+        {
+            var channel = new FakeChannel();
+            channel.Replies.Enqueue("{\"ok\": false, \"caught\": true, \"reason\": \"a fatal check was caught\"}");
+            var logged = new List<string>();
+            var integrator = new PrincipiaIntegrator(
+                () => channel, () => "S\nB\t1\t0\n", "", null, logged.Add);
+            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
+
+            var path = integrator.Propagate(Seed, 200.0, 8);
+
+            Assert.False(path.Solved);
+            Assert.Contains(logged, line => line.Contains("a fatal check was caught"));
         }
     }
 }

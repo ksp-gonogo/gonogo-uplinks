@@ -28,6 +28,10 @@ namespace GonogoPrincipiaUplink
             _bodyNames ??= PrincipiaPerturbers.NameOf;
         }
     
-        partial void AttachSystemRequest() => SystemRequest = PrincipiaSystemSource.Read;
+        partial void AttachSystemRequest()
+        {
+            SystemRequest = PrincipiaSystemSource.Read;
+            GameLog = UnityEngine.Debug.LogWarning;
+        }
     }
 }

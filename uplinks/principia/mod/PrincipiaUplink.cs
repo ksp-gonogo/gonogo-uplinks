@@ -705,8 +705,11 @@ namespace GonogoPrincipiaUplink
             OpenRoute,
             () => SystemRequest?.Invoke(),
             PrincipiaPrivateCopy.PrivateFileDirectory,
-            0.0,
-            ForceCheckRequested);
+            ForceCheckRequested,
+            message => GameLog?.Invoke(message));
+
+        /// <summary>Writes to the game's log. Set only by the game-facing partial.</summary>
+        private static Action<string>? GameLog;
 
         /// <summary>
         /// The copy inside the game, unless a file named <c>use-separate-process</c> sits

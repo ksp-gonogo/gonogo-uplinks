@@ -309,6 +309,14 @@ static char *refusal(const char *why)
     return reply;
 }
 
+/* A refusal the Uplink writes to the game's log, since a fatal check only reaches stderr, which the log does not hold. */
+static char *caught(const char *why)
+{
+    char *reply = malloc(strlen(why) + 64);
+    sprintf(reply, "{\"ok\": false, \"caught\": true, \"reason\": \"%s\"}", why);
+    return reply;
+}
+
 typedef struct { double t, x, y, z, vx, vy, vz; } Point;
 
 static char *format_reply(double reached, const Point *points, int keep)
@@ -499,7 +507,7 @@ static char *cpu_flags(const char *library)
 
 /*
  * First line, tab separated: P, library, seed UT, parent, six state numbers, end UT,
- * max points, rotation, a directory for the private file. The rest is the system.
+ * max points, a directory for the private file. The rest is the system.
  * Or F, library: the CPU flags. Or X, library, directory: force a fatal check, so
  * recovery can be shown working in the real game.
  */
@@ -534,10 +542,10 @@ static char *serve(char *request)
         }
         recoveries++;
         set_current(NULL);
-        return refusal("a fatal check in the private copy was caught");
+        return caught("a fatal check in the private copy was caught");
     }
 
-    if (newline == NULL || n < 14 || f[0] == NULL || f[0][0] != 'P') {
+    if (newline == NULL || n < 13 || f[0] == NULL || f[0][0] != 'P') {
         return refusal("the request could not be read");
     }
     const char *library = f[1];
@@ -547,9 +555,15 @@ static char *serve(char *request)
                {strtod(f[7], NULL), strtod(f[8], NULL), strtod(f[9], NULL)}};
     double to_ut = strtod(f[10], NULL);
     int max_points = (int)strtod(f[11], NULL);
-    double rotation = strtod(f[12], NULL);
-    const char *directory = f[13];
+    const char *directory = f[12];
     const char *system = newline + 1;
+    /* The system's first line ends with the rotation the plugin was made with, and it has to stay the one it advances with. */
+    const char *end_of_first = strchr(system, '\n');
+    const char *last_tab = end_of_first == NULL ? NULL : end_of_first;
+    while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
+        last_tab--;
+    }
+    double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
 
     Copy *volatile copy = current;
     if (sigsetjmp(recover, 1) == 0) {
@@ -585,7 +599,7 @@ static char *serve(char *request)
     }
     recoveries++;
     set_current(NULL);
-    return refusal("a fatal check in the private copy was caught, and it has been set aside");
+    return caught("a fatal check in the private copy was caught, and it has been set aside");
 }
 
 typedef struct { uint64_t generation; } ThreadArgument;
@@ -685,7 +699,7 @@ char *gonogo_principia_exchange(const char *request, int timeout_seconds)
             job = NULL;
             serving = false;
             start_thread_locked();
-            reply = refusal(poisoned
+            reply = caught(poisoned
                 ? "a fatal check on a thread of the private copy was caught, and it has been set aside"
                 : "the private copy of Principia did not answer in time, and it has been set aside");
             break;
