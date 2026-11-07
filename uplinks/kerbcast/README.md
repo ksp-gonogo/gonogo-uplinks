@@ -9,7 +9,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | --- | --- |
 | Uplink id | `kerbcast` |
 | Version | `0.0.0-development` |
-| Wraps | kerbcast 1.12.0-rc.11 (ckan) |
+| Wraps | kerbcast 1.12.0-rc.8 (ckan) |
 | Built against | contract 51.0, extension API 6.0.0 |
 
 ## Install

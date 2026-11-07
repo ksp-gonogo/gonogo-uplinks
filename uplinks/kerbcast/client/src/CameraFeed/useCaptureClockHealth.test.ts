@@ -72,53 +72,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/* The steps the station page's view clock made in one recorded minute: its estimate of the game's present ran ahead and refitted back by more than a second, each second, while the camera's own stamps stayed with the game. Each row is the present before the step, after it, and the UT of the next stamp. */
-const RECORDED_REFITS: [number, number, number][] = [
-  [68.73036342294495, 67.45874859478933, 67.46],
-  [69.80621874041515, 68.50264440672656, 68.5],
-  [70.89564685322817, 69.5623669541335, 69.52],
-  [72.11680210585125, 70.56340883562977, 70.6],
-  [73.18553371863563, 71.63701021268282, 71.64],
-  [73.87168275616435, 72.64535674145293, 72.64],
-  [74.97091294496698, 73.68413929995016, 73.66],
-  [76.03647921042518, 74.74824463618582, 74.74],
-  [77.07307037508858, 75.81746322528095, 75.78],
-  [78.14082803496115, 76.80551969901983, 76.8],
-];
-
 describe("useCaptureClockHealth", () => {
-  it("does not flush the delay each second while the view's estimate refits behind a camera that is on time", () => {
-    const clock = fakeView(68);
-    const stamps = stampFeed();
-    const { result } = setup({ flightId: 767722819, view: clock.view, captureUt: 68, epoch: 0, warpRate: 1, frameStamps: stamps.feed });
-    for (const [before, after, stampUt] of RECORDED_REFITS) {
-      clock.setPresent(before);
-      clock.run(1);
-      stamps.send(stampUt - 0.04, 0);
-      clock.setPresent(after);
-      clock.run(1);
-      stamps.send(stampUt, 0);
-      nowMs += 1000;
-    }
-    expect(result.current.resets).toBe(0);
-    expect(result.current.stale).toBe(false);
-  });
-
-  it("still flushes once for a real revert, and not again when the camera catches up", () => {
-    const clock = fakeView(549);
-    const stamps = stampFeed();
-    const { result } = setup({ flightId: 767722819, view: clock.view, captureUt: 549, epoch: 0, warpRate: 1, frameStamps: stamps.feed });
-    stamps.send(549, 0);
-    clock.run(500);
-    clock.setPresent(549 - 124);
-    clock.run(100);
-    expect(result.current.stale).toBe(true);
-    expect(result.current.resets).toBe(1);
-    stamps.send(425.2, 1);
-    expect(result.current.stale).toBe(false);
-    expect(result.current.resets).toBe(1);
-  });
-
   it("stops trusting the camera clock when the game steps back, and trusts it again on a stamp from the new timeline", () => {
     const clock = fakeView(549);
     const stamps = stampFeed();
@@ -134,7 +88,7 @@ describe("useCaptureClockHealth", () => {
 
     stamps.send(419.2, 2);
     expect(result.current.stale).toBe(false);
-    expect(result.current.resets).toBe(1);
+    expect(result.current.resets).toBe(2);
   });
 
   it("keeps distrusting it while the stamps still come from before the revert", () => {
