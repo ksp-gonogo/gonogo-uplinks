@@ -14,7 +14,7 @@ const BANNER_ID = "forecasts-stopped";
 
 /** What the banner says while forecasts are stopped. */
 export const FORECASTS_STOPPED_BANNER =
-  "Principia's forecasts stopped after an internal error. Restart the game to bring them back.";
+  "Forecasts stopped after an internal error. Restart the game to bring them back.";
 
 /*
  * The banner has one id, so every surface that calls this raises the same banner, and
