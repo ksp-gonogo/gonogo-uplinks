@@ -10,7 +10,7 @@ Principia's n-body flight on the dashboard: how far each trajectory holds, the f
 | Uplink id | `principia` |
 | Version | `1.0.0-rc.4` |
 | Wraps | Principia 2026101016-Lichnerowicz (manual) |
-| Built against | contract 51.0, extension API 6.0.0 |
+| Built against | contract 52.0, extension API 6.0.0 |
 
 ## Install
 
