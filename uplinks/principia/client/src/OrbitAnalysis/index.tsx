@@ -31,6 +31,7 @@ import {
   orbitDescription,
   UNREACHABLE_ADJECTIVES,
 } from "../orbitDescription.js";
+import { useForecastsStopped } from "../FlightPlanSection/forecastsStopped.js";
 import { PRINCIPIA } from "../uplink.js";
 // Side-effect import: hydrates this Topic's units at decode time. Without it
 // every band arrives as a bare number while the type still says it carries one.
@@ -614,6 +615,7 @@ function HazardRow({
  * under the phrase for that reason.</p>
  */
 export function OrbitAnalysisSection() {
+  useForecastsStopped();
   const reading = useTelemetry("principia.analysis");
   const view = analysisView(reading);
   const viewUt = magnitudeOf(useViewUt());
