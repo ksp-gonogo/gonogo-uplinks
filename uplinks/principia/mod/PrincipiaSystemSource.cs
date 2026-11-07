@@ -36,6 +36,41 @@ namespace GonogoPrincipiaUplink
             }
         }
 
+        /// <summary>
+        /// Every body but the star, about its parent, as the game holds them, plus the
+        /// planetarium's rotation. Principia writes each body's orbit from its plugin every
+        /// step, so these are the plugin's states, read with no call into it.
+        /// </summary>
+        public static PrincipiaGameReading? ReadGame()
+        {
+            if (!HasBodies() || Planetarium.fetch == null)
+            {
+                return null;
+            }
+            var main = FlightGlobals.currentMainBody;
+            var reading = new PrincipiaGameReading
+            {
+                Ut = Planetarium.GetUniversalTime(),
+                InverseRotAngle = Planetarium.InverseRotAngle,
+                FrameFacts = main == null
+                    ? "no main body;"
+                    : main.bodyName + " rotating frame " + main.inverseRotation
+                        + ", threshold " + main.inverseRotThresholdAltitude + " m;",
+            };
+            foreach (var body in FlightGlobals.Bodies)
+            {
+                if (body == null || body.orbit == null || body.orbit.referenceBody == null)
+                {
+                    continue;
+                }
+                var q = body.orbit.pos;
+                var p = body.orbit.vel;
+                reading.Bodies.Add(new PrincipiaBodyReading(
+                    body.flightGlobalsIndex, body.bodyName, new[] { q.x, q.y, q.z, p.x, p.y, p.z }));
+            }
+            return reading;
+        }
+
         private static PrincipiaWorkerSystem? Build()
         {
             var database = GameDatabase.Instance;

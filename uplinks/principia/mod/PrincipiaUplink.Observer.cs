@@ -32,6 +32,7 @@ namespace GonogoPrincipiaUplink
         {
             SystemRequest = PrincipiaSystemSource.Read;
             GameLog = UnityEngine.Debug.LogWarning;
+            GameReading = PrincipiaSystemSource.ReadGame;
         }
     }
 }

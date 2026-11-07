@@ -63,11 +63,17 @@ namespace GonogoPrincipiaUplink
         public static string PrivateFileDirectory => Path.GetTempPath().TrimEnd('/');
 
         /// <summary>The native half written to <paramref name="directory"/>, or null when this build carries none or it cannot be written.</summary>
-        public static string? EnsureLibrary(string directory)
+        public static string? EnsureLibrary(string directory) => EnsureFile(Library, directory);
+
+        /// <summary>
+        /// A file this assembly carries, written beside it. Written only when absent or
+        /// different, since a running program's file cannot be overwritten.
+        /// </summary>
+        private static string? EnsureFile(string name, string directory)
         {
             try
             {
-                using var resource = typeof(PrincipiaPrivateCopy).Assembly.GetManifestResourceStream(Library);
+                using var resource = typeof(PrincipiaPrivateCopy).Assembly.GetManifestResourceStream(name);
                 if (resource == null)
                 {
                     return null;
@@ -75,7 +81,7 @@ namespace GonogoPrincipiaUplink
                 using var buffer = new MemoryStream();
                 resource.CopyTo(buffer);
                 var bytes = buffer.ToArray();
-                var path = Path.Combine(directory, Library);
+                var path = Path.Combine(directory, name);
                 if (!File.Exists(path) || new FileInfo(path).Length != bytes.Length || !Same(File.ReadAllBytes(path), bytes))
                 {
                     Directory.CreateDirectory(directory);
@@ -114,16 +120,11 @@ namespace GonogoPrincipiaUplink
             }
             try
             {
-                using var resource = typeof(PrincipiaPrivateCopy).Assembly.GetManifestResourceStream(WorkerProgram);
-                if (resource == null)
+                var path = EnsureFile(WorkerProgram, directory);
+                if (path == null)
                 {
                     return null;
                 }
-                using var buffer = new MemoryStream();
-                resource.CopyTo(buffer);
-                Directory.CreateDirectory(directory);
-                var path = Path.Combine(directory, WorkerProgram);
-                File.WriteAllBytes(path, buffer.ToArray());
                 if (ChMod(path, 0x1ED) != 0)
                 {
                     return null;

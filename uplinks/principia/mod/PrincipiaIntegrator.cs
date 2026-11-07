@@ -36,6 +36,7 @@ namespace GonogoPrincipiaUplink
         private readonly string _directory;
         private readonly Func<bool> _forceCheck;
         private readonly Action<string> _log;
+        private readonly PrincipiaDiagnostic? _diagnostic;
         private readonly object _gate = new object();
         private readonly object _channelGate = new object();
 
@@ -62,13 +63,15 @@ namespace GonogoPrincipiaUplink
             Func<string?> system,
             string directory = "",
             Func<bool>? forceCheck = null,
-            Action<string>? log = null)
+            Action<string>? log = null,
+            PrincipiaDiagnostic? diagnostic = null)
         {
             _spawn = spawn ?? throw new ArgumentNullException(nameof(spawn));
             _system = system ?? throw new ArgumentNullException(nameof(system));
             _directory = directory;
             _forceCheck = forceCheck ?? (() => false);
             _log = log ?? (_ => { });
+            _diagnostic = diagnostic;
         }
 
         /// <summary>
@@ -258,7 +261,9 @@ namespace GonogoPrincipiaUplink
                     return PropagatedPath.Refused("Principia's private copy stopped before it answered.");
                 }
                 Report(reply);
-                return Parse(reply, seed, basis);
+                var path = Parse(reply, seed, basis);
+                _diagnostic?.Compare(channel, library, _directory, system, seed.Ut, _log);
+                return path;
             }
         }
 

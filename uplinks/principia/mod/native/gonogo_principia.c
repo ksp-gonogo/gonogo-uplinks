@@ -101,6 +101,7 @@ typedef struct {
     void (*free_vessels)(void *, double);
     void (*catch_up)(void *, void **);
     QP (*vessel_from_parent)(void *, int, const char *);
+    QP (*celestial_from_parent)(void *, int);
     void (*delete_iterator)(void **);
     void (*suppress)(int);
     void (*stderr_logging)(int);
@@ -181,6 +182,7 @@ static bool bind_symbols(Copy *copy, const char **missing)
     SYMBOL(free_vessels, "FreeVesselsAndPartsAndCollectPileUps");
     SYMBOL(catch_up, "CatchUpLaggingVessels");
     SYMBOL(vessel_from_parent, "VesselFromParent");
+    SYMBOL(celestial_from_parent, "CelestialFromParent");
     SYMBOL(delete_iterator, "IteratorDelete");
     SYMBOL(suppress, "SetSuppressedLogging");
     SYMBOL(stderr_logging, "SetStderrLogging");
@@ -506,6 +508,68 @@ static char *cpu_flags(const char *library)
 }
 
 /*
+ * Diagnostic. Where this copy's plugin puts each named body at an instant, about its
+ * parent, to set beside where the game's plugin puts it. First line: D, library,
+ * directory, UT, comma-separated body indices. The rest is the system.
+ */
+static char *body_states(const char *library, const char *directory, double ut, char *indices, const char *system)
+{
+    const char *why = NULL;
+    Copy *volatile copy = current;
+    if (sigsetjmp(recover, 1) != 0) {
+        recoveries++;
+        set_current(NULL);
+        return caught("a fatal check in the private copy was caught during a diagnostic");
+    }
+    in_call = 1;
+    if (copy != NULL && copy->plugin != NULL
+        && (strcmp(copy->system, system) != 0 || ut < copy->current_time(copy->plugin))) {
+        copy->delete_plugin(&copy->plugin);
+        copy->plugin = NULL;
+        free(copy->system);
+        copy->system = NULL;
+        restarts++;
+    }
+    if (copy == NULL) {
+        in_call = 0;
+        copy = open_copy(library, directory, &why);
+        if (copy == NULL) {
+            return refusal(why);
+        }
+        set_current(copy);
+        in_call = 1;
+    }
+    if (copy->plugin == NULL) {
+        copy->system = strdup(system);
+        char *working = strdup(system);
+        build_plugin(copy, working);
+        free(working);
+    }
+    const char *end_of_first = strchr(system, '\n');
+    const char *last_tab = end_of_first;
+    while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
+        last_tab--;
+    }
+    double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
+    if (ut > copy->current_time(copy->plugin)) {
+        copy->advance(copy->plugin, ut, rotation);
+    }
+    size_t capacity = 8192;
+    char *reply = malloc(capacity);
+    size_t at = (size_t)snprintf(reply, capacity, "{\"ok\": true, \"reachedUt\": %.17g, \"points\": \"", copy->current_time(copy->plugin));
+    bool first = true;
+    for (char *index = strtok(indices, ","); index != NULL; index = strtok(NULL, ",")) {
+        QP state = copy->celestial_from_parent(copy->plugin, (int)strtod(index, NULL));
+        at += (size_t)snprintf(reply + at, capacity - at, "%s%s,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g", first ? "" : ";", index,
+                               state.q.x, state.q.y, state.q.z, state.p.x, state.p.y, state.p.z);
+        first = false;
+    }
+    snprintf(reply + at, capacity - at, "\"}");
+    in_call = 0;
+    return reply;
+}
+
+/*
  * First line, tab separated: P, library, seed UT, parent, six state numbers, end UT,
  * max points, a directory for the private file. The rest is the system.
  * Or F, library: the CPU flags. Or X, library, directory: force a fatal check, so
@@ -545,6 +609,10 @@ static char *serve(char *request)
         return caught("a fatal check in the private copy was caught");
     }
 
+    if (n >= 5 && newline != NULL && f[0] != NULL && f[0][0] == 'D') {
+        return body_states(f[1], f[2], strtod(f[3], NULL), f[4], newline + 1);
+    }
+
     if (newline == NULL || n < 13 || f[0] == NULL || f[0][0] != 'P') {
         return refusal("the request could not be read");
     }
@@ -563,7 +631,7 @@ static char *serve(char *request)
     while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
         last_tab--;
     }
-    double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
+    volatile double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
 
     Copy *volatile copy = current;
     if (sigsetjmp(recover, 1) == 0) {
@@ -653,9 +721,22 @@ static void start_thread_locked(void)
     thread_running = true;
 }
 
-/* Installs the signal handler. Call once, after the game's own handlers are in place. */
+/*
+ * Installs the signal handler, after the game's own are in place. Only the first call
+ * does anything: a second would record this handler as the one before it, and a real
+ * abort elsewhere in the process would then loop instead of ending.
+ */
 int gonogo_principia_init(void)
 {
+    static pthread_mutex_t once = PTHREAD_MUTEX_INITIALIZER;
+    static bool done;
+    pthread_mutex_lock(&once);
+    if (done) {
+        pthread_mutex_unlock(&once);
+        return 0;
+    }
+    done = true;
+    pthread_mutex_unlock(&once);
     void *warm[4];
     backtrace(warm, 4);
     struct sigaction action;

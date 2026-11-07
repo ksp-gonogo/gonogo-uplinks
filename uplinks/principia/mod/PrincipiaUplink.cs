@@ -270,6 +270,13 @@ namespace GonogoPrincipiaUplink
             // subscription would leave the roster describing a build nobody had
             // read yet for as long as nobody was looking.
             host.AddSampledSource(CaptureBinaryHealthOnMain, AdoptBinaryHealthOnCourier);
+            host.AddSampledSource(
+                _ =>
+                {
+                    if (GameReading?.Invoke() is { } reading) Diagnostic.Adopt(reading);
+                    return null;
+                },
+                _ => { });
             RegisterPlanCommands(host);
         }
 
@@ -706,7 +713,14 @@ namespace GonogoPrincipiaUplink
             () => SystemRequest?.Invoke(),
             PrincipiaPrivateCopy.PrivateFileDirectory,
             ForceCheckRequested,
-            message => GameLog?.Invoke(message));
+            message => GameLog?.Invoke(message),
+            Diagnostic);
+
+        /// <summary>Sets the game's plugin beside the private copy's in the game's log.</summary>
+        private static readonly PrincipiaDiagnostic Diagnostic = new PrincipiaDiagnostic();
+
+        /// <summary>Reads the game for <see cref="Diagnostic"/>. Set only by the game-facing partial.</summary>
+        private static Func<PrincipiaGameReading?>? GameReading;
 
         /// <summary>Writes to the game's log. Set only by the game-facing partial.</summary>
         private static Action<string>? GameLog;

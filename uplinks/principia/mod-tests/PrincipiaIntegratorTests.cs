@@ -320,6 +320,17 @@ namespace GonogoPrincipiaUplink.Tests
             var offY = last.Y - (700_000.0 * Math.Sin(expectedAngle));
             Assert.True(Math.Sqrt((offX * offX) + (offY * offY) + (last.Z * last.Z)) < 500.0);
 
+            // The diagnostic asks the copy where each body is, through the real native half.
+            var seen = new PrincipiaDiagnostic();
+            var game = new PrincipiaGameReading { Ut = 1500.0 };
+            game.Bodies.Add(new PrincipiaBodyReading(1, "Kerbin", new double[6]));
+            seen.Adopt(game);
+            using (var channel = route(directory))
+            {
+                seen.Compare(channel!, library!, directory, system.ToText(), 1000.0, logged.Add);
+            }
+            Assert.Contains(logged, line => line.Contains("Kerbin at UT"));
+
             // A fatal check in the copy leaves this process running and the next ask answered.
             force = 1;
             var later = new PropagationSeed(seed.State, 1, 2000.0, Mu);
@@ -340,6 +351,30 @@ namespace GonogoPrincipiaUplink.Tests
                 }
             }
             Assert.True(path.Solved, path.Refusal);
+        }
+
+        [Fact]
+        public void TheDiagnosticSetsTheTwoPluginsSideBySide()
+        {
+            var reading = new PrincipiaGameReading { Ut = 100.0 };
+            reading.Bodies.Add(new PrincipiaBodyReading(2, "Mun", new[] { 1000.0, 0, 0, 0, 10.0, 0 }));
+
+            var lines = new List<string>(PrincipiaDiagnostic.Lines("2,0,1000,0,10,0,0", reading));
+
+            var line = Assert.Single(lines);
+            Assert.Contains("Mun", line);
+            Assert.Contains("copy minus game about the parent 90 deg", line);
+        }
+
+        [Fact]
+        public void TheRotationAtASeedIsTheOneTheGameHadThen()
+        {
+            var diagnostic = new PrincipiaDiagnostic();
+            diagnostic.Adopt(new PrincipiaGameReading { Ut = 100.0, InverseRotAngle = 1.0 });
+            diagnostic.Adopt(new PrincipiaGameReading { Ut = 200.0, InverseRotAngle = 2.0 });
+
+            Assert.Equal(1.0, diagnostic.RotationAt(150.0));
+            Assert.Null(diagnostic.RotationAt(50.0));
         }
 
         [Fact]
