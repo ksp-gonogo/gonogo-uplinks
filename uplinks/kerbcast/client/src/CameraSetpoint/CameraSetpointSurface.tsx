@@ -53,7 +53,7 @@
  * and nothing leaves the widget until the commit. See `setpointRate.ts`.
  */
 
-import { useCommand } from "@ksp-gonogo/sitrep-sdk";
+import { commandSet, useCommand } from "@ksp-gonogo/sitrep-sdk";
 import { Box } from "@ksp-gonogo/ui-kit";
 import {
   type CSSProperties,
@@ -165,8 +165,7 @@ function previewSize(
   if (height + SDK_PAN_PAD_INSET_PX + CLUSTER_INSET_PX > frame.height) {
     return null;
   }
-  const clusterLeftEdge =
-    frame.width - SDK_PAN_PAD_INSET_PX - CLUSTER_WIDTH_PX;
+  const clusterLeftEdge = frame.width - SDK_PAN_PAD_INSET_PX - CLUSTER_WIDTH_PX;
   const tileRightEdge = frame.width / 2 + PREVIEW_WIDTH_PX / 2;
   if (tileRightEdge + PREVIEW_CLEARANCE_PX > clusterLeftEdge) return null;
   return { width: PREVIEW_WIDTH_PX, height };
@@ -319,30 +318,31 @@ export const CameraSetpointSurface = forwardRef<
    * refused or lost command leaves the draft and the preview where they were,
    * and the panel's rail carries the refusal.
    */
-  const handleCommit = (next: CameraSetpoint): void => {
-    const sends: Promise<unknown>[] = [];
-    if (axes.pan) {
-      sends.push(
-        setPan.send({
-          cameraId,
-          lensKey: String(cameraId),
-          yaw: next.yaw,
-          pitch: next.pitch,
-        }),
-      );
-    }
-    if (axes.zoom) {
-      sends.push(
-        setFov.send({
-          cameraId,
-          lensKey: String(cameraId),
-          fieldOfView: next.fov,
-        }),
-      );
-    }
-    void Promise.all(sends).then(
-      () => {
-        if (!mountedRef.current) return;
+  const commitCommand = commandSet(
+    [
+      axes.pan &&
+        setPan.with(
+          {
+            cameraId,
+            lensKey: String(cameraId),
+            yaw: setpoint.yaw,
+            pitch: setpoint.pitch,
+          },
+          { label: "Aim the camera" },
+        ),
+      axes.zoom &&
+        setFov.with(
+          {
+            cameraId,
+            lensKey: String(cameraId),
+            fieldOfView: setpoint.fov,
+          },
+          { label: "Zoom the camera" },
+        ),
+    ],
+    {
+      onSettled: (result) => {
+        if (result.failed > 0 || !mountedRef.current) return;
         setCommitting(true);
         if (morphTimerRef.current !== null) clearTimeout(morphTimerRef.current);
         morphTimerRef.current = setTimeout(
@@ -350,9 +350,8 @@ export const CameraSetpointSurface = forwardRef<
           MORPH_MS,
         );
       },
-      () => {},
-    );
-  };
+    },
+  );
 
   if (mode === "live") return null;
 
@@ -371,8 +370,8 @@ export const CameraSetpointSurface = forwardRef<
           bounds={bounds}
           axes={axes}
           warning={mode === "no-path" ? "No signal path" : undefined}
-                   onChange={setSetpoint}
-          onCommit={handleCommit}
+          onChange={setSetpoint}
+          command={commitCommand}
         />
       </Box>
       {preview && (
