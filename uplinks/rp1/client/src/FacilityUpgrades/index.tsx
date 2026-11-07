@@ -7,8 +7,9 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
-  CommandButton,
+  type CommandButtonHandle,
   EmptyState,
   MissionDate,
   NULL_DISPLAY,
@@ -316,7 +317,7 @@ function UpgradeCard({
   pricedAt,
 }: Readonly<{
   facility: string;
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   step: NextTier;
   rate: Rp1FacilityUpgradeRate | undefined;
   pricedAt: Rp1ConstructionRates["refreshedAt"];
@@ -344,19 +345,19 @@ function UpgradeCard({
             </>
           )}
         </Text>
-        <CommandButton
-          args={{ facility }}
+        <Button
+          command={handle.with(
+            { facility },
+            { label: `Queue ${label} upgrade` },
+          )}
+          variant="ghost"
           aria-label={`Queue ${label} upgrade`}
-          commandLabel={`Queue ${label} upgrade`}
           confirmAriaLabel={`Confirm queueing ${label} tier ${step.current + 1}`}
-          /* COMMIT rather than spend, because nothing leaves the treasury at
-             the press: RP-1 draws the funds down over the build, which the
-             price beside this says in its own three words. */
           confirmLabel={`Commit tier ${step.current + 1}`}
-          handle={handle}
-          label="Queue upgrade"
           size="sm"
-        />
+        >
+          Queue upgrade
+        </Button>
       </Cluster>
       <UpgradeRate pricedAt={pricedAt} rate={rate} />
     </ProjectCard>

@@ -42,7 +42,11 @@ function steps() {
 
 function mount(
   row = node(),
-  rates: unknown = { refreshedAt: 1_000_000, techId: "basicRocketry", steps: steps() },
+  rates: unknown = {
+    refreshedAt: 1_000_000,
+    techId: "basicRocketry",
+    steps: steps(),
+  },
 ) {
   const fixture = setupStreamFixture();
   const view = render(
@@ -73,7 +77,7 @@ describe("ResearchQueue work rate", () => {
     expect(text).not.toContain("against now");
     expect(
       screen.getByRole("button", { name: "Research is already at 100%" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
     await expectNoA11yViolations(view.container);
   });
 
@@ -90,9 +94,13 @@ describe("ResearchQueue work rate", () => {
     const text = visibleText(view.container);
     expect(text).toContain("90%");
     expect(text).toContain("researchers paid 1900 f/day");
-    expect(text).toContain("against now: pay 100 f/day less, Unlock Credit 40 f/day less");
+    expect(text).toContain(
+      "against now: pay 100 f/day less, Unlock Credit 40 f/day less",
+    );
 
-    await user.click(screen.getByRole("button", { name: "Set research to 90%" }));
+    await user.click(
+      screen.getByRole("button", { name: "Set research to 90%" }),
+    );
     await user.click(await screen.findByRole("button", { name: "Set 90%" }));
 
     const sent = fixture.transport.sentCommands.find(
@@ -106,13 +114,17 @@ describe("ResearchQueue work rate", () => {
     const { view } = mount(node({ workRate: 0.05 }));
 
     await user.click(
-      await screen.findByRole("button", { name: "Decrease Research work rate" }),
+      await screen.findByRole("button", {
+        name: "Decrease Research work rate",
+      }),
     );
 
     const text = visibleText(view.container);
     expect(text).toContain("stopped: researchers still paid 1000 f/day");
     expect(text).toContain("no Unlock Credit, Basic Rocketry never finishes");
-    expect(text).toContain("against now: pay 50 f/day less, Unlock Credit 20 f/day less");
+    expect(text).toContain(
+      "against now: pay 50 f/day less, Unlock Credit 20 f/day less",
+    );
   });
 
   it("says a rate RP-1 has not priced yet rather than inventing a figure", async () => {
@@ -129,7 +141,9 @@ describe("ResearchQueue work rate", () => {
   });
 
   it("dates no node when the table was priced for a node that has since finished", async () => {
-    const { view } = mount(node({ techId: "orbitalRocketry", techName: "Orbital Rocketry" }));
+    const { view } = mount(
+      node({ techId: "orbitalRocketry", techName: "Orbital Rocketry" }),
+    );
 
     await screen.findByText("Set rate");
     const text = visibleText(view.container);

@@ -217,8 +217,10 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: "The renovation is not priced or its specification is incomplete",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   /*
@@ -237,8 +239,10 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: "The renovation is not priced or its specification is incomplete",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("charges for a shrink and says so rather than implying a refund", async () => {
@@ -273,8 +277,10 @@ describe("renovating a launch complex", () => {
     expect(refusal.textContent).toContain("200");
     expect(view.container).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: "The renovation is not priced or its specification is incomplete",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("says how many engineers the renovation takes off before the press", async () => {

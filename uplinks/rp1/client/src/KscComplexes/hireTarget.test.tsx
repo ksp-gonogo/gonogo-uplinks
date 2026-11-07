@@ -185,9 +185,9 @@ describe("the standing hire instruction", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: "Hire up to 31 researchers, spending no lower than 0 funds",
+        name: "The target is below the staff already on the books",
       }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("reports what stands, and withdraws it in one press", async () => {

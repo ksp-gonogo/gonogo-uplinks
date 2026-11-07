@@ -173,7 +173,10 @@ describe("starting a build from a saved craft", () => {
   });
 
   it("shows how long integration takes as its own row", async () => {
-    await withOneSavedCraft({}, { ...QUOTE, integrationSeconds: 3 * 24 * 3600 });
+    await withOneSavedCraft(
+      {},
+      { ...QUOTE, integrationSeconds: 3 * 24 * 3600 },
+    );
 
     const label = await screen.findByText("Integration");
     expect(label.parentElement).toHaveTextContent(/\d+d/);
@@ -264,9 +267,8 @@ describe("starting a build from a saved craft", () => {
     await screen.findByText("Price");
     expect(await screen.findByText("SHORT")).toBeInTheDocument();
     // Charged up front and refused when short: dark, with the shortfall as the tip.
-    const press = await screen.findByRole("button", { name: "Build at LC-1" });
-    expect(press).toBeDisabled();
-    expect(press).toHaveAccessibleDescription("Short 30,000f");
+    const press = await screen.findByRole("button", { name: "Short 30,000f" });
+    expect(press).toHaveAttribute("aria-disabled", "true");
   });
 
   it("does not mark SHORT when RP-1 could not read the balance", async () => {

@@ -7,8 +7,8 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
-  CommandButton,
   NULL_DISPLAY,
   Readout,
   ReadoutCaption,
@@ -152,22 +152,24 @@ export function StartResearch() {
                 </option>
               ))}
             </Select>
-            <CommandButton
-              args={{ techId: chosen.id }}
-              aria-label={short ? undefined : `Research ${titleOf(chosen)}`}
-              commandLabel={`Research ${titleOf(chosen)}`}
+            <Button
+              command={start.with(
+                { techId: chosen.id },
+                { label: `Research ${titleOf(chosen)}` },
+              )}
+              variant="ghost"
+              aria-label={`Research ${titleOf(chosen)}`}
               confirmAriaLabel={`Confirm researching ${titleOf(chosen)}`}
               confirmLabel={<SpendWording cost={chosen.scienceCost} />}
-              disabled={short}
-              handle={start}
-              label="Research"
-              size="sm"
-              title={
+              unavailable={
                 short
                   ? "RP-1 charges the whole science cost when the node is queued, and the career is short of it"
-                  : undefined
+                  : null
               }
-            />
+              size="sm"
+            >
+              Research
+            </Button>
           </Cluster>
           <ReadoutCaption>
             {chosen.scienceCost == null ? (

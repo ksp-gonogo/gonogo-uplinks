@@ -303,7 +303,9 @@ describe("KscComplexes", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Max").length).toBeGreaterThan(0);
     });
-    expect(screen.getByRole("button", { name: "LC-1 is full" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "LC-1 is full" }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("says the centre has nobody free, which is the other ceiling", async () => {
@@ -319,7 +321,7 @@ describe("KscComplexes", () => {
       screen.getByRole("button", {
         name: "No engineers free at Cape to assign to LC-1",
       }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("prices the idle pool on the centre that holds it", async () => {
@@ -631,7 +633,7 @@ describe("KscComplexes", () => {
     const refused = screen.getByRole("button", {
       name: /LP-1 is the last working pad at this complex/,
     });
-    expect(refused).toBeDisabled();
+    expect(refused).toHaveAttribute("aria-disabled", "true");
     expect(refused).toHaveAccessibleName(
       "LP-1 is the last working pad at this complex, and a complex must keep one",
     );

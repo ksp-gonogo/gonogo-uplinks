@@ -244,7 +244,9 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
     emit(stream, tree(5));
     await screen.findByText("START RESEARCH");
 
-    expect(screen.getByRole("button", { name: /^research$/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /charges the whole science cost/ }),
+    ).toHaveAttribute("aria-disabled", "true");
     expect(visibleText(stream.container)).toContain("SHORT");
   });
 

@@ -8,7 +8,7 @@ import {
   Badge,
   Button,
   Cluster,
-  CommandButton,
+  type CommandButtonHandle,
   Countdown,
   DataLine,
   magnitudeOf,
@@ -106,11 +106,7 @@ export function BuildableSection() {
       ) : (
         <ProjectCardList>
           {buildable.map((craft) => (
-            <CraftCard
-              craft={craft}
-              handle={start}
-              key={cardKey(craft)}
-            />
+            <CraftCard craft={craft} handle={start} key={cardKey(craft)} />
           ))}
         </ProjectCardList>
       )}
@@ -134,40 +130,32 @@ function CraftCard({
   handle,
 }: Readonly<{
   craft: Rp1BuildableCraftEntry;
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
 }>) {
   const name = craft.shipName ?? craft.craftFile ?? NULL_DISPLAY;
   const file = craft.craftFile ?? null;
-  const [shortfalls, setShortfalls] = useState<Readonly<Record<string, number>>>(
-    {},
-  );
-  const reportShortfall = useCallback(
-    (key: string, shortBy: number | null) => {
-      setShortfalls((held) => {
-        if ((held[key] ?? null) === shortBy) {
-          return held;
-        }
-        const { [key]: _dropped, ...rest } = held;
-        return shortBy === null ? rest : { ...rest, [key]: shortBy };
-      });
-    },
-    [],
-  );
+  const [shortfalls, setShortfalls] = useState<
+    Readonly<Record<string, number>>
+  >({});
+  const reportShortfall = useCallback((key: string, shortBy: number | null) => {
+    setShortfalls((held) => {
+      if ((held[key] ?? null) === shortBy) {
+        return held;
+      }
+      const { [key]: _dropped, ...rest } = held;
+      return shortBy === null ? rest : { ...rest, [key]: shortBy };
+    });
+  }, []);
   const complexes = craft.complexes ?? [];
   const eligible = complexes.filter((complex) => complex.eligible === true);
   const partBlock = partRefusal(craft);
   /* A craft with no file name has no address, and guessing one from the ship
      name would build whichever file the folder listed first. */
-  const blockReason =
-    partBlock ?? (file === null ? NO_FILE_NAME : null);
+  const blockReason = partBlock ?? (file === null ? NO_FILE_NAME : null);
 
   return (
     <ProjectCard
-      detail={
-        <>
-          {editorOf(craft)}
-        </>
-      }
+      detail={<>{editorOf(craft)}</>}
       name={name}
       tone={eligible.length > 0 && blockReason === null ? "go" : "warn"}
     >
@@ -183,7 +171,10 @@ function CraftCard({
 
       {blockReason !== null || file === null ? (
         <Cluster gap="related-dense" justify="start" wrap>
-          <DeadButtons complexes={complexes} reason={blockReason ?? NO_FILE_NAME} />
+          <DeadButtons
+            complexes={complexes}
+            reason={blockReason ?? NO_FILE_NAME}
+          />
         </Cluster>
       ) : (
         <Stack gap="related-dense">
@@ -202,36 +193,29 @@ function CraftCard({
             {eligible.map((complex) => {
               const shortBy = shortfalls[complexKey(complex)];
               return (
-              <CommandButton
-                args={{
-                  craftFile: file,
-                  facility: craft.facility,
-                  lcId: complex.lcId,
-                }}
-                aria-label={
-                  shortBy === undefined
-                    ? `Start building ${name} at ${complexLabel(complex)}`
-                    : undefined
-                }
-                commandLabel={`Start building ${name} at ${complexLabel(complex)}`}
-                confirmAriaLabel={`Confirm starting ${name} at ${complexLabel(complex)}`}
-                confirmLabel="Start build"
-                disabled={shortBy !== undefined}
-                handle={handle}
-                key={complex.lcId ?? complexLabel(complex)}
-                /* One button per complex, always named, even when there is
-                   only one. A label that switches to "Start build" on a
-                   single-complex centre makes the control read differently
-                   depending on how many OTHER complexes exist, so an operator
-                   learns two buttons for one action. */
-                label={`Build at ${complex.name ?? complexLabel(complex)}`}
-                size="sm"
-                title={
-                  shortBy === undefined
-                    ? undefined
-                    : `Short ${Math.ceil(shortBy).toLocaleString("en-US")}f`
-                }
-              />
+                <Button
+                  command={handle.with(
+                    {
+                      craftFile: file,
+                      facility: craft.facility,
+                      lcId: complex.lcId,
+                    },
+                    {
+                      label: `Start building ${name} at ${complexLabel(complex)}`,
+                    },
+                  )}
+                  variant="ghost"
+                  aria-label={`Start building ${name} at ${complexLabel(complex)}`}
+                  confirmAriaLabel={`Confirm starting ${name} at ${complexLabel(complex)}`}
+                  confirmLabel="Start build"
+                  unavailable={
+                    shortBy === undefined
+                      ? null
+                      : `Short ${Math.ceil(shortBy).toLocaleString("en-US")}f`
+                  }
+                  key={complex.lcId ?? complexLabel(complex)}
+                  size="sm"
+                >{`Build at ${complex.name ?? complexLabel(complex)}`}</Button>
               );
             })}
             <Refusals complexes={complexes} />
@@ -277,8 +261,12 @@ function asSeconds(
 }
 
 function asFunds(amount: Value<"funds"> | number): Value<"funds">;
-function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"funds"> | null;
-function asFunds(amount: Value<"funds"> | number | null | undefined): Value<"funds"> | null {
+function asFunds(
+  amount: Value<"funds"> | number | null | undefined,
+): Value<"funds"> | null;
+function asFunds(
+  amount: Value<"funds"> | number | null | undefined,
+): Value<"funds"> | null {
   if (amount === null || amount === undefined) {
     return null;
   }
@@ -323,11 +311,9 @@ function BuildQuote({
     rail: false,
     vantage: "meta",
   });
-  const send = useRef(quote.send);
-  send.current = quote.send;
-  const [answer, setAnswer] = useState<QuotedFigures | "unquoted" | null>(
-    null,
-  );
+  const send = useRef(quote.dangerouslySendWithoutInput);
+  send.current = quote.dangerouslySendWithoutInput;
+  const [answer, setAnswer] = useState<QuotedFigures | "unquoted" | null>(null);
   const facility = craft.facility;
   const lcId = complex.lcId;
   const complexName = complex.name ?? complexLabel(complex);
@@ -356,7 +342,9 @@ function BuildQuote({
   }, [file, facility, lcId]);
 
   const balance =
-    answer === null || answer === "unquoted" ? null : magnitudeOf(answer.balance);
+    answer === null || answer === "unquoted"
+      ? null
+      : magnitudeOf(answer.balance);
   const price =
     answer === null || answer === "unquoted" ? null : magnitudeOf(answer.price);
   const short = balance !== null && price !== null && price > balance;

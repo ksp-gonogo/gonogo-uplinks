@@ -1,5 +1,6 @@
 import {
-  CommandButton,
+  Button,
+  type CommandButtonHandle,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -28,7 +29,7 @@ export function StandingFundTarget({
   handle,
   target,
 }: Readonly<{
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   target: Rp1FundTarget;
 }>) {
   return (
@@ -51,14 +52,14 @@ export function StandingFundTarget({
           </Text>
         </Row>
       )}
-      <CommandButton
-        args={{}}
+      <Button
+        command={handle.with({}, { label: "Cancel the fund target" })}
+        variant="ghost"
         aria-label="Cancel the fund target"
-        commandLabel="Cancel the fund target"
-        handle={handle}
-        label="Cancel"
         size="sm"
-      />
+      >
+        Cancel
+      </Button>
     </Stack>
   );
 }

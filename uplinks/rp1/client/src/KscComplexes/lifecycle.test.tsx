@@ -230,7 +230,7 @@ describe("dismantling a launch pad", () => {
     // RP-1's own control is live here and silently inert. A dark control with
     // the reason on it is the difference between an operator who knows to build
     // another pad and one who thinks the mod is broken.
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
   });
 
   it("darkens a pad still under construction, and says which act to use instead", async () => {
@@ -244,7 +244,7 @@ describe("dismantling a launch pad", () => {
     const button = await screen.findByRole("button", {
       name: "LP-2 is not in service yet, so cancel its construction instead",
     });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-disabled", "true");
     // The row says so too, because the count above it cannot: two pads listed
     // and one operational reads as a contradiction without it.
     expect(screen.getByText(/not in service/)).toBeInTheDocument();
@@ -312,8 +312,10 @@ describe("adding a launch pad", () => {
       screen.getByText("a pad at this complex already has that name"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^Build LP-2 at LC-1/ }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: "a pad at this complex already has that name",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("refuses an unnamed pad without saying the name is wrong", async () => {
@@ -325,7 +327,7 @@ describe("adding a launch pad", () => {
     // gone wrong yet, the operator simply has not typed a name.
     expect(
       screen.getByRole("button", { name: "Name the pad before building it" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("judges a pad against the last balance received while the balance is held", async () => {
@@ -488,8 +490,8 @@ describe("renaming", () => {
       screen.getByText("that name is already in use here"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Rename LP-1 to LP-2" }),
-    ).toBeDisabled();
+      screen.getByRole("button", { name: "that name is already in use here" }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("does not call a name a duplicate of itself", async () => {
@@ -507,7 +509,7 @@ describe("renaming", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "LP-1 is already called that" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("leaves the name alone on cancel", async () => {
@@ -662,8 +664,10 @@ describe("building a launch complex", () => {
       screen.getByText("a complex at this centre already has that name"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Build LC-1 at Cape" }),
-    ).toBeDisabled();
+      screen.getByRole("button", {
+        name: "a complex at this centre already has that name",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("names the one centre rather than making the operator choose it", async () => {
