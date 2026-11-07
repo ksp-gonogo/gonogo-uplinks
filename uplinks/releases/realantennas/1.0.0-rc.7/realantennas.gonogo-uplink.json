@@ -1,0 +1,19 @@
+{
+  "id": "realantennas",
+  "name": "RealAntennas",
+  "description": "Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "RealAntennas",
+    "builtAgainst": "2.11.1.0"
+  },
+  "version": "1.0.0-rc.7",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 51,
+  "contractMinor": 0,
+  "bundleUrl": "realantennas/realantennas.client.js",
+  "integrity": "sha256-0516ab9cbbde8f0b23ef4d0b3c2e1c069fd9ee580b7eaa7e9d26e5585c9964aa",
+  "sdkVersion": "0.0.1"
+}
