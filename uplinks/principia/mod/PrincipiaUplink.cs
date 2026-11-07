@@ -702,11 +702,24 @@ namespace GonogoPrincipiaUplink
 
         /// <summary>Answers an accurate propagate-from-state with the player's own build.</summary>
         private readonly PrincipiaIntegrator _integrator = new PrincipiaIntegrator(
-            () => PrincipiaPrivateCopy.Open(NativeDirectory()),
+            OpenRoute,
             () => SystemRequest?.Invoke(),
             PrincipiaPrivateCopy.PrivateFileDirectory,
             0.0,
             ForceCheckRequested);
+
+        /// <summary>
+        /// The copy inside the game, unless a file named <c>use-separate-process</c> sits
+        /// beside the native half, which selects the separate program so a test run can
+        /// measure the two routes side by side.
+        /// </summary>
+        private static IPrincipiaWorkerChannel? OpenRoute()
+        {
+            var directory = NativeDirectory();
+            return File.Exists(Path.Combine(directory, "use-separate-process"))
+                ? PrincipiaPrivateCopy.OpenSeparateProcess(directory)
+                : PrincipiaPrivateCopy.Open(directory);
+        }
 
         /// <summary>
         /// Whether a file named <c>force-check</c> sits beside the native half, taken once

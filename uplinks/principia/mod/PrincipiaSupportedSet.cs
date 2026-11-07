@@ -62,6 +62,10 @@ namespace GonogoPrincipiaUplink
                 "b2569d212a9fbbe5334e49ed05f08b464a4e387469231245e3f682f5c6ce11b3",
                 "2026081218-Levi-Civita-0-gc6615048e8fc76722b081bb3f1f4536afcf66870",
                 170),
+            new PrincipiaRelease(
+                "8ff908176263b9ee99771c3b92573518c25b36f82957da2561147216bddbdb5f",
+                "2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467",
+                173),
         };
 
         public static IReadOnlyList<PrincipiaRelease> All => Known;

@@ -22,6 +22,12 @@ namespace GonogoPrincipiaUplink
         /// <summary>How long a caller waits for an answer before being told to ask again.</summary>
         public const int WaitMilliseconds = 250;
 
+        /// <summary>The most points one path carries. Each is a step of the private plugin.</summary>
+        public const int MaxPoints = 1024;
+
+        /// <summary>The furthest one path reaches, in seconds: longer than any widget asks, short of what a long catch-up would cost.</summary>
+        public const double MaxSpanSeconds = 30 * 86400.0;
+
         private const string Catching =
             "Principia is still catching up to that instant. Ask again shortly.";
 
@@ -106,7 +112,8 @@ namespace GonogoPrincipiaUplink
                 return PropagatedPath.Refused("That state is not one a craft can be in.");
             }
 
-            var count = maxPoints > 0 ? maxPoints : PropagatedPath.DefaultPoints;
+            var count = maxPoints > 0 ? Math.Min(maxPoints, MaxPoints) : PropagatedPath.DefaultPoints;
+            toUt = Math.Min(toUt, seed.Ut + MaxSpanSeconds);
             var key = Key(seed, toUt, count);
             ManualResetEventSlim finished;
             lock (_gate)
@@ -123,7 +130,7 @@ namespace GonogoPrincipiaUplink
                 {
                     if (_runningKey != key)
                     {
-                        return PropagatedPath.Refused(Catching);
+                        return PropagatedPath.Working(Catching);
                     }
                     finished = _finished!;
                 }
@@ -145,13 +152,13 @@ namespace GonogoPrincipiaUplink
 
             if (!finished.Wait(WaitMilliseconds))
             {
-                return PropagatedPath.Refused(Catching);
+                return PropagatedPath.Working(Catching);
             }
             lock (_gate)
             {
                 return _heldKey == key && _held != null
                     ? TakeHeld()
-                    : PropagatedPath.Refused(Catching);
+                    : PropagatedPath.Working(Catching);
             }
         }
 

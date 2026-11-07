@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -24,6 +25,7 @@ namespace GonogoPrincipiaUplink
         private const int ReplyTimeoutSeconds = 600;
 
         private const string Library = "libgonogo_principia.so";
+        private const string WorkerProgram = "gonogo_principia_worker";
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate int InitDelegate();
@@ -33,6 +35,9 @@ namespace GonogoPrincipiaUplink
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void FreeDelegate(IntPtr reply);
+
+        [DllImport("libc", EntryPoint = "chmod")]
+        private static extern int ChMod([MarshalAs(UnmanagedType.LPStr)] string path, int mode);
 
         [DllImport("libdl.so.2", EntryPoint = "dlopen")]
         private static extern IntPtr DlOpen([MarshalAs(UnmanagedType.LPStr)] string path, int flags);
@@ -94,6 +99,91 @@ namespace GonogoPrincipiaUplink
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// The same requests answered by a program of its own, the other route, for
+        /// comparing the two. A fatal check ends that program and never the game.
+        /// Null where it cannot start.
+        /// </summary>
+        public static IPrincipiaWorkerChannel? OpenSeparateProcess(string directory)
+        {
+            if (Environment.OSVersion.Platform != PlatformID.Unix)
+            {
+                return null;
+            }
+            try
+            {
+                using var resource = typeof(PrincipiaPrivateCopy).Assembly.GetManifestResourceStream(WorkerProgram);
+                if (resource == null)
+                {
+                    return null;
+                }
+                using var buffer = new MemoryStream();
+                resource.CopyTo(buffer);
+                Directory.CreateDirectory(directory);
+                var path = Path.Combine(directory, WorkerProgram);
+                File.WriteAllBytes(path, buffer.ToArray());
+                if (ChMod(path, 0x1ED) != 0)
+                {
+                    return null;
+                }
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo(path)
+                    {
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    },
+                };
+                return process.Start() ? new ProcessChannel(process) : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private sealed class ProcessChannel : IPrincipiaWorkerChannel
+        {
+            private readonly Process _process;
+
+            public ProcessChannel(Process process) => _process = process;
+
+            public string? Exchange(string request)
+            {
+                var bytes = Encoding.UTF8.GetBytes(request);
+                var input = _process.StandardInput;
+                input.Write(bytes.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\n");
+                input.Flush();
+                input.BaseStream.Write(bytes, 0, bytes.Length);
+                input.BaseStream.Flush();
+                var reply = _process.StandardOutput.ReadLineAsync();
+                if (reply.Wait(ReplyTimeoutSeconds * 1000))
+                {
+                    return reply.Result;
+                }
+                _process.Kill();
+                return null;
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill();
+                    }
+                }
+                catch (Exception)
+                {
+                    // Disposing runs on a thread nothing is watching.
+                }
+                _process.Dispose();
+            }
         }
 
         /// <summary>The copy's channel, or null where it cannot run: not Linux, or the native half will not load.</summary>

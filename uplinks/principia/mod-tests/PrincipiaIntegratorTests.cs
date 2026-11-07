@@ -93,7 +93,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             var first = integrator.Propagate(Seed, 200.0, 8);
             Assert.False(first.Solved);
-            Assert.Contains("Ask again", first.Refusal);
+            Assert.True(first.StillWorking);
 
             channel.Gate.Set();
             var deadline = Stopwatch.StartNew();
@@ -233,7 +233,12 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
-        public void TheRealBuildIntegratesFromTheSeedItIsGiven()
+        public void TheRealBuildIntegratesInsideThisProcess() => TheRealBuildIntegrates(PrincipiaPrivateCopy.Open);
+
+        [Fact]
+        public void TheRealBuildIntegratesInASeparateProcess() => TheRealBuildIntegrates(PrincipiaPrivateCopy.OpenSeparateProcess);
+
+        private static void TheRealBuildIntegrates(Func<string, IPrincipiaWorkerChannel?> route)
         {
             var library = Environment.GetEnvironmentVariable("PRINCIPIA_SO");
             if (string.IsNullOrEmpty(library) || !File.Exists(library))
@@ -284,7 +289,7 @@ namespace GonogoPrincipiaUplink.Tests
 
             var force = 0;
             var integrator = new PrincipiaIntegrator(
-                () => PrincipiaPrivateCopy.Open(directory), system.ToText, directory, 0.0, () => force-- > 0);
+                () => route(directory), system.ToText, directory, 0.0, () => force-- > 0);
             integrator.Authorise(library, "test build", MayRun);
             var seed = new PropagationSeed(
                 new StateVector(new Vector3d(700_000.0, 0.0, 0.0), new Vector3d(0.0, Math.Sqrt(Mu / 700_000.0), 0.0)),
@@ -298,11 +303,11 @@ namespace GonogoPrincipiaUplink.Tests
             {
                 path = integrator.Propagate(seed, 1000.0, 16);
             }
-            while (!path.Solved && path.Refusal!.Contains("Ask again") && deadline.ElapsedMilliseconds < 60000);
+            while (!path.Solved && path.StillWorking && deadline.ElapsedMilliseconds < 60000);
 
             Assert.True(path.Solved, path.Refusal);
             Assert.Equal(TrajectoryKind.Integrated, path.Kind);
-            Assert.Equal(1000.0, path.ReachedUt);
+            Assert.Equal(1000.0, path.ReachedUt!.Value, 3);
             Assert.Equal(700_000.0, path.States[0].X, 3);
             Assert.Equal(0.0, path.States[0].Y, 3);
 
@@ -322,7 +327,17 @@ namespace GonogoPrincipiaUplink.Tests
             {
                 path = integrator.Propagate(later, 3000.0, 16);
             }
-            while (!path.Solved && path.Refusal!.Contains("Ask again") && deadline.ElapsedMilliseconds < 60000);
+            while (!path.Solved && path.StillWorking && deadline.ElapsedMilliseconds < 60000);
+            if (!path.Solved)
+            {
+                // The separate route loses its process to the check, and the next ask starts another.
+                path = integrator.Propagate(later, 3000.0, 16);
+                deadline.Restart();
+                while (!path.Solved && deadline.ElapsedMilliseconds < 60000)
+                {
+                    path = integrator.Propagate(later, 3000.0, 16);
+                }
+            }
             Assert.True(path.Solved, path.Refusal);
         }
     }

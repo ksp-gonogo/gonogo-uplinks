@@ -76,13 +76,11 @@ typedef struct {
 typedef struct { const char *a, *b; } TwoStrings;
 typedef struct { const char *a, *b, *c; } ThreeStrings;
 typedef struct { const char *a; } OneString;
-typedef struct { int extension, centre_index; const void *const *primary, *const *secondary; } PlottingFrame;
 
 typedef struct {
     void *handle;
     struct link_map *map;
     void *plugin;
-    double reached_vessels;
     int vessels;
     char *system;
     volatile bool poisoned;
@@ -102,14 +100,7 @@ typedef struct {
     void (*prepare_collisions)(void *);
     void (*free_vessels)(void *, double);
     void (*catch_up)(void *, void **);
-    void (*set_frame)(void *, const PlottingFrame *);
-    void (*plan_create)(void *, const char *, double, double);
-    double (*plan_final)(void *, const char *);
-    void *(*plan_segment)(void *, const char *, XYZ, int);
-    bool (*at_end)(void *);
-    void (*increment)(void *);
-    QP (*get_qp)(void *);
-    double (*get_time)(void *);
+    QP (*vessel_from_parent)(void *, int, const char *);
     void (*delete_iterator)(void **);
     void (*suppress)(int);
     void (*stderr_logging)(int);
@@ -189,14 +180,7 @@ static bool bind_symbols(Copy *copy, const char **missing)
     SYMBOL(prepare_collisions, "PrepareToReportCollisions");
     SYMBOL(free_vessels, "FreeVesselsAndPartsAndCollectPileUps");
     SYMBOL(catch_up, "CatchUpLaggingVessels");
-    SYMBOL(set_frame, "SetPlottingFrame");
-    SYMBOL(plan_create, "FlightPlanCreate");
-    SYMBOL(plan_final, "FlightPlanGetActualFinalTime");
-    SYMBOL(plan_segment, "FlightPlanRenderedSegment");
-    SYMBOL(at_end, "IteratorAtEnd");
-    SYMBOL(increment, "IteratorIncrement");
-    SYMBOL(get_qp, "IteratorGetDiscreteTrajectoryQP");
-    SYMBOL(get_time, "IteratorGetDiscreteTrajectoryTime");
+    SYMBOL(vessel_from_parent, "VesselFromParent");
     SYMBOL(delete_iterator, "IteratorDelete");
     SYMBOL(suppress, "SetSuppressedLogging");
     SYMBOL(stderr_logging, "SetStderrLogging");
@@ -327,14 +311,13 @@ static char *refusal(const char *why)
 
 typedef struct { double t, x, y, z, vx, vy, vz; } Point;
 
-static char *format_reply(double reached, const Point *points, int count, int max_points)
+static char *format_reply(double reached, const Point *points, int keep)
 {
-    int keep = max_points > 1 && count > max_points ? max_points : count;
     size_t capacity = (size_t)keep * 7 * 28 + 128;
     char *reply = malloc(capacity);
     size_t at = (size_t)snprintf(reply, capacity, "{\"ok\": true, \"reachedUt\": %.17g, \"points\": \"", reached);
     for (int k = 0; k < keep; k++) {
-        const Point *p = &points[keep > 1 ? ((int64_t)k * (count - 1)) / (keep - 1) : 0];
+        const Point *p = &points[k];
         at += (size_t)snprintf(reply + at, capacity - at, "%s%.17g,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g",
                                k == 0 ? "" : ";", p->t, p->x, p->y, p->z, p->vx, p->vy, p->vz);
     }
@@ -342,12 +325,19 @@ static char *format_reply(double reached, const Point *points, int count, int ma
     return reply;
 }
 
+/*
+ * Reads by flying the craft forward in the copy's own plugin and asking where it is.
+ * The calls this needs have stayed the same across Principia's releases, where the
+ * flight plan's rendered segment was removed in 2026101016-Lichnerowicz. A plugin only
+ * moves forward, so the next seed behind this one rebuilds it.
+ */
 static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double to_ut, int max_points, double rotation)
 {
     void *plugin = copy->plugin;
     if (seed_ut > copy->current_time(plugin)) {
         copy->advance(plugin, seed_ut, rotation);
     }
+    double start = copy->current_time(plugin);
 
     char guid[64];
     snprintf(guid, sizeof guid, "00000000-0000-0000-0000-%012d", ++copy->vessels);
@@ -362,61 +352,26 @@ static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double t
         copy->delete_iterator(&collided);
     }
 
-    const void *terminator[1] = {NULL};
-    PlottingFrame frame = {6000, parent, terminator, terminator};
-    copy->set_frame(plugin, &frame);
-
-    copy->plan_create(plugin, guid, to_ut, 1.0);
-    double reached = copy->plan_final(plugin, guid);
-    XYZ sun = {0, 0, 0};
-    void *iterator = copy->plan_segment(plugin, guid, sun, 0);
-
-    int capacity = 1024;
-    int count = 0;
-    Point *points = malloc(sizeof(Point) * (size_t)capacity);
-    while (!copy->at_end(iterator)) {
-        if (count == capacity) {
-            capacity *= 2;
-            points = realloc(points, sizeof(Point) * (size_t)capacity);
+    int count = max_points > 1 ? max_points : 2;
+    Point *points = malloc(sizeof(Point) * (size_t)count);
+    Point first = {start, seed.q.x, seed.q.y, seed.q.z, seed.p.x, seed.p.y, seed.p.z};
+    points[0] = first;
+    for (int i = 1; i < count; i++) {
+        double ut = start + ((to_ut - start) * i) / (count - 1);
+        copy->advance(plugin, ut, rotation);
+        copy->keep_vessel(plugin, guid, "gonogo seed", parent, false, &inserted);
+        copy->prepare_collisions(plugin);
+        copy->free_vessels(plugin, 0.02);
+        collided = NULL;
+        copy->catch_up(plugin, &collided);
+        if (collided != NULL) {
+            copy->delete_iterator(&collided);
         }
-        QP qp = copy->get_qp(iterator);
-        Point p = {copy->get_time(iterator), qp.q.x, qp.q.y, qp.q.z, 0, 0, 0};
-        points[count++] = p;
-        copy->increment(iterator);
+        QP state = copy->vessel_from_parent(plugin, parent, guid);
+        Point p = {copy->current_time(plugin), state.q.x, state.q.y, state.q.z, state.p.x, state.p.y, state.p.z};
+        points[i] = p;
     }
-    copy->delete_iterator(&iterator);
-
-    /*
-     * The rendered frame is fixed at the plugin's current time, so the first point
-     * being the seed says where its origin is. World swaps y and z against the frame
-     * the game's orbit vectors are in. A rendered point's velocity is not in the axes
-     * of its position, so velocity comes from the dense path, the seed's own first.
-     */
-    if (count > 0) {
-        double ox = points[0].x - seed.q.x;
-        double oy = points[0].y - seed.q.z;
-        double oz = points[0].z - seed.q.y;
-        for (int i = 0; i < count; i++) {
-            double y = points[i].y;
-            points[i].x -= ox;
-            points[i].y = points[i].z - oz;
-            points[i].z = y - oy;
-        }
-        for (int i = 0; i < count; i++) {
-            if (i == 0) {
-                points[i].vx = seed.p.x;
-                points[i].vy = seed.p.y;
-                points[i].vz = seed.p.z;
-                continue;
-            }
-            const Point *before = &points[i - 1];
-            const Point *after = &points[i + 1 < count ? i + 1 : i];
-            double dt = after->t - before->t;
-            points[i].vx = (after->x - before->x) / dt;
-            points[i].vy = (after->y - before->y) / dt;
-            points[i].vz = (after->z - before->z) / dt;
-        }
-    }
+    double reached = points[count - 1].t;
 
     for (int i = 0; i < count; i++) {
         if (!isfinite(points[i].x + points[i].y + points[i].z)) {
@@ -424,7 +379,7 @@ static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double t
             return refusal("Principia returned a path with no numbers in it");
         }
     }
-    char *reply = format_reply(reached, points, count, max_points);
+    char *reply = format_reply(reached, points, count);
     free(points);
     return reply;
 }
@@ -760,6 +715,35 @@ int gonogo_principia_restarts(void)
 {
     return restarts;
 }
+
+#ifdef GONOGO_WORKER
+/*
+ * The same requests as a program of its own, for comparing the two routes: a length
+ * line then that many bytes on stdin, one reply line on stdout. Nothing catches a fatal
+ * check here, since it ends only this process.
+ */
+int main(void)
+{
+    uselocale(newlocale(LC_ALL_MASK, "C", (locale_t)0));
+    char header[32];
+    while (fgets(header, sizeof header, stdin) != NULL) {
+        size_t length = (size_t)strtod(header, NULL);
+        char *request = malloc(length + 1);
+        if (fread(request, 1, length, stdin) != length) {
+            free(request);
+            return 0;
+        }
+        request[length] = '\0';
+        char *reply = serve(request);
+        free(request);
+        fputs(reply, stdout);
+        fputc('\n', stdout);
+        fflush(stdout);
+        free(reply);
+    }
+    return 0;
+}
+#endif
 
 /* For a test: a fatal check on a thread that is not the call thread, with the copy's code on its stack. */
 static void *check_off_thread(void *argument)
