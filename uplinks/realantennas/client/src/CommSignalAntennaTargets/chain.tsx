@@ -15,13 +15,12 @@ import {
   Badge,
   Button,
   Cluster,
-  CommandButton,
   magnitudeOf,
   magnitudeOr,
-  Stack,
-  Text,
   type Quantityish,
   type Severity,
+  Stack,
+  Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type {
@@ -282,15 +281,20 @@ export function AntennaChain({
           </Button>
         ) : null}
         {draft.length > 0 ? (
-          <CommandButton
+          <Button
+            command={setChain.with(
+              { antennaId, steps: [...draft] },
+              {
+                label: `Set the fallback chain for ${antennaName}`,
+                onConfirmed: onSent,
+              },
+            )}
+            variant="ghost"
             size="sm"
-            handle={setChain}
-            args={{ antennaId, steps: [...draft] }}
-            commandLabel={`Set the fallback chain for ${antennaName}`}
-            label="SET CHAIN"
             confirmLabel="CONFIRM CHAIN"
-            onConfirmed={onSent}
-          />
+          >
+            SET CHAIN
+          </Button>
         ) : null}
         {/*
           An empty list is the only way a walk stops, which is why the clear is
@@ -298,14 +302,17 @@ export function AntennaChain({
           once the craft says it is holding something to clear.
         */}
         {chain ? (
-          <CommandButton
+          <Button
+            command={setChain.with(
+              { antennaId, steps: [] },
+              { label: `Clear the fallback chain for ${antennaName}` },
+            )}
+            variant="ghost"
             size="sm"
-            handle={setChain}
-            args={{ antennaId, steps: [] }}
-            commandLabel={`Clear the fallback chain for ${antennaName}`}
-            label="CLEAR CHAIN"
             confirmLabel="CONFIRM CLEAR"
-          />
+          >
+            CLEAR CHAIN
+          </Button>
         ) : null}
       </Cluster>
     </Stack>
