@@ -9,10 +9,19 @@
   "mod": {
     "name": "Principia",
     "tier": "manual",
-    "builtAgainst": "2026081218-Levi-Civita",
-    "channels": [{ "githubTags": "mockingbirdnest/Principia", "pattern": "^(?<order>\\d{10})-" }]
+    "builtAgainst": "2026101016-Lichnerowicz",
+    "channels": [
+      {
+        "githubTags": "mockingbirdnest/Principia",
+        "pattern": "^(?<order>\\d{10})-"
+      }
+    ]
   },
-  "ckanDepends": [{ "name": "Harmony2" }],
+  "ckanDepends": [
+    {
+      "name": "Harmony2"
+    }
+  ],
   "codegen": {
     "assembly": "GonogoPrincipiaUplink.Contract",
     "configurationMethod": "GonogoPrincipiaUplink.PrincipiaRtConfig.Configure",
