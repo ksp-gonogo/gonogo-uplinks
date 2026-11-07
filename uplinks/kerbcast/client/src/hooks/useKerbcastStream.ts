@@ -27,9 +27,12 @@ import {
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 
 /**
- * The most encoded video, in bytes, one camera's delay holds before it drops
- * the oldest. 256 MiB is about 8 minutes at 4 Mbps, past the longest light
- * delay a stock lens can have from its viewer.
+ * The most encoded video, in bytes, one camera's delay holds before it sheds
+ * the frames that arrive. A 1024x576 feed at 30 frames a second is about 19 KB a
+ * frame, 570 KB a second. The longest delay a lens can have is the light time
+ * from the farthest stock body, Eeloo at its apoapsis, to Kerbin: about 127 Gm,
+ * 424 s, which needs 242 MB (231 MiB). 256 MiB covers it; the 64 MiB default
+ * holds about 118 s, the light time to a body near Duna.
  */
 export const ENCODED_HOLD_MAX_BYTES = 256 * 1024 * 1024;
 
