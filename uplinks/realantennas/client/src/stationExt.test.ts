@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readRealAntennasStationExt } from "./stationExt";
+import { readRealAntennasStationExt } from "./stationExt.js";
 
 describe("readRealAntennasStationExt", () => {
   it("narrows a station's bag to RealAntennas' own namespace", () => {
