@@ -268,28 +268,28 @@
       "text": "928693c3"
     },
     "catalogue-picker--default.png": {
-      "hash": "d7d296504dc1f9e5",
-      "elements": 312,
+      "hash": "97dd6ae822b2d8df",
+      "elements": 318,
       "text": "a7dc3743"
     },
     "catalogue-picker--landscape-18x5.png": {
-      "hash": "41ed774304681248",
-      "elements": 331,
+      "hash": "c22591039494cbfe",
+      "elements": 337,
       "text": "0b3b1d5e"
     },
     "catalogue-picker--mobile-9x8.png": {
-      "hash": "fc6d71c913fa9d83",
-      "elements": 331,
+      "hash": "8faca522a46184a6",
+      "elements": 337,
       "text": "0b3b1d5e"
     },
     "catalogue-picker--portrait-5x18.png": {
-      "hash": "d7d296504dc1f9e5",
-      "elements": 312,
+      "hash": "97dd6ae822b2d8df",
+      "elements": 318,
       "text": "a7dc3743"
     },
     "completed-program--default.png": {
-      "hash": "2d160f4ef1516655",
-      "elements": 317,
+      "hash": "88631f2fb031fc5f",
+      "elements": 323,
       "text": "8affac5d"
     },
     "complexes-add-pad--default.png": {
@@ -418,14 +418,14 @@
       "text": "bff3c1dc"
     },
     "facility-tiers-in-flight--default.png": {
-      "hash": "ebec4f5e2e946ad8",
-      "elements": 132,
-      "text": "52ea478a"
+      "hash": "151bded49b252a76",
+      "elements": 139,
+      "text": "0bf7519c"
     },
     "facility-upgrades-at-centre--default.png": {
-      "hash": "6ab78cb815cd0eaf",
-      "elements": 169,
-      "text": "f8868bc4"
+      "hash": "c6270ff83dc8b1db",
+      "elements": 197,
+      "text": "bd8b7a29"
     },
     "facility-upgrades-away--default.png": {
       "hash": "327a7be523f57327",
@@ -468,8 +468,8 @@
       "text": "fa01ee7a"
     },
     "offer-frontloaded--default.png": {
-      "hash": "b95cb9665c1b9a6c",
-      "elements": 295,
+      "hash": "b0d8dcc6a51bcd90",
+      "elements": 301,
       "text": "c6d03256"
     },
     "pad-holding-a-finished-vehicle--default.png": {
@@ -518,13 +518,13 @@
       "text": "2b08d951"
     },
     "running-backloaded--default.png": {
-      "hash": "aeba27bcce53b4e4",
-      "elements": 343,
+      "hash": "fea5835fb6c4a451",
+      "elements": 349,
       "text": "c8d63483"
     },
     "running-overrun-ready--default.png": {
-      "hash": "cf6cf2c83013ce67",
-      "elements": 258,
+      "hash": "44df4eaa3ff76a4a",
+      "elements": 264,
       "text": "ebde44e8"
     },
     "serving-leader--default.png": {
