@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
  * Turns a release tag (`<uplink id>-v<version>`) into the one Uplink it releases,
- * and refuses a tag whose version the Uplink's own `client.url` does not carry.
+ * and the `client.url` the release will carry.
  *
- * The URL is baked into the DLL, so it is what every install fetches for the
- * life of that release. A tag of 0.0.3 on a tree whose URL still names 0.0.2
- * would publish into 0.0.2's directory, which the never-overwrite rule then
- * refuses, or worse, succeeds when 0.0.2 was never published and ships a 0.0.3
- * DLL fetching a directory named for another version.
+ * What is committed holds the placeholder version in the URL, and a release
+ * stamps the tag's version over it before it builds. The URL is baked into the
+ * DLL, so it is what every install fetches for the life of that release. A tree
+ * whose URL names some other version than the placeholder would be stamped
+ * wrongly or not at all, and ship a DLL fetching a directory named for another
+ * version, so it is refused.
  *
  * Usage:
  *   resolve-release-tag.mjs <tag>            human summary
@@ -51,19 +52,21 @@ if (!leg.client || !leg.mod_csproj) {
   process.exit(1);
 }
 
-const url = JSON.parse(
+const PLACEHOLDER = "0.0.0-development";
+const committed = JSON.parse(
   readFileSync(join(ROOT, "uplinks", leg.name, "uplink.json"), "utf8"),
 ).client?.url;
-if (!url?.split("/").includes(version)) {
+if (!committed?.split("/").includes(PLACEHOLDER)) {
   console.error(
     `✖ ${tag}: uplinks/${leg.name}/uplink.json declares client.url\n` +
-      `    ${url ?? "(none)"}\n` +
-      `  which has no /${version}/ directory. The URL is baked into the DLL, so this release would\n` +
-      "  fetch a client published for some other version. Point client.url at\n" +
-      `  .../@releases/uplinks/releases/${id}/${version}/${id}.client.js and tag that commit.`,
+      `    ${committed ?? "(none)"}\n` +
+      `  which has no /${PLACEHOLDER}/ directory. A release stamps its version over that folder, so\n` +
+      "  what is committed must name the placeholder: " +
+      `.../@releases/uplinks/releases/${id}/${PLACEHOLDER}/${id}.client.js`,
   );
   process.exit(1);
 }
+const url = committed.split(`/${PLACEHOLDER}/`).join(`/${version}/`);
 
 const out = { name: leg.name, id, version, url, leg: JSON.stringify(leg) };
 if (process.argv.includes("--github")) {

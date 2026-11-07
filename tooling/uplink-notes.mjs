@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * The release notes of one Uplink's release: the subjects of the commits that
- * belong to it since its previous full release, grouped the way its CHANGELOG.md
+ * belong to it since its previous full release, grouped the way a changelog
  * groups them. The GitHub Release and the SpaceDock version carry this text.
  *
  *   node tooling/uplink-notes.mjs <uplink id> [--tag <release tag>] [--since <ref>] [--out <file>]

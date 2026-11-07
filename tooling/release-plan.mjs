@@ -4,7 +4,7 @@
  * before anything is built.
  *
  *   release-plan.mjs plan --uplinks <ids|all> --bump <kind> [--version V] [--full true|false] [--github]
- *   release-plan.mjs subject < versions.json     ([{ "id", "version" }])
+ *   release-plan.mjs from <uplink id>
  *
  * `plan` turns the dispatch inputs into the matrix of Uplinks to prepare and the
  * arguments `uplink-tools release prepare` takes. It refuses an id that names no
@@ -13,6 +13,11 @@
  * with `full`, and a set whose Uplinks are pinned to different contract Majors,
  * naming the odd one out: a contract Major needs its re-pin landed first, and a
  * release that covered half of it would ship Uplinks the app refuses.
+ *
+ * `from` prints the Uplink's newest released version, read from its own tags:
+ * the committed files hold a placeholder, so the tags are the only record of
+ * where an Uplink's versions have got to, and `release prepare` is given it as
+ * `--from` to work out the next one.
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -83,15 +88,29 @@ export function planLegs(legs, requested, contractMajorOf) {
   return chosen;
 }
 
-/** The release commit's subject, at most 100 characters. */
-export function releaseSubject(released) {
-  const sorted = [...released].sort((a, b) => a.id.localeCompare(b.id));
-  if (sorted.length === 1) return `release: ${sorted[0].id} v${sorted[0].version}`;
-  const versions = new Set(sorted.map((r) => r.version));
-  const shared = `release: ${sorted.length} uplinks to ${[...versions][0]}`;
-  if (versions.size === 1) return shared;
-  const listed = `release: ${sorted.map((r) => `${r.id} v${r.version}`).join(", ")}`;
-  return listed.length <= 100 ? listed : `release: ${sorted.length} uplinks`;
+const TAGGED = /^(.+)-v(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?$/;
+
+/**
+ * The newest version among the tags of `id` (`<id>-v<version>`), where a
+ * candidate sorts below the release it is for and a number is compared as a
+ * number (rc.10 above rc.9). Undefined when the Uplink has never been tagged.
+ */
+export function latestVersion(tags, id) {
+  const found = [];
+  for (const tag of tags) {
+    const match = TAGGED.exec(tag);
+    if (!match || match[1] !== id) continue;
+    const [major, minor, patch] = match.slice(2, 5).map(Number);
+    const rc = match[5] === undefined ? Number.POSITIVE_INFINITY : Number(match[5]);
+    found.push({ key: [major, minor, patch, rc], version: tag.slice(id.length + 2) });
+  }
+  found.sort((a, b) => {
+    for (let at = 0; at < 4; at++) {
+      if (a.key[at] !== b.key[at]) return b.key[at] > a.key[at] ? 1 : -1;
+    }
+    return 0;
+  });
+  return found[0]?.version;
 }
 
 function contractMajorFromDisk(leg) {
@@ -108,13 +127,21 @@ function main(argv) {
     const at = rest.indexOf(name);
     return at < 0 ? fallback : rest[at + 1];
   };
-  if (command === "subject") {
-    const released = JSON.parse(readFileSync(0, "utf8"));
-    console.log(releaseSubject(released));
+  if (command === "from") {
+    if (!rest[0]) {
+      console.error("usage: release-plan.mjs from <uplink id>");
+      process.exit(2);
+    }
+    const ran = spawnSync("git", ["tag", "--list", `${rest[0]}-v*`], { cwd: ROOT, encoding: "utf8" });
+    if (ran.status !== 0) {
+      process.stderr.write(ran.stderr);
+      process.exit(1);
+    }
+    console.log(latestVersion(ran.stdout.split("\n").filter(Boolean), rest[0]) ?? "");
     return;
   }
   if (command !== "plan") {
-    console.error("usage: release-plan.mjs plan|subject ...");
+    console.error("usage: release-plan.mjs plan|from ...");
     process.exit(2);
   }
   const ran = spawnSync("node", [join(ROOT, "scripts", "uplink-matrix.mjs")], {

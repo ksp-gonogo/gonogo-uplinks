@@ -2,29 +2,30 @@
 #
 #   gh workflow run prepare-release.yml --ref staging -f uplinks=kerbcast [-f full=true] [-f dry_run=true]
 #
-# All work lands on `staging` and `main` moves only here. A release starts on
-# staging and is settled there before `main` is touched:
+# All work lands on `staging`. Nothing is committed to cut a release: an Uplink's
+# committed files hold the placeholder version 0.0.0-development, the version is
+# the tag, and the release's own build stamps it into the checkout it builds from.
 #
 #   1. plan: refuses any ref but staging, refuses when main cannot fast-forward to
 #      it, refuses a full release unless the operator has set ALLOW_FULL_RELEASE,
 #      and works out which Uplinks to release
 #   2. prepare: one leg per Uplink runs `uplink-tools release prepare` on the
-#      staging head: the version is read from that Uplink's own commits and moved
-#      everywhere it is written, the page and the README's version and "built
-#      against" lines are regenerated, and the same checks a release is held to
-#      run, ending in a full release build into a scratch folder. A leg pushes
-#      nothing and uploads the commit it made as a patch. Every leg runs, so one
-#      failure is reported beside the others, and any failure stops the release
-#   3. assemble: applies every patch and makes ONE release commit on staging
-#   4. ci: ci.yml on that commit, with the repo-wide checks, the scaffold proof
-#      and the legs of the chosen Uplinks only. A push made with the job's own
-#      token starts no run, so it is called from here
-#   5. release: only when ci is green, main fast-forwards to the commit, the tags
-#      go with it in one atomic push, and release.yml is dispatched on each tag
+#      staging head. The next version comes from that Uplink's own newest tag
+#      (`--from`) and its own commits, is stamped over the placeholder in the
+#      leg's checkout, and the same checks a release is held to run, ending in a
+#      full release build into a scratch folder. A leg commits and pushes
+#      nothing, and uploads the version and tag it settled on. Every leg runs, so
+#      one failure is reported beside the others, and any failure stops the release
+#   3. settle: gathers the legs' tags
+#   4. ci: ci.yml on the staging head the legs prepared, with the repo-wide
+#      checks, the scaffold proof and the legs of the chosen Uplinks only
+#   5. release: only when ci is green, the tags go on that commit and main
+#      fast-forwards to it, in one atomic push, and release.yml is dispatched on
+#      each tag. release.yml builds each tag stamped with its own version
 #
-# Nothing reaches main except through step 5, and a tag exists only after every
-# check has passed on the commit it names. `dry_run` runs steps 1 to 3 and prints
-# the commit and the tags, and pushes nothing.
+# A tag exists only after every check has passed on the commit it names, and the
+# commit is the one that was checked even when staging has moved on during the
+# run. `dry_run` runs steps 1 to 3 and prints the tags, and pushes nothing.
 #
 # If release.yml fails after its tag exists, run it again on that tag:
 #   gh workflow run release.yml --ref <tag>
@@ -142,19 +143,12 @@ jobs:
       bundle: ${{ matrix.bundle }}
       prepare_args: ${{ needs.plan.outputs.args }}
 
-  assemble:
+  settle:
     needs: [plan, prepare]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
-      sha: ${{ steps.commit.outputs.sha }}
-      tags: ${{ steps.commit.outputs.tags }}
+      tags: ${{ steps.tags.outputs.tags }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
 
@@ -164,61 +158,36 @@ jobs:
           path: ${{ runner.temp }}/legs
           merge-multiple: true
 
-      # One commit for the whole set: the patches cover separate Uplink
-      # directories, so they apply in id order without touching each other, and
-      # the root README is generated once from what they leave.
-      - id: commit
+      - id: tags
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           legs="$RUNNER_TEMP/legs"
-          base="$(git rev-parse HEAD)"
-          for patch in $(ls "$legs"/prepare-*.patch | sort); do
-            git am --3way "$patch"
-          done
-          git reset --soft "$base"
-          node -e '
+          tags="$(node -e '
             const fs = require("fs");
             const dir = process.argv[1];
             const released = fs.readdirSync(dir).filter((f) => /^prepare-.*\.json$/.test(f))
               .map((f) => JSON.parse(fs.readFileSync(dir + "/" + f, "utf8")))
               .sort((a, b) => a.id.localeCompare(b.id));
-            fs.writeFileSync(process.env.RUNNER_TEMP + "/released.json", JSON.stringify(released));
-          ' "$legs"
-          node tooling/generate-root-readme.mjs
-          git add -A
-          git commit -q -m "$(node tooling/release-plan.mjs subject < "$RUNNER_TEMP/released.json")"
-          tags="$(node -e 'console.log(JSON.stringify(JSON.parse(require("fs").readFileSync(process.env.RUNNER_TEMP + "/released.json", "utf8")).map((r) => r.id + "-v" + r.version)))')"
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            console.log(JSON.stringify(released.map((r) => r.id + "-v" + r.version)));
+          ' "$legs")"
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
           {
-            echo "### $(git log -1 --format=%s)"
+            echo "### Tags on $GITHUB_SHA"
             echo
-            echo "Tags: $tags"
-            echo
-            echo '```'
-            git show --stat --format= HEAD
-            echo '```'
+            echo "$tags"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # A fast-forward only: when staging has moved since the legs started, the
-      # push is rejected and nothing is released. Run it again.
-      - name: Put the release commit on staging
-        if: inputs.dry_run == false
-        run: git push origin HEAD:refs/heads/staging
-
   ci:
-    needs: [plan, assemble]
+    needs: [plan, settle]
     if: inputs.dry_run == false
     uses: ./.github/workflows/ci.yml
     secrets: inherit
     with:
-      ref: ${{ needs.assemble.outputs.sha }}
+      ref: ${{ github.sha }}
       uplinks: ${{ needs.plan.outputs.ids }}
 
   release:
-    needs: [assemble, ci]
+    needs: [settle, ci]
     if: inputs.dry_run == false
     runs-on: ubuntu-latest
     permissions:
@@ -227,19 +196,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.assemble.outputs.sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
-      # main moves to the release commit and the tags go with it, in one push
+      # main moves to the commit that was checked and the tags go with it, in one push
       # that either lands whole or not at all.
-      - name: main moves to the release commit
+      - name: main moves to the checked commit
         env:
-          TAGS: ${{ needs.assemble.outputs.tags }}
+          TAGS: ${{ needs.settle.outputs.tags }}
         run: |
           set -euo pipefail
           sha="$(git rev-parse HEAD)"
           if ! git merge-base --is-ancestor origin/main "$sha"; then
-            echo "::error::main is no longer an ancestor of the release commit, so it cannot fast-forward. Nothing was pushed."
+            echo "::error::main is no longer an ancestor of the checked commit, so it cannot fast-forward. Nothing was pushed."
             exit 1
           fi
           refs=()
@@ -255,7 +224,7 @@ jobs:
       - name: Start each release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAGS: ${{ needs.assemble.outputs.tags }}
+          TAGS: ${{ needs.settle.outputs.tags }}
         run: |
           set -euo pipefail
           for tag in $(echo "$TAGS" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0, "utf8")).sort().join(" "))'); do

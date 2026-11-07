@@ -30,16 +30,19 @@ on:
       # Set by ci-dev-check.yml only: the name of a workflow artifact holding
       # packages packed from a gonogo commit (tooling/use-packed-gonogo.mjs).
       packed_gonogo: { required: false, type: string, default: "" }
-      # The release's version, from its tag. Every manifest reports it. Empty on
-      # a build that is not a release, which reports 0.0.0-dev.
+      # The release's version, from its tag. The committed files hold the
+      # placeholder, so a release build stamps this over it first, and every
+      # manifest reports it. Empty on a build that is not a release, which keeps
+      # the placeholder and reports 0.0.0-dev.
       version: { required: false, type: string, default: "" }
       # The commit to build. Empty is the ref the caller was triggered on.
       ref: { required: false, type: string, default: "" }
       # Set by prepare-release.yml only: the arguments of `uplink-tools release
-      # prepare`. A leg given them moves the Uplink to its next version, proves
-      # the release builds with the command's own checks, and uploads the commit
-      # it made as a patch. It runs none of the other task steps, because
-      # `release prepare` runs those checks itself, and it pushes nothing.
+      # prepare`. A leg given them works out the Uplink's next version from its
+      # newest tag, stamps it in this checkout, proves the release builds with the
+      # command's own checks, and uploads the version it settled on. It runs none
+      # of the other task steps, because `release prepare` runs those checks
+      # itself, and it commits and pushes nothing.
       prepare_args: { required: false, type: string, default: "" }
 
 jobs:
@@ -183,16 +186,24 @@ jobs:
         if: (inputs.packages_version != '' || inputs.packed_gonogo != '') && inputs.client
         run: node tooling/uplink-tools.mjs "${{ inputs.name }}" page
 
+      # A release build gets its version from its tag. The committed files hold
+      # the placeholder, so the version is stamped over it here, in this runner's
+      # checkout, before anything is built: the client bundle, its hash, the
+      # page and the DLL then all carry the release's version.
+      - name: Stamp the version from the tag
+        if: inputs.version != '' && inputs.client
+        run: node tooling/uplink-tools.mjs "${{ inputs.name }}" version "${{ inputs.version }}"
+
       # The one thing a prepare leg does that no other leg does. `release
-      # prepare` is the author's command: it moves the version, runs codegen
-      # --check, check, the client's tests, docs --check and a full release into a
-      # scratch folder, and only then makes the commit. The commits it reads are
-      # this Uplink's own, picked out of the shared history by
-      # tooling/uplink-commits.mjs.
+      # prepare` is the author's command: it works out the next version, stamps
+      # it, runs codegen --check, check, the client's tests, docs --check and a
+      # full release into a scratch folder, and leaves the stamped tree
+      # uncommitted. The commits it reads are this Uplink's own, picked out of the
+      # shared history by tooling/uplink-commits.mjs, and the version it moves
+      # from is the Uplink's newest tag, since no committed file records one.
       #
-      # It makes the commit in this runner's checkout and nothing leaves it: the
-      # commit goes up as a patch, and the run that applies the patches is the
-      # only one that pushes.
+      # Nothing leaves this runner but the version it settled on, and the run
+      # that tags is the only one that pushes.
       - name: Install the browser the checks render in
         if: inputs.prepare_args != '' && inputs.client
         working-directory: uplinks/${{ inputs.name }}/client
@@ -202,14 +213,11 @@ jobs:
         if: inputs.prepare_args != ''
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c release-prepare
           node tooling/uplink-commits.mjs "${{ inputs.id }}" --out "$RUNNER_TEMP/commits.json"
           cat "$RUNNER_TEMP/commits.json"
-          node tooling/uplink-tools.mjs "${{ inputs.name }}" release prepare ${{ inputs.prepare_args }} --commits "$RUNNER_TEMP/commits.json"
+          from="$(node tooling/release-plan.mjs from "${{ inputs.id }}")"
+          node tooling/uplink-tools.mjs "${{ inputs.name }}" release prepare ${{ inputs.prepare_args }} ${from:+--from "$from"} --commits "$RUNNER_TEMP/commits.json"
           mkdir -p artifacts
-          git format-patch -1 --stdout > "artifacts/prepare-${{ inputs.id }}.patch"
           node -e '
             const pkg = require("./uplinks/${{ inputs.name }}/client/package.json");
             require("fs").writeFileSync("artifacts/prepare-${{ inputs.id }}.json", JSON.stringify({ id: "${{ inputs.id }}", version: pkg.version }));

@@ -41,7 +41,7 @@ test("a release is checked on the chosen Uplinks only, and the scaffold gates it
   const ci = release.slice(release.indexOf("  ci:"), release.indexOf("  release:"));
   assert.match(ci, /uses: \.\/\.github\/workflows\/ci\.yml/);
   assert.match(ci, /uplinks: \$\{\{ needs\.plan\.outputs\.ids \}\}/);
-  assert.match(release, /needs: \[assemble, ci\]/);
+  assert.match(release, /needs: \[settle, ci\]/);
 
   const workflow = read("ci.yml");
   assert.match(workflow, /--only "\$UPLINKS"/);

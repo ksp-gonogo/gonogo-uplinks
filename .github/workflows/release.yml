@@ -1,5 +1,9 @@
 # Releases ONE Uplink when its tag (`<uplink id>-v<version>`) is pushed.
 #
+# Nothing committed carries a release's version: the files hold the placeholder
+# 0.0.0-development, and every job here stamps the tag's version over it in its
+# own checkout before it builds or publishes.
+#
 # The client bundle is committed to the `releases` branch at the path its
 # baked `client.url` names, which is what jsDelivr serves: browsers refuse raw
 # GitHub URLs on CORS, and jsDelivr mirrors git trees, never release assets. So
@@ -28,7 +32,7 @@
 # exactly as a pushed tag is, and the same checks run. Running it again on the
 # same tag finishes a release whose publishing step failed.
 #
-# A manual dispatch on a BRANCH with `tag` is a dry run, always: it resolves the
+# A manual dispatch on `staging` with `tag` is a dry run, always: it resolves the
 # tag against the dispatched tree, runs the whole build, and copies the client into a
 # scratch folder to print what a real run would publish, and says which
 # SpaceDock listing and file a full release would upload, without logging in or
@@ -43,7 +47,7 @@ on:
     inputs:
       tag:
         description: >-
-          Dispatched on main, the release tag to rehearse, <uplink id>-v<version>.
+          Dispatched on staging, the release tag to rehearse, <uplink id>-v<version>.
           Dry run: builds and shows what would be published, and publishes
           nothing. Dispatched on a tag, leave it empty: that publishes the tag.
         type: string
@@ -65,9 +69,9 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       # A release is baked from the tree its tag names, so a tag on an unmerged
-      # branch would ship code main never reviewed. A dry run builds the tree it
-      # was dispatched on, which has to be main for the same reason.
-      - name: The tag is on main
+      # branch would ship code staging never reviewed. A dry run builds the tree
+      # it was dispatched on, which has to be staging for the same reason.
+      - name: The tag is on staging
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: |
@@ -76,16 +80,16 @@ jobs:
             exit 1
           fi
           if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then
-            if [ "$GITHUB_REF" != refs/heads/main ]; then
-              echo "::error::A dry run rehearses what main would release, and this was dispatched on $GITHUB_REF"
+            if [ "$GITHUB_REF" != refs/heads/staging ]; then
+              echo "::error::A dry run rehearses what staging would release, and this was dispatched on $GITHUB_REF"
               exit 1
             fi
             if [ -z "${{ inputs.tag }}" ]; then
               echo "::error::A dry run needs the tag to rehearse"
               exit 1
             fi
-          elif ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "::error::$TAG points at $GITHUB_SHA, which is not on main"
+          elif ! git merge-base --is-ancestor "$GITHUB_SHA" origin/staging; then
+            echo "::error::$TAG points at $GITHUB_SHA, which is not on staging"
             exit 1
           fi
 
@@ -184,6 +188,18 @@ jobs:
         with:
           name: uplink-${{ needs.resolve.outputs.id }}
           path: artifacts
+
+      # client.url is committed with the placeholder, and `publish` copies the
+      # bundle to the folder it names, so the tag's version is stamped over it
+      # here exactly as the build job did.
+      - name: Install client dependencies
+        working-directory: uplinks/${{ needs.resolve.outputs.name }}/client
+        run: npm ci --no-audit --no-fund
+
+      - name: Stamp the version from the tag
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: node tooling/uplink-tools.mjs "$NAME" version "$VERSION"
 
       # `publish` checks the bundle against the hash baked into the plugin's
       # sources, and this job starts from a bare checkout where the generated

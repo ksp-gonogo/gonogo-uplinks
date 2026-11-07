@@ -8,7 +8,7 @@ TestFlight engine reliability on the fleet roster: failed engines, rated burn ne
 | | |
 | --- | --- |
 | Uplink id | `testflight` |
-| Version | `1.0.0-rc.4` |
+| Version | `0.0.0-development` |
 | Wraps | TestFlight 2.12.0.0 (ckan) |
 | Built against | contract 51.0, extension API 6.0.0 |
 

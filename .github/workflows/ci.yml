@@ -6,10 +6,10 @@ name: ci
 on:
   push: { branches: [main, staging] }
   pull_request: { branches: [staging] }
-  # `prepare-release.yml` runs this on the release commit before `main` moves to
-  # it, because a push made with the job's own token starts no run of its own.
-  # It names the Uplinks being released, so a release is held to the checks about
-  # the repo and to the legs of those Uplinks, and no other Uplink's leg.
+  # `prepare-release.yml` runs this on the staging commit it prepared before the
+  # tags go on it and `main` moves to it. It names the Uplinks being released,
+  # so a release is held to the checks about the repo and to the legs of those
+  # Uplinks, and no other Uplink's leg.
   workflow_call:
     inputs:
       ref:
