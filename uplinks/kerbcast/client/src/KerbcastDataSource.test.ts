@@ -554,6 +554,25 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     ds.disconnect();
   });
 
+  it("binds a part camera again when a revert brings it back under the same id after leaving the list", async () => {
+    const { ds, sidecar } = await connectedSidecar([42]);
+    ds.subscribeCamera(42);
+    expect(subscribeCount(sidecar, 42)).toBe(1);
+
+    sidecar.setCameras([{ flightId: 77 }]);
+    expect(sidecar.slotMidFor(42)).toBeUndefined();
+
+    sidecar.setCameras([{ flightId: 42 }, { flightId: 77 }]);
+
+    await vi.waitFor(() => expect(subscribeCount(sidecar, 42)).toBe(2));
+    expect(sidecar.slotMidFor(42)).toBeDefined();
+
+    ds.unsubscribeCamera(42);
+    await pastGrace();
+    expect(sidecar.slotMidFor(42)).toBeUndefined();
+    ds.disconnect();
+  });
+
   it("keeps the slot of a command camera that leaves the camera list", async () => {
     const sidecar = new MockSidecar();
     sidecar.addCamera({ flightId: 42, kind: CameraKind.Command });

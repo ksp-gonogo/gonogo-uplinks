@@ -1828,6 +1828,50 @@ function frameText(): string {
   ).replace(/\s+/g, " ");
 }
 
+describe("CameraFeed: ground camera picture", () => {
+  it("delays a ground camera's picture on its receiver, where its frames can be released", async () => {
+    vi.stubGlobal(
+      "RTCRtpScriptTransform",
+      class {
+        constructor(
+          public worker: unknown,
+          public options: unknown,
+        ) {}
+      },
+    );
+    vi.stubGlobal(
+      "Worker",
+      class {
+        onmessage = null;
+        postMessage() {}
+      },
+    );
+    try {
+      const { ds } = await buildConnectedSource([
+        makeCamera({ flightId: 42, cameraName: "Launchpad", kind: "command" }),
+      ]);
+      Object.defineProperty(ds.getClient(), "encodedTransformPath", {
+        configurable: true,
+        get: () => "script",
+      });
+      holdStream(ds, 42, "launchpad-camera");
+      const handle = ds.getClient().camera(42);
+      const setTransform = vi.spyOn(handle, "setEncodedTransform");
+
+      const stream = setupStreamFixture();
+      renderFeedWithComms({ flightId: 42 }, stream);
+
+      await waitFor(() =>
+        expect(
+          setTransform.mock.calls.some(([f]) => typeof f === "function"),
+        ).toBe(true),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
 describe("CameraFeed: signal quality badge", () => {
   it("draws no signal delay badge: the dashboard header carries the delay", async () => {
     await buildConnectedSource();

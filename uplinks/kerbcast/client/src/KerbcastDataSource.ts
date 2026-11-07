@@ -1107,12 +1107,13 @@ export class KerbcastDataSource {
   }
 
   /**
-   * Free the slot of every subscribed camera that has left the camera list.
-   * The sidecar keeps a slot for a subscribed id so a camera returning under
-   * the same id can rebind, which only command cameras do; a part camera comes
-   * back under a new id after a relaunch, so its old slot would stay taken and
-   * a later relaunch would find none free. An id never seen in the list is
-   * left alone: it is a camera named before KSP had it.
+   * Free the slot of every subscribed part camera that has left the camera
+   * list. The sidecar keeps a slot for a subscribed id so a camera returning
+   * under the same id can rebind; a part camera comes back under a new id after
+   * a relaunch, so its old slot would stay taken and a later relaunch would
+   * find none free. The feeds showing it keep holding it, and it is bound again
+   * if it registers under the same id, as a revert brings it back. An id never
+   * seen in the list is left alone: it is a camera named before KSP had it.
    */
   private releaseDepartedCameras(): void {
     const present = new Set<number>();
@@ -1134,8 +1135,7 @@ export class KerbcastDataSource {
       logger
         .tag("kerbcast:subscriptions")
         .debug("release departed", { flightId, status: this.status });
-      this.desiredSubs.delete(flightId);
-      this.notThereYet.delete(flightId);
+      this.notThereYet.add(flightId);
       this.dropAwaiting(flightId);
       this.setRefusal(flightId, undefined);
       if (this.status === "connected") {

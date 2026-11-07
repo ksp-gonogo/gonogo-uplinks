@@ -7,7 +7,6 @@ import {
 } from "@ksp-gonogo/sitrep-sdk/media";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
-import { useGroundFeedClock } from "./groundFeedClock.js";
 import { useCaptureClockHealth } from "./useCaptureClockHealth.js";
 import { useSourceGeneration } from "./useSourceGeneration.js";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
@@ -170,9 +169,10 @@ export function useDelayedKerbcastStream(
   // own doc: the concrete ViewClock stays app-internal). Narrow to
   // the structural `DelayClockLike` contract this module actually drives,
   // the real `ViewClock` satisfies it (see that class's own doc).
-  const sharedView = useViewClockOptional() as DelayClockLike | undefined;
-  // A ground camera releases against its own site's clock, not the craft's.
-  const view = useGroundFeedClock() ?? sharedView;
+  /* Every feed releases against this one clock, ground cameras included: the
+     delay worker holds a single clock for all of its cameras, so a clock of
+     one camera's own would move every other feed's release with it. */
+  const view = useViewClockOptional() as DelayClockLike | undefined;
   const { captureUt, epoch, warpRate } = useKerbcastClock();
   const sourceGeneration = useSourceGeneration(
     flightId,
