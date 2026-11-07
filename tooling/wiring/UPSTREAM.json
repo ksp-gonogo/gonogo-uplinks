@@ -1,0 +1,6 @@
+{
+  "repo": "ksp-gonogo/gonogo",
+  "path": "mod/Sitrep.Core.Tests/UplinkWiringScan.cs",
+  "note": "Verbatim, differing only in its namespace line. Verified by tooling/check-wiring-walk.mjs; re-sync with --from <gonogo checkout>.",
+  "sha256": "e3c43ab5062bbf5f46bde59ad0e6d2b7a7ad32b522c5c1ce7457acafa057a3e5"
+}

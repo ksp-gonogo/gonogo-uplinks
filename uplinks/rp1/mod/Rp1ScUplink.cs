@@ -1032,6 +1032,16 @@ namespace GonogoRp1Uplink
             AbsenceIsData = absenceIsData,
         };
 
+        /// <summary>The template for a dynamic namespace, whose concrete topics each get their own id.</summary>
+        private static ChannelDeclaration AtHomeNamespace(SampleKind kind) => new ChannelDeclaration
+        {
+            Kind = kind,
+            Delivery = Delivery.LossyLatest,
+            Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+            Delay = DelayRole.Delayed,
+            HeldAtHome = true,
+        };
+
         public IReadOnlyList<ModSetting> ListModSettings() => ModSettings.ListModSettings();
 
         public ModSettingValue ReadModSetting(string id) => ModSettings.ReadModSetting(id);
@@ -1647,7 +1657,7 @@ namespace GonogoRp1Uplink
 
             // Gated on its namespace: its whole effect is its return value, and
             // each figure it answers is one a client subscribed to.
-            _fundsReachedAtSource = host.RegisterDynamicNamespace(FundsReachedAtPrefix, AtHome(FundsReachedAtPrefix, SampleKind.Discrete));
+            _fundsReachedAtSource = host.RegisterDynamicNamespace(FundsReachedAtPrefix, AtHomeNamespace(SampleKind.Discrete));
             _fundsReachedAtSource.OnSubscribed(topic => _fundsReachedAtAsked.TryAdd(topic, 0));
             host.AddSampledSource(
                 CaptureFundsReachedAtOnMain,
