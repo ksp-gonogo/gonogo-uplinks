@@ -705,7 +705,9 @@ namespace GonogoPrincipiaUplink
                     parentOf,
                     _bodyNames,
                     _secularSeeds,
-                    _integrator),
+                    _integrator,
+                    ProbeSeed,
+                    WriteProbePath),
             });
         }
 
@@ -762,6 +764,34 @@ namespace GonogoPrincipiaUplink
             return File.Exists(Path.Combine(directory, "use-separate-process"))
                 ? PrincipiaPrivateCopy.OpenSeparateProcess(directory)
                 : PrincipiaPrivateCopy.Open(directory);
+        }
+
+        /// <summary>The development seed file beside the native half, or null (see <see cref="PrincipiaProbeSeed"/>).</summary>
+        private static string? ProbeSeed()
+        {
+            try
+            {
+                var path = Path.Combine(NativeDirectory(), PrincipiaProbeSeed.FileName);
+                return File.Exists(path) ? File.ReadAllText(path) : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Writes a path from the development seed beside it, named by the seed's UT.</summary>
+        private static void WriteProbePath(double seedUt, string lines)
+        {
+            try
+            {
+                var name = "prinprobe-path-" + Math.Round(seedUt, 2).ToString("R", System.Globalization.CultureInfo.InvariantCulture) + ".jsonl";
+                File.WriteAllText(Path.Combine(NativeDirectory(), name), lines);
+            }
+            catch (Exception e)
+            {
+                HostLog?.Invoke(UplinkLogLevel.Warn, "could not write the development path: " + e.Message);
+            }
         }
 
         /// <summary>

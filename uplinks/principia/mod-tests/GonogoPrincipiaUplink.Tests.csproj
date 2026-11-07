@@ -75,6 +75,7 @@
     <Compile Include="..\mod\MappedModules.cs" />
     <Compile Include="..\mod\PrincipiaWorkerProcess.cs" />
     <Compile Include="..\mod\PrincipiaIntegrator.cs" />
+    <Compile Include="..\mod\PrincipiaProbeSeed.cs" />
     <Compile Include="..\mod\PrincipiaSystemInputs.cs" />
     <Compile Include="..\mod\PrincipiaPrivateCopy.cs" />
     <Compile Include="..\mod\PrincipiaDiagnostic.cs" />

@@ -65,6 +65,8 @@ namespace GonogoPrincipiaUplink
         private readonly Func<int, string?>? _bodyName;
         private readonly PrincipiaSecularSeeds? _analyses;
         private readonly PrincipiaIntegrator? _integrator;
+        private readonly Func<string?> _probeSeed;
+        private readonly Action<double, string> _probePath;
 
         private readonly object _boundGate = new object();
         private string? _boundVesselId;
@@ -136,9 +138,13 @@ namespace GonogoPrincipiaUplink
             Func<int, int?> parentOf,
             Func<int, string?>? bodyName = null,
             PrincipiaSecularSeeds? analyses = null,
-            PrincipiaIntegrator? integrator = null)
+            PrincipiaIntegrator? integrator = null,
+            Func<string?>? probeSeed = null,
+            Action<double, string>? probePath = null)
         {
             _integrator = integrator;
+            _probeSeed = probeSeed ?? (() => null);
+            _probePath = probePath ?? ((_, _) => { });
             _bodyName = bodyName;
             _analyses = analyses;
             _conics = conics ?? throw new ArgumentNullException(nameof(conics));
@@ -181,7 +187,9 @@ namespace GonogoPrincipiaUplink
             {
                 return PropagatedPath.Refused("Principia's build is not available to integrate this.");
             }
-            return _integrator.Propagate(seed, toUt, maxPoints);
+            var integrator = _integrator;
+            return PrincipiaProbeSeed.Around(
+                _probeSeed(), seed, toUt, (from, until) => integrator.Propagate(from, until, maxPoints), _probePath);
         }
 
         public RadiusExtremes? RadiusExtremesOf(PropagationTarget target) =>
