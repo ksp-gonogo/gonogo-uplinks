@@ -178,6 +178,9 @@ namespace GonogoPrincipiaUplink.Tests
         /// </summary>
         private sealed class RecordingConics : IPropagationProvider
         {
+            public PropagatedPath PropagateFromState(PropagationSeed seed, double toUt, int maxPoints, PropagationCertification certification) =>
+                PropagatedPath.Refused("not exercised here");
+
             public List<string> Calls { get; } = new List<string>();
 
             public string ProviderId => "recording-conics";

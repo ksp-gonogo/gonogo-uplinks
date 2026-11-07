@@ -31,6 +31,7 @@ import type {
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
 import { IgnitionTime } from "../IgnitionTime.js";
+import { LastKnownPathRow } from "./LastKnownPath.js";
 import { untilIgnition } from "../ignitionCountdown.js";
 import { PlanIntegrationBlock } from "../PlanIntegration/index.js";
 import { PRINCIPIA } from "../uplink.js";
@@ -397,6 +398,7 @@ export function FlightPlanSection() {
             )}
           </Stack>
         )}
+        <LastKnownPathRow viewUt={viewUt} />
       </Stack>
     </Section>
   );

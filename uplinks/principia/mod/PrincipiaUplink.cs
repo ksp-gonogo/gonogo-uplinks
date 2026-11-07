@@ -383,13 +383,12 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
 
-            // Ask the worker what THIS machine reports, which is the one thing the
-            // decision below cannot get any other way: reading CPUID here would
-            // answer about whatever machine this code runs on, and the question is
-            // about the game's. A worker beside the game is that machine.
+            // The private copy runs in this process, so the machine it asks about is the game's.
             var hostFacts = AskTheWorker(verdict);
             var decision = PrincipiaWorkerHost.Decide(
                 verdict, hostFacts, hostFacts, UsesCorrectSinCos);
+            _integrator.Authorise(verdict.ActivePath, verdict.ReleaseName, decision);
+            _integrator.Preload();
 
             _binaryGateHasRun = true;
             return PrincipiaBinaryHealth.Of(_guard.DetectedVersion, verdict, decision);
@@ -405,6 +404,10 @@ namespace GonogoPrincipiaUplink
             if (captured is PrincipiaBinaryHealth reading)
             {
                 _binaryHealth = reading;
+                if (reading.RefusesToStart)
+                {
+                    _host?.SetAvailability(Availability.Unavailable(reading.Detail));
+                }
             }
         }
 
@@ -423,18 +426,12 @@ namespace GonogoPrincipiaUplink
         private static bool? UsesCorrectSinCos => null;
 
         /// <summary>
-        /// Start a worker beside the game and ask it what the CPU reports, then stop
-        /// it.
+        /// Asks what the CPU reports, through the native half and the copy of the build
+        /// the game already loaded.
         ///
-        /// <para>Once per session and only for a build that passed the gate: there
-        /// is nothing to ask a worker about a build we would not call into anyway.
-        /// The worker is disposed immediately because this one question is all it is
-        /// asked so far, and a process left running for a value that cannot change
-        /// is a process nobody remembers to stop.</para>
-        ///
-        /// <para>Every failure is unknown rather than false. No python, no script, a
-        /// worker that dies: none of those are a CPU without FMA, and treating them
-        /// as one would have the decision claim a match nobody measured.</para>
+        /// <para>Every failure is unknown rather than false. A machine where the native
+        /// half will not run is not a CPU without FMA, and treating it as one would have
+        /// the decision claim a match nobody measured.</para>
         /// </summary>
         private static PrincipiaHostFacts AskTheWorker(PrincipiaConformanceVerdict verdict)
         {
@@ -444,31 +441,15 @@ namespace GonogoPrincipiaUplink
                 return new PrincipiaHostFacts(osFamily, null);
             }
 
-            using var channel = PrincipiaWorkerProcess.Spawn("python3", WorkerScriptPath());
             return PrincipiaWorkerProcess.AskCpuidFeatureFlags(
-                channel, verdict.ActivePath, osFamily);
+                PrincipiaPrivateCopy.Open(NativeDirectory()), verdict.ActivePath, osFamily);
         }
 
-        /// <summary>
-        /// The worker script, found relative to this assembly rather than from a
-        /// configured path: it ships beside the plugin and moves with it, and a
-        /// path an operator could set is a path that can be set wrong.
-        /// </summary>
-        private static string WorkerScriptPath()
+        /// <summary>The folder the native half is written to, beside the plugin it ships in.</summary>
+        private static string NativeDirectory()
         {
-            try
-            {
-                var plugins = Path.GetDirectoryName(
-                    typeof(PrincipiaUplink).Assembly.Location);
-                var root = plugins == null ? null : Path.GetDirectoryName(plugins);
-                return root == null
-                    ? string.Empty
-                    : Path.Combine(root, "Worker", "principia_worker.py");
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
+            var plugins = Path.GetDirectoryName(typeof(PrincipiaUplink).Assembly.Location);
+            return plugins ?? string.Empty;
         }
 
         private static string OsFamily()
@@ -695,6 +676,7 @@ namespace GonogoPrincipiaUplink
         {
             AttachGravityModel();
             AttachPerturbers();
+            AttachSystemRequest();
             var perturbers = _perturbers ?? (_ => NoPerturbers);
             var parentOf = _bodyParents ?? (_ => (int?)null);
             host.Kernel.RegisterProvider(new ProviderRegistration
@@ -713,9 +695,48 @@ namespace GonogoPrincipiaUplink
                     perturbers,
                     parentOf,
                     _bodyNames,
-                    _secularSeeds),
+                    _secularSeeds,
+                    _integrator),
             });
         }
+
+        /// <summary>Answers an accurate propagate-from-state with the player's own build.</summary>
+        private readonly PrincipiaIntegrator _integrator = new PrincipiaIntegrator(
+            () => PrincipiaPrivateCopy.Open(NativeDirectory()),
+            () => SystemRequest?.Invoke(),
+            PrincipiaPrivateCopy.PrivateFileDirectory,
+            0.0,
+            ForceCheckRequested);
+
+        /// <summary>
+        /// Whether a file named <c>force-check</c> sits beside the native half, taken once
+        /// and deleted. It lets a test run in the real game show that a fatal check in the
+        /// private copy leaves the player's game running.
+        /// </summary>
+        private static bool ForceCheckRequested()
+        {
+            try
+            {
+                var flag = Path.Combine(NativeDirectory(), "force-check");
+                if (!File.Exists(flag))
+                {
+                    return false;
+                }
+                File.Delete(flag);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The solar system as the private copy has to rebuild it, as text. Set only by the
+        /// game-facing partial; a build that omits it has nothing to build from and
+        /// refuses every accurate ask.
+        /// </summary>
+        private static Func<string?>? SystemRequest;
 
         /// <summary>
         /// Sets <c>_perturbers</c> to the real body-tree walk. Implemented only in
@@ -725,6 +746,9 @@ namespace GonogoPrincipiaUplink
         /// is never longer than the horizon this Uplink used to get.
         /// </summary>
         partial void AttachPerturbers();
+
+        /// <summary>Sets <see cref="SystemRequest"/>. Implemented only in the game-facing partial.</summary>
+        partial void AttachSystemRequest();
 
         /// <summary>Test seam: the neighbourhood injected, so the bound is provable with no game.</summary>
         private Func<int, IReadOnlyList<PrincipiaPerturber>>? _perturbers;

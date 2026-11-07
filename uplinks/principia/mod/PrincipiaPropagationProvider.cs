@@ -29,18 +29,17 @@ namespace GonogoPrincipiaUplink
     /// <see cref="PrincipiaHorizonBound"/> holds the arithmetic and the rig
     /// measurements behind its constants.</para>
     ///
-    /// <para><b>Why it forwards rather than integrates.</b> The conic answers a
+    /// <para><b>Why the rest forwards rather than integrates.</b> The conic answers a
     /// caller asks for through this interface are the osculating state the game is
     /// holding right now, propagated in the frame it was asked about: where a body
-    /// is, how long a revolution takes, when two craft next pass closest. Those are
-    /// two-body questions with two-body answers, and the producer's own trajectory
-    /// exports either write to the save or abort the process on state we do not
-    /// control, so there is no honest integrated substitute to forward them to. The
-    /// integrated answer, the one this marker promises, is the arc, and that is
-    /// computed against the force model this Uplink publishes separately. Carrying
-    /// a second copy of two-body motion in here to answer the rest would be the
-    /// duplication the propagation seam exists to prevent, which is why the
-    /// displaced solver arrives as a constructor argument.</para>
+    /// is, how long a revolution takes, when two craft next pass closest. The
+    /// producer's trajectory exports either write to the plugin the player is flying
+    /// or abort the process on state we do not control, so there is nothing in the
+    /// game process to forward them to. The integrated answer is
+    /// <see cref="PropagateFromState"/>, which runs a private copy of the producer's
+    /// build that is never the player's plugin. Carrying a second copy of two-body motion in here to answer
+    /// the rest would be the duplication the propagation seam exists to prevent, which
+    /// is why the displaced solver arrives as a constructor argument.</para>
     ///
     /// <para><b>Registered whether or not a force model could be read.</b> Whether
     /// trajectories are integrated is a property of the install, and it does not
@@ -65,6 +64,7 @@ namespace GonogoPrincipiaUplink
         private readonly Func<int, int?> _parentOf;
         private readonly Func<int, string?>? _bodyName;
         private readonly PrincipiaSecularSeeds? _analyses;
+        private readonly PrincipiaIntegrator? _integrator;
 
         private readonly object _boundGate = new object();
         private string? _boundVesselId;
@@ -120,6 +120,10 @@ namespace GonogoPrincipiaUplink
         /// answer, leaves oblateness out of the bound, which is what a model with no J2
         /// gets anyway.
         /// </param>
+        /// <param name="integrator">
+        /// A private copy of the producer's own build. Null refuses every accurate
+        /// propagate-from-state.
+        /// </param>
         /// <param name="analyses">
         /// The producer's orbit analyses as the Uplink has captured them, which give a
         /// craft's secular seed from the producer's own fit. Null leaves every craft on
@@ -131,8 +135,10 @@ namespace GonogoPrincipiaUplink
             Func<int, IReadOnlyList<PrincipiaPerturber>> perturbers,
             Func<int, int?> parentOf,
             Func<int, string?>? bodyName = null,
-            PrincipiaSecularSeeds? analyses = null)
+            PrincipiaSecularSeeds? analyses = null,
+            PrincipiaIntegrator? integrator = null)
         {
+            _integrator = integrator;
             _bodyName = bodyName;
             _analyses = analyses;
             _conics = conics ?? throw new ArgumentNullException(nameof(conics));
@@ -155,6 +161,33 @@ namespace GonogoPrincipiaUplink
 
         public double? CharacteristicCycleSeconds(PropagationTarget target) =>
             _conics.CharacteristicCycleSeconds(target);
+
+        /// <summary>
+        /// An analytic ask gets the displaced solver's conic. An accurate ask goes to
+        /// the producer's build and is refused when that cannot answer: a conic in its
+        /// place plots the same way and is wrong in the regime the question is about.
+        /// </summary>
+        public PropagatedPath PropagateFromState(
+            PropagationSeed seed,
+            double toUt,
+            int maxPoints,
+            PropagationCertification certification)
+        {
+            if (certification == PropagationCertification.AnalyticAccepted)
+            {
+                return _conics.PropagateFromState(seed, toUt, maxPoints, certification);
+            }
+            if (_integrator == null)
+            {
+                return PropagatedPath.Refused("Principia's build is not available to integrate this.");
+            }
+            var path = _integrator.Propagate(seed, toUt, maxPoints);
+            if (path.Solved)
+            {
+                path.ProviderId = ProviderId;
+            }
+            return path;
+        }
 
         public RadiusExtremes? RadiusExtremesOf(PropagationTarget target) =>
             _conics.RadiusExtremesOf(target);
@@ -350,6 +383,9 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
 
+            // Analytic, and it has to be: the bound is made of this walk, so bounding it
+            // here would refuse the walk.
+            //
             // Where everything is at any instant, not where it is at this one. The
             // bound integrates the difference between the published conic and the
             // path, and both halves of that difference move: the craft round its own

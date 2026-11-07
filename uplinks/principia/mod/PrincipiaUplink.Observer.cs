@@ -27,5 +27,7 @@ namespace GonogoPrincipiaUplink
             _bodyParents ??= PrincipiaPerturbers.ParentOf;
             _bodyNames ??= PrincipiaPerturbers.NameOf;
         }
+    
+        partial void AttachSystemRequest() => SystemRequest = PrincipiaSystemSource.Read;
     }
 }

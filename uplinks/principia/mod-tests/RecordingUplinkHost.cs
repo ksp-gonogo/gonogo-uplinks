@@ -222,6 +222,9 @@ namespace GonogoPrincipiaUplink.Tests
         /// </summary>
         private sealed class StandInConics : IPropagationProvider
         {
+            public PropagatedPath PropagateFromState(PropagationSeed seed, double toUt, int maxPoints, PropagationCertification certification) =>
+                PropagatedPath.Refused("not exercised here");
+
             public string ProviderId => "stand-in-conics";
 
             public StateVector Solve(PropagationTarget target, PropagationFrame frame, double ut) =>

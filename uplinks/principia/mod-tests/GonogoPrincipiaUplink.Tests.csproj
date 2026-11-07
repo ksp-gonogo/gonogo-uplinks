@@ -74,6 +74,9 @@
     <Compile Include="..\mod\PrincipiaWorkerHost.cs" />
     <Compile Include="..\mod\MappedModules.cs" />
     <Compile Include="..\mod\PrincipiaWorkerProcess.cs" />
+    <Compile Include="..\mod\PrincipiaIntegrator.cs" />
+    <Compile Include="..\mod\PrincipiaSystemInputs.cs" />
+    <Compile Include="..\mod\PrincipiaPrivateCopy.cs" />
     <Compile Include="..\mod\NativeExportReader.cs" />
     <Compile Include="..\mod\PrincipiaSymbolGate.cs" />
     <Compile Include="..\mod\PrincipiaUplink.cs" />
@@ -130,5 +133,16 @@
     <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" />
     <ProjectReference Include="..\mod-contract\GonogoPrincipiaUplink.Contract.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PrincipiaNativeOut>obj/libgonogo_principia.so</PrincipiaNativeOut>
+  </PropertyGroup>
+  <Target Name="BuildPrincipiaNative" BeforeTargets="PrepareForBuild;BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <MakeDir Directories="obj" />
+    <Exec Command="gcc -shared -fPIC -O2 -g0 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-stack-protector -o &quot;$(PrincipiaNativeOut)&quot; ../mod/native/gonogo_principia.c -ldl -lpthread -lm" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(PrincipiaNativeOut)" LogicalName="libgonogo_principia.so" />
+    </ItemGroup>
+  </Target>
 
 </Project>

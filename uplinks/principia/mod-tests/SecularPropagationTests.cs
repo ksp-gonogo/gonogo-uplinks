@@ -209,6 +209,9 @@ namespace GonogoPrincipiaUplink.Tests
         /// <summary>A circular low Earth orbit, whatever the target, which is all the bound reads.</summary>
         private sealed class FixedConics : IPropagationProvider
         {
+            public PropagatedPath PropagateFromState(PropagationSeed seed, double toUt, int maxPoints, PropagationCertification certification) =>
+                PropagatedPath.Refused("not exercised here");
+
             private static readonly double Period = 2 * Math.PI * Math.Sqrt(Math.Pow(IssSma, 3) / EarthMu);
 
             public string ProviderId => "fixed-conics";

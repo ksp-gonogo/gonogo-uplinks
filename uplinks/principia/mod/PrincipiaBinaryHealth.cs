@@ -37,6 +37,12 @@ namespace GonogoPrincipiaUplink
             _facts = facts;
         }
 
+        /// <summary>True when the gate saw a build that does not match what it claims.</summary>
+        public bool RefusesToStart => _state == UplinkHealthState.Unavailable;
+
+        /// <summary>The sentence the roster shows.</summary>
+        public string? Detail => _detail;
+
         public UplinkHealth ToHealth() => new UplinkHealth(_state, _detail, _facts);
 
         /// <summary>
@@ -59,11 +65,11 @@ namespace GonogoPrincipiaUplink
         /// The reading once the gate has answered, with what the worker decision
         /// concluded about reproducing the game's arithmetic folded in.
         ///
-        /// <para>Only a Conformant build is Healthy. Everything else is Degraded and
-        /// never Unavailable, because Unavailable is this roster's word for an uplink
-        /// that is not working, and an unreadable native build leaves every channel
-        /// this uplink publishes working exactly as before. Saying Unavailable would
-        /// hide a flight plan that is being read correctly.</para>
+        /// <para>Only a Conformant build is Healthy. A build the gate can see does not match
+        /// what it claims is Unavailable, and the Uplink stops: its layouts cannot be
+        /// trusted, so nothing it reads or writes can. A release the gate has not seen is
+        /// Degraded, since nothing visible is wrong with it, and only what computes against
+        /// the native build is refused.</para>
         /// </summary>
         public static PrincipiaBinaryHealth Of(
             Version? assemblyVersion,
@@ -91,7 +97,9 @@ namespace GonogoPrincipiaUplink
             return new PrincipiaBinaryHealth(
                 verdict.State == PrincipiaConformance.Conformant
                     ? UplinkHealthState.Healthy
-                    : UplinkHealthState.Degraded,
+                    : verdict.State == PrincipiaConformance.Refused
+                        ? UplinkHealthState.Unavailable
+                        : UplinkHealthState.Degraded,
                 DetailOf(verdict),
                 facts);
         }
@@ -109,8 +117,8 @@ namespace GonogoPrincipiaUplink
                     return "This Principia release has not been vetted here, so nothing computes "
                         + "against it. Report its interface hash below to have it added.";
                 case PrincipiaConformance.Refused:
-                    return "The loaded Principia build is not what it claims, so nothing computes "
-                        + "against it. " + (verdict.Reason ?? string.Empty);
+                    return "The loaded Principia build does not match what it claims, so this Uplink "
+                        + "will not start. " + (verdict.Reason ?? string.Empty);
                 default:
                     // The uplink does not adopt a NotEstablished verdict, so reaching
                     // here means the gate answered in a way this switch has not been

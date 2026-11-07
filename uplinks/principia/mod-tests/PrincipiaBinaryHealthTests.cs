@@ -190,7 +190,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
-        public void AnUnreadableBuildIsDegradedAndSaysWhy()
+        public void ABuildTheGateCanSeeDoesNotMatchRefusesToStartAndSaysWhy()
         {
             var verdict = PrincipiaConformanceVerdict.Refused(
                 PrincipiaBinaryVariant.Unknown, "/GameData/Principia/x64/principia.so",
@@ -204,7 +204,7 @@ namespace GonogoPrincipiaUplink.Tests
                     null))
                 .ToHealth();
 
-            Assert.Equal(UplinkHealthState.Degraded, health.State);
+            Assert.Equal(UplinkHealthState.Unavailable, health.State);
             Assert.Contains("no interface descriptor", health.Detail);
         }
 

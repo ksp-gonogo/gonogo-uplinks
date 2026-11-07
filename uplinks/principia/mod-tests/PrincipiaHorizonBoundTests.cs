@@ -779,6 +779,9 @@ namespace GonogoPrincipiaUplink.Tests
         /// </summary>
         private sealed class StubConics : IPropagationProvider
         {
+            public PropagatedPath PropagateFromState(PropagationSeed seed, double toUt, int maxPoints, PropagationCertification certification) =>
+                PropagatedPath.Refused("not exercised here");
+
             private readonly Craft _craft;
 
             public StubConics(Craft craft)

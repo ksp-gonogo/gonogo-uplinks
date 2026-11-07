@@ -98,6 +98,9 @@ namespace GonogoPrincipiaUplink.Tests
 
         private sealed class EarthConics : IPropagationProvider
         {
+            public PropagatedPath PropagateFromState(PropagationSeed seed, double toUt, int maxPoints, PropagationCertification certification) =>
+                PropagatedPath.Refused("not exercised here");
+
             public string ProviderId => "earth-conics";
 
             public StateVector Solve(PropagationTarget target, PropagationFrame frame, double ut) =>
