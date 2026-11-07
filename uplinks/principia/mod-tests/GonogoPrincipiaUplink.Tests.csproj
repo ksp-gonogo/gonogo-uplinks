@@ -78,6 +78,7 @@
     <Compile Include="..\mod\PrincipiaSystemInputs.cs" />
     <Compile Include="..\mod\PrincipiaPrivateCopy.cs" />
     <Compile Include="..\mod\PrincipiaDiagnostic.cs" />
+    <Compile Include="..\mod\PrincipiaGameFrame.cs" />
     <Compile Include="..\mod\NativeExportReader.cs" />
     <Compile Include="..\mod\PrincipiaSymbolGate.cs" />
     <Compile Include="..\mod\PrincipiaUplink.cs" />

@@ -32,6 +32,15 @@ namespace GonogoPrincipiaUplink
         {
             SystemRequest = PrincipiaSystemSource.Read;
             GameReading = PrincipiaSystemSource.ReadGame;
+            // The main body as Principia's own adapter sets it, falling back to the home body.
+            FrameReading = () =>
+            {
+                var main = FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
+                return Planetarium.fetch == null || main == null
+                    ? null
+                    : ((double Ut, double Degrees, int MainBody)?)(
+                        Planetarium.GetUniversalTime(), Planetarium.InverseRotAngle, main.flightGlobalsIndex);
+            };
         }
     }
 }

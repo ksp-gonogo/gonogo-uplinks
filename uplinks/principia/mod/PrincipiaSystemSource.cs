@@ -52,6 +52,7 @@ namespace GonogoPrincipiaUplink
             {
                 Ut = Planetarium.GetUniversalTime(),
                 InverseRotAngle = Planetarium.InverseRotAngle,
+                MainBody = (main ?? FlightGlobals.GetHomeBody())?.flightGlobalsIndex ?? 0,
                 FrameFacts = main == null
                     ? "no main body;"
                     : main.bodyName + " rotating frame " + main.inverseRotation

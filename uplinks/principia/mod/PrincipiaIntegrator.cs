@@ -73,7 +73,8 @@ namespace GonogoPrincipiaUplink
             string directory = "",
             Func<bool>? forceCheck = null,
             Action<UplinkLogLevel, string>? log = null,
-            PrincipiaDiagnostic? diagnostic = null)
+            PrincipiaDiagnostic? diagnostic = null,
+            Func<double, PrincipiaFrameAt?>? frameAt = null)
         {
             _spawn = spawn ?? throw new ArgumentNullException(nameof(spawn));
             _system = system ?? throw new ArgumentNullException(nameof(system));
@@ -81,7 +82,11 @@ namespace GonogoPrincipiaUplink
             _forceCheck = forceCheck ?? (() => false);
             _log = log ?? ((_, _) => { });
             _diagnostic = diagnostic;
+            _frameAt = frameAt;
         }
+
+        /// <summary>The game's frame at an instant, or null where none was recorded.</summary>
+        private readonly Func<double, PrincipiaFrameAt?>? _frameAt;
 
         /// <summary>
         /// Takes the conformance gate's answer. Until a build has passed and the decision
@@ -271,7 +276,18 @@ namespace GonogoPrincipiaUplink
                     }
                 }
 
-                var reply = channel.Exchange(Request(library, _directory, system, seed, toUt, count));
+                PrincipiaFrameAt? frame = null;
+                if (_frameAt != null)
+                {
+                    frame = _frameAt(seed.Ut);
+                    if (frame == null)
+                    {
+                        return PropagatedPath.Refused(
+                            "The game's frame at the instant of that state was not recorded, so Principia cannot place it.");
+                    }
+                }
+
+                var reply = channel.Exchange(Request(library, _directory, system, seed, toUt, count, frame));
                 if (reply == null)
                 {
                     DropChannel();
@@ -288,7 +304,7 @@ namespace GonogoPrincipiaUplink
                     _reportedBuild = true;
                     _log(UplinkLogLevel.Info, "private copy computing paths: " + basis);
                 }
-                _diagnostic?.Compare(channel, library, _directory, system, seed.Ut, message => _log(UplinkLogLevel.Info, message));
+                _diagnostic?.Compare(channel, library, _directory, system, seed.Ut, frame?.RotationDegrees, message => _log(UplinkLogLevel.Info, message));
                 return path;
             }
         }
@@ -357,7 +373,8 @@ namespace GonogoPrincipiaUplink
         private static string Text(double value) => PrincipiaWorkerSystem.Number(value);
 
         internal static string Request(
-            string library, string directory, string system, PropagationSeed seed, double toUt, int count)
+            string library, string directory, string system, PropagationSeed seed, double toUt, int count,
+            PrincipiaFrameAt? frame = null)
         {
             var p = seed.State.Position;
             var v = seed.State.Velocity;
@@ -368,6 +385,8 @@ namespace GonogoPrincipiaUplink
                     "P", library, Text(seed.Ut), seed.ParentBodyIndex.ToString(CultureInfo.InvariantCulture),
                     Text(p.X), Text(p.Y), Text(p.Z), Text(v.X), Text(v.Y), Text(v.Z),
                     Text(toUt), count.ToString(CultureInfo.InvariantCulture), directory,
+                    frame is { } at ? Text(at.RotationDegrees) : "-",
+                    frame is { } on ? on.MainBody.ToString(CultureInfo.InvariantCulture) : "-",
                 })
                 + "\n" + system;
         }

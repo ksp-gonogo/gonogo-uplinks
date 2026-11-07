@@ -97,6 +97,7 @@ typedef struct {
     void (*insert_cartesian)(void *, int, const int *, const BodyParameters *, const char *, const char *, const char *, const char *, const char *, const char *);
     void (*end_initialization)(void *);
     void (*advance)(void *, double, double);
+    void (*set_main_body)(void *, int);
     double (*current_time)(void *);
     void (*keep_vessel)(void *, const char *, const char *, int, bool, bool *);
     void (*insert_part)(void *, uint32_t, const char *, const char *, QP);
@@ -174,6 +175,7 @@ static bool bind_symbols(Copy *copy, const char **missing)
     SYMBOL(insert_cartesian, "InsertCelestialAbsoluteCartesian");
     SYMBOL(end_initialization, "EndInitialization");
     SYMBOL(advance, "AdvanceTime");
+    SYMBOL(set_main_body, "SetMainBody");
     SYMBOL(current_time, "CurrentTime");
     SYMBOL(keep_vessel, "InsertOrKeepVessel");
     SYMBOL(insert_part, "InsertUnloadedPart");
@@ -221,7 +223,8 @@ typedef struct {
     int row_count;
 } Body;
 
-static void build_plugin(Copy *copy, char *system)
+/* Builds the plugin from the system, at the given planetarium rotation in degrees. */
+static void build_plugin(Copy *copy, char *system, double rotation)
 {
     Body *bodies = calloc(256, sizeof(Body));
     int body_count = 0;
@@ -236,7 +239,7 @@ static void build_plugin(Copy *copy, char *system)
         int n = split(cursor, f, 18);
         char kind = f[0] == NULL ? '\0' : f[0][0];
         if (kind == 'S' && n >= 4) {
-            copy->plugin = copy->new_plugin(f[1], f[2], strtod(f[3], NULL));
+            copy->plugin = copy->new_plugin(f[1], f[2], rotation);
         } else if (kind == 'D') {
             OneString p = {f[1]};
             copy->init_downsampling(copy->plugin, &p);
@@ -399,9 +402,13 @@ static char *format_reply(double reached, const Point *points, int keep)
  * flight plan's rendered segment was removed in 2026101016-Lichnerowicz. A plugin only
  * moves forward, so the next seed behind this one rebuilds it.
  */
-static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double to_ut, int max_points, double rotation)
+static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double to_ut, int max_points, double rotation, int main_body)
 {
     void *plugin = copy->plugin;
+    /* Principia hangs the game's axes off the main body as well as the rotation. */
+    if (main_body >= 0) {
+        copy->set_main_body(plugin, main_body);
+    }
     if (seed_ut > copy->current_time(plugin)) {
         copy->advance(plugin, seed_ut, rotation);
     }
@@ -568,11 +575,31 @@ static char *cpu_flags(const char *library)
 /*
  * Diagnostic. Where this copy's plugin puts each named body at an instant, about its
  * parent, to set beside where the game's plugin puts it. First line: D, library,
- * directory, UT, comma-separated body indices. The rest is the system.
+ * directory, UT, comma-separated body indices, then the game's rotation and main body at
+ * that UT. The rest is the system.
  */
-static char *body_states(const char *library, const char *directory, double ut, char *indices, const char *system)
+/* A rotation field from a request, in degrees, or the fallback when the field is absent or not a number. */
+static double given_rotation(const char *field, double fallback)
+{
+    if (field == NULL) {
+        return fallback;
+    }
+    char *end = NULL;
+    double value = strtod(field, &end);
+    return end == field || !isfinite(value) ? fallback : value;
+}
+
+static char *body_states(const char *library, const char *directory, double ut, char *indices, const char *given,
+                         const char *given_body, const char *system)
 {
     const char *why = NULL;
+    const char *end_of_first = strchr(system, '\n');
+    const char *last_tab = end_of_first;
+    while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
+        last_tab--;
+    }
+    double rotation = given_rotation(given, last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL));
+    int main_body = given_body == NULL ? -1 : (int)strtod(given_body, NULL);
     Copy *volatile copy = current;
     if (sigsetjmp(recover, 1) != 0) {
         set_current(NULL);
@@ -580,7 +607,7 @@ static char *body_states(const char *library, const char *directory, double ut, 
     }
     in_call = 1;
     if (copy != NULL && copy->plugin != NULL
-        && (strcmp(copy->system, system) != 0 || ut < copy->current_time(copy->plugin))) {
+        && (strcmp(copy->system, system) != 0 || ut <= copy->current_time(copy->plugin))) {
         copy->delete_plugin(&copy->plugin);
         copy->plugin = NULL;
         free(copy->system);
@@ -599,17 +626,14 @@ static char *body_states(const char *library, const char *directory, double ut, 
     if (copy->plugin == NULL) {
         copy->system = strdup(system);
         char *working = strdup(system);
-        build_plugin(copy, working);
+        build_plugin(copy, working, rotation);
         free(working);
     }
-    const char *end_of_first = strchr(system, '\n');
-    const char *last_tab = end_of_first;
-    while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
-        last_tab--;
-    }
-    double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
     if (ut > copy->current_time(copy->plugin)) {
         copy->advance(copy->plugin, ut, rotation);
+    }
+    if (main_body >= 0) {
+        copy->set_main_body(copy->plugin, main_body);
     }
     size_t capacity = 8192;
     char *reply = malloc(capacity);
@@ -628,7 +652,8 @@ static char *body_states(const char *library, const char *directory, double ut, 
 
 /*
  * First line, tab separated: P, library, seed UT, parent, six state numbers, end UT,
- * max points, a directory for the private file. The rest is the system.
+ * max points, a directory for the private file, then the game's rotation at the seed UT
+ * in degrees and its main body's index, each a dash when unknown. The rest is the system.
  * Or F, library: the CPU flags. Or X, library, directory: force a fatal check, so
  * recovery can be shown working in the real game.
  */
@@ -666,7 +691,7 @@ static char *serve(char *request)
     }
 
     if (n >= 5 && newline != NULL && f[0] != NULL && f[0][0] == 'D') {
-        return body_states(f[1], f[2], strtod(f[3], NULL), f[4], newline + 1);
+        return body_states(f[1], f[2], strtod(f[3], NULL), f[4], n >= 6 ? f[5] : NULL, n >= 7 ? f[6] : NULL, newline + 1);
     }
 
     if (newline == NULL || n < 13 || f[0] == NULL || f[0][0] != 'P') {
@@ -681,20 +706,33 @@ static char *serve(char *request)
     int max_points = (int)strtod(f[11], NULL);
     const char *directory = f[12];
     const char *system = newline + 1;
-    /* The system's first line ends with the rotation the plugin was made with, and it has to stay the one it advances with. */
+    /* The system's first line ends with the rotation the plugin was made with, used when the request gives none. */
     const char *end_of_first = strchr(system, '\n');
     const char *last_tab = end_of_first == NULL ? NULL : end_of_first;
     while (last_tab != NULL && last_tab > system && *last_tab != '\t') {
         last_tab--;
     }
     volatile double rotation = last_tab == NULL ? 0.0 : strtod(last_tab + 1, NULL);
+    /*
+     * The game's frame turns with the main body below its rotating-frame threshold, so the
+     * seed only means something at the rotation the game had at the seed's instant. The
+     * whole path is read at that same rotation, so it stays in one frame.
+     */
+    if (n >= 14) {
+        rotation = given_rotation(f[13], rotation);
+    }
+    volatile int main_body = n >= 15 && f[14] != NULL ? (int)strtod(f[14], NULL) : -1;
 
     Copy *volatile copy = current;
     if (sigsetjmp(recover, 1) == 0) {
         in_call = 1;
         if (copy != NULL && copy->plugin != NULL
-            && (strcmp(copy->system, system) != 0 || seed_ut < copy->current_time(copy->plugin))) {
-            /* A plugin only moves forward, and only one may exist in a copy at a time. */
+            && (strcmp(copy->system, system) != 0 || seed_ut <= copy->current_time(copy->plugin))) {
+            /*
+             * A plugin only moves forward, and only one may exist in a copy at a time. A seed
+             * at the plugin's own instant rebuilds it too, since the rotation can only be
+             * changed by a step forward or a new plugin.
+             */
             copy->delete_plugin(&copy->plugin);
             copy->plugin = NULL;
             free(copy->system);
@@ -713,11 +751,11 @@ static char *serve(char *request)
         if (copy->plugin == NULL) {
             copy->system = strdup(system);
             char *working = strdup(system);
-            build_plugin(copy, working);
+            build_plugin(copy, working, rotation);
             /* The strings have been copied by now. */
             free(working);
         }
-        char *reply = propagate(copy, seed_ut, parent, seed, to_ut, max_points, rotation);
+        char *reply = propagate(copy, seed_ut, parent, seed, to_ut, max_points, rotation, main_body);
         in_call = 0;
         return reply;
     }

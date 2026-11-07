@@ -130,6 +130,58 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Contains(logged, line => line.Contains("UT 100"));
         }
 
+        /// <summary>A field of a request's first line.</summary>
+        private static string Field(string request, int index) => request.Split('\n')[0].Split('\t')[index];
+
+        private static double RotationField(string request) =>
+            double.Parse(Field(request, 13), System.Globalization.CultureInfo.InvariantCulture);
+
+        [Fact]
+        public void EachAskGivesTheCopyTheFrameTheGameHadAtItsSeed()
+        {
+            // The copy was built when the frame stood at 320.0003 degrees; the game's frame
+            // turns with Kerbin below the threshold, so each seed has an angle of its own.
+            var frame = new PrincipiaGameFrame();
+            for (var ut = 0.0; ut <= 4000.0; ut += 1.0)
+            {
+                frame.Adopt(ut, (320.0003 + (ut * 360.0 / 21600.0)) % 360.0, 1);
+            }
+            var channel = new FakeChannel();
+            channel.Replies.Enqueue(GoodReply);
+            channel.Replies.Enqueue(GoodReply);
+            var integrator = new PrincipiaIntegrator(
+                () => channel, () => "S\tJD1\tJD2\t320.0003\nB\t1\t0\n", "", null, null, null, frame.At);
+            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
+
+            integrator.Propagate(Seed, 200.0, 8);
+            integrator.Propagate(new PropagationSeed(Seed.State, 1, 3700.0, Mu), 3800.0, 8);
+
+            Assert.Equal(2, channel.Requests.Count);
+            Assert.Equal(frame.At(Seed.Ut)!.Value.RotationDegrees, RotationField(channel.Requests[0]), 9);
+            Assert.Equal(frame.At(3700.0)!.Value.RotationDegrees, RotationField(channel.Requests[1]), 9);
+            // The second seed is an hour on, past a whole turn of 360 degrees.
+            Assert.Equal((320.0003 + (3700.0 * 360.0 / 21600.0)) % 360.0, RotationField(channel.Requests[1]), 6);
+            Assert.Equal("1", Field(channel.Requests[0], 14));
+        }
+
+        [Fact]
+        public void ASeedFromBeforeAnyRecordedRotationIsRefusedRatherThanPlacedInTheWrongFrame()
+        {
+            var frame = new PrincipiaGameFrame();
+            frame.Adopt(5000.0, 10.0, 1);
+            var channel = new FakeChannel();
+            channel.Replies.Enqueue(GoodReply);
+            var integrator = new PrincipiaIntegrator(
+                () => channel, () => "S\tJD1\tJD2\t0\nB\t1\t0\n", "", null, null, null, frame.At);
+            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
+
+            var path = integrator.Propagate(Seed, 200.0, 8);
+
+            Assert.False(path.Solved);
+            Assert.Empty(channel.Requests);
+            Assert.Null(integrator.StoppedReason);
+        }
+
         [Fact]
         public void AFatalCheckIsLoggedWithItsTextAndTheStateThatCausedIt()
         {
@@ -319,7 +371,8 @@ namespace GonogoPrincipiaUplink.Tests
             var force = 0;
             var logged = new List<string>();
             var integrator = new PrincipiaIntegrator(
-                () => route(directory), system.ToText, directory, () => force-- > 0, (_, message) => logged.Add(message));
+                () => route(directory), system.ToText, directory, () => force-- > 0, (_, message) => logged.Add(message),
+                null, _ => new PrincipiaFrameAt(37.5, 1));
             integrator.Authorise(library, "test build", MayRun);
             var seed = new PropagationSeed(
                 new StateVector(new Vector3d(700_000.0, 0.0, 0.0), new Vector3d(0.0, Math.Sqrt(Mu / 700_000.0), 0.0)),
@@ -356,7 +409,7 @@ namespace GonogoPrincipiaUplink.Tests
             seen.Adopt(game);
             using (var channel = route(directory))
             {
-                seen.Compare(channel!, library!, directory, system.ToText(), 1000.0, logged.Add);
+                seen.Compare(channel!, library!, directory, system.ToText(), 1000.0, 37.5, logged.Add);
             }
             Assert.Contains(logged, line => line.Contains("Kerbin at UT"));
 

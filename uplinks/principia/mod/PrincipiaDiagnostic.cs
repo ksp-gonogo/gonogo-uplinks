@@ -28,6 +28,7 @@ namespace GonogoPrincipiaUplink
     {
         public double Ut;
         public double InverseRotAngle;
+        public int MainBody;
         public string FrameFacts = "";
         public List<PrincipiaBodyReading> Bodies = new List<PrincipiaBodyReading>();
     }
@@ -86,6 +87,7 @@ namespace GonogoPrincipiaUplink
             string directory,
             string system,
             double seedUt,
+            double? sentRotation,
             Action<string> log)
         {
             PrincipiaGameReading? reading;
@@ -102,6 +104,7 @@ namespace GonogoPrincipiaUplink
             log("Principia diagnostic: " + reading.FrameFacts
                 + " rotation now " + Number(reading.InverseRotAngle) + " deg at UT " + Number(reading.Ut)
                 + ", at seed UT " + Number(seedUt) + " " + (RotationAt(seedUt) is double then ? Number(then) + " deg" : "not seen")
+                + ", sent to the copy " + (sentRotation is double sent ? Number(sent) + " deg" : "none")
                 + ", in the copy's system line " + FirstLineEnd(system) + " deg");
 
             var indices = new StringBuilder();
@@ -111,7 +114,8 @@ namespace GonogoPrincipiaUplink
                 indices.Append(body.Index.ToString(CultureInfo.InvariantCulture));
             }
             var reply = channel.Exchange(
-                "D\t" + library + "\t" + directory + "\t" + Number(reading.Ut) + "\t" + indices + "\n" + system);
+                "D\t" + library + "\t" + directory + "\t" + Number(reading.Ut) + "\t" + indices + "\t"
+                + Number(reading.InverseRotAngle) + "\t" + reading.MainBody.ToString(CultureInfo.InvariantCulture) + "\n" + system);
             var text = PrincipiaWorkerProcess.PlainStringField(reply, "points");
             if (text == null)
             {

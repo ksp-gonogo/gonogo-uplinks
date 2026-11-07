@@ -274,6 +274,7 @@ namespace GonogoPrincipiaUplink
             host.AddSampledSource(
                 _ =>
                 {
+                    if (FrameReading?.Invoke() is { } frame) GameFrame.Adopt(frame.Ut, frame.Degrees, frame.MainBody);
                     if (GameReading?.Invoke() is { } reading) Diagnostic.Adopt(reading);
                     return null;
                 },
@@ -715,7 +716,14 @@ namespace GonogoPrincipiaUplink
             PrincipiaPrivateCopy.PrivateFileDirectory,
             ForceCheckRequested,
             (level, message) => HostLog?.Invoke(level, message),
-            Diagnostic);
+            Diagnostic,
+            GameFrame.At);
+
+        /// <summary>The game's frame over time, which every ask sends to the copy as it was at the seed.</summary>
+        private static readonly PrincipiaGameFrame GameFrame = new PrincipiaGameFrame();
+
+        /// <summary>Reads the game's UT, planetarium rotation and main body. Set only by the game-facing partial.</summary>
+        private static Func<(double Ut, double Degrees, int MainBody)?>? FrameReading;
 
         /// <summary>Sets the game's plugin beside the private copy's in the game's log.</summary>
         private static readonly PrincipiaDiagnostic Diagnostic = new PrincipiaDiagnostic();
