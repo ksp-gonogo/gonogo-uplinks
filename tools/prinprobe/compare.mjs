@@ -1,7 +1,10 @@
 /**
  * Sets a private copy's path beside the game's own Principia, as recorded by the probe.
  *
- *   node compare.mjs --flown flown-<ut>.jsonl [--path prinprobe-path-<ut>.jsonl] [--plan plan-<ut>.jsonl]
+ *   node compare.mjs --flown flown-<ut>.jsonl [--path prinprobe-path-<ut>.jsonl] [--ask ask.jsonl] [--plan plan-<ut>.jsonl]
+ *
+ * `--ask` reads the replies an ask script recorded (one JSON line per ask, the reply under
+ * `reply`) and compares every solved path in it.
  *
  * Everything is compared in KSP's fixed frame. A probe line holds Principia's state in its
  * planetarium frame at that line's rotation; the copy's path is already fixed. The game's
@@ -97,6 +100,20 @@ export function keplerState(el, ut) {
   return { q: R(xp, yp), p: R(vxp, vyp) };
 }
 
+/** Every solved path in an ask capture, as timed fixed-frame states. */
+export function askPaths(lines) {
+  const pick = (o, ...names) => names.map((n) => o[n] ?? o[n[0].toUpperCase() + n.slice(1)]);
+  return lines
+    .map((l) => l.reply?.path ?? l.reply)
+    .filter((path) => path && (path.states ?? path.States))
+    .map((path) =>
+      (path.states ?? path.States).map((s) => {
+        const [ut, x, y, z, vx, vy, vz] = pick(s, "ut", "x", "y", "z", "vx", "vy", "vz");
+        return { ut, q: [x, y, z], p: [vx, vy, vz] };
+      }),
+    );
+}
+
 const MARKS = [5, 10, 15, 30, 50];
 
 /** Distances of a timed path from the game's flown states, at the marks and at worst. */
@@ -146,6 +163,8 @@ function main() {
   }
 
   if (flags.path) report("copy", gap(flown, readJsonLines(flags.path)));
+  if (flags.ask)
+    askPaths(readJsonLines(flags.ask)).forEach((path, i) => report(`ask ${i + 1} from UT ${path[0].ut}`, gap(flown, path)));
   if (flags.plan) {
     const plan = readJsonLines(flags.plan)
       .filter((l) => l.kind === "plan")
