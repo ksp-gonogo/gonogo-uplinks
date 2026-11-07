@@ -69,6 +69,9 @@ jobs:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
     env:
       GH_TOKEN: ${{ secrets.UPLINK_DEPS_TOKEN || github.token }}
+      # `uplink-tools deps` authenticates its GitHub API reads (release lists,
+      # the CKAN-meta listing) with this one; unauthenticated they answer 403.
+      GITHUB_TOKEN: ${{ secrets.UPLINK_DEPS_TOKEN || github.token }}
       KSP_MANAGED_TOKEN: ${{ secrets.KSP_MANAGED_TOKEN }}
     steps:
       - uses: actions/checkout@v4
@@ -149,8 +152,21 @@ jobs:
             --managed "$GITHUB_WORKSPACE/.refs/ksp-managed" \
             --work "$RUNNER_TEMP/uplink-deps"
 
+      # One machine-readable line per dependency: up to date, bumped green
+      # with its pull request, unverified, or red with the reason. It is in the
+      # run's artifact (`gh run download -n uplink-deps-<uplink>`) and on the job
+      # summary page, and runs whatever the earlier steps did.
+      - name: Summary
+        if: always() && steps.behind.outcome != 'skipped'
+        run: |
+          node tooling/uplink-deps-summary.mjs "${{ matrix.name }}" \
+            --code "${{ steps.behind.outputs.code || 1 }}" \
+            --deps "$RUNNER_TEMP/deps.json" \
+            --work "$RUNNER_TEMP/uplink-deps" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
       - uses: actions/upload-artifact@v4
-        if: always() && steps.behind.outputs.code == '10'
+        if: always()
         with:
           name: uplink-deps-${{ matrix.name }}
           path: ${{ runner.temp }}/uplink-deps

@@ -19,18 +19,35 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   statSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { describeMoves, diffInterface, parseDeclarations, usedBy } from "./principia-proto.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const WATCH_LABEL = "uplink-deps";
 export const IN_GAME_LABEL = "needs-in-game-test";
+
+/**
+ * Mods whose interface is readable from a public file at the release tag, for
+ * the ones that ship no binary the checks can load. The vetted copy is
+ * committed in the Uplink and moves with every bump that does not break it.
+ */
+export const PROTO_WATCH = {
+  principia: {
+    repo: "mockingbirdnest/Principia",
+    path: "serialization/journal.proto",
+    vetted: "journal.proto",
+    sources: "mod",
+  },
+};
 
 const MARKER = /<!-- uplink-deps: ([^/\s]+)\/(.+?):(\S+) -->/;
 
@@ -168,6 +185,28 @@ export function mentionsOutsideFences(text) {
     .includes("@");
 }
 
+/**
+ * Puts one check's outcome into a bump result, replacing the entry of that name,
+ * and turns the verdict red when it failed. A check that passes never changes a
+ * verdict the bump already reached.
+ */
+export function applyCheck(result, check) {
+  const at = result.checks.findIndex((c) => c.name === check.name);
+  if (at === -1) result.checks.push(check);
+  else result.checks[at] = check;
+  if (check.status === "fail") result.verdict = "red";
+  return result;
+}
+
+/** The one line a run summary gives for why a red bump is red. */
+export function reasonOf(result) {
+  const failing = result.checks.find((c) => c.status === "fail");
+  if (!failing) return "a check failed";
+  const lines = String(failing.excerpt ?? "").split("\n").filter((line) => line.trim() !== "");
+  const error = lines.find((line) => /^error /.test(line)) ?? lines[0];
+  return `${failing.name}: ${error ?? "failed"}`;
+}
+
 function sh(command, args, { cwd = ROOT, env, allowFail = false } = {}) {
   const ran = spawnSync(command, args, {
     cwd,
@@ -239,6 +278,95 @@ function flag(argv, name) {
   return at === -1 ? undefined : argv[at + 1];
 }
 
+/**
+ * `uplink-tools check` as a normal build runs it: the client is bundled and the
+ * bundle baked first, because `bake/stale` compares the baked hash with the
+ * client as it builds now and a fresh checkout has none.
+ */
+export function rebakeAndCheck(name) {
+  const tools = ["tooling/uplink-tools.mjs", name];
+  const hasClient = existsSync(join(ROOT, "uplinks", name, "client", "package.json"));
+  const modDir = join(ROOT, "uplinks", name, "mod");
+  const hasMod = existsSync(modDir) && readdirSync(modDir).some((f) => f.endsWith(".csproj"));
+  if (hasClient && hasMod) {
+    const out = mkdtempSync(join(tmpdir(), "uplink-deps-bundle-"));
+    const bundled = sh("node", [...tools, "bundle", "--out", out], { allowFail: true });
+    const file = bundled.status === 0 ? findClientBundle(out) : undefined;
+    if (!file) {
+      return {
+        name: "check",
+        status: "fail",
+        excerpt: `the client did not bundle\n${bundled.out}${bundled.err}`.trimEnd().split("\n").slice(-15).join("\n"),
+      };
+    }
+    const baked = sh("node", [...tools, "bake", "--bundle", file], { allowFail: true });
+    if (baked.status !== 0) {
+      return {
+        name: "check",
+        status: "fail",
+        excerpt: `bake failed\n${baked.out}${baked.err}`.trimEnd().split("\n").slice(-15).join("\n"),
+      };
+    }
+  }
+  const ran = sh("node", [...tools, "check"], { allowFail: true });
+  return ran.status === 0
+    ? { name: "check", status: "pass" }
+    : {
+        name: "check",
+        status: "fail",
+        excerpt: `${ran.out}${ran.err}`.trimEnd().split("\n").slice(-15).join("\n"),
+      };
+}
+
+function findClientBundle(dir) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      const found = findClientBundle(path);
+      if (found) return found;
+    } else if (entry.endsWith(".client.js")) return path;
+  }
+  return undefined;
+}
+
+/**
+ * Diffs the interface a mod publishes at the new release against the copy
+ * vetted for the pinned one. A name that cannot be read is an error, never a
+ * red: an outage says nothing about the mod.
+ */
+export async function interfaceCheck({ name, watch, report, dep, fetchText = fetchRaw }) {
+  const uplinkDir = join(ROOT, "uplinks", name);
+  const vettedFile = join(uplinkDir, watch.vetted);
+  if (!existsSync(vettedFile)) throw new Error(`${watch.vetted} is not committed for ${name}, so there is nothing to diff against`);
+  const vetted = readFileSync(vettedFile, "utf8");
+  const proto = await fetchText(`https://raw.githubusercontent.com/${watch.repo}/${dep.newest}/${watch.path}`);
+  const used = usedBy(parseDeclarations(vetted).keys(), join(uplinkDir, watch.sources));
+  const moves = diffInterface(vetted, proto, used);
+  const sentence = describeMoves(moves, dep.pinned, dep.newest);
+  return {
+    proto,
+    check: sentence
+      ? {
+          name: "interface",
+          status: "fail",
+          excerpt: [
+            sentence,
+            `Gone: ${moves.removed.join(", ") || "none"}`,
+            `Different shape: ${moves.changed.join(", ") || "none"}`,
+            `New in the release: ${moves.added.join(", ") || "none"}`,
+          ].join("\n"),
+        }
+      : { name: "interface", status: "pass" },
+  };
+}
+
+async function fetchRaw(url) {
+  const headers = process.env.GH_TOKEN ? { Authorization: `Bearer ${process.env.GH_TOKEN}` } : {};
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error(`${url} answered ${response.status}`);
+  return response.text();
+}
+
 export async function main(argv) {
   const name = argv[0];
   const gamedata = flag(argv, "--gamedata");
@@ -273,98 +401,135 @@ export async function main(argv) {
     ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
     : "";
   let failed = false;
+  const outcomes = [];
+  const record = (dep, outcome, extra = {}) =>
+    outcomes.push({ name: dep.name, from: dep.pinned, to: dep.newest, outcome, ...extra });
+  mkdirSync(work, { recursive: true });
+  const writeOutcomes = () =>
+    writeFileSync(join(work, "outcomes.json"), `${JSON.stringify({ uplink: name, outcomes }, null, 2)}\n`);
 
-  for (const dep of behind) {
-    const key = keyOf(report.uplink, dep.name, dep.newest);
-    const { prs, issues } = openItems();
-    if (existingFor([...prs, ...issues], key).length > 0) {
-      console.log(`${key}: already has an open pull request or issue`);
-      continue;
-    }
-    const branch = branchOf(report.uplink, dep.name, dep.newest);
-    const dir = join(work, slug(dep.name));
-    mkdirSync(dir, { recursive: true });
-    const resultFile = join(dir, "result.json");
-    const referenceOut = join(dir, "reference");
+  try {
+    for (const dep of behind) {
+      const key = keyOf(report.uplink, dep.name, dep.newest);
+      const { prs, issues } = openItems();
+      if (existingFor([...prs, ...issues], key).length > 0) {
+        console.log(`${key}: already has an open pull request or issue`);
+        record(dep, "already-open");
+        continue;
+      }
+      const branch = branchOf(report.uplink, dep.name, dep.newest);
+      const dir = join(work, slug(dep.name));
+      mkdirSync(dir, { recursive: true });
+      const resultFile = join(dir, "result.json");
+      const referenceOut = join(dir, "reference");
 
-    sh("git", ["fetch", "origin", "staging"]);
-    sh("git", ["checkout", "-f", "-B", branch, "origin/staging"]);
-    sh("git", ["clean", "-fdq", "--", `uplinks/${name}`]);
-    const args = [
-      ...tools,
-      "deps",
-      "bump",
-      dep.name,
-      "--result",
-      resultFile,
-      "--reference-out",
-      referenceOut,
-    ];
-    if (gamedata) args.push("--gamedata", resolve(gamedata));
-    const bumped = sh("node", args, { allowFail: true });
-    console.log(bumped.out + bumped.err);
-    if (![0, 1, 3].includes(bumped.status) || !existsSync(resultFile)) {
-      console.error(`::error title=${key}::the bump could not be applied\n${bumped.err}`);
-      failed = true;
-      continue;
-    }
-    const result = JSON.parse(readFileSync(resultFile, "utf8"));
-    const subject = prTitle(report.uplink, dep.name, dep.newest);
-
-    sh("git", ["config", "user.name", "github-actions[bot]"]);
-    sh("git", ["config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"]);
-
-    let managedNote;
-    if (result.verdict !== "red") {
-      managedNote = commitReference({
-        managed,
+      sh("git", ["fetch", "origin", "staging"]);
+      sh("git", ["checkout", "-f", "-B", branch, "origin/staging"]);
+      sh("git", ["clean", "-fdq", "--", `uplinks/${name}`]);
+      const args = [
+        ...tools,
+        "deps",
+        "bump",
+        dep.name,
+        "--result",
+        resultFile,
+        "--reference-out",
         referenceOut,
-        branch,
-        subject: `${dep.name} ${dep.newest}`,
-      }).note;
-    }
-    sh("git", ["add", "-A", `uplinks/${name}`]);
-    sh("git", ["commit", "-q", "-m", subject]);
-    sh("git", ["push", "--force", "origin", `HEAD:refs/heads/${branch}`]);
+        "--skip",
+        "check",
+      ];
+      if (gamedata) args.push("--gamedata", resolve(gamedata));
+      const bumped = sh("node", args, { allowFail: true });
+      console.log(bumped.out + bumped.err);
+      if (![0, 1, 3].includes(bumped.status) || !existsSync(resultFile)) {
+        console.error(`::error title=${key}::the bump could not be applied\n${bumped.err}`);
+        failed = true;
+        record(dep, "error", { reason: "the bump could not be applied" });
+        continue;
+      }
+      const result = JSON.parse(readFileSync(resultFile, "utf8"));
+      let proto;
+      try {
+        applyCheck(result, rebakeAndCheck(name));
+        const watch = PROTO_WATCH[name];
+        if (watch) {
+          const verdict = await interfaceCheck({ name, watch, report, dep });
+          applyCheck(result, verdict.check);
+          proto = verdict.proto;
+        }
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : String(err);
+        console.error(`::error title=${key}::${reason}`);
+        failed = true;
+        record(dep, "error", { reason });
+        continue;
+      }
+      const subject = prTitle(report.uplink, dep.name, dep.newest);
 
-    const bodyFile = join(dir, "body.md");
-    let created;
-    if (result.verdict === "red") {
-      writeFileSync(
-        bodyFile,
-        issueBody({ result, dependency: dep.name, version: dep.newest, key, branch, runUrl }),
-      );
-      created = sh("gh", [
-        "issue", "create",
-        "--title", issueTitle(uplinkName, dep.name, dep.newest),
-        "--body-file", bodyFile,
-        "--label", WATCH_LABEL,
-      ]).out.trim();
-    } else {
-      writeFileSync(
-        bodyFile,
-        prBody({ result, dependency: dep.name, version: dep.newest, key, managed: managedNote }),
-      );
-      const labels = [WATCH_LABEL, ...(result.verdict === "unverified" ? [IN_GAME_LABEL] : [])];
-      created = sh("gh", [
-        "pr", "create",
-        "--base", "staging",
-        "--head", branch,
-        "--title", subject,
-        "--body-file", bodyFile,
-        ...labels.flatMap((label) => ["--label", label]),
-      ]).out.trim();
-    }
-    console.log(`${key}: ${result.verdict}, ${created}`);
+      sh("git", ["config", "user.name", "github-actions[bot]"]);
+      sh("git", ["config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"]);
 
-    const number = created.split("/").pop();
-    const old = supersededBy([...prs, ...issues], report.uplink, dep.name, dep.newest);
-    for (const item of old) {
-      const kind = prs.some((p) => p.number === item.number) ? "pr" : "issue";
-      sh("gh", [kind, "close", String(item.number), "--comment", `Superseded by #${number}`], {
-        allowFail: true,
+      let managedNote;
+      if (result.verdict !== "red") {
+        managedNote = commitReference({
+          managed,
+          referenceOut,
+          branch,
+          subject: `${dep.name} ${dep.newest}`,
+        }).note;
+      }
+      if (proto && result.verdict !== "red") {
+        writeFileSync(join(ROOT, "uplinks", name, PROTO_WATCH[name].vetted), proto);
+      }
+      sh("git", ["add", "-A", `uplinks/${name}`]);
+      sh("git", ["commit", "-q", "-m", subject]);
+      sh("git", ["push", "--force", "origin", `HEAD:refs/heads/${branch}`]);
+
+      const bodyFile = join(dir, "body.md");
+      let created;
+      if (result.verdict === "red") {
+        writeFileSync(
+          bodyFile,
+          issueBody({ result, dependency: dep.name, version: dep.newest, key, branch, runUrl }),
+        );
+        created = sh("gh", [
+          "issue", "create",
+          "--title", issueTitle(uplinkName, dep.name, dep.newest),
+          "--body-file", bodyFile,
+          "--label", WATCH_LABEL,
+        ]).out.trim();
+      } else {
+        writeFileSync(
+          bodyFile,
+          prBody({ result, dependency: dep.name, version: dep.newest, key, managed: managedNote }),
+        );
+        const labels = [WATCH_LABEL, ...(result.verdict === "unverified" ? [IN_GAME_LABEL] : [])];
+        created = sh("gh", [
+          "pr", "create",
+          "--base", "staging",
+          "--head", branch,
+          "--title", subject,
+          "--body-file", bodyFile,
+          ...labels.flatMap((label) => ["--label", label]),
+        ]).out.trim();
+      }
+      console.log(`${key}: ${result.verdict}, ${created}`);
+      record(dep, result.verdict, {
+        url: created,
+        ...(result.verdict === "red" ? { reason: reasonOf(result) } : {}),
       });
+
+      const number = created.split("/").pop();
+      const old = supersededBy([...prs, ...issues], report.uplink, dep.name, dep.newest);
+      for (const item of old) {
+        const kind = prs.some((p) => p.number === item.number) ? "pr" : "issue";
+        sh("gh", [kind, "close", String(item.number), "--comment", `Superseded by #${number}`], {
+          allowFail: true,
+        });
+      }
     }
+  } finally {
+    writeOutcomes();
   }
   return failed ? 1 : 0;
 }

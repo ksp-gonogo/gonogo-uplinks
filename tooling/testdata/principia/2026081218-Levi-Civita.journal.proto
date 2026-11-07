@@ -1,0 +1,2950 @@
+﻿syntax = "proto2";
+
+import "serialization/options.proto";
+
+package principia.journal.serialization;
+
+// These messages must come first because the other interchange messages use
+// them and we need to generate the structs in the correct order.
+message NavigationFrameParameters {
+  option (is_class) = true;
+  // Must correspond to a rigid reference frame.
+  required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
+  required int32 centre_index = 2;
+  required int32 primary_index = 3 [(is_private) = true];
+  required int32 secondary_index = 4 [(is_private) = true];
+}
+
+message SphericalCoordinates {
+    option (is_public) = true;
+  required double radius = 1;
+  required double latitude_in_degrees = 2;
+  required double longitude_in_degrees = 3;
+}
+
+message XYZ {
+  option (is_public) = true;
+  required double x = 1;
+  required double y = 2;
+  required double z = 3;
+}
+
+enum CoordinateSystem {
+  CARTESIAN_TNB = 1;
+  // In the spherical coordinate systems, the third letter is the polar axis,
+  // and the first letter is origin in the equatorial plane.
+  SPHERICAL_TNB = 2;
+  SPHERICAL_NBT = 3;
+  SPHERICAL_BTN = 4;
+}
+
+// This message is used in both directions: C++ → C# and C# → C++.
+// The C++ side fills both fields irrespective of the `coordinate_system`.  The
+// C# side only fills the field that is meaningful for the `coordinate_system`.
+// That way, the C# code can switch coordinate system without having to do
+// coordinate conversions (the conversions are all on the C++ side).
+message Intensity {
+  required CoordinateSystem coordinate_system = 1;
+  // CARTESIAN_TNB.
+  required XYZ xyz = 2;
+  // SPHERICAL_...
+  required SphericalCoordinates spherical_coordinates = 3;
+}
+
+// These messages should be in alphabetical order.
+
+message AdaptiveStepParameters {
+  // Corresponds to AdaptiveStepSizeIntegrator.Kind.
+  required int64 integrator_kind = 4;
+  required int64 max_steps = 1;
+  required double length_integration_tolerance = 2;
+  required double speed_integration_tolerance = 3;
+}
+
+message BodyGeopotentialElement {
+  required string degree = 1;
+  required string order = 2;
+  optional string cos = 3;
+  optional string j = 5;
+  required string sin = 4;
+}
+
+message BodyParameters {
+  required string name = 10;
+  required string gravitational_parameter = 1;
+  optional string reference_instant = 7;
+  optional string min_radius = 12;
+  optional string mean_radius = 2;
+  optional string max_radius = 13;
+  optional string atmosphere_depth = 14;  // Added in Legendre.
+  required bool has_ocean = 15;  // Added in Legendre.
+  optional string axis_right_ascension = 3;
+  optional string axis_declination = 4;
+  optional string reference_angle = 8;
+  optional string angular_frequency = 9;
+  optional string reference_radius = 6;
+  optional string j2 = 5;  // No parsing in C#.
+  repeated BodyGeopotentialElement geopotential = 11;
+}
+
+message Burn {
+  required double thrust_in_kilonewtons = 1;
+  required double specific_impulse_in_seconds_g0 = 2;
+  required NavigationFrameParameters frame = 3;
+  required double initial_time = 4;
+  required Intensity intensity = 7;  // Added in Levi-Civita.
+  required bool is_inertially_fixed = 6;
+}
+
+message ConfigurationAccuracyParameters {
+  required string fitting_tolerance = 1;
+  required string geopotential_tolerance = 2;
+}
+
+message ConfigurationDownsamplingParameters {
+  required string tolerance = 2;
+}
+
+message ConfigurationFixedStepParameters {
+  // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+  required string fixed_step_size_integrator = 1;
+  required string integration_step_size = 2;
+}
+
+message ConfigurationAdaptiveStepParameters {
+  // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
+  required string adaptive_step_size_integrator = 1;
+  required string length_integration_tolerance = 2;
+  required string speed_integration_tolerance = 3;
+}
+
+message FlightPlanAdaptiveStepParameters {
+  // Corresponds to AdaptiveStepSizeIntegrator.Kind.
+  required int64 integrator_kind = 4;
+  required int64 generalized_integrator_kind = 5;
+  required int64 max_steps = 1;
+  required double length_integration_tolerance = 2;
+  required double speed_integration_tolerance = 3;
+}
+
+message Interval {
+  required double min = 1;
+  required double max = 2;
+}
+
+message KeplerianElements {
+  required double eccentricity = 1;
+  required double semimajor_axis = 2 [default = nan];  // Optional.
+  required double mean_motion = 3 [default = nan];     // Optional.
+  required double inclination_in_degrees = 4;
+  required double longitude_of_ascending_node_in_degrees = 5;
+  required double argument_of_periapsis_in_degrees = 6;
+  required double mean_anomaly = 7;
+}
+
+message NavigationManoeuvre {
+  required Burn burn = 1;
+  required double initial_mass_in_tonnes = 2;
+  required double final_mass_in_tonnes = 3;
+  required double mass_flow = 4;
+  required double duration = 5;
+  required double final_time = 6;
+  required double time_of_half_delta_v = 7;
+  required double time_to_half_delta_v = 8;
+}
+
+// Frenet trihedron at the beginning of the manœuvre.
+message NavigationManoeuvreFrenetTrihedron {
+  required XYZ binormal = 1;
+  required XYZ normal = 2;
+  required XYZ tangent = 3;
+}
+
+message Node {
+  required double time = 1;
+  required XYZ world_position = 2;
+  required double apparent_inclination_in_degrees = 3;
+  required double out_of_plane_velocity = 4;
+}
+
+message Origin {
+  required bool reference_part_is_at_origin = 1;
+  required bool reference_part_is_unmoving = 2;
+  required fixed32 reference_part_id = 3;
+  required XYZ main_body_centre_in_world = 4;
+}
+
+// Structurally identical to NavigationFrameParameters, but differs in
+// constraints, so we distinguish them to avoid violating preconditions by
+// mixing them up in the C#.
+message PlottingFrameParameters {
+  required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
+  required int32 centre_index = 2;
+  repeated int32 primary_index = 3;
+  repeated int32 secondary_index = 4;
+}
+
+message PlottingFramePayload {
+  required Interval plottable_time_interval = 1;
+}
+
+message QP {
+  required XYZ q = 1;
+  required XYZ p = 2;
+}
+
+message TQP {
+  required double t = 1;
+  required QP qp = 2;
+}
+
+message Status {
+  // A principia::base::Error, or equivalently, a google.rpc.Code.
+  required int32 error = 1;
+  required fixed64 message = 2 [(encoding) = UTF_8,
+                                (is_produced) = true];
+}
+
+message WXYZ {
+  required double w = 1;
+  required double x = 2;
+  required double y = 3;
+  required double z = 4;
+}
+
+message QPRW {
+  required QP qp = 1;
+  required WXYZ r = 2;
+  required XYZ w = 3;
+}
+
+message XY {
+  option (is_public) = true;
+  required double x = 1;
+  required double y = 2;
+}
+
+// The messages used within OrbitAnalysis are defined first, so that the struct
+// definitions, being generated in the same order refer to already-defined
+// types.
+message PlottableElements {
+  required double time = 1;
+  required double semimajor_axis = 2;
+  required double eccentricity = 3;
+  required double inclination = 4;
+  required double longitude_of_ascending_node = 5;
+  required double argument_of_periapsis = 6;
+  required double periapsis_distance = 7;
+  required double apoapsis_distance = 8;
+  required double lidov_c1 = 14;
+  required double lidov_c2 = 15;
+  required double eccentricity_cos_argument_of_periapsis = 16;
+  required double eccentricity_sin_argument_of_periapsis = 17;
+}
+
+message OrbitalElements {
+  required double sidereal_period = 1;
+  required double nodal_period = 2;
+  required double anomalistic_period = 3;
+  required double nodal_precession = 4;
+  required Interval mean_semimajor_axis = 5;
+  required Interval mean_eccentricity = 6;
+  required Interval mean_inclination = 7;
+  required Interval mean_longitude_of_ascending_nodes = 8;
+  required Interval mean_argument_of_periapsis = 9;
+  required Interval mean_periapsis_distance = 10;
+  required Interval mean_apoapsis_distance = 11;
+  // Added in Gallai.
+  required Interval radial_distance = 12;
+  // Added in Legendre.
+  optional double first_collision_time = 13 [(is_produced) = true];
+  optional double first_collision_risk_time = 14 [(is_produced) = true];
+  optional double first_reentry_time = 15 [(is_produced) = true];
+  required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
+  required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
+  required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
+  // Added in Leibniz.
+  required fixed64 plottable_elements = 19 [(pointer_to) = "Iterator",
+                                            (disposable) = "DisposableIterator",
+                                            (is_produced) = true];
+}
+
+message OrbitRecurrence {
+  required int32 nuo = 1;  // νₒ.
+  required int32 dto = 2;  // Dᴛₒ.
+  required int32 cto = 3;  // Cᴛₒ.
+  required int32 number_of_revolutions = 4;
+  required double equatorial_shift = 5;
+  required double base_interval = 6;
+  required double grid_interval = 7;
+  required int32 subcycle = 8;
+}
+
+message EquatorialCrossings {
+  required Interval longitudes_reduced_to_ascending_pass = 1;
+  required Interval longitudes_reduced_to_descending_pass = 2;
+}
+
+message SolarTimesOfNodes {
+  required Interval mean_solar_times_of_ascending_nodes = 1;
+  required Interval mean_solar_times_of_descending_nodes = 2;
+}
+
+message OrbitAnalysis {
+  required double progress_of_next_analysis = 1;
+  optional int32 primary_index = 2 [(is_produced) = true];
+  required double mission_duration = 3;
+  optional OrbitalElements elements = 4 [(is_produced) = true];
+  optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
+  optional EquatorialCrossings ground_track_equatorial_crossings = 6 [(is_produced) = true];
+  optional SolarTimesOfNodes solar_times_of_nodes = 11 [(is_produced) = true];
+  required fixed64 primary_index_address = 10 [(address_of) = "primary_index"];
+  required fixed64 elements_address = 7 [(address_of) = "elements"];
+  required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
+  required fixed64 ground_track_equatorial_crossings_address = 9 [(address_of) = "ground_track_equatorial_crossings"];
+  required fixed64 solar_times_of_nodes_address = 12 [(address_of) = "solar_times_of_nodes"];
+}
+
+message Method {
+  extensions 5000 to 5999;  // Last used: 5221.
+}
+
+message ActivatePlayer {
+  option (omit_journaling) = true;
+  extend Method {
+    optional ActivatePlayer extension = 5200;
+  }
+}
+
+message ActivateRecorder {
+  // NOTE: Do not journal!  You'd end up with half a message in the journal and
+  // that would cause trouble.
+  option (omit_journaling) = true;
+  extend Method {
+    optional ActivateRecorder extension = 5199;
+  }
+  message In {
+    required bool activate = 1;
+  }
+  optional In in = 1;
+}
+
+message AdvanceTime {
+  extend Method {
+    optional AdvanceTime extension = 5019;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double t = 2;
+    required double planetarium_rotation = 3;
+  }
+  optional In in = 1;
+}
+
+message CameraReferenceRotation {
+  extend Method {
+    optional CameraReferenceRotation extension = 5163;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CameraScale {
+  extend Method {
+    optional CameraScale extension = 5185;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CatchUpLaggingVessels {
+  extend Method {
+    optional CatchUpLaggingVessels extension = 5120;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Out {
+    required fixed64 collided_vessels = 1 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
+                                           (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message CelestialFromParent {
+  extend Method {
+    optional CelestialFromParent extension = 5026;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialInitialRotationInDegrees {
+  extend Method {
+    optional CelestialInitialRotationInDegrees extension = 5100;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialRotation {
+  extend Method {
+    optional CelestialRotation extension = 5098;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 index = 2;
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialRotationPeriod {
+  extend Method {
+    optional CelestialRotationPeriod extension = 5099;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialSphereRotation {
+  extend Method {
+    optional CelestialSphereRotation extension = 5101;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialWorldDegreesOfFreedom {
+  extend Method {
+    optional CelestialWorldDegreesOfFreedom extension = 5112;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 index = 2;
+    required Origin origin = 5;
+    required double time = 4;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CollisionDeleteExecutor {
+  extend Method {
+    optional CollisionDeleteExecutor extension = 5193;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed64 executor = 2
+        [(pointer_to) =
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
+         (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 executor = 1
+        [(pointer_to) =
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>"];
+    // Deleting the executor returns the time and degrees of freedom of the
+    // collision, if any.
+    required TQP collision = 2;
+  }
+  message Return {
+    // True if a collision was found.
+    required bool found = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message CollisionGetLatitudeLongitude {
+  extend Method {
+    optional CollisionGetLatitudeLongitude extension = 5194;
+  }
+  message In {
+    required fixed64 executor = 1
+        [(pointer_to) =
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
+         (is_subject) = true];
+  }
+  message Out {
+    required double latitude_in_degrees = 1;
+    required double longitude_in_degrees = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message CollisionNewFlightPlanExecutor {
+  extend Method {
+    optional CollisionNewFlightPlanExecutor extension = 5196;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+    required XYZ sun_world_position = 3;
+    required int32 max_points = 7;
+    required string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 result = 1
+    [(pointer_to) =
+    "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
+    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CollisionNewPredictionExecutor {
+  extend Method {
+    optional CollisionNewPredictionExecutor extension = 5192;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+    required XYZ sun_world_position = 3;
+    required int32 max_points = 7;
+    required string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 result = 1
+    [(pointer_to) =
+    "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
+    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CollisionSetRadius {
+  extend Method {
+    optional CollisionSetRadius extension = 5195;
+  }
+  message In {
+    required fixed64 executor = 1
+        [(pointer_to) =
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
+         (is_subject) = true];
+    required double radius = 2;
+  }
+  optional In in = 1;
+}
+
+message ClearFlags {
+  extend Method {
+    optional ClearFlags extension = 5167;
+  }
+}
+
+message ClearTargetVessel {
+  extend Method {
+    optional ClearTargetVessel extension = 5122;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message ClearWorldRotationalReferenceFrame {
+  extend Method {
+    optional ClearWorldRotationalReferenceFrame extension = 5145;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message CurrentTime {
+  extend Method {
+    optional CurrentTime extension = 5048;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message DeleteInterchange {
+  extend Method {
+    optional DeleteInterchange extension = 5169;
+  }
+  message In {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const",
+                                         (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_pointer = 1 [(pointer_to) = "void const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeletePlugin {
+  extend Method {
+    optional DeletePlugin extension = 5000;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeleteString {
+  extend Method {
+    optional DeleteString extension = 5049;
+  }
+  message In {
+    required fixed64 native_string = 1 [(pointer_to) = "char const",
+                                        (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_string = 1 [(pointer_to) = "char const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeleteU16String {
+  extend Method {
+    optional DeleteU16String extension = 5155;
+  }
+  message In {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const",
+                                        (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeserializePlugin {
+  extend Method {
+    optional DeserializePlugin extension = 5050;
+  }
+  message In {
+    required string serialization = 1;
+    required fixed64 deserializer = 2
+        [(pointer_to) = "PushDeserializer",
+         (is_consumed_if) = "std::string_view(serialization).empty()"];
+    required fixed64 plugin_reader = 3 [(pointer_to) = "PluginReader"];
+    required string compressor = 4;
+    required string encoder = 5;
+  }
+  message Out {
+    required fixed64 deserializer = 1
+        [(pointer_to) = "PushDeserializer",
+         (is_produced_if) = "!std::string_view(serialization).empty()"];
+    required fixed64 plugin_reader = 2 [(pointer_to) = "PluginReader",
+                                        (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message EndInitialization {
+  extend Method {
+    optional EndInitialization extension = 5020;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message EquipotentialCount {
+  extend Method {
+    optional EquipotentialCount extension = 5184;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanCount {
+  extend Method {
+    optional FlightPlanCount extension = 5179;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanCreate {
+  extend Method {
+    optional FlightPlanCreate extension = 5071;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double final_time = 3;
+    required double mass_in_tonnes = 4;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanDelete {
+  extend Method {
+    optional FlightPlanDelete extension = 5072;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanDuplicate {
+  extend Method {
+    optional FlightPlanDuplicate extension = 5182;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanExists {
+  extend Method {
+    optional FlightPlanExists extension = 5074;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetAdaptiveStepParameters {
+  extend Method {
+    optional FlightPlanGetAdaptiveStepParameters extension = 5079;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required FlightPlanAdaptiveStepParameters result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetActualFinalTime {
+  extend Method {
+    optional FlightPlanGetActualFinalTime extension = 5088;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetAnomalousStatus {
+  extend Method {
+    optional FlightPlanGetAnomalousStatus extension = 5187;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetCoastAnalysis {
+  extend Method {
+    optional FlightPlanGetCoastAnalysis extension = 5177;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional int32 revolutions_per_cycle = 3;
+    optional int32 days_per_cycle = 4;
+    required int32 ground_track_revolution = 5;
+    required int32 index = 6;
+  }
+  message Return {
+    required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetDesiredFinalTime {
+  extend Method {
+    optional FlightPlanGetDesiredFinalTime extension = 5076;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetGuidance {
+  extend Method {
+    optional FlightPlanGetGuidance extension = 5138;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetInitialTime {
+  extend Method {
+    optional FlightPlanGetInitialTime extension = 5075;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetManoeuvre {
+  extend Method {
+    optional FlightPlanGetManoeuvre extension = 5064;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required NavigationManoeuvre result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetManoeuvreFrenetTrihedron {
+  extend Method {
+    optional FlightPlanGetManoeuvreFrenetTrihedron extension = 5127;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required NavigationManoeuvreFrenetTrihedron result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetManoeuvreInitialPlottedVelocity {
+  extend Method {
+    optional FlightPlanGetManoeuvreInitialPlottedVelocity extension = 5186;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanInsert {
+  extend Method {
+    optional FlightPlanInsert extension = 5063;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanNumberOfAnomalousManoeuvres {
+  extend Method {
+    optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanNumberOfManoeuvres {
+  extend Method {
+    optional FlightPlanNumberOfManoeuvres extension = 5038;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanNumberOfSegments {
+  extend Method {
+    optional FlightPlanNumberOfSegments extension = 5070;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanOptimizationDriverInProgress {
+  extend Method {
+    optional FlightPlanOptimizationDriverInProgress extension = 5188;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 manoeuvre_index = 2;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanOptimizationDriverMake {
+  extend Method {
+    optional FlightPlanOptimizationDriverMake extension = 5191;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double distance = 3;
+    optional double inclination_in_degrees = 4;
+    required int32 celestial_index = 5;
+    required NavigationFrameParameters navigation_frame_parameters = 6;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanOptimizationDriverStart {
+  extend Method {
+    optional FlightPlanOptimizationDriverStart extension = 5189;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 manoeuvre_index = 3;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanRebase {
+  extend Method {
+    optional FlightPlanRebase extension = 5173;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double mass_in_tonnes = 3;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanRemove {
+  extend Method {
+    optional FlightPlanRemove extension = 5065;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanRenderedApsides {
+  extend Method {
+    optional FlightPlanRenderedApsides extension = 5081;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
+    required int32 celestial_index = 3;
+    required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
+  }
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
+                                      (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message FlightPlanRenderedClosestApproaches {
+  extend Method {
+    optional FlightPlanRenderedClosestApproaches extension = 5126;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
+  }
+  message Out {
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message FlightPlanRenderedNodes {
+  extend Method {
+    optional FlightPlanRenderedNodes extension = 5123;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
+    required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
+  }
+  message Out {
+    required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
+                                    (is_produced) = true];
+    required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
+                                     (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message FlightPlanRenderedSegment {
+  extend Method {
+    optional FlightPlanRenderedSegment extension = 5069;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanReplace {
+  extend Method {
+    optional FlightPlanReplace extension = 5158;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required Burn burn = 3;
+    required int32 index = 4;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanSelect {
+  extend Method {
+    optional FlightPlanSelect extension = 5180;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanSelected {
+  extend Method {
+    optional FlightPlanSelected extension = 5181;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanSetAdaptiveStepParameters {
+  extend Method {
+    optional FlightPlanSetAdaptiveStepParameters extension = 5080;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required FlightPlanAdaptiveStepParameters
+        flight_plan_adaptive_step_parameters = 3;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanSetDesiredFinalTime {
+  extend Method {
+    optional FlightPlanSetDesiredFinalTime extension = 5067;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double final_time = 3;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanUpdateFromOptimization {
+  extend Method {
+    optional FlightPlanUpdateFromOptimization extension = 5190;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FreeVesselsAndPartsAndCollectPileUps {
+  extend Method {
+    optional FreeVesselsAndPartsAndCollectPileUps extension = 5111;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double delta_t = 2;
+  }
+  optional In in = 1;
+}
+
+message FutureCatchUpVessel {
+  extend Method {
+    optional FutureCatchUpVessel extension = 5139;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "PileUpFuture",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FutureWaitForVesselToCatchUp {
+  extend Method {
+    optional FutureWaitForVesselToCatchUp extension = 5140;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed64 future = 2 [(pointer_to) = "PileUpFuture",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 future = 1 [(pointer_to) = "PileUpFuture"];
+    required fixed64 collided_vessels = 2 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
+                                           (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message GetBufferedLogging {
+  extend Method {
+    optional GetBufferedLogging extension = 5006;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional Return return = 3;
+}
+
+message GetCPUIDFeatureFlags {
+  // It makes no sense to journal this method, since it's used to select the DLL
+  // to load.  The journal replayer must just be built for the "right" platform.
+  option (omit_journaling) = true;
+  extend Method {
+    optional GetCPUIDFeatureFlags extension = 5198;
+  }
+  message Out {
+    required bool has_avx = 1;
+    required bool has_fma = 2;
+  }
+  optional Out out = 2;
+}
+
+message GetStderrLogging {
+  extend Method {
+    optional GetStderrLogging extension = 5007;
+  }
+  message Return {
+    // Omitting the return check here makes it possible to replay the journal
+    // with logging to stderr, which is useful for debugging.
+    required int32 result = 1 [(omit_check) = true];
+  }
+  optional Return return = 3;
+}
+
+message GetSuppressedLogging {
+  extend Method {
+    optional GetSuppressedLogging extension = 5008;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional Return return = 3;
+}
+
+message GetVerboseLogging {
+  extend Method {
+    optional GetVerboseLogging extension = 5009;
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional Return return = 3;
+}
+
+message GetVersion {
+  extend Method {
+    optional GetVersion extension = 5078;
+  }
+  message Out {
+    required string build_date = 1;
+    required string version = 2;
+    required string platform = 3;  // Added in Lebesgue.
+  }
+  optional Out out = 2;
+}
+
+message GraphLidovFrozenLine {
+  extend Method {
+    optional GraphLidovFrozenLine extension = 5208;
+  }
+  message In {
+    required double c2 = 1;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLine {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLine extension = 5206;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLineC2Range extension = 5207;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLine {
+  extend Method {
+    optional GraphLidovMaximalInclinationLine extension = 5209;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalInclinationLineC2Range extension = 5210;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLine {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLine extension = 5211;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLineC2Range extension = 5213;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityRightLineC2AndC1Max {
+  extend Method {
+    optional GraphLidovMinimalEccentricityRightLineC2AndC1Max extension = 5214;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Out {
+    required double c2 = 1;
+    required double c1_max = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message GraphLidovMinimalInclinationLine {
+  extend Method {
+    optional GraphLidovMinimalInclinationLine extension = 5204;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message HasEncounteredApocalypse {
+  extend Method {
+    optional HasEncounteredApocalypse extension = 5102;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Out {
+    required fixed64 details = 1 [(encoding) = UTF_8,
+                                  (is_produced) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message HasVessel {
+  extend Method {
+    optional HasVessel extension = 5039;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message InitGoogleLogging {
+  option (omit_journaling) = true;
+  extend Method {
+    optional InitGoogleLogging extension = 5002;
+  }
+}
+
+message InitializeDownsamplingParameters {
+  extend Method {
+    optional InitializeDownsamplingParameters extension = 5178;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required ConfigurationDownsamplingParameters downsampling_parameters = 2;
+  }
+  optional In in = 1;
+}
+
+message InitializeEphemerisParameters {
+  extend Method {
+    optional InitializeEphemerisParameters extension = 5148;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required ConfigurationAccuracyParameters accuracy_parameters = 2;
+    required ConfigurationFixedStepParameters fixed_step_parameters = 3;
+  }
+  optional In in = 1;
+}
+
+message InitializeHistoryParameters {
+  extend Method {
+    optional InitializeHistoryParameters extension = 5149;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required ConfigurationFixedStepParameters fixed_step_parameters = 2;
+  }
+  optional In in = 1;
+}
+
+message InitializePsychohistoryParameters {
+  extend Method {
+    optional InitializePsychohistoryParameters extension = 5150;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required ConfigurationAdaptiveStepParameters parameters = 3;
+  }
+  optional In in = 1;
+}
+
+message InsertCelestialAbsoluteCartesian {
+  extend Method {
+    optional InsertCelestialAbsoluteCartesian extension = 5003;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required int32 celestial_index = 2;
+    optional int32 parent_index = 3;
+    required BodyParameters body_parameters = 16;
+    required string x = 9;
+    required string y = 10;
+    required string z = 11;
+    required string vx = 12;
+    required string vy = 13;
+    required string vz = 14;
+  }
+  optional In in = 1;
+}
+
+message InsertCelestialJacobiKeplerian {
+  extend Method {
+    optional InsertCelestialJacobiKeplerian extension = 5092;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required int32 celestial_index = 2;
+    optional int32 parent_index = 3;
+    required BodyParameters body_parameters = 16;
+    optional KeplerianElements keplerian_elements = 9;
+  }
+  optional In in = 1;
+}
+
+message InsertOrKeepVessel {
+  extend Method {
+    optional InsertOrKeepVessel extension = 5022;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required string vessel_name = 5;
+    required int32 parent_index = 3;
+    required bool loaded = 4;
+  }
+  message Out {
+    required bool inserted = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message InsertOrKeepLoadedPart {
+  extend Method {
+    optional InsertOrKeepLoadedPart extension = 5113;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required string name = 8;
+    required double mass_in_tonnes = 3;
+    required XYZ centre_of_mass = 15;
+    required XYZ moments_of_inertia_in_tonnes = 10;
+    required WXYZ principal_axes_rotation = 11;
+    required bool is_solid_rocket_motor = 14;
+    required string vessel_guid = 4;
+    required int32 main_body_index = 5;
+    required QP main_body_world_degrees_of_freedom = 6;
+    required QP part_world_degrees_of_freedom = 7;
+    required WXYZ part_rotation = 12;
+    required XYZ part_angular_velocity = 13;
+    required double delta_t = 9;
+  }
+  optional In in = 1;
+}
+
+message InsertUnloadedPart {
+  extend Method {
+    optional InsertUnloadedPart extension = 5117;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required string name = 5;
+    required string vessel_guid = 3;
+    required QP from_parent = 4;
+  }
+  optional In in = 1;
+}
+
+message IteratorAtEnd {
+  extend Method {
+    optional IteratorAtEnd extension = 5083;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorDelete {
+  extend Method {
+    optional IteratorDelete extension = 5084;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message IteratorGetDiscreteTrajectoryQP {
+  extend Method {
+    optional IteratorGetDiscreteTrajectoryQP extension = 5093;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDiscreteTrajectoryTime {
+  extend Method {
+    optional IteratorGetDiscreteTrajectoryTime extension = 5094;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDiscreteTrajectoryXYZ {
+  extend Method {
+    optional IteratorGetDiscreteTrajectoryXYZ extension = 5085;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDistinguishedPointsQP {
+  extend Method {
+    optional IteratorGetDistinguishedPointsQP extension = 5201;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDistinguishedPointsTime {
+  extend Method {
+    optional IteratorGetDistinguishedPointsTime extension = 5202;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetNode {
+  extend Method {
+    optional IteratorGetNode extension = 5197;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required Node node = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetRP2LinesIterator {
+  extend Method {
+    optional IteratorGetRP2LinesIterator extension = 5132;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetRP2LineXY {
+  extend Method {
+    optional IteratorGetRP2LineXY extension = 5133;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XY result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetVesselGuid {
+  extend Method {
+    optional IteratorGetVesselGuid extension = 5147;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetPlottableElements {
+  extend Method {
+    optional IteratorGetPlottableElements extension = 5212;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required PlottableElements result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorIncrement {
+  extend Method {
+    optional IteratorIncrement extension = 5086;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message IteratorReset {
+  extend Method {
+    optional IteratorReset extension = 5135;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message IteratorSize {
+  extend Method {
+    optional IteratorSize extension = 5087;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message LogError {
+  extend Method {
+    optional LogError extension = 5010;
+  }
+  message In {
+    required string file = 2;
+    required int32 line = 3;
+    required string text = 1;
+  }
+  optional In in = 1;
+}
+
+message LogFatal {
+  extend Method {
+    optional LogFatal extension = 5011;
+  }
+  message In {
+    required string file = 2;
+    required int32 line = 3;
+    required string text = 1;
+  }
+  optional In in = 1;
+}
+
+message LogInfo {
+  extend Method {
+    optional LogInfo extension = 5012;
+  }
+  message In {
+    required string file = 2;
+    required int32 line = 3;
+    required string text = 1;
+  }
+  optional In in = 1;
+}
+
+message LogWarning {
+  extend Method {
+    optional LogWarning extension = 5013;
+  }
+  message In {
+    required string file = 2;
+    required int32 line = 3;
+    required string text = 1;
+  }
+  optional In in = 1;
+}
+
+message MonitorSetName {
+  extend Method {
+    optional MonitorSetName extension = 5143;
+  }
+  message In {
+    required int32 i = 1;
+    required string name = 2;
+  }
+  optional In in = 1;
+}
+
+message MonitorStart {
+  extend Method {
+    optional MonitorStart extension = 5141;
+  }
+  message In {
+    required int32 i = 1;
+  }
+  optional In in = 1;
+}
+
+message MonitorStop {
+  extend Method {
+    optional MonitorStop extension = 5142;
+  }
+  message In {
+    required int32 i = 1;
+  }
+  optional In in = 1;
+}
+
+message NavballOrientation {
+  extend Method {
+    optional NavballOrientation extension = 5051;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required XYZ sun_world_position = 3;
+    required XYZ ship_world_position = 4;
+  }
+  message Return {
+    required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message NewPlugin {
+  extend Method {
+    optional NewPlugin extension = 5001;
+  }
+  message In {
+    required string game_epoch = 1;
+    required string solar_system_epoch = 2;
+    required double planetarium_rotation_in_degrees = 3;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartAngularMomentumFromAngularVelocity {
+  extend Method {
+    optional PartAngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartApplyIntrinsicForce {
+  extend Method {
+    optional PartApplyIntrinsicForce extension = 5114;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
+  }
+  optional In in = 1;
+}
+
+message PartApplyIntrinsicForceAtPosition {
+  extend Method {
+    optional PartApplyIntrinsicForceAtPosition extension = 5164;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ force_in_kilonewtons = 3;
+    required XYZ lever_arm = 4;
+  }
+  optional In in = 1;
+}
+
+message PartApplyIntrinsicTorque {
+  extend Method {
+    optional PartApplyIntrinsicTorque extension = 5165;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required XYZ torque_in_kilonewton_metre = 3;
+  }
+  optional In in = 1;
+}
+
+message PartDragTorqueFromAngularVelocity {
+  extend Method {
+    optional PartDragTorqueFromAngularVelocity extension = 5203;
+  }
+  message In {
+    required double angular_drag_per_second = 1;
+    required double delta_t = 2;
+    required XYZ world_angular_velocity = 3;
+    required XYZ moments_of_inertia_in_tonnes = 4;
+    required WXYZ principal_axes_rotation = 5;
+    required WXYZ part_rotation = 6;
+  }
+  message Return {
+    required XYZ torque_in_kilonewton_metre = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartGetActualRigidMotion {
+  extend Method {
+    optional PartGetActualRigidMotion extension = 5116;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+    required Origin origin = 4;
+  }
+  message Return {
+    required QPRW result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartIsTruthful {
+  extend Method {
+    optional PartIsTruthful extension = 5166;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartSetApparentRigidMotion {
+  extend Method {
+    optional PartSetApparentRigidMotion extension = 5115;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required QP degrees_of_freedom = 3;
+    required WXYZ rotation = 5;
+    required XYZ angular_velocity = 6;
+  }
+  optional In in = 1;
+}
+
+message PlanetariumCreate {
+  extend Method {
+    optional PlanetariumCreate extension = 5130;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required XYZ sun_world_position = 2;
+    required XYZ xyz_opengl_camera_x_in_world = 3;
+    required XYZ xyz_opengl_camera_y_in_world = 4;
+    required XYZ xyz_opengl_camera_z_in_world = 5;
+    required XYZ xyz_camera_position_in_world = 6;
+    required double focal = 7;
+    required double field_of_view = 8;
+    required double inverse_scale_factor = 9;
+    required double angular_resolution = 11;  // Added in Lagrange.
+    required XYZ scaled_space_origin = 10;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Planetarium",
+                                 (disposable) = "DisposablePlanetarium",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumDelete {
+  extend Method {
+    optional PlanetariumDelete extension = 5131;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotCelestialFutureTrajectory {
+  extend Method {
+    optional PlanetariumPlotCelestialFutureTrajectory extension = 5161;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 celestial_index = 3;
+    required string vessel_guid = 4;
+    required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 6 [(size_of) = "vertices"];
+  }
+  message Out {
+    required double minimal_distance_from_camera = 1;
+    required int32 vertex_count = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotCelestialPastTrajectory {
+  extend Method {
+    optional PlanetariumPlotCelestialPastTrajectory extension = 5162;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 celestial_index = 3;
+    required double max_history_length = 4;
+    required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 6 [(size_of) = "vertices"];
+  }
+  message Out {
+    required double minimal_distance_from_camera = 1;
+    required int32 vertex_count = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotEquipotential {
+  extend Method {
+    optional PlanetariumPlotEquipotential extension = 5183;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 index = 3;
+    required fixed64 vertices = 4 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 5 [(size_of) = "vertices"];
+  }
+  message Out {
+    required int32 vertex_count = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotFlightPlanSegment {
+  extend Method {
+    optional PlanetariumPlotFlightPlanSegment extension = 5137;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required string vessel_guid = 4;
+    required int32 index = 5;
+    optional double t_max = 8;  // Added in von Koch.
+    required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 7 [(size_of) = "vertices"];
+  }
+  message Out {
+    required int32 vertex_count = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotPrediction {
+  extend Method {
+    optional PlanetariumPlotPrediction extension = 5136;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required string vessel_guid = 4;
+    optional double t_max = 7;  // Added in von Koch.
+    required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 6 [(size_of) = "vertices"];
+  }
+  message Out {
+    required int32 vertex_count = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotPsychohistory {
+  extend Method {
+    optional PlanetariumPlotPsychohistory extension = 5134;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required string vessel_guid = 4;
+    required double max_history_length = 5;
+    optional double t_max = 8;  // Added in von Koch.
+    required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 7 [(size_of) = "vertices"];
+  }
+  message Out {
+    required int32 vertex_count = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PluginReaderAwait {
+  extend Method {
+    optional PluginReaderAwait extension = 5218;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader"];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message PluginReaderGet {
+  // If the call to `get` in the journal returned `nullptr`, do the same and
+  // don't call `get`, it would consume the plugin too early.  If the call to
+  // `get` in the journal returned a bona fide Plugin, call the entry point that
+  // awaits the result to make sure that deserialization has completed.
+  option (run_using) =
+    "[&message](PluginReader** reader) -> Plugin* {\n    if (message.return_().result() == 0) {\n      return nullptr;\n    } else {\n      return interface::principia__PluginReaderAwait(reader);\n    }\n  }";
+  extend Method {
+    optional PluginReaderGet extension = 5215;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader",
+                                 (is_consumed_if) = "result != nullptr"];
+  }
+  message Out {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader"];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced_if) = "result != nullptr"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message PluginReaderLogs {
+  extend Method {
+    optional PluginReaderLogs extension = 5216;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PluginReaderWillBeSlow {
+  extend Method {
+    optional PluginReaderWillBeSlow extension = 5217;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PrepareToReportCollisions {
+  extend Method {
+    optional PrepareToReportCollisions extension = 5118;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
+                                 (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message RenderedPredictionApsides {
+  extend Method {
+    optional RenderedPredictionApsides extension = 5082;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
+    required int32 celestial_index = 3;
+    required XYZ sun_world_position = 4;
+    required int32 max_points = 5;
+  }
+  message Out {
+    required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
+                                     (is_produced) = true];
+    required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
+                                      (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message RenderedPredictionClosestApproaches {
+  extend Method {
+    optional RenderedPredictionClosestApproaches extension = 5125;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
+  }
+  message Out {
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message RenderedPredictionNodes {
+  extend Method {
+    optional RenderedPredictionNodes extension = 5124;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional double t_max = 5;  // Added in von Koch.
+    required XYZ sun_world_position = 3;
+    required int32 max_points = 4;
+  }
+  message Out {
+    required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
+                                    (is_produced) = true];
+    required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
+                                     (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message ReportGroundCollision {
+  extend Method {
+    optional ReportGroundCollision extension = 5146;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  optional In in = 1;
+}
+
+message ReportPartCollision {
+  extend Method {
+    optional ReportPartCollision extension = 5103;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part1_id = 2;
+    required fixed32 part2_id = 3;
+  }
+  optional In in = 1;
+}
+
+message SayHello {
+  extend Method {
+    optional SayHello extension = 5053;
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional Return return = 3;
+}
+
+message SayNotFound {
+  extend Method {
+    optional SayNotFound extension = 5175;
+  }
+  message Return {
+    required Status result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional Return return = 3;
+}
+
+message SerializePlugin {
+  extend Method {
+    optional SerializePlugin extension = 5054;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed64 serializer = 2
+        [(pointer_to) = "PullSerializer",
+         (is_consumed_if) = "result == nullptr"];
+    required string compressor = 3;
+    required string encoder = 4;
+  }
+  message Out {
+    required fixed64 serializer = 1 [(pointer_to) = "PullSerializer",
+                                     (is_produced_if) = "result != nullptr"];
+  }
+  message Return {
+    required fixed64 result = 1 [(encoding) = UTF_8,
+                                 (is_produced_if) = "result != nullptr"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message SetBufferedLogging {
+  extend Method {
+    optional SetBufferedLogging extension = 5015;
+  }
+  message In {
+    required int32 max_severity = 1;
+  }
+  optional In in = 1;
+}
+
+message SetFlag {
+  extend Method {
+    optional SetFlag extension = 5168;
+  }
+  message In {
+    required string name = 1;
+    required string value = 2;
+  }
+  optional In in = 1;
+}
+
+message SetMainBody {
+  extend Method {
+    optional SetMainBody extension = 5097;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required int32 index = 2;
+  }
+  optional In in = 1;
+}
+
+message SetPlottingFrame {
+  extend Method {
+    optional SetPlottingFrame extension = 5059;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required PlottingFrameParameters parameters = 2;
+  }
+  optional In in = 1;
+}
+
+message SetStderrLogging {
+  extend Method {
+    optional SetStderrLogging extension = 5016;
+  }
+  message In {
+    required int32 min_severity = 1;
+  }
+  optional In in = 1;
+}
+
+message SetSuppressedLogging {
+  extend Method {
+    optional SetSuppressedLogging extension = 5017;
+  }
+  message In {
+    required int32 min_severity = 1;
+  }
+  optional In in = 1;
+}
+
+message SetTargetVessel {
+  extend Method {
+    optional SetTargetVessel extension = 5121;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 reference_body_index = 3;
+  }
+  optional In in = 1;
+}
+
+message SetVerboseLogging {
+  option (run_conditional_compilation_symbol) = "PRINCIPIA_SET_VERBOSE_LOGGING";
+  extend Method {
+    optional SetVerboseLogging extension = 5018;
+  }
+  message In {
+    required int32 level = 1;
+  }
+  optional In in = 1;
+}
+
+message SetWorldRotationalReferenceFrame {
+  extend Method {
+    optional SetWorldRotationalReferenceFrame extension = 5144;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required int32 index = 2;
+  }
+  optional In in = 1;
+}
+
+message UnmanageableVesselVelocity {
+  extend Method {
+    optional UnmanageableVesselVelocity extension = 5128;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required QP degrees_of_freedom = 2;
+    required int32 celestial_index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message UpdateCelestialHierarchy {
+  extend Method {
+    optional UpdateCelestialHierarchy extension = 5025;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+    required int32 parent_index = 3;
+  }
+  optional In in = 1;
+}
+
+message UpdatePrediction {
+  extend Method {
+    optional UpdatePrediction extension = 5033;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    repeated string vessel_guids = 2;
+  }
+  optional In in = 1;
+}
+
+message VesselBinormal {
+  extend Method {
+    optional VesselBinormal extension = 5055;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselClearPlottingFramePayload {
+  extend Method {
+    optional VesselClearPlottingFramePayload extension = 5219;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+  }
+  optional In in = 1;
+}
+
+message VesselFromParent {
+  extend Method {
+    optional VesselFromParent extension = 5034;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 parent_index = 3;
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetAnalysis {
+  extend Method {
+    optional VesselGetAnalysis extension = 5176;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    optional int32 revolutions_per_cycle = 5;
+    optional int32 days_per_cycle = 6;
+    required int32 ground_track_revolution = 7;
+  }
+  message Return {
+    required OrbitAnalysis result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetPlottingFramePayload {
+  extend Method {
+    optional VesselGetPlottingFramePayload extension = 5220;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+  }
+  message Return {
+    required PlottingFramePayload payload = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetPredictionAdaptiveStepParameters {
+  extend Method {
+    optional VesselGetPredictionAdaptiveStepParameters extension = 5090;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required AdaptiveStepParameters adaptive_step_parameters = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselNormal {
+  extend Method {
+    optional VesselNormal extension = 5056;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselRequestAnalysis {
+  extend Method {
+    optional VesselRequestAnalysis extension = 5160;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double mission_duration = 4;
+  }
+  optional In in = 1;
+}
+
+message VesselSetPlottingFramePayload {
+  extend Method {
+    optional VesselSetPlottingFramePayload extension = 5221;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+    required PlottingFramePayload payload = 4;
+  }
+  optional In in = 1;
+}
+
+message VesselSetPredictionAdaptiveStepParameters {
+  extend Method {
+    optional VesselSetPredictionAdaptiveStepParameters extension = 5091;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required AdaptiveStepParameters adaptive_step_parameters = 3;
+  }
+  optional In in = 1;
+}
+
+message VesselTangent {
+  extend Method {
+    optional VesselTangent extension = 5057;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselVelocity{
+  extend Method {
+    optional VesselVelocity extension = 5095;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}

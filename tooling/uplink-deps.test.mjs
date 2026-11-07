@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  applyCheck,
   branchOf,
   existingFor,
   issueBody,
@@ -10,6 +11,7 @@ import {
   mentionsOutsideFences,
   prBody,
   prTitle,
+  reasonOf,
   supersededBy,
 } from "./uplink-deps.mjs";
 
@@ -108,4 +110,18 @@ test("the word that names the test machine appears in nothing it writes", () => 
 
 test("a commit subject fits the limit", () => {
   assert.ok(prTitle("ferramaerospaceresearch", "Ferram Aerospace Research", "0.16.1.2").length <= 100);
+});
+
+test("a failing check turns a green verdict red and replaces the skipped entry", () => {
+  const r = result("green", { checks: [{ name: "check", status: "skipped" }, { name: "tests", status: "pass" }] });
+  applyCheck(r, { name: "check", status: "fail", excerpt: "x\nerror bake/stale  a.cs:1\ny" });
+  assert.equal(r.verdict, "red");
+  assert.equal(r.checks.filter((c) => c.name === "check").length, 1);
+  assert.equal(reasonOf(r), "check: error bake/stale  a.cs:1");
+});
+
+test("a passing check leaves an unverified verdict alone", () => {
+  const r = result("unverified", { checks: [{ name: "check", status: "skipped" }] });
+  applyCheck(r, { name: "check", status: "pass" });
+  assert.equal(r.verdict, "unverified");
 });
