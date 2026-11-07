@@ -17,6 +17,7 @@ import {
 } from "../AdminBuilding/leadersScreen.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { LeaderDetail } from "./index.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const YEAR = 31_557_600;
 
@@ -166,7 +167,7 @@ describe("LeaderDetail", () => {
       leader({ canAppoint: false, appointBlockedReason: reason }),
     ]);
 
-    expect(screen.getByRole("button", { name: reason })).toHaveAttribute(
+    expect(getButtonDescribedBy(reason)).toHaveAttribute(
       "aria-disabled",
       "true",
     );
@@ -260,7 +261,7 @@ describe("LeaderDetail", () => {
     });
 
     expect(
-      screen.getByRole("button", { name: "Too soon to remove" }),
+      getButtonDescribedBy("Too soon to remove"),
     ).toHaveAttribute("aria-disabled", "true");
     expect(visibleText()).toContain("Can dismiss");
   });

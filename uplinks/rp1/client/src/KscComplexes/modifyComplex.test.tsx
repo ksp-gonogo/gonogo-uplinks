@@ -12,6 +12,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
 import { RP1_COMPLEX_MODIFY_COMMAND } from "./Modify.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -217,9 +218,7 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", {
-        name: "The renovation is not priced or its specification is incomplete",
-      }),
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -239,9 +238,7 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", {
-        name: "The renovation is not priced or its specification is incomplete",
-      }),
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -277,9 +274,7 @@ describe("renovating a launch complex", () => {
     expect(refusal.textContent).toContain("200");
     expect(view.container).toBeTruthy();
     expect(
-      screen.getByRole("button", {
-        name: "The renovation is not priced or its specification is incomplete",
-      }),
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 

@@ -17,6 +17,7 @@ import {
   RP1_BUILD_START_COMMAND,
 } from "./Buildable.js";
 import { VehicleAssembly } from "./index.js";
+import { findButtonDescribedBy } from "../test/describedButton";
 
 const CAREER = {
   balances: { funds: 289_848, reputation: 40, science: 12 },
@@ -267,7 +268,7 @@ describe("starting a build from a saved craft", () => {
     await screen.findByText("Price");
     expect(await screen.findByText("SHORT")).toBeInTheDocument();
     // Charged up front and refused when short: dark, with the shortfall as the tip.
-    const press = await screen.findByRole("button", { name: "Short 30,000f" });
+    const press = await findButtonDescribedBy("Short 30,000f");
     expect(press).toHaveAttribute("aria-disabled", "true");
   });
 

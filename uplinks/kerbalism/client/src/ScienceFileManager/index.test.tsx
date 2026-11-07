@@ -13,6 +13,7 @@ import {
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
+import { findButtonDescribedBy } from "../test/describedButton.js";
 import { findDriveEntries, ScienceDataAboardRowAugment } from "./index.js";
 
 const SUBJECT_ID = "mysteryGoo@KerbinInSpaceLow";
@@ -416,9 +417,7 @@ describe("ScienceDataAboardRowAugment", () => {
       fixture.emit("science.experiments", [SAMPLE_ENTRY]);
       fixture.emit("science.lab", []);
     });
-    const move = await screen.findByRole("button", {
-      name: /no lab part aboard this vessel/i,
-    });
+    const move = await findButtonDescribedBy(/no lab part aboard this vessel/i);
     expect(move).toHaveAttribute("aria-disabled", "true");
   });
 

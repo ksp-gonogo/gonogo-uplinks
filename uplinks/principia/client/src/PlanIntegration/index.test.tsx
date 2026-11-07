@@ -196,7 +196,7 @@ describe("PlanIntegrationBlock", () => {
    * readout: hiding it would leave the one remedy for an under-integrated plan
    * unreachable on exactly the plan that needs it.
    */
-  it.skip("lets the operator step onto a value and send it", async () => {
+  it("lets the operator step onto a value and send it", async () => {
     mount(plan({ integrator: integratorWithoutStepLimit() }));
 
     await userEvent.click(
@@ -211,7 +211,7 @@ describe("PlanIntegrationBlock", () => {
       }),
     ).toHaveAttribute(
       "aria-valuetext",
-      MAX_STEPS_OPTIONS[MAX_STEPS_OPTIONS.length - 1].toLocaleString("en-GB"),
+      MAX_STEPS_OPTIONS[0].toLocaleString("en-GB"),
     );
     expect(control("SET")).not.toHaveAttribute("aria-disabled", "true");
   });

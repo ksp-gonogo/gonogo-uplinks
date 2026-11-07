@@ -20,6 +20,7 @@ import {
   RP1_PAD_RENAME_COMMAND,
 } from "./Lifecycle.js";
 import { RP1_COMPLEX_NEW_COMMAND } from "./NewComplex.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   engineers: 30,
@@ -312,9 +313,7 @@ describe("adding a launch pad", () => {
       screen.getByText("a pad at this complex already has that name"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "a pad at this complex already has that name",
-      }),
+      getButtonDescribedBy("a pad at this complex already has that name"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -326,7 +325,7 @@ describe("adding a launch pad", () => {
     // Dark, and the label says what to do rather than what went wrong: nothing has
     // gone wrong yet, the operator simply has not typed a name.
     expect(
-      screen.getByRole("button", { name: "Name the pad before building it" }),
+      getButtonDescribedBy("Name the pad before building it"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -490,7 +489,7 @@ describe("renaming", () => {
       screen.getByText("that name is already in use here"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "that name is already in use here" }),
+      getButtonDescribedBy("that name is already in use here"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -508,7 +507,7 @@ describe("renaming", () => {
       screen.queryByText("that name is already in use here"),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "LP-1 is already called that" }),
+      getButtonDescribedBy("LP-1 is already called that"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -664,9 +663,7 @@ describe("building a launch complex", () => {
       screen.getByText("a complex at this centre already has that name"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "a complex at this centre already has that name",
-      }),
+      getButtonDescribedBy("a complex at this centre already has that name"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 

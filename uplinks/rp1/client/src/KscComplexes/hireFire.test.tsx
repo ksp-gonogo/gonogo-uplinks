@@ -15,6 +15,7 @@ import {
   RP1_PERSONNEL_HIRE_COMMAND,
 } from "./HireFire.js";
 import { KscComplexes } from "./index.js";
+import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -179,9 +180,7 @@ describe("hiring and firing now", () => {
     );
 
     expect(
-      screen.getByRole("button", {
-        name: "More than the unassigned staff available to fire",
-      }),
+      getButtonDescribedBy("More than the unassigned staff available to fire"),
     ).toHaveAttribute("aria-disabled", "true");
     expect(view.container.textContent).toContain(
       "only 6 unassigned at Cape Canaveral can be fired",
@@ -195,9 +194,7 @@ describe("hiring and firing now", () => {
     await open(user, "5");
 
     expect(
-      screen.getByRole("button", {
-        name: "More than the balance, so RP-1 will refuse it",
-      }),
+      getButtonDescribedBy("More than the balance, so RP-1 will refuse it"),
     ).toHaveAttribute("aria-disabled", "true");
     expect(view.container.textContent).toContain("more than the balance");
     // Firing spends nothing, so a short balance leaves it alone.
@@ -245,9 +242,7 @@ describe("hiring and firing now", () => {
     await open(user, "5");
 
     expect(
-      await screen.findByRole("button", {
-        name: "More than the balance, so RP-1 will refuse it",
-      }),
+      await findButtonDescribedBy("More than the balance, so RP-1 will refuse it"),
     ).toHaveAttribute("aria-disabled", "true");
     expect(view.container.textContent).toContain("900");
     expect(view.container.textContent).toContain("800");

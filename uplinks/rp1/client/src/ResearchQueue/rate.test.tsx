@@ -12,6 +12,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { ResearchQueue } from "./index.js";
 import { RP1_RESEARCH_SET_RATE_COMMAND } from "./RateControl.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 function node(overrides: Record<string, unknown> = {}) {
   return {
@@ -76,7 +77,7 @@ describe("ResearchQueue work rate", () => {
     expect(text).not.toMatch(/afford/i);
     expect(text).not.toContain("against now");
     expect(
-      screen.getByRole("button", { name: "Research is already at 100%" }),
+      getButtonDescribedBy("Research is already at 100%"),
     ).toHaveAttribute("aria-disabled", "true");
     await expectNoA11yViolations(view.container);
   });

@@ -16,6 +16,7 @@ import {
   RP1_COMPLEX_RUSH_COMMAND,
   RP1_PERSONNEL_ASSIGN_COMMAND,
 } from "./index.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -304,7 +305,7 @@ describe("KscComplexes", () => {
       expect(screen.getAllByText("Max").length).toBeGreaterThan(0);
     });
     expect(
-      screen.getByRole("button", { name: "LC-1 is full" }),
+      getButtonDescribedBy("LC-1 is full"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -318,9 +319,7 @@ describe("KscComplexes", () => {
       expect(screen.getAllByText("Unassigned").length).toBeGreaterThan(0);
     });
     expect(
-      screen.getByRole("button", {
-        name: "No engineers free at Cape to assign to LC-1",
-      }),
+      getButtonDescribedBy("No engineers free at Cape to assign to LC-1"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 

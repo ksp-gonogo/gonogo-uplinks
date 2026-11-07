@@ -17,6 +17,7 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { ProgramDetail } from "./index.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 installFixedSizeResizeObserver({ width: 320, height: 140 });
 
@@ -628,9 +629,7 @@ describe("ProgramDetail", () => {
       expect(screen.getByText("ACCEPT")).toBeInTheDocument();
     });
     expect(
-      screen.getByRole("button", {
-        name: /career is short of it|has not said which/,
-      }),
+      getButtonDescribedBy(/career is short of it|has not said which/),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -727,9 +726,7 @@ describe("ProgramDetail", () => {
 
     await user.click(fast);
     expect(
-      screen.getByRole("button", {
-        name: /career is short of it|has not said which/,
-      }),
+      getButtonDescribedBy(/career is short of it|has not said which/),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -813,12 +810,13 @@ describe("ProgramDetail", () => {
     const { fixture } = mount();
     await feed(fixture);
 
-    expect(
-      screen.getByRole("button", { name: /only once its objectives are met/ }),
-    ).toHaveAttribute("aria-disabled", "true");
-    expect(
-      screen.queryByRole("button", { name: /complete x-plane research/i }),
-    ).toBeNull();
+    const complete = screen.getByRole("button", {
+      name: /complete x-plane research/i,
+    });
+    expect(complete).toHaveAttribute("aria-disabled", "true");
+    expect(complete).toBe(
+      getButtonDescribedBy(/only once its objectives are met/),
+    );
   });
 
   /*

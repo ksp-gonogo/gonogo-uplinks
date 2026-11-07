@@ -17,6 +17,7 @@ import {
   RP1_TRAINING_CANCEL_COMMAND,
   RP1_TRAINING_REMOVE_COMMAND,
 } from "./training.js";
+import { findAllButtonsDescribedBy } from "../test/describedButton";
 
 const NAUT = "Ludrey Kerman";
 const MATE = "Nedcas Kerman";
@@ -312,9 +313,7 @@ describe("TrainingCourses", () => {
     const { fixture } = mount();
     present(fixture, [course({ seatMin: 2 })]);
 
-    const controls = await screen.findAllByRole("button", {
-      name: "This course seats 2 at least, so one student cannot leave it",
-    });
+    const controls = await findAllButtonsDescribedBy("This course seats 2 at least, so one student cannot leave it");
     expect(controls.length).toBeGreaterThan(0);
     for (const control of controls) {
       expect(control).toHaveAttribute("aria-disabled", "true");

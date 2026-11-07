@@ -12,6 +12,10 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  getAllButtonsDescribedBy,
+  getButtonDescribedBy,
+} from "../test/describedButton.js";
 // Side-effect import: the widget self-registers on module load, and
 // `renderWidget` looks it up by id rather than importing the component.
 import "./index.js";
@@ -131,9 +135,7 @@ describe("MechJeb command widget", () => {
      * wire, by click or by a bound serial/keyboard input, because MechJeb would
      * fly whatever number arrives.
      */
-    const button = screen.getByRole("button", {
-      name: /no target altitude read from the field/i,
-    });
+    const button = getButtonDescribedBy(/no target altitude read from the field/i);
     expect(button).toHaveAttribute("aria-disabled", "true");
     await userEvent.click(button);
     await act(async () => {});
@@ -151,9 +153,7 @@ describe("MechJeb command widget", () => {
     await userEvent.type(input, "0");
 
     expect(
-      screen.getByRole("button", {
-        name: /no target altitude read from the field/i,
-      }),
+      getButtonDescribedBy(/no target altitude read from the field/i),
     ).toHaveAttribute("aria-disabled", "true");
     await act(async () => {});
     expect(
@@ -254,9 +254,9 @@ describe("MechJeb2 not reachable", () => {
       screen.getByText(/MechJeb2 assembly version unreadable/),
     ).toBeInTheDocument();
 
-    const dead = screen.getAllByRole("button", {
-      name: /MechJeb2 assembly version unreadable/,
-    });
+    const dead = getAllButtonsDescribedBy(
+      /MechJeb2 assembly version unreadable/,
+    );
     expect(dead).toHaveLength(3);
     for (const button of dead) {
       expect(button).toHaveAttribute("aria-disabled", "true");

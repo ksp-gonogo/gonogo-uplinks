@@ -15,6 +15,7 @@ import {
   RP1_HIRE_TARGET_SET_COMMAND,
 } from "./HireTarget.js";
 import { KscComplexes } from "./index.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -184,9 +185,7 @@ describe("the standing hire instruction", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "The target is below the staff already on the books",
-      }),
+      getButtonDescribedBy("The target is below the staff already on the books"),
     ).toHaveAttribute("aria-disabled", "true");
   });
 
