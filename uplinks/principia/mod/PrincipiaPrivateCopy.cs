@@ -135,6 +135,7 @@ namespace GonogoPrincipiaUplink
                     {
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
+                        RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
                     },
@@ -150,8 +151,40 @@ namespace GonogoPrincipiaUplink
         private sealed class ProcessChannel : IPrincipiaWorkerChannel
         {
             private readonly Process _process;
+            private volatile string? _fatal;
 
-            public ProcessChannel(Process process) => _process = process;
+            public ProcessChannel(Process process)
+            {
+                _process = process;
+                _process.ErrorDataReceived += (_, line) => Note(line.Data);
+                _process.BeginErrorReadLine();
+            }
+
+            private void Note(string? line)
+            {
+                if (line == null)
+                {
+                    return;
+                }
+                var isFatal = line.Contains("Check failed") || (line.Length > 1 && line[0] == 'F' && char.IsDigit(line[1]));
+                if (isFatal)
+                {
+                    _fatal = line.Replace('"', ' ').Replace('\\', ' ').Replace('\t', ' ');
+                }
+                Console.Error.WriteLine(line);
+            }
+
+            /// <summary>What a process that ended without a reply says, with its fatal line if it wrote one.</summary>
+            private string Ended()
+            {
+                if (_process.WaitForExit(ReplyTimeoutSeconds * 1000))
+                {
+                    /* The form with no timeout is the one that waits for stderr to be read to its end. */
+                    _process.WaitForExit();
+                }
+                return "{\"ok\": false, \"caught\": true, \"reason\": \"the private copy's process ended\", \"check\": \""
+                    + _fatal + "\"}";
+            }
 
             public string? Exchange(string request)
             {
@@ -164,7 +197,7 @@ namespace GonogoPrincipiaUplink
                 var reply = _process.StandardOutput.ReadLineAsync();
                 if (reply.Wait(ReplyTimeoutSeconds * 1000))
                 {
-                    return reply.Result;
+                    return reply.Result ?? Ended();
                 }
                 _process.Kill();
                 return null;

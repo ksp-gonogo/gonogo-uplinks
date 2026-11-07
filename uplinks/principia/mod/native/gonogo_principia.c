@@ -16,7 +16,9 @@
  * Every call into the copy runs on a thread of this library's. Mono and Unity never
  * have frames on it, so a fatal check can be jumped out of with no managed frame
  * unwound. Recovery abandons the copy, because its locks and heap are in an unknown
- * state, and the next request opens a new one.
+ * state, and the Uplink stops asking: a fatal check most likely means the request was
+ * wrong, so the same state would fail again, and every copy set aside keeps its pool
+ * threads and heap until the game exits.
  *
  * A fatal check is a SIGABRT, and that signal is shared with the rest of the process,
  * so the handler looks at where it came from:
@@ -49,6 +51,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 
 /* The game's container has an older C library than a build machine does. */
@@ -109,9 +112,6 @@ typedef struct {
 
 #define MAX_TRACKED 64
 
-/* Each abandoned copy keeps about 25 MB and its pool threads until the game exits. */
-#define MAX_RECOVERIES 8
-
 static struct link_map *volatile tracked[MAX_TRACKED];
 static Copy *volatile tracked_copy[MAX_TRACKED];
 static volatile int tracked_count;
@@ -120,7 +120,6 @@ static __thread sigjmp_buf recover;
 static __thread volatile sig_atomic_t in_call;
 static struct sigaction previous_abort;
 
-static int recoveries;
 static int restarts;
 
 static void on_abort(int signal_number, siginfo_t *info, void *context)
@@ -311,11 +310,70 @@ static char *refusal(const char *why)
     return reply;
 }
 
-/* A refusal the Uplink writes to the game's log, since a fatal check only reaches stderr, which the log does not hold. */
+/*
+ * The copy's fatal message goes to stderr, which the game's log does not hold, so stderr
+ * points at memory for the length of each request and is then written back unchanged.
+ * The program form needs none of this: a fatal check ends it, and its parent reads its stderr.
+ */
+static int saved_stderr = -1;
+static FILE *captured;
+
+static void capture_begin(void)
+{
+    if (saved_stderr >= 0) {
+        return;
+    }
+    int memory = (int)syscall(SYS_memfd_create, "gonogo-principia-stderr", 0);
+    captured = memory < 0 ? NULL : fdopen(memory, "w+");
+    if (captured == NULL) {
+        return;
+    }
+    fflush(stderr);
+    saved_stderr = dup(2);
+    dup2(fileno(captured), 2);
+}
+
+/* Ends a capture and returns the last fatal line it holds, with nothing in it that would break a reply, or NULL. */
+static char *capture_end(void)
+{
+    if (saved_stderr < 0) {
+        return NULL;
+    }
+    fflush(stderr);
+    dup2(saved_stderr, 2);
+    close(saved_stderr);
+    saved_stderr = -1;
+
+    char line[1024];
+    char *found = NULL;
+    rewind(captured);
+    while (fgets(line, sizeof line, captured) != NULL) {
+        size_t length = strlen(line);
+        if (write(2, line, length) < 0) {
+            break;
+        }
+        if (strstr(line, "Check failed") != NULL || (line[0] == 'F' && line[1] >= '0' && line[1] <= '9')) {
+            free(found);
+            found = strdup(line);
+        }
+    }
+    fclose(captured);
+    captured = NULL;
+    for (char *c = found; c != NULL && *c != '\0'; c++) {
+        if (*c == '"' || *c == '\\' || *c == '\n' || *c == '\r' || *c == '\t') {
+            *c = ' ';
+        }
+    }
+    return found;
+}
+
+/* A failure the Uplink stops for and writes to the game's log. */
 static char *caught(const char *why)
 {
-    char *reply = malloc(strlen(why) + 64);
-    sprintf(reply, "{\"ok\": false, \"caught\": true, \"reason\": \"%s\"}", why);
+    char *check = capture_end();
+    char *reply = malloc(strlen(why) + (check == NULL ? 0 : strlen(check)) + 96);
+    sprintf(reply, "{\"ok\": false, \"caught\": true, \"reason\": \"%s\", \"check\": \"%s\"}", why, check == NULL ? "" : check);
+    free(check);
     return reply;
 }
 
@@ -441,8 +499,8 @@ static bool write_private_file(const char *library, const char *directory, char 
 
 static Copy *open_copy(const char *library, const char *directory, const char **why)
 {
-    if (tracked_count >= MAX_TRACKED || recoveries >= MAX_RECOVERIES) {
-        *why = "the private copy of Principia has failed too often in this session";
+    if (tracked_count >= MAX_TRACKED) {
+        *why = "too many private copies of Principia are open";
         return NULL;
     }
     char path[4096];
@@ -517,7 +575,6 @@ static char *body_states(const char *library, const char *directory, double ut, 
     const char *why = NULL;
     Copy *volatile copy = current;
     if (sigsetjmp(recover, 1) != 0) {
-        recoveries++;
         set_current(NULL);
         return caught("a fatal check in the private copy was caught during a diagnostic");
     }
@@ -604,7 +661,6 @@ static char *serve(char *request)
             in_call = 0;
             return refusal("the forced check did not fire");
         }
-        recoveries++;
         set_current(NULL);
         return caught("a fatal check in the private copy was caught");
     }
@@ -665,7 +721,6 @@ static char *serve(char *request)
         in_call = 0;
         return reply;
     }
-    recoveries++;
     set_current(NULL);
     return caught("a fatal check in the private copy was caught, and it has been set aside");
 }
@@ -692,7 +747,9 @@ static void *call_thread(void *argument)
         job = NULL;
         serving = true;
         pthread_mutex_unlock(&gate);
+        capture_begin();
         char *reply = serve(request);
+        free(capture_end());
         free(request);
         pthread_mutex_lock(&gate);
         if (thread_generation != generation) {
@@ -759,7 +816,6 @@ char *gonogo_principia_exchange(const char *request, int timeout_seconds)
         start_thread_locked();
     }
     if (current != NULL && current->poisoned) {
-        recoveries++;
         current = NULL;
     }
     job = strdup(request);
@@ -774,7 +830,6 @@ char *gonogo_principia_exchange(const char *request, int timeout_seconds)
         clock_gettime(CLOCK_REALTIME, &deadline);
         bool poisoned = current != NULL && current->poisoned;
         if (poisoned || deadline.tv_sec >= give_up) {
-            recoveries++;
             current = NULL;
             free(job);
             job = NULL;
@@ -799,11 +854,6 @@ char *gonogo_principia_exchange(const char *request, int timeout_seconds)
 void gonogo_principia_free(char *reply)
 {
     free(reply);
-}
-
-int gonogo_principia_recoveries(void)
-{
-    return recoveries;
 }
 
 int gonogo_principia_restarts(void)

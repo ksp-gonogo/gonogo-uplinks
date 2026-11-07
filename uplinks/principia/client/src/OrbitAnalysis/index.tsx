@@ -11,6 +11,7 @@ import {
   Band,
   Cluster,
   Countdown,
+  Disclosure,
   magnitudeOf,
   NULL_DISPLAY,
   Row,
@@ -268,11 +269,14 @@ export function OrbitAnalysisRows({
   orbit,
   viewUt,
   source,
+  foldDetails = false,
 }: {
   orbit: PrincipiaOrbitAnalysis;
   viewUt: number | null;
   /** The reading `orbit` was taken from, which dates every figure drawn. */
   source: TopicReading<PrincipiaAnalysis>;
+  /** Puts the figures that describe the orbit behind a disclosure. */
+  foldDetails?: boolean;
 }) {
   const dated = datedBy(source);
   if (
@@ -320,19 +324,89 @@ export function OrbitAnalysisRows({
     );
   }
 
+  /*
+   * What stays on show: how old this is, whether the craft is bound at all, the lowest
+   * it gets, and any collision or reentry ahead. Those can end the mission, and the rest
+   * describes it, so the rest folds away and the panel's room goes to the orbit diagram.
+   */
   return (
     <Stack>
-      {/* The age and the window lead the numbers rather than sitting in the
-          section header, because they qualify the numbers and the numbers are
-          shown in two places: here under the current orbit, and again inside a
-          coast row of the flight plan. A qualifier left in one header is a
-          qualifier the other surface silently drops. */}
+      {/* The age leads the numbers rather than sitting in the section header, because it
+          qualifies them and they are shown in two places: here under the current orbit,
+          and again inside a coast row of the flight plan. A qualifier left in one header
+          is a qualifier the other surface silently drops. */}
       <AgeLine orbit={orbit} viewUt={viewUt} dated={dated} />
       {orbit.gravitationallyBound === false && (
         <Text tone="warn" size="sm">
           Not gravitationally bound
         </Text>
       )}
+      <OrbitHazards orbit={orbit} viewUt={viewUt} dated={dated} />
+      {foldDetails ? (
+        <Disclosure variant="inline" label="ORBIT DETAILS">
+          <OrbitDetails orbit={orbit} dated={dated} />
+        </Disclosure>
+      ) : (
+        <OrbitDetails orbit={orbit} dated={dated} />
+      )}
+    </Stack>
+  );
+}
+
+/** The lowest the craft comes and anything ahead that could end the mission. */
+function OrbitHazards({
+  orbit,
+  viewUt,
+  dated,
+}: Readonly<{
+  orbit: PrincipiaOrbitAnalysis;
+  viewUt: number | null;
+  dated: Dated;
+}>) {
+  return (
+    <>
+      {/* The closest the craft ever comes to the surface over the whole window, from the
+          integrated trajectory rather than a filtered average of it. */}
+      <Row as="div">
+        <RowName>LOWEST</RowName>
+        {orbit.lowestAltitudeMetres == null ? (
+          <Text>{NULL_DISPLAY}</Text>
+        ) : (
+          <Unit value={dated(orbit.lowestAltitudeMetres)} />
+        )}
+      </Row>
+      <HazardRow
+        label="COLLISION"
+        ut={orbit.firstCollisionUt}
+        viewUt={viewUt}
+        dated={dated}
+        tone="nogo"
+      />
+      <HazardRow
+        label="COLLISION RISK"
+        ut={orbit.firstCollisionRiskUt}
+        viewUt={viewUt}
+        dated={dated}
+        tone="warn"
+      />
+      <HazardRow
+        label="REENTRY"
+        ut={orbit.firstReentryUt}
+        viewUt={viewUt}
+        dated={dated}
+        tone="warn"
+      />
+    </>
+  );
+}
+
+/** The figures that describe the orbit, opened on demand. */
+function OrbitDetails({
+  orbit,
+  dated,
+}: Readonly<{ orbit: PrincipiaOrbitAnalysis; dated: Dated }>) {
+  return (
+    <Stack>
       {/* The window every band below belongs to. A band without it is
           meaningless: widening the span widens every interval and can flip every
           adjective in the description. */}
@@ -438,42 +512,8 @@ export function OrbitAnalysisRows({
           max={orbit.meanApoapsisAltitudeMetres?.max}
         />
       </Row>
-      {/* A different claim from the periapsis band above, and the one a safety
-          check reads: the closest the craft ever comes to the surface over the
-          whole window, from the integrated trajectory rather than a filtered
-          average of it. */}
-      <Row as="div">
-        <RowName>LOWEST</RowName>
-        {orbit.lowestAltitudeMetres == null ? (
-          <Text>{NULL_DISPLAY}</Text>
-        ) : (
-          <Unit value={dated(orbit.lowestAltitudeMetres)} />
-        )}
-      </Row>
-
       <GroundTrackRows orbit={orbit} dated={dated} />
 
-      <HazardRow
-        label="COLLISION"
-        ut={orbit.firstCollisionUt}
-        viewUt={viewUt}
-        dated={dated}
-        tone="nogo"
-      />
-      <HazardRow
-        label="COLLISION RISK"
-        ut={orbit.firstCollisionRiskUt}
-        viewUt={viewUt}
-        dated={dated}
-        tone="warn"
-      />
-      <HazardRow
-        label="REENTRY"
-        ut={orbit.firstReentryUt}
-        viewUt={viewUt}
-        dated={dated}
-        tone="warn"
-      />
     </Stack>
   );
 }
@@ -624,7 +664,12 @@ export function OrbitAnalysisSection() {
           </Text>
         )}
 
-        <OrbitAnalysisRows orbit={orbit} viewUt={viewUt} source={reading} />
+        <OrbitAnalysisRows
+          orbit={orbit}
+          viewUt={viewUt}
+          source={reading}
+          foldDetails
+        />
 
         {/* The list is EMPTY now, so this renders nothing, and the guard is why
             it renders nothing rather than an empty accusation.

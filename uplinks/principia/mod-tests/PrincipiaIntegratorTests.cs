@@ -81,8 +81,7 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Equal(1, path.CentreBodyIndex);
             Assert.Equal(2, path.States.Count);
             Assert.Equal(690000.0, path.States[1].X);
-            Assert.Contains("Levi-Civita", path.Basis);
-        }
+                    }
 
         [Fact]
         public void ASlowAnswerNeverHoldsTheCallerAndIsThereForTheNextAsk()
@@ -109,19 +108,50 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
-        public void AWorkerThatDiesRefusesAndTheNextAskStartsAnother()
+        public void TheFirstFailureStopsForecastsForTheSessionAndSaysSo()
         {
             var dead = new FakeChannel();
-            var fresh = new FakeChannel();
-            fresh.Replies.Enqueue(GoodReply);
-            var integrator = Integrator(dead, fresh);
+            var unused = new FakeChannel();
+            unused.Replies.Enqueue(GoodReply);
+            var logged = new List<string>();
+            var queue = new Queue<IPrincipiaWorkerChannel?>(new IPrincipiaWorkerChannel?[] { dead, unused });
+            var integrator = new PrincipiaIntegrator(
+                () => queue.Dequeue(), () => "S\nB\t0\t\nB\t1\t0\n", "", null, (_, m) => logged.Add(m));
+            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
 
             var first = integrator.Propagate(Seed, 200.0, 8);
-            Assert.False(first.Solved);
-            Assert.Contains("stopped", first.Refusal);
-            Assert.True(dead.Disposed);
+            var again = integrator.Propagate(Seed, 300.0, 8);
 
-            Assert.True(integrator.Propagate(Seed, 200.0, 8).Solved);
+            Assert.False(first.Solved);
+            Assert.False(again.Solved);
+            Assert.False(again.StillWorking);
+            Assert.Empty(unused.Requests);
+            Assert.Equal(PrincipiaIntegrator.StoppedSentence, integrator.StoppedReason);
+            Assert.Contains(logged, line => line.Contains("UT 100"));
+        }
+
+        [Fact]
+        public void AFatalCheckIsLoggedWithItsTextAndTheStateThatCausedIt()
+        {
+            var channel = new FakeChannel();
+            channel.Replies.Enqueue(
+                "{\"ok\": false, \"caught\": true, \"reason\": \"a fatal check was caught\", \"check\": \"map_util.hpp:63] Check failed: Map key not found: 999\"}");
+            var logged = new List<KeyValuePair<UplinkLogLevel, string>>();
+            var integrator = new PrincipiaIntegrator(
+                () => channel,
+                () => "S\nB\t1\t0\n",
+                "",
+                null,
+                (level, message) => logged.Add(new KeyValuePair<UplinkLogLevel, string>(level, message)));
+            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
+
+            integrator.Propagate(Seed, 200.0, 8);
+
+            var line = Assert.Single(logged);
+            Assert.Equal(UplinkLogLevel.Error, line.Key);
+            Assert.Contains("Map key not found: 999", line.Value);
+            Assert.Contains("UT 100", line.Value);
+            Assert.Contains("700000", line.Value);
         }
 
         [Fact]
@@ -168,7 +198,6 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Equal(TrajectoryKind.Analytic, analytic.Kind);
             Assert.Empty(channel.Requests.FindAll(r => r.Contains("analytic")));
             Assert.Equal(TrajectoryKind.Integrated, accurate.Kind);
-            Assert.Equal(PrincipiaPropagationProvider.ProviderIdValue, accurate.ProviderId);
         }
 
         [Fact]
@@ -290,7 +319,7 @@ namespace GonogoPrincipiaUplink.Tests
             var force = 0;
             var logged = new List<string>();
             var integrator = new PrincipiaIntegrator(
-                () => route(directory), system.ToText, directory, () => force-- > 0, logged.Add);
+                () => route(directory), system.ToText, directory, () => force-- > 0, (_, message) => logged.Add(message));
             integrator.Authorise(library, "test build", MayRun);
             var seed = new PropagationSeed(
                 new StateVector(new Vector3d(700_000.0, 0.0, 0.0), new Vector3d(0.0, Math.Sqrt(Mu / 700_000.0), 0.0)),
@@ -331,26 +360,20 @@ namespace GonogoPrincipiaUplink.Tests
             }
             Assert.Contains(logged, line => line.Contains("Kerbin at UT"));
 
-            // A fatal check in the copy leaves this process running and the next ask answered.
+            // A fatal check in the copy leaves this process running, is logged with its
+            // text, and ends forecasts for the session.
             force = 1;
             var later = new PropagationSeed(seed.State, 1, 2000.0, Mu);
+            path = integrator.Propagate(later, 3000.0, 16);
             deadline.Restart();
-            do
+            while (path.StillWorking && deadline.ElapsedMilliseconds < 60000)
             {
                 path = integrator.Propagate(later, 3000.0, 16);
             }
-            while (!path.Solved && path.StillWorking && deadline.ElapsedMilliseconds < 60000);
-            if (!path.Solved)
-            {
-                // The separate route loses its process to the check, and the next ask starts another.
-                path = integrator.Propagate(later, 3000.0, 16);
-                deadline.Restart();
-                while (!path.Solved && deadline.ElapsedMilliseconds < 60000)
-                {
-                    path = integrator.Propagate(later, 3000.0, 16);
-                }
-            }
-            Assert.True(path.Solved, path.Refusal);
+            Assert.False(path.Solved);
+            Assert.Equal(PrincipiaIntegrator.StoppedSentence, integrator.StoppedReason);
+            Assert.Contains(logged, line => line.Contains("UT 2000"));
+            Assert.Contains(logged, line => line.Contains("Check failed") && line.Contains("UT 2000"));
         }
 
         [Fact]
@@ -375,22 +398,6 @@ namespace GonogoPrincipiaUplink.Tests
 
             Assert.Equal(1.0, diagnostic.RotationAt(150.0));
             Assert.Null(diagnostic.RotationAt(50.0));
-        }
-
-        [Fact]
-        public void ACaughtFailureLeavesALineAnOperatorCanFind()
-        {
-            var channel = new FakeChannel();
-            channel.Replies.Enqueue("{\"ok\": false, \"caught\": true, \"reason\": \"a fatal check was caught\"}");
-            var logged = new List<string>();
-            var integrator = new PrincipiaIntegrator(
-                () => channel, () => "S\nB\t1\t0\n", "", null, logged.Add);
-            integrator.Authorise("/lib/principia.so", "Levi-Civita", MayRun);
-
-            var path = integrator.Propagate(Seed, 200.0, 8);
-
-            Assert.False(path.Solved);
-            Assert.Contains(logged, line => line.Contains("a fatal check was caught"));
         }
     }
 }

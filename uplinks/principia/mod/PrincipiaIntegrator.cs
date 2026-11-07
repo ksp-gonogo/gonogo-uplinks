@@ -28,6 +28,15 @@ namespace GonogoPrincipiaUplink
         /// <summary>The furthest one path reaches, in seconds: longer than any widget asks, short of what a long catch-up would cost.</summary>
         public const double MaxSpanSeconds = 30 * 86400.0;
 
+        /// <summary>What a stopped copy tells an asker and the Uplink's roster entry.</summary>
+        public const string StoppedSentence =
+            "Principia's forecasts stopped after an internal error. Restart the game to bring them back.";
+
+        /// <summary>Why forecasts stopped for this session, or null while they run.</summary>
+        public string? StoppedReason { get; private set; }
+
+        private bool _reportedBuild;
+
         private const string Catching =
             "Principia is still catching up to that instant. Ask again shortly.";
 
@@ -35,7 +44,7 @@ namespace GonogoPrincipiaUplink
         private readonly Func<string?> _system;
         private readonly string _directory;
         private readonly Func<bool> _forceCheck;
-        private readonly Action<string> _log;
+        private readonly Action<UplinkLogLevel, string> _log;
         private readonly PrincipiaDiagnostic? _diagnostic;
         private readonly object _gate = new object();
         private readonly object _channelGate = new object();
@@ -63,14 +72,14 @@ namespace GonogoPrincipiaUplink
             Func<string?> system,
             string directory = "",
             Func<bool>? forceCheck = null,
-            Action<string>? log = null,
+            Action<UplinkLogLevel, string>? log = null,
             PrincipiaDiagnostic? diagnostic = null)
         {
             _spawn = spawn ?? throw new ArgumentNullException(nameof(spawn));
             _system = system ?? throw new ArgumentNullException(nameof(system));
             _directory = directory;
             _forceCheck = forceCheck ?? (() => false);
-            _log = log ?? (_ => { });
+            _log = log ?? ((_, _) => { });
             _diagnostic = diagnostic;
         }
 
@@ -82,6 +91,10 @@ namespace GonogoPrincipiaUplink
         {
             lock (_gate)
             {
+                if (StoppedReason != null)
+                {
+                    return;
+                }
                 _libraryPath = libraryPath;
                 if (!decision.MayRun || string.IsNullOrEmpty(libraryPath))
                 {
@@ -216,7 +229,8 @@ namespace GonogoPrincipiaUplink
             catch (Exception)
             {
                 DropChannel();
-                path = PropagatedPath.Refused("Principia's private copy stopped before it answered.");
+                Stop("talking to the copy failed", null, seed);
+                path = PropagatedPath.Refused(StoppedSentence);
             }
 
             lock (_gate)
@@ -251,30 +265,70 @@ namespace GonogoPrincipiaUplink
 
                 if (_forceCheck())
                 {
-                    Report(channel.Exchange("X\t" + library + "\t" + _directory + "\n"));
+                    if (Report(channel.Exchange("X\t" + library + "\t" + _directory + "\n"), seed))
+                    {
+                        return PropagatedPath.Refused(StoppedSentence);
+                    }
                 }
 
                 var reply = channel.Exchange(Request(library, _directory, system, seed, toUt, count));
                 if (reply == null)
                 {
                     DropChannel();
-                    return PropagatedPath.Refused("Principia's private copy stopped before it answered.");
+                    Stop("the copy ended without answering", null, seed);
+                    return PropagatedPath.Refused(StoppedSentence);
                 }
-                Report(reply);
-                var path = Parse(reply, seed, basis);
-                _diagnostic?.Compare(channel, library, _directory, system, seed.Ut, _log);
+                if (Report(reply, seed))
+                {
+                    return PropagatedPath.Refused(StoppedSentence);
+                }
+                var path = Parse(reply, seed);
+                if (path.Solved && !_reportedBuild)
+                {
+                    _reportedBuild = true;
+                    _log(UplinkLogLevel.Info, "private copy computing paths: " + basis);
+                }
+                _diagnostic?.Compare(channel, library, _directory, system, seed.Ut, message => _log(UplinkLogLevel.Info, message));
                 return path;
             }
         }
 
-        private void Report(string? reply)
+        /*
+         * A fatal check most likely means this request was wrong, so asking again would
+         * fail again, and each copy set aside keeps its threads and heap until the game
+         * exits. So the first one ends forecasts for the session.
+         */
+        private void Stop(string what, string? check, PropagationSeed? seed)
         {
-            if (PrincipiaWorkerProcess.BoolField(reply, "caught") == true)
+            lock (_gate)
             {
-                _log("[Gonogo] Principia's private copy: "
-                    + (PrincipiaWorkerProcess.PlainStringField(reply, "reason") ?? "a failure was caught")
-                    + ". The game is unaffected, and the next prediction opens a new copy.");
+                _refusal = StoppedSentence;
+                StoppedReason = StoppedSentence;
+                _held = null;
+                _heldKey = null;
             }
+            _log(
+                UplinkLogLevel.Error,
+                "private copy: " + what + (string.IsNullOrEmpty(check) ? "" : ": " + check!.Trim())
+                    + (seed == null ? "" : ". Asked from UT " + Text(seed.Value.Ut) + ", body "
+                        + seed.Value.ParentBodyIndex.ToString(CultureInfo.InvariantCulture)
+                        + ", state " + Text(seed.Value.State.Position.X) + "," + Text(seed.Value.State.Position.Y) + ","
+                        + Text(seed.Value.State.Position.Z) + "," + Text(seed.Value.State.Velocity.X) + ","
+                        + Text(seed.Value.State.Velocity.Y) + "," + Text(seed.Value.State.Velocity.Z))
+                    + ". Forecasts are off until the game restarts.");
+        }
+
+        private bool Report(string? reply, PropagationSeed? seed)
+        {
+            if (PrincipiaWorkerProcess.BoolField(reply, "caught") != true)
+            {
+                return false;
+            }
+            Stop(
+                PrincipiaWorkerProcess.PlainStringField(reply, "reason") ?? "a failure was caught",
+                PrincipiaWorkerProcess.PlainStringField(reply, "check"),
+                seed);
+            return true;
         }
 
         private void DropChannel()
@@ -318,7 +372,7 @@ namespace GonogoPrincipiaUplink
                 + "\n" + system;
         }
 
-        internal static PropagatedPath Parse(string reply, PropagationSeed seed, string? basis)
+        internal static PropagatedPath Parse(string reply, PropagationSeed seed)
         {
             if (PrincipiaWorkerProcess.BoolField(reply, "ok") != true)
             {
@@ -368,7 +422,6 @@ namespace GonogoPrincipiaUplink
                 CentreBodyIndex = seed.ParentBodyIndex,
                 States = states,
                 ReachedUt = reached,
-                Basis = basis,
             };
         }
     }

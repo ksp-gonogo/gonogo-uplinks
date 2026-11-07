@@ -181,12 +181,7 @@ namespace GonogoPrincipiaUplink
             {
                 return PropagatedPath.Refused("Principia's build is not available to integrate this.");
             }
-            var path = _integrator.Propagate(seed, toUt, maxPoints);
-            if (path.Solved)
-            {
-                path.ProviderId = ProviderId;
-            }
-            return path;
+            return _integrator.Propagate(seed, toUt, maxPoints);
         }
 
         public RadiusExtremes? RadiusExtremesOf(PropagationTarget target) =>

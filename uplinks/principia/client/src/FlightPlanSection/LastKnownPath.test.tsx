@@ -1,4 +1,4 @@
-import { act, screen, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
+import { act, screen, setupStreamFixture, waitFor } from "@ksp-gonogo/sitrep-sdk/testing";
 import { renderWithRail as render, visibleText } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
 import { axe } from "../test/axe.js";
@@ -15,8 +15,6 @@ const solved = {
     kind: 2,
     centreBodyIndex: 1,
     reachedUt: VIEW_UT + 3600,
-    providerId: "principia-propagation",
-    basis: "Principia Levi-Civita, the game's own arithmetic",
     states: [0, 1, 2].map((i) => ({
       ut: VIEW_UT - 40 + i * 1800,
       x: 700000 * Math.cos(i),
@@ -43,7 +41,7 @@ function mount(answer: unknown) {
       <LastKnownPathRow viewUt={VIEW_UT} />
     </stream.Provider>,
   );
-  return { container: result.container, asked };
+  return { container: result.container, asked, emit: stream.emit };
 }
 
 async function press() {
@@ -54,16 +52,45 @@ async function press() {
 }
 
 describe("the flight plan's plot from the last known state", () => {
-  it("asks for the accurate answer an hour past the view and draws what comes back, saying what computed it", async () => {
+  it("asks for the accurate answer an hour past the view and draws what comes back, saying how old its start is", async () => {
     const { container, asked } = mount(solved);
     await press();
 
     expect(asked).toHaveLength(1);
     expect(asked[0]).toMatchObject({ certification: 0 });
     expect(container.querySelector("[data-last-known-path] polyline")).not.toBeNull();
-    expect(visibleText(container)).toContain("INTEGRATED");
-    expect(visibleText(container)).toContain("Levi-Civita");
+    expect(visibleText(container)).toContain("COMPUTED FROM STATE OF");
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("takes the plot away and disables the press once forecasts have stopped", async () => {
+    const { container, emit } = mount(solved);
+    await press();
+    expect(container.querySelector("[data-last-known-path]")).not.toBeNull();
+
+    act(() => {
+      emit("system.uplinks", {
+        uplinks: [
+          {
+            id: "principia",
+            version: "1.0.0",
+            available: true,
+            reason: null,
+            ownedPrefixes: [],
+            health: {
+              state: 1,
+              detail: "Forecasts stopped.",
+              facts: [{ label: "forecasts", value: "stopped" }],
+            },
+          },
+        ],
+      }, { validAt: VIEW_UT });
+    });
+    await waitFor(() =>
+      expect(container.querySelector("[data-last-known-path]")).toBeNull(),
+    );
+    const button = screen.getByRole("button", { name: /PLOT NEXT HOUR FROM HERE/i });
+    expect(button.getAttribute("aria-disabled") === "true" || (button as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("shows why when there is no path, and draws nothing", async () => {

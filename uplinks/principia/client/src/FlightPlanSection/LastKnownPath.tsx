@@ -1,12 +1,10 @@
 import type { LastKnownPathReply } from "@ksp-gonogo/sitrep-sdk";
 import {
   PropagationCertification,
-  TrajectoryKind,
   useLastKnownPath,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Badge,
   Button,
   Cluster,
   Countdown,
@@ -17,6 +15,8 @@ import {
   Stack,
   Text,
 } from "@ksp-gonogo/ui-kit";
+
+import { useForecastsStopped } from "./forecastsStopped.js";
 
 /** How far ahead the plot reaches: an hour is a manoeuvre's worth of context. */
 const ONE_HOUR_SECONDS = 3600;
@@ -77,16 +77,6 @@ export function LastKnownPathResult({
     <Stack>
       <PathPlot states={path.states} />
       <Row as="div">
-        <RowName>PATH</RowName>
-        <Badge tone="neutral">
-          {path.kind === TrajectoryKind.Integrated ? "INTEGRATED" : "CONIC"}
-        </Badge>
-      </Row>
-      <Row as="div">
-        <RowName>COMPUTED BY</RowName>
-        <Text size="sm">{path.basis ?? path.providerId ?? NULL_DISPLAY}</Text>
-      </Row>
-      <Row as="div">
         <RowName>COMPUTED FROM STATE OF</RowName>
         {reply.seededAtUt == null || viewUt === null ? (
           <Text>{NULL_DISPLAY}</Text>
@@ -109,6 +99,7 @@ export function LastKnownPathRow({
   viewUt,
 }: Readonly<{ viewUt: number | null }>) {
   const { solve, reply, pending } = useLastKnownPath();
+  const stopped = useForecastsStopped();
   return (
     <Stack>
       <Cluster justify="start" gap="related-dense">
@@ -122,12 +113,13 @@ export function LastKnownPathRow({
               });
             }
           }}
-          disabled={pending || viewUt === null}
+          disabled={pending || viewUt === null || stopped !== null}
+          disabledReason={stopped ?? undefined}
         >
           {pending ? "WORKING" : "PLOT NEXT HOUR FROM HERE"}
         </Button>
       </Cluster>
-      <LastKnownPathResult reply={reply} viewUt={viewUt} />
+      {stopped === null && <LastKnownPathResult reply={reply} viewUt={viewUt} />}
     </Stack>
   );
 }

@@ -228,6 +228,7 @@ namespace GonogoPrincipiaUplink
             }
 
             _host = host;
+            HostLog = (level, message) => host.Log(level, "principia", message);
             RegisterPropagation(host);
             RegisterControlFrame(host);
             RegisterManeuverPlan(host);
@@ -713,7 +714,7 @@ namespace GonogoPrincipiaUplink
             () => SystemRequest?.Invoke(),
             PrincipiaPrivateCopy.PrivateFileDirectory,
             ForceCheckRequested,
-            message => GameLog?.Invoke(message),
+            (level, message) => HostLog?.Invoke(level, message),
             Diagnostic);
 
         /// <summary>Sets the game's plugin beside the private copy's in the game's log.</summary>
@@ -722,8 +723,25 @@ namespace GonogoPrincipiaUplink
         /// <summary>Reads the game for <see cref="Diagnostic"/>. Set only by the game-facing partial.</summary>
         private static Func<PrincipiaGameReading?>? GameReading;
 
-        /// <summary>Writes to the game's log. Set only by the game-facing partial.</summary>
-        private static Action<string>? GameLog;
+        /// <summary>Writes through the host's log, which reaches KSP.log. Set when the host registers this Uplink.</summary>
+        private static Action<UplinkLogLevel, string>? HostLog;
+
+        /// <summary>The roster fact a client reads to learn that forecasts stopped this session.</summary>
+        private const string ForecastsFact = "forecasts";
+
+        /// <summary>The Uplink's health with stopped forecasts counted in; a refused build stays refused.</summary>
+        internal static UplinkHealth WithForecasts(UplinkHealth health, string? stoppedReason)
+        {
+            if (stoppedReason == null || health.State == UplinkHealthState.Unavailable)
+            {
+                return health;
+            }
+            var facts = new List<UplinkHealthFact>(health.Facts)
+            {
+                new UplinkHealthFact(ForecastsFact, "stopped"),
+            };
+            return new UplinkHealth(UplinkHealthState.Degraded, stoppedReason, facts);
+        }
 
         /// <summary>
         /// The copy inside the game, unless a file named <c>use-separate-process</c> sits
@@ -871,7 +889,7 @@ namespace GonogoPrincipiaUplink
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, _guard.Reason);
             }
-            return (_binaryHealth ?? _detecting).ToHealth();
+            return WithForecasts((_binaryHealth ?? _detecting).ToHealth(), _integrator.StoppedReason);
         }
     }
 }

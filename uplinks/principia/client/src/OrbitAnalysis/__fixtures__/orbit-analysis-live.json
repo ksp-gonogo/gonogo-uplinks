@@ -7,7 +7,7 @@
       "w": 12,
       "h": 14
     },
-    "paints": ["N-BODY ORBIT ANALYSIS", "NODE DRIFT", "SMA"]
+    "paints": ["N-BODY ORBIT ANALYSIS", "LOWEST", "ORBIT DETAILS"]
   },
   "_stream": {
     "pinnedUt": 1000000,

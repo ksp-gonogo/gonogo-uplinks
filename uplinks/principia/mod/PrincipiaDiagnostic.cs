@@ -95,11 +95,11 @@ namespace GonogoPrincipiaUplink
             }
             if (reading == null)
             {
-                log("[Gonogo] Principia diagnostic: nothing read from the game yet");
+                log("Principia diagnostic: nothing read from the game yet");
                 return;
             }
 
-            log("[Gonogo] Principia diagnostic: " + reading.FrameFacts
+            log("Principia diagnostic: " + reading.FrameFacts
                 + " rotation now " + Number(reading.InverseRotAngle) + " deg at UT " + Number(reading.Ut)
                 + ", at seed UT " + Number(seedUt) + " " + (RotationAt(seedUt) is double then ? Number(then) + " deg" : "not seen")
                 + ", in the copy's system line " + FirstLineEnd(system) + " deg");
@@ -115,12 +115,12 @@ namespace GonogoPrincipiaUplink
             var text = PrincipiaWorkerProcess.PlainStringField(reply, "points");
             if (text == null)
             {
-                log("[Gonogo] Principia diagnostic: the copy gave no body states: " + reply);
+                log("Principia diagnostic: the copy gave no body states: " + reply);
                 return;
             }
             foreach (var line in Lines(text, reading))
             {
-                log("[Gonogo] Principia diagnostic: " + line);
+                log("Principia diagnostic: " + line);
             }
         }
 

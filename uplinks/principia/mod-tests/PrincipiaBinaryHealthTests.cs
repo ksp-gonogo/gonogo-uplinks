@@ -157,6 +157,17 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
+        public void StoppedForecastsDegradeTheUplinkAndSayWhatToDo()
+        {
+            var health = PrincipiaUplink.WithForecasts(
+                Available().Health(), PrincipiaIntegrator.StoppedSentence);
+
+            Assert.Equal(UplinkHealthState.Degraded, health.State);
+            Assert.Contains("Restart the game", health.Detail);
+            Assert.Equal("stopped", FactNamed(health, "forecasts"));
+        }
+
+        [Fact]
         public void AVettedBuildIsHealthy()
         {
             var health = PrincipiaBinaryHealth
