@@ -244,7 +244,7 @@ namespace Gonogo.ScansatUplink
             // PQS/BiomeMap (SCANsat-independent): they're released under the
             // discover-by-scanning fiction alongside the delayed coverage
             // that reveals them (spec §2.2).
-            ChannelDeclaration Template(SampleKind kind, string prefix) => new ChannelDeclaration
+            ChannelDeclaration Template(string prefix, SampleKind kind) => new ChannelDeclaration
             {
                 Kind = kind,
                 Delivery = Delivery.LossyLatest,
@@ -252,11 +252,11 @@ namespace Gonogo.ScansatUplink
                 Delay = DelayRole.Delayed,
                 Requires = ScanChannels.RequiresFor(prefix),
             };
-            _coverageSource = host.RegisterDynamicNamespace(ScanChannels.CoveragePrefix, Template(SampleKind.Continuous, ScanChannels.CoveragePrefix));
-            _maskSource = host.RegisterDynamicNamespace(ScanChannels.MaskPrefix, Template(SampleKind.Discrete, ScanChannels.MaskPrefix));
-            _heightSource = host.RegisterDynamicNamespace(ScanChannels.HeightPrefix, Template(SampleKind.Discrete, ScanChannels.HeightPrefix));
-            _biomeSource = host.RegisterDynamicNamespace(ScanChannels.BiomePrefix, Template(SampleKind.Discrete, ScanChannels.BiomePrefix));
-            _anomaliesSource = host.RegisterDynamicNamespace(ScanChannels.AnomaliesPrefix, Template(SampleKind.Discrete, ScanChannels.AnomaliesPrefix));
+            _coverageSource = host.RegisterDynamicNamespace(ScanChannels.CoveragePrefix, Template(ScanChannels.CoveragePrefix, SampleKind.Continuous));
+            _maskSource = host.RegisterDynamicNamespace(ScanChannels.MaskPrefix, Template(ScanChannels.MaskPrefix, SampleKind.Discrete));
+            _heightSource = host.RegisterDynamicNamespace(ScanChannels.HeightPrefix, Template(ScanChannels.HeightPrefix, SampleKind.Discrete));
+            _biomeSource = host.RegisterDynamicNamespace(ScanChannels.BiomePrefix, Template(ScanChannels.BiomePrefix, SampleKind.Discrete));
+            _anomaliesSource = host.RegisterDynamicNamespace(ScanChannels.AnomaliesPrefix, Template(ScanChannels.AnomaliesPrefix, SampleKind.Discrete));
 
             // Capture-on-main / handle-on-Courier (see
             // IUplinkHost.AddSampledSource): EVERY KSP/SCANsat/stock read now
