@@ -53,3 +53,53 @@ test("an ask capture's solved paths are read whatever the casing of their states
   assert.equal(paths.length, 2);
   assert.deepEqual(paths[1][0], { ut: 1, q: [2, 3, 4], p: [5, 6, 7] });
 });
+
+/*
+ * A loaded craft as the probe reads it during FixedUpdate: the craft one step behind, its
+ * parent already at the new instant, so the line is q(t − Δt) − Δt·v_parent.
+ */
+function loadedRecord(seconds, withBodies = true) {
+  const step = 0.02;
+  const kerbin = [-5971.86, 7106.29, 0.003];
+  const lines = [];
+  for (let k = 0; k * step <= seconds; k++) {
+    const ut = k * step;
+    const s = keplerState(elements, ut - step);
+    const line = {
+      kind: "flown",
+      ut,
+      rotation,
+      packed: false,
+      parent: 1,
+      q: toPlanetarium(s.q.map((x, i) => x - step * kerbin[i])),
+      p: toPlanetarium(s.p),
+      elements,
+    };
+    if (withBodies && k % 10 === 0) line.bodies = { 1: { q: [1.04e10, 8.7e9, 0], p: toPlanetarium(kerbin) } };
+    lines.push(line);
+  }
+  return lines;
+}
+
+test("a loaded craft's line is put back to its own state one step earlier", () => {
+  const flown = flownStates(loadedRecord(60));
+  for (const f of flown.slice(1, -1)) {
+    const truth = keplerState(elements, f.ut);
+    assert.ok(Math.abs(f.line.ut - 0.02 - f.ut) < 1e-12);
+    truth.q.forEach((v, i) => assert.ok(Math.abs(v - f.q[i]) < 1e-6));
+  }
+  const path = [];
+  for (let ut = 1; ut <= 59; ut += 7.3) path.push({ ut, ...keplerState(elements, ut) });
+  assert.ok(gap(flown, path).worst.dq < 1e-4);
+});
+
+test("read as written, the loaded record is a parent's step of velocity away", () => {
+  const flown = flownStates(loadedRecord(60).map((l) => ({ ...l, packed: true })));
+  const path = [{ ut: 30, ...keplerState(elements, 30) }];
+  assert.ok(gap(flown, path).worst.dq > 150);
+});
+
+test("a loaded line with no parent velocity recorded around it is left as read and marked", () => {
+  const flown = flownStates(loadedRecord(1, false));
+  assert.ok(flown.every((f) => f.uncorrected));
+});
