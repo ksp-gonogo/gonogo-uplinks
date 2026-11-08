@@ -12,7 +12,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { ResearchQueue } from "./index.js";
 import { RP1_RESEARCH_SET_RATE_COMMAND } from "./RateControl.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 function node(overrides: Record<string, unknown> = {}) {
   return {

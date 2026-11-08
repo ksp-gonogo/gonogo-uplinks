@@ -17,7 +17,7 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { ProgramDetail } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 installFixedSizeResizeObserver({ width: 320, height: 140 });
 

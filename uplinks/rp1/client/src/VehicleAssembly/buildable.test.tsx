@@ -17,7 +17,7 @@ import {
   RP1_BUILD_START_COMMAND,
 } from "./Buildable.js";
 import { VehicleAssembly } from "./index.js";
-import { findButtonDescribedBy } from "../test/describedButton";
+import { findButtonDescribedBy } from "../test/describedButton.js";
 
 const CAREER = {
   balances: { funds: 289_848, reputation: 40, science: 12 },

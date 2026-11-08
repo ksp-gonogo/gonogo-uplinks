@@ -15,7 +15,7 @@ import {
   RP1_PERSONNEL_HIRE_COMMAND,
 } from "./HireFire.js";
 import { KscComplexes } from "./index.js";
-import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton";
+import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton.js";
 
 const CAPE = {
   anyOperational: true,

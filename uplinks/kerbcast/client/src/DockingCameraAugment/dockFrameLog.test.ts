@@ -5,7 +5,7 @@ import {
   DOCK_FRAME_LOG_SWITCH,
   dockFrameLogEnabled,
   logDockFrame,
-} from "./dockFrameLog";
+} from "./dockFrameLog.js";
 
 function frame(rtp: number, x: number): DisplayedFrameUt {
   return {

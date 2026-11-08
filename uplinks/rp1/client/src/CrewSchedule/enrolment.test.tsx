@@ -14,7 +14,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { TrainingEnrolment } from "./enrolment.js";
 import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
-import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton";
+import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton.js";
 
 /** RP-1's own crew rules: every mechanic on, both training rates at 1. */
 const DEFAULT_RULES = {

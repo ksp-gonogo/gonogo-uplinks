@@ -17,7 +17,7 @@ import {
   RP1_TRAINING_CANCEL_COMMAND,
   RP1_TRAINING_REMOVE_COMMAND,
 } from "./training.js";
-import { findAllButtonsDescribedBy } from "../test/describedButton";
+import { findAllButtonsDescribedBy } from "../test/describedButton.js";
 
 const NAUT = "Ludrey Kerman";
 const MATE = "Nedcas Kerman";

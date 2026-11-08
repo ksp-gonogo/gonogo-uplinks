@@ -15,7 +15,7 @@ import {
   RP1_HIRE_TARGET_SET_COMMAND,
 } from "./HireTarget.js";
 import { KscComplexes } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const CAPE = {
   anyOperational: true,

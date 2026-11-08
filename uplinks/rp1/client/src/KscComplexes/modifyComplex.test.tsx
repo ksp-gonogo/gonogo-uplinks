@@ -12,7 +12,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
 import { RP1_COMPLEX_MODIFY_COMMAND } from "./Modify.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const CAPE = {
   anyOperational: true,

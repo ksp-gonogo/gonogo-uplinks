@@ -20,7 +20,7 @@ import {
   RP1_PAD_RENAME_COMMAND,
 } from "./Lifecycle.js";
 import { RP1_COMPLEX_NEW_COMMAND } from "./NewComplex.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const CAPE = {
   engineers: 30,

@@ -17,7 +17,7 @@ import {
 } from "../AdminBuilding/leadersScreen.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { LeaderDetail } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const YEAR = 31_557_600;
 

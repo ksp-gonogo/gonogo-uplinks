@@ -10,7 +10,7 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { StartResearch } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const renderedTrees: Array<() => void> = [];
 

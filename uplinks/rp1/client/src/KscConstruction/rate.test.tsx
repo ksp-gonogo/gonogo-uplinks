@@ -15,7 +15,7 @@ import {
   RP1_CONSTRUCTION_CANCEL_COMMAND,
   RP1_CONSTRUCTION_SET_RATE_COMMAND,
 } from "./RateControl.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const ID = "6f1c2a0e-3b4d-4c5e-8f60-7a8b9c0d1e2f";
 

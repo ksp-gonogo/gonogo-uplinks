@@ -16,7 +16,7 @@ import {
   RP1_COMPLEX_RUSH_COMMAND,
   RP1_PERSONNEL_ASSIGN_COMMAND,
 } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
+import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const CAPE = {
   anyOperational: true,
