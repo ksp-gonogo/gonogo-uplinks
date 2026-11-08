@@ -30,6 +30,7 @@
 
 import {
   type TopicPayload,
+  registerDynamicTopicPrefix,
   registerUplinkTopic,
   registerEnumMembers,
   registerTopicUnits,
@@ -65,6 +66,14 @@ export const KERBCAST_CAMERAS_TOPIC = "kerbcast.cameras";
  */
 export const KERBCAST_CRAFT_KNOWLEDGE_TOPIC = "kerbcast.craftKnowledge";
 
+/**
+ * The prefix of the per-camera Topics, `kerbcast.lens.<flightId>`, which carry one
+ * camera on another craft at the delay of the place it stands. Its value must
+ * match `KerbcastLensSites.Prefix` in ../../mod/KerbcastLensSites.cs:
+ * `topics.test.ts` asserts that.
+ */
+export const CAMERA_TOPIC_PREFIX = "kerbcast.lens.";
+
 declare module "@ksp-gonogo/sitrep-sdk" {
   interface TopicPayloadMap {
     "kerbcast.available": boolean;
@@ -76,6 +85,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
 registerUplinkTopic(KERBCAST_AVAILABLE_TOPIC);
 registerUplinkTopic(KERBCAST_CAMERAS_TOPIC);
 registerUplinkTopic(KERBCAST_CRAFT_KNOWLEDGE_TOPIC);
+registerDynamicTopicPrefix(CAMERA_TOPIC_PREFIX);
 
 // The runtime half. The SDK's own generated unit map knows nothing about
 // KerbcastCameraEntry, so it cannot hydrate kerbcast.cameras's nine

@@ -10,7 +10,7 @@ const STATIC_STYLE: CSSProperties = {
   inset: 0,
   width: "100%",
   height: "100%",
-  zIndex: 5,
+  zIndex: 1,
   imageRendering: "pixelated",
   pointerEvents: "none",
   background: "#000",

@@ -117,3 +117,22 @@ describe("a command camera and the shared feed's own choice", () => {
     ).toBe(true);
   });
 });
+
+describe("orderCamerasForPicker with the craft being flown", () => {
+  const cameras = [
+    cam({ flightId: 7, vesselName: "Munar Relay" }),
+    cam({ flightId: 42, vesselName: "Kerbal X" }),
+    cam({ flightId: 8, vesselName: "Munar Relay" }),
+    cam({ flightId: 43, vesselName: "Kerbal X" }),
+  ];
+
+  it("lists the craft being flown first, then the rest in the order they appear", () => {
+    const ordered = orderCamerasForPicker(cameras, new Set([42, 43]));
+    expect(ordered.map((c) => c.flightId)).toEqual([42, 43, 7, 8]);
+  });
+
+  it("groups by craft in order of appearance while the flown craft's list is unheard", () => {
+    const ordered = orderCamerasForPicker(cameras);
+    expect(ordered.map((c) => c.flightId)).toEqual([7, 8, 42, 43]);
+  });
+});

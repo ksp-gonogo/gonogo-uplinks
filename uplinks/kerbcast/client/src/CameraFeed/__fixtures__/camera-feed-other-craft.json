@@ -1,0 +1,65 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 43
+    },
+    "caption": "A camera on another craft, shown at the delay of the craft it stands on (4.2 seconds) while the craft being flown is 0.4 seconds away. The aim controls follow the camera's own delay, so they are the staged wheels rather than the live pad",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 0.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      },
+      {
+        "topic": "kerbcast.cameras",
+        "payload": [
+          {
+            "cameraId": 42,
+            "cameraName": "Starboard Cam",
+            "partTitle": "Hullcam Mk1",
+            "vesselId": "vessel:5b1d0c3a-0000-4000-8000-000000000042",
+            "supportsZoom": true,
+            "supportsPan": true
+          }
+        ]
+      },
+      {
+        "topic": "kerbcast.lens.43",
+        "payload": {
+          "cameraId": 43,
+          "cameraName": "Relay Cam",
+          "partTitle": "Hullcam Mk1",
+          "vesselId": "vessel:5b1d0c3a-0000-4000-8000-000000000043",
+          "supportsZoom": true,
+          "supportsPan": true
+        }
+      }
+    ],
+    "delaySeconds": 4.2
+  }
+}

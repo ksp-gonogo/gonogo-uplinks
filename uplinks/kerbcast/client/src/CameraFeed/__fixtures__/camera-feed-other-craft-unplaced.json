@@ -1,0 +1,54 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 43
+    },
+    "caption": "A camera on another craft whose site has not been heard from yet: static under a NO LINK badge, and nothing borrows the delay of the craft being flown. If nothing arrives within a few seconds the camera leaves the picker instead",
+    "unchangedWhenHeld": "the header badge says the camera has no link and static covers the picture, and the picture rides the video track outside the stream",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 0.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      },
+      {
+        "topic": "kerbcast.cameras",
+        "payload": [
+          {
+            "cameraId": 42,
+            "cameraName": "Starboard Cam",
+            "partTitle": "Hullcam Mk1",
+            "vesselId": "vessel:5b1d0c3a-0000-4000-8000-000000000042",
+            "supportsZoom": true,
+            "supportsPan": true
+          }
+        ]
+      }
+    ]
+  }
+}

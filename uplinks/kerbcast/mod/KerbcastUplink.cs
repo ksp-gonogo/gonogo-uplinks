@@ -76,6 +76,7 @@ namespace Gonogo.KerbcastUplink
         private readonly CraftPlaces _craftPlaces = new CraftPlaces();
         private double? _craftLabelsRead;
         private readonly KerbcastLensSites _lensSites = new KerbcastLensSites();
+        private IDynamicChannelSource? _lensSource;
         private IChannelPublisher? _cameras;
         private IChannelPublisher? _craftKnowledge;
         private readonly KerbcastCraftKnowledgeFeed _craftKnowledgeFeed = new KerbcastCraftKnowledgeFeed();
@@ -148,7 +149,7 @@ namespace Gonogo.KerbcastUplink
 
         public void Register(IUplinkHost host)
         {
-            RegisterLensNamespace(host);
+            _lensSource = RegisterLensNamespace(host);
 
             var binding = KerbcastBinding.Bind(
                 KerbcastBinding.IsKerbcastLoaded(), () => new KerbcastApiAdapter());
@@ -403,18 +404,20 @@ namespace Gonogo.KerbcastUplink
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 
         /// <summary>
-        /// Declares the namespace the lens commands name as Subject. Registered even
-        /// when kerbcast is absent, since a command whose Subject resolves to nothing
-        /// takes the whole Uplink offline.
+        /// Declares the namespace the lens commands name as Subject, which also
+        /// carries the reading of each watched camera off the craft being flown, at
+        /// the delay to the place that camera stands. Registered even when kerbcast
+        /// is absent, since a command whose Subject resolves to nothing takes the
+        /// whole Uplink offline.
         /// </summary>
-        private void RegisterLensNamespace(IUplinkHost host)
+        private IDynamicChannelSource RegisterLensNamespace(IUplinkHost host)
         {
-            host.RegisterDynamicNamespace(KerbcastLensSites.Prefix, new ChannelDeclaration
+            return host.RegisterDynamicNamespace(KerbcastLensSites.Prefix, new ChannelDeclaration
             {
-                Kind = SampleKind.Discrete,
+                Kind = SampleKind.Continuous,
                 Delivery = Delivery.LossyLatest,
                 Delay = DelayRole.Delayed,
-                Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
+                Emission = new EmissionPolicy(keyframeIntervalUt: 1, quantum: EmissionQuantum.Absolute(0)),
                 PerLensNode = true,
                 LensSiteForKey = _lensSites.SiteFor,
             });
@@ -515,6 +518,7 @@ namespace Gonogo.KerbcastUplink
             _lensSites.Replace(loaded);
 
             var vesselId = "vessel:" + reported.Value;
+            capture.Lens = ReadWatchedLenses(loaded, vesselId);
             var views = kerbcast.CamerasFor(reported.Value);
             var entries = new List<object?>(views.Count);
 
@@ -527,6 +531,43 @@ namespace Gonogo.KerbcastUplink
             Volatile.Write(ref _cameraCount, entries.Count);
             capture.Entries = entries;
             return capture;
+        }
+
+        /// <summary>
+        /// The reading of every camera off the craft being flown that a client
+        /// watches, keyed by its lens key. Cameras nobody watches are not built.
+        /// </summary>
+        private List<KeyValuePair<string, Dictionary<string, object?>>> ReadWatchedLenses(
+            IEnumerable<KeyValuePair<string, IReadOnlyList<KerbcastView>>> loaded, string activeVesselId)
+        {
+            var lenses = new List<KeyValuePair<string, Dictionary<string, object?>>>();
+            var host = _host;
+            if (host == null)
+            {
+                return lenses;
+            }
+            foreach (var craft in loaded)
+            {
+                if (craft.Key == activeVesselId)
+                {
+                    continue;
+                }
+                foreach (var view in craft.Value)
+                {
+                    if (view.FlightId is not uint id)
+                    {
+                        continue;
+                    }
+                    var key = KerbcastLensSites.KeyFor(id);
+                    if (!host.IsAnyTopicSubscribed(KerbcastLensSites.Prefix + key))
+                    {
+                        continue;
+                    }
+                    lenses.Add(new KeyValuePair<string, Dictionary<string, object?>>(
+                        key, KerbcastCameraEntryBuilder.Build(view, DockingCameraFacts.FromView(view), craft.Key)));
+                }
+            }
+            return lenses;
         }
 
         /// <summary>The craft every active-vessel channel reports, the one a kerbal on EVA left; null with no flight.</summary>
@@ -621,6 +662,15 @@ namespace Gonogo.KerbcastUplink
                 return;
             }
             _cameras?.Publish(capture.Entries, capture.Ut);
+
+            if (capture.Lens == null || _lensSource == null)
+            {
+                return;
+            }
+            foreach (var lens in capture.Lens)
+            {
+                _lensSource.Publisher(lens.Key).Publish(lens.Value, capture.Ut);
+            }
         }
 
         /// <summary>
@@ -745,6 +795,7 @@ namespace Gonogo.KerbcastUplink
         {
             public double Ut;
             public List<object?>? Entries;
+            public List<KeyValuePair<string, Dictionary<string, object?>>>? Lens;
         }
 
         private sealed class NoRateRelease : IDisposable

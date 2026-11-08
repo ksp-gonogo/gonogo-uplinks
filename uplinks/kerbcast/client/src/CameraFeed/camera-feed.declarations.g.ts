@@ -5,6 +5,7 @@ export default {
     "commandCentre.separation",
     "comms.delay",
     "comms.link",
+    "kerbcast.cameras",
     "kerbcast.craftKnowledge",
     "vessel.comms",
     "vessel.identity",

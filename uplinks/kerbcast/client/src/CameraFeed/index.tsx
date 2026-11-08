@@ -60,13 +60,17 @@ registerComponent<CameraFeedConfig>({
   // "Show debug info" lives in the gear modal's Settings tab (paired with the
   // Inputs tab the widget's actions add): not in the in-feed camera dropdown.
   configComponent: CameraFeedConfigPanel,
-  // kerbcast.cameras is pulled direct from the kerbcast DataSource via
-  // custom hooks: not listed here to avoid a duplicate subscription.
+  // The picker's camera list is pulled direct from the kerbcast DataSource via
+  // custom hooks. `kerbcast.cameras` is the craft being flown's own list, which
+  // says whether the displayed camera is one of its; any other camera is read
+  // at its own site's delay through its per-camera Topic.
   // CommNet topics are listed so the orchestrator knows to subscribe them
   // for signal strength / connection status / one-way signal delay (the
   // quality badge in the feed header, and which control the delay mode picks).
   dataRequirements: ["vessel.comms", "comms.link", "comms.delay"],
   dataRates: { fast: ["vessel.flight"] },
+  optionalChannels: ["kerbcast.cameras"],
+  optionalChannelFamilies: ["kerbcast.lens.<flightId>"],
   // Exposes an overlay slot, drawn over the video and passed the feed's pixel
   // dimensions and displayed camera id. No first-party augment fills it yet.
   augmentSlots: ["camera-feed.overlay"],

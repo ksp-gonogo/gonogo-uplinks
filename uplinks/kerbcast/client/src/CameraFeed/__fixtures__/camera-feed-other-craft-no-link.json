@@ -1,0 +1,67 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 43
+    },
+    "caption": "A camera on another craft that streamed and then lost its link for ten seconds of game time: the picture is static under a NO LINK badge, with the camera name and picker still there, where the craft being flown is still live. A camera that never delivered a frame is not shown this way: it leaves the picker instead",
+    "unchangedWhenHeld": "the header badge says the camera has no link and static covers the picture, and the picture rides the video track outside the stream",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbcast.lens.43",
+        "payload": {
+          "cameraId": 43,
+          "cameraName": "Relay Cam",
+          "partTitle": "Hullcam Mk1",
+          "vesselId": "vessel:5b1d0c3a-0000-4000-8000-000000000043",
+          "supportsZoom": true,
+          "supportsPan": true
+        },
+        "validAt": 999990
+      },
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 0.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      },
+      {
+        "topic": "kerbcast.cameras",
+        "payload": [
+          {
+            "cameraId": 42,
+            "cameraName": "Starboard Cam",
+            "partTitle": "Hullcam Mk1",
+            "vesselId": "vessel:5b1d0c3a-0000-4000-8000-000000000042",
+            "supportsZoom": true,
+            "supportsPan": true
+          }
+        ]
+      }
+    ],
+    "delaySeconds": 0.5
+  }
+}

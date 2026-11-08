@@ -75,8 +75,15 @@ import {
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
+import {
+  type CameraSite,
+  isDark,
+  useActiveCameraIds,
+  useCameraSite,
+} from "./cameraSite.js";
 import { frameBox } from "./frameShape.js";
 import { FullscreenExit } from "./FullscreenExit.js";
+import { useTrackUnheard, useUnheardCameras } from "./unheardCameras.js";
 import {
   useDelayedKerbcastStream,
   useDelayedPlaybackStatus,
@@ -220,21 +227,19 @@ export function CameraFeed({
 }: Readonly<ComponentProps<CameraFeedConfig>>) {
   const ds = getUplinkHandle<KerbcastDataSource>("kerbcast");
   const dsClient = ds?.getClient();
-
-  // The one-way delay a pan or zoom waits out before it reaches the camera,
-  // read when the input is made. A delay inside the dead zone is no delay.
+  const activeCameraIds = useActiveCameraIds();
   const liveDelayRef = useRef(0);
   const aimQueue = useMemo(() => new AimQueue(), []);
   const client = useMemo(
     () =>
       dsClient
         ? withDelayedAim(
-            withPickerOrder(dsClient),
+            withPickerOrder(dsClient, activeCameraIds),
             aimQueue,
             () => liveDelayRef.current,
           )
         : undefined,
-    [dsClient, aimQueue],
+    [dsClient, aimQueue, activeCameraIds],
   );
 
   // Ensure the sidecar connection is open before we render.
@@ -407,10 +412,15 @@ export function CameraFeed({
   // because the serial-input handlers below route on it, and a widget reading
   // the mode in two places is a widget that can disagree with itself about
   // which control an operator is holding.
-  const controlMode = currentMode({ oneWaySeconds: signalDelay ?? null });
+  // A camera on another craft is aimed across its own site's delay, and across
+  // nothing while that site is silent: the delay in the dashboard header is the
+  // craft being flown's.
+  const site = useCameraSite(effectiveFlightId);
+  const aimOneWay = aimDelay(site, signalDelay);
+  const controlMode = currentMode({ oneWaySeconds: aimOneWay });
   liveDelayRef.current =
-    controlMode === "live" && delayVisibility(signalDelay ?? null) === "shown"
-      ? (signalDelay?.magnitude ?? 0)
+    controlMode === "live" && delayVisibility(aimOneWay) === "shown"
+      ? (aimOneWay?.magnitude ?? 0)
       : 0;
 
   // ---- Serial-input actions ----
@@ -473,6 +483,9 @@ export function CameraFeed({
 
   useEffect(() => {
     if (effectiveFlightId === null || !client) return;
+    // The strength and the link are the craft being flown's: they say nothing
+    // of a camera standing elsewhere.
+    if (site.kind === "elsewhere") return;
     // If both values are undefined, CommNet data isn't available -- skip.
     if (signalStrength === undefined && commConnected === undefined) return;
 
@@ -506,7 +519,7 @@ export function CameraFeed({
       if (degradeTimerRef.current !== null)
         clearTimeout(degradeTimerRef.current);
     };
-  }, [effectiveFlightId, signalStrength, commConnected, client]);
+  }, [effectiveFlightId, signalStrength, commConnected, client, site.kind]);
 
   // Cross-browser kerbcast video-delay design (2026-07-16), decision 5:
   // "can't delay -> no video". `useDelayedKerbcastStream` (passed to the SDK
@@ -553,7 +566,8 @@ export function CameraFeed({
    * Hidden rather than cleared: the SDK only binds a stream when it changes, so
    * a cleared element would stay dark after the feed returns.
    */
-  const linkLost = commConnected === false;
+  const linkLost =
+    site.kind === "elsewhere" ? isDark(site) : commConnected === false;
   const powerLost = useCraftPowerLost(
     effectiveFlightId === null
       ? undefined
@@ -580,10 +594,15 @@ export function CameraFeed({
     ),
   );
 
-  const pickerIds = useMemo(
-    () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
-    [cameras, requested, effectiveFlightId],
-  );
+  useTrackUnheard(effectiveFlightId, site);
+  const unheard = useUnheardCameras();
+  const pickerIds = useMemo(() => {
+    const ids = selectableFlightIds(cameras, requested ?? effectiveFlightId);
+    // A camera on another craft that never delivered a frame leaves the list,
+    // unless it has since become one of the craft being flown's.
+    for (const id of unheard) if (!activeCameraIds.has(id)) ids.delete(id);
+    return ids;
+  }, [cameras, requested, effectiveFlightId, unheard, activeCameraIds]);
   /* The shared feed latches onto a camera by itself only when no camera is
      requested. If every live camera it could choose is a command camera, they
      are withheld from it then, so it shows nothing instead of one. */
@@ -661,7 +680,9 @@ export function CameraFeed({
   const qualityBadge =
     effectiveFlightId === null
       ? null
-      : describeSignalQuality(commConnected, signalStrength);
+      : site.kind === "elsewhere"
+        ? describeSiteLink(site)
+        : describeSignalQuality(commConnected, signalStrength);
 
   // Delayed camera control. `currentMode` (derived above, where the
   // serial-input handlers also read it) maps null → "no-path" (never coerce to
@@ -701,6 +722,7 @@ export function CameraFeed({
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
   const frame = frameBox(stageBox);
   const showSetpointSurface =
+    !isDark(site) &&
     controlMode !== "live" &&
     effectiveFlightId !== null &&
     steerable &&
@@ -725,7 +747,10 @@ export function CameraFeed({
         panelAside={
           <LostCameraMenu
             cameras={cameras.filter(
-              (c) => isPartCamera(c) && !pickerIds.has(c.flightId),
+              (c) =>
+                isPartCamera(c) &&
+                !pickerIds.has(c.flightId) &&
+                !(unheard.has(c.flightId) && !activeCameraIds.has(c.flightId)),
             )}
             onSelect={(nextFlightId) =>
               onConfigChange?.({
@@ -888,6 +913,51 @@ function FrameSizeReport({
 }>) {
   useReportFrameSize(flightId, stage);
   return null;
+}
+
+/**
+ * The one-way delay a camera is aimed across: its own site's for a camera
+ * elsewhere (null while that site is silent or unheard, never the craft being
+ * flown's), and the dashboard's for one on the craft being flown.
+ */
+function aimDelay(
+  site: CameraSite,
+  flownDelay: Value<"s"> | null | undefined,
+): Value<"s"> | null {
+  if (site.kind === "elsewhere") {
+    return site.link === "live" && site.delaySeconds !== undefined
+      ? value("s", site.delaySeconds)
+      : null;
+  }
+  return flownDelay ?? null;
+}
+
+/**
+ * The header badge of a camera standing elsewhere: the delay its picture is
+ * shown at while its site's link is arriving, and a lost link otherwise.
+ */
+function describeSiteLink(
+  site: Extract<CameraSite, { kind: "elsewhere" }>,
+): PanelBadge | null {
+  if (site.link !== "live") {
+    return {
+      id: "site-link",
+      label: "NO LINK",
+      tone: "nogo",
+      title:
+        site.link === "silent"
+          ? "No signal from where this camera is"
+          : "Nothing has been heard from where this camera is",
+    };
+  }
+  if (site.delaySeconds === undefined) return null;
+  const delay = value("s", site.delaySeconds);
+  return {
+    id: "site-link",
+    label: `ONE-WAY ${writeQuantity(delay)}`,
+    tone: "neutral",
+    title: `This camera's picture is ${speakQuantity(delay)} old`,
+  };
 }
 
 /*

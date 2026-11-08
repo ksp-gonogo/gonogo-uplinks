@@ -11,6 +11,8 @@ import { useGroundFeedClock } from "./groundFeedClock.js";
 import { useCaptureClockHealth } from "./useCaptureClockHealth.js";
 import { useSourceGeneration } from "./useSourceGeneration.js";
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { type CameraSite, isDark, useCameraSite } from "./cameraSite.js";
+import { useFrameWitness } from "./unheardCameras.js";
 import {
   type DelayedPlayoutResult,
   useDelayedPlayout,
@@ -165,14 +167,22 @@ export function useDelayedKerbcastStream(
   flightId: number | null,
 ): MediaStream | null {
   const raw = useKerbcastStream(flightId);
+  useFrameWitness(flightId, raw);
   const encodedTarget = useEncodedDelayTarget(flightId);
   // The facade's `useViewClockOptional` is typed `unknown` (opaque; see its
   // own doc: the concrete ViewClock stays app-internal). Narrow to
   // the structural `DelayClockLike` contract this module actually drives,
   // the real `ViewClock` satisfies it (see that class's own doc).
   const sharedView = useViewClockOptional() as DelayClockLike | undefined;
-  // A ground camera releases against its own site's clock, not the craft's.
-  const view = useGroundFeedClock() ?? sharedView;
+  const site = useCameraSite(flightId);
+  // A ground camera releases against its own site's clock, a camera on another
+  // craft against its lens Topic's, and any other against the shared one.
+  const view = useGroundFeedClock() ?? clockFor(site, sharedView);
+  // A camera on another craft is held, never shown live, while nothing is
+  // arriving from its site. A camera whose craft is not yet known waits too,
+  // whenever a stream is mounted to tell it.
+  const held =
+    isDark(site) || (site.kind === "pending" && sharedView !== undefined);
   const { captureUt, epoch, warpRate } = useKerbcastClock();
   const sourceGeneration = useSourceGeneration(
     flightId,
@@ -236,7 +246,7 @@ export function useDelayedKerbcastStream(
   const clockFacts = useCallback(() => clockFactsRef.current(), []);
 
   const result = useDelayedPlayout(
-    raw,
+    held ? null : raw,
     view && (frameStamps !== undefined || captureUt != null)
       ? {
           view,
@@ -256,6 +266,21 @@ export function useDelayedKerbcastStream(
     if (flightId !== null) publishStatus(flightId, shown);
   }, [flightId, shown]);
 
+  if (held) return null;
   if (shown.kind === "raw" || shown.kind === "delayed") return shown.stream;
   return null;
+}
+
+/**
+ * The clock a camera's frames are released against: the shared view clock for
+ * a camera on the craft being flown (or with no stream mounted, where the
+ * picture passes straight through), and the camera's own Topic's clock for one
+ * standing elsewhere. A camera elsewhere never falls back to the shared clock,
+ * which would delay it as the craft being flown.
+ */
+function clockFor(
+  site: CameraSite,
+  shared: DelayClockLike | undefined,
+): DelayClockLike | undefined {
+  return site.kind === "elsewhere" ? site.clock : shared;
 }

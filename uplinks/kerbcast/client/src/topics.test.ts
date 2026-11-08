@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 // Side-effect import: registers `kerbcast.available`/`kerbcast.cameras` into
 // the SDK's runtime registry.
 import {
+  CAMERA_TOPIC_PREFIX,
   KERBCAST_AVAILABLE_TOPIC,
   KERBCAST_CAMERAS_TOPIC,
   KERBCAST_CRAFT_KNOWLEDGE_TOPIC,
@@ -47,6 +48,20 @@ function csCamerasTopic(): string {
     throw new Error("CamerasTopic constant not found in KerbcastManifest.cs");
   return m[1];
 }
+
+/** The value of `KerbcastLensSites.Prefix` as declared in the C# source. */
+function csLensPrefix(): string {
+  const src = readFileSync(join(MOD_ROOT, "KerbcastLensSites.cs"), "utf8");
+  const m = src.match(/const\s+string\s+Prefix\s*=\s*"([^"]+)"/);
+  if (!m) throw new Error("Prefix constant not found in KerbcastLensSites.cs");
+  return m[1];
+}
+
+describe("kerbcast.lens.<flightId> per-camera Topics", () => {
+  it("registers the same prefix the C# Uplink declares", () => {
+    expect(CAMERA_TOPIC_PREFIX).toBe(csLensPrefix());
+  });
+});
 
 describe("kerbcast.available bare-primitive Topic", () => {
   it("registers the same string the C# Uplink declares", () => {

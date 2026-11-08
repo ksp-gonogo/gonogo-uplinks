@@ -5,6 +5,8 @@ import {
 } from "@ksp-gonogo/kerbcast";
 import { isCameraDestroyed } from "@ksp-gonogo/kerbcast-react";
 
+const NO_FLOWN_CAMERAS: ReadonlySet<number> = new Set();
+
 /**
  * Whether the shared feed may choose this camera on its own, as the first live
  * one or when the displayed one goes away. A command camera is a ground feed
@@ -27,16 +29,26 @@ export function hasAutoLatchableCamera(
 }
 
 /**
- * The cameras in picker order: live cameras first, grouped by craft in the
- * order each craft first appears, with command cameras after the rest of the
- * live ones so the shared feed's first-live choice never lands on one, then
- * destroyed cameras. Order within a craft is the registry's, so camera
- * numbering stays stable.
+ * The cameras in picker order: live cameras first, grouped by craft, with
+ * command cameras after the rest of the live ones so the shared feed's
+ * first-live choice never lands on one, then destroyed cameras. The craft being
+ * flown comes first, being the one whose cameras are the list; every other
+ * craft follows in the order it first appears. Order within a craft is the
+ * registry's, so camera numbering stays stable.
+ *
+ * `activeFlightIds` is the camera ids the craft being flown's own list names,
+ * empty while that list has not been heard.
  */
 export function orderCamerasForPicker<T extends CameraState>(
   cameras: readonly T[],
+  activeFlightIds: ReadonlySet<number> = NO_FLOWN_CAMERAS,
 ): T[] {
   const craftRank = new Map<string, number>();
+  for (const c of cameras) {
+    if (activeFlightIds.has(c.flightId) && !craftRank.has(c.vesselName)) {
+      craftRank.set(c.vesselName, craftRank.size);
+    }
+  }
   for (const c of cameras) {
     if (!craftRank.has(c.vesselName)) craftRank.set(c.vesselName, craftRank.size);
   }
@@ -72,17 +84,24 @@ export function selectableFlightIds(
  * feed lists cameras in the order its client reports them and offers no
  * ordering of its own, so the order is applied where it reads them.
  */
-export function withPickerOrder(client: KerbcastClient): KerbcastClient {
+export function withPickerOrder(
+  client: KerbcastClient,
+  activeFlightIds: ReadonlySet<number> = NO_FLOWN_CAMERAS,
+): KerbcastClient {
   return new Proxy(client, {
     get(target, prop) {
-      if (prop === "cameras") return orderCamerasForPicker(target.cameras);
+      if (prop === "cameras") {
+        return orderCamerasForPicker(target.cameras, activeFlightIds);
+      }
       if (prop === "on") {
         return (event: string, handler: (...args: unknown[]) => void) =>
           (target.on as (e: string, h: (...a: unknown[]) => void) => () => void)(
             event,
             event === "cameras-change"
               ? (next: unknown) =>
-                  handler(orderCamerasForPicker(next as CameraState[]))
+                  handler(
+                    orderCamerasForPicker(next as CameraState[], activeFlightIds),
+                  )
               : handler,
           );
       }

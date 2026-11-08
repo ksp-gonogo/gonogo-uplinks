@@ -247,10 +247,14 @@
         "camera"
       ],
       "channels": [],
-      "optionalChannels": [],
+      "optionalChannels": [
+        "kerbcast.cameras"
+      ],
       "commands": [],
       "channelFamilies": [],
-      "optionalChannelFamilies": [],
+      "optionalChannelFamilies": [
+        "kerbcast.lens.<flightId>"
+      ],
       "readsFromConfig": false,
       "dataRequirements": [
         "vessel.comms",

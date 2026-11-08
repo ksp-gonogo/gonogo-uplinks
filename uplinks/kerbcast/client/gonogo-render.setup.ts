@@ -12,7 +12,21 @@
 import { type MockCameraInit, MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import { dispatchAction, registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
 import { defineRenderSetup } from "@ksp-gonogo/uplink-tools/render-probe";
+import { noteFrameReceived } from "./src/CameraFeed/unheardCameras";
 import { KerbcastDataSource } from "./src/KerbcastDataSource";
+
+/**
+ * The scenes whose camera is on another craft: the selected camera, and the
+ * camera of the craft being flown that sits beside it in the sidecar's list.
+ */
+const OTHER_CRAFT = new Set([
+  "camera-feed-other-craft",
+  "camera-feed-other-craft-no-link",
+  "camera-feed-other-craft-unplaced",
+]);
+
+/** The scene of a camera on another craft that delivered frames before its link went silent. */
+const STREAMED_THEN_SILENT_SCENE = "camera-feed-other-craft-no-link";
 
 /**
  * The camera each scene is of, by fixture name.
@@ -43,6 +57,27 @@ const CAMERAS: Record<string, MockCameraInit> = {
     supportsZoom: false,
     supportsPan: false,
   },
+  ...Object.fromEntries(
+    [...OTHER_CRAFT].map((name) => [
+      name,
+      {
+        ...base(),
+        flightId: 43,
+        cameraName: "Relay Cam",
+        vesselName: "Munar Relay",
+        supportsZoom: true,
+        supportsPan: true,
+        fovMin: 10,
+        fovMax: 90,
+        panYaw: 0,
+        panPitch: 0,
+        panYawMin: -90,
+        panYawMax: 90,
+        panPitchMin: -45,
+        panPitchMax: 45,
+      } satisfies MockCameraInit,
+    ]),
+  ),
   "docking-camera-behind-reticle": {
     ...base(),
     flightId: 42,
@@ -248,6 +283,9 @@ export default defineRenderSetup({
       );
     }
     const sidecar = new MockSidecar();
+    if (OTHER_CRAFT.has(scene.fixture)) {
+      sidecar.addCamera({ ...base(), supportsZoom: true, supportsPan: true });
+    }
     sidecar.addCamera(camera);
     source = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
     // The handle, not `registerDataSource`: the feed's own hooks reach the
@@ -259,7 +297,9 @@ export default defineRenderSetup({
     // client opens a track for the one it is about to learn about.
     realFetch = globalThis.fetch;
     globalThis.fetch = (async () =>
-      MockSidecar.makeOfferResponse([camera.flightId])) as typeof fetch;
+      MockSidecar.makeOfferResponse(
+        OTHER_CRAFT.has(scene.fixture) ? [42, camera.flightId] : [camera.flightId],
+      )) as typeof fetch;
 
     // The track follows the subscription rather than the registration order:
     // the client binds a camera to a slot mid, and that is the mid its media
@@ -268,6 +308,10 @@ export default defineRenderSetup({
     sidecar.onSubscribe((_flightId, mid) => {
       if (track) sidecar.deliverTrack(mid, track);
     });
+
+    // Headless Chromium decodes no frame from the stand-in track, so the scene
+    // that shows a camera which streamed and then lost its link says so here.
+    if (scene.fixture === STREAMED_THEN_SILENT_SCENE) noteFrameReceived(43);
 
     await source.connect();
     // Opening the channel is what pushes hello and the camera snapshot.
