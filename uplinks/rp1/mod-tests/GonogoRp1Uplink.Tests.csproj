@@ -23,6 +23,7 @@
        only a live game could test. -->
   <ItemGroup>
     <Compile Include="..\mod\Rp1Types.cs" />
+    <Compile Include="..\mod\Rp1SaveGuard.cs" />
     <Compile Include="..\mod\Rp1ScRaw.cs" />
     <Compile Include="..\mod\Rp1ScMath.cs" />
     <Compile Include="..\mod\Rp1ScCapture.cs" />

@@ -291,6 +291,9 @@ namespace GonogoRp1Uplink
         /// </summary>
         private Rp1SimulationDelay? _simulationDelay;
 
+        /// <summary>Why the guard against saving inside a simulation could not register, or null when it did.</summary>
+        private string? _saveGuardRegistrationError;
+
         /// <summary>This Uplink's settings block, or null on a host that never declared it.</summary>
         private IUplinkSettings? _settings;
 
@@ -1482,6 +1485,23 @@ namespace GonogoRp1Uplink
             // Which command centre holds the career ledger: the oldest space centre
             // RP-1 still holds. Fail-softed on its own like the arms above; a claimant
             // that fails to register leaves the runner-up claimant answering.
+            // Registering IS the gate: a save written inside a simulation would hold
+            // the simulation's own state. Fail-softed like the arms around it, so a
+            // guard that cannot register does not cost this Uplink its read surface.
+            try
+            {
+                host.Kernel.RegisterProvider(new ProviderRegistration
+                {
+                    Capability = SaveGuardCapability.Id,
+                    Id = "rp1",
+                    Factory = _ => new Rp1SaveGuard(_rp1.IsSimulatedFlight),
+                });
+            }
+            catch (Exception ex)
+            {
+                _saveGuardRegistrationError = ex.Message;
+            }
+
             try
             {
                 host.Kernel.RegisterProvider(Rp1HomeCommandProvider.Registration(
@@ -2422,6 +2442,11 @@ namespace GonogoRp1Uplink
                             : _rp1.IsKscSwitcherLoaded()
                                 ? "registered"
                                 : "withdrawn: KSCSwitcher not loaded"),
+                new UplinkHealthFact(
+                    "save guard",
+                    _saveGuardRegistrationError != null
+                        ? "registration failed: " + _saveGuardRegistrationError
+                        : "registered"),
                 new UplinkHealthFact(
                     "signal delay",
                     _simulationDelay?.Holding == true
