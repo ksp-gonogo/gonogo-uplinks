@@ -238,7 +238,7 @@ export function useSendDraft(): {
 
       setPending(true);
       try {
-        const reply = await command.dangerouslySendWithoutInput({
+        const reply = await command.send({
           vesselId: draft.vesselId,
           requestId: `${draft.id}@${draft.revision}#${attempts.current.get(draft.id) ?? 0}-${sessionNonce}`,
           composedAtViewUt,

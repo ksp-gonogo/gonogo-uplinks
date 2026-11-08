@@ -16,7 +16,6 @@ import {
   RP1_COMPLEX_RUSH_COMMAND,
   RP1_PERSONNEL_ASSIGN_COMMAND,
 } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -304,9 +303,7 @@ describe("KscComplexes", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Max").length).toBeGreaterThan(0);
     });
-    expect(
-      getButtonDescribedBy("LC-1 is full"),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "LC-1 is full" })).toBeDisabled();
   });
 
   it("says the centre has nobody free, which is the other ceiling", async () => {
@@ -319,8 +316,10 @@ describe("KscComplexes", () => {
       expect(screen.getAllByText("Unassigned").length).toBeGreaterThan(0);
     });
     expect(
-      getButtonDescribedBy("No engineers free at Cape to assign to LC-1"),
-    ).toHaveAttribute("aria-disabled", "true");
+      screen.getByRole("button", {
+        name: "No engineers free at Cape to assign to LC-1",
+      }),
+    ).toBeDisabled();
   });
 
   it("prices the idle pool on the centre that holds it", async () => {
@@ -632,7 +631,7 @@ describe("KscComplexes", () => {
     const refused = screen.getByRole("button", {
       name: /LP-1 is the last working pad at this complex/,
     });
-    expect(refused).toHaveAttribute("aria-disabled", "true");
+    expect(refused).toBeDisabled();
     expect(refused).toHaveAccessibleName(
       "LP-1 is the last working pad at this complex, and a complex must keep one",
     );

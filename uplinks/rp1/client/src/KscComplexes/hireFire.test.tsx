@@ -15,7 +15,6 @@ import {
   RP1_PERSONNEL_HIRE_COMMAND,
 } from "./HireFire.js";
 import { KscComplexes } from "./index.js";
-import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -94,7 +93,10 @@ async function open(user: ReturnType<typeof userEvent.setup>, count: string) {
   await user.type(input, count);
 }
 
-function sent(fixture: ReturnType<typeof setupStreamFixture>, command: string) {
+function sent(
+  fixture: ReturnType<typeof setupStreamFixture>,
+  command: string,
+) {
   return fixture.transport.sentCommands.find((c) => c.command === command)
     ?.args;
 }
@@ -109,12 +111,8 @@ describe("hiring and firing now", () => {
     // Two applicants are free, so three are paid: 900f, not 1,500f.
     expect(view.container.textContent).toMatch(/900f( funds)? of 120,000f/);
     expect(view.container.textContent).toContain("2 free from applicants");
-    expect(view.container.textContent).toMatch(
-      /\+6\.9\s*f\/day( funds per day)? salary/,
-    );
-    expect(view.container.textContent).toMatch(
-      /no fee · -6\.9\s*f\/day( funds per day)? salary/,
-    );
+    expect(view.container.textContent).toMatch(/\+6\.9\s*f\/day( funds per day)? salary/);
+    expect(view.container.textContent).toMatch(/no fee · -6\.9\s*f\/day( funds per day)? salary/);
 
     await user.click(
       await screen.findByRole("button", { name: "Hire 5 researchers" }),
@@ -146,9 +144,7 @@ describe("hiring and firing now", () => {
     expect(
       screen.queryByRole("checkbox", { name: "engineers at Vandenberg" }),
     ).toBeNull();
-    expect(view.container.textContent).toMatch(
-      /no fee · -2\.7\s*f\/day( funds per day)? salary/,
-    );
+    expect(view.container.textContent).toMatch(/no fee · -2\.7\s*f\/day( funds per day)? salary/);
 
     await user.click(
       await screen.findByRole("button", {
@@ -180,8 +176,10 @@ describe("hiring and firing now", () => {
     );
 
     expect(
-      getButtonDescribedBy("More than the unassigned staff available to fire"),
-    ).toHaveAttribute("aria-disabled", "true");
+      screen.getByRole("button", {
+        name: "Fire 7 engineers at Cape Canaveral",
+      }),
+    ).toBeDisabled();
     expect(view.container.textContent).toContain(
       "only 6 unassigned at Cape Canaveral can be fired",
     );
@@ -194,8 +192,8 @@ describe("hiring and firing now", () => {
     await open(user, "5");
 
     expect(
-      getButtonDescribedBy("More than the balance, so RP-1 will refuse it"),
-    ).toHaveAttribute("aria-disabled", "true");
+      screen.getByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeDisabled();
     expect(view.container.textContent).toContain("more than the balance");
     // Firing spends nothing, so a short balance leaves it alone.
     expect(
@@ -242,8 +240,8 @@ describe("hiring and firing now", () => {
     await open(user, "5");
 
     expect(
-      await findButtonDescribedBy("More than the balance, so RP-1 will refuse it"),
-    ).toHaveAttribute("aria-disabled", "true");
+      await screen.findByRole("button", { name: "Hire 5 researchers" }),
+    ).toBeDisabled();
     expect(view.container.textContent).toContain("900");
     expect(view.container.textContent).toContain("800");
     expect(view.container.textContent).toContain("more than the balance");

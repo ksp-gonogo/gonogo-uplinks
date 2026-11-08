@@ -17,7 +17,6 @@ import { act } from "react";
 import { describe, expect, it } from "vitest";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { ProgramDetail } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
 
 installFixedSizeResizeObserver({ width: 320, height: 140 });
 
@@ -184,7 +183,9 @@ describe("ProgramDetail", () => {
     // Still drawn: a held balance is the last real answer, not an absent one.
     expect(visibleText()).toContain("289,848");
     // And marked, which the bare value it used to be handed could not carry.
-    expect(document.querySelector("[data-held-mark]")).toBeInTheDocument();
+    expect(
+      document.querySelector("[data-held-mark]"),
+    ).toBeInTheDocument();
   });
 
   it("renders nothing at all until RP-1 says it is there", async () => {
@@ -628,9 +629,7 @@ describe("ProgramDetail", () => {
     await waitFor(() => {
       expect(screen.getByText("ACCEPT")).toBeInTheDocument();
     });
-    expect(
-      getButtonDescribedBy(/career is short of it|has not said which/),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: /^accept$/i })).toBeDisabled();
   });
 
   /*
@@ -648,9 +647,7 @@ describe("ProgramDetail", () => {
       await screen.findByRole("button", { name: /accept x-plane research/i }),
     );
     await user.click(
-      screen.getByRole("button", {
-        name: "Confirm accepting X-Plane Research",
-      }),
+      screen.getByRole("button", { name: "Confirm accepting X-Plane Research" }),
     );
 
     const sent = fixture.transport.sentCommands.find(
@@ -676,9 +673,7 @@ describe("ProgramDetail", () => {
       screen.getByRole("button", { name: /accept x-plane research/i }),
     );
     await user.click(
-      screen.getByRole("button", {
-        name: "Confirm accepting X-Plane Research",
-      }),
+      screen.getByRole("button", { name: "Confirm accepting X-Plane Research" }),
     );
 
     const sent = fixture.transport.sentCommands.find(
@@ -725,9 +720,7 @@ describe("ProgramDetail", () => {
     ).not.toHaveTextContent("SHORT");
 
     await user.click(fast);
-    expect(
-      getButtonDescribedBy(/career is short of it|has not said which/),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: /^accept$/i })).toBeDisabled();
   });
 
   /*
@@ -810,13 +803,10 @@ describe("ProgramDetail", () => {
     const { fixture } = mount();
     await feed(fixture);
 
-    const complete = screen.getByRole("button", {
-      name: /complete x-plane research/i,
-    });
-    expect(complete).toHaveAttribute("aria-disabled", "true");
-    expect(complete).toBe(
-      getButtonDescribedBy(/only once its objectives are met/),
-    );
+    expect(screen.getByRole("button", { name: /^complete$/i })).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /complete x-plane research/i }),
+    ).toBeNull();
   });
 
   /*
@@ -1037,7 +1027,10 @@ describe("ProgramDetail", () => {
       expect(visibleText()).toContain("Overrun cost");
       // The bar is the share of the term, so it stops at full rather than
       // running off the end of its track.
-      expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "100");
+      expect(screen.getByRole("meter")).toHaveAttribute(
+        "aria-valuenow",
+        "100",
+      );
     });
 
     it("keeps quiet about the overrun rate while the Program is still inside its deadline", async () => {

@@ -1,6 +1,6 @@
 import {
   Button,
-  type CommandButtonHandle,
+  CommandButton,
   Inline,
   magnitudeOf,
   NULL_DISPLAY,
@@ -58,7 +58,7 @@ export function DismantleControl({
 }: Readonly<{
   complex: Rp1ComplexEntry;
   name: string;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const lcId = complex.lcId;
   if (lcId === undefined || lcId === null) {
@@ -72,18 +72,18 @@ export function DismantleControl({
   }
 
   return (
-    <Button
-      command={handle.with({ lcId }, { label: `Dismantle ${name}` })}
-      variant="ghost"
+    <CommandButton
+      args={{ lcId }}
       aria-label={`Dismantle ${name}`}
+      commandLabel={`Dismantle ${name}`}
       confirmAriaLabel={`Confirm dismantling ${name}: removes the whole complex, its pads and its crew rating`}
       confirmLabel="Warning: removes complex, pads and crew rating"
       confirmTone="nogo"
+      handle={handle}
+      label="Dismantle"
       size="sm"
       tone="warn"
-    >
-      Dismantle
-    </Button>
+    />
   );
 }
 
@@ -109,7 +109,7 @@ export function PadDismantleControl({
 }: Readonly<{
   complex: Rp1ComplexEntry;
   pad: Rp1PadEntry;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const lcId = complex.lcId;
   const padId = pad.padId;
@@ -137,22 +137,20 @@ export function PadDismantleControl({
 
   return (
     <Inline gap="related-packed">
-      <Button
-        command={handle.with(
-          { lcId, padId },
-          { label: `Dismantle ${padName}` },
-        )}
-        variant="ghost"
+      <CommandButton
+        args={{ lcId, padId }}
         aria-label={blockedBecause ?? `Dismantle ${padName}, permanently`}
+        commandLabel={`Dismantle ${padName}`}
         confirmAriaLabel={`Confirm dismantling ${padName}`}
         confirmLabel="Confirm"
         confirmTone="nogo"
-        unavailable={blockedBecause ?? null}
+        disabled={blockedBecause !== null}
+        handle={handle}
+        label="Dismantle"
         size="sm"
+        title={blockedBecause ?? undefined}
         tone="warn"
-      >
-        Dismantle
-      </Button>
+      />
     </Inline>
   );
 }
@@ -192,7 +190,7 @@ export function PadNewControl({
   complex: Rp1ComplexEntry;
   /** The career balance, for the covers-it reading only. Absent means say nothing. */
   funds: number | null;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   /** Pad names already at this complex, which RP-1 refuses a duplicate of. */
   taken: readonly string[];
 }>) {
@@ -229,26 +227,21 @@ export function PadNewControl({
           <Unit value={complex.newPadCost} />
           {short && " · more than the balance, so it builds slower"}
         </Text>
-        <Button
-          command={handle.with(
-            { lcId, name: trimmed },
-            { label: `Build ${trimmed} at ${complex.name ?? NULL_DISPLAY}` },
-          )}
-          variant="ghost"
-          aria-label={`Build ${trimmed} at ${complex.name ?? NULL_DISPLAY}`}
-          confirmAriaLabel={`Confirm building ${trimmed}, committing the career to its cost as it builds`}
-          confirmLabel="Confirm"
-          unavailable={
+        <CommandButton
+          args={{ lcId, name: trimmed }}
+          aria-label={
             trimmed === ""
               ? "Name the pad before building it"
-              : duplicate
-                ? "a pad at this complex already has that name"
-                : null
+              : `Build ${trimmed} at ${complex.name ?? NULL_DISPLAY}`
           }
+          commandLabel={`Build ${trimmed} at ${complex.name ?? NULL_DISPLAY}`}
+          confirmAriaLabel={`Confirm building ${trimmed}, committing the career to its cost as it builds`}
+          confirmLabel="Confirm"
+          disabled={trimmed === "" || duplicate}
+          handle={handle}
+          label="Build"
           size="sm"
-        >
-          Build
-        </Button>
+        />
       </Row>
     </Stack>
   );
@@ -281,7 +274,7 @@ export function RenameControl({
   /** Everything the command needs except the name, which this control supplies. */
   args: Record<string, string>;
   currentName: string;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   /** What is being renamed, for the field label and every announced name. */
   label: string;
   /**
@@ -345,26 +338,21 @@ export function RenameControl({
         value={next}
       />
       <Inline gap="related-packed">
-        <Button
-          command={handle.with(
-            { ...args, name: trimmed },
-            { label: `Rename ${label} to ${trimmed}` },
-          )}
-          variant="ghost"
-          aria-label={`Rename ${label} to ${trimmed}`}
-          unavailable={
+        <CommandButton
+          args={{ ...args, name: trimmed }}
+          aria-label={
             trimmed === ""
               ? `Give ${label} a name`
               : unchanged
                 ? `${label} is already called that`
-                : duplicate
-                  ? "that name is already in use here"
-                  : null
+                : `Rename ${label} to ${trimmed}`
           }
+          commandLabel={`Rename ${label} to ${trimmed}`}
+          disabled={trimmed === "" || duplicate || unchanged}
+          handle={handle}
+          label="Rename"
           size="sm"
-        >
-          Rename
-        </Button>
+        />
         <Button
           variant="ghost"
           size="sm"
@@ -397,10 +385,10 @@ function PadRow({
   taken,
 }: Readonly<{
   complex: Rp1ComplexEntry;
-  dismantlePad: CommandButtonHandle;
+  dismantlePad: Parameters<typeof CommandButton>[0]["handle"];
   lcId: string | null | undefined;
   pad: Rp1PadEntry;
-  renamePad: CommandButtonHandle;
+  renamePad: Parameters<typeof CommandButton>[0]["handle"];
   taken: readonly string[];
 }>) {
   const [renaming, setRenaming] = useState(false);
@@ -476,10 +464,10 @@ export function PadRows({
 }: Readonly<{
   complex: Rp1ComplexEntry;
   pads: readonly Rp1PadEntry[];
-  dismantlePad: CommandButtonHandle;
+  dismantlePad: Parameters<typeof CommandButton>[0]["handle"];
   funds: number | null;
-  newPad: CommandButtonHandle;
-  renamePad: CommandButtonHandle;
+  newPad: Parameters<typeof CommandButton>[0]["handle"];
+  renamePad: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const lcId = complex.lcId;
   const taken = pads

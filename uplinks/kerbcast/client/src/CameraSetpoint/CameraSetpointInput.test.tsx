@@ -1,14 +1,7 @@
-import {
-  createFakeCommand,
-  fireEvent,
-  render,
-  screen,
-} from "@ksp-gonogo/sitrep-sdk/testing";
+import { fireEvent, render, screen } from "@ksp-gonogo/sitrep-sdk/testing";
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CameraSetpointInput } from "./CameraSetpointInput.js";
-
-const noCommit = () => createFakeCommand().handle.with(undefined);
 
 const bounds = {
   yawMin: -90,
@@ -26,7 +19,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     expect(screen.getByRole("slider", { name: /yaw/i })).toBeInTheDocument();
@@ -46,7 +39,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 18, pitch: -10, fov: 45 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     for (const [name, glyph, degrees] of [
@@ -74,7 +67,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 18, pitch: -10, fov: 45 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     const pitch = screen.getByRole("slider", { name: "Pitch" });
@@ -91,7 +84,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: -10, pitch: -10, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     // The standing pitch wheel draws no caret, so the rule is asserted on the
@@ -107,13 +100,12 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
-    expect(screen.getByRole("slider", { name: "Pitch" })).toHaveAttribute(
-      "aria-orientation",
-      "vertical",
-    );
+    expect(
+      screen.getByRole("slider", { name: "Pitch" }),
+    ).toHaveAttribute("aria-orientation", "vertical");
     for (const name of ["Yaw", "Zoom (field of view)"]) {
       expect(screen.getByRole("slider", { name })).toHaveAttribute(
         "aria-orientation",
@@ -122,36 +114,36 @@ describe("CameraSetpointInput", () => {
     }
   });
 
-  it("sends the command it was given once on commit", () => {
-    const fake = createFakeCommand<{ yaw: number }>();
+  it("commits the current vector once on commit", () => {
+    const onCommit = vi.fn();
     render(
       <CameraSetpointInput
         value={{ yaw: 10, pitch: -5, fov: 40 }}
         bounds={bounds}
         warning="No signal path"
         onChange={() => {}}
-        command={fake.handle.with({ yaw: 10 })}
+        onCommit={onCommit}
         commitLabel="Commit"
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Commit" }));
-    expect(fake.sent).toHaveLength(1);
-    expect(fake.sent[0]?.args).toEqual({ yaw: 10 });
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledWith({ yaw: 10, pitch: -5, fov: 40 });
   });
 
   it("commits with a warning shown", () => {
-    const fake = createFakeCommand();
+    const onCommit = vi.fn();
     render(
       <CameraSetpointInput
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={fake.handle.with(undefined)}
+        onCommit={onCommit}
         commitLabel="Commit"
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Commit" }));
-    expect(fake.sent).toHaveLength(1);
+    expect(onCommit).toHaveBeenCalledTimes(1);
   });
 
   it("draws the pitch wheel as the flat wheel turned a quarter turn", () => {
@@ -164,7 +156,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     const box = (name: string): { width: string; height: string } => {
@@ -177,7 +169,8 @@ describe("CameraSetpointInput", () => {
   });
 
   it("draws the commit in the cluster's own voice without renaming it", () => {
-    // The commit is drawn in the scope the cluster sets. Uppercase is DRAWN
+    // `CommandGroup` renders the commit and offers a caller no say in how it
+    // looks, so the scope it is drawn in is the lever. Uppercase is DRAWN
     // rather than spelled, so the accessible name stays the word: this asserts
     // the label that reaches an assistive technology, not the pixels.
     render(
@@ -185,7 +178,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
         commitLabel="Commit"
       />,
     );
@@ -198,13 +191,16 @@ describe("CameraSetpointInput", () => {
 
   it("stands the commit beside the wheels, not under them", () => {
     // Under, the commit cost a whole line and the cluster came out 88px tall on
-    // a 176px picture, so the commit is the last child of a row.
+    // a 176px picture. `CommandGroup orientation="row"` is what the kit offers
+    // for that, and what it offers is the whole of it: the commit is always the
+    // group's LAST child, so an icon-sized control on the LEFT of the wheels is
+    // not expressible without a change to `CommandGroup` itself.
     const { container } = render(
       <CameraSetpointInput
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     const commit = screen.getByRole("button", { name: "Commit" });
@@ -219,7 +215,7 @@ describe("CameraSetpointInput", () => {
         value={{ yaw: 0, pitch: 0, fov: 60 }}
         bounds={bounds}
         onChange={() => {}}
-        command={noCommit()}
+        onCommit={() => {}}
       />,
     );
     await expectNoA11yViolations(container);

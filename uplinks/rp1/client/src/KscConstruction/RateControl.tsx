@@ -1,8 +1,7 @@
 import { magnitudeOf, value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   MissionDate,
   NULL_DISPLAY,
   Stepper,
@@ -26,7 +25,7 @@ export const RP1_CONSTRUCTION_CANCEL_COMMAND = "rp1.construction.cancel";
 const STEPS_PER_UNIT = 20;
 const STEPS = Array.from({ length: 31 }, (_, step) => step);
 
-type Handle = CommandButtonHandle;
+type Handle = Parameters<typeof CommandButton>[0]["handle"];
 
 /**
  * The slider step a work rate sits on, or null when RP-1 did not say. Rounded,
@@ -105,21 +104,20 @@ export function RateControl({
           <StepReadout step={step} priced={priced} />
         </Text>
       </Stepper>
-      <Button
-        command={handle.with(
-          { id: row.id, workRate: step / STEPS_PER_UNIT },
-          { label: `Set ${label} to ${percent(step)}` },
-        )}
-        variant="ghost"
-        aria-label={`Set ${label} to ${percent(step)}`}
-        confirmLabel={`Set ${percent(step)}`}
-        unavailable={
-          step === current ? `${label} is already at ${percent(step)}` : null
+      <CommandButton
+        args={{ id: row.id, workRate: step / STEPS_PER_UNIT }}
+        aria-label={
+          step === current
+            ? `${label} is already at ${percent(step)}`
+            : `Set ${label} to ${percent(step)}`
         }
+        commandLabel={`Set ${label} to ${percent(step)}`}
+        confirmLabel={`Set ${percent(step)}`}
+        disabled={step === current}
+        handle={handle}
+        label="Set rate"
         size="sm"
-      >
-        Set rate
-      </Button>
+      />
     </Cluster>
   );
 }
@@ -179,17 +177,17 @@ export function CancelControl({
           </>
         )}
       </Text>
-      <Button
-        command={handle.with({ id: row.id }, { label: `Cancel ${label}` })}
-        variant="ghost"
+      <CommandButton
+        args={{ id: row.id }}
         aria-label={`Cancel ${label}`}
+        commandLabel={`Cancel ${label}`}
         confirmAriaLabel={`Stop building ${label}; nothing already spent is refunded`}
         confirmLabel="Stop building"
         confirmTone="nogo"
+        handle={handle}
+        label="Cancel"
         size="sm"
-      >
-        Cancel
-      </Button>
+      />
     </Cluster>
   );
 }

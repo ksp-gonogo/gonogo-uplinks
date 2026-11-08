@@ -22,9 +22,7 @@ import { KERBCAST } from "./uplink.js";
 function KerbcastMainConnect({ children }: { children: ReactNode }) {
   useKerbcastMainConnect();
   const liftoff = useLiftoffCountdown();
-  const { dangerouslySendWithoutInput: send } = useCommand(
-    "kerbcast.launchCountdown",
-  );
+  const { send } = useCommand("kerbcast.launchCountdown");
   useLaunchCountdownSender(liftoff, (message) => {
     void send(message);
   });

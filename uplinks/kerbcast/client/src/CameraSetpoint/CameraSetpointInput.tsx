@@ -3,15 +3,15 @@
  * camera control. Yaw and zoom are horizontal `JogWheel` scrubbers stacked in a
  * column; pitch is the same wheel turned a quarter turn, standing beside them,
  * which is what turns three tapes in a line into a block roughly as tall as it
- * is wide. The wheels only change the draft; the vector is sent by the commit
- * button, which takes the command it sends as `command` (never on a wheel's own
- * change). Props only, no gonogo data hooks.
+ * is wide. The three sit inside the existing `CommandGroup` commit container, so
+ * the whole vector dispatches as one delayed command on an explicit commit
+ * (never on a child's own change). Vanilla-safe: props only, no gonogo data
+ * hooks. The `commitLabel` passes straight through to `CommandGroup`.
  */
 
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
-  type CommandInput,
+  CommandGroup,
   JogWheel,
   Tooltip,
   writeQuantity,
@@ -42,8 +42,7 @@ export interface CameraSetpointInputProps {
   /** Defaults to both axis groups. Yaw and pitch need `pan`, the FOV wheel needs `zoom`. */
   axes?: CameraSetpointAxes;
   onChange: (next: CameraSetpoint) => void;
-  /** The command the commit control sends, built from the vector the wheels hold. */
-  command: CommandInput;
+  onCommit: (v: CameraSetpoint) => void;
   /**
    * A warning about the commit, shown as a tip on the cluster and in the
    * warning tone on the commit. It never disables or refuses the commit.
@@ -89,20 +88,24 @@ const AXIS_STACK_HEIGHT_PX = 2 * WHEEL_SHORT_PX + WHEEL_STACK_GAP_PX;
 const AXIS_GAP_PX = 4;
 
 /**
- * The commit control beside the wheels: the gap before it, then the button.
- * Both numbers are measured off the rendered control in the render harness
- * rather than reasoned about, since the button reserves room for its longest
- * word and so is wider than its resting label.
+ * The commit control beside the wheels: `CommandGroup`'s own gap before it, then
+ * the button. Both numbers are measured off the rendered control in the render
+ * harness rather than reasoned about; the first guess from the type metrics was
+ * 55 against a then-67px button, which would have under-reported the cluster's
+ * width by 12px to every caller asking whether a tile fits.
  *
- * The gap is the one {@link CommitScope} sets so the cluster keeps one rhythm;
- * the width is what "Commit" measures in the uppercase mono that scope also
- * hands the button.
+ * The gap is `--gap-control-row`, which {@link CommitScope} sets to 4 so the
+ * cluster keeps one rhythm; the width is what "Commit" measures in the
+ * uppercase mono that scope also hands the button.
  *
  * Its height is not written down here because nothing needs it: the commit is
  * shorter than the wheels it stands beside, so the cluster's depth is theirs.
+ * It measures 24 in the same render, which is the wheels' own short axis and
+ * the WCAG 2.2 SC 2.5.8 target floor: the mono face is what took it there, from
+ * the 22 the kit's default type drew.
  */
 const COMMIT_GAP_PX = 4;
-const COMMIT_WIDTH_PX = 59;
+const COMMIT_WIDTH_PX = 63;
 
 /**
  * What the whole control measures across, CSS px, for a caller deciding what
@@ -219,7 +222,7 @@ export function CameraSetpointInput({
   bounds,
   axes = { pan: true, zoom: true },
   onChange,
-  command,
+  onCommit,
   warning,
   step = 1,
   commitLabel,
@@ -227,34 +230,48 @@ export function CameraSetpointInput({
   return (
     <Tooltip text={warning}>
       <CommitScope data-warning={warning ? "true" : undefined}>
+      <CommandGroup
+        value={value}
+        onCommit={onCommit}
+        commitLabel={commitLabel}
+        /* Beside the wheels, not under them. Under, the commit cost a whole
+           line: a 52px block of wheels drew an 88px cluster, nearly half the
+           height of the 194px picture the default tile produces. Beside, it
+           costs its width instead, on the axis the corner has more of. */
+        orientation="row"
+        /* One block, always. The children here are a single laid-out div, so a
+           wrap would only ever break the pitch wheel off under the pair and
+           make the cluster taller than the picture can spare. */
+        wrap={false}
+      >
         <div style={AXES_STYLE}>
           <div style={AXIS_STACK_STYLE}>
             {axes.pan && (
               <AxisWheel
-                glyph="Y"
-                name="Yaw"
-                orientation="horizontal"
-                width={WHEEL_LONG_PX}
-                height={WHEEL_SHORT_PX}
-                value={value.yaw}
-                min={bounds.yawMin}
-                max={bounds.yawMax}
-                step={step}
-                onChange={(yaw) => onChange({ ...value, yaw })}
+              glyph="Y"
+              name="Yaw"
+              orientation="horizontal"
+              width={WHEEL_LONG_PX}
+              height={WHEEL_SHORT_PX}
+              value={value.yaw}
+              min={bounds.yawMin}
+              max={bounds.yawMax}
+              step={step}
+              onChange={(yaw) => onChange({ ...value, yaw })}
               />
             )}
             {axes.zoom && (
               <AxisWheel
-                glyph="Z"
-                name="Zoom (field of view)"
-                orientation="horizontal"
-                width={WHEEL_LONG_PX}
-                height={WHEEL_SHORT_PX}
-                value={value.fov}
-                min={bounds.fovMin}
-                max={bounds.fovMax}
-                step={step}
-                onChange={(fov) => onChange({ ...value, fov })}
+              glyph="Z"
+              name="Zoom (field of view)"
+              orientation="horizontal"
+              width={WHEEL_LONG_PX}
+              height={WHEEL_SHORT_PX}
+              value={value.fov}
+              min={bounds.fovMin}
+              max={bounds.fovMax}
+              step={step}
+              onChange={(fov) => onChange({ ...value, fov })}
               />
             )}
           </div>
@@ -271,28 +288,22 @@ export function CameraSetpointInput({
               The transform turns the picture and leaves the control where it
               was. */}
           {axes.pan && (
-            <AxisWheel
-              glyph="P"
-              name="Pitch"
-              labelled={false}
-              orientation="vertical"
-              width={WHEEL_SHORT_PX}
-              height={WHEEL_LONG_PX}
-              value={value.pitch}
-              min={bounds.pitchMin}
-              max={bounds.pitchMax}
-              step={step}
-              onChange={(pitch) => onChange({ ...value, pitch })}
-            />
+          <AxisWheel
+            glyph="P"
+            name="Pitch"
+            labelled={false}
+            orientation="vertical"
+            width={WHEEL_SHORT_PX}
+            height={WHEEL_LONG_PX}
+            value={value.pitch}
+            min={bounds.pitchMin}
+            max={bounds.pitchMax}
+            step={step}
+            onChange={(pitch) => onChange({ ...value, pitch })}
+          />
           )}
         </div>
-        <Button
-          command={command}
-          size="sm"
-          tone={warning ? "warn" : undefined}
-        >
-          {commitLabel ?? "Commit"}
-        </Button>
+      </CommandGroup>
       </CommitScope>
     </Tooltip>
   );
@@ -324,26 +335,41 @@ const AXIS_WHEEL_STYLE: CSSProperties = { display: "inline-flex" };
  * What makes the commit read as part of this cluster rather than as a form
  * button dropped on a video.
  *
- * <p><b>One gap and one inset, which inside this subtree only the commit
- * reads.</b> The cluster's own rhythm is 4, so the button sits 4px from the
- * wheels and its padding is narrowed from the kit's 12 to 8 on the sides.</p>
+ * `CommandGroup` renders its own commit and offers a caller two things about
+ * it: `commitLabel` (a string) and `orientation`. Neither is
+ * appearance, and a bespoke button beside the group would be a second
+ * implementation of select-then-commit. So the lever is the scope the kit's
+ * button is drawn in, in two parts.
+ *
+ * <p><b>Two spacing tokens, which inside this subtree only the commit reads.</b>
+ * `--gap-control-row` is `CommandGroup`'s gap between its inputs and its commit
+ * (its inputs gap too, but there is one input here) and `--inset-commit-button`
+ * is the button's padding, whose sides this narrows from 12 to 8. At the kit's own values the commit sat 8px from the wheels in a
+ * cluster whose own rhythm is 4, so it read as a slab set down beside the
+ * control rather than as the last element of it; at 4 the cluster keeps one
+ * rhythm throughout.</p>
  *
  * <p><b>One rule reaching the button itself, for the type.</b> This widget's
  * chrome is tracked-out uppercase mono throughout ("STARBOARD CAM", "1.4 S",
- * "Y18°"), and a `<button>` gets its own `font` from the user agent stylesheet,
- * so none of the three properties inherits from an ancestor.</p>
+ * "Y18°") and the commit was the one element in it set in title-case Arial: the
+ * loudest thing in the cluster while being the least of it. That is not a
+ * choice the kit made, it is the UA stylesheet: a `<button>` gets its own
+ * `font`, and resets `text-transform` and `letter-spacing` to `initial`, so
+ * none of the three inherits from an ancestor. Every other button in the kit
+ * answers that with `font-family: inherit`; `CommandGroup`'s is the one that
+ * does not, so it renders in Arial under every theme. Setting the three here is
+ * a stand-in for that one missing line, and it goes when the kit grows it.</p>
  *
  * <p>The label stays "Commit" rather than "COMMIT": `text-transform` changes
  * what is drawn and not the accessible name, and a screen reader handed an
  * all-caps name may spell it out.</p>
  *
- * <p>`& button` rather than a child selector because the subtree holds exactly
- * one button, which is the commit.</p>
+ * <p>`& button` rather than a child selector because the group's own root sits
+ * between: the subtree holds exactly one button, which is the commit.</p>
  */
 const CommitScope = styled.div`
   display: flex;
-  align-items: center;
-  gap: ${COMMIT_GAP_PX}px;
+  --gap-control-row: 4px;
   --inset-commit-button: 4px 8px;
 
   & button {

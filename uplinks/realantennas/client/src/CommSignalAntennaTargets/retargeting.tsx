@@ -79,13 +79,14 @@ function RetargetSwitch({ vesselId, heading, entry }: SwitchRowProps) {
   return (
     <Cluster gap="related-comfortable" align="center" wrap justify="start">
       <Switch
-        state={allowed}
+        checked={allowed}
         id={switchId}
         aria-label={`Automatic retargeting, ${heading}`}
-        command={setAutoRetarget.toArgs(
-          (next: boolean) => ({ vessel: vesselId, allow: next }),
-          { label: `Automatic retargeting, ${heading}` },
-        )}
+        onChange={(next) => {
+          void setAutoRetarget
+            .send({ vessel: vesselId, allow: next })
+            .catch(() => undefined);
+        }}
       />
       <label htmlFor={switchId} style={{ cursor: "pointer" }}>
         <Text size="xs" level="muted" style={LABEL_STYLE}>
@@ -111,8 +112,7 @@ function BorrowedNotice({ entry, vessels, reading }: BorrowedProps) {
     <Text size="sm" role="status">
       Borrowed · {borrowed.dishName || "a dish"} aimed at{" "}
       {nameOf(borrowed.peerId, vessels)} since{" "}
-      <Unit value={heldFigureOf(borrowed.sinceUt, reading)} /> · turns back to{" "}
-      {borrowed.previousAim}
+      <Unit value={heldFigureOf(borrowed.sinceUt, reading)} /> · turns back to {borrowed.previousAim}
     </Text>
   );
 }
@@ -171,23 +171,17 @@ export function Retargeting({
   );
   return (
     <Stack gap="related-dense" aria-label="Dish turning">
-      <SectionTitle>{heldingOf(reading, "Dish turning")}</SectionTitle>
+      <SectionTitle>
+        {heldingOf(reading, "Dish turning")}
+      </SectionTitle>
       <Card>
         <Stack gap="related-dense">
           <Text size="xs" level="muted" style={LABEL_STYLE}>
             This craft
           </Text>
-          <RetargetSwitch
-            vesselId={vesselId}
-            heading="This craft"
-            entry={own}
-          />
-          {own ? (
-            <BorrowedNotice entry={own} vessels={vessels} reading={reading} />
-          ) : null}
-          {own ? (
-            <LastNotice entry={own} vessels={vessels} reading={reading} />
-          ) : null}
+          <RetargetSwitch vesselId={vesselId} heading="This craft" entry={own} />
+          {own ? <BorrowedNotice entry={own} vessels={vessels} reading={reading} /> : null}
+          {own ? <LastNotice entry={own} vessels={vessels} reading={reading} /> : null}
         </Stack>
       </Card>
       {others.map((entry) => (

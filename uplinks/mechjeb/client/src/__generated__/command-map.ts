@@ -100,13 +100,6 @@ export interface GeneratedCommandRail {
    * command.
    */
   readonly arriveBefore?: string;
-  /**
-   * Set when the command may be sent from the meta vantage, off
-   * `[SitrepCommand(AllowMetaVantage = true)]`: it acts on the game or the program
-   * itself, so it runs at once whichever command centre is selected. A client sends
-   * it from the meta vantage on its own. Absent for every other command.
-   */
-  readonly meta?: true;
 }
 
 /**

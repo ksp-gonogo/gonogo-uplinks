@@ -6,9 +6,8 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   DataLine,
   DataTable,
   EmptyState,
@@ -17,9 +16,9 @@ import {
   Graph,
   GraphNotice,
   Grid,
-  magnitudeOf,
   Meter,
   MissionDate,
+  magnitudeOf,
   NULL_DISPLAY,
   Readout,
   ReadoutCaption,
@@ -46,11 +45,7 @@ import type {
 } from "../__generated__/contract.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { current } from "../shared/current.js";
-import {
-  SnugTable,
-  useNarrowerThan,
-  TABLE_MIN_WIDTH,
-} from "../shared/narrow.js";
+import { SnugTable, useNarrowerThan, TABLE_MIN_WIDTH } from "../shared/narrow.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 import {
@@ -371,8 +366,8 @@ function ChosenProgram({
   curves,
   confidenceHeld,
 }: Readonly<{
-  accept: CommandButtonHandle;
-  complete: CommandButtonHandle;
+  accept: Parameters<typeof CommandButton>[0]["handle"];
+  complete: Parameters<typeof CommandButton>[0]["handle"];
   program: Rp1ProgramEntry;
   curves: readonly Rp1FundingCurveEntry[] | undefined;
   confidenceHeld: number | null;
@@ -426,8 +421,7 @@ function ChosenProgram({
             <Row wrap>
               <RowName>Speed</RowName>
               <Text>
-                {speedLabel(program.speedOptions, program.speed) ??
-                  NULL_DISPLAY}
+                {speedLabel(program.speedOptions, program.speed) ?? NULL_DISPLAY}
               </Text>
             </Row>
             <Row wrap>
@@ -594,7 +588,7 @@ function AcceptControl({
   program,
 }: Readonly<{
   confidenceHeld: number | null;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   program: Rp1ProgramEntry;
 }>) {
   const [picked, setPicked] = useState<string | null>(null);
@@ -638,9 +632,7 @@ function AcceptControl({
       <Cluster gap="related-dense" justify="start" wrap>
         <Text size="sm" level="muted">
           {speed === null ? (
-            <>
-              {NULL_DISPLAY} RP-1 did not say which speeds this Program offers
-            </>
+            <>{NULL_DISPLAY} RP-1 did not say which speeds this Program offers</>
           ) : cost == null ? (
             <>
               {NULL_DISPLAY} RP-1 did not price {speedName} speed
@@ -657,26 +649,27 @@ function AcceptControl({
             </>
           )}
         </Text>
-        <Button
-          command={handle.with(
-            { strategyId: program.name, speed: speed ?? undefined },
-            { label: `Accept ${name} at ${speedName ?? NULL_DISPLAY} speed` },
-          )}
-          variant="ghost"
-          aria-label={`Accept ${name}`}
+        <CommandButton
+          args={{ strategyId: program.name, speed: speed ?? undefined }}
+          /* Named while it can act, and the bare label once it cannot: a
+             refused control announcing the acceptance it would have made
+             describes something that will not happen. */
+          aria-label={short || speed === null ? undefined : `Accept ${name}`}
+          commandLabel={`Accept ${name} at ${speedName ?? NULL_DISPLAY} speed`}
           confirmAriaLabel={`Confirm accepting ${name}`}
           confirmLabel={<AcceptWording cost={cost} speed={speedName} />}
-          unavailable={
+          disabled={short || speed === null}
+          handle={handle}
+          label="Accept"
+          size="sm"
+          title={
             speed === null
               ? "RP-1 accepts a Program only at a named speed, and it has not said which it offers"
               : short
                 ? "RP-1 charges the whole Confidence price for this speed when the Program is accepted, and the career is short of it"
-                : null
+                : undefined
           }
-          size="sm"
-        >
-          Accept
-        </Button>
+        />
       </Cluster>
     </Section>
   );
@@ -695,9 +688,8 @@ function speedLabel(
   if (speed === null || speed === undefined) {
     return null;
   }
-  const label = present(options)?.find(
-    (option) => option.speed === speed,
-  )?.label;
+  const label = present(options)?.find((option) => option.speed === speed)
+    ?.label;
   return typeof label === "string" && label !== "" ? label : speed;
 }
 
@@ -771,7 +763,7 @@ function RunningProgram({
   complete,
   program,
 }: Readonly<{
-  complete: CommandButtonHandle;
+  complete: Parameters<typeof CommandButton>[0]["handle"];
   program: Rp1ProgramEntry;
 }>) {
   if (program.status !== "active") {
@@ -824,7 +816,11 @@ function RunningProgram({
           value={value("ratio", Math.min(ratio, 1))}
         />
       )}
-      <CompleteControl handle={complete} overrun={overrun} program={program} />
+      <CompleteControl
+        handle={complete}
+        overrun={overrun}
+        program={program}
+      />
     </Section>
   );
 }
@@ -843,7 +839,7 @@ function CompleteControl({
   overrun,
   program,
 }: Readonly<{
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   overrun: boolean;
   program: Rp1ProgramEntry;
 }>) {
@@ -860,24 +856,22 @@ function CompleteControl({
           </>
         )}
       </Text>
-      <Button
-        command={handle.with(
-          { strategyId: program.name },
-          { label: `Complete ${name}` },
-        )}
-        variant="ghost"
-        aria-label={`Complete ${name}`}
+      <CommandButton
+        args={{ strategyId: program.name }}
+        aria-label={ready ? `Complete ${name}` : undefined}
+        commandLabel={`Complete ${name}`}
         confirmAriaLabel={`Confirm completing ${name}`}
         confirmLabel={<CompleteWording rep={program.repForComplete} />}
-        unavailable={
+        disabled={!ready}
+        handle={handle}
+        label="Complete"
+        size="sm"
+        title={
           ready
-            ? null
+            ? undefined
             : "RP-1 completes a Program only once its objectives are met"
         }
-        size="sm"
-      >
-        Complete
-      </Button>
+      />
     </Cluster>
   );
 }
@@ -909,8 +903,8 @@ function AcceptWording({
 }>) {
   return (
     <>
-      Spend {cost == null ? NULL_DISPLAY : <Unit value={cost} />} Confidence for{" "}
-      {speed ?? NULL_DISPLAY}
+      Spend {cost == null ? NULL_DISPLAY : <Unit value={cost} />} Confidence
+      for {speed ?? NULL_DISPLAY}
     </>
   );
 }
@@ -1094,30 +1088,30 @@ function PaymentSchedule({ program }: Readonly<{ program: Rp1ProgramEntry }>) {
     <Section>
       <SectionTitle>FUNDING SUMMARY</SectionTitle>
       <SnugTable>
-        <DataTable
-          caption="Funding paid per nominal year of this Program"
-          rows={schedule as Rp1ProgramPaymentEntry[]}
-          rowKey={(row) => String(magnitudeOf(row.year) ?? "")}
-          columns={[
-            {
-              key: "year",
-              header: "Year",
-              render: (row) => <Unit value={row.year} />,
-            },
-            {
-              key: "funds",
-              header: "Pays",
-              align: "end",
-              render: (row) => <Unit value={row.funds} />,
-            },
-            {
-              key: "cumulative",
-              header: "Cumulative",
-              align: "end",
-              render: (row) => <Unit value={row.cumulativeFunds} />,
-            },
-          ]}
-        />
+      <DataTable
+        caption="Funding paid per nominal year of this Program"
+        rows={schedule as Rp1ProgramPaymentEntry[]}
+        rowKey={(row) => String(magnitudeOf(row.year) ?? "")}
+        columns={[
+          {
+            key: "year",
+            header: "Year",
+            render: (row) => <Unit value={row.year} />,
+          },
+          {
+            key: "funds",
+            header: "Pays",
+            align: "end",
+            render: (row) => <Unit value={row.funds} />,
+          },
+          {
+            key: "cumulative",
+            header: "Cumulative",
+            align: "end",
+            render: (row) => <Unit value={row.cumulativeFunds} />,
+          },
+        ]}
+      />
       </SnugTable>
     </Section>
   );

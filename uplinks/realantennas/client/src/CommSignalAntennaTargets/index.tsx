@@ -19,9 +19,9 @@ import {
   useTelemetry,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
   Card,
   Cluster,
+  CommandButton,
   Field,
   FieldLabel,
   Grid,
@@ -234,9 +234,7 @@ function AntennaCard({
               </Text>
             </>
           ) : null}
-          {!isOmni &&
-          antenna.cone10Db != null &&
-          magnitudeOf(antenna.cone10Db) !== null ? (
+          {!isOmni && antenna.cone10Db != null && magnitudeOf(antenna.cone10Db) !== null ? (
             <>
               <Text size="xs" level="muted" style={LABEL_STYLE}>
                 Beam
@@ -409,39 +407,33 @@ function AntennaCard({
             <Cluster gap="related-comfortable" wrap justify="start">
               {/* Armed: a slew is a signal to the craft and the dish stops
                   hearing whatever it was on when it moves. */}
-              <Button
-                command={target.with(
-                  {
-                    antennaId: antenna.antennaId,
-                    mode,
-                    vesselId: vesselId || undefined,
-                    bodyName: bodyName || undefined,
-                    latitude: numberOf(latitude),
-                    longitude: numberOf(longitude),
-                    altitude: numberOf(altitude),
-                    azimuth: numberOf(azimuth),
-                    elevation: numberOf(elevation),
-                    forward: numberOf(forward),
-                  },
-                  { label: `Aim ${antennaName}` },
-                )}
-                variant="ghost"
+              <CommandButton
                 size="sm"
+                handle={target}
+                args={{
+                  antennaId: antenna.antennaId,
+                  mode,
+                  vesselId: vesselId || undefined,
+                  bodyName: bodyName || undefined,
+                  latitude: numberOf(latitude),
+                  longitude: numberOf(longitude),
+                  altitude: numberOf(altitude),
+                  azimuth: numberOf(azimuth),
+                  elevation: numberOf(elevation),
+                  forward: numberOf(forward),
+                }}
+                commandLabel={`Aim ${antennaName}`}
+                label="AIM"
                 confirmLabel="CONFIRM AIM"
-              >
-                AIM
-              </Button>
-              <Button
-                command={targetHome.with(
-                  { antennaId: antenna.antennaId },
-                  { label: `Aim ${antennaName} at the home body` },
-                )}
-                variant="ghost"
+              />
+              <CommandButton
                 size="sm"
+                handle={targetHome}
+                args={{ antennaId: antenna.antennaId }}
+                commandLabel={`Aim ${antennaName} at the home body`}
+                label="HOME"
                 confirmLabel="CONFIRM HOME"
-              >
-                HOME
-              </Button>
+              />
             </Cluster>
 
             <AntennaChain
@@ -486,7 +478,9 @@ function CommSignalAntennaTargets() {
     (chainsReading.state === "observed" || chainsReading.state === "held"
       ? chainsReading.value
       : []
-    ).map((chain) => [chain.antennaId, chain]),
+    ).map(
+      (chain) => [chain.antennaId, chain],
+    ),
   );
 
   const bodies =
@@ -510,8 +504,7 @@ function CommSignalAntennaTargets() {
     nothing to draw, and a switch at its default would read as a reported state.
   */
   const retargeting =
-    retargetingReading.state === "observed" ||
-    retargetingReading.state === "held"
+    retargetingReading.state === "observed" || retargetingReading.state === "held"
       ? retargetingReading.value
       : undefined;
 
@@ -526,9 +519,7 @@ function CommSignalAntennaTargets() {
 
   return (
     <Stack gap="related-dense" aria-label="Antenna targeting">
-      <SectionHeading reading={antennasReading}>
-        Antenna targeting
-      </SectionHeading>
+      <SectionHeading reading={antennasReading}>Antenna targeting</SectionHeading>
       {antennas.map((antenna) => (
         <AntennaCard
           key={antenna.antennaId}

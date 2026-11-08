@@ -14,11 +14,10 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Cluster,
+  CommandButton,
   Section,
   Stack,
-  ToggleButton,
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
@@ -208,7 +207,8 @@ function ScienceDataAboardRowAugment({
     experimentsReading,
     file,
     subjectId,
-    experiments?.find((e) => e.subjectId === subjectId)?.title || subjectId,
+    experiments?.find((e) => e.subjectId === subjectId)?.title ||
+      subjectId,
   );
   if (!file && !sample) return null;
 
@@ -273,33 +273,35 @@ function ScienceDataAboardRowAugment({
             )}
           </Cluster>
           <Cluster wrap justify="start">
-            <ToggleButton
-              command={sendCmd.toArgs(
-                (flag: boolean) => ({ subjectId, flag }),
-                { label: send.on ? "Cancel send" : "Send" },
-              )}
-              state={file?.sendFlagged}
-              name="Send file"
+            <CommandButton
               size="sm"
               tone="go"
-              unavailable={send.read ? null : UNREAD_FLAG_TITLE}
-              aria-label="Send file"
-            >
-              {(shown) =>
-                shown === true ? "Queued" : shown === false ? "Send" : "Unknown"
+              handle={sendCmd}
+              args={{ subjectId, flag: send.next }}
+              commandLabel={send.on ? "Cancel send" : "Send"}
+              pressed={send.on}
+              disabled={!send.read}
+              title={send.read ? undefined : UNREAD_FLAG_TITLE}
+              label={send.read ? (send.on ? "Queued" : "Send") : "Unknown"}
+              aria-label={
+                send.read
+                  ? send.on
+                    ? "Cancel send for file"
+                    : "Send file"
+                  : "Send file (send flag could not be read)"
               }
-            </ToggleButton>
-            <Button
-              command={deleteCmd.with({ subjectId }, { label: "Delete file" })}
-              variant="ghost"
+            />
+            <CommandButton
               size="sm"
+              handle={deleteCmd}
+              args={{ subjectId }}
+              commandLabel="Delete file"
+              label="Delete"
               confirmLabel="Confirm"
               confirmTone="nogo"
               aria-label="Delete file"
               confirmAriaLabel="Confirm delete file"
-            >
-              Delete
-            </Button>
+            />
           </Cluster>
         </Stack>
       )}
@@ -327,46 +329,55 @@ function ScienceDataAboardRowAugment({
             )}
           </Cluster>
           <Cluster wrap justify="start">
-            <ToggleButton
-              command={analyzeCmd.toArgs(
-                (flag: boolean) => ({ subjectId, flag }),
-                { label: analyze.on ? "Cancel analyze" : "Analyze" },
-              )}
-              state={sample?.analyze}
-              name="Analyze sample"
+            <CommandButton
               size="sm"
               tone="go"
-              unavailable={analyze.read ? null : UNREAD_FLAG_TITLE}
-              aria-label="Flag sample for analysis"
-            >
-              {(shown) =>
-                shown === true
-                  ? "Analyzing"
-                  : shown === false
-                    ? "Analyze"
-                    : "Unknown"
+              handle={analyzeCmd}
+              args={{ subjectId, flag: analyze.next }}
+              commandLabel={analyze.on ? "Cancel analyze" : "Analyze"}
+              pressed={analyze.on}
+              disabled={!analyze.read}
+              title={analyze.read ? undefined : UNREAD_FLAG_TITLE}
+              label={
+                analyze.read
+                  ? analyze.on
+                    ? "Analyzing"
+                    : "Analyze"
+                  : "Unknown"
               }
-            </ToggleButton>
-            <Button
-              command={moveCmd.with({ subjectId }, { label: "Move to lab" })}
-              variant="ghost"
+              aria-label={
+                analyze.read
+                  ? analyze.on
+                    ? "Cancel analyze for sample"
+                    : "Flag sample for analysis"
+                  : "Flag sample for analysis (analyze flag could not be read)"
+              }
+            />
+            <CommandButton
               size="sm"
-              unavailable={hasLab ? null : "No lab part aboard this vessel"}
-              aria-label="Move sample to lab"
-            >
-              Move to lab
-            </Button>
-            <Button
-              command={dumpCmd.with({ subjectId }, { label: "Dump sample" })}
-              variant="ghost"
+              handle={moveCmd}
+              args={{ subjectId }}
+              commandLabel="Move to lab"
+              label="Move to lab"
+              disabled={!hasLab}
+              title={hasLab ? undefined : "No lab part aboard this vessel"}
+              aria-label={
+                hasLab
+                  ? "Move sample to lab"
+                  : "Move sample to lab (no lab part aboard this vessel)"
+              }
+            />
+            <CommandButton
               size="sm"
+              handle={dumpCmd}
+              args={{ subjectId }}
+              commandLabel="Dump sample"
+              label="Dump"
               confirmLabel="Confirm"
               confirmTone="nogo"
               aria-label="Dump sample"
               confirmAriaLabel="Confirm dump sample"
-            >
-              Dump
-            </Button>
+            />
           </Cluster>
         </Stack>
       )}

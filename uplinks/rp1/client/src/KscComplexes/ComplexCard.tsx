@@ -1,14 +1,13 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Card,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   Disclosure,
   Inline,
-  magnitudeOf,
   Meter,
+  magnitudeOf,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -70,18 +69,18 @@ export function ComplexCard({
   unassigned: number | null;
   pads: readonly Rp1PadEntry[];
   terms: Rp1RushTerms | undefined;
-  assign: CommandButtonHandle;
-  rush: CommandButtonHandle;
-  dismantle: CommandButtonHandle;
-  dismantlePad: CommandButtonHandle;
+  assign: Parameters<typeof CommandButton>[0]["handle"];
+  rush: Parameters<typeof CommandButton>[0]["handle"];
+  dismantle: Parameters<typeof CommandButton>[0]["handle"];
+  dismantlePad: Parameters<typeof CommandButton>[0]["handle"];
   /** The career balance, so a pad quote can say whether it is covered. */
   funds: number | null;
-  modify: CommandButtonHandle;
-  newPad: CommandButtonHandle;
+  modify: Parameters<typeof CommandButton>[0]["handle"];
+  newPad: Parameters<typeof CommandButton>[0]["handle"];
   /** RP-1's pricing settings, for the renovation quote. */
   pricing: Rp1LcPricing | undefined;
-  renameComplex: CommandButtonHandle;
-  renamePad: CommandButtonHandle;
+  renameComplex: Parameters<typeof CommandButton>[0]["handle"];
+  renamePad: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const name = complex.name ?? NULL_DISPLAY;
   const engineers = magnitudeOf(complex.engineers);
@@ -312,7 +311,7 @@ function AssignControl({
   unassigned: number | null;
   centreName: string;
   name: string;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const [step, setStep] = useState<Step>(1);
   const lcId = complex.lcId;
@@ -379,32 +378,34 @@ function AssignControl({
           drops its number stops being the other half of a pair.
         */}
         <Inline gap="related-packed">
-          <Button
-            command={handle.with(
-              { engineers: engineers - shrink, lcId },
-              { label: `Assign ${engineers - shrink} engineers to ${name}` },
-            )}
-            variant="ghost"
-            aria-label={`Return ${shrink} engineers from ${name} to ${centreName}, leaving ${engineers - shrink}`}
-            unavailable={shrink === 0 ? `Nobody is assigned to ${name}` : null}
+          <CommandButton
+            args={{ engineers: engineers - shrink, lcId }}
+            aria-label={
+              shrink === 0
+                ? `Nobody is assigned to ${name}`
+                : `Return ${shrink} engineers from ${name} to ${centreName}, leaving ${engineers - shrink}`
+            }
+            commandLabel={`Assign ${engineers - shrink} engineers to ${name}`}
+            disabled={shrink === 0}
+            handle={handle}
+            label={`−${shrink === 0 ? (size === Number.POSITIVE_INFINITY ? 0 : size) : shrink}`}
             size="sm"
-          >{`−${shrink === 0 ? (size === Number.POSITIVE_INFINITY ? 0 : size) : shrink}`}</Button>
-          <Button
-            command={handle.with(
-              { engineers: engineers + grow, lcId },
-              { label: `Assign ${engineers + grow} engineers to ${name}` },
-            )}
-            variant="ghost"
-            aria-label={`Assign ${grow} more engineers to ${name}, ${engineers + grow} in all`}
-            unavailable={
+          />
+          <CommandButton
+            args={{ engineers: engineers + grow, lcId }}
+            aria-label={
               grow === 0
                 ? room === 0
                   ? `${name} is full`
                   : `No engineers free at ${centreName} to assign to ${name}`
-                : null
+                : `Assign ${grow} more engineers to ${name}, ${engineers + grow} in all`
             }
+            commandLabel={`Assign ${engineers + grow} engineers to ${name}`}
+            disabled={grow === 0}
+            handle={handle}
+            label={`+${grow === 0 ? (size === Number.POSITIVE_INFINITY ? 0 : size) : grow}`}
             size="sm"
-          >{`+${grow === 0 ? (size === Number.POSITIVE_INFINITY ? 0 : size) : grow}`}</Button>
+          />
         </Inline>
       </Cluster>
 
@@ -628,7 +629,7 @@ function RushControl({
   complex: Rp1ComplexEntry;
   name: string;
   terms: Rp1RushTerms | undefined;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   const lcId = complex.lcId;
   if (lcId === undefined || lcId === null) {
@@ -642,23 +643,20 @@ function RushControl({
       : `, at ${Number(salaryMult.toFixed(2))}× the crew salary`;
 
   return (
-    <Button
-      command={handle.with(
-        { lcId, rushing: !rushing },
-        { label: rushing ? `Stop rushing ${name}` : `Rush ${name}` },
-      )}
-      variant="ghost"
+    <CommandButton
       pressed={rushing}
+      args={{ lcId, rushing: !rushing }}
       aria-label={
         rushing
           ? `Stop rushing work at ${name}`
           : `Rush work at ${name}${price}`
       }
+      commandLabel={rushing ? `Stop rushing ${name}` : `Rush ${name}`}
+      handle={handle}
+      label={rushing ? "Stop rushing" : "Rush"}
       size="sm"
       tone={rushing ? "warn" : "neutral"}
-    >
-      {rushing ? "Stop rushing" : "Rush"}
-    </Button>
+    />
   );
 }
 

@@ -1,12 +1,12 @@
 import { useCommand, value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Cluster,
+  CommandButton,
   Countdown,
-  magnitudeOf,
   MissionDate,
   MissionDateField,
+  magnitudeOf,
   NULL_DISPLAY,
   Row,
   RowName,
@@ -241,37 +241,30 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
             </Cluster>
           </Row>
           <Cluster justify="end" gap="related-dense" wrap>
-            <Button
-              command={horizonCmd.with(
-                {
-                  vesselId: plan.vesselId ?? undefined,
-                  requestId: `${horizonAttempt.requestId}-${plan.vesselId ?? "none"}-${endUt}`,
-                  desiredFinalTimeUt: endUt,
-                },
-                {
-                  label: "Move the flight plan's end instant",
-                  onConfirmed: (result) => {
-                    horizonAttempt.settle();
-                    setLastWrite(planWriteReceipt(result));
-                  },
-                },
-              )}
-              variant="ghost"
+            <CommandButton
               size="sm"
+              handle={horizonCmd}
+              args={{
+                vesselId: plan.vesselId ?? undefined,
+                requestId: `${horizonAttempt.requestId}-${plan.vesselId ?? "none"}-${endUt}`,
+                desiredFinalTimeUt: endUt,
+              }}
+              commandLabel="Move the flight plan's end instant"
+              label="SET END"
               confirmLabel="CONFIRM"
-              unavailable={
+              title={
                 endsBeforeStart
                   ? "A plan cannot end at or before it starts"
-                  : (frozenReason ??
-                    (endUt === desired
-                      ? "The plan already ends at that instant"
-                      : null))
+                  : (frozenReason ?? undefined)
               }
+              disabled={frozen || endUt === desired || endsBeforeStart}
               aria-label="Move the flight plan's end instant"
               confirmAriaLabel="Confirm moving the flight plan's end instant"
-            >
-              SET END
-            </Button>
+              onConfirmed={(result) => {
+                horizonAttempt.settle();
+                setLastWrite(planWriteReceipt(result));
+              }}
+            />
           </Cluster>
         </Stack>
       )}
@@ -314,43 +307,40 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
               steps === null ? NULL_DISPLAY : steps.toLocaleString("en-GB")
             }
           />
-          <Button
-            command={integratorCmd.with(
-              {
-                vesselId: plan.vesselId ?? undefined,
-                requestId: `${integratorAttempt.requestId}-${plan.vesselId ?? "none"}-${chosen}`,
-                // `undefined`, never a number, for a limit nobody stated: the mod
-                // leaves an omitted step parameter at the plugin's own value. The
-                // control is held shut in that state anyway, so this is the shape
-                // of the args rather than a write that happens.
-                maxSteps: chosen ?? undefined,
-              },
-              {
-                label: "Set the flight plan's step limit",
-                onConfirmed: (result) => {
-                  integratorAttempt.settle();
-                  setLastWrite(planWriteReceipt(result));
-                },
-              },
-            )}
-            variant="ghost"
+          <CommandButton
             size="sm"
-            confirmLabel="CONFIRM"
-            unavailable={
+            handle={integratorCmd}
+            args={{
+              vesselId: plan.vesselId ?? undefined,
+              requestId: `${integratorAttempt.requestId}-${plan.vesselId ?? "none"}-${chosen}`,
+              // `undefined`, never a number, for a limit nobody stated: the mod
+              // leaves an omitted step parameter at the plugin's own value. The
+              // control is held shut in that state anyway, so this is the shape
+              // of the args rather than a write that happens.
+              maxSteps: chosen ?? undefined,
+            }}
+            commandLabel="Set the flight plan's step limit"
+            title={
               frozenReason ??
               (stepParametersUnverified
                 ? "Principia's step parameters have not survived a round trip this session, so the limit cannot be written"
-                : chosen === null
-                  ? "No step limit is chosen"
-                  : chosen === maxSteps
-                    ? "The step limit is already set to that"
-                    : null)
+                : undefined)
+            }
+            label="SET"
+            confirmLabel="CONFIRM"
+            disabled={
+              frozen ||
+              stepParametersUnverified ||
+              chosen === null ||
+              chosen === maxSteps
             }
             aria-label="Set the flight plan's step limit"
             confirmAriaLabel="Confirm setting the flight plan's step limit"
-          >
-            SET
-          </Button>
+            onConfirmed={(result) => {
+              integratorAttempt.settle();
+              setLastWrite(planWriteReceipt(result));
+            }}
+          />
         </Cluster>
       </Row>
       {/* Neither control's success state can see this, and the receipt is the

@@ -1,5 +1,4 @@
 import {
-  argsOf,
   clearRegistry,
   getMapPoiProviders,
   TargetKind,
@@ -197,13 +196,8 @@ describe("scansat:anomalies map POI provider", () => {
     const poi = result.current?.[0];
     expect(poi?.actions?.[0].id).toBe("set-target");
 
-    const command = poi?.actions?.[0].command;
-    if (!command) throw new Error("the action carries no command");
-    expect(command.options.label).toBe("Set as Target");
     await act(async () => {
-      await command.handle.dangerouslySendWithoutInput(argsOf(command), {
-        label: command.options.label,
-      });
+      await poi?.actions?.[0].run();
     });
 
     const sent = transport.sentCommands.find(

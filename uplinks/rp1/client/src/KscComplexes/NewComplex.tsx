@@ -1,7 +1,6 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
-  type CommandButtonHandle,
+  CommandButton,
   Disclosure,
   Inline,
   magnitudeOf,
@@ -60,7 +59,7 @@ export function NewComplexControl({
   /** Complex names already at the chosen centre, which RP-1 refuses a duplicate of. */
   existingNames: (kscName: string) => readonly string[];
   funds: number | null;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   pricing: Rp1LcPricing | undefined;
   /** What a new complex is costed at per centre, for the draw and finish date. */
   rates: Rp1ConstructionRates | undefined;
@@ -107,6 +106,9 @@ export function NewComplexControl({
   const pricedAt = magnitudeOf(rates?.refreshedAt);
   const short = funds !== null && quote !== null && funds < quote.total;
   const massed = spec.massMax > 0;
+
+  const blocked =
+    trimmed === "" || duplicate || chosen == null || !massed || quote === null;
 
   return (
     /* A small trailing button rather than a full-width chevron band, matching
@@ -230,43 +232,36 @@ export function NewComplexControl({
               </>
             )}
           </Text>
-          <Button
-            command={handle.with(
-              {
-                assignEngineersOnComplete: staffOnComplete,
-                humanRated,
-                kscName: chosen ?? "",
-                massMax: spec.massMax,
-                name: trimmed,
-                size: {
-                  sizeMaxDepth: spec.sizeMaxDepth,
-                  sizeMaxHeight: spec.sizeMaxHeight,
-                  sizeMaxWidth: spec.sizeMaxWidth,
-                },
+          <CommandButton
+            args={{
+              assignEngineersOnComplete: staffOnComplete,
+              humanRated,
+              kscName: chosen ?? "",
+              massMax: spec.massMax,
+              name: trimmed,
+              size: {
+                sizeMaxDepth: spec.sizeMaxDepth,
+                sizeMaxHeight: spec.sizeMaxHeight,
+                sizeMaxWidth: spec.sizeMaxWidth,
               },
-              { label: `Build ${trimmed} at ${chosen ?? ""}` },
-            )}
-            variant="ghost"
-            aria-label={`Build ${trimmed} at ${chosen}`}
-            confirmAriaLabel={`Confirm building ${trimmed}, whose tonnage limit fixes its renovation range for life`}
-            confirmLabel="Confirm"
-            unavailable={
+            }}
+            aria-label={
               trimmed === ""
                 ? "Name the complex before building it"
-                : duplicate
-                  ? "a complex at this centre already has that name"
-                  : chosen == null
-                    ? "Choose which space centre builds it"
-                    : !massed
-                      ? "Give the complex a tonnage limit"
-                      : quote === null
-                        ? "RP-1 has not priced this complex"
-                        : null
+                : chosen == null
+                  ? "Choose which space centre builds it"
+                  : !massed
+                    ? "Give the complex a tonnage limit"
+                    : `Build ${trimmed} at ${chosen}`
             }
+            commandLabel={`Build ${trimmed} at ${chosen ?? ""}`}
+            confirmAriaLabel={`Confirm building ${trimmed}, whose tonnage limit fixes its renovation range for life`}
+            confirmLabel="Confirm"
+            disabled={blocked}
+            handle={handle}
+            label="Build"
             size="sm"
-          >
-            Build
-          </Button>
+          />
         </Row>
       </Stack>
     </Disclosure>

@@ -1,7 +1,6 @@
 import {
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   DataLine,
   magnitudeOf,
 } from "@ksp-gonogo/ui-kit";
@@ -23,9 +22,9 @@ export interface CourseControlsProps {
   /** The live course these controls act on. */
   course: Rp1TrainingCourseEntry;
   /** The shared `rp1.training.cancel` handle; each button holds its own arm state. */
-  cancel: CommandButtonHandle;
+  cancel: Parameters<typeof CommandButton>[0]["handle"];
   /** The shared `rp1.training.remove` handle. */
-  remove: CommandButtonHandle;
+  remove: Parameters<typeof CommandButton>[0]["handle"];
 }
 
 /**
@@ -66,13 +65,10 @@ export function CourseControls({
       {/* RP-1 addresses a course by ONE of its students rather than by an id
           (`Rp1TrainingLeaveArgs.crewName` selects the course for cancel), so
           the first student names it and every student comes off. */}
-      <Button
-        command={cancel.with(
-          { crewName: students[0] },
-          { label: "Cancel this course" },
-        )}
-        variant="ghost"
+      <CommandButton
+        args={{ crewName: students[0] }}
         aria-label="Cancel this course"
+        commandLabel="Cancel this course"
         confirmAriaLabel="Confirm cancelling this course"
         confirmLabel={
           queued
@@ -81,33 +77,38 @@ export function CourseControls({
               ? `All ${students.length} off, no credit`
               : "Course ends, no credit"
         }
-        unavailable={
+        disabled={students.length === 0}
+        handle={cancel}
+        label="Cancel course"
+        size="sm"
+        title={
           students.length === 0
             ? "RP-1 addresses a course by one of its students and this one has none"
-            : null
+            : undefined
         }
-        size="sm"
         tone="warn"
-      >
-        Cancel course
-      </Button>
+      />
       {/* No per-student control on a queued course: RP-1 takes one off whole,
           and the mod refuses a single student leaving it. */}
       {!queued &&
         students.map((student) => (
-          <Button
-            command={remove.with(
-              { crewName: student },
-              { label: `Take ${student} off the course` },
-            )}
-            variant="ghost"
-            aria-label={`Take ${student} off the course`}
+          <CommandButton
+            args={{ crewName: student }}
+            /* The visible label once the course strands them: the fuller name is
+               the act, and this control cannot perform it. */
+            aria-label={
+              stranded === null ? `Take ${student} off the course` : undefined
+            }
+            commandLabel={`Take ${student} off the course`}
             confirmAriaLabel={`Confirm taking ${student} off the course`}
             confirmLabel={`${student} off, no credit`}
-            unavailable={stranded ?? null}
+            disabled={stranded !== null}
+            handle={remove}
             key={student}
+            label={`${student} off`}
             size="sm"
-          >{`${student} off`}</Button>
+            title={stranded ?? undefined}
+          />
         ))}
     </Cluster>
   );

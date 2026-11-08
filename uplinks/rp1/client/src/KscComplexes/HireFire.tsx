@@ -1,8 +1,7 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   Disclosure,
   heldFigureOf,
   magnitudeOf,
@@ -53,12 +52,12 @@ export function HireFireControl({
   personnel,
 }: Readonly<{
   centres: readonly Rp1CentreEntry[];
-  fire: CommandButtonHandle;
+  fire: Parameters<typeof CommandButton>[0]["handle"];
   /** The last career balance received. Null takes the whole control off. */
   funds: number | null;
   /** The reading `funds` came from, so a held balance is drawn with its held mark. */
   fundsReading?: Parameters<typeof heldFigureOf>[1];
-  hire: CommandButtonHandle;
+  hire: Parameters<typeof CommandButton>[0]["handle"];
   personnel: Rp1Personnel | undefined;
 }>) {
   const [research, setResearch] = useState(true);
@@ -141,35 +140,25 @@ export function HireFireControl({
         />
         <Row as="div">
           <Text size="xs" level="muted">
-            {cost === null ? (
-              NULL_DISPLAY
-            ) : (
-              <Unit decimals={0} value={value("funds", cost)} />
-            )}{" "}
-            of{" "}
+            {cost === null ? NULL_DISPLAY : <Unit decimals={0} value={value("funds", cost)} />} of{" "}
             <Unit
               decimals={0}
               value={heldFigureOf(value("funds", funds), fundsReading)}
             />{" "}
-            · <SalaryDelta sign="+" salary={salary} />
+            ·{" "}
+            <SalaryDelta sign="+" salary={salary} />
           </Text>
-          <Button
-            command={hire.with(args, { label: hirePress })}
-            variant="ghost"
+          <CommandButton
+            args={args}
             aria-label={hirePress}
+            commandLabel={hirePress}
             confirmAriaLabel={`Confirm hiring ${count} ${kind}${where}`}
             confirmLabel="Confirm"
-            unavailable={
-              count <= 0
-                ? "There is nobody to hire"
-                : short
-                  ? "More than the balance, so RP-1 will refuse it"
-                  : null
-            }
+            disabled={count <= 0 || short}
+            handle={hire}
+            label="Hire"
             size="sm"
-          >
-            Hire
-          </Button>
+          />
         </Row>
         {short && (
           <Text size="xs" tone="warn">
@@ -182,23 +171,17 @@ export function HireFireControl({
           <Text size="xs" level="muted">
             no fee · <SalaryDelta sign="-" salary={salary} />
           </Text>
-          <Button
-            command={fire.with(args, { label: firePress })}
-            variant="ghost"
+          <CommandButton
+            args={args}
             aria-label={firePress}
+            commandLabel={firePress}
             confirmAriaLabel={`Confirm firing ${count} ${kind}${where}`}
             confirmLabel="Confirm"
-            unavailable={
-              count <= 0
-                ? "There is nobody to fire"
-                : tooMany
-                  ? "More than the unassigned staff available to fire"
-                  : null
-            }
+            disabled={count <= 0 || tooMany}
+            handle={fire}
+            label="Fire"
             size="sm"
-          >
-            Fire
-          </Button>
+          />
         </Row>
         {tooMany && (
           <Text size="xs" tone="warn">

@@ -11,13 +11,6 @@ import { clearPlanDrafts } from "../planDrafts.js";
 import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { PlanComposer } from "./index.js";
 
-/** A commanded button by its visible word: its accessible name is the reason while it is blocked. */
-function control(word: string): HTMLElement {
-  const button = screen.getByText(word).closest("button");
-  if (!button) throw new Error(`no button reads ${word}`);
-  return button;
-}
-
 /**
  * Composing a plan at the command centre and sending it whole.
  *
@@ -269,10 +262,11 @@ describe("PlanComposer", () => {
 
     await act(async () => {});
     expect(screen.getByText("Too late")).toBeTruthy();
-    expect(control("Upload to vessel")).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", {
+        name: "Upload this flight plan to the vessel",
+      }),
+    ).toBeDisabled();
     expect(fixture.transport.sentCommands).toHaveLength(0);
   });
 

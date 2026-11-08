@@ -1,8 +1,7 @@
 import {
   Badge,
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   Countdown,
   magnitudeOf,
   NULL_DISPLAY,
@@ -32,9 +31,9 @@ import {
 
 /** The three command handles a vehicle card can dispatch. */
 export type VehicleHandles = Readonly<{
-  rollout: CommandButtonHandle;
-  rollback: CommandButtonHandle;
-  scrap: CommandButtonHandle;
+  rollout: Parameters<typeof CommandButton>[0]["handle"];
+  rollback: Parameters<typeof CommandButton>[0]["handle"];
+  scrap: Parameters<typeof CommandButton>[0]["handle"];
 }>;
 
 /**
@@ -411,48 +410,45 @@ function VehicleActions({
           padNames={eligiblePads}
         />
         {operation?.type === "Rollback" ? (
-          <Button
-            command={handles.rollout.with(
-              { id },
-              { label: `Roll out ${name}` },
-            )}
-            variant="ghost"
+          <CommandButton
+            args={{ id }}
             aria-label={`Send ${label} back out to the pad`}
+            commandLabel={`Roll out ${name}`}
             confirmAriaLabel={`Confirm sending ${label} back out to the pad`}
+            /* COMMIT rather than spend, the same wording the facility upgrades
+               carry: nothing leaves the treasury at the press, RP-1 draws the
+               price down over the move. */
             confirmLabel="Commit"
+            handle={handles.rollout}
+            label="Roll out again"
             size="sm"
-          >
-            Roll out again
-          </Button>
+          />
         ) : null}
         {operation?.type === "Rollout" ? (
-          <Button
-            command={handles.rollback.with(
-              { id },
-              { label: `Roll back ${name}` },
-            )}
-            variant="ghost"
+          <CommandButton
+            args={{ id }}
             aria-label={`Roll ${label} back off the pad`}
+            commandLabel={`Roll back ${name}`}
             confirmAriaLabel={`Confirm rolling ${label} back off the pad`}
             confirmLabel="Confirm"
+            handle={handles.rollback}
+            label="Roll back"
             size="sm"
             tone="warn"
-          >
-            Roll back
-          </Button>
+          />
         ) : null}
         {moving ? null : (
-          <Button
-            command={handles.scrap.with({ id }, { label: `Scrap ${name}` })}
-            variant="ghost"
+          <CommandButton
+            args={{ id }}
             aria-label={`Scrap ${label}`}
+            commandLabel={`Scrap ${name}`}
             confirmAriaLabel={`Confirm scrapping ${label}`}
             confirmLabel={<RefundWording cost={cost} />}
+            handle={handles.scrap}
+            label="Scrap"
             size="sm"
             tone="nogo"
-          >
-            Scrap
-          </Button>
+          />
         )}
       </Cluster>
 
@@ -521,7 +517,7 @@ function RolloutControls({
   name: string;
   label: string;
   padNames: readonly string[];
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
 }>) {
   // One pad needs no name on the button: an operator with no choice does not
   // need it repeated, and the aria-label carries it for anyone who cannot see
@@ -531,20 +527,19 @@ function RolloutControls({
   return (
     <>
       {padNames.map((padName) => (
-        <Button
-          command={handle.with(
-            { id, pad: padName },
-            { label: `Roll ${name} out to ${padName}` },
-          )}
-          variant="ghost"
+        <CommandButton
+          args={{ id, pad: padName }}
           aria-label={`Roll ${label} out to ${padName}`}
+          commandLabel={`Roll ${name} out to ${padName}`}
           confirmAriaLabel={`Confirm rolling ${label} out to ${padName}`}
+          // See the price above the row: the press commits the career to a bill
+          // RP-1 draws down over the move, and spends nothing when it lands.
           confirmLabel="Commit"
+          handle={handle}
           key={padName}
+          label={short ? "Roll out" : `Roll out to ${padName}`}
           size="sm"
-        >
-          {short ? "Roll out" : `Roll out to ${padName}`}
-        </Button>
+        />
       ))}
     </>
   );

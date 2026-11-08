@@ -17,7 +17,6 @@ import {
 } from "../AdminBuilding/leadersScreen.js";
 import { PROGRAMS_SCREEN_ID } from "../AdminBuilding/programsScreen.js";
 import { LeaderDetail } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
 
 const YEAR = 31_557_600;
 
@@ -128,7 +127,9 @@ describe("LeaderDetail", () => {
 
   it("does not read an unreadable setup cost as no cost", async () => {
     const { fixture } = mount();
-    await feed(fixture, [leader({ setupFunds: Number.NaN })]);
+    await feed(fixture, [
+      leader({ setupFunds: Number.NaN }),
+    ]);
 
     expect(visibleText()).not.toContain("No cost");
     expect(visibleText()).toContain(NULL_DISPLAY);
@@ -167,10 +168,7 @@ describe("LeaderDetail", () => {
       leader({ canAppoint: false, appointBlockedReason: reason }),
     ]);
 
-    expect(getButtonDescribedBy(reason)).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    expect(screen.getByRole("button", { name: "Appoint" })).toBeDisabled();
     expect(visibleText()).toContain(reason);
     expect(visibleText()).toContain("LOCKED");
   });
@@ -260,9 +258,7 @@ describe("LeaderDetail", () => {
       deactivateBlockedReason: "Too soon to remove",
     });
 
-    expect(
-      getButtonDescribedBy("Too soon to remove"),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Dismiss" })).toBeDisabled();
     expect(visibleText()).toContain("Can dismiss");
   });
 

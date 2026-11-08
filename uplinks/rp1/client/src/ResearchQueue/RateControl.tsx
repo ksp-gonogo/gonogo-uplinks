@@ -1,8 +1,7 @@
 import { magnitudeOf, value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   MissionDate,
   NULL_DISPLAY,
   Stack,
@@ -24,7 +23,7 @@ export const RP1_RESEARCH_SET_RATE_COMMAND = "rp1.research.setRate";
 const STEPS_PER_UNIT = 20;
 const STEPS = Array.from({ length: STEPS_PER_UNIT + 1 }, (_, step) => step);
 
-type Handle = CommandButtonHandle;
+type Handle = Parameters<typeof CommandButton>[0]["handle"];
 
 const percent = (step: number) => `${step * 5}%`;
 
@@ -101,21 +100,20 @@ export function ResearchRateControl({
           )}
         </Stack>
       </Stepper>
-      <Button
-        command={handle.with(
-          { workRate: step / STEPS_PER_UNIT },
-          { label: `Set research to ${percent(step)}` },
-        )}
-        variant="ghost"
-        aria-label={`Set research to ${percent(step)}`}
-        confirmLabel={`Set ${percent(step)}`}
-        unavailable={
-          step === current ? `Research is already at ${percent(step)}` : null
+      <CommandButton
+        args={{ workRate: step / STEPS_PER_UNIT }}
+        aria-label={
+          step === current
+            ? `Research is already at ${percent(step)}`
+            : `Set research to ${percent(step)}`
         }
+        commandLabel={`Set research to ${percent(step)}`}
+        confirmLabel={`Set ${percent(step)}`}
+        disabled={step === current}
+        handle={handle}
+        label="Set rate"
         size="sm"
-      >
-        Set rate
-      </Button>
+      />
     </Cluster>
   );
 }
@@ -152,8 +150,7 @@ function StepReadout({
       researchers paid {salary}
       {priced.unlockCreditPerDay != null && (
         <>
-          , Unlock Credit{" "}
-          <Unit decimals={0} value={priced.unlockCreditPerDay} />
+          , Unlock Credit <Unit decimals={0} value={priced.unlockCreditPerDay} />
         </>
       )}
       {dated && priced.finishesAt != null && (
@@ -170,10 +167,7 @@ function Change({
   priced,
   now,
 }: Readonly<{ priced: Rp1ResearchRateStep; now: Rp1ResearchRateStep }>) {
-  const pay = difference(
-    priced.researcherSalaryPerDay,
-    now.researcherSalaryPerDay,
-  );
+  const pay = difference(priced.researcherSalaryPerDay, now.researcherSalaryPerDay);
   const credit = difference(priced.unlockCreditPerDay, now.unlockCreditPerDay);
   if (pay === null && credit === null) {
     return null;

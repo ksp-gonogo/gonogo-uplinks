@@ -1,7 +1,6 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
-  type CommandButtonHandle,
+  CommandButton,
   Disclosure,
   magnitudeOf,
   NULL_DISPLAY,
@@ -67,7 +66,7 @@ export function ModifyControl({
   complex: Rp1ComplexEntry;
   /** The career balance, for the covers-it reading only. Absent means say nothing. */
   funds: number | null;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   /**
    * RP-1's own pricing settings. Needed for the additional-pad multiplier, which
    * a renovation applies to every pad the complex already has; the quote is
@@ -115,7 +114,7 @@ function ModifyForm({
   capacities: { [key: string]: number };
   complex: Rp1ComplexEntry;
   funds: number | null;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   lcId: string;
   pricing: Rp1LcPricing | undefined;
 }>) {
@@ -348,32 +347,25 @@ function ModifyForm({
               </>
             )}
           </Text>
-          <Button
-            command={handle.with(
-              renovationArgs({
-                capacities,
-                humanRated,
-                isHangar,
-                lcId,
-                reassign,
-                spec: nextSpec,
-                wantedMass,
-              }),
-              { label: `Queue the renovation of ${name}` },
-            )}
-            variant="ghost"
+          <CommandButton
+            args={renovationArgs({
+              capacities,
+              humanRated,
+              isHangar,
+              lcId,
+              reassign,
+              spec: nextSpec,
+              wantedMass,
+            })}
             aria-label={`Queue the renovation of ${name}`}
+            commandLabel={`Queue the renovation of ${name}`}
             confirmAriaLabel={confirm}
             confirmLabel="Confirm"
-            unavailable={
-              blocked
-                ? "The renovation is not priced or its specification is incomplete"
-                : null
-            }
+            disabled={blocked}
+            handle={handle}
+            label="Renovate"
             size="sm"
-          >
-            Renovate
-          </Button>
+          />
         </Row>
       </Stack>
     </Disclosure>

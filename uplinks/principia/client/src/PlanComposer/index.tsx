@@ -4,7 +4,6 @@ import type {
   VesselOrbit,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  bindCommand,
   observedAt,
   readingOf,
   registerAugment,
@@ -21,6 +20,7 @@ import {
   Badge,
   Button,
   Cluster,
+  CommandButton,
   Countdown,
   FieldLabel,
   MissionDate,
@@ -332,7 +332,7 @@ function ReadyPlan({
    */
   const upload = {
     ...command,
-    dangerouslySendWithoutInput: async () => {
+    send: async () => {
       const answer = await onSend();
       if (!answer.accepted) {
         throw new Error(answer.refusal ?? "The vessel declined the plan.");
@@ -386,27 +386,18 @@ function ReadyPlan({
           is flying with this, there is no undo from the operator's seat, and at a
           distant vantage the correction is another round trip behind. Every other
           write on this surface already arms. */}
-      <Button
-        command={bindCommand(upload, undefined, {
-          label: "Upload the flight plan",
-        })}
-        variant="ghost"
+      <CommandButton
         size="sm"
         tone="go"
+        handle={upload}
+        commandLabel="Upload the flight plan"
+        label="Upload to vessel"
         confirmLabel="CONFIRM UPLOAD"
         confirmTone="nogo"
-        unavailable={
-          pending
-            ? "The last upload has not been answered"
-            : window?.shut === true
-              ? "The send window has closed: the plan would arrive after ignition"
-              : null
-        }
+        disabled={pending || window?.shut === true}
         aria-label="Upload this flight plan to the vessel"
         confirmAriaLabel="Confirm uploading this flight plan to the vessel"
-      >
-        Upload to vessel
-      </Button>
+      />
       <Button variant="primary" onClick={onReopen}>
         Reopen
       </Button>

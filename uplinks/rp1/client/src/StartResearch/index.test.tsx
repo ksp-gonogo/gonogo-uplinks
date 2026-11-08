@@ -10,7 +10,6 @@ import {
 } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { StartResearch } from "./index.js";
-import { getButtonDescribedBy } from "../test/describedButton";
 
 const renderedTrees: Array<() => void> = [];
 
@@ -245,9 +244,7 @@ describe("StartResearch: putting a node on RP-1's research queue", () => {
     emit(stream, tree(5));
     await screen.findByText("START RESEARCH");
 
-    expect(
-      getButtonDescribedBy(/charges the whole science cost/),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: /^research$/i })).toBeDisabled();
     expect(visibleText(stream.container)).toContain("SHORT");
   });
 

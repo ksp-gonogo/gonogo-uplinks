@@ -18,13 +18,6 @@ import { axe } from "../test/axe.js";
 import { EVERY_COMMAND_TO_THE_CRAFT } from "../test/commandTargets.js";
 import { BurnEditor } from "./index.js";
 
-/** A commanded button by its visible word: its accessible name is the reason while it is blocked. */
-function control(word: string): HTMLElement {
-  const button = screen.getByText(word).closest("button");
-  if (!button) throw new Error(`no button reads ${word}`);
-  return button;
-}
-
 const renderedTrees: Array<() => void> = [];
 
 afterEach(() => {
@@ -331,10 +324,9 @@ describe("BurnEditor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
     expect(screen.getByText("NOT ARMED")).toBeInTheDocument();
-    expect(control("ARM WRITES")).toHaveAttribute(
-      "data-tooltip",
-      expect.stringMatching(/round trip of Principia's own burn/),
-    );
+    expect(
+      screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
+    ).toHaveAccessibleDescription(/round trip of Principia's own burn/);
     expect(screen.getByLabelText("DAY")).toBeDisabled();
     expect(screen.getByLabelText("NORMAL")).toBeDisabled();
     await act(async () => {});
@@ -357,11 +349,12 @@ describe("BurnEditor", () => {
     });
 
     expect(screen.getByRole("button", { name: "Burn 1" })).toBeInTheDocument();
-    expect(control("ARM WRITES")).toHaveAttribute(
-      "data-tooltip",
-      expect.stringMatching(/not analysed for flight-plan WRITES/),
-    );
-    expect(control("ARM WRITES")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
+    ).toHaveAccessibleDescription(/not analysed for flight-plan WRITES/);
+    expect(
+      screen.getByRole("button", { name: "Arm the flight-plan write surface" }),
+    ).toBeDisabled();
     await act(async () => {});
   });
 
@@ -497,9 +490,15 @@ describe("BurnEditor", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("REMOVE")).toHaveAttribute("aria-disabled", "true");
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
-    expect(control("ADD BURN")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Add a burn from these values" }),
+    ).toBeDisabled();
     expect(
       screen.getByText("WHETHER THIS BURN IS RUNNING COULD NOT BE READ"),
     ).toBeInTheDocument();
@@ -516,8 +515,12 @@ describe("BurnEditor", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("REMOVE")).toHaveAttribute("aria-disabled", "true");
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
     await act(async () => {});
   });
 
@@ -532,8 +535,12 @@ describe("BurnEditor", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("REMOVE")).not.toHaveAttribute("aria-disabled", "true");
-    expect(control("APPLY")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeEnabled();
     await act(async () => {});
   });
 
@@ -564,7 +571,9 @@ describe("BurnEditor", () => {
     ).not.toBeInTheDocument();
     // Still refused: an unreadable frame is not a frame an edit may be sent
     // with, and the mod refuses `BurnFrameUnsupported` on it.
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
     await act(async () => {});
   });
 
@@ -650,7 +659,9 @@ describe("BurnEditor", () => {
     // label.
     expect(screen.getByLabelText("NORMAL")).toBeDisabled();
     expect(screen.getByLabelText("DAY")).toBeDisabled();
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
     expect(screen.getByText("OUT OF CONTACT")).toBeInTheDocument();
     await act(async () => {});
   });
@@ -694,8 +705,14 @@ describe("BurnEditor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
     expect(screen.getByText("EDIT WINDOW SHUT")).toBeInTheDocument();
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
-    expect(control("ADD BURN")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", {
+        name: "Add a burn from these values",
+      }),
+    ).toBeDisabled();
     await act(async () => {});
   });
 
@@ -717,7 +734,9 @@ describe("BurnEditor", () => {
 
     expect(screen.queryByText("EDIT WINDOW SHUT")).not.toBeInTheDocument();
     expect(screen.getByText(/EDIT WINDOW/)).toHaveTextContent("CLOSES IN 1h");
-    expect(control("APPLY")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeEnabled();
     await act(async () => {});
   });
 
@@ -787,16 +806,21 @@ describe("BurnEditor", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
-    expect(control("ADD BURN")).toHaveAttribute("aria-disabled", "true");
-    expect(control("REMOVE")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Add a burn from these values" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).toBeEnabled();
     // Beside the controls it darkened, not only beside the ARM button at the
     // top of the section. The consequence rather than a second copy of the
     // surface's own sentence, which is already up there.
-    expect(control("APPLY")).toHaveAttribute(
-      "data-tooltip",
-      expect.stringMatching(/burn layout is unverified/),
-    );
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toHaveAccessibleDescription(/burn layout is unverified/);
     await act(async () => {});
   });
 
@@ -1304,11 +1328,17 @@ describe("BurnEditor", () => {
     });
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
-    expect(control("ADD BURN")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Add a burn from these values" }),
+    ).toBeDisabled();
     // REMOVE is not among them: it sends the index alone, and dropping a burn
     // whose delta-v nobody can read is the likeliest thing an operator wants.
-    expect(control("REMOVE")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).not.toBeDisabled();
     await act(async () => {});
   });
 
@@ -1337,7 +1367,9 @@ describe("BurnEditor", () => {
     await userEvent.type(screen.getByLabelText("NORMAL"), "0");
     await userEvent.type(screen.getByLabelText("BINORMAL"), "-5");
 
-    expect(control("APPLY")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).not.toBeDisabled();
     const form = document.querySelector("[data-burn-editor-form]");
     expect(form?.textContent ?? "").not.toContain(`MAGNITUDE${NULL_DISPLAY}`);
     await act(async () => {});
@@ -1377,15 +1409,20 @@ describe("BurnEditor", () => {
     await emitPlan(stream, { burns: [burn({ ignitionUt: null })] });
     await userEvent.click(screen.getByRole("button", { name: "Burn 1" }));
 
-    expect(control("APPLY")).toHaveAttribute("aria-disabled", "true");
-    expect(control("ADD BURN")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Add a burn from these values" }),
+    ).toBeDisabled();
     // REMOVE sends the index alone, and dropping a burn nobody can time is the
     // likeliest thing an operator wants next.
-    expect(control("REMOVE")).not.toHaveAttribute("aria-disabled", "true");
-    expect(control("APPLY")).toHaveAttribute(
-      "data-tooltip",
-      expect.stringMatching(/ignition instant is unstated/),
-    );
+    expect(
+      screen.getByRole("button", { name: "Remove this burn from the plan" }),
+    ).not.toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).toHaveAccessibleDescription(/ignition instant is unstated/);
     await act(async () => {});
   });
 
@@ -1398,7 +1435,9 @@ describe("BurnEditor", () => {
     await userEvent.type(screen.getByLabelText("YEAR"), "3");
 
     expect(screen.getByLabelText("YEAR")).toHaveValue(3);
-    expect(control("APPLY")).not.toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("button", { name: "Apply the edited burn" }),
+    ).not.toBeDisabled();
     await act(async () => {});
   });
 

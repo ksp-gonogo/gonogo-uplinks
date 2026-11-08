@@ -6,7 +6,7 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
-  Button,
+  CommandButton,
   Inline,
   Stack,
   Text,
@@ -103,26 +103,23 @@ export function ContractPayload() {
         )}
       </Text>
 
-      <Button
-        command={setPayload.with(
-          { commsPayload: comms, weatherPayload: weather },
-          { label: "Set contract payload requirements" },
-        )}
-        variant="ghost"
-        aria-label={`Require ${comms} kilograms for CommSat contracts and ${weather} kilograms for WeatherSat contracts, withdrawing the matching pending offers`}
+      <CommandButton
+        args={{ commsPayload: comms, weatherPayload: weather }}
+        aria-label={
+          legalPair
+            ? `Require ${comms} kilograms for CommSat contracts and ${weather} kilograms for WeatherSat contracts, withdrawing the matching pending offers`
+            : "One of the payload figures is outside the range RP-1 accepts"
+        }
+        commandLabel="Set contract payload requirements"
         confirmAriaLabel="Confirm the new payload requirements and withdraw the matching pending offers"
         confirmLabel="Confirm"
         confirmTone="nogo"
-        unavailable={
-          legalPair
-            ? null
-            : "One of the payload figures is outside the range RP-1 accepts"
-        }
+        disabled={!legalPair}
+        handle={setPayload}
+        label="Set payload"
         size="sm"
         tone="warn"
-      >
-        Set payload
-      </Button>
+      />
     </Stack>
   );
 }

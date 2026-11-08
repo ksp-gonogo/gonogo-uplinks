@@ -3,8 +3,9 @@ import {
   Badge,
   Button,
   Cluster,
-  DataTable,
+  CommandButton,
   type DataTableColumn,
+  DataTable,
   EmptyState,
   ModalProvider,
   NULL_DISPLAY,
@@ -151,29 +152,23 @@ function DeviceSwitch({ device }: { device: KerbalismDevice }) {
   const name = device.name ?? "device";
   return (
     <Cluster justify="end" wrap={false}>
-      <Button
-        command={deviceSet.with(
-          { deviceId: device.id, on: true },
-          { label: `Switch ${name} on` },
-        )}
-        variant="ghost"
+      <CommandButton
         size="sm"
         tone="go"
+        handle={deviceSet}
+        args={{ deviceId: device.id, on: true }}
+        commandLabel={`Switch ${name} on`}
+        label="On"
         aria-label={`Switch ${name} on`}
-      >
-        On
-      </Button>
-      <Button
-        command={deviceSet.with(
-          { deviceId: device.id, on: false },
-          { label: `Switch ${name} off` },
-        )}
-        variant="ghost"
+      />
+      <CommandButton
         size="sm"
+        handle={deviceSet}
+        args={{ deviceId: device.id, on: false }}
+        commandLabel={`Switch ${name} off`}
+        label="Off"
         aria-label={`Switch ${name} off`}
-      >
-        Off
-      </Button>
+      />
     </Cluster>
   );
 }
@@ -245,21 +240,14 @@ function ScriptDeviceControls({
   const name = device.name ?? "device";
   const label = scriptLabel(script);
   const setTo = (state: boolean | null, words: string) => (
-    <Button
-      command={scriptSet.with(
-        {
-          scriptType: script,
-          deviceId: device.id as string,
-          state: state ?? undefined,
-        },
-        { label: `${label} script: ${words} ${name}` },
-      )}
-      variant="ghost"
+    <CommandButton
       size="sm"
+      handle={scriptSet}
+      args={{ scriptType: script, deviceId: device.id as string, state: state ?? undefined }}
+      commandLabel={`${label} script: ${words} ${name}`}
+      label={words === "remove" ? "Remove" : words === "on" ? "On" : "Off"}
       aria-label={`${label} script: ${words} ${name}`}
-    >
-      {words === "remove" ? "Remove" : words === "on" ? "On" : "Off"}
-    </Button>
+    />
   );
   return (
     <Cluster justify="end" wrap={false}>

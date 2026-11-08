@@ -8,15 +8,14 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Cluster,
-  type CommandButtonHandle,
+  CommandButton,
   Countdown,
   EmptyState,
   FilterRegion,
   Grid,
-  magnitudeOf,
   MissionDate,
+  magnitudeOf,
   NULL_DISPLAY,
   Readout,
   ReadoutCaption,
@@ -262,8 +261,8 @@ function ChosenLeader({
   leader,
   reputation,
 }: Readonly<{
-  appoint: CommandButtonHandle;
-  dismiss: CommandButtonHandle;
+  appoint: Parameters<typeof CommandButton>[0]["handle"];
+  dismiss: Parameters<typeof CommandButton>[0]["handle"];
   entry: CareerStrategyEntry | undefined;
   leader: Rp1LeaderEntry;
   reputation: number | null;
@@ -329,7 +328,7 @@ function AppointControl({
   handle,
   leader,
 }: Readonly<{
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   leader: Rp1LeaderEntry;
 }>) {
   const name = label(leader);
@@ -341,25 +340,20 @@ function AppointControl({
         <Text size="sm" level="muted">
           <SetupCost leader={leader} />
         </Text>
-        <Button
-          command={handle.with(
-            { strategyId: leader.strategyId ?? "" },
-            { label: `Appoint ${name}` },
-          )}
-          variant="ghost"
-          aria-label={`Appoint ${name}`}
+        <CommandButton
+          args={{ strategyId: leader.strategyId ?? "" }}
+          aria-label={offered ? `Appoint ${name}` : undefined}
+          commandLabel={`Appoint ${name}`}
           confirmAriaLabel={`Confirm appointing ${name}`}
           confirmLabel={<SetupCost leader={leader} verb />}
-          unavailable={
-            offered
-              ? null
-              : (leader.appointBlockedReason ??
-                "RP-1 does not offer this leader")
-          }
+          disabled={!offered}
+          handle={handle}
+          label="Appoint"
           size="sm"
-        >
-          Appoint
-        </Button>
+          title={
+            offered ? undefined : (leader.appointBlockedReason ?? undefined)
+          }
+        />
       </Cluster>
       <Stack as="ul" gap="rows" style={LIST_STYLE}>
         {!offered && leader.appointBlockedReason != null && (
@@ -455,7 +449,7 @@ function DismissControl({
   reputation,
 }: Readonly<{
   entry: CareerStrategyEntry | undefined;
-  handle: CommandButtonHandle;
+  handle: Parameters<typeof CommandButton>[0]["handle"];
   leader: Rp1LeaderEntry;
   reputation: number | null;
 }>) {
@@ -483,29 +477,24 @@ function DismissControl({
           />{" "}
           of subsidy
         </Text>
-        <Button
-          command={handle.with(
-            { strategyId: leader.strategyId ?? "" },
-            { label: `Dismiss ${name}` },
-          )}
-          variant="ghost"
-          aria-label={`Dismiss ${name}`}
+        <CommandButton
+          args={{ strategyId: leader.strategyId ?? "" }}
+          aria-label={blocked ? undefined : `Dismiss ${name}`}
+          commandLabel={`Dismiss ${name}`}
           confirmAriaLabel={`Confirm dismissing ${name}`}
           confirmLabel={
             <>
               Lose <Unit value={leader.deactivateReputation} /> reputation
             </>
           }
-          unavailable={
-            blocked
-              ? (entry?.deactivateBlockedReason ??
-                "RP-1 will not let this leader be dismissed yet")
-              : null
-          }
+          disabled={blocked}
+          handle={handle}
+          label="Dismiss"
           size="sm"
-        >
-          Dismiss
-        </Button>
+          title={
+            blocked ? (entry?.deactivateBlockedReason ?? undefined) : undefined
+          }
+        />
       </Cluster>
       <Stack as="ul" gap="rows" style={LIST_STYLE}>
         {blocked && leader.canRemoveFromUt != null && (

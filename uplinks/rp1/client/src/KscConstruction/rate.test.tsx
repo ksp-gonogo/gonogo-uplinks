@@ -15,7 +15,6 @@ import {
   RP1_CONSTRUCTION_CANCEL_COMMAND,
   RP1_CONSTRUCTION_SET_RATE_COMMAND,
 } from "./RateControl.js";
-import { getButtonDescribedBy } from "../test/describedButton";
 
 const ID = "6f1c2a0e-3b4d-4c5e-8f60-7a8b9c0d1e2f";
 
@@ -56,10 +55,7 @@ function steps() {
   }));
 }
 
-function mount(
-  row = construction(),
-  table: unknown = { id: ID, steps: steps() },
-) {
+function mount(row = construction(), table: unknown = { id: ID, steps: steps() }) {
   const fixture = setupStreamFixture();
   const view = render(
     <fixture.Provider>
@@ -70,9 +66,7 @@ function mount(
     </fixture.Provider>,
   );
   fixture.emit("rp1.available", true);
-  fixture.emit("rp1.centres", [
-    { kscName: "Cape", kscDisplayName: "Cape Canaveral" },
-  ]);
+  fixture.emit("rp1.centres", [{ kscName: "Cape", kscDisplayName: "Cape Canaveral" }]);
   fixture.emit("rp1.constructions", [row]);
   fixture.emit("rp1.constructionRates", {
     refreshedAt: 1_000_000,
@@ -94,8 +88,8 @@ describe("KscConstruction work rate and cancel", () => {
     expect(text).not.toMatch(/afford/i);
     // Already at this rate, so there is nothing to set.
     expect(
-      getButtonDescribedBy("Vehicle Assembly Building is already at 100%"),
-    ).toHaveAttribute("aria-disabled", "true");
+      screen.getByRole("button", { name: "Vehicle Assembly Building is already at 100%" }),
+    ).toBeDisabled();
     await expectNoA11yViolations(view.container);
   });
 
@@ -114,11 +108,7 @@ describe("KscConstruction work rate and cancel", () => {
     expect(text).toContain("2200 f/day");
     expect(text).toContain("rush cost ×1.20");
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Set Vehicle Assembly Building to 110%",
-      }),
-    );
+    await user.click(screen.getByRole("button", { name: "Set Vehicle Assembly Building to 110%" }));
     await user.click(await screen.findByRole("button", { name: "Set 110%" }));
 
     const sent = fixture.transport.sentCommands.find(
@@ -137,18 +127,14 @@ describe("KscConstruction work rate and cancel", () => {
       }),
     );
 
-    expect(visibleText(view.container)).toContain(
-      "draws nothing and never finishes",
-    );
+    expect(visibleText(view.container)).toContain("draws nothing and never finishes");
   });
 
   it("says a rate RP-1 has not priced yet rather than inventing a draw", async () => {
     const { view } = mount(construction(), null);
 
     await screen.findByText("Set rate");
-    expect(visibleText(view.container)).toContain(
-      "RP-1 has not priced this rate yet",
-    );
+    expect(visibleText(view.container)).toContain("RP-1 has not priced this rate yet");
   });
 
   it("names what has been spent beside Cancel, and cancels only once armed", async () => {
@@ -157,18 +143,12 @@ describe("KscConstruction work rate and cancel", () => {
 
     await screen.findByText("Set rate");
     expect(visibleText(view.container)).toContain("12,500");
-    expect(visibleText(view.container)).toContain(
-      "drawn so far, none refunded",
-    );
+    expect(visibleText(view.container)).toContain("drawn so far, none refunded");
     expect(visibleText(view.container)).toContain("2,500f of it rush premium");
 
-    await user.click(
-      screen.getByRole("button", { name: "Cancel Vehicle Assembly Building" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Cancel Vehicle Assembly Building" }));
     expect(
-      fixture.transport.sentCommands.some(
-        (c) => c.command === RP1_CONSTRUCTION_CANCEL_COMMAND,
-      ),
+      fixture.transport.sentCommands.some((c) => c.command === RP1_CONSTRUCTION_CANCEL_COMMAND),
     ).toBe(false);
 
     await user.click(
@@ -186,9 +166,7 @@ describe("KscConstruction work rate and cancel", () => {
     const { view } = mount(construction({ spentRushCost: 10_000 }));
 
     await screen.findByText("Set rate");
-    expect(visibleText(view.container)).toContain(
-      "drawn so far, none refunded",
-    );
+    expect(visibleText(view.container)).toContain("drawn so far, none refunded");
     expect(visibleText(view.container)).not.toContain("rush premium");
   });
 

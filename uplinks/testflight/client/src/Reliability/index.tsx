@@ -6,9 +6,9 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
-  Button,
   Card,
   Cluster,
+  CommandButton,
   heldWord,
   Stack,
   Text,
@@ -46,14 +46,14 @@ function RepairEngine({ partId, title }: { partId: string; title: string }) {
   const repair = useCommand("testflight.repair");
   return (
     <Cluster justify="start">
-      <Button
-        command={repair.with({ partId }, { label: `Repair ${title}` })}
-        variant="ghost"
+      <CommandButton
+        handle={repair}
+        args={{ partId }}
         size="sm"
+        commandLabel={`Repair ${title}`}
+        label="Repair"
         confirmLabel="Confirm"
-      >
-        Repair
-      </Button>
+      />
     </Cluster>
   );
 }
