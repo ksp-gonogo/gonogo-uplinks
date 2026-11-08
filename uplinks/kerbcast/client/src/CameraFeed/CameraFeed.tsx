@@ -70,8 +70,6 @@ import {
 import { feedKnowledgeEntry, networkKnowledge } from "./networkKnowledge.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
-  hasAutoLatchableCamera,
-  isAutoLatchable,
   selectableFlightIds,
   withPickerOrder,
 } from "./cameraPicker.js";
@@ -584,17 +582,9 @@ export function CameraFeed({
     () => selectableFlightIds(cameras, requested ?? effectiveFlightId),
     [cameras, requested, effectiveFlightId],
   );
-  /* The shared feed latches onto a camera by itself only when no camera is
-     requested. If every live camera it could choose is a command camera, they
-     are withheld from it then, so it shows nothing instead of one. */
-  const withholdCommandCameras =
-    requested === null && !hasAutoLatchableCamera(cameras);
   const pickerFilter = useCallback(
-    (camera: CameraState) =>
-      isPartCamera(camera) &&
-      pickerIds.has(camera.flightId) &&
-      (!withholdCommandCameras || isAutoLatchable(camera)),
-    [pickerIds, withholdCommandCameras],
+    (camera: CameraState) => isPartCamera(camera) && pickerIds.has(camera.flightId),
+    [pickerIds],
   );
 
   const displayedContext = useRef({ requested, cameras, pickerFilter });

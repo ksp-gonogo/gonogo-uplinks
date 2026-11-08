@@ -6,32 +6,9 @@ import {
 import { isCameraDestroyed } from "@ksp-gonogo/kerbcast-react";
 
 /**
- * Whether the shared feed may choose this camera on its own, as the first live
- * one or when the displayed one goes away. A command camera is a ground feed
- * that follows a craft rather than a camera on it, so it is only ever shown
- * when the operator picks it.
- */
-export function isAutoLatchable(camera: CameraState): boolean {
-  return camera.kind !== CameraKind.Command;
-}
-
-/**
- * Whether the shared feed, left to choose a camera itself, has a camera it may
- * choose: a live one that is not a command camera. When it has none, the
- * command cameras are withheld from it so it shows nothing rather than one.
- */
-export function hasAutoLatchableCamera(
-  cameras: readonly CameraState[],
-): boolean {
-  return cameras.some((c) => !isCameraDestroyed(c) && isAutoLatchable(c));
-}
-
-/**
  * The cameras in picker order: live cameras first, grouped by craft in the
- * order each craft first appears, with command cameras after the rest of the
- * live ones so the shared feed's first-live choice never lands on one, then
- * destroyed cameras. Order within a craft is the registry's, so camera
- * numbering stays stable.
+ * order each craft first appears, then destroyed cameras. Order within a craft
+ * is the registry's, so camera numbering stays stable.
  */
 export function orderCamerasForPicker<T extends CameraState>(
   cameras: readonly T[],
@@ -40,9 +17,8 @@ export function orderCamerasForPicker<T extends CameraState>(
   for (const c of cameras) {
     if (!craftRank.has(c.vesselName)) craftRank.set(c.vesselName, craftRank.size);
   }
-  const size = craftRank.size;
   const rank = (c: T) =>
-    (isCameraDestroyed(c) ? 2 : isAutoLatchable(c) ? 0 : 1) * size +
+    (isCameraDestroyed(c) ? 1 : 0) * craftRank.size +
     (craftRank.get(c.vesselName) ?? 0);
   return [...cameras].sort((a, b) => rank(a) - rank(b));
 }

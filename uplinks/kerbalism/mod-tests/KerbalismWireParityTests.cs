@@ -118,32 +118,6 @@ public class KerbalismWireParityTests
 
         var transmission = KerbalismCapture.BuildTransmission(new TransmissionRaw { DataRateBitsPerSecond = 144_000, Target = "DSN: KSC", ScienceTransmitted = 12.5 });
 
-        var kerbal = new KerbalRulesRaw { Name = "Valentina Kerman" };
-        kerbal.Rules["radiation"] = 0.25;
-        var eva = KerbalismCapture.BuildEva(
-            kerbal,
-            new Dictionary<string, RuleConstants> { ["radiation"] = new RuleConstants { DegenPerSec = 1e-7, FatalThreshold = 50 } },
-            new[] { "ElectricCharge" },
-            _ => 1.0,
-            _ => 5.0,
-            _ => -0.1,
-            radiation: 1e-7);
-
-        var diagnostics = KerbalismCapture.BuildDiagnostics(new DiagnosticsRaw
-        {
-            Devices = new List<DeviceRaw> { new DeviceRaw { Id = "1", Name = "Scrubber", PartName = "hab", Status = "on" } },
-            Scripts = new List<ScriptRaw>
-            {
-                new ScriptRaw
-                {
-                    Type = "Landed",
-                    DeviceCount = 1,
-                    States = new List<ScriptStateRaw> { new ScriptStateRaw { DeviceId = "1", On = true } },
-                },
-            },
-            Log = new List<LogEntryRaw> { new LogEntryRaw { Level = "info", Message = "ok" } },
-        });
-
         var reliabilitySummary = KerbalismCapture.BuildReliabilitySummary(new GonogoKerbalismUplink.KerbalismReliabilitySummary());
         var reliabilityParts = KerbalismCapture.BuildReliabilityParts(new[]
         {
@@ -181,16 +155,6 @@ public class KerbalismWireParityTests
             [T("KerbalismFeatures")] = features,
 
             [T("KerbalismTransmission")] = transmission,
-
-            [T("KerbalismEva")] = eva,
-            [T("KerbalismEvaRule")] = Entry(eva["rules"], 0),
-            [T("KerbalismResource")] = Dict(eva["resources"]).Values.First(),
-
-            [T("KerbalismDiagnostics")] = diagnostics,
-            [T("KerbalismDevice")] = Entry(diagnostics["devices"], 0),
-            [T("KerbalismScript")] = Entry(diagnostics["scripts"], 0),
-            [T("KerbalismScriptState")] = Entry(Dict(Entry(diagnostics["scripts"], 0))["states"], 0),
-            [T("KerbalismLogEntry")] = Entry(diagnostics["log"], 0),
 
             [T("KerbalismProfile")] = profile,
             [T("KerbalismResourceDef")] = Dict(profile["resources"]).Values.First(),
@@ -310,7 +274,6 @@ public class KerbalismWireParityTests
             "KerbalismSpaceWeather", "KerbalismLifeSupport", "KerbalismCrewEntry",
             "KerbalismFeatures", "KerbalismProfile", "KerbalismTransmission",
             "KerbalismReliabilitySummary", "KerbalismReliabilityPart",
-            "KerbalismEva", "KerbalismDiagnostics",
         }.Select(n => contract.GetType("GonogoKerbalismUplink." + n, throwOnError: true)!);
 
         var seen = new HashSet<Type>();
