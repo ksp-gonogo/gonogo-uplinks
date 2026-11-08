@@ -834,6 +834,56 @@ public class KerbalismCrewEntry
 }
 
 /// <summary>
+/// The suit of a kerbal who is outside: their own supplies, the radiation at
+/// their position and their survival rules. Useful for showing the operator what
+/// a spacewalk has left in the suit while the vessel they stepped out of stays in
+/// the vessel-wide channels. Used by the Ship Systems widget.
+///
+/// <para>Absent while no kerbal is on EVA, and absent when Kerbalism is not
+/// installed or does not simulate the kerbal. Every member inside is null when
+/// Kerbalism does not report it, never zero.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepTopic("kerbalism.eva")]
+public class KerbalismEva
+{
+    [SitrepUnit(Units.Text)]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Amount, capacity and signed net rate of each profile resource the suit
+    /// reports, keyed by KSP resource name. A resource the suit carries no tank
+    /// for has no key.
+    /// </summary>
+    public Dictionary<string, KerbalismResource>? Resources { get; set; }
+
+    [SitrepUnit(Units.RadPerSecond)]
+    public double? RadiationRadPerSecond { get; set; }
+
+    /// <summary>The kerbal's survival rules, one entry per rule Kerbalism tracks for them.</summary>
+    public List<KerbalismEvaRule>? Rules { get; set; }
+}
+
+/// <summary>One survival rule of the kerbal outside: how far its accumulator has climbed toward the fatal threshold.</summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public class KerbalismEvaRule
+{
+    [SitrepEntryKey]
+    [SitrepUnit(Units.Text)]
+    public string? Name { get; set; }
+    [SitrepUnit(Units.ResourceUnits)]
+    public double? Problem { get; set; }
+    [SitrepUnit(Units.ResourceUnits)]
+    public double? FatalThreshold { get; set; }
+}
+
+/// <summary>
 /// Kerbalism feature toggles (auto-detected from the loaded profile). Drives the
 /// per-domain "unmodeled vs healthy" gate, under RO, <c>Reliability</c> is false.
 /// </summary>

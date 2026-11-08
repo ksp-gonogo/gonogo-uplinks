@@ -484,6 +484,64 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
+        /// The <c>kerbalism.eva</c> payload for one kerbal outside: each profile
+        /// resource the suit has a tank for, the radiation at the kerbal and their
+        /// survival rules.
+        ///
+        /// <para>A resource with no readable amount and no capacity is omitted
+        /// rather than carried as zero, and a reading Kerbalism did not answer
+        /// stays null inside the entry that has the others.</para>
+        /// </summary>
+        public static Dictionary<string, object?> BuildEva(
+            KerbalRulesRaw? kerbal,
+            IReadOnlyDictionary<string, RuleConstants> constants,
+            IEnumerable<string> resourceNames,
+            Func<string, double?> amount,
+            Func<string, double?> capacity,
+            Func<string, double?> rate,
+            double? radiation)
+        {
+            var resources = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var name in resourceNames)
+            {
+                var a = amount(name);
+                var c = capacity(name);
+                if (!a.HasValue && !c.HasValue) continue;
+                if (c.HasValue && c.Value <= 0) continue;
+                resources[name] = new Dictionary<string, object?>
+                {
+                    ["amount"] = a,
+                    ["capacity"] = c,
+                    ["rate"] = rate(name),
+                };
+            }
+
+            List<object>? rules = null;
+            if (kerbal != null)
+            {
+                rules = new List<object>();
+                foreach (var kv in kerbal.Rules)
+                {
+                    double? fatal = constants.TryGetValue(kv.Key, out var c) ? c.FatalThreshold : (double?)null;
+                    rules.Add(new Dictionary<string, object?>
+                    {
+                        ["name"] = kv.Key,
+                        ["problem"] = kv.Value,
+                        ["fatalThreshold"] = fatal,
+                    });
+                }
+            }
+
+            return new Dictionary<string, object?>
+            {
+                ["name"] = kerbal?.Name,
+                ["resources"] = resources,
+                ["radiationRadPerSecond"] = radiation,
+                ["rules"] = rules,
+            };
+        }
+
+        /// <summary>
         /// <paramref name="asOfUt"/> stamps every entry with the UT Kerbalism
         /// last advanced these accumulators at (see
         /// <c>KerbalismCrewEntry.RulesAsOfKerbalismUt</c>): null stays null rather than

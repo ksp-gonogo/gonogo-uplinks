@@ -12,10 +12,10 @@ namespace GonogoKerbalismUplink;
 /// <c>Configure</c> does. Deliberately names no sibling Uplink: doing so would
 /// trip that Uplink's own frontend uplink-boundary token.
 ///
-/// <para><b>Eight Topic-tagged roots, so the topic-map leg is not optional.</b>
+/// <para><b>Nine Topic-tagged roots, so the topic-map leg is not optional.</b>
 /// <see cref="KerbalismSpaceWeather"/>, <see cref="KerbalismProfile"/>,
 /// <see cref="KerbalismLifeSupport"/>, <see cref="KerbalismCrewEntry"/>
-/// (<c>isArray</c>), <see cref="KerbalismFeatures"/>,
+/// (<c>isArray</c>), <see cref="KerbalismEva"/>, <see cref="KerbalismFeatures"/>,
 /// <see cref="KerbalismTransmission"/>,
 /// <see cref="KerbalismReliabilitySummary"/> and
 /// <see cref="KerbalismReliabilityPart"/> (<c>isArray</c>) each carry
@@ -125,6 +125,9 @@ public static class KerbalismRtConfig
             // kerbalism.crew + its nested per-rule survival shape
             typeof(KerbalismCrewEntry),
             typeof(KerbalismCrewRule),
+            // kerbalism.eva + its nested per-rule survival shape
+            typeof(KerbalismEva),
+            typeof(KerbalismEvaRule),
             // kerbalism.profile: the loaded profile's own definitions, so the
             // app derives the resource graph without gonogo naming a resource
             typeof(KerbalismProfile),

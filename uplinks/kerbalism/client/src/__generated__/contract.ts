@@ -883,6 +883,39 @@ export interface KerbalismCrewEntry
 	rulesAsOfKerbalismUt?: Value<"ut"> | null;
 }
 /**
+* The suit of a kerbal who is outside: their own supplies, the radiation at
+* their position and their survival rules. Useful for showing the operator
+* what a spacewalk has left in the suit while the vessel they stepped out of
+* stays in the vessel-wide channels. Used by the Ship Systems widget.
+*
+* Absent while no kerbal is on EVA, and absent when Kerbalism is not installed
+* or does not simulate the kerbal. Every member inside is null when Kerbalism
+* does not report it, never zero.
+*/
+export interface KerbalismEva
+{
+	name?: string | null;
+	/**
+	* Amount, capacity and signed net rate of each profile resource the suit
+	* reports, keyed by KSP resource name. A resource the suit carries no tank for
+	* has no key.
+	*/
+	resources?: { [key: string]: KerbalismResource } | null;
+	radiationRadPerSecond?: Value<"rad/s"> | null;
+	/** The kerbal's survival rules, one entry per rule Kerbalism tracks for them. */
+	rules?: KerbalismEvaRule[] | null;
+}
+/**
+* One survival rule of the kerbal outside: how far its accumulator has climbed
+* toward the fatal threshold.
+*/
+export interface KerbalismEvaRule
+{
+	name?: string | null;
+	problem?: Value<"units"> | null;
+	fatalThreshold?: Value<"units"> | null;
+}
+/**
 * Kerbalism feature toggles (auto-detected from the loaded profile). Drives
 * the per-domain "unmodeled vs healthy" gate, under RO, `Reliability` is
 * false.

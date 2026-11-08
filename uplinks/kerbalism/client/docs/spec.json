@@ -62,6 +62,33 @@
       }
     },
     {
+      "id": "kerbalism.eva",
+      "payload": "KerbalismEva",
+      "array": false,
+      "fields": [
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "radiationRadPerSecond",
+          "unit": "rad/s"
+        },
+        {
+          "name": "resources",
+          "shape": "*KerbalismResource"
+        },
+        {
+          "name": "rules",
+          "shape": "KerbalismEvaRule[]"
+        }
+      ],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "delayed"
+      }
+    },
+    {
       "id": "kerbalism.features",
       "payload": "KerbalismFeatures",
       "array": false,
@@ -423,6 +450,23 @@
       ]
     },
     {
+      "name": "KerbalismEvaRule",
+      "fields": [
+        {
+          "name": "fatalThreshold",
+          "unit": "units"
+        },
+        {
+          "name": "name",
+          "unit": "text"
+        },
+        {
+          "name": "problem",
+          "unit": "units"
+        }
+      ]
+    },
+    {
       "name": "KerbalismGreenhouseEntry",
       "fields": [
         {
@@ -626,6 +670,23 @@
         {
           "name": "quantity",
           "unit": "count"
+        }
+      ]
+    },
+    {
+      "name": "KerbalismResource",
+      "fields": [
+        {
+          "name": "amount",
+          "unit": "units"
+        },
+        {
+          "name": "capacity",
+          "unit": "units"
+        },
+        {
+          "name": "rate",
+          "unit": "units/s"
         }
       ]
     },
@@ -857,23 +918,6 @@
         {
           "name": "repaired",
           "unit": "flag"
-        }
-      ]
-    },
-    {
-      "name": "KerbalismResource",
-      "fields": [
-        {
-          "name": "amount",
-          "unit": "units"
-        },
-        {
-          "name": "capacity",
-          "unit": "units"
-        },
-        {
-          "name": "rate",
-          "unit": "units/s"
         }
       ]
     },

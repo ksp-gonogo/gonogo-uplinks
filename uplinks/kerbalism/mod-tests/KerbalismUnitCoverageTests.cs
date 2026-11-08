@@ -74,7 +74,7 @@ namespace GonogoKerbalismUplink.Tests
                 nameof(KerbalismSpaceWeather), nameof(KerbalismStarInfo), nameof(KerbalismStormEntry),
                 nameof(KerbalismLifeSupport), nameof(KerbalismResource), nameof(KerbalismHabitat),
                 nameof(KerbalismProcessEntry), nameof(KerbalismGreenhouseEntry),
-                nameof(KerbalismCrewEntry), nameof(KerbalismCrewRule),
+                nameof(KerbalismCrewEntry), nameof(KerbalismCrewRule), nameof(KerbalismEva), nameof(KerbalismEvaRule),
                 nameof(KerbalismProfile), nameof(KerbalismResourceDef), nameof(KerbalismRuleDef),
                 nameof(KerbalismProcessDef), nameof(KerbalismFeatures), nameof(KerbalismTransmission),
                 // kerbalism.reliability and kerbalism.reliabilityParts, with the

@@ -26,6 +26,7 @@ namespace Gonogo.KerbalismUplink
         private const string SpaceWeatherTopic = "kerbalism.spaceweather";
         private const string LifeSupportTopic = "kerbalism.lifesupport";
         private const string CrewTopic = "kerbalism.crew";
+        private const string EvaTopic = "kerbalism.eva";
         private const string ProfileTopic = "kerbalism.profile";
         private const string TransmissionTopic = "kerbalism.transmission";
         private const string ReliabilityTopic = "kerbalism.reliability";
@@ -71,6 +72,7 @@ namespace Gonogo.KerbalismUplink
         private IChannelPublisher? _lifeSupport;
         private IChannelPublisher? _crew;
         private IChannelPublisher? _transmission;
+        private IChannelPublisher? _eva;
         private IChannelPublisher? _reliability;
         private IChannelPublisher? _reliabilityParts;
         private IChannelPublisher? _diagnostics;
@@ -117,6 +119,7 @@ namespace Gonogo.KerbalismUplink
                     Delayed(LifeSupportTopic, SampleKind.Continuous),
                     Delayed(CrewTopic, SampleKind.Continuous),
                     Delayed(TransmissionTopic, SampleKind.Continuous),
+                    Delayed(EvaTopic, SampleKind.Continuous),
                     Delayed(ReliabilityTopic, SampleKind.Discrete),
                     Delayed(ReliabilityPartsTopic, SampleKind.Continuous),
                     Delayed(DiagnosticsTopic, SampleKind.Continuous),
@@ -179,6 +182,7 @@ namespace Gonogo.KerbalismUplink
             _lifeSupport = host.Publisher(LifeSupportTopic);
             _crew = host.Publisher(CrewTopic);
             _transmission = host.Publisher(TransmissionTopic);
+            _eva = host.Publisher(EvaTopic);
             _reliability = host.Publisher(ReliabilityTopic);
             _reliabilityParts = host.Publisher(ReliabilityPartsTopic);
             _diagnostics = host.Publisher(DiagnosticsTopic);
@@ -197,6 +201,8 @@ namespace Gonogo.KerbalismUplink
                 LifeSupportTopic,
                 CrewTopic,
                 TransmissionTopic);
+
+            host.AddSampledSource(CaptureEvaOnMain, HandleEvaOnCourier, EvaTopic);
 
             RegisterScience(host);
             RegisterIsru(host);
@@ -445,6 +451,57 @@ namespace Gonogo.KerbalismUplink
         /// of an EVA.</para>
         /// </summary>
         private Vessel? ScopedVessel() => _kernel.ReportedVessel() as Vessel;
+
+        /// <summary>
+        /// The kerbal KSP is flying while one is outside, or null otherwise. This
+        /// is the one place the stock active vessel is read on purpose: every
+        /// other channel here is about the craft the kerbal left, and this one is
+        /// about the kerbal.
+        /// </summary>
+        private Vessel? EvaVessel()
+        {
+            var v = FlightGlobals.ActiveVessel;
+            return v != null && v.isEVA && _k.IsSimulated(v) == true ? v : null;
+        }
+
+        /// <summary>
+        /// MAIN-THREAD capture of the suit. Always returns a sample once there is
+        /// a snapshot, with a null payload while nobody is outside, so the topic
+        /// reads as absent again after the kerbal boards rather than holding the
+        /// last suit.
+        /// </summary>
+        private object? CaptureEvaOnMain(KspSnapshot? snapshot)
+        {
+            if (snapshot == null || !_k.IsAvailable) return null;
+            var v = EvaVessel();
+            if (v == null) return new EvaSample { Ut = snapshot.Ut };
+
+            var kerbal = _k.CrewRules(v).FirstOrDefault();
+            return new EvaSample
+            {
+                Ut = snapshot.Ut,
+                Payload = KerbalismCapture.BuildEva(
+                    kerbal,
+                    _k.RuleConstants(),
+                    KerbalismCapture.ResourceNames(Profile()),
+                    res => _k.ApiResource("ResourceAmount", v, res),
+                    res => _k.ApiResource("ResourceCapacity", v, res),
+                    res => _k.ApiResource("ResourceAverageRate", v, res),
+                    _k.Api("Radiation", v)),
+            };
+        }
+
+        /// <summary>COURIER-THREAD handle: publish the suit, or nothing. No KSP access.</summary>
+        private void HandleEvaOnCourier(object? captured)
+        {
+            if (captured is EvaSample sample) _eva?.Publish(sample.Payload, sample.Ut);
+        }
+
+        private sealed class EvaSample
+        {
+            public double Ut;
+            public Dictionary<string, object?>? Payload;
+        }
 
         /// <summary>MAIN-THREAD capture: read live Kerbalism science into a plain bundle (no KSP handles cross threads).</summary>
         private object? CaptureScienceOnMain(KspSnapshot? snapshot)

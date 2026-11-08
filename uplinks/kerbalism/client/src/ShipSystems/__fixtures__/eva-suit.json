@@ -1,0 +1,208 @@
+{
+  "_meta": {
+    "capturedAt": "2026-10-26",
+    "vessel": "synthetic (hand-authored, no live capture)",
+    "notes": "SYNTHETIC fixture: a kerbal on EVA. The craft they left is healthy and now carries no crew; the suit has its own oxygen and electric charge, a radiation dose and a health rule."
+  },
+  "_scene": {
+    "widget": "ship-systems",
+    "caption": "A kerbal on EVA: the craft they left stays in the ledger and the suit's own supplies, radiation and health sit above it",
+    "modes": [
+      "default",
+      "min"
+    ],
+    "paints": [
+      "Suit",
+      "Oxygen"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "kerbalism.profile",
+        "payload": {
+          "name": "Default",
+          "resources": {
+            "Water": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Water",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "ElectricCharge": {
+              "flowMode": "ALL_VESSEL_BALANCE",
+              "flowModeOrdinal": 4,
+              "displayName": "Electric Charge",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            },
+            "Oxygen": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Oxygen",
+              "isSupply": true
+            },
+            "WasteWater": {
+              "flowMode": "ALL_VESSEL",
+              "flowModeOrdinal": 1,
+              "displayName": "Waste Water",
+              "isSupply": false
+            },
+            "_NonRegenScrubber": {
+              "flowMode": "",
+              "displayName": "Scrubber Cartridge",
+              "isSupply": false
+            }
+          },
+          "rules": [
+            {
+              "name": "drinking",
+              "input": "Water",
+              "output": "WasteWater",
+              "ratePerSecond": 1e-05
+            }
+          ],
+          "processes": [
+            {
+              "name": "Water Recycler",
+              "modifiers": [
+                "_WaterRecycler"
+              ],
+              "inputs": {
+                "WasteWater": 0.0002,
+                "ElectricCharge": 0.01
+              },
+              "outputs": {
+                "Water": 0.00018
+              }
+            },
+            {
+              "name": "CO2 Scrubber",
+              "modifiers": [
+                "_Scrubber"
+              ],
+              "inputs": {
+                "_NonRegenScrubber": 2e-05
+              },
+              "outputs": {}
+            }
+          ]
+        }
+      },
+      {
+        "topic": "kerbalism.lifesupport",
+        "payload": {
+          "rates": {
+            "Water": 0.0,
+            "ElectricCharge": 0.02
+          },
+          "habitat": {
+            "pressure": 0.9,
+            "poisoning": 0.05,
+            "comfort": 0.6,
+            "livingSpace": 0.7
+          },
+          "processes": [
+            {
+              "resource": "_WaterRecycler",
+              "title": "Water Recycler",
+              "capacity": 1,
+              "running": true,
+              "broken": false
+            },
+            {
+              "resource": "_Scrubber",
+              "title": "CO2 Scrubber",
+              "capacity": 1,
+              "running": true,
+              "broken": false
+            }
+          ],
+          "greenhouses": [],
+          "asOfKerbalismUt": 1000000
+        }
+      },
+      {
+        "topic": "vessel.resources",
+        "payload": {
+          "resources": {
+            "Water": {
+              "current": 400,
+              "max": 500,
+              "active": true
+            },
+            "ElectricCharge": {
+              "current": 380,
+              "max": 400,
+              "active": true
+            },
+            "Oxygen": {
+              "current": 380,
+              "max": 400,
+              "active": true
+            },
+            "WasteWater": {
+              "current": 10,
+              "max": 200,
+              "active": true
+            },
+            "_NonRegenScrubber": {
+              "current": 30,
+              "max": 100,
+              "active": true
+            }
+          },
+          "meta": {
+            "source": "vessel:1",
+            "quality": 1
+          }
+        }
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": {
+          "count": 0,
+          "capacity": 4,
+          "crew": [],
+          "meta": {
+            "source": "vessel:1",
+            "quality": 1
+          }
+        }
+      },
+      {
+        "topic": "kerbalism.eva",
+        "payload": {
+          "name": "Valentina Kerman",
+          "resources": {
+            "Oxygen": {
+              "amount": 3.1,
+              "capacity": 5,
+              "rate": -0.0014
+            },
+            "ElectricCharge": {
+              "amount": 18,
+              "capacity": 25,
+              "rate": -0.004
+            }
+          },
+          "radiationRadPerSecond": 0.00027,
+          "rules": [
+            {
+              "name": "radiation",
+              "problem": 0.12,
+              "fatalThreshold": 1
+            },
+            {
+              "name": "stress",
+              "problem": 0.35,
+              "fatalThreshold": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

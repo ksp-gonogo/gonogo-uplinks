@@ -25,6 +25,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
 | `kerbalism.crew` | `KerbalismCrewEntry[]` | lossy-latest | delayed |
+| `kerbalism.eva` | `KerbalismEva` | lossy-latest | delayed |
 | `kerbalism.features` | `KerbalismFeatures` | lossy-latest | true-now |
 | `kerbalism.lifesupport` | `KerbalismLifeSupport` | lossy-latest | delayed |
 | `kerbalism.profile` | `KerbalismProfile` | lossy-latest | true-now |
@@ -39,6 +40,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | --- | --- |
 | `KerbalismCrewRule` | `degenPerSec` units/s, `fatalThreshold` units, `name` text, `problem` units |
 | `KerbalismDevice` | `id` text, `name` text, `partName` text, `status` text |
+| `KerbalismEvaRule` | `fatalThreshold` units, `name` text, `problem` units |
 | `KerbalismGreenhouseEntry` | `active` flag, `artificial` W/m², `cropResource` text, `ecRateMaxPerSec` units/s, `foodRatePerSec` units/s, `issue` text, `lampEcDrawPerSec` units/s, `lightToleranceWm2` W/m², `natural` W/m², `pressureTolerance` ratio, `radiationToleranceRadPerSec` rad/s |
 | `KerbalismHabitat` | `comfort` ratio, `evaSafe` flag, `livingSpace` ratio, `poisoning` ratio, `pressure` ratio, `pressureKpa` kPa, `shielding` ratio, `surface` m², `volume` m³ |
 | `KerbalismIsruConverterExtension` | `broken` flag, `capacity` units, `processToken` text, `title` text, `valveIndex` count |
@@ -96,7 +98,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | Needs | a vessel in flight |
 | Default size, in grid units | 12 × 24 |
 | Smallest size, in grid units | 4 × 5 |
-| Scenes | 5 |
+| Scenes | 6 |
 
 ![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](client/docs/assets/ec-shortage-limits-water--default.png)
 

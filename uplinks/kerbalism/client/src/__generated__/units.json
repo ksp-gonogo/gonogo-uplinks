@@ -75,6 +75,15 @@
       "deviceId": "id",
       "on": "flag"
     },
+    "KerbalismEva": {
+      "name": "text",
+      "radiationRadPerSecond": "rad/s"
+    },
+    "KerbalismEvaRule": {
+      "fatalThreshold": "units",
+      "name": "text",
+      "problem": "units"
+    },
     "KerbalismFeatures": {
       "automation": "flag",
       "comfort": "flag",
@@ -330,6 +339,10 @@
       "rulesAsOfKerbalismUt": "ut",
       "trait": "text"
     },
+    "kerbalism.eva": {
+      "name": "text",
+      "radiationRadPerSecond": "rad/s"
+    },
     "kerbalism.features": {
       "automation": "flag",
       "comfort": "flag",
@@ -404,6 +417,10 @@
       "log": "KerbalismLogEntry[]",
       "scripts": "KerbalismScript[]"
     },
+    "KerbalismEva": {
+      "resources": "*KerbalismResource",
+      "rules": "KerbalismEvaRule[]"
+    },
     "KerbalismLifeSupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",
       "habitat": "KerbalismHabitat",
@@ -434,6 +451,10 @@
       "devices": "KerbalismDevice[]",
       "log": "KerbalismLogEntry[]",
       "scripts": "KerbalismScript[]"
+    },
+    "kerbalism.eva": {
+      "resources": "*KerbalismResource",
+      "rules": "KerbalismEvaRule[]"
     },
     "kerbalism.lifesupport": {
       "greenhouses": "KerbalismGreenhouseEntry[]",

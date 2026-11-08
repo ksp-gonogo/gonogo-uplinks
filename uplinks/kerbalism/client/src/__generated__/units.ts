@@ -115,6 +115,15 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     deviceId: "id",
     on: "flag",
   },
+  "KerbalismEva": {
+    name: "text",
+    radiationRadPerSecond: "rad/s",
+  },
+  "KerbalismEvaRule": {
+    fatalThreshold: "units",
+    name: "text",
+    problem: "units",
+  },
   "KerbalismFeatures": {
     automation: "flag",
     comfort: "flag",
@@ -375,6 +384,10 @@ export const GENERATED_TOPIC_UNITS: Readonly<Record<string, UnitsByField>> = {
     rulesAsOfKerbalismUt: "ut",
     trait: "text",
   },
+  "kerbalism.eva": {
+    name: "text",
+    radiationRadPerSecond: "rad/s",
+  },
   "kerbalism.features": {
     automation: "flag",
     comfort: "flag",
@@ -478,6 +491,10 @@ export const GENERATED_TYPE_SHAPES: Readonly<Record<string, ShapesByField>> = {
     log: "KerbalismLogEntry[]",
     scripts: "KerbalismScript[]",
   },
+  "KerbalismEva": {
+    resources: "*KerbalismResource",
+    rules: "KerbalismEvaRule[]",
+  },
   "KerbalismLifeSupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
     habitat: "KerbalismHabitat",
@@ -510,6 +527,10 @@ export const GENERATED_TOPIC_SHAPES: Readonly<Record<string, ShapesByField>> = {
     devices: "KerbalismDevice[]",
     log: "KerbalismLogEntry[]",
     scripts: "KerbalismScript[]",
+  },
+  "kerbalism.eva": {
+    resources: "*KerbalismResource",
+    rules: "KerbalismEvaRule[]",
   },
   "kerbalism.lifesupport": {
     greenhouses: "KerbalismGreenhouseEntry[]",
@@ -632,6 +653,9 @@ export const GENERATED_CONTRACT_TAGS = {
     "kerbalism.crew": {
       "*.name": { entryKey: true },
       "*.rules.*.name": { entryKey: true },
+    },
+    "kerbalism.eva": {
+      "rules.*.name": { entryKey: true },
     },
   },
   names: {

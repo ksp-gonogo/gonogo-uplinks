@@ -6,6 +6,7 @@ import {
   useProcessor,
   useTelemetry,
   useUtNow,
+  VesselType,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
@@ -38,6 +39,7 @@ import {
 } from "@ksp-gonogo/ui-kit";
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import type {
+  KerbalismEva,
   KerbalismGreenhouseEntry,
   KerbalismHabitat,
   KerbalismProcessEntry,
@@ -64,6 +66,7 @@ import "./GreenhouseSection.js";
 import { radiationTooHigh } from "./GreenhouseSection.js";
 import { DiagnosticsButtons } from "./diagnostics.js";
 import { RadiationSection } from "./RadiationSection.js";
+import { SuitSection } from "./SuitSection.js";
 import { useResourceColorMap } from "./resourceColorMap.js";
 
 type ShipSystemsConfig = Record<string, never>;
@@ -439,7 +442,45 @@ function ShipSystemsComponent(
   const weatherReading = useTelemetry("kerbalism.spaceweather");
   const weather =
     weatherReading.state === "observed" ? weatherReading.value : undefined;
+  // The suit of a kerbal who is outside. Absent on a quiet link or with nobody
+  // on EVA; a held figure would show a suit the kerbal may have since boarded.
+  const evaReading = useTelemetry("kerbalism.eva");
+  const eva = evaReading.state === "observed" ? evaReading.value : undefined;
+  // Whether the craft is the kerbal themselves: the craft they left is out of
+  // physics range, so its supplies, habitat and processes are not reported.
+  const identityReading = useTelemetry("vessel.identity");
+  const craftIsKerbal =
+    (identityReading.state === "observed" ||
+      identityReading.state === "held") &&
+    identityReading.value.vesselType === VesselType.EVA;
   const utNow = useUtNow();
+
+  if (craftIsKerbal) {
+    return (
+      <Panel
+        panelTitle="Ship Systems"
+        sections={
+          <Section full>
+            {eva ? (
+              <>
+                <SectionHead label="Suit" />
+                <SuitSection
+                  eva={eva}
+                  displayName={(name) =>
+                    ship?.profile?.resources?.[name]?.displayName ?? name
+                  }
+                />
+              </>
+            ) : (
+              <EmptyState layout="fill" role="status" aria-live="polite">
+                Waiting for the suit...
+              </EmptyState>
+            )}
+          </Section>
+        }
+      />
+    );
+  }
 
   if (!ship) {
     return (
@@ -482,6 +523,7 @@ function ShipSystemsComponent(
       <ShipSystemsBody
         ship={ship}
         weather={weather}
+        eva={eva}
         utNow={utNow}
         held={shipReading?.state === "held"}
         modelled={modelledBeyondReceived(ship.figures)}
@@ -515,12 +557,14 @@ function overallStatus(
 function ShipSystemsBody({
   ship,
   weather,
+  eva,
   utNow,
   held,
   modelled,
 }: {
   ship: ShipSystems;
   weather: KerbalismSpaceWeather | undefined;
+  eva: KerbalismEva | undefined;
   utNow: number | undefined;
   /** Whether the ledger is the last one there was rather than a current one. */
   held: boolean;
@@ -666,6 +710,17 @@ function ShipSystemsBody({
         )
       }
       sections={[
+        eva && (
+          <Section key="suit" full>
+            <SectionHead label="Suit" />
+            <SuitSection
+              eva={eva}
+              displayName={(name) =>
+                ship.profile?.resources?.[name]?.displayName ?? name
+              }
+            />
+          </Section>
+        ),
         /* Radiation leads the widget: the operator's own call, it is the
            attractive visual (the sparkline trend), so it earns the top
            slot rather than sitting below the resource ledger, and it spans

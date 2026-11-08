@@ -22,6 +22,7 @@
 import type {
   KerbalismCrewEntry,
   KerbalismDiagnostics,
+  KerbalismEva,
   KerbalismFeatures,
   KerbalismLifeSupport,
   KerbalismProfile,
@@ -34,6 +35,7 @@ import type {
 export interface GeneratedTopicPayloadMap {
   "kerbalism.crew": KerbalismCrewEntry[];
   "kerbalism.diagnostics": KerbalismDiagnostics;
+  "kerbalism.eva": KerbalismEva;
   "kerbalism.features": KerbalismFeatures;
   "kerbalism.lifesupport": KerbalismLifeSupport;
   "kerbalism.profile": KerbalismProfile;
@@ -46,6 +48,7 @@ export interface GeneratedTopicPayloadMap {
 export const GENERATED_TOPIC_IDS = [
   "kerbalism.crew",
   "kerbalism.diagnostics",
+  "kerbalism.eva",
   "kerbalism.features",
   "kerbalism.lifesupport",
   "kerbalism.profile",

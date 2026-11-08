@@ -32,6 +32,7 @@ import {
 import type {
   KerbalismCrewEntry,
   KerbalismDiagnostics,
+  KerbalismEva,
   KerbalismFeatures,
   KerbalismLifeSupport,
   KerbalismProfile,
@@ -74,6 +75,8 @@ export const KERBALISM_CREW_TOPIC = "kerbalism.crew";
 
 /** What Kerbalism reports about the craft's transmission to the command centre. */
 export const KERBALISM_TRANSMISSION_TOPIC = "kerbalism.transmission";
+/** The suit of a kerbal who is outside: supplies, radiation and survival rules. */
+export const KERBALISM_EVA_TOPIC = "kerbalism.eva";
 
 /** The Kerbalism feature-toggle Topic. */
 export const KERBALISM_FEATURES_TOPIC = "kerbalism.features";
@@ -94,6 +97,7 @@ declare module "@ksp-gonogo/sitrep-sdk" {
     "kerbalism.profile": KerbalismProfile;
     "kerbalism.lifesupport": KerbalismLifeSupport;
     "kerbalism.crew": KerbalismCrewEntry[];
+    "kerbalism.eva": KerbalismEva;
     "kerbalism.features": KerbalismFeatures;
     "kerbalism.transmission": KerbalismTransmission;
     "kerbalism.reliability": KerbalismReliabilitySummary;
@@ -107,6 +111,7 @@ registerUplinkTopic(KERBALISM_SPACEWEATHER_TOPIC);
 registerUplinkTopic(KERBALISM_PROFILE_TOPIC);
 registerUplinkTopic(KERBALISM_LIFESUPPORT_TOPIC);
 registerUplinkTopic(KERBALISM_CREW_TOPIC);
+registerUplinkTopic(KERBALISM_EVA_TOPIC);
 registerUplinkTopic(KERBALISM_FEATURES_TOPIC);
 registerUplinkTopic(KERBALISM_TRANSMISSION_TOPIC);
 registerUplinkTopic(KERBALISM_RELIABILITY_TOPIC);
@@ -208,6 +213,9 @@ export type _ResolvesKerbalismLifeSupport = Expect<
 >;
 export type _ResolvesKerbalismCrew = Expect<
   Equal<TopicPayload<"kerbalism.crew">, KerbalismCrewEntry[]>
+>;
+export type _ResolvesKerbalismEva = Expect<
+  Equal<TopicPayload<"kerbalism.eva">, KerbalismEva>
 >;
 export type _ResolvesKerbalismFeatures = Expect<
   Equal<TopicPayload<"kerbalism.features">, KerbalismFeatures>
