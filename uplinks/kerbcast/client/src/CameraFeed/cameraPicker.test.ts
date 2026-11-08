@@ -4,7 +4,12 @@ import {
   type CameraState,
 } from "@ksp-gonogo/kerbcast";
 import { describe, expect, it } from "vitest";
-import { followedPartCameraId } from "./cameraPicker.js";
+import {
+  followedPartCameraId,
+  hasAutoLatchableCamera,
+  isAutoLatchable,
+  orderCamerasForPicker,
+} from "./cameraPicker.js";
 
 function cam(over: Partial<CameraState> & { flightId: number }): CameraState {
   return {
@@ -78,3 +83,37 @@ describe("followedPartCameraId: independent of list order", () => {
   });
 });
 
+function camera(
+  flightId: number,
+  kind: CameraKind,
+  vesselName = "Kerbal X",
+): CameraState {
+  return cam({ flightId, kind, vesselName });
+}
+
+describe("a command camera and the shared feed's own choice", () => {
+  it("is not one the feed may choose by itself", () => {
+    expect(isAutoLatchable(camera(1, CameraKind.Part))).toBe(true);
+    expect(isAutoLatchable(camera(2, CameraKind.Kerbal))).toBe(true);
+    expect(isAutoLatchable(camera(3, CameraKind.Command))).toBe(false);
+  });
+
+  it("is listed after the other live cameras", () => {
+    const ordered = orderCamerasForPicker([
+      camera(3, CameraKind.Command),
+      camera(1, CameraKind.Part),
+      camera(2, CameraKind.Part, "Other"),
+    ]);
+    expect(ordered.map((c) => c.flightId)).toEqual([1, 2, 3]);
+  });
+
+  it("leaves the feed with no camera to choose when only command cameras are live", () => {
+    expect(hasAutoLatchableCamera([camera(3, CameraKind.Command)])).toBe(false);
+    expect(
+      hasAutoLatchableCamera([
+        camera(3, CameraKind.Command),
+        camera(1, CameraKind.Part),
+      ]),
+    ).toBe(true);
+  });
+});
