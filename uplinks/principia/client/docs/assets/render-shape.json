@@ -3,17 +3,17 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "05b4fe47a7baed16",
+      "hash": "42201c76b02c8425",
       "elements": 325,
       "text": "73062ab1"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "7e40b6e403235be0",
+      "hash": "f615063219672afc",
       "elements": 274,
       "text": "8426cfe6"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "3f5ee496af805b0c",
+      "hash": "24c99f9af267179b",
       "elements": 195,
       "text": "eda9efd6"
     },
@@ -53,27 +53,27 @@
       "text": "7423c9f0"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "732f6d4e8391768a",
+      "hash": "75f8488892d2c82d",
       "elements": 195,
       "text": "77f93d41"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "656e1c2cf2400a52",
+      "hash": "db05fc52773f2457",
       "elements": 204,
       "text": "d745e85e"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "15a108cbb1721d19",
+      "hash": "a24ca3d124a096ae",
       "elements": 196,
       "text": "227aedca"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "3c40835e31aa8632",
+      "hash": "903f0bda7a5b905f",
       "elements": 196,
       "text": "1c6dae7c"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "c66e618eced4710b",
+      "hash": "9847013b77c1db87",
       "elements": 153,
       "text": "6531a84b"
     },
@@ -393,17 +393,17 @@
       "text": "7babab77"
     },
     "plan-slots-armed--default.png": {
-      "hash": "4e041bce02007587",
+      "hash": "4bb8fdaf20e0ef4b",
       "elements": 176,
       "text": "807f9248"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "f8253d7083c31453",
+      "hash": "363f4faf92dc343c",
       "elements": 132,
       "text": "cacc10df"
     },
     "plan-slots-shut--default.png": {
-      "hash": "e704bb66a0a466e8",
+      "hash": "4294af084bd735f4",
       "elements": 162,
       "text": "d231b46b"
     }

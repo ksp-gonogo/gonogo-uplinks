@@ -3,27 +3,27 @@
   "engine": "chromium",
   "assets": {
     "ascent-command-in-flight--default.png": {
-      "hash": "45a1e6dae6581641",
-      "elements": 34,
-      "text": "9d9ba87f"
+      "hash": "729c82cabf3ee7e2",
+      "elements": 33,
+      "text": "ac7b387f"
     },
     "duna-uplink-delay--default.png": {
-      "hash": "f91d36fc9e9fb224",
+      "hash": "0dadf20612b5319e",
       "elements": 33,
       "text": "717aac6a"
     },
     "duna-uplink-delay--min.png": {
-      "hash": "1f2677143af35adf",
+      "hash": "59d441205a5c7a85",
       "elements": 33,
       "text": "717aac6a"
     },
     "remote-autopilot--default.png": {
-      "hash": "d07e3ca1ba159057",
+      "hash": "45eb584ba7716d39",
       "elements": 33,
       "text": "a4321ee0"
     },
     "remote-autopilot--min.png": {
-      "hash": "d07e3ca1ba159057",
+      "hash": "45eb584ba7716d39",
       "elements": 33,
       "text": "a4321ee0"
     }
