@@ -57,7 +57,10 @@ function stillTrue<T, A>(
  */
 function useBodyIndexByName(): Map<string, number> {
   // The solar system is the least volatile fact on the wire.
-  const systemBodies = stillTrue(useTelemetry("trackingStation.bodies"), undefined);
+  const systemBodies = stillTrue(
+    useTelemetry("trackingStation.bodies"),
+    undefined,
+  );
   return useMemo(() => {
     const map = new Map<string, number>();
     for (const body of systemBodies?.bodies ?? []) {
@@ -97,32 +100,32 @@ registerMapPoiProvider({
           // steer at such a marker; nothing stopped it being DRAWN.
           if (lat == null || lon == null) return [];
 
-          return [{
-            id: `anomaly:${a.name}-${lat}-${lon}`,
-            bodyId,
-            lat,
-            lon,
-            kind: "anomaly",
-            label: a.detail ? a.name : "(unknown)",
-            status: "info",
-            meta: { known: a.known, detail: a.detail },
-            // Only dispatchable once the body index has resolved; never hand
-            // a malformed Position SetTarget to the queue while
-            // `trackingStation.bodies` is still loading. The coordinate half of this
-            // guard moved up to the marker itself: an anomaly we cannot place
-            // is no longer drawn, so it cannot be reached here. Rides
-            // `useCommand("vessel.target.set")` (a Position-kind SetTarget);
-            // instant today, and the handle registers with the panel's delay
-            // rail, so the widget stays behaviour-free.
-            actions:
-              bodyIndex === undefined
-                ? []
-                : [
-                    {
-                      id: "set-target",
-                      label: "Set as Target",
-                      run: () =>
-                        void setTargetCmd.send(
+          return [
+            {
+              id: `anomaly:${a.name}-${lat}-${lon}`,
+              bodyId,
+              lat,
+              lon,
+              kind: "anomaly",
+              label: a.detail ? a.name : "(unknown)",
+              status: "info",
+              meta: { known: a.known, detail: a.detail },
+              // Only dispatchable once the body index has resolved; never hand
+              // a malformed Position SetTarget to the queue while
+              // `trackingStation.bodies` is still loading. The coordinate half of this
+              // guard moved up to the marker itself: an anomaly we cannot place
+              // is no longer drawn, so it cannot be reached here. Rides
+              // `useCommand("vessel.target.set")` (a Position-kind SetTarget);
+              // instant today, and the handle registers with the panel's delay
+              // rail, so the widget stays behaviour-free.
+              actions:
+                bodyIndex === undefined
+                  ? []
+                  : [
+                      {
+                        id: "set-target",
+                        label: "Set as Target",
+                        command: setTargetCmd.with(
                           {
                             kind: TargetKind.Position,
                             bodyIndex,
@@ -131,9 +134,10 @@ registerMapPoiProvider({
                           },
                           { label: "Set as Target" },
                         ),
-                    },
-                  ],
-          }];
+                      },
+                    ],
+            },
+          ];
         });
     }, [anomalies, ctx.bodyId, setTargetCmd, bodyIndexByName]);
   },

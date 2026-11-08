@@ -2,7 +2,7 @@ import type { TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
 /**
  * Render helper for delayed-command widgets under test. Mounts a real
  * `TelemetryClient` over an in-memory `StubTransport` inside a
- * `TelemetryProvider`, so `useCommand().send()` dispatches for real and the
+ * `TelemetryProvider`, so a command sent from a control dispatches for real and the
  * command envelope lands in `transport.sentCommands` verbatim. No module mocks:
  * the widget, the hook, and the client all run; only the wire is a stub (the
  * testing-philosophy default for this repo).

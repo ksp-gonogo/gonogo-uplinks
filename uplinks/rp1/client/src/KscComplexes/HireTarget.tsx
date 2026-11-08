@@ -1,7 +1,8 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Button,
   Cluster,
-  CommandButton,
+  type CommandButtonHandle,
   Disclosure,
   heldFigureOf,
   magnitudeOf,
@@ -69,7 +70,7 @@ export function HireTargetControl({
   personnel,
   set,
 }: Readonly<{
-  cancel: Parameters<typeof CommandButton>[0]["handle"];
+  cancel: CommandButtonHandle;
   /** Every complex in the career, for the engineer half's picker. */
   complexes: readonly Rp1ComplexEntry[];
   /** The last career balance received. Null takes the whole control off, see the summary. */
@@ -77,7 +78,7 @@ export function HireTargetControl({
   /** The reading `funds` came from, so a held balance is drawn with its held mark. */
   fundsReading?: Parameters<typeof heldFigureOf>[1];
   personnel: Rp1Personnel | undefined;
-  set: Parameters<typeof CommandButton>[0]["handle"];
+  set: CommandButtonHandle;
 }>) {
   const target = personnel?.hireTarget;
 
@@ -122,7 +123,7 @@ function StandingTarget({
   target,
 }: Readonly<{
   complexes: readonly Rp1ComplexEntry[];
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   personnel: Rp1Personnel | undefined;
   target: Rp1HireTarget;
 }>) {
@@ -159,14 +160,14 @@ function StandingTarget({
         personnel={personnel}
       />
       <Row as="div">
-        <CommandButton
-          args={{}}
+        <Button
+          command={handle.with({}, { label: "Cancel the hire target" })}
+          variant="ghost"
           aria-label="Cancel the hire target"
-          commandLabel="Cancel the hire target"
-          handle={handle}
-          label="Cancel"
           size="sm"
-        />
+        >
+          Cancel
+        </Button>
       </Row>
     </Stack>
   );
@@ -286,7 +287,7 @@ function HireTargetForm({
   complexes: readonly Rp1ComplexEntry[];
   funds: number;
   fundsReading?: Parameters<typeof heldFigureOf>[1];
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   personnel: Rp1Personnel | undefined;
 }>) {
   const [lcId, setLcId] = useState<string | null>(null);
@@ -423,21 +424,28 @@ function HireTargetForm({
               decimals={0}
             />
           </Text>
-          <CommandButton
-            args={
+          <Button
+            command={handle.with(
               at === undefined
                 ? { reserveFunds, targetCount }
-                : { lcId: at.lcId ?? "", reserveFunds, targetCount }
-            }
+                : { lcId: at.lcId ?? "", reserveFunds, targetCount },
+              { label: press },
+            )}
+            variant="ghost"
             aria-label={press}
-            commandLabel={press}
             confirmAriaLabel={`Confirm hiring up to ${targetCount} ${kind}${where}`}
             confirmLabel="Confirm"
-            disabled={targetCount <= 0 || tooLow}
-            handle={handle}
-            label="Set"
+            unavailable={
+              targetCount <= 0
+                ? "There is no target to set"
+                : tooLow
+                  ? "The target is below the staff already on the books"
+                  : null
+            }
             size="sm"
-          />
+          >
+            Set
+          </Button>
         </Row>
       </Stack>
     </Disclosure>

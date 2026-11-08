@@ -13,6 +13,7 @@ import {
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 // Importing the real module runs its module-load registerAugment(...).
+import { findButtonDescribedBy } from "../test/describedButton.js";
 import { findDriveEntries, ScienceDataAboardRowAugment } from "./index.js";
 
 const SUBJECT_ID = "mysteryGoo@KerbinInSpaceLow";
@@ -148,7 +149,7 @@ describe("ScienceDataAboardRowAugment", () => {
     expect(visibleText()).toMatch(/12\.5\s*MB/);
     expect(visibleText()).toMatch(/Transmitting/);
     const sendToggle = screen.getByRole("button", {
-      name: /cancel send for file/i,
+      name: "Send file",
     });
     expect(sendToggle).toHaveAttribute("aria-pressed", "true");
     expect(sendToggle).toHaveTextContent("Queued");
@@ -258,9 +259,9 @@ describe("ScienceDataAboardRowAugment", () => {
       ]);
     });
     const sendToggle = await screen.findByRole("button", {
-      name: /send flag could not be read/i,
+      name: "Send file",
     });
-    expect(sendToggle).toBeDisabled();
+    expect(sendToggle).toHaveAttribute("aria-disabled", "true");
     expect(sendToggle).toHaveTextContent("Unknown");
     await user.click(sendToggle);
     expect(
@@ -285,9 +286,9 @@ describe("ScienceDataAboardRowAugment", () => {
       ]);
     });
     const analyzeToggle = await screen.findByRole("button", {
-      name: /analyze flag could not be read/i,
+      name: "Flag sample for analysis",
     });
-    expect(analyzeToggle).toBeDisabled();
+    expect(analyzeToggle).toHaveAttribute("aria-disabled", "true");
     expect(analyzeToggle).toHaveTextContent("Unknown");
     await user.click(analyzeToggle);
     expect(
@@ -354,7 +355,7 @@ describe("ScienceDataAboardRowAugment", () => {
     // laddering, the same as any other mass quantity in the app.
     expect(visibleText()).toMatch(/12\.5\d?\s*kg/);
     const analyzeToggle = screen.getByRole("button", {
-      name: /cancel analyze for sample/i,
+      name: "Flag sample for analysis",
     });
     expect(analyzeToggle).toHaveAttribute("aria-pressed", "true");
     expect(analyzeToggle).toHaveTextContent("Analyzing");
@@ -416,10 +417,8 @@ describe("ScienceDataAboardRowAugment", () => {
       fixture.emit("science.experiments", [SAMPLE_ENTRY]);
       fixture.emit("science.lab", []);
     });
-    const move = await screen.findByRole("button", {
-      name: /move sample to lab \(no lab part aboard/i,
-    });
-    expect(move).toBeDisabled();
+    const move = await findButtonDescribedBy(/no lab part aboard this vessel/i);
+    expect(move).toHaveAttribute("aria-disabled", "true");
   });
 
   it("enables and dispatches kerbalism.sample.moveToLab when a lab is aboard", async () => {
@@ -448,10 +447,14 @@ describe("ScienceDataAboardRowAugment", () => {
     act(() => {
       fixture.emit("science.experiments", [FILE_ENTRY, SAMPLE_ENTRY]);
     });
-    await within(container).findByRole("button", { name: /cancel send/i });
     expect(
-      within(container).getByRole("button", { name: /cancel analyze/i }),
-    ).toBeInTheDocument();
+      await within(container).findByRole("button", { name: "Send file" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(container).getByRole("button", {
+        name: "Flag sample for analysis",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
     expect(
       within(container).getByRole("button", { name: "Delete file" }),
     ).toBeInTheDocument();
@@ -467,7 +470,7 @@ describe("ScienceDataAboardRowAugment", () => {
       fixture.emit("science.experiments", [FILE_ENTRY, SAMPLE_ENTRY]);
       fixture.emit("science.lab", LAB);
     });
-    await within(container).findByRole("button", { name: /cancel send/i });
+    await within(container).findByRole("button", { name: "Send file" });
     await expectNoA11yViolations(container);
   });
 });

@@ -1,6 +1,7 @@
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
-  CommandButton,
+  Button,
+  type CommandButtonHandle,
   Disclosure,
   magnitudeOf,
   NULL_DISPLAY,
@@ -66,7 +67,7 @@ export function ModifyControl({
   complex: Rp1ComplexEntry;
   /** The career balance, for the covers-it reading only. Absent means say nothing. */
   funds: number | null;
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   /**
    * RP-1's own pricing settings. Needed for the additional-pad multiplier, which
    * a renovation applies to every pad the complex already has; the quote is
@@ -114,7 +115,7 @@ function ModifyForm({
   capacities: { [key: string]: number };
   complex: Rp1ComplexEntry;
   funds: number | null;
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   lcId: string;
   pricing: Rp1LcPricing | undefined;
 }>) {
@@ -347,25 +348,32 @@ function ModifyForm({
               </>
             )}
           </Text>
-          <CommandButton
-            args={renovationArgs({
-              capacities,
-              humanRated,
-              isHangar,
-              lcId,
-              reassign,
-              spec: nextSpec,
-              wantedMass,
-            })}
+          <Button
+            command={handle.with(
+              renovationArgs({
+                capacities,
+                humanRated,
+                isHangar,
+                lcId,
+                reassign,
+                spec: nextSpec,
+                wantedMass,
+              }),
+              { label: `Queue the renovation of ${name}` },
+            )}
+            variant="ghost"
             aria-label={`Queue the renovation of ${name}`}
-            commandLabel={`Queue the renovation of ${name}`}
             confirmAriaLabel={confirm}
             confirmLabel="Confirm"
-            disabled={blocked}
-            handle={handle}
-            label="Renovate"
+            unavailable={
+              blocked
+                ? "The renovation is not priced or its specification is incomplete"
+                : null
+            }
             size="sm"
-          />
+          >
+            Renovate
+          </Button>
         </Row>
       </Stack>
     </Disclosure>

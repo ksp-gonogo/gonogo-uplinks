@@ -17,6 +17,7 @@ import {
   RP1_TRAINING_CANCEL_COMMAND,
   RP1_TRAINING_REMOVE_COMMAND,
 } from "./training.js";
+import { findAllButtonsDescribedBy } from "../test/describedButton";
 
 const NAUT = "Ludrey Kerman";
 const MATE = "Nedcas Kerman";
@@ -177,8 +178,12 @@ describe("TrainingCourses", () => {
       expect(screen.getByText("QUEUED")).toBeInTheDocument();
     });
     expect(screen.queryByText("NOT STARTED")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Cancel this course/ })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /off the course/ })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Cancel this course/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /off the course/ }),
+    ).not.toBeInTheDocument();
   });
 
   /*
@@ -308,22 +313,19 @@ describe("TrainingCourses", () => {
     const { fixture } = mount();
     present(fixture, [course({ seatMin: 2 })]);
 
-    const control = await screen.findByRole("button", {
-      name: `${NAUT} off`,
-    });
-    expect(control).toBeDisabled();
-    expect(control).toHaveAccessibleDescription(
-      "This course seats 2 at least, so one student cannot leave it",
-    );
+    const controls = await findAllButtonsDescribedBy("This course seats 2 at least, so one student cannot leave it");
+    expect(controls.length).toBeGreaterThan(0);
+    for (const control of controls) {
+      expect(control).toHaveAttribute("aria-disabled", "true");
+    }
     // Cancelling the whole course is the way out RP-1 leaves open here.
     expect(
       screen.getByRole("button", { name: "Cancel this course" }),
     ).toBeEnabled();
-    /* Same control as the press, and the same chrome with it. Its name drops to
-       the visible label, where the pressable one says "off the course": a
-       refusal announcing the act would describe something that cannot happen. */
-    expect(control).toHaveAttribute("data-command-phase", "idle");
-    expect(control).toHaveAccessibleName(`${NAUT} off`);
+    /* Same control as the press, and the same chrome with it: the kit names a
+       refused control by its reason, where the pressable one says "off the
+       course". */
+    expect(controls[0]).toHaveAttribute("data-command-phase", "blocked");
   });
 
   it("registers itself into the Astronaut Complex tab, labelled Training", () => {

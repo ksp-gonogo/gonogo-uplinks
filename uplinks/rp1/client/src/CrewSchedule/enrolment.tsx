@@ -8,9 +8,9 @@ import {
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
+  Button,
   Card,
   Cluster,
-  CommandButton,
   DataLine,
   magnitudeOf,
   NULL_DISPLAY,
@@ -244,29 +244,23 @@ export function TrainingEnrolment() {
               </Text>
             )}
             <Cluster gap="related-dense" justify="start" wrap>
-              <CommandButton
-                args={{
-                  crew: chosen.map((candidate) => candidate.name),
-                  templateId: selected.id ?? undefined,
-                }}
-                /* Named by the student count while it can act, and the bare
-                   visible label once it cannot: a refused control announcing an
-                   enrolment describes something that will not happen. The reason
-                   rides `title` and the line above. */
-                aria-label={
-                  refusal === null
-                    ? `${verb} ${students(chosen.length)} on ${name}`
-                    : undefined
-                }
-                commandLabel={`${verb} ${students(chosen.length)} on ${name}`}
+              <Button
+                command={enrol.with(
+                  {
+                    crew: chosen.map((candidate) => candidate.name),
+                    templateId: selected.id ?? undefined,
+                  },
+                  { label: `${verb} ${students(chosen.length)} on ${name}` },
+                )}
+                variant="ghost"
+                aria-label={`${verb} ${students(chosen.length)} on ${name}`}
                 confirmAriaLabel={`Confirm ${queues ? "queueing" : "enrolling"} ${students(chosen.length)} on ${name}`}
                 confirmLabel={`${verb} ${students(chosen.length)} on ${name}`}
-                disabled={refusal !== null}
-                handle={enrol}
-                label={verb}
+                unavailable={refusal ?? null}
                 size="sm"
-                title={refusal ?? undefined}
-              />
+              >
+                {verb}
+              </Button>
             </Cluster>
           </Stack>
         </Stack>

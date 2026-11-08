@@ -14,6 +14,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { TrainingEnrolment } from "./enrolment.js";
 import { RP1_TRAINING_ENROL_COMMAND } from "./training.js";
+import { findButtonDescribedBy, getButtonDescribedBy } from "../test/describedButton";
 
 /** RP-1's own crew rules: every mechanic on, both training rates at 1. */
 const DEFAULT_RULES = {
@@ -364,11 +365,8 @@ describe("the seat bounds", () => {
     await present(fixture);
 
     await pick(user, LUDREY);
-    const control = screen.getByRole("button", { name: "Enrol" });
-    expect(control).toBeDisabled();
-    expect(control).toHaveAccessibleDescription(
-      "Mission training: Gemini needs 2 students and 1 student is picked",
-    );
+    const control = getButtonDescribedBy("Mission training: Gemini needs 2 students and 1 student is picked");
+    expect(control).toHaveAttribute("aria-disabled", "true");
     // And the bounds are on screen, so the dark control reads as a fact about
     // the training rather than about the operator.
     expect(visibleText()).toContain("seats 2");
@@ -382,22 +380,16 @@ describe("the seat bounds", () => {
     });
 
     await pick(user, LUDREY, NEDCAS, VALENTINA);
-    const control = screen.getByRole("button", { name: "Enrol" });
-    expect(control).toBeDisabled();
-    expect(control).toHaveAccessibleDescription(
-      "Mission training: Gemini seats 2 and 3 students are picked",
-    );
+    const control = getButtonDescribedBy("Mission training: Gemini seats 2 and 3 students are picked");
+    expect(control).toHaveAttribute("aria-disabled", "true");
   });
 
   it("refuses an empty crew in RP-1's own terms", async () => {
     const { fixture } = mount();
     await present(fixture, { catalogue: [SOLO] });
 
-    const control = await screen.findByRole("button", { name: "Enrol" });
-    expect(control).toBeDisabled();
-    expect(control).toHaveAccessibleDescription(
-      "Nobody is picked, and RP-1 has no such thing as an empty course",
-    );
+    const control = await findButtonDescribedBy("Nobody is picked, and RP-1 has no such thing as an empty course");
+    expect(control).toHaveAttribute("aria-disabled", "true");
   });
 
   /**
@@ -440,10 +432,9 @@ describe("the seat bounds", () => {
     const { fixture } = mount();
     await present(fixture);
 
-    const refused = await screen.findByRole("button", { name: "Enrol" });
-    expect(refused).toBeDisabled();
-    expect(refused).toHaveAttribute("data-command-phase", "idle");
-    expect(refused).toHaveAccessibleName("Enrol");
+    const refused = await findButtonDescribedBy(/needs 2 students and nobody is picked|Nobody is picked/);
+    expect(refused).toHaveAttribute("aria-disabled", "true");
+    expect(refused).toHaveAttribute("data-command-phase", "blocked");
 
     await pick(user, LUDREY, NEDCAS);
     const live = screen.getByRole("button", {
@@ -585,11 +576,19 @@ describe("who RP-1 would refuse", () => {
   it.each([
     [
       "a retiree",
-      { available: false, standing: CrewStanding.Unknown, unavailableReason: "Retired" },
+      {
+        available: false,
+        standing: CrewStanding.Unknown,
+        unavailableReason: "Retired",
+      },
       [{ name: VALENTINA, retired: true }],
     ],
     ["a fatality", { standing: CrewStanding.Dead }, []],
-    ["an applicant", { isApplicant: true, standing: CrewStanding.Applicant }, []],
+    [
+      "an applicant",
+      { isApplicant: true, standing: CrewStanding.Applicant },
+      [],
+    ],
   ])("leaves %s off the list entirely", async (_what, overrides, crew) => {
     const { fixture } = mount();
     await present(fixture, {
@@ -629,11 +628,8 @@ describe("who RP-1 would refuse", () => {
       ]);
     });
 
-    const control = await screen.findByRole("button", { name: "Enrol" });
-    expect(control).toBeDisabled();
-    expect(control).toHaveAccessibleDescription(
-      `${NEDCAS} cannot take this training, and RP-1 refuses the whole crew rather than starting a seat short`,
-    );
+    const control = await findButtonDescribedBy(`${NEDCAS} cannot take this training, and RP-1 refuses the whole crew rather than starting a seat short`);
+    expect(control).toHaveAttribute("aria-disabled", "true");
   });
 
   /**
@@ -663,9 +659,9 @@ describe("who RP-1 would refuse", () => {
     expect(stale).toBeEnabled();
     await user.click(stale);
 
-    expect(screen.getByRole("button", { name: "Enrol" })).toHaveAccessibleDescription(
-      "Mission training: Gemini needs 2 students and 1 student is picked",
-    );
+    expect(
+      getButtonDescribedBy("Mission training: Gemini needs 2 students and 1 student is picked"),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 });
 
@@ -870,7 +866,9 @@ describe("what the course adds per day", () => {
     await present(fixture, { breakdown: FEES });
 
     await user.click(
-      await screen.findByRole("button", { name: "Proficiency: Mercury-Redstone" }),
+      await screen.findByRole("button", {
+        name: "Proficiency: Mercury-Redstone",
+      }),
     );
     await pick(user, LUDREY);
     expect(visibleText()).toMatch(/Course\s*120\s*f\/day/);
@@ -881,7 +879,9 @@ describe("what the course adds per day", () => {
   it("reads the course fee as unknown while it is unread", async () => {
     const { fixture } = mount();
     await present(fixture, {
-      breakdown: { trainingFees: [{ templateId: "tt-mercury", perStudent: { day: -120 } }] },
+      breakdown: {
+        trainingFees: [{ templateId: "tt-mercury", perStudent: { day: -120 } }],
+      },
     });
 
     await screen.findByRole("button", { name: LUDREY });

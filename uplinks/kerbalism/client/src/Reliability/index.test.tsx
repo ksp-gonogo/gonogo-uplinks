@@ -3,6 +3,7 @@ import {
   screen,
   setupStreamFixture,
   stopArriving,
+  waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import {
   expectNoA11yViolations,
@@ -157,9 +158,11 @@ describe("KerbalismReliabilityUpdates", () => {
 
     act(() => fixture.emit("vessel.crew", crew(["Bill Kerman"])));
 
-    expect(
-      await screen.findByRole("button", { name: /^Bill Kerman/ }),
-    ).toHaveAttribute("aria-pressed", "true");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /^Bill Kerman/ }),
+      ).toHaveAttribute("aria-pressed", "true"),
+    );
     expect(screen.queryByText(/Valentina Kerman/)).toBeNull();
   });
 

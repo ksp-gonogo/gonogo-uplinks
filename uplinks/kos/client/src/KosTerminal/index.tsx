@@ -931,10 +931,10 @@ function KosTerminalScreen({
   const openCmd = useCommand("kos.terminal.open", { rail: false });
   const closeCmd = useCommand("kos.terminal.close", { rail: false });
   const resizeCmd = useCommand("kos.terminal.resize", { rail: false });
-  const { send: sendKeystroke } = keystrokeCmd;
-  const { send: sendOpen } = openCmd;
-  const { send: sendClose } = closeCmd;
-  const { send: sendResize } = resizeCmd;
+  const { dangerouslySendWithoutInput: sendKeystroke } = keystrokeCmd;
+  const { dangerouslySendWithoutInput: sendOpen } = openCmd;
+  const { dangerouslySendWithoutInput: sendClose } = closeCmd;
+  const { dangerouslySendWithoutInput: sendResize } = resizeCmd;
 
   /*
    * The lease on the CPU's terminal. The widget's FIXED terminal size is
@@ -959,8 +959,7 @@ function KosTerminalScreen({
       [sendResize, coreId, leaseToken],
     ),
     sendClose: useCallback(
-      () =>
-        sendClose({ coreId, leaseToken } satisfies KosTerminalCloseArgs),
+      () => sendClose({ coreId, leaseToken } satisfies KosTerminalCloseArgs),
       [sendClose, coreId, leaseToken],
     ),
   });

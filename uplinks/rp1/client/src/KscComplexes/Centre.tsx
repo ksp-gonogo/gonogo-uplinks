@@ -2,7 +2,7 @@ import { value } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Cluster,
-  type CommandButton,
+  type CommandButtonHandle,
   Grid,
   Inline,
   magnitudeOf,
@@ -61,19 +61,19 @@ export function Centre({
   complexNames: ReadonlyMap<string, string>;
   pads: readonly Rp1PadEntry[];
   terms: Rp1RushTerms | undefined;
-  assign: Parameters<typeof CommandButton>[0]["handle"];
-  rush: Parameters<typeof CommandButton>[0]["handle"];
-  dismantle: Parameters<typeof CommandButton>[0]["handle"];
-  dismantlePad: Parameters<typeof CommandButton>[0]["handle"];
+  assign: CommandButtonHandle;
+  rush: CommandButtonHandle;
+  dismantle: CommandButtonHandle;
+  dismantlePad: CommandButtonHandle;
   /** The career balance, threaded down so a pad quote can say if it is covered. */
   funds: number | null;
-  newPad: Parameters<typeof CommandButton>[0]["handle"];
+  newPad: CommandButtonHandle;
   /** Renovate a complex, threaded to each card. */
-  modify: Parameters<typeof CommandButton>[0]["handle"];
+  modify: CommandButtonHandle;
   /** RP-1's pricing settings, threaded to each card for the renovation quote. */
   pricing: Rp1LcPricing | undefined;
-  renameComplex: Parameters<typeof CommandButton>[0]["handle"];
-  renamePad: Parameters<typeof CommandButton>[0]["handle"];
+  renameComplex: CommandButtonHandle;
+  renamePad: CommandButtonHandle;
 }>) {
   // The display name first, the id behind it. RP-1 keeps only the id on a
   // centre, and on an RSS career that id is us_cape_canaveral, which is not what

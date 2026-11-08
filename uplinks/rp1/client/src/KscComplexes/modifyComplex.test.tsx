@@ -12,6 +12,7 @@ import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KscComplexes } from "./index.js";
 import { RP1_COMPLEX_MODIFY_COMMAND } from "./Modify.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -217,8 +218,8 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   /*
@@ -237,8 +238,8 @@ describe("renovating a launch complex", () => {
       );
     });
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("charges for a shrink and says so rather than implying a refund", async () => {
@@ -273,8 +274,8 @@ describe("renovating a launch complex", () => {
     expect(refusal.textContent).toContain("200");
     expect(view.container).toBeTruthy();
     expect(
-      screen.getByRole("button", { name: "Queue the renovation of LC-1" }),
-    ).toBeDisabled();
+      getButtonDescribedBy("The renovation is not priced or its specification is incomplete"),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("says how many engineers the renovation takes off before the press", async () => {

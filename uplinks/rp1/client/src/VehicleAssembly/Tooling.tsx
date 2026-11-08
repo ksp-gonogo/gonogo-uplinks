@@ -6,8 +6,9 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
+  Button,
   Cluster,
-  CommandButton,
+  type CommandButtonHandle,
   Disclosure,
   NULL_DISPLAY,
   Row,
@@ -148,16 +149,16 @@ export function ToolingSection() {
               <Unit value={toolingReading.toolAllCost} decimals={0} />
             )}
           </Text>
-          <CommandButton
-            args={{}}
+          <Button
+            command={toolAll.with({}, { label: "Tool this vehicle" })}
+            variant="ghost"
             aria-label="Tool this vehicle"
-            commandLabel="Tool this vehicle"
             confirmAriaLabel="Confirm tooling this vehicle"
             confirmLabel={<SpendWording cost={tooling.toolAllCost} />}
-            handle={toolAll}
-            label="Tool all"
             size="sm"
-          />
+          >
+            Tool all
+          </Button>
         </Cluster>
       )}
 
@@ -242,7 +243,7 @@ function PurchaseCard({
   refit,
 }: Readonly<{
   purchase: Purchase;
-  refit: Parameters<typeof CommandButton>[0]["handle"];
+  refit: CommandButtonHandle;
 }>) {
   return (
     <ProjectCard
@@ -315,7 +316,7 @@ function PartCharge({
 }: Readonly<{
   owned: boolean;
   part: Rp1ToolingEntry;
-  refit: Parameters<typeof CommandButton>[0]["handle"];
+  refit: CommandButtonHandle;
 }>) {
   const name = part.partTitle ?? part.partId ?? NULL_DISPLAY;
   if (owned || part.untooledSurcharge == null) {
@@ -368,7 +369,7 @@ function RefitControl({
   name,
   part,
 }: Readonly<{
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   name: string;
   part: Rp1ToolingEntry;
 }>) {
@@ -451,7 +452,7 @@ function RefitRow({
   partId,
   target,
 }: Readonly<{
-  handle: Parameters<typeof CommandButton>[0]["handle"];
+  handle: CommandButtonHandle;
   name: string;
   partId: string;
   target: Rp1ToolingRefitTarget;
@@ -468,14 +469,17 @@ function RefitRow({
       <Text size="xs">
         <Unit value={target.diameter} /> × <Unit value={target.length} />
       </Text>
-      <CommandButton
-        args={{ diameter, length, partId, rfType: target.rfType }}
+      <Button
+        command={handle.with(
+          { diameter, length, partId, rfType: target.rfType },
+          { label: press },
+        )}
+        variant="ghost"
         aria-label={press}
-        commandLabel={press}
-        handle={handle}
-        label="Refit"
         size="sm"
-      />
+      >
+        Refit
+      </Button>
     </Row>
   );
 }

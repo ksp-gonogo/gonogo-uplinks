@@ -15,6 +15,7 @@ import {
   RP1_HIRE_TARGET_SET_COMMAND,
 } from "./HireTarget.js";
 import { KscComplexes } from "./index.js";
+import { getButtonDescribedBy } from "../test/describedButton";
 
 const CAPE = {
   anyOperational: true,
@@ -184,10 +185,8 @@ describe("the standing hire instruction", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", {
-        name: "Hire up to 31 researchers, spending no lower than 0 funds",
-      }),
-    ).toBeDisabled();
+      getButtonDescribedBy("The target is below the staff already on the books"),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("reports what stands, and withdraws it in one press", async () => {
