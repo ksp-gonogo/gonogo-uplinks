@@ -332,10 +332,16 @@ jobs:
       # branch push. A push that moves a picture is healed by `uplink-docs.yml`,
       # whose GITHUB_TOKEN commit starts no run of this workflow, so a blocking
       # check here would leave main red after the heal until the next push.
+      #
+      # Against a kit packed from gonogo's integration branch the pictures are
+      # not blocking either: they are committed against the kit this repo is
+      # pinned to, so a restyled kit moves every one of them until the pin moves
+      # and the pictures are regenerated with it. The leg stays green and the
+      # step shows red.
       - name: Docs are current
         id: docs
         if: inputs.client && inputs.prepare_args == ''
-        continue-on-error: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') }}
+        continue-on-error: ${{ inputs.packed_gonogo != '' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')) }}
         run: |
           (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
           node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
