@@ -50,7 +50,7 @@ namespace Gonogo.KosUplink
     /// method" behaviour, not a special-cased seam.</para>
     /// </summary>
     [SitrepUplink("kos")]
-    public sealed partial class KosExtension : ISitrepUplink, IUplinkTimelineListener
+    public sealed partial class KosExtension : ISitrepUplink
     {
         // Bound in InstallProductionDefaults() (KosExtension.Ksp.cs) for a
         // production instance; a caller-supplied value (e.g. a test) is left
@@ -102,12 +102,6 @@ namespace Gonogo.KosUplink
         // publisher) is assigned only in RegisterKspBindings, same
         // "assigned in the other half" story as _terminalSource above.
         private readonly KosRunManager _runManager = new KosRunManager();
-
-        /// <summary>
-        /// Disarms every pending <c>kos.run</c>: a load or revert destroys the
-        /// processors the scripts were running on, so their results never print.
-        /// </summary>
-        public void OnTimelineReset(bool saveChanged) => _runManager.Reset();
 #pragma warning disable CS0169 // field is never read in this compilation unit (RegisterKspBindings is the only reader)
         private IDynamicChannelSource? _runSource;
 #pragma warning restore CS0169

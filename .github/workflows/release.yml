@@ -315,37 +315,6 @@ jobs:
           echo "SpaceDock mod ${SPACEDOCK_MOD_ID} ($ID) updated to ${VERSION} (KSP ${GAME_VERSION})"
           echo "### SpaceDock updated: $ID ${VERSION} (KSP ${GAME_VERSION})" >> "$GITHUB_STEP_SUMMARY"
 
-      # The Uplink's README is the listing's description. SpaceDock's JSON API
-      # cannot edit one, so the script logs in to https://spacedock.info with the
-      # same login, loads the website's edit form and sends it back with only the
-      # description replaced (every other field exactly as the form held it). It
-      # also runs when the version was already held, so a failed run can be re-run.
-      # Off until the repository variable SPACEDOCK_SYNC_README is "true".
-      - name: Replace the SpaceDock description
-        if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true' && vars.SPACEDOCK_SYNC_README == 'true' && steps.sd.outcome == 'success'
-        env:
-          SPACEDOCK_USERNAME: ${{ secrets.SPACEDOCK_USERNAME }}
-          SPACEDOCK_PASSWORD: ${{ secrets.SPACEDOCK_PASSWORD }}
-          MOD_ID: ${{ steps.sd.outputs.mod_id }}
-          VERSION: ${{ steps.sd.outputs.version }}
-        run: |
-          set -euo pipefail
-          # Talks to https://spacedock.info only through the script below.
-          if [ -z "$MOD_ID" ] || [ ! -f "uplinks/$NAME/README.md" ]; then
-            echo "::notice::No SpaceDock listing id or no README for $ID; the description is left alone"
-            exit 0
-          fi
-          # The release is already published by now: a failure here is reported
-          # in the summary and never fails the run.
-          if node tooling/spacedock-description.mjs sync "uplinks/$NAME/README.md" \
-            --repo "$GITHUB_REPOSITORY" --ref "$TAG" --dir "uplinks/$NAME" --mod-id "$MOD_ID" --version "$VERSION" 2> sd-description-error.txt; then
-            echo "### SpaceDock description replaced from uplinks/$NAME/README.md: $ID" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "::warning::The SpaceDock description of $ID was not replaced"
-            { echo "### SpaceDock description NOT replaced: $ID"; echo; head -c 1000 sd-description-error.txt; } >> "$GITHUB_STEP_SUMMARY"
-          fi
-          rm -f sd-description-error.txt
-
       # No login and no request to SpaceDock: only the listing and the file.
       - name: Dry run, what SpaceDock would get
         if: needs.resolve.outputs.dry == 'true'
@@ -358,9 +327,3 @@ jobs:
           VERSION="$(node tooling/spacedock-release.mjs version "$TAG")"
           MOD_ID="$(node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json")"
           echo "Would upload $(ls artifacts/*.zip | head -1) to SpaceDock mod $MOD_ID as version $VERSION."
-          if [ -f "uplinks/$NAME/README.md" ]; then
-            node tooling/spacedock-description.mjs sync "uplinks/$NAME/README.md" \
-              --repo "$GITHUB_REPOSITORY" --ref "$TAG" --dir "uplinks/$NAME" --mod-id "$MOD_ID" --version "$VERSION" --dry-run > sd-description-preview.txt || true
-            head -c 4000 sd-description-preview.txt || true
-            rm -f sd-description-preview.txt
-          fi

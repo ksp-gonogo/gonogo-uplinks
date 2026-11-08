@@ -476,56 +476,6 @@ describe("CameraFeed: camera selection", () => {
     ]);
   });
 
-  describe("a command camera is never chosen by the feed itself", () => {
-    const COMMAND_CAMERA = makeCamera({
-      flightId: 90,
-      kind: "command",
-      cameraName: "Launchpad camera",
-      vesselName: "Kerbal X",
-    });
-
-    it("shows the first part camera when the command camera is registered first", async () => {
-      await buildConnectedSource([COMMAND_CAMERA, ...TWO_CAMERAS]);
-
-      renderFeed({ flightId: null });
-
-      expect(screen.getByRole("heading", { name: "Starboard Cam" })).toBeTruthy();
-      fireEvent.click(screen.getByRole("button", { name: /starboard cam/i }));
-      const labels = screen
-        .getAllByRole("menuitemradio")
-        .map((item) => item.textContent);
-      expect(labels.at(-1)).toBe("Launchpad camera (Kerbal X)");
-    });
-
-    it("shows no camera when the command camera is the only live one", async () => {
-      await buildConnectedSource([COMMAND_CAMERA]);
-
-      renderFeed({ flightId: null });
-
-      expect(document.querySelector("video")).toBeNull();
-      expect(screen.queryByRole("heading", { name: "Launchpad camera" })).toBeNull();
-    });
-
-    it("shows the command camera once it is picked", async () => {
-      await buildConnectedSource([COMMAND_CAMERA, ...TWO_CAMERAS]);
-
-      renderFeed({ flightId: 90 });
-
-      expect(screen.getByRole("heading", { name: "Launchpad camera" })).toBeTruthy();
-    });
-
-    it("steps onto the command camera with the next button", async () => {
-      await buildConnectedSource([COMMAND_CAMERA, ...TWO_CAMERAS]);
-
-      renderStatefulFeed({ flightId: 44 });
-      await act(async () => {
-        fireEvent.click(screen.getByRole("button", { name: /next camera/i }));
-      });
-
-      expect(screen.getByRole("heading", { name: "Launchpad camera" })).toBeTruthy();
-    });
-  });
-
   it("lists a camera of a kind it does not know, since kinds are open-ended", async () => {
     await buildConnectedSource([
       ...TWO_CAMERAS,

@@ -75,29 +75,6 @@ describe("LevelHistory.trend", () => {
   });
 });
 
-describe("LevelHistory.follow", () => {
-  it("does not fit one vessel's levels into another's after a switch or a load", () => {
-    const history = recorded([52.2, 51.4, 50.6, 49.8, 49.0, 48.2]);
-    history.follow("vessel-a");
-    history.follow("vessel-b");
-    history.record(1100, { ElectricCharge: 20 });
-    history.record(1110, { ElectricCharge: 20 });
-
-    expect(history.trend("ElectricCharge", CAPACITY).kind).not.toBe("falling");
-  });
-
-  it("keeps the history while the vessel stays the same", () => {
-    const history = new LevelHistory();
-    history.follow("vessel-a");
-    [52.2, 51.4, 50.6, 49.8, 49.0, 48.2].forEach((amount, i) => {
-      history.record(1000 + i * 10, { ElectricCharge: amount });
-    });
-    expect(history.follow("vessel-a")).toBe(false);
-
-    expect(history.trend("ElectricCharge", CAPACITY).kind).toBe("falling");
-  });
-});
-
 describe("reconcileCrossing", () => {
   const level = { current: 47.4, capacity: CAPACITY, ut: 1050 };
   const falling = recorded([52.2, 51.4, 50.6, 49.8, 49.0, 48.2]).trend(

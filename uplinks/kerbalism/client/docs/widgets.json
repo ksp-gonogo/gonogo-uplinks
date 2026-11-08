@@ -12,8 +12,7 @@
         "kerbalism.profile",
         "kerbalism.lifesupport",
         "vessel.resources",
-        "vessel.crew",
-        "vessel.identity"
+        "vessel.crew"
       ],
       "optionalChannels": [],
       "commands": [],
@@ -24,8 +23,7 @@
         "kerbalism.profile",
         "kerbalism.lifesupport",
         "vessel.resources",
-        "vessel.crew",
-        "vessel.identity"
+        "vessel.crew"
       ],
       "fields": [],
       "actions": [],

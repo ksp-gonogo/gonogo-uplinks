@@ -49,7 +49,7 @@ namespace Gonogo.KerbcastUplink
     /// stock KSP and Kerbcast.API.</para>
     /// </summary>
     [SitrepUplink("kerbcast")]
-    public sealed class KerbcastUplink : ISitrepUplink, IUplinkSettingsDeclarer, IModSettingsSource, IModSettingsWriter, IUplinkTimelineListener
+    public sealed class KerbcastUplink : ISitrepUplink, IUplinkSettingsDeclarer, IModSettingsSource, IModSettingsWriter
     {
         public const string AvailableTopic = KerbcastManifest.AvailableTopic;
         public const string CamerasTopic = KerbcastManifest.CamerasTopic;
@@ -396,9 +396,6 @@ namespace Gonogo.KerbcastUplink
             var vessel = FlightGlobals.ActiveVessel;
             return vessel == null ? (uint?)null : vessel.persistentId;
         }
-
-        /// <summary>Forgets the craft knowledge already sent, so the next tick publishes it again.</summary>
-        public void OnTimelineReset(bool saveChanged) => _craftKnowledgeFeed.Reset();
 
         private void OnGameStateLoad(ConfigNode node) => _governor?.OnGameLoaded();
 

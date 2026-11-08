@@ -93,7 +93,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 | | |
 | --- | --- |
 | Widget id | `ship-systems` |
-| Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew`, `vessel.identity` |
+| Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew` |
 | Slots of its own | `ship-systems.life-support` |
 | Needs | a vessel in flight |
 | Default size, in grid units | 12 × 24 |
