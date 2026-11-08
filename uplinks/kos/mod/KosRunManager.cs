@@ -38,6 +38,7 @@ namespace Gonogo.KosUplink
         // coreId -> the single armed request's RequestId. Presence in this
         // dictionary IS "armed", there is no separate flag.
         private readonly Dictionary<int, string> _pending = new Dictionary<int, string>();
+        private readonly object _gate = new object();
 
         private Action<int, KosRunResult>? _publish;
 
@@ -67,12 +68,15 @@ namespace Gonogo.KosUplink
             {
                 return false;
             }
-            if (_pending.ContainsKey(coreId))
+            lock (_gate)
             {
-                return false;
+                if (_pending.ContainsKey(coreId))
+                {
+                    return false;
+                }
+                _pending[coreId] = requestId;
+                return true;
             }
-            _pending[coreId] = requestId;
-            return true;
         }
 
         /// <summary>
@@ -118,10 +122,10 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>True while a run is armed (in flight) for <paramref name="coreId"/>.</summary>
-        public bool IsArmed(int coreId) => _pending.ContainsKey(coreId);
+        public bool IsArmed(int coreId) { lock (_gate) { return _pending.ContainsKey(coreId); } }
 
         /// <summary>True while any CPU has an armed run, widens OnPrint's subscription gate so accumulation isn't starved when nobody subscribes to kos.compute.* (see the migration plan's "Subscription-gate fix").</summary>
-        public bool HasAnyArmed() => _pending.Count > 0;
+        public bool HasAnyArmed() { lock (_gate) { return _pending.Count > 0; } }
 
         /// <summary>
         /// Called when a <see cref="KosComputeBlock"/> completes for
@@ -133,11 +137,15 @@ namespace Gonogo.KosUplink
         /// </summary>
         public void Complete(int coreId, KosComputeBlock block)
         {
-            if (!_pending.TryGetValue(coreId, out var requestId))
+            string? requestId;
+            lock (_gate)
             {
-                return;
+                if (!_pending.TryGetValue(coreId, out requestId))
+                {
+                    return;
+                }
+                _pending.Remove(coreId);
             }
-            _pending.Remove(coreId);
 
             var result = new KosRunResult
             {
@@ -157,7 +165,14 @@ namespace Gonogo.KosUplink
         /// an arm whose typing never reached the CPU. Nothing evicts a request
         /// whose CPU went away mid-run, that is still the known gap above.
         /// </summary>
-        public void Cancel(int coreId) => _pending.Remove(coreId);
+        public void Cancel(int coreId) { lock (_gate) { _pending.Remove(coreId); } }
+
+        /// <summary>
+        /// Disarms every CPU without publishing. A load or revert destroys the
+        /// processors a run was typed into, so none of the armed requests can
+        /// ever complete.
+        /// </summary>
+        public void Reset() { lock (_gate) { _pending.Clear(); } }
 
         private static Dictionary<string, object?> ToFieldMap(IReadOnlyDictionary<string, object> fields)
         {
