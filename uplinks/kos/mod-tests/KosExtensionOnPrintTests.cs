@@ -254,6 +254,17 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void OnTimelineReset_DisarmsARunWhoseCpuWasDestroyed()
+        {
+            var ext = NewExtension(new RecordingChannelSource(), new CoreIdCounter(), () => true);
+            Assert.True(ext.ArmRunForTests(42, "req-1"));
+
+            ext.OnTimelineReset(saveChanged: false);
+
+            Assert.True(ext.ArmRunForTests(42, "req-2"));
+        }
+
+        [Fact]
         public void OnPrint_ArmedRun_RoutesTheCompletedBlockToTheRunManagerNotCompute()
         {
             var source = new RecordingChannelSource();

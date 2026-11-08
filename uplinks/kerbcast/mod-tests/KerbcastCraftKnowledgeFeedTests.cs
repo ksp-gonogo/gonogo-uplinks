@@ -47,6 +47,19 @@ public class KerbcastCraftKnowledgeFeedTests
     }
 
     [Fact]
+    public void AfterAResetWhatWasSentIsSentAgain()
+    {
+        var feed = new KerbcastCraftKnowledgeFeed();
+        var facts = new[] { Fact(7, CraftKnowledgeState.Seen, 5.0) };
+        Assert.NotNull(feed.Next(facts));
+        Assert.Null(feed.Next(facts));
+
+        feed.Reset();
+
+        Assert.NotNull(feed.Next(facts));
+    }
+
+    [Fact]
     public void ARepeatOfWhatWasSentIsNotSentAgain()
     {
         var feed = new KerbcastCraftKnowledgeFeed();

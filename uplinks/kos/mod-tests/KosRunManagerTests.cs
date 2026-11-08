@@ -250,5 +250,18 @@ namespace GonogoKosUplink.Tests
             mgr.Cancel(7);
             Assert.False(mgr.HasAnyArmed());
         }
+
+        [Fact]
+        public void Reset_DisarmsEveryCpuSoTheNextRunGetsThrough()
+        {
+            var mgr = new KosRunManager();
+            Assert.True(mgr.ArmAndType(7, "a", () => true).Success);
+            Assert.True(mgr.TryArm(8, "b"));
+
+            mgr.Reset();
+
+            Assert.False(mgr.HasAnyArmed());
+            Assert.True(mgr.ArmAndType(7, "c", () => true).Success);
+        }
     }
 }
