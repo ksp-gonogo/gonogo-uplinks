@@ -61,6 +61,20 @@ function significant(change: number, capacity: number, sigma: number): boolean {
 export class LevelHistory {
   private readonly byName = new Map<string, Sample[]>();
   private newestUt = Number.NEGATIVE_INFINITY;
+  private vesselId: string | undefined;
+
+  /**
+   * Names the vessel the next levels are of. A different vessel than the last
+   * one named (a switch, or a load into another craft) starts the history over
+   * and returns true; an absent id changes nothing.
+   */
+  follow(vesselId: string | undefined): boolean {
+    if (vesselId === undefined || vesselId === this.vesselId) return false;
+    const switched = this.vesselId !== undefined;
+    this.vesselId = vesselId;
+    if (switched) this.reset();
+    return switched;
+  }
 
   /**
    * Adds the levels observed at `ut`. Seeing the same observation again adds

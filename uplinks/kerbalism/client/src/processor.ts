@@ -133,8 +133,17 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     // separately. It also carries the observation's own UT.
     { reading: "vessel.resources" },
     "vessel.crew",
+    // Which craft the levels are of, so the history of one is never fitted into another's.
+    "vessel.identity",
   ] as const,
-  compute: ([profile, lifeSupport, resourcesReading, crew]): ShipSystems => {
+  compute: ([
+    profile,
+    lifeSupport,
+    resourcesReading,
+    crew,
+    identity,
+  ]): ShipSystems => {
+    if (levelHistory.follow(identity?.vesselId ?? undefined)) rateHold.reset();
     // `stored`/`capacity` were never Kerbalism-specific: they come off the
     // generic `vessel.resources` levels, keyed by KSP resource name.
     //
