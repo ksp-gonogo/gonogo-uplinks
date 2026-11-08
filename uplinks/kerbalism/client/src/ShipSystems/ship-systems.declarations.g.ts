@@ -5,7 +5,6 @@ export default {
     "kerbalism.eva",
     "kerbalism.reliabilityParts",
     "kerbalism.spaceweather",
-    "vessel.identity",
   ],
   optionalChannelFamilies: [],
   commands: ["kerbalism.device.set", "kerbalism.script.set"],
