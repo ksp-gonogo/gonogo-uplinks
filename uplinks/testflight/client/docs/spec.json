@@ -13,6 +13,15 @@
   },
   "topics": [
     {
+      "id": "testflight.available",
+      "array": false,
+      "fields": [],
+      "disposition": {
+        "delivery": "lossy-latest",
+        "delay": "true-now"
+      }
+    },
+    {
       "id": "testflight.reliability",
       "payload": "TestFlightReliabilitySummary",
       "array": false,

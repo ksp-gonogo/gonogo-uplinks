@@ -26,12 +26,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=scansat-v
 | --- | --- | --- | --- |
 | `scansat.scanningVessels` | `ScanningVesselEntry[]` | lossy-latest | delayed |
 | `scansat.science` | `ScanScienceEntry[]` | lossy-latest | delayed |
-| `scansat.anomalies.` | – | lossy-latest | delayed |
 | `scansat.available` | – | lossy-latest | true-now |
-| `scansat.biome.` | – | lossy-latest | delayed |
-| `scansat.coverage.` | – | lossy-latest | delayed |
-| `scansat.height.` | – | lossy-latest | delayed |
-| `scansat.mask.` | – | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |

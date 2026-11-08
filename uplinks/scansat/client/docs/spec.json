@@ -13,57 +13,12 @@
   },
   "topics": [
     {
-      "id": "scansat.anomalies.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
       "id": "scansat.available",
       "array": false,
       "fields": [],
       "disposition": {
         "delivery": "lossy-latest",
         "delay": "true-now"
-      }
-    },
-    {
-      "id": "scansat.biome.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
-      "id": "scansat.coverage.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
-      "id": "scansat.height.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
-      "id": "scansat.mask.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
       }
     },
     {

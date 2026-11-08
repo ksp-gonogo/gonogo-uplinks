@@ -59,7 +59,6 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 | `rp1.trainingCatalogue` | `Rp1TrainingTemplateEntry[]` | lossy-latest | delayed |
 | `rp1.warehouse` | `Rp1WarehouseItemEntry[]` | lossy-latest | delayed |
 | `rp1.available` | – | lossy-latest | true-now |
-| `rp1.fundsReachedAt.` | – | lossy-latest | delayed |
 
 | Payload | Fields |
 | --- | --- |

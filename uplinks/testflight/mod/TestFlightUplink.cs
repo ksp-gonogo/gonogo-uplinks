@@ -48,7 +48,7 @@ namespace GonogoTestFlightUplink
                 },
                 Channels = new List<ChannelDeclaration>
                 {
-                    new()
+                    new ChannelDeclaration
                     {
                         Topic = AvailableTopic,
                         Kind = SampleKind.Discrete,
@@ -64,7 +64,7 @@ namespace GonogoTestFlightUplink
                 Commands = _tf.IsAvailable
                     ? new List<CommandDeclaration>
                     {
-                        new() { Command = RepairCommand, Subject = ReliabilityPartsTopic },
+                        new CommandDeclaration { Command = RepairCommand, Subject = ReliabilityPartsTopic },
                     }
                     : new List<CommandDeclaration>(),
                 ErrorCodes = ErrorCodeCatalog.Of(typeof(TestFlightErrorCodes)),

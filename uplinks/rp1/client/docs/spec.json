@@ -830,15 +830,6 @@
       }
     },
     {
-      "id": "rp1.fundsReachedAt.",
-      "array": false,
-      "fields": [],
-      "disposition": {
-        "delivery": "lossy-latest",
-        "delay": "delayed"
-      }
-    },
-    {
       "id": "rp1.fundTarget",
       "payload": "Rp1FundTarget",
       "array": false,

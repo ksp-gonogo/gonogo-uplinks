@@ -26,6 +26,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 | --- | --- | --- | --- |
 | `testflight.reliability` | `TestFlightReliabilitySummary` | lossy-latest | delayed |
 | `testflight.reliabilityParts` | `TestFlightReliabilityPart[]` | lossy-latest | delayed |
+| `testflight.available` | – | lossy-latest | true-now |
 
 | Payload | Fields |
 | --- | --- |
