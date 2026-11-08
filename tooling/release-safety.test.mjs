@@ -145,3 +145,19 @@ test("release.yml's dispatch is a dry run that pushes nothing", () => {
     assert.doesNotMatch(step, /--push|--purge|gh release|curl|secrets\./, `${name} changes nothing outside the runner`);
   }
 });
+
+test("the description step reads the login only behind both guards and never prints it", () => {
+  const release = read("release.yml");
+  const step = steps(release).find((s) => s.includes("- name: Replace the SpaceDock description"));
+  assert.ok(step, "found the description step");
+  assert.match(step, /needs\.resolve\.outputs\.prerelease != 'true'/);
+  assert.match(step, /needs\.resolve\.outputs\.dry != 'true'/);
+  assert.doesNotMatch(step, /echo[^\n]*SPACEDOCK_(USERNAME|PASSWORD)|set -x/);
+});
+
+test("the description step is off without its repository variable and swallows a failed sync", () => {
+  const step = steps(read("release.yml")).find((s) => s.includes("- name: Replace the SpaceDock description"));
+  assert.match(step, /vars\.SPACEDOCK_SYNC_README == 'true'/);
+  assert.match(step, /if node tooling\/spacedock-description\.mjs sync/);
+  assert.match(step, /NOT replaced/);
+});
