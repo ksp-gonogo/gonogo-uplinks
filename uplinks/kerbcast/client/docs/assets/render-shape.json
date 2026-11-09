@@ -12,6 +12,11 @@
       "elements": 79,
       "text": "4c74fe0b"
     },
+    "camera-feed-command-zoom-locked--default.png": {
+      "hash": "318cadd89b8242f0",
+      "elements": 71,
+      "text": "0437929a"
+    },
     "camera-feed-command-zoom-mid--default.png": {
       "hash": "bcbccd24f13da035",
       "elements": 79,
@@ -66,6 +71,11 @@
       "hash": "347abb05106f3109",
       "elements": 75,
       "text": "77896017"
+    },
+    "camera-feed-steerable-locked--default.png": {
+      "hash": "b2aa64073b4f61ba",
+      "elements": 48,
+      "text": "3a9044cd"
     },
     "camera-feed-stick-hold--default.gif": {
       "hash": "207275c84529b9da",

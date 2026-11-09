@@ -59,7 +59,7 @@ A live view from a camera on the active craft.
 | Slots of its own | `camera-feed.overlay` |
 | Default size, in grid units | 9 × 8 |
 | Smallest size, in grid units | 7 × 6 |
-| Scenes | 10 |
+| Scenes | 12 |
 
 ![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](client/docs/assets/camera-feed-fixed--default.png)
 
