@@ -33,7 +33,7 @@ namespace Gonogo.RealAntennasUplink
     /// <c>Sitrep.Contract</c> + stock KSP only.</para>
     /// </summary>
     [SitrepUplink("realantennas")]
-    public sealed class RealAntennasUplink : ISitrepUplink
+    public sealed class RealAntennasUplink : ISitrepUplink, IModSettingsSource, IModSettingsWriter
     {
         public const string DataRateTopic = RealAntennasManifest.DataRateTopic;
         public const string LinkMarginTopic = RealAntennasManifest.LinkMarginTopic;
@@ -81,7 +81,7 @@ namespace Gonogo.RealAntennasUplink
         private IChannelPublisher? _chains;
         private IChannelPublisher? _retargeting;
 
-        /// <summary>The dishes on loan and the crafts opted out of dish turning: the process's own register, saved with the game.</summary>
+        /// <summary>The dishes on loan and the choices about dish turning, per craft and save-wide: the process's own register, saved with the game.</summary>
         private readonly RaRetargetRegister _retargets = RaChainScenario.Retargets;
 
         /// <summary>Turns another craft's idle dish and puts it back, built at Register beside targeting.</summary>
@@ -94,6 +94,29 @@ namespace Gonogo.RealAntennasUplink
         private RaChains? _chainWalk;
 
         public UplinkManifest Manifest { get; } = RealAntennasManifest.Build();
+
+        private RaRetargetModSettings? _modSettings;
+
+        private RaRetargetModSettings ModSettings =>
+            _modSettings ??= new RaRetargetModSettings(_retargets, RestoreStoppedLoans);
+
+        public IReadOnlyList<ModSetting> ListModSettings() => ModSettings.ListModSettings();
+
+        public ModSettingValue ReadModSetting(string id) => ModSettings.ReadModSetting(id);
+
+        public CommandResult WriteModSetting(string id, ModSettingValue value) => ModSettings.WriteModSetting(id, value);
+
+        /// <summary>Puts back every dish on loan from a craft that may no longer have one turned.</summary>
+        private void RestoreStoppedLoans()
+        {
+            foreach (var loan in new List<RaRetargetRegister.Borrow>(_retargets.Open))
+            {
+                if (!_retargets.Allowed(loan.VesselId))
+                {
+                    _turner?.Restore(loan.Id, UtOf(null));
+                }
+            }
+        }
 
         /// <summary>Mandatory health self-report (see <see cref="ISitrepUplink.Health"/>), as
         /// <see cref="RaHealth.Of"/> answers it for the RealAntennas this Uplink found at Register.</summary>
@@ -261,7 +284,15 @@ namespace Gonogo.RealAntennasUplink
                 }
                 return entry;
             }
-            foreach (var id in _retargets.OptedOut)
+            var known = new List<string>();
+            foreach (var vessel in FlightGlobals.Vessels ?? new List<Vessel>())
+            {
+                if (vessel != null)
+                {
+                    known.Add(vessel.id.ToString());
+                }
+            }
+            foreach (var id in _retargets.NotAllowed(known))
             {
                 EntryOf(id);
             }

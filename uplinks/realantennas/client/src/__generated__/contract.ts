@@ -390,10 +390,14 @@ export interface RealAntennasHopRate
 *
 * Addressed to the craft by id, so it reaches any craft, one on rails
 * included, and it rides that craft's signal delay like any other change to
-* what it does on board. Allowed is the default; a craft the operator opts out
-* of never has a dish turned automatically, though other craft may still turn
-* their own dishes toward it. Turning it off while a dish is on loan puts the
-* dish back at once.
+* what it does on board. A craft the operator opts out of never has a dish
+* turned automatically, though other craft may still turn their own dishes
+* toward it. Turning it off while a dish is on loan puts the dish back at
+* once.
+*
+* This is the craft's own choice and it stays whatever the save-wide
+* "Automatic retargeting" mod setting becomes. A craft that was never given
+* one follows that setting, which is on until changed.
 */
 export interface RealAntennasSetAutoRetargetArgs
 {
@@ -454,7 +458,7 @@ export interface RealAntennasLastBorrow
 * One craft's dish turning, an entry of `realantennas.retargeting`: whether it
 * may turn a dish on its own, which dish of it is on loan, and how the last
 * loan ended. The channel value is a bare array with an entry for every craft
-* that is opted out, has a dish on loan, or has had one.
+* that may not turn a dish, has a dish on loan, or has had one.
 *
 * As the reported craft's own delay delivers it: the channel is `Delayed` and
 * carries the whole fleet, so an entry for another craft is not older or newer
@@ -464,7 +468,10 @@ export interface RealAntennasVesselRetargeting
 {
 	/** The craft, by its id as `trackingStation.catalog` gives it. */
 	vesselId: string;
-	/** Whether the craft may turn an idle dish on its own. */
+	/**
+	* Whether the craft may turn an idle dish on its own: its own switch when it
+	* has one, otherwise the save-wide setting.
+	*/
 	allowed: boolean;
 	/** The dish on loan now, or `null` when none is. */
 	borrowed?: RealAntennasBorrowedDish | null;

@@ -22,7 +22,8 @@ namespace Gonogo.RealAntennasUplink
 
     /// <summary>
     /// What the Uplink owes the craft it borrowed a dish from, and the operator's
-    /// standing choice of whether a craft may be borrowed from at all. KSP-free
+    /// standing choices of whether a craft may be borrowed from at all: one per
+    /// craft, and one for the whole save that covers every craft with none. KSP-free
     /// and RealAntennas-free, so its whole surface is reachable headlessly.
     ///
     /// <para><b>The record is written before the dish moves.</b> A turn that
@@ -73,7 +74,8 @@ namespace Gonogo.RealAntennasUplink
         }
 
         private readonly Dictionary<string, Borrow> _borrows = new Dictionary<string, Borrow>(StringComparer.Ordinal);
-        private readonly HashSet<string> _optedOut = new HashSet<string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, bool> _choices = new Dictionary<string, bool>(StringComparer.Ordinal);
+        private bool _allowedByDefault = true;
         private readonly Dictionary<string, Borrow> _lastByVessel = new Dictionary<string, Borrow>(StringComparer.Ordinal);
         private long _nextId;
 
@@ -83,41 +85,86 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>The most recent loan that ended, per craft, for display.</summary>
         public IReadOnlyDictionary<string, Borrow> LastEnded => _lastByVessel;
 
-        /// <summary>Every craft the operator has opted out of automatic retargeting.</summary>
-        public IEnumerable<string> OptedOut
+        /// <summary>Every craft the operator has made a choice for, with that choice, whichever way it went.</summary>
+        public IReadOnlyList<KeyValuePair<string, bool>> Choices
         {
             get
             {
-                lock (_optedOut)
+                lock (_choices)
                 {
-                    return _optedOut.ToList();
+                    return _choices.ToList();
                 }
             }
         }
 
-        /// <summary>Whether a craft may have a dish turned on its own. The default is yes. Safe from any thread: the network reads it while the main thread writes it.</summary>
+        /// <summary>
+        /// Whether a craft with no choice of its own may have a dish turned on its
+        /// own. The default is yes. Safe from any thread, as <see cref="Allowed"/> is.
+        /// </summary>
+        public bool AllowedByDefault
+        {
+            get
+            {
+                lock (_choices)
+                {
+                    return _allowedByDefault;
+                }
+            }
+            set
+            {
+                lock (_choices)
+                {
+                    _allowedByDefault = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether a craft may have a dish turned on its own: its own choice when it
+        /// has one, otherwise <see cref="AllowedByDefault"/>. Safe from any thread:
+        /// the network reads it while the main thread writes it.
+        /// </summary>
         public bool Allowed(string vesselGuid)
         {
-            lock (_optedOut)
+            lock (_choices)
             {
-                return !_optedOut.Contains(vesselGuid);
+                return _choices.TryGetValue(vesselGuid, out var choice) ? choice : _allowedByDefault;
             }
         }
 
-        /// <summary>Sets whether a craft may have a dish turned on its own.</summary>
+        /// <summary>Sets a craft's own choice of whether it may have a dish turned on its own. The choice stays whatever <see cref="AllowedByDefault"/> becomes.</summary>
         public void SetAllowed(string vesselGuid, bool allowed)
         {
-            lock (_optedOut)
+            lock (_choices)
             {
-                if (allowed)
+                _choices[vesselGuid] = allowed;
+            }
+        }
+
+        /// <summary>
+        /// The crafts among <paramref name="known"/> that may not have a dish turned
+        /// on its own, plus every craft with a choice of its own that says no, so
+        /// the channel names exactly the crafts whose switch reads off.
+        /// </summary>
+        public IReadOnlyList<string> NotAllowed(IEnumerable<string> known)
+        {
+            var ids = new List<string>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in Choices)
+            {
+                if (!pair.Value && seen.Add(pair.Key))
                 {
-                    _optedOut.Remove(vesselGuid);
-                }
-                else
-                {
-                    _optedOut.Add(vesselGuid);
+                    ids.Add(pair.Key);
                 }
             }
+            foreach (var id in known)
+            {
+                if (!Allowed(id) && seen.Add(id))
+                {
+                    ids.Add(id);
+                }
+            }
+            return ids;
         }
 
         public Borrow? Find(string? recordId) =>
@@ -199,9 +246,10 @@ namespace Gonogo.RealAntennasUplink
         public void Clear()
         {
             _borrows.Clear();
-            lock (_optedOut)
+            lock (_choices)
             {
-                _optedOut.Clear();
+                _choices.Clear();
+                _allowedByDefault = true;
             }
             _lastByVessel.Clear();
             _nextId = 0;

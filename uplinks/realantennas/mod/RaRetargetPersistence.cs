@@ -3,7 +3,7 @@ using System.Globalization;
 namespace Gonogo.RealAntennasUplink
 {
     /// <summary>
-    /// ConfigNode round trip for <see cref="RaRetargetRegister"/>: the opt-outs,
+    /// ConfigNode round trip for <see cref="RaRetargetRegister"/>: the save-wide default and every craft's own choice,
     /// every open loan with what the dish must go back to, and each craft's last
     /// finished loan. Loaded into the process's existing register, as the chains
     /// are, so a command handler registered once keeps writing to the register
@@ -17,7 +17,8 @@ namespace Gonogo.RealAntennasUplink
     {
         private const string RootNodeName = "REALANTENNAS_RETARGET";
         private const string LoanNodeName = "BORROW";
-        private const string OptOutNodeName = "OPTOUT";
+        private const string ChoiceNodeName = "CHOICE";
+        private const string DefaultValueName = "allowByDefault";
         private const string PreviousNodeName = "PREVIOUS";
 
         public static void Save(RaRetargetRegister register, ConfigNode node)
@@ -27,9 +28,12 @@ namespace Gonogo.RealAntennasUplink
                 return;
             }
             var root = node.AddNode(RootNodeName);
-            foreach (var vessel in register.OptedOut)
+            root.AddValue(DefaultValueName, register.AllowedByDefault.ToString(CultureInfo.InvariantCulture));
+            foreach (var choice in register.Choices)
             {
-                root.AddNode(OptOutNodeName).AddValue("vessel", vessel);
+                var entry = root.AddNode(ChoiceNodeName);
+                entry.AddValue("vessel", choice.Key);
+                entry.AddValue("allow", choice.Value.ToString(CultureInfo.InvariantCulture));
             }
             foreach (var borrow in Everything(register))
             {
@@ -56,12 +60,13 @@ namespace Gonogo.RealAntennasUplink
             {
                 return;
             }
-            foreach (var optOut in root.GetNodes(OptOutNodeName))
+            register.AllowedByDefault = !bool.TryParse(root.GetValue(DefaultValueName), out var byDefault) || byDefault;
+            foreach (var choice in root.GetNodes(ChoiceNodeName))
             {
-                var vessel = optOut.GetValue("vessel");
-                if (!string.IsNullOrEmpty(vessel))
+                var vessel = choice.GetValue("vessel");
+                if (!string.IsNullOrEmpty(vessel) && bool.TryParse(choice.GetValue("allow"), out var allow))
                 {
-                    register.SetAllowed(vessel, false);
+                    register.SetAllowed(vessel, allow);
                 }
             }
             foreach (var loan in root.GetNodes(LoanNodeName))

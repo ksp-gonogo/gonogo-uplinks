@@ -159,7 +159,7 @@
     <Compile Include="RaChainPersistenceTests.cs" />
     <Compile Include="..\mod\RaRetargetPersistence.cs" />
     <Compile Include="RaRetargetPersistenceTests.cs" />
-  </ItemGroup>
+    <Compile Include="..\mod\RaRetargetModSettings.cs" />  </ItemGroup>
 
   <Target Name="WarnIfKspManagedMissing" BeforeTargets="Build" Condition="'$(KspManagedAvailable)' != 'true'">
     <Warning Text="Assembly-CSharp.dll not found under KspManaged=$(KspManaged): RaRoutingTests SKIPPED (soft-degrade), so nothing is checking that this Uplink routes through RealAntennas' own FindClosestWhere rather than stock's FindPath. Pass /p:KspManaged=&lt;dir containing Assembly-CSharp.dll&gt; to compile and run them." />
