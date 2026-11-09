@@ -1602,7 +1602,8 @@ function KosTerminalConfigComponent({
 registerComponent<KosTerminalConfig>({
   id: "kos-terminal",
   name: "kOS Terminal",
-  description: "The live terminal of a kOS CPU.",
+  description:
+    "The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.",
   tags: ["kos", "control", "telemetry"],
   defaultSize: { w: 18, h: 15 },
   minSize: { w: 8, h: 6 },

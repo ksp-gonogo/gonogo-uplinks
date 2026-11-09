@@ -9,9 +9,8 @@ namespace Gonogo.KerbcastUplink
     /// </summary>
     public readonly struct CraftPlace
     {
-        private CraftPlace(double ut, int bodyIndex, bool onSurface, double latitude, double longitude, double altitude, double[] state, double[]? position)
+        private CraftPlace(double ut, int bodyIndex, bool onSurface, double latitude, double longitude, double altitude, double[] state)
         {
-            Position = position;
             Ut = ut;
             BodyIndex = bodyIndex;
             OnSurface = onSurface;
@@ -24,12 +23,12 @@ namespace Gonogo.KerbcastUplink
         /// <summary>A craft on the ground or the water, carried by the body's rotation.</summary>
         private static readonly double[] NoState = new double[0];
 
-        public static CraftPlace Surface(double ut, int bodyIndex, double latitude, double longitude, double altitude, double[]? position = null) =>
-            new CraftPlace(ut, bodyIndex, true, latitude, longitude, altitude, NoState, position);
+        public static CraftPlace Surface(double ut, int bodyIndex, double latitude, double longitude, double altitude) =>
+            new CraftPlace(ut, bodyIndex, true, latitude, longitude, altitude, NoState);
 
         /// <summary>A craft in flight, by body-relative position and velocity in KSP's fixed inertial frame.</summary>
         public static CraftPlace State(double ut, int bodyIndex, double x, double y, double z, double vx, double vy, double vz) =>
-            new CraftPlace(ut, bodyIndex, false, 0.0, 0.0, 0.0, new[] { x, y, z, vx, vy, vz }, new[] { x, y, z });
+            new CraftPlace(ut, bodyIndex, false, 0.0, 0.0, 0.0, new[] { x, y, z, vx, vy, vz });
 
         /// <summary>Game time the place was read.</summary>
         public double Ut { get; }
@@ -44,9 +43,6 @@ namespace Gonogo.KerbcastUplink
         public double Longitude { get; }
 
         public double Altitude { get; }
-
-        /// <summary>The body-relative position in KSP's fixed inertial frame, three numbers; null for a surface place when it was not read.</summary>
-        public double[]? Position { get; }
 
         /// <summary>Position then velocity, six numbers; empty for a surface place.</summary>
         public double[] State6 { get; }

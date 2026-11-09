@@ -9,7 +9,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 | --- | --- |
 | Uplink id | `kerbcast` |
 | Version | `0.0.0-development` |
-| Wraps | kerbcast 1.12.1-rc.13 (ckan) |
+| Wraps | kerbcast 1.12.0 (ckan) |
 | Built against | contract 51.0, extension API 6.0.0 |
 
 ## Install
@@ -48,7 +48,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 
 ### Camera Feed
 
-A live view from a camera on the active craft.
+A live view from a camera on the active craft. Pick which camera to watch, step to the next or previous one, and aim and zoom the ones that can.
 
 | | |
 | --- | --- |
