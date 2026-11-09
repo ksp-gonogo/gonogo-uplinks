@@ -194,14 +194,14 @@ export const cameraFeedActions = [
     label: "Zoom in",
     accepts: ["button"],
     description:
-      "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
+      "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit.",
   },
   {
     id: "zoom-out",
     label: "Zoom out",
     accepts: ["button"],
     description:
-      "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
+      "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit.",
   },
   {
     id: "pan-yaw",

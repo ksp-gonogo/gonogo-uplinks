@@ -1,0 +1,68 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 42
+    },
+    "caption": "A command camera at its narrowest field of view, 0.13 degrees (Tracking Station level 3), above the staged delay threshold: the zoom wheel reads the sub-degree figure and moves on a log scale between the camera's live widest and narrowest field of view",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ],
+    "paints": [
+      "Z0.13\u00b0"
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 1.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      },
+      {
+        "topic": "commandCentre.roster",
+        "payload": [
+          {
+            "id": "stub",
+            "isHome": true
+          },
+          {
+            "id": "ground:Dish",
+            "isHome": false
+          }
+        ]
+      },
+      {
+        "topic": "commandCentre.separation",
+        "payload": {
+          "pairs": [
+            {
+              "from": "stub",
+              "to": "ground:Dish",
+              "oneWaySeconds": 1.4
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

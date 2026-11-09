@@ -53,6 +53,7 @@
     <Compile Include="..\mod\KerbcastGovernor.cs" />
     <Compile Include="..\mod\SidecarDeathDebouncer.cs" />
     <Compile Include="..\mod\KerbcastAimOutcome.cs" />
+    <Compile Include="..\mod\KerbcastZoom.cs" />
     <Compile Include="..\mod\KerbcastModSettings.cs" />
     <Compile Include="..\mod\KerbcastBindAddress.cs" />
     <Compile Include="..\mod\KerbcastFollowGonogoSetting.cs" />

@@ -1,0 +1,90 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 42
+    },
+    "caption": "A bound zoom-in input held on a command camera, then released: the zoom wheel sweeps the camera's whole range from 1.2 degrees to 0.13 degrees on a log scale, reading each sub-degree figure on the way, and nothing is sent to the camera until the commit",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ],
+    "steps": [
+      {
+        "waitMs": 1300,
+        "frames": 8
+      },
+      {
+        "waitMs": 1300,
+        "frames": 8
+      },
+      {
+        "waitMs": 1300,
+        "frames": 8
+      },
+      {
+        "waitMs": 1300,
+        "frames": 8
+      },
+      {
+        "waitMs": 1300,
+        "frames": 8
+      }
+    ],
+    "motion": {
+      "fps": 8
+    }
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 1.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      },
+      {
+        "topic": "commandCentre.roster",
+        "payload": [
+          {
+            "id": "stub",
+            "isHome": true
+          },
+          {
+            "id": "ground:Dish",
+            "isHome": false
+          }
+        ]
+      },
+      {
+        "topic": "commandCentre.separation",
+        "payload": {
+          "pairs": [
+            {
+              "from": "stub",
+              "to": "ground:Dish",
+              "oneWaySeconds": 1.4
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
