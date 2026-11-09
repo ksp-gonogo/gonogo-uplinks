@@ -24,6 +24,7 @@ import {
   MAX_SLOTS,
   MIN_SLOTS,
   RELEASE_GRACE_MS,
+  STATION_DISCONNECTED_MS,
   slotPoolFor,
   NO_H264_MESSAGE,
   sidecarUnreachableMessage,
@@ -344,7 +345,7 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
     expect(fetchSpy.mock.calls.length).toBeGreaterThan(callsBefore);
   });
 
-  it("a station rebuilds a dropped peer after a minute without pings", async () => {
+  it("a station rebuilds a peer that stays disconnected for a few seconds", async () => {
     const session = createMockKerbcastSession();
     const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
     const ds = makeTracked({ port: 1 }, session.transport);
@@ -355,14 +356,77 @@ describe("KerbcastDataSource: keepalive + reconnect", () => {
     relay.mockClear();
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(59_000);
+      await vi.advanceTimersByTimeAsync(STATION_DISCONNECTED_MS - 1_000);
     });
     expect(relay).not.toHaveBeenCalled();
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2_000);
     });
-    expect(relay).toHaveBeenCalled();
+    expect(relay).toHaveBeenCalledWith("negotiate", expect.anything());
+  });
+
+  it("a station keeps a peer that comes back from disconnected in time", async () => {
+    const session = createMockKerbcastSession();
+    const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
+    const ds = makeTracked({ port: 1 }, session.transport);
+    attachStationBroker(ds, { relay } as unknown as StationBroker);
+    await ds.connect();
+    session.setState("connected");
+    session.setState("disconnected");
+    relay.mockClear();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(STATION_DISCONNECTED_MS / 2);
+    });
+    session.setState("connected");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(STATION_DISCONNECTED_MS);
+    });
+    expect(relay).not.toHaveBeenCalled();
+  });
+
+  it("a station opens a new camera connection within a few seconds of its link to the main screen coming back", async () => {
+    const session = createMockKerbcastSession();
+    const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
+    let reset: () => void = () => {};
+    const ds = makeTracked({ port: 1 }, session.transport);
+    attachStationBroker(ds, {
+      relay,
+      onLinkReset: (cb: () => void) => {
+        reset = cb;
+        return () => {};
+      },
+    } as unknown as StationBroker);
+    await ds.connect();
+    session.setState("connected");
+    relay.mockClear();
+
+    reset();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+    });
+    expect(relay).toHaveBeenCalledWith("negotiate", expect.anything());
+  });
+
+  it("a station with no camera connection opens none when its link comes back", async () => {
+    const session = createMockKerbcastSession();
+    const relay = vi.fn(async () => ({ sdp: "v=answer", cameras: [] }));
+    let reset: () => void = () => {};
+    const ds = makeTracked({ port: 1 }, session.transport);
+    attachStationBroker(ds, {
+      relay,
+      onLinkReset: (cb: () => void) => {
+        reset = cb;
+        return () => {};
+      },
+    } as unknown as StationBroker);
+
+    reset();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000);
+    });
+    expect(relay).not.toHaveBeenCalled();
   });
 
   it("a ping whose pong cannot be sent still restarts the watchdog", async () => {
@@ -485,6 +549,20 @@ describe("KerbcastDataSource: dynamic slot subscription", () => {
     expect(sidecar.lastCommand("subscribe", 42)).toBeTruthy();
     expect(sidecar.slotMidFor(42)).toBeDefined();
 
+    ds.disconnect();
+  });
+
+  it("logs each bind it sends with the client it goes out on, which the peer state log names too", async () => {
+    const debug = vi.spyOn(console, "debug").mockImplementation(() => {});
+    const { ds } = await connectedSidecar();
+
+    ds.subscribeCamera(42);
+
+    const binds = debug.mock.calls.filter((c) => String(c[0]).includes("bind sent"));
+    expect(binds).toHaveLength(1);
+    expect(binds[0]).toContainEqual(
+      expect.objectContaining({ flightId: 42, instanceId: expect.any(Number) }),
+    );
     ds.disconnect();
   });
 

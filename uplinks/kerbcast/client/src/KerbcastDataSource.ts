@@ -70,6 +70,8 @@ export interface KerbcastBroker {
    * reconnecting.
    */
   renegotiate?(offer: RenegotiateOffer): Promise<{ sdp: string }>;
+  /** Calls `cb` when the station's link to the main screen comes back after it was lost; returns an unsubscribe. */
+  onLinkReset?(cb: () => void): () => void;
 }
 
 /**
@@ -102,9 +104,17 @@ const PING_WATCHDOG_MS = 15_000;
  * The ping window for a station: its control channel shares a mobile link with
  * the media, so a reliable channel can stall for tens of seconds while the
  * connection is still alive. A connection that is really gone reports
- * `failed` and is rebuilt then.
+ * `disconnected` or `failed` and is rebuilt by those paths.
  */
 const STATION_PING_WATCHDOG_MS = 60_000;
+
+/**
+ * How long a station's peer may stay `disconnected` before it is rebuilt. A
+ * peer bridged through the relay's endpoint does not come back once the
+ * endpoint closes its bridge, and the browser takes about half a minute to
+ * call it `failed`.
+ */
+export const STATION_DISCONNECTED_MS = 8_000;
 const RECONNECT_BASE_MS = 2_000;
 const RECONNECT_MAX_MS = 30_000;
 
@@ -442,6 +452,10 @@ export class KerbcastDataSource {
   private pingWatchdog: ReturnType<typeof setTimeout> | null = null;
   private lastPingAt: number | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private disconnectedTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The instance number of the client a subscribe goes out on, which the peer state log names too. */
+  private clientInstanceId = 0;
+  private stopLinkReset: (() => void) | null = null;
   private reconnectAttempts = 0;
   private reconnectEnabled = false;
   private unsubGameHost: (() => void) | null = null;
@@ -828,6 +842,8 @@ export class KerbcastDataSource {
   attachBroker(broker: KerbcastBroker): void {
     logger.tag("kerbcast:reconnect").info("config rebuild: station broker attached");
     this.broker = broker;
+    this.stopLinkReset?.();
+    this.stopLinkReset = broker.onLinkReset?.(() => this.linkReset()) ?? null;
     const wasEnabled = this.reconnectEnabled;
     this.teardownClient();
     this.client = this.buildClient();
@@ -942,6 +958,7 @@ export class KerbcastDataSource {
       keepaliveTransport,
     );
     const instanceId = ++KerbcastDataSource.clientInstanceSeq;
+    this.clientInstanceId = instanceId;
     (client as unknown as { __kcInstanceId?: number }).__kcInstanceId =
       instanceId;
     logger.tag("kerbcast:clock").debug("built KerbcastClient", { instanceId });
@@ -973,6 +990,8 @@ export class KerbcastDataSource {
         // The slot pool belongs to the peer, so a lost peer takes every
         // binding with it; the next answer restates them.
         if (s === "disconnected" || s === "failed") this.forgetSlotState(false);
+        if (s === "disconnected") this.watchDisconnected();
+        else this.clearDisconnectedTimer();
         const status = mapStatus(s);
         this.setStatus(status);
         if (s === "connected") {
@@ -1064,6 +1083,10 @@ export class KerbcastDataSource {
     // Queued before the send because the answer can arrive before the send's
     // promise settles.
     this.awaitingSlot.push(flightId);
+    logger.tag("kerbcast:subscriptions").debug("bind sent", {
+      flightId,
+      instanceId: this.clientInstanceId,
+    });
     void this.client.subscribe(flightId).catch(() => {
       // Channel raced closed, so no answer is coming. Re-bound on the next
       // connect via the initial set.
@@ -1382,6 +1405,39 @@ export class KerbcastDataSource {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+    this.clearDisconnectedTimer();
+  }
+
+  private clearDisconnectedTimer(): void {
+    if (this.disconnectedTimer !== null) {
+      clearTimeout(this.disconnectedTimer);
+      this.disconnectedTimer = null;
+    }
+  }
+
+  /** On a station, rebuild a peer still `disconnected` after {@link STATION_DISCONNECTED_MS}. */
+  private watchDisconnected(): void {
+    if (!this.broker || this.disconnectedTimer !== null) return;
+    this.disconnectedTimer = setTimeout(() => {
+      this.disconnectedTimer = null;
+      if (!this.reconnectEnabled || this.status === "connected") return;
+      logger
+        .tag("kerbcast:reconnect")
+        .warn("peer stayed disconnected on a station, rebuilding", {
+          seconds: STATION_DISCONNECTED_MS / 1000,
+        });
+      void this.attemptReconnect();
+    }, STATION_DISCONNECTED_MS);
+  }
+
+  /** The station's link to the main screen came back: a bridge the peer rode on ended with the old link, so the peer is rebuilt now. */
+  private linkReset(): void {
+    if (!this.reconnectEnabled) return;
+    logger
+      .tag("kerbcast:reconnect")
+      .info("station link came back, rebuilding the peer");
+    this.clearTimers();
+    void this.attemptReconnect();
   }
 
   /**
@@ -1519,11 +1575,15 @@ export function attachStationBroker(
   source: KerbcastDataSource,
   broker: StationBroker,
 ): void {
+  const withReset = broker as StationBroker & {
+    onLinkReset?(cb: () => void): () => void;
+  };
   source.attachBroker({
     negotiate: (offer) =>
       broker.relay("negotiate", offer) as Promise<NegotiateAnswer>,
     renegotiate: (offer) =>
       broker.relay("renegotiate", offer) as Promise<{ sdp: string }>,
+    onLinkReset: withReset.onLinkReset?.bind(broker),
   });
 }
 
