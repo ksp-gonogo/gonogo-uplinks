@@ -5,12 +5,9 @@
 
 Brings RP-1's career layer to the dashboard: Programs with their objectives, deadlines, funding curves and the Confidence price at each speed.
 
-| | |
-| --- | --- |
-| Uplink id | `rp1` |
-| Version | `0.0.0-development` |
-| Wraps | RP-1 4.7.0.0 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against RP-1 4.7.0.0.
 
 ## Install
 
@@ -20,7 +17,57 @@ Without CKAN, download `GonogoRp1Uplink.zip` from the releases page, unpack it i
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 
-## Wire
+## Widgets
+
+### Vehicle Assembly
+
+Start, roll out, roll back and scrap RP-1 vehicle builds.
+
+<a href="client/docs/assets/assembly-two-complexes--default.png"><img src="client/docs/assets/assembly-two-complexes--default.png" width="267" alt="Four craft across two launch complexes: one flying-ready and one still integrating at each, the key line at the top saying what LC-1 and LC-2 are and where they stand, and every card naming its complex and the staffing that sets its rate"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `rp1-vehicle-assembly` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget`, `rp1.crew` |
+| Slots of its own | `rp1-vehicle-assembly.sections` |
+| Default size, in grid units | 7 × 16 |
+| Smallest size, in grid units | 4 × 6 |
+| Scenes | 11 |
+
+</details>
+
+## What it adds to other widgets
+
+| | | |
+| --- | --- | --- |
+| <a href="client/docs/assets/crew-schedule-three-states--default.png"><img src="client/docs/assets/crew-schedule-three-states--default.png" width="280" alt="Three kerbals' RP-1 schedules inside the roster rows the Astronaut Complex already draws, each on one card of its own with the sack control at the end of the identity line: a retirement and the two things that will push it out, a course being worked and a course nobody has started, and mission training lapsing before either finishes. Each line names itself, and only the lapse is toned"></a><br>`rp1-crew-schedule` in `astronaut-complex.crew` | <a href="client/docs/assets/crew-training-corner--default.png"><img src="client/docs/assets/crew-training-corner--default.png" width="280" alt="Four kerbals KSP calls Available, two of them on RP-1 courses: the corner of each card says which, and tells a course being worked from one nobody has started, with nothing else on any card to tell them apart"></a><br>`rp1-crew-training-badge` in `astronaut-complex.crew-badge` | <a href="client/docs/assets/crew-training-both-ways-out--default.png"><img src="client/docs/assets/crew-training-both-ways-out--default.png" width="280" alt="One course two kerbals share, carrying its own progress, the date the course ends, the later date its crew comes free, and RP-1's two ways off it: one cancel that ends it for both and one removal per student, with the roster rows above stating only where each kerbal stands"></a><br>`rp1-training-courses` in `astronaut-complex.tab` |
+| <a href="client/docs/assets/crew-enrolment-ready--default.png"><img src="client/docs/assets/crew-enrolment-ready--default.png" width="280" alt="Two of three idle nauts picked for Gemini, which seats exactly two: the crew fits its bounds, so the enrolment is one press away, priced at what the course adds per day, and the third name is still there to swap in"></a><br>`rp1-training-enrolment` in `astronaut-complex.tab` | <a href="client/docs/assets/contract-payload--default.png"><img src="client/docs/assets/contract-payload--default.png" width="280" alt="The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions"></a><br>`rp1-contract-payload` in `contract-manager.sections` | <a href="client/docs/assets/facility-upgrades-at-centre--default.png"><img src="client/docs/assets/facility-upgrades-at-centre--default.png" width="280" alt="A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by &quot;over the build&quot; beside each price and by &quot;Commit&quot; on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says &quot;Queue upgrade&quot;. The grid above draws each tier with no price and no Upgrade control, because the stock command is refused under RP-1: this section holds the one control for each building"></a><br>`rp1-facility-upgrades` in `space-center-status.sections` |
+| <a href="client/docs/assets/early-career--default.png"><img src="client/docs/assets/early-career--default.png" width="280" alt="An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon"></a><br>`rp1-finances` in `administration-building.screen-body` | <a href="client/docs/assets/serving-leader--default.png"><img src="client/docs/assets/serving-leader--default.png" width="280" alt="A serving leader: Dismiss carries the reputation RP-1 would take right now, what that costs in subsidy per day, when dismissal stops costing anything and the re-hire cooldown it starts"></a><br>`rp1-leader-detail` in `administration-building.screen-body` | <a href="client/docs/assets/complexes-rushing--default.png"><img src="client/docs/assets/complexes-rushing--default.png" width="280" alt="LC-1 rushing with its detail open, so the terms in force and the way out of rush mode are both on screen; LC-2 stays collapsed, which is what a complex costs to read when nobody is asking about it"></a><br>`rp1-ksc-complexes` in `space-center-status.sections` |
+| <a href="client/docs/assets/construction-full-queue--default.png"><img src="client/docs/assets/construction-full-queue--default.png" width="280" alt="The state a first-decade RP-1 career sits in: a VAB upgrade, a second launch complex and a pad all building at once, appended under the space centre's own facility list, each row naming the centre it belongs to by the name an operator uses rather than the site id the save keys it on"></a><br>`rp1-ksc-construction` in `space-center-status.sections` | <a href="client/docs/assets/pad-holding-a-finished-vehicle--default.png"><img src="client/docs/assets/pad-holding-a-finished-vehicle--default.png" width="280" alt="Three pads across two RP-1 complexes: one holding a vehicle that has finished rolling out, one being reconditioned, and a stock runway RP-1 does not model"></a><br>`rp1-launch-complex-status` in `launch-director.pad` | <a href="client/docs/assets/catalogue-picker--landscape-18x5.png"><img src="client/docs/assets/catalogue-picker--landscape-18x5.png" width="280" alt="The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes"></a><br>`rp1-program-detail` in `administration-building.screen-body` |
+| <a href="client/docs/assets/research-queue-throttled-and-stalled--default.png"><img src="client/docs/assets/research-queue-throttled-and-stalled--default.png" width="280" alt="A throttled node at the head of the queue, and two waiting behind it: RP-1 researches only the first node, and the last also has its work rate at zero"></a><br>`rp1-research-queue` in `research-and-development.sections` | <a href="client/docs/assets/start-research-affordable--default.png"><img src="client/docs/assets/start-research-affordable--default.png" width="280" alt="The same frontier against a balance that can meet it, with a node already on the queue withheld from the picker: RP-1 refuses a second press ahead of the charge, so offering one would be offering a press that cannot land"></a><br>`rp1-start-research` in `research-and-development.sections` | <a href="client/docs/assets/build-cost-absences-and-tech-gate--default.png"><img src="client/docs/assets/build-cost-absences-and-tech-gate--default.png" width="280" alt="A fully tooled spaceplane: no rollout because it does not roll out, no surcharge row because there is no surcharge, and four blocking tech nodes under ONE severity badge, each named and each showing what on the vehicle is waiting for it"></a><br>`rp1-vehicle-assembly-build-cost` in `rp1-vehicle-assembly.sections` |
+| <a href="client/docs/assets/building-three-clocks--default.png"><img src="client/docs/assets/building-three-clocks--default.png" width="280" alt="Three builds under integration: one with a date at a rushing complex, one stalled because nobody is assigned to its complex, and one RP-1 has not costed yet"></a><br>`rp1-vehicle-assembly-building` in `rp1-vehicle-assembly.sections` | <a href="client/docs/assets/buildable-blocked-and-buildable--default.png"><img src="client/docs/assets/buildable-blocked-and-buildable--default.png" width="280" alt="Three saved craft: one startable at either complex, one only at LC-1 with LC-2 dead, and one blocked on parts that are researched but not bought"></a><br>`rp1-vehicle-assembly-buildable` in `rp1-vehicle-assembly.sections` | <a href="client/docs/assets/tooling-nothing-outstanding--default.png"><img src="client/docs/assets/tooling-nothing-outstanding--default.png" width="267" alt="Every tooling on this vehicle is already owned: the cards say so and no purchase control is offered, because there is nothing left to buy"></a><br>`rp1-vehicle-assembly-tooling` in `rp1-vehicle-assembly.sections` |
+| <a href="client/docs/assets/warehouse-three-places--default.png"><img src="client/docs/assets/warehouse-three-places--default.png" width="280" alt="Three finished vehicles in three different places: one standing on the pad, one still moving to it, and one RP-1 will not release at all with its reason on the card"></a><br>`rp1-vehicle-assembly-warehouse` in `rp1-vehicle-assembly.sections` | <a href="client/docs/assets/warp-fund-target-standing--default.png"><img src="client/docs/assets/warp-fund-target-standing--default.png" width="226" alt="A fund target RP-1's own Maintenance screen stood up: its figure and RP-1's ETA, and the press that withdraws it. The balance alarm lives on the Finances tab."></a><br>`rp1-warp-targets` in `warp-control.stepper` | <a href="client/docs/assets/avionics-controls-locked--default.png"><img src="client/docs/assets/avionics-controls-locked--default.png" width="280" alt="AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so"></a><br>`rp1:rp1-avionics-badge` in `navball.badges` |
+| <a href="client/docs/assets/programs-screen--default.png"><img src="client/docs/assets/programs-screen--default.png" width="280" alt="The tab strip this Uplink's contribution puts on the Administration Building: Programs, Leaders and Finances are the screens it names, and the host draws the strip and lists each screen's departments under it. The leader departments list on Leaders, whose own body carries Appoint and Dismiss. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here"></a><br>`rp1:programs-screen` in `administration-building.screens` | <a href="client/docs/assets/crew-core-stats--default.png"><img src="client/docs/assets/crew-core-stats--default.png" width="280" alt="RP-1's three core stats in the Astronaut Complex's own strip: what each hire adds to upkeep per day, beside the price of the next one, how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before"></a><br>`rp1:crew-core-stats` in `astronaut-complex.readouts` | <a href="client/docs/assets/facility-tiers-in-flight--default.png"><img src="client/docs/assets/facility-tiers-in-flight--default.png" width="280" alt="The space centre read from orbit. &quot;career.status&quot; comes off the live UpgradeableFacility objects, which KSP puts in the scene only at the space centre, so every tier on it is absent here and the grid used to be empty. RP-1 denormalises the level the save persists against its own tier count and bills the career off it in all four scenes, so this contribution answers wherever the operator is standing and takes the grid over rather than repeating it underneath. Mission Control is one of the five RP-1 prices at a single fund under a &quot;cosmetic only&quot; comment: its tier is a reading and is shown, its price is for a step nothing will take and is withheld. The Upgrade controls stay dark because the stock command needs the building in the scene"></a><br>`rp1:facility-tiers` in `space-center-status.facilities` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `rp1` |
+| Wraps | RP-1 (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -93,7 +140,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 | `Rp1ToolingRefitTarget` | `diameter` m, `length` m, `rfType` id |
 | `Rp1TrainingFeeEntry` | `perStudent` Rp1BudgetHorizons, `templateId` id |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -165,24 +215,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 | `Rp1TrainingLeaveArgs` | `crewName` id |
 | `Rp1VehicleArgs` | `id` id |
 
-## Widgets
+</details>
 
-### Vehicle Assembly
-
-Start, roll out, roll back and scrap RP-1 vehicle builds.
-
-| | |
-| --- | --- |
-| Widget id | `rp1-vehicle-assembly` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `rp1.available`, `rp1.warehouse`, `rp1.buildQueue`, `rp1.buildable`, `rp1.complexes`, `rp1.pads`, `rp1.operations`, `rp1.buildCost`, `rp1.tooling`, `career.status`, `rp1.budget`, `rp1.crew` |
-| Slots of its own | `rp1-vehicle-assembly.sections` |
-| Default size, in grid units | 7 × 16 |
-| Smallest size, in grid units | 4 × 6 |
-| Scenes | 11 |
-
-![Four craft across two launch complexes: one flying-ready and one still integrating at each, the key line at the top saying what LC-1 and LC-2 are and where they stand, and every card naming its complex and the staffing that sets its rate](client/docs/assets/assembly-two-complexes--default.png)
-
-## Augments
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -207,47 +243,10 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `rp1-vehicle-assembly-warehouse` | `rp1-vehicle-assembly.sections` | – |  | 1 |  |
 | `rp1-warp-targets` | `warp-control.stepper` | – |  | 2 |  |
 
-![Three kerbals' RP-1 schedules inside the roster rows the Astronaut Complex already draws, each on one card of its own with the sack control at the end of the identity line: a retirement and the two things that will push it out, a course being worked and a course nobody has started, and mission training lapsing before either finishes. Each line names itself, and only the lapse is toned](client/docs/assets/crew-schedule-three-states--default.png)
+</details>
 
-![Four kerbals KSP calls Available, two of them on RP-1 courses: the corner of each card says which, and tells a course being worked from one nobody has started, with nothing else on any card to tell them apart](client/docs/assets/crew-training-corner--default.png)
-
-![One course two kerbals share, carrying its own progress, the date the course ends, the later date its crew comes free, and RP-1's two ways off it: one cancel that ends it for both and one removal per student, with the roster rows above stating only where each kerbal stands](client/docs/assets/crew-training-both-ways-out--default.png)
-
-![Two of three idle nauts picked for Gemini, which seats exactly two: the crew fits its bounds, so the enrolment is one press away, priced at what the course adds per day, and the third name is still there to swap in](client/docs/assets/crew-enrolment-ready--default.png)
-
-![The payload requirement beside the contracts it shapes, with the consequence named before the press: changing either figure withdraws the matching pending offers, once each, which is the half RP-1's own tab never mentions](client/docs/assets/contract-payload--default.png)
-
-![A career with two tiers it could commit to and one building already in the queue. The balance covers one of the two prices and not the other, and neither is refused: RP-1 bills a construction as it builds, so a short career gets a slower upgrade. That is carried by "over the build" beside each price and by "Commit" on the confirm rather than by a sentence about it. Each badge is the tier the building is AT, and it is the same number the grid above reads because it comes from the same place: on an RP-1 save this Uplink feeds the host's grid, so the two cannot be a second opinion. The step is the control's, and it says "Queue upgrade". The grid above draws each tier with no price and no Upgrade control, because the stock command is refused under RP-1: this section holds the one control for each building](client/docs/assets/facility-upgrades-at-centre--default.png)
-
-![An early career two Programs are carrying: upkeep outruns the subsidy, and Program funding turns the Balance into a gain at every horizon](client/docs/assets/early-career--default.png)
-
-![A serving leader: Dismiss carries the reputation RP-1 would take right now, what that costs in subsidy per day, when dismissal stops costing anything and the re-hire cooldown it starts](client/docs/assets/serving-leader--default.png)
-
-![LC-1 rushing with its detail open, so the terms in force and the way out of rush mode are both on screen; LC-2 stays collapsed, which is what a complex costs to read when nobody is asking about it](client/docs/assets/complexes-rushing--default.png)
-
-![The state a first-decade RP-1 career sits in: a VAB upgrade, a second launch complex and a pad all building at once, appended under the space centre's own facility list, each row naming the centre it belongs to by the name an operator uses rather than the site id the save keys it on](client/docs/assets/construction-full-queue--default.png)
-
-![Three pads across two RP-1 complexes: one holding a vehicle that has finished rolling out, one being reconditioned, and a stock runway RP-1 does not model](client/docs/assets/pad-holding-a-finished-vehicle--default.png)
-
-![The Program catalogue standing open beside the detail of the Program picked out of it: each row names its Program first and carries its state at the end of the line, the running one sorts first, a filter box under the list narrows a career's worth of Programs by name or state, and the pair lays out left to right whenever the tile is wide enough for two panes](client/docs/assets/catalogue-picker--landscape-18x5.png)
-
-![A throttled node at the head of the queue, and two waiting behind it: RP-1 researches only the first node, and the last also has its work rate at zero](client/docs/assets/research-queue-throttled-and-stalled--default.png)
-
-![The same frontier against a balance that can meet it, with a node already on the queue withheld from the picker: RP-1 refuses a second press ahead of the charge, so offering one would be offering a press that cannot land](client/docs/assets/start-research-affordable--default.png)
-
-![A fully tooled spaceplane: no rollout because it does not roll out, no surcharge row because there is no surcharge, and four blocking tech nodes under ONE severity badge, each named and each showing what on the vehicle is waiting for it](client/docs/assets/build-cost-absences-and-tech-gate--default.png)
-
-![Three builds under integration: one with a date at a rushing complex, one stalled because nobody is assigned to its complex, and one RP-1 has not costed yet](client/docs/assets/building-three-clocks--default.png)
-
-![Three saved craft: one startable at either complex, one only at LC-1 with LC-2 dead, and one blocked on parts that are researched but not bought](client/docs/assets/buildable-blocked-and-buildable--default.png)
-
-![Every tooling on this vehicle is already owned: the cards say so and no purchase control is offered, because there is nothing left to buy](client/docs/assets/tooling-nothing-outstanding--default.png)
-
-![Three finished vehicles in three different places: one standing on the pad, one still moving to it, and one RP-1 will not release at all with its reason on the card](client/docs/assets/warehouse-three-places--default.png)
-
-![A fund target RP-1's own Maintenance screen stood up: its figure and RP-1's ETA, and the press that withdraws it. The balance alarm lives on the Finances tab.](client/docs/assets/warp-fund-target-standing--default.png)
-
-## Contributions
+<details>
+<summary>Contributions</summary>
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
@@ -257,15 +256,10 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `rp1:facility-tiers` | `space-center-status.facilities` | `rp1.facilities`, `system.uplink.gates` | only while `rp1` |
 | `rp1:rp1-simulation-badge` | `app.header-badges` | `rp1.simulation` | only while `rp1` |
 
-![AFTER: RP-1 has taken the controls, and the badge is the only thing on screen that says so](client/docs/assets/avionics-controls-locked--default.png)
+</details>
 
-![The tab strip this Uplink's contribution puts on the Administration Building: Programs, Leaders and Finances are the screens it names, and the host draws the strip and lists each screen's departments under it. The leader departments list on Leaders, whose own body carries Appoint and Dismiss. The Program Detail body below the list is a separate augment, photographed fed in its own scenes: a contribution scene carries only the contribution's OWN topics, so the catalogue it reads does not reach it here](client/docs/assets/programs-screen--default.png)
-
-![RP-1's three core stats in the Astronaut Complex's own strip: what each hire adds to upkeep per day, beside the price of the next one, how much of the roster is mid-course, with the courses nobody has started called out, and how many kerbals are about to lose a qualification, toned because that one is a date somebody has to act before](client/docs/assets/crew-core-stats--default.png)
-
-![The space centre read from orbit. "career.status" comes off the live UpgradeableFacility objects, which KSP puts in the scene only at the space centre, so every tier on it is absent here and the grid used to be empty. RP-1 denormalises the level the save persists against its own tier count and bills the career off it in all four scenes, so this contribution answers wherever the operator is standing and takes the grid over rather than repeating it underneath. Mission Control is one of the five RP-1 prices at a single fund under a "cosmetic only" comment: its tier is a reading and is shown, its price is for a step nothing will take and is withheld. The Upgrade controls stay dark because the stock command needs the building in the scene](client/docs/assets/facility-tiers-in-flight--default.png)
-
-## Error codes
+<details>
+<summary>Error codes</summary>
 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
@@ -273,4 +267,6 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `rp1.spaceCentreNotLoaded` | `modeUnavailable` | RP-1's space centre is not loaded | RP-1's space centre, which holds every queue and complex these commands act on, is not loaded in the current scene. |
 | `rp1.notReady` | `wrongState` | the vehicle is not ready to fly yet | The vehicle or the complex it needs has RP-1 work outstanding: never integrated, still integrating, not rolled out, or on a pad still being reconditioned. Nothing is over a limit and nothing is broken, the work simply has not been done. The detail says which. |
 | `rp1.buildUnrecognised` | `unreadable` | this RP-1 build is not one this Uplink recognises | The installed RP-1 build lacks a member this Uplink reads or calls, so the command could not be carried out. The detail names which one. |
+
+</details>
 

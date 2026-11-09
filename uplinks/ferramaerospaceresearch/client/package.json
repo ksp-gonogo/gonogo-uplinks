@@ -23,27 +23,27 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9cc743e160c1.tgz",
-    "styled-components": "^6.0.0"
+    "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-91255484b224.tgz",
+    "styled-components": "^6.6.0"
   },
   "devDependencies": {
-    "@fontsource/jetbrains-mono": "^5.2.8",
-    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-97cbd530e3d1.tgz",
-    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-77cc48580528.tgz",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@ksp-gonogo/sitrep-sdk": "file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-9be616789d71.tgz",
+    "@ksp-gonogo/uplink-tools": "file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-ee4e636340dc.tgz",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/react": "^16.3.3",
     "@types/jest-axe": "^3.5.9",
-    "@types/react": "^18.3.28",
-    "@vitest/coverage-v8": "^4.1.4",
-    "esbuild": "^0.28.0",
+    "@types/react": "^18.3.31",
+    "@vitest/coverage-v8": "^4.1.12",
+    "esbuild": "^0.28.2",
     "jest-axe": "^10.0.0",
-    "jsdom": "^29.0.2",
-    "playwright": "^1.60.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^4.1.4"
+    "jsdom": "^29.1.1",
+    "playwright": "^1.65.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12"
   },
   "peerDependencies": {
     "react": "^18.0.0"

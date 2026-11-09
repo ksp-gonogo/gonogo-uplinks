@@ -5,12 +5,9 @@
 
 Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.
 
-| | |
-| --- | --- |
-| Uplink id | `scansat` |
-| Version | `0.0.0-development` |
-| Wraps | SCANsat 21.1 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against SCANsat 21.1.
 
 ## Install
 
@@ -20,7 +17,51 @@ Without CKAN, download `GonogoScansatUplink.zip` from the releases page, unpack 
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=scansat-v
 
-## Wire
+## Widgets
+
+### Scanning
+
+SCANsat coverage of the current body, with your scanning vessels and anomalies.
+
+<a href="client/docs/assets/kerbin-partial-scan--default.png"><img src="client/docs/assets/kerbin-partial-scan--default.png" width="226" alt="Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `scanning` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `trackingStation.bodies`, `vessel.surface`, `vessel.flight` |
+| Slots of its own | `scanning.sections` |
+| Default size, in grid units | 6 × 10 |
+| Smallest size, in grid units | 4 × 4 |
+| Scenes | 2 |
+
+</details>
+
+## What it adds to other widgets
+
+| | | |
+| --- | --- | --- |
+| <a href="client/docs/assets/biome-base-kerbin--default.png"><img src="client/docs/assets/biome-base-kerbin--default.png" width="280" alt="Map View over Kerbin painted with SCANsat's biome colormap, each biome in KSP's own colour, under one satellite's footprint"></a><br>`scansat:biome` in `ground-track.base` | <a href="client/docs/assets/two-footprints-over-kerbin--default.png"><img src="client/docs/assets/two-footprints-over-kerbin--default.png" width="280" alt="Map View over Kerbin with two scanning satellites' ground-track footprints, one of them split across the edge of the map"></a><br>`scansat-footprint-overlay` in `ground-track.overlay` | <a href="client/docs/assets/coverage-under-kerbin-map--default.png"><img src="client/docs/assets/coverage-under-kerbin-map--default.png" width="280" alt="Map View over Kerbin with SCANsat's per-scan-type coverage rows beneath the map, and which types a satellite is scanning right now"></a><br>`scansat-coverage-panel` in `ground-track.sections` |
+| <a href="client/docs/assets/altimetry-base-kerbin--default.png"><img src="client/docs/assets/altimetry-base-kerbin--default.png" width="280" alt="Map View over Kerbin painted with SCANsat's altimetry colormap in place of the stock body texture, under one satellite's footprint"></a><br>`scansat:altimetry` in `ground-track.base` | <a href="client/docs/assets/scanners-beside-stock--default.png"><img src="client/docs/assets/scanners-beside-stock--default.png" width="280" alt="Experiments listing SCANsat's scanners under their own heading beside the stock instruments, with the scanner holding data marked DATA"></a><br>`scansat:science-instruments` in `experiments.instruments` |  |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `scansat` |
+| Wraps | SCANsat (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -34,24 +75,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=scansat-v
 | `ScanSensorEntry` | `bestAlt` m, `bestRange` flag, `fov` °, `inRange` flag, `maxAlt` m, `minAlt` m, `type` id |
 | `ScanTrackColor` | `a` count, `b` count, `g` count, `r` count |
 
-## Widgets
+</details>
 
-### Scanning
-
-SCANsat coverage of the current body, with your scanning vessels and anomalies.
-
-| | |
-| --- | --- |
-| Widget id | `scanning` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `scansat.available`, `scansat.scanningVessels`, `vessel.identity`, `trackingStation.bodies`, `vessel.surface`, `vessel.flight` |
-| Slots of its own | `scanning.sections` |
-| Default size, in grid units | 6 × 10 |
-| Smallest size, in grid units | 4 × 4 |
-| Scenes | 2 |
-
-![Kerbin part-scanned: five scan types at different coverage, one satellite with sensors in range, and two known anomalies](client/docs/assets/kerbin-partial-scan--default.png)
-
-## Augments
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -61,25 +88,23 @@ SCANsat coverage of the current body, with your scanning vessels and anomalies.
 | `scansat:altimetry` | `ground-track.base` | – | only while `scansat` | 1 | replaces the host surface; adds `show` (1) |
 | `scansat-coverage-sync` | `ground-track.overlay` | – | only while `scansat` | 0 |  |
 
-![Map View over Kerbin painted with SCANsat's biome colormap, each biome in KSP's own colour, under one satellite's footprint](client/docs/assets/biome-base-kerbin--default.png)
+</details>
 
-![Map View over Kerbin with two scanning satellites' ground-track footprints, one of them split across the edge of the map](client/docs/assets/two-footprints-over-kerbin--default.png)
-
-![Map View over Kerbin with SCANsat's per-scan-type coverage rows beneath the map, and which types a satellite is scanning right now](client/docs/assets/coverage-under-kerbin-map--default.png)
-
-![Map View over Kerbin painted with SCANsat's altimetry colormap in place of the stock body texture, under one satellite's footprint](client/docs/assets/altimetry-base-kerbin--default.png)
-
-## Contributions
+<details>
+<summary>Contributions</summary>
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `scansat:science-instruments` | `experiments.instruments` | `scansat.science`, `processor:scansat:science-reading` | only while `scansat` |
 
-![Experiments listing SCANsat's scanners under their own heading beside the stock instruments, with the scanner holding data marked DATA](client/docs/assets/scanners-beside-stock--default.png)
+</details>
 
-## Models
+<details>
+<summary>Models</summary>
 
 | Kind | Id |
 | --- | --- |
 | processor | `scansat:science-reading` |
+
+</details>
 

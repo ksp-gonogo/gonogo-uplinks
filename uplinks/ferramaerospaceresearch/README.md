@@ -5,12 +5,9 @@
 
 Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle of attack, sideslip, stall, lift and drag.
 
-| | |
-| --- | --- |
-| Uplink id | `aero` |
-| Version | `0.0.0-development` |
-| Wraps | Ferram Aerospace Research 0.16.1.2 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against Ferram Aerospace Research 0.16.1.2.
 
 ## Install
 
@@ -20,18 +17,16 @@ Without CKAN, download `GonogoFerramAerospaceResearchUplink.zip` from the releas
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=aero-v
 
-## Wire
-
-| Topic | Payload | Delivery | Delay |
-| --- | --- | --- | --- |
-| `aero.state` | `AeroState` | lossy-latest | delayed |
-| `aero.available` | – | lossy-latest | true-now |
-
 ## Widgets
 
 ### Aerodynamics
 
 Angle of attack, stall, lift and drag from FAR.
+
+<a href="client/docs/assets/winged-subsonic-climb--default.png"><img src="client/docs/assets/winged-subsonic-climb--default.png" width="144" alt="Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated"></a>
+
+<details>
+<summary>Widget details</summary>
 
 | | |
 | --- | --- |
@@ -42,16 +37,45 @@ Angle of attack, stall, lift and drag from FAR.
 | Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |
 
-![Winged vehicle in a clean subsonic climb: attached flow, every field on the Topic populated](client/docs/assets/winged-subsonic-climb--default.png)
+</details>
 
-## Contributions
+## What it adds to other widgets
+
+| | |
+| --- | --- |
+| <a href="client/docs/assets/winged-entry-high-alpha--default.png"><img src="client/docs/assets/winged-entry-high-alpha--default.png" width="280" alt="Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge"></a><br>`aero:descent-envelope` in `plots` | <a href="client/docs/assets/entry-badges--default.png"><img src="client/docs/assets/entry-badges--default.png" width="280" alt="Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget"></a><br>`aero:descent-envelope-badges` in `landing-status.badges` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `aero` |
+| Wraps | Ferram Aerospace Research (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
+
+| Topic | Payload | Delivery | Delay |
+| --- | --- | --- | --- |
+| `aero.state` | `AeroState` | lossy-latest | delayed |
+| `aero.available` | – | lossy-latest | true-now |
+
+</details>
+
+<details>
+<summary>Contributions</summary>
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `aero:descent-envelope` | `plots` | `aero.state`, `vessel.landing`, `vessel.flight`, `vessel.surface`, `vessel.identity`, `trackingStation.bodies` | only while `aero` |
 | `aero:descent-envelope-badges` | `landing-status.badges` | `aero.state` | only while `aero` |
 
-![Winged entry at 40 degrees alpha: the model's own terminal curve parts from the drag back-out it draws beside it, settling the descent higher, with the ballistic coefficient on its tick and STALL up the left edge](client/docs/assets/winged-entry-high-alpha--default.png)
-
-![Angle of attack and stall fraction as panel badges: the framework mounts the badge slot for every widget, so this needs nothing added to the landing widget](client/docs/assets/entry-badges--default.png)
+</details>
 

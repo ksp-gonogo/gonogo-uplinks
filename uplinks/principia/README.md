@@ -5,12 +5,9 @@
 
 Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.
 
-| | |
-| --- | --- |
-| Uplink id | `principia` |
-| Version | `0.0.0-development` |
-| Wraps | Principia 2026081218-Levi-Civita (manual) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against Principia 2026081218-Levi-Civita.
 
 ## Install
 
@@ -20,7 +17,52 @@ Without CKAN, download `GonogoPrincipiaUplink.zip` from the releases page, unpac
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=principia-v
 
-## Wire
+## Widgets
+
+### Libration Points
+
+The libration points of a body pair, with your craft's offset.
+
+<a href="client/docs/assets/mun-l1-holding-station--default.png"><img src="client/docs/assets/mun-l1-holding-station--default.png" width="226" alt="A relay 46 km Kerbin-ward of the Kerbin-Mun L1 point, turning with the pair"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `libration-points` |
+| Reads | `trackingStation.bodies` |
+| Also reads, if the mod publishes them | `vessel.orbit`, `vessel.identity` |
+| Actions an input can be bound to | Cycle Pair (`cycle-pair`): Step to the next body pair, with Auto in the cycle |
+| Default size, in grid units | 6 × 10 |
+| Smallest size, in grid units | 4 × 7 |
+| Scenes | 11 |
+
+</details>
+
+## What it adds to other widgets
+
+| | | |
+| --- | --- | --- |
+| <a href="client/docs/assets/flight-plan-healthy--default.png"><img src="client/docs/assets/flight-plan-healthy--default.png" width="280" alt="A plan mid-mission: one burn behind, one imminent, one a day out"></a><br>`principia-flight-plan` in `maneuver-planner.sections` | <a href="client/docs/assets/plan-slots-armed--default.png"><img src="client/docs/assets/plan-slots-armed--default.png" width="280" alt="An armed slot, one of three, mid-mission with a burn already running: copy and delete are the transitions available and create is not offered at all"></a><br>`principia-plan-slots` in `maneuver-planner.sections` | <a href="client/docs/assets/orbit-analysis-live--default.png"><img src="client/docs/assets/orbit-analysis-live--default.png" width="280" alt="A near-circular polar orbit as Principia's own analyser sees it: mean elements as bands, three periods that differ, and the node drift that makes them differ"></a><br>`principia-orbit-analysis` in `orbit-view.sections` |
+| <a href="client/docs/assets/coast-analysis-plan--default.png"><img src="client/docs/assets/coast-analysis-plan--default.png" width="280" alt="What each stretch of the plan leaves the craft flying: a parking orbit, a transfer the integrator could not analyse, and the capture the plan ends in"></a><br>`principia-coast-analysis` in `maneuver-planner.sections` | <a href="client/docs/assets/burn-editor-armed-mid-tune--default.png"><img src="client/docs/assets/burn-editor-armed-mid-tune--default.png" width="280" alt="Writes armed at a ten-light-minute vantage with the second burn picked: the profile Principia will fly, the deadline an edit has to beat, and the three delta-v components live for editing"></a><br>`principia-burn-editor` in `maneuver-planner.sections` | <a href="client/docs/assets/composer-composing--default.png"><img src="client/docs/assets/composer-composing--default.png" width="280" alt="A plan being composed, driven through the composer's own buttons: two burns seeded at instants the craft can still act on"></a><br>`principia-plan-composer` in `maneuver-planner.sections` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `principia` |
+| Wraps | Principia (manual) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -42,7 +84,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=principia-v
 | `PrincipiaReferenceFrame` | `centreBody` text, `primaryBodies` text, `primaryBody` text, `secondaryBodies` text, `secondaryBody` text, `selector` text, `targetFrameSelected` flag, `targetPrimaryBody` text, `targetVesselId` id, `targetVesselName` text, `type` enum |
 | `PrincipiaWriteSurface` | `analysedVersion` text, `armed` flag, `available` flag, `burnLayoutVerified` flag, `detectedVersion` text, `integratorLayoutVerified` flag, `reason` text |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -67,25 +112,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=principia-v
 | `PrincipiaPlanSendArgs` | `burns` PrincipiaComposedBurn[], `composedAtViewUt` ut, `desiredFinalTimeUt` ut, `observedAtUt` ut, `requestId` id, `vesselId` id |
 | `PrincipiaPlanSlotArgs` | `finalTimeUt` ut, `requestId` id, `vesselId` id |
 
-## Widgets
+</details>
 
-### Libration Points
-
-The libration points of a body pair, with your craft's offset.
-
-| | |
-| --- | --- |
-| Widget id | `libration-points` |
-| Reads | `trackingStation.bodies` |
-| Also reads, if the mod publishes them | `vessel.orbit`, `vessel.identity` |
-| Actions an input can be bound to | Cycle Pair (`cycle-pair`): Step to the next body pair, with Auto in the cycle |
-| Default size, in grid units | 6 × 10 |
-| Smallest size, in grid units | 4 × 7 |
-| Scenes | 11 |
-
-![A relay 46 km Kerbin-ward of the Kerbin-Mun L1 point, turning with the pair](client/docs/assets/mun-l1-holding-station--default.png)
-
-## Augments
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -96,19 +126,10 @@ The libration points of a body pair, with your craft's offset.
 | `principia-burn-editor` | `maneuver-planner.sections` | – |  | 3 |  |
 | `principia-plan-composer` | `maneuver-planner.sections` | – |  | 5 |  |
 
-![A plan mid-mission: one burn behind, one imminent, one a day out](client/docs/assets/flight-plan-healthy--default.png)
+</details>
 
-![An armed slot, one of three, mid-mission with a burn already running: copy and delete are the transitions available and create is not offered at all](client/docs/assets/plan-slots-armed--default.png)
-
-![A near-circular polar orbit as Principia's own analyser sees it: mean elements as bands, three periods that differ, and the node drift that makes them differ](client/docs/assets/orbit-analysis-live--default.png)
-
-![What each stretch of the plan leaves the craft flying: a parking orbit, a transfer the integrator could not analyse, and the capture the plan ends in](client/docs/assets/coast-analysis-plan--default.png)
-
-![Writes armed at a ten-light-minute vantage with the second burn picked: the profile Principia will fly, the deadline an edit has to beat, and the three delta-v components live for editing](client/docs/assets/burn-editor-armed-mid-tune--default.png)
-
-![A plan being composed, driven through the composer's own buttons: two burns seeded at instants the craft can still act on](client/docs/assets/composer-composing--default.png)
-
-## Error codes
+<details>
+<summary>Error codes</summary>
 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
@@ -133,4 +154,6 @@ The libration points of a body pair, with your craft's offset.
 | `principia.planMalformed` | `range` | the composed plan cannot be read as one plan | A composed plan that cannot be read as one: no burn list where a list was required, a burn missing from the middle, more burns than a single command may install, ignitions out of time order, or an end that falls before the last burn. It refuses the whole plan, because a plan half-installed is a trajectory nobody composed. |
 | `principia.composedBurnIncomplete` | `range` | a first burn needs the time it lights | A burn with no manœuvre ahead of it was asked for without the instant it lights. An absent instant elsewhere means "leave it where it is", and a burn with nothing ahead of it has no instant to be left at. |
 | `principia.guardReadUnreadable` | `unreadable` | a value a write guard needs would not read | A read a guard depends on could not be decoded from the loaded build, so the guard cannot answer: whether a burn is under thrust, whether an optimisation would revert the edit, or what the producer's clock reads. Refused rather than permitted. Distinct from `PrincipiaErrorCodes.PluginShapeChanged`, which is a field this write must set; this is a value this build could not read. |
+
+</details>
 

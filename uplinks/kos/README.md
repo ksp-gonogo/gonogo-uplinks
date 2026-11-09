@@ -5,12 +5,9 @@
 
 Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.
 
-| | |
-| --- | --- |
-| Uplink id | `kos` |
-| Version | `0.0.0-development` |
-| Wraps | kOS 1.6.0.1 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against kOS 1.6.0.1.
 
 ## Install
 
@@ -20,7 +17,62 @@ Without CKAN, download `GonogoKosUplink.zip` from the releases page, unpack it i
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 
-## Wire
+## Widgets
+
+### kOS Script Trigger
+
+Run a kerboscript on a kOS CPU and see the result.
+
+<a href="client/docs/assets/two-cpus-idle--default.png"><img src="client/docs/assets/two-cpus-idle--default.png" width="390" alt="Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `kos-script-trigger` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `kos.processors` |
+| Default size, in grid units | 10 × 9 |
+| Smallest size, in grid units | 6 × 7 |
+| Scenes | 2 |
+
+</details>
+
+### kOS Terminal
+
+The live terminal of a kOS CPU.
+
+<a href="client/docs/assets/boot-then-run--default.gif"><img src="client/docs/assets/boot-then-run--default.gif" width="400" alt="A script running: kOS redraws the screen in chunks and the terminal repaints as they land"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `kos-terminal` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `kos.processors` |
+| Default size, in grid units | 18 × 15 |
+| Smallest size, in grid units | 8 × 6 |
+| Scenes | 4 |
+
+</details>
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `kos` |
+| Wraps | kOS (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -32,7 +84,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 | `KosRunResult` | `coreId` id, `error` text, `requestId` id |
 | `KosTerminalFrame` | `chunk` text, `coreId` id, `fullRepaint` flag |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -52,41 +107,16 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 | `KosTerminalOpenArgs` | `coreId` id, `leaseToken` id |
 | `KosTerminalResizeArgs` | `cols` count, `coreId` id, `leaseToken` id, `rows` count |
 
-## Widgets
+</details>
 
-### kOS Script Trigger
-
-Run a kerboscript on a kOS CPU and see the result.
-
-| | |
-| --- | --- |
-| Widget id | `kos-script-trigger` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `kos.processors` |
-| Default size, in grid units | 10 × 9 |
-| Smallest size, in grid units | 6 × 7 |
-| Scenes | 2 |
-
-![Two CPUs in range and none pinned, so the widget asks which one to run on rather than guessing](client/docs/assets/two-cpus-idle--default.png)
-
-### kOS Terminal
-
-The live terminal of a kOS CPU.
-
-| | |
-| --- | --- |
-| Widget id | `kos-terminal` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `kos.processors` |
-| Default size, in grid units | 18 × 15 |
-| Smallest size, in grid units | 8 × 6 |
-| Scenes | 4 |
-
-![A script running: kOS redraws the screen in chunks and the terminal repaints as they land](client/docs/assets/boot-then-run--default.gif)
-
-## Error codes
+<details>
+<summary>Error codes</summary>
 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
 | `kos.terminalHeld` | `notClearToProceed` | another screen is using this CPU's terminal | Another screen holds this CPU's terminal. A terminal is leased to one screen at a time and never taken from it; it frees when that screen closes it. |
 | `kos.cpuBusy` | `notClearToProceed` | the CPU is busy and not at its prompt | The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one. |
 | `kos.noTerminal` | `capabilityMismatch` | that CPU has no terminal window to type into | The CPU has no terminal window a script could be typed into. |
+
+</details>
 

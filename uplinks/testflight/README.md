@@ -5,12 +5,9 @@
 
 TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.
 
-| | |
-| --- | --- |
-| Uplink id | `testflight` |
-| Version | `0.0.0-development` |
-| Wraps | TestFlight 2.12.0.0 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against TestFlight 2.12.0.0.
 
 ## Install
 
@@ -20,7 +17,28 @@ Without CKAN, download `GonogoTestFlightUplink.zip` from the releases page, unpa
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 
-## Wire
+## What it adds to other widgets
+
+| |
+| --- |
+| <a href="client/docs/assets/engine-failure-mid-ascent--default.png"><img src="client/docs/assets/engine-failure-mid-ascent--default.png" width="280" alt="A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier"></a><br>`testflight-reliability-updates` in `vessel-catalog.updates` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `testflight` |
+| Wraps | TestFlight (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -33,7 +51,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 | `TestFlightReliabilityBudget` | `consumed` ratio, `id` id, `kind` enum, `label` text, `limitSeconds` s, `usedSeconds` s |
 | `TestFlightRepairOutcome` | `failuresCleared` count, `repaired` flag |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -43,15 +64,19 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 | --- | --- |
 | `TestFlightRepairPartArgs` | `partId` id |
 
-## Augments
+</details>
+
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `testflight-reliability-updates` | `vessel-catalog.updates` | – | only while `testflight` | 2 |  |
 
-![A failed first-stage engine with TestFlight's free repair, a second stage near its continuous rating, and an immature vernier](client/docs/assets/engine-failure-mid-ascent--default.png)
+</details>
 
-## Error codes
+<details>
+<summary>Error codes</summary>
 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
@@ -60,4 +85,6 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 | `testflight.nothingFailed` | `notFound` | that engine has no active TestFlight failure | The engine is tracked and carries no active failure. |
 | `testflight.unrepairable` | `capabilityMismatch` | TestFlight marks that failure as beyond repair | Every active failure on the engine is a class TestFlight says no repair can fix: an explosion, a fired docking clamp, a snapped solar mechanism. |
 | `testflight.repairDeclined` | `modeUnavailable` | TestFlight left the failure standing | TestFlight was asked to repair and left the failure standing without saying why. |
+
+</details>
 

@@ -5,12 +5,9 @@
 
 Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.
 
-| | |
-| --- | --- |
-| Uplink id | `kerbalism` |
-| Version | `0.0.0-development` |
-| Wraps | Kerbalism 3.32 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against Kerbalism 3.32.
 
 ## Install
 
@@ -20,7 +17,74 @@ Without CKAN, download `GonogoKerbalismUplink.zip` from the releases page, unpac
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 
-## Wire
+## Widgets
+
+### Ship Systems
+
+Kerbalism resources, habitat, wear and radiation for your vessel.
+
+<a href="client/docs/assets/ec-shortage-limits-water--default.png"><img src="client/docs/assets/ec-shortage-limits-water--default.png" width="400" alt="Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `ship-systems` |
+| Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew`, `vessel.identity` |
+| Slots of its own | `ship-systems.life-support` |
+| Needs | a vessel in flight |
+| Default size, in grid units | 12 × 24 |
+| Smallest size, in grid units | 4 × 5 |
+| Scenes | 6 |
+
+</details>
+
+### Space Weather
+
+Solar activity, coronal mass ejections and your craft's radiation dose.
+
+<a href="client/docs/assets/nominal--default.png"><img src="client/docs/assets/nominal--default.png" width="308" alt="A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `space-weather` |
+| Reads | `kerbalism.spaceweather` |
+| Also reads, if the mod publishes them | `vessel.flight` |
+| Needs | a vessel in flight |
+| Default size, in grid units | 8 × 11 |
+| Smallest size, in grid units | 3 × 4 |
+| Scenes | 8 |
+
+</details>
+
+## What it adds to other widgets
+
+| | | |
+| --- | --- | --- |
+| <a href="client/docs/assets/greenhouse-halted-in-the-dark--default.png"><img src="client/docs/assets/greenhouse-halted-in-the-dark--default.png" width="280" alt="Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate"></a><br>`life-support-greenhouse` in `ship-systems.life-support` | <a href="client/docs/assets/file-and-sample-on-one-subject--default.png"><img src="client/docs/assets/file-and-sample-on-one-subject--default.png" width="280" alt="File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once"></a><br>`science-data-aboard-row-file-manager` in `science-data.aboard-row` | <a href="client/docs/assets/collecting-a-subject--default.png"><img src="client/docs/assets/collecting-a-subject--default.png" width="280" alt="A running thermometer with its time to finish inside its card, and a waiting gravity scanner with nothing added"></a><br>`experiments-instrument-progress` in `experiments.instrument` |
+| <a href="client/docs/assets/kit-cost-beside-the-repair--default.png"><img src="client/docs/assets/kit-cost-beside-the-repair--default.png" width="280" alt="A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair"></a><br>`kerbalism-reliability-updates` in `vessel-catalog.updates` | <a href="client/docs/assets/radiation-dose-critical--default.png"><img src="client/docs/assets/radiation-dose-critical--default.png" width="280" alt="Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy"></a><br>`kerbalism:crew-survival-meters` in `crew-status.meters` | <a href="client/docs/assets/dose-band-reaching-critical--default.png"><img src="client/docs/assets/dose-band-reaching-critical--default.png" width="280" alt="A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it"></a><br>`kerbalism:crew-survival-band-badge` in `crew-status.badges` |
+| <a href="client/docs/assets/supply-tank-meters--default.png"><img src="client/docs/assets/supply-tank-meters--default.png" width="280" alt="Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border"></a><br>`kerbalism:ship-map-part-meters` in `ship-map.part-meters` | <a href="client/docs/assets/a-filter-term-per-process--default.png"><img src="client/docs/assets/a-filter-term-per-process--default.png" width="280" alt="One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters"></a><br>`kerbalism:resource-ops-processes` in `resource-ops.filters` |  |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `kerbalism` |
+| Wraps | Kerbalism (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -63,7 +127,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismStarInfo` | `direction.x` 1, `direction.y` 1, `direction.z` 1, `distance` m, `star` text |
 | `KerbalismStormEntry` | `dist` m, `star` text, `stormDuration` s, `stormState` count, `stormTime` ut, `targetKind` enum, `targetName` text |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -84,41 +151,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 | `KerbalismSubjectActionArgs` | `subjectId` id |
 | `KerbalismSubjectFlagArgs` | `flag` flag, `subjectId` id |
 
-## Widgets
+</details>
 
-### Ship Systems
-
-Kerbalism resources, habitat, wear and radiation for your vessel.
-
-| | |
-| --- | --- |
-| Widget id | `ship-systems` |
-| Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew`, `vessel.identity` |
-| Slots of its own | `ship-systems.life-support` |
-| Needs | a vessel in flight |
-| Default size, in grid units | 12 × 24 |
-| Smallest size, in grid units | 4 × 5 |
-| Scenes | 6 |
-
-![Electric Charge short and named as the limiting factor, with the Water shortage it explains sorted underneath it](client/docs/assets/ec-shortage-limits-water--default.png)
-
-### Space Weather
-
-Solar activity, coronal mass ejections and your craft's radiation dose.
-
-| | |
-| --- | --- |
-| Widget id | `space-weather` |
-| Reads | `kerbalism.spaceweather` |
-| Also reads, if the mod publishes them | `vessel.flight` |
-| Needs | a vessel in flight |
-| Default size, in grid units | 8 × 11 |
-| Smallest size, in grid units | 3 × 4 |
-| Scenes | 8 |
-
-![A sheltered craft in low Kerbin orbit: quiet star, no CME, habitat dose inside the magnetosphere](client/docs/assets/nominal--default.png)
-
-## Augments
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -129,15 +165,10 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 2 |  |
 | `kerbalism-reliability-updates` | `vessel-catalog.updates` | – | only while `kerbalism` | 2 |  |
 
-![Greenhouse halted in shadow: the growth rate stops and the row names the reason, while the reason named underneath rather than left to a stopped rate](client/docs/assets/greenhouse-halted-in-the-dark--default.png)
+</details>
 
-![File Manager controls under a Science Data Aboard row: one subject carrying a file and a sample, so every verb the augment knows renders at once](client/docs/assets/file-and-sample-on-one-subject--default.png)
-
-![A running thermometer with its time to finish inside its card, and a waiting gravity scanner with nothing added](client/docs/assets/collecting-a-subject--default.png)
-
-![A critically failed reaction wheel and an overdue antenna on the active craft's row, the kit cost beside the repair](client/docs/assets/kit-cost-beside-the-repair--default.png)
-
-## Contributions
+<details>
+<summary>Contributions</summary>
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
@@ -155,15 +186,10 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | `kerbalism:science-transmitted` | `science-data.archive-readouts` | `kerbalism.transmission` | only while `kerbalism` |
 | `kerbalism:comm-signal-link-rate` | `comm-signal.link-rate` | `kerbalism.transmission` | only while `kerbalism` |
 
-![Per-kerbal survival meters contributed into Crew Status: one kerbal near a fatal radiation dose, one on a death clock, one healthy](client/docs/assets/radiation-dose-critical--default.png)
+</details>
 
-![A header badge from the crew model's own interval: the figure is under critical, the band's pessimistic end is past it](client/docs/assets/dose-band-reaching-critical--default.png)
-
-![Supply tank meters contributed into Ship Map beside the built-in propellant meters, Food drained low enough to carry a status border](client/docs/assets/supply-tank-meters--default.png)
-
-![One filter term per running Kerbalism process, contributed into Resource Ops beside its built-in by-resource filters](client/docs/assets/a-filter-term-per-process--default.png)
-
-## Models
+<details>
+<summary>Models</summary>
 
 | Kind | Id |
 | --- | --- |
@@ -173,7 +199,10 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | forward model | `kerbalism.crew` |
 | forward model | `vessel.resources` |
 
-## Error codes
+</details>
+
+<details>
+<summary>Error codes</summary>
 
 | Code | Refines | Reads as | Meaning |
 | --- | --- | --- | --- |
@@ -190,4 +219,6 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | `kerbalism.nothingToRepair` | `notFound` | no part aboard with that id is broken or due a service | No reliability module aboard has that id and is broken or due a service. |
 | `kerbalism.craftNotLoaded` | `modeUnavailable` | the craft is not loaded, so Kerbalism cannot switch its devices | Kerbalism lists and switches devices for a loaded craft only, and this one is not loaded. |
 | `kerbalism.noSuchDevice` | `notFound` | no device or script aboard matches that | The craft has no visible device with that id, or no event script by that name. |
+
+</details>
 

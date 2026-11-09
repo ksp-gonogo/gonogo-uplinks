@@ -5,12 +5,9 @@
 
 Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the next node, or land at the selected target, over the delayed command path.
 
-| | |
-| --- | --- |
-| Uplink id | `mechjeb` |
-| Version | `0.0.0-development` |
-| Wraps | MechJeb2 2.15.3.0 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against MechJeb2 2.15.3.0.
 
 ## Install
 
@@ -20,9 +17,45 @@ Without CKAN, download `GonogoMechJebUplink.zip` from the releases page, unpack 
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=mechjeb-v
 
-## Wire
+## Widgets
 
-## Commands
+### MechJeb
+
+Engage MechJeb's ascent autopilot, node execution or landing.
+
+<a href="client/docs/assets/ascent-command-in-flight--default.png"><img src="client/docs/assets/ascent-command-in-flight--default.png" width="185" alt="Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `mechjeb` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `comms.delay` |
+| Actions an input can be bound to | Engage ascent autopilot (`engage-ascent`): Commands the ascent autopilot to fly to the set target altitude; Execute next node (`execute-node`): Commands execution of the next maneuver node; Land at target (`land-at-target`): Commands an autopilot landing at the selected target |
+| Needs | a vessel in flight |
+| Default size, in grid units | 5 × 7 |
+| Smallest size, in grid units | 4 × 5 |
+| Scenes | 3 |
+
+</details>
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `mechjeb` |
+| Wraps | MechJeb2 (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -35,21 +68,5 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=mechjeb-v
 | `MechJebAscentArgs` | `targetAltitudeKm` km |
 | `MechJebNoArgs` | – |
 
-## Widgets
-
-### MechJeb
-
-Engage MechJeb's ascent autopilot, node execution or landing.
-
-| | |
-| --- | --- |
-| Widget id | `mechjeb` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `comms.delay` |
-| Actions an input can be bound to | Engage ascent autopilot (`engage-ascent`): Commands the ascent autopilot to fly to the set target altitude; Execute next node (`execute-node`): Commands execution of the next maneuver node; Land at target (`land-at-target`): Commands an autopilot landing at the selected target |
-| Needs | a vessel in flight |
-| Default size, in grid units | 5 × 7 |
-| Smallest size, in grid units | 4 × 5 |
-| Scenes | 3 |
-
-![Ascent autopilot commanded across a 12.5-minute link: the row that was pressed carries a status chip, the two that were not stay idle](client/docs/assets/ascent-command-in-flight--default.png)
+</details>
 

@@ -5,12 +5,9 @@
 
 Reports per-engine RealFuels limits: ignitions remaining, ullage stability and pressure feed, plus cryogenic boiloff.
 
-| | |
-| --- | --- |
-| Uplink id | `realfuels` |
-| Version | `0.0.0-development` |
-| Wraps | RealFuels 15.15.0 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against RealFuels 15.15.0.
 
 ## Install
 
@@ -20,7 +17,28 @@ Without CKAN, download `GonogoRealFuelsUplink.zip` from the releases page, unpac
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realfuels-v
 
-## Wire
+## What it adds to other widgets
+
+| |
+| --- |
+| <a href="client/docs/assets/finite-ignition-budget--default.png"><img src="client/docs/assets/finite-ignition-budget--default.png" width="280" alt="A restartable upper stage with two lights left, its propellant settling in the risky band after a coast"></a><br>`realfuels-fuel-status-section` in `fuel-status.sections` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `realfuels` |
+| Wraps | RealFuels (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -32,11 +50,14 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realfuels-v
 | --- | --- |
 | `RealFuelsEngineEntry` | `feedPressureOk` flag, `groundIgnitionOnly` flag, `ignitionProbability` ratio, `ignitionsRemaining` count, `ignitionsUnlimited` flag, `literalZeroIgnitions` flag, `partId` id, `partName` text, `predictedMaximumResiduals` ratio, `pressureFed` flag, `ratedBurnTimeSeconds` s, `ratedContinuousBurnTimeSeconds` s, `ullageModelled` flag, `ullageStability` ratio |
 
-## Augments
+</details>
+
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `realfuels-fuel-status-section` | `fuel-status.sections` | `realfuels.engines`, `realfuels.boiloff` | only while `realfuels` | 3 |  |
 
-![A restartable upper stage with two lights left, its propellant settling in the risky band after a coast](client/docs/assets/finite-ignition-budget--default.png)
+</details>
 

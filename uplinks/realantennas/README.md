@@ -5,12 +5,9 @@
 
 Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.
 
-| | |
-| --- | --- |
-| Uplink id | `realantennas` |
-| Version | `0.0.0-development` |
-| Wraps | RealAntennas 2.11.1.0 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against RealAntennas 2.11.1.0.
 
 ## Install
 
@@ -20,7 +17,28 @@ Without CKAN, download `GonogoRealAntennasUplink.zip` from the releases page, un
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 
-## Wire
+## What it adds to other widgets
+
+| | | |
+| --- | --- | --- |
+| <a href="client/docs/assets/ra-link-budget-closes--default.png"><img src="client/docs/assets/ra-link-budget-closes--default.png" width="280" alt="RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it"></a><br>`realantennas-comm-signal-section` in `comm-signal.sections` | <a href="client/docs/assets/ra-antenna-targets--default.png"><img src="client/docs/assets/ra-antenna-targets--default.png" width="280" alt="A card per antenna: what each is aimed at, the modes its tech level has earned, and the controls to move it"></a><br>`realantennas-comm-signal-antenna-targets` in `comm-signal.sections` | <a href="client/docs/assets/ra-hop-rates-bottleneck--default.png"><img src="client/docs/assets/ra-hop-rates-bottleneck--default.png" width="280" alt="Per-hop bitrates joined onto CommSignal's route, with the slow middle leg flagged as the bottleneck"></a><br>`realantennas:comm-signal-hop-rates` in `comm-signal.hop-rates` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `realantennas` |
+| Wraps | RealAntennas (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -42,7 +60,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | `RealAntennasTargetStep` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 | `RealAntennasTargetStepArgs` | `altitude` m, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -58,7 +79,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | `RealAntennasTargetArgs` | `altitude` m, `antennaId` id, `azimuth` °, `bodyName` text, `elevation` °, `forward` °, `latitude` °, `longitude` °, `mode` text, `vesselId` id |
 | `RealAntennasTargetChainArgs` | `antennaId` id, `settleSeconds` s, `steps` RealAntennasTargetStepArgs[] |
 
-## Augments
+</details>
+
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -66,16 +90,15 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | `realantennas-comm-signal-section` | `comm-signal.sections` | `comms.linkMargin`, `comms.path`, `comms.link` | only while `realantennas` | 3 |  |
 | `realantennas-comm-signal-antenna-targets` | `comm-signal.sections` | `realantennas.antennas`, `realantennas.antennaChains`, `realantennas.retargeting`, `trackingStation.bodies`, `trackingStation.catalog` | only while `realantennas` | 1 |  |
 
-![RealAntennas' link budget composed into CommSignal: margin closing, with the negotiated encoder, modulation and tech level under it](client/docs/assets/ra-link-budget-closes--default.png)
+</details>
 
-![A card per antenna: what each is aimed at, the modes its tech level has earned, and the controls to move it](client/docs/assets/ra-antenna-targets--default.png)
-
-## Contributions
+<details>
+<summary>Contributions</summary>
 
 | Contribution | Into | Computed from | Presence |
 | --- | --- | --- | --- |
 | `realantennas:comm-signal-hop-rates` | `comm-signal.hop-rates` | `realantennas.hopRates` | only while `realantennas` |
 | `realantennas:comm-signal-link-rate` | `comm-signal.link-rate` | `comms.dataRate` | only while `realantennas` |
 
-![Per-hop bitrates joined onto CommSignal's route, with the slow middle leg flagged as the bottleneck](client/docs/assets/ra-hop-rates-bottleneck--default.png)
+</details>
 

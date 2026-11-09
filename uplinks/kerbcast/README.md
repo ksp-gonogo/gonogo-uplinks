@@ -5,12 +5,9 @@
 
 Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.
 
-| | |
-| --- | --- |
-| Uplink id | `kerbcast` |
-| Version | `0.0.0-development` |
-| Wraps | kerbcast 1.12.1-rc.13 (ckan) |
-| Built against | contract 51.0, extension API 6.0.0 |
+An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
+
+Built against kerbcast 1.12.1-rc.13.
 
 ## Install
 
@@ -20,7 +17,52 @@ Without CKAN, download `GonogoKerbcastUplink.zip` from the releases page, unpack
 
 Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 
-## Wire
+## Widgets
+
+### Camera Feed
+
+A live view from a camera on the active craft.
+
+<a href="client/docs/assets/camera-feed-fixed--default.png"><img src="client/docs/assets/camera-feed-fixed--default.png" width="349" alt="A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's"></a>
+
+<details>
+<summary>Widget details</summary>
+
+| | |
+| --- | --- |
+| Widget id | `camera-feed` |
+| Reads, as dotted paths (a Topic id or a field of its payload) | `vessel.comms`, `comms.link`, `comms.delay` |
+| Also reads, if the mod publishes them | `kerbcast.cameras`, `kerbcast.lens.<flightId>` |
+| Actions an input can be bound to | Next camera (`next-camera`): Switch to the next available camera, persisting the choice to the widget config (wraps round at the end of the list); Previous camera (`prev-camera`): Switch to the previous available camera (wraps round); Zoom in (`zoom-in`): Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit; Zoom out (`zoom-out`): Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit; Pan yaw axis (`pan-yaw`): Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit; Pan pitch axis (`pan-pitch`): Analog pitch rate, -1..1. Positive = up. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged pitch wheel at up to 30 degrees per second, clamped to the camera's pitch envelope, and sends nothing until the commit. A camera with no pitch envelope does not move either way |
+| Slots of its own | `camera-feed.overlay` |
+| Default size, in grid units | 9 × 8 |
+| Smallest size, in grid units | 7 × 6 |
+| Scenes | 12 |
+
+</details>
+
+## What it adds to other widgets
+
+| |
+| --- |
+| <a href="client/docs/assets/docking-camera-behind-reticle--default.png"><img src="client/docs/assets/docking-camera-behind-reticle--default.png" width="226" alt="Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle"></a><br>`kerbcast-docking-camera` in `rendezvous.camera` |
+
+## For developers
+
+<details>
+<summary>Uplink details</summary>
+
+| | |
+| --- | --- |
+| Uplink id | `kerbcast` |
+| Wraps | kerbcast (ckan) |
+| Version | `0.0.0-development` |
+| Built against | contract 51.0, extension API 6.0.0 |
+
+</details>
+
+<details>
+<summary>Topics</summary>
 
 | Topic | Payload | Delivery | Delay |
 | --- | --- | --- | --- |
@@ -28,7 +70,10 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 | `kerbcast.craftKnowledge` | `KerbcastCraftKnowledgeEntry[]` | lossy-latest | true-now |
 | `kerbcast.available` | – | lossy-latest | true-now |
 
-## Commands
+</details>
+
+<details>
+<summary>Commands</summary>
 
 | Command | Args | Result |
 | --- | --- | --- |
@@ -44,31 +89,15 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbcast-v
 | `KerbcastSetFieldOfViewArgs` | `cameraId` id, `fieldOfView` °, `lensKey` text |
 | `KerbcastSetPanArgs` | `cameraId` id, `lensKey` text, `pitch` °, `yaw` ° |
 
-## Widgets
+</details>
 
-### Camera Feed
-
-A live view from a camera on the active craft.
-
-| | |
-| --- | --- |
-| Widget id | `camera-feed` |
-| Reads, as dotted paths (a Topic id or a field of its payload) | `vessel.comms`, `comms.link`, `comms.delay` |
-| Also reads, if the mod publishes them | `kerbcast.cameras`, `kerbcast.lens.<flightId>` |
-| Actions an input can be bound to | Next camera (`next-camera`): Switch to the next available camera, persisting the choice to the widget config (wraps round at the end of the list); Previous camera (`prev-camera`): Switch to the previous available camera (wraps round); Zoom in (`zoom-in`): Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit; Zoom out (`zoom-out`): Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit; Pan yaw axis (`pan-yaw`): Analog yaw rate, -1..1. Positive = right. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged yaw wheel at up to 30 degrees per second, clamped to the camera's yaw envelope, and sends nothing until the commit; Pan pitch axis (`pan-pitch`): Analog pitch rate, -1..1. Positive = up. Live, this is the camera's pan rate at up to its max pan speed; above the staged delay threshold it turns the staged pitch wheel at up to 30 degrees per second, clamped to the camera's pitch envelope, and sends nothing until the commit. A camera with no pitch envelope does not move either way |
-| Slots of its own | `camera-feed.overlay` |
-| Default size, in grid units | 9 × 8 |
-| Smallest size, in grid units | 7 × 6 |
-| Scenes | 12 |
-
-![A fixed camera, which most are: no aim to give it, so the picture has the whole panel body and the feed's own header carries the name and the signal quality, and the delay is the dashboard header's](client/docs/assets/camera-feed-fixed--default.png)
-
-## Augments
+<details>
+<summary>Augments</summary>
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `kerbcast-crew-avatar` | `crew-status.avatar` | – | only while `kerbcast` | 0 |  |
 | `kerbcast-docking-camera` | `rendezvous.camera` | `kerbcast.cameras` | only while `kerbcast` | 1 |  |
 
-![Rendezvous's docking HUD on final approach, with the port camera's delayed feed drawn behind the reticle](client/docs/assets/docking-camera-behind-reticle--default.png)
+</details>
 
