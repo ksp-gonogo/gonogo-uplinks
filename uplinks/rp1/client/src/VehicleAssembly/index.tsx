@@ -243,11 +243,7 @@ function groupByCentre(complexes: readonly Rp1ComplexEntry[]): Centre[] {
 registerComponent<VehicleAssemblyConfig>({
   id: "rp1-vehicle-assembly",
   name: "Vehicle Assembly",
-  description:
-    "Every craft RP-1 is integrating, holding or could start, across every " +
-    "launch complex at every space centre: what it costs, how far along it " +
-    "is, why its clock reads what it reads, and the controls to start a " +
-    "build, roll one out, bring it back or scrap it.",
+  description: "Start, roll out, roll back and scrap RP-1 vehicle builds.",
   tags: ["rp1", "career", "vehicles"],
   defaultSize: { w: 7, h: 16 },
   minSize: { w: 4, h: 6 },

@@ -420,10 +420,7 @@ registerComponent<ScanningConfig>({
   id: "scanning",
   name: "Scanning",
   description:
-    "SCANsat status: per-scan-type coverage of the current body, the " +
-    "list of vessels SCANsat is tracking with their on-board scanners " +
-    "and live in-range state, and the body's known anomalies with " +
-    "discovery state.",
+    "SCANsat coverage of the current body, with your scanning vessels and anomalies.",
   tags: ["scan", "fleet"],
   defaultSize: { w: 6, h: 10 },
   minSize: { w: 4, h: 4 },

@@ -88,7 +88,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kerbalism-v
 
 ### Ship Systems
 
-Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resource as a meter with a per-source rate ledger, wear gauges, habitat, processes, and the power meter.
+Kerbalism resources, habitat, wear and radiation for your vessel.
 
 | | |
 | --- | --- |
@@ -104,7 +104,7 @@ Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resou
 
 ### Space Weather
 
-Solar activity and radiation: each star's activity, coronal mass ejections with departure, transit progress, impact ETA and what they will hit, and the craft's own habitat dose rate, belt and magnetopause position and shielding.
+Solar activity, coronal mass ejections and your craft's radiation dose.
 
 | | |
 | --- | --- |
