@@ -11,8 +11,11 @@
  * good.
  */
 
+const FEED_ASPECT_W = 16;
+const FEED_ASPECT_H = 9;
+
 /** Shape of every camera frame, width over height. */
-export const FEED_ASPECT = 16 / 9;
+export const FEED_ASPECT = FEED_ASPECT_W / FEED_ASPECT_H;
 
 /**
  * The smallest side the sidecar is asked to render. Its hardware encoder
@@ -41,6 +44,33 @@ export function frameBox(
 ): { width: number; height: number } {
   const width = Math.floor(Math.min(box.w, box.h * aspect));
   return { width, height: Math.floor(width / aspect) };
+}
+
+/**
+ * The frame's outer box when the frame draws a border of `border` px and the
+ * feed inside it is drawn `bleed` px larger than the frame's content on every
+ * side, which the frame then crops. The feed fills the frame's content plus
+ * the bleed at exactly 16:9, in whole pixels, as large as the box the tile
+ * left. Sizing the content to a shape a pixel off the feed's own leaves slivers
+ * of frame beside the picture and puts the feed's dark band, its edges and its
+ * corners out of line with everything drawn over the whole content box.
+ */
+export function borderedFrameBox(
+  box: { w: number; h: number },
+  border: number,
+  bleed = 0,
+): { width: number; height: number } {
+  const room = 2 * (bleed - border);
+  const units = Math.max(
+    1,
+    Math.floor(
+      Math.min((box.w + room) / FEED_ASPECT_W, (box.h + room) / FEED_ASPECT_H),
+    ),
+  );
+  return {
+    width: units * FEED_ASPECT_W - 2 * bleed + 2 * border,
+    height: units * FEED_ASPECT_H - 2 * bleed + 2 * border,
+  };
 }
 
 /**

@@ -11,6 +11,7 @@ const STATIC_STYLE: CSSProperties = {
   width: "100%",
   height: "100%",
   zIndex: 1,
+  borderRadius: "3px",
   imageRendering: "pixelated",
   pointerEvents: "none",
   background: "#000",

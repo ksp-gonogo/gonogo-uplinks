@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FEED_ASPECT, frameBox, frameRequest } from "./frameShape.js";
+import {
+  borderedFrameBox,
+  FEED_ASPECT,
+  frameBox,
+  frameRequest,
+} from "./frameShape.js";
 
 describe("frameBox", () => {
   it("holds the aspect when the box is wider than the camera", () => {
@@ -58,5 +63,27 @@ describe("frameRequest", () => {
       expect(request?.height).toBeGreaterThanOrEqual(128);
     }
     expect(frameRequest(48, 1)).toEqual({ width: 128, height: 128 });
+  });
+});
+
+describe("borderedFrameBox", () => {
+  it("leaves a feed of exactly 16:9 under the border and the bleed", () => {
+    for (const bleed of [0, 1]) {
+      for (const box of [
+        { w: 396, h: 156 },
+        { w: 320, h: 400 },
+        { w: 335, h: 188 },
+        { w: 158, h: 88 },
+      ]) {
+        const frame = borderedFrameBox(box, 1, bleed);
+        const feed = {
+          w: frame.width - 2 + 2 * bleed,
+          h: frame.height - 2 + 2 * bleed,
+        };
+        expect(feed.w * 9).toBe(feed.h * 16);
+        expect(frame.width).toBeLessThanOrEqual(box.w);
+        expect(frame.height).toBeLessThanOrEqual(box.h);
+      }
+    }
   });
 });

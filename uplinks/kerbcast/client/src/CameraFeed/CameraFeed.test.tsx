@@ -1973,9 +1973,9 @@ describe("CameraFeed: signal quality badge", () => {
       emitComms(stream, { signalStrength: 0.72, connected: false });
     });
 
-    await waitFor(() => expect(headerText()).toContain("NO SIGNAL"));
+    await waitFor(() => expect(headerText()).toContain("NO LINK"));
     expect(frameText()).toMatch(/starboard cam/i);
-    expect(frameText()).not.toContain("NO SIGNAL");
+    expect(frameText()).not.toContain("NO LINK");
     // The stale strength percentage is not shown alongside a lost link.
     expect(visibleText()).not.toContain("72 %");
   });
@@ -2524,8 +2524,8 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
 
   it("letterboxes a 16:9 frame from the tile's width and asks for one 16:9 size", async () => {
     const { sidecar, video } = await mountFeed();
-    expect(frameOf(video).style.width).toBe("170px");
-    expect(frameOf(video).style.height).toBe("95px");
+    expect(frameOf(video).style.width).toBe("160px");
+    expect(frameOf(video).style.height).toBe("90px");
     expect(sizeReports(sidecar)).toEqual([
       { flightId: 42, width: 240, height: 136 },
     ]);
@@ -2542,8 +2542,8 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
       [176, 400],
     ] as const) {
       await streamBecomes(sidecar, video, w, h);
-      expect(frameOf(video).style.width).toBe("170px");
-      expect(frameOf(video).style.height).toBe("95px");
+      expect(frameOf(video).style.width).toBe("160px");
+      expect(frameOf(video).style.height).toBe("90px");
     }
 
     expect(sizeReports(sidecar).length - before).toBe(0);

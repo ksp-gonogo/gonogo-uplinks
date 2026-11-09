@@ -81,7 +81,7 @@ import {
   useActiveCameraIds,
   useCameraSite,
 } from "./cameraSite.js";
-import { frameBox } from "./frameShape.js";
+import { borderedFrameBox } from "./frameShape.js";
 import { FullscreenExit } from "./FullscreenExit.js";
 import { useTrackUnheard, useUnheardCameras } from "./unheardCameras.js";
 import {
@@ -340,7 +340,7 @@ export function CameraFeed({
   // `comms.link` (NOT `vessel.comms.connected`): a dedicated, freeze-EXEMPT
   // MetaTopic. `vessel.comms` is a Delayed struct subject to the reveal-gate
   // freeze, so its own `.connected` field would stick at last-known through
-  // a blackout instead of firing "NO SIGNAL". `comms.link` escapes that
+  // a blackout instead of firing "NO LINK". `comms.link` escapes that
   // freeze, so it's the edge that actually reflects a live disconnect.
   const craftConnected =
     observedValue(useTelemetry("comms.link"))?.connected ?? undefined;
@@ -720,7 +720,7 @@ export function CameraFeed({
   };
   const steerable =
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
-  const frame = frameBox(stageBox);
+  const frame = borderedFrameBox(stageBox, FRAME_BORDER_PX, STAGE_BORDER_PX);
   const showSetpointSurface =
     !isDark(site) &&
     controlMode !== "live" &&
@@ -773,6 +773,8 @@ export function CameraFeed({
                 onBlur={onFeedBlur}
               >
                 <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
+                  <div style={FEED_CLIP_STYLE}>
+                  <div style={FEED_BLEED_STYLE}>
                   <GroundFeedClockContext.Provider value={groundClock}>
                   <SharedCameraFeed
                     ref={feedRef}
@@ -815,6 +817,8 @@ export function CameraFeed({
                     renderSize="none"
                   />
                   </GroundFeedClockContext.Provider>
+                  </div>
+                  </div>
                   <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}
@@ -972,7 +976,7 @@ function describeSignalQuality(
   signalStrength: Value<"ratio"> | undefined,
 ): PanelBadge | null {
   if (connected === undefined && signalStrength === undefined) return null;
-  // NO SIGNAL when the link is down OR the strength has decayed to
+  // NO LINK when the link is down OR the strength has decayed to
   // effectively zero: a 0% link carries nothing, so it reads as no signal
   // rather than a "0%" quality badge. The tiny epsilon is a float-noise guard,
   // not a "weak link" threshold: a real 1% link still shows its percentage.
@@ -982,7 +986,7 @@ function describeSignalQuality(
   if (connected === false || zeroSignal) {
     return {
       id: "signal-quality",
-      label: "NO SIGNAL",
+      label: "NO LINK",
       tone: "nogo",
       title: "Signal quality: no signal",
     };
@@ -1013,8 +1017,36 @@ const FEED_STAGE_STYLE: CSSProperties = {
   justifyContent: "center",
 };
 
+/** The border `FramedDisplay` draws, which the frame's outer size allows for. */
+const FRAME_BORDER_PX = 1;
+
 /**
- * The frame itself, sized by `frameBox` rather than by the layout.
+ * The border and corner radius of the box the kerbcast feed draws its picture
+ * in. The feed is drawn that border's width larger than the frame's content on
+ * every side and cropped, so the border never shows and the picture, the static
+ * and the feed's dark top band end on the frame's own edge.
+ */
+const STAGE_BORDER_PX = 1;
+const STAGE_RADIUS_PX = 4;
+
+/** The corner of the visible picture: the feed's own corner less the cropped border. */
+const FEED_CLIP_RADIUS_PX = STAGE_RADIUS_PX - STAGE_BORDER_PX;
+
+const FEED_CLIP_STYLE: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  overflow: "hidden",
+  borderRadius: `${FEED_CLIP_RADIUS_PX}px`,
+};
+
+const FEED_BLEED_STYLE: CSSProperties = {
+  position: "absolute",
+  inset: `-${STAGE_BORDER_PX}px`,
+  display: "flex",
+};
+
+/**
+ * The frame itself, sized by `borderedFrameBox` rather than by the layout.
  *
  * The size has to be stated somewhere, because there is no content to leave it
  * to. The kerbcast SDK's `Stage` positions its `<video>` absolutely and says in
@@ -1024,6 +1056,7 @@ const FEED_STAGE_STYLE: CSSProperties = {
  * an empty box.
  */
 const FEED_FRAME_STYLE: CSSProperties = {
+  borderRadius: `${FEED_CLIP_RADIUS_PX + FRAME_BORDER_PX}px`,
   flex: "0 0 auto",
   minWidth: 0,
   minHeight: 0,
