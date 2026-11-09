@@ -3,42 +3,42 @@
   "engine": "chromium",
   "assets": {
     "ascent-no-wings--default.png": {
-      "hash": "7a953bc210bcc45e",
+      "hash": "e84e0779f34c3110",
       "elements": 74,
       "text": "e4a8e2c6"
     },
     "atmospheric-final-approach-site--default.png": {
-      "hash": "1eeaa4d6787549c9",
+      "hash": "bd805ea2f0848719",
       "elements": 1527,
       "text": "c8a84eb9"
     },
     "ballistic-capsule--default.png": {
-      "hash": "54dc3e99162db68d",
+      "hash": "f3e6a07bdf73e746",
       "elements": 485,
       "text": "7beb0342"
     },
     "entry-badges--default.png": {
-      "hash": "7e25c9e652521b4f",
+      "hash": "87134749ddd091fc",
       "elements": 488,
       "text": "3b156153"
     },
     "no-aero-model--default.png": {
-      "hash": "5e6417b9b0ccc451",
+      "hash": "78dbe1c4d05de5e9",
       "elements": 51,
       "text": "a3d38ca0"
     },
     "no-aero-model-installed--default.png": {
-      "hash": "3bbe679fa822ebce",
+      "hash": "0684b6d7615bebaf",
       "elements": 477,
       "text": "f9acb1c0"
     },
     "reentry-high-alpha--default.png": {
-      "hash": "f58a3599a0d2ff50",
+      "hash": "18c8b01fee5698ed",
       "elements": 84,
       "text": "579cadf4"
     },
     "subsonic-final-approach--default.png": {
-      "hash": "4be01cd61ea562dd",
+      "hash": "141483b741471dfd",
       "elements": 530,
       "text": "f39d4069"
     },
@@ -48,27 +48,27 @@
       "text": "5b64fe6c"
     },
     "winged-entry-high-alpha--default.png": {
-      "hash": "7e25c9e652521b4f",
+      "hash": "87134749ddd091fc",
       "elements": 488,
       "text": "3b156153"
     },
     "winged-subsonic-climb--default.png": {
-      "hash": "63862845999ca62c",
+      "hash": "680011c2fde1e6d3",
       "elements": 84,
       "text": "78744edc"
     },
     "winged-subsonic-climb--landscape-18x5.png": {
-      "hash": "63862845999ca62c",
+      "hash": "680011c2fde1e6d3",
       "elements": 84,
       "text": "78744edc"
     },
     "winged-subsonic-climb--min.png": {
-      "hash": "63862845999ca62c",
+      "hash": "680011c2fde1e6d3",
       "elements": 84,
       "text": "78744edc"
     },
     "winged-subsonic-climb--mobile-9x8.png": {
-      "hash": "63862845999ca62c",
+      "hash": "680011c2fde1e6d3",
       "elements": 84,
       "text": "78744edc"
     }

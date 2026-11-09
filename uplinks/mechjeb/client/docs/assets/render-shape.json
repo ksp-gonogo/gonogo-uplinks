@@ -3,12 +3,12 @@
   "engine": "chromium",
   "assets": {
     "ascent-command-in-flight--default.png": {
-      "hash": "729c82cabf3ee7e2",
-      "elements": 33,
+      "hash": "bd8f011a4ba60626",
+      "elements": 34,
       "text": "ac7b387f"
     },
     "duna-uplink-delay--default.png": {
-      "hash": "0dadf20612b5319e",
+      "hash": "59d441205a5c7a85",
       "elements": 33,
       "text": "717aac6a"
     },
@@ -18,7 +18,7 @@
       "text": "717aac6a"
     },
     "remote-autopilot--default.png": {
-      "hash": "45eb584ba7716d39",
+      "hash": "8b63dcc021d00b23",
       "elements": 33,
       "text": "a4321ee0"
     },
