@@ -637,7 +637,7 @@ namespace Gonogo.KerbcastUplink
                     case Vessel.Situations.LANDED:
                     case Vessel.Situations.SPLASHED:
                     case Vessel.Situations.PRELAUNCH:
-                        _craftPlaces.Learn(vessel.id, CraftPlace.Surface(ut, body, vessel.latitude, vessel.longitude, vessel.altitude, CarriedPosition(vessel, ut)));
+                        _craftPlaces.Learn(vessel.id, CraftPlace.Surface(ut, body, vessel.latitude, vessel.longitude, vessel.altitude));
                         break;
                     default:
                         var orbit = vessel.orbit;
@@ -652,17 +652,6 @@ namespace Gonogo.KerbcastUplink
                         break;
                 }
             }
-        }
-
-        /* A craft on the ground has a place for a camera to point at only as a body-relative position, for the line of sight a relay tests. */
-        private static double[]? CarriedPosition(Vessel vessel, double ut)
-        {
-            if (vessel.orbit == null)
-            {
-                return null;
-            }
-            var position = Planetarium.Zup.LocalToWorld(vessel.orbit.getRelativePositionAtUT(ut));
-            return new[] { position.x, position.y, position.z };
         }
 
         /// <summary>COURIER-THREAD handle: publish the captured inventory.</summary>
@@ -762,12 +751,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            var answer = kerbcast.SetCommandAim(cameraId, subject);
-            if (answer == "Ok")
-            {
-                _governor?.SayViewerAim(cameraId);
-            }
-            return KerbcastAimOutcome.ForCommandAim(answer);
+            return KerbcastAimOutcome.ForCommandAim(kerbcast.SetCommandAim(cameraId, subject));
         }
 
         /// <summary>Any thread: a countdown to liftoff started or was called off, which the launchpad cameras frame wider for.</summary>

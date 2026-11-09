@@ -47,29 +47,29 @@ export function frameBox(
 }
 
 /**
- * The frame's outer box when the frame draws a border of `border` px: the feed
- * fills the frame's content at exactly 16:9, in whole pixels, as large as the
- * box the tile left. Sizing the content to a shape a pixel off the feed's own
- * leaves slivers of frame beside the picture and puts the feed's dark band, its
- * edges and its corners out of line with everything drawn over the whole
- * content box.
+ * The frame's outer box when the frame draws a border of `border` px and the
+ * feed inside it is drawn `bleed` px larger than the frame's content on every
+ * side, which the frame then crops. The feed fills the frame's content plus
+ * the bleed at exactly 16:9, in whole pixels, as large as the box the tile
+ * left. Sizing the content to a shape a pixel off the feed's own leaves slivers
+ * of frame beside the picture and puts the feed's dark band, its edges and its
+ * corners out of line with everything drawn over the whole content box.
  */
 export function borderedFrameBox(
   box: { w: number; h: number },
   border: number,
+  bleed = 0,
 ): { width: number; height: number } {
+  const room = 2 * (bleed - border);
   const units = Math.max(
     1,
     Math.floor(
-      Math.min(
-        (box.w - 2 * border) / FEED_ASPECT_W,
-        (box.h - 2 * border) / FEED_ASPECT_H,
-      ),
+      Math.min((box.w + room) / FEED_ASPECT_W, (box.h + room) / FEED_ASPECT_H),
     ),
   );
   return {
-    width: units * FEED_ASPECT_W + 2 * border,
-    height: units * FEED_ASPECT_H + 2 * border,
+    width: units * FEED_ASPECT_W - 2 * bleed + 2 * border,
+    height: units * FEED_ASPECT_H - 2 * bleed + 2 * border,
   };
 }
 

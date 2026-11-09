@@ -67,18 +67,23 @@ describe("frameRequest", () => {
 });
 
 describe("borderedFrameBox", () => {
-  it("leaves a feed of exactly 16:9 under the border", () => {
-    for (const box of [
-      { w: 396, h: 156 },
-      { w: 320, h: 400 },
-      { w: 335, h: 188 },
-      { w: 158, h: 88 },
-    ]) {
-      const frame = borderedFrameBox(box, 1);
-      const feed = { w: frame.width - 2, h: frame.height - 2 };
-      expect(feed.w * 9).toBe(feed.h * 16);
-      expect(frame.width).toBeLessThanOrEqual(box.w);
-      expect(frame.height).toBeLessThanOrEqual(box.h);
+  it("leaves a feed of exactly 16:9 under the border and the bleed", () => {
+    for (const bleed of [0, 1]) {
+      for (const box of [
+        { w: 396, h: 156 },
+        { w: 320, h: 400 },
+        { w: 335, h: 188 },
+        { w: 158, h: 88 },
+      ]) {
+        const frame = borderedFrameBox(box, 1, bleed);
+        const feed = {
+          w: frame.width - 2 + 2 * bleed,
+          h: frame.height - 2 + 2 * bleed,
+        };
+        expect(feed.w * 9).toBe(feed.h * 16);
+        expect(frame.width).toBeLessThanOrEqual(box.w);
+        expect(frame.height).toBeLessThanOrEqual(box.h);
+      }
     }
   });
 });
