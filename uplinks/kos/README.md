@@ -56,7 +56,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 
 ### kOS Script Trigger
 
-Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the Uplink, and see the correlated result or error inline.
+Run a kerboscript on a kOS CPU and see the result.
 
 | | |
 | --- | --- |
@@ -70,7 +70,7 @@ Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the 
 
 ### kOS Terminal
 
-The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.
+The live terminal of a kOS CPU.
 
 | | |
 | --- | --- |

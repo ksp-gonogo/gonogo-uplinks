@@ -71,7 +71,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=principia-v
 
 ### Libration Points
 
-The five libration points of a body pair, drawn in the frame that turns with it so they hold still, with the craft's offset from the one it is nearest.
+The libration points of a body pair, with your craft's offset.
 
 | | |
 | --- | --- |

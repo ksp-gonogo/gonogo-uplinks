@@ -246,7 +246,7 @@
     {
       "id": "kos-script-trigger",
       "name": "kOS Script Trigger",
-      "description": "Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the Uplink, and see the correlated result or error inline.",
+      "description": "Run a kerboscript on a kOS CPU and see the result.",
       "tags": [
         "kos",
         "control"
@@ -280,7 +280,7 @@
     {
       "id": "kos-terminal",
       "name": "kOS Terminal",
-      "description": "The terminal screen of a kOS CPU as kOS draws it, live. Type into it, or set it read-only to watch a script run.",
+      "description": "The live terminal of a kOS CPU.",
       "tags": [
         "kos",
         "control",
