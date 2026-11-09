@@ -3,53 +3,53 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "1128f35414bb4ff0",
-      "elements": 50,
+      "hash": "ed0030243900cdf6",
+      "elements": 48,
       "text": "de169916"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "cd95429cb4632dd3",
-      "elements": 50,
+      "hash": "f8134988b2c89fae",
+      "elements": 48,
       "text": "de169916"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "1128f35414bb4ff0",
-      "elements": 50,
+      "hash": "ed0030243900cdf6",
+      "elements": 48,
       "text": "de169916"
     },
     "camera-feed-other-craft--default.png": {
-      "hash": "7bf541d23e1952e9",
-      "elements": 76,
+      "hash": "43fcfc56045d8f7a",
+      "elements": 74,
       "text": "497abb31"
     },
     "camera-feed-other-craft-no-link--default.png": {
-      "hash": "e5bc9425a022c6e7",
-      "elements": 61,
+      "hash": "e1bd596b68425003",
+      "elements": 59,
       "text": "6157281a"
     },
     "camera-feed-other-craft-unplaced--default.png": {
-      "hash": "a1bc187aada4018d",
-      "elements": 61,
+      "hash": "3b10a4509adc24fd",
+      "elements": 59,
       "text": "6157281a"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "5c2c818fe6ee5c08",
-      "elements": 77,
+      "hash": "23e7e0e5e83a2326",
+      "elements": 75,
       "text": "77896017"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "56c453b554b6652f",
-      "elements": 77,
+      "hash": "8bb9a39fb21d5f4a",
+      "elements": 75,
       "text": "77896017"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "5c2c818fe6ee5c08",
-      "elements": 77,
+      "hash": "23e7e0e5e83a2326",
+      "elements": 75,
       "text": "77896017"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "a3608ac47551083c",
-      "elements": 77,
+      "hash": "296e34bb61e328ec",
+      "elements": 75,
       "text": "2dc9c080"
     },
     "docking-camera-behind-reticle--default.png": {
