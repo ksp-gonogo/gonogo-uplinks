@@ -169,7 +169,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=rp1-v
 
 ### Vehicle Assembly
 
-Start, roll out, roll back and scrap RP-1 vehicle builds.
+Every craft RP-1 is integrating, holding or could start, across every launch complex at every space centre: what it costs, how far along it is, why its clock reads what it reads, and the controls to start a build, roll one out, bring it back or scrap it.
 
 | | |
 | --- | --- |

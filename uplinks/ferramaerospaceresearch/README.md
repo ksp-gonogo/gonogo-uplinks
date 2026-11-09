@@ -31,7 +31,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=aero-v
 
 ### Aerodynamics
 
-Angle of attack, stall, lift and drag from FAR.
+Angle of attack, sideslip, stall fraction, lift, drag and dynamic pressure as Ferram Aerospace Research computes them. Shows that FAR is unavailable instead of zeros when it is not installed.
 
 | | |
 | --- | --- |

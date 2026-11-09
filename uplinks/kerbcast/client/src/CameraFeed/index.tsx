@@ -11,7 +11,8 @@ import { CameraFeedConfigPanel } from "./CameraFeedConfigPanel.js";
 registerComponent<CameraFeedConfig>({
   id: "camera-feed",
   name: "Camera Feed",
-  description: "A live view from a camera on the active craft.",
+  description:
+    "A live view from a camera on the active craft. Pick which camera to watch, step to the next or previous one, and aim and zoom the ones that can.",
   tags: ["camera"],
   /**
    * Down from 11x7. Eleven columns were what the aim cluster needed while it
