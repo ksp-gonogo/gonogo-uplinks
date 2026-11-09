@@ -1518,7 +1518,7 @@ registerComponent<SpaceWeatherConfig>({
   id: "space-weather",
   name: "Space Weather",
   description:
-    "Solar activity, coronal mass ejections and your craft's radiation dose.",
+    "Solar activity and radiation: each star's activity, coronal mass ejections with departure, transit progress, impact ETA and what they will hit, and the craft's own habitat dose rate, belt and magnetopause position and shielding.",
   tags: ["telemetry", "kerbalism"],
   defaultSize: { w: 8, h: 11 },
   minSize: { w: 3, h: 4 },

@@ -394,7 +394,8 @@ function KosScriptTriggerConfigComponent({
 registerComponent<KosScriptTriggerConfig>({
   id: "kos-script-trigger",
   name: "kOS Script Trigger",
-  description: "Run a kerboscript on a kOS CPU and see the result.",
+  description:
+    "Run a kerboscript on a kOS CPU: pick the CPU, path, and args, dispatch over the Uplink, and see the correlated result or error inline.",
   tags: ["kos", "control"],
   defaultSize: { w: 10, h: 9 },
   minSize: { w: 6, h: 7 },

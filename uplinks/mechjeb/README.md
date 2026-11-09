@@ -39,7 +39,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=mechjeb-v
 
 ### MechJeb
 
-Engage MechJeb's ascent autopilot, node execution or landing.
+Engage MechJeb's ascent autopilot, execute the next node, or land at the target. Shows the one-way light time each command costs and which commands are still in flight.
 
 | | |
 | --- | --- |

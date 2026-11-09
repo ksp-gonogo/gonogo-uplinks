@@ -23,7 +23,8 @@ export type { LibrationPointsActions } from "./config.js";
 registerComponent<LibrationPointsConfig>({
   id: "libration-points",
   name: "Libration Points",
-  description: "The libration points of a body pair, with your craft's offset.",
+  description:
+    "The five libration points of a body pair, drawn in the frame that turns with it so they hold still, with the craft's offset from the one it is nearest.",
   tags: ["telemetry", "navigation"],
   defaultSize: { w: 6, h: 10 },
   minSize: { w: 4, h: 7 },
