@@ -1,0 +1,40 @@
+{
+  "_scene": {
+    "widget": "camera-feed",
+    "modes": [
+      "default"
+    ],
+    "config": {
+      "flightId": 42
+    },
+    "caption": "A camera that can be aimed, above the staged delay threshold, while a command authority holds its lock: Kerbcast refuses every viewer pan and zoom then, so no wheel is drawn over the picture",
+    "before": [
+      {
+        "hover": "video"
+      }
+    ]
+  },
+  "_stream": {
+    "pinnedUt": 1000000,
+    "emits": [
+      {
+        "topic": "comms.delay",
+        "payload": {
+          "oneWaySeconds": 1.4
+        }
+      },
+      {
+        "topic": "vessel.comms",
+        "payload": {
+          "signalStrength": 0.72
+        }
+      },
+      {
+        "topic": "comms.link",
+        "payload": {
+          "connected": true
+        }
+      }
+    ]
+  }
+}
