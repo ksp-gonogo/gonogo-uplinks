@@ -720,7 +720,7 @@ export function CameraFeed({
   };
   const steerable =
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
-  const frame = borderedFrameBox(stageBox, FRAME_BORDER_PX, STAGE_BORDER_PX);
+  const frame = borderedFrameBox(stageBox, FRAME_BORDER_PX);
   const showSetpointSurface =
     !isDark(site) &&
     controlMode !== "live" &&
@@ -773,13 +773,12 @@ export function CameraFeed({
                 onBlur={onFeedBlur}
               >
                 <div ref={attachOverlayWrap} style={FEED_WRAP_STYLE}>
-                  <div style={FEED_CLIP_STYLE}>
-                  <div style={FEED_BLEED_STYLE}>
                   <GroundFeedClockContext.Provider value={groundClock}>
                   <SharedCameraFeed
                     ref={feedRef}
                     targetBracketOverlay={bracketOverlay}
                     useStream={useDelayedKerbcastStream}
+                    frameless
                     flightId={requested}
                     cameraFilter={pickerFilter}
                     onSelectCamera={(nextFlightId) =>
@@ -817,8 +816,6 @@ export function CameraFeed({
                     renderSize="none"
                   />
                   </GroundFeedClockContext.Provider>
-                  </div>
-                  </div>
                   <FullscreenExit host={overlayWrapEl} />
                   <FrameSizeReport
                     flightId={effectiveFlightId}
@@ -1021,31 +1018,6 @@ const FEED_STAGE_STYLE: CSSProperties = {
 const FRAME_BORDER_PX = 1;
 
 /**
- * The border and corner radius of the box the kerbcast feed draws its picture
- * in. The feed is drawn that border's width larger than the frame's content on
- * every side and cropped, so the border never shows and the picture, the static
- * and the feed's dark top band end on the frame's own edge.
- */
-const STAGE_BORDER_PX = 1;
-const STAGE_RADIUS_PX = 4;
-
-/** The corner of the visible picture: the feed's own corner less the cropped border. */
-const FEED_CLIP_RADIUS_PX = STAGE_RADIUS_PX - STAGE_BORDER_PX;
-
-const FEED_CLIP_STYLE: CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  overflow: "hidden",
-  borderRadius: `${FEED_CLIP_RADIUS_PX}px`,
-};
-
-const FEED_BLEED_STYLE: CSSProperties = {
-  position: "absolute",
-  inset: `-${STAGE_BORDER_PX}px`,
-  display: "flex",
-};
-
-/**
  * The frame itself, sized by `borderedFrameBox` rather than by the layout.
  *
  * The size has to be stated somewhere, because there is no content to leave it
@@ -1056,7 +1028,6 @@ const FEED_BLEED_STYLE: CSSProperties = {
  * an empty box.
  */
 const FEED_FRAME_STYLE: CSSProperties = {
-  borderRadius: `${FEED_CLIP_RADIUS_PX + FRAME_BORDER_PX}px`,
   flex: "0 0 auto",
   minWidth: 0,
   minHeight: 0,

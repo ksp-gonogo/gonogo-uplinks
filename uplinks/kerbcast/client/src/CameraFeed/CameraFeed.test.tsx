@@ -2073,6 +2073,16 @@ describe("CameraFeed: signal quality badge", () => {
 
       expect(covered()).toBeNull();
     });
+
+    it("never covers a command camera when the craft loses its link", async () => {
+      const stream = await mount([
+        makeCamera({ flightId: 42, kind: "command" as CameraKind }),
+      ]);
+
+      act(() => emitComms(stream, { signalStrength: 0, connected: false }));
+
+      expect(covered()).toBeNull();
+    });
   });
 
   it("says the camera is being re-acquired while its slot is bound again", async () => {
@@ -2524,8 +2534,8 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
 
   it("letterboxes a 16:9 frame from the tile's width and asks for one 16:9 size", async () => {
     const { sidecar, video } = await mountFeed();
-    expect(frameOf(video).style.width).toBe("160px");
-    expect(frameOf(video).style.height).toBe("90px");
+    expect(frameOf(video).style.width).toBe("162px");
+    expect(frameOf(video).style.height).toBe("92px");
     expect(sizeReports(sidecar)).toEqual([
       { flightId: 42, width: 240, height: 136 },
     ]);
@@ -2542,8 +2552,8 @@ describe("CameraFeed: frame shape in a narrow, tall tile", () => {
       [176, 400],
     ] as const) {
       await streamBecomes(sidecar, video, w, h);
-      expect(frameOf(video).style.width).toBe("160px");
-      expect(frameOf(video).style.height).toBe("90px");
+      expect(frameOf(video).style.width).toBe("162px");
+      expect(frameOf(video).style.height).toBe("92px");
     }
 
     expect(sizeReports(sidecar).length - before).toBe(0);

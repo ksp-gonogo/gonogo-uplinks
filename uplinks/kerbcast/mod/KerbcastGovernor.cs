@@ -23,6 +23,9 @@ namespace Gonogo.KerbcastUplink
 
         /// <summary>Any thread: the countdown to liftoff was called off.</summary>
         void CancelLaunchCountdown();
+
+        /// <summary>Any thread: an operator aimed command feed <paramref name="flightId"/> at a craft.</summary>
+        void SayViewerAim(uint flightId);
     }
 
     /// <summary>
@@ -70,7 +73,7 @@ namespace Gonogo.KerbcastUplink
             _kerbcast = kerbcast;
             _kernel = kernel;
             _authority = new KerbcastAuthority(kerbcast, supports);
-            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu, supportsAcceleration, supportsOcclusion, onKnowledge);
+            _model = new KerbcastWorldModel(labels, supports, places, log, onFeedSites, launchSite, activeCraft, bodyMu, supportsAcceleration, supportsOcclusion, onKnowledge, KerbcastApiMinor5.Supported);
             KerbcastApi.Identity += _model.OnIdentity;
         }
 
@@ -96,7 +99,8 @@ namespace Gonogo.KerbcastUplink
                 Query<ILensSites>(LensSitesCapability.Id),
                 Query<ICraftKnowledge>(CraftKnowledgeCapability.Id) as IBulkCraftKnowledge,
                 nowUt,
-                realSeconds);
+                realSeconds,
+                speed);
             _onFollowing?.Invoke(_model.Following);
         }
 
@@ -105,6 +109,8 @@ namespace Gonogo.KerbcastUplink
         public void SayLaunchCountdown(double remainingSeconds, double lengthSeconds) => _model.SayLaunchCountdown(remainingSeconds, lengthSeconds);
 
         public void CancelLaunchCountdown() => _model.CancelLaunchCountdown();
+
+        public void SayViewerAim(uint flightId) => _model.SayViewerAim(flightId);
 
         public void Dispose() => KerbcastApi.Identity -= _model.OnIdentity;
 

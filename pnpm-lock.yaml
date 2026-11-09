@@ -133,11 +133,11 @@ importers:
   uplinks/kerbcast/client:
     dependencies:
       '@ksp-gonogo/kerbcast':
-        specifier: 1.12.0
-        version: 1.12.0
+        specifier: 1.12.1-rc.13
+        version: 1.12.1-rc.13
       '@ksp-gonogo/kerbcast-react':
-        specifier: 1.12.0
-        version: 1.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: 1.12.1-rc.13
+        version: 1.12.1-rc.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/ui-kit':
         specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9cc743e160c1.tgz
         version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9cc743e160c1.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -1065,15 +1065,15 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@ksp-gonogo/kerbcast-react@1.12.0':
-    resolution: {integrity: sha512-S12WzQJLm58ckbXAzUlKWLARAL7mYod0YFhNPRwCdkiylp/mloC3J8TyczcEF5VTNMsYa6TVh7+XN3zvxihxHw==}
+  '@ksp-gonogo/kerbcast-react@1.12.1-rc.13':
+    resolution: {integrity: sha512-REYQaVu83f6cBdhfeQIX3ko325hZsFLlwc5q0mKwaVhBSobcZWrHU+eayWr0yKMtSOBDOCmGrwBYJNldRUyYFA==}
     peerDependencies:
       react: ^18 || ^19
       react-dom: ^18 || ^19
       styled-components: ^6
 
-  '@ksp-gonogo/kerbcast@1.12.0':
-    resolution: {integrity: sha512-NJXEz8yOQkNqNcLEaO1KiyJniWPXgnSPBH2XIMEbiF85GgjcEfcVZKx6mpkgDKdmMIJeDC76EAhcyVAR32QA3A==}
+  '@ksp-gonogo/kerbcast@1.12.1-rc.13':
+    resolution: {integrity: sha512-PPxGaFuvHF51C+yn2omEVAeaweeCKHv3SxbPl+gfLCp+VK6gltHqGQcvlIMShZy+5XitUzaDx8DghbE0uG1d0A==}
 
   '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-97cbd530e3d1.tgz':
     resolution: {integrity: sha512-UG/0nxy01Q575MTQz5oYoCzQ/P+HtG0vp1VWIr2DgerK2wOEgm0nx+HtAM+cNYlU+uT3yHLRQYiiljobHx+ZdQ==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-97cbd530e3d1.tgz}
@@ -2400,14 +2400,14 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@ksp-gonogo/kerbcast-react@1.12.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@ksp-gonogo/kerbcast-react@1.12.1-rc.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
-      '@ksp-gonogo/kerbcast': 1.12.0
+      '@ksp-gonogo/kerbcast': 1.12.1-rc.13
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  '@ksp-gonogo/kerbcast@1.12.0':
+  '@ksp-gonogo/kerbcast@1.12.1-rc.13':
     dependencies:
       mediabunny: 1.62.1
 

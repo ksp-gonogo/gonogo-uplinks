@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Kerbcast.Api;
 using Sitrep.Contract;
@@ -42,6 +43,52 @@ namespace Gonogo.KerbcastUplink
         /// <summary>How far past the instant read a predicted place is read again, to give the craft the velocity its prediction implies.</summary>
         private const double VelocitySpanSeconds = 1.0;
 
+        /// <summary>The fewest pixels across a craft must cover for a relay's camera to make it out.</summary>
+        private const double RelaySightMinPixels = 2.0;
+
+        /// <summary>The angle one pixel of a relay's camera covers when Kerbcast does not report it, in radians: its shipped tightest vertical field of view, 0.02 degrees, over its shipped frame height, 576 pixels.</summary>
+        private const double RelayDefaultPixelRad = 0.02 * Math.PI / 180.0 / 576.0;
+
+        /// <summary>The size of a craft whose size was not heard, in metres across: Kerbcast's nominal craft radius, twice.</summary>
+        private const double RelaySightDefaultCraftAcrossM = 4.0;
+
+        /// <summary>
+        /// The furthest a relay's camera can make out a craft <paramref name="craftAcrossM"/>
+        /// metres across, in metres, given the smallest angle it resolves toward the craft.
+        ///
+        /// <para>A craft spans <c>N</c> resolved angles at <c>range = size / (resolutionRad * N)</c>.
+        /// N is 2 because a target takes two samples across to be told from a single stray
+        /// pixel. Kerbcast reports the angle for the line tested: one pixel at its tightest zoom,
+        /// or the wider blur of its lens when deep-space optics are drawn, as they are by default.
+        /// From a craft in vacuum the top 1 arcsecond lens reads 206 km for a 2 m probe, 413 km for
+        /// a default 4 m craft and 3,094 km for a 30 m station; the level 1 lens of 15 arcseconds
+        /// reads 14 km, 28 km and 206 km.</para>
+        /// </summary>
+        public static double RelaySightRangeM(double craftAcrossM, double resolutionRad = RelayDefaultPixelRad) =>
+            craftAcrossM / (resolutionRad * RelaySightMinPixels);
+
+        /* Whether a tested line counts as sight of a craft this size: known, unblocked, on and within what the camera can resolve there. */
+        private bool Sees(LineOfSightResult line, double? extentM)
+        {
+            if (!line.Known || !line.Visible || line.Disabled)
+            {
+                return false;
+            }
+            var resolution = _supports(ApiFeature.VantageResolution) ? KerbcastApiMinor5.ResolutionRad(line) : double.NaN;
+            if (double.IsNaN(resolution) || resolution <= 0.0)
+            {
+                resolution = RelayDefaultPixelRad;
+            }
+            var across = extentM is double radius && radius > 0.0 ? 2.0 * radius : RelaySightDefaultCraftAcrossM;
+            return line.RangeM <= RelaySightRangeM(across, resolution);
+        }
+
+        /// <summary>Real seconds a relay's line of sight is kept before it is tested again.</summary>
+        private const double SightRefreshSeconds = 0.5;
+
+        /// <summary>Real seconds a relay's frontier may stand still before its path home is called lost.</summary>
+        private const double RelayPathLostSeconds = 2.0;
+
         /** Net acceleration beyond gravity, in m/s², above which a record is given its acceleration; below it the craft follows its conic. */
         private const double ThrustThreshold = 0.1;
 
@@ -56,13 +103,21 @@ namespace Gonogo.KerbcastUplink
         private readonly Func<uint?>? _activeCraft;
         private readonly Func<int, double?>? _bodyMu;
         private readonly Func<bool>? _supportsAcceleration;
+        private readonly Func<bool>? _supportsNetworks;
         private readonly Dictionary<uint, uint> _followed = new Dictionary<uint, uint>();
+        private readonly HashSet<(uint Feed, uint Craft)> _refusedSincePublish = new HashSet<(uint Feed, uint Craft)>();
         private int _followTenure = -1;
+        private readonly HashSet<uint> _networksSeen = new HashSet<uint>();
+        private readonly HashSet<uint> _networksFollowing = new HashSet<uint>();
+        private readonly ConcurrentQueue<uint> _viewerAims = new ConcurrentQueue<uint>();
+        private readonly Dictionary<uint, HashSet<string>> _networkScopes = new Dictionary<uint, HashSet<string>>();
+        private readonly Dictionary<string, RelayPath> _relayPaths = new Dictionary<string, RelayPath>(StringComparer.Ordinal);
+        private readonly Dictionary<string, RelayReading> _relayReadings = new Dictionary<string, RelayReading>(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _logged = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<string, double> _recordRadius = new Dictionary<string, double>(StringComparer.Ordinal);
         private readonly List<IdentityEvent> _pending = new List<IdentityEvent>();
         private readonly List<HeardAlias> _aliases = new List<HeardAlias>();
-        private readonly HashSet<string> _bound = new HashSet<string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _bound = new Dictionary<string, string>(StringComparer.Ordinal);
         private CraftKnowledgeSample[] _buffer = new CraftKnowledgeSample[64];
         private CraftKnowledgeSample[] _ahead = new CraftKnowledgeSample[64];
         private CraftKnowledgeSample[] _mid = new CraftKnowledgeSample[64];
@@ -76,6 +131,7 @@ namespace Gonogo.KerbcastUplink
         private double? _lastPublish;
         private int _lastTenure = -1;
         private string _lastBindings = "";
+        private string _lastRelaySight = "";
         private int _aliasVersion;
         private int _lastAliasVersion = -1;
         private long _lastEpoch = -1;
@@ -94,8 +150,10 @@ namespace Gonogo.KerbcastUplink
         /// <param name="supportsOcclusion">Whether this Kerbcast reports a command feed's view as blocked (API 1.2), normally <see cref="KerbcastApiMinor2.Supported"/>; null means it does not.</param>
         /// <param name="onKnowledge">Receives, on every publish attempt, how each command centre knows each craft it knows of, and the game time it describes; null reports nothing.</param>
         /// <param name="onFeedSites">Receives, on every publish and on a game load, each command feed's camera id in decimal mapped to the command centre its lens stands at; null reports nothing.</param>
-        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null, Func<bool>? supportsOcclusion = null, Action<IReadOnlyList<CraftKnowledgeFact>, double>? onKnowledge = null)
+        /// <param name="supportsNetworks">Whether this Kerbcast says which vantages a tracking network has and which feeds follow the active craft (API 1.5), normally <see cref="KerbcastApiMinor5.Supported"/>; null means it does not.</param>
+        public KerbcastWorldModel(CraftLabels labels, Func<ApiFeature, bool> supports, CraftPlaces? places = null, Action<string>? log = null, Action<IReadOnlyDictionary<string, string>>? onFeedSites = null, Func<string, LaunchSiteReading>? launchSite = null, Func<uint?>? activeCraft = null, Func<int, double?>? bodyMu = null, Func<bool>? supportsAcceleration = null, Func<bool>? supportsOcclusion = null, Action<IReadOnlyList<CraftKnowledgeFact>, double>? onKnowledge = null, Func<bool>? supportsNetworks = null)
         {
+            _supportsNetworks = supportsNetworks;
             _supportsOcclusion = supportsOcclusion;
             _bodyMu = bodyMu;
             _supportsAcceleration = supportsAcceleration;
@@ -114,6 +172,9 @@ namespace Gonogo.KerbcastUplink
 
         /// <summary>Any thread: the countdown to liftoff was called off, so the camera eases back in.</summary>
         public void CancelLaunchCountdown() => _framing.Cancel();
+
+        /// <summary>Any thread: an operator aimed command feed <paramref name="flightId"/> at a craft, so a tracking network no longer follows the active craft for the rest of this lock tenure.</summary>
+        public void SayViewerAim(uint flightId) => _viewerAims.Enqueue(flightId);
 
         /// <summary>Whether at least one command feed is aimed at a craft Gonogo follows for it.</summary>
         public bool Following => _followed.Count > 0;
@@ -136,6 +197,8 @@ namespace Gonogo.KerbcastUplink
             _places.Clear();
             _logged.Clear();
             _recordRadius.Clear();
+            _relayPaths.Clear();
+            _relayReadings.Clear();
             _onFeedSites?.Invoke(new Dictionary<string, string>());
         }
 
@@ -177,6 +240,7 @@ namespace Gonogo.KerbcastUplink
         /// <param name="knowledge">Gonogo's craft knowledge, or null when the capability is missing.</param>
         /// <param name="nowUt">Game time now.</param>
         /// <param name="realSeconds">A monotonic real-time clock in seconds.</param>
+        /// <param name="lightSpeed">How fast signals travel, in metres per second; null gives a relay no sight of its own.</param>
         public PublishResult? Publish(
             IKerbcast kerbcast,
             IWorldModelPublisher publisher,
@@ -184,7 +248,8 @@ namespace Gonogo.KerbcastUplink
             ILensSites? sites,
             IBulkCraftKnowledge? knowledge,
             double nowUt,
-            double realSeconds)
+            double realSeconds,
+            double? lightSpeed = null)
         {
             if (_lastUt.HasValue && nowUt < _lastUt.Value)
             {
@@ -199,9 +264,27 @@ namespace Gonogo.KerbcastUplink
             _lastUt = nowUt;
             _realSeconds = realSeconds;
 
+            if (tenure != _followTenure)
+            {
+                _followed.Clear();
+                _refusedSincePublish.Clear();
+                _networksSeen.Clear();
+                _networksFollowing.Clear();
+                _followTenure = tenure;
+            }
+            while (_viewerAims.TryDequeue(out var aimed))
+            {
+                if (_networksFollowing.Remove(aimed))
+                {
+                    _followed.Remove(aimed);
+                }
+            }
+            var active = _activeCraft?.Invoke();
             var bindings = Bindings(kerbcast, sites, out var feedSites);
             _onFeedSites?.Invoke(feedSites);
-            SyncLensSites(sites, bindings);
+            var relays = RelayScopes(knowledge, bindings, nowUt);
+            var commanders = Commanders(sites, relays, bindings);
+            SyncLensSites(sites, bindings, commanders);
 
             var scopes = new List<string>();
             foreach (var scope in bindings.Values)
@@ -219,11 +302,23 @@ namespace Gonogo.KerbcastUplink
             var scopeUt = new Dictionary<string, double>(StringComparer.Ordinal);
             var facts = _onKnowledge == null ? null : new List<CraftKnowledgeFact>();
             long? version = null;
+            var ownSight = new Dictionary<string, List<RelaySighting>>(StringComparer.Ordinal);
             foreach (var scope in scopes)
             {
                 var ut = sites?.KnowledgeUt(scope);
                 var crafts = new List<ScopeCraft>();
                 var lastHeard = new Dictionary<uint, double?>();
+                if (relays.Contains(scope))
+                {
+                    if (ut.HasValue && commanders.TryGetValue(scope, out var commander) && knowledge != null)
+                    {
+                        scopeUt[scope] = ut.Value;
+                        ownSight[scope] = RelaySights(kerbcast, knowledge, scope, commander, ut.Value, nowUt, realSeconds, lightSpeed, crafts, lastHeard);
+                    }
+                    listed[scope] = crafts;
+                    heard[scope] = lastHeard;
+                    continue;
+                }
                 if (ut.HasValue && knowledge != null)
                 {
                     scopeUt[scope] = ut.Value;
@@ -279,14 +374,16 @@ namespace Gonogo.KerbcastUplink
                 _onKnowledge!(facts, nowUt);
             }
             ApplyHeardChanges(listed, heard);
-            Follow(kerbcast, tenure, feedSites, listed);
+            Follow(kerbcast, active, relays, feedSites, listed, ownSight);
             _occluded = LaunchpadOccluded(kerbcast, out _occludedRangeM);
 
             var bindingKey = BindingKey(bindings);
+            var relaySight = RelaySightKey(ownSight, listed, relays);
             var due = tenure != _lastTenure
                 || _epoch != _lastEpoch
                 || version != _lastVersion
                 || bindingKey != _lastBindings
+                || relaySight != _lastRelaySight
                 || _aliasVersion != _lastAliasVersion
                 || !_lastPublish.HasValue
                 || realSeconds - _lastPublish.Value >= RefreshSeconds
@@ -307,7 +404,7 @@ namespace Gonogo.KerbcastUplink
             var sent = false;
             try
             {
-                Fill(builder, bindings, scopes, listed);
+                Fill(builder, bindings, scopes, listed, ownSight);
                 sent = true;
                 result = publisher.Publish(builder, out _);
             }
@@ -325,8 +422,10 @@ namespace Gonogo.KerbcastUplink
             _lastEpoch = _epoch;
             _lastVersion = version;
             _lastBindings = bindingKey;
+            _lastRelaySight = relaySight;
             _lastAliasVersion = _aliasVersion;
             _lastPublish = realSeconds;
+            _refusedSincePublish.Clear();
             LogEligibility(kerbcast);
             return result;
         }
@@ -340,27 +439,47 @@ namespace Gonogo.KerbcastUplink
          * view sends no aim and leaves the framing as it was. When the craft stops
          * qualifying otherwise the feed is left to Kerbcast, which shows its own waiting view for a subject it
          * cannot watch; the API has no call that clears an aim.
+         *
+         * Under the lock a feed with no aim has no subject, so a tracking network that
+         * follows the active craft is only ever shown by being aimed at it here, and that
+         * aim clears FollowsActiveVessel. So which networks follow is read once, the first
+         * time each is seen in a lock tenure, and a network that was watching a chosen
+         * craft then is never aimed; a viewer's aim takes a network out of the set. The
+         * network chooses its own vantage per craft, so the on-air site's Targets says
+         * nothing about it: a network is aimed once any of its vantages' scopes hears the
+         * active craft or a relay among them sees it.
+         *
+         * Kerbcast judges an aim against the last world model it was given, and this runs
+         * ahead of the publish that names a newly heard craft. A network is aimed on what
+         * Gonogo knows, without Kerbcast's targets to hold it back, so its first aim can be
+         * refused with the craft still unknown there. A refused aim is not recorded as
+         * sent: only a new model can change the answer, so it goes again after the next
+         * publish.
          */
-        private void Follow(IKerbcast kerbcast, int tenure, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
+        private void Follow(IKerbcast kerbcast, uint? active, HashSet<string> relays, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed, Dictionary<string, List<RelaySighting>> ownSight)
         {
             if (_activeCraft == null || !_supports(ApiFeature.CommandFeeds))
             {
                 return;
             }
-            if (tenure != _followTenure)
-            {
-                _followed.Clear();
-                _followTenure = tenure;
-            }
-            var active = _activeCraft();
             foreach (var feed in kerbcast.Command.Feeds())
             {
                 if (feed == null)
                 {
                     continue;
                 }
-                var subject = active.HasValue && Qualifies(kerbcast, feed, active.Value, feedSites, listed) ? active.Value : 0u;
-                if (subject == 0u && active.HasValue && _followed.TryGetValue(feed.FlightId, out var aimed) && aimed == active.Value && IsHeard(feed, active.Value, feedSites, listed))
+                var network = IsNetwork(feed);
+                if (network && !_networksFollowing.Contains(feed.FlightId))
+                {
+                    continue;
+                }
+                var subject = active.HasValue
+                    && (network
+                        ? KnownToNetwork(feed.FlightId, active.Value, relays, listed, ownSight)
+                        : Qualifies(kerbcast, feed, active.Value, feedSites, listed))
+                    ? active.Value
+                    : 0u;
+                if (subject == 0u && active.HasValue && _followed.TryGetValue(feed.FlightId, out var aimed) && aimed == active.Value && (network || IsHeard(feed, active.Value, feedSites, listed)))
                 {
                     continue;
                 }
@@ -374,11 +493,47 @@ namespace Gonogo.KerbcastUplink
                 {
                     continue;
                 }
-                _followed[feed.FlightId] = subject;
+                if (_refusedSincePublish.Contains((feed.FlightId, subject)))
+                {
+                    continue;
+                }
                 var result = kerbcast.Command.SetAim(feed.FlightId, Aim.Vessel(subject, 0.0, false), KerbcastAuthority.Owner);
                 LogFollow(feed.FlightId, subject + " result=" + result);
+                if (result == AimResult.Ok)
+                {
+                    _followed[feed.FlightId] = subject;
+                }
+                else
+                {
+                    _refusedSincePublish.Add((feed.FlightId, subject));
+                }
             }
         }
+
+        private bool KnownToNetwork(uint flightId, uint craft, HashSet<string> relays, Dictionary<string, List<ScopeCraft>> listed, Dictionary<string, List<RelaySighting>> ownSight)
+        {
+            if (!_networkScopes.TryGetValue(flightId, out var scopes))
+            {
+                return false;
+            }
+            foreach (var scope in scopes)
+            {
+                if (relays.Contains(scope))
+                {
+                    if (ownSight.TryGetValue(scope, out var seen) && seen.Exists(s => s.PersistentId == craft))
+                    {
+                        return true;
+                    }
+                }
+                else if (listed.TryGetValue(scope, out var crafts) && crafts.Exists(c => c.PersistentId == craft && c.Sample.State == CraftKnowledgeState.Heard))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsNetwork(CommandFeed feed) => _supportsNetworks?.Invoke() == true && KerbcastApiMinor5.IsNetwork(feed);
 
         private static bool IsHeard(CommandFeed feed, uint craft, Dictionary<string, string> feedSites, Dictionary<string, List<ScopeCraft>> listed)
         {
@@ -431,7 +586,8 @@ namespace Gonogo.KerbcastUplink
             WorldModelBuilder builder,
             Dictionary<string, string> bindings,
             List<string> scopes,
-            Dictionary<string, List<ScopeCraft>> listed)
+            Dictionary<string, List<ScopeCraft>> listed,
+            Dictionary<string, List<RelaySighting>> ownSight)
         {
             foreach (var binding in bindings)
             {
@@ -446,21 +602,51 @@ namespace Gonogo.KerbcastUplink
                 builder.Scope(scope);
                 foreach (var craft in listed[scope])
                 {
-                    var pid = craft.PersistentId;
                     Describe(builder, scope, craft);
-                    if (_labels.TryLabel(pid, out var label))
+                    Label(builder, craft.PersistentId);
+                }
+                if (ownSight.TryGetValue(scope, out var seen))
+                {
+                    foreach (var sighting in seen)
                     {
-                        if (label.Name != null)
-                        {
-                            builder.Name(label.Name);
-                        }
-                        if (label.Kind != null)
-                        {
-                            builder.Kind(label.Kind);
-                        }
+                        DescribeSighting(builder, sighting);
+                        Label(builder, sighting.PersistentId);
                     }
                 }
             }
+        }
+
+        private void Label(WorldModelBuilder builder, uint pid)
+        {
+            if (!_labels.TryLabel(pid, out var label))
+            {
+                return;
+            }
+            if (label.Name != null)
+            {
+                builder.Name(label.Name);
+            }
+            if (label.Kind != null)
+            {
+                builder.Kind(label.Kind);
+            }
+        }
+
+        /* A relay sees where the craft was when its light left, so the record starts there and Kerbcast carries it on from that instant. */
+        private static void DescribeSighting(WorldModelBuilder builder, RelaySighting sighting)
+        {
+            var place = sighting.Place;
+            var from = place.Ut;
+            var until = place.Ut + RecordValiditySeconds;
+            if (place.OnSurface)
+            {
+                builder.Surface(sighting.PersistentId, place.BodyIndex, place.Latitude, place.Longitude, place.Altitude, from, until);
+            }
+            else
+            {
+                builder.StateVector(sighting.PersistentId, place.BodyIndex, place.Ut, new Vec3d(place.State6[0], place.State6[1], place.State6[2]), new Vec3d(place.State6[3], place.State6[4], place.State6[5]), from, until);
+            }
+            builder.Uncertainty(0.0, 0.0, 0.0, 0.0);
         }
 
         /*
@@ -737,6 +923,217 @@ namespace Gonogo.KerbcastUplink
             _log("[Kerbcast][WORLD] scope=" + scope + " craft=" + craft.PersistentId + " " + detail);
         }
 
+        /*
+         * A relay's picture counts at home only when all of it holds: a signal path home,
+         * a clear line to the craft where the craft's light left it, within the sight
+         * range, and a place to point at. The relay's observe time is the newest instant
+         * of home's knowledge that has reached it: the path is the same one the picture
+         * comes home along, so the two delays match. A line the camera could not test is
+         * unknown and shows nothing. The place comes from the relay's own sight when the
+         * game recorded the craft at that moment, or else from what its commanding centre
+         * has told it, which is read at the same observe time and so aged by the delay.
+         */
+        private List<RelaySighting> RelaySights(
+            IKerbcast kerbcast,
+            IBulkCraftKnowledge knowledge,
+            string scope,
+            string commander,
+            double observeUt,
+            double nowUt,
+            double realSeconds,
+            double? lightSpeed,
+            List<ScopeCraft> fromCommander,
+            Dictionary<uint, double?> lastHeard)
+        {
+            var seen = new List<RelaySighting>();
+            if (!RelayPathLive(scope, observeUt, nowUt, realSeconds) || !lightSpeed.HasValue
+                || !Guid.TryParse(scope.Substring(VesselCentrePrefix.Length), out var relayId)
+                || !kerbcast.Cameras.TryPersistentId(relayId, out var relayPid)
+                || !_subjects.TryGetValue(scope, out var subjects))
+            {
+                return seen;
+            }
+            var vantage = NetworkVantage.Vessel(relayPid);
+            Dictionary<string, double?>? extents = null;
+            foreach (var pid in subjects)
+            {
+                if (pid == relayPid || !kerbcast.Cameras.TryVessel(pid, out var craftId))
+                {
+                    continue;
+                }
+                var cacheKey = scope + "|" + pid;
+                if (!_relayReadings.TryGetValue(cacheKey, out var reading) || realSeconds - reading.AtRealSeconds >= SightRefreshSeconds)
+                {
+                    extents ??= Extents(knowledge, commander, nowUt);
+                    extents.TryGetValue(craftId.ToString(), out var extent);
+                    reading = ReadSight(kerbcast, vantage, craftId, observeUt, lightSpeed.Value, realSeconds, extent);
+                    _relayReadings[cacheKey] = reading;
+                }
+                if (reading.Sees && reading.Place is CraftPlace place)
+                {
+                    seen.Add(new RelaySighting(pid, place));
+                    lastHeard[pid] = place.Ut;
+                    continue;
+                }
+                if (reading.NoPlace)
+                {
+                    CommanderKnows(kerbcast, knowledge, vantage, commander, observeUt, craftId, pid, fromCommander, lastHeard);
+                }
+            }
+            return seen;
+        }
+
+        /* A craft's size as its commanding centre last heard it, keyed by craft id; a craft the centre has not heard reads as absent. */
+        private Dictionary<string, double?> Extents(IBulkCraftKnowledge knowledge, string commander, double nowUt)
+        {
+            var extents = new Dictionary<string, double?>(StringComparer.Ordinal);
+            var count = Read(knowledge, commander, nowUt, out _);
+            for (var i = 0; i < count; i++)
+            {
+                extents[_buffer[i].VesselId] = _buffer[i].ExtentM;
+            }
+            return extents;
+        }
+
+        private RelayReading ReadSight(IKerbcast kerbcast, NetworkVantage vantage, Guid craftId, double observeUt, double lightSpeed, double realSeconds, double? extentM)
+        {
+            if (!_places.TryAt(craftId, observeUt, out var atObserve) || atObserve.Position == null)
+            {
+                return new RelayReading(realSeconds, false, null, noPlace: true);
+            }
+            var nearest = KerbcastApiMinor5.Sight(kerbcast, vantage, observeUt, atObserve.BodyIndex, atObserve.Position, extentM);
+            if (!nearest.Known || double.IsNaN(nearest.RangeM) || double.IsInfinity(nearest.RangeM))
+            {
+                return new RelayReading(realSeconds, false, null, noPlace: false);
+            }
+            var emitUt = observeUt - nearest.RangeM / lightSpeed;
+            if (!_places.TryAt(craftId, emitUt, out var atEmit) || atEmit.Position == null)
+            {
+                return new RelayReading(realSeconds, false, null, noPlace: true);
+            }
+            var line = KerbcastApiMinor5.Sight(kerbcast, vantage, observeUt, atEmit.BodyIndex, atEmit.Position, extentM);
+            return new RelayReading(realSeconds, Sees(line, extentM), atEmit, noPlace: false);
+        }
+
+        private void CommanderKnows(IKerbcast kerbcast, IBulkCraftKnowledge knowledge, NetworkVantage vantage, string commander, double observeUt, Guid craftId, uint pid, List<ScopeCraft> fromCommander, Dictionary<uint, double?> lastHeard)
+        {
+            var count = Read(knowledge, commander, observeUt, out var version);
+            var idText = craftId.ToString();
+            for (var i = 0; i < count; i++)
+            {
+                var sample = _buffer[i];
+                if (sample.VesselId != idText || sample.Place == null || !sample.UncertaintyM.HasValue || sample.State == CraftKnowledgeState.Unknown || sample.State == CraftKnowledgeState.Held)
+                {
+                    continue;
+                }
+                var position = sample.Place.Position;
+                var line = KerbcastApiMinor5.Sight(kerbcast, vantage, observeUt, sample.Place.BodyIndex, new[] { position.X, position.Y, position.Z }, sample.ExtentM);
+                if (Sees(line, sample.ExtentM))
+                {
+                    fromCommander.Add(new ScopeCraft(pid, craftId, sample, observeUt, null, version, version, null));
+                    lastHeard[pid] = sample.LastKnownUt;
+                }
+                return;
+            }
+        }
+
+        /*
+         * The frontier holds still while no path reaches the relay, and moves on every
+         * courier tick while one does, so a frontier that has stopped moving for a couple
+         * of real seconds is a lost path. A paused game moves neither clock.
+         */
+        private bool RelayPathLive(string scope, double observeUt, double nowUt, double realSeconds)
+        {
+            if (!_relayPaths.TryGetValue(scope, out var path))
+            {
+                _relayPaths[scope] = new RelayPath(observeUt, nowUt, realSeconds);
+                return true;
+            }
+            if (observeUt > path.DeliveredUt)
+            {
+                _relayPaths[scope] = new RelayPath(observeUt, nowUt, realSeconds);
+                return true;
+            }
+            if (nowUt <= path.AtUt)
+            {
+                _relayPaths[scope] = new RelayPath(path.DeliveredUt, nowUt, realSeconds);
+                return true;
+            }
+            return realSeconds - path.AtRealSeconds < RelayPathLostSeconds;
+        }
+
+        private static string RelaySightKey(Dictionary<string, List<RelaySighting>> ownSight, Dictionary<string, List<ScopeCraft>> listed, HashSet<string> relays)
+        {
+            var keys = new List<string>();
+            foreach (var relay in relays)
+            {
+                if (ownSight.TryGetValue(relay, out var seen))
+                {
+                    foreach (var sighting in seen)
+                    {
+                        keys.Add(relay + ":" + sighting.PersistentId);
+                    }
+                }
+                if (listed.TryGetValue(relay, out var crafts))
+                {
+                    foreach (var craft in crafts)
+                    {
+                        keys.Add(relay + "~" + craft.PersistentId);
+                    }
+                }
+            }
+            keys.Sort(StringComparer.Ordinal);
+            return string.Join("|", keys);
+        }
+
+        private readonly struct RelaySighting
+        {
+            public RelaySighting(uint persistentId, CraftPlace place)
+            {
+                PersistentId = persistentId;
+                Place = place;
+            }
+
+            public uint PersistentId { get; }
+
+            public CraftPlace Place { get; }
+        }
+
+        private readonly struct RelayPath
+        {
+            public RelayPath(double deliveredUt, double atUt, double atRealSeconds)
+            {
+                DeliveredUt = deliveredUt;
+                AtUt = atUt;
+                AtRealSeconds = atRealSeconds;
+            }
+
+            public double DeliveredUt { get; }
+
+            public double AtUt { get; }
+
+            public double AtRealSeconds { get; }
+        }
+
+        private readonly struct RelayReading
+        {
+            public RelayReading(double atRealSeconds, bool sees, CraftPlace? place, bool noPlace)
+            {
+                AtRealSeconds = atRealSeconds;
+                Sees = sees;
+                Place = place;
+                NoPlace = noPlace;
+            }
+
+            public double AtRealSeconds { get; }
+
+            public bool Sees { get; }
+
+            public CraftPlace? Place { get; }
+
+            public bool NoPlace { get; }
+        }
+
         private readonly struct ScopeCraft
         {
             public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, CraftKnowledgeSample? aheadSample, long readVersion, long aheadVersion, CraftKnowledgeSample? midSample)
@@ -777,46 +1174,166 @@ namespace Gonogo.KerbcastUplink
                 Sample.Place != null && AheadSample?.Place is { } later && later.BodyIndex == Sample.Place.BodyIndex ? later : null;
         }
 
-        /// <summary>Each command feed's site key, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
+        /// <summary>Each command feed's site key, and every vantage of a tracking network, mapped to the scope of the centre at that site; unresolved sites are left out.</summary>
         private Dictionary<string, string> Bindings(IKerbcast kerbcast, ILensSites? sites, out Dictionary<string, string> feedSites)
         {
             var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
             feedSites = new Dictionary<string, string>(StringComparer.Ordinal);
+            _networkScopes.Clear();
+            _subjects.Clear();
             if (!_supports(ApiFeature.CommandFeeds))
             {
                 return bindings;
             }
             foreach (var feed in kerbcast.Command.Feeds())
             {
-                if (feed == null || string.IsNullOrEmpty(feed.SiteKey))
+                if (feed == null)
                 {
                     continue;
                 }
-                var centre = CentreAt(kerbcast, sites, feed);
-                if (centre == null)
+                if (!string.IsNullOrEmpty(feed.SiteKey))
                 {
-                    continue;
+                    var centre = CentreAt(kerbcast, sites, feed.SiteKey, feed.SiteKind, feed.VantagePersistentId, feed.FlightId);
+                    if (centre != null)
+                    {
+                        feedSites[KerbcastLensSites.KeyFor(feed.FlightId)] = centre;
+                        if (!bindings.ContainsKey(feed.SiteKey))
+                        {
+                            bindings[feed.SiteKey] = centre;
+                        }
+                        AddSubject(centre, feed);
+                    }
                 }
-                feedSites[KerbcastLensSites.KeyFor(feed.FlightId)] = centre;
-                if (!bindings.ContainsKey(feed.SiteKey))
+                if (IsNetwork(feed))
                 {
-                    bindings[feed.SiteKey] = centre;
+                    BindVantages(kerbcast, sites, feed, bindings);
                 }
             }
             return bindings;
         }
 
-        private string? CentreAt(IKerbcast kerbcast, ILensSites? sites, CommandFeed feed)
+        /*
+         * A network scores every vantage on what that vantage's own site knows, so every
+         * one has to be bound and not only the one on air. Binding one at the moment of a
+         * cut is too late, since a new binding holds its knowledge for one more delay.
+         */
+        private void BindVantages(IKerbcast kerbcast, ILensSites? sites, CommandFeed feed, Dictionary<string, string> bindings)
         {
-            switch (feed.SiteKind)
+            if (_networksSeen.Add(feed.FlightId) && KerbcastApiMinor5.FollowsActive(feed))
+            {
+                _networksFollowing.Add(feed.FlightId);
+            }
+            var scopes = new HashSet<string>(StringComparer.Ordinal);
+            _networkScopes[feed.FlightId] = scopes;
+            foreach (var vantage in KerbcastApiMinor5.Vantages(kerbcast, feed.FlightId))
+            {
+                if (string.IsNullOrEmpty(vantage.SiteKey))
+                {
+                    continue;
+                }
+                var centre = CentreAt(kerbcast, sites, vantage.SiteKey, vantage.SiteKind, vantage.VantagePersistentId, feed.FlightId);
+                if (centre == null)
+                {
+                    continue;
+                }
+                scopes.Add(centre);
+                if (!bindings.ContainsKey(vantage.SiteKey))
+                {
+                    bindings[vantage.SiteKey] = centre;
+                }
+                AddSubject(centre, feed);
+            }
+        }
+
+        /* The craft a relay's scope has to answer for: what the feed is aimed at, or the active craft for a network that follows it and is not aimed yet. */
+        private void AddSubject(string centre, CommandFeed feed)
+        {
+            var subject = feed.SubjectPersistentId;
+            if (subject == 0u && _networksFollowing.Contains(feed.FlightId) && _activeCraft?.Invoke() is uint active)
+            {
+                subject = active;
+            }
+            if (subject == 0u)
+            {
+                return;
+            }
+            if (!_subjects.TryGetValue(centre, out var crafts))
+            {
+                _subjects[centre] = crafts = new HashSet<uint>();
+            }
+            crafts.Add(subject);
+        }
+
+        private readonly Dictionary<string, HashSet<uint>> _subjects = new Dictionary<string, HashSet<uint>>(StringComparer.Ordinal);
+
+        /*
+         * A craft is a command centre only while crewed, and only a centre has knowledge
+         * of its own, so a craft site whose board holds nothing is an uncrewed relay.
+         */
+        private HashSet<string> RelayScopes(IBulkCraftKnowledge? knowledge, Dictionary<string, string> bindings, double nowUt)
+        {
+            var relays = new HashSet<string>(StringComparer.Ordinal);
+            if (knowledge == null)
+            {
+                return relays;
+            }
+            foreach (var scope in bindings.Values)
+            {
+                if (scope.StartsWith(VesselCentrePrefix, StringComparison.Ordinal) && !relays.Contains(scope)
+                    && Read(knowledge, scope, nowUt, out _) == 0)
+                {
+                    relays.Add(scope);
+                }
+            }
+            return relays;
+        }
+
+        /*
+         * Which centre commands each relay: stock's home node when the game has one, else
+         * the first ground station bound this tick. Every ground station reaches home over
+         * the ground network, so any of them holds what home knows; the capabilities offer
+         * no way to name home itself from a mod.
+         */
+        private static Dictionary<string, string> Commanders(ILensSites? sites, HashSet<string> relays, Dictionary<string, string> bindings)
+        {
+            var commanders = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (relays.Count == 0 || sites == null)
+            {
+                return commanders;
+            }
+            var home = sites.GroundStationNamed("KSC");
+            if (home == null)
+            {
+                foreach (var scope in bindings.Values)
+                {
+                    if (scope.StartsWith("ground:", StringComparison.Ordinal) && (home == null || string.CompareOrdinal(scope, home) < 0))
+                    {
+                        home = scope;
+                    }
+                }
+            }
+            if (home == null)
+            {
+                return commanders;
+            }
+            foreach (var relay in relays)
+            {
+                commanders[relay] = home;
+            }
+            return commanders;
+        }
+
+        private string? CentreAt(IKerbcast kerbcast, ILensSites? sites, string siteKey, SiteKind kind, uint vantagePersistentId, uint feedFlightId)
+        {
+            switch (kind)
             {
                 case SiteKind.Station:
-                    return sites?.GroundStationNamed(feed.SiteKey);
+                    return sites?.GroundStationNamed(siteKey);
                 case SiteKind.LaunchSite:
-                    return StationNear(sites, feed.SiteKey, feed.FlightId);
+                    return StationNear(sites, siteKey, feedFlightId);
                 case SiteKind.Vessel:
-                    if (feed.VantagePersistentId == 0 || !_supports(ApiFeature.CraftIdentity)
-                        || !kerbcast.Cameras.TryVessel(feed.VantagePersistentId, out var vesselId)
+                    if (vantagePersistentId == 0 || !_supports(ApiFeature.CraftIdentity)
+                        || !kerbcast.Cameras.TryVessel(vantagePersistentId, out var vesselId)
                         || vesselId == Guid.Empty)
                     {
                         return null;
@@ -871,8 +1388,8 @@ namespace Gonogo.KerbcastUplink
             _log("[Kerbcast][WORLD] launch-site feed=" + feedFlightId + " " + line);
         }
 
-        /* A bound site is commanded by the centre standing at it, so its knowledge reaches the lens at once. */
-        private void SyncLensSites(ILensSites? sites, Dictionary<string, string> bindings)
+        /* A site is commanded by the centre standing at it, whose knowledge reaches the lens at once, unless it is a relay. */
+        private void SyncLensSites(ILensSites? sites, Dictionary<string, string> bindings, Dictionary<string, string> commanders)
         {
             if (sites == null)
             {
@@ -881,20 +1398,21 @@ namespace Gonogo.KerbcastUplink
             var wanted = new HashSet<string>(bindings.Values, StringComparer.Ordinal);
             foreach (var centre in wanted)
             {
-                if (_bound.Add(centre))
+                var commander = commanders.TryGetValue(centre, out var home) ? home : centre;
+                if (!_bound.TryGetValue(centre, out var last) || last != commander)
                 {
-                    sites.Bind(centre, centre, centre);
+                    _bound[centre] = commander;
+                    sites.Bind(centre, centre, commander);
                 }
             }
-            _bound.RemoveWhere(centre =>
+            foreach (var centre in new List<string>(_bound.Keys))
             {
-                if (wanted.Contains(centre))
+                if (!wanted.Contains(centre))
                 {
-                    return false;
+                    _bound.Remove(centre);
+                    sites.Unbind(centre, centre);
                 }
-                sites.Unbind(centre, centre);
-                return true;
-            });
+            }
         }
 
         private int Read(IBulkCraftKnowledge knowledge, string centre, double ut, out long version) =>
