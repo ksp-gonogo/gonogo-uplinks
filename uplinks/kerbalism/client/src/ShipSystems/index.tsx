@@ -1177,7 +1177,7 @@ registerComponent<ShipSystemsConfig>({
   id: "ship-systems",
   name: "Ship Systems",
   description:
-    "Vessel-wide Kerbalism resource ledger: root-cause diagnosis, every profile resource as a meter with a per-source rate ledger, wear gauges, habitat, processes, and the power meter.",
+    "Kerbalism resources, habitat, wear and radiation for your vessel.",
   tags: ["telemetry", "kerbalism"],
   defaultSize: { w: 12, h: 24 },
   minSize: { w: 4, h: 5 },
