@@ -127,31 +127,6 @@ export function isPartCamera(camera: CameraState): boolean {
   return camera.kind !== CameraKind.Kerbal;
 }
 
-/** The name this Uplink holds the Kerbcast command lock under. */
-const UPLINK_LOCK_OWNER = "gonogo";
-
-/**
- * The staged aim controls a camera can show: pan and zoom, each only when the
- * camera can move that way. While a command authority holds the camera's lock
- * Kerbcast refuses every viewer pan and zoom, so neither is drawn. A command
- * camera is the one exception for zoom when this Uplink holds the lock, since
- * its zoom is sent through the lock holder's own command path.
- */
-export function setpointAxesFor(
-  camera: CameraState | undefined,
-): CameraSetpointAxes {
-  const authority = camera?.commandTrack?.authority;
-  if (authority == null) {
-    return {
-      pan: camera?.supportsPan === true,
-      zoom: camera?.supportsZoom === true,
-    };
-  }
-  const ownLock =
-    camera?.kind === CameraKind.Command && authority.owner === UPLINK_LOCK_OWNER;
-  return { pan: false, zoom: ownLock && camera?.supportsZoom === true };
-}
-
 // ---------------------------------------------------------------------------
 // Augment slots. CameraFeed is PRIMARILY an
 // augment itself (it fills `rendezvous.camera`) and secondarily a HOST
@@ -219,14 +194,14 @@ export const cameraFeedActions = [
     label: "Zoom in",
     accepts: ["button"],
     description:
-      "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit.",
+      "Held: zooms in, field of view falling. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
     id: "zoom-out",
     label: "Zoom out",
     accepts: ["button"],
     description:
-      "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel across its whole range in six seconds and sends nothing until the commit.",
+      "Held: zooms out, field of view rising. Live, this drives the camera; above the staged delay threshold it turns the staged zoom wheel at 30 degrees per second and sends nothing until the commit.",
   },
   {
     id: "pan-yaw",
@@ -739,7 +714,10 @@ export function CameraFeed({
   // controls until supportsPan == true"). Without this the bounds collapse to a
   // set of zeroes, which is a perfectly well-formed `CameraSetpointBounds`, so
   // every fixed camera drew three dead 0-degree tapes over its own picture.
-  const setpointAxes = setpointAxesFor(activeCamera);
+  const setpointAxes: CameraSetpointAxes = {
+    pan: activeCamera?.supportsPan === true,
+    zoom: activeCamera?.supportsZoom === true,
+  };
   const steerable =
     activeCamera !== undefined && (setpointAxes.pan || setpointAxes.zoom);
   const frame = borderedFrameBox(stageBox, FRAME_BORDER_PX);
@@ -831,9 +809,7 @@ export function CameraFeed({
                     // `setpointRef`, never to `feedRef`, so the handle's
                     // pan/zoom methods going no-op is a stand-down of a path
                     // nothing was taking.
-                    disableManualControls={
-                      showSetpointSurface || activeCamera?.commandTrack?.authority != null
-                    }
+                    disableManualControls={showSetpointSurface}
                     // The SDK would report its own measured box, which sits
                     // inside the frame; the request comes from the stage's
                     // layout instead (`FrameSizeReport` below).

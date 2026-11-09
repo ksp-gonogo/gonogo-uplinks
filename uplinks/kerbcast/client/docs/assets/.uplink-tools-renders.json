@@ -1,9 +1,4 @@
 [
-  "camera-feed-command-zoom--default.png",
-  "camera-feed-command-zoom-hold--default.gif",
-  "camera-feed-command-zoom-locked--default.png",
-  "camera-feed-command-zoom-mid--default.png",
-  "camera-feed-command-zoom-wide--default.png",
   "camera-feed-fixed--default.png",
   "camera-feed-fixed--min.png",
   "camera-feed-fixed--mobile-9x8.png",
@@ -13,7 +8,6 @@
   "camera-feed-steerable--default.png",
   "camera-feed-steerable--min.png",
   "camera-feed-steerable--mobile-9x8.png",
-  "camera-feed-steerable-locked--default.png",
   "camera-feed-stick-hold--default.gif",
   "docking-camera-behind-reticle--default.png"
 ]

@@ -45,52 +45,6 @@ describe("anyHeld", () => {
   });
 });
 
-describe("advanceSetpoint zoom", () => {
-  const command = { ...bounds, fovMin: 0.004, fovMax: 1.2 };
-
-  it("carries the whole range in six seconds at full deflection", () => {
-    const wide = { yaw: 0, pitch: 0, fov: 1.2 };
-    const next = advanceSetpoint(wide, { ...REST_RATES, fov: -1 }, command, 6);
-    expect(next.fov).toBeCloseTo(0.004, 10);
-  });
-
-  it("moves a sub-degree zoom by a ratio, not by degrees", () => {
-    const at = { yaw: 0, pitch: 0, fov: 0.1 };
-    const next = advanceSetpoint(at, { ...REST_RATES, fov: -1 }, command, 1);
-    const ratio = (1.2 / 0.004) ** (1 / 6);
-    expect(next.fov).toBeCloseTo(0.1 / ratio, 10);
-    expect(next.fov).toBeGreaterThan(0.004);
-  });
-
-  it("stops at the live limits it was handed", () => {
-    const narrow = advanceSetpoint(
-      { yaw: 0, pitch: 0, fov: 0.005 },
-      { ...REST_RATES, fov: -1 },
-      command,
-      6,
-    );
-    const wide = advanceSetpoint(
-      { yaw: 0, pitch: 0, fov: 1.1 },
-      { ...REST_RATES, fov: 1 },
-      command,
-      6,
-    );
-    expect(narrow.fov).toBeCloseTo(0.004, 10);
-    expect(wide.fov).toBeCloseTo(1.2, 10);
-  });
-
-  it("pulls a draft that a tighter limit left outside back inside", () => {
-    const level1 = { ...bounds, fovMin: 1.2 / 9, fovMax: 1.2 };
-    const next = advanceSetpoint(
-      { yaw: 0, pitch: 0, fov: 0.01 },
-      { ...REST_RATES, fov: 0.5 },
-      level1,
-      0.06,
-    );
-    expect(next.fov).toBeGreaterThanOrEqual(level1.fovMin);
-  });
-});
-
 describe("advanceSetpoint", () => {
   it("moves an axis by the rate times the elapsed degrees", () => {
     const next = advanceSetpoint(

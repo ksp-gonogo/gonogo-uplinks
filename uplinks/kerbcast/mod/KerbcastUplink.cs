@@ -704,9 +704,7 @@ namespace Gonogo.KerbcastUplink
 
         /// <summary>
         /// MAIN-THREAD command: zoom a camera. Runs on the actuator thread the
-        /// engine dispatches commands on, after the Courier's delay. A command
-        /// camera is zoomed through kerbcast's command interface under gonogo's
-        /// lock, which is how its aim is set; a part camera through its own.
+        /// engine dispatches commands on, after the Courier's delay.
         /// </summary>
         internal CommandResult HandleSetFieldOfView(KerbcastSetFieldOfViewArgs? args)
         {
@@ -723,7 +721,7 @@ namespace Gonogo.KerbcastUplink
             {
                 return CommandResult.Fail(CommandErrorCode.Range);
             }
-            return KerbcastZoom.Apply(kerbcast, _lensSites, cameraId, args.LensKey, args.FieldOfView);
+            return KerbcastAimOutcome.For(kerbcast.SetFov(cameraId, (float)args.FieldOfView));
         }
 
         /// <summary>MAIN-THREAD command: aim a camera (absolute degrees).</summary>

@@ -7,7 +7,6 @@ import {
 import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { describe, expect, it } from "vitest";
 import { CameraSetpointInput } from "./CameraSetpointInput.js";
-import { fovToPosition } from "./zoomScale.js";
 
 const noCommit = () => createFakeCommand().handle.with(undefined);
 
@@ -58,48 +57,6 @@ describe("CameraSetpointInput", () => {
       expect(wheel).toHaveAttribute("aria-valuetext", `${glyph}${degrees}`);
       expect(wheel.textContent).toBe(`${glyph}${degrees}`);
     }
-  });
-
-  it("reads a command camera's sub-degree zoom to its precision, never as zero", () => {
-    const command = { ...bounds, fovMin: 0.004, fovMax: 1.2 };
-    for (const [fov, reading] of [
-      [0.13, "Z0.13°"],
-      [0.004, "Z0.004°"],
-      [1.2, "Z1.2°"],
-    ] as const) {
-      const { unmount } = render(
-        <CameraSetpointInput
-          value={{ yaw: 0, pitch: 0, fov }}
-          bounds={command}
-          onChange={() => {}}
-          command={noCommit()}
-        />,
-      );
-      const zoom = screen.getByRole("slider", { name: "Zoom (field of view)" });
-      expect(zoom.textContent).toBe(reading);
-      expect(zoom).toHaveAttribute("aria-valuetext", reading);
-      unmount();
-    }
-  });
-
-  it("turns the zoom wheel on a log scale between the camera's limits", () => {
-    const command = { ...bounds, fovMin: 0.004, fovMax: 1.2 };
-    const changes: number[] = [];
-    render(
-      <CameraSetpointInput
-        value={{ yaw: 0, pitch: 0, fov: 0.1 }}
-        bounds={command}
-        onChange={(next) => changes.push(next.fov)}
-        command={noCommit()}
-      />,
-    );
-    const zoom = screen.getByRole("slider", { name: "Zoom (field of view)" });
-    fireEvent.keyDown(zoom, { key: "ArrowRight" });
-    fireEvent.keyDown(zoom, { key: "ArrowLeft" });
-    // The wheel snaps to its step grid, so the keys land on the neighbouring
-    // multiples of a fiftieth of the range, not a fiftieth away from the draft.
-    expect(fovToPosition(changes[0] as number, command)).toBeCloseTo(0.58, 8);
-    expect(fovToPosition(changes[1] as number, command)).toBeCloseTo(0.54, 8);
   });
 
   it("leaves the standing wheel's reading to its value, not to a caret it cannot hold", () => {
