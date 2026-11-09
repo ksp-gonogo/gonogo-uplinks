@@ -22,6 +22,13 @@ import type { CSSProperties } from "react";
 // namespace and `styled.div` is a type error. The named export binds in both
 // modes, and the nodenext typecheck is the gate that says so.
 import { styled } from "styled-components";
+import {
+  clampFov,
+  formatFov,
+  fovToPosition,
+  positionToFov,
+  ZOOM_STEP,
+} from "./zoomScale.js";
 
 export type CameraSetpoint = { yaw: number; pitch: number; fov: number };
 export type CameraSetpointBounds = {
@@ -49,7 +56,7 @@ export interface CameraSetpointInputProps {
    * warning tone on the commit. It never disables or refuses the commit.
    */
   warning?: string;
-  /** Per-wheel increment. Default 1 (degree). */
+  /** Increment of the yaw and pitch wheels. Default 1 (degree). The zoom wheel steps on its own log scale. */
   step?: number;
   /** Commit button label. Default "Commit". */
   commitLabel?: string;
@@ -183,10 +190,13 @@ function AxisWheel({
   glyph,
   name,
   labelled = true,
+  readout = formatDegrees,
   ...wheel
 }: {
   glyph: string;
   name: string;
+  /** How the wheel's value reads, for a wheel whose value is not degrees. */
+  readout?: (v: number) => string;
   /** Draw the value in the caret. Off for a wheel too narrow to hold it. */
   labelled?: boolean;
   orientation: "horizontal" | "vertical";
@@ -198,7 +208,7 @@ function AxisWheel({
   step: number;
   onChange: (next: number) => void;
 }): JSX.Element {
-  const reading = formatDegrees(wheel.value);
+  const reading = readout(wheel.value);
   return (
     <span
       title={labelled ? name : `${name} ${reading}`}
@@ -208,7 +218,7 @@ function AxisWheel({
         {...wheel}
         aria-label={name}
         label={false}
-        format={(v) => (labelled ? `${glyph}${formatDegrees(v)}` : "")}
+        format={(v) => (labelled ? `${glyph}${readout(v)}` : "")}
       />
     </span>
   );
@@ -250,11 +260,16 @@ export function CameraSetpointInput({
                 orientation="horizontal"
                 width={WHEEL_LONG_PX}
                 height={WHEEL_SHORT_PX}
-                value={value.fov}
-                min={bounds.fovMin}
-                max={bounds.fovMax}
-                step={step}
-                onChange={(fov) => onChange({ ...value, fov })}
+                value={fovToPosition(value.fov, bounds)}
+                min={0}
+                max={1}
+                step={ZOOM_STEP}
+                readout={(position) =>
+                  formatFov(clampFov(positionToFov(position, bounds), bounds))
+                }
+                onChange={(position) =>
+                  onChange({ ...value, fov: positionToFov(position, bounds) })
+                }
               />
             )}
           </div>

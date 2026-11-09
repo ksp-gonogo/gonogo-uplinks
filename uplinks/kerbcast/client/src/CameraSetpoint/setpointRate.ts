@@ -13,6 +13,12 @@
  */
 
 import type { CameraSetpoint, CameraSetpointBounds } from "./CameraSetpointInput.js";
+import {
+  clampFov,
+  fovToPosition,
+  positionToFov,
+  ZOOM_SECONDS_END_TO_END,
+} from "./zoomScale.js";
 
 /** The three axes the cluster's wheels dial, as an input may drive them. */
 export type SetpointAxis = "yaw" | "pitch" | "fov";
@@ -82,6 +88,25 @@ function clamp(v: number, min: number, max: number): number {
 }
 
 /**
+ * Zoom moves on the log scale the wheel draws, covering its whole range in
+ * {@link ZOOM_SECONDS_END_TO_END} at full deflection, so a held input crosses
+ * a command camera's three orders of magnitude as steadily as it crosses a
+ * part camera's few degrees. Degrees per second would be useless here: 30 of
+ * them is more than the widest command field of view.
+ */
+function advanceFov(
+  fov: number,
+  rate: number,
+  bounds: CameraSetpointBounds,
+  seconds: number,
+): number {
+  if (rate === 0) return clampFov(fov, bounds);
+  const position = fovToPosition(fov, bounds);
+  const next = position + (rate * seconds) / ZOOM_SECONDS_END_TO_END;
+  return clampFov(positionToFov(next, bounds), bounds);
+}
+
+/**
  * Move the draft by however far the held rates carry it in `seconds`.
  *
  * Clamped at the bounds rather than stopped there. Three reasons, and the third
@@ -114,7 +139,7 @@ export function advanceSetpoint(
       bounds.pitchMin,
       bounds.pitchMax,
     ),
-    fov: clamp(setpoint.fov + rates.fov * step, bounds.fovMin, bounds.fovMax),
+    fov: advanceFov(setpoint.fov, rates.fov, bounds, seconds),
   };
   if (
     next.yaw === setpoint.yaw &&

@@ -33,6 +33,12 @@ namespace Gonogo.KerbcastUplink
                     : null;
 
         /// <summary>
+        /// Whether the key names a command camera, which kerbcast zooms only through its command
+        /// interface. Safe on any thread.
+        /// </summary>
+        public bool IsCommandFeed(string key) => Volatile.Read(ref _feedSites).ContainsKey(key);
+
+        /// <summary>
         /// Replaces what is known with the lenses of <paramref name="craft"/>, each a
         /// craft's centre id and the cameras it carries. Called from the main
         /// thread, since reading a craft's cameras is a game read.

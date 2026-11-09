@@ -19,6 +19,7 @@ import {
   SETPOINT_DEG_PER_SECOND,
   SETPOINT_TICK_MS,
 } from "./setpointRate.js";
+import { formatFov, fovToPosition, positionToFov } from "./zoomScale.js";
 
 const bounds = {
   yawMin: -90,
@@ -132,7 +133,17 @@ describe("staged setpoint under a held input", () => {
     act(() => ref.current?.setAxisRate("fov", -1));
     await hold(1000);
 
-    expect(wheel(/field of view/i)).toBeCloseTo(60 - degreesOver(1000), 6);
+    // The zoom wheel carries a log-scale position, so the held rate moves it by
+    // a share of the whole range: sixteen 60ms ticks of a six second crossing.
+    const start = fovToPosition(60, bounds);
+    expect(wheel(/field of view/i)).toBeCloseTo(start - (16 * 0.06) / 6, 6);
+    expect(
+      screen
+        .getByRole("slider", { name: /field of view/i })
+        .getAttribute("aria-valuetext"),
+    ).toBe(
+      `Z${formatFov(positionToFov(start - (16 * 0.06) / 6, bounds))}`,
+    );
   });
 
   it("ignores a stick resting off centre rather than creeping on a stale event", async () => {

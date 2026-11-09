@@ -96,6 +96,18 @@ namespace Gonogo.KerbcastUplink
             }
         }
 
+        public string? SetCommandFov(uint flightId, double fovDeg)
+        {
+            try
+            {
+                return SetCommandFovCore(flightId, fovDeg);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public string? SetCommandAim(uint flightId, uint subjectPersistentId)
         {
             try
@@ -217,6 +229,15 @@ namespace Gonogo.KerbcastUplink
             return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CommandFeeds)
                 ? null
                 : kerbcast.Command.SetAim(flightId, Aim.Vessel(subjectPersistentId, 0.0, false), KerbcastAuthority.Owner).ToString();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static string? SetCommandFovCore(uint flightId, double fovDeg)
+        {
+            var kerbcast = KerbcastApi.Instance;
+            return kerbcast == null || !KerbcastApi.Supports(ApiFeature.CommandFov)
+                ? null
+                : kerbcast.Command.SetFov(flightId, fovDeg, KerbcastAuthority.Owner).ToString();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
