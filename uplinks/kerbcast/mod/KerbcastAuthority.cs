@@ -20,6 +20,9 @@ namespace Gonogo.KerbcastUplink
 
         /// <summary>Another mod holds the lock.</summary>
         HeldByOther,
+
+        /// <summary>The player released the lock in game, so Gonogo holds none and does not take it back while signal delay stays on.</summary>
+        ReleasedByPlayer,
     }
 
     /// <summary>
@@ -34,7 +37,7 @@ namespace Gonogo.KerbcastUplink
     /// Gonogo. Each owner call is a heartbeat; Kerbcast blanks governed feeds
     /// after five real seconds without one.</para>
     /// </summary>
-    public sealed class KerbcastAuthority
+    public sealed class KerbcastAuthority : IDisposable
     {
         /// <summary>The owner name the lock, the reservation and every aim carry.</summary>
         public const string Owner = "gonogo";
@@ -52,6 +55,7 @@ namespace Gonogo.KerbcastUplink
         private double? _lastBeat;
         private double? _speedSent;
         private bool _speedKnown;
+        private bool _releasedByPlayer;
 
         /// <param name="kerbcast">Kerbcast in this scene, normally <see cref="KerbcastApi.Instance"/>.</param>
         /// <param name="supports">Which API features this Kerbcast implements, normally <see cref="KerbcastApi.Supports"/>.</param>
@@ -59,6 +63,22 @@ namespace Gonogo.KerbcastUplink
         {
             _kerbcast = kerbcast;
             _supports = supports;
+            KerbcastApi.LockLost += OnLockLost;
+        }
+
+        public void Dispose() => KerbcastApi.LockLost -= OnLockLost;
+
+        /*
+         * A player's release is a choice, so it holds until signal delay is switched off and on again.
+         * The release also cleared the reservation, and the lock the publisher was attached to is gone.
+         */
+        private void OnLockLost(LockLostEvent lost)
+        {
+            if (lost.Owner == Owner && lost.Reason == LockLossReason.ReleasedByPlayer)
+            {
+                _releasedByPlayer = true;
+                _reserved = false;
+            }
         }
 
         public AuthorityState State { get; private set; } = AuthorityState.Absent;
@@ -93,10 +113,17 @@ namespace Gonogo.KerbcastUplink
                     ReleaseHold(command);
                     _delayOffSettled = true;
                 }
+                _releasedByPlayer = false;
                 Forget();
                 return State = AuthorityState.DelayOff;
             }
             _delayOffSettled = false;
+
+            if (_releasedByPlayer)
+            {
+                Forget();
+                return State = AuthorityState.ReleasedByPlayer;
+            }
 
             var tenureLost = _holds && (Publisher == null || !Publisher.Attached);
             var speedDue = _supports(ApiFeature.LightSpeed) && (!_speedKnown || !Nullable.Equals(_speedSent, signalSpeed));

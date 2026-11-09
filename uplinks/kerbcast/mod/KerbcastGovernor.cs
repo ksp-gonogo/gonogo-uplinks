@@ -112,7 +112,11 @@ namespace Gonogo.KerbcastUplink
 
         public void SayViewerAim(uint flightId) => _model.SayViewerAim(flightId);
 
-        public void Dispose() => KerbcastApi.Identity -= _model.OnIdentity;
+        public void Dispose()
+        {
+            KerbcastApi.Identity -= _model.OnIdentity;
+            _authority.Dispose();
+        }
 
         /* Query throws for a capability that is unknown or unresolved; both are this Gonogo not offering it. */
         private T? Query<T>(string capability) where T : class
