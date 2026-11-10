@@ -3,58 +3,58 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "f41b6220effd19d2",
-      "elements": 48,
+      "hash": "75b3553ffc1bc61e",
+      "elements": 49,
       "text": "de169916"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "433b4bd2320a3656",
-      "elements": 48,
+      "hash": "6731ed613428baff",
+      "elements": 49,
       "text": "de169916"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "f41b6220effd19d2",
-      "elements": 48,
+      "hash": "75b3553ffc1bc61e",
+      "elements": 49,
       "text": "de169916"
     },
     "camera-feed-other-craft--default.png": {
-      "hash": "940bdf8f724b9dd7",
-      "elements": 74,
+      "hash": "957123817ab84d8b",
+      "elements": 75,
       "text": "497abb31"
     },
     "camera-feed-other-craft-no-link--default.png": {
-      "hash": "34e1afdb2adfedca",
-      "elements": 59,
+      "hash": "5fd42febffa50c4e",
+      "elements": 60,
       "text": "6157281a"
     },
     "camera-feed-other-craft-unplaced--default.png": {
-      "hash": "a52bb38bccb9c7c9",
-      "elements": 59,
+      "hash": "800f358c1db40e3b",
+      "elements": 60,
       "text": "6157281a"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "f805ba865f8c8518",
-      "elements": 75,
+      "hash": "6fb468e62fc519c2",
+      "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "effc9787e745d028",
-      "elements": 75,
+      "hash": "40ffe390d8103109",
+      "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "f805ba865f8c8518",
-      "elements": 75,
+      "hash": "6fb468e62fc519c2",
+      "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable-locked--default.png": {
-      "hash": "cf87ed5d663ee3e4",
-      "elements": 48,
+      "hash": "a08b018bc9772c0f",
+      "elements": 49,
       "text": "3a9044cd"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "beec0eca6f42f1e7",
-      "elements": 75,
+      "hash": "7a79ba0f9c0d3dc0",
+      "elements": 76,
       "text": "2dc9c080"
     },
     "docking-camera-behind-reticle--default.png": {
