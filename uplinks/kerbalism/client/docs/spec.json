@@ -1458,7 +1458,7 @@
       "kerbalism.crew",
       "vessel.resources"
     ],
-    "derivedChannels": [],
+    "publishedTopics": [],
     "inputRuleExemptions": []
   },
   "errorCodes": [

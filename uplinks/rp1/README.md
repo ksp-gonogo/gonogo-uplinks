@@ -62,7 +62,7 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | Uplink id | `rp1` |
 | Wraps | RP-1 (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 51.0, extension API 6.0.0 |
+| Built against | contract 51.1, extension API 6.0.0 |
 
 </details>
 

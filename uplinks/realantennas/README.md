@@ -33,7 +33,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=realantennas-v
 | Uplink id | `realantennas` |
 | Wraps | RealAntennas (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 51.0, extension API 6.0.0 |
+| Built against | contract 51.1, extension API 6.0.0 |
 
 </details>
 

@@ -7,7 +7,7 @@ Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, 
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against kerbcast 1.12.1-rc.13.
+Built against kerbcast 1.12.1-rc.23.
 
 ## Install
 
@@ -57,7 +57,7 @@ A live view from a camera on the active craft.
 | Uplink id | `kerbcast` |
 | Wraps | kerbcast (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 51.0, extension API 6.0.0 |
+| Built against | contract 51.1, extension API 6.0.0 |
 
 </details>
 

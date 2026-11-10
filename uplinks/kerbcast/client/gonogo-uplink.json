@@ -6,13 +6,13 @@
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {
     "name": "kerbcast",
-    "builtAgainst": "1.12.1-rc.13"
+    "builtAgainst": "1.12.1-rc.23"
   },
   "version": "0.0.0-development",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
   "contractMajor": 51,
-  "contractMinor": 0,
+  "contractMinor": 1,
   "bundleUrl": "kerbcast/kerbcast.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"
