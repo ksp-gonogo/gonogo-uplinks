@@ -767,7 +767,7 @@ namespace Gonogo.KerbcastUplink
             Log(scope, craft, place.Basis.ToString().ToLowerInvariant(), radiusM);
         }
 
-        /* What Kerbcast then says each command feed may watch, once per craft per feed and again only when its answer changes. */
+        /* What Kerbcast then says each command feed may watch, once per craft per feed and again only when its eligibility changes; the range is context on that line and never a reason for another. */
         private void LogEligibility(IKerbcast kerbcast)
         {
             if (_log == null || !_supports(ApiFeature.CommandFeeds))
@@ -782,14 +782,15 @@ namespace Gonogo.KerbcastUplink
                 }
                 foreach (var target in kerbcast.Command.Targets(feed.FlightId))
                 {
-                    var detail = "eligibility=" + target.Eligibility + " rangeM=" + (double.IsNaN(target.RangeM) ? "none" : Math.Round(target.RangeM).ToString(System.Globalization.CultureInfo.InvariantCulture));
                     var key = "feed" + feed.FlightId + "|" + target.PersistentId;
-                    if (_logged.TryGetValue(key, out var last) && last == detail)
+                    var eligibility = target.Eligibility?.ToString() ?? "none";
+                    if (_logged.TryGetValue(key, out var last) && last == eligibility)
                     {
                         continue;
                     }
-                    _logged[key] = detail;
-                    _log("[Kerbcast][WORLD] feed=" + feed.FlightId + " craft=" + target.PersistentId + " " + detail);
+                    _logged[key] = eligibility;
+                    var range = double.IsNaN(target.RangeM) ? "none" : Math.Round(target.RangeM).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    _log("[Kerbcast][WORLD] feed=" + feed.FlightId + " craft=" + target.PersistentId + " eligibility=" + eligibility + " rangeM=" + range);
                 }
             }
         }
@@ -1229,11 +1230,13 @@ namespace Gonogo.KerbcastUplink
             {
                 if (string.IsNullOrEmpty(vantage.SiteKey))
                 {
+                    LogUnbound(feed.FlightId, "(no site key)", vantage.SiteKind);
                     continue;
                 }
                 var centre = CentreAt(kerbcast, sites, vantage.SiteKey, vantage.SiteKind, vantage.VantagePersistentId, feed.FlightId);
                 if (centre == null)
                 {
+                    LogUnbound(feed.FlightId, vantage.SiteKey, vantage.SiteKind);
                     continue;
                 }
                 scopes.Add(centre);
@@ -1243,6 +1246,22 @@ namespace Gonogo.KerbcastUplink
                 }
                 AddSubject(centre, feed);
             }
+        }
+
+        /* A vantage no command centre stands at is left out of the network's scopes, so the network never hears a craft through it; the line says which one, once. */
+        private void LogUnbound(uint feedFlightId, string siteKey, SiteKind kind)
+        {
+            if (_log == null)
+            {
+                return;
+            }
+            var key = "unbound" + feedFlightId + "|" + siteKey;
+            if (_logged.ContainsKey(key))
+            {
+                return;
+            }
+            _logged[key] = kind.ToString();
+            _log("[Kerbcast][WORLD] network feed=" + feedFlightId + " vantage '" + siteKey + "' (" + kind + ") has no command centre to bind to; no craft is heard through it");
         }
 
         /* The craft a relay's scope has to answer for: what the feed is aimed at, or the active craft for a network that follows it and is not aimed yet. */

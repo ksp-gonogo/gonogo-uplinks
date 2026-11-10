@@ -119,6 +119,28 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void ACraftMovingAtConstantEligibilityLogsItsEligibilityOnce()
+    {
+        var lines = new List<string>();
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, lines.Add);
+        _sites.Delivered[Ksc] = 100.0;
+        _authority.Tick(0.0, Light);
+
+        for (var i = 0; i < 20; i++)
+        {
+            _kc.Command.SetTargets(1, new[] { new CommandTarget { PersistentId = ProbePid, Eligibility = "ok", RangeM = 1000.0 + 37.0 * i } });
+            model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 3.0 * i);
+        }
+
+        Assert.Equal(1, lines.Count(l => l.Contains("feed=1") && l.Contains("eligibility=ok")));
+
+        _kc.Command.SetTargets(1, new[] { new CommandTarget { PersistentId = ProbePid, Eligibility = "tooUncertain", RangeM = 5000.0 } });
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _knowledge, 100.0, 100.0);
+
+        Assert.Equal(1, lines.Count(l => l.Contains("feed=1") && l.Contains("eligibility=tooUncertain")));
+    }
+
+    [Fact]
     public void ARecordLineIsWrittenWhenTheRadiusMovesByMoreThanFivePercentAndNotBefore()
     {
         var lines = new List<string>();

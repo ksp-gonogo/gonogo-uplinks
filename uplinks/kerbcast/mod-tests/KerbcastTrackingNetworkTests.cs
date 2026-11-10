@@ -98,6 +98,26 @@ public class KerbcastTrackingNetworkTests
     private PublishedRecord? RelayRecord() => _kc.Command.Published.Last().Find(RelayScope, ProbePid);
 
     [Fact]
+    public void AVantageWithNoCommandCentreIsNamedOnceInTheLog()
+    {
+        var lines = new List<string>();
+        var model = new KerbcastWorldModel(_labels, _kc.Supports, _places, lines.Add, activeCraft: () => _active, supportsNetworks: () => true);
+        AddNetwork();
+        _kc.Command.SetNetworkStatus(Network, new[]
+        {
+            new NetworkVantageStatus { SiteKey = "KSC", SiteKind = SiteKind.Station, Active = true, State = "ok" },
+            new NetworkVantageStatus { SiteKey = "Nowhere Station", SiteKind = SiteKind.Station, State = "ok" },
+        });
+
+        _authority.Tick(0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _board, 100.0, 0.0, Light);
+        model.Publish(_kc, _authority.Publisher!, _authority.Tenure, _sites, _board, 100.0, 3.0, Light);
+
+        Assert.Equal(1, lines.Count(l => l.Contains("vantage 'Nowhere Station'") && l.Contains("no command centre")));
+        Assert.DoesNotContain(lines, l => l.Contains("vantage 'KSC'"));
+    }
+
+    [Fact]
     public void EveryVantageIsBoundNotOnlyTheOneOnAir()
     {
         AddNetwork();
