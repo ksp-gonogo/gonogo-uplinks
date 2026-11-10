@@ -1105,10 +1105,10 @@ describe("CameraFeed: empty state and status", () => {
     expect(screen.queryByText(/start a vessel with hullcam parts/i)).toBeNull();
   });
 
-  it("renders the empty state gracefully when the source is disconnected", async () => {
+  it("reads a source that has not connected yet as loading, not as an empty list", async () => {
     // A kerbcast source that never connects (status stays disconnected): build
-    // the transport but never call connect()/open(). The widget shows the same
-    // neutral empty state and surfaces no in-widget connection status.
+    // the transport but never call connect()/open(). The widget says it is
+    // connecting and surfaces no in-widget connection status.
     const sidecar = new MockSidecar();
     const ds = new KerbcastDataSource({ port: 1 }, sidecar.createTransport());
     registerUplinkHandle("kerbcast", ds);
@@ -1116,7 +1116,8 @@ describe("CameraFeed: empty state and status", () => {
 
     renderFeed({ flightId: null });
 
-    expect(screen.getByText(/start a vessel with hullcam parts/i)).toBeTruthy();
+    expect(screen.getByText("Connecting to cameras")).toBeTruthy();
+    expect(screen.queryByText(/start a vessel with hullcam parts/i)).toBeNull();
     // No in-widget sidecar status indicator (removed: lives in Data Sources).
     expect(
       screen.queryByRole("status", { name: /connected|disconnected/i }),

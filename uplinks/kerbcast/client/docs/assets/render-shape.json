@@ -2,31 +2,6 @@
   "version": 1,
   "engine": "chromium",
   "assets": {
-    "camera-feed-command-zoom--default.png": {
-      "hash": "8a1136021ab0b33e",
-      "elements": 79,
-      "text": "a0d0b3ff"
-    },
-    "camera-feed-command-zoom-hold--default.gif": {
-      "hash": "2403d60e4a62cc04",
-      "elements": 79,
-      "text": "4c74fe0b"
-    },
-    "camera-feed-command-zoom-locked--default.png": {
-      "hash": "7038b178acfbdf64",
-      "elements": 71,
-      "text": "0437929a"
-    },
-    "camera-feed-command-zoom-mid--default.png": {
-      "hash": "e9e21d633adb5fdf",
-      "elements": 79,
-      "text": "3b167df5"
-    },
-    "camera-feed-command-zoom-wide--default.png": {
-      "hash": "ffcf62f37127a6ce",
-      "elements": 79,
-      "text": "6cd795b0"
-    },
     "camera-feed-fixed--default.png": {
       "hash": "f41b6220effd19d2",
       "elements": 48,

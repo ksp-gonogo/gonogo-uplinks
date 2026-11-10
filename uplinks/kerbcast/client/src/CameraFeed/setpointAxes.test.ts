@@ -39,15 +39,29 @@ describe("setpointAxesFor", () => {
     });
   });
 
-  it("keeps zoom, and drops pan, on a command camera this Uplink holds", () => {
+  it("follows a command camera's own flags: zoom, no pan", () => {
     expect(
-      setpointAxesFor(camera({ kind: CameraKind.Command, ...locked("gonogo") })),
+      setpointAxesFor(camera({ kind: CameraKind.Command, supportsPan: false })),
     ).toEqual({ pan: false, zoom: true });
   });
 
-  it("offers nothing on a command camera another authority holds", () => {
+  it("offers nothing on a command camera while a lock is held", () => {
     expect(
-      setpointAxesFor(camera({ kind: CameraKind.Command, ...locked("other") })),
+      setpointAxesFor(
+        camera({ kind: CameraKind.Command, supportsPan: false, ...locked("gonogo") }),
+      ),
+    ).toEqual({ pan: false, zoom: false });
+  });
+
+  it("offers no zoom where the camera reports it cannot zoom", () => {
+    expect(setpointAxesFor(camera({ supportsZoom: false }))).toEqual({
+      pan: true,
+      zoom: false,
+    });
+    expect(
+      setpointAxesFor(
+        camera({ kind: CameraKind.Command, supportsPan: false, supportsZoom: false }),
+      ),
     ).toEqual({ pan: false, zoom: false });
   });
 

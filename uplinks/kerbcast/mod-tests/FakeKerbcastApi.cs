@@ -41,16 +41,6 @@ public sealed class FakeKerbcastApi : IKerbcastApi
         return PanResult;
     }
 
-    public (uint FlightId, double FovDeg)? LastCommandFov;
-
-    public string? CommandFovResult = "Ok";
-
-    public string? SetCommandFov(uint flightId, double fovDeg)
-    {
-        LastCommandFov = (flightId, fovDeg);
-        return CommandFovResult;
-    }
-
     public string? SetCommandAim(uint flightId, uint subjectPersistentId)
     {
         LastCommandAim = (flightId, subjectPersistentId);

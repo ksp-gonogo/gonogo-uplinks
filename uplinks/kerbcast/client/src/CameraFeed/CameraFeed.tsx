@@ -59,6 +59,7 @@ import {
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import { useReacquiring } from "../hooks/useReacquiring.js";
 import { useSidecarNote } from "../hooks/useSidecarNote.js";
+import { useSourceStatus } from "../hooks/useSourceStatus.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
 import { resolveCameraLink } from "./cameraLink.js";
 import { AimQueue, withDelayedAim } from "./delayedAim.js";
@@ -68,6 +69,8 @@ import {
   useGroundCameraClock,
 } from "./groundFeedClock.js";
 import { feedKnowledgeEntry, networkKnowledge } from "./networkKnowledge.js";
+import { FEED_LOADING_TEXT, feedLoading } from "./feedLoading.js";
+import { OnScreenOnly } from "./OnScreenOnly.js";
 import { LostCameraMenu } from "./LostCameraMenu.js";
 import {
   hasAutoLatchableCamera,
@@ -127,29 +130,22 @@ export function isPartCamera(camera: CameraState): boolean {
   return camera.kind !== CameraKind.Kerbal;
 }
 
-/** The name this Uplink holds the Kerbcast command lock under. */
-const UPLINK_LOCK_OWNER = "gonogo";
-
 /**
  * The staged aim controls a camera can show: pan and zoom, each only when the
- * camera can move that way. While a command authority holds the camera's lock
- * Kerbcast refuses every viewer pan and zoom, so neither is drawn. A command
- * camera is the one exception for zoom when this Uplink holds the lock, since
- * its zoom is sent through the lock holder's own command path.
+ * camera reports it can move that way (`supportsPan`, `supportsZoom`). While a
+ * command authority holds a camera's lock Kerbcast refuses every viewer pan and
+ * zoom, so neither is drawn.
  */
 export function setpointAxesFor(
   camera: CameraState | undefined,
 ): CameraSetpointAxes {
-  const authority = camera?.commandTrack?.authority;
-  if (authority == null) {
-    return {
-      pan: camera?.supportsPan === true,
-      zoom: camera?.supportsZoom === true,
-    };
+  if (camera?.commandTrack?.authority != null) {
+    return { pan: false, zoom: false };
   }
-  const ownLock =
-    camera?.kind === CameraKind.Command && authority.owner === UPLINK_LOCK_OWNER;
-  return { pan: false, zoom: ownLock && camera?.supportsZoom === true };
+  return {
+    pan: camera?.supportsPan === true,
+    zoom: camera?.supportsZoom === true,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -246,7 +242,7 @@ export const cameraFeedActions = [
 
 export type CameraFeedActions = typeof cameraFeedActions;
 
-export function CameraFeed({
+function CameraFeedBody({
   config,
   onConfigChange,
 }: Readonly<ComponentProps<CameraFeedConfig>>) {
@@ -575,6 +571,7 @@ export function CameraFeed({
 
   // ---- Delayed camera control gate ----
   const sidecarNote = useSidecarNote();
+  const loading = feedLoading(useSourceStatus(), sidecarNote);
   const reacquiring = useReacquiring(effectiveFlightId);
   useFeedBindProbe(
     effectiveFlightId,
@@ -811,7 +808,10 @@ export function CameraFeed({
                     }
                     onDisplayedCameraChange={onDisplayedCameraChange}
                     showDebugInfo={showDebugInfo}
-                    emptyMessage={sidecarNote ?? undefined}
+                    emptyMessage={
+                      sidecarNote ??
+                      (loading ? FEED_LOADING_TEXT.empty : undefined)
+                    }
                     enableFullscreen
                     enablePictureInPicture
                     // The SDK's own pan pad and zoom pair stand down for as
@@ -896,9 +896,15 @@ export function CameraFeed({
                       aria-live="polite"
                       style={FEED_SIGNAL_STYLE}
                     >
-                      <Badge tone={feedSignal === "none" ? "info" : "warn"}>
-                        {feedSignal === "none" ? "NO CAMERA" : "FEED STALLED"}
-                      </Badge>
+                      {loading ? (
+                        <Badge tone="info">
+                          {FEED_LOADING_TEXT.badge}
+                        </Badge>
+                      ) : (
+                        <Badge tone={feedSignal === "none" ? "info" : "warn"}>
+                          {feedSignal === "none" ? "NO CAMERA" : "FEED STALLED"}
+                        </Badge>
+                      )}
                     </div>
                   )}
                   {unavailableReason && (
@@ -922,6 +928,18 @@ export function CameraFeed({
         }
       />
     </KerbcastProvider>
+  );
+}
+
+/**
+ * The camera feed widget. Mounted only while it is on screen, so a tile on a
+ * hidden tab or in a hidden strip releases its feed.
+ */
+export function CameraFeed(props: Readonly<ComponentProps<CameraFeedConfig>>) {
+  return (
+    <OnScreenOnly>
+      <CameraFeedBody {...props} />
+    </OnScreenOnly>
   );
 }
 

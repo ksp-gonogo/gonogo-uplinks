@@ -37,7 +37,7 @@ A live view from a camera on the active craft.
 | Slots of its own | `camera-feed.overlay` |
 | Default size, in grid units | 9 × 8 |
 | Smallest size, in grid units | 7 × 6 |
-| Scenes | 12 |
+| Scenes | 7 |
 
 </details>
 

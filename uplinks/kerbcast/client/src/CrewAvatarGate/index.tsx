@@ -16,6 +16,7 @@ import {
 import { Badge, TextButton, useModal } from "@ksp-gonogo/ui-kit";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo } from "react";
+import { OnScreenOnly } from "../CameraFeed/OnScreenOnly.js";
 import { useReportFaceSize } from "../CameraFeed/useReportFaceSize.js";
 import { useKerbcastCameras } from "../hooks/useKerbcastCameras.js";
 import type { KerbcastDataSource } from "../KerbcastDataSource.js";
@@ -84,13 +85,15 @@ function FacecamAvatar({ crewName }: { crewName: string }) {
     return <InitialPlaceholder crewName={crewName} />;
   }
   return (
-    <KerbcastProvider client={client} subscriptions={subscriptions}>
-      <FacecamAvatarFeed
-        flightId={camera.flightId}
-        crewName={crewName}
-        crewLocation={camera.crewLocation}
-      />
-    </KerbcastProvider>
+    <OnScreenOnly>
+      <KerbcastProvider client={client} subscriptions={subscriptions}>
+        <FacecamAvatarFeed
+          flightId={camera.flightId}
+          crewName={crewName}
+          crewLocation={camera.crewLocation}
+        />
+      </KerbcastProvider>
+    </OnScreenOnly>
   );
 }
 

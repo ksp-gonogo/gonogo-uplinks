@@ -9,7 +9,6 @@
 //
 // The scene's own shape still comes from its fixture. What is here is the fake
 // nobody else could write, which is what this file is for.
-import { CameraKind } from "@ksp-gonogo/kerbcast";
 import { type MockCameraInit, MockSidecar } from "@ksp-gonogo/kerbcast/testing";
 import { dispatchAction, registerUplinkHandle } from "@ksp-gonogo/sitrep-sdk";
 import { defineRenderSetup } from "@ksp-gonogo/uplink-tools/render-probe";
@@ -38,24 +37,6 @@ const STREAMED_THEN_SILENT_SCENE = "camera-feed-other-craft-no-link";
  * own name, which is the one thing the setup is told about the scene it is
  * about to feed.
  */
-/** A command camera at a Tracking Station level 3 site: a field of view from 0.13 to 1.2 degrees. */
-const COMMAND_ZOOM: MockCameraInit = {
-  ...base(),
-  kind: CameraKind.Command,
-  commandCentre: { stationId: "ground:Dish" } as MockCameraInit["commandCentre"],
-  cameraName: "Tracking Station",
-  supportsZoom: true,
-  supportsPan: true,
-  fovMin: 0.13,
-  fovMax: 1.2,
-  panYaw: 18,
-  panPitch: -10,
-  panYawMin: -90,
-  panYawMax: 90,
-  panPitchMin: -45,
-  panPitchMax: 45,
-};
-
 const CAMERAS: Record<string, MockCameraInit> = {
   "camera-feed-steerable": {
     ...base(),
@@ -69,32 +50,6 @@ const CAMERAS: Record<string, MockCameraInit> = {
     panYawMax: 90,
     panPitchMin: -45,
     panPitchMax: 45,
-  },
-  "camera-feed-command-zoom": {
-    ...base(),
-    ...COMMAND_ZOOM,
-    fov: 0.13,
-  },
-  "camera-feed-command-zoom-mid": {
-    ...base(),
-    ...COMMAND_ZOOM,
-    fov: 0.395,
-  },
-  "camera-feed-command-zoom-wide": {
-    ...base(),
-    ...COMMAND_ZOOM,
-    fov: 1.2,
-  },
-  "camera-feed-command-zoom-hold": {
-    ...base(),
-    ...COMMAND_ZOOM,
-    fov: 1.2,
-  },
-  "camera-feed-command-zoom-locked": {
-    ...base(),
-    ...COMMAND_ZOOM,
-    fov: 0.395,
-    commandTrack: { authority: { owner: "gonogo" }, hasFix: true, occluded: false } as MockCameraInit["commandTrack"],
   },
   "camera-feed-steerable-locked": {
     ...base(),
@@ -202,12 +157,6 @@ const FEED_H_PX = 288;
  */
 const STICK_HOLD_SCENE = "camera-feed-stick-hold";
 
-/** The scene of a held zoom-in input sweeping a command camera's range. */
-const ZOOM_HOLD_SCENE = "camera-feed-command-zoom-hold";
-
-/** Roughly how long zoom-in is held, ms: a little over the six seconds the range takes. */
-const ZOOM_HOLD_MS = 6200;
-
 /** The instance id the render probe mounts a widget under. */
 const PROBE_INSTANCE_ID = "probe";
 
@@ -235,17 +184,6 @@ function holdThenReleaseStick(): void {
   stickReleaseTimer = setTimeout(() => {
     dispatchAction(PROBE_INSTANCE_ID, "pan-yaw", { kind: "analog", value: 0 });
   }, STICK_HOLD_MS);
-}
-
-/** Hold zoom-in, then let go after the range has been crossed. */
-function holdThenReleaseZoom(): void {
-  document
-    .querySelector<HTMLElement>('[role="slider"][aria-label="Yaw"]')
-    ?.focus();
-  dispatchAction(PROBE_INSTANCE_ID, "zoom-in", { kind: "button", value: true });
-  setTimeout(() => {
-    dispatchAction(PROBE_INSTANCE_ID, "zoom-in", { kind: "button", value: false });
-  }, ZOOM_HOLD_MS);
 }
 
 let source: KerbcastDataSource | null = null;
@@ -402,7 +340,6 @@ export default defineRenderSetup({
     await new Promise((resolve) => setTimeout(resolve, 400));
     paintFeedBackdrop();
     if (scene.fixture === STICK_HOLD_SCENE) holdThenReleaseStick();
-    if (scene.fixture === ZOOM_HOLD_SCENE) holdThenReleaseZoom();
   },
 
   afterScene() {

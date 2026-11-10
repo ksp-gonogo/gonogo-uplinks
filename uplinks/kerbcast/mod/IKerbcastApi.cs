@@ -45,13 +45,6 @@ namespace Gonogo.KerbcastUplink
         /// </summary>
         string? SetCommandAim(uint flightId, uint subjectPersistentId);
 
-        /// <summary>
-        /// Holds a command camera's lens at <paramref name="fovDeg"/> degrees under gonogo's lock. Returns
-        /// kerbcast's answer as the name of its <c>AimResult</c>, or null when the call could not be made,
-        /// which includes a Kerbcast without <c>ApiFeature.CommandFov</c>.
-        /// </summary>
-        string? SetCommandFov(uint flightId, double fovDeg);
-
         /// <summary>Why the main-render throttle cannot be reached, or null when it can.</summary>
         string? ThrottleUnavailable();
 
