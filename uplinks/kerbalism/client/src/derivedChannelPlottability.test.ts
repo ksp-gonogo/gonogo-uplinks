@@ -1,13 +1,13 @@
-import type { Value } from "@ksp-gonogo/sitrep-sdk";
+import type { DerivedChannelDefinition, Value } from "@ksp-gonogo/sitrep-sdk";
 import { value } from "@ksp-gonogo/sitrep-sdk";
 import type { StreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { makeMeta, setupStreamFixture } from "@ksp-gonogo/sitrep-sdk/testing";
 import { describe, expect, it } from "vitest";
 
 /**
- * What shape a processor's published Topic has to be in for a chart to reach it.
+ * What shape a derived channel has to be in for a chart to reach it.
  *
- * Written against `kerbalism.resourceProjection`, a derived channel that carried seven scalars
+ * Written against `kerbalism.resourceProjection`, which carried seven scalars
  * per resource and could not be plotted, though not for a shortage of numbers.
  * The reason outlives that channel, which is why it is pinned here on a probe.
  *
@@ -17,13 +17,11 @@ import { describe, expect, it } from "vitest";
  * subtopic, whose value is the array. There is no syntax that indexes an
  * element, and keying by name instead would still need two segments.
  *
- * A published processor grows no reckoned tail at all: `sampleReckonedTail` walks a
- * raw topic's own model, and a published processor declares none.
+ * A derived channel grows no reckoned tail at all: `sampleReckonedTail` walks a
+ * raw topic's own model, and a derived channel declares none.
  */
 
 const INPUT = "vessel.resources";
-
-const INGESTED_AT = 1000;
 
 const AMOUNTS = {
   resources: {
@@ -38,43 +36,40 @@ const AMOUNTS = {
  */
 function ingest(fixture: StreamFixture, topic: string, payload: unknown) {
   fixture.store.ingest(topic, {
-    validAt: INGESTED_AT,
+    validAt: 1000,
     payload,
-    meta: makeMeta({ validAt: INGESTED_AT, deliveredAt: INGESTED_AT }),
+    meta: makeMeta({ validAt: 1000, deliveredAt: 1000 }),
     epoch: 0,
   });
 }
 
-/** A processor whose published scalars sit one level down, inside an array. */
-const collection = {
+/** A channel whose scalars sit one level down, inside an array. */
+const collection: DerivedChannelDefinition<{
+  resources: { name: string; projected: Value<"units"> }[];
+}> = {
   topic: "probe.collection",
-  deps: [INPUT],
-  compute: (
-    [amounts]: readonly [unknown],
-    frame: { viewUt: number },
-  ) => {
-    if (!amounts) return undefined;
+  inputs: [INPUT],
+  derive: (get, viewUt) => {
+    const point = get<unknown>(INPUT);
+    if (!point || point.payload === null) return undefined;
     return {
       resources: [
-        {
-          name: "Food",
-          projected: value("units", frame.viewUt - INGESTED_AT),
-        },
+        { name: "Food", projected: value("units", viewUt - point.validAt) },
       ],
-    } satisfies { resources: { name: string; projected: Value<"units"> }[] };
+    };
   },
   fields: true,
 };
 
 function fixtureWithProbes(pinnedUt: number) {
   const fixture = setupStreamFixture({ pinnedUt });
-  fixture.store.publishProcessor(collection);
+  fixture.store.registerDerivedChannel(collection);
   ingest(fixture, INPUT, AMOUNTS);
   fixture.store.beginFrame();
   return fixture;
 }
 
-describe("why an array-rooted published Topic reaches no chart", () => {
+describe("why an array-rooted channel reaches no chart", () => {
   it("carries scalars, so a shortage of numbers is not the reason", () => {
     const fixture = fixtureWithProbes(1600);
 
@@ -88,7 +83,7 @@ describe("why an array-rooted published Topic reaches no chart", () => {
   it("offers no subtopic that reaches an element's own fields", () => {
     const fixture = fixtureWithProbes(1600);
 
-    // A published subtopic is ONE segment past the channel, so this resolves to
+    // A derived subtopic is ONE segment past the channel, so this resolves to
     // a `projected` key on the record root, which does not exist.
     expect(fixture.store.sample("probe.collection.projected")?.payload).toBe(
       undefined,

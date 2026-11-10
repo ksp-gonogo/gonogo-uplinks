@@ -137,14 +137,12 @@ export const SHIP_SYSTEMS = KERBALISM.registerProcessor({
     "vessel.identity",
   ] as const,
   compute: ([
-    profileTopic,
-    lifeSupportTopic,
+    profile,
+    lifeSupport,
     resourcesReading,
     crew,
     identity,
   ]): ShipSystems => {
-    const profile = profileTopic ?? undefined;
-    const lifeSupport = lifeSupportTopic ?? undefined;
     if (levelHistory.follow(identity?.vesselId ?? undefined)) rateHold.reset();
     // `stored`/`capacity` were never Kerbalism-specific: they come off the
     // generic `vessel.resources` levels, keyed by KSP resource name.

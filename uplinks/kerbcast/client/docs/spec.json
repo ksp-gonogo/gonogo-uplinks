@@ -336,7 +336,7 @@
   "models": {
     "processors": [],
     "forwardModels": [],
-    "publishedTopics": [],
+    "derivedChannels": [],
     "inputRuleExemptions": []
   },
   "errorCodes": []

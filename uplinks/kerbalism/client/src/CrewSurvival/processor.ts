@@ -331,15 +331,15 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
   // them the moment more than plain property access is needed.
   compute: (
     [crew, kerbals, delay]: readonly [
-      VesselCrew | null | undefined,
+      VesselCrew | undefined,
       TopicReading<KerbalismCrewEntry[]>,
-      CommsDelay | null | undefined,
+      CommsDelay | undefined,
     ],
     // The frame's frozen received edge, so two readouts in one frame agree about the same deadline.
     frame: { viewUt: number },
   ): CrewSurvival => {
     const receivedUt = value("ut", frame.viewUt);
-    const oneWay = oneWayOf(delay ?? undefined);
+    const oneWay = oneWayOf(delay);
     const marginOf = (name: string) =>
       marginToAct(kerbals, name, receivedUt, oneWay);
     /*
@@ -353,7 +353,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
       const projected = kerbals.reckoning.value;
       return {
         ...deriveCrewSurvival(
-          crew ?? undefined,
+          crew,
           projected,
           marginOf,
           carriedRules(projected, kerbals.reckoning.modelled),
@@ -362,7 +362,7 @@ export const CREW_SURVIVAL = KERBALISM.registerProcessor({
       };
     }
     return deriveCrewSurvival(
-      crew ?? undefined,
+      crew,
       kerbals.state === "observed" || kerbals.state === "held"
         ? kerbals.value
         : undefined,
