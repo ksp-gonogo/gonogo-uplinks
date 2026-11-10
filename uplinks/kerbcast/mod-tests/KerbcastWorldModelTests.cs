@@ -436,6 +436,19 @@ public class KerbcastWorldModelTests
     }
 
     [Fact]
+    public void ACoastingRecordStartedWhenTheCraftWasLastHeardCarriesTheRadiusItHasGrownToSince()
+    {
+        _sites.Delivered[Ksc] = 100.0;
+        _knowledge.AddByUt(Ksc, ProbeId, CraftKnowledgeState.Heard, _ => 50.0, ut => 0.001 + 2.0 * Math.Max(0.0, ut - 50.0), MovingAlong(Sitrep.Contract.CraftPlaceBasis.Coasting, 1000.0, 10.0));
+
+        Publish(100.0, 0.0);
+
+        var probe = _kc.Command.Published.Last().Find(Ksc, ProbePid);
+        Assert.Equal(50.0, probe.StateUt);
+        Assert.True(probe.UncertaintyRadiusM >= 100.0, "radius " + probe.UncertaintyRadiusM);
+    }
+
+    [Fact]
     public void ASignalDelayedCraftInPoweredClimbIsRecordedFromTheInstantItWasHeard()
     {
         _sites.Delivered[Ksc] = 117.26;

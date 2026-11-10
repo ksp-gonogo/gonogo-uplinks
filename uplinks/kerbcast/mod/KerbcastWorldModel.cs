@@ -350,6 +350,7 @@ namespace Gonogo.KerbcastUplink
                         var mid = AheadOf(sample, midCount, _mid);
                         var sampleRead = read;
                         var sampleAheadVersion = aheadVersion;
+                        var uncertaintyNow = sample.UncertaintyM;
                         if (sample.State != CraftKnowledgeState.Held && sample.UncertaintyM.HasValue && sample.Place != null
                             && sample.LastKnownUt.HasValue && sample.LastKnownUt.Value < at
                             && TryHeard(knowledge, scope, sample, sample.LastKnownUt.Value, out var heardSample, out var heardAhead, out var heardMid, out var heardRead, out var heardAheadVersion))
@@ -361,7 +362,7 @@ namespace Gonogo.KerbcastUplink
                             sampleRead = heardRead;
                             sampleAheadVersion = heardAheadVersion;
                         }
-                        crafts.Add(new ScopeCraft(pid, vesselId, sample, at, ahead, sampleRead, sampleAheadVersion, mid));
+                        crafts.Add(new ScopeCraft(pid, vesselId, sample, at, ahead, sampleRead, sampleAheadVersion, mid, uncertaintyNow));
                         lastHeard[pid] = sample.LastKnownUt;
                     }
                 }
@@ -760,7 +761,9 @@ namespace Gonogo.KerbcastUplink
             {
                 KerbcastApiMinor1.Accelerate(builder, acceleration.X, acceleration.Y, acceleration.Z);
             }
-            var publishedM = Math.Max(EndOfLifeRadius(craft, radiusM) + residualM, LaunchFramingM(craft, false));
+            /* The record starts at the instant the craft was last heard and Kerbcast carries it forward, so the radius has to cover how far that has aged by now. */
+            var coastedM = Math.Max(EndOfLifeRadius(craft, radiusM), craft.UncertaintyNowM ?? 0.0);
+            var publishedM = Math.Max(coastedM + residualM, LaunchFramingM(craft, false));
             builder.Uncertainty(publishedM, 0.0, 0.0, 0.0);
             SayExtent(builder, craft);
             LogRecord(scope, craft, ut, publishedM, radiusM);
@@ -1137,8 +1140,9 @@ namespace Gonogo.KerbcastUplink
 
         private readonly struct ScopeCraft
         {
-            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, CraftKnowledgeSample? aheadSample, long readVersion, long aheadVersion, CraftKnowledgeSample? midSample)
+            public ScopeCraft(uint persistentId, Guid vesselId, CraftKnowledgeSample sample, double ut, CraftKnowledgeSample? aheadSample, long readVersion, long aheadVersion, CraftKnowledgeSample? midSample, double? uncertaintyNowM = null)
             {
+                UncertaintyNowM = uncertaintyNowM;
                 MidSample = midSample;
                 PersistentId = persistentId;
                 VesselId = vesselId;
@@ -1152,6 +1156,9 @@ namespace Gonogo.KerbcastUplink
             public uint PersistentId { get; }
 
             public Guid VesselId { get; }
+
+            /// <summary>The uncertainty at the scope's read instant, which has grown with the age of the capture the record starts from; null where the record starts at the read instant.</summary>
+            public double? UncertaintyNowM { get; }
 
             public CraftKnowledgeSample Sample { get; }
 
