@@ -141,8 +141,9 @@ jobs:
 
       - name: Install the browser the page check renders in
         if: steps.behind.outputs.code == '10' && matrix.client
-        working-directory: uplinks/${{ matrix.name }}/client
-        run: npm exec --no -- playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright-browsers
+        with:
+          directories: uplinks/${{ matrix.name }}/client
 
       - name: Bump and open a pull request or an issue
         if: steps.behind.outputs.code == '10'

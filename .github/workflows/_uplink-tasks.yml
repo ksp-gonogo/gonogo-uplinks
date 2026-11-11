@@ -206,8 +206,9 @@ jobs:
       # that tags is the only one that pushes.
       - name: Install the browser the checks render in
         if: inputs.prepare_args != '' && inputs.client
-        working-directory: uplinks/${{ inputs.name }}/client
-        run: npm exec --no -- playwright install --with-deps chromium
+        uses: ./.github/actions/setup-playwright-browsers
+        with:
+          directories: uplinks/${{ inputs.name }}/client
 
       - name: Prepare the release
         if: inputs.prepare_args != ''
@@ -267,11 +268,16 @@ jobs:
       #
       # The browser is the CLIENT's own playwright, for the reason the docs step
       # below gives. `minsize` measures pixels and only answers honestly on Linux.
+      - name: Install the browser the checks render in
+        if: inputs.prepare_args == '' && inputs.client
+        uses: ./.github/actions/setup-playwright-browsers
+        with:
+          directories: uplinks/${{ inputs.name }}/client
+
       - name: Full uplink-tools check
         if: inputs.prepare_args == ''
         run: |
           if [ "${{ inputs.client }}" = "true" ]; then
-            (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
             if [ -n "${{ inputs.mod_csproj }}" ]; then
               node tooling/uplink-tools.mjs "${{ inputs.name }}" bundle --out "$RUNNER_TEMP/check-bundle"
               node tooling/uplink-tools.mjs "${{ inputs.name }}" bake --bundle "$(ls "$RUNNER_TEMP"/check-bundle/*/*.client.js | head -1)"
@@ -338,12 +344,17 @@ jobs:
       # pinned to, so a restyled kit moves every one of them until the pin moves
       # and the pictures are regenerated with it. The leg stays green and the
       # step shows red.
+      - name: Install the browser the docs render in
+        if: inputs.client && inputs.prepare_args == ''
+        uses: ./.github/actions/setup-playwright-browsers
+        with:
+          directories: uplinks/${{ inputs.name }}/client
+
       - name: Docs are current
         id: docs
         if: inputs.client && inputs.prepare_args == ''
         continue-on-error: ${{ inputs.packed_gonogo != '' || (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')) }}
         run: |
-          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- playwright install --with-deps chromium)
           node tooling/uplink-docs.mjs --check --only "${{ inputs.name }}"
 
       # The check renders into a throwaway directory, so when it fails the
