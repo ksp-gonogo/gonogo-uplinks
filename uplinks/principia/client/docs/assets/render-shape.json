@@ -3,24 +3,24 @@
   "engine": "chromium",
   "assets": {
     "burn-editor-armed-mid-tune--default.png": {
-      "hash": "fbb272e2a84d9da3",
-      "elements": 325,
-      "text": "73062ab1"
+      "hash": "44cb3ab1117e2a47",
+      "elements": 328,
+      "text": "6f1e00e7"
     },
     "burn-editor-spherical-frozen--default.png": {
-      "hash": "c5002434cba02fc1",
-      "elements": 274,
-      "text": "8426cfe6"
+      "hash": "e7662eee81a8ece0",
+      "elements": 277,
+      "text": "0d14f6f0"
     },
     "burn-editor-writes-shut--default.png": {
-      "hash": "954da2e1f9665bb7",
-      "elements": 195,
-      "text": "eda9efd6"
+      "hash": "51062db45736e755",
+      "elements": 198,
+      "text": "0dd29ae6"
     },
     "coast-analysis-expanded--default.png": {
-      "hash": "ebaec327202dc440",
-      "elements": 167,
-      "text": "49722a5b"
+      "hash": "613d2a1bcb95836d",
+      "elements": 168,
+      "text": "59333b9b"
     },
     "coast-analysis-no-plan--default.png": {
       "hash": "5eb02c1b693babbb",
@@ -53,29 +53,29 @@
       "text": "7423c9f0"
     },
     "flight-plan-healthy--default.png": {
-      "hash": "870ac5960fb0def3",
-      "elements": 195,
-      "text": "77f93d41"
+      "hash": "d881d2763987c894",
+      "elements": 198,
+      "text": "dcdb07b8"
     },
     "flight-plan-integration-failed--default.png": {
-      "hash": "6d04b1d0944d95c8",
-      "elements": 204,
-      "text": "d745e85e"
+      "hash": "67a628ec6cd9974e",
+      "elements": 207,
+      "text": "8696f912"
     },
     "flight-plan-other-vessel--default.png": {
-      "hash": "88108a385f8d134f",
-      "elements": 196,
-      "text": "227aedca"
+      "hash": "0f73ad4343053161",
+      "elements": 199,
+      "text": "fd13e027"
     },
     "flight-plan-stale-observation--default.png": {
-      "hash": "522e19943ff7b7a4",
-      "elements": 196,
-      "text": "1c6dae7c"
+      "hash": "993648e72f3cc612",
+      "elements": 199,
+      "text": "fad6d720"
     },
     "flight-plan-steps-exhausted--default.png": {
-      "hash": "ebb7fc2956293dd1",
-      "elements": 153,
-      "text": "6531a84b"
+      "hash": "e4990f70286c58cb",
+      "elements": 156,
+      "text": "c0f1d6ba"
     },
     "flight-plan-unobserved--default.png": {
       "hash": "500e38be14300446",
@@ -363,14 +363,14 @@
       "text": "e3f9c194"
     },
     "orbit-analysis-decaying--default.png": {
-      "hash": "e710d84e8e09451b",
-      "elements": 183,
-      "text": "c5c0e715"
+      "hash": "f7e440e95bb4f192",
+      "elements": 46,
+      "text": "0d3b2b8e"
     },
     "orbit-analysis-live--default.png": {
-      "hash": "520a7859ab0e6796",
-      "elements": 168,
-      "text": "08c33ef0"
+      "hash": "f3f57247c2d6b324",
+      "elements": 31,
+      "text": "df64c4cc"
     },
     "orbit-analysis-never-run--default.png": {
       "hash": "5c741b6d47cf40fc",
@@ -393,19 +393,19 @@
       "text": "7babab77"
     },
     "plan-slots-armed--default.png": {
-      "hash": "3126d7ec3d7af96d",
-      "elements": 176,
-      "text": "807f9248"
+      "hash": "5ac3f51e0ae7c0ec",
+      "elements": 179,
+      "text": "71c8c409"
     },
     "plan-slots-no-plan--default.png": {
-      "hash": "1f6c43acfd4ccafd",
-      "elements": 132,
-      "text": "cacc10df"
+      "hash": "e57db70ab98a2bc9",
+      "elements": 135,
+      "text": "875b1cab"
     },
     "plan-slots-shut--default.png": {
-      "hash": "f8594431d08f9fa1",
-      "elements": 162,
-      "text": "d231b46b"
+      "hash": "2f04980fb928cd74",
+      "elements": 165,
+      "text": "2456bd2f"
     }
   }
 }
