@@ -72,6 +72,14 @@ namespace GonogoPrincipiaUplink
         public const string AnalysedPluginVersion =
             "2026081218-Levi-Civita-0-gc6615048e8fc76722b081bb3f1f4536afcf66870";
 
+        /// <summary>
+        /// A later build whose interface bodies for every call in
+        /// <see cref="PrincipiaCalls.Allowed"/> were compared against the analysed one.
+        /// All but one are unchanged, and the one that moved keeps the same preconditions.
+        /// </summary>
+        public const string ComparedPluginVersion =
+            "2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467";
+
         private readonly IPrincipiaPlugin _plugin;
         private readonly IPrincipiaPluginHandle _handle;
 
@@ -143,7 +151,8 @@ namespace GonogoPrincipiaUplink
                 return false;
             }
 
-            if (!string.Equals(version, AnalysedPluginVersion, StringComparison.Ordinal))
+            if (!string.Equals(version, AnalysedPluginVersion, StringComparison.Ordinal)
+                && !string.Equals(version, ComparedPluginVersion, StringComparison.Ordinal))
             {
                 reason =
                     "Principia build not analysed for call safety. Expected version '"

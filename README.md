@@ -14,7 +14,7 @@ built and released on its own, and loaded by the app at runtime.
 | [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.12.1-rc.26 (ckan) |
 | [kOS](uplinks/kos/README.md) | `kos` | kOS 1.6.0.1 (ckan) |
 | [MechJeb](uplinks/mechjeb/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) |
-| [Principia](uplinks/principia/README.md) | `principia` | Principia 2026081218-Levi-Civita (manual) |
+| [Principia](uplinks/principia/README.md) | `principia` | Principia 2026101016-Lichnerowicz (manual) |
 | [RealAntennas](uplinks/realantennas/README.md) | `realantennas` | RealAntennas 2.11.1.0 (ckan) |
 | [RealFuels](uplinks/realfuels/README.md) | `realfuels` | RealFuels 15.15.0 (ckan) |
 | [RP-1](uplinks/rp1/README.md) | `rp1` | RP-1 4.7.0.0 (ckan) |

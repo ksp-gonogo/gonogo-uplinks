@@ -31,6 +31,8 @@ import type {
   PrincipiaPlannedBurn,
 } from "../__generated__/contract.js";
 import { IgnitionTime } from "../IgnitionTime.js";
+import { useForecastsStopped } from "./forecastsStopped.js";
+import { LastKnownPathRow } from "./LastKnownPath.js";
 import { untilIgnition } from "../ignitionCountdown.js";
 import { PlanIntegrationBlock } from "../PlanIntegration/index.js";
 import { PRINCIPIA } from "../uplink.js";
@@ -257,6 +259,7 @@ function buildBadge(roster: SystemUplinkHealth | undefined): ReactNode {
 }
 
 export function FlightPlanSection() {
+  useForecastsStopped();
   // ONE reading, where there used to be two. The burns and the badges came off a
   // mirror of the game's planner window and the integration bounds off the plugin,
   // and the two could disagree about the same plan while each was internally
@@ -397,6 +400,7 @@ export function FlightPlanSection() {
             )}
           </Stack>
         )}
+        <LastKnownPathRow viewUt={viewUt} />
       </Stack>
     </Section>
   );

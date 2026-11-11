@@ -150,14 +150,5 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.True(decision.MayRun);
             Assert.Equal(PrincipiaNumericsProvenance.Reproduced, decision.Provenance);
         }
-
-        [Fact]
-        public void SpawningSaysNoRatherThanThrowingWhenThereIsNoWorkerScript()
-        {
-            // A machine without python, or a GameData without the script, is a
-            // reason to do without the fidelity tier rather than a reason for the
-            // Uplink to fail.
-            Assert.Null(PrincipiaWorkerProcess.Spawn("python3", "/no/such/worker.py"));
-        }
     }
 }

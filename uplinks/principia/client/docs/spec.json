@@ -7,7 +7,7 @@
     "description": "Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.",
     "wraps": {
       "name": "Principia",
-      "builtAgainst": "2026081218-Levi-Civita",
+      "builtAgainst": "2026101016-Lichnerowicz",
       "tier": "manual"
     }
   },

@@ -228,6 +228,7 @@ namespace GonogoPrincipiaUplink
             }
 
             _host = host;
+            HostLog = (level, message) => host.Log(level, "principia", message);
             RegisterPropagation(host);
             RegisterControlFrame(host);
             RegisterManeuverPlan(host);
@@ -270,6 +271,14 @@ namespace GonogoPrincipiaUplink
             // subscription would leave the roster describing a build nobody had
             // read yet for as long as nobody was looking.
             host.AddSampledSource(CaptureBinaryHealthOnMain, AdoptBinaryHealthOnCourier);
+            host.AddSampledSource(
+                _ =>
+                {
+                    if (FrameReading?.Invoke() is { } frame) GameFrame.Adopt(frame.Ut, frame.Degrees, frame.MainBody);
+                    if (GameReading?.Invoke() is { } reading) Diagnostic.Adopt(reading);
+                    return null;
+                },
+                _ => { });
             RegisterPlanCommands(host);
         }
 
@@ -383,13 +392,12 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
 
-            // Ask the worker what THIS machine reports, which is the one thing the
-            // decision below cannot get any other way: reading CPUID here would
-            // answer about whatever machine this code runs on, and the question is
-            // about the game's. A worker beside the game is that machine.
+            // The private copy runs in this process, so the machine it asks about is the game's.
             var hostFacts = AskTheWorker(verdict);
             var decision = PrincipiaWorkerHost.Decide(
                 verdict, hostFacts, hostFacts, UsesCorrectSinCos);
+            _integrator.Authorise(verdict.ActivePath, verdict.ReleaseName, decision);
+            _integrator.Preload();
 
             _binaryGateHasRun = true;
             return PrincipiaBinaryHealth.Of(_guard.DetectedVersion, verdict, decision);
@@ -405,6 +413,10 @@ namespace GonogoPrincipiaUplink
             if (captured is PrincipiaBinaryHealth reading)
             {
                 _binaryHealth = reading;
+                if (reading.RefusesToStart)
+                {
+                    _host?.SetAvailability(Availability.Unavailable(reading.Detail));
+                }
             }
         }
 
@@ -423,18 +435,12 @@ namespace GonogoPrincipiaUplink
         private static bool? UsesCorrectSinCos => null;
 
         /// <summary>
-        /// Start a worker beside the game and ask it what the CPU reports, then stop
-        /// it.
+        /// Asks what the CPU reports, through the native half and the copy of the build
+        /// the game already loaded.
         ///
-        /// <para>Once per session and only for a build that passed the gate: there
-        /// is nothing to ask a worker about a build we would not call into anyway.
-        /// The worker is disposed immediately because this one question is all it is
-        /// asked so far, and a process left running for a value that cannot change
-        /// is a process nobody remembers to stop.</para>
-        ///
-        /// <para>Every failure is unknown rather than false. No python, no script, a
-        /// worker that dies: none of those are a CPU without FMA, and treating them
-        /// as one would have the decision claim a match nobody measured.</para>
+        /// <para>Every failure is unknown rather than false. A machine where the native
+        /// half will not run is not a CPU without FMA, and treating it as one would have
+        /// the decision claim a match nobody measured.</para>
         /// </summary>
         private static PrincipiaHostFacts AskTheWorker(PrincipiaConformanceVerdict verdict)
         {
@@ -444,31 +450,15 @@ namespace GonogoPrincipiaUplink
                 return new PrincipiaHostFacts(osFamily, null);
             }
 
-            using var channel = PrincipiaWorkerProcess.Spawn("python3", WorkerScriptPath());
             return PrincipiaWorkerProcess.AskCpuidFeatureFlags(
-                channel, verdict.ActivePath, osFamily);
+                PrincipiaPrivateCopy.Open(NativeDirectory()), verdict.ActivePath, osFamily);
         }
 
-        /// <summary>
-        /// The worker script, found relative to this assembly rather than from a
-        /// configured path: it ships beside the plugin and moves with it, and a
-        /// path an operator could set is a path that can be set wrong.
-        /// </summary>
-        private static string WorkerScriptPath()
+        /// <summary>The folder the native half is written to, beside the plugin it ships in.</summary>
+        private static string NativeDirectory()
         {
-            try
-            {
-                var plugins = Path.GetDirectoryName(
-                    typeof(PrincipiaUplink).Assembly.Location);
-                var root = plugins == null ? null : Path.GetDirectoryName(plugins);
-                return root == null
-                    ? string.Empty
-                    : Path.Combine(root, "Worker", "principia_worker.py");
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
+            var plugins = Path.GetDirectoryName(typeof(PrincipiaUplink).Assembly.Location);
+            return plugins ?? string.Empty;
         }
 
         private static string OsFamily()
@@ -695,6 +685,7 @@ namespace GonogoPrincipiaUplink
         {
             AttachGravityModel();
             AttachPerturbers();
+            AttachSystemRequest();
             var perturbers = _perturbers ?? (_ => NoPerturbers);
             var parentOf = _bodyParents ?? (_ => (int?)null);
             host.Kernel.RegisterProvider(new ProviderRegistration
@@ -713,9 +704,125 @@ namespace GonogoPrincipiaUplink
                     perturbers,
                     parentOf,
                     _bodyNames,
-                    _secularSeeds),
+                    _secularSeeds,
+                    _integrator,
+                    ProbeSeed,
+                    WriteProbePath),
             });
         }
+
+        /// <summary>Answers an accurate propagate-from-state with the player's own build.</summary>
+        private readonly PrincipiaIntegrator _integrator = new PrincipiaIntegrator(
+            OpenRoute,
+            () => SystemRequest?.Invoke(),
+            PrincipiaPrivateCopy.PrivateFileDirectory,
+            ForceCheckRequested,
+            (level, message) => HostLog?.Invoke(level, message),
+            Diagnostic,
+            GameFrame.At);
+
+        /// <summary>The game's frame over time, which every ask sends to the copy as it was at the seed.</summary>
+        private static readonly PrincipiaGameFrame GameFrame = new PrincipiaGameFrame();
+
+        /// <summary>Reads the game's UT, planetarium rotation and main body. Set only by the game-facing partial.</summary>
+        private static Func<(double Ut, double Degrees, int MainBody)?>? FrameReading;
+
+        /// <summary>Sets the game's plugin beside the private copy's in the game's log.</summary>
+        private static readonly PrincipiaDiagnostic Diagnostic = new PrincipiaDiagnostic();
+
+        /// <summary>Reads the game for <see cref="Diagnostic"/>. Set only by the game-facing partial.</summary>
+        private static Func<PrincipiaGameReading?>? GameReading;
+
+        /// <summary>Writes through the host's log, which reaches KSP.log. Set when the host registers this Uplink.</summary>
+        private static Action<UplinkLogLevel, string>? HostLog;
+
+        /// <summary>The roster fact a client reads to learn that forecasts stopped this session.</summary>
+        private const string ForecastsFact = "forecasts";
+
+        /// <summary>The Uplink's health with stopped forecasts counted in; a refused build stays refused.</summary>
+        internal static UplinkHealth WithForecasts(UplinkHealth health, string? stoppedReason)
+        {
+            if (stoppedReason == null || health.State == UplinkHealthState.Unavailable)
+            {
+                return health;
+            }
+            var facts = new List<UplinkHealthFact>(health.Facts)
+            {
+                new UplinkHealthFact(ForecastsFact, "stopped"),
+            };
+            return new UplinkHealth(UplinkHealthState.Degraded, stoppedReason, facts);
+        }
+
+        /// <summary>
+        /// The copy inside the game, unless a file named <c>use-separate-process</c> sits
+        /// beside the native half, which selects the separate program so a test run can
+        /// measure the two routes side by side.
+        /// </summary>
+        private static IPrincipiaWorkerChannel? OpenRoute()
+        {
+            var directory = NativeDirectory();
+            return File.Exists(Path.Combine(directory, "use-separate-process"))
+                ? PrincipiaPrivateCopy.OpenSeparateProcess(directory)
+                : PrincipiaPrivateCopy.Open(directory);
+        }
+
+        /// <summary>The development seed file beside the native half, or null (see <see cref="PrincipiaProbeSeed"/>).</summary>
+        private static string? ProbeSeed()
+        {
+            try
+            {
+                var path = Path.Combine(NativeDirectory(), PrincipiaProbeSeed.FileName);
+                return File.Exists(path) ? File.ReadAllText(path) : null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Writes a path from the development seed beside it, named by the seed's UT.</summary>
+        private static void WriteProbePath(double seedUt, string lines)
+        {
+            try
+            {
+                var name = "prinprobe-path-" + Math.Round(seedUt, 2).ToString("R", System.Globalization.CultureInfo.InvariantCulture) + ".jsonl";
+                File.WriteAllText(Path.Combine(NativeDirectory(), name), lines);
+            }
+            catch (Exception e)
+            {
+                HostLog?.Invoke(UplinkLogLevel.Warn, "could not write the development path: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Whether a file named <c>force-check</c> sits beside the native half, taken once
+        /// and deleted. It lets a test run in the real game show that a fatal check in the
+        /// private copy leaves the player's game running.
+        /// </summary>
+        private static bool ForceCheckRequested()
+        {
+            try
+            {
+                var flag = Path.Combine(NativeDirectory(), "force-check");
+                if (!File.Exists(flag))
+                {
+                    return false;
+                }
+                File.Delete(flag);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The solar system as the private copy has to rebuild it, as text. Set only by the
+        /// game-facing partial; a build that omits it has nothing to build from and
+        /// refuses every accurate ask.
+        /// </summary>
+        private static Func<string?>? SystemRequest;
 
         /// <summary>
         /// Sets <c>_perturbers</c> to the real body-tree walk. Implemented only in
@@ -725,6 +832,9 @@ namespace GonogoPrincipiaUplink
         /// is never longer than the horizon this Uplink used to get.
         /// </summary>
         partial void AttachPerturbers();
+
+        /// <summary>Sets <see cref="SystemRequest"/>. Implemented only in the game-facing partial.</summary>
+        partial void AttachSystemRequest();
 
         /// <summary>Test seam: the neighbourhood injected, so the bound is provable with no game.</summary>
         private Func<int, IReadOnlyList<PrincipiaPerturber>>? _perturbers;
@@ -817,7 +927,7 @@ namespace GonogoPrincipiaUplink
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, _guard.Reason);
             }
-            return (_binaryHealth ?? _detecting).ToHealth();
+            return WithForecasts((_binaryHealth ?? _detecting).ToHealth(), _integrator.StoppedReason);
         }
     }
 }

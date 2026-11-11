@@ -72,4 +72,21 @@
     <ProjectReference Include="..\mod-contract\GonogoPrincipiaUplink.Contract.csproj" />
   </ItemGroup>
 
+  <!-- The native half of the private Principia copy, carried inside this assembly and
+       written out beside it at runtime, so a release zip stays one Plugins folder. Built
+       where a Linux C compiler is; a build without one still works and refuses every
+       accurate ask at runtime. -->
+  <PropertyGroup>
+    <PrincipiaNativeOut>obj/libgonogo_principia.so</PrincipiaNativeOut>
+  </PropertyGroup>
+  <Target Name="BuildPrincipiaNative" BeforeTargets="PrepareForBuild;BeforeBuild" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <MakeDir Directories="obj" />
+    <Exec Command="gcc -shared -fPIC -O2 -g0 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-stack-protector -o &quot;$(PrincipiaNativeOut)&quot; native/gonogo_principia.c -ldl -lpthread -lm" />
+    <Exec Command="gcc -DGONOGO_WORKER -O2 -g0 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-stack-protector -o obj/gonogo_principia_worker native/gonogo_principia.c -ldl -lpthread -lm" />
+    <ItemGroup>
+      <EmbeddedResource Include="$(PrincipiaNativeOut)" LogicalName="libgonogo_principia.so" />
+      <EmbeddedResource Include="obj/gonogo_principia_worker" LogicalName="gonogo_principia_worker" />
+    </ItemGroup>
+  </Target>
+
 </Project>

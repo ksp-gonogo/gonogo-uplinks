@@ -1,8 +1,10 @@
 import {
   act,
+  screen,
   setupStreamFixture,
   waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
+import { userEvent } from "@testing-library/user-event";
 import {
   renderWithRail as render,
   visibleText,
@@ -19,6 +21,10 @@ afterEach(() => {
 });
 
 const VIEW_UT = 1_000_000;
+
+async function openDetails() {
+  await userEvent.click(screen.getByRole("button", { name: /ORBIT DETAILS/ }));
+}
 
 function mount() {
   const stream = setupStreamFixture({
@@ -213,10 +219,21 @@ describe("OrbitAnalysisSection", () => {
    * Every element is an interval and the width is the number that says whether
    * the orbit is stable. A midpoint would answer a question nobody asked.
    */
+  it("keeps the lowest altitude on show and folds the figures that describe the orbit", async () => {
+    const stream = mount();
+    await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
+
+    const text = await visibleText(stream.container);
+    expect(text).toContain("LOWEST");
+    expect(text).toContain("ORBIT DETAILS");
+    expect(text).not.toContain("SIDEREAL");
+  });
+
   it("renders each mean element as both ends of its band", async () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("0.0012");
     expect(text).toContain("0.0041");
@@ -233,6 +250,7 @@ describe("OrbitAnalysisSection", () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("SIDEREAL");
     expect(text).toContain("−13s");
@@ -243,6 +261,7 @@ describe("OrbitAnalysisSection", () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("-0.2061");
     expect(text).toContain("°/h");
@@ -274,6 +293,7 @@ describe("OrbitAnalysisSection", () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("REPEATS IN");
     expect(text).toContain("SUBCYCLE");
@@ -287,6 +307,7 @@ describe("OrbitAnalysisSection", () => {
     const stream = mount();
     await emit(stream, { vesselId: "v", sampledAtUt: VIEW_UT, orbit: orbit() });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("ASC NODE");
     expect(text).toContain("DESC NODE");
@@ -314,6 +335,7 @@ describe("OrbitAnalysisSection", () => {
       }),
     });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).not.toContain("REPEATS IN");
     expect(text).not.toContain("ASC NODE");
@@ -425,6 +447,7 @@ describe("OrbitAnalysisSection", () => {
       orbit: orbit({ siderealPeriodSeconds: 3270.99 }),
     });
 
+    await openDetails();
     const text = await visibleText(stream.container);
     expect(text).toContain("54min 31s");
     expect(text).not.toContain("54min 30s");

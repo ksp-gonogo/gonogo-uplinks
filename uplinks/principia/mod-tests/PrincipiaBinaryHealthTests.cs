@@ -157,6 +157,17 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
+        public void StoppedForecastsDegradeTheUplinkAndSayWhatToDo()
+        {
+            var health = PrincipiaUplink.WithForecasts(
+                Available().Health(), PrincipiaIntegrator.StoppedSentence);
+
+            Assert.Equal(UplinkHealthState.Degraded, health.State);
+            Assert.Contains("Restart the game", health.Detail);
+            Assert.Equal("stopped", FactNamed(health, "forecasts"));
+        }
+
+        [Fact]
         public void AVettedBuildIsHealthy()
         {
             var health = PrincipiaBinaryHealth
@@ -190,7 +201,7 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
-        public void AnUnreadableBuildIsDegradedAndSaysWhy()
+        public void ABuildTheGateCanSeeDoesNotMatchRefusesToStartAndSaysWhy()
         {
             var verdict = PrincipiaConformanceVerdict.Refused(
                 PrincipiaBinaryVariant.Unknown, "/GameData/Principia/x64/principia.so",
@@ -204,7 +215,7 @@ namespace GonogoPrincipiaUplink.Tests
                     null))
                 .ToHealth();
 
-            Assert.Equal(UplinkHealthState.Degraded, health.State);
+            Assert.Equal(UplinkHealthState.Unavailable, health.State);
             Assert.Contains("no interface descriptor", health.Detail);
         }
 
