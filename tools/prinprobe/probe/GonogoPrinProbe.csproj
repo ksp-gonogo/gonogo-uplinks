@@ -11,6 +11,10 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <!-- The Uplink's own hash, so the probe keys a body exactly as the Uplink does. -->
+    <Compile Include="..\..\..\uplinks\principia\mod\CityHash.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="UnityEngine" Private="false">
       <HintPath>$(KspManaged)\UnityEngine.dll</HintPath>
     </Reference>

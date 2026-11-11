@@ -13,8 +13,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <!-- The record format only: PrinProbe.cs names game types. -->
+  <!-- Everything but PrinProbe.cs, which names game types. -->
   <ItemGroup>
     <Compile Include="..\probe\ProbeRecord.cs" />
+    <Compile Include="..\probe\ProbeBodyKey.cs" />
+    <Compile Include="..\..\..\uplinks\principia\mod\CityHash.cs" />
   </ItemGroup>
 </Project>

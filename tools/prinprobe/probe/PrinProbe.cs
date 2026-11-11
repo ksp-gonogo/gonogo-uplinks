@@ -160,6 +160,10 @@ namespace GonogoPrinProbe
             return method.Invoke(null, args);
         }
 
+        /// <summary>The body argument a call taking the plugin then one body expects.</summary>
+        private object Body(string call, CelestialBody body) =>
+            ProbeBodyKey.For(Method(call), 1, body.flightGlobalsIndex, body.name);
+
         private MethodInfo Method(string name) =>
             _interface!.GetMethod(name, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
             ?? throw new MissingMethodException(InterfaceTypeName, name);
@@ -197,7 +201,7 @@ namespace GonogoPrinProbe
                 return;
             }
             var parent = vessel.mainBody.flightGlobalsIndex;
-            var (q, p) = Qp(Call("VesselFromParent", plugin, parent, guid)!);
+            var (q, p) = Qp(Call("VesselFromParent", plugin, Body("VesselFromParent", vessel.mainBody), guid)!);
             var ut = (double)Call("CurrentTime", plugin)!;
             var seed = ProbeRecord.Seed(ut, parent, Planetarium.InverseRotAngle, q, p);
             File.WriteAllText(Path.Combine(_folder, "seed-" + ProbeRecord.Number(Math.Round(ut, 2)) + ".json"), seed);
@@ -240,7 +244,7 @@ namespace GonogoPrinProbe
                 return;
             }
             var parent = vessel.mainBody.flightGlobalsIndex;
-            var (q, p) = Qp(Call("VesselFromParent", plugin, parent, guid)!);
+            var (q, p) = Qp(Call("VesselFromParent", plugin, Body("VesselFromParent", vessel.mainBody), guid)!);
             var orbit = vessel.orbit;
             var line = new FlownLine
             {
@@ -272,7 +276,7 @@ namespace GonogoPrinProbe
                         continue;
                     }
                     line.Bodies.Add(new KeyValuePair<int, (Triple, Triple)>(
-                        body.flightGlobalsIndex, Qp(Call("CelestialFromParent", plugin, body.flightGlobalsIndex)!)));
+                        body.flightGlobalsIndex, Qp(Call("CelestialFromParent", plugin, Body("CelestialFromParent", body))!)));
                 }
             }
             _out!.WriteLine(ProbeRecord.Flown(line));
@@ -303,7 +307,7 @@ namespace GonogoPrinProbe
                 return;
             }
             var parent = vessel.mainBody.flightGlobalsIndex;
-            var (q0, p0) = Qp(Call("VesselFromParent", plugin, parent, guid)!);
+            var (q0, p0) = Qp(Call("VesselFromParent", plugin, Body("VesselFromParent", vessel.mainBody), guid)!);
             Call("FlightPlanCreate", plugin, guid, ut + seconds, vessel.GetTotalMass());
             try
             {
