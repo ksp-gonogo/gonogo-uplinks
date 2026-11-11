@@ -10,7 +10,7 @@
     "name": "kerbcast",
     "tier": "ckan",
     "ckan": "Kerbcast",
-    "builtAgainst": "1.12.1",
+    "builtAgainst": "1.12.1-rc.26",
     "channels": [{ "ckan": "Kerbcast" }, { "github": "ksp-gonogo/kerbcast" }, { "spacedock": 4366 }],
     "packages": ["@ksp-gonogo/kerbcast", "@ksp-gonogo/kerbcast-react"]
   },
