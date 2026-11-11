@@ -17,6 +17,7 @@
   <ItemGroup>
     <Compile Include="..\probe\ProbeRecord.cs" />
     <Compile Include="..\probe\ProbeBodyKey.cs" />
+    <Compile Include="..\probe\ProbePlanPoints.cs" />
     <Compile Include="..\..\..\uplinks\principia\mod\CityHash.cs" />
   </ItemGroup>
 </Project>

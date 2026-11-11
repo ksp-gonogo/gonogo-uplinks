@@ -23,7 +23,7 @@ Create these files in `GameData/GonogoPrinProbe/PluginData/`. Each is read once,
 | file | contents | does |
 | --- | --- | --- |
 | `go` | game seconds, default 3600 | records `flown-<ut>.jsonl` every fixed update until that UT, and writes the seed file `GameData/GonogoPrincipiaUplink/Plugins/prinprobe-seed.json` |
-| `plan` | game seconds, default 3600 | disposable saves only: coasts a flight plan with no manoeuvres at the craft's prediction settings, records `plan-<ut>.jsonl`, deletes the plan. Refuses if the craft already has a flight plan |
+| `plan` | game seconds, default 3600 | disposable saves only: coasts a flight plan with no manoeuvres at the craft's prediction settings, records `plan-<ut>.jsonl` (the whole coast where Principia still renders one, before 2026101016-Lichnerowicz; from then on the plan's start and its apsides about the parent), deletes the plan. Refuses if the craft already has a flight plan |
 | `stop` | nothing | stops recording |
 
 While `prinprobe-seed.json` exists, every accurate ask to the Principia Uplink starts from it, and each solved path is written beside it as `prinprobe-path-<ut>.jsonl`. Delete the file to return to normal asks.

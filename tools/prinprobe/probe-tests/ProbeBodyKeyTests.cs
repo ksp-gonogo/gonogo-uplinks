@@ -12,6 +12,14 @@ namespace GonogoPrinProbe.Tests
             public static object? ByIndex(IntPtr plugin, int celestialIndex) => null;
 
             public static object? ByCity(IntPtr plugin, ulong celestialCity) => null;
+
+            public static void ApsidesByCity(
+                IntPtr plugin, string guid, object? tMax, ulong celestialCity, object sun, int maxPoints,
+                out object? apoapsides, out object? periapsides)
+            {
+                apoapsides = null;
+                periapsides = null;
+            }
         }
 
         [Fact]
@@ -27,6 +35,16 @@ namespace GonogoPrinProbe.Tests
         public void ABuildThatNamesBodiesByCityIsGivenTheCityOfTheName()
         {
             var key = ProbeBodyKey.For(typeof(Forwarder).GetMethod(nameof(Forwarder.ByCity))!, 1, 1, "Kerbin");
+
+            Assert.Equal(6228157669635263037UL, key);
+        }
+
+        /// <summary>The apsides read names its body fourth, after the plugin, the craft and
+        /// the end time.</summary>
+        [Fact]
+        public void FindsTheBodyParameterWhereverTheCallPutsIt()
+        {
+            var key = ProbeBodyKey.For(typeof(Forwarder).GetMethod(nameof(Forwarder.ApsidesByCity))!, 3, 1, "Kerbin");
 
             Assert.Equal(6228157669635263037UL, key);
         }

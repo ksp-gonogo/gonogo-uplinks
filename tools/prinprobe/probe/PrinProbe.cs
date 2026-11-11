@@ -33,6 +33,9 @@ namespace GonogoPrinProbe
         private const string AdapterTypeName = "principia.ksp_plugin_adapter.PrincipiaPluginAdapter";
         private const int BodiesEvery = 10;
 
+        /// <summary>Apsides asked for per plan: a one-hour coast in low orbit has about two.</summary>
+        private const int MaxApsides = 64;
+
         private string _folder = "";
         private string _seedFile = "";
         private Type? _interface;
@@ -326,39 +329,15 @@ namespace GonogoPrinProbe
                 writer.WriteLine(ProbeRecord.Fact("planActualFinalTime", ProbeRecord.Describe(Call("FlightPlanGetActualFinalTime", plugin, guid))));
                 writer.WriteLine(ProbeRecord.Fact("planVesselState", ProbeRecord.Seed(ut, parent, Planetarium.InverseRotAngle, q0, p0)));
 
-                var segment = Method("FlightPlanRenderedSegment");
-                var sunType = segment.GetParameters()[2].ParameterType;
-                var sun = Activator.CreateInstance(sunType);
-                var sunWorld = Planetarium.fetch.Sun.position;
-                sunType.GetField("x")!.SetValue(sun, sunWorld.x);
-                sunType.GetField("y")!.SetValue(sun, sunWorld.y);
-                sunType.GetField("z")!.SetValue(sun, sunWorld.z);
-                var iterator = segment.Invoke(null, new object?[] { plugin, guid, sun, 0 });
-                var parentWorld = Of(vessel.mainBody.position);
-                var first = true;
-                try
+                var segment = _interface!.GetMethod(
+                    "FlightPlanRenderedSegment", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                if (segment != null)
                 {
-                    while (!(bool)Call("IteratorAtEnd", iterator)!)
-                    {
-                        var (wq, wp) = Qp(Call("IteratorGetDiscreteTrajectoryQP", iterator)!);
-                        var t = (double)Call("IteratorGetDiscreteTrajectoryTime", iterator)!;
-                        var q = (wq - parentWorld).WorldToPlanetarium();
-                        var p = wp.WorldToPlanetarium();
-                        if (first)
-                        {
-                            writer.WriteLine(ProbeRecord.Fact(
-                                "planSelfCheck",
-                                "first point " + ProbeRecord.Number(t) + " is " + ProbeRecord.Number((q - q0).Length())
-                                + " m and " + ProbeRecord.Number((p - p0).Length()) + " m/s from the craft"));
-                            first = false;
-                        }
-                        writer.WriteLine(ProbeRecord.PlanPoint(t, Planetarium.InverseRotAngle, q, p));
-                        Call("IteratorIncrement", iterator);
-                    }
+                    WriteSegment(writer, segment, vessel, plugin, guid, q0, p0);
                 }
-                finally
+                else
                 {
-                    (iterator as IDisposable)?.Dispose();
+                    WriteApsides(writer, vessel, plugin, guid, q0, p0);
                 }
             }
             catch (Exception e)
@@ -369,6 +348,100 @@ namespace GonogoPrinProbe
             {
                 Call("FlightPlanDelete", plugin, guid);
             }
+        }
+
+        private object SunWorld(Type xyzType)
+        {
+            var sun = Activator.CreateInstance(xyzType);
+            var sunWorld = Planetarium.fetch.Sun.position;
+            xyzType.GetField("x")!.SetValue(sun, sunWorld.x);
+            xyzType.GetField("y")!.SetValue(sun, sunWorld.y);
+            xyzType.GetField("z")!.SetValue(sun, sunWorld.z);
+            return sun!;
+        }
+
+        /// <summary>The whole rendered coast, on the builds before 2026101016-Lichnerowicz that still render one.</summary>
+        private void WriteSegment(
+            StreamWriter writer, MethodInfo segment, Vessel vessel, IntPtr plugin, string guid, Triple q0, Triple p0)
+        {
+            var iterator = segment.Invoke(null, new object?[] { plugin, guid, SunWorld(segment.GetParameters()[2].ParameterType), 0 });
+            var parentWorld = Of(vessel.mainBody.position);
+            var first = true;
+            try
+            {
+                while (!(bool)Call("IteratorAtEnd", iterator)!)
+                {
+                    var (wq, wp) = Qp(Call("IteratorGetDiscreteTrajectoryQP", iterator)!);
+                    var t = (double)Call("IteratorGetDiscreteTrajectoryTime", iterator)!;
+                    var q = (wq - parentWorld).WorldToPlanetarium();
+                    var p = wp.WorldToPlanetarium();
+                    if (first)
+                    {
+                        writer.WriteLine(ProbeRecord.Fact(
+                            "planSelfCheck",
+                            "first point " + ProbeRecord.Number(t) + " is " + ProbeRecord.Number((q - q0).Length())
+                            + " m and " + ProbeRecord.Number((p - p0).Length()) + " m/s from the craft"));
+                        first = false;
+                    }
+                    writer.WriteLine(ProbeRecord.PlanPoint(t, Planetarium.InverseRotAngle, q, p));
+                    Call("IteratorIncrement", iterator);
+                }
+            }
+            finally
+            {
+                (iterator as IDisposable)?.Dispose();
+            }
+        }
+
+        /*
+         * The apsides about the craft's parent, rendered through the same plotting frame as the
+         * segment was, so the same subtraction of the parent's world position applies. There is
+         * no first rendered point to self-check against, so the plan's start is the craft's own
+         * state, which is what a plan with no manoeuvres starts from.
+         */
+        private void WriteApsides(StreamWriter writer, Vessel vessel, IntPtr plugin, string guid, Triple q0, Triple p0)
+        {
+            var apsides = Method("FlightPlanRenderedApsides");
+            var parameters = apsides.GetParameters();
+            var args = new object?[]
+            {
+                plugin, guid, null,
+                ProbeBodyKey.For(apsides, 3, vessel.mainBody.flightGlobalsIndex, vessel.mainBody.name),
+                SunWorld(parameters[4].ParameterType), MaxApsides, null, null,
+            };
+            apsides.Invoke(null, args);
+            var parentWorld = Of(vessel.mainBody.position);
+            var initial = (double)Call("FlightPlanGetInitialTime", plugin, guid)!;
+            var points = ProbePlanPoints.FromApsides(
+                new PlanState(initial, q0, p0), Read(args[6], parentWorld), Read(args[7], parentWorld));
+            writer.WriteLine(ProbeRecord.Fact(
+                "planPoints",
+                "the plan's start, which is the craft's own state, then its " + (points.Count - 1)
+                + " apsides about " + vessel.mainBody.name + ": Principia renders no whole coast in this release"));
+            foreach (var point in points)
+            {
+                writer.WriteLine(ProbeRecord.PlanPoint(point.Ut, Planetarium.InverseRotAngle, point.Q, point.P));
+            }
+        }
+
+        private List<PlanState> Read(object? iterator, Triple parentWorld)
+        {
+            var states = new List<PlanState>();
+            try
+            {
+                while (!(bool)Call("IteratorAtEnd", iterator)!)
+                {
+                    var (wq, wp) = Qp(Call("IteratorGetDistinguishedPointsQP", iterator)!);
+                    var t = (double)Call("IteratorGetDistinguishedPointsTime", iterator)!;
+                    states.Add(new PlanState(t, (wq - parentWorld).WorldToPlanetarium(), wp.WorldToPlanetarium()));
+                    Call("IteratorIncrement", iterator);
+                }
+            }
+            finally
+            {
+                (iterator as IDisposable)?.Dispose();
+            }
+            return states;
         }
     }
 }
