@@ -313,7 +313,7 @@ function CrossingTime({
  * The reading the resource ledger was derived from, so a figure drawn deep in
  * a row says how current it is without every row between being handed it.
  */
-const LedgerReadingContext = createContext<Reading<unknown> | undefined>(
+export const LedgerReadingContext = createContext<Reading<unknown> | undefined>(
   undefined,
 );
 
@@ -1072,7 +1072,7 @@ function LimitedByMessage({
   );
 }
 
-function LedgerBody({ ledger }: { ledger: Ledger }) {
+export function LedgerBody({ ledger }: { ledger: Ledger }) {
   const ledgerReading = useContext(LedgerReadingContext);
   const hasResidual =
     ledger.residual !== undefined && Math.abs(ledger.residual) > 1e-6;

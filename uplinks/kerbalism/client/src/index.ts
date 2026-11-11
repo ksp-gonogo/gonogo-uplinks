@@ -120,6 +120,8 @@ import "./processor.js";
 // when the app pulls the package entry in.
 import "./ShipSystems/index.js";
 import "./ShipSystems/badge.js";
+// Fills the Power Systems widget's sections slot with Kerbalism's electric-charge ledger.
+import "./PowerSystems/PowerFeed.js";
 // CrewStatus's per-kerbal survival: a Processor (CrewSurvival/processor.ts),
 // the `crew-status.meters` contribution that carries it into the BASE widget's
 // (packages/components/src/CrewStatus) own slot, the panel badge, and the

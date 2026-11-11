@@ -1318,6 +1318,13 @@
       "settings": []
     },
     {
+      "id": "power-systems-kerbalism",
+      "augments": "power-systems.sections",
+      "channels": [],
+      "suppressesVanillaBase": false,
+      "settings": []
+    },
+    {
       "id": "science-data-aboard-row-file-manager",
       "augments": "science-data.aboard-row",
       "channels": [],
