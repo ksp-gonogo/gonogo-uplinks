@@ -24,14 +24,17 @@ namespace GonogoPrincipiaUplink.Tests
     public class PrincipiaDescriptorRealBinaryTests
     {
         /// <summary>
-        /// Measured across all six shipped builds of `2026081218-Levi-Civita`. The
-        /// descriptor is byte-identical in every one, which is what lets a hash name
-        /// a release rather than a file.
+        /// Descriptor lengths measured across all six shipped builds of a release, by
+        /// its hash. The descriptor is byte-identical in every one, which is what lets
+        /// a hash name a release rather than a file.
         /// </summary>
-        private const string ExpectedSha256 =
-            "b2569d212a9fbbe5334e49ed05f08b464a4e387469231245e3f682f5c6ce11b3";
-
-        private const int ExpectedLength = 76_757;
+        private static readonly Dictionary<string, int> MeasuredLengths = new Dictionary<string, int>
+        {
+            // 2026081218-Levi-Civita
+            ["b2569d212a9fbbe5334e49ed05f08b464a4e387469231245e3f682f5c6ce11b3"] = 76_757,
+            // 2026110907-Lie
+            ["84008b57dc8f41eb78dc223b6c605b6e89b6930ceae3ec4fe3f11e42e535613b"] = 75_559,
+        };
 
         private static readonly string[] RelativeBuildPaths =
         {
@@ -59,6 +62,7 @@ namespace GonogoPrincipiaUplink.Tests
             }
 
             var found = new List<string>();
+            string? firstSha = null;
             foreach (var relative in RelativeBuildPaths)
             {
                 var path = Path.Combine(installRoot!, relative.Replace('/', Path.DirectorySeparatorChar));
@@ -71,8 +75,12 @@ namespace GonogoPrincipiaUplink.Tests
                 var descriptor = PrincipiaDescriptorReader.Read(stream);
 
                 Assert.True(descriptor.Found, relative + ": no descriptor found");
-                Assert.Equal(ExpectedLength, descriptor.Length);
-                Assert.Equal(ExpectedSha256, descriptor.Sha256);
+                Assert.True(
+                    MeasuredLengths.TryGetValue(descriptor.Sha256!, out var length),
+                    relative + ": descriptor " + descriptor.Sha256 + " is not a measured release");
+                Assert.Equal(length, descriptor.Length);
+                firstSha ??= descriptor.Sha256;
+                Assert.Equal(firstSha, descriptor.Sha256);
             }
 
             if (found.Count == 0)
@@ -125,9 +133,10 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.True(verdict.MayProceed);
             Assert.Equal(PrincipiaBinaryVariant.X64AvxFma, verdict.Variant);
             Assert.Equal(fma, verdict.ActivePath);
-            Assert.Equal(ExpectedSha256, verdict.DescriptorSha256);
-            Assert.Equal(170, verdict.ExportCount);
-            Assert.NotNull(verdict.ReleaseName);
+            var release = PrincipiaSupportedSet.Find(verdict.DescriptorSha256);
+            Assert.NotNull(release);
+            Assert.Equal(release!.Value.InterfaceExports, verdict.ExportCount);
+            Assert.Equal(release.Value.Name, verdict.ReleaseName);
         }
 
         /// <summary>

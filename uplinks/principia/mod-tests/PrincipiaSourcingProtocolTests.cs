@@ -55,6 +55,23 @@ namespace GonogoPrincipiaUplink.Tests
             Assert.Equal(new[] { "GetVersion" }, plugin.Calls);
         }
 
+        /// <summary>A compared build reads like the analysed one, and its writes stay
+        /// closed because they were analysed against one build only.</summary>
+        [Theory]
+        [InlineData("2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467")]
+        [InlineData("2026110907-Lie-0-g242a88d95867b9d39557ed1a40269f51d979cdea")]
+        public void AComparedBuildBindsForReadingOnly(string version)
+        {
+            var plugin = new FakePrincipiaPlugin { Version = version };
+
+            var bound = PrincipiaSession.TryBind(
+                plugin, new FakePluginHandle(plugin), out var session, out var reason);
+
+            Assert.True(bound, reason);
+            Assert.Equal(version, session!.Version);
+            Assert.False(session.Writes.Available);
+        }
+
         [Fact]
         public void AnUnanalysedBuildPublishesNothingAndSaysWhatItFound()
         {

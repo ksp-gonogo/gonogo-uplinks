@@ -113,6 +113,29 @@ namespace GonogoPrincipiaUplink
         };
 
         /// <summary>
+        /// Calls in <see cref="Allowed"/> that only some builds export, so a build
+        /// without one still binds. Each reader of one answers null on a build that
+        /// lacks it. <c>IteratorGetPlottableElements</c> went with the mean-element
+        /// series in 2026110907-Lie, which carries the analysis's anchor as a field
+        /// instead.
+        /// </summary>
+        public static readonly string[] AllowedWhereBuilt =
+        {
+            "IteratorGetPlottableElements",
+        };
+
+        /// <summary>
+        /// Calls that gained a trailing <c>BoxedOrbitAnalysisPlotOptions</c> in
+        /// 2026110907-Lie. It is passed as null, which leaves the player's own
+        /// analyser's plot settings as they are and asks for no graphs.
+        /// </summary>
+        public static readonly string[] TakesPlotOptions =
+        {
+            "VesselGetAnalysis",
+            "FlightPlanGetCoastAnalysis",
+        };
+
+        /// <summary>
         /// Calls refused by name, each with the reason a caller gets told.
         ///
         /// <para>Named individually even though the family screens below would

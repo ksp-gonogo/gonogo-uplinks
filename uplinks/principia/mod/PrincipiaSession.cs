@@ -73,12 +73,22 @@ namespace GonogoPrincipiaUplink
             "2026081218-Levi-Civita-0-gc6615048e8fc76722b081bb3f1f4536afcf66870";
 
         /// <summary>
-        /// A later build whose interface bodies for every call in
-        /// <see cref="PrincipiaCalls.Allowed"/> were compared against the analysed one.
-        /// All but one are unchanged, and the one that moved keeps the same preconditions.
+        /// Later builds whose interface bodies for every call in
+        /// <see cref="PrincipiaCalls.Allowed"/> were compared against the one before.
+        ///
+        /// <para>2026101016-Lichnerowicz against the analysed build: all but one are
+        /// unchanged, and the one that moved keeps the same preconditions.
+        /// 2026110907-Lie against Lichnerowicz: the two analysis reads pass a new
+        /// trailing plot-options pointer through, and the analysis they build checks
+        /// nothing new and writes the player's plot settings only when that pointer is
+        /// set, which it never is here; <c>IteratorGetPlottableElements</c> is gone;
+        /// every other body is unchanged.</para>
         /// </summary>
-        public const string ComparedPluginVersion =
-            "2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467";
+        public static readonly string[] ComparedPluginVersions =
+        {
+            "2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467",
+            "2026110907-Lie-0-g242a88d95867b9d39557ed1a40269f51d979cdea",
+        };
 
         private readonly IPrincipiaPlugin _plugin;
         private readonly IPrincipiaPluginHandle _handle;
@@ -152,7 +162,7 @@ namespace GonogoPrincipiaUplink
             }
 
             if (!string.Equals(version, AnalysedPluginVersion, StringComparison.Ordinal)
-                && !string.Equals(version, ComparedPluginVersion, StringComparison.Ordinal))
+                && Array.IndexOf(ComparedPluginVersions, version) < 0)
             {
                 reason =
                     "Principia build not analysed for call safety. Expected version '"

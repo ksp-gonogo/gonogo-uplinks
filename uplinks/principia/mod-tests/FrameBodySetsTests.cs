@@ -166,6 +166,54 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         [Fact]
+        public void ACityNamedBurnFrameNamesTheSameBodies()
+        {
+            var descriptor = new FakeCityFrameParameters(
+                RotatingPulsating,
+                centre: null,
+                primary: new[] { "Kerbol", "Mun", "Minmus" },
+                secondary: new[] { "Kerbin", "Duna" });
+
+            var frame = new SettingsReflection().FrameFromIndices(
+                descriptor, new FakeCelestialNames(), "burn");
+
+            Assert.Equal("Kerbol", frame.PrimaryBody);
+            Assert.Equal("Kerbin", frame.SecondaryBody);
+            Assert.Equal(new List<string> { "Kerbol", "Mun", "Minmus" }, frame.PrimaryBodies);
+            Assert.Equal(new List<string> { "Kerbin", "Duna" }, frame.SecondaryBodies);
+        }
+
+        [Fact]
+        public void ACityNamedCentredFrameNamesItsCentre()
+        {
+            var descriptor = new FakeCityFrameParameters(
+                BodyCentredNonRotating, centre: "Mun", primary: new string[0], secondary: new string[0]);
+
+            var frame = new SettingsReflection().FrameFromIndices(
+                descriptor, new FakeCelestialNames(), "burn");
+
+            Assert.Equal("Mun", frame.CentreBody);
+        }
+
+        /// <summary>A side holding a city no body of this game has stops there, rather
+        /// than publishing the bodies around it as the whole set.</summary>
+        [Fact]
+        public void ACityNoBodyHasEndsTheSideItIsIn()
+        {
+            var descriptor = new FakeCityFrameParameters(
+                RotatingPulsating,
+                centre: null,
+                primary: new[] { "Kerbol", "Vall", "Minmus" },
+                secondary: new[] { "Kerbin" });
+
+            var frame = new SettingsReflection().FrameFromIndices(
+                descriptor, new FakeCelestialNames(), "burn");
+
+            Assert.Equal("Kerbol", frame.PrimaryBody);
+            Assert.Empty(frame.PrimaryBodies);
+        }
+
+        [Fact]
         public void ABurnFrameWithOneBodyASideLeavesTheListsEmpty()
         {
             var descriptor = new FakeFrameParameters(

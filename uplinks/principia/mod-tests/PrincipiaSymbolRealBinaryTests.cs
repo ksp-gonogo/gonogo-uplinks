@@ -26,10 +26,19 @@ namespace GonogoPrincipiaUplink.Tests
     public class PrincipiaSymbolRealBinaryTests
     {
         /// <summary>
-        /// Principia's C interface, measured at 170 exports in every one of the six
-        /// shipped builds of `2026081218-Levi-Civita`, with the same names in each.
+        /// The size of Principia's C interface, measured with the same names in every
+        /// one of the six shipped builds of a release: 170 in
+        /// <c>2026081218-Levi-Civita</c> and 164 in <c>2026110907-Lie</c>. Taken from
+        /// the release the build's own descriptor names.
         /// </summary>
-        private const int ExpectedInterfaceExports = 170;
+        private static int ExpectedInterfaceExports(Stream build)
+        {
+            var descriptor = PrincipiaDescriptorReader.Read(build);
+            var release = PrincipiaSupportedSet.Find(descriptor.Sha256);
+            Assert.True(release != null, "descriptor " + descriptor.Sha256 + " is not a vetted release");
+            build.Position = 0;
+            return release!.Value.InterfaceExports;
+        }
 
         private static readonly (string Path, NativeBinaryFormat Format)[] ShippedBuilds =
         {
@@ -73,13 +82,14 @@ namespace GonogoPrincipiaUplink.Tests
                 read.Add(build.Path);
 
                 using var stream = File.OpenRead(path);
+                var expected = ExpectedInterfaceExports(stream);
                 var exports = NativeExportReader.Read(stream);
 
                 Assert.True(exports.Found, build.Path + ": " + exports.Reason);
                 Assert.Equal(build.Format, exports.Format);
 
                 var api = PrincipiaSymbolGate.InterfaceExports(exports);
-                Assert.Equal(ExpectedInterfaceExports, api.Count);
+                Assert.Equal(expected, api.Count);
 
                 if (first == null)
                 {

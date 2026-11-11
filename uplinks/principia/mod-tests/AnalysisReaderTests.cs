@@ -309,6 +309,79 @@ namespace GonogoPrincipiaUplink.Tests
         }
 
         /// <summary>
+        /// A build that names bodies by city carries the analysis's anchor itself, and
+        /// that is the epoch, without the mean-element series being read at all.
+        /// </summary>
+        [Fact]
+        public void DatesACityNamedAnalysisFromItsOwnFirstTime()
+        {
+            var (plugin, observation) = Read(p =>
+            {
+                p.Add(Guid);
+                p.VesselAnalysis = new FakeCityOrbitAnalysis();
+            });
+
+            Assert.Equal(777.0, observation!.Orbit!.ElementsEpochUt);
+            Assert.Empty(Named(plugin, "IteratorGetPlottableElements"));
+        }
+
+        [Fact]
+        public void NamesACityNamedPrimaryByTheGamesOwnIndex()
+        {
+            var (_, observation) = Read(p =>
+            {
+                p.Add(Guid);
+                p.VesselAnalysis = new FakeCityOrbitAnalysis();
+            });
+
+            Assert.Equal(1, observation!.Orbit!.PrimaryIndex);
+            Assert.Equal("Kerbin", observation.Orbit.PrimaryBody);
+            Assert.True(observation.Orbit.GravitationallyBound);
+        }
+
+        /// <summary>
+        /// A city this game has no body for is not an escape: the craft has a primary,
+        /// it just cannot be named here.
+        /// </summary>
+        [Fact]
+        public void ACityThisGameCannotNameLeavesBoundUnknown()
+        {
+            var (_, observation) = Read(p =>
+            {
+                p.Add(Guid);
+                p.VesselAnalysis = new FakeCityOrbitAnalysis { primary_city = 12345UL };
+            });
+
+            Assert.Null(observation!.Orbit!.PrimaryIndex);
+            Assert.Null(observation.Orbit.GravitationallyBound);
+        }
+
+        [Fact]
+        public void ACityNamedAnalysisWithNoPrimaryIsUnbound()
+        {
+            var (_, observation) = Read(p =>
+            {
+                p.Add(Guid);
+                p.VesselAnalysis = new FakeCityOrbitAnalysis { primary_city = null };
+            });
+
+            Assert.False(observation!.Orbit!.GravitationallyBound);
+        }
+
+        [Fact]
+        public void FreesTheGraphLabelsAnAnalysisCarries()
+        {
+            var analysis = new FakeCityOrbitAnalysis();
+            Read(p =>
+            {
+                p.Add(Guid);
+                p.VesselAnalysis = analysis;
+            });
+
+            Assert.Equal(1, analysis.element_graphs!.lidov_graph_labels.Disposals);
+        }
+
+        /// <summary>
         /// A shape change must not read as an escape trajectory. With nothing on the
         /// struct resolving, "is it bound" is unanswerable, and unanswerable is not
         /// "no".

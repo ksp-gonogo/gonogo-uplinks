@@ -76,7 +76,10 @@ namespace GonogoPrincipiaUplink
                 var method = BindMethod(forwarder, name);
                 if (method == null)
                 {
-                    missing.Add(name);
+                    if (Array.IndexOf(PrincipiaCalls.AllowedWhereBuilt, name) < 0)
+                    {
+                        missing.Add(name);
+                    }
                     continue;
                 }
                 methods[name] = method;
@@ -362,7 +365,9 @@ namespace GonogoPrincipiaUplink
             Bool("IteratorAtEnd", iterator) ?? true;
 
         public object? IteratorGetPlottableElements(object iterator) =>
-            Call("IteratorGetPlottableElements", iterator);
+            _methods.ContainsKey("IteratorGetPlottableElements")
+                ? Call("IteratorGetPlottableElements", iterator)
+                : null;
 
         public bool WritesBound(out string reason)
         {
@@ -416,8 +421,31 @@ namespace GonogoPrincipiaUplink
         public void FlightPlanDuplicate(IntPtr plugin, string vesselGuid) =>
             Call("FlightPlanDuplicate", plugin, vesselGuid);
 
-        private object? Call(string name, params object?[] args) =>
-            _methods[name].Invoke(null, args);
+        private object? Call(string name, params object?[] args)
+        {
+            var method = _methods[name];
+            return method.Invoke(null, WithPlotOptions(method, name, args));
+        }
+
+        /// <summary>
+        /// The arguments with a null plot-options value appended, when the bound
+        /// method is one of <see cref="PrincipiaCalls.TakesPlotOptions"/> and takes
+        /// exactly that one parameter more than it was given. Any other difference in
+        /// count is left for the invoke to refuse.
+        /// </summary>
+        internal static object?[] WithPlotOptions(MethodInfo method, string name, object?[] args)
+        {
+            var parameters = method.GetParameters();
+            if (parameters.Length != args.Length + 1
+                || Array.IndexOf(PrincipiaCalls.TakesPlotOptions, name) < 0
+                || parameters[parameters.Length - 1].ParameterType.Name != "BoxedOrbitAnalysisPlotOptions")
+            {
+                return args;
+            }
+            var padded = new object?[args.Length + 1];
+            Array.Copy(args, padded, args.Length);
+            return padded;
+        }
 
         /// <summary>
         /// The three decoders, and they answer null rather than a zero.

@@ -34,6 +34,13 @@ namespace GonogoPrincipiaUplink
         /// the two want opposite answers. Empty means not read.</para>
         /// </summary>
         System.Collections.Generic.IReadOnlyList<int> Indices { get; }
+
+        /// <summary>
+        /// The index of the body a Principia build names by this city, the
+        /// <see cref="CityHash"/> of the body's name, or null when no body of this
+        /// game has it.
+        /// </summary>
+        int? IndexOfCity(ulong city);
     }
 
     /// <summary>

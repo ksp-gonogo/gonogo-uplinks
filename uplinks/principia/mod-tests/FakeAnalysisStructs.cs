@@ -51,6 +51,36 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
+    /// An analysis in the shape 2026110907-Lie hands back: the primary named by the
+    /// city of its name, the anchor carried as <c>first_time</c>, and the element
+    /// graphs the player's own window may have asked for.
+    /// </summary>
+    public sealed class FakeCityOrbitAnalysis
+    {
+#pragma warning disable IDE1006
+        public double progress_of_next_analysis;
+        public ulong? primary_city = CityHash.Hash64("Kerbin");
+        public double first_time = 777.0;
+        public double mission_duration = 604800.0;
+        public FakeOrbitalElements? elements = new FakeOrbitalElements();
+        public FakeOrbitRecurrence? recurrence = new FakeOrbitRecurrence();
+        public FakeEquatorialCrossings? ground_track_equatorial_crossings =
+            new FakeEquatorialCrossings();
+        public FakeSolarTimesOfNodes? solar_times_of_nodes = new FakeSolarTimesOfNodes();
+        public FakeElementGraphs? element_graphs = new FakeElementGraphs();
+#pragma warning restore IDE1006
+    }
+
+    /// <summary>The element graphs, of which only the label iterator is owned by the
+    /// caller.</summary>
+    public sealed class FakeElementGraphs
+    {
+#pragma warning disable IDE1006
+        public FakeDisposableIterator lidov_graph_labels = new FakeDisposableIterator();
+#pragma warning restore IDE1006
+    }
+
+    /// <summary>
     /// A ground-track recurrence, in the producer's own spelling.
     ///
     /// <para>The triple is Capderou's: <c>nuo</c> revolutions per day, <c>dto</c>

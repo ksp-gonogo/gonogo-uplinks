@@ -80,6 +80,16 @@ typedef struct { const char *a, *b; } TwoStrings;
 typedef struct { const char *a, *b, *c; } ThreeStrings;
 typedef struct { const char *a; } OneString;
 
+#define MAX_BODIES 256
+
+/*
+ * Principia names a body by an int index up to 2026101016-Lichnerowicz and by the
+ * CityHash64 of its name from 2026110907-Lie on, in the same six calls. A key is held
+ * wide either way: an older build reads the low 32 bits of the register or of the
+ * pointed-to word, and on x86-64 those are the index.
+ */
+typedef uint64_t BodyKey;
+
 typedef struct {
     void *handle;
     struct link_map *map;
@@ -87,25 +97,29 @@ typedef struct {
     int vessels;
     char *system;
     volatile bool poisoned;
+    uint64_t (*city_hash)(const char *);
+    int body_count;
+    int body_index[MAX_BODIES];
+    BodyKey body_key[MAX_BODIES];
     void *(*new_plugin)(const char *, const char *, double);
     void (*delete_plugin)(void **);
     void (*init_ephemeris)(void *, const TwoStrings *, const TwoStrings *);
     void (*init_history)(void *, const TwoStrings *);
     void (*init_psychohistory)(void *, const ThreeStrings *);
     void (*init_downsampling)(void *, const OneString *);
-    void (*insert_keplerian)(void *, int, const int *, const BodyParameters *, const Keplerian *);
-    void (*insert_cartesian)(void *, int, const int *, const BodyParameters *, const char *, const char *, const char *, const char *, const char *, const char *);
+    void (*insert_keplerian)(void *, BodyKey, const BodyKey *, const BodyParameters *, const Keplerian *);
+    void (*insert_cartesian)(void *, BodyKey, const BodyKey *, const BodyParameters *, const char *, const char *, const char *, const char *, const char *, const char *);
     void (*end_initialization)(void *);
     void (*advance)(void *, double, double);
-    void (*set_main_body)(void *, int);
+    void (*set_main_body)(void *, BodyKey);
     double (*current_time)(void *);
-    void (*keep_vessel)(void *, const char *, const char *, int, bool, bool *);
+    void (*keep_vessel)(void *, const char *, const char *, BodyKey, bool, bool *);
     void (*insert_part)(void *, uint32_t, const char *, const char *, QP);
     void (*prepare_collisions)(void *);
     void (*free_vessels)(void *, double);
     void (*catch_up)(void *, void **);
-    QP (*vessel_from_parent)(void *, int, const char *);
-    QP (*celestial_from_parent)(void *, int);
+    QP (*vessel_from_parent)(void *, BodyKey, const char *);
+    QP (*celestial_from_parent)(void *, BodyKey);
     void (*delete_iterator)(void **);
     void (*suppress)(int);
     void (*stderr_logging)(int);
@@ -187,7 +201,27 @@ static bool bind_symbols(Copy *copy, const char **missing)
     SYMBOL(delete_iterator, "IteratorDelete");
     SYMBOL(suppress, "SetSuppressedLogging");
     SYMBOL(stderr_logging, "SetStderrLogging");
+    /* Present exactly in the builds that name bodies by city. */
+    *(void **)&copy->city_hash = dlsym(copy->handle, "principia__CityHash64");
     return true;
+}
+
+/*
+ * The key this build knows a body by. An index the system never named has no name to
+ * hash, so it gets a key no body has and the call it reaches fails its own check, which
+ * the recovery catches.
+ */
+static BodyKey body_key(const Copy *copy, int index)
+{
+    if (copy->city_hash == NULL) {
+        return (BodyKey)(uint32_t)index;
+    }
+    for (int i = 0; i < copy->body_count; i++) {
+        if (copy->body_index[i] == index) {
+            return copy->body_key[i];
+        }
+    }
+    return 0;
 }
 
 /* Splits a line on tabs in place. An empty field is NULL. */
@@ -226,8 +260,9 @@ typedef struct {
 /* Builds the plugin from the system, at the given planetarium rotation in degrees. */
 static void build_plugin(Copy *copy, char *system, double rotation)
 {
-    Body *bodies = calloc(256, sizeof(Body));
+    Body *bodies = calloc(MAX_BODIES, sizeof(Body));
     int body_count = 0;
+    copy->body_count = 0;
     Body *body = NULL;
     char *cursor = system;
     while (cursor != NULL && *cursor != '\0') {
@@ -253,7 +288,7 @@ static void build_plugin(Copy *copy, char *system, double rotation)
         } else if (kind == 'Y') {
             ThreeStrings p = {f[1], f[2], f[3]};
             copy->init_psychohistory(copy->plugin, &p);
-        } else if (kind == 'B' && n >= 17 && body_count < 256) {
+        } else if (kind == 'B' && n >= 17 && body_count < MAX_BODIES) {
             body = &bodies[body_count++];
             body->index = (int)strtod(f[1], NULL);
             body->has_parent = f[2] != NULL;
@@ -261,6 +296,10 @@ static void build_plugin(Copy *copy, char *system, double rotation)
             BodyParameters p = {f[3], f[4], f[5], f[6], f[7], f[8], f[9], f[10] != NULL && f[10][0] == '1',
                                 f[11], f[12], f[13], f[14], f[15], f[16], NULL};
             body->parameters = p;
+            copy->body_index[copy->body_count] = body->index;
+            copy->body_key[copy->body_count] =
+                copy->city_hash == NULL ? (BodyKey)(uint32_t)body->index : copy->city_hash(f[3] == NULL ? "" : f[3]);
+            copy->body_count++;
         } else if (kind == 'E' && body != NULL && n >= 7) {
             Keplerian e = {strtod(f[1], NULL), NAN, strtod(f[2], NULL), strtod(f[3], NULL),
                            strtod(f[4], NULL), strtod(f[5], NULL), strtod(f[6], NULL)};
@@ -288,13 +327,14 @@ static void build_plugin(Copy *copy, char *system, double rotation)
             }
             b->parameters.geopotential = b->geopotential;
         }
-        const int *parent = b->has_parent ? &b->parent : NULL;
+        BodyKey parent_key = body_key(copy, b->parent);
+        const BodyKey *parent = b->has_parent ? &parent_key : NULL;
         if (b->has_cartesian) {
-            copy->insert_cartesian(copy->plugin, b->index, parent, &b->parameters,
+            copy->insert_cartesian(copy->plugin, body_key(copy, b->index), parent, &b->parameters,
                                    b->cartesian[0], b->cartesian[1], b->cartesian[2],
                                    b->cartesian[3], b->cartesian[4], b->cartesian[5]);
         } else {
-            copy->insert_keplerian(copy->plugin, b->index, parent, &b->parameters,
+            copy->insert_keplerian(copy->plugin, body_key(copy, b->index), parent, &b->parameters,
                                    b->has_elements ? &b->elements : NULL);
         }
     }
@@ -398,16 +438,16 @@ static char *format_reply(double reached, const Point *points, int keep)
 
 /*
  * Reads by flying the craft forward in the copy's own plugin and asking where it is.
- * The calls this needs have stayed the same across Principia's releases, where the
- * flight plan's rendered segment was removed in 2026101016-Lichnerowicz. A plugin only
- * moves forward, so the next seed behind this one rebuilds it.
+ * These calls exist in every release, where the flight plan's rendered segment was
+ * removed in 2026101016-Lichnerowicz; only how they name a body changes (see BodyKey).
+ * A plugin only moves forward, so the next seed behind this one rebuilds it.
  */
 static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double to_ut, int max_points, double rotation, int main_body)
 {
     void *plugin = copy->plugin;
     /* Principia hangs the game's axes off the main body as well as the rotation. */
     if (main_body >= 0) {
-        copy->set_main_body(plugin, main_body);
+        copy->set_main_body(plugin, body_key(copy, main_body));
     }
     if (seed_ut > copy->current_time(plugin)) {
         copy->advance(plugin, seed_ut, rotation);
@@ -417,7 +457,7 @@ static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double t
     char guid[64];
     snprintf(guid, sizeof guid, "00000000-0000-0000-0000-%012d", ++copy->vessels);
     bool inserted = false;
-    copy->keep_vessel(plugin, guid, "gonogo seed", parent, false, &inserted);
+    copy->keep_vessel(plugin, guid, "gonogo seed", body_key(copy, parent), false, &inserted);
     copy->insert_part(plugin, (uint32_t)copy->vessels, "gonogo seed", guid, seed);
     copy->prepare_collisions(plugin);
     copy->free_vessels(plugin, 0.02);
@@ -434,7 +474,7 @@ static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double t
     for (int i = 1; i < count; i++) {
         double ut = start + ((to_ut - start) * i) / (count - 1);
         copy->advance(plugin, ut, rotation);
-        copy->keep_vessel(plugin, guid, "gonogo seed", parent, false, &inserted);
+        copy->keep_vessel(plugin, guid, "gonogo seed", body_key(copy, parent), false, &inserted);
         copy->prepare_collisions(plugin);
         copy->free_vessels(plugin, 0.02);
         collided = NULL;
@@ -442,7 +482,7 @@ static char *propagate(Copy *copy, double seed_ut, int parent, QP seed, double t
         if (collided != NULL) {
             copy->delete_iterator(&collided);
         }
-        QP state = copy->vessel_from_parent(plugin, parent, guid);
+        QP state = copy->vessel_from_parent(plugin, body_key(copy, parent), guid);
         Point p = {copy->current_time(plugin), state.q.x, state.q.y, state.q.z, state.p.x, state.p.y, state.p.z};
         points[i] = p;
     }
@@ -633,14 +673,14 @@ static char *body_states(const char *library, const char *directory, double ut, 
         copy->advance(copy->plugin, ut, rotation);
     }
     if (main_body >= 0) {
-        copy->set_main_body(copy->plugin, main_body);
+        copy->set_main_body(copy->plugin, body_key(copy, main_body));
     }
     size_t capacity = 8192;
     char *reply = malloc(capacity);
     size_t at = (size_t)snprintf(reply, capacity, "{\"ok\": true, \"reachedUt\": %.17g, \"points\": \"", copy->current_time(copy->plugin));
     bool first = true;
     for (char *index = strtok(indices, ","); index != NULL; index = strtok(NULL, ",")) {
-        QP state = copy->celestial_from_parent(copy->plugin, (int)strtod(index, NULL));
+        QP state = copy->celestial_from_parent(copy->plugin, body_key(copy, (int)strtod(index, NULL)));
         at += (size_t)snprintf(reply + at, capacity - at, "%s%s,%.17g,%.17g,%.17g,%.17g,%.17g,%.17g", first ? "" : ";", index,
                                state.q.x, state.q.y, state.q.z, state.p.x, state.p.y, state.p.z);
         first = false;

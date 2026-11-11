@@ -7,7 +7,7 @@ Principia's n-body flight on the dashboard: how far each trajectory holds, the f
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against Principia 2026101016-Lichnerowicz.
+Built against Principia 2026110907-Lie.
 
 ## Install
 

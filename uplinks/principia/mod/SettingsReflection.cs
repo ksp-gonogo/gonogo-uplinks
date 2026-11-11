@@ -64,9 +64,9 @@ namespace GonogoPrincipiaUplink
         private const string VesselOrbitMember = "orbit";
 
         private const string FrameExtensionMember = "extension";
-        private const string FrameCentreIndexMember = "centre_index";
-        private const string FramePrimaryIndexMember = "primary_index";
-        private const string FrameSecondaryIndexMember = "secondary_index";
+        private const string FrameCentreStem = "centre";
+        private const string FramePrimaryStem = "primary";
+        private const string FrameSecondaryStem = "secondary";
 
         /// <summary>The producer's own frame kinds, by the values it declares. Two
         /// of them build their key from the centre body alone; the other three from
@@ -75,8 +75,7 @@ namespace GonogoPrincipiaUplink
         private const int BodySurface = 6003;
         private const int RotatingPulsating = 6004;
 
-        /// <summary>The producer's "no body" in an index slot.</summary>
-        private const int NoBody = -1;
+        private const int NoBody = PrincipiaBodyKeys.NoBody;
 
         /// <summary>How far down a body tree the set walk will go. The deepest real
         /// chain is star, planet, moon, submoon, so this is well clear of it and
@@ -91,7 +90,7 @@ namespace GonogoPrincipiaUplink
             ReadFrameSelector(source.FrameSelector, into);
             ReadFlightPlanner(source.FlightPlanner, into);
             ReadOrbitAnalyser(source.OrbitAnalyser, into);
-            ReadDeclutter(source.MainWindow, source.FrameSelector, into);
+            ReadDeclutter(source.MainWindow, source.FrameSelector, source.Celestials, into);
         }
 
         private void ReadMainWindow(object? window, SettingsObservation into)
@@ -361,7 +360,8 @@ namespace GonogoPrincipiaUplink
         /// pair determines the whole descriptor and the quadruple is a complete key
         /// rather than a prefix of one.</para>
         /// </summary>
-        private void ReadDeclutter(object? window, object? selector, SettingsObservation into)
+        private void ReadDeclutter(
+            object? window, object? selector, ICelestialNames celestials, SettingsObservation into)
         {
             if (window == null || selector == null || into.PlottingFrame?.Type == null)
             {
@@ -412,13 +412,16 @@ namespace GonogoPrincipiaUplink
             }
 
             into.UnpinnedMarkersHiddenHere = SetContainsFrame(
-                _m.Value(window, FramesHidingMarkersMember), type, keyCentre, keyPrimary, keySecondary);
+                _m.Value(window, FramesHidingMarkersMember), celestials,
+                type, keyCentre, keyPrimary, keySecondary);
             into.UnpinnedCelestialsHiddenHere = SetContainsFrame(
-                _m.Value(window, FramesHidingCelestialsMember), type, keyCentre, keyPrimary, keySecondary);
+                _m.Value(window, FramesHidingCelestialsMember), celestials,
+                type, keyCentre, keyPrimary, keySecondary);
         }
 
         private bool? SetContainsFrame(
-            object? set, int type, int centreIndex, int primaryIndex, int secondaryIndex)
+            object? set, ICelestialNames celestials,
+            int type, int centreIndex, int primaryIndex, int secondaryIndex)
         {
             if (set is not IEnumerable entries)
             {
@@ -431,9 +434,9 @@ namespace GonogoPrincipiaUplink
                     continue;
                 }
                 if (EnumOrdinal(_m.Value(entry, FrameExtensionMember)) == type
-                    && _m.ReadInt(entry, FrameCentreIndexMember) == centreIndex
-                    && FirstIndex(entry, FramePrimaryIndexMember) == primaryIndex
-                    && FirstIndex(entry, FrameSecondaryIndexMember) == secondaryIndex)
+                    && CentreIndex(entry, celestials) == centreIndex
+                    && FirstIndex(entry, FramePrimaryStem, celestials) == primaryIndex
+                    && FirstIndex(entry, FrameSecondaryStem, celestials) == secondaryIndex)
                 {
                     return true;
                 }
@@ -442,57 +445,45 @@ namespace GonogoPrincipiaUplink
         }
 
         /// <summary>
-        /// A frame descriptor's primary or secondary index, whichever shape it
-        /// holds.
+        /// A frame descriptor's primary or secondary body, whichever shape it holds.
         ///
         /// <para>The plotting descriptor carries arrays and the manœuvring one
-        /// carries a bare integer, for the same field name. Both use minus one for
-        /// "no body", the arrays by being empty and the integer by holding it, so
-        /// one accessor covers both and the two shapes compare against the same
-        /// key.</para>
+        /// carries a bare key, for the same field name. An empty array and a key that
+        /// names no body both read as <see cref="NoBody"/>, so the two shapes compare
+        /// against the same key.</para>
         /// </summary>
-        private int FirstIndex(object entry, string member)
+        private int FirstIndex(object entry, string stem, ICelestialNames celestials)
         {
-            var all = AllIndices(entry, member);
+            var all = AllIndices(entry, stem, celestials);
             return all.Count == 0 ? NoBody : all[0];
         }
 
         /// <summary>
-        /// Every index a frame descriptor's primary or secondary field holds, in the
+        /// The body a frame descriptor centres on, by the game's index. The centred
+        /// kinds' default when unset is index zero on a build that names bodies by
+        /// index, and city zero names no body on one that names them by city.
+        /// </summary>
+        private int? CentreIndex(object entry, ICelestialNames celestials)
+        {
+            var raw = PrincipiaBodyKeys.Read(member => _m.Value(entry, member), FrameCentreStem);
+            if (raw is ulong city && city == 0)
+            {
+                return 0;
+            }
+            return PrincipiaBodyKeys.IndexOf(raw, celestials);
+        }
+
+        /// <summary>
+        /// Every body a frame descriptor's primary or secondary field holds, in the
         /// order it holds them.
         ///
         /// <para>The array shape is not a formality: a pulsating frame's side is a
         /// set, and the entries past the first are the rest of the mass that decides
-        /// where the frame's origin sits. Taking the head is what the reading did
-        /// before, and it lost them without saying so.</para>
-        ///
-        /// <para>A non-integer entry ends the read rather than being skipped. A
-        /// field that suddenly holds something else has changed shape, and half a
-        /// set published as a whole one is the failure this list exists to
-        /// remove.</para>
+        /// where the frame's origin sits.</para>
         /// </summary>
-        private List<int> AllIndices(object entry, string member)
-        {
-            var found = new List<int>();
-            var value = _m.Value(entry, member);
-            if (value is int scalar)
-            {
-                found.Add(scalar);
-                return found;
-            }
-            if (value is IEnumerable items)
-            {
-                foreach (var item in items)
-                {
-                    if (item is not int index)
-                    {
-                        break;
-                    }
-                    found.Add(index);
-                }
-            }
-            return found;
-        }
+        private List<int> AllIndices(object entry, string stem, ICelestialNames celestials) =>
+            PrincipiaBodyKeys.AllIndices(
+                PrincipiaBodyKeys.Read(member => _m.Value(entry, member), stem), celestials);
 
         /// <summary>
         /// The frame's index-named bodies, resolved through the game's body table.
@@ -509,16 +500,16 @@ namespace GonogoPrincipiaUplink
             var frame = new FrameObservation { Selector = selector, Type = type };
             if (type == BodyCentredNonRotating || type == BodySurface)
             {
-                var centre = _m.ReadInt(descriptor, FrameCentreIndexMember);
+                var centre = CentreIndex(descriptor, celestials);
                 frame.CentreBody = centre == null ? null : celestials.NameOf(centre.Value);
                 return frame;
             }
             NameSide(
-                AllIndices(descriptor, FramePrimaryIndexMember),
+                AllIndices(descriptor, FramePrimaryStem, celestials),
                 celestials,
                 frame.PrimaryBodies);
             NameSide(
-                AllIndices(descriptor, FrameSecondaryIndexMember),
+                AllIndices(descriptor, FrameSecondaryStem, celestials),
                 celestials,
                 frame.SecondaryBodies);
             frame.PrimaryBody = frame.PrimaryBodies.Count == 0 ? null : frame.PrimaryBodies[0];

@@ -89,6 +89,8 @@
     <Compile Include="..\mod\ExpectedClientHash.g.cs" />
     <Compile Include="..\mod\ReflectedMembers.cs" />
     <Compile Include="..\mod\ISettingsSource.cs" />
+    <Compile Include="..\mod\CityHash.cs" />
+    <Compile Include="..\mod\PrincipiaBodyKeys.cs" />
     <Compile Include="..\mod\SettingsObservation.cs" />
     <Compile Include="..\mod\SettingsReflection.cs" />
     <Compile Include="..\mod\NativeSettingsReader.cs" />

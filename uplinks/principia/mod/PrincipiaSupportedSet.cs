@@ -66,6 +66,10 @@ namespace GonogoPrincipiaUplink
                 "8ff908176263b9ee99771c3b92573518c25b36f82957da2561147216bddbdb5f",
                 "2026101016-Lichnerowicz-0-g759238feafbefab3c5382215ed19322048cf8467",
                 173),
+            new PrincipiaRelease(
+                "84008b57dc8f41eb78dc223b6c605b6e89b6930ceae3ec4fe3f11e42e535613b",
+                "2026110907-Lie-0-g242a88d95867b9d39557ed1a40269f51d979cdea",
+                164),
         };
 
         public static IReadOnlyList<PrincipiaRelease> All => Known;

@@ -42,7 +42,10 @@ namespace GonogoPrincipiaUplink
 
         /// <summary>Fields on the analysis itself.</summary>
         internal const string ProgressField = "progress_of_next_analysis";
-        internal const string PrimaryIndexField = "primary_index";
+        internal const string PrimaryStem = "primary";
+        internal const string FirstTimeField = "first_time";
+        internal const string ElementGraphsField = "element_graphs";
+        internal const string LidovGraphLabelsField = "lidov_graph_labels";
         internal const string MissionDurationField = "mission_duration";
         internal const string ElementsField = "elements";
 
@@ -327,8 +330,10 @@ namespace GonogoPrincipiaUplink
             }
 
             var missionDuration = Fields.GetDouble(analysis, MissionDurationField);
-            var primaryIndex = Fields.GetInt(analysis, PrimaryIndexField);
+            var primaryKey = PrincipiaBodyKeys.Read(name => Fields.Get(analysis, name), PrimaryStem);
+            var primaryIndex = PrincipiaBodyKeys.IndexOf(primaryKey, celestials);
             var elements = Fields.Get(analysis, ElementsField);
+            DisposeGraphLabels(analysis);
 
             var observation = new OrbitAnalysisObservation
             {
@@ -339,7 +344,10 @@ namespace GonogoPrincipiaUplink
                 // A missing primary means unbound, but only once something else on
                 // the struct has proved the struct is the shape we think it is.
                 // Without that, a renamed field would report every craft escaping.
-                GravitationallyBound = missionDuration == null ? null : primaryIndex != null,
+                // A primary this game cannot name says nothing either way.
+                GravitationallyBound = missionDuration == null
+                    ? null
+                    : primaryKey == null ? false : primaryIndex != null ? true : (bool?)null,
                 ElementsPresent = elements != null,
                 ElementsEpochUt = epochUt,
             };
@@ -356,7 +364,8 @@ namespace GonogoPrincipiaUplink
             // Read the series, then free it. The order is load-bearing rather than
             // tidy: freeing the iterator invalidates the only thing on the whole
             // payload that carries an instant.
-            observation.ElementsEpochUt = epochUt ?? MeanElementsEpoch(frame, elements);
+            observation.ElementsEpochUt =
+                epochUt ?? Fields.GetDouble(analysis, FirstTimeField) ?? MeanElementsEpoch(frame, elements);
             DisposePlottableElements(elements);
 
             var radius = primaryIndex == null ? null : celestials.RadiusOf(primaryIndex.Value);
@@ -424,6 +433,10 @@ namespace GonogoPrincipiaUplink
         /// </summary>
         private static double? MeanElementsEpoch(PrincipiaFrame frame, object elements)
         {
+            /*
+             * From 2026110907-Lie the analysis carries its anchor as first_time and the
+             * series is gone, so this path serves the builds before it.
+             */
             var first = frame.FirstMeanElement(Fields.Get(elements, PlottableElementsField));
             if (first == null)
             {
@@ -468,6 +481,27 @@ namespace GonogoPrincipiaUplink
         /// throw from a third party's finaliser-backed handle must not take the
         /// tick with it.</para>
         /// </summary>
+        /// <summary>
+        /// Frees the label iterator an analysis carries whenever the producer's own
+        /// window has asked for element graphs. It is allocated afresh on every call,
+        /// like the mean-element series, and freed only by its finaliser otherwise.
+        /// </summary>
+        private static void DisposeGraphLabels(object analysis)
+        {
+            try
+            {
+                var graphs = Fields.Get(analysis, ElementGraphsField);
+                if (graphs != null && Fields.Get(graphs, LidovGraphLabelsField) is IDisposable labels)
+                {
+                    labels.Dispose();
+                }
+            }
+            catch (Exception)
+            {
+                // Nothing to report and nothing to do: the finaliser is still there.
+            }
+        }
+
         private static void DisposePlottableElements(object elements)
         {
             try

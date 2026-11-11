@@ -219,6 +219,23 @@ namespace GonogoPrincipiaUplink
                 return null;
             }
 
+            /* Principia hashes the body's object name, not its display name. */
+            public int? IndexOfCity(ulong city)
+            {
+                if (FlightGlobals.Bodies == null)
+                {
+                    return null;
+                }
+                foreach (var body in FlightGlobals.Bodies)
+                {
+                    if (body != null && CityHash.Hash64(body.name) == city)
+                    {
+                        return body.flightGlobalsIndex;
+                    }
+                }
+                return null;
+            }
+
             public IReadOnlyList<int> Indices
             {
                 get

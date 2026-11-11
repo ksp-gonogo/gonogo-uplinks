@@ -756,6 +756,28 @@ namespace GonogoPrincipiaUplink.Tests
     }
 
     /// <summary>
+    /// A frame descriptor in the shape 2026110907-Lie holds: bodies by the city of
+    /// their name, the centre as one key and each side as a set.
+    /// </summary>
+    public class FakeCityFrameParameters
+    {
+        public FakeCityFrameParameters(int type, string? centre, string[] primary, string[] secondary)
+        {
+            extension = type;
+            centre_city = centre == null ? 0UL : CityHash.Hash64(centre);
+            primary_city = System.Array.ConvertAll(primary, CityHash.Hash64);
+            secondary_city = System.Array.ConvertAll(secondary, CityHash.Hash64);
+        }
+
+#pragma warning disable IDE1006
+        public int extension;
+        public ulong centre_city;
+        public ulong[] primary_city;
+        public ulong[] secondary_city;
+#pragma warning restore IDE1006
+    }
+
+    /// <summary>
     /// The producer's main window, by member name.
     ///
     /// <para>The two prediction indices are present and at their real constructor
@@ -904,6 +926,18 @@ namespace GonogoPrincipiaUplink.Tests
             Radii.TryGetValue(index, out var radius) ? radius : (double?)null;
 
         public IReadOnlyList<int> Indices => new List<int>(Names.Keys);
+
+        public int? IndexOfCity(ulong city)
+        {
+            foreach (var entry in Names)
+            {
+                if (CityHash.Hash64(entry.Value) == city)
+                {
+                    return entry.Key;
+                }
+            }
+            return null;
+        }
     }
 
     public class FakeSettingsSource : ISettingsSource
