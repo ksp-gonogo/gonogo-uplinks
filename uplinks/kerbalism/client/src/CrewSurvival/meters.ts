@@ -8,6 +8,7 @@ import {
   survivalFrom,
   toneFor,
 } from "./processor.js";
+import { steadyMeters } from "./steadyMeters.js";
 import { CREW_RULE_READINGS, type RuleReadings, ruleKey } from "./ruleReadings.js";
 
 // ---------------------------------------------------------------------------
@@ -127,11 +128,13 @@ KERBALISM.registerContribution({
    */
   compute: (topics) => {
     const rules = topics[CREW_RULE_READINGS.id];
-    return survivalMeters(
-      survivalFrom(topics[CREW_SURVIVAL.id])?.survival,
-      rules?.state === "observed" || rules?.state === "held"
-        ? rules.value
-        : undefined,
+    return steadyMeters(
+      survivalMeters(
+        survivalFrom(topics[CREW_SURVIVAL.id])?.survival,
+        rules?.state === "observed" || rules?.state === "held"
+          ? rules.value
+          : undefined,
+      ),
     );
   },
 });
