@@ -57,7 +57,7 @@ The libration points of a body pair, with your craft's offset.
 | Uplink id | `principia` |
 | Wraps | Principia (manual) |
 | Version | `0.0.0-development` |
-| Built against | contract 52.1, extension API 6.0.0 |
+| Built against | contract 52.0, extension API 6.0.0 |
 
 </details>
 
