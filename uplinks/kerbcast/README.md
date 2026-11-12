@@ -57,7 +57,7 @@ A live view from a camera on the active craft.
 | Uplink id | `kerbcast` |
 | Wraps | kerbcast (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 52.0, extension API 6.0.0 |
+| Built against | contract 52.1, extension API 6.0.0 |
 
 </details>
 

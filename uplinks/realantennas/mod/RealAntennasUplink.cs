@@ -163,6 +163,15 @@ namespace Gonogo.RealAntennasUplink
                 Console.Error.WriteLine("[RealAntennasUplink] could not register comms provider: " + ex.Message);
             }
 
+            // RealAntennas decides for itself whether a craft with no charge can talk, so Gonogo's own setting would change nothing.
+            if (host is ICoreSettingLocks locks)
+            {
+                locks.Lock(
+                    CoreSettings.TelemetryRequiresCharge,
+                    true,
+                    "RealAntennas already cuts the link of a craft with no charge");
+            }
+
             // Every RA ground station is home for comms, so stock's claimant, which
             // wants exactly one flagged station, names none of them. The capability is
             // declared in the comms core's capability pass, like "comms" above.
