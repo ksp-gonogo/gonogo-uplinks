@@ -38,9 +38,9 @@
       "text": "375a5be1"
     },
     "ec-falling-while-rate-positive--default.gif": {
-      "hash": "025dfe8d74b0443d",
+      "hash": "79dc8f36a808bb56",
       "elements": 145,
-      "text": "2a000e90"
+      "text": "625ac736"
     },
     "ec-shortage-limits-water--default.png": {
       "hash": "51791d214c46e298",
@@ -66,6 +66,11 @@
       "hash": "1be4595051bcf586",
       "elements": 196,
       "text": "9799a339"
+    },
+    "electric-charge-drawn-by-processes--default.png": {
+      "hash": "6954387d1de73fac",
+      "elements": 88,
+      "text": "d8385a53"
     },
     "eva-suit--default.png": {
       "hash": "f4633cbd159c6d8b",
@@ -183,7 +188,7 @@
       "text": "9d645099"
     },
     "supply-tank-meters-stopped-arriving--default.png": {
-      "hash": "ad7539023fb4f8e3",
+      "hash": "bd84f61e8fb200e6",
       "elements": 82,
       "text": "9d645099"
     },
