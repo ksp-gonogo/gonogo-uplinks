@@ -220,8 +220,12 @@ jobs:
           node tooling/uplink-tools.mjs "${{ inputs.name }}" release prepare ${{ inputs.prepare_args }} ${from:+--from "$from"} --commits "$RUNNER_TEMP/commits.json"
           mkdir -p artifacts
           node -e '
-            const pkg = require("./uplinks/${{ inputs.name }}/client/package.json");
-            require("fs").writeFileSync("artifacts/prepare-${{ inputs.id }}.json", JSON.stringify({ id: "${{ inputs.id }}", version: pkg.version }));
+            const fs = require("fs");
+            const dir = "./uplinks/${{ inputs.name }}";
+            const version = fs.existsSync(dir + "/client/package.json")
+              ? require(dir + "/client/package.json").version
+              : /Version = "([^"]+)"/.exec(fs.readFileSync(dir + "/mod/Provenance.g.cs", "utf8"))[1];
+            fs.writeFileSync("artifacts/prepare-${{ inputs.id }}.json", JSON.stringify({ id: "${{ inputs.id }}", version }));
           '
 
       - name: Typecheck client

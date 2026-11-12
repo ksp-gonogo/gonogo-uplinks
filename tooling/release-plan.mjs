@@ -8,11 +8,13 @@
  *
  * `plan` turns the dispatch inputs into the matrix of Uplinks to prepare and the
  * arguments `uplink-tools release prepare` takes. It refuses an id that names no
- * Uplink, an Uplink that cannot be released (a release publishes a client and
- * the plugin that vouches for it, so it needs both), a version that disagrees
+ * Uplink, an Uplink with no plugin (a release ships the plugin, and
+ * the client bundle too when the Uplink has one), a version that disagrees
  * with `full`, and a set whose Uplinks are pinned to different contract Majors,
  * naming the odd one out: a contract Major needs its re-pin landed first, and a
- * release that covered half of it would ship Uplinks the app refuses.
+ * release that covered half of it would ship Uplinks the app refuses. An Uplink
+ * with no client has no manifest to read a Major from, so it is left out of that
+ * comparison.
  *
  * `from` prints the Uplink's newest released version, read from its own tags:
  * the committed files hold a placeholder, so the tags are the only record of
@@ -55,7 +57,7 @@ export function prepareArgs({ bump, version, full }) {
  * answers for one leg what contract Major its manifest is pinned to.
  */
 export function planLegs(legs, requested, contractMajorOf) {
-  const releasable = (leg) => leg.client && leg.mod_csproj;
+  const releasable = (leg) => Boolean(leg.mod_csproj);
   let chosen;
   if (requested.length === 1 && requested[0] === "all") {
     chosen = legs.filter(releasable);
@@ -65,7 +67,7 @@ export function planLegs(legs, requested, contractMajorOf) {
       if (!leg) throw new Error(`no Uplink under uplinks/ is called ${name}`);
       if (!releasable(leg)) {
         throw new Error(
-          `${leg.name} has ${leg.client ? "no mod project" : "no client"}. A release publishes a client bundle and the plugin that vouches for its hash, so it needs both halves.`,
+          `${leg.name} has no mod project, and a release ships the plugin.`,
         );
       }
       return leg;
@@ -75,7 +77,7 @@ export function planLegs(legs, requested, contractMajorOf) {
   chosen = [...new Map(chosen.map((leg) => [leg.id, leg])).values()].sort((a, b) =>
     a.id.localeCompare(b.id),
   );
-  const majors = new Map(chosen.map((leg) => [leg.id, contractMajorOf(leg)]));
+  const majors = new Map(chosen.filter((leg) => leg.client).map((leg) => [leg.id, contractMajorOf(leg)]));
   const counts = new Map();
   for (const major of majors.values()) counts.set(major, (counts.get(major) ?? 0) + 1);
   if (counts.size > 1) {

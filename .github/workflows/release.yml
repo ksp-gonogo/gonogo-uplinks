@@ -193,10 +193,12 @@ jobs:
       # bundle to the folder it names, so the tag's version is stamped over it
       # here exactly as the build job did.
       - name: Install client dependencies
+        if: fromJson(needs.resolve.outputs.leg).client
         working-directory: uplinks/${{ needs.resolve.outputs.name }}/client
         run: npm ci --no-audit --no-fund
 
       - name: Stamp the version from the tag
+        if: fromJson(needs.resolve.outputs.leg).client
         env:
           VERSION: ${{ needs.resolve.outputs.version }}
         run: node tooling/uplink-tools.mjs "$NAME" version "$VERSION"
@@ -206,6 +208,7 @@ jobs:
       # file is not. Baking it again from the downloaded bundle gives the same
       # hash the build job baked into the zip.
       - name: Restore the baked hash the publish check reads
+        if: fromJson(needs.resolve.outputs.leg).client
         run: >-
           node tooling/uplink-tools.mjs "$NAME" bake
           --bundle "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}/${{ needs.resolve.outputs.id }}.client.js"
@@ -216,7 +219,7 @@ jobs:
       # the remote, and asks jsDelivr to drop its cached copy of both URLs. A
       # failed purge only delays the file, so it warns.
       - name: Publish the client
-        if: needs.resolve.outputs.dry != 'true'
+        if: needs.resolve.outputs.dry != 'true' && fromJson(needs.resolve.outputs.leg).client
         run: >-
           node tooling/uplink-tools.mjs "$NAME" publish
           --from "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}"
@@ -225,7 +228,7 @@ jobs:
       # The same command into a scratch folder that is a checkout of the branch
       # the URL names, with no --push and no --purge.
       - name: Dry run, what would be published
-        if: needs.resolve.outputs.dry == 'true'
+        if: needs.resolve.outputs.dry == 'true' && fromJson(needs.resolve.outputs.leg).client
         run: |
           set -euo pipefail
           scratch="$RUNNER_TEMP/releases-dry"
@@ -235,6 +238,13 @@ jobs:
             --to "$scratch" --tag "$TAG"
           echo "Would publish, on the releases branch:"
           (cd "$scratch" && find . -type f -not -path './.git/*' -exec sha256sum {} +)
+          echo "Would create the GitHub release $TAG as a $([ "$PRERELEASE" = true ] && echo prerelease || echo 'full release') with:"
+          ls artifacts/*.zip
+
+      - name: Dry run, what would be released of a plugin alone
+        if: needs.resolve.outputs.dry == 'true' && !fromJson(needs.resolve.outputs.leg).client
+        run: |
+          echo "$NAME has no client, so there is no bundle to publish."
           echo "Would create the GitHub release $TAG as a $([ "$PRERELEASE" = true ] && echo prerelease || echo 'full release') with:"
           ls artifacts/*.zip
 
@@ -252,7 +262,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          { cat release-notes.md; printf '\nClient: %s\n' "$URL"; } > github-notes.md
+          { cat release-notes.md; [ -z "$URL" ] || printf '\nClient: %s\n' "$URL"; } > github-notes.md
           gh release create "$TAG" artifacts/*.zip \
             --verify-tag --title "$TAG" --notes-file github-notes.md \
             $([ "$PRERELEASE" = true ] && echo --prerelease)

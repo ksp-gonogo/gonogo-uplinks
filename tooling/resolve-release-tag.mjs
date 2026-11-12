@@ -44,11 +44,8 @@ if (!leg) {
   console.error(`✖ ${tag}: no Uplink under uplinks/ declares the id ${id}.`);
   process.exit(1);
 }
-if (!leg.client || !leg.mod_csproj) {
-  console.error(
-    `✖ ${tag}: ${leg.name} has ${leg.client ? "no mod project" : "no client"}. A release publishes a\n` +
-      "  client bundle and the DLL that vouches for its hash, so it needs both halves.",
-  );
+if (!leg.mod_csproj) {
+  console.error(`✖ ${tag}: ${leg.name} has no mod project, and a release ships the plugin.`);
   process.exit(1);
 }
 
@@ -56,7 +53,7 @@ const PLACEHOLDER = "0.0.0-development";
 const committed = JSON.parse(
   readFileSync(join(ROOT, "uplinks", leg.name, "uplink.json"), "utf8"),
 ).client?.url;
-if (!committed?.split("/").includes(PLACEHOLDER)) {
+if (leg.client && !committed?.split("/").includes(PLACEHOLDER)) {
   console.error(
     `✖ ${tag}: uplinks/${leg.name}/uplink.json declares client.url\n` +
       `    ${committed ?? "(none)"}\n` +
@@ -66,11 +63,11 @@ if (!committed?.split("/").includes(PLACEHOLDER)) {
   );
   process.exit(1);
 }
-const url = committed.split(`/${PLACEHOLDER}/`).join(`/${version}/`);
+const url = !leg.client ? "" : committed.split(`/${PLACEHOLDER}/`).join(`/${version}/`);
 
 const out = { name: leg.name, id, version, url, leg: JSON.stringify(leg) };
 if (process.argv.includes("--github")) {
   for (const [key, value] of Object.entries(out)) console.log(`${key}=${value}`);
 } else {
-  console.log(`${tag}: ${leg.name} ${version}\n  client ${url}`);
+  console.log(`${tag}: ${leg.name} ${version}\n  client ${url || "(none, a plugin alone)"}`);
 }

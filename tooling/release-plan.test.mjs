@@ -40,17 +40,24 @@ test("a version and full must agree", () => {
   assert.throws(() => prepareArgs({ bump: "huge", full: false }), /none of them/);
 });
 
-test("all means every Uplink that has both halves, in id order", () => {
+test("all means every Uplink that has a plugin, in id order, a plugin alone included", () => {
   assert.deepEqual(planLegs(legs, ["all"], major({})).map((l) => l.id), [
     "kerbcast",
     "kos",
+    "modonly",
     "scansat",
   ]);
 });
 
+test("an Uplink with no client has no contract Major to disagree with", () => {
+  const asked = [];
+  planLegs(legs, ["modonly", "kos"], (l) => (asked.push(l.id), 46));
+  assert.deepEqual(asked, ["kos"]);
+});
+
 test("an unknown Uplink, or one with a missing half, is refused by name", () => {
   assert.throws(() => planLegs(legs, ["nope"], major({})), /no Uplink .* nope/);
-  assert.throws(() => planLegs(legs, ["modonly"], major({})), /no client/);
+  assert.throws(() => planLegs([leg("nomod", { mod_csproj: "" })], ["nomod"], major({})), /no mod project/);
 });
 
 test("a set pinned to two contract Majors names the odd one out", () => {
