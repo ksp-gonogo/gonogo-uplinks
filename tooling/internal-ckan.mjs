@@ -5,11 +5,13 @@
  *   internal-ckan.mjs <uplink-dir-name> --zip <release zip>   add it to the zip
  *   internal-ckan.mjs <uplink-dir-name>                       print it
  *
- * NetKAN downloads the SpaceDock archive and copies the keys of a .ckan inside
- * it onto the listing, except keys the listing already declares, so the listing
- * must not carry a `depends` of its own. The file declares what the Uplink needs
- * at the version it was built against, which a release changes and a listing
- * kept outside the zip cannot follow.
+ * NetKAN downloads the release archive and copies the keys of a .ckan inside
+ * it onto the listing, except keys the listing already declares. The file
+ * declares what the Uplink needs at the version it was built against, which a
+ * release changes and a listing kept outside the zip cannot follow. This file is
+ * what CKAN reads for relationships. The committed `<gamedata>.netkan` in each
+ * Uplink's folder declares none (`netkan.test.mjs` fails if it does), because a
+ * relationship the listing declares wins over this file's.
  *
  * The mod's CKAN identifier comes from uplink.json (`mod.ckan`), and the version
  * from the client's gonogo-uplink.json when the Uplink has one, otherwise from
