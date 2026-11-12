@@ -106,7 +106,7 @@ describe("Ship Systems says a held ledger is held", () => {
     );
   });
 
-  it("dims every ledger term's bar once the ledger is held", async () => {
+  it("marks every ledger term's rate held once the ledger is held, and leaves the bars plain", async () => {
     const container = await scene(held);
     fireEvent.click(
       screen.getByRole("button", { name: "Show rate breakdown for Water" }),
@@ -115,7 +115,11 @@ describe("Ship Systems says a held ledger is held", () => {
       ...container.querySelectorAll('[data-testid="diverging-bar"]'),
     ];
     expect(bars.length).toBeGreaterThan(0);
-    for (const bar of bars) expect(bar).toHaveAttribute("data-held");
+    for (const bar of bars) expect(bar).not.toHaveAttribute("data-held");
+    const rates = [...container.querySelectorAll("[data-tooltip]")].filter(
+      (el) => /\/s/.test(el.textContent?.trim() ?? ""),
+    );
+    expect(rates.length).toBeGreaterThan(0);
   });
 
   it("leaves the ledger's bars undimmed while it is current", async () => {

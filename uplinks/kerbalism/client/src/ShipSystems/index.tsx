@@ -18,6 +18,8 @@ import {
   Divider,
   EmptyState,
   Grid,
+  HeldFigure,
+  heldMarking,
   Meter,
   MeterStack,
   ModelledAlongside,
@@ -1074,6 +1076,7 @@ function LimitedByMessage({
 
 export function LedgerBody({ ledger }: { ledger: Ledger }) {
   const ledgerReading = useContext(LedgerReadingContext);
+  const marking = heldMarking(ledgerReading);
   const hasResidual =
     ledger.residual !== undefined && Math.abs(ledger.residual) > 1e-6;
   // Every bar in this ledger scales against the largest |rate| among ITS OWN
@@ -1120,20 +1123,22 @@ export function LedgerBody({ ledger }: { ledger: Ledger }) {
                 gives this inner row. */}
             <Cluster justify="start">
               <DivergingBar
-                value={
-                  ledgerReading
-                    ? combineReadings([ledgerReading], () =>
-                        value("units/s", term.ratePerSecond),
-                      )
-                    : value("units/s", term.ratePerSecond)
-                }
+                value={value("units/s", term.ratePerSecond)}
                 maxAbs={maxAbsRate}
               />
               {/* The DivergingBar already paints the sign; a red/green
                   NUMBER beside a red/green bar doubled the same reading and
                   fed the widget's colour pile-up. The signed prefix keeps
                   the direction legible in text. */}
-              <Text size="xs">{formatRate(term.ratePerSecond)}</Text>
+              <Text size="xs">
+                {marking === null ? (
+                  formatRate(term.ratePerSecond)
+                ) : (
+                  <HeldFigure caption={marking.caption} kind={marking.kind}>
+                    {formatRate(term.ratePerSecond)}
+                  </HeldFigure>
+                )}
+              </Text>
             </Cluster>
           </Cluster>
         ))

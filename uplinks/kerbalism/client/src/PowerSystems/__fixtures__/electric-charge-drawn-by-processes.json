@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "synthetic": true,
+    "notes": "SYNTHETIC. A probe with one battery bank, Power Systems on Electric Charge. Kerbalism reports a net rate of -0.05 per second and the profile lists a water recycler drawing 0.01 per second, so the Kerbalism ledger sits under the widget's own producer and consumer lists."
+  },
+  "_scene": {
+    "augment": "power-systems-kerbalism",
+    "hostWidget": "power-systems",
+    "caption": "Electric Charge on a probe: the Kerbalism ledger under the producer list, with the water recycler's draw and the net rate Kerbalism reports",
+    "modes": ["default"],
+    "size": { "w": 8, "h": 16 },
+    "paints": ["KERBALISM", "Water Recycler"],
+    "hero": true
+  },
+  "_stream": {
+    "pinnedUt": 10,
+    "emits": [
+      { "topic": "kerbalism.available", "payload": true },
+      {
+        "topic": "vessel.parts",
+        "payload": {
+          "parts": [
+            {
+              "id": "1",
+              "name": "probeCore",
+              "title": "Probe Core",
+              "position": { "x": 0, "y": 0, "z": 0 },
+              "bounds": { "size": { "x": 1, "y": 1, "z": 1 } },
+              "dryMass": 0.1,
+              "inverseStage": 0,
+              "maxTemp": 1200,
+              "category": "Pods",
+              "modules": [],
+              "isRobotics": false,
+              "isPowerRelated": false,
+              "resources": {
+                "ElectricCharge": { "amount": 20, "maxAmount": 140, "flow": -0.05, "nominalFlow": -0.05 }
+              },
+              "moduleStates": []
+            }
+          ]
+        }
+      },
+      {
+        "topic": "kerbalism.profile",
+        "payload": {
+          "name": "Default",
+          "resources": {
+            "ElectricCharge": {
+              "flowMode": "ALL_VESSEL_BALANCE",
+              "flowModeOrdinal": 4,
+              "displayName": "Electric Charge",
+              "isSupply": true,
+              "lowThreshold": 0.15
+            }
+          },
+          "rules": [],
+          "processes": [
+            {
+              "name": "Water Recycler",
+              "modifiers": ["_WaterRecycler"],
+              "inputs": { "ElectricCharge": 0.01 },
+              "outputs": {}
+            }
+          ]
+        }
+      },
+      {
+        "topic": "kerbalism.lifesupport",
+        "payload": {
+          "asOfKerbalismUt": 10,
+          "rates": { "ElectricCharge": -0.05 },
+          "processes": [
+            { "resource": "_WaterRecycler", "title": "Water Recycler", "capacity": 1, "running": true, "broken": false }
+          ]
+        }
+      },
+      {
+        "topic": "vessel.resources",
+        "payload": {
+          "resources": { "ElectricCharge": { "current": 20, "max": 140, "active": true } },
+          "meta": { "source": "vessel:1", "quality": 1 }
+        }
+      },
+      {
+        "topic": "vessel.crew",
+        "payload": { "count": 0, "capacity": 4, "crew": [], "meta": { "source": "vessel:1", "quality": 1 } }
+      }
+    ]
+  }
+}

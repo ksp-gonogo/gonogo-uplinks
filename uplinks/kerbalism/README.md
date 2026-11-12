@@ -160,7 +160,7 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | --- | --- | --- | --- | --- | --- |
 | `life-support-greenhouse` | `ship-systems.life-support` | – |  | 1 |  |
 | `crew-status-radiation-summary` | `crew-status.summary` | – | only while `kerbalism` | 0 |  |
-| `power-systems-kerbalism` | `power-systems.sections` | – |  | 0 |  |
+| `power-systems-kerbalism` | `power-systems.sections` | – |  | 1 |  |
 | `crew-status-survival-badge` | `crew-status.row-badges` | `kerbalism.lifesupport` | only while `kerbalism` | 0 |  |
 | `science-data-aboard-row-file-manager` | `science-data.aboard-row` | – | only while `kerbalism` | 3 |  |
 | `experiments-instrument-progress` | `experiments.instrument` | – | only while `kerbalism` | 2 |  |
