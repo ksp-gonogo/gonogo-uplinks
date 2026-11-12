@@ -11,8 +11,8 @@ importers:
   uplinks/ferramaerospaceresearch/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -21,11 +21,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -72,8 +72,8 @@ importers:
   uplinks/kerbalism/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -82,11 +82,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -139,8 +139,8 @@ importers:
         specifier: 1.12.1
         version: 1.12.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -149,11 +149,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -203,8 +203,8 @@ importers:
   uplinks/kos/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@xterm/addon-fit':
         specifier: ^0.11.0
         version: 0.11.0
@@ -219,11 +219,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -279,8 +279,8 @@ importers:
   uplinks/mechjeb/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -289,11 +289,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -343,8 +343,8 @@ importers:
   uplinks/principia/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -353,11 +353,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -410,8 +410,8 @@ importers:
   uplinks/realantennas/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -420,11 +420,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -474,8 +474,8 @@ importers:
   uplinks/realfuels/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -484,11 +484,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -535,8 +535,8 @@ importers:
   uplinks/rp1/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -545,11 +545,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -602,8 +602,8 @@ importers:
   uplinks/scansat/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -612,11 +612,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -663,8 +663,8 @@ importers:
   uplinks/testflight/client:
     dependencies:
       '@ksp-gonogo/ui-kit':
-        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz
-        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz
+        version: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       styled-components:
         specifier: ^6.6.0
         version: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -673,11 +673,11 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@ksp-gonogo/sitrep-sdk':
-        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz
-        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        specifier: file:../../../vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz
+        version: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@ksp-gonogo/uplink-tools':
-        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz
-        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+        specifier: file:../../../vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz
+        version: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -1084,8 +1084,8 @@ packages:
   '@ksp-gonogo/kerbcast@1.12.1':
     resolution: {integrity: sha512-Evjso3LmgzOB7/dAaK+yq3bdvttDGeBZYgM0eZ6RqbzHzmwa5Q7BMdH3/rbUi0lbCq+hiuKt0vKVUZUadzXUIg==}
 
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz':
-    resolution: {integrity: sha512-TCHC/YYpK8SFJ5jg6KV7crh9n4EiS1tpJDMNfkdj917DYDUCS7oR8QuXBzlp+JfIg+EnnsH9j6NGZYlfgr6wqA==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz}
+  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz':
+    resolution: {integrity: sha512-8BnwKCNmcr6x286nT750E0OzmtiPGqXJrGYZP+FTabTEDLBNWu5D1QvbcGS28UYL4HiJlAbov+/cyfeaJgShdQ==, tarball: file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz}
     version: 0.0.1
     peerDependencies:
       '@testing-library/react': ^16.0.0
@@ -1099,8 +1099,8 @@ packages:
       styled-components:
         optional: true
 
-  '@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz':
-    resolution: {integrity: sha512-FhA5Z95EHP5DOL2mg0E9XvI2pCFQQ9LEzB8otCV9Gne4wM8Q/sRWIbps+2jiPC1ozimkVhhdCYmdNTySdw9bzg==, tarball: file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz}
+  '@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz':
+    resolution: {integrity: sha512-eNMCSD4t+mWQm32yQqwt6ECcTx3tCx2VQ/KI8zgBY95oeU1PfnzeDXifj0uR11OMKaFB5L0NshJIDENu21+sjg==, tarball: file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz}
     version: 0.1.0
     peerDependencies:
       '@fontsource/jetbrains-mono': ^5.0.0
@@ -1113,8 +1113,8 @@ packages:
       jest-axe:
         optional: true
 
-  '@ksp-gonogo/uplink-tools@file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz':
-    resolution: {integrity: sha512-VPqBPJABLWz4ocdEyT/dcIFE6gzbPOmkfUJQPLA3Y+pPUlcPf3EVkhjt/ccT1j4zOvxFlOqVWtpl+m9vphVrXQ==, tarball: file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz}
+  '@ksp-gonogo/uplink-tools@file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz':
+    resolution: {integrity: sha512-hWpbKjrNVhUSsdq7+w2WMpMP+ZlzOigbbYog6FB+lTAczBGxIZO0tDBnDQ74HuXpm5G6/+nRhlhjRL0TXGqmwg==, tarball: file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz}
     version: 0.1.0
     hasBin: true
     peerDependencies:
@@ -2483,13 +2483,13 @@ snapshots:
     dependencies:
       mediabunny: 1.65.2
 
-  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-fc2c9f602dce.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@ksp-gonogo/sitrep-sdk@file:vendor/ksp-gonogo-sitrep-sdk-0.0.1-4c36f1de0b90.tgz(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     optionalDependencies:
       '@testing-library/react': 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  '@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+  '@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       react: 18.3.1
       styled-components: 6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2497,11 +2497,11 @@ snapshots:
       '@fontsource/jetbrains-mono': 5.3.0
       jest-axe: 10.0.0
 
-  '@ksp-gonogo/uplink-tools@file:vendor/ksp-gonogo-uplink-tools-0.1.0-b485842bef7c.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)':
+  '@ksp-gonogo/uplink-tools@file:vendor/ksp-gonogo-uplink-tools-0.1.0-fcf33f2c8511.tgz(@ksp-gonogo/ui-kit@file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.28.2)(playwright@1.65.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)':
     dependencies:
       '@clack/prompts': 1.8.1
     optionalDependencies:
-      '@ksp-gonogo/ui-kit': file:vendor/ksp-gonogo-ui-kit-0.1.0-9f569bf2da74.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      '@ksp-gonogo/ui-kit': file:vendor/ksp-gonogo-ui-kit-0.1.0-74ef29a14f0a.tgz(@fontsource/jetbrains-mono@5.3.0)(jest-axe@10.0.0)(react@18.3.1)(styled-components@6.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@testing-library/react': 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       esbuild: 0.28.2
       playwright: 1.65.0

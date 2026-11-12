@@ -33,7 +33,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=testflight-v
 | Uplink id | `testflight` |
 | Wraps | TestFlight (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 52.0, extension API 6.0.0 |
+| Built against | contract 52.1, extension API 6.0.0 |
 
 </details>
 
