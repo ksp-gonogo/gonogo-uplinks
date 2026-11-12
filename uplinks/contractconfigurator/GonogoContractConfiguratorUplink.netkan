@@ -6,7 +6,7 @@
     "prereleases": false
   },
   "x_netkan_version_edit": {
-    "find": "^contractconfigurator-[vV]?(?<version>.+)$",
+    "find": "^contractConfigurator-[vV]?(?<version>.+)$",
     "replace": "${version}"
   },
   "name": "Gonogo Contract Configurator Uplink",

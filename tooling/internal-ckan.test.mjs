@@ -67,6 +67,16 @@ test("the file read back out of a release zip is the one generated", () => {
   assert.deepEqual(JSON.parse(readFromZip(zip)), internalCkan(facts));
 });
 
+test("every Uplink's release zip carries its mod/LICENSE, the licence its netkan names", () => {
+  for (const name of uplinkNames()) {
+    const facts = readUplink(name);
+    const zip = releaseZip(facts.uplink.gamedata);
+    addToZip(zip, facts);
+    const shipped = execFileSync("unzip", ["-p", zip, `GameData/${facts.uplink.gamedata}/LICENSE`], { encoding: "utf8" });
+    assert.equal(shipped, readFileSync(join(ROOT, "uplinks", name, "mod", "LICENSE"), "utf8"), name);
+  }
+});
+
 test("a zip that already holds a .ckan, or another Uplink's zip, is refused", () => {
   const facts = readUplink("kerbcast");
   assert.throws(

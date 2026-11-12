@@ -6,7 +6,7 @@
     "prereleases": false
   },
   "x_netkan_version_edit": {
-    "find": "^ferramaerospaceresearch-[vV]?(?<version>.+)$",
+    "find": "^aero-[vV]?(?<version>.+)$",
     "replace": "${version}"
   },
   "name": "Gonogo Ferram Aerospace Research Uplink",

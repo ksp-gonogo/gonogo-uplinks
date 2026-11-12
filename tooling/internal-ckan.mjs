@@ -34,7 +34,7 @@
  * uninstallable.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -51,7 +51,7 @@ export function readUplink(name, root = ROOT) {
   const uplink = readJson(join(dir, "uplink.json"));
   const manifestPath = join(dir, "client", "gonogo-uplink.json");
   const manifest = existsSync(manifestPath) ? readJson(manifestPath) : undefined;
-  return { uplink, manifest };
+  return { uplink, manifest, dir };
 }
 
 /** The internal .ckan as an object. */
@@ -80,7 +80,11 @@ function listZip(zip) {
     .filter(Boolean);
 }
 
-/** Adds GameData/<gamedata>/<gamedata>.ckan to a release zip and returns its path inside the zip. */
+/**
+ * Adds GameData/<gamedata>/<gamedata>.ckan to a release zip and returns its path inside the zip.
+ * The Uplink's own mod/LICENSE goes in beside it as GameData/<gamedata>/LICENSE, so the licence
+ * a player receives is the one the netkan's license field names.
+ */
 export function addToZip(zip, facts) {
   const { gamedata } = facts.uplink;
   const entries = listZip(zip);
@@ -92,11 +96,22 @@ export function addToZip(zip, facts) {
     throw new Error(`${zip} already holds ${existing.join(", ")}; CKAN refuses an archive with more than one`);
   }
   const entry = `GameData/${gamedata}/${gamedata}.ckan`;
+  const licenseEntry = `GameData/${gamedata}/LICENSE`;
+  const licensePath = join(facts.dir, "mod", "LICENSE");
+  if (!existsSync(licensePath)) {
+    throw new Error(`${licensePath} is missing, so the release zip would carry no licence`);
+  }
+  const addLicense = !entries.includes(licenseEntry);
   const stage = mkdtempSync(join(tmpdir(), "internal-ckan-"));
   try {
     mkdirSync(join(stage, "GameData", gamedata), { recursive: true });
     writeFileSync(join(stage, entry), renderInternalCkan(facts));
-    execFileSync("zip", ["-q", resolve(zip), entry], { cwd: stage });
+    const added = [entry];
+    if (addLicense) {
+      copyFileSync(licensePath, join(stage, licenseEntry));
+      added.push(licenseEntry);
+    }
+    execFileSync("zip", ["-q", resolve(zip), ...added], { cwd: stage });
   } finally {
     rmSync(stage, { recursive: true, force: true });
   }

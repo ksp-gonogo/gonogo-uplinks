@@ -32,8 +32,18 @@ test("every Uplink has a netkan named for its GameData folder, with the release 
     );
     assert.equal(netkan.x_netkan_github.prereleases, false, name);
     assert.deepEqual(netkan.install, [{ file: `GameData/${uplink.gamedata}`, install_to: "GameData" }], name);
-    const version = new RegExp(netkan.x_netkan_version_edit.find).exec(`${name}-v1.2.3`);
+    const version = new RegExp(netkan.x_netkan_version_edit.find).exec(`${uplink.id}-v1.2.3`);
     assert.equal(version?.groups.version, "1.2.3", `${name}: the version edit must strip the release tag's prefix`);
+  }
+});
+
+test("the version edit's prefix is the Uplink's id, the way prepare-release names the tag", () => {
+  for (const name of uplinkNames()) {
+    const { uplink, netkan } = netkanOf(name);
+    assert.ok(
+      netkan.x_netkan_version_edit.find.startsWith(`^${uplink.id}-`),
+      `${name}: the tag is ${uplink.id}-v<version>, the netkan reads ${netkan.x_netkan_version_edit.find}`,
+    );
   }
 });
 

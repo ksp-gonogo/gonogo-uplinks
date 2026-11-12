@@ -6,7 +6,7 @@
     "prereleases": false
   },
   "x_netkan_version_edit": {
-    "find": "^actiongroupsextended-[vV]?(?<version>.+)$",
+    "find": "^actionGroupsExtended-[vV]?(?<version>.+)$",
     "replace": "${version}"
   },
   "name": "Gonogo Action Groups Extended Uplink",
