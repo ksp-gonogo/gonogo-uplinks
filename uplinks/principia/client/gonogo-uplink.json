@@ -11,8 +11,8 @@
   "version": "0.0.0-development",
   "minAppVersion": "0.0.0",
   "apiVersion": "6.0.0",
-  "contractMajor": 51,
-  "contractMinor": 1,
+  "contractMajor": 52,
+  "contractMinor": 0,
   "bundleUrl": "principia/principia.client.js",
   "integrity": "",
   "sdkVersion": "0.0.1"

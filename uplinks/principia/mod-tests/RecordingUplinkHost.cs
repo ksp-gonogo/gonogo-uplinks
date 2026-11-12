@@ -264,6 +264,12 @@ namespace GonogoPrincipiaUplink.Tests
             HandlersRegistered.Add(command);
         }
 
+        public void AddSessionCommandHandler<TArgs, TResult>(
+            string command, Func<TArgs, CommandOrigin, TResult> handler)
+        {
+            HandlersRegistered.Add(command);
+        }
+
         public IChannelPublisher Publisher(string topic)
         {
             PublishersTaken.Add(topic);

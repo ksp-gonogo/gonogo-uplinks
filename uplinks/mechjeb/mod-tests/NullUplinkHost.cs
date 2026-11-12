@@ -40,6 +40,7 @@ namespace GonogoMechJebUplink.Tests
         public IDynamicChannelSource RegisterDynamicNamespace(string prefix, ChannelDeclaration template) => throw NotExpected();
         public void AddCommandHandler<TArgs, TResult>(string command, Func<TArgs, TResult> handler) => throw NotExpected();
         public void AddVantageCommandHandler<TArgs, TResult>(string command, Func<TArgs, string, TResult> handler) => throw NotExpected();
+        public void AddSessionCommandHandler<TArgs, TResult>(string command, Func<TArgs, CommandOrigin, TResult> handler) => throw NotExpected();
         public List<ICommandGateEvaluator> GateEvaluators { get; } = new List<ICommandGateEvaluator>();
         public void AddGateEvaluator(ICommandGateEvaluator evaluator) => GateEvaluators.Add(evaluator);
         public void AddCommandRequirement(string command, CommandRequirement requirement) => throw NotExpected();

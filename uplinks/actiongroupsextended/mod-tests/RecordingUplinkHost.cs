@@ -218,6 +218,10 @@ namespace Gonogo.ActionGroupsExtendedUplink.Tests
             string command, Func<TArgs, string, TResult> handler) =>
             throw NotExpected("AddVantageCommandHandler");
 
+        public void AddSessionCommandHandler<TArgs, TResult>(
+            string command, Func<TArgs, CommandOrigin, TResult> handler) =>
+            throw NotExpected("AddSessionCommandHandler");
+
         public IChannelPublisher Publisher(string topic) => throw NotExpected("Publisher");
 
         public void AddChannelSource(string topic, Func<KspSnapshot?, object?> map) =>
