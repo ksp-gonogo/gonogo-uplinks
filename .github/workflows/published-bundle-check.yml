@@ -1,0 +1,74 @@
+# Does each Uplink's newest published client still load in the current app?
+#
+# A bundle keeps its bare imports until the app's import map resolves them, so a
+# name gonogo stops exporting shows only when the app loads the bundle. This
+# builds the app's externals from the head of ksp-gonogo/gonogo `ci-dev` and
+# imports each newest bundle on the `releases` branch in Chromium. The run goes
+# red and its summary names the Uplink and the missing export. Nothing depends
+# on it and it is no required check, so it blocks nothing.
+#
+# A scheduled run uses the copy of this file on `main` and only dispatches this
+# workflow on staging, so the nightly starts once this file reaches main.
+#
+#   gh workflow run published-bundle-check.yml --ref staging [-f gonogo_ref=<branch, tag or sha>]
+name: published-bundle-check
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      gonogo_ref:
+        description: "Gonogo branch, tag or sha to load against. Empty = ci-dev."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: published-bundle-check
+  cancel-in-progress: true
+
+jobs:
+  trampoline:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch this workflow on staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run published-bundle-check.yml --repo "$GITHUB_REPOSITORY" --ref staging
+
+  check:
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the published bundles
+        run: git fetch --no-tags origin +refs/heads/releases:refs/remotes/origin/releases
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ksp-gonogo/gonogo
+          ref: ${{ inputs.gonogo_ref || 'ci-dev' }}
+          path: gonogo
+          fetch-depth: 1
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: gonogo/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: gonogo/pnpm-lock.yaml
+      - name: Install the app and its browser
+        working-directory: gonogo
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @ksp-gonogo/app exec playwright install --with-deps chromium
+
+      - name: Load every newest bundle
+        run: node tooling/published-bundle-check.mjs --gonogo gonogo

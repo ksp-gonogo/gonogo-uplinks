@@ -161,3 +161,28 @@ test("the description step is off without its repository variable and swallows a
   assert.match(step, /if node tooling\/spacedock-description\.mjs sync/);
   assert.match(step, /NOT replaced/);
 });
+
+/** The jobs of a workflow that set a concurrency group of their own. */
+export function jobConcurrencyGroups(text) {
+  return [...text.matchAll(/^    concurrency:\n\s+group: (.+)$/gm)].map((match) => match[1]);
+}
+
+test("no job in a release waits on a group shared between releases", () => {
+  const planted = "jobs:\n  publish:\n    concurrency:\n      group: releases-branch\n";
+  assert.deepEqual(jobConcurrencyGroups(planted), ["releases-branch"], "BLIND: a planted group went unseen");
+  assert.deepEqual(
+    jobConcurrencyGroups(read("release.yml")),
+    [],
+    "GitHub keeps one waiting job per group, so a release dispatched with others can be cancelled unpublished",
+  );
+});
+
+test("a rejected push to releases is rebased and retried a bounded number of times", () => {
+  const step = steps(read("release.yml")).find((s) => s.includes("- name: Publish the client"));
+  assert.match(step, /node tooling\/uplink-tools\.mjs "\$NAME" publish/);
+  assert.match(step, /--push --purge --tag "\$TAG"/);
+  assert.match(step, /for attempt in 1 2 3 4 5/);
+  assert.match(step, /rebase origin\/releases/);
+  assert.match(step, /rebase --abort/);
+  assert.match(step, /rev-list --count origin\/releases\.\.HEAD/);
+});

@@ -165,11 +165,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Two tags pushed together would each commit to `releases` from the same
-    # parent, and the second push would be rejected after its build had passed.
-    concurrency:
-      group: releases-branch
-      cancel-in-progress: false
     env:
       NAME: ${{ needs.resolve.outputs.name }}
       URL: ${{ needs.resolve.outputs.url }}
@@ -218,12 +213,34 @@ jobs:
       # already published with different bytes, pushes, reads the push back from
       # the remote, and asks jsDelivr to drop its cached copy of both URLs. A
       # failed purge only delays the file, so it warns.
+      #
+      # Uplinks released together each commit to `releases` from the same parent,
+      # so all but the first push is rejected. A rejected push leaves the release
+      # committed in the Uplink's `client/.releases` checkout, so the retry
+      # rebases that unsent commit onto the remote and runs the same command,
+      # which pushes it. Each Uplink writes its own path, so the rebase does not
+      # conflict; one that does fails the step.
       - name: Publish the client
         if: needs.resolve.outputs.dry != 'true' && fromJson(needs.resolve.outputs.leg).client
-        run: >-
-          node tooling/uplink-tools.mjs "$NAME" publish
-          --from "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}"
-          --push --purge --tag "$TAG"
+        run: |
+          set -uo pipefail
+          checkout="uplinks/$NAME/client/.releases"
+          for attempt in 1 2 3 4 5; do
+            node tooling/uplink-tools.mjs "$NAME" publish \
+              --from "$GITHUB_WORKSPACE/artifacts/${{ needs.resolve.outputs.id }}" \
+              --push --purge --tag "$TAG" && exit 0
+            [ "$attempt" -lt 5 ] && [ -d "$checkout" ] || break
+            git -C "$checkout" fetch --no-tags origin +refs/heads/releases:refs/remotes/origin/releases || break
+            if [ "$(git -C "$checkout" rev-list --count origin/releases..HEAD)" = 0 ]; then
+              echo "::error::publish failed with nothing unsent to retry"
+              break
+            fi
+            echo "::warning::push to releases rejected (attempt $attempt); rebasing the unsent release onto the remote"
+            git -C "$checkout" -c user.name=uplink-tools -c user.email=uplink-tools@users.noreply.github.com \
+              rebase origin/releases || { git -C "$checkout" rebase --abort; break; }
+            sleep $((attempt * 3))
+          done
+          exit 1
 
       # The same command into a scratch folder that is a checkout of the branch
       # the URL names, with no --push and no --purge.
