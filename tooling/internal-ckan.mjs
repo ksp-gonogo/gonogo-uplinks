@@ -14,9 +14,11 @@
  * The mod's CKAN identifier comes from uplink.json (`mod.ckan`), and the version
  * from the client's gonogo-uplink.json when the Uplink has one, otherwise from
  * uplink.json. An Uplink whose mod is not on CKAN (`tier: "manual"`) depends on
- * GonogoCore alone. Any other mod the code needs at runtime, such as the
+ * Gonogo alone. Any other mod the code needs at runtime, such as the
  * Harmony library an Uplink's assembly references, is listed in uplink.json as
  * `ckanDepends`, entries in CKAN's own relationship form.
+ * What the wrapped mod itself only recommends, for which this repo has an Uplink,
+ * is listed as `ckanRecommends` in the same form, and lands in `recommends`.
  *
  * `min_version` is `mod.ckanVersion` when the Uplink has one: the pinned release
  * in the spelling CKAN lists it under, with its epoch and leading `v`, which
@@ -24,8 +26,8 @@
  * and a `v` above no prefix, so the bare `builtAgainst` of a mod CKAN lists as
  * `v4.7.0.0` or `1:1.6.0.1` is met by every release of it.
  *
- * GonogoCore carries no version: the Uplinks build against a pinned gonogo
- * commit (vendor/gonogo-ref), which is not a GonogoCore release, and a
+ * Gonogo carries no version: the Uplinks build against a pinned gonogo
+ * commit (vendor/gonogo-ref), which is not a Gonogo release, and a
  * min_version CKAN cannot find a release for would make the Uplink
  * uninstallable.
  */
@@ -61,8 +63,9 @@ export function internalCkan({ uplink, manifest }) {
     }
     depends.push({ name: mod.ckan, min_version: mod.ckanVersion ?? builtAgainst });
   }
-  depends.push(...(uplink.ckanDepends ?? []), { name: "GonogoCore" });
-  return { depends };
+  depends.push(...(uplink.ckanDepends ?? []), { name: "Gonogo" });
+  const recommends = uplink.ckanRecommends ?? [];
+  return recommends.length > 0 ? { depends, recommends } : { depends };
 }
 
 export function renderInternalCkan(facts) {

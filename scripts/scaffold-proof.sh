@@ -66,7 +66,7 @@ for path in "$id/$id.client.js" "$id/gonogo-uplink.json" "$ns.zip"; do
     exit 1
   fi
 done
-# GonogoCore provides Sitrep.Contract.dll in the game, and a second copy in another GameData folder is a second set of types.
+# Gonogo provides Sitrep.Contract.dll in the game, and a second copy in another GameData folder is a second set of types.
 if unzip -Z1 "$out/artifacts/$ns.zip" | grep -q "Sitrep.Contract.dll"; then
   echo "::error::the scaffold's mod zip carries Sitrep.Contract.dll"
   exit 1

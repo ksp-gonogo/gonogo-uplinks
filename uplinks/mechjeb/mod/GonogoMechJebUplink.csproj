@@ -77,7 +77,7 @@
   <!-- Sitrep.Contract only - the whole point of the Uplink split is that a
        third-party Uplink author's compile-time surface needs nothing from
        Sitrep.Host (the engine). Private="false": Sitrep.Contract.dll is
-       provided by the core mod (GonogoCore) at runtime, never copied here. -->
+       provided by the core mod (Gonogo) at runtime, never copied here. -->
   <ItemGroup>
     <PackageReference Include="KspGonogo.Sitrep.Contract" Version="[$(GonogoContractVersion)]" IncludeAssets="compile" PrivateAssets="all" />
   </ItemGroup>

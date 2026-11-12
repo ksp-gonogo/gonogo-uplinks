@@ -13,6 +13,18 @@
     "builtAgainst": "4.7.0.0",
     "channels": [{ "ckan": "RP-1" }, { "github": "KSP-RO/RP-1" }]
   },
+  "ckanDepends": [
+    { "name": "GonogoContractConfiguratorUplink" },
+    { "name": "GonogoFerramAerospaceResearchUplink" },
+    { "name": "GonogoKerbalismUplink" },
+    { "name": "GonogoRealFuelsUplink" }
+  ],
+  "ckanRecommends": [
+    { "name": "GonogoKosUplink" },
+    { "name": "GonogoMechJebUplink" },
+    { "name": "GonogoRealAntennasUplink" },
+    { "name": "GonogoTestFlightUplink" }
+  ],
   "codegen": {
     "assembly": "GonogoRp1Uplink.Contract",
     "configurationMethod": "GonogoRp1Uplink.Rp1RtConfig.Configure",

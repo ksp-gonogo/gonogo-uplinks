@@ -55,7 +55,7 @@
 
   <!-- Sitrep.Contract only, Private="false": SitrepContractAttribute/
        SitrepTopicAttribute/SitrepUnitAttribute/Units are core's cross-package
-       surface, provided by the core mod (GonogoCore) at runtime, never copied
+       surface, provided by the core mod (Gonogo) at runtime, never copied
        here. Same pattern GonogoScansatUplink.csproj already uses for its own
        Sitrep.Contract reference. -->
   <ItemGroup>

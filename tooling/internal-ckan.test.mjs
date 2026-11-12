@@ -26,12 +26,12 @@ function releaseZip(gamedata, extra = []) {
   return zip;
 }
 
-test("an Uplink depends on its mod at builtAgainst, and on GonogoCore", () => {
+test("an Uplink depends on its mod at builtAgainst, and on Gonogo", () => {
   const kerbcast = readUplink("kerbcast");
   assert.deepEqual(internalCkan(kerbcast), {
     depends: [
       { name: "Kerbcast", min_version: kerbcast.uplink.mod.builtAgainst },
-      { name: "GonogoCore" },
+      { name: "Gonogo" },
     ],
   });
 });
@@ -55,7 +55,7 @@ test("every Uplink names its mod's CKAN identifier and a version, or is manual",
       assert.ok(uplink.mod.ckan, `${name} names no mod.ckan`);
       assert.ok(uplink.mod.builtAgainst, `${name} names no builtAgainst`);
     }
-    assert.equal(internalCkan(readUplink(name)).depends.at(-1).name, "GonogoCore");
+    assert.equal(internalCkan(readUplink(name)).depends.at(-1).name, "Gonogo");
   }
 });
 
@@ -88,9 +88,28 @@ test("an Uplink lists Harmony2 exactly when its mod project references 0Harmony"
   }
 });
 
-test("ckanDepends reach the generated file, ahead of GonogoCore", () => {
+test("ckanDepends reach the generated file, ahead of Gonogo", () => {
   assert.deepEqual(internalCkan(readUplink("principia")).depends, [
     { name: "Harmony2" },
-    { name: "GonogoCore" },
+    { name: "Gonogo" },
   ]);
+});
+
+test("ckanRecommends reach the generated file as recommends, and only where an Uplink declares them", () => {
+  assert.deepEqual(internalCkan(readUplink("rp1")).recommends, [
+    { name: "GonogoKosUplink" },
+    { name: "GonogoMechJebUplink" },
+    { name: "GonogoRealAntennasUplink" },
+    { name: "GonogoTestFlightUplink" },
+  ]);
+  assert.equal("recommends" in internalCkan(readUplink("principia")), false);
+});
+
+test("every ckanRecommends entry names an Uplink in this repo", () => {
+  const gamedata = new Set(uplinkNames().map((name) => readUplink(name).uplink.gamedata));
+  for (const name of uplinkNames()) {
+    for (const dep of readUplink(name).uplink.ckanRecommends ?? []) {
+      assert.ok(gamedata.has(dep.name), `${name}: ${dep.name} is not an Uplink here`);
+    }
+  }
 });

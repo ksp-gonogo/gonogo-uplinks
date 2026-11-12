@@ -19,7 +19,7 @@ MSBuild properties (`Directory.Build.props`), so `-p:KspManaged=...`, or an
 environment variable of the same name, points a build at a different install.
 
 The package is the whole of the C# surface. A plugin and its contract slice
-compile against the `Sitrep.Contract` in it (compile-only, since GonogoCore
+compile against the `Sitrep.Contract` in it (compile-only, since Gonogo
 provides the assembly in the game); a Tests project also gets
 `Sitrep.Contract.TestSupport`, the fakes and rule assertions, and `Sitrep.Core`,
 the real delay engine; and its `codegen` folder holds the twin and the props

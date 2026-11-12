@@ -6,7 +6,7 @@ renders/
 artifacts/
 .DS_Store
 # Vendored reference assemblies: the author's own KSP install and the artifacts
-# GonogoCore ships. Machine-local and not ours to redistribute.
+# Gonogo ships. Machine-local and not ours to redistribute.
 vendor/ksp-managed/
 vendor/gamedata/
 

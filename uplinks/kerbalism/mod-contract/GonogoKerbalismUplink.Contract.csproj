@@ -60,7 +60,7 @@
 
   <!-- Sitrep.Contract only, Private="false": SitrepContractAttribute/
        SitrepTopicAttribute/SitrepUnitAttribute/Units are core's cross-package
-       surface, provided by the core mod (GonogoCore) at runtime, never copied
+       surface, provided by the core mod (Gonogo) at runtime, never copied
        here. Vec3 comes from the same place and for the same reason: it is the
        ONE canonical vector shape every Domain's vector fields reuse (see its
        own doc comment on why the unit sits on the FIELD, not the type), so a
