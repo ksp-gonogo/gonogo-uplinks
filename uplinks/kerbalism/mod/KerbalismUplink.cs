@@ -68,6 +68,9 @@ namespace Gonogo.KerbalismUplink
         /// <summary>The same reads, for every other craft: see <see cref="KerbalismFleetChannels"/>.</summary>
         private readonly KerbalismFleetChannels _fleet;
 
+        /// <summary>Every other craft's record of the channels that follow the active craft: see <see cref="KerbalismLaneFeed"/>.</summary>
+        private readonly KerbalismLaneFeed _lanes;
+
         private IChannelPublisher? _spaceWeather;
         private IChannelPublisher? _lifeSupport;
         private IChannelPublisher? _crew;
@@ -87,6 +90,7 @@ namespace Gonogo.KerbalismUplink
         public KerbalismUplink()
         {
             _fleet = new KerbalismFleetChannels(_k, CaptureVessel);
+            _lanes = new KerbalismLaneFeed(_k, CaptureVessel);
             _modSettings = new KerbalismModSettings(
                 () => _k.IsAvailable ? null : "Kerbalism is not installed",
                 _k.Features,
@@ -163,6 +167,7 @@ namespace Gonogo.KerbalismUplink
             Delivery = Delivery.LossyLatest,
             Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
             Delay = DelayRole.Delayed,
+            FollowsActiveCraft = KerbalismLaneScope.Follows(topic),
         };
 
         public void Register(IUplinkHost host)
@@ -192,6 +197,7 @@ namespace Gonogo.KerbalismUplink
             // unconditionally alongside the active-vessel channels: its capture
             // does nothing at all until a client subscribes to a specific craft.
             _fleet.RegisterInto(host);
+            _lanes.RegisterInto(host, _lifeSupport!, _crew!, _transmission!);
 
             // Vessel telemetry: capture live Kerbalism on the main thread, publish off it.
             host.AddSampledSource(
